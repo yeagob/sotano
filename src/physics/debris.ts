@@ -11,8 +11,8 @@ import { fx } from '../core/fx';
 export const DEBRIS_SIZE = 0.72;     // loose cube edge length
 export const DEBRIS_LIFETIME = 90;   // seconds until it despawns
 export const DEBRIS_BLINK = 8;       // blinks for the last seconds
-export const DEBRIS_HITS = 4;        // shots (or enemy shoves) a loose block takes before it shatters
-export const HOP = 3.4;              // upward hop of a cube that is stuck against something
+export const HOP = 8.5;              // launch speed of a hop over an obstacle (apex ~1.4 blocks)
+export const HOP_COOLDOWN = 0.7;     // seconds between hops, so a cube pinned against a wall doesn't jitter
 
 const G = 26;
 const HS = DEBRIS_SIZE / 2;
@@ -41,9 +41,9 @@ export class DebrisSystem {
   readonly tags: (Set<string> | null)[];
   /** Seconds left on a bomb's fuse (0 = not a bomb). Bombs are pinned: never recycled, never age out. */
   readonly fuse: Float32Array;
-  /** Hits left before the cube shatters (bombs ignore it: a hit sets them off). */
-  readonly hits: Uint8Array;
   onFuse: FuseFn = () => {};
+  /** Seconds until this cube may hop again. */
+  private readonly hopT: Float32Array;
   private cursor = 0;
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
@@ -67,7 +67,7 @@ export class DebrisSystem {
     this.cooldown = new Float32Array(max);
     this.tags = new Array(max).fill(null);
     this.fuse = new Float32Array(max);
-    this.hits = new Uint8Array(max);
+    this.hopT = new Float32Array(max);
     this.stepped = new Uint8Array(max);
     this.unsettled = new Uint8Array(max);
   }
@@ -102,7 +102,7 @@ export class DebrisSystem {
     this.cooldown[i] = 0.25;
     this.tags[i] = null;
     this.fuse[i] = 0;
-    this.hits[i] = DEBRIS_HITS;
+    this.hopT[i] = 0;
     this.unsettled[i] = 1;
     return i;
   }
@@ -124,19 +124,12 @@ export class DebrisSystem {
   }
 
   /**
-   * A hit that wears the cube down: pushes it and returns true when it shatters (the caller
-   * removes it and shows the effect). A bomb never shatters: the hit lights it instead.
+   * A shot hits the cube. A loose block shatters on the spot (returns true, the caller removes it).
+   * A bomb is only pushed: it is never set off by a hit, only by its fuse or an explosion.
    */
-  strike(i: number, vx: number, vy: number, vz: number): 'pushed' | 'shattered' | 'ignited' {
-    if (this.fuse[i] > 0) {
-      this.push(i, vx, vy, vz);
-      this.fuse[i] = Math.min(this.fuse[i], 0.01);
-      return 'ignited';
-    }
-    if (this.hits[i] <= 1) return 'shattered';
-    this.hits[i]--;
-    this.push(i, vx, vy, vz);
-    return 'pushed';
+  hit(i: number, vx: number, vy: number, vz: number): boolean {
+    if (this.fuse[i] > 0) { this.push(i, vx, vy, vz); return false; }
+    return true;
   }
 
   /** Adds to the velocity (an intention or explosion hitting it). */
@@ -182,6 +175,7 @@ export class DebrisSystem {
       if (!st) continue;
       this.age[i] += dt;
       this.cooldown[i] -= dt;
+      this.hopT[i] -= dt;
       const i3 = i * 3;
       if (this.fuse[i] > 0) {
         this.fuse[i] -= dt;
@@ -319,10 +313,20 @@ export class DebrisSystem {
     let landed = false;
     for (let s = 0; s < n; s++) {
       let x = this.pos[i3] + vx * h;
-      if (this.boxSolid(x, this.pos[i3 + 1], this.pos[i3 + 2])) { impact = Math.max(impact, Math.abs(vx)); vx *= -0.35; x = this.pos[i3]; if (vy <= 0) vy = Math.max(vy, HOP); }
+      if (this.boxSolid(x, this.pos[i3 + 1], this.pos[i3 + 2])) {
+        impact = Math.max(impact, Math.abs(vx));
+        x = this.pos[i3];
+        // a hop keeps most of the forward speed so a cube in a pit can climb out; while already
+        // rising it slides up the wall with its speed intact; otherwise it bounces back
+        if (this.tryHop(i, vy)) { vy = HOP; vx *= 0.8; } else if (vy <= 0.5) vx *= -0.35;
+      }
       this.pos[i3] = x;
       let z = this.pos[i3 + 2] + vz * h;
-      if (this.boxSolid(this.pos[i3], this.pos[i3 + 1], z)) { impact = Math.max(impact, Math.abs(vz)); vz *= -0.35; z = this.pos[i3 + 2]; if (vy <= 0) vy = Math.max(vy, HOP); }
+      if (this.boxSolid(this.pos[i3], this.pos[i3 + 1], z)) {
+        impact = Math.max(impact, Math.abs(vz));
+        z = this.pos[i3 + 2];
+        if (this.tryHop(i, vy)) { vy = HOP; vz *= 0.8; } else if (vy <= 0.5) vz *= -0.35;
+      }
       this.pos[i3 + 2] = z;
       let y = this.pos[i3 + 1] + vy * h;
       if (vy > 0) {
@@ -350,6 +354,13 @@ export class DebrisSystem {
     if (this.tags[i] && impact > 3.5) this.onImpact(i, this.pos[i3], this.pos[i3 + 1], this.pos[i3 + 2], impact);
   }
 
+  /** Starts a hop if the cube is not already rising and its cooldown is over. */
+  private tryHop(i: number, vy: number): boolean {
+    if (vy > 0.5 || this.hopT[i] > 0) return false;
+    this.hopT[i] = HOP_COOLDOWN;
+    return true;
+  }
+
   /**
    * Moves an overlapping cube to the closest free position (searching outwards along the six
    * axes, up first on ties) and gives it a little push that way. If nothing is free within
@@ -364,7 +375,7 @@ export class DebrisSystem {
         const nx = x + dx * d, ny = y + dy * d, nz = z + dz * d;
         if (this.boxSolid(nx, ny, nz)) continue;
         this.pos[i3] = nx; this.pos[i3 + 1] = ny; this.pos[i3 + 2] = nz;
-        this.vel[i3] = dx * 2; this.vel[i3 + 1] = Math.max(HOP, dy * 2); this.vel[i3 + 2] = dz * 2;
+        this.vel[i3] = dx * 2; this.vel[i3 + 1] = Math.max(0, dy * 2); this.vel[i3 + 2] = dz * 2;
         this.state[i] = MOVING;
         return;
       }

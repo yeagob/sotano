@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DebrisSystem, DEBRIS_HITS, DEBRIS_LIFETIME } from '../src/physics/debris';
+import { DebrisSystem, DEBRIS_LIFETIME } from '../src/physics/debris';
 
 const floor = (_x: number, y: number, _z: number) => y < 0;
 const step = (d: DebrisSystem, seconds: number) => { for (let t = 0; t < seconds; t += 1 / 60) d.update(1 / 60); };
@@ -89,14 +89,25 @@ describe('loose cubes', () => {
     expect(peak).toBeGreaterThan(0.6);
   });
 
-  it('shatter after enough hits, and a hit sets a bomb off at once', () => {
+  it('a shot shatters a loose block at once, and only pushes a bomb', () => {
     const d = new DebrisSystem(4, floor, () => {});
     const c = d.spawn(1, 0.5, 0.4, 0.5);
-    for (let k = 1; k < DEBRIS_HITS; k++) expect(d.strike(c, 1, 0, 0)).toBe('pushed');
-    expect(d.strike(c, 1, 0, 0)).toBe('shattered');
+    expect(d.hit(c, 1, 0, 0)).toBe(true);
     const b = d.spawn(1, 2.5, 0.4, 0.5);
     d.fuse[b] = 1.8;
-    expect(d.strike(b, 1, 0, 0)).toBe('ignited');
-    expect(d.fuse[b]).toBeLessThanOrEqual(0.01);
+    expect(d.hit(b, 1, 0, 0)).toBe(false);
+    expect(d.fuse[b]).toBeGreaterThan(1.7);
+    expect(d.vel[b * 3]).toBeGreaterThan(0);
+  });
+
+  it('a cube in a one-block pit climbs out instead of jittering', () => {
+    // floor at y<0, with a pit at x 0..1 whose walls are one block high
+    const pit = (x: number, y: number) => y < 0 || (y < 1 && (x === -1 || x === 1));
+    const d = new DebrisSystem(4, pit, () => {});
+    const c = d.spawn(1, 0.5, 0.4, 0.5);
+    step(d, 1);
+    d.launch(c, 4, 0, 0);
+    step(d, 2);
+    expect(d.pos[c * 3]).toBeGreaterThan(1.2);
   });
 });
