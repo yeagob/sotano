@@ -70,3 +70,5 @@ A feature is done only when all of this is true:
 - **Cubes must never clip into each other**, not even right after spawning: they repel each other (separation pass) and never into walls.
 - **Items must say plainly what they do** and their impact on the run, besides the philosophical message: every item has an `effect` line with numbers.
 - **Every run must be unique, driven by a seed** (RNG across rooms, variants, enemies, items, rewards); take the time to do it right.
+- **Before scaling vertically, stress-test the architecture with extreme items** (UI in the world, sudden wind, clones, friendly enemies…) and fix the root causes first; see docs/reviews/stress-test.md.
+- **Damage to actors and damage to blocks are separate values**: a damage item must not also speed up digging unless it says so.
