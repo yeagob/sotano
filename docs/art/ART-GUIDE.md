@@ -2,7 +2,7 @@
 
 The reference for every visual element in SÓTANO: how it is built, what it means, its colours, proportions and rules. Anything the player sees must follow this guide. The full reasoning and every number are in [DECISIONS.md](DECISIONS.md), the binding ledger from the art-direction debate; where the two disagree, the ledger wins. Use the [`sotano-art`](../../.claude/skills/sotano-art/SKILL.md) skill for any proposal that generates art.
 
-Status: **direction agreed in debate; not yet built.** Items marked *(owner)* wait for the owner's decision (see §13 of the ledger).
+Status: **direction agreed in debate and accepted by the owner; not yet built.** Phase 0 (palette and gallery) is starting; see the ledger's §12.9.
 
 ---
 
@@ -437,9 +437,9 @@ Principle: **one grid, one light, one palette, one review screen. Every rule has
 
 ---
 
-## 14. Open questions for the owner
+## 14. Owner rulings (accepted)
 
-These are the decisions that belong to you. The debate's recommendation is in brackets.
+**Accepted by the owner on 2026-10-26: every recommendation below (the choice is in brackets).** The binding record is DECISIONS.md §14.
 
 1. **Style name:** Vessel Light (recommended) or Lantern Clay?
 2. **Fonts:** allow two OFL font files (about 80 KB) despite the "no image files" rule? [yes]

@@ -866,3 +866,28 @@ Only decisions that are the owner's (taste, story, scope). Each has the debate's
 | Q12 | **Floor ↔ element order** (F1 earth, F2 water, F3 air, F4 fire) and **floor-1 lamps unlit until cleared** | **Yes** to both |
 | Q13 | **Scope of Phase D** world motifs: the surface tree whose roots are the dungeon's tunnels, and a side-view Tree map | With the Tree-of-Life map milestone, not the art pass |
 | Q14 | **Optional bloom** as a "High" quality setting | Later, opt-in; never in review captures |
+
+---
+
+## 14. Owner rulings (accepted)
+
+On 2026-10-26 the owner accepted **every recommendation in §13** without changes. These rulings are binding and supersede any "OWNER" marker above.
+
+| # | Ruling |
+|---|---|
+| Q1 | Style name: **Vessel Light** |
+| Q2 | Fonts: **Pixelify Sans** and **Atkinson Hyperlegible Next** (OFL, self-hosted). Fallback: a generated pixel font |
+| Q3 | Renames: "Bone frame" → **Obsidian frame**; "Gilded frame" → **Brass frame** |
+| Q4 | Doubt's pause and reach telegraph **now**; other behaviour changes with each projection's milestone |
+| Q5 | Shards stay **cosmetic** for now; a use is designed with the Tree-of-Life milestone |
+| Q6 | The Tao Te Ching icon is **replaced** with water flowing around a stone |
+| Q7 | **Kintsugi** is added to the source library as the origin of the gold seams |
+| Q8 | Hexagram names shown on **start and pause** only; six lines = six stations **yes**; changing-line mechanics later |
+| Q9 | Projection → path mapping **kept** (Doubt, Lectern and Distraction stay Mind) |
+| Q10 | The Shadow is **your own silhouette**, with your hands |
+| Q11 | Skin tone asked **once on first start** (t3 preselected), changeable in settings |
+| Q12 | Floor order earth, water, air, fire **yes**; floor-1 lamps unlit until the room is cleared **yes** |
+| Q13 | Phase D world motifs (surface tree, side-view map) **with the Tree-of-Life milestone** |
+| Q14 | Optional bloom as a High setting: **later**; never in review captures |
+
+**Next:** phase 0 (palette, source-scan test, gallery v1). Phase A starts only after the three-party review of the architecture decisions.
