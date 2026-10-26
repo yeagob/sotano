@@ -4,7 +4,7 @@
 
 import { EventBus } from '../core/events';
 import type { DamageKind } from '../core/damage';
-import type { ActorId, ActorKind, Owner } from '../entities/actors';
+import type { ActorId, ActorKind, Faction, Owner } from '../entities/actors';
 
 export type { Owner } from '../entities/actors';
 
@@ -73,6 +73,8 @@ export interface GameEvents {
   heal: { amount: number; source: string };
   /** The player reached 0 hearts. Cancel to survive (with whatever health a hook sets). */
   death: { source: string };
+  /** An actor changed side (react only), e.g. a projection that became part of the self. */
+  factionChange: { target: ActorId; targetKind: ActorKind; def: string; from: Faction; to: Faction; source: string };
   /** An actor is gone (react only). `drops` can be changed (projections drop them). */
   actorDeath: { target: ActorId; targetKind: ActorKind; def: string; x: number; y: number; z: number; drops: PickupKind[] };
 

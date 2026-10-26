@@ -33,6 +33,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   land: () => ({ fallSpeed: 10, cause: 'fall' }),
   actorDamage: () => ({ target: 1, targetKind: 'player', def: 'player', amount: 8, kind: 'explosion', source: 'bomb', owner: 1, knockback: 0 }),
   contact: () => ({ attacker: 2, attackerDef: 'doubt', target: 1, targetKind: 'player', toTarget: 4, toAttacker: 0 }),
+  factionChange: () => ({ target: 2, targetKind: 'projection', def: 'doubt', from: 'projection', to: 'self', source: 'test' }),
   actorDeath: () => ({ target: 2, targetKind: 'projection', def: 'doubt', x: 1, y: 1, z: 1, drops: [] }),
   heal: () => ({ amount: 2, source: 'pickup' }),
   death: () => ({ source: 'doubt' }),

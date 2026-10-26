@@ -22,6 +22,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Items](docs/architecture/ITEMS.md) — the item model, the stat and event contract, synergies and exceptions, safety layers.
 - [Rooms and floors](docs/architecture/ROOMS.md) — floor plans, room templates and their rules, doors and keys.
 - [Entities](docs/architecture/ENTITIES.md) — stacked floors, health, pickups, bombs, enemies and their navigation.
+- [Actors and factions](docs/architecture/ACTORS.md) — the player and projections as actors, one damage pipeline, sides (allies), chain safety.
 - [Seeds and randomness](docs/architecture/RNG.md) — every run unique and replayable: seed codes, structure/runtime/cosmetic randomness, weighted tables.
 - [Elements plan](docs/architecture/ELEMENTS.md) — architecture and step-by-step plan for elements and containers.
 
@@ -34,7 +35,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Technical research and proposal](docs/research/TECHNICAL.md) — how Isaac and Noita are built, the target architecture, budgets, IP notes, roadmap.
 
 ### Reviews — architecture decisions
-- [Items](docs/reviews/items-architecture.md), [entities](docs/reviews/entities.md) and [RNG](docs/reviews/rng.md) reviews — engineer, architect and mediator: critique, ruling, resolution.
+- [Items](docs/reviews/items-architecture.md), [entities](docs/reviews/entities.md), [RNG](docs/reviews/rng.md) and [actors](docs/reviews/actors.md) reviews — engineer, architect and mediator: critique, ruling, resolution.
 - [Architecture stress test](docs/reviews/stress-test.md) — extreme items (wind, clones, friendly enemies, a HUD that falls into the world…) against the architecture, and the refactoring plan before scaling.
 
 ### Working on the project
@@ -144,6 +145,7 @@ S.bombs(5); S.keys(2)   // counters
 S.floor()               // open the hole and drop to the next floor
 S.enemies()             // live projections
 S.seed()                // this run's seed code
+S.charm()               // the nearest projection becomes an ally (factions)
 S.restart('ABCD-EFGH')  // replay a seed (no argument: a fresh one)
 ```
 

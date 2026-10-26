@@ -7,24 +7,30 @@ import { fx } from '../core/fx';
 import * as THREE from 'three';
 import { ROOM_D, ROOM_W } from '../content/rooms';
 import { FlowField, type RoomArea } from '../enemies/flowfield';
-import type { Enemy, EnemyCtx, EnemyDef } from '../enemies/types';
+import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
+import { hostile, type Actor } from './actors';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
 const PROJECTILE_GRAVITY = 14;
+/** Seconds between target choices, and how much closer (blocks) a new target must be to switch. */
+const RETARGET = 0.25;
+const RETARGET_MARGIN = 1.5;
 
 type Solid = (x: number, y: number, z: number) => boolean;
 
 export interface EnemyHost {
   solid: Solid;
   worldVersion(): number;
-  player(): { x: number; y: number; z: number; hw: number; h: number };
+  /** Every actor (the player and projections, any side). */
+  actors(): Iterable<Actor>;
+  actor(id: number): Actor | undefined;
   room(id: number): RoomArea;
-  /** The player and this enemy are touching (the game emits `contact`). */
-  contact(e: Enemy): void;
-  /** A projectile reached the player. `thrower` is the actor id of the enemy that threw it. */
-  projectileHit(damage: number, thrower: number): void;
+  /** This enemy touches an actor it is hostile to (the game emits `contact`, rate-limited). */
+  contact(e: Enemy, target: Actor): void;
+  /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
+  projectileHit(target: Actor, damage: number, thrower: number): void;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
   burst(e: Enemy, radius: number): void;
@@ -32,14 +38,15 @@ export interface EnemyHost {
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
 }
 
-interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number }
+interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction'] }
 
 interface View { group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[] }
 
 export class Enemies {
   readonly list: Enemy[] = [];
   private views = new Map<number, View>();
-  private flows = new Map<number, FlowField>();
+  private flows = new Map<string, FlowField>();
+  private lastDt = 0;
   private projectiles: Projectile[] = [];
   private projMesh: THREE.InstancedMesh;
   private group = new THREE.Group();
@@ -65,7 +72,7 @@ export class Enemies {
     const e: Enemy = {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
-      spawning: SPAWN_TIME, state: 'move', timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
+      spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -74,13 +81,13 @@ export class Enemies {
 
   get(id: number) { return this.list.find(e => e.id === id && e.alive); }
 
-  /** Enemies of a room that are still alive (wherever they wandered). */
-  aliveIn(room: number) { return this.list.filter(e => e.alive && e.room === room).length; }
+  /** Projections of a room that keep its doors shut: alive and still hostile (allies don't count). */
+  blockingIn(room: number) { return this.list.filter(e => e.alive && e.room === room && e.faction === 'projection').length; }
 
-  /** Id of a hittable enemy touching the sphere, or -1. */
-  at(x: number, y: number, z: number, r: number): number {
+  /** Id of a hittable enemy touching the sphere (and passing `filter`), or -1. */
+  at(x: number, y: number, z: number, r: number, filter?: (e: Enemy) => boolean): number {
     for (const e of this.list) {
-      if (!e.alive || e.spawning > 0) continue;
+      if (!e.alive || e.spawning > 0 || (filter && !filter(e))) continue;
       const b = e.body;
       if (Math.abs(x - b.x) < b.hw + r && Math.abs(z - b.z) < b.hw + r && y > b.y - r && y < b.y + b.h + r) return e.id;
     }
@@ -109,12 +116,14 @@ export class Enemies {
 
   update(dt: number) {
     this.time += dt;
-    const host = this.host, pl = host.player();
+    this.lastDt = dt;
+    const host = this.host;
+    const actors = [...host.actors()];
     const ctx: EnemyCtx = {
       dt,
-      player: pl,
-      dist: e => Math.hypot(pl.x - e.body.x, pl.z - e.body.z),
-      towardPlayer: e => this.toward(e, pl.x, pl.z),
+      target: e => this.target(e, actors),
+      dist: (e, t) => Math.hypot(t.x - e.body.x, t.z - e.body.z),
+      toward: (e, t) => this.toward(e, t),
       shootAt: (e, x, y, z) => this.shoot(e, x, y, z),
       burst: (e, r) => host.burst(e, r),
       kill: e => this.kill(e),
@@ -157,22 +166,53 @@ export class Enemies {
         if (!boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
       }
       if (b.y < -10) { this.kill(e); continue; }
-      // touching the player
-      if (Math.abs(pl.x - b.x) < pl.hw + b.hw && Math.abs(pl.z - b.z) < pl.hw + b.hw && pl.y < b.y + b.h && pl.y + pl.h > b.y)
-        host.contact(e);
+      // touching actors it is hostile to (the game rate-limits each pair)
+      for (const a of actors) {
+        if (a === e || !a.alive || a.spawning > 0 || !hostile(e.faction, a.faction)) continue;
+        const o = a.body;
+        if (Math.abs(o.x - b.x) < o.hw + b.hw && Math.abs(o.z - b.z) < o.hw + b.hw && o.y < b.y + b.h && o.y + o.h > b.y) host.contact(e, a);
+      }
       e.flash = Math.max(0, e.flash - dt);
       this.draw(e);
     }
-    this.updateProjectiles(dt, pl);
+    this.updateProjectiles(dt, actors);
     // forget the dead
     for (let i = this.list.length - 1; i >= 0; i--) if (!this.list[i].alive) this.list.splice(i, 1);
   }
 
-  /** Flow-field direction inside the enemy's room; straight line otherwise. */
-  private toward(e: Enemy, tx: number, tz: number): [number, number] {
-    const b = e.body;
-    let f = this.flows.get(e.room);
-    if (!f) { f = new FlowField(this.host.room(e.room)); this.flows.set(e.room, f); }
+  /**
+   * The nearest live actor hostile to `e`, preferring its own room. Chosen at 4 Hz, and only
+   * switched for one at least RETARGET_MARGIN blocks closer, so equidistant targets don't jitter.
+   */
+  private target(e: Enemy, actors: Actor[]): TargetView | null {
+    const valid = (a: Actor | undefined) => !!a && a.alive && a.spawning <= 0 && hostile(e.faction, a.faction);
+    const cost = (a: Actor) => Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z) + (a.room === e.room ? 0 : 20);
+    let cur = e.targetId >= 0 ? this.host.actor(e.targetId) : undefined;
+    if (!valid(cur)) { cur = undefined; e.targetId = -1; e.retarget = 0; }
+    e.retarget -= this.lastDt;
+    if (e.retarget <= 0) {
+      e.retarget = RETARGET;
+      let best: Actor | undefined, bestCost = Infinity;
+      for (const a of actors) {
+        if (a === e || !valid(a)) continue;
+        const c = cost(a);
+        if (c < bestCost) { best = a; bestCost = c; }
+      }
+      if (best && (!cur || bestCost < cost(cur) - RETARGET_MARGIN)) { cur = best; e.targetId = best.id; }
+    }
+    return cur ? { id: cur.id, x: cur.body.x, y: cur.body.y, z: cur.body.z } : null;
+  }
+
+  /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
+  private toward(e: Enemy, t: TargetView): [number, number] {
+    const b = e.body, tx = t.x, tz = t.z;
+    const key = `${e.room}:${t.id}`;
+    let f = this.flows.get(key);
+    if (!f) {
+      if (this.flows.size > 128) this.flows.clear(); // fields are tiny; just drop stale ones now and then
+      f = new FlowField(this.host.room(e.room));
+      this.flows.set(key, f);
+    }
     f.update(this.host.solid, tx, tz, this.host.worldVersion());
     const d = f.direction(b.x, b.z);
     if (d) return d;
@@ -187,12 +227,12 @@ export class Enemies {
     const dx = tx - sx, dz = tz - sz, d = Math.hypot(dx, dz);
     const t = Math.max(0.5, d / 9);
     this.projectiles.push({
-      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id,
+      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id, faction: e.faction,
     });
     if (this.projectiles.length > 64) this.projectiles.shift();
   }
 
-  private updateProjectiles(dt: number, pl: { x: number; y: number; z: number; hw: number; h: number }) {
+  private updateProjectiles(dt: number, actors: Actor[]) {
     let n = 0;
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const p = this.projectiles[i];
@@ -200,8 +240,11 @@ export class Enemies {
       p.vy -= PROJECTILE_GRAVITY * dt;
       p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
       let dead = p.age > 5;
-      if (Math.abs(p.x - pl.x) < pl.hw + 0.12 && Math.abs(p.z - pl.z) < pl.hw + 0.12 && p.y > pl.y && p.y < pl.y + pl.h) {
-        this.host.projectileHit(p.damage, p.thrower);
+      // the first actor hostile to the thrower's side that it touches
+      const hit = actors.find(a => a.alive && a.spawning <= 0 && a.id !== p.thrower && hostile(p.faction, a.faction)
+        && Math.abs(p.x - a.body.x) < a.body.hw + 0.12 && Math.abs(p.z - a.body.z) < a.body.hw + 0.12 && p.y > a.body.y && p.y < a.body.y + a.body.h);
+      if (hit) {
+        this.host.projectileHit(hit, p.damage, p.thrower);
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
         this.host.projectileBlock(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));
@@ -242,9 +285,9 @@ export class Enemies {
     if (!v) return;
     const b = e.body;
     v.group.position.set(b.x, b.y, b.z);
-    // face the player
-    const pl = this.host.player();
-    v.group.rotation.y = Math.atan2(pl.x - b.x, pl.z - b.z);
+    // face its target (or keep the last heading)
+    const t = e.targetId >= 0 ? this.host.actor(e.targetId) : undefined;
+    if (t) v.group.rotation.y = Math.atan2(t.body.x - b.x, t.body.z - b.z);
     // materialise: grow from nothing with a wobble
     const grow = e.spawning > 0 ? Math.max(0.05, 1 - e.spawning / SPAWN_TIME) : 1;
     const pulse = 1 + e.pulse * 0.35;
@@ -257,8 +300,10 @@ export class Enemies {
     for (const l of v.parts.get('armR') ?? []) l.rotation.x = walk * 0.6;
     // hit flash and Panic's colour shift
     for (const m of v.mats) {
-      // white on hit; otherwise a red heat that builds as it winds up or swells
+      // white on hit; otherwise a red heat that builds as it winds up or swells.
+      // Allies (part of the self) glow a steady warm gold.
       if (e.flash > 0) m.emissive.setRGB(0.9, 0.9, 0.9);
+      else if (e.faction === 'self') m.emissive.setRGB(0.32 + e.pulse * 0.4, 0.24, 0.05);
       else m.emissive.setRGB(e.pulse * 0.75, e.pulse * 0.06, 0);
     }
   }

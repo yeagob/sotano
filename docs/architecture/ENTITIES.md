@@ -18,10 +18,10 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 ## 2. Health (`entities/player.ts`, `game/game.ts`)
 
 - Half-hearts in `player.hp`; containers are the **`maxHearts` stat** (base 3), so an item that grants a container takes it away again when lost.
-- Every hit goes through **`playerDamage { amount, kind, source, owner }`** (cancellable). After a hit you're invulnerable for the **`invuln` stat** (1 s) and the HUD shows a red vignette and a shake.
+- The player is an **actor** like every projection ([ACTORS.md](ACTORS.md)). Every hit goes through **`actorDamage`** (cancellable) in damage points: the player loses `ceil(points / 4)` half-hearts, at least one. After a hit you're invulnerable for the **`invuln` stat** (1 s) and the HUD shows a red vignette and a shake.
 - **`heal { amount, source }`** before healing; hearts on the floor are only picked up when you're hurt (Isaac rule).
 - At 0: **`death { source }`** (cancellable: a future "second chance" item). Otherwise the death screen shows the floor reached and your practices; R starts again.
-- **Owners**: `'player'`, `'world'` or `` `enemy:${uid}` ``. Radical Acceptance cancels damage whose owner is the player and kind is `explosion` (your own bombs).
+- **Owners**: an actor id or `'world'` (`api.isPlayer(owner)` asks whether it was the player). Radical Acceptance cancels damage to the player whose owner is the player and kind is `explosion` (your own bombs), and only that: its hook targets the player.
 
 ## 3. Pickups (`entities/pickups.ts`)
 
@@ -33,8 +33,9 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 
 - Start with 1. **E** drops one at your feet through **`bombPlace { fuse }`**.
 - A bomb **is a loose cube** (material `bomb`) with a fuse in `DebrisSystem.fuse`: it falls, stacks, can be kicked (walking into a bomb always kicks it) and is pushed by explosions. Bombs are **pinned**: never recycled by the ring buffer and never aged out.
-- When the fuse ends: `explode()` with the **`bombRadius`** (2.6) and **`bombDamage`** (40) stats, owner `player`. Bombs caught in a blast go off almost at once (chains).
-- `explosion { radius, damage, actorDamage, source, owner }`: damages blocks (with falloff), deals `actorDamage` half-hearts to the player and ×4 HP to enemies in range, pushes cubes, shakes the screen.
+- When the fuse ends: `explode()` with the **`bombRadius`** (2.6) and **`bombDamage`** (40) stats, owned by the player. Bombs caught in a blast go off almost at once (chains).
+- Explosions are queued and run at most 8 per frame; chains stop at 12 links ([ACTORS.md §1](ACTORS.md#1-chain-safety)).
+- `explosion { radius, damage, actorDamage, source, owner, cause }`: damages blocks (with falloff), deals `actorDamage` (8 points: one heart to the player) to every actor in range, whatever its side, pushes cubes, shakes the screen.
 
 ## 5. Enemies: projections (`enemies/`, `entities/enemies.ts`, `content/enemies/`)
 
@@ -43,7 +44,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 ```ts
 defineEnemy({
   id: 'doubt', name: 'Doubt', pattern: 'Self-doubt',
-  hp: 12, speed: 1.7, size: [0.32, 1.6], contactDamage: 1,
+  hp: 12, speed: 1.7, size: [0.32, 1.6], contactDamage: 4,   // damage points (4 = half a heart)
   cost: 1, minFloor: 1,
   drops: { heart: 0.12, key: 0.04, bomb: 0.05 },
   behaviour: chase({ lunge: 1.5 }),
@@ -52,7 +53,7 @@ defineEnemy({
 });
 ```
 
-- **Behaviours are factories** (`enemies/behaviours.ts`): `chase`, `ranged`, `burst`. Each returns a small state machine that sets the enemy's wish direction, winds up, shoots or bursts. New patterns (splitting, armour, mirroring) are new factories or an `onDeath`, never a switch in the system.
+- **Behaviours are factories** (`enemies/behaviours.ts`): `chase`, `ranged`, `burst`. Each returns a small state machine that sets the enemy's wish direction, winds up, shoots or bursts. Behaviours never look for the player: they ask `ctx.target(e)` for the nearest actor hostile to them and idle without one ([ACTORS.md §4](ACTORS.md#4-factions)). New patterns (splitting, armour, mirroring) are new factories or an `onDeath`, never a switch in the system.
 - **Models** are lists of boxes; named parts (`legL`, `armR`, `head`…) get a walk cycle. Hits flash white; winding up and swelling glow red.
 
 | Enemy | Pattern | Behaviour |
@@ -68,17 +69,20 @@ defineEnemy({
 - **Spawning from the centre, visibly**: each projection materialises at the room's **centre column on the first free height**, over 0.9 s (cubes converge, it grows from nothing), harmless and unhittable meanwhile; then it steps off the spot. If you're standing on the centre (you fell or dug in), it appears beside you, never at the doors.
 - **Every spawn goes through `enemySpawn`** (hp, speed, contact damage, tags, position all mutable).
 - **Leash**: projections belong to their room; one that leaves it walks back to the centre.
-- **Clear**: when every projection of the room is gone (wherever it went), the doors unseal, `roomClear { drops }` fires and the reward (if any) appears at the centre. If you dig out of a sealed room, its doors stay shut until it's cleared, and seal again when you're back inside.
+- **Clear**: when no hostile projection of the room is left (wherever it went; allies don't count), the doors unseal, `roomClear { drops }` fires and the reward (if any) appears at the centre. If you dig out of a sealed room, its doors stay shut until it's cleared, and seal again when you're back inside.
 
 ### Navigation (`enemies/flowfield.ts`)
 
-A **flow field per room**: BFS over the 13×7 interior from the player's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the player changes cell or the world changes (`VoxelWorld.version`). Outside the room, steering is a straight line. Blocked enemies hop up one block.
+A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world changes (`VoxelWorld.version`). Outside the room, steering is a straight line. Blocked enemies hop up one block.
 
 ### Combat events
 
-- `enemyDamage { uid, def, amount, kind, source, owner, knockback }` before any damage (intentions, explosions, contact).
-- `enemyContact { uid, def, toPlayer, toEnemy }` when touching the player (thorns, Open-hearted…).
-- `enemyDeath { uid, def, x, y, z, drops }`; the source `enemy:<uid>` is removed from the bus on death (reserved for enemy-owned hooks, M2).
+These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
+
+- `actorDamage { target, targetKind, def, amount, kind, source, owner, knockback, cause? }` before any damage to any actor (intentions, explosions, contact, projectiles).
+- `contact { attacker, attackerDef, target, targetKind, toTarget, toAttacker }` when a projection touches an actor it is hostile to, at most once per pair every 0.5 s (thorns, Forgiveness…).
+- `actorDeath { target, targetKind, def, x, y, z, drops }` (react only); the source `actor:<id>` is removed from the bus on death (reserved for actor-owned hooks).
+- `factionChange` when a projection changes side (`S.charm()` in the console).
 
 ## 6. Events added in this milestone
 
@@ -92,6 +96,6 @@ A **flow field per room**: BFS over the 13×7 interior from the player's cell, w
 
 | When | What |
 |---|---|
-| M2 | Enemy-owned hooks (Comparison mirrors your intentions), installed as `enemy:<uid>` |
+| M2 | Enemy-owned hooks (Comparison mirrors your intentions), installed as `actor:<id>` |
 | M2 | Procrastination (splits on death), Perfectionism (armour shell), bosses made of breakable voxels |
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |

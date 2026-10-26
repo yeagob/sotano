@@ -50,7 +50,8 @@ Then list it in `src/content/items/index.ts`. The full checklist is the project 
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
-| `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health and counters, through `heal`, `playerDamage` and `pickupCollect` |
+| `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (half-hearts) and counters, through `heal`, `actorDamage` and `pickupCollect` |
+| `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
 | `toast(text)`, `bus` | Feedback; raw access to the event bus |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
@@ -63,7 +64,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 
 | Stat | Drives |
 |---|---|
-| `damage`, `fireRate`, `shotSpeed`, `range`, `gravity`, `size`, `mining` | Intentions |
+| `damage` (to actors), `mining` (to blocks, absolute: separate from damage), `fireRate`, `shotSpeed`, `range`, `gravity`, `size` | Intentions |
 | `moveSpeed`, `jump` | Movement |
 | `reach` | How far you can place blocks |
 | `carry` | How many blocks you can hold (1 by default) |
@@ -96,18 +97,21 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
-| `playerDamage` | `amount`, or cancel (`kind`, `source`, `owner` tell you what it is) | anything hurting the player |
+| `actorDamage` *(target required)* | `amount` (damage points; 4 = half a heart), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is) | anything hurting the player or a projection |
+| `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount`, or cancel | healing |
-| `death` | cancel (survive) | reaching 0 hearts |
-| `enemySpawn` | `hp`, `speed`, `contactDamage`, `tags`, position, or cancel | a projection materialising |
-| `enemyDamage` | `amount`, `knockback`, or cancel | anything hurting a projection |
-| `enemyContact` | `toPlayer`, `toEnemy` | a projection touching the player |
-| `enemyDeath`, `roomClear` | `drops` | a projection dissolving; a room cleared |
+| `death` | cancel (survive) | the player reaching 0 hearts |
+| `actorDeath` *(target required)* | `drops` (react otherwise) | an actor is gone |
+| `factionChange` | — (react) | an actor changed side (e.g. a projection became an ally) |
+| `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
+| `roomClear` | `drops` | a room cleared |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
 
-`explosion` also carries `actorDamage` (half-hearts to the player, ×4 HP to projections) and `owner`; `land` carries `cause` (`'fall'` or `'descent'` down a shaft).
+**Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).
 
-The owner's list, mapped: the carry limit is `carry` plus `touchCube`; health is `maxHearts` plus `playerDamage`/`heal`; enemies are `enemySpawn`/`enemyDamage`/`enemyContact`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
+`explosion` also carries `actorDamage` (damage points to every actor in range), `owner` and `cause` (its chain); `land` carries `cause` (`'fall'` or `'descent'` down a shaft).
+
+The owner's list, mapped: the carry limit is `carry` plus `touchCube`; health is `maxHearts` plus `actorDamage`/`heal`; enemies are `enemySpawn`/`actorDamage`/`contact`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
 
 **Tags on cubes** carry intent across time: a hook on `throw` or `kick` adds a tag, and a hook on `debrisImpact` reacts to it later. The core clears a cube's tags after its impact unless a hook sets `keepTags` (so a volatile cube explodes once, not on every bounce). Items export their tag names as constants.
 

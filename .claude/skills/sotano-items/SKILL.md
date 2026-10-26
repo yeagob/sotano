@@ -36,13 +36,14 @@ Then add it to `src/content/items/index.ts`.
 3. **Every hook that defines the item gets an `id`**, so synergies can suppress it. Synergy hooks always have ids.
 4. **Priority bands:** 0–99 modify, 100–199 cancel, 200+ side effects (never cancel there).
 5. **No direct recursion.** Chain reactions use `api.defer(fn)`. Guard against triggering yourself by checking the event's `source` (e.g. Habit Stacking ignores breaks whose source is `'chain'`).
-6. **Deterministic.** Use `api.rng()` (each held copy has its own seeded stream), never `Math.random()`. Items change runtime outcomes only (drops, rewards, procs), never the run's structure.
-7. **Persistent effects are stats.** Anything that must disappear when the item is lost (heart containers, reach…) is a stat modifier, not something done in `onGain`.
-8. **Tags on cubes/intentions are exported constants** (`export const VOLATILE = 'volatile'`), never retyped strings.
-9. **Exceptions between items live in `src/content/synergies.ts`** (add a synergy, `suppress` the item hook, install a replacement). Never patch one item to special-case another.
-10. **Names:** generic technique names or public-domain works; modern books, courses and branded methods only in `inspiredBy`. No trademarks (Pomodoro®, GTD®, Wim Hof Method®, 7 Habits®…). Respectful tone.
-11. **Two texts, always:** `description` is the meaning (philosophical, the story's voice); `effect` says plainly what it does and its impact on the run, with numbers. The player must never have to guess what an item does.
-12. **Icon:** 12×12, every non-`.` key in the palette, readable at 24 px (high contrast, clear silhouette). The renderer adds an outline.
+6. **Say which actors a hook is for.** Hooks on `actorDamage`, `contact` or `actorDeath` cover the player *and* every projection: pass `{ target: 'player' }` (or `'projection'`, `'any'`). Compare owners with `api.isPlayer(owner)`, never with raw ids. Damage to actors is in points (4 = half a heart); `damage` hurts actors and `mining` breaks blocks: never derive one from the other.
+7. **Deterministic.** Use `api.rng()` (each held copy has its own seeded stream), never `Math.random()`. Items change runtime outcomes only (drops, rewards, procs), never the run's structure.
+8. **Persistent effects are stats.** Anything that must disappear when the item is lost (heart containers, reach…) is a stat modifier, not something done in `onGain`.
+9. **Tags on cubes/intentions are exported constants** (`export const VOLATILE = 'volatile'`), never retyped strings.
+10. **Exceptions between items live in `src/content/synergies.ts`** (add a synergy, `suppress` the item hook, install a replacement). Never patch one item to special-case another.
+11. **Names:** generic technique names or public-domain works; modern books, courses and branded methods only in `inspiredBy`. No trademarks (Pomodoro®, GTD®, Wim Hof Method®, 7 Habits®…). Respectful tone.
+12. **Two texts, always:** `description` is the meaning (philosophical, the story's voice); `effect` says plainly what it does and its impact on the run, with numbers. The player must never have to guess what an item does.
+13. **Icon:** 12×12, every non-`.` key in the palette, readable at 24 px (high contrast, clear silhouette). The renderer adds an outline.
 
 ## 3. Safety layers (don't remove them; extend them)
 

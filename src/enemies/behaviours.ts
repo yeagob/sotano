@@ -4,31 +4,35 @@
 
 import type { Behaviour, Enemy, EnemyCtx } from './types';
 
-/** Walk at the player and keep pressing on them (Doubt). */
+/** Walk at the target and keep pressing on it (Doubt). */
 export function chase(opt: { lunge?: number } = {}): Behaviour {
   return {
     name: 'chase',
     update(e, ctx) {
-      const [dx, dz] = ctx.towardPlayer(e);
-      const k = opt.lunge && ctx.dist(e) < 2.2 ? opt.lunge : 1;
+      const t = ctx.target(e);
+      if (!t) { e.wishX = 0; e.wishZ = 0; return; }
+      const [dx, dz] = ctx.toward(e, t);
+      const k = opt.lunge && ctx.dist(e, t) < 2.2 ? opt.lunge : 1;
       e.wishX = dx * k; e.wishZ = dz * k;
     },
   };
 }
 
-/** Keep a distance and lob projectiles in arcs (Inner Critic). */
+/** Keep a distance from the target and lob projectiles in arcs (Inner Critic). */
 export function ranged(opt: { keep: number; cooldown: number; windup: number }): Behaviour {
   return {
     name: 'ranged',
     update(e, ctx) {
-      const d = ctx.dist(e);
-      const [dx, dz] = ctx.towardPlayer(e);
+      const t = ctx.target(e);
       e.timer -= ctx.dt;
+      if (!t) { e.wishX = 0; e.wishZ = 0; e.state = 'move'; e.pulse = 0; return; }
+      const d = ctx.dist(e, t);
+      const [dx, dz] = ctx.toward(e, t);
       if (e.state === 'windup') {
         e.wishX = 0; e.wishZ = 0;
         e.pulse = 1 - e.timer / opt.windup;
         if (e.timer <= 0) {
-          ctx.shootAt(e, ctx.player.x, ctx.player.y + 1, ctx.player.z);
+          ctx.shootAt(e, t.x, t.y + 1, t.z);
           e.state = 'move'; e.timer = opt.cooldown; e.pulse = 0;
         }
         return;
@@ -43,7 +47,7 @@ export function ranged(opt: { keep: number; cooldown: number; windup: number }):
   };
 }
 
-/** Rush in, swell and burst (Panic). */
+/** Rush at the target, swell and burst (Panic). */
 export function burst(opt: { trigger: number; fuse: number; radius: number; rush: number }): Behaviour {
   return {
     name: 'burst',
@@ -55,10 +59,13 @@ export function burst(opt: { trigger: number; fuse: number; radius: number; rush
         if (e.timer <= 0) { ctx.burst(e, opt.radius); ctx.kill(e); }
         return;
       }
-      const [dx, dz] = ctx.towardPlayer(e);
+      const t = ctx.target(e);
+      e.timer += ctx.dt; // free-running clock for the idle flicker
+      e.pulse = 0.15 + 0.15 * Math.sin(e.timer * 11);
+      if (!t) { e.wishX = 0; e.wishZ = 0; return; }
+      const [dx, dz] = ctx.toward(e, t);
       e.wishX = dx * opt.rush; e.wishZ = dz * opt.rush;
-      e.pulse = 0.15 + 0.15 * Math.sin(performance.now() / 90);
-      if (ctx.dist(e) < opt.trigger) { e.state = 'swell'; e.timer = opt.fuse; }
+      if (ctx.dist(e, t) < opt.trigger) { e.state = 'swell'; e.timer = opt.fuse; }
     },
   };
 }

@@ -43,8 +43,9 @@ The simulation runs only while the mouse is captured, the inventory is closed an
 6. `DebrisSystem.update` — loose-cube physics, depenetration, bomb fuses (→ `explode`), tagged impacts (→ `debrisImpact`).
 7. `touchDebris` — `touchCube`: pick up, kick (`kick`), bombs are always kicked.
 8. `touchPickups` — keys, bombs, hearts (`pickupCollect`), pedestal items (`Inventory.gain` → banner, flash, hold-up).
-9. `Intents.update` — move intentions; hit enemies (`enemyDamage`), push cubes, damage voxels (pierce up to `pierceTier`).
-10. `Enemies.update` — behaviours, flow-field steering, leash, contact (`enemyContact`), projectiles.
+9. `Intents.update` — move intentions; hit hostile projections (`actorDamage`), push cubes, damage voxels (pierce up to `pierceTier`).
+10. `Enemies.update` — behaviours (each chases its target: the nearest hostile actor), flow-field steering, leash, contact between hostile actors (`contact`, rate-limited), projectiles.
+    Then queued explosions run (`BlastQueue`, 8 per frame) before deferred chain reactions.
 11. `bus.flush()` — deferred chain reactions (64 per frame).
 12. `trackPlace` — floors, rooms (`roomEnter`), boss-room hole.
 13. `updateCombat` — seal rooms, materialise projections from the centre (`enemySpawn`), clear rooms (`roomClear`).
@@ -70,7 +71,7 @@ See [ITEMS.md](ITEMS.md). `Inventory.gain/lose/restore` → `rebuild()` reinstal
 
 ### Damage and health
 
-`blockDamage(amount, material) = max(amount − armor, 10%)` (block damage is its own number: an intent's `mining`, an explosion's `damage`; see [ACTORS.md](ACTORS.md)); `Game.damageBlock` → `blockDamage` event → HP in `world.damaged` → `breakBlock` (`blockBreak`, with `source`) → loose cube, `blockLoot`. Actors: `damagePlayer` (`playerDamage`, invulnerability, `death`), `heal`, `damageEnemy` (`enemyDamage`, knock-back). `explode()` queues a blast (`BlastQueue`: 8 per frame, chains capped at 12 links, each with a `Cause`) that covers blocks, actors, cubes and chained bombs. Past the bus depth cap an event is cancelled (fail closed).
+`blockDamage(amount, material) = max(amount − armor, 10%)` (block damage is its own number: an intent's `mining`, an explosion's `damage`; see [ACTORS.md](ACTORS.md)); `Game.damageBlock` → `blockDamage` event → HP in `world.damaged` → `breakBlock` (`blockBreak`, with `source`) → loose cube, `blockLoot`. Actors ([ACTORS.md](ACTORS.md)): one `damageActor` (`actorDamage` in points; the player loses half-hearts, invulnerability, `death`), `heal`, `contact` (rate-limited), factions. `explode()` queues a blast (`BlastQueue`: 8 per frame, chains capped at 12 links, each with a `Cause`) that covers blocks, actors, cubes and chained bombs. Past the bus depth cap an event is cancelled (fail closed).
 
 ### Seeds and randomness (`core/seed.ts`, `core/rng.ts`, `core/tables.ts`, `core/fx.ts`)
 
@@ -91,7 +92,8 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## Entities (`entities/`)
 
-- `player.ts` — the 0.6 × 1.8 box, hand stack (`carry`), keys, bombs, half-heart `hp`, invulnerability.
+- `actors.ts` — `Actor`, `ActorRegistry` (one id space per run), `HALF_HEART`, `ContactGate`, factions and `hostile()`.
+- `player.ts` — the player actor: the 0.6 × 1.8 box, hand stack (`carry`), keys, bombs, half-heart `hp`, invulnerability.
 - `doors.ts` — Doom-style sliding slabs per floor; locks; **sealing** for combat; `unlock`.
 - `pickups.ts` — keys, bombs, hearts (fall and settle) and pedestal items (icon sprite + glow).
 - `enemies.ts` — the projection system: materialise, behave, steer by flow field, leash, contact, projectiles, dissolve. Definitions in `content/enemies/`, behaviours in `enemies/behaviours.ts`.
@@ -122,6 +124,7 @@ Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, d
 | `S.god()` / `S.god(false)` | Invulnerable |
 | `S.floor()` | Open this floor's hole and drop into the next |
 | `S.enemies()`, `S.room()` | Live projections; the current room |
+| `S.charm()` | The nearest projection becomes an ally |
 | `S.seed()`, `S.restart('ABCD-EFGH')` | This run's seed; replay one (no argument: fresh) |
 | `S.tp(x, y, z)`, `S.debug(false)` | Teleport, hide the readout |
 | `S.game` | The whole `Game` |

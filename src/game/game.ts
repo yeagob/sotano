@@ -41,7 +41,7 @@ import {
   type FloorResult, type RoomInfo,
 } from '../world/floor';
 import type { VoxelWorld } from '../world/world';
-import { ActorRegistry, ContactGate, HALF_HEART, halfHeartsFor, type Actor } from '../entities/actors';
+import { ActorRegistry, ContactGate, HALF_HEART, halfHeartsFor, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, type Cause, type GameBus, type Owner, type PickupKind } from './events';
 import { Hud } from './hud';
 
@@ -143,7 +143,8 @@ export class Game {
         const k = t.knock * 6 / Math.max(1, v.length());
         this.debris.push(i, v.x * k, v.y * k + 1, v.z * k);
       },
-      enemyAt: (x, y, z, r) => this.enemies.at(x, y, z, r),
+      // the player's intentions pass through allies
+      enemyAt: (x, y, z, r) => this.enemies.at(x, y, z, r, e => hostile(this.player.faction, e.faction)),
       hitEnemy: (uid, v, t) => {
         const e = this.enemies.get(uid);
         const l = Math.hypot(v.x, v.z) || 1;
@@ -405,10 +406,11 @@ export class Game {
     return {
       solid: (x: number, y: number, z: number) => this.solid(x, y, z),
       worldVersion: () => this.world.version,
-      player: () => { const b = this.player.body; return { x: b.x, y: b.y, z: b.z, hw: b.hw, h: b.h }; },
+      actors: () => this.actors.all(),
+      actor: (id: number) => this.actors.get(id),
       room: (id: number) => this.rooms.get(id)!,
-      contact: (e: Enemy) => this.contact(e, this.player),
-      projectileHit: (dmg: number, thrower: number) => { this.damageActor(this.player, dmg, 'projectile', 'judgement', thrower); },
+      contact: (e: Enemy, t: Actor) => this.contact(e, t),
+      projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
       projectileBlock: (x: number, y: number, z: number) => {
         const id = this.world.get(x, y, z);
         return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
@@ -433,6 +435,15 @@ export class Game {
     if (ev.cancelled) return;
     if (ev.toTarget > 0) this.damageActor(t, ev.toTarget, 'contact', a.def, a.id);
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
+  }
+
+  /** Moves an actor to another side (e.g. a projection that becomes part of the self). */
+  setFaction(a: Actor, faction: Faction, source: string) {
+    if (a.faction === faction) return;
+    const from = a.faction;
+    a.faction = faction;
+    if (a.kind === 'projection') (a as Enemy).targetId = -1; // look again with new eyes
+    this.bus.emit('factionChange', { target: a.id, targetKind: a.kind, def: a.def, from, to: faction, source });
   }
 
   private onEnemyDeath(e: Enemy) {
@@ -468,7 +479,7 @@ export class Game {
         continue;
       }
       // a room only clears once queued blasts (e.g. a last Panic's burst) have gone off
-      if (this.enemies.aliveIn(id) === 0 && this.blasts.pending === 0) {
+      if (this.enemies.blockingIn(id) === 0 && this.blasts.pending === 0) {
         st.cleared = true;
         this.doors.seal(id, false);
         // Isaac-style clear reward, pre-rolled per room: the room's own fork gives one uniform
@@ -819,6 +830,7 @@ export class Game {
     const r = this.roomAt(b.x, b.y + 0.1, b.z);
     if (r && r.id !== this.room) {
       this.room = r.id;
+      this.player.room = r.id;
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
       this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
