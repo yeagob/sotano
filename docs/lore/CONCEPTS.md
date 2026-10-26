@@ -1,0 +1,29 @@
+# Concept glossary
+
+Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURCES.md)) and how it is expressed in play. When you design something with meaning, find or add its concept here first.
+
+| Concept | Sources | In the game |
+|---|---|---|
+| **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |
+| **As above, so below** | `emerald-tablet`, `kybalion` (correspondence) | The depth and the surface mirror each other and connect in the endgame ([COSMOLOGY.md](COSMOLOGY.md)) |
+| **The obstacle is the way** | `meditations` | Broken blocks become material you carry and build with |
+| **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, materialising from the centre of the room, never from outside |
+| **A miracle is a shift in perception** | `course-in-miracles` | Practices that change how a hit is perceived (Forgiveness, Nothing Personal); future: rooms that change when seen differently |
+| **Forgiveness as release** | `course-in-miracles` | **Forgiveness**: what touches you is hurt instead of you |
+| **Don't take anything personally** | `four-agreements` | **Nothing Personal**: contact hits often slide off |
+| **Be impeccable with your word** | `four-agreements` | Future: intentions that never miss what they're aimed at |
+| **Don't make assumptions / always do your best** | `four-agreements` | Future practices |
+| **The symbolic act** | `psychomagic`, `psychodrama` | **Symbolic Act** (thrown blocks burst); burning barrels where you let things go |
+| **The system and its orders** (belonging, order, balance) | `constellations` | **Systemic Constellation**: seeing the whole system weakens its projections; future: rooms as family systems, ancestors in the deepest floor |
+| **Art transforms the maker** | `art-therapy` | **Art Therapy**: placing blocks (building, creating) can heal you |
+| **Listening to the river** | `siddhartha`, `tao-te-ching` | Water as emotion ([ELEMENTS](../design/ELEMENTS.md)); a future river place in the depths |
+| **Think, wait, fast** | `siddhartha` | **Thinking, Waiting, Fasting**: reach further, recover longer, luck |
+| **Personal legend and omens** | `the-alchemist` | **Follow the Omens**: luck; the treasure that was where you started (endgame) |
+| **Inner alchemy** (transmutation) | `emerald-tablet`, `the-alchemist` | Furnaces turning raw blocks into refined ones; states of being |
+| **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
+| **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
+| **The shadow** | `jung` | A future boss |
+| **Resistance** | `war-of-art` | A future boss |
+| **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |
+| **Rhythm and polarity** | `kybalion` | Fire and water, cycles of runs ([COSMOLOGY.md §2](COSMOLOGY.md#2-the-seven-principles-as-systems)) |
+| **Cause and effect** | `kybalion` | Synergies and chain reactions |

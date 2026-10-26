@@ -95,7 +95,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Habit Stacking** | Will | 3 | Breaking a block damages its same-material neighbours | Habit stacking (*Atomic Habits*, James Clear; *Tiny Habits*, BJ Fogg) |
 | **Second Brain** | Mind | 3 | Carry one more block (shown in your other hand) | *Building a Second Brain* (Tiago Forte); external memory |
 | **Exposure** | Emotion, Body | 2 | Soft blocks shatter when you walk into them | Exposure therapy (CBT) |
-| **Catharsis** | Emotion | 3 | Thrown blocks burst on impact | Catharsis; psychodrama |
+| **Symbolic Act** | Emotion | 3 | Thrown blocks burst on impact | *Psychomagic* (Alejandro Jodorowsky); catharsis in psychodrama |
 | **Growth Mindset** | Mind | 1 | Jump much higher | *Mindset* (Carol Dweck) |
 | **Flow** | Body | 2 | Move and cast faster | *Flow* (Mihaly Csikszentmihalyi) |
 | **Visualization** | Mind | 1 | Intentions fly further and faster | Mental rehearsal in sports psychology |
@@ -110,6 +110,14 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **As a Man Thinketh** | Mind | 4 | ×4 mining, ×1.5 damage, faster and flatter intentions | James Allen, *As a Man Thinketh* (public domain) |
 | **Letters from a Stoic** | Will, Body | 4 | Carry three more blocks, ×2 kick and throw, +2 reach | Seneca, *Moral Letters to Lucilius* (public domain) |
 | **Satori** | All four | 4 | A little more of everything (damage, fire rate, speed, range, jump, luck, mining) | Satori, sudden awakening in Zen Buddhism |
+| **Forgiveness** | Emotion | 3 | Projections that touch you take 4 damage; half their contact hits are ignored | *A Course in Miracles* (Helen Schucman) |
+| **Nothing Personal** | Emotion, Mind | 2 | Two in three contact hits do nothing | *The Four Agreements* (don Miguel Ruiz) |
+| **Systemic Constellation** | Emotion, Mind | 3 | Projections materialise with 30% less health, 15% slower | Family and systemic constellations (Bert Hellinger and others) |
+| **Art Therapy** | Emotion, Body | 2 | Each block you place has a 20% chance to heal half a heart | Art therapy; art transforms the maker |
+| **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
+| **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
+
+Every practice has two texts: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, plainly, with numbers). Both are shown on pickup and in the inventory. References and their naming status live in [../lore/SOURCES.md](../lore/SOURCES.md).
 
 Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup banner, held up in your hands when you take it, and in the inventory window).
 
@@ -117,7 +125,7 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 | Synergy | Requires | Effect |
 |---|---|---|
-| **Somatic Release** | Catharsis + Grounding | Kicked blocks burst too |
+| **Somatic Release** | Symbolic Act + Grounding | Kicked blocks burst too |
 | **Compound Effect** | Kaizen + Deep Focus | Pierce through stone and brick as well |
 | **Flooding** | Exposure + Habit Stacking | Blocks you shatter by contact break their neighbours outright |
 | **Embodied** | 3 Body practices | State of being: ×1.15 speed, ×1.3 kick |

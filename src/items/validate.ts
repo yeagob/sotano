@@ -15,6 +15,7 @@ export function validateItem(d: ItemDef): string[] {
   if (!ID.test(d.id)) e.push(`${at}: id must be lowercase letters, digits or _`);
   if (!d.name?.trim()) e.push(`${at}: missing name`);
   if (!d.description?.trim()) e.push(`${at}: missing description`);
+  if (!d.effect?.trim()) e.push(`${at}: missing effect (what it does, plainly, with numbers)`);
   if (!d.inspiredBy?.trim()) e.push(`${at}: missing inspiredBy (credit the practice or work)`);
   if (!(d.quality >= 0 && d.quality <= 4 && Number.isInteger(d.quality))) e.push(`${at}: quality must be 0..4`);
   if (!d.tags?.some(t => (PATHS as readonly string[]).includes(t))) e.push(`${at}: needs a path tag (${PATHS.join(', ')})`);

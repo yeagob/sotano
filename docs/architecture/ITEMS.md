@@ -18,9 +18,10 @@ export const VOLATILE = 'volatile';      // cube tag, exported so others don't m
 
 export default defineItem({
   id: 'catharsis',                       // stable id: saves and synergies refer to it
-  name: 'Catharsis',                     // a technique/concept or public-domain work (STORY.md §5)
-  description: 'What you let go of bursts: thrown blocks explode on impact.',
-  inspiredBy: 'Catharsis; psychodrama',  // credit, required
+  name: 'Symbolic Act',
+  description: 'A symbolic act reaches what words cannot: blocks you throw burst on impact.', // meaning
+  effect: 'Blocks you throw explode when they hit something (radius 1.8, can hurt you). Throw strength ×1.3.', // plainly
+  inspiredBy: 'Psychomagic (Alejandro Jodorowsky); catharsis in psychodrama', // credit, required
   pools: { treasure: 1 },                // where it can drop, with a weight in each
   tags: ['emotion', 'blocks', 'explosive'], // a path (body/mind/emotion/will) + mechanics
   color: 0xff5a1f,                       // glow and accents

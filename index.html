@@ -48,15 +48,18 @@
 
     /* item banner */
     #banner { position: fixed; left: 50%; top: 13%; transform: translate(-50%, -14px); pointer-events: none; opacity: 0; max-width: min(640px, 92vw); }
-    #banner.show { animation: bannerIn 5.2s ease forwards; }
-    @keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -14px) scale(.96); } 6% { opacity: 1; transform: translate(-50%, 0) scale(1.03); }
-      10% { transform: translate(-50%, 0) scale(1); } 88% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -6px); } }
+    #banner.show { animation: bannerIn .5s ease forwards; }
+    @keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -14px) scale(.96); } 60% { opacity: 1; transform: translate(-50%, 0) scale(1.03); }
+      100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+    #banner .dismiss { margin: 8px 0 0; font-size: 11px; opacity: .6; text-align: right; animation: blink 1.4s infinite; }
     #banner .ribbon { display: flex; gap: 14px; align-items: flex-start; padding: 12px 18px 12px 12px; background: linear-gradient(180deg, #241c16f0, #15100cf0);
       border: 3px solid #000; outline: 2px solid var(--c); box-shadow: 0 0 30px color-mix(in srgb, var(--c) 45%, transparent); }
     #banner .ribbon img { width: 70px; height: 70px; flex: none; filter: drop-shadow(0 0 8px var(--c)); }
     #banner b { display: block; font-size: 26px; letter-spacing: 1px; text-shadow: 0 3px 0 #000; }
     #banner span { display: block; margin-top: 2px; font-size: 14px; }
     #banner small { display: block; margin-top: 3px; font-size: 11px; opacity: .65; font-style: italic; }
+    #banner span { font-style: italic; opacity: .85; }
+    .effect { margin: 6px 0 2px; padding: 4px 8px; background: #ffffff0f; border-left: 3px solid var(--c, #9fd3ff); font-size: 13px; color: #fff; }
     #banner i { display: block; font-style: normal; font-size: 13px; margin-top: 3px; }
     #banner i.up { color: #8fe38f; } #banner i.down { color: #f08a8a; } #banner i.syn { color: #f2c84b; }
     .q { font-style: normal; letter-spacing: 1px; font-size: 13px; }

@@ -4,6 +4,7 @@ export default defineItem({
   id: 'grounding',
   name: 'Grounding',
   description: 'Rooted in the body, you push with your whole weight: kick twice as hard.',
+  effect: 'Kicks are twice as strong.',
   inspiredBy: 'Somatic grounding techniques',
   pools: { treasure: 1 },
   tags: ['body', 'contact'],

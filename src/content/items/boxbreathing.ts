@@ -4,6 +4,7 @@ export default defineItem({
   id: 'boxbreathing',
   name: 'Box Breathing',
   description: 'In for four, hold for four, out for four: one more heart, and you heal completely.',
+  effect: '+1 heart container and a full heal when picked up. Losing it removes the container.',
   inspiredBy: 'Box breathing (paced breathing)',
   pools: { treasure: 1 },
   tags: ['body', 'emotion'],

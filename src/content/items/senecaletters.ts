@@ -4,6 +4,7 @@ export default defineItem({
   id: 'senecaletters',
   name: 'Letters from a Stoic',
   description: 'Carry more and let go harder: three more blocks, double kick and throw.',
+  effect: 'Carry 4 blocks. Kicks and throws ×2. Reach +2 blocks.',
   inspiredBy: 'Seneca, Moral Letters to Lucilius (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'body', 'blocks'],

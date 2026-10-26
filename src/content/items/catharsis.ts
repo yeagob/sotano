@@ -5,9 +5,10 @@ export const VOLATILE = 'volatile';
 
 export default defineItem({
   id: 'catharsis',
-  name: 'Catharsis',
-  description: 'What you let go of bursts: thrown blocks explode on impact.',
-  inspiredBy: 'Catharsis; psychodrama',
+  name: 'Symbolic Act',
+  description: 'A symbolic act reaches what words cannot: blocks you throw burst on impact.',
+  effect: 'Blocks you throw explode when they hit something (radius 1.8, can hurt you). Throw strength ×1.3.',
+  inspiredBy: 'Psychomagic (Alejandro Jodorowsky); catharsis in psychodrama (J. L. Moreno)',
   pools: { treasure: 1 },
   tags: ['emotion', 'blocks', 'explosive'],
   color: 0xff5a1f,

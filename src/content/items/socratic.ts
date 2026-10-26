@@ -4,6 +4,7 @@ export default defineItem({
   id: 'socratic',
   name: 'Socratic Questioning',
   description: 'Question the belief behind the lock: two keys now, and locked doors sometimes just open.',
+  effect: '+2 keys when picked up. Locked doors open without a key 35% of the time.',
   inspiredBy: 'Socratic questioning (cognitive behavioural therapy)',
   pools: { treasure: 1 },
   tags: ['mind'],

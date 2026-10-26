@@ -4,6 +4,7 @@ export default defineItem({
   id: 'gratitude',
   name: 'Gratitude Journal',
   description: 'Notice what is going well: cleared rooms reward you more often.',
+  effect: 'Luck +1.5: cleared rooms leave a reward more often.',
   inspiredBy: 'Gratitude journaling (positive psychology)',
   pools: { treasure: 1 },
   tags: ['emotion'],

@@ -72,8 +72,11 @@ export type PoolName = 'treasure' | 'boss' | 'vault';
 export interface ItemDef extends Effect {
   id: string;
   name: string;
-  /** One line, shown on pickup: what the practice is about and what it does in the game. */
+  /** One line, shown on pickup: what the practice is about (its meaning, in the story's voice). */
   description: string;
+  /** What it does in the game, plainly and with numbers ("Damage ×3, then +2"). Always shown
+   *  next to the description so the player knows exactly what they got. */
+  effect: string;
   /** The book, course, technique or therapy that inspired it (credited, never used as the name). */
   inspiredBy?: string;
   /** Pools it can drop from, with a weight in each. */

@@ -13,7 +13,8 @@ Items are **practices** the protagonist picks up. They change the game only thro
 export default defineItem({
   id: 'gratitude',                     // lowercase, unique, stable (saves refer to it)
   name: 'Gratitude Journal',           // a technique/concept or a public-domain work, never a trademark
-  description: 'What the practice is about: what it does in the game.',
+  description: 'What the practice is about (its meaning, in the story voice).',
+  effect: 'Luck +1.5: cleared rooms leave a reward more often.',   // plainly, with numbers
   inspiredBy: 'Gratitude journaling (positive psychology)',   // credit, required
   pools: { treasure: 1 },              // where it drops, with weights
   tags: ['emotion'],                   // at least one path: body | mind | emotion | will
@@ -40,7 +41,8 @@ Then add it to `src/content/items/index.ts`.
 8. **Tags on cubes/intentions are exported constants** (`export const VOLATILE = 'volatile'`), never retyped strings.
 9. **Exceptions between items live in `src/content/synergies.ts`** (add a synergy, `suppress` the item hook, install a replacement). Never patch one item to special-case another.
 10. **Names:** generic technique names or public-domain works; modern books, courses and branded methods only in `inspiredBy`. No trademarks (Pomodoro®, GTD®, Wim Hof Method®, 7 Habits®…). Respectful tone.
-11. **Icon:** 12×12, every non-`.` key in the palette, readable at 24 px (high contrast, clear silhouette). The renderer adds an outline.
+11. **Two texts, always:** `description` is the meaning (philosophical, the story's voice); `effect` says plainly what it does and its impact on the run, with numbers. The player must never have to guess what an item does.
+12. **Icon:** 12×12, every non-`.` key in the palette, readable at 24 px (high contrast, clear silhouette). The renderer adds an outline.
 
 ## 3. Safety layers (don't remove them; extend them)
 
@@ -57,7 +59,8 @@ When you add an **event**, add a sample payload to `SAMPLES` in the synergy matr
 ## 4. Checklist for a new item
 
 - [ ] File + index entry; passes `validateItem`.
-- [ ] Name/credit follow STORY.md §5; ask the owner if the practice or its meaning is unclear.
+- [ ] Name/credit follow STORY.md §5 and the source is in `docs/lore/SOURCES.md` (sotano-lore skill); ask the owner if the practice or its meaning is unclear.
+- [ ] `effect` line is clear, complete and has the real numbers.
 - [ ] Uses stats where possible; hooks have ids and correct priorities.
 - [ ] Icon reviewed in the browser (pedestal, banner, inventory window).
 - [ ] `npm test` green (matrix included). If it interacts with another item in a special way, add a synergy and a test for it.

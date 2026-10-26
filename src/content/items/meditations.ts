@@ -4,6 +4,7 @@ export default defineItem({
   id: 'meditations',
   name: 'Meditations',
   description: 'Notes to yourself on what is in your control. Every intention lands with enormous weight.',
+  effect: 'Damage ×3, then +2. The strongest damage boost in the game.',
   inspiredBy: 'Marcus Aurelius, Meditations (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'mind', 'intent'],

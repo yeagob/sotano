@@ -4,7 +4,7 @@
 
 Inspired by the block worlds of *Minecraft*, the runs and item synergies of *The Binding of Isaac*, and the knowledge-gated secrets of *Noita*. Open source, runs in the browser (WebGL), no install.
 
-> **Status: prototype M1.5.** Four stacked floors you descend by falling through the boss room, rooms sealed while projections (enemies) fight you, Isaac-style hearts, bombs and keys, 21 practices (items) with icons, quality up to 4 and synergies, and an inventory window. Elements (fire, water, lava, chests, furnaces) are designed and planned, not built yet. Things marked *planned* are design, not code.
+> **Status: prototype M1.5.** Four stacked floors you descend by falling through the boss room, rooms sealed while projections (enemies) fight you, Isaac-style hearts, bombs and keys, 27 practices (items) with icons, a clear effect line, quality up to 4 and synergies, and an inventory window. Elements (fire, water, lava, chests, furnaces) are designed and planned, not built yet. Things marked *planned* are design, not code.
 
 ---
 
@@ -24,6 +24,11 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Entities](docs/architecture/ENTITIES.md) — stacked floors, health, pickups, bombs, enemies and their navigation.
 - [Elements plan](docs/architecture/ELEMENTS.md) — architecture and step-by-step plan for elements and containers.
 
+### Lore — references and cosmology
+- [Source library](docs/lore/SOURCES.md) — every book, tradition, technique, therapy and game the work draws on, with naming status and where it shows up.
+- [Concept glossary](docs/lore/CONCEPTS.md) — each idea and its expressions in the game.
+- [Cosmology](docs/lore/COSMOLOGY.md) — the depth and the surface as mirrors (as above, so below) and the endgame connection.
+
 ### Research — background and long-term plan
 - [Technical research and proposal](docs/research/TECHNICAL.md) — how Isaac and Noita are built, the target architecture, budgets, IP notes, roadmap.
 
@@ -31,7 +36,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Items architecture review](docs/reviews/items-architecture.md) and [entities review](docs/reviews/entities.md) — engineer, architect and mediator: critique, ruling, resolution.
 
 ### Working on the project
-- Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log).
+- Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log), [lore](.claude/skills/sotano-lore/SKILL.md) (how references become content).
 
 ---
 
@@ -42,7 +47,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - **Survive** — Isaac-style hearts (half-hearts), a moment of invulnerability after each hit, and a death screen when the intention fades.
 - **Use bombs ("breakthroughs")** — E drops one; it's a cube with a fuse you can kick, and it chains with other bombs.
 - **Open doors by walking up to them** — they slide up like in Doom; gold frames lead to treasure, red ones to the boss, a padlock needs a key.
-- **Pick up practices** — from pedestals: they're held up with both hands, a banner tells you what they are, where they come from and exactly what changed. **Tab** opens the inventory: your practices, their descriptions and inspirations, synergies and states of being with progress, and every stat.
+- **Pick up practices** — from pedestals: they're held up with both hands, and a banner (which stays until you click) tells you what they mean, **what they do** in plain words, where they come from and exactly which stats changed. **Tab** opens the inventory: your practices, their descriptions and inspirations, synergies and states of being with progress, and every stat.
 - **Cast intentions** — your shot: straight for a moment, then it drops.
 - **Break anything** — every block has a tier, HP and armor; weak shots still do 10%, so everything breaks (except bedrock). Broken blocks drop nothing but themselves.
 - **Catch the debris** — broken blocks become cubes that tumble and pile up (thousands, smoothly). Walk over one to pick it up; with your hand full, you kick it. Carry more than one and the next shows in your other hand.
@@ -58,7 +63,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 | Habit Stacking | ★★★ | Breaks spread to same-material neighbours | Habit stacking (James Clear; BJ Fogg) |
 | Second Brain | ★★★ | Carry one more block | *Building a Second Brain* (Tiago Forte) |
 | Exposure | ★★ | Soft blocks shatter on contact | Exposure therapy |
-| Catharsis | ★★★ | Thrown blocks burst | Catharsis; psychodrama |
+| Symbolic Act | ★★★ | Thrown blocks burst | *Psychomagic* (Jodorowsky); psychodrama |
 | Growth Mindset | ★ | Jump much higher | *Mindset* (Carol Dweck) |
 | Flow | ★★ | Move and cast faster | *Flow* (Csikszentmihalyi) |
 | Visualization | ★ | Intentions fly further and faster | Mental rehearsal |
@@ -73,8 +78,14 @@ The full index is [docs/README.md](docs/README.md). By block:
 | As a Man Thinketh | ★★★★ | ×4 mining, ×1.5 damage | James Allen (public domain) |
 | Letters from a Stoic | ★★★★ | +3 carry, ×2 kick and throw, +2 reach | Seneca (public domain) |
 | Satori | ★★★★ | A little more of everything | Zen |
+| Forgiveness | ★★★ | Projections that touch you are hurt; half their hits ignored | *A Course in Miracles* |
+| Nothing Personal | ★★ | Two in three contact hits do nothing | *The Four Agreements* (don Miguel Ruiz) |
+| Systemic Constellation | ★★★ | Projections spawn weaker and slower | Family and systemic constellations |
+| Art Therapy | ★★ | Placing blocks may heal you | Art therapy |
+| Thinking, Waiting, Fasting | ★★ | Range, longer recovery, luck | *Siddhartha* (Hesse) |
+| Follow the Omens | ★★ | Luck; every cleared room leaves a reward | *The Alchemist* (Coelho) |
 
-Synergies: **Somatic Release**, **Compound Effect**, **Flooding**, and four **states of being** (Embodied, Lucid, Open-hearted, Resolute) for holding three practices of the same path. Details: [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names).
+Every practice has a meaning (its description) and a plain **effect** line with numbers. Synergies: **Somatic Release**, **Compound Effect**, **Flooding**, and four **states of being** (Embodied, Lucid, Open-hearted, Resolute) for holding three practices of the same path. Details: [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names).
 
 ## Controls
 
@@ -145,7 +156,7 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 | Enemies | Data + behaviour factories, per-room flow-field navigation |
 | Art | Pixel-art textures and item icons generated at runtime: no image files |
 | Audio | Synthesised with WebAudio: no sound files |
-| Tests | Vitest: rules, generation, physics, items, a 252-combination synergy matrix and a contract test |
+| Tests | Vitest: rules, generation, physics, items, a 378-combination synergy matrix and a contract test |
 | Hosting | Static site (Vercel) |
 
 The core idea, borrowed from how Isaac is built: **items don't call into the game; the game emits events and items hook into them.** Anything an item might want to change reads a stat or emits an event (a test enforces it). Stats are recomputed from layered modifiers, damage goes through one pipeline, chain reactions are deferred and budgeted, exceptions between items live in one file, and five safety layers keep powerful items from breaking the game. Key designs go through an architect and a mediator review before being built.
@@ -197,4 +208,4 @@ Not chosen yet. The proposal is MIT for code and CC BY 4.0 (or BY-SA) for origin
 
 ## Credits
 
-Born from a voxel gift game made for a friend who finished *The Binding of Isaac*. Inspired by *Minecraft* (Mojang), *The Binding of Isaac* (Edmund McMillen / Nicalis) and *Noita* (Nolla Games). Practices are inspired by the works and techniques credited in [STORY.md](docs/design/STORY.md). SÓTANO is not affiliated with or endorsed by any of them.
+Born from a voxel gift game made for a friend who finished *The Binding of Isaac*. Inspired by *Minecraft* (Mojang), *The Binding of Isaac* (Edmund McMillen / Nicalis) and *Noita* (Nolla Games). Practices are inspired by the works and techniques credited in the [source library](docs/lore/SOURCES.md). SÓTANO is not affiliated with or endorsed by any of them.

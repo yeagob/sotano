@@ -4,6 +4,7 @@ export default defineItem({
   id: 'exposure',
   name: 'Exposure',
   description: 'Walk into small fears and they shatter: soft blocks break on contact.',
+  effect: 'Walking into soft blocks (dirt, grass, crates) shatters them instantly.',
   inspiredBy: 'Exposure therapy (cognitive behavioural therapy)',
   pools: { treasure: 1 },
   tags: ['emotion', 'body', 'contact'],

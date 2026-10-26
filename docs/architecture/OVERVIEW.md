@@ -87,7 +87,7 @@ See [ITEMS.md](ITEMS.md). `Inventory.gain/lose/restore` → `rebuild()` reinstal
 
 - `raycast.ts` — Amanatides–Woo DDA (intentions, placement).
 - `voxel-collide.ts` — axis-by-axis box movement in substeps (player, enemies).
-- `debris.ts` — loose cubes without a physics engine (Joel-gift approach): typed arrays in a 2000-slot ring (1000 on touch devices), per-column hash so piles stack, **depenetration** (a cube overlapping anything solid is pushed to the nearest free spot), visual-only tumbling, **bomb fuses** (pinned slots), tagged impacts. ≈4 ms per frame for 2000 moving cubes.
+- `debris.ts` — loose cubes without a physics engine (Joel-gift approach): typed arrays in a 2000-slot ring (1000 on touch devices), per-column hash so piles stack, **depenetration** (a cube overlapping anything solid is pushed to the nearest free spot), a **separation pass** (cubes that moved are pushed apart from overlapping neighbours along the axis of least overlap, stacked when the overlap is vertical, never into walls, and re-checked until clear), visual-only tumbling, **bomb fuses** (pinned slots), tagged impacts. ≈4 ms per frame for 2000 moving cubes.
 
 ## Entities (`entities/`)
 
@@ -107,7 +107,7 @@ See [ITEMS.md](ITEMS.md). `Inventory.gain/lose/restore` → `rebuild()` reinstal
 
 ## HUD (`game/hud.ts`, `index.html`)
 
-Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, debug readout, the **pickup banner** (icon, quality, description, inspiration, every stat change, new synergies) with a coloured screen flash, damage vignette and screen shake, toasts, the **inventory window** (Tab: practices with icons and details, synergies and states of being with progress, all stats; pauses and releases the mouse), the pause card and the **death screen**.
+Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, debug readout, the **pickup banner** (icon, quality, description, plain effect, inspiration, every stat change, new synergies; it stays until you click, and that click doesn't fire) with a coloured screen flash, damage vignette and screen shake, toasts, the **inventory window** (Tab: practices with icons and details, synergies and states of being with progress, all stats; pauses and releases the mouse), the pause card and the **death screen**.
 
 ## Debug console
 
@@ -129,10 +129,10 @@ URL parameter `?seed=123` picks the seed.
 
 ## Tests (`tests/`)
 
-Vitest, Node, no rendering (49 tests):
+Vitest, Node, no rendering (50 tests):
 
 - `core.test.ts` — event bus, RNG, stats, block damage.
 - `world.test.ts` — templates, mesher, DDA, collision, plans (one start/treasure/boss; from all 49 start cells), stacked dungeon (doorways, global room ids, bands), the hole landing in the next start room.
-- `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, 2000 cubes.
+- `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, cubes spawned at one spot repelling each other (and never into walls), 2000 cubes.
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
-- `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (252 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.
+- `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (378 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.

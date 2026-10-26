@@ -47,6 +47,29 @@ describe('loose cubes', () => {
     expect(hits).not.toContain(plain);
   });
 
+  it('repel each other: cubes spawned at the same spot end up apart and never inside walls', () => {
+    // a 4×4 well with walls around it
+    const well = (x: number, y: number, z: number) => y < 0 || x < 0 || x > 3 || z < 0 || z > 3;
+    const worstOverlap = (count: number) => {
+      const d = new DebrisSystem(64, well, () => {});
+      for (let k = 0; k < count; k++) d.spawn(1, 2, 1 + k * 0.05, 2);
+      step(d, 6);
+      const S = 0.72 * 0.98;
+      let worst = 0;
+      for (let i = 0; i < count; i++) {
+        expect(d.isAlive(i)).toBe(true);
+        for (const k of [0, 2]) { expect(d.pos[i * 3 + k]).toBeGreaterThanOrEqual(0.359); expect(d.pos[i * 3 + k]).toBeLessThanOrEqual(3.641); }
+        expect(d.pos[i * 3 + 1]).toBeGreaterThanOrEqual(0.359);
+        for (let j = i + 1; j < count; j++) {
+          worst = Math.max(worst, Math.min(...[0, 1, 2].map(k => S - Math.abs(d.pos[i * 3 + k] - d.pos[j * 3 + k]))));
+        }
+      }
+      return worst;
+    };
+    expect(worstOverlap(20)).toBeLessThanOrEqual(0.02);   // fits on the floor: no overlap at all
+    expect(worstOverlap(40)).toBeLessThanOrEqual(0.22);   // an overfull, jammed pit: some pressure remains
+  });
+
   it('handle a couple of thousand cubes quickly', () => {
     const d = new DebrisSystem(2000, floor, () => {});
     for (let k = 0; k < 2000; k++) d.spawn(1, (k % 50) + 0.5, 2 + Math.floor(k / 50) * 0.8, 0.5);

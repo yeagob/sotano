@@ -4,6 +4,7 @@ export default defineItem({
   id: 'manthinketh',
   name: 'As a Man Thinketh',
   description: 'Thought shapes circumstance: blocks crumble four times as fast and intentions fly true.',
+  effect: 'Mining ×4 and damage ×1.5: walls crumble. Shot speed +50%, intentions drop half as much.',
   inspiredBy: 'James Allen, As a Man Thinketh (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['mind', 'mining'],

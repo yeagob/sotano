@@ -4,6 +4,7 @@ export default defineItem({
   id: 'selfreliance',
   name: 'Self-Reliance',
   description: 'Trust yourself: intentions pour out twice as fast and hit harder.',
+  effect: 'Fire rate ×2. Damage +1.5.',
   inspiredBy: 'Ralph Waldo Emerson, Self-Reliance (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'intent'],

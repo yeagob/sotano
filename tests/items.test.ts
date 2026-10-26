@@ -10,7 +10,7 @@ import { Inventory } from '../src/items/inventory';
 import { ItemPools } from '../src/items/pool';
 import { defineItem, defineSynergy, hook, type ItemApi, type ItemDef, type SynergyDef } from '../src/items/types';
 
-const T = { quality: 0 as const, icon: { rows: [], palette: {} } };
+const T = { quality: 0 as const, icon: { rows: [], palette: {} }, effect: '' };
 
 function setup(catalog: readonly ItemDef[] = ITEMS, synergies: readonly SynergyDef[] = SYNERGIES) {
   const bus: GameBus = createBus();

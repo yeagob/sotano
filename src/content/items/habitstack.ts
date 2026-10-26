@@ -10,6 +10,7 @@ export default defineItem({
   id: 'habitstack',
   name: 'Habit Stacking',
   description: 'One change triggers the next: breaking a block damages its same-material neighbours.',
+  effect: 'When you break a block, its same-material neighbours take 60% of their HP as damage.',
   inspiredBy: 'Habit stacking (Atomic Habits, James Clear; Tiny Habits, BJ Fogg)',
   pools: { treasure: 1 },
   tags: ['will', 'blocks'],

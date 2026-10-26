@@ -4,6 +4,7 @@ export default defineItem({
   id: 'deepfocus',
   name: 'Deep Focus',
   description: 'Undistracted effort breaks through obstacles twice as fast, at some cost to force.',
+  effect: 'Breaks blocks twice as fast (mining ×2). Damage ×0.8.',
   inspiredBy: 'Deep Work (Cal Newport)',
   pools: { treasure: 1 },
   tags: ['mind', 'will', 'mining'],

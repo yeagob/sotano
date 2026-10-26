@@ -4,6 +4,7 @@ export default defineItem({
   id: 'satori',
   name: 'Satori',
   description: 'A sudden awakening: everything you do is a little more of everything.',
+  effect: 'Damage +1.5, fire rate +1, speed +30%, range ×1.3, jump ×1.3, mining ×1.3, luck +2.',
   inspiredBy: 'Satori, sudden awakening in Zen Buddhism',
   pools: { treasure: 1, vault: 2 },
   tags: ['body', 'mind', 'emotion', 'will'],

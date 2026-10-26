@@ -48,11 +48,11 @@ export class Hud {
   private heartsKey = '';
   private slotUrls = new Map<number, string>();
   private debugTimer = 0;
-  private bannerTimer = 0;
   private toastTimer = 0;
   private shakeT = 0;
   private selected: string | null = null;
   inventoryOpen = false;
+  bannerOpen = false;
   showDebug = true;
 
   update(g: Game, running: boolean, dt: number) {
@@ -104,7 +104,6 @@ export class Hud {
     }
     this.debugEl.style.display = this.showDebug ? 'block' : 'none';
     const now = performance.now();
-    if (now > this.bannerTimer) this.bannerEl.classList.remove('show');
     if (now > this.toastTimer) this.toastEl.classList.remove('show');
   }
 
@@ -164,12 +163,19 @@ export class Hud {
       `<div class="ribbon"><img src="${iconDataUrl(def, 5)}" alt=""><div>` +
       `<b>${esc(def.name)}</b><em class="q q${def.quality}">${qualityStars(def.quality)}</em>` +
       `<span>${esc(def.description)}</span>` +
+      `<p class="effect">${esc(def.effect)}</p>` +
       (def.inspiredBy ? `<small>Inspired by ${esc(def.inspiredBy)}</small>` : '') +
-      `${lines.concat(syn).join('')}</div></div>`;
+      `${lines.concat(syn).join('')}<p class="dismiss">Click to continue</p></div></div>`;
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
     this.bannerEl.classList.add('show');
-    this.bannerTimer = performance.now() + 5200;
+    this.bannerOpen = true;
+  }
+
+  /** Information banners stay until the player clicks (owner rule). */
+  dismissBanner() {
+    this.bannerOpen = false;
+    this.bannerEl.classList.remove('show');
   }
 
   flash(color: number) {
@@ -196,6 +202,7 @@ export class Hud {
   }
 
   showDeath(depth: number, items: readonly ItemDef[], source: string) {
+    this.dismissBanner();
     document.exitPointerLock?.();
     this.deathEl.innerHTML =
       `<div class="card"><h1>The intention faded</h1><p>Overcome by ${esc(source)} on floor ${depth}.</p>` +
@@ -263,7 +270,7 @@ export class Hud {
     const paths = (d.tags ?? []).filter(t => PATH_COLORS[t]).map(t => `<em class="path" style="--p:${PATH_COLORS[t]}">${t}</em>`).join('');
     return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
       `<div><b>${esc(d.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
-      `<p>${esc(d.description)}</p>${d.inspiredBy ? `<small>Inspired by ${esc(d.inspiredBy)}</small>` : ''}` +
+      `<p>${esc(d.description)}</p><p class="effect">${esc(d.effect)}</p>${d.inspiredBy ? `<small>Inspired by ${esc(d.inspiredBy)}</small>` : ''}` +
       `<div class="fx">${fx}</div></div></div>`;
   }
 

@@ -4,6 +4,7 @@ export default defineItem({
   id: 'acceptance',
   name: 'Radical Acceptance',
   description: 'Stop fighting what already happened: your own breakthroughs no longer hurt you.',
+  effect: 'Your own bomb and thrown-block explosions no longer damage you.',
   inspiredBy: 'Radical acceptance (Dialectical Behaviour Therapy)',
   pools: { treasure: 1 },
   tags: ['emotion'],

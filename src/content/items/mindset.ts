@@ -4,6 +4,7 @@ export default defineItem({
   id: 'mindset',
   name: 'Growth Mindset',
   description: 'Believing you can grow lifts you higher: jump much higher.',
+  effect: 'Jump height ×1.7.',
   inspiredBy: 'Mindset (Carol Dweck)',
   pools: { treasure: 1 },
   tags: ['mind', 'movement'],

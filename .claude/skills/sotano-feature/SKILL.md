@@ -36,7 +36,8 @@ A feature is done only when all of this is true:
 | Feedback | Hits flash, pickups pop, explosions shake the screen, damage shows a red vignette, important events get a banner or toast |
 | Audio | Every action has a short synthesised sound (WebAudio, no files); avoid repetition with slight pitch variation |
 | UI | Readable at 1366×768 and on narrow screens; Isaac-style counters; menus pause the game and release the mouse |
-| Physics | Nothing gets stuck inside walls; nothing tunnels; loose cubes stack |
+| Physics | Nothing gets stuck inside walls; nothing tunnels; loose cubes stack and never overlap each other |
+| Messages | Information banners stay until clicked; short notices (toasts) can fade |
 | Enemies | Spawn visibly from the room centre, never by the doors; telegraph attacks (wind-up, swelling) |
 | Performance | 60 fps on desktop with 2000 cubes; budgets for remeshing, chain reactions, simulations |
 
@@ -63,3 +64,8 @@ A feature is done only when all of this is true:
 - **Item quality goes up to 4**; some items must be strong enough to break a run (fun first).
 - **The shot is called "intentions"**, never tears. Items are practices named after real techniques and works; enemies are projections of mental blocks.
 - **Everything documented, in English**, with indexed sections; ask when something is unclear.
+- **References and lore are a library** (docs/lore + the sotano-lore skill); new references the owner shares get catalogued and, where they fit, reshape existing content.
+- **Information messages stay until the player clicks** (the item banner); the dismissing click doesn't fire.
+- **Cubes must never clip into each other**, not even right after spawning: they repel each other (separation pass) and never into walls.
+- **Items must say plainly what they do** and their impact on the run, besides the philosophical message: every item has an `effect` line with numbers.
+- **Every run must be unique, driven by a seed** (RNG across rooms, variants, enemies, items, rewards); take the time to do it right.

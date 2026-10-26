@@ -759,6 +759,12 @@ export class Game {
     if (inp.pressed.has('KeyR') && (this.player.dead || inp.locked || this.simulateUnlocked)) {
       this.newRun(this.seed + 1 + Math.floor(Math.random() * 1000));
     }
+    // an information banner stays until clicked; that click only dismisses it
+    if (this.hud.bannerOpen && inp.clicked) {
+      this.hud.dismissBanner();
+      inp.fireHeld = false;
+      inp.placePressed = false;
+    }
     if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleInventory(this);
     const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen;
     if (running) this.simulate(dt);

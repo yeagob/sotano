@@ -30,6 +30,8 @@ docs/architecture/             How the code works today
   ROOMS.md                     Floor plans, room templates, doors
   ENTITIES.md                  Health, bombs, enemies, pickups, stacked floors
   ELEMENTS.md                  Elements and containers: architecture + step-by-step plan
+docs/lore/                     References and lore (see the sotano-lore skill)
+  README.md, SOURCES.md (library), CONCEPTS.md (glossary), COSMOLOGY.md (as above, so below)
 docs/research/                 Background research, target architecture, roadmap
   README.md, TECHNICAL.md
 docs/reviews/                  Three-party architecture reviews
@@ -45,6 +47,7 @@ docs/reviews/                  Three-party architecture reviews
 | Room templates, floor generation, doors | `docs/architecture/ROOMS.md` |
 | Module layout, frame order, debug console, tests | `docs/architecture/OVERVIEW.md` |
 | Roadmap / milestone status, a technical decision change | `docs/research/TECHNICAL.md` (§15 roadmap, and note decision changes where the old decision was described) and the README roadmap |
+| A new reference (book, technique, therapy, game) or lore | `docs/lore/` via the sotano-lore skill |
 | A key architecture decision | Run the three-party review (below) and add `docs/reviews/<topic>.md` |
 
 A **new document** must be added to its section `README.md` index. A **new section (folder)** must have its own `README.md` with an index, and be listed in `docs/README.md` and in the root `README.md` documentation index.

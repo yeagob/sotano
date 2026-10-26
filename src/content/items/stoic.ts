@@ -4,6 +4,7 @@ export default defineItem({
   id: 'stoic',
   name: 'Stoic Resolve',
   description: 'Weighty, steady intentions: more damage, and they drop hard.',
+  effect: 'Damage +2. Intentions are 40% bigger and drop twice as fast.',
   inspiredBy: 'Marcus Aurelius, Meditations; Epictetus, Enchiridion',
   pools: { treasure: 1 },
   tags: ['will', 'intent'],

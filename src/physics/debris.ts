@@ -42,6 +42,12 @@ export class DebrisSystem {
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
   private columns = new Map<number, number[]>();
+  /** Cubes that moved this frame (they are the ones that may overlap others). */
+  private stepped = new Uint8Array(0);
+  /** Cubes pushed by the separation pass: re-checked every frame until they're clear. */
+  private unsettled = new Uint8Array(0);
+  /** Cell hash of every live cube, for the separation pass. */
+  private cells = new Map<number, number[]>();
 
   constructor(max: number, private solid: Solid, private onImpact: ImpactFn) {
     this.max = max;
@@ -55,6 +61,8 @@ export class DebrisSystem {
     this.cooldown = new Float32Array(max);
     this.tags = new Array(max).fill(null);
     this.fuse = new Float32Array(max);
+    this.stepped = new Uint8Array(max);
+    this.unsettled = new Uint8Array(max);
   }
 
   isBomb(i: number) { return this.fuse[i] > 0; }
@@ -87,6 +95,7 @@ export class DebrisSystem {
     this.cooldown[i] = 0.25;
     this.tags[i] = null;
     this.fuse[i] = 0;
+    this.unsettled[i] = 1;
     return i;
   }
 
@@ -143,6 +152,7 @@ export class DebrisSystem {
 
   update(dt: number) {
     this.buildColumns();
+    this.stepped.fill(0);
     for (let i = 0; i < this.max; i++) {
       const st = this.state[i];
       if (!st) continue;
@@ -168,8 +178,111 @@ export class DebrisSystem {
         continue;
       }
       this.step(i, dt);
+      this.stepped[i] = 1;
       if (this.pos[i3 + 1] < -20) this.remove(i);
     }
+    this.separate();
+  }
+
+  /**
+   * Cubes never share space. Every cube that moved this frame is checked against its
+   * neighbours (a cell hash); overlapping pairs are pushed apart along the axis of least
+   * overlap, half each (all of it on the moving one when the other is resting), and the
+   * push is cancelled for a cube if it would put it into a wall. A vertical overlap puts the
+   * upper cube on top of the lower one. Pushed cubes stay "unsettled" and are re-checked on
+   * the next frames until nothing overlaps them, so fresh spawns (several cubes created at the
+   * same spot) and piles sort themselves out within a few frames.
+   */
+  private separate() {
+    const S = DEBRIS_SIZE * 0.98;
+    for (let i = 0; i < this.max; i++) if (this.stepped[i]) this.unsettled[i] = 1;
+    for (let pass = 0; pass < 6; pass++) {
+      this.cells.clear();
+      for (let i = 0; i < this.max; i++) {
+        if (!this.state[i]) continue;
+        const k = cellKey(this.pos[i * 3], this.pos[i * 3 + 1], this.pos[i * 3 + 2]);
+        let l = this.cells.get(k);
+        if (!l) this.cells.set(k, (l = []));
+        l.push(i);
+      }
+      let moved = false;
+      for (let i = 0; i < this.max; i++) {
+        if (!this.state[i] || !this.unsettled[i]) continue;
+        let touched = false;
+        const i3 = i * 3;
+        const cx = Math.floor(this.pos[i3]), cy = Math.floor(this.pos[i3 + 1]), cz = Math.floor(this.pos[i3 + 2]);
+        for (let dz = -1; dz <= 1; dz++) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const l = this.cells.get(cellKeyInt(cx + dx, cy + dy, cz + dz));
+          if (!l) continue;
+          for (const j of l) {
+            if (j === i || !this.state[j]) continue;
+            if (this.unsettled[j] && j < i) continue; // each unsettled pair once
+            if (this.pushApart(i, j, S)) { moved = true; touched = true; this.unsettled[j] = 1; }
+          }
+        }
+        if (!touched && pass === 0) this.unsettled[i] = 0;
+      }
+      if (!moved) break;
+    }
+  }
+
+  private pushApart(i: number, j: number, S: number): boolean {
+    const i3 = i * 3, j3 = j * 3;
+    const ox = this.pos[i3] - this.pos[j3], oy = this.pos[i3 + 1] - this.pos[j3 + 1], oz = this.pos[i3 + 2] - this.pos[j3 + 2];
+    const px = S - Math.abs(ox), py = S - Math.abs(oy), pz = S - Math.abs(oz);
+    if (px <= 0 || py <= 0 || pz <= 0) return false;
+    // axis of least penetration; exact overlaps (same spawn spot) get a deterministic nudge
+    let axis = px < py && px < pz ? 0 : py < pz ? 1 : 2;
+    let d = axis === 0 ? ox : axis === 1 ? oy : oz;
+    let pen = axis === 0 ? px : axis === 1 ? py : pz;
+    if (Math.abs(d) < 1e-4) { axis = (i + j) % 2 === 0 ? 0 : 2; d = i < j ? 1 : -1; pen = S; }
+    if (axis === 1) {
+      // stacked: the upper cube sits on the lower one
+      const up = oy > 0 ? i : j, low = up === i ? j : i;
+      const u3 = up * 3, l3 = low * 3, old = this.pos[u3 + 1];
+      this.pos[u3 + 1] = this.pos[l3 + 1] + DEBRIS_SIZE;
+      if (this.boxSolid(this.pos[u3], this.pos[u3 + 1], this.pos[u3 + 2])) {
+        // no room above: slide it sideways instead
+        this.pos[u3 + 1] = old;
+        axis = Math.abs(ox) > Math.abs(oz) ? 0 : 2;
+        d = axis === 0 ? ox : oz;
+        if (Math.abs(d) < 1e-4) d = i < j ? 1 : -1;
+        pen = S - Math.abs(axis === 0 ? ox : oz);
+      } else {
+        if (this.vel[u3 + 1] < this.vel[l3 + 1]) this.vel[u3 + 1] = this.vel[l3 + 1];
+        return true;
+      }
+    }
+    const dir = Math.sign(d) || 1;
+    const jRests = this.state[j] === RESTING && !this.stepped[j];
+    if (this.state[i] === RESTING && this.state[j] === RESTING) this.state[i] = MOVING;
+    const shareI = jRests ? 1 : 0.5, shareJ = 1 - shareI;
+    const tryMove = (k: number, amount: number) => {
+      if (amount === 0) return 0;
+      const k3 = k * 3, old = this.pos[k3 + axis];
+      this.pos[k3 + axis] = old + amount;
+      if (this.boxSolid(this.pos[k3], this.pos[k3 + 1], this.pos[k3 + 2])) { this.pos[k3 + axis] = old; return 0; }
+      return amount;
+    };
+    const gotI = tryMove(i, dir * pen * shareI);
+    // whatever the first cube couldn't take (a wall behind it), the other one takes
+    const gotJ = tryMove(j, -dir * (pen * shareJ + (pen * shareI - Math.abs(gotI))));
+    if (Math.abs(gotI) + Math.abs(gotJ) < pen * 0.5) {
+      // boxed in sideways (a full pit): climb on top of the other cube instead
+      const up = this.pos[i3 + 1] >= this.pos[j3 + 1] ? i : j, low = up === i ? j : i;
+      const u3 = up * 3, old = this.pos[u3 + 1];
+      this.pos[u3 + 1] = this.pos[low * 3 + 1] + DEBRIS_SIZE;
+      if (this.boxSolid(this.pos[u3], this.pos[u3 + 1], this.pos[u3 + 2])) this.pos[u3 + 1] = old;
+      else { this.state[up] = MOVING; this.vel[u3 + 1] = Math.max(0, this.vel[u3 + 1]); }
+    }
+    // kill the closing speed along that axis so they don't keep pressing into each other
+    const rel = this.vel[i3 + axis] - this.vel[j3 + axis];
+    if (rel * dir < 0) {
+      this.vel[i3 + axis] -= rel * shareI;
+      if (!jRests) this.vel[j3 + axis] += rel * shareJ;
+    }
+    if (jRests && axis !== 1) this.state[i] = MOVING;
+    return true;
   }
 
   private step(i: number, dt: number) {
@@ -305,3 +418,5 @@ export class DebrisSystem {
 }
 
 function colKey(x: number, z: number) { return (x + 4096) * 8192 + (z + 4096); }
+function cellKeyInt(x: number, y: number, z: number) { return ((x + 512) * 1024 + (y + 512)) * 1024 + (z + 512); }
+function cellKey(x: number, y: number, z: number) { return cellKeyInt(Math.floor(x), Math.floor(y), Math.floor(z)); }

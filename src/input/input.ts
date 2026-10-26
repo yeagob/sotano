@@ -7,6 +7,8 @@ export class Input {
   readonly pressed = new Set<string>();
   fireHeld = false;
   placePressed = false;
+  /** Any mouse button went down this frame (while captured). */
+  clicked = false;
   lookDX = 0; lookDY = 0;
   locked = false;
   sensitivity = 0.0022;
@@ -22,6 +24,7 @@ export class Input {
     // listen on the whole document: overlays (pause card, HUD) must not swallow the click
     document.addEventListener('mousedown', e => {
       if (!this.locked) { this.lock(); return; }
+      this.clicked = true;
       if (e.button === 0) this.fireHeld = true;
       if (e.button === 2) this.placePressed = true;
     });
@@ -50,5 +53,5 @@ export class Input {
   }
 
   /** Call at the end of every frame. */
-  endFrame() { this.pressed.clear(); this.placePressed = false; this.lookDX = 0; this.lookDY = 0; }
+  endFrame() { this.pressed.clear(); this.placePressed = false; this.clicked = false; this.lookDX = 0; this.lookDY = 0; }
 }
