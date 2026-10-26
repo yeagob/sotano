@@ -28,10 +28,10 @@ export default defineItem({
     palette: { a: 0xc9a227, b: 0xf2c84b, c: 0xfff3c4, d: 0xffffff },
   },
   hooks: [
-    hook('enemyContact', (e, api) => {
+    hook('contact', (e, api) => {
       // what touches you meets no resistance: it takes the blow, and often you don't
-      e.toEnemy += 4;
-      if (api.rng().chance(0.5)) e.toPlayer = 0;
-    }, { id: 'release', priority: 40 }),
+      e.toAttacker += 4;
+      if (api.rng().chance(0.5)) e.toTarget = 0;
+    }, { id: 'release', priority: 40, target: 'player' }),
   ],
 });

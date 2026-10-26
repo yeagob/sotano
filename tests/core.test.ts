@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BlastQueue } from '../src/combat/blasts';
+import { ActorRegistry, ContactGate, HALF_HEART, halfHeartsFor, hostile } from '../src/entities/actors';
 import type { Cause } from '../src/game/events';
 import { EventBus } from '../src/core/events';
 import { Rng, RunRandom } from '../src/core/rng';
@@ -164,5 +165,38 @@ describe('block damage', () => {
   });
   it('bedrock never breaks', () => {
     expect(blockDamage(1e6, mat(MAT.bedrock))).toBe(0);
+  });
+});
+
+describe('actors', () => {
+  it('converts damage points to half-hearts: rounded up, at least one', () => {
+    expect(halfHeartsFor(4)).toBe(1);
+    expect(halfHeartsFor(1)).toBe(1);
+    expect(halfHeartsFor(8)).toBe(2);
+    expect(halfHeartsFor(9)).toBe(3);
+    expect(halfHeartsFor(10)).toBe(3);
+    expect(halfHeartsFor(3 * HALF_HEART)).toBe(3);
+  });
+
+  it('one id space per run, restarted by reset', () => {
+    const r = new ActorRegistry();
+    const a = r.newId(), b = r.newId();
+    expect(a).not.toBe(b);
+    r.reset();
+    expect(r.newId()).toBe(1);
+  });
+
+  it('contact lands at most once per pair every 0.5 s (bounded damage per second)', () => {
+    const g = new ContactGate(0.5);
+    let hits = 0;
+    for (let f = 0; f < 60; f++) if (g.ready(2, 1, f / 60)) hits++; // one second at 60 fps
+    expect(hits).toBe(2);
+    expect(g.ready(3, 1, 0.99)).toBe(true); // other pairs are independent
+  });
+
+  it('factions: only different, non-neutral sides are hostile', () => {
+    expect(hostile('self', 'projection')).toBe(true);
+    expect(hostile('self', 'self')).toBe(false);
+    expect(hostile('neutral', 'projection')).toBe(false);
   });
 });

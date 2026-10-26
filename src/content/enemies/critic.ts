@@ -10,7 +10,7 @@ export default defineEnemy({
   hp: 9,
   speed: 1.5,
   size: [0.28, 1.9],
-  contactDamage: 1,
+  contactDamage: 4,
   cost: 2,
   minFloor: 1,
   drops: { heart: 0.1, key: 0.08, bomb: 0.06 },

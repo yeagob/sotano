@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { Input } from '../input/input';
 import { moveBody, type Body } from '../physics/voxel-collide';
 import type { Stats } from '../core/stats';
+import type { Actor, ActorId, Faction } from './actors';
 
 export const EYE = 1.62;
 const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
@@ -17,7 +18,19 @@ export interface PlayerHooks {
   land(fallSpeed: number): void;
 }
 
-export class Player {
+/** The player: an actor like any projection (docs/architecture/ACTORS.md), plus input, a hand and counters. */
+export class Player implements Actor {
+  /** Set by the game at the start of each run (the first actor registered). */
+  id: ActorId = 0;
+  readonly kind = 'player' as const;
+  readonly def = 'player';
+  faction: Faction = 'self';
+  readonly halfHearts = true as const;
+  tags = new Set<string>();
+  room = -1;
+  readonly spawning = 0;
+  get alive() { return !this.dead; }
+  set alive(v: boolean) { this.dead = !v; }
   body: Body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: false };
   yaw = 0; pitch = 0;
   /** Blocks in your hand, bottom to top (materials). The top one is placed/thrown first. */

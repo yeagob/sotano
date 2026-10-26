@@ -34,9 +34,9 @@ export interface IntentHooks {
   debrisAt(x: number, y: number, z: number, r: number): number;
   /** Something hit a loose cube with this velocity. */
   hitDebris(i: number, vel: THREE.Vector3, intent: IntentSpec): void;
-  /** Uid of an enemy touching this sphere, or -1. */
+  /** Actor id of an enemy touching this sphere, or -1. */
   enemyAt(x: number, y: number, z: number, r: number): number;
-  hitEnemy(uid: number, vel: THREE.Vector3, intent: IntentSpec): void;
+  hitEnemy(id: number, vel: THREE.Vector3, intent: IntentSpec): void;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
 }
 

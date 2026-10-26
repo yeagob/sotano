@@ -4,14 +4,16 @@
 
 import { EventBus } from '../core/events';
 import type { DamageKind } from '../core/damage';
+import type { ActorId, ActorKind, Owner } from '../entities/actors';
+
+export type { Owner } from '../entities/actors';
 
 export type CubeAction = 'pickup' | 'kick' | 'ignore';
 export type PickupKind = 'key' | 'bomb' | 'heart';
-/** Who caused something: the player, a specific enemy, or the world itself. */
-export type Owner = 'player' | 'world' | `enemy:${number}`;
 /** Where a chain reaction started and how many links deep it is (an explosion set off by an
  *  explosion has `gen + 1`). Chains stop at MAX_CHAIN_GEN. */
 export interface Cause { origin: string; gen: number }
+
 
 export interface GameEvents {
   // ── shooting ──
@@ -30,7 +32,7 @@ export interface GameEvents {
    *  (it starts as "tier ≤ the crush stat"; hooks may flip it either way). */
   touchBlock: { x: number; y: number; z: number; material: number; crush: boolean };
   /** Something exploded. Radius and damage can be changed before blocks are hit.
-   *  `actorDamage` is in half-hearts for the player (enemies take it ×4 as HP).
+   *  `damage` is for blocks, `actorDamage` (points) for every actor in range.
    *  Explosions are queued and run a few per frame; `cause` says which chain this one belongs to. */
   explosion: { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause };
   /** Loot rolled for a broken block (after the break). Hooks may add, remove or replace drops. */
@@ -58,23 +60,25 @@ export interface GameEvents {
   /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor. */
   land: { fallSpeed: number; cause: 'fall' | 'descent' };
 
-  // ── health ──
-  /** Anything about to hurt the player, in half-hearts. Cancel to ignore it. */
-  playerDamage: { amount: number; kind: string; source: string; owner: Owner };
+  // ── actors (the player and projections; docs/architecture/ACTORS.md) ──
+  // Hooks on actorDamage, contact and actorDeath must say which actors they are for
+  // (`hook(..., { target: 'player' })`): one event covers everyone.
+  /** Anything about to hurt an actor, in damage points (the player loses one half-heart per
+   *  4 points, rounded up, at least one). Cancel to ignore it. */
+  actorDamage: { target: ActorId; targetKind: ActorKind; def: string; amount: number; kind: DamageKind; source: string; owner: Owner; knockback: number; cause?: Cause };
+  /** A projection touches an actor it is hostile to (at most once per pair every 0.5 s):
+   *  `toTarget` and `toAttacker` are damage points. */
+  contact: { attacker: ActorId; attackerDef: string; target: ActorId; targetKind: ActorKind; toTarget: number; toAttacker: number };
   /** About to heal the player, in half-hearts. */
   heal: { amount: number; source: string };
   /** The player reached 0 hearts. Cancel to survive (with whatever health a hook sets). */
   death: { source: string };
+  /** An actor is gone (react only). `drops` can be changed (projections drop them). */
+  actorDeath: { target: ActorId; targetKind: ActorKind; def: string; x: number; y: number; z: number; drops: PickupKind[] };
 
-  // ── enemies (projections) ──
-  /** An enemy is about to materialise. Every number here can be changed. */
-  enemySpawn: { uid: number; def: string; hp: number; speed: number; contactDamage: number; tags: Set<string>; x: number; y: number; z: number };
-  /** Anything about to hurt an enemy, in HP. */
-  enemyDamage: { uid: number; def: string; amount: number; kind: string; source: string; owner: Owner; knockback: number };
-  /** The player and an enemy touch: how much each takes (half-hearts / HP). */
-  enemyContact: { uid: number; def: string; toPlayer: number; toEnemy: number };
-  /** An enemy dissolved. `drops` can be changed. */
-  enemyDeath: { uid: number; def: string; x: number; y: number; z: number; drops: PickupKind[] };
+  // ── projections ──
+  /** A projection is about to materialise. Every number here can be changed (`contactDamage` in points). */
+  enemySpawn: { id: ActorId; def: string; hp: number; speed: number; contactDamage: number; tags: Set<string>; x: number; y: number; z: number };
 
   // ── dungeon ──
   /** A door wants to open. Locked doors ask for a key: hooks may set `needsKey = false`. */
@@ -108,7 +112,7 @@ export interface IntentSpec {
 }
 
 export type GameBus = EventBus<GameEvents>;
-/** Emitted only by the core loop (depth 0). `death` is emitted right after `playerDamage`
+/** Emitted only by the core loop (depth 0). `death` is emitted right after `actorDamage`
  *  returns, at the same depth, so a hit that passed the depth cap also reaches `death`. */
 export const ROOT_EVENTS = ['death', 'doorOpen', 'enemySpawn', 'roomClear', 'floorEnter'] as const satisfies readonly (keyof GameEvents)[];
 export const createBus = (): GameBus => new EventBus<GameEvents>(ROOT_EVENTS);

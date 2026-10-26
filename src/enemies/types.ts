@@ -4,7 +4,7 @@
 // in src/content/enemies/.
 
 import type { PickupKind } from '../game/events';
-import type { Body } from '../physics/voxel-collide';
+import type { Actor } from '../entities/actors';
 
 /** One box of an enemy's cube model, relative to its feet. */
 export interface ModelPart {
@@ -27,7 +27,7 @@ export interface EnemyDef {
   speed: number;
   /** Half-width and height of its box. */
   size: [number, number];
-  /** Half-hearts dealt on touch. */
+  /** Damage points dealt on touch (4 = half a heart to the player). */
   contactDamage: number;
   model: ModelPart[];
   behaviour: Behaviour;
@@ -40,19 +40,14 @@ export interface EnemyDef {
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
 }
 
-export interface Enemy {
-  uid: number;
-  def: EnemyDef;
-  body: Body;
-  hp: number;
+/** A projection: an actor with a definition, a behaviour and spawn-time numbers. */
+export interface Enemy extends Actor {
+  readonly kind: 'projection';
+  /** The definition (`Actor.def` holds its id). */
+  spec: EnemyDef;
   maxHp: number;
   speed: number;
   contactDamage: number;
-  tags: Set<string>;
-  /** Global id of the room it belongs to (it stays leashed to it). */
-  room: number;
-  /** Seconds left materialising: harmless and unhittable meanwhile. */
-  spawning: number;
   /** Behaviour state machine slot and timer, free for the behaviour to use. */
   state: string;
   timer: number;
@@ -61,7 +56,6 @@ export interface Enemy {
   /** Visual-only: hit flash and scale pulse. */
   flash: number;
   pulse: number;
-  alive: boolean;
 }
 
 /** What a behaviour can see and do. */

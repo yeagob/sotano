@@ -10,6 +10,7 @@ import type { DamageKind } from '../core/damage';
 import type { EventCtx } from '../core/events';
 import type { Rng } from '../core/rng';
 import type { StatLayer, StatName, Stats } from '../core/stats';
+import type { ActorId, ActorKind, Owner } from '../entities/actors';
 import type { GameBus, GameEvents, PickupKind } from '../game/events';
 
 /** What effects can do to the world. A small facade so items never depend on `Game`. */
@@ -31,8 +32,12 @@ export interface ItemApi {
   defer(fn: () => void): void;
   /** Heal the player by half-hearts (through the `heal` event). */
   heal(halfHearts: number, source?: string): void;
-  /** Hurt the player by half-hearts (through `playerDamage`, owner 'player'). */
+  /** Hurt the player by half-hearts (through `actorDamage`, owned by the player). */
   damagePlayer(halfHearts: number, source?: string): void;
+  /** The player's actor id. */
+  player(): ActorId;
+  /** Is this owner the player? (Compare owners with this, never with raw ids.) */
+  isPlayer(owner: Owner): boolean;
   /** Give keys, bombs or hearts (through `pickupCollect`). */
   collect(kind: PickupKind, amount: number): boolean;
   counts(): { keys: number; bombs: number; hp: number; maxHp: number };
@@ -42,11 +47,17 @@ export interface ItemApi {
 
 export type StatModSpec = { stat: StatName; layer: StatLayer; value: number };
 
+/** Events that cover every actor: hooks on them must set `target`. */
+export const ACTOR_EVENTS = ['actorDamage', 'contact', 'actorDeath'] as const satisfies readonly (keyof GameEvents)[];
+
 /** One hook on one event. `id` lets a synergy suppress exactly this hook (see `Effect.suppress`). */
 export interface HookSpec<K extends keyof GameEvents = keyof GameEvents> {
   event: K;
   id?: string;
   priority?: number;
+  /** Actor events (`actorDamage`, `contact`, `actorDeath`) cover every actor: say which ones this
+   *  hook is for. The installer skips the others before calling `fn`. Required on those events. */
+  target?: ActorKind | 'any';
   fn: (ctx: GameEvents[K] & EventCtx, api: ItemApi) => void;
 }
 
@@ -54,7 +65,7 @@ export interface HookSpec<K extends keyof GameEvents = keyof GameEvents> {
 export function hook<K extends keyof GameEvents>(
   event: K,
   fn: HookSpec<K>['fn'],
-  opts: { id?: string; priority?: number } = {},
+  opts: { id?: string; priority?: number; target?: ActorKind | 'any' } = {},
 ): HookSpec<K> {
   return { event, fn, ...opts };
 }

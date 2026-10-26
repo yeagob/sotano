@@ -117,7 +117,12 @@ export class Inventory {
     for (const m of e.stats ?? []) this.stats.add({ ...m, source });
     for (const h of e.hooks ?? []) {
       if (h.id && suppressed.has(`${ownerId}.${h.id}`)) continue;
-      bus.on(h.event, { priority: h.priority ?? 50, source, id: h.id ? `${ownerId}.${h.id}` : ownerId, fn: ctx => h.fn(ctx, api) });
+      const only = h.target && h.target !== 'any' ? h.target : null;
+      bus.on(h.event, {
+        priority: h.priority ?? 50, source, id: h.id ? `${ownerId}.${h.id}` : ownerId,
+        // actor events: skip actors this hook isn't for (see HookSpec.target)
+        fn: only ? ctx => { if ((ctx as { targetKind?: string }).targetKind === only) h.fn(ctx, api); } : ctx => h.fn(ctx, api),
+      });
     }
     this.installed.add(source);
   }

@@ -28,8 +28,8 @@ export default defineItem({
     palette: { a: 0x2a5a7a, b: 0x9fd3ff, c: 0x2a2633 },
   },
   hooks: [
-    hook('enemyContact', (e, api) => {
-      if (api.rng().chance(2 / 3)) e.toPlayer = 0;
-    }, { id: 'slide-off', priority: 30 }),
+    hook('contact', (e, api) => {
+      if (api.rng().chance(2 / 3)) e.toTarget = 0;
+    }, { id: 'slide-off', priority: 30, target: 'player' }),
   ],
 });

@@ -34,7 +34,7 @@ export function ranged(opt: { keep: number; cooldown: number; windup: number }):
         return;
       }
       // back off when too close, approach when too far, strafe in between
-      const strafe = Math.sin(e.uid * 1.7 + e.timer * 0.8) > 0 ? 1 : -1;
+      const strafe = Math.sin(e.id * 1.7 + e.timer * 0.8) > 0 ? 1 : -1;
       if (d < opt.keep - 1) { e.wishX = -dx; e.wishZ = -dz; }
       else if (d > opt.keep + 2) { e.wishX = dx; e.wishZ = dz; }
       else { e.wishX = -dz * strafe * 0.6; e.wishZ = dx * strafe * 0.6; }

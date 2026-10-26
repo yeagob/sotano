@@ -28,8 +28,8 @@ export default defineItem({
     palette: { a: 0xe88fb5, b: 0xfbd3e4, c: 0x3a8a5a },
   },
   hooks: [
-    hook('playerDamage', e => {
-      if (e.owner === 'player' && e.kind === 'explosion') e.cancel();
-    }, { id: 'no-self-harm', priority: 100 }),
+    hook('actorDamage', (e, api) => {
+      if (api.isPlayer(e.owner) && e.kind === 'explosion') e.cancel();
+    }, { id: 'no-self-harm', priority: 100, target: 'player' }),
   ],
 });

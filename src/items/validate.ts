@@ -3,7 +3,7 @@
 // tests (problems fail the build). See the sotano-items skill for the rules it enforces.
 
 import { BASE_STATS, type StatName } from '../core/stats';
-import type { ItemDef, SynergyDef } from './types';
+import { ACTOR_EVENTS, type ItemDef, type SynergyDef } from './types';
 
 export const PATHS = ['body', 'mind', 'emotion', 'will'] as const;
 const STATS = new Set(Object.keys(BASE_STATS) as StatName[]);
@@ -34,6 +34,7 @@ export function validateItem(d: ItemDef): string[] {
     if (h.id && ids.has(h.id)) e.push(`${at}: duplicate hook id "${h.id}"`);
     if (h.id) ids.add(h.id);
     if (h.priority !== undefined && (h.priority < 0 || h.priority > 999)) e.push(`${at}: hook priority out of 0..999`);
+    if ((ACTOR_EVENTS as readonly string[]).includes(h.event) && !h.target) e.push(`${at}: hook on "${h.event}" needs a target ('player', 'projection' or 'any')`);
   }
   return e;
 }

@@ -21,7 +21,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   blockBreak: () => ({ x: 1, y: 1, z: 1, material: 4, kind: 'intent', source: 'intent', spawnDebris: true }),
   blockPlace: () => ({ x: 1, y: 1, z: 1, material: 4 }),
   touchBlock: () => ({ x: 1, y: 1, z: 1, material: 1, crush: false }),
-  explosion: () => ({ x: 1, y: 1, z: 1, radius: 2, damage: 10, actorDamage: 2, source: 'test', owner: 'player', cause: { origin: 'test', gen: 0 } }),
+  explosion: () => ({ x: 1, y: 1, z: 1, radius: 2, damage: 10, actorDamage: 8, source: 'test', owner: 1, cause: { origin: 'test', gen: 0 } }),
   blockLoot: () => ({ x: 1, y: 1, z: 1, material: 4, source: 'intent', drops: ['key'] }),
   touchCube: () => ({ cube: 0, material: 1, held: 0, carry: 1, bomb: false, action: 'pickup' }),
   bombPlace: () => ({ fuse: 1.8 }),
@@ -31,13 +31,12 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   debrisImpact: () => ({ cube: 0, x: 1, y: 1, z: 1, material: 1, speed: 8, tags: new Set(['volatile']), keepTags: false }),
   jump: () => ({ velocity: 8.4 }),
   land: () => ({ fallSpeed: 10, cause: 'fall' }),
-  playerDamage: () => ({ amount: 2, kind: 'explosion', source: 'bomb', owner: 'player' }),
+  actorDamage: () => ({ target: 1, targetKind: 'player', def: 'player', amount: 8, kind: 'explosion', source: 'bomb', owner: 1, knockback: 0 }),
+  contact: () => ({ attacker: 2, attackerDef: 'doubt', target: 1, targetKind: 'player', toTarget: 4, toAttacker: 0 }),
+  actorDeath: () => ({ target: 2, targetKind: 'projection', def: 'doubt', x: 1, y: 1, z: 1, drops: [] }),
   heal: () => ({ amount: 2, source: 'pickup' }),
   death: () => ({ source: 'doubt' }),
-  enemySpawn: () => ({ uid: 1, def: 'doubt', hp: 12, speed: 1.7, contactDamage: 1, tags: new Set(), x: 1, y: 1, z: 1 }),
-  enemyDamage: () => ({ uid: 1, def: 'doubt', amount: 3.5, kind: 'intent', source: 'intent', owner: 'player', knockback: 3 }),
-  enemyContact: () => ({ uid: 1, def: 'doubt', toPlayer: 1, toEnemy: 0 }),
-  enemyDeath: () => ({ uid: 1, def: 'doubt', x: 1, y: 1, z: 1, drops: [] }),
+  enemySpawn: () => ({ id: 2, def: 'doubt', hp: 12, speed: 1.7, contactDamage: 4, tags: new Set(), x: 1, y: 1, z: 1 }),
   roomClear: () => ({ room: 101, drops: [] }),
   doorOpen: () => ({ door: 0, locked: true, needsKey: true }),
   pickupCollect: () => ({ kind: 'key', amount: 1 }),
@@ -65,6 +64,8 @@ function sandbox() {
     defer: fn => bus.defer(fn),
     heal: () => {},
     damagePlayer: () => {},
+    player: () => 1,
+    isPlayer: id => id === 1,
     collect: () => true,
     counts: () => ({ keys: 1, bombs: 1, hp: 6, maxHp: 6 }),
     spawnPickup: () => {},
@@ -107,6 +108,19 @@ describe('synergy matrix', () => {
       }
       expect(bus.pending, `chain reactions never settle with ${combo.join(' + ')}`).toBe(0);
     }
+  });
+
+  // Actor events cover the player and projections: the same sample aimed at a projection
+  // must never be blocked by a hook meant for the player (e.g. Radical Acceptance vs your bombs).
+  it('with every item held, your bomb still hurts a projection and its contact still reaches you', () => {
+    const { bus } = exercise(ids);
+    const toEnemy = bus.emit('actorDamage', { ...SAMPLES.actorDamage(), target: 2, targetKind: 'projection', def: 'doubt', knockback: 3 });
+    expect(toEnemy.cancelled).toBe(false);
+    expect(toEnemy.amount).toBeGreaterThan(0);
+    // contact aimed at another projection (an ally later) is untouched by player-only hooks
+    const ally = bus.emit('contact', { ...SAMPLES.contact(), target: 3, targetKind: 'projection' });
+    expect(ally.toTarget).toBe(4);
+    expect(ally.toAttacker).toBe(0);
   });
 
   it('everything at once still works', () => {

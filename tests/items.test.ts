@@ -8,7 +8,7 @@ import { BASE_STATS, StatSheet, type StatName } from '../src/core/stats';
 import { createBus, type GameBus, type GameEvents } from '../src/game/events';
 import { Inventory } from '../src/items/inventory';
 import { ItemPools } from '../src/items/pool';
-import { defineItem, defineSynergy, hook, type ItemApi, type ItemDef, type SynergyDef } from '../src/items/types';
+import { ACTOR_EVENTS, defineItem, defineSynergy, hook, type ItemApi, type ItemDef, type SynergyDef } from '../src/items/types';
 
 const T = { quality: 0 as const, icon: { rows: [], palette: {} }, effect: '' };
 
@@ -178,8 +178,7 @@ describe('contract', () => {
   const eventNames = Object.keys({
     fire: 0, blockDamage: 0, blockBreak: 0, blockPlace: 0, touchBlock: 0, explosion: 0, touchCube: 0, kick: 0, throw: 0,
     drop: 0, debrisImpact: 0, jump: 0, land: 0, doorOpen: 0, pickupCollect: 0, itemGained: 0, roomEnter: 0, floorEnter: 0,
-    blockLoot: 0, bombPlace: 0, playerDamage: 0, heal: 0, death: 0, enemySpawn: 0, enemyDamage: 0, enemyContact: 0,
-    enemyDeath: 0, roomClear: 0,
+    blockLoot: 0, bombPlace: 0, actorDamage: 0, contact: 0, actorDeath: 0, heal: 0, death: 0, enemySpawn: 0, roomClear: 0,
   } satisfies Record<keyof GameEvents, 0>);
 
   it('no content sets keepTags (cube chains would outlive their cause; see ACTORS.md §1)', () => {
@@ -190,6 +189,12 @@ describe('contract', () => {
   it('no item changes mining with the add layer (mining is absolute: adds need a rebalance)', () => {
     for (const i of [...ITEMS, ...SYNERGIES]) for (const m of i.stats ?? []) {
       expect(m.stat === 'mining' && m.layer === 'add', `${i.id} adds to mining`).toBe(false);
+    }
+  });
+
+  it('hooks on actor events say which actors they are for', () => {
+    for (const d of [...ITEMS, ...SYNERGIES]) for (const h of d.hooks ?? []) {
+      if ((ACTOR_EVENTS as readonly string[]).includes(h.event)) expect(h.target, `${d.id}: hook on ${h.event} needs a target`).toBeDefined();
     }
   });
 

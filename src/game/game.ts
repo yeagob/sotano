@@ -41,6 +41,7 @@ import {
   type FloorResult, type RoomInfo,
 } from '../world/floor';
 import type { VoxelWorld } from '../world/world';
+import { ActorRegistry, ContactGate, HALF_HEART, halfHeartsFor, type Actor } from '../entities/actors';
 import { createBus, type Cause, type GameBus, type Owner, type PickupKind } from './events';
 import { Hud } from './hud';
 
@@ -57,6 +58,9 @@ const SKY = new THREE.Color(0x8ec5ee);
 const COUNTER_CAP = 99;
 const SPAWN_GAP = 0.45;
 const HOLE_DELAY = 1.5;
+/** Damage points a blast deals to every actor in range (8 = one heart to the player). */
+const BLAST_ACTOR_DAMAGE = 2 * HALF_HEART;
+
 interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
 
 interface RoomState { cleared: boolean; started: boolean; queue: string[]; next: number; sealed: boolean }
@@ -106,6 +110,9 @@ export class Game {
   private intents: Intents;
   private api: ItemApi;
   private time = 0;
+  /** Every actor of the run (the player and projections), one id space. */
+  readonly actors = new ActorRegistry();
+  private contacts = new ContactGate();
   /** Queued explosions (chain safety: a few per frame, chains capped). */
   private blasts = new BlastQueue<Blast>();
   /** Bombs set off by a blast carry its chain to their own explosion. */
@@ -140,7 +147,7 @@ export class Game {
       hitEnemy: (uid, v, t) => {
         const e = this.enemies.get(uid);
         const l = Math.hypot(v.x, v.z) || 1;
-        if (e) this.damageEnemy(e, t.damage, 'intent', 'intent', 'player', v.x / l, v.z / l);
+        if (e) this.damageActor(e, t.damage, 'intent', 'intent', this.player.id, v.x / l, v.z / l);
       },
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
     });
@@ -189,7 +196,7 @@ export class Game {
       const chain = this.bombCause.get(i);
       this.bombCause.delete(i);
       this.blasts.current = chain ?? null;
-      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', 'player', 2);
+      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
       this.blasts.current = null;
     };
     this.blasts.clear(); this.bombCause.clear();
@@ -201,6 +208,12 @@ export class Game {
     this.inventory.restore([]);
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.stats.get('maxHearts') * 2; p.dead = false; p.invulnT = 0;
+    // actors: one id space per run, the player first
+    this.actors.reset();
+    this.contacts.clear();
+    p.id = this.actors.newId();
+    p.room = -1;
+    this.actors.add(p);
     this.carve(1);
     this.activate(1);
     this.carve(2);
@@ -290,12 +303,14 @@ export class Game {
       rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
-      explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, 'player', 2),
+      explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, this.player.id),
       spawnDebris: (m, x, y, z, vx, vy, vz) => { this.debris.spawn(m, x, y, z, vx, vy, vz); },
       toast: text => this.hud.toast(text),
       defer: fn => this.bus.defer(fn),
       heal: (n, src = 'item') => this.heal(n, src),
-      damagePlayer: (n, src = 'item') => this.damagePlayer(n, 'item', src, 'player'),
+      damagePlayer: (n, src = 'item') => this.damagePlayer(n, 'item', src, this.player.id),
+      player: () => this.player.id,
+      isPlayer: id => id === this.player.id,
       collect: (kind, n) => this.collect(kind, n),
       counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.stats.get('maxHearts') * 2 }),
       spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
@@ -326,13 +341,31 @@ export class Game {
     this.player.hp = Math.min(this.player.hp, this.stats.get('maxHearts') * 2);
   }
 
-  /** Hurts the player through `playerDamage`. Returns true if it landed. */
-  damagePlayer(amount: number, kind: string, source: string, owner: Owner): boolean {
+  /** Hurts the player by half-hearts (console, items): `damageActor` in points. */
+  damagePlayer(halfHearts: number, kind: DamageKind, source: string, owner: Owner): boolean {
+    return this.damageActor(this.player, halfHearts * HALF_HEART, kind, source, owner);
+  }
+
+  /**
+   * The one damage pipeline for every actor (docs/architecture/ACTORS.md §3): `amount` in damage
+   * points through `actorDamage`. Projections lose HP and are knocked back along (kx, kz); the
+   * player loses half-hearts (4 points each, rounded up, at least one) and gets invulnerability.
+   * Returns true if the hit landed.
+   */
+  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0): boolean {
     const p = this.player;
-    if (p.dead || p.invulnT > 0 || amount <= 0) return false;
-    const ev = this.bus.emit('playerDamage', { amount, kind, source, owner });
+    if (!t.alive || t.spawning > 0 || amount <= 0) return false;
+    if (t === p && p.invulnT > 0) return false;
+    const ev = this.bus.emit('actorDamage', {
+      target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
+      knockback: t === p ? 0 : 3, cause: this.blasts.current ?? undefined,
+    });
     if (ev.cancelled || ev.amount <= 0) return false;
-    p.hp -= Math.ceil(ev.amount);
+    if (t !== p) {
+      this.enemies.hurt(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback);
+      return true;
+    }
+    p.hp -= halfHeartsFor(ev.amount);
     p.invulnT = this.stats.get('invuln');
     this.hud.hurt();
     sfx3.hurt();
@@ -341,6 +374,7 @@ export class Game {
       if (d.cancelled) { p.hp = Math.max(1, p.hp); return true; }
       p.hp = 0;
       p.dead = true;
+      this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
       sfx3.death();
       this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
     }
@@ -373,37 +407,42 @@ export class Game {
       worldVersion: () => this.world.version,
       player: () => { const b = this.player.body; return { x: b.x, y: b.y, z: b.z, hw: b.hw, h: b.h }; },
       room: (id: number) => this.rooms.get(id)!,
-      contact: (e: Enemy) => {
-        const ev = this.bus.emit('enemyContact', { uid: e.uid, def: e.def.id, toPlayer: e.contactDamage, toEnemy: 0 });
-        if (ev.cancelled) return;
-        if (ev.toPlayer > 0) this.damagePlayer(ev.toPlayer, 'contact', e.def.id, `enemy:${e.uid}`);
-        if (ev.toEnemy > 0) this.damageEnemy(e, ev.toEnemy, 'contact', 'contact', 'player', 0, 0);
-      },
-      projectileHit: (dmg: number, thrower: number) => { this.damagePlayer(dmg, 'projectile', 'judgement', `enemy:${thrower}`); },
+      contact: (e: Enemy) => this.contact(e, this.player),
+      projectileHit: (dmg: number, thrower: number) => { this.damageActor(this.player, dmg, 'projectile', 'judgement', thrower); },
       projectileBlock: (x: number, y: number, z: number) => {
         const id = this.world.get(x, y, z);
         return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
       },
-      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def.id}`, `enemy:${e.uid}`, 2),
+      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE),
       died: (e: Enemy) => this.onEnemyDeath(e),
       particles: (x: number, y: number, z: number, c: number, n: number, s: number, size: number) => this.particles.burst(x, y, z, c, n, s, size),
     };
   }
 
-  /** Hurts an enemy through `enemyDamage`, with knock-back along (kx, kz). */
-  damageEnemy(e: Enemy, amount: number, kind: string, source: string, owner: Owner, kx: number, kz: number) {
-    if (!e.alive || e.spawning > 0) return;
-    const ev = this.bus.emit('enemyDamage', { uid: e.uid, def: e.def.id, amount, kind, source, owner, knockback: 3 });
-    if (ev.cancelled || ev.amount <= 0) return;
-    this.enemies.hurt(e, ev.amount, kx * ev.knockback, kz * ev.knockback);
+  /**
+   * A projection touches an actor: one exchange per pair every 0.5 s (`ContactGate`), and none
+   * while the player is invulnerable, so contact effects (and their random rolls) never run per frame.
+   */
+  private contact(a: Enemy, t: Actor) {
+    if (!a.alive || a.spawning > 0 || !t.alive || t.spawning > 0) return;
+    if (t === this.player && this.player.invulnT > 0) return;
+    if (!this.contacts.ready(a.id, t.id, this.time)) return;
+    const ev = this.bus.emit('contact', {
+      attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage, toAttacker: 0,
+    });
+    if (ev.cancelled) return;
+    if (ev.toTarget > 0) this.damageActor(t, ev.toTarget, 'contact', a.def, a.id);
+    if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
   private onEnemyDeath(e: Enemy) {
-    this.bus.off(null, `enemy:${e.uid}`); // reserved for enemy-owned hooks (M2)
+    this.bus.off(null, `actor:${e.id}`); // reserved for actor-owned hooks
+    this.actors.remove(e.id);
+    this.contacts.forget(e.id);
     const rng = this.rng.stream('drops');
-    const drops = (Object.entries(e.def.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
+    const drops = (Object.entries(e.spec.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
     const b = e.body;
-    const ev = this.bus.emit('enemyDeath', { uid: e.uid, def: e.def.id, x: b.x, y: b.y, z: b.z, drops });
+    const ev = this.bus.emit('actorDeath', { target: e.id, targetKind: 'projection', def: e.def, x: b.x, y: b.y, z: b.z, drops });
     for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
     sfx3.dissolve();
   }
@@ -460,10 +499,10 @@ export class Game {
     if (d < 1.8) { x += (d > 0.01 ? dx / d : 1) * 2; z += (d > 0.01 ? dz / d : 0) * 1.5; }
     let y = r.y0;
     while (y < r.y0 + 3 && this.solid(Math.floor(x), y, Math.floor(z))) y++;
-    const uid = this.enemies.newUid();
-    const ev = this.bus.emit('enemySpawn', { uid, def: defId, hp: def.hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(), x, y, z });
+    const id = this.actors.newId();
+    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp: def.hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(), x, y, z });
     if (ev.cancelled) return;
-    this.enemies.spawn(def, uid, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
+    this.actors.add(this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags));
     sfx3.spawn();
   }
 
@@ -519,7 +558,7 @@ export class Game {
    * Queues an explosion. It runs from `runBlasts()` (a few per frame, outside any other event),
    * so chains never recurse. A blast queued while another runs joins its chain (`gen + 1`).
    */
-  explode(x: number, y: number, z: number, radius: number, damage: number, source: string, owner: Owner = 'world', actorDamage = 2) {
+  explode(x: number, y: number, z: number, radius: number, damage: number, source: string, owner: Owner = 'world', actorDamage = BLAST_ACTOR_DAMAGE) {
     this.blasts.push({ x, y, z, radius, damage, actorDamage, source, owner });
   }
 
@@ -548,11 +587,10 @@ export class Game {
         this.bombCause.set(i, cause);
       }
     }
-    const b = this.player.body;
-    if (Math.hypot(b.x - x, b.y + 0.9 - y, b.z - z) < r + 0.4) this.damagePlayer(ev.actorDamage, 'explosion', source, owner);
-    for (const e of [...this.enemies.list]) {
-      const ox = e.body.x - x, oz = e.body.z - z, d = Math.hypot(ox, e.body.y + 0.5 - y, oz);
-      if (d < r + 0.4) this.damageEnemy(e, ev.actorDamage * 4, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
+    // every actor in range, whatever its side (friendly fire, like bombs on the player)
+    for (const a of [...this.actors.all()]) {
+      const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
+      if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
     this.particles.burst(x, y, z, 0xffa040, 50, 8, 0.15);
     this.particles.burst(x, y, z, 0xfff3c4, 20, 5, 0.1);

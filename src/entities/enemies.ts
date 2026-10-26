@@ -21,9 +21,9 @@ export interface EnemyHost {
   worldVersion(): number;
   player(): { x: number; y: number; z: number; hw: number; h: number };
   room(id: number): RoomArea;
-  /** The player and this enemy are touching (the game emits `enemyContact`). */
+  /** The player and this enemy are touching (the game emits `contact`). */
   contact(e: Enemy): void;
-  /** A projectile reached the player. `thrower` is the uid of the enemy that threw it. */
+  /** A projectile reached the player. `thrower` is the actor id of the enemy that threw it. */
   projectileHit(damage: number, thrower: number): void;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
@@ -44,7 +44,6 @@ export class Enemies {
   private projMesh: THREE.InstancedMesh;
   private group = new THREE.Group();
   private m = new THREE.Matrix4();
-  private nextUid = 1;
   private time = 0;
 
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
@@ -61,36 +60,34 @@ export class Enemies {
     this.scene.remove(this.projMesh);
   }
 
-  newUid() { return this.nextUid++; }
-
   /** Creates an enemy (already approved by `enemySpawn`). It materialises over SPAWN_TIME. */
-  spawn(def: EnemyDef, uid: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
+  spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
     const e: Enemy = {
-      uid, def, room, hp, maxHp: hp, speed, contactDamage, tags,
+      id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
-      spawning: SPAWN_TIME, state: 'move', timer: 1 + (uid % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
+      spawning: SPAWN_TIME, state: 'move', timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
     };
     this.list.push(e);
-    this.views.set(uid, this.buildView(def));
+    this.views.set(id, this.buildView(def));
     return e;
   }
 
-  get(uid: number) { return this.list.find(e => e.uid === uid && e.alive); }
+  get(id: number) { return this.list.find(e => e.id === id && e.alive); }
 
   /** Enemies of a room that are still alive (wherever they wandered). */
   aliveIn(room: number) { return this.list.filter(e => e.alive && e.room === room).length; }
 
-  /** Uid of a hittable enemy touching the sphere, or -1. */
+  /** Id of a hittable enemy touching the sphere, or -1. */
   at(x: number, y: number, z: number, r: number): number {
     for (const e of this.list) {
       if (!e.alive || e.spawning > 0) continue;
       const b = e.body;
-      if (Math.abs(x - b.x) < b.hw + r && Math.abs(z - b.z) < b.hw + r && y > b.y - r && y < b.y + b.h + r) return e.uid;
+      if (Math.abs(x - b.x) < b.hw + r && Math.abs(z - b.z) < b.hw + r && y > b.y - r && y < b.y + b.h + r) return e.id;
     }
     return -1;
   }
 
-  /** Applies damage already approved by `enemyDamage`; returns true if it dissolved. */
+  /** Applies damage already approved by `actorDamage`; returns true if it dissolved. */
   hurt(e: Enemy, amount: number, kx: number, kz: number) {
     e.hp -= amount;
     e.flash = 0.15;
@@ -104,9 +101,9 @@ export class Enemies {
     e.alive = false;
     const b = e.body;
     // dissolve into the cubes it was made of
-    for (const p of e.def.model) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
-    const v = this.views.get(e.uid);
-    if (v) { this.group.remove(v.group); this.views.delete(e.uid); }
+    for (const p of e.spec.model) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
+    const v = this.views.get(e.id);
+    if (v) { this.group.remove(v.group); this.views.delete(e.id); }
     this.host.died(e);
   }
 
@@ -130,17 +127,17 @@ export class Enemies {
         e.spawning -= dt;
         if (fx.random() < 0.6) {
           const a = fx.random() * Math.PI * 2, r = 1.2 + fx.random();
-          host.particles(b.x + Math.cos(a) * r, b.y + 0.2 + fx.random() * 1.4, b.z + Math.sin(a) * r, e.def.model[0].color, 1, 0.6, 0.08);
+          host.particles(b.x + Math.cos(a) * r, b.y + 0.2 + fx.random() * 1.4, b.z + Math.sin(a) * r, e.spec.model[0].color, 1, 0.6, 0.08);
         }
         if (e.spawning <= 0) {
           // step off the spawn spot so a queue of spawns doesn't stack
-          const a = (e.uid * 2.39996) % (Math.PI * 2);
+          const a = (e.id * 2.39996) % (Math.PI * 2);
           b.vx = Math.cos(a) * 2.5; b.vz = Math.sin(a) * 2.5;
         }
         this.draw(e);
         continue;
       }
-      e.def.behaviour.update(e, ctx);
+      e.spec.behaviour.update(e, ctx);
       // leash: an enemy that wandered out of its room heads back to the centre
       const rm = host.room(e.room);
       const inside = b.x > rm.x0 - 0.5 && b.x < rm.x0 + ROOM_W + 0.5 && b.z > rm.z0 - 0.5 && b.z < rm.z0 + ROOM_D + 0.5;
@@ -190,7 +187,7 @@ export class Enemies {
     const dx = tx - sx, dz = tz - sz, d = Math.hypot(dx, dz);
     const t = Math.max(0.5, d / 9);
     this.projectiles.push({
-      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 1, thrower: e.uid,
+      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id,
     });
     if (this.projectiles.length > 64) this.projectiles.shift();
   }
@@ -241,7 +238,7 @@ export class Enemies {
   }
 
   private draw(e: Enemy) {
-    const v = this.views.get(e.uid);
+    const v = this.views.get(e.id);
     if (!v) return;
     const b = e.body;
     v.group.position.set(b.x, b.y, b.z);
@@ -253,7 +250,7 @@ export class Enemies {
     const pulse = 1 + e.pulse * 0.35;
     v.group.scale.set(grow * pulse, grow * (1 + e.pulse * 0.2), grow * pulse);
     // walk cycle on named limbs
-    const walk = Math.sin(this.time * 9 + e.uid) * Math.min(1, Math.hypot(b.vx, b.vz) / 2) * 0.5;
+    const walk = Math.sin(this.time * 9 + e.id) * Math.min(1, Math.hypot(b.vx, b.vz) / 2) * 0.5;
     for (const l of v.parts.get('legL') ?? []) l.rotation.x = walk;
     for (const l of v.parts.get('legR') ?? []) l.rotation.x = -walk;
     for (const l of v.parts.get('armL') ?? []) l.rotation.x = -walk * 0.6;
