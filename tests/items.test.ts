@@ -140,6 +140,19 @@ describe('inventory', () => {
   });
 });
 
+describe('split damage', () => {
+  it('damage items do not dig faster, and mining items do not hurt more', () => {
+    const { stats, inv } = setup();
+    inv.gain('meditations');
+    expect(stats.get('damage')).toBeGreaterThan(BASE_STATS.damage);
+    expect(stats.get('mining')).toBe(BASE_STATS.mining);
+    const b = setup();
+    b.inv.gain('deepfocus');
+    expect(b.stats.get('mining')).toBeCloseTo(BASE_STATS.mining * 2);
+    expect(b.stats.get('damage')).toBeLessThan(BASE_STATS.damage);
+  });
+});
+
 describe('pools', () => {
   it('reserve deterministically, without repeats, and runtime draws skip reserved items', () => {
     const slots = Array.from({ length: 6 }, (_, i) => ({ key: String(i), pool: 'treasure' as const }));

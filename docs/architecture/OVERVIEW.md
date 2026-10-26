@@ -70,7 +70,7 @@ See [ITEMS.md](ITEMS.md). `Inventory.gain/lose/restore` → `rebuild()` reinstal
 
 ### Damage and health
 
-`blockDamage(amount, mining, material) = max(amount × mining − armor, 10%)`; `Game.damageBlock` → `blockDamage` event → HP in `world.damaged` → `breakBlock` (`blockBreak`, with `source`) → loose cube, `blockLoot`. Actors: `damagePlayer` (`playerDamage`, invulnerability, `death`), `heal`, `damageEnemy` (`enemyDamage`, knock-back). `explode()` covers blocks, actors, cubes and chained bombs.
+`blockDamage(amount, material) = max(amount − armor, 10%)` (block damage is its own number: an intent's `mining`, an explosion's `damage`; see [ACTORS.md](ACTORS.md)); `Game.damageBlock` → `blockDamage` event → HP in `world.damaged` → `breakBlock` (`blockBreak`, with `source`) → loose cube, `blockLoot`. Actors: `damagePlayer` (`playerDamage`, invulnerability, `death`), `heal`, `damageEnemy` (`enemyDamage`, knock-back). `explode()` queues a blast (`BlastQueue`: 8 per frame, chains capped at 12 links, each with a `Cause`) that covers blocks, actors, cubes and chained bombs. Past the bus depth cap an event is cancelled (fail closed).
 
 ### Seeds and randomness (`core/seed.ts`, `core/rng.ts`, `core/tables.ts`, `core/fx.ts`)
 

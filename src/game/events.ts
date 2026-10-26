@@ -9,6 +9,9 @@ export type CubeAction = 'pickup' | 'kick' | 'ignore';
 export type PickupKind = 'key' | 'bomb' | 'heart';
 /** Who caused something: the player, a specific enemy, or the world itself. */
 export type Owner = 'player' | 'world' | `enemy:${number}`;
+/** Where a chain reaction started and how many links deep it is (an explosion set off by an
+ *  explosion has `gen + 1`). Chains stop at MAX_CHAIN_GEN. */
+export interface Cause { origin: string; gen: number }
 
 export interface GameEvents {
   // ── shooting ──
@@ -27,8 +30,9 @@ export interface GameEvents {
    *  (it starts as "tier ≤ the crush stat"; hooks may flip it either way). */
   touchBlock: { x: number; y: number; z: number; material: number; crush: boolean };
   /** Something exploded. Radius and damage can be changed before blocks are hit.
-   *  `actorDamage` is in half-hearts for the player (enemies take it ×4 as HP). */
-  explosion: { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner };
+   *  `actorDamage` is in half-hearts for the player (enemies take it ×4 as HP).
+   *  Explosions are queued and run a few per frame; `cause` says which chain this one belongs to. */
+  explosion: { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause };
   /** Loot rolled for a broken block (after the break). Hooks may add, remove or replace drops. */
   blockLoot: { x: number; y: number; z: number; material: number; source: string; drops: PickupKind[] };
 
@@ -84,9 +88,14 @@ export interface GameEvents {
   floorEnter: { depth: number };
 }
 
+/** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */
 export interface IntentSpec {
+  /** Damage to actors (projections). */
   damage: number;
+  /** Damage to blocks, before the material's armor. */
   mining: number;
+  /** How hard it shoves loose cubes. */
+  knock: number;
   speed: number;      // blocks/s
   flight: number;     // seconds flying straight before dropping
   gravity: number;    // blocks/s²

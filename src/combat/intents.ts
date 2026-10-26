@@ -10,6 +10,7 @@ export function intentFromStats(s: Stats): IntentSpec {
   return {
     damage: s.damage,
     mining: s.mining,
+    knock: 0.46,
     speed: 16 * s.shotSpeed,
     flight: 0.5 * s.range,
     gravity: 22 * s.gravity,

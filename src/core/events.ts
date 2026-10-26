@@ -5,8 +5,8 @@
 //  - Lower priority runs first. 0–99 modify the payload, 100–199 may cancel, 200+ side effects
 //    (which must not cancel).
 //  - A hook that throws is logged with its source and skipped; it never breaks the frame.
-//  - Nested emits are capped at MAX_DEPTH: past it the event runs with no hooks (default
-//    behaviour) instead of being dropped.
+//  - Nested emits are capped at MAX_DEPTH: past it the event is cancelled ("fail closed":
+//    nothing happens), so a protective hook can never be bypassed by a deep chain.
 //  - Chain reactions go through `defer`, owned by a source so they die with it, capped at MAX_DEFERRED.
 //  - A hook slower than SLOW_HOOK_MS is reported once.
 
@@ -19,7 +19,7 @@ export interface EventCtx {
 
 export type Hook<C> = { priority: number; source: string; id?: string; fn: (ctx: C) => void };
 
-const MAX_DEPTH = 8;
+export const MAX_DEPTH = 8;
 /** A hook slower than this (ms) is reported once: it would stutter the frame. */
 const SLOW_HOOK_MS = 4;
 /** Safety cap for queued chain reactions; past it the oldest are dropped. */
@@ -56,7 +56,11 @@ export class EventBus<Events extends { [K in keyof Events]: object }> {
     ctx.cancel = () => { ctx.cancelled = true; };
     if (this.trace) ctx.touchedBy = [];
     if (this.depth >= MAX_DEPTH) {
-      console.warn(`[events] max depth reached on "${String(type)}": running without hooks`);
+      ctx.cancelled = true;
+      if (!this.slowReported.has('depth:' + String(type))) {
+        this.slowReported.add('depth:' + String(type));
+        console.warn(`[events] max depth reached on "${String(type)}": cancelled`);
+      }
       return ctx;
     }
     this.depth++;

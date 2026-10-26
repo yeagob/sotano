@@ -23,8 +23,8 @@ export interface EnemyHost {
   room(id: number): RoomArea;
   /** The player and this enemy are touching (the game emits `enemyContact`). */
   contact(e: Enemy): void;
-  /** A projectile reached the player. */
-  projectileHit(damage: number, x: number, y: number, z: number): void;
+  /** A projectile reached the player. `thrower` is the uid of the enemy that threw it. */
+  projectileHit(damage: number, thrower: number): void;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
   burst(e: Enemy, radius: number): void;
@@ -32,7 +32,7 @@ export interface EnemyHost {
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
 }
 
-interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number }
+interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number }
 
 interface View { group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[] }
 
@@ -190,7 +190,7 @@ export class Enemies {
     const dx = tx - sx, dz = tz - sz, d = Math.hypot(dx, dz);
     const t = Math.max(0.5, d / 9);
     this.projectiles.push({
-      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 1,
+      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 1, thrower: e.uid,
     });
     if (this.projectiles.length > 64) this.projectiles.shift();
   }
@@ -204,7 +204,7 @@ export class Enemies {
       p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
       let dead = p.age > 5;
       if (Math.abs(p.x - pl.x) < pl.hw + 0.12 && Math.abs(p.z - pl.z) < pl.hw + 0.12 && p.y > pl.y && p.y < pl.y + pl.h) {
-        this.host.projectileHit(p.damage, p.x, p.y, p.z);
+        this.host.projectileHit(p.damage, p.thrower);
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
         this.host.projectileBlock(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));

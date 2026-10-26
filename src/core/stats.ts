@@ -23,14 +23,14 @@ export interface StatMod {
 export type Stats = Record<StatName, number>;
 
 export const BASE_STATS: Stats = {
-  damage: 3.5,     // damage per intention
+  damage: 3.5,     // damage per intention to actors (projections)
   fireRate: 2.7,   // shots per second
   shotSpeed: 1,    // relative (1 = 16 blocks/s)
   range: 1,        // relative (1 = 0.5 s straight before dropping)
   gravity: 1,      // relative (1 = 22 blocks/s²)
   size: 1,         // relative (radius 0.12)
   luck: 0,
-  mining: 1,       // damage multiplier against blocks
+  mining: 3.5,     // damage per intention to blocks (separate from `damage`, which hurts actors)
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
   reach: 5,        // reach for placing blocks
@@ -51,7 +51,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   range: [0.2, 6],
   gravity: [0, 6],
   size: [0.3, 5],
-  mining: [0.1, 100],
+  mining: [0.35, 350],
   moveSpeed: [0.3, 3],
   jump: [0.3, 5],
   carry: [1, 9],
@@ -72,7 +72,7 @@ export const STAT_INFO: Record<StatName, { label: string; fmt: (v: number) => st
   range: { label: 'Range', fmt: v => `×${v.toFixed(2)}` },
   gravity: { label: 'Drop', fmt: v => `×${v.toFixed(2)}` },
   size: { label: 'Size', fmt: v => `×${v.toFixed(2)}` },
-  mining: { label: 'Mining', fmt: v => `×${v.toFixed(2)}` },
+  mining: { label: 'Mining', fmt: v => v.toFixed(2) },
   luck: { label: 'Luck', fmt: v => v.toFixed(1) },
   moveSpeed: { label: 'Speed', fmt: v => `×${v.toFixed(2)}` },
   jump: { label: 'Jump', fmt: v => `×${v.toFixed(2)}` },

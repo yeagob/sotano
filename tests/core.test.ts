@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { BlastQueue } from '../src/combat/blasts';
+import type { Cause } from '../src/game/events';
 import { EventBus } from '../src/core/events';
 import { Rng, RunRandom } from '../src/core/rng';
 import { computeStats, BASE_STATS, StatSheet } from '../src/core/stats';
@@ -32,6 +34,19 @@ describe('EventBus', () => {
     bus.emit('boom', { d: 0 });
     console.warn = warn;
     expect(calls).toBe(8);
+  });
+
+  it('fails closed past the depth cap: a protective hook is never bypassed', () => {
+    const bus = new EventBus<{ hurt: { d: number; amount: number } }>();
+    let landed = 0;
+    // a shield that cancels every hurt, and a chain that re-emits hurt from inside itself
+    bus.on('hurt', { priority: 0, source: 'chain', fn: e => { if (e.d < 20) { const r = bus.emit('hurt', { d: e.d + 1, amount: 1 }); if (!r.cancelled) landed++; } } });
+    bus.on('hurt', { priority: 100, source: 'shield', fn: e => e.cancel() });
+    const warn = console.warn; console.warn = () => {};
+    const top = bus.emit('hurt', { d: 0, amount: 1 });
+    console.warn = warn;
+    expect(top.cancelled).toBe(true);
+    expect(landed).toBe(0);
   });
 
   it('runs deferred work within a budget', () => {
@@ -81,20 +96,53 @@ describe('stats', () => {
   });
 });
 
+describe('BlastQueue (chain safety)', () => {
+  type B = { source: string; cause: Cause; n: number };
+  const quiet = (fn: () => void) => { const w = console.warn; console.warn = () => {}; try { fn(); } finally { console.warn = w; } };
+
+  it('runs a few blasts per frame, never nested', () => {
+    const q = new BlastQueue<B>(8);
+    for (let i = 0; i < 20; i++) q.push({ source: 'bomb', n: i });
+    let ran = 0;
+    q.run(() => ran++);
+    expect(ran).toBe(8);
+    expect(q.pending).toBe(12);
+  });
+
+  it('links blasts queued during a blast into its chain and stops long chains', () => {
+    const q = new BlastQueue<B>(1000, 1000, 12);
+    const gens: number[] = [];
+    // "every blast sets off another one": an endless chain
+    q.push({ source: 'bomb', n: 0 });
+    quiet(() => { for (let f = 0; f < 50; f++) q.run(b => { gens.push(b.cause.gen); q.push({ source: 'volatile', n: 0 }); }); });
+    expect(gens).toEqual(Array.from({ length: 13 }, (_, i) => i));
+    expect(q.pending).toBe(0);
+  });
+
+  it('keeps the chain origin and caps the queue', () => {
+    const q = new BlastQueue<B>(8, 5);
+    quiet(() => { for (let i = 0; i < 10; i++) q.push({ source: 'x', n: i }); });
+    expect(q.pending).toBe(5);
+    const origins: string[] = [];
+    q.run(b => { origins.push(b.cause.origin); });
+    expect(origins.every(o => o === 'x')).toBe(true);
+  });
+});
+
 describe('block damage', () => {
   it('matches the design targets for starting intents', () => {
-    expect(hitsToBreak(3.5, 1, mat(MAT.dirt))).toBe(1);
-    expect(hitsToBreak(3.5, 1, mat(MAT.brick))).toBe(4);
-    expect(hitsToBreak(3.5, 1, mat(MAT.deepstone))).toBe(13);
+    expect(hitsToBreak(3.5, mat(MAT.dirt))).toBe(1);
+    expect(hitsToBreak(3.5, mat(MAT.brick))).toBe(4);
+    expect(hitsToBreak(3.5, mat(MAT.deepstone))).toBe(13);
   });
   it('always deals at least 10%, so everything breakable breaks eventually', () => {
     for (const m of MATERIALS) {
       if (m.id === 0 || !isFinite(m.hp)) continue;
-      expect(blockDamage(0.5, 1, m)).toBeGreaterThan(0);
-      expect(isFinite(hitsToBreak(0.5, 1, m))).toBe(true);
+      expect(blockDamage(0.5, m)).toBeGreaterThan(0);
+      expect(isFinite(hitsToBreak(0.5, m))).toBe(true);
     }
   });
   it('bedrock never breaks', () => {
-    expect(blockDamage(1e6, 100, mat(MAT.bedrock))).toBe(0);
+    expect(blockDamage(1e6, mat(MAT.bedrock))).toBe(0);
   });
 });

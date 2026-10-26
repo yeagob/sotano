@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { sfx, sfx2, sfx3, unlockAudio } from '../audio/sfx';
+import { BlastQueue } from '../combat/blasts';
 import { intentFromStats, Intents } from '../combat/intents';
 import { ENEMY_BUDGET, ENEMY_BY_ID } from '../content/enemies';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
@@ -40,7 +41,7 @@ import {
   type FloorResult, type RoomInfo,
 } from '../world/floor';
 import type { VoxelWorld } from '../world/world';
-import { createBus, type GameBus, type Owner, type PickupKind } from './events';
+import { createBus, type Cause, type GameBus, type Owner, type PickupKind } from './events';
 import { Hud } from './hud';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
@@ -56,6 +57,7 @@ const SKY = new THREE.Color(0x8ec5ee);
 const COUNTER_CAP = 99;
 const SPAWN_GAP = 0.45;
 const HOLE_DELAY = 1.5;
+interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
 
 interface RoomState { cleared: boolean; started: boolean; queue: string[]; next: number; sealed: boolean }
 
@@ -104,6 +106,10 @@ export class Game {
   private intents: Intents;
   private api: ItemApi;
   private time = 0;
+  /** Queued explosions (chain safety: a few per frame, chains capped). */
+  private blasts = new BlastQueue<Blast>();
+  /** Bombs set off by a blast carry its chain to their own explosion. */
+  private bombCause = new Map<number, Cause>();
   private fpsAcc = 0; private fpsN = 0; fps = 0;
   private fogColor = new THREE.Color();
 
@@ -124,10 +130,10 @@ export class Game {
     this.intents = new Intents(this.scene, {
       solid: (x, y, z) => this.solid(x, y, z),
       tier: (x, y, z) => mat(this.world.get(x, y, z)).tier,
-      hitBlock: (hit, t) => this.intentHitsBlock(hit, t.damage, t.mining),
+      hitBlock: (hit, t) => this.intentHitsBlock(hit, t.mining),
       debrisAt: (x, y, z, r) => this.debrisAt(x, y, z, r),
       hitDebris: (i, v, t) => {
-        const k = (0.25 + t.damage * 0.06) * 6 / Math.max(1, v.length());
+        const k = t.knock * 6 / Math.max(1, v.length());
         this.debris.push(i, v.x * k, v.y * k + 1, v.z * k);
       },
       enemyAt: (x, y, z, r) => this.enemies.at(x, y, z, r),
@@ -179,7 +185,14 @@ export class Game {
     this.world = createDungeonWorld(this.rng, this.dungeon);
     this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 48);
     this.debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
-    this.debris.onFuse = (_i, x, y, z) => this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', 'player', 2);
+    this.debris.onFuse = (i, x, y, z) => {
+      const chain = this.bombCause.get(i);
+      this.bombCause.delete(i);
+      this.blasts.current = chain ?? null;
+      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', 'player', 2);
+      this.blasts.current = null;
+    };
+    this.blasts.clear(); this.bombCause.clear();
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
@@ -276,7 +289,7 @@ export class Game {
       held: () => this.player.hand,
       rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
-      damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, 1, kind, src),
+      damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
       explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, 'player', 2),
       spawnDebris: (m, x, y, z, vx, vy, vz) => { this.debris.spawn(m, x, y, z, vx, vy, vz); },
       toast: text => this.hud.toast(text),
@@ -366,10 +379,10 @@ export class Game {
         if (ev.toPlayer > 0) this.damagePlayer(ev.toPlayer, 'contact', e.def.id, `enemy:${e.uid}`);
         if (ev.toEnemy > 0) this.damageEnemy(e, ev.toEnemy, 'contact', 'contact', 'player', 0, 0);
       },
-      projectileHit: (dmg: number) => { this.damagePlayer(dmg, 'projectile', 'judgement', 'world'); },
+      projectileHit: (dmg: number, thrower: number) => { this.damagePlayer(dmg, 'projectile', 'judgement', `enemy:${thrower}`); },
       projectileBlock: (x: number, y: number, z: number) => {
         const id = this.world.get(x, y, z);
-        return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 1, 'crush', 'judgement');
+        return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
       },
       burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def.id}`, `enemy:${e.uid}`, 2),
       died: (e: Enemy) => this.onEnemyDeath(e),
@@ -455,12 +468,12 @@ export class Game {
 
   // ───────────────────────── blocks ─────────────────────────
 
-  /** Damages a block through the shared pipeline. Returns true if it breaks. */
-  damageBlock(x: number, y: number, z: number, amount: number, mining: number, kind: DamageKind, source: string): boolean {
+  /** Damages a block through the shared pipeline (`amount` is block damage, before armor). Returns true if it breaks. */
+  damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string): boolean {
     const id = this.world.get(x, y, z);
     if (id === AIR) return false;
     const m = mat(id);
-    const ev = this.bus.emit('blockDamage', { x, y, z, material: id, amount: blockDamage(amount, mining, m), kind, source });
+    const ev = this.bus.emit('blockDamage', { x, y, z, material: id, amount: blockDamage(amount, m), kind, source });
     if (ev.cancelled || ev.amount <= 0) return false;
     const hp = this.world.hp(x, y, z) - ev.amount;
     if (hp > 1e-6) {
@@ -501,16 +514,24 @@ export class Game {
     }
   }
 
-  /** Damages blocks in a sphere, hurts actors and throws cubes. Items can resize it via `explosion`. */
+  /**
+   * Queues an explosion. It runs from `runBlasts()` (a few per frame, outside any other event),
+   * so chains never recurse. A blast queued while another runs joins its chain (`gen + 1`).
+   */
   explode(x: number, y: number, z: number, radius: number, damage: number, source: string, owner: Owner = 'world', actorDamage = 2) {
-    const ev = this.bus.emit('explosion', { x, y, z, radius, damage, actorDamage, source, owner });
+    this.blasts.push({ x, y, z, radius, damage, actorDamage, source, owner });
+  }
+
+  /** One explosion: damages blocks in a sphere, hurts actors and throws cubes. Items can resize it via `explosion`. */
+  private blast({ x, y, z, radius, damage, actorDamage, source, owner, cause }: Blast) {
+    const ev = this.bus.emit('explosion', { x, y, z, radius, damage, actorDamage, source, owner, cause });
     if (ev.cancelled) return;
     const r = ev.radius, ri = Math.ceil(r);
     for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
       const d = Math.hypot(bx + 0.5 - x, by + 0.5 - y, bz + 0.5 - z);
       if (d > r) continue;
-      this.damageBlock(bx, by, bz, ev.damage * (1 - 0.5 * d / r), 1, 'explosion', `explosion:${source}`);
+      this.damageBlock(bx, by, bz, ev.damage * (1 - 0.5 * d / r), 'explosion', `explosion:${source}`);
     }
     for (let i = 0; i < this.debris.max; i++) {
       if (!this.debris.isAlive(i)) continue;
@@ -521,7 +542,10 @@ export class Game {
       const k = 9 * (1 - d / (r * 1.8)) / d;
       this.debris.push(i, ox * k, oy * k + 3, oz * k);
       // bombs caught in a blast go off almost at once
-      if (this.debris.isBomb(i) && d < r) this.debris.fuse[i] = Math.min(this.debris.fuse[i], 0.12);
+      if (this.debris.isBomb(i) && d < r) {
+        this.debris.fuse[i] = Math.min(this.debris.fuse[i], 0.12);
+        this.bombCause.set(i, cause);
+      }
     }
     const b = this.player.body;
     if (Math.hypot(b.x - x, b.y + 0.9 - y, b.z - z) < r + 0.4) this.damagePlayer(ev.actorDamage, 'explosion', source, owner);
@@ -536,10 +560,10 @@ export class Game {
     sfx2.boom();
   }
 
-  private intentHitsBlock(hit: VoxelHit, damage: number, mining: number) {
+  private intentHitsBlock(hit: VoxelHit, mining: number) {
     const id = this.world.get(hit.x, hit.y, hit.z);
     if (id === AIR) return false; // a door
-    const broke = this.damageBlock(hit.x, hit.y, hit.z, damage, mining, 'intent', 'intent');
+    const broke = this.damageBlock(hit.x, hit.y, hit.z, mining, 'intent', 'intent');
     if (!broke) sfx.hit(Math.min(3, isFinite(mat(id).tier) ? mat(id).tier : 3));
     return broke;
   }
@@ -692,7 +716,7 @@ export class Game {
       if (seen.has(k)) continue;
       seen.add(k);
       const ev = this.bus.emit('touchBlock', { x, y, z, material: id, crush: mat(id).tier <= crush });
-      if (!ev.cancelled && ev.crush) this.damageBlock(x, y, z, 1e6, 1, 'crush', 'contact');
+      if (!ev.cancelled && ev.crush) this.damageBlock(x, y, z, 1e6, 'crush', 'contact');
     }
   }
 
@@ -859,6 +883,7 @@ export class Game {
     this.touchPickups();
     this.intents.update(dt);
     this.enemies.update(dt);
+    this.blasts.run(b => this.blast(b));
     this.bus.flush();
     this.trackPlace(dt);
     this.updateCombat(dt);
