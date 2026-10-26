@@ -41,8 +41,47 @@ At the deepest, farthest point, the depth and the surface meet. Direction, to be
 - This is also *The Alchemist*'s ending: the treasure was where you started. The house you came from is changed by what you found below.
 - The loop is the point: integration is not escaping the depth but bringing it to the surface, and seeing the surface with what the depth taught you.
 
-## 4. Open questions for the owner
+## 4. Other maps of the same world
+
+Three traditions describe the same shape from other angles. This is direction, not built; each mapping waits for the owner before it becomes content.
+
+### The Tree of Life (Kabbalah)
+
+The Tree describes light descending through ten emanations, from the crown (Keter) to the kingdom (Malkuth, the physical world), and the soul climbing back up along 22 paths. That is a run: down through the depth, back up to the surface and the sky. Below and above are one tree, which agrees with correspondence (§1).
+
+**Owner's decision:** the Tree is the **literal map of the generated world**. The generator lays places out as emanations and connects them by paths; the exact mapping (which emanation is which floor or place, how the 22 paths become connections) is to be designed with the three-party review before it is built.
+
+Isaac Luria's teaching of the **shattered vessels** fits the core loop closely: light too strong for its vessels broke them, and sparks fell and were hidden in husks. **Repair** (tikkun) is gathering them and rebuilding, and it mends the world, not only the person. In SÓTANO the blocks that intentions break are the vessels, the material you carry is the light they held, and building with it is repair. **Owner's decision:** in the game these pieces are called **shards** (a nod to the shards of the Cosmere, each carrying an intent, see [SOURCES](SOURCES.md)). This gives the game's ambition a name: a game that transforms the world.
+
+Respect rule (from the [`sotano-lore`](../../.claude/skills/sotano-lore/SKILL.md) skill): Kabbalah is a living Jewish tradition. We use its structure (tree, emanations, vessels, sparks, repair), never the sacred names of God, and never turn its figures into projections.
+
+### The Book of Changes (I Ching)
+
+The I Ching reads any moment as one of 64 hexagrams of six lines, built from eight trigrams. Lines that change turn one hexagram into another: nothing stays still.
+
+- **The run as a moment.** **Owner's decision:** the run seed is shown and read as a hexagram: same seed, same reading. Changing lines could hint at how the run turns.
+- **The eight forces as elements** ([ELEMENTS](../design/ELEMENTS.md)):
+
+| Trigram | Force | Element |
+|---|---|---|
+| Heaven | Creative, strong | The sky above the surface |
+| Earth | Receptive, yielding | Blocks, the ground you build on |
+| Thunder | Arousing | Electricity |
+| Water (the abyss) | Danger, depth | Water |
+| Mountain | Keeping still | Stone, bedrock |
+| Wind / wood | Gentle, penetrating | Wood, growing blocks |
+| Fire | Clinging, clarity | Fire, lava |
+| Lake | Joy, openness | Mud, marsh |
+
+### The Kybalion, further
+
+Beyond the seven principles (§2), two practical teachings suggest mechanics: **mental transmutation** (change a state by moving it along its own pole, fear toward courage, rather than fighting it) and **neutralising the pendulum** (rise above the swing of rhythm instead of being carried by it). The first suits practices that turn a state into its opposite; the second suits rooms or projections with a rhythm that rewards timing over reaction.
+
+## 5. Open questions for the owner
 
 1. Is the endgame connection a **place** (the bottom opening onto the sky), an **event** (the house changes when you reach the bottom), or both?
 2. Should the surface be explorable during a run, or only reached at the end?
 3. Should each floor's mirror counterpart be literal (same layout above and below) or symbolic (themes that echo)?
+4. ~~Tree of Life literal or symbolic?~~ Decided: the literal map of the generated world. Open: the exact mapping.
+5. ~~Seed as a hexagram?~~ Decided: yes. Open: where it shows (start screen, pause) and whether a practice reads it.
+6. ~~Sparks?~~ Decided: **shards**, as in the Cosmere.

@@ -27,3 +27,11 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |
 | **Rhythm and polarity** | `kybalion` | Fire and water, cycles of runs ([COSMOLOGY.md §2](COSMOLOGY.md#2-the-seven-principles-as-systems)) |
 | **Cause and effect** | `kybalion` | Synergies and chain reactions |
+| **Change is the only constant** | `i-ching`, `kybalion` (rhythm) | Every run is a different moment; the run seed is shown and read as a hexagram (owner's decision) whose changing lines hint at how the run turns |
+| **Reading the moment** (not forcing it) | `i-ching`, `tao-te-ching` | Future: a practice that reads the run's hexagram; companion to **Follow the Omens** |
+| **The eight forces** (trigrams) | `i-ching` | The elements: heaven, earth, thunder (electricity), water, mountain (stone), wind (wood, growth), fire, lake (mud, marsh) ([COSMOLOGY.md §4](COSMOLOGY.md#4-other-maps-of-the-same-world)) |
+| **Mental transmutation** | `kybalion` (polarity), `emerald-tablet` | Future: practices that move a state along its own pole (fear toward courage) instead of removing it |
+| **Riding the pendulum** | `kybalion` (rhythm) | Future: a rhythm in rooms or projections that punishes reacting and rewards timing |
+| **The Tree of Life** (light descends, the soul climbs back) | `kabbalah`, `monomyth` | The literal map of the generated world (owner's decision): emanations are places, paths are the connections between them |
+| **Shattered vessels and shards** | `kabbalah`, `cosmere`, `meditations` | Broken blocks are shattered vessels; what you carry are **shards** of the light they held, each with an intent |
+| **Repair** (gathering shards, rebuilding) | `kabbalah`, `art-therapy` | Building with what you broke; the game's aim to transform the world, not only the player |
