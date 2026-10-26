@@ -30,6 +30,7 @@ export default defineItem({
     ],
     palette: { a: 0xff5a1f, b: 0xffb347, c: 0xfff3c4 },
   },
+  causes: ['volatile'],
   stats: [{ stat: 'throw', layer: 'mul', value: 1.3 }],
   hooks: [
     // mark the cube; the explosion is a separate hook so synergies can reuse the tag

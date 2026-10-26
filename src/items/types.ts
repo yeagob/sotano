@@ -12,6 +12,7 @@ import type { Rng } from '../core/rng';
 import type { StatLayer, StatName, Stats } from '../core/stats';
 import type { ActorId, ActorKind, Owner } from '../entities/actors';
 import type { GameBus, GameEvents, PickupKind } from '../game/events';
+import type { Params } from '../i18n';
 
 /** What effects can do to the world. A small facade so items never depend on `Game`. */
 export interface ItemApi {
@@ -27,7 +28,8 @@ export interface ItemApi {
   damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string): boolean;
   explode(x: number, y: number, z: number, radius: number, damage: number, source: string): void;
   spawnDebris(material: number, x: number, y: number, z: number, vx: number, vy: number, vz: number): void;
-  toast(text: string): void;
+  /** Show one of this item's `messages` (by id, in the player's language) as a toast. */
+  toast(messageId: string, params?: Params): void;
   /** Run `fn` at the end of the frame (chain reactions). Owned by the item: dropped if it is lost. */
   defer(fn: () => void): void;
   /** Heal the player by half-hearts (through the `heal` event). */
@@ -45,6 +47,12 @@ export interface ItemApi {
   /** Drop a key, bomb or heart in the world. */
   spawnPickup(kind: PickupKind, x: number, y: number, z: number): void;
 }
+
+/** What the game gives the installer: like `ItemApi`, but a toast names the effect it comes from
+ *  (the inventory binds it, so items only pass a message id). */
+export type HostApi = Omit<ItemApi, 'toast'> & {
+  message(owner: ItemDef | SynergyDef, messageId: string, params?: Params): void;
+};
 
 export type StatModSpec = { stat: StatName; layer: StatLayer; value: number };
 
@@ -93,6 +101,12 @@ export interface ItemDef extends Effect {
   inspiredBy?: string;
   /** Pools it can drop from, with a weight in each. */
   pools: Partial<Record<PoolName, number>>;
+  /** Text the item shows while you hold it (`api.toast(id)`), in English; other languages
+   *  translate it by id (docs/architecture/LOCALIZATION.md). Never pass a literal to toast. */
+  messages?: Record<string, string>;
+  /** Damage source labels this item passes to `explode`/`damagePlayer` besides its own id, so
+   *  the death screen can name the practice ("volatile" → Symbolic Act). */
+  causes?: string[];
   /** Labels other effects can query with `api.hasTag`. Include the item's path: 'body', 'mind',
    *  'emotion' or 'will' (three of a path give a state of being), plus mechanics ('blocks', 'explosive'…). */
   tags?: string[];
@@ -118,6 +132,8 @@ export interface SynergyDef extends Effect {
   id: string;
   name: string;
   description: string;
+  /** Like `ItemDef.messages`. */
+  messages?: Record<string, string>;
   requires: Req[];
 }
 

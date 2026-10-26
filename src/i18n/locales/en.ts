@@ -1,0 +1,120 @@
+// English: the source catalog. Every message key the game uses is defined here first; other
+// locales must have the same keys and placeholders (tests/i18n.test.ts). Content texts (items,
+// synergies, enemies, materials) are not repeated here: their English lives in their definitions.
+
+import type { Catalog } from '.';
+
+const messages = {
+  // ── start / pause card (index.html) ──
+  'app.loading': 'Loading…',
+  'app.failed': 'Failed to start: {error}',
+  'intro.tagline': 'Go down into yourself. Break what holds you. Find the way back up.',
+  'intro.play': 'Click to play',
+  'intro.language': 'Language',
+  'controls.look.key': 'Mouse',
+  'controls.look': 'look',
+  'controls.move.key': 'WASD · Space',
+  'controls.move': 'move · jump',
+  'controls.cast.key': 'Left click (hold)',
+  'controls.cast': 'cast intentions',
+  'controls.pickup.key': 'Walk over',
+  'controls.pickup': 'pick up a loose block (or kick it if your hand is full)',
+  'controls.place.key': 'Right click',
+  'controls.place': "place the top block (throws it if there's nowhere to place it)",
+  'controls.throw.key': 'Q',
+  'controls.throw': 'throw the top block',
+  'controls.bomb.key': 'E',
+  'controls.bomb': 'drop a bomb',
+  'controls.doors.key': 'Doors',
+  'controls.doors': 'open as you approach; locked ones need a key',
+  'controls.inventory.key': 'Tab',
+  'controls.inventory': 'practices, synergies and your state',
+  'controls.restart.key': 'R',
+  'controls.restart': 'new run',
+  'controls.pause.key': 'Esc',
+  'controls.pause': 'release the mouse (pause)',
+
+  // ── HUD ──
+  'hud.hand': 'hand',
+  'hud.floor': 'Floor {n}',
+  'seed.label': 'Seed {seed}',
+  'seed.copy': 'Seed {seed} · click to copy',
+  'seed.copied': 'Seed link copied',
+  'banner.inspired': 'Inspired by {credit}',
+  'banner.continue': 'Click to continue',
+
+  // ── toasts ──
+  'toast.newRun': 'Floor 1 · seed {seed}',
+  'toast.seedInvalid': '"{input}" isn\'t a valid seed: new run {seed}',
+  'toast.seedVersion': 'This seed is from generator v{v}; this build is v{build}: the run may differ',
+  'toast.floor': 'Floor {n}',
+  'toast.roomClear': 'Room clear',
+  'toast.noBombs': 'No bombs',
+  'toast.locked': 'Locked: you need a key',
+  'toast.unlocked': 'Unlocked',
+  'toast.wayDown': 'A way down opens',
+
+  // ── death screen ──
+  'death.title': 'The intention faded',
+  'death.cause': 'Overcome by {cause} on floor {n}.',
+  'death.restart': 'Press R to begin again',
+  'cause.unknown': 'the depths',
+  'cause.judgement': 'judgement',
+  'cause.bomb': 'your own breakthrough',
+  'cause.explosion': 'an explosion',
+  'cause.contact': 'contact',
+  'cause.item': 'a practice',
+  'cause.console': 'the console',
+
+  // ── inventory window ──
+  'inv.title': 'Practices',
+  'inv.held': { one: '{n} held', other: '{n} held' },
+  'inv.seed': 'seed {seed}',
+  'inv.close': 'Tab to close',
+  'inv.empty': 'No practices yet. Find a treasure room.',
+  'inv.synergies': 'Synergies and states of being',
+  'inv.noSynergies': 'None discovered yet.',
+  'inv.state': 'State',
+
+  // ── paths (item tags) ──
+  'path.body': 'body',
+  'path.mind': 'mind',
+  'path.emotion': 'emotion',
+  'path.will': 'will',
+
+  // ── stats: labels (`stat.<name>`) and units ──
+  'stat.damage': 'Damage',
+  'stat.fireRate': 'Fire rate',
+  'stat.shotSpeed': 'Shot speed',
+  'stat.range': 'Range',
+  'stat.gravity': 'Drop',
+  'stat.size': 'Size',
+  'stat.mining': 'Mining',
+  'stat.luck': 'Luck',
+  'stat.moveSpeed': 'Speed',
+  'stat.jump': 'Jump',
+  'stat.reach': 'Reach',
+  'stat.carry': 'Carry',
+  'stat.kick': 'Kick',
+  'stat.throw': 'Throw',
+  'stat.crush': 'Crush',
+  'stat.maxHearts': 'Hearts',
+  'stat.invuln': 'Recovery',
+  'stat.bombRadius': 'Bomb radius',
+  'stat.bombDamage': 'Bomb power',
+  'unit.times': '×{n}',
+  'unit.perSecond': '{n}/s',
+  'unit.seconds': '{n} s',
+  'unit.blocks': { one: '{n} block', other: '{n} blocks' },
+  'unit.crushNone': 'none',
+  'unit.crushTier': 'tier ≤ {n}',
+} as const;
+
+export type MessageKey = keyof typeof messages;
+
+export const EN: Catalog = {
+  code: 'en',
+  name: 'English',
+  messages,
+  content: { items: {}, synergies: {}, enemies: {}, materials: {} },
+};

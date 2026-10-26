@@ -15,4 +15,5 @@ Each review records the critique, the ruling and the engineer's resolution.
 | [rng.md](rng.md) | Seeds and randomness across the whole game ([../architecture/RNG.md](../architecture/RNG.md)) | Accepted with changes |
 | [stress-test.md](stress-test.md) | 28 extreme items run against the whole architecture; root causes and a prioritised refactoring plan (P0–P2) | Report; refactors pending the owner's go-ahead |
 | [actors.md](actors.md) | Actors, split damage, chain safety, factions ([../architecture/ACTORS.md](../architecture/ACTORS.md)) | Accepted with changes; built |
+| [localization.md](localization.md) | Localization: English source + Spanish, catalogs, item messages, live switching ([../architecture/LOCALIZATION.md](../architecture/LOCALIZATION.md)) | Accepted with changes; built |
 | *elements.md* | Fire, water, lava, chests, furnaces ([../architecture/ELEMENTS.md](../architecture/ELEMENTS.md)) | Planned before step E0 |

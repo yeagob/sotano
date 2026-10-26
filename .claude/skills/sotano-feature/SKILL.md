@@ -13,7 +13,7 @@ A feature is done only when all of this is true:
 
 1. **It works in the real game**, verified in the browser (not only in tests), with a screenshot of the result.
 2. **It has juice**: visual feedback (particles, flashes, animation), a synthesised sound, and a HUD/UI change where relevant. Nothing important happens silently.
-3. **It reads clearly**: the player can tell what happened and why (banner, toast, icon, colour), in English.
+3. **It reads clearly**: the player can tell what happened and why (banner, toast, icon, colour), in every shipped language (English source + Spanish; `sotano-i18n` skill).
 4. **It respects the story**: names and meaning follow `docs/design/STORY.md`; ask the owner when unsure.
 5. **It is modifiable**: anything an item might want to change reads a stat or emits an event (see the `sotano-items` skill), and the contract test still passes.
 6. **It performs**: no frame-time regression; heavy work is budgeted per frame (the Joel-gift standard: thousands of cubes smoothly).
@@ -73,3 +73,4 @@ A feature is done only when all of this is true:
 - **Before scaling vertically, stress-test the architecture with extreme items** (UI in the world, sudden wind, clones, friendly enemies…) and fix the root causes first; see docs/reviews/stress-test.md.
 - **Damage to actors and damage to blocks are separate values**: a damage item must not also speed up digging unless it says so.
 - **Small damage reductions must count**: the player's health is in points (a heart is 8) and hearts are drawn in quarters; no minimum loss per hit.
+- **The game is localized (English + Spanish) and every new text must be too**: any text the player reads goes through `src/i18n/`, with its translation, in the same change; the `sotano-i18n` skill is invoked whenever text is added anywhere.

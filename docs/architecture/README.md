@@ -10,6 +10,7 @@ How the code that exists today works.
 | [ENTITIES.md](ENTITIES.md) | Stacked floors (going down by gravity), health, pickups and counters, bombs, enemies (projections): definitions, spawning, flow-field navigation, combat events |
 | [RNG.md](RNG.md) | Seeds and randomness: seed codes, the three classes (structure, runtime, cosmetic), the path table, weighted tables, what varies per run, item pools, guarantees |
 | [ACTORS.md](ACTORS.md) | Actors, factions, one damage pipeline (points), split actor/block damage, chain safety for explosions and deep event chains |
+| [LOCALIZATION.md](LOCALIZATION.md) | Localization: English source and Spanish, `t()` and catalogs, content texts by id, item messages, numbers, choosing the language, live switching, death causes, tests, how to add text or a language |
 | [ELEMENTS.md](ELEMENTS.md) | Plan: architecture for fire, fluids, lava, electricity, block entities (chests, furnaces, barrels), and the step-by-step implementation plan (E0–E9) |
 
 Related: the target architecture and the reasoning behind it are in [../research/TECHNICAL.md](../research/TECHNICAL.md); reviews of these designs are in [../reviews/](../reviews/README.md).

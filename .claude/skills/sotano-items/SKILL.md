@@ -1,6 +1,6 @@
 ---
 name: sotano-items
-description: How to create, change or fix SÓTANO items (practices) and synergies so they are compatible with every other item, testable, and cannot break the game. Use it whenever you add or edit anything in src/content/items/, src/content/synergies.ts or src/items/, or add a stat/event items could use. Also use the sotano-docs skill.
+description: How to create, change or fix SÓTANO items (practices) and synergies so they are compatible with every other item, testable, and cannot break the game. Use it whenever you add or edit anything in src/content/items/, src/content/synergies.ts or src/items/, or add a stat/event items could use. Also use the sotano-docs and sotano-i18n skills.
 ---
 
 # SÓTANO items skill
@@ -55,13 +55,14 @@ Then add it to `src/content/items/index.ts`.
 | 4. Inventory invariants | `tests/items.test.ts` | Gain then lose leaves no residue; serialize/restore is identical; `onGain` runs once |
 | 5. Contract | `tests/items.test.ts` "contract" | Every event has an emit site; every stat is read by the game |
 
-When you add an **event**, add a sample payload to `SAMPLES` in the synergy matrix (TypeScript forces it) and add it to the contract list. When you add a **stat**, add limits and `STAT_INFO`.
+When you add an **event**, add a sample payload to `SAMPLES` in the synergy matrix (TypeScript forces it) and add it to the contract list. When you add a **stat**, add limits, its format in `STAT_FMT` and its `stat.<name>` label in every catalog (`sotano-i18n` skill).
 
 ## 4. Checklist for a new item
 
 - [ ] File + index entry; passes `validateItem`.
 - [ ] Name/credit follow STORY.md §5 and the source is in `docs/lore/SOURCES.md` (sotano-lore skill); ask the owner if the practice or its meaning is unclear.
 - [ ] `effect` line is clear, complete and has the real numbers.
+- [ ] Translated in every catalog in `src/i18n/locales/` (name, description, effect, `inspiredBy`, `messages`), with the same numbers; text it shows uses `messages` + `api.toast(id)`, own damage labels go in `causes` (`sotano-i18n` skill).
 - [ ] Uses stats where possible; hooks have ids and correct priorities.
 - [ ] Icon reviewed in the browser (pedestal, banner, inventory window).
 - [ ] `npm test` green (matrix included). If it interacts with another item in a special way, add a synergy and a test for it.

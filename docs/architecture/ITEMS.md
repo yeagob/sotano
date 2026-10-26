@@ -27,6 +27,7 @@ export default defineItem({
   color: 0xff5a1f,                       // glow and accents
   quality: 3,                            // 0–4, Isaac-style; shown as stars
   icon: { rows: [/* 12 × 12 */], palette: { a: 0xff5a1f, b: 0xffb347, c: 0xfff3c4 } },
+  causes: ['volatile'],                  // damage sources it uses besides its id (death screen)
   stats: [{ stat: 'throw', layer: 'mul', value: 1.3 }],
   hooks: [
     hook('throw', e => { e.tags.add(VOLATILE); }, { id: 'arm' }),
@@ -34,11 +35,12 @@ export default defineItem({
       if (e.tags.has(VOLATILE)) api.explode(e.x, e.y, e.z, 1.8, 14, 'volatile');
     }, { id: 'explode' }),
   ],
+  // messages: { lock: '…' },           // text it shows with api.toast('lock'), in English
   // onGain(api) { ... }                 // optional one-shot effect on pickup
 });
 ```
 
-Then list it in `src/content/items/index.ts`. The full checklist is the project skill [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md).
+Then list it in `src/content/items/index.ts`, and translate `name`, `description`, `effect` (and `inspiredBy`, `messages` if any) in every non-English catalog in `src/i18n/locales/` ([LOCALIZATION.md](LOCALIZATION.md) §5; `tests/i18n.test.ts` lists what is missing, and checks the translated `effect` keeps the same numbers). The full checklist is the project skill [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md).
 
 - `hook(event, fn, { id?, priority? })` is typed: the payload type comes from the event name. Give an `id` to every hook that defines the item's identity, so synergies can target it.
 - Hooks get the event context (mutable fields + `cancel()`) and an `ItemApi` facade:
@@ -52,7 +54,7 @@ Then list it in `src/content/items/index.ts`. The full checklist is the project 
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
 | `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (`heal`/`damagePlayer` take half-hearts; `counts()` gives points) and counters, through `heal`, `actorDamage` and `pickupCollect` |
 | `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
-| `toast(text)`, `bus` | Feedback; raw access to the event bus |
+| `toast(messageId, params?)`, `bus` | Show one of the item's own `messages` (by id, in the player's language; never a literal); raw access to the event bus |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
 

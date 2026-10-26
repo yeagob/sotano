@@ -10,7 +10,7 @@ import { Rng } from '../src/core/rng';
 import { STAT_LIMITS, StatSheet, type StatName } from '../src/core/stats';
 import { createBus, type GameEvents, type IntentSpec } from '../src/game/events';
 import { Inventory } from '../src/items/inventory';
-import type { ItemApi } from '../src/items/types';
+import type { HostApi } from '../src/items/types';
 import { validateCatalogue } from '../src/items/validate';
 
 const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, color: 0, tags: new Set() });
@@ -50,7 +50,7 @@ function sandbox() {
   const bus = createBus();
   const stats = new StatSheet();
   const calls = { damage: 0, explode: 0, spawn: 0 };
-  const api: ItemApi = {
+  const api: HostApi = {
     get bus() { return bus; },
     stats: () => stats.all,
     has: id => inv.has(id),
@@ -61,7 +61,7 @@ function sandbox() {
     damageBlock: () => { calls.damage++; return true; },
     explode: () => { calls.explode++; },
     spawnDebris: () => { calls.spawn++; },
-    toast: () => {},
+    message: () => {},
     defer: fn => bus.defer(fn),
     heal: () => {},
     damagePlayer: () => {},

@@ -24,6 +24,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Entities](docs/architecture/ENTITIES.md) — stacked floors, health, pickups, bombs, enemies and their navigation.
 - [Actors and factions](docs/architecture/ACTORS.md) — the player and projections as actors, one damage pipeline, sides (allies), chain safety.
 - [Seeds and randomness](docs/architecture/RNG.md) — every run unique and replayable: seed codes, structure/runtime/cosmetic randomness, weighted tables.
+- [Localization](docs/architecture/LOCALIZATION.md) — English and Spanish: catalogs, content texts by id, item messages, live language switching.
 - [Elements plan](docs/architecture/ELEMENTS.md) — architecture and step-by-step plan for elements and containers.
 
 ### Lore — references and cosmology
@@ -39,7 +40,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Architecture stress test](docs/reviews/stress-test.md) — extreme items (wind, clones, friendly enemies, a HUD that falls into the world…) against the architecture, and the refactoring plan before scaling.
 
 ### Working on the project
-- Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log), [lore](.claude/skills/sotano-lore/SKILL.md) (how references become content).
+- Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log), [lore](.claude/skills/sotano-lore/SKILL.md) (how references become content), [i18n](.claude/skills/sotano-i18n/SKILL.md) (every player-facing text in every language).
 
 ---
 
@@ -106,6 +107,8 @@ Every practice has a meaning (its description) and a plain **effect** line with 
 | Open a door | Walk up to it (locked doors use a key) |
 | Inventory and stats | Tab (or I) |
 | New run | R |
+
+Language: English or Spanish, picked from your browser; switch it on the pause card (remembered) or with `?lang=es` in the URL.
 
 Touch controls are *planned*.
 

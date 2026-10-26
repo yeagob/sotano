@@ -10,7 +10,7 @@
 import { Rng } from '../core/rng';
 import { StatSheet, diffStats, type Stats } from '../core/stats';
 import type { GameBus } from '../game/events';
-import type { Effect, ItemApi, ItemDef, ItemInstance, Req, SynergyDef } from './types';
+import type { HostApi, ItemApi, ItemDef, ItemInstance, Req, SynergyDef } from './types';
 
 export interface GainResult {
   instance: ItemInstance;
@@ -29,7 +29,7 @@ export class Inventory {
     private synergies: readonly SynergyDef[],
     readonly stats: StatSheet,
     private bus: () => GameBus,
-    private api: () => ItemApi,
+    private api: () => HostApi,
     /** The RNG for one held copy of an item: `fork('item', id, copyIndex)` in the game. */
     private rngFor: (id: string, copy: number) => Rng = (id, copy) => new Rng(id.length * 7919 + copy),
   ) {}
@@ -61,7 +61,7 @@ export class Inventory {
     this.held.push(instance);
     this.rebuild();
     const copy = this.held.filter(h => h.def.id === id).length - 1;
-    def.onGain?.({ ...this.api(), defer: fn => this.bus().defer(fn, `item:${instance.uid}`), rng: () => this.itemRng(id, copy) });
+    def.onGain?.({ ...this.bound(def), defer: fn => this.bus().defer(fn, `item:${instance.uid}`), rng: () => this.itemRng(id, copy) });
     return {
       instance,
       changes: diffStats(before, this.stats.all),
@@ -111,9 +111,15 @@ export class Inventory {
     for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed, this.itemRng(`syn:${s.id}`, 0));
   }
 
-  private install(source: string, ownerId: string, e: Effect, suppressed: Set<string>, rng: Rng) {
+  /** The game's API with toasts bound to the effect that raises them. */
+  private bound(owner: ItemDef | SynergyDef): ItemApi {
+    const { message, ...host } = this.api();
+    return { ...host, toast: (id, params) => message(owner, id, params) };
+  }
+
+  private install(source: string, ownerId: string, e: ItemDef | SynergyDef, suppressed: Set<string>, rng: Rng) {
     const bus = this.bus();
-    const api: ItemApi = { ...this.api(), defer: fn => bus.defer(fn, source), rng: () => rng };
+    const api: ItemApi = { ...this.bound(e), defer: fn => bus.defer(fn, source), rng: () => rng };
     for (const m of e.stats ?? []) this.stats.add({ ...m, source });
     for (const h of e.hooks ?? []) {
       if (h.id && suppressed.has(`${ownerId}.${h.id}`)) continue;

@@ -2,13 +2,16 @@ import { Game } from './game/game';
 import { ITEMS } from './content/items';
 import { MAT } from './content/materials';
 import { GEN_VERSION } from './core/seed';
+import { setLocale, t } from './i18n';
+import { initDom } from './i18n/dom';
 
 async function boot() {
+  initDom(); // language first: everything below may show text
   const params = new URLSearchParams(location.search);
   // ?seed=ABCD-EFGH replays a run; without it every run is new
   const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
   const v = params.get('v');
-  if (v && Number(v) !== GEN_VERSION) game.hud.toast(`This seed is from generator v${v}; this build is v${GEN_VERSION}: the run may differ`);
+  if (v && Number(v) !== GEN_VERSION) game.hud.toast('toast.seedVersion', { v, build: GEN_VERSION });
 
   // debug shortcuts in the browser console
   const S = {
@@ -44,6 +47,8 @@ async function boot() {
     tp: (x: number, y: number, z: number) => game.player.spawnAt(x, y, z),
     debug: (on = true) => { game.hud.showDebug = on; },
     trace: (on = true) => { game.bus.trace = on; },
+    /** Switch language without saving the choice ('en', 'es'). */
+    lang: (code: string) => setLocale(code),
   };
   (window as any).S = S;
 
@@ -60,5 +65,5 @@ async function boot() {
 boot().catch(err => {
   console.error(err);
   const el = document.getElementById('loading');
-  if (el) el.textContent = 'Failed to start: ' + (err?.message ?? err);
+  if (el) el.textContent = t('app.failed', { error: String(err?.message ?? err) });
 });

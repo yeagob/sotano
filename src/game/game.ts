@@ -25,7 +25,7 @@ import { Player } from '../entities/player';
 import { Input } from '../input/input';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
-import type { ItemApi } from '../items/types';
+import type { HostApi } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
@@ -108,7 +108,7 @@ export class Game {
   private cracks: CrackView;
   private particles: Particles;
   private intents: Intents;
-  private api: ItemApi;
+  private api: HostApi;
   private time = 0;
   /** Every actor of the run (the player and projections), one id space. */
   readonly actors = new ActorRegistry();
@@ -228,7 +228,7 @@ export class Game {
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(1)!, 1);
     this.bus.emit('floorEnter', { depth: 1 });
-    this.hud.toast(invalid ? `"${seed}" isn't a valid seed: new run ${this.seedLabel}` : `Floor 1 · seed ${this.seedLabel}`);
+    this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
   }
 
   /** "ABCD EFGH · v1": what the player shares to replay this run. */
@@ -293,7 +293,7 @@ export class Game {
 
   // ───────────────────────── items ─────────────────────────
 
-  private makeApi(): ItemApi {
+  private makeApi(): HostApi {
     const game = this;
     return {
       get bus() { return game.bus; },
@@ -306,7 +306,7 @@ export class Game {
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
       explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, this.player.id),
       spawnDebris: (m, x, y, z, vx, vy, vz) => { this.debris.spawn(m, x, y, z, vx, vy, vz); },
-      toast: text => this.hud.toast(text),
+      message: (owner, id, params) => this.hud.effectToast(owner, id, params),
       defer: fn => this.bus.defer(fn),
       heal: (n, src = 'item') => this.heal(n * HALF_HEART, src),
       damagePlayer: (n, src = 'item') => this.damagePlayer(n, 'item', src, this.player.id),
@@ -494,7 +494,7 @@ export class Game {
         const drops: PickupKind[] = reward ? [reward] : [];
         const ev = this.bus.emit('roomClear', { room: id, drops });
         for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, id, null, 0.3);
-        this.hud.toast('Room clear');
+        this.hud.toast('toast.roomClear');
         sfx3.clear();
       } else if (!inside && st.sealed) {
         // the player dug their way out: keep the doors shut until it's cleared, reseal on return
@@ -684,7 +684,7 @@ export class Game {
   /** E: drop a bomb (a breakthrough) at your feet. */
   private placeBomb() {
     const p = this.player;
-    if (p.bombs <= 0) { sfx.denied(); this.hud.toast('No bombs'); return; }
+    if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
     const ev = this.bus.emit('bombPlace', { fuse: 1.8 });
     if (ev.cancelled) return;
     p.bombs--;
@@ -781,9 +781,9 @@ export class Game {
     const ev = this.bus.emit('doorOpen', { door: d.id, locked: d.locked, needsKey: d.locked });
     if (ev.cancelled) return false;
     if (ev.needsKey) {
-      if (this.player.keys <= 0) { this.hud.toast('Locked: you need a key'); sfx.denied(); return false; }
+      if (this.player.keys <= 0) { this.hud.toast('toast.locked'); sfx.denied(); return false; }
       this.player.keys--;
-      this.hud.toast('Unlocked');
+      this.hud.toast('toast.unlocked');
       sfx2.unlock();
     }
     if (d.locked) this.doors.unlock(d);
@@ -828,7 +828,7 @@ export class Game {
       this.bus.clearDeferred();
         this.bus.emit('floorEnter', { depth: band });
       this.hud.setFloor(this.floors.get(band)!, band);
-      this.hud.toast(`Floor ${band}`);
+      this.hud.toast('toast.floor', { n: band });
       this.visited = new Set();
     }
     const r = this.roomAt(b.x, b.y + 0.1, b.z);
@@ -855,7 +855,7 @@ export class Game {
         openHole(this.world, hole);
         this.particles.burst(hole.x + 1, hole.yTop + 1, hole.z + 1, 0x8a7a6a, 40, 4, 0.15);
         this.hud.shake(0.5);
-        this.hud.toast('A way down opens');
+        this.hud.toast('toast.wayDown');
         sfx3.rumble();
       }
     }

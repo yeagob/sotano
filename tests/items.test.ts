@@ -8,7 +8,7 @@ import { BASE_STATS, StatSheet, type StatName } from '../src/core/stats';
 import { createBus, type GameBus, type GameEvents } from '../src/game/events';
 import { Inventory } from '../src/items/inventory';
 import { ItemPools } from '../src/items/pool';
-import { ACTOR_EVENTS, defineItem, defineSynergy, hook, type ItemApi, type ItemDef, type SynergyDef } from '../src/items/types';
+import { ACTOR_EVENTS, defineItem, defineSynergy, hook, type HostApi, type ItemDef, type SynergyDef } from '../src/items/types';
 
 const T = { quality: 0 as const, icon: { rows: [], palette: {} }, effect: '' };
 
@@ -17,8 +17,8 @@ function setup(catalog: readonly ItemDef[] = ITEMS, synergies: readonly SynergyD
   const stats = new StatSheet();
   const api = {
     bus, stats: () => stats.all, defer: (fn: () => void) => bus.defer(fn),
-    heal: () => {}, collect: () => true, damagePlayer: () => {}, rng: () => new Rng(1), toast: () => {},
-  } as unknown as ItemApi;
+    heal: () => {}, collect: () => true, damagePlayer: () => {}, rng: () => new Rng(1), message: () => {},
+  } as unknown as HostApi;
   const inv = new Inventory(new Map(catalog.map(i => [i.id, i])), synergies, stats, () => bus, () => api);
   return { bus, stats, inv };
 }

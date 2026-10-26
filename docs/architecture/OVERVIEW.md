@@ -19,10 +19,12 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ input/       keyboard + mouse (pointer lock)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
              ├─ audio/       synthesised sound effects
+             ├─ i18n/        localization: t(), number formats, catalogs (en source, es), content
+             │               texts by id, language detection and the static HTML
              └─ game/        event catalogue, HUD (inventory window, banners, counters), game loop
 ```
 
-`core/`, `items/`, `enemies/` (except nothing), `content/`, `world/` and `physics/` never import three.js or touch the DOM, so the rules are testable in Node and the mesher runs in a worker.
+`core/`, `items/`, `enemies/` (except nothing), `content/`, `world/`, `physics/` and `i18n/` (except `i18n/dom.ts`) never import three.js or touch the DOM, so the rules are testable in Node and the mesher runs in a worker.
 
 ## Runs and floors
 
@@ -109,7 +111,9 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## HUD (`game/hud.ts`, `index.html`)
 
-Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, debug readout, the **pickup banner** (icon, quality, description, plain effect, inspiration, every stat change, new synergies; it stays until you click, and that click doesn't fire) with a coloured screen flash, damage vignette and screen shake, toasts, the **inventory window** (Tab: practices with icons and details, synergies and states of being with progress, all stats; pauses and releases the mouse), the pause card and the **death screen**.
+Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, debug readout, the **pickup banner** (icon, quality, description, plain effect, inspiration, every stat change, new synergies; it stays until you click, and that click doesn't fire) with a coloured screen flash, damage vignette and screen shake, toasts, the **inventory window** (Tab: practices with icons and details, synergies and states of being with progress, all stats; pauses and releases the mouse), the pause card (with the **language selector**) and the **death screen**.
+
+Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md)): `hud.toast(key, params)` takes a message key, item texts come from `itemText(def)` and friends, numbers from `fmtNum`. Changing language calls `Hud.relocalize()`, which redraws every surface on screen from its last inputs. The debug readout stays English on purpose.
 
 ## Debug console
 
@@ -127,13 +131,14 @@ Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, d
 | `S.charm()` | The nearest projection becomes an ally |
 | `S.seed()`, `S.restart('ABCD-EFGH')` | This run's seed; replay one (no argument: fresh) |
 | `S.tp(x, y, z)`, `S.debug(false)` | Teleport, hide the readout |
+| `S.lang('es')` | Switch language (not remembered) |
 | `S.game` | The whole `Game` |
 
-URL parameter `?seed=123` picks the seed.
+URL parameter `?seed=123` picks the seed; `?lang=es` picks the language.
 
 ## Tests (`tests/`)
 
-Vitest, Node, no rendering (69 tests):
+Vitest, Node, no rendering (100 tests):
 
 - `core.test.ts` — event bus, RNG, stats, block damage.
 - `world.test.ts` — templates, mesher, DDA, collision, plans (one start/treasure/boss; from all 49 start cells), stacked dungeon (doorways, global room ids, bands), the hole landing in the next start room.
@@ -141,4 +146,5 @@ Vitest, Node, no rendering (69 tests):
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
 - `rng.test.ts` — seed codes, fork purity, determinism (same seed, same four floors), isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
 - `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
+- `i18n.test.ts` — every locale has every message with the same placeholders; every item, synergy, enemy and material translated, no stale ids; translated effect lines keep English's numbers; no empty strings or markup; fallback, plurals, number formats, language detection; every damage source names a cause; the language never changes a run.
 - `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (378 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.

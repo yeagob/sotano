@@ -38,7 +38,7 @@
     .slot { position: relative; width: 56px; height: 56px; border: 3px solid #0009; background: #0005; outline: 2px solid #fff3; }
     .slot.top { outline-color: #fffb; }
     .slot img { width: 100%; height: 100%; display: block; }
-    #hand::after { content: "hand"; position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; opacity: .6; }
+    #hand::after { content: attr(data-label); position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; opacity: .6; }
 
     /* minimap, floor */
     #corner { position: fixed; right: 12px; bottom: 14px; text-align: right; text-shadow: 0 1px 2px #000; pointer-events: none; }
@@ -86,6 +86,11 @@
     #overlay table { border-collapse: collapse; margin: 10px 0; }
     #overlay td { padding: 2px 10px 2px 0; }
     #overlay td:first-child { color: var(--accent); white-space: nowrap; }
+    #lang { display: flex; gap: 6px; align-items: center; justify-content: center; margin: 10px 0 2px; font-size: 12px; }
+    #lang span { opacity: .65; margin-right: 2px; }
+    #lang button { font: inherit; color: var(--ink); background: #0006; border: 2px solid #0009; outline: 1px solid #fff2; padding: 2px 10px; cursor: pointer; }
+    #lang button:hover { outline-color: var(--accent); }
+    #lang button.on { color: var(--accent); outline-color: var(--accent); }
     .go { margin-top: 12px; text-align: center; font-weight: bold; animation: blink 1.2s infinite; }
     @keyframes blink { 50% { opacity: .4; } }
 
@@ -142,7 +147,7 @@
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
     <div id="items"></div>
   </div>
-  <div id="hand"></div>
+  <div id="hand" data-label="hand" data-i18n-label="hud.hand"></div>
   <div id="corner"><canvas id="minimap"></canvas><div id="depth"></div></div>
   <div id="debug"></div>
   <div id="banner"></div>
@@ -152,25 +157,26 @@
   <div id="overlay">
     <div class="card">
       <h1>SÓTANO</h1>
-      <p>Go down into yourself. Break what holds you. Find the way back up.</p>
+      <p data-i18n="intro.tagline">Go down into yourself. Break what holds you. Find the way back up.</p>
       <table>
-        <tr><td>Mouse</td><td>look</td></tr>
-        <tr><td>WASD · Space</td><td>move · jump</td></tr>
-        <tr><td>Left click (hold)</td><td>cast intentions</td></tr>
-        <tr><td>Walk over</td><td>pick up a loose block (or kick it if your hand is full)</td></tr>
-        <tr><td>Right click</td><td>place the top block (throws it if there's nowhere to place it)</td></tr>
-        <tr><td>Q</td><td>throw the top block</td></tr>
-        <tr><td>E</td><td>drop a bomb</td></tr>
-        <tr><td>Doors</td><td>open as you approach; locked ones need a key</td></tr>
-        <tr><td>Tab</td><td>practices, synergies and your state</td></tr>
-        <tr><td>R</td><td>new run</td></tr>
-        <tr><td>Esc</td><td>release the mouse (pause)</td></tr>
+        <tr><td data-i18n="controls.look.key">Mouse</td><td data-i18n="controls.look">look</td></tr>
+        <tr><td data-i18n="controls.move.key">WASD · Space</td><td data-i18n="controls.move">move · jump</td></tr>
+        <tr><td data-i18n="controls.cast.key">Left click (hold)</td><td data-i18n="controls.cast">cast intentions</td></tr>
+        <tr><td data-i18n="controls.pickup.key">Walk over</td><td data-i18n="controls.pickup">pick up a loose block (or kick it if your hand is full)</td></tr>
+        <tr><td data-i18n="controls.place.key">Right click</td><td data-i18n="controls.place">place the top block (throws it if there's nowhere to place it)</td></tr>
+        <tr><td data-i18n="controls.throw.key">Q</td><td data-i18n="controls.throw">throw the top block</td></tr>
+        <tr><td data-i18n="controls.bomb.key">E</td><td data-i18n="controls.bomb">drop a bomb</td></tr>
+        <tr><td data-i18n="controls.doors.key">Doors</td><td data-i18n="controls.doors">open as you approach; locked ones need a key</td></tr>
+        <tr><td data-i18n="controls.inventory.key">Tab</td><td data-i18n="controls.inventory">practices, synergies and your state</td></tr>
+        <tr><td data-i18n="controls.restart.key">R</td><td data-i18n="controls.restart">new run</td></tr>
+        <tr><td data-i18n="controls.pause.key">Esc</td><td data-i18n="controls.pause">release the mouse (pause)</td></tr>
       </table>
       <p id="seed" class="seed"></p>
-      <div class="go">Click to play</div>
+      <div id="lang"></div>
+      <div class="go" data-i18n="intro.play">Click to play</div>
     </div>
   </div>
-  <div id="loading">Loading…</div>
+  <div id="loading" data-i18n="app.loading">Loading…</div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

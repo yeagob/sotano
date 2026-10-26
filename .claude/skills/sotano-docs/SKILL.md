@@ -9,7 +9,7 @@ The owner wants **everything documented thoroughly, always in English**, in a pr
 
 ## 0. Language and tone
 
-- **English only**: docs, code comments, identifiers, commit messages, in-game text. (Talk to the owner in their language in chat; write the repo in English.)
+- **English only**: docs, code comments, identifiers, commit messages, and the source text of the game. (Talk to the owner in their language in chat; write the repo in English.) Players read the game in every shipped language: translations live in `src/i18n/locales/` (`sotano-i18n` skill).
 - Respectful tone around mental health, therapy and personal growth: practices are not magic cures, enemies are *patterns*, never people or diagnoses (see `docs/design/STORY.md`).
 
 ## 1. Know where things go
@@ -30,6 +30,7 @@ docs/architecture/             How the code works today
   ROOMS.md                     Floor plans, room templates, doors
   ENTITIES.md                  Health, bombs, enemies, pickups, stacked floors
   RNG.md                       Seeds and randomness: classes, paths, tables, guarantees
+  LOCALIZATION.md              i18n: catalogs, content texts, item messages, live switching
   ELEMENTS.md                  Elements and containers: architecture + step-by-step plan
 docs/lore/                     References and lore (see the sotano-lore skill)
   README.md, SOURCES.md (library), CONCEPTS.md (glossary), COSMOLOGY.md (as above, so below)
@@ -49,6 +50,7 @@ docs/reviews/                  Three-party architecture reviews
 | Module layout, frame order, debug console, tests | `docs/architecture/OVERVIEW.md` |
 | Roadmap / milestone status, a technical decision change | `docs/research/TECHNICAL.md` (§15 roadmap, and note decision changes where the old decision was described) and the README roadmap |
 | A new reference (book, technique, therapy, game) or lore | `docs/lore/` via the sotano-lore skill |
+| Player-facing text, a new language, or the localization mechanism | The catalogs in `src/i18n/locales/` (`sotano-i18n` skill); `docs/architecture/LOCALIZATION.md` if the mechanism changed |
 | Anything random (a new table, a new random decision, a new seed path) | `docs/architecture/RNG.md` (path table, tables list) |
 | A key architecture decision | Run the three-party review (below) and add `docs/reviews/<topic>.md` |
 

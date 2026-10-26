@@ -5,6 +5,8 @@
 // shooting, moving, jumping, how many blocks you carry, how hard you kick or throw,
 // and which blocks shatter just by walking into them.
 
+import { fmtNum, t } from '../i18n';
+
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
   | 'moveSpeed' | 'jump' | 'reach'
@@ -64,28 +66,34 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   bombDamage: [5, 500],
 };
 
-/** How the stats panel shows each stat. `fmt` turns the value into text. */
-export const STAT_INFO: Record<StatName, { label: string; fmt: (v: number) => string }> = {
-  damage: { label: 'Damage', fmt: v => v.toFixed(2) },
-  fireRate: { label: 'Fire rate', fmt: v => `${v.toFixed(2)}/s` },
-  shotSpeed: { label: 'Shot speed', fmt: v => `×${v.toFixed(2)}` },
-  range: { label: 'Range', fmt: v => `×${v.toFixed(2)}` },
-  gravity: { label: 'Drop', fmt: v => `×${v.toFixed(2)}` },
-  size: { label: 'Size', fmt: v => `×${v.toFixed(2)}` },
-  mining: { label: 'Mining', fmt: v => v.toFixed(2) },
-  luck: { label: 'Luck', fmt: v => v.toFixed(1) },
-  moveSpeed: { label: 'Speed', fmt: v => `×${v.toFixed(2)}` },
-  jump: { label: 'Jump', fmt: v => `×${v.toFixed(2)}` },
-  reach: { label: 'Reach', fmt: v => `${v.toFixed(1)} blocks` },
-  carry: { label: 'Carry', fmt: v => `${Math.floor(v)} block${Math.floor(v) === 1 ? '' : 's'}` },
-  kick: { label: 'Kick', fmt: v => `×${v.toFixed(2)}` },
-  throw: { label: 'Throw', fmt: v => `×${v.toFixed(2)}` },
-  crush: { label: 'Crush', fmt: v => (v < 0 ? 'none' : `tier ≤ ${Math.floor(v)}`) },
-  maxHearts: { label: 'Hearts', fmt: v => `${Math.floor(v)}` },
-  invuln: { label: 'Recovery', fmt: v => `${v.toFixed(1)} s` },
-  bombRadius: { label: 'Bomb radius', fmt: v => `${v.toFixed(1)} blocks` },
-  bombDamage: { label: 'Bomb power', fmt: v => v.toFixed(0) },
+const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
+const blocks = (v: number, digits: number) => t('unit.blocks', { n: fmtNum(v, digits), count: v });
+
+/** How the stats panel shows each stat, in the player's language (labels are `stat.<name>`). */
+const STAT_FMT: Record<StatName, (v: number) => string> = {
+  damage: v => fmtNum(v, 2),
+  fireRate: v => t('unit.perSecond', { n: fmtNum(v, 2) }),
+  shotSpeed: times,
+  range: times,
+  gravity: times,
+  size: times,
+  mining: v => fmtNum(v, 2),
+  luck: v => fmtNum(v, 1),
+  moveSpeed: times,
+  jump: times,
+  reach: v => blocks(v, 1),
+  carry: v => blocks(Math.floor(v), 0),
+  kick: times,
+  throw: times,
+  crush: v => (v < 0 ? t('unit.crushNone') : t('unit.crushTier', { n: Math.floor(v) })),
+  maxHearts: v => fmtNum(Math.floor(v), 0),
+  invuln: v => t('unit.seconds', { n: fmtNum(v, 1) }),
+  bombRadius: v => blocks(v, 1),
+  bombDamage: v => fmtNum(v, 0),
 };
+
+export const statLabel = (n: StatName) => t(`stat.${n}`);
+export const fmtStat = (n: StatName, v: number) => STAT_FMT[n](v);
 
 export function computeStats(mods: readonly StatMod[], base: Stats = BASE_STATS): Stats {
   const out = { ...base };

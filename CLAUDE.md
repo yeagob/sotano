@@ -5,7 +5,8 @@
   - `sotano-feature` (`.claude/skills/sotano-feature/SKILL.md`) for anything the player sees, hears or feels: the production quality bar. **Self-improving**: after every round of owner feedback, append the lesson to its feedback log.
   - `sotano-items` (`.claude/skills/sotano-items/SKILL.md`) whenever items, synergies, stats or events change: how to keep items compatible, testable and safe.
   - `sotano-lore` (`.claude/skills/sotano-lore/SKILL.md`) whenever the owner shares a reference or you name/design practices, projections, places or the endgame.
-- Repo language is **English** (docs, comments, identifiers, commits, in-game text). Chat with the owner in Spanish.
+  - `sotano-i18n` (`.claude/skills/sotano-i18n/SKILL.md`) **every time any text the player can read is added, changed or removed**, anywhere (HUD, toasts, menus, index.html, items, synergies, enemies, materials, stats, damage causes): every word must exist in every shipped language (English + Spanish).
+- Repo language is **English** (docs, comments, identifiers, commits, and the source text of the game). Players read the game in their language through `src/i18n/` (English and Spanish). Chat with the owner in Spanish.
 - Ask the owner when anything about meaning, names, story or scope is unclear.
 - Key architecture decisions go through the three-party review (engineer, architect agent, mediator agent) described in the skill.
 - Docs index: [docs/README.md](docs/README.md). Story and naming rules: [docs/design/STORY.md](docs/design/STORY.md).

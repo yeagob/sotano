@@ -27,10 +27,11 @@ export default defineItem({
     ],
     palette: { a: 0x9fd3ff },
   },
+  messages: { lock: 'The lock gives way to a good question' },
   onGain(api) { api.collect('key', 2); },
   hooks: [
     hook('doorOpen', (e, api) => {
-      if (e.needsKey && api.rng().chance(0.35)) { e.needsKey = false; api.toast('The lock gives way to a good question'); }
+      if (e.needsKey && api.rng().chance(0.35)) { e.needsKey = false; api.toast('lock'); }
     }, { id: 'unlock', priority: 20 }),
   ],
 });
