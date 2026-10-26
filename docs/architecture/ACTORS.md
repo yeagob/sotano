@@ -50,8 +50,7 @@ interface Actor {
   def: string;            // 'player' or the projection's definition id
   faction: Faction;
   body: Body;
-  hp: number;             // damage points (half-hearts for the player: `halfHearts: true`)
-  halfHearts?: true;
+  hp: number;             // damage points, for everyone (the player too)
   tags: Set<string>;
   room: number;           // global room id (−1: none)
   alive: boolean;
@@ -60,10 +59,13 @@ interface Actor {
 ```
 
 - **Registry.** `ActorRegistry` (`src/entities/actors.ts`) holds one id space per run: `reset`, `newId`, `add`, `remove`, `get`, `all`. `Player` and `Enemy` both implement `Actor`. An enemy's definition is `e.spec`; `e.def` is its id.
-- **Units.** Everything deals **damage points**. The player's health stays in half-hearts, because the HUD and items talk in hearts. A hit on the player costs `max(1, ceil(points / 4))` half-hearts (`HALF_HEART = 4`, `halfHeartsFor`). Old values keep their effect:
-  - contact (`contactDamage`) and projectiles: 4 points;
-  - explosions: 8 points to every actor. Before, projections took 2 half-hearts × 4 and the player took 2 half-hearts.
-  - Damage reductions on the player work in steps of 4 points or by cancelling.
+- **Units.** Every actor's health, the player's included, is in **damage points**, and every hit deals points.
+  - A heart is **8 points** (`HEART`; `HALF_HEART` = 4, `QUARTER_HEART` = 2). The player's maximum is `maxHearts × 8`.
+  - The player loses exactly the points of each hit, so **small damage reductions count** (owner decision). The HUD draws each heart in **quarters**: a partly filled quarter shows as full (`heartQuarters`).
+  - Old values keep their effect:
+    - contact (`contactDamage`) and projectiles: 4 points (half a heart);
+    - explosions: 8 points (a heart) to every actor. Before, projections took 2 half-hearts × 4 and the player took 2 half-hearts.
+  - Items keep talking in half-hearts where that reads better: `api.heal(halfHearts)` and `api.damagePlayer(halfHearts)` convert (×4). The `heal` event and `api.counts()` are in points.
 - **One damage function.** `Game.damageActor(target, points, kind, source, owner, kx?, kz?)`:
   - skips dead or materialising targets, and the player while invulnerable;
   - emits **`actorDamage { target, targetKind, def, amount, kind, source, owner, knockback, cause? }`**, then applies it.
@@ -116,7 +118,6 @@ Thematic reading: a projection that changes side becomes part of the **self**. I
 | When an item first sets `keepTags` or tags debris spawned by a blast | Carry `Cause` through cubes (per-cube cause arrays, ambient cause during `debrisImpact`); a contract test forbids `keepTags = true` until then |
 | PR5 statuses | `api.actors.query({ faction, room, near })` |
 | PR7 controllers | Allies follow the player across rooms and floors |
-| Owner question | Should a reduction smaller than 4 points ever save a half-heart? (That would need player HP in points and quarter hearts.) |
 | Later | A cancellable `factionChange`; cancellable death for projections (every `kill()` site must handle survival first) |
 
 ## 7. Tests
@@ -125,7 +126,7 @@ Thematic reading: a projection that changes side becomes part of the **self**. I
   - the bus fails closed, so a shield is never bypassed;
   - root-only events are reported when nested, and `bus.depth` is exposed;
   - `BlastQueue` runs 8 per frame, chains stop at 12, root blasts are never dropped;
-  - half-heart conversion; one id space; `ContactGate` bounds hits per second; `hostile()`.
+  - quarter-heart drawing; one id space; `ContactGate` bounds hits per second; `hostile()`.
 - `tests/items.test.ts`:
   - damage items don't dig faster, and mining items don't hurt more;
   - hooks on actor events have a `target`;

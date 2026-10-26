@@ -67,7 +67,7 @@ All of them push their changes through the existing pipelines (`world.set` → r
 - `fluidAt(x, y, z)` → `{ material, level }`. The player samples feet and head cells:
   - feet in fluid, head out → **wading**: `moveSpeed × 0.6`, jump × 0.7 (water); mud × 0.4;
   - head in fluid → **swimming**: gravity × 0.2, terminal sink speed 1.5, Space = swim up, no ground friction; **breath** stat (new, seconds) drains; at 0, `playerDamage` (kind `drown`) every 1.5 s.
-- Lava: `playerDamage` (kind `burn`) 2 half-hearts per second + `burning` status.
+- Lava: `actorDamage` (kind `burn`) 8 points (a heart) per second + `burning` status.
 - Enemies use the same sampling (Overwhelm is the exception: it swims).
 - Loose cubes: `floats` materials rise to the surface in water and bob; others sink at reduced speed; in lava they burn (flammable) or are destroyed.
 - Intentions slow down in water (×0.5 speed) and fizzle in lava.

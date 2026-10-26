@@ -40,6 +40,7 @@ export interface ItemApi {
   isPlayer(owner: Owner): boolean;
   /** Give keys, bombs or hearts (through `pickupCollect`). */
   collect(kind: PickupKind, amount: number): boolean;
+  /** Counters; `hp` and `maxHp` in damage points (a heart is 8). */
   counts(): { keys: number; bombs: number; hp: number; maxHp: number };
   /** Drop a key, bomb or heart in the world. */
   spawnPickup(kind: PickupKind, x: number, y: number, z: number): void;

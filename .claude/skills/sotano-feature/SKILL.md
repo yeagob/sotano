@@ -72,3 +72,4 @@ A feature is done only when all of this is true:
 - **Every run must be unique, driven by a seed** (RNG across rooms, variants, enemies, items, rewards); take the time to do it right.
 - **Before scaling vertically, stress-test the architecture with extreme items** (UI in the world, sudden wind, clones, friendly enemies…) and fix the root causes first; see docs/reviews/stress-test.md.
 - **Damage to actors and damage to blocks are separate values**: a damage item must not also speed up digging unless it says so.
+- **Small damage reductions must count**: the player's health is in points (a heart is 8) and hearts are drawn in quarters; no minimum loss per hit.

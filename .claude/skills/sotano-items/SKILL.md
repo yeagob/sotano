@@ -36,7 +36,7 @@ Then add it to `src/content/items/index.ts`.
 3. **Every hook that defines the item gets an `id`**, so synergies can suppress it. Synergy hooks always have ids.
 4. **Priority bands:** 0–99 modify, 100–199 cancel, 200+ side effects (never cancel there).
 5. **No direct recursion.** Chain reactions use `api.defer(fn)`. Guard against triggering yourself by checking the event's `source` (e.g. Habit Stacking ignores breaks whose source is `'chain'`).
-6. **Say which actors a hook is for.** Hooks on `actorDamage`, `contact` or `actorDeath` cover the player *and* every projection: pass `{ target: 'player' }` (or `'projection'`, `'any'`). Compare owners with `api.isPlayer(owner)`, never with raw ids. Damage to actors is in points (4 = half a heart); `damage` hurts actors and `mining` breaks blocks: never derive one from the other.
+6. **Say which actors a hook is for.** Hooks on `actorDamage`, `contact` or `actorDeath` cover the player *and* every projection: pass `{ target: 'player' }` (or `'projection'`, `'any'`). Compare owners with `api.isPlayer(owner)`, never with raw ids. Damage and health are in points for every actor (8 = a heart, 2 = a quarter; the player loses exactly the points of each hit); `damage` hurts actors and `mining` breaks blocks: never derive one from the other.
 7. **Deterministic.** Use `api.rng()` (each held copy has its own seeded stream), never `Math.random()`. Items change runtime outcomes only (drops, rewards, procs), never the run's structure.
 8. **Persistent effects are stats.** Anything that must disappear when the item is lost (heart containers, reach…) is a stat modifier, not something done in `onGain`.
 9. **Tags on cubes/intentions are exported constants** (`export const VOLATILE = 'volatile'`), never retyped strings.

@@ -130,4 +130,4 @@ Everything ruled "now" is built; see [../architecture/ACTORS.md](../architecture
 - `blockingIn` decides room clear.
 - `setFaction` with `factionChange`; a warm tint for allies; `S.charm()`.
 
-**Owner question pending:** should a damage reduction smaller than half a heart ever save a half-heart?
+**Owner answer (M2):** yes, small reductions must count. The player's health is now in points too (a heart is 8) and the HUD draws quarter hearts; the minimum of one half-heart per hit is gone.

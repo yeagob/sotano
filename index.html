@@ -22,10 +22,10 @@
     #status { position: fixed; top: 10px; left: 12px; text-shadow: 0 2px 0 #000; pointer-events: none; }
     #hearts { display: flex; gap: 3px; margin-bottom: 6px; }
     #hearts.blink { animation: blink .18s steps(2) infinite; }
-    .heart { width: 22px; height: 20px; display: inline-block; background: no-repeat center/contain;
+    .heart { position: relative; width: 22px; height: 20px; display: inline-block; background: no-repeat center/contain;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23140808' d='M1 0h3v1h1v1h1V1h1V0h3v1h1v4h-1v1H9v1H8v1H7v1H6v1H5V9H4V8H3V7H2V6H1V5H0V1h1z'/%3E%3Cpath fill='%233a1416' d='M1 1h3v1h1v1h1V2h1V1h3v4H9v1H8v1H7v1H6v1H5V8H4V7H3V6H2V5H1z'/%3E%3C/svg%3E"); }
     .heart.full { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23140808' d='M1 0h3v1h1v1h1V1h1V0h3v1h1v4h-1v1H9v1H8v1H7v1H6v1H5V9H4V8H3V7H2V6H1V5H0V1h1z'/%3E%3Cpath fill='%23e0303c' d='M1 1h3v1h1v1h1V2h1V1h3v4H9v1H8v1H7v1H6v1H5V8H4V7H3V6H2V5H1z'/%3E%3Cpath fill='%23ff8a8a' d='M2 2h1v1H2z'/%3E%3C/svg%3E"); }
-    .heart.half { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23140808' d='M1 0h3v1h1v1h1V1h1V0h3v1h1v4h-1v1H9v1H8v1H7v1H6v1H5V9H4V8H3V7H2V6H1V5H0V1h1z'/%3E%3Cpath fill='%233a1416' d='M1 1h3v1h1v1h1V2h1V1h3v4H9v1H8v1H7v1H6v1H5V8H4V7H3V6H2V5H1z'/%3E%3Cpath fill='%23e0303c' d='M1 1h3v1h1v6H5V8H4V7H3V6H2V5H1z'/%3E%3C/svg%3E"); }
+    .heart > .heart { position: absolute; left: 0; top: 0; }
     .counter { display: flex; align-items: center; gap: 6px; font-size: 18px; font-weight: bold; margin: 2px 0; }
     .counter .ico { width: 20px; height: 20px; background: no-repeat center/contain; }
     .ico.bomb { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23120c18' d='M2 2h6v1h1v5H8v1H2V8H1V3h1z'/%3E%3Cpath fill='%232a2233' d='M2 3h6v5H2z'/%3E%3Cpath fill='%23ffb347' d='M4 4h2v2H4zM3 6h1v1H3zM6 3h1v1H6zM5 0h1v2H5z'/%3E%3Cpath fill='%23fff3c4' d='M5 0h1v1H5z'/%3E%3C/svg%3E"); }

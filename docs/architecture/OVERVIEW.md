@@ -93,7 +93,7 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 ## Entities (`entities/`)
 
 - `actors.ts` — `Actor`, `ActorRegistry` (one id space per run), `HALF_HEART`, `ContactGate`, factions and `hostile()`.
-- `player.ts` — the player actor: the 0.6 × 1.8 box, hand stack (`carry`), keys, bombs, half-heart `hp`, invulnerability.
+- `player.ts` — the player actor: the 0.6 × 1.8 box, hand stack (`carry`), keys, bombs, `hp` in damage points (a heart is 8, drawn in quarters), invulnerability.
 - `doors.ts` — Doom-style sliding slabs per floor; locks; **sealing** for combat; `unlock`.
 - `pickups.ts` — keys, bombs, hearts (fall and settle) and pedestal items (icon sprite + glow).
 - `enemies.ts` — the projection system: materialise, behave, steer by flow field, leash, contact, projectiles, dissolve. Definitions in `content/enemies/`, behaviours in `enemies/behaviours.ts`.

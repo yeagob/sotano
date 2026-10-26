@@ -38,7 +38,7 @@ export const BASE_STATS: Stats = {
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier
   crush: -1,       // highest block tier that shatters on contact (-1 = none)
-  maxHearts: 3,    // heart containers (each holds 2 half-hearts)
+  maxHearts: 3,    // heart containers (each holds 8 damage points, drawn in quarters)
   invuln: 1,       // seconds of invulnerability after being hit
   bombRadius: 2.6, // blocks
   bombDamage: 40,  // damage to blocks at the centre of a bomb

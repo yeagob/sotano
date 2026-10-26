@@ -25,7 +25,6 @@ export class Player implements Actor {
   readonly kind = 'player' as const;
   readonly def = 'player';
   faction: Faction = 'self';
-  readonly halfHearts = true as const;
   tags = new Set<string>();
   room = -1;
   readonly spawning = 0;
@@ -37,8 +36,8 @@ export class Player implements Actor {
   hand: number[] = [];
   keys = 0;
   bombs = 1;
-  /** Health in half-hearts (max = 2 × the maxHearts stat). */
-  hp = 6;
+  /** Health in damage points (max = HEART × the maxHearts stat; the HUD draws quarter hearts). */
+  hp = 24;
   /** Seconds of invulnerability left after a hit. */
   invulnT = 0;
   dead = false;

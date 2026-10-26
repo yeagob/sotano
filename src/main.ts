@@ -21,7 +21,7 @@ async function boot() {
     hold: (...keys: string[]) => { game.player.hand = keys.map(k => MAT[k]).filter(Boolean); },
     keys: (n = 1) => { game.collect('key', n); },
     bombs: (n = 1) => { game.collect('bomb', n); },
-    heal: (n = 6) => { game.heal(n, 'console'); },
+    heal: (n = 6) => { game.heal(n * 4, 'console'); },   // half-hearts
     hurt: (n = 1) => { game.damagePlayer(n, 'item', 'console', 'world'); },
     god: (on = true) => { game.player.invulnT = on ? 1e9 : 0; },
     lose: (id: string) => { game.inventory.lose(id); game.hud.setItems(game.inventory.items.map(i => i.def)); },

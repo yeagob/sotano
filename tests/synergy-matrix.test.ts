@@ -68,7 +68,7 @@ function sandbox() {
     player: () => 1,
     isPlayer: id => id === 1,
     collect: () => true,
-    counts: () => ({ keys: 1, bombs: 1, hp: 6, maxHp: 6 }),
+    counts: () => ({ keys: 1, bombs: 1, hp: 24, maxHp: 24 }),
     spawnPickup: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);

@@ -11,11 +11,17 @@ export type Faction = 'self' | 'projection' | 'neutral';
 /** Who caused something: an actor, or the world itself. */
 export type Owner = ActorId | 'world';
 
-/** Damage points per half-heart. Everything deals damage in points; the player shows hearts. */
-export const HALF_HEART = 4;
+/** Health is damage points for every actor. The player sees them as hearts of 8 points, drawn
+ *  in quarters (2 points each), so even a small damage reduction shows and counts. */
+export const HEART = 8;
+export const HALF_HEART = HEART / 2;
+export const QUARTER_HEART = HEART / 4;
 
-/** Half-hearts a hit of `points` costs the player: rounded up, at least one (Isaac-style). */
-export const halfHeartsFor = (points: number) => Math.max(1, Math.ceil(points / HALF_HEART - 1e-9));
+/** Quarters (0–4) to draw in heart `i` (0-based) for `hp` points: a partly filled quarter shows as full. */
+export const heartQuarters = (hp: number, i: number) => {
+  const left = Math.max(0, Math.min(HEART, hp - i * HEART));
+  return left > 0 ? Math.ceil(left / QUARTER_HEART - 1e-9) : 0;
+};
 
 export const hostile = (a: Faction, b: Faction) => a !== b && a !== 'neutral' && b !== 'neutral';
 
@@ -26,9 +32,8 @@ export interface Actor {
   readonly def: string;
   faction: Faction;
   body: Body;
-  /** Health in points (in half-hearts when `halfHearts` is set: the player). */
+  /** Health in damage points. */
   hp: number;
-  halfHearts?: true;
   tags: Set<string>;
   /** Global id of the room it belongs to (−1: none). */
   room: number;

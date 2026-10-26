@@ -63,13 +63,13 @@ export interface GameEvents {
   // ── actors (the player and projections; docs/architecture/ACTORS.md) ──
   // Hooks on actorDamage, contact and actorDeath must say which actors they are for
   // (`hook(..., { target: 'player' })`): one event covers everyone.
-  /** Anything about to hurt an actor, in damage points (the player loses one half-heart per
-   *  4 points, rounded up, at least one). Cancel to ignore it. */
+  /** Anything about to hurt an actor, in damage points (a heart is 8; the player loses exactly
+   *  that, shown in quarter hearts). Cancel to ignore it. */
   actorDamage: { target: ActorId; targetKind: ActorKind; def: string; amount: number; kind: DamageKind; source: string; owner: Owner; knockback: number; cause?: Cause };
   /** A projection touches an actor it is hostile to (at most once per pair every 0.5 s):
    *  `toTarget` and `toAttacker` are damage points. */
   contact: { attacker: ActorId; attackerDef: string; target: ActorId; targetKind: ActorKind; toTarget: number; toAttacker: number };
-  /** About to heal the player, in half-hearts. */
+  /** About to heal the player, in damage points (4 = half a heart). */
   heal: { amount: number; source: string };
   /** The player reached 0 hearts. Cancel to survive (with whatever health a hook sets). */
   death: { source: string };

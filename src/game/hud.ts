@@ -3,6 +3,7 @@
 // screen flash; damage vignette and screen shake; the inventory window (Tab); the death screen;
 // toasts; and the debug readout.
 
+import { heartQuarters } from '../entities/actors';
 import { SYNERGIES } from '../content/synergies';
 import { mat } from '../content/materials';
 import { STAT_INFO, type StatName } from '../core/stats';
@@ -59,15 +60,18 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     this.overlay.style.display = running || this.inventoryOpen || g.player.dead ? 'none' : 'flex';
 
-    // hearts: full, half, empty containers
+    // hearts: each container drawn in quarters (2 points each), filled from the left
     const max = Math.floor(g.stats.get('maxHearts')), hp = g.player.hp;
     const hk = `${max}:${hp}:${g.player.invulnT > 0 ? 1 : 0}`;
     if (hk !== this.heartsKey) {
       this.heartsKey = hk;
       let html = '';
       for (let i = 0; i < max; i++) {
-        const v = hp - i * 2;
-        html += `<span class="heart ${v >= 2 ? 'full' : v === 1 ? 'half' : 'empty'}"></span>`;
+        const q = heartQuarters(hp, i);
+        // the red fill spans pixels 1–10 of the 11-pixel heart: clip it to q quarters
+        const shown = q === 4 ? 0 : (1 - (1 + 9 * q / 4) / 11) * 100;
+        html += q === 0 ? '<span class="heart"></span>'
+          : `<span class="heart"><span class="heart full" style="clip-path: inset(0 ${shown.toFixed(1)}% 0 0)"></span></span>`;
       }
       this.heartsEl.innerHTML = html;
       this.heartsEl.classList.toggle('blink', g.player.invulnT > 0);

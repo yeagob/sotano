@@ -17,8 +17,8 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 
 ## 2. Health (`entities/player.ts`, `game/game.ts`)
 
-- Half-hearts in `player.hp`; containers are the **`maxHearts` stat** (base 3), so an item that grants a container takes it away again when lost.
-- The player is an **actor** like every projection ([ACTORS.md](ACTORS.md)). Every hit goes through **`actorDamage`** (cancellable) in damage points: the player loses `ceil(points / 4)` half-hearts, at least one. After a hit you're invulnerable for the **`invuln` stat** (1 s) and the HUD shows a red vignette and a shake.
+- Damage points in `player.hp` (a heart is 8 points); containers are the **`maxHearts` stat** (base 3), so an item that grants a container takes it away again when lost. The HUD draws hearts in **quarters** (2 points each).
+- The player is an **actor** like every projection ([ACTORS.md](ACTORS.md)). Every hit goes through **`actorDamage`** (cancellable) in damage points: the player loses exactly those points, so small damage reductions count. After a hit you're invulnerable for the **`invuln` stat** (1 s) and the HUD shows a red vignette and a shake.
 - **`heal { amount, source }`** before healing; hearts on the floor are only picked up when you're hurt (Isaac rule).
 - At 0: **`death { source }`** (cancellable: a future "second chance" item). Otherwise the death screen shows the floor reached and your practices; R starts again.
 - **Owners**: an actor id or `'world'` (`api.isPlayer(owner)` asks whether it was the player). Radical Acceptance cancels damage to the player whose owner is the player and kind is `explosion` (your own bombs), and only that: its hook targets the player.

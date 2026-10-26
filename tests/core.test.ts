@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BlastQueue } from '../src/combat/blasts';
-import { ActorRegistry, ContactGate, HALF_HEART, halfHeartsFor, hostile } from '../src/entities/actors';
+import { ActorRegistry, ContactGate, HEART, heartQuarters, hostile } from '../src/entities/actors';
 import type { Cause } from '../src/game/events';
 import { EventBus } from '../src/core/events';
 import { Rng, RunRandom } from '../src/core/rng';
@@ -169,13 +169,13 @@ describe('block damage', () => {
 });
 
 describe('actors', () => {
-  it('converts damage points to half-hearts: rounded up, at least one', () => {
-    expect(halfHeartsFor(4)).toBe(1);
-    expect(halfHeartsFor(1)).toBe(1);
-    expect(halfHeartsFor(8)).toBe(2);
-    expect(halfHeartsFor(9)).toBe(3);
-    expect(halfHeartsFor(10)).toBe(3);
-    expect(halfHeartsFor(3 * HALF_HEART)).toBe(3);
+  it('draws hearts in quarters: a partly filled quarter shows, small reductions count', () => {
+    expect(HEART).toBe(8);
+    expect([0, 1, 2].map(i => heartQuarters(24, i))).toEqual([4, 4, 4]);
+    expect([0, 1, 2].map(i => heartQuarters(20, i))).toEqual([4, 4, 2]); // lost half a heart (4 points)
+    expect([0, 1, 2].map(i => heartQuarters(21, i))).toEqual([4, 4, 3]); // a 3-point hit: only a quarter shows lost
+    expect(heartQuarters(1, 0)).toBe(1); // alive with 1 point: one quarter left
+    expect(heartQuarters(0, 0)).toBe(0);
   });
 
   it('one id space per run, restarted by reset', () => {

@@ -50,7 +50,7 @@ Then list it in `src/content/items/index.ts`. The full checklist is the project 
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
-| `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (half-hearts) and counters, through `heal`, `actorDamage` and `pickupCollect` |
+| `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (`heal`/`damagePlayer` take half-hearts; `counts()` gives points) and counters, through `heal`, `actorDamage` and `pickupCollect` |
 | `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
 | `toast(text)`, `bus` | Feedback; raw access to the event bus |
 
@@ -97,9 +97,9 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
-| `actorDamage` *(target required)* | `amount` (damage points; 4 = half a heart), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is) | anything hurting the player or a projection |
+| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
-| `heal` | `amount`, or cancel | healing |
+| `heal` | `amount` (points), or cancel | healing |
 | `death` | cancel (survive) | the player reaching 0 hearts |
 | `actorDeath` *(target required)* | `drops` (react otherwise) | an actor is gone |
 | `factionChange` | — (react) | an actor changed side (e.g. a projection became an ally) |

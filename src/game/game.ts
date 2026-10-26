@@ -41,7 +41,7 @@ import {
   type FloorResult, type RoomInfo,
 } from '../world/floor';
 import type { VoxelWorld } from '../world/world';
-import { ActorRegistry, ContactGate, HALF_HEART, halfHeartsFor, hostile, type Actor, type Faction } from '../entities/actors';
+import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, type Cause, type GameBus, type Owner, type PickupKind } from './events';
 import { Hud } from './hud';
 
@@ -208,7 +208,7 @@ export class Game {
     this.bus = createBus();
     this.inventory.restore([]);
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.stats.get('maxHearts') * 2; p.dead = false; p.invulnT = 0;
+    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.maxHp; p.dead = false; p.invulnT = 0;
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -308,12 +308,12 @@ export class Game {
       spawnDebris: (m, x, y, z, vx, vy, vz) => { this.debris.spawn(m, x, y, z, vx, vy, vz); },
       toast: text => this.hud.toast(text),
       defer: fn => this.bus.defer(fn),
-      heal: (n, src = 'item') => this.heal(n, src),
+      heal: (n, src = 'item') => this.heal(n * HALF_HEART, src),
       damagePlayer: (n, src = 'item') => this.damagePlayer(n, 'item', src, this.player.id),
       player: () => this.player.id,
       isPlayer: id => id === this.player.id,
       collect: (kind, n) => this.collect(kind, n),
-      counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.stats.get('maxHearts') * 2 }),
+      counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.maxHp }),
       spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
     };
   }
@@ -339,8 +339,11 @@ export class Game {
   // ───────────────────────── health ─────────────────────────
 
   private clampHealth() {
-    this.player.hp = Math.min(this.player.hp, this.stats.get('maxHearts') * 2);
+    this.player.hp = Math.min(this.player.hp, this.maxHp);
   }
+
+  /** The player's maximum health in points (heart containers × HEART). */
+  get maxHp() { return Math.floor(this.stats.get('maxHearts')) * HEART; }
 
   /** Hurts the player by half-hearts (console, items): `damageActor` in points. */
   damagePlayer(halfHearts: number, kind: DamageKind, source: string, owner: Owner): boolean {
@@ -350,7 +353,7 @@ export class Game {
   /**
    * The one damage pipeline for every actor (docs/architecture/ACTORS.md §3): `amount` in damage
    * points through `actorDamage`. Projections lose HP and are knocked back along (kx, kz); the
-   * player loses half-hearts (4 points each, rounded up, at least one) and gets invulnerability.
+   * player loses exactly those points (shown as quarter hearts) and gets invulnerability.
    * Returns true if the hit landed.
    */
   damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0): boolean {
@@ -366,7 +369,7 @@ export class Game {
       this.enemies.hurt(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback);
       return true;
     }
-    p.hp -= halfHeartsFor(ev.amount);
+    p.hp = Math.max(0, p.hp - ev.amount);
     p.invulnT = this.stats.get('invuln');
     this.hud.hurt();
     sfx3.hurt();
@@ -382,10 +385,11 @@ export class Game {
     return true;
   }
 
+  /** Heals the player by `amount` damage points (HALF_HEART = half a heart) through `heal`. */
   heal(amount: number, source: string) {
     const ev = this.bus.emit('heal', { amount, source });
     if (ev.cancelled || ev.amount <= 0) return;
-    this.player.hp = Math.min(this.stats.get('maxHearts') * 2, this.player.hp + Math.ceil(ev.amount));
+    this.player.hp = Math.min(this.maxHp, this.player.hp + ev.amount);
     sfx3.heal();
   }
 
@@ -396,7 +400,7 @@ export class Game {
     const p = this.player;
     if (kind === 'key') { p.keys = Math.min(COUNTER_CAP, p.keys + ev.amount); sfx2.key(); }
     else if (kind === 'bomb') { p.bombs = Math.min(COUNTER_CAP, p.bombs + ev.amount); sfx3.bombPickup(); }
-    else this.heal(ev.amount, 'pickup');
+    else this.heal(ev.amount * HALF_HEART, 'pickup'); // hearts are counted in half-hearts
     return true;
   }
 
@@ -804,7 +808,7 @@ export class Game {
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
       // hearts stay on the floor while you're at full health, like in Isaac
-      if (p.type === 'heart' && this.player.hp >= this.stats.get('maxHearts') * 2) continue;
+      if (p.type === 'heart' && this.player.hp >= this.maxHp) continue;
       if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {
         this.pickups.take(p);
         this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'key' ? 0xf2c84b : p.type === 'bomb' ? 0xffb347 : 0xe0303c, 10, 2, 0.06);
