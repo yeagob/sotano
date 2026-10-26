@@ -1,6 +1,6 @@
 # SÓTANO — Research and Technical Proposal (v0.2, draft)
 
-Companion to [DESIGN.md](DESIGN.md). Two parts: **what we know about how Isaac and Noita are built**, and **how we build SÓTANO** for the browser (WebGL), open source, deployed on Vercel. For how the code that exists *today* is organised, see [ARCHITECTURE.md](ARCHITECTURE.md); the item system as built (after its review) is in [ITEMS.md](ITEMS.md), floors and templates in [ROOMS.md](ROOMS.md).
+Companion to [DESIGN.md](../design/DESIGN.md). Two parts: **what we know about how Isaac and Noita are built**, and **how we build SÓTANO** for the browser (WebGL), open source, deployed on Vercel. For how the code that exists *today* is organised, see [ARCHITECTURE.md](../architecture/OVERVIEW.md); the item system as built (after its review) is in [ITEMS.md](../architecture/ITEMS.md), floors and templates in [ROOMS.md](../architecture/ROOMS.md).
 
 > **About sources.** The Isaac material comes mainly from its public modding API (documented by the community in IsaacDocs) and from the analysis of its floor generation (Boris the Brave, with input from Florian Himsl). The Noita material comes from the GDC 2019 talk *Exploring the Tech and Design of Noita* and articles by Nolla Games. Details marked *(verify)* are from memory or secondary sources.
 
@@ -297,7 +297,9 @@ Measure early on a mid-range phone; it drives most decisions.
 | Milestone | Content | Question it answers |
 |---|---|---|
 | **M0 — Toy** ✔ | Vite+TS, breakable 13×7 room, FPS controller with hands, intentions that drop, physics cubes, pick up/kick/place/throw | Is breaking, carrying and placing fun in first person? |
-| **M1 — One floor** ✔ (partly) | Done: floor plan generator, connectable room templates, Doom-style doors and keys, treasure/vault pedestals, boss room with trapdoor, 11 items + 3 synergies on the reviewed item architecture, stats panel, minimap, custom cube physics. Still to do: bombs, enemies, health, touch controls | Does Isaac's structure work in 3D with breakable walls? |
+| **M1 — One floor** ✔ | Floor plan generator, connectable room templates, Doom-style doors and keys, treasure/vault pedestals, items + synergies on the reviewed item architecture, stats panel, minimap, custom cube physics | Does Isaac's structure work in 3D with breakable walls? |
+| **M1.5 — Combat and depth** ✔ | Stacked floors descended by falling, projections (Doubt, Inner Critic, Panic) with flow-field navigation, health, bombs as fused cubes, inventory window, item icons and quality up to 4, item safety layers (validation, runtime guards, synergy matrix) | Is fighting projections in breakable rooms fun? |
+| **E — Elements** | Chests, fire and barrels, water, lava, mud/sand, furnaces, electricity ([plan](../architecture/ELEMENTS.md)) | Do material interactions make the world feel alive (Noita)? |
 | **M2 — Synergies** | Behaviours, weapon types, 15 items, synergy test matrix | Do surprising combinations emerge without special code? |
 | **M3 — Depth** | 4 floors, slabs, streaming, digging between floors, voxel boss | Is choosing between trapdoor and digging interesting? |
 | **M4 — The climb** | Special blocks, climbing to a minimal surface, run saving | Is the way back fun, or a chore? |

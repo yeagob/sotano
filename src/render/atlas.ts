@@ -58,6 +58,18 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
       }
       for (const [x, y] of [[3, 3], [T - 4, 3], [3, T - 4], [T - 4, T - 4]]) px(x, y, light);
       break;
+    case 'seed':
+      // dark core with glowing cracks: a breakthrough waiting to happen
+      for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+        const d = Math.hypot(x - 7.5, y - 7.5);
+        px(x, y, d > 7.2 ? dark : rng.next() < 0.1 ? dark : base);
+      }
+      for (let i = 0; i < 4; i++) {
+        let x = 7, y = 7;
+        for (let k = 0; k < 6; k++) { px(x, y, light); x += rng.int(-1, 1); y += rng.int(-1, 1); x = Math.max(1, Math.min(T - 2, x)); y = Math.max(1, Math.min(T - 2, y)); }
+      }
+      px(7, 7, '#fff3c4'); px(8, 7, '#fff3c4'); px(7, 8, '#fff3c4'); px(8, 8, '#fff3c4');
+      break;
     case 'grass':
       // grass side: dirt with a green fringe on top
       paintTile(g, ox, oy, MATERIALS[1], rng);

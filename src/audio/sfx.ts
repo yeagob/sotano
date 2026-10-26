@@ -62,3 +62,17 @@ export const sfx2 = {
   item: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.18, 'triangle', 0.16), i * 90)),
   descend: () => { tone(330, 0.5, 'sine', 0.25, 0.3); noise(0.6, 0.2, 200, 0.7); },
 };
+
+export const sfx3 = {
+  hurt: () => { tone(220, 0.18, 'square', 0.18, 0.5); noise(0.12, 0.3, 600, 1); },
+  heal: () => { tone(523, 0.12, 'sine', 0.15); setTimeout(() => tone(784, 0.16, 'sine', 0.15), 90); },
+  bombPickup: () => { tone(330, 0.08, 'square', 0.12); setTimeout(() => tone(440, 0.1, 'square', 0.12), 60); },
+  fuse: () => noise(0.25, 0.12, 4000, 4),
+  spawn: () => { tone(110, 0.6, 'sine', 0.18, 2.2); noise(0.6, 0.08, 1200, 6); },
+  dissolve: () => { noise(0.3, 0.25, 900, 1.2); tone(300, 0.25, 'triangle', 0.12, 0.4); },
+  seal: () => { noise(0.4, 0.3, 120, 0.8); tone(70, 0.4, 'sawtooth', 0.08, 0.8); },
+  clear: () => [392, 523, 659].forEach((f, i) => setTimeout(() => tone(f, 0.22, 'triangle', 0.14), i * 110)),
+  rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
+  judge: () => tone(880, 0.12, 'sawtooth', 0.06, 0.5),
+  death: () => [392, 330, 262, 196].forEach((f, i) => setTimeout(() => tone(f, 0.4, 'sine', 0.2), i * 220)),
+};

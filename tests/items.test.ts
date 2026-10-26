@@ -10,10 +10,15 @@ import { Inventory } from '../src/items/inventory';
 import { ItemPools } from '../src/items/pool';
 import { defineItem, defineSynergy, hook, type ItemApi, type ItemDef, type SynergyDef } from '../src/items/types';
 
+const T = { quality: 0 as const, icon: { rows: [], palette: {} } };
+
 function setup(catalog: readonly ItemDef[] = ITEMS, synergies: readonly SynergyDef[] = SYNERGIES) {
   const bus: GameBus = createBus();
   const stats = new StatSheet();
-  const api = { bus, stats: () => stats.all, defer: (fn: () => void) => bus.defer(fn) } as unknown as ItemApi;
+  const api = {
+    bus, stats: () => stats.all, defer: (fn: () => void) => bus.defer(fn),
+    heal: () => {}, collect: () => true, damagePlayer: () => {}, rng: () => new Rng(1), toast: () => {},
+  } as unknown as ItemApi;
   const inv = new Inventory(new Map(catalog.map(i => [i.id, i])), synergies, stats, () => bus, () => api);
   return { bus, stats, inv };
 }
@@ -66,32 +71,32 @@ describe('inventory', () => {
 
   it('reports the stat changes of a pickup', () => {
     const { inv } = setup();
-    const r = inv.gain('heavy')!;
+    const r = inv.gain('stoic')!;
     expect(r.changes.find(c => c.stat === 'damage')).toEqual({ stat: 'damage', from: 3.5, to: 5.5 });
   });
 
   it('keeps effects from other sources on the same sheet', () => {
     const { stats, inv } = setup();
     stats.add({ stat: 'moveSpeed', layer: 'mul', value: 0.5, source: 'curse:slow' });
-    inv.gain('swift');
-    inv.lose('swift');
+    inv.gain('flow');
+    inv.lose('flow');
     expect(stats.get('moveSpeed')).toBe(0.5);
   });
 
   it('switches synergies on and off, and suppression replaces the item hook', () => {
     const { bus, inv } = setup();
-    inv.gain('chain');
-    expect(bus.dump().blockBreak.map(h => h.id)).toEqual(['chain.spread']);
-    const r = inv.gain('bulldozer')!;
-    expect(r.newSynergies.map(s => s.id)).toEqual(['wrecking_ball']);
-    expect(bus.dump().blockBreak.map(h => h.id)).toEqual(['wrecking_ball.shatter']);
-    inv.lose('bulldozer');
-    expect(bus.dump().blockBreak.map(h => h.id)).toEqual(['chain.spread']);
+    inv.gain('habitstack');
+    expect(bus.dump().blockBreak.map(h => h.id)).toEqual(['habitstack.spread']);
+    const r = inv.gain('exposure')!;
+    expect(r.newSynergies.map(s => s.id)).toEqual(['flooding']);
+    expect(bus.dump().blockBreak.map(h => h.id)).toEqual(['flooding.shatter']);
+    inv.lose('exposure');
+    expect(bus.dump().blockBreak.map(h => h.id)).toEqual(['habitstack.spread']);
   });
 
   it('supports tag requirements with counts', () => {
-    const a = defineItem({ id: 'a', name: 'A', description: '', pools: {}, color: 0, tags: ['x'] });
-    const b = defineItem({ id: 'b', name: 'B', description: '', pools: {}, color: 0, tags: ['x'] });
+    const a = defineItem({ id: 'a', name: 'A', description: '', pools: {}, color: 0, ...T, tags: ['x'] });
+    const b = defineItem({ id: 'b', name: 'B', description: '', pools: {}, color: 0, ...T, tags: ['x'] });
     const two = defineSynergy({ id: 'two_x', name: '', description: '', requires: [{ tag: 'x', count: 2 }],
       stats: [{ stat: 'luck', layer: 'add', value: 1 }] });
     const { stats, inv } = setup([a, b], [two]);
@@ -103,8 +108,8 @@ describe('inventory', () => {
 
   it('runs onGain once, never on rebuild or restore', () => {
     let n = 0;
-    const once = defineItem({ id: 'once', name: '', description: '', pools: {}, color: 0, onGain: () => { n++; } });
-    const other = defineItem({ id: 'other', name: '', description: '', pools: {}, color: 0 });
+    const once = defineItem({ id: 'once', name: '', description: '', pools: {}, color: 0, ...T, onGain: () => { n++; } });
+    const other = defineItem({ id: 'other', name: '', description: '', pools: {}, color: 0, ...T });
     const { inv } = setup([once, other], []);
     inv.gain('once');
     inv.gain('other');
@@ -114,7 +119,7 @@ describe('inventory', () => {
   });
 
   it('a throwing hook is logged and skipped, not fatal', () => {
-    const bad = defineItem({ id: 'bad', name: '', description: '', pools: {}, color: 0,
+    const bad = defineItem({ id: 'bad', name: '', description: '', pools: {}, color: 0, ...T,
       hooks: [
         hook('jump', () => { throw new Error('boom'); }, { id: 'oops' }),
         hook('jump', e => { e.velocity = 99; }, { id: 'ok', priority: 60 }),
@@ -129,7 +134,7 @@ describe('inventory', () => {
 
   it('serialize then restore gives the same stats', () => {
     const a = setup(), b = setup();
-    ['heavy', 'miner', 'builder', 'heavy'].forEach(id => a.inv.gain(id));
+    ['stoic', 'deepfocus', 'secondbrain', 'stoic'].forEach(id => a.inv.gain(id));
     b.inv.restore(a.inv.serialize());
     expect(b.stats.all).toEqual(a.stats.all);
   });
@@ -158,7 +163,9 @@ describe('contract', () => {
     .map(p => readFileSync(p, 'utf8')).join('\n');
   const eventNames = Object.keys({
     fire: 0, blockDamage: 0, blockBreak: 0, blockPlace: 0, touchBlock: 0, explosion: 0, touchCube: 0, kick: 0, throw: 0,
-    drop: 0, debrisImpact: 0, jump: 0, land: 0, doorOpen: 0, keyPickup: 0, itemGained: 0, roomEnter: 0, floorEnter: 0,
+    drop: 0, debrisImpact: 0, jump: 0, land: 0, doorOpen: 0, pickupCollect: 0, itemGained: 0, roomEnter: 0, floorEnter: 0,
+    blockLoot: 0, bombPlace: 0, playerDamage: 0, heal: 0, death: 0, enemySpawn: 0, enemyDamage: 0, enemyContact: 0,
+    enemyDeath: 0, roomClear: 0,
   } satisfies Record<keyof GameEvents, 0>);
 
   it('every game event has an emit site', () => {

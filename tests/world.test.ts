@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { meshChunk } from '../src/world/mesher';
 import { raycastVoxels } from '../src/physics/raycast';
 import { moveBody, type Body } from '../src/physics/voxel-collide';
-import { buildFloor } from '../src/world/floor';
+import { bandOf, carveFloor, createDungeonWorld, FLOORS, openHole } from '../src/world/floor';
+import { ENEMY_BUDGET } from '../src/content/enemies';
 import { generatePlan, DEFAULT_PLAN } from '../src/world/floorplan';
 import { ROOM_TEMPLATES, validateTemplate } from '../src/content/rooms';
 import { Rng, RunRng } from '../src/core/rng';
@@ -57,12 +58,24 @@ describe('voxel collision', () => {
   });
 });
 
-describe('floor generation', () => {
+const carveOpts = { templates: ROOM_TEMPLATES, drawItem: () => null, enemies: ENEMY_BUDGET };
+
+function dungeon(seed: number, floors = 2) {
+  const rng = new RunRng(seed);
+  const w = createDungeonWorld(seed);
+  const out = [carveFloor(w, rng, 1, carveOpts)];
+  for (let k = 2; k <= floors; k++) {
+    const boss = out[k - 2].rooms.find(r => r.type === 'boss')!;
+    out.push(carveFloor(w, rng, k, { ...carveOpts, startCell: [boss.gx, boss.gz] }));
+  }
+  return { w, floors: out };
+}
+
+describe('dungeon generation', () => {
   it('is deterministic per seed', () => {
-    const a = buildFloor(new RunRng(5), 1, ROOM_TEMPLATES);
-    const b = buildFloor(new RunRng(5), 1, ROOM_TEMPLATES);
-    expect(a.rooms.map(r => r.template)).toEqual(b.rooms.map(r => r.template));
-    expect(a.world.data).toEqual(b.world.data);
+    const a = dungeon(5), b = dungeon(5);
+    expect(a.floors.map(f => f.rooms.map(r => r.template))).toEqual(b.floors.map(f => f.rooms.map(r => r.template)));
+    expect(a.w.data).toEqual(b.w.data);
   });
 
   it('always has a start, a treasure room and a boss room far from the start', () => {
@@ -79,6 +92,14 @@ describe('floor generation', () => {
     }
   });
 
+  it('can start a plan from any of the 49 grid cells (floors start under the boss above)', () => {
+    for (let gz = 0; gz < 7; gz++) for (let gx = 0; gx < 7; gx++) for (let seed = 1; seed <= 6; seed++) {
+      const plan = generatePlan(new Rng(seed * 100 + gx * 7 + gz), DEFAULT_PLAN, [gx, gz]);
+      expect(plan.rooms[0]).toMatchObject({ gx, gz, type: 'start' });
+      expect(plan.rooms.some(r => r.type === 'boss')).toBe(true);
+    }
+  });
+
   it('connects every room (a tree reachable from the start)', () => {
     for (let seed = 1; seed <= 30; seed++) {
       const plan = generatePlan(new Rng(seed));
@@ -88,20 +109,41 @@ describe('floor generation', () => {
     }
   });
 
-  it('carves walkable doorways, a spawn, a pedestal, a trapdoor and a key when a door is locked', () => {
-    for (let seed = 1; seed <= 20; seed++) {
-      const f = buildFloor(new RunRng(seed), 1, ROOM_TEMPLATES);
-      const [sx, sy, sz] = f.spawn;
-      expect(f.world.get(Math.floor(sx), sy, Math.floor(sz))).toBe(AIR);
-      for (const d of f.doors) {
-        for (let x = d.x0; x <= d.x1; x++) for (let y = d.y0; y <= d.y1; y++) for (let z = d.z0; z <= d.z1; z++)
-          expect(f.world.get(x, y, z)).toBe(AIR);
-        expect(f.world.get(d.x0, d.y0 - 1, d.z0)).not.toBe(AIR);
+  it('carves walkable doorways, spawn, pedestals and unique global room ids on every floor', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const { w, floors } = dungeon(seed, FLOORS);
+      const ids = new Set<number>();
+      for (const f of floors) {
+        const [sx, sy, sz] = f.spawn;
+        if (f.floor === 1) expect(w.get(Math.floor(sx), sy, Math.floor(sz))).toBe(AIR);
+        for (const d of f.doors) {
+          for (let x = d.x0; x <= d.x1; x++) for (let y = d.y0; y <= d.y1; y++) for (let z = d.z0; z <= d.z1; z++)
+            expect(w.get(x, y, z)).toBe(AIR);
+          expect(w.get(d.x0, d.y0 - 1, d.z0)).not.toBe(AIR);
+        }
+        expect(f.pedestals.length).toBeGreaterThanOrEqual(1);
+        expect(f.keys.length).toBe(f.doors.some(d => d.locked) ? 1 : 0);
+        expect(f.doors).toHaveLength(f.rooms.length - 1);
+        for (const r of f.rooms) { expect(ids.has(r.id)).toBe(false); ids.add(r.id); expect(bandOf(r.y0)).toBe(f.floor); }
+        expect(f.hole === null).toBe(f.floor === FLOORS);
       }
-      expect(f.pedestals.length).toBeGreaterThanOrEqual(1);
-      expect(f.trapdoor).not.toBeNull();
-      expect(f.keys.length).toBe(f.doors.some(d => d.locked) ? 1 : 0);
-      expect(f.doors).toHaveLength(f.rooms.length - 1);
+    }
+  });
+
+  it('the hole drops you from the boss room straight into the next start room', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const { w, floors } = dungeon(seed, 2);
+      const hole = floors[0].hole!;
+      openHole(w, hole);
+      // the shaft is open from the boss room floor down into floor 2
+      for (let y = hole.yBottom; y <= hole.yTop; y++) expect(w.get(hole.x, y, hole.z)).toBe(AIR);
+      // and it ends inside floor 2's start room
+      const start = floors[1].rooms.find(r => r.type === 'start')!;
+      expect(hole.x).toBeGreaterThanOrEqual(start.x0);
+      expect(hole.x + 1).toBeLessThan(start.x0 + 13);
+      expect(hole.z).toBeGreaterThanOrEqual(start.z0);
+      expect(hole.z + 1).toBeLessThan(start.z0 + 7);
+      expect(w.solid(hole.x, start.y0 - 1, hole.z)).toBe(true); // you land on its floor
     }
   });
   it('marks neighbour chunks dirty when editing a chunk border', () => {

@@ -17,6 +17,7 @@ export function intentFromStats(s: Stats): IntentSpec {
     pierce: 0,
     pierceTier: 0,
     color: 0x9fd3ff,
+    tags: new Set(),
   };
 }
 
@@ -32,6 +33,9 @@ export interface IntentHooks {
   debrisAt(x: number, y: number, z: number, r: number): number;
   /** Something hit a loose cube with this velocity. */
   hitDebris(i: number, vel: THREE.Vector3, intent: IntentSpec): void;
+  /** Uid of an enemy touching this sphere, or -1. */
+  enemyAt(x: number, y: number, z: number, r: number): number;
+  hitEnemy(uid: number, vel: THREE.Vector3, intent: IntentSpec): void;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
 }
 
@@ -70,6 +74,14 @@ export class Intents {
       let dead = false;
 
       // against loose cubes: push them
+      // against projections: damage and knock them back
+      const foe = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius);
+      if (foe >= 0) {
+        h.hitEnemy(foe, t.vel, t.spec);
+        h.splash(t.pos, t.spec.color, true);
+        this.list.splice(i, 1);
+        continue;
+      }
       const cube = h.debrisAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius);
       if (cube >= 0) {
         h.hitDebris(cube, t.vel, t.spec);

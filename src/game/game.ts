@@ -1,24 +1,28 @@
-// The game loop: ties together the generated floor, player, intentions, loose cubes, doors,
-// pickups, items and rendering. Rule of thumb for this file: anything an item might want to
-// change reads a stat or emits an event (docs/ITEMS.md §3).
+// The game loop: ties together the stacked dungeon, player, intentions, loose cubes, bombs,
+// doors, pickups, projections (enemies), items and rendering. Rule of thumb for this file:
+// anything an item might want to change reads a stat or emits an event (docs/architecture/ITEMS.md §3).
 
 import * as THREE from 'three';
-import { sfx, sfx2, unlockAudio } from '../audio/sfx';
+import { sfx, sfx2, sfx3, unlockAudio } from '../audio/sfx';
 import { intentFromStats, Intents } from '../combat/intents';
+import { ENEMY_BUDGET, ENEMY_BY_ID } from '../content/enemies';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
-import { AIR, mat, MATERIALS } from '../content/materials';
-import { ROOM_TEMPLATES } from '../content/rooms';
+import { AIR, MAT, mat, MATERIALS } from '../content/materials';
+import { ROOM_D, ROOM_H, ROOM_TEMPLATES, ROOM_W } from '../content/rooms';
 import { SYNERGIES } from '../content/synergies';
 import { blockDamage, type DamageKind } from '../core/damage';
 import { RunRng } from '../core/rng';
 import { StatSheet } from '../core/stats';
+import type { Enemy } from '../enemies/types';
 import { Doors, type Door } from '../entities/doors';
+import { Enemies } from '../entities/enemies';
 import { Pickups } from '../entities/pickups';
 import { Player } from '../entities/player';
 import { Input } from '../input/input';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
 import type { ItemApi } from '../items/types';
+import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import { boxHits } from '../physics/voxel-collide';
@@ -27,15 +31,29 @@ import { ChunkRenderer } from '../render/chunks';
 import { CrackView, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
-import { buildFloor, cellOf, SURFACE_Y, type FloorResult } from '../world/floor';
+import {
+  bandOf, carveFloor, cellOf, createDungeonWorld, FLOORS, openHole, SURFACE_Y,
+  type FloorResult, type RoomInfo,
+} from '../world/floor';
 import type { VoxelWorld } from '../world/world';
-import { createBus, type GameBus } from './events';
+import { createBus, type GameBus, type Owner, type PickupKind } from './events';
 import { Hud } from './hud';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
+
+// safety layer 1 at startup: report catalogue problems, and keep invalid items out of the pools
+const CATALOGUE_ERRORS = validateCatalogue(ITEMS, SYNERGIES);
+for (const e of CATALOGUE_ERRORS) console.error('[items]', e);
+const PLAYABLE_ITEMS = ITEMS.filter(i => validateItem(i).length === 0);
+
 const MAX_CUBES = IS_TOUCH ? 1000 : 2000;
 const DUNGEON_FOG = new THREE.Color(0x15110e);
 const SKY = new THREE.Color(0x8ec5ee);
+const COUNTER_CAP = 99;
+const SPAWN_GAP = 0.45;
+const HOLE_DELAY = 1.5;
+
+interface RoomState { cleared: boolean; started: boolean; queue: string[]; next: number; sealed: boolean }
 
 export class Game {
   readonly renderer: THREE.WebGLRenderer;
@@ -51,17 +69,25 @@ export class Game {
   rng!: RunRng;
   pools!: ItemPools;
   seed: number;
+  /** Floor the player is on now (by height), and the deepest one reached. */
   depth = 1;
-  floor!: FloorResult;
+  maxDepth = 1;
   world!: VoxelWorld;
+  floors = new Map<number, FloorResult>();
+  rooms = new Map<number, RoomInfo>();
   debris!: DebrisSystem;
   doors!: Doors;
   pickups!: Pickups;
+  enemies!: Enemies;
   room = -1;
   visited = new Set<number>();
   /** Keep simulating while the mouse isn't captured (for automated tests). */
   simulateUnlocked = false;
 
+  private activated = new Set<number>();
+  private roomState = new Map<number, RoomState>();
+  private holes = new Map<number, number>();   // floor → seconds until its hole opens
+  private groundBand = 1;
   private atlas = buildAtlas();
   private chunks!: ChunkRenderer;
   private debrisView: DebrisView;
@@ -72,7 +98,6 @@ export class Game {
   private time = 0;
   private fpsAcc = 0; private fpsN = 0; fps = 0;
   private fogColor = new THREE.Color();
-  private descending = 0;
 
   constructor(canvas: HTMLCanvasElement, seed: number) {
     this.seed = seed;
@@ -86,7 +111,7 @@ export class Game {
     const sun = new THREE.DirectionalLight(0xffffff, 1.0);
     sun.position.set(0.4, 1, 0.3);
     this.scene.add(sun);
-    this.particles = new Particles(this.scene);
+    this.particles = new Particles(this.scene, 900);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
     this.cracks = new CrackView(this.scene);
     this.intents = new Intents(this.scene, {
@@ -97,6 +122,12 @@ export class Game {
       hitDebris: (i, v, t) => {
         const k = (0.25 + t.damage * 0.06) * 6 / Math.max(1, v.length());
         this.debris.push(i, v.x * k, v.y * k + 1, v.z * k);
+      },
+      enemyAt: (x, y, z, r) => this.enemies.at(x, y, z, r),
+      hitEnemy: (uid, v, t) => {
+        const e = this.enemies.get(uid);
+        const l = Math.hypot(v.x, v.z) || 1;
+        if (e) this.damageEnemy(e, t.damage, 'intent', 'intent', 'player', v.x / l, v.z / l);
       },
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
     });
@@ -111,60 +142,91 @@ export class Game {
 
   // ───────────────────────── runs and floors ─────────────────────────
 
-  /** Starts a new run: fresh items, keys and pools, floor 1. */
+  /** Starts a new run: a fresh dungeon, items, counters and pools; floor 1. */
   newRun(seed = this.seed) {
     this.seed = seed;
     this.rng = new RunRng(seed);
-    this.pools = new ItemPools(ITEMS, this.rng.get('loot'));
-    this.inventory.restore([]);
-    this.player.hand = [];
-    this.player.keys = 0;
-    this.depth = 1;
-    this.buildLevel();
-    this.hud.setItems(this.inventory.items.map(i => i.def));
-    this.hud.toast(`Seed ${seed}`);
-  }
-
-  /** Down the trapdoor: same run, same items, a new floor. */
-  nextFloor() {
-    this.depth++;
-    this.buildLevel();
-    this.hud.toast(`Floor ${this.depth}`);
-  }
-
-  private buildLevel() {
+    this.pools = new ItemPools(PLAYABLE_ITEMS, this.rng.get('loot'));
     this.chunks?.dispose();
     this.doors?.dispose();
     this.pickups?.dispose();
-    this.floor = buildFloor(this.rng, this.depth, ROOM_TEMPLATES);
-    this.world = this.floor.world;
-    this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 64);
+    this.enemies?.dispose();
+    this.world = createDungeonWorld(seed);
+    this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 48);
     this.debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
-    this.doors = new Doors(this.scene, this.floor.doors);
+    this.debris.onFuse = (_i, x, y, z) => this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', 'player', 2);
+    this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
-    for (const p of this.floor.pedestals) {
-      const type = this.floor.rooms[p.room].type;
-      const id = this.pools.draw(type === 'vault' ? 'vault' : 'treasure');
-      this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, id, id ? ITEM_BY_ID.get(id)!.color : 0xffffff);
-    }
-    for (const k of this.floor.keys) this.pickups.add('key', k.x + 0.5, k.y, k.z + 0.5, k.room);
-    const t = this.floor.trapdoor;
-    if (t) this.pickups.add('trapdoor', t.x + 0.5, t.y + 0.01, t.z + 0.5, t.room);
-
-    // a fresh bus per floor: drops every hook and pending chain reaction from the last one
+    this.enemies = new Enemies(this.scene, this.enemyHost());
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.holes.clear();
     this.bus = createBus();
-    this.inventory.rebuild();
-    this.player.spawnAt(...this.floor.spawn);
-    this.player.yaw = 0; this.player.pitch = 0;
-    this.visited = new Set();
+    this.inventory.restore([]);
+    const p = this.player;
+    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.stats.get('maxHearts') * 2; p.dead = false; p.invulnT = 0;
+    this.carve(1);
+    this.activate(1);
+    this.carve(2);
+    p.spawnAt(...this.floors.get(1)!.spawn);
+    p.yaw = 0; p.pitch = 0;
+    this.depth = this.maxDepth = this.groundBand = 1;
     this.room = -1;
-    this.bus.emit('floorEnter', { depth: this.depth });
-    this.hud.setFloor(this.floor, this.depth);
+    this.visited = new Set();
+    this.hud.hideDeath();
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    this.hud.setFloor(this.floors.get(1)!, 1);
+    this.bus.emit('floorEnter', { depth: 1 });
+    this.hud.toast(`Floor 1 · seed ${seed}`);
+  }
+
+  /** Carves floor k into the world (one floor ahead of the player). */
+  private carve(k: number) {
+    if (k > FLOORS || this.floors.has(k)) return;
+    const above = this.floors.get(k - 1);
+    const boss = above?.rooms.find(r => r.type === 'boss');
+    const f = carveFloor(this.world, this.rng, k, {
+      templates: ROOM_TEMPLATES,
+      startCell: boss ? [boss.gx, boss.gz] : undefined,
+      drawItem: pool => this.pools.draw(pool),
+      enemies: ENEMY_BUDGET,
+    });
+    this.floors.set(k, f);
+    for (const r of f.rooms) {
+      this.rooms.set(r.id, r);
+      this.roomState.set(r.id, { cleared: !r.enemies.length, started: false, queue: [...r.enemies], next: 0, sealed: false });
+    }
+  }
+
+  /** Activates floor k: its doors, pedestals and keys appear ("the next floor loads"). */
+  private activate(k: number) {
+    const f = this.floors.get(k);
+    if (!f || this.activated.has(k)) return;
+    this.activated.add(k);
+    this.doors.add(f.doors);
+    for (const p of f.pedestals) this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, p.item ? ITEM_BY_ID.get(p.item) ?? null : null);
+    for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
+  }
+
+  /** Down a floor (console shortcut): open the hole and drop the player into it. */
+  nextFloor() {
+    const f = this.floors.get(this.depth);
+    if (!f?.hole) return;
+    this.activate(this.depth + 1);
+    openHole(this.world, f.hole);
+    this.player.spawnAt(f.hole.x + 1, f.hole.yTop + 1, f.hole.z + 1);
   }
 
   /** World voxels plus closed doors. */
   solid(x: number, y: number, z: number) {
     return this.world.solid(x, y, z) || this.doors.solidAt(x, y, z);
+  }
+
+  roomAt(x: number, y: number, z: number): RoomInfo | null {
+    const f = this.floors.get(bandOf(y));
+    if (!f) return null;
+    const [gx, gz] = cellOf(x, z);
+    if (gx < 0 || gz < 0 || gx >= f.plan.w || gz >= f.plan.h) return null;
+    const i = f.plan.grid[gx + gz * f.plan.w];
+    return i < 0 ? null : f.rooms[i];
   }
 
   // ───────────────────────── items ─────────────────────────
@@ -180,22 +242,178 @@ export class Game {
       rng: () => this.rng.get('items'),
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, 1, kind, src),
-      explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src),
+      explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, 'player', 2),
       spawnDebris: (m, x, y, z, vx, vy, vz) => { this.debris.spawn(m, x, y, z, vx, vy, vz); },
       toast: text => this.hud.toast(text),
       defer: fn => this.bus.defer(fn),
+      heal: (n, src = 'item') => this.heal(n, src),
+      damagePlayer: (n, src = 'item') => this.damagePlayer(n, 'item', src, 'player'),
+      collect: (kind, n) => this.collect(kind, n),
+      counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.stats.get('maxHearts') * 2 }),
+      spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
     };
   }
 
-  /** Gives an item (pedestal or console) and shows what it changed. */
+  /** Gives an item (pedestal or console) with the full pickup feedback. */
   give(id: string) {
     const r = this.inventory.gain(id);
     if (!r) { console.warn('Unknown item:', id, '· available:', ITEMS.map(i => i.id)); return; }
     this.pools.remove(id);
+    const def = r.instance.def;
     this.bus.emit('itemGained', { id, uid: r.instance.uid });
+    this.clampHealth();
     this.hud.setItems(this.inventory.items.map(i => i.def));
-    this.hud.itemBanner(r.instance.def, r.changes, r.newSynergies);
+    this.hud.itemBanner(def, r.changes, r.newSynergies);
+    this.hud.flash(def.color);
+    this.hands.holdUp(def);
+    const b = this.player.body;
+    this.particles.burst(b.x, b.y + 1.6, b.z, def.color, 30, 4, 0.08);
+    this.particles.burst(b.x, b.y + 1.6, b.z, 0xfff3c4, 16, 3, 0.06);
     sfx2.item();
+  }
+
+  // ───────────────────────── health ─────────────────────────
+
+  private clampHealth() {
+    this.player.hp = Math.min(this.player.hp, this.stats.get('maxHearts') * 2);
+  }
+
+  /** Hurts the player through `playerDamage`. Returns true if it landed. */
+  damagePlayer(amount: number, kind: string, source: string, owner: Owner): boolean {
+    const p = this.player;
+    if (p.dead || p.invulnT > 0 || amount <= 0) return false;
+    const ev = this.bus.emit('playerDamage', { amount, kind, source, owner });
+    if (ev.cancelled || ev.amount <= 0) return false;
+    p.hp -= Math.ceil(ev.amount);
+    p.invulnT = this.stats.get('invuln');
+    this.hud.hurt();
+    sfx3.hurt();
+    if (p.hp <= 0) {
+      const d = this.bus.emit('death', { source });
+      if (d.cancelled) { p.hp = Math.max(1, p.hp); return true; }
+      p.hp = 0;
+      p.dead = true;
+      sfx3.death();
+      this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
+    }
+    return true;
+  }
+
+  heal(amount: number, source: string) {
+    const ev = this.bus.emit('heal', { amount, source });
+    if (ev.cancelled || ev.amount <= 0) return;
+    this.player.hp = Math.min(this.stats.get('maxHearts') * 2, this.player.hp + Math.ceil(ev.amount));
+    sfx3.heal();
+  }
+
+  /** Adds keys, bombs or hearts through `pickupCollect`. Returns false if refused. */
+  collect(kind: PickupKind, amount: number): boolean {
+    const ev = this.bus.emit('pickupCollect', { kind, amount });
+    if (ev.cancelled) return false;
+    const p = this.player;
+    if (kind === 'key') { p.keys = Math.min(COUNTER_CAP, p.keys + ev.amount); sfx2.key(); }
+    else if (kind === 'bomb') { p.bombs = Math.min(COUNTER_CAP, p.bombs + ev.amount); sfx3.bombPickup(); }
+    else this.heal(ev.amount, 'pickup');
+    return true;
+  }
+
+  // ───────────────────────── enemies ─────────────────────────
+
+  private enemyHost() {
+    return {
+      solid: (x: number, y: number, z: number) => this.solid(x, y, z),
+      worldVersion: () => this.world.version,
+      player: () => { const b = this.player.body; return { x: b.x, y: b.y, z: b.z, hw: b.hw, h: b.h }; },
+      room: (id: number) => this.rooms.get(id)!,
+      contact: (e: Enemy) => {
+        const ev = this.bus.emit('enemyContact', { uid: e.uid, def: e.def.id, toPlayer: e.contactDamage, toEnemy: 0 });
+        if (ev.cancelled) return;
+        if (ev.toPlayer > 0) this.damagePlayer(ev.toPlayer, 'contact', e.def.id, `enemy:${e.uid}`);
+        if (ev.toEnemy > 0) this.damageEnemy(e, ev.toEnemy, 'contact', 'contact', 'player', 0, 0);
+      },
+      projectileHit: (dmg: number) => { this.damagePlayer(dmg, 'projectile', 'judgement', 'world'); },
+      projectileBlock: (x: number, y: number, z: number) => {
+        const id = this.world.get(x, y, z);
+        return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 1, 'crush', 'judgement');
+      },
+      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def.id}`, `enemy:${e.uid}`, 2),
+      died: (e: Enemy) => this.onEnemyDeath(e),
+      particles: (x: number, y: number, z: number, c: number, n: number, s: number, size: number) => this.particles.burst(x, y, z, c, n, s, size),
+    };
+  }
+
+  /** Hurts an enemy through `enemyDamage`, with knock-back along (kx, kz). */
+  damageEnemy(e: Enemy, amount: number, kind: string, source: string, owner: Owner, kx: number, kz: number) {
+    if (!e.alive || e.spawning > 0) return;
+    const ev = this.bus.emit('enemyDamage', { uid: e.uid, def: e.def.id, amount, kind, source, owner, knockback: 3 });
+    if (ev.cancelled || ev.amount <= 0) return;
+    this.enemies.hurt(e, ev.amount, kx * ev.knockback, kz * ev.knockback);
+  }
+
+  private onEnemyDeath(e: Enemy) {
+    this.bus.off(null, `enemy:${e.uid}`); // reserved for enemy-owned hooks (M2)
+    const rng = this.rng.get('drops');
+    const drops = (Object.entries(e.def.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
+    const b = e.body;
+    const ev = this.bus.emit('enemyDeath', { uid: e.uid, def: e.def.id, x: b.x, y: b.y, z: b.z, drops });
+    for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    sfx3.dissolve();
+  }
+
+  /** Room combat: seal when the player is fully inside, materialise the queue at the centre,
+   *  open the doors when every projection of the room is gone. */
+  private updateCombat(dt: number) {
+    const b = this.player.body;
+    for (const [id, st] of this.roomState) {
+      if (st.cleared) continue;
+      const r = this.rooms.get(id)!;
+      const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + ROOM_W && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + ROOM_D
+        && b.y > r.y0 - 1 && b.y < r.y0 + ROOM_H;
+      if (inside && !st.sealed) {
+        st.sealed = true;
+        this.doors.seal(id, true);
+        if (!st.started) { st.started = true; st.next = 0.5; sfx3.seal(); }
+      }
+      if (!st.started) continue;
+      if (st.queue.length) {
+        st.next -= dt;
+        if (st.next <= 0) { st.next = SPAWN_GAP; this.spawnEnemy(st.queue.shift()!, r); }
+        continue;
+      }
+      if (this.enemies.aliveIn(id) === 0) {
+        st.cleared = true;
+        this.doors.seal(id, false);
+        const rng = this.rng.get('drops');
+        // Isaac-style clear reward; luck makes it likelier
+        const chance = Math.min(0.9, 0.4 * (1 + 0.25 * Math.max(0, this.stats.get('luck'))));
+        const drops: PickupKind[] = rng.chance(chance) ? [rng.pick(['heart', 'bomb', 'key'] as PickupKind[])] : [];
+        const ev = this.bus.emit('roomClear', { room: id, drops });
+        for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, id, null, 0.3);
+        this.hud.toast('Room clear');
+        sfx3.clear();
+      } else if (!inside && st.sealed) {
+        // the player dug their way out: keep the doors shut until it's cleared, reseal on return
+        st.sealed = false;
+      }
+    }
+  }
+
+  /** Materialise one projection at the room's centre column, on the first free height. */
+  private spawnEnemy(defId: string, r: RoomInfo) {
+    const def = ENEMY_BY_ID.get(defId);
+    if (!def) return;
+    let x = r.x0 + 6.5, z = r.z0 + 3.5;
+    // if the player is standing on the centre (arrived by falling or digging), step aside
+    const b = this.player.body;
+    const dx = x - b.x, dz = z - b.z, d = Math.hypot(dx, dz);
+    if (d < 1.8) { x += (d > 0.01 ? dx / d : 1) * 2; z += (d > 0.01 ? dz / d : 0) * 1.5; }
+    let y = r.y0;
+    while (y < r.y0 + 3 && this.solid(Math.floor(x), y, Math.floor(z))) y++;
+    const uid = this.enemies.newUid();
+    const ev = this.bus.emit('enemySpawn', { uid, def: defId, hp: def.hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(), x, y, z });
+    if (ev.cancelled) return;
+    this.enemies.spawn(def, uid, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
+    sfx3.spawn();
   }
 
   // ───────────────────────── blocks ─────────────────────────
@@ -227,12 +445,28 @@ export class Game {
       this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, r(), 1 + Math.random(), r());
     }
     sfx.break(Math.min(3, mat(id).tier));
+    this.rollLoot(x, y, z, id, source);
+    // digging into the next floor's band activates it
+    if (bandOf(y) > this.maxDepth) this.activate(bandOf(y));
     return true;
   }
 
-  /** Damages every block in a sphere and throws nearby cubes. Items can resize it via `explosion`. */
-  explode(x: number, y: number, z: number, radius: number, damage: number, source: string) {
-    const ev = this.bus.emit('explosion', { x, y, z, radius, damage, source });
+  /**
+   * Broken blocks give nothing but the block itself (owner decision: keys, items and other
+   * rewards live in chests, Minecraft-style). The `blockLoot` event still fires with no drops,
+   * so an item can add some.
+   */
+  private rollLoot(x: number, y: number, z: number, material: number, source: string) {
+    const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops: [] });
+    for (const k of ev.drops) {
+      this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
+      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, k === 'key' ? 0xf2c84b : k === 'bomb' ? 0xffb347 : 0xe0303c, 14, 2.5, 0.07);
+    }
+  }
+
+  /** Damages blocks in a sphere, hurts actors and throws cubes. Items can resize it via `explosion`. */
+  explode(x: number, y: number, z: number, radius: number, damage: number, source: string, owner: Owner = 'world', actorDamage = 2) {
+    const ev = this.bus.emit('explosion', { x, y, z, radius, damage, actorDamage, source, owner });
     if (ev.cancelled) return;
     const r = ev.radius, ri = Math.ceil(r);
     for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
@@ -249,9 +483,19 @@ export class Game {
       if (d > r * 1.8 || d < 1e-3) continue;
       const k = 9 * (1 - d / (r * 1.8)) / d;
       this.debris.push(i, ox * k, oy * k + 3, oz * k);
+      // bombs caught in a blast go off almost at once
+      if (this.debris.isBomb(i) && d < r) this.debris.fuse[i] = Math.min(this.debris.fuse[i], 0.12);
     }
-    this.particles.burst(x, y, z, 0xffa040, 40, 7, 0.14);
-    this.particles.burst(x, y, z, 0x555555, 20, 4, 0.2);
+    const b = this.player.body;
+    if (Math.hypot(b.x - x, b.y + 0.9 - y, b.z - z) < r + 0.4) this.damagePlayer(ev.actorDamage, 'explosion', source, owner);
+    for (const e of [...this.enemies.list]) {
+      const ox = e.body.x - x, oz = e.body.z - z, d = Math.hypot(ox, e.body.y + 0.5 - y, oz);
+      if (d < r + 0.4) this.damageEnemy(e, ev.actorDamage * 4, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
+    }
+    this.particles.burst(x, y, z, 0xffa040, 50, 8, 0.15);
+    this.particles.burst(x, y, z, 0xfff3c4, 20, 5, 0.1);
+    this.particles.burst(x, y, z, 0x555555, 24, 4, 0.22);
+    this.hud.shake(0.35);
     sfx2.boom();
   }
 
@@ -263,7 +507,7 @@ export class Game {
     return broke;
   }
 
-  // ───────────────────────── loose cubes ─────────────────────────
+  // ───────────────────────── loose cubes and bombs ─────────────────────────
 
   private debrisAt(x: number, y: number, z: number, r: number): number {
     const reach = DEBRIS_SIZE / 2 + r;
@@ -293,12 +537,13 @@ export class Game {
       const dx = d.pos[i3] - b.x, dz = d.pos[i3 + 2] - b.z, cy = d.pos[i3 + 1];
       const horiz = Math.hypot(dx, dz);
       if (horiz > b.hw + DEBRIS_SIZE / 2 + 0.35 || cy < b.y - 0.6 || cy > b.y + b.h) continue;
+      const bomb = d.isBomb(i);
       const ev = this.bus.emit('touchCube', {
-        cube: i, material: d.material[i], held: p.hand.length, carry,
-        action: p.hand.length < carry ? 'pickup' : 'kick',
+        cube: i, material: d.material[i], held: p.hand.length, carry, bomb,
+        action: !bomb && p.hand.length < carry ? 'pickup' : 'kick',
       });
       if (ev.cancelled || ev.action === 'ignore') continue;
-      if (ev.action === 'pickup') {
+      if (ev.action === 'pickup' && !bomb) {
         p.hand.push(d.material[i]);
         d.remove(i);
         sfx.pickup();
@@ -321,11 +566,27 @@ export class Game {
     }
   }
 
+  /** E: drop a bomb (a breakthrough) at your feet. */
+  private placeBomb() {
+    const p = this.player;
+    if (p.bombs <= 0) { sfx.denied(); this.hud.toast('No bombs'); return; }
+    const ev = this.bus.emit('bombPlace', { fuse: 1.8 });
+    if (ev.cancelled) return;
+    p.bombs--;
+    const f = p.forward;
+    const l = Math.hypot(f.x, f.z) || 1;
+    const b = p.body;
+    const cube = this.debris.spawn(MAT.bomb, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, 0, b.vz * 0.5);
+    this.debris.fuse[cube] = Math.max(0.1, ev.fuse);
+    this.debris.cooldown[cube] = 0.8;
+    sfx3.fuse();
+  }
+
   // ───────────────────────── player actions ─────────────────────────
 
   private fire() {
     const p = this.player;
-    if (!this.input.fireHeld || p.fireCooldown > 0) return;
+    if (!this.input.fireHeld || p.fireCooldown > 0 || this.hands.holding) return;
     const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all) });
     if (ev.cancelled) return;
     p.fireCooldown = 1 / this.stats.get('fireRate');
@@ -417,38 +678,70 @@ export class Game {
   private touchPickups() {
     const b = this.player.body;
     for (const p of this.pickups.list) {
-      if (p.taken) continue;
+      if (p.taken || p.delay > 0) continue;
       const horiz = Math.hypot(p.x - b.x, p.z - b.z);
       const dy = b.y - p.y;
-      if (p.kind === 'key' && horiz < 0.9 && Math.abs(dy) < 1.2) {
+      if (p.type === 'item') {
+        if (p.item && horiz < 1.1 && dy > -1.3 && dy < 1.6) {
+          // the item floats over a 1-block pedestal: reachable standing next to it or on top
+          const id = p.item.id;
+          this.pickups.take(p);
+          this.give(id);
+        }
+        continue;
+      }
+      if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
+      // hearts stay on the floor while you're at full health, like in Isaac
+      if (p.type === 'heart' && this.player.hp >= this.stats.get('maxHearts') * 2) continue;
+      if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {
         this.pickups.take(p);
-        this.player.keys++;
-        this.bus.emit('keyPickup', { count: this.player.keys });
-        this.hud.toast('Key');
-        sfx2.key();
-      } else if (p.kind === 'item' && p.item && horiz < 1.1 && dy > -1.3 && dy < 1.6) {
-        // the item floats over a 1-block pedestal: reachable standing next to it or on top
-        const id = p.item;
-        this.pickups.take(p);
-        this.give(id);
-      } else if (p.kind === 'trapdoor' && horiz < 0.7 && b.onGround && Math.abs(dy) < 0.3 && !this.descending) {
-        this.descending = 0.6;
-        sfx2.descend();
+        this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'key' ? 0xf2c84b : p.type === 'bomb' ? 0xffb347 : 0xe0303c, 10, 2, 0.06);
       }
     }
   }
 
-  private trackRoom() {
-    const [gx, gz] = cellOf(this.player.body.x, this.player.body.z);
-    const plan = this.floor.plan;
-    if (gx < 0 || gz < 0 || gx >= plan.w || gz >= plan.h) return;
-    const id = plan.grid[gx + gz * plan.w];
-    if (id < 0 || id === this.room) return;
-    this.room = id;
-    const first = !this.visited.has(id);
-    this.visited.add(id);
-    this.bus.emit('roomEnter', { room: id, type: this.floor.rooms[id].type, firstVisit: first });
-    this.hud.setRoom(this.floor, id, this.visited);
+  /** Floors, rooms and the way down. */
+  private trackPlace(dt: number) {
+    const b = this.player.body;
+    const band = Math.max(1, bandOf(b.y));
+    this.depth = band;
+    if (band > this.maxDepth) {
+      this.maxDepth = band;
+      this.activate(band);
+      this.carve(band + 1);
+      this.bus.clearDeferred();
+        this.bus.emit('floorEnter', { depth: band });
+      this.hud.setFloor(this.floors.get(band)!, band);
+      this.hud.toast(`Floor ${band}`);
+      this.visited = new Set();
+    }
+    const r = this.roomAt(b.x, b.y + 0.1, b.z);
+    if (r && r.id !== this.room) {
+      this.room = r.id;
+      const first = !this.visited.has(r.id);
+      this.visited.add(r.id);
+      this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
+      this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited);
+      // the boss room: the next floor loads, and (no boss yet) the way down opens shortly
+      const f = this.floors.get(r.floor)!;
+      if (r.type === 'boss' && f.hole && !this.holes.has(r.floor)) {
+        this.activate(r.floor + 1);
+        this.holes.set(r.floor, HOLE_DELAY);
+      }
+    }
+    for (const [k, t] of this.holes) {
+      if (t <= 0) continue;
+      const left = t - dt;
+      this.holes.set(k, left);
+      if (left <= 0) {
+        const hole = this.floors.get(k)!.hole!;
+        openHole(this.world, hole);
+        this.particles.burst(hole.x + 1, hole.yTop + 1, hole.z + 1, 0x8a7a6a, 40, 4, 0.15);
+        this.hud.shake(0.5);
+        this.hud.toast('A way down opens');
+        sfx3.rumble();
+      }
+    }
   }
 
   // ───────────────────────── loop ─────────────────────────
@@ -463,14 +756,20 @@ export class Game {
   frame(dt: number) {
     dt = Math.min(dt, 0.05);
     const inp = this.input;
-    const running = inp.locked || this.simulateUnlocked;
+    if (inp.pressed.has('KeyR') && (this.player.dead || inp.locked || this.simulateUnlocked)) {
+      this.newRun(this.seed + 1 + Math.floor(Math.random() * 1000));
+    }
+    if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleInventory(this);
+    const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen;
     if (running) this.simulate(dt);
     this.chunks.update();
-
-    // camera with a little walking bob
     const p = this.player, e = p.eye;
+    this.chunks.setVisibleRange(e.y - 22, e.y + 22);
+
+    // camera with a little walking bob and explosion shake
     const bob = Math.sin(p.walkPhase * 3.2) * 0.035;
-    this.camera.position.set(e.x, e.y + bob, e.z);
+    const sh = this.hud.shakeAmount();
+    this.camera.position.set(e.x + (Math.random() - 0.5) * sh, e.y + bob + (Math.random() - 0.5) * sh, e.z + (Math.random() - 0.5) * sh);
     this.camera.rotation.set(p.pitch, p.yaw, 0, 'YXZ');
 
     // fog: dark dungeon below, sky above
@@ -488,54 +787,59 @@ export class Game {
 
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
-    if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleStats();
-    this.hud.update(this, running);
+    this.hud.update(this, running, dt);
     inp.endFrame();
   }
 
   private simulate(dt: number) {
     this.time += dt;
     const inp = this.input;
-    if (inp.pressed.has('KeyR')) { this.newRun(this.seed + 1 + Math.floor(Math.random() * 1000)); return; }
-    if (this.descending > 0) {
-      this.descending -= dt;
-      if (this.descending <= 0) { this.descending = 0; this.nextFloor(); return; }
-    }
     const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
+    const b = this.player.body;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
-      land: fall => { this.bus.emit('land', { fallSpeed: fall }); },
+      land: fall => {
+        const cause = Math.max(1, bandOf(b.y)) !== this.groundBand ? 'descent' : 'fall';
+        this.bus.emit('land', { fallSpeed: fall, cause });
+      },
     });
+    if (b.onGround) this.groundBand = Math.max(1, bandOf(b.y));
+    this.clampHealth();
     this.touchBlocks();
     this.fire();
     this.tryPlace();
     if (inp.pressed.has('KeyQ')) this.throwTop();
-    const b = this.player.body;
+    if (inp.pressed.has('KeyE')) this.placeBomb();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.touchDebris();
     this.touchPickups();
     this.intents.update(dt);
+    this.enemies.update(dt);
     this.bus.flush();
-    this.trackRoom();
-    this.pickups.update(dt);
+    this.trackPlace(dt);
+    this.updateCombat(dt);
+    this.pickups.update(dt, solid);
     this.particles.update(dt);
     this.debrisView.update(this.debris, this.time);
     this.cracks.update(this.world);
-    this.hands.update(dt, this.player.walkPhase, this.player.top);
+    const hand = this.player.hand;
+    this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);
   }
 
   /** What the debug HUD shows. */
   get debug() {
+    const r = this.room >= 0 ? this.rooms.get(this.room) : undefined;
     return {
       fps: this.fps,
       tris: this.chunks.triangles,
       debris: this.debris.count,
       intents: this.intents.count,
+      enemies: this.enemies.list.length,
       damaged: this.world.damaged.size,
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
       held: this.player.hand.length ? this.player.hand.map(m => MATERIALS[m].name).join(', ') : '—',
-      room: this.room >= 0 ? `${this.room} (${this.floor.rooms[this.room].type}, ${this.floor.rooms[this.room].template})` : '—',
+      room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
     };
   }
 }

@@ -11,6 +11,8 @@ export class VoxelWorld {
   /** Remaining HP of damaged blocks (only the ones that were hit). Key = voxel index. */
   readonly damaged = new Map<number, number>();
   readonly dirty = new Set<string>();
+  /** Bumped on every change (navigation caches compare against it). */
+  version = 0;
   readonly ncx: number; readonly ncy: number; readonly ncz: number;
 
   constructor(readonly sx: number, readonly sy: number, readonly sz: number) {
@@ -35,6 +37,7 @@ export class VoxelWorld {
     if (this.data[i] === m) return;
     this.data[i] = m;
     this.damaged.delete(i);
+    this.version++;
     this.markDirty(x, y, z);
   }
 

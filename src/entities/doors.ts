@@ -16,6 +16,8 @@ export interface Door extends DoorSpec {
   wantOpen: boolean;
   /** Already refused this approach (so a locked door doesn't nag every frame). */
   refused: boolean;
+  /** Shut by combat: projections in one of its rooms are still around. */
+  sealed: boolean;
   mesh: THREE.Mesh;
   cx: number; cy: number; cz: number;
 }
@@ -25,16 +27,23 @@ export class Doors {
   private group = new THREE.Group();
   private mats = new Map<DoorLook, THREE.Material>();
 
-  constructor(private scene: THREE.Scene, specs: DoorSpec[]) {
+  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+
+  /** Adds a floor's doors (floors are activated one at a time). */
+  add(specs: DoorSpec[]) {
     for (const s of specs) {
       const w = s.x1 - s.x0 + 1, h = s.y1 - s.y0 + 1, d = s.z1 - s.z0 + 1;
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w - 0.02, h, d - 0.02), this.material(lookOf(s)));
       const cx = (s.x0 + s.x1 + 1) / 2, cy = (s.y0 + s.y1 + 1) / 2, cz = (s.z0 + s.z1 + 1) / 2;
       mesh.position.set(cx, cy, cz);
       this.group.add(mesh);
-      this.list.push({ ...s, open: 0, wantOpen: false, refused: false, mesh, cx, cy, cz });
+      this.list.push({ ...s, open: 0, wantOpen: false, refused: false, sealed: false, mesh, cx, cy, cz });
     }
-    scene.add(this.group);
+  }
+
+  /** Seal or unseal every door of a room (combat). */
+  seal(room: number, sealed: boolean) {
+    for (const d of this.list) if (d.rooms.includes(room)) { d.sealed = sealed; if (sealed) d.refused = false; }
   }
 
   dispose() {
@@ -71,11 +80,13 @@ export class Doors {
     for (const d of this.list) {
       const dist = Math.hypot(px - d.cx, pz - d.cz);
       const near = dist < OPEN_DIST && Math.abs(py - d.y0) < 2.5;
-      if (near && !d.wantOpen && !d.refused) {
+      if (d.sealed) {
+        if (!this.occupied(d, px, py, pz, hw, h)) d.wantOpen = false;
+      } else if (near && !d.wantOpen && !d.refused) {
         if (request(d)) d.wantOpen = true;
         else d.refused = true;
       }
-      if (dist > CLOSE_DIST) {
+      if (dist > CLOSE_DIST && !d.sealed) {
         d.refused = false;
         if (!this.occupied(d, px, py, pz, hw, h)) d.wantOpen = false;
       }

@@ -10,7 +10,7 @@ import type { DamageKind } from '../core/damage';
 import type { EventCtx } from '../core/events';
 import type { Rng } from '../core/rng';
 import type { StatLayer, StatName, Stats } from '../core/stats';
-import type { GameBus, GameEvents } from '../game/events';
+import type { GameBus, GameEvents, PickupKind } from '../game/events';
 
 /** What effects can do to the world. A small facade so items never depend on `Game`. */
 export interface ItemApi {
@@ -29,6 +29,15 @@ export interface ItemApi {
   toast(text: string): void;
   /** Run `fn` at the end of the frame (chain reactions). Owned by the item: dropped if it is lost. */
   defer(fn: () => void): void;
+  /** Heal the player by half-hearts (through the `heal` event). */
+  heal(halfHearts: number, source?: string): void;
+  /** Hurt the player by half-hearts (through `playerDamage`, owner 'player'). */
+  damagePlayer(halfHearts: number, source?: string): void;
+  /** Give keys, bombs or hearts (through `pickupCollect`). */
+  collect(kind: PickupKind, amount: number): boolean;
+  counts(): { keys: number; bombs: number; hp: number; maxHp: number };
+  /** Drop a key, bomb or heart in the world. */
+  spawnPickup(kind: PickupKind, x: number, y: number, z: number): void;
 }
 
 export type StatModSpec = { stat: StatName; layer: StatLayer; value: number };
@@ -63,16 +72,28 @@ export type PoolName = 'treasure' | 'boss' | 'vault';
 export interface ItemDef extends Effect {
   id: string;
   name: string;
-  /** One line, shown on pickup. */
+  /** One line, shown on pickup: what the practice is about and what it does in the game. */
   description: string;
+  /** The book, course, technique or therapy that inspired it (credited, never used as the name). */
+  inspiredBy?: string;
   /** Pools it can drop from, with a weight in each. */
   pools: Partial<Record<PoolName, number>>;
-  /** Free-form labels other effects can query with `api.hasTag` (e.g. 'explosive', 'blocks'). */
+  /** Labels other effects can query with `api.hasTag`. Include the item's path: 'body', 'mind',
+   *  'emotion' or 'will' (three of a path give a state of being), plus mechanics ('blocks', 'explosive'…). */
   tags?: string[];
-  /** Colour of the pedestal gem. */
+  /** Main colour (glow, particles, HUD accents). */
   color: number;
+  /** Isaac-style quality, 0 (weak) to 4 (run-defining). Shown as stars. */
+  quality: 0 | 1 | 2 | 3 | 4;
+  /** 12×12 pixel-art icon: rows of palette keys ('.' = transparent). */
+  icon: ItemIcon;
   /** One-shot effect when picked up (heal, spawn something…). Never re-run by rebuilds or restores. */
   onGain?(api: ItemApi): void;
+}
+
+export interface ItemIcon {
+  rows: string[];
+  palette: Record<string, number>;
 }
 
 /** A synergy requirement: an item id, or "at least `count` (default 1) items tagged `tag`". */

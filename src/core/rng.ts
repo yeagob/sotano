@@ -51,13 +51,16 @@ export function hash3(seed: number, x: number, y: number, z: number): number {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
-export type StreamName = 'floorplan' | 'rooms' | 'rock' | 'loot' | 'combat' | 'items' | 'fx';
+export type StreamName = 'loot' | 'drops' | 'combat' | 'items' | 'fx';
 
 /** One Rng per purpose, all derived from the run seed. */
 export class RunRng {
-  private streams = new Map<StreamName, Rng>();
+  private streams = new Map<string, Rng>();
   constructor(readonly seed: number) {}
-  get(name: StreamName): Rng {
+  get(name: StreamName): Rng { return this.named(name); }
+
+  /** A stream for any name (e.g. "floor3:rooms"), so each floor's layout is independent of when it is generated. */
+  named(name: string): Rng {
     let r = this.streams.get(name);
     if (!r) { r = new Rng(this.seed ^ hashStr(name)); this.streams.set(name, r); }
     return r;

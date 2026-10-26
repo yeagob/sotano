@@ -8,7 +8,8 @@
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
   | 'moveSpeed' | 'jump' | 'reach'
-  | 'carry' | 'kick' | 'throw' | 'crush';
+  | 'carry' | 'kick' | 'throw' | 'crush'
+  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -37,6 +38,10 @@ export const BASE_STATS: Stats = {
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier
   crush: -1,       // highest block tier that shatters on contact (-1 = none)
+  maxHearts: 3,    // heart containers (each holds 2 half-hearts)
+  invuln: 1,       // seconds of invulnerability after being hit
+  bombRadius: 2.6, // blocks
+  bombDamage: 40,  // damage to blocks at the centre of a bomb
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -53,6 +58,10 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   kick: [0.2, 6],
   throw: [0.2, 6],
   crush: [-1, 3],
+  maxHearts: [1, 12],
+  invuln: [0.2, 5],
+  bombRadius: [1, 8],
+  bombDamage: [5, 500],
 };
 
 /** How the stats panel shows each stat. `fmt` turns the value into text. */
@@ -72,6 +81,10 @@ export const STAT_INFO: Record<StatName, { label: string; fmt: (v: number) => st
   kick: { label: 'Kick', fmt: v => `×${v.toFixed(2)}` },
   throw: { label: 'Throw', fmt: v => `×${v.toFixed(2)}` },
   crush: { label: 'Crush', fmt: v => (v < 0 ? 'none' : `tier ≤ ${Math.floor(v)}`) },
+  maxHearts: { label: 'Hearts', fmt: v => `${Math.floor(v)}` },
+  invuln: { label: 'Recovery', fmt: v => `${v.toFixed(1)} s` },
+  bombRadius: { label: 'Bomb radius', fmt: v => `${v.toFixed(1)} blocks` },
+  bombDamage: { label: 'Bomb power', fmt: v => v.toFixed(0) },
 };
 
 export function computeStats(mods: readonly StatMod[], base: Stats = BASE_STATS): Stats {
@@ -89,6 +102,12 @@ export function computeStats(mods: readonly StatMod[], base: Stats = BASE_STATS)
     const lim = STAT_LIMITS[k];
     if (lim) v = Math.min(lim[1], Math.max(lim[0], v));
     if (fin[k] !== undefined) v = fin[k]!;
+    // safety layer: a broken modifier must never poison the game with NaN or Infinity
+    if (!Number.isFinite(v)) {
+      const culprits = mods.filter(m => m.stat === k).map(m => `${m.source} ${m.layer} ${m.value}`);
+      console.error(`[stats] ${k} became ${v}; using the base value. Modifiers: ${culprits.join(', ')}`);
+      v = base[k];
+    }
     out[k] = v;
   }
   return out;

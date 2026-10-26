@@ -65,6 +65,14 @@ export class ChunkRenderer {
     this.material.dispose();
   }
 
+  /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). */
+  setVisibleRange(y0: number, y1: number) {
+    for (const [key, m] of this.meshes) {
+      const cy = Number(key.split(',')[1]) * CHUNK;
+      m.visible = cy + CHUNK > y0 && cy < y1;
+    }
+  }
+
   get triangles() {
     let t = 0;
     for (const m of this.meshes.values()) t += (m.geometry.index?.count ?? 0) / 3;

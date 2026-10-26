@@ -2,7 +2,9 @@
 // (clearing only depth), so they never clip through walls.
 
 import * as THREE from 'three';
+import type { ItemDef } from '../items/types';
 import { materialTexture } from './atlas';
+import { glowTexture, iconTexture } from './icons';
 
 const SKIN = 0xd9a07a, SLEEVE = 0x3d5a80;
 
@@ -21,11 +23,19 @@ export class Hands {
   readonly camera: THREE.PerspectiveCamera;
   private right = arm();
   private left = arm();
+  /** The top block of your hand rides in the left hand; the next one (if you carry 2+) in the right. */
   private block: THREE.Mesh;
+  private second: THREE.Mesh;
   private blockMats = new Map<number, THREE.Material>();
   private swing = 0;
   private place = 0;
   private heldNow = 0;
+  private secondNow = 0;
+  /** Isaac-style "hold up": both hands raise a new item for a moment after picking it up. */
+  private holdT = 0;
+  private holdItem: THREE.Sprite;
+  private holdGlow: THREE.Sprite;
+  static readonly HOLD_TIME = 1.6;
 
   constructor(aspect: number) {
     this.camera = new THREE.PerspectiveCamera(60, aspect, 0.01, 10);
@@ -42,14 +52,35 @@ export class Hands {
     this.block.rotation.set(0.3, 0.6, 0.1);
     this.block.visible = false;
     this.left.add(this.block);
+    this.second = new THREE.Mesh(this.block.geometry);
+    this.second.position.set(-0.02, 0.2, -0.36);
+    this.second.rotation.set(0.3, -0.6, -0.1);
+    this.second.visible = false;
+    this.right.add(this.second);
     this.scene.add(this.right, this.left);
+    this.holdGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.holdItem = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false }));
+    this.holdGlow.visible = this.holdItem.visible = false;
+    this.scene.add(this.holdGlow, this.holdItem);
   }
+
+  /** Raise `def` above both hands for HOLD_TIME seconds. */
+  holdUp(def: ItemDef) {
+    this.holdT = Hands.HOLD_TIME;
+    (this.holdItem.material as THREE.SpriteMaterial).map = iconTexture(def);
+    (this.holdItem.material as THREE.SpriteMaterial).needsUpdate = true;
+    (this.holdGlow.material as THREE.SpriteMaterial).color.setHex(def.color);
+  }
+
+  get holding() { return this.holdT > 0; }
 
   fire() { this.swing = 1; }
   placed() { this.place = 1; }
 
-  update(dt: number, walkPhase: number, held: number) {
+  /** `held` = top block of the hand (left), `second` = the one below it (right), 0 = none. */
+  update(dt: number, walkPhase: number, held: number, second = 0) {
     this.swing = Math.max(0, this.swing - dt * 7);
+    this.holdT = Math.max(0, this.holdT - dt);
     this.place = Math.max(0, this.place - dt * 5);
     const bobX = Math.sin(walkPhase * 1.6) * 0.02, bobY = Math.abs(Math.cos(walkPhase * 1.6)) * 0.025;
     const s = Math.sin(this.swing * Math.PI);
@@ -61,14 +92,44 @@ export class Hands {
     this.left.position.y += (targetY - this.place * 0.08 - bobY - this.left.position.y) * Math.min(1, dt * 12);
     this.left.position.x = -0.42 - bobX;
     this.left.position.z = -0.6 - this.place * 0.2;
+    // hold-up: both arms swing up to hold the item over your head, then settle back
+    const h = this.holdT > 0 ? Math.min(1, (Hands.HOLD_TIME - this.holdT) * 6, this.holdT * 4) : 0;
+    if (h > 0) {
+      // forearms come up from the bottom corners, hands meeting under the item
+      this.right.position.set(0.3 - h * 0.06, -0.5 + h * 0.12, -0.78);
+      this.right.rotation.set(0.12 + h * 0.55, -0.18 - h * 0.35, 0.05);
+      this.left.position.set(-0.3 + h * 0.06, -0.5 + h * 0.12, -0.78);
+      this.left.rotation.set(0.15 + h * 0.55, 0.2 + h * 0.35, -0.05);
+    } else {
+      this.right.rotation.y = -0.18;
+      this.left.rotation.set(0.15, 0.2, -0.05);
+    }
+    this.holdItem.visible = this.holdGlow.visible = h > 0;
+    if (h > 0) {
+      const bob = Math.sin(this.holdT * 6) * 0.01;
+      const k = 0.2 + 0.1 * h;
+      this.holdItem.position.set(0, -0.28 + h * 0.36 + bob, -0.95);
+      this.holdItem.scale.set(k, k, 1);
+      this.holdGlow.position.copy(this.holdItem.position).z -= 0.02;
+      const gk = k * (1.7 + Math.sin(this.holdT * 10) * 0.12);
+      this.holdGlow.scale.set(gk, gk, 1);
+      (this.holdGlow.material as THREE.SpriteMaterial).opacity = 0.4 * h;
+    }
     if (held !== this.heldNow) {
       this.heldNow = held;
       this.block.visible = held !== 0;
-      if (held) {
-        let m = this.blockMats.get(held);
-        if (!m) { m = new THREE.MeshLambertMaterial({ map: materialTexture(held) }); this.blockMats.set(held, m); }
-        this.block.material = m;
-      }
+      if (held) this.block.material = this.blockMaterial(held);
     }
+    if (second !== this.secondNow) {
+      this.secondNow = second;
+      this.second.visible = second !== 0;
+      if (second) this.second.material = this.blockMaterial(second);
+    }
+  }
+
+  private blockMaterial(m: number) {
+    let mat = this.blockMats.get(m);
+    if (!mat) { mat = new THREE.MeshLambertMaterial({ map: materialTexture(m) }); this.blockMats.set(m, mat); }
+    return mat;
   }
 }

@@ -18,6 +18,8 @@ type Solid = (x: number, y: number, z: number) => boolean;
 
 /** Called when a tagged (thrown/kicked) cube hits something hard. */
 export type ImpactFn = (i: number, x: number, y: number, z: number, speed: number) => void;
+/** Called when a bomb's fuse runs out (the cube is removed right after). */
+export type FuseFn = (i: number, x: number, y: number, z: number) => void;
 
 export class DebrisSystem {
   readonly max: number;
@@ -33,6 +35,9 @@ export class DebrisSystem {
   readonly cooldown: Float32Array;
   /** Item-defined labels ('volatile'…) on cubes that were thrown or kicked. Sparse. */
   readonly tags: (Set<string> | null)[];
+  /** Seconds left on a bomb's fuse (0 = not a bomb). Bombs are pinned: never recycled, never age out. */
+  readonly fuse: Float32Array;
+  onFuse: FuseFn = () => {};
   private cursor = 0;
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
@@ -49,7 +54,10 @@ export class DebrisSystem {
     this.age = new Float32Array(max);
     this.cooldown = new Float32Array(max);
     this.tags = new Array(max).fill(null);
+    this.fuse = new Float32Array(max);
   }
+
+  isBomb(i: number) { return this.fuse[i] > 0; }
 
   get count() { return this.alive; }
   isAlive(i: number) { return this.state[i] !== 0; }
@@ -59,7 +67,11 @@ export class DebrisSystem {
   spawn(material: number, x: number, y: number, z: number, vx = 0, vy = 0, vz = 0): number {
     let i = this.cursor;
     if (this.alive < this.max) while (this.state[i]) i = (i + 1) % this.max;
-    else this.alive--;
+    else {
+      // full: reuse the oldest slot that isn't a live bomb
+      for (let k = 0; k < this.max && this.fuse[i] > 0; k++) i = (i + 1) % this.max;
+      this.alive--;
+    }
     this.alive++;
     this.cursor = (i + 1) % this.max;
     const i3 = i * 3, i4 = i * 4;
@@ -74,6 +86,7 @@ export class DebrisSystem {
     this.age[i] = 0;
     this.cooldown[i] = 0.25;
     this.tags[i] = null;
+    this.fuse[i] = 0;
     return i;
   }
 
@@ -81,6 +94,7 @@ export class DebrisSystem {
     if (!this.state[i]) return;
     this.state[i] = 0;
     this.tags[i] = null;
+    this.fuse[i] = 0;
     this.alive--;
   }
 
@@ -122,6 +136,7 @@ export class DebrisSystem {
 
   /** Visible this frame? (blinks near the end of its life) */
   visible(i: number, time: number) {
+    if (this.fuse[i] > 0) return this.fuse[i] > 1.2 || Math.floor(time * (this.fuse[i] < 0.5 ? 16 : 8)) % 2 === 0;
     const left = DEBRIS_LIFETIME - this.age[i];
     return left > DEBRIS_BLINK || Math.floor(time * (left < 3 ? 12 : 5)) % 2 === 0;
   }
@@ -133,8 +148,20 @@ export class DebrisSystem {
       if (!st) continue;
       this.age[i] += dt;
       this.cooldown[i] -= dt;
-      if (this.age[i] > DEBRIS_LIFETIME) { this.remove(i); continue; }
       const i3 = i * 3;
+      if (this.fuse[i] > 0) {
+        this.fuse[i] -= dt;
+        if (this.fuse[i] <= 0) {
+          this.fuse[i] = 0;
+          const x = this.pos[i3], y = this.pos[i3 + 1], z = this.pos[i3 + 2];
+          this.remove(i);
+          this.onFuse(i, x, y, z);
+          continue;
+        }
+      } else if (this.age[i] > DEBRIS_LIFETIME) { this.remove(i); continue; }
+      // walls never hold a cube: if something solid overlaps it (a block placed on it, a door
+      // closing, a throw that started too close to a wall), push it out to the nearest free spot
+      if (this.boxSolid(this.pos[i3], this.pos[i3 + 1], this.pos[i3 + 2])) { this.depenetrate(i); continue; }
       if (st === RESTING) {
         // lost its support (block broken, cube below picked up)? fall again
         if (this.supportTop(i, this.pos[i3], this.pos[i3 + 1] - HS - 0.04, this.pos[i3 + 2]) === null) this.state[i] = MOVING;
@@ -184,6 +211,28 @@ export class DebrisSystem {
       this.settleRotation(i);
     } else this.integrateSpin(i, dt);
     if (this.tags[i] && impact > 3.5) this.onImpact(i, this.pos[i3], this.pos[i3 + 1], this.pos[i3 + 2], impact);
+  }
+
+  /**
+   * Moves an overlapping cube to the closest free position (searching outwards along the six
+   * axes, up first on ties) and gives it a little push that way. If nothing is free within
+   * two blocks the cube is removed rather than left inside the wall.
+   */
+  private depenetrate(i: number) {
+    const i3 = i * 3;
+    const x = this.pos[i3], y = this.pos[i3 + 1], z = this.pos[i3 + 2];
+    const dirs: [number, number, number][] = [[0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1], [0, -1, 0]];
+    for (let d = 0.05; d <= 2; d += 0.05) {
+      for (const [dx, dy, dz] of dirs) {
+        const nx = x + dx * d, ny = y + dy * d, nz = z + dz * d;
+        if (this.boxSolid(nx, ny, nz)) continue;
+        this.pos[i3] = nx; this.pos[i3 + 1] = ny; this.pos[i3 + 2] = nz;
+        this.vel[i3] = dx * 2; this.vel[i3 + 1] = Math.max(0, dy * 2); this.vel[i3 + 2] = dz * 2;
+        this.state[i] = MOVING;
+        return;
+      }
+    }
+    this.remove(i);
   }
 
   /** Is the cube's box (centre x,y,z) overlapping a solid voxel? */

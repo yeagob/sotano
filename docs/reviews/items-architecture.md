@@ -1,6 +1,6 @@
 # Review: item & synergy architecture (M1)
 
-A three-party review of the proposal in [../ITEMS.md](../ITEMS.md), as requested by the project owner:
+A three-party review of the proposal in [../ITEMS.md](../architecture/ITEMS.md), as requested by the project owner:
 
 - **Engineer** — wrote the proposal and implements the outcome.
 - **Architect** — attacks the proposal, finds weaknesses, proposes alternatives.
@@ -76,7 +76,7 @@ The architect is right about the foundation, but most fixes can be small: rebuil
 
 ## 3. Engineer's resolution
 
-All "Now" decisions are implemented in M1; "Later" items are tracked in [../ITEMS.md §9](../ITEMS.md#9-deferred-decisions-from-the-architecture-review). Wrecking Ball's description was changed to match its behaviour (one ring around each block you shatter by contact).
+All "Now" decisions are implemented in M1; "Later" items are tracked in [../ITEMS.md §9](../architecture/ITEMS.md#9-deferred-decisions-from-the-architecture-review). Wrecking Ball's description was changed to match its behaviour (one ring around each block you shatter by contact).
 
 - **Bus:** per-hook try/catch logging `source` and hook id; at max depth the event returns uncancelled without running hooks; `defer(fn, source)`, `off(source)` purges pending calls, `clearDeferred()`, `dump()` (`S.hooks()` in the console).
 - **Inventory:** `ItemInstance { uid, def }`, sources `item:<uid>` / `syn:<id>`, removes only its own stat sources, `onGain` only from `gain()`, structured `Req`, warns on unknown ids.

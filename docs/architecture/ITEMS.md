@@ -2,7 +2,7 @@
 
 How items are defined, stored and installed, and how they can affect anything (and be affected by anything). This is the most important architectural piece of SÓTANO: the whole game is meant to be "everything can modify everything".
 
-This design went through a three-party review (engineer, architect, mediator); the critique, the ruling and what changed are in [reviews/items-architecture.md](reviews/items-architecture.md).
+This design went through a three-party review (engineer, architect, mediator); the critique, the ruling and what changed are in [reviews/items-architecture.md](../reviews/items-architecture.md).
 
 Code: [`src/items/`](../src/items) (the machinery), [`src/content/items/`](../src/content/items) (one file per item), [`src/content/synergies.ts`](../src/content/synergies.ts) (combinations and exceptions), [`src/game/events.ts`](../src/game/events.ts) (every place an item can step in).
 
@@ -13,16 +13,19 @@ An item is **data plus effects**. Effects come in exactly two kinds: **stat modi
 ## 2. Defining an item
 
 ```ts
-// src/content/items/volatile.ts
+// src/content/items/catharsis.ts
 export const VOLATILE = 'volatile';      // cube tag, exported so others don't mistype it
 
 export default defineItem({
-  id: 'volatile',                        // stable id: saves and synergies refer to it
-  name: 'Volatile Grip',
-  description: 'Blocks you throw explode when they hit something.',
+  id: 'catharsis',                       // stable id: saves and synergies refer to it
+  name: 'Catharsis',                     // a technique/concept or public-domain work (STORY.md §5)
+  description: 'What you let go of bursts: thrown blocks explode on impact.',
+  inspiredBy: 'Catharsis; psychodrama',  // credit, required
   pools: { treasure: 1 },                // where it can drop, with a weight in each
-  tags: ['blocks', 'explosive'],         // labels other effects can query
-  color: 0xff5a1f,                       // pedestal gem colour
+  tags: ['emotion', 'blocks', 'explosive'], // a path (body/mind/emotion/will) + mechanics
+  color: 0xff5a1f,                       // glow and accents
+  quality: 3,                            // 0–4, Isaac-style; shown as stars
+  icon: { rows: [/* 12 × 12 */], palette: { a: 0xff5a1f, b: 0xffb347, c: 0xfff3c4 } },
   stats: [{ stat: 'throw', layer: 'mul', value: 1.3 }],
   hooks: [
     hook('throw', e => { e.tags.add(VOLATILE); }, { id: 'arm' }),
@@ -34,7 +37,7 @@ export default defineItem({
 });
 ```
 
-Then list it in `src/content/items/index.ts`. That's all.
+Then list it in `src/content/items/index.ts`. The full checklist is the project skill [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md).
 
 - `hook(event, fn, { id?, priority? })` is typed: the payload type comes from the event name. Give an `id` to every hook that defines the item's identity, so synergies can target it.
 - Hooks get the event context (mutable fields + `cancel()`) and an `ItemApi` facade:
@@ -46,6 +49,7 @@ Then list it in `src/content/items/index.ts`. That's all.
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
+| `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health and counters, through `heal`, `playerDamage` and `pickupCollect` |
 | `toast(text)`, `bus` | Feedback; raw access to the event bus |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
@@ -64,7 +68,9 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `carry` | How many blocks you can hold (1 by default) |
 | `kick`, `throw` | Strength of kicks and throws |
 | `crush` | Highest block tier that shatters when you walk into it (-1 = none) |
-| `luck` | Reserved (no luck effects yet) |
+| `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
+| `bombRadius`, `bombDamage` | Your bombs |
+| `luck` | Chance of a reward when a room is cleared (more uses to come: chests) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
 
@@ -86,9 +92,21 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `jump` | `velocity`, or cancel | jumping |
 | `land` | — (react) | touching ground after a fall |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
-| `keyPickup`, `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
+| `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
+| `bombPlace` | `fuse`, or cancel | pressing E |
+| `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
+| `playerDamage` | `amount`, or cancel (`kind`, `source`, `owner` tell you what it is) | anything hurting the player |
+| `heal` | `amount`, or cancel | healing |
+| `death` | cancel (survive) | reaching 0 hearts |
+| `enemySpawn` | `hp`, `speed`, `contactDamage`, `tags`, position, or cancel | a projection materialising |
+| `enemyDamage` | `amount`, `knockback`, or cancel | anything hurting a projection |
+| `enemyContact` | `toPlayer`, `toEnemy` | a projection touching the player |
+| `enemyDeath`, `roomClear` | `drops` | a projection dissolving; a room cleared |
+| `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
 
-The owner's list, mapped: the carry limit is `carry` plus `touchCube`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
+`explosion` also carries `actorDamage` (half-hearts to the player, ×4 HP to projections) and `owner`; `land` carries `cause` (`'fall'` or `'descent'` down a shaft).
+
+The owner's list, mapped: the carry limit is `carry` plus `touchCube`; health is `maxHearts` plus `playerDamage`/`heal`; enemies are `enemySpawn`/`enemyDamage`/`enemyContact`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
 
 **Tags on cubes** carry intent across time: a hook on `throw` or `kick` adds a tag, and a hook on `debrisImpact` reacts to it later. The core clears a cube's tags after its impact unless a hook sets `keepTags` (so a volatile cube explodes once, not on every bounce). Items export their tag names as constants.
 
@@ -104,27 +122,28 @@ Hooks run in ascending `priority` (default 50):
 
 Equal priorities run in installation order: items in acquisition order, then synergies.
 
-- **A hook that throws** is logged with its source and id (`item:3 drill.pierce`) and skipped; the event and the frame go on.
-- **Chain reactions** never recurse directly: they use `api.defer(fn)`, which runs in `bus.flush(64)` at the end of the frame, owned by the item (losing the item drops its pending calls). A new floor gets a fresh bus, so nothing leaks into the next floor.
+- **A hook that throws** is logged with its source and id (`item:3 kaizen.pierce`) and skipped; the event and the frame go on.
+- **Chain reactions** never recurse directly: they use `api.defer(fn)`, which runs in `bus.flush(64)` at the end of the frame, owned by the item (losing the item drops its pending calls). Going down to a new floor clears the queue (`floorEnter`), so nothing leaks into the next floor; the queue is capped at 5000.
+- **A hook slower than 4 ms** is reported once with its source and id.
 - **Nested emits** are capped at depth 8; past it the event runs **without hooks** (default behaviour) and a warning is logged. It is never silently cancelled.
-- To stop an effect from triggering itself, check the `source` of the event (Chain Reaction ignores breaks whose source is `'chain'`), not the damage kind.
+- To stop an effect from triggering itself, check the `source` of the event (Habit Stacking ignores breaks whose source is `'chain'`), not the damage kind.
 
 ## 5. Synergies and exceptions
 
 ```ts
 // src/content/synergies.ts
 defineSynergy({
-  id: 'wrecking_ball',
-  name: 'Wrecking Ball',
-  description: 'Blocks you shatter by walking into them damage their neighbours too.',
-  requires: ['bulldozer', 'chain'],     // item ids, or { tag: 'explosive', count: 2 }
-  suppress: ['chain.spread'],           // turn off Chain Reaction's 'spread' hook…
+  id: 'flooding',
+  name: 'Flooding',
+  description: 'Fears you walk through take their neighbours with them.',
+  requires: ['exposure', 'habitstack'], // item ids, or { tag: 'body', count: 3 }
+  suppress: ['habitstack.spread'],      // turn off Habit Stacking's 'spread' hook…
   hooks: [hook('blockBreak', ..., { id: 'shatter', priority: 200 })],  // …and install a replacement
 });
 ```
 
 - A synergy is an `Effect` like an item: stats, hooks, plus `requires` and `suppress`.
-- `requires` takes item ids and `{ tag, count? }` ("two explosive items": a transformation in Isaac terms).
+- `requires` takes item ids and `{ tag, count? }`. **States of being** (Embodied, Lucid, Open-hearted, Resolute) are synergies that require three practices of one path: Isaac's transformations.
 - `suppress` names hooks as `itemId.hookId`. Synergy hooks must have ids too.
 - **All exceptions live in this one file.** Fixing a bad interaction between two items means adding or editing one entry here, never patching either item or the core.
 - Tests check that every `suppress` points at a real hook, that no hook is suppressed by two synergies, and that synergy ids never collide with item ids.
@@ -149,7 +168,7 @@ on gain / lose / restore / new floor:
 ## 7. Storing
 
 - **Definitions** are code (TypeScript modules), versioned with the game.
-- **A player's items** are ids in acquisition order: `inventory.serialize() → ['drill', 'miner']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
+- **A player's items** are ids in acquisition order: `inventory.serialize() → ['kaizen', 'deepfocus']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
 - **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault` (falling back to `treasure`).
 
 ## 8. Debugging an interaction
@@ -157,20 +176,32 @@ on gain / lose / restore / new floor:
 In the browser console:
 
 ```js
-S.give('bulldozer'); S.give('chain')
-S.synergies()   // ['wrecking_ball']
-S.hooks()       // every hook per event, in run order: { blockBreak: [{ priority: 200, source: 'syn:wrecking_ball', id: 'wrecking_ball.shatter' }] }
+S.give('exposure'); S.give('habitstack')
+S.synergies()   // ['flooding']
+S.hooks()       // every hook per event, in run order: { blockBreak: [{ priority: 200, source: 'syn:flooding', id: 'flooding.shatter' }] }
 S.trace()       // then inspect ctx.touchedBy on events
-S.lose('chain')
+S.lose('habitstack')
 ```
 
-## 9. Deferred decisions from the architecture review
+## 9. Safety layers
+
+Items are meant to be powerful enough to break a run, but never to break the game. Five layers guard that (details in the [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md) skill):
+
+| Layer | Where | Catches |
+|---|---|---|
+| 1. Static validation | `src/items/validate.ts`, at startup (invalid items stay out of the pools) and in tests | Bad ids, missing credit, path or icon, unknown stats, non-finite values, bad suppressions, impossible requirements |
+| 2. Runtime guards | `core/events.ts`, `core/stats.ts` | Throwing hooks (logged, skipped), slow hooks, nested emits, runaway chain reactions, NaN/Infinity stats (fall back to base) |
+| 3. Synergy matrix | `tests/synergy-matrix.test.ts` | Every item alone and every pair, under every event: no errors, finite stats within limits, chain reactions settle |
+| 4. Inventory invariants | `tests/items.test.ts` | Gain then lose leaves no residue; serialize/restore; `onGain` once |
+| 5. Contract | `tests/items.test.ts` | Every event has an emit site; every stat is read by the game |
+
+## 10. Deferred decisions from the architecture review
 
 Accepted by the mediator, scheduled for later milestones:
 
 | When | What |
 |---|---|
-| M2 | An `EffectHost` that owns effects from every source (items, synergies, curses, rooms, buffs), with wildcard suppression (`'drill.*'`) |
+| M2 | An `EffectHost` that owns effects from every source (items, synergies, curses, rooms, buffs), with wildcard suppression (`'kaizen.*'`) |
 | M2 | Per-instance item state (`initState`, hooks receive the instance) for counters and charges |
 | M2 | `replaces` with most-specific-wins, `suppressStats`, `not`/`any` requirements |
 | M2 | Pre/post event phases (`blockBreak` / readonly `blockBroken`), readonly fact fields |

@@ -38,15 +38,23 @@ export interface PlanOptions { w: number; h: number; minRooms: number; maxRooms:
 
 export const DEFAULT_PLAN: PlanOptions = { w: 7, h: 7, minRooms: 8, maxRooms: 11 };
 
-export function generatePlan(rng: Rng, opt: PlanOptions = DEFAULT_PLAN): FloorPlan {
-  for (let attempt = 0; attempt < 200; attempt++) {
-    const plan = tryPlan(rng, opt);
-    if (plan) return plan;
+/**
+ * `start` is the grid cell of the start room (default: the centre). Floors below the first start
+ * under the boss room above, which may be on an edge or a corner: if no valid plan turns up,
+ * the minimum room count is relaxed step by step before giving up.
+ */
+export function generatePlan(rng: Rng, opt: PlanOptions = DEFAULT_PLAN, start?: [number, number]): FloorPlan {
+  for (let relax = 0; relax <= opt.minRooms - 5; relax++) {
+    const o = { ...opt, minRooms: opt.minRooms - relax };
+    for (let attempt = 0; attempt < 150; attempt++) {
+      const plan = tryPlan(rng, o, start ?? [opt.w >> 1, opt.h >> 1]);
+      if (plan) return plan;
+    }
   }
   throw new Error('floorplan: could not generate a valid plan');
 }
 
-function tryPlan(rng: Rng, { w, h, minRooms, maxRooms }: PlanOptions): FloorPlan | null {
+function tryPlan(rng: Rng, { w, h, minRooms, maxRooms }: PlanOptions, [sx, sz]: [number, number]): FloorPlan | null {
   const target = rng.int(minRooms, maxRooms);
   const grid = new Int16Array(w * h).fill(-1);
   const at = (x: number, z: number) => (x < 0 || z < 0 || x >= w || z >= h ? -2 : grid[x + z * w]);
@@ -55,10 +63,10 @@ function tryPlan(rng: Rng, { w, h, minRooms, maxRooms }: PlanOptions): FloorPlan
   const filledNeighbours = (x: number, z: number) =>
     Object.values(SIDES).filter(([dx, dz]) => at(x + dx, z + dz) >= 0).length;
 
-  const sx = w >> 1, sz = h >> 1;
   add(sx, sz);
   const queue: [number, number][] = [[sx, sz]];
-  while (queue.length && cells.length < target) {
+  let guard = 0; // a grid corner can leave no valid growth: never spin forever
+  while (queue.length && cells.length < target && guard++ < 2000) {
     const [x, z] = queue.shift()!;
     for (const [dx, dz] of Object.values(SIDES)) {
       const nx = x + dx, nz = z + dz;

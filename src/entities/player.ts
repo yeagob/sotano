@@ -23,6 +23,12 @@ export class Player {
   /** Blocks in your hand, bottom to top (materials). The top one is placed/thrown first. */
   hand: number[] = [];
   keys = 0;
+  bombs = 1;
+  /** Health in half-hearts (max = 2 × the maxHearts stat). */
+  hp = 6;
+  /** Seconds of invulnerability left after a hit. */
+  invulnT = 0;
+  dead = false;
   fireCooldown = 0;
   /** Distance walked on the ground (drives camera and hand bobbing). */
   walkPhase = 0;
@@ -77,5 +83,6 @@ export class Player {
     if (b.onGround && !wasGround && fall > 2) hooks.land(fall);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
+    this.invulnT = Math.max(0, this.invulnT - dt);
   }
 }

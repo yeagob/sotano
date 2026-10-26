@@ -7,7 +7,8 @@
 //  - A hook that throws is logged with its source and skipped; it never breaks the frame.
 //  - Nested emits are capped at MAX_DEPTH: past it the event runs with no hooks (default
 //    behaviour) instead of being dropped.
-//  - Chain reactions go through `defer`, owned by a source so they die with it.
+//  - Chain reactions go through `defer`, owned by a source so they die with it, capped at MAX_DEFERRED.
+//  - A hook slower than SLOW_HOOK_MS is reported once.
 
 export interface EventCtx {
   cancelled: boolean;
@@ -19,11 +20,16 @@ export interface EventCtx {
 export type Hook<C> = { priority: number; source: string; id?: string; fn: (ctx: C) => void };
 
 const MAX_DEPTH = 8;
+/** A hook slower than this (ms) is reported once: it would stutter the frame. */
+const SLOW_HOOK_MS = 4;
+/** Safety cap for queued chain reactions; past it the oldest are dropped. */
+const MAX_DEFERRED = 5000;
 
 export class EventBus<Events extends { [K in keyof Events]: object }> {
   private hooks = new Map<keyof Events, Hook<any>[]>();
   private depth = 0;
   private deferred: { fn: () => void; source: string }[] = [];
+  private slowReported = new Set<string>();
   trace = false;
 
   on<K extends keyof Events>(type: K, hook: Hook<Events[K] & EventCtx>): () => void {
@@ -57,7 +63,13 @@ export class EventBus<Events extends { [K in keyof Events]: object }> {
     try {
       for (const h of this.hooks.get(type) ?? []) {
         try {
+          const t0 = performance.now();
           h.fn(ctx);
+          const ms = performance.now() - t0;
+          if (ms > SLOW_HOOK_MS && !this.slowReported.has(h.source + h.id)) {
+            this.slowReported.add(h.source + h.id);
+            console.warn(`[events] hook ${h.source}${h.id ? '.' + h.id : ''} took ${ms.toFixed(1)} ms on "${String(type)}"`);
+          }
         } catch (err) {
           console.error(`[events] hook ${h.source}${h.id ? '.' + h.id : ''} failed on "${String(type)}"`, err);
         }
@@ -71,7 +83,16 @@ export class EventBus<Events extends { [K in keyof Events]: object }> {
   }
 
   /** Chain reactions: they run in `flush()`, outside the stack of the event that caused them. */
-  defer(fn: () => void, source = 'core') { this.deferred.push({ fn, source }); }
+  defer(fn: () => void, source = 'core') {
+    this.deferred.push({ fn, source });
+    if (this.deferred.length > MAX_DEFERRED) {
+      this.deferred.splice(0, this.deferred.length - MAX_DEFERRED);
+      if (!this.slowReported.has('deferred-cap')) {
+        this.slowReported.add('deferred-cap');
+        console.warn(`[events] more than ${MAX_DEFERRED} chain reactions queued; dropping the oldest`);
+      }
+    }
+  }
 
   /** Runs at most `budget` deferred reactions (the rest wait for the next frame). */
   flush(budget = 64) {

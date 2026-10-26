@@ -12,7 +12,7 @@ export interface MaterialDef {
   /** Colours for the generated pixel-art texture: [base, dark, light] (hex). */
   colors: [number, number, number];
   /** Procedural texture style. */
-  pattern: 'noise' | 'brick' | 'planks' | 'speckle' | 'grass' | 'cracked' | 'frame';
+  pattern: 'noise' | 'brick' | 'planks' | 'speckle' | 'grass' | 'cracked' | 'frame' | 'seed';
 }
 
 export const AIR = 0;
@@ -33,6 +33,8 @@ export const MATERIALS: MaterialDef[] = [
   { id: 11, key: 'goldframe', name: 'Gilded frame', tier: 2, hp: 30, armor: 1.5, colors: [0xc9a227, 0x8a6d12, 0xf2d36b], pattern: 'frame' },
   { id: 12, key: 'bossframe', name: 'Bone frame', tier: 2, hp: 30, armor: 1.5, colors: [0x8c2a2a, 0x521616, 0xd9cfc1], pattern: 'frame' },
   { id: 13, key: 'pedestal', name: 'Pedestal', tier: 3, hp: 60, armor: 3, colors: [0x9a9590, 0x6d6964, 0xc7c2bb], pattern: 'brick' },
+  // a bomb ('breakthrough' in the story): only ever exists as a loose cube with a fuse
+  { id: 14, key: 'bomb', name: 'Breakthrough', tier: 0, hp: 1, armor: 0, colors: [0x2a2233, 0x15101c, 0xffb347], pattern: 'seed' },
 ];
 
 export const MAT: Record<string, number> = Object.fromEntries(MATERIALS.map(m => [m.key, m.id]));

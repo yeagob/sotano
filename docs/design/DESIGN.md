@@ -200,6 +200,8 @@ The "official" dungeon (4 floors of rooms) is only the visible part. Around it t
 
 ## 10. Items and synergies (design examples)
 
+> These were the first design sketches. The **current catalogue** (names, paths, effects, inspirations, quality) is in [STORY.md §5](STORY.md#5-items-practices-with-real-names); how items are built is in [../architecture/ITEMS.md](../architecture/ITEMS.md).
+
 Passive items (on pedestals). Provisional, original names.
 
 | Item | Effect | Synergies that should emerge "on their own" |

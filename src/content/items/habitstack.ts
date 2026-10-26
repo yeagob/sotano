@@ -7,12 +7,31 @@ export const NEIGHBOURS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 
 export const CHAIN_SOURCE = 'chain';
 
 export default defineItem({
-  id: 'chain',
-  name: 'Chain Reaction',
-  description: 'Breaking a block damages its neighbours of the same material.',
+  id: 'habitstack',
+  name: 'Habit Stacking',
+  description: 'One change triggers the next: breaking a block damages its same-material neighbours.',
+  inspiredBy: 'Habit stacking (Atomic Habits, James Clear; Tiny Habits, BJ Fogg)',
   pools: { treasure: 1 },
-  tags: ['blocks'],
+  tags: ['will', 'blocks'],
   color: 0xe05d5d,
+  quality: 3,
+  icon: {
+    rows: [
+      '............',
+      '.aa.........',
+      '.ab..aa.....',
+      '.ab..ab..aa.',
+      '.ab..ab..ab.',
+      '.ab..ab..ab.',
+      '.bb..ab..ab.',
+      '.....bb..ab.',
+      '.........bb.',
+      '............',
+      'cccccccccccc',
+      '............',
+    ],
+    palette: { a: 0xf6efe2, b: 0xc9b9a0, c: 0xe05d5d },
+  },
   hooks: [
     hook('blockBreak', (e, api) => {
       if (e.source === CHAIN_SOURCE) return; // chain damage does not chain again
