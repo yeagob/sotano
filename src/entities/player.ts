@@ -1,4 +1,6 @@
 // First-person player: a 0.6 × 1.8 box against the grid, like Minecraft.
+// Movement reads stats every frame; jumping and landing go through the game's events
+// (via `PlayerHooks`) so items can change them.
 
 import * as THREE from 'three';
 import type { Input } from '../input/input';
@@ -8,16 +10,28 @@ import type { Stats } from '../core/stats';
 export const EYE = 1.62;
 const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
 
+export interface PlayerHooks {
+  /** Asked before jumping with the stat-based velocity; return the velocity to use, or null to cancel. */
+  jump(velocity: number): number | null;
+  /** Touched the ground after falling at `fallSpeed` blocks/s. */
+  land(fallSpeed: number): void;
+}
+
 export class Player {
   body: Body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: false };
   yaw = 0; pitch = 0;
-  /** Material of the block in your hand (0 = none). */
-  held = 0;
+  /** Blocks in your hand, bottom to top (materials). The top one is placed/thrown first. */
+  hand: number[] = [];
+  keys = 0;
   fireCooldown = 0;
   /** Distance walked on the ground (drives camera and hand bobbing). */
   walkPhase = 0;
+  /** Direction the player is trying to move this frame (unit or zero), for contact checks. */
+  wishX = 0; wishZ = 0;
   private jumpBuffer = 0;
   private coyote = 0;
+
+  get top() { return this.hand.length ? this.hand[this.hand.length - 1] : 0; }
 
   spawnAt(x: number, y: number, z: number) {
     Object.assign(this.body, { x, y, z, vx: 0, vy: 0, vz: 0 });
@@ -30,7 +44,7 @@ export class Player {
     return new THREE.Vector3(-Math.sin(this.yaw) * cp, Math.sin(this.pitch), -Math.cos(this.yaw) * cp);
   }
 
-  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean) {
+  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks) {
     this.yaw -= input.lookDX * input.sensitivity;
     this.pitch = Math.max(-1.55, Math.min(1.55, this.pitch - input.lookDY * input.sensitivity));
 
@@ -40,6 +54,7 @@ export class Player {
     let wx = -sin * f + cos * s, wz = -cos * f - sin * s;
     const l = Math.hypot(wx, wz);
     if (l > 1) { wx /= l; wz /= l; }
+    this.wishX = wx; this.wishZ = wz;
     const speed = WALK * stats.moveSpeed;
     const b = this.body;
     const k = b.onGround ? 1 : AIR_CONTROL;
@@ -52,11 +67,14 @@ export class Player {
     this.jumpBuffer -= dt;
     this.coyote = b.onGround ? 0.1 : this.coyote - dt;
     if (this.jumpBuffer > 0 && this.coyote > 0) {
-      b.vy = JUMP_V * Math.sqrt(stats.jump);
+      const v = hooks.jump(JUMP_V * Math.sqrt(stats.jump));
+      if (v !== null) b.vy = v;
       this.jumpBuffer = 0; this.coyote = 0;
     }
     b.vy = Math.max(b.vy - GRAVITY * dt, -40);
+    const wasGround = b.onGround, fall = -b.vy;
     moveBody(solid, b, dt);
+    if (b.onGround && !wasGround && fall > 2) hooks.land(fall);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
   }

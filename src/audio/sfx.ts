@@ -53,3 +53,12 @@ export const sfx = {
   place: () => { noise(0.08, 0.4, 500, 1.5); tone(200, 0.08, 'triangle', 0.2, 0.7); },
   denied: () => tone(160, 0.12, 'square', 0.12, 0.8),
 };
+
+export const sfx2 = {
+  boom: () => { noise(0.5, 0.8, 140, 0.6); tone(70, 0.4, 'sine', 0.6, 0.4); },
+  door: () => { noise(0.35, 0.18, 260, 2); tone(90, 0.3, 'sawtooth', 0.05, 1.4); },
+  unlock: () => { tone(880, 0.06, 'square', 0.1); setTimeout(() => tone(660, 0.1, 'square', 0.1), 70); },
+  key: () => { tone(1320, 0.08, 'triangle', 0.15); setTimeout(() => tone(1760, 0.12, 'triangle', 0.15), 80); },
+  item: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.18, 'triangle', 0.16), i * 90)),
+  descend: () => { tone(330, 0.5, 'sine', 0.25, 0.3); noise(0.6, 0.2, 200, 0.7); },
+};

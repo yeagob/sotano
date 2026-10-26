@@ -50,6 +50,14 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
         for (let k = 0; k < 7; k++) { px(x, y, dark); x = (x + rng.int(-1, 1) + T) % T; y = (y + 1) % T; }
       }
       break;
+    case 'frame':
+      // riveted border around a darker plate
+      for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+        const edge = x < 2 || y < 2 || x > T - 3 || y > T - 3;
+        px(x, y, edge ? light : rng.next() < 0.15 ? base : dark);
+      }
+      for (const [x, y] of [[3, 3], [T - 4, 3], [3, T - 4], [T - 4, T - 4]]) px(x, y, light);
+      break;
     case 'grass':
       // grass side: dirt with a green fringe on top
       paintTile(g, ox, oy, MATERIALS[1], rng);
@@ -124,4 +132,46 @@ function pixelTexture(c: HTMLCanvasElement) {
   t.generateMipmaps = false;
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+export type DoorLook = 'normal' | 'treasure' | 'boss' | 'locked';
+
+const DOOR_COLORS: Record<DoorLook, [string, string, string]> = {
+  normal: ['#5d4a3a', '#3e3127', '#7a6450'],
+  treasure: ['#8a6d12', '#5e4a0b', '#e8c454'],
+  boss: ['#6e1f1f', '#431212', '#b8a89a'],
+  locked: ['#4b5563', '#2f3640', '#c9a227'],
+};
+
+/** Doom-style sliding door: horizontal bands, rivets, a stripe; locked doors get a padlock. */
+export function doorTexture(look: DoorLook): THREE.CanvasTexture {
+  const S = 32;
+  const c = document.createElement('canvas');
+  c.width = S; c.height = S;
+  const g = c.getContext('2d')!;
+  const [base, dark, light] = DOOR_COLORS[look];
+  const rng = new Rng(55);
+  g.fillStyle = base; g.fillRect(0, 0, S, S);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    if (y % 8 === 7) { g.fillStyle = dark; g.fillRect(x, y, 1, 1); }
+    else if (rng.next() < 0.08) { g.fillStyle = light; g.globalAlpha = 0.35; g.fillRect(x, y, 1, 1); g.globalAlpha = 1; }
+  }
+  g.fillStyle = dark; g.fillRect(0, 0, S, 2); g.fillRect(0, S - 2, S, 2); g.fillRect(0, 0, 2, S); g.fillRect(S - 2, 0, 2, S);
+  g.fillStyle = light;
+  for (let y = 3; y < S; y += 8) { g.fillRect(3, y, 1, 1); g.fillRect(S - 4, y, 1, 1); }
+  if (look === 'boss') { g.fillStyle = light; g.fillRect(14, 6, 4, 4); g.fillRect(13, 10, 6, 3); g.fillStyle = dark; g.fillRect(14, 8, 1, 1); g.fillRect(17, 8, 1, 1); }
+  if (look === 'treasure') { g.fillStyle = light; g.fillRect(11, 9, 10, 2); g.fillRect(11, 7, 2, 2); g.fillRect(15, 6, 2, 3); g.fillRect(19, 7, 2, 2); }
+  if (look === 'locked') {
+    g.fillStyle = light; g.fillRect(13, 12, 6, 6); g.fillRect(14, 9, 1, 3); g.fillRect(17, 9, 1, 3); g.fillRect(14, 9, 4, 1);
+    g.fillStyle = dark; g.fillRect(15, 14, 2, 2);
+  }
+  return pixelTexture(c);
+}
+
+/** Small pixel-art sprite for the minimap and HUD icons. */
+export function iconCanvas(draw: (g: CanvasRenderingContext2D) => void, size = 16): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  draw(c.getContext('2d')!);
+  return c;
 }

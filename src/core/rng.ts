@@ -51,7 +51,7 @@ export function hash3(seed: number, x: number, y: number, z: number): number {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
-export type StreamName = 'floorplan' | 'rooms' | 'rock' | 'loot' | 'combat' | 'fx';
+export type StreamName = 'floorplan' | 'rooms' | 'rock' | 'loot' | 'combat' | 'items' | 'fx';
 
 /** One Rng per purpose, all derived from the run seed. */
 export class RunRng {

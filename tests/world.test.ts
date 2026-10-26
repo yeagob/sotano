@@ -2,15 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { meshChunk } from '../src/world/mesher';
 import { raycastVoxels } from '../src/physics/raycast';
 import { moveBody, type Body } from '../src/physics/voxel-collide';
-import { generateM0, FLOOR_Y, ROOM } from '../src/world/gen';
-import { ROOM_TEMPLATES, validateTemplate, ROOM_W, ROOM_D } from '../src/content/rooms';
-import { Rng } from '../src/core/rng';
+import { buildFloor } from '../src/world/floor';
+import { generatePlan, DEFAULT_PLAN } from '../src/world/floorplan';
+import { ROOM_TEMPLATES, validateTemplate } from '../src/content/rooms';
+import { Rng, RunRng } from '../src/core/rng';
 import { AIR, MAT } from '../src/content/materials';
 import { VoxelWorld } from '../src/world/world';
 
 describe('room templates', () => {
   it('are all valid', () => {
     for (const t of ROOM_TEMPLATES) expect(validateTemplate(t)).toEqual([]);
+  });
+  it('cover every room type', () => {
+    for (const type of ['start', 'normal', 'treasure', 'boss', 'vault'])
+      expect(ROOM_TEMPLATES.some(t => t.types.includes(type as never))).toBe(true);
+  });
+  it('reject blocked doorways', () => {
+    const bad = { id: 'bad', types: ['normal' as const], rows: ['.....r.......', ...Array(6).fill('.............')] };
+    expect(validateTemplate(bad).join()).toMatch(/N door is blocked/);
   });
 });
 
@@ -48,16 +57,52 @@ describe('voxel collision', () => {
   });
 });
 
-describe('M0 generation', () => {
-  it('is deterministic and leaves an empty room with a spawn point', () => {
-    const a = generateM0(5, new Rng(5), ROOM_TEMPLATES);
-    const b = generateM0(5, new Rng(5), ROOM_TEMPLATES);
-    expect(a.template).toBe(b.template);
+describe('floor generation', () => {
+  it('is deterministic per seed', () => {
+    const a = buildFloor(new RunRng(5), 1, ROOM_TEMPLATES);
+    const b = buildFloor(new RunRng(5), 1, ROOM_TEMPLATES);
+    expect(a.rooms.map(r => r.template)).toEqual(b.rooms.map(r => r.template));
     expect(a.world.data).toEqual(b.world.data);
-    const [sx, sy, sz] = a.spawn;
-    expect(a.world.get(Math.floor(sx), sy, Math.floor(sz))).toBe(AIR);
-    expect(a.world.get(Math.floor(sx), sy - 1, Math.floor(sz))).toBe(MAT.brick);
-    expect(a.world.get(ROOM.x0 + ROOM_W, FLOOR_Y, ROOM.z0 + ROOM_D)).toBe(MAT.brick);
+  });
+
+  it('always has a start, a treasure room and a boss room far from the start', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const plan = generatePlan(new Rng(seed));
+      const types = plan.rooms.map(r => r.type);
+      expect(types.filter(t => t === 'start')).toHaveLength(1);
+      expect(types.filter(t => t === 'treasure')).toHaveLength(1);
+      expect(types.filter(t => t === 'boss')).toHaveLength(1);
+      const boss = plan.rooms.find(r => r.type === 'boss')!;
+      expect(boss.dist).toBeGreaterThanOrEqual(2);
+      expect(Object.keys(boss.links)).toHaveLength(1);
+      expect(plan.rooms.length).toBeGreaterThanOrEqual(DEFAULT_PLAN.minRooms);
+    }
+  });
+
+  it('connects every room (a tree reachable from the start)', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const plan = generatePlan(new Rng(seed));
+      expect(plan.rooms.every(r => r.dist >= 0)).toBe(true);
+      const links = plan.rooms.reduce((n, r) => n + Object.keys(r.links).length, 0) / 2;
+      expect(links).toBe(plan.rooms.length - 1);
+    }
+  });
+
+  it('carves walkable doorways, a spawn, a pedestal, a trapdoor and a key when a door is locked', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const f = buildFloor(new RunRng(seed), 1, ROOM_TEMPLATES);
+      const [sx, sy, sz] = f.spawn;
+      expect(f.world.get(Math.floor(sx), sy, Math.floor(sz))).toBe(AIR);
+      for (const d of f.doors) {
+        for (let x = d.x0; x <= d.x1; x++) for (let y = d.y0; y <= d.y1; y++) for (let z = d.z0; z <= d.z1; z++)
+          expect(f.world.get(x, y, z)).toBe(AIR);
+        expect(f.world.get(d.x0, d.y0 - 1, d.z0)).not.toBe(AIR);
+      }
+      expect(f.pedestals.length).toBeGreaterThanOrEqual(1);
+      expect(f.trapdoor).not.toBeNull();
+      expect(f.keys.length).toBe(f.doors.some(d => d.locked) ? 1 : 0);
+      expect(f.doors).toHaveLength(f.rooms.length - 1);
+    }
   });
   it('marks neighbour chunks dirty when editing a chunk border', () => {
     const w = new VoxelWorld(32, 32, 32);

@@ -1,4 +1,5 @@
-// Keyboard and mouse with pointer lock. (Touch controls arrive in M1.)
+// Keyboard and mouse. A click anywhere captures the mouse (pointer lock) until Esc.
+// (Touch controls are still to come.)
 
 export class Input {
   readonly keys = new Set<string>();
@@ -10,29 +11,38 @@ export class Input {
   locked = false;
   sensitivity = 0.0022;
 
-  constructor(el: HTMLElement) {
+  constructor(private el: HTMLElement) {
     addEventListener('keydown', e => {
       if (!this.keys.has(e.code)) this.pressed.add(e.code);
       this.keys.add(e.code);
-      if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+      if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
     });
     addEventListener('keyup', e => this.keys.delete(e.code));
     addEventListener('blur', () => { this.keys.clear(); this.fireHeld = false; });
-    el.addEventListener('mousedown', e => {
-      if (!this.locked) { el.requestPointerLock(); return; }
+    // listen on the whole document: overlays (pause card, HUD) must not swallow the click
+    document.addEventListener('mousedown', e => {
+      if (!this.locked) { this.lock(); return; }
       if (e.button === 0) this.fireHeld = true;
       if (e.button === 2) this.placePressed = true;
     });
     addEventListener('mouseup', e => { if (e.button === 0) this.fireHeld = false; });
-    el.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('pointerlockchange', () => {
-      this.locked = document.pointerLockElement === el;
-      if (!this.locked) this.fireHeld = false;
+      this.locked = document.pointerLockElement === this.el;
+      if (!this.locked) { this.fireHeld = false; this.keys.clear(); }
     });
     addEventListener('mousemove', e => {
       if (!this.locked) return;
       this.lookDX += e.movementX; this.lookDY += e.movementY;
     });
+  }
+
+  /** Request pointer lock (browsers refuse it for ~1 s right after Esc: just click again). */
+  lock() {
+    try {
+      const p = this.el.requestPointerLock() as unknown as Promise<void> | undefined;
+      p?.catch?.(() => {});
+    } catch { /* not allowed right now */ }
   }
 
   axis(neg: string[], pos: string[]) {

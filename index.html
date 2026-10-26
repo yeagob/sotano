@@ -14,20 +14,35 @@
     #crosshair::before, #crosshair::after { content: ""; position: absolute; background: #fffc; box-shadow: 0 0 2px #000; }
     #crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
     #crosshair::after { top: 8px; left: 0; height: 2px; width: 18px; }
-    #slot { position: fixed; left: 50%; bottom: 18px; width: 64px; height: 64px; margin-left: -32px;
-      border: 3px solid #0009; background: #0005; outline: 2px solid #fff3; image-rendering: pixelated; }
-    #slot img { width: 100%; height: 100%; display: none; image-rendering: pixelated; }
-    #slot.full img { display: block; }
-    #slot::after { content: "block"; position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; opacity: .6; }
+    #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
+    .slot { position: relative; width: 56px; height: 56px; border: 3px solid #0009; background: #0005; outline: 2px solid #fff3; }
+    .slot.top { outline-color: #fffb; }
+    .slot img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+    #hand::after { content: "hand"; position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; opacity: .6; }
     #items { position: fixed; top: 10px; left: 12px; margin: 0; padding: 0; list-style: none; text-shadow: 0 1px 2px var(--shadow); }
     #items li { margin-bottom: 2px; }
-    #items li::before { content: "◆ "; color: var(--accent); }
+    #items li::before { content: "◆ "; color: var(--c, var(--accent)); }
+    #corner { position: fixed; right: 12px; bottom: 14px; text-align: right; text-shadow: 0 1px 2px #000; }
+    #minimap { display: block; margin: 0 0 6px auto; image-rendering: pixelated; width: 180px; background: #0006; outline: 2px solid #0008; }
+    #keys, #depth { font-size: 15px; }
+    #stats { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 340px; max-width: 520px; max-height: 80vh; overflow: auto;
+      padding: 14px 20px; background: #1d1813ee; border: 3px solid #000; outline: 2px solid #5a4a3a; display: none; }
+    #stats.show { display: block; }
+    #stats h2 { margin: 4px 0 8px; font-size: 16px; letter-spacing: 2px; color: var(--accent); }
+    #stats table { border-collapse: collapse; width: 100%; }
+    #stats td { padding: 1px 0; } #stats td:last-child { text-align: right; }
+    #stats ul { margin: 0; padding: 0; list-style: none; }
+    #stats li { margin: 3px 0; } #stats li::before { content: "◆ "; color: var(--c, var(--accent)); }
+    #stats li.syn::before { content: "✦ "; color: #f2c84b; } #stats .none { opacity: .6; }
+    #stats .hint { opacity: .5; font-size: 11px; text-align: center; margin: 10px 0 0; }
     #debug { position: fixed; right: 10px; top: 8px; text-align: right; white-space: pre; font-size: 11px; opacity: .75; text-shadow: 0 1px 2px #000; }
     #banner { position: fixed; left: 0; right: 0; top: 18%; text-align: center; pointer-events: none; opacity: 0;
       transition: opacity .25s, transform .25s; transform: translateY(-8px); }
     #banner.show { opacity: 1; transform: none; }
     #banner b { display: block; font-size: 30px; letter-spacing: 1px; text-shadow: 0 3px 0 #000, 0 0 12px #000; }
     #banner span { display: block; margin-top: 4px; font-size: 15px; text-shadow: 0 2px 0 #000; }
+    #banner i { display: block; font-style: normal; font-size: 14px; margin-top: 3px; text-shadow: 0 2px 0 #000; }
+    #banner i.up { color: #8fe38f; } #banner i.down { color: #f08a8a; } #banner i.syn { color: #f2c84b; }
     #toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: #000a; padding: 6px 12px;
       border-radius: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; }
     #toast.show { opacity: 1; }
@@ -46,7 +61,9 @@
 <body>
   <canvas id="game"></canvas>
   <div id="crosshair"></div>
-  <div id="slot"><img id="slot-img" alt="" /></div>
+  <div id="hand"></div>
+  <div id="corner"><canvas id="minimap"></canvas><div id="keys"></div><div id="depth"></div></div>
+  <div id="stats"></div>
   <ul id="items"></ul>
   <div id="debug"></div>
   <div id="banner"></div>
@@ -54,15 +71,18 @@
   <div id="overlay">
     <div class="card">
       <h1>SÓTANO</h1>
-      <p>Prototype M0 · everything breaks.</p>
+      <p>Prototype M1 · one generated floor, doors, keys, items.</p>
       <table>
         <tr><td>Mouse</td><td>look</td></tr>
         <tr><td>WASD · Space</td><td>move · jump</td></tr>
         <tr><td>Left click (hold)</td><td>cast intentions</td></tr>
         <tr><td>Walk over</td><td>pick up a loose block (or kick it if your hand is full)</td></tr>
-        <tr><td>Right click</td><td>place the block you hold</td></tr>
-        <tr><td>Q</td><td>throw the block</td></tr>
-        <tr><td>R</td><td>new room</td></tr>
+        <tr><td>Right click</td><td>place the top block (throws it if there's nowhere to place it)</td></tr>
+        <tr><td>Q</td><td>throw the top block</td></tr>
+        <tr><td>Doors</td><td>open as you approach; locked ones need a key</td></tr>
+        <tr><td>Tab</td><td>stats and items</td></tr>
+        <tr><td>R</td><td>new run</td></tr>
+        <tr><td>Esc</td><td>release the mouse (pause)</td></tr>
       </table>
       <p>Console: <code>S.give('drill')</code> · <code>S.items</code></p>
       <div class="go">Click to play</div>

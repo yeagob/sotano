@@ -96,11 +96,11 @@ There's no floating "item drop" like in Minecraft: the broken block *is* the obj
 
 ## 6. The block slot
 
-- You can carry **one block**. No inventory.
+- You can carry **one block** by default. No inventory. (Items can raise it: the `carry` stat. Builder's Hands gives +1.)
 - **Walking over** a loose block picks it up… if your hand is free.
 - If you already carry one, **you kick it**: it flies off with physics. A kicked block hurts enemies (more if heavy) and can break fragile blocks. This is a combat mechanic, not just an inconvenience.
 - **Place:** aim at a block face and place it (like Minecraft, ~5 blocks of reach).
-- **Throw:** launch the block you hold.
+- **Throw:** launch the block you hold (Q, or right click when there's nowhere to place it).
 - **Use:** some blocks have an active effect when placed or dropped (the equivalent of cards and runes):
   - TNT: placed, explodes after a delay.
   - Light block: lights up dark areas.
@@ -229,10 +229,10 @@ As you approach the top of floor 1 the surface loads: a **house** (where the pro
 
 1. First-person controller with hands, intentions that drop. **(M0 ✔)**
 2. A breakable 13×7 room, with blocks that fall with physics, can be picked up, kicked and placed. **(M0 ✔)**
-3. A full generated floor (8–12 rooms) with doors, keys, bombs, treasure room and boss.
+3. A full generated floor (8–11 rooms) with doors, keys, bombs, treasure room and boss. **(M1: done except bombs and the boss itself)**
 4. 3 enemies (zombie, skeleton, exploder) and 1 block-built boss.
-5. 10–15 items with real synergies between them.
-6. Going down to floor 2 by trapdoor **or** by digging, with floor streaming.
+5. 10–15 items with real synergies between them. **(M1: 11 items, 3 synergies)**
+6. Going down to floor 2 by trapdoor **or** by digging, with floor streaming. **(M1: trapdoor only; each floor replaces the last)**
 7. Climbing back up by digging and placing blocks until the surface (even if the surface is an empty meadow).
 
 If that's fun, it grows to 4 floors, bosses and secrets.

@@ -12,7 +12,7 @@ export interface MaterialDef {
   /** Colours for the generated pixel-art texture: [base, dark, light] (hex). */
   colors: [number, number, number];
   /** Procedural texture style. */
-  pattern: 'noise' | 'brick' | 'planks' | 'speckle' | 'grass' | 'cracked';
+  pattern: 'noise' | 'brick' | 'planks' | 'speckle' | 'grass' | 'cracked' | 'frame';
 }
 
 export const AIR = 0;
@@ -28,6 +28,11 @@ export const MATERIALS: MaterialDef[] = [
   { id: 7, key: 'obsidian', name: 'Obsidian', tier: 3, hp: 40, armor: 3, heavy: true, colors: [0x241a33, 0x150f20, 0x3b2b55], pattern: 'speckle' },
   { id: 8, key: 'bedrock', name: 'Bedrock', tier: Infinity, hp: Infinity, armor: 0, colors: [0x2b2b2b, 0x161616, 0x484848], pattern: 'cracked' },
   { id: 9, key: 'ore', name: 'Iron ore', tier: 2, hp: 18, armor: 1, heavy: true, colors: [0x7d7d80, 0x606064, 0xd8a77a], pattern: 'speckle' },
+  // door frames: one tier tougher than walls, coloured by what lies behind the door
+  { id: 10, key: 'frame', name: 'Door frame', tier: 2, hp: 30, armor: 1.5, colors: [0x5b5049, 0x3a322d, 0x7a6c62], pattern: 'frame' },
+  { id: 11, key: 'goldframe', name: 'Gilded frame', tier: 2, hp: 30, armor: 1.5, colors: [0xc9a227, 0x8a6d12, 0xf2d36b], pattern: 'frame' },
+  { id: 12, key: 'bossframe', name: 'Bone frame', tier: 2, hp: 30, armor: 1.5, colors: [0x8c2a2a, 0x521616, 0xd9cfc1], pattern: 'frame' },
+  { id: 13, key: 'pedestal', name: 'Pedestal', tier: 3, hp: 60, armor: 3, colors: [0x9a9590, 0x6d6964, 0xc7c2bb], pattern: 'brick' },
 ];
 
 export const MAT: Record<string, number> = Object.fromEntries(MATERIALS.map(m => [m.key, m.id]));

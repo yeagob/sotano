@@ -1,6 +1,6 @@
 # SÓTANO — Research and Technical Proposal (v0.2, draft)
 
-Companion to [DESIGN.md](DESIGN.md). Two parts: **what we know about how Isaac and Noita are built**, and **how we build SÓTANO** for the browser (WebGL), open source, deployed on Vercel. For how the code that exists *today* is organised, see [ARCHITECTURE.md](ARCHITECTURE.md).
+Companion to [DESIGN.md](DESIGN.md). Two parts: **what we know about how Isaac and Noita are built**, and **how we build SÓTANO** for the browser (WebGL), open source, deployed on Vercel. For how the code that exists *today* is organised, see [ARCHITECTURE.md](ARCHITECTURE.md); the item system as built (after its review) is in [ITEMS.md](ITEMS.md), floors and templates in [ROOMS.md](ROOMS.md).
 
 > **About sources.** The Isaac material comes mainly from its public modding API (documented by the community in IsaacDocs) and from the analysis of its floor generation (Boris the Brave, with input from Florian Himsl). The Noita material comes from the GDC 2019 talk *Exploring the Tech and Design of Noita* and articles by Nolla Games. Details marked *(verify)* are from memory or secondary sources.
 
@@ -199,13 +199,18 @@ There are three distinct problems, and they shouldn't share one tool:
 |---|---|---|
 | Player and enemies vs. the world | **Custom:** box vs. voxel grid, swept per axis | What Minecraft does; precise, cheap, no dependencies |
 | Intentions | **Custom:** stepped DDA raycast through the grid (Amanatides–Woo) | Exact block and face hit |
-| Loose blocks (fall, roll, get kicked, stack) | **Rapier** (`@dimforge/rapier3d-compat`, WASM) | Believable rotation, stacking and kicks |
+| Loose blocks (fall, roll, get kicked, stack) | **Custom:** typed arrays + ring buffer, box vs. grid, per-column hash for stacking | Thousands of cubes at a few ms per frame |
 
-Rapier details:
-- The terrain is a **voxel collider** (`ColliderDesc.voxels`, sparse storage since 0.19) kept in sync with `setVoxel` as blocks break or are placed. In M0 the whole world is one collider; with streaming, one per chunk (coupled with `propagateVoxelChange`).
-- **Cap on active bodies** (e.g. 150 on PC, 60 on mobile). Settled bodies sleep; expired ones despawn; past the cap, the oldest/farthest go.
-- Fixed physics step (60 Hz).
-- Cheaper fallback if Rapier doesn't perform on mobile: the Joel project's cube physics with "fake" rotation. Keep physics behind an interface so it can be swapped.
+**Decision change in M1.** M0 used Rapier (WASM) for loose blocks: nice tumbling, but capped at ~150 bodies, a 4.9 MB bundle and async start-up. The Joel gift project had shown that a custom cube system handles thousands of cubes smoothly, and the owner asked for that. M1 replaced Rapier with that approach, improved:
+
+- One cube = an axis-aligned 0.72 box moved one axis at a time against the voxel grid (and closed doors), with substeps against tunnelling.
+- Resting cubes are hashed per column; falling cubes land on them, so piles stack. A resting cube that loses its support falls again.
+- Rotation is visual only: tumbling in the air, flat with a random yaw at rest.
+- A ring buffer of 2000 cubes (1000 on touch devices): when full, the oldest slot is reused. Cubes despawn after 90 s, blinking for the last 8.
+- All cubes render in one `InstancedMesh`; each instance picks its atlas tile in the shader.
+- Measured in the browser: 2000 moving cubes ≈ 3.7 ms per frame (median), 5.2 ms p95.
+
+What we gave up: true rotational collisions (a cube resting on an edge). If that's ever needed for a specific mechanic, a physics engine can be added for a handful of "special" bodies without moving the mass of debris back onto it.
 
 ### 7. Rendering
 
@@ -260,9 +265,9 @@ export default defineItem({
 | Piece | Choice |
 |---|---|
 | Language | Strict TypeScript |
-| Build | Vite (ESM, native workers, Rapier WASM with no friction) |
+| Build | Vite (ESM, native workers) |
 | Rendering | three.js (pinned version) |
-| Block physics | `@dimforge/rapier3d-compat` |
+| Block physics | Custom (typed arrays), see §6 |
 | ECS | Small home-grown (or `bitecs`) |
 | Audio | WebAudio synthesis, as in the Joel project (zero files, zero licensing issues) |
 | Tests | Vitest + Playwright |
@@ -291,8 +296,8 @@ Measure early on a mid-range phone; it drives most decisions.
 
 | Milestone | Content | Question it answers |
 |---|---|---|
-| **M0 — Toy** ✔ | Vite+TS, breakable 13×7 room, FPS controller with hands, intentions that drop, Rapier cubes, pick up/kick/place/throw | Is breaking, carrying and placing fun in first person? |
-| **M1 — One floor** | Floor plan generator, room templates, doors/keys/bombs, 3 enemies, health, touch controls | Does Isaac's structure work in 3D with breakable walls? |
+| **M0 — Toy** ✔ | Vite+TS, breakable 13×7 room, FPS controller with hands, intentions that drop, physics cubes, pick up/kick/place/throw | Is breaking, carrying and placing fun in first person? |
+| **M1 — One floor** ✔ (partly) | Done: floor plan generator, connectable room templates, Doom-style doors and keys, treasure/vault pedestals, boss room with trapdoor, 11 items + 3 synergies on the reviewed item architecture, stats panel, minimap, custom cube physics. Still to do: bombs, enemies, health, touch controls | Does Isaac's structure work in 3D with breakable walls? |
 | **M2 — Synergies** | Behaviours, weapon types, 15 items, synergy test matrix | Do surprising combinations emerge without special code? |
 | **M3 — Depth** | 4 floors, slabs, streaming, digging between floors, voxel boss | Is choosing between trapdoor and digging interesting? |
 | **M4 — The climb** | Special blocks, climbing to a minimal surface, run saving | Is the way back fun, or a chore? |
@@ -303,7 +308,7 @@ Measure early on a mid-range phone; it drives most decisions.
 1. **Readability of first-person combat.** Isaac is top-down for a reason: you see everything. Mitigation: small rooms, clear attack telegraphing, off-screen enemy indicators; and prototype an alternative camera.
 2. **Digging breaks room design.** Mitigation: tiers, wall reinforcement during combat, rewards tied to clearing rooms (see DESIGN §7).
 3. **The climb may be tedious.** The biggest design risk; that's why M4 is its own milestone.
-4. **Physics on mobile.** Rapier WASM is fast, but hundreds of cubes plus meshing plus enemies on a phone is tight. Body caps and swappable physics.
+4. **Physics on mobile.** Custom cube physics is cheap (≈4 ms for 2000 cubes on desktop), but meshing plus enemies on a phone is still to be measured. Cube cap halves on touch devices.
 5. **Combinatorial explosion of synergies.** Mitigation: orthogonal flags, centralised exceptions, automatic test matrix.
 6. **Scope.** Isaac has 700+ items after a decade. The prototype must prove the idea with 15.
 
@@ -317,4 +322,4 @@ Measure early on a mid-range phone; it drives most decisions.
 - Isaac wiki, floors: https://bindingofisaacrebirth.wiki.gg/wiki/Floor
 - Nolla Games, *Exploring the Tech and Design of Noita* (GDC 2019), listed at: https://noita.wiki.gg/wiki/Official_Interviews_and_Videos
 - 80.lv, *Noita: a game based on falling sand simulation*: https://80.lv/articles/noita-a-game-based-on-falling-sand-simulation/
-- Rapier (WASM physics) on npm: https://classic.yarnpkg.com/en/package/@dimforge/rapier3d · three.js + Rapier: https://discourse.threejs.org/t/physics-rapier3d-js-three-js/25610
+- Rapier (WASM physics), used in M0 and replaced in M1 (see §6): https://classic.yarnpkg.com/en/package/@dimforge/rapier3d

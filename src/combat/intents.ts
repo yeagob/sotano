@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import type { Stats } from '../core/stats';
 import type { IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
-import { DEBRIS_SIZE, type Debris } from '../physics/debris';
 
 export function intentFromStats(s: Stats): IntentSpec {
   return {
@@ -16,19 +15,23 @@ export function intentFromStats(s: Stats): IntentSpec {
     gravity: 22 * s.gravity,
     radius: 0.12 * s.size,
     pierce: 0,
+    pierceTier: 0,
     color: 0x9fd3ff,
   };
 }
 
-interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; hitDebris: Set<number> }
+interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number }
 
 export interface IntentHooks {
   solid(x: number, y: number, z: number): boolean;
   /** Returns true if the block broke. */
   hitBlock(hit: VoxelHit, intent: IntentSpec): boolean;
-  /** Is the block soft (tier 0), and therefore something `pierce` can go through? */
-  soft(x: number, y: number, z: number): boolean;
-  debris(): readonly Debris[];
+  /** Tier of the block (pierce only works up to `pierceTier`). */
+  tier(x: number, y: number, z: number): number;
+  /** Index of a loose cube touching this sphere, or -1. */
+  debrisAt(x: number, y: number, z: number, r: number): number;
+  /** Something hit a loose cube with this velocity. */
+  hitDebris(i: number, vel: THREE.Vector3, intent: IntentSpec): void;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
 }
 
@@ -53,7 +56,7 @@ export class Intents {
   fire(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, hitDebris: new Set() });
+    this.list.push({ spec, pos: from.clone(), vel, age: 0 });
   }
 
   update(dt: number) {
@@ -67,18 +70,11 @@ export class Intents {
       let dead = false;
 
       // against loose cubes: push them
-      for (const d of h.debris()) {
-        if (t.hitDebris.has(d.id)) continue;
-        const p = d.body.translation();
-        const r = DEBRIS_SIZE / 2 + t.spec.radius;
-        if (Math.abs(p.x - t.pos.x) < r && Math.abs(p.y - t.pos.y) < r && Math.abs(p.z - t.pos.z) < r) {
-          const imp = t.vel.clone().normalize().multiplyScalar(0.25 + t.spec.damage * 0.06);
-          d.body.applyImpulseAtPoint(imp, { x: t.pos.x, y: t.pos.y, z: t.pos.z }, true);
-          t.hitDebris.add(d.id);
-          h.splash(t.pos, t.spec.color, false);
-          dead = true;
-          break;
-        }
+      const cube = h.debrisAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius);
+      if (cube >= 0) {
+        h.hitDebris(cube, t.vel, t.spec);
+        h.splash(t.pos, t.spec.color, false);
+        dead = true;
       }
 
       // against the world (piercing through soft blocks)
@@ -86,10 +82,10 @@ export class Intents {
         const hit = raycastVoxels(h.solid, t.pos.x, t.pos.y, t.pos.z, step.x, step.y, step.z, dist);
         if (hit) {
           const hitPos = t.pos.clone().addScaledVector(step, dist ? hit.t / dist : 0);
-          const soft = h.soft(hit.x, hit.y, hit.z);
+          const pierceable = h.tier(hit.x, hit.y, hit.z) <= t.spec.pierceTier;
           const broke = h.hitBlock(hit, t.spec);
           h.splash(hitPos, t.spec.color, broke);
-          if (broke && soft && t.spec.pierce > 0) { t.spec = { ...t.spec, pierce: t.spec.pierce - 1 }; t.pos.copy(hitPos); }
+          if (broke && pierceable && t.spec.pierce > 0) { t.spec = { ...t.spec, pierce: t.spec.pierce - 1 }; t.pos.copy(hitPos); }
           else dead = true;
         } else t.pos.add(step);
       }
