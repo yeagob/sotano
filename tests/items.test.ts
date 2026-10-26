@@ -182,6 +182,17 @@ describe('contract', () => {
     enemyDeath: 0, roomClear: 0,
   } satisfies Record<keyof GameEvents, 0>);
 
+  it('no content sets keepTags (cube chains would outlive their cause; see ACTORS.md §1)', () => {
+    const content = src(join('src', 'content')).map(p => readFileSync(p, 'utf8')).join('\n');
+    expect(content).not.toMatch(/keepTags\s*=\s*true/);
+  });
+
+  it('no item changes mining with the add layer (mining is absolute: adds need a rebalance)', () => {
+    for (const i of [...ITEMS, ...SYNERGIES]) for (const m of i.stats ?? []) {
+      expect(m.stat === 'mining' && m.layer === 'add', `${i.id} adds to mining`).toBe(false);
+    }
+  });
+
   it('every game event has an emit site', () => {
     for (const e of eventNames) expect(code, `no emit('${e}')`).toMatch(new RegExp(`emit\\('${e}'`));
   });

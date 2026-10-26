@@ -428,7 +428,8 @@ export class Game {
         if (st.next <= 0) { st.next = SPAWN_GAP; this.spawnEnemy(st.queue.shift()!, r); }
         continue;
       }
-      if (this.enemies.aliveIn(id) === 0) {
+      // a room only clears once queued blasts (e.g. a last Panic's burst) have gone off
+      if (this.enemies.aliveIn(id) === 0 && this.blasts.pending === 0) {
         st.cleared = true;
         this.doors.seal(id, false);
         // Isaac-style clear reward, pre-rolled per room: the room's own fork gives one uniform
@@ -639,6 +640,7 @@ export class Game {
     const b = p.body;
     const cube = this.debris.spawn(MAT.bomb, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, 0, b.vz * 0.5);
     this.debris.fuse[cube] = Math.max(0.1, ev.fuse);
+    this.bombCause.delete(cube); // the slot may have held an old bomb that despawned unlit
     this.debris.cooldown[cube] = 0.8;
     sfx3.fuse();
   }

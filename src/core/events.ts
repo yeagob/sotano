@@ -27,10 +27,18 @@ const MAX_DEFERRED = 5000;
 
 export class EventBus<Events extends { [K in keyof Events]: object }> {
   private hooks = new Map<keyof Events, Hook<any>[]>();
-  private depth = 0;
+  private depthNow = 0;
   private deferred: { fn: () => void; source: string }[] = [];
   private slowReported = new Set<string>();
   trace = false;
+
+  /** Events only the core loop may emit, never from inside a hook (e.g. `death`, `doorOpen`):
+   *  emitting one nested is a bug and is reported once. Cancelling them at the depth cap would
+   *  change their meaning (a cancelled `death` means "survive"). */
+  constructor(private rootOnly: readonly (keyof Events)[] = []) {}
+
+  /** How many emits are running right now (0 = called from the core loop). */
+  get depth() { return this.depthNow; }
 
   on<K extends keyof Events>(type: K, hook: Hook<Events[K] & EventCtx>): () => void {
     const list = this.hooks.get(type) ?? [];
@@ -55,7 +63,11 @@ export class EventBus<Events extends { [K in keyof Events]: object }> {
     ctx.cancelled = false;
     ctx.cancel = () => { ctx.cancelled = true; };
     if (this.trace) ctx.touchedBy = [];
-    if (this.depth >= MAX_DEPTH) {
+    if (this.depthNow > 0 && this.rootOnly.includes(type) && !this.slowReported.has('root:' + String(type))) {
+      this.slowReported.add('root:' + String(type));
+      console.error(`[events] "${String(type)}" emitted from inside a hook (depth ${this.depthNow}); it must only come from the core loop`);
+    }
+    if (this.depthNow >= MAX_DEPTH) {
       ctx.cancelled = true;
       if (!this.slowReported.has('depth:' + String(type))) {
         this.slowReported.add('depth:' + String(type));
@@ -63,7 +75,7 @@ export class EventBus<Events extends { [K in keyof Events]: object }> {
       }
       return ctx;
     }
-    this.depth++;
+    this.depthNow++;
     try {
       for (const h of this.hooks.get(type) ?? []) {
         try {
@@ -81,7 +93,7 @@ export class EventBus<Events extends { [K in keyof Events]: object }> {
         if (ctx.cancelled) break;
       }
     } finally {
-      this.depth--;
+      this.depthNow--;
     }
     return ctx;
   }

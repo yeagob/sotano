@@ -49,6 +49,18 @@ describe('EventBus', () => {
     expect(landed).toBe(0);
   });
 
+  it('reports root-only events emitted from inside a hook, and exposes the depth', () => {
+    const bus = new EventBus<{ a: object; death: object }>(['death']);
+    let seen = -1;
+    bus.on('a', { priority: 0, source: 't', fn: () => { seen = bus.depth; bus.emit('death', {}); } });
+    const err = console.error; let msgs = 0; console.error = () => { msgs++; };
+    bus.emit('a', {}); bus.emit('death', {});
+    console.error = err;
+    expect(seen).toBe(1);
+    expect(bus.depth).toBe(0);
+    expect(msgs).toBe(1);
+  });
+
   it('runs deferred work within a budget', () => {
     const bus = new EventBus<{}>();
     let n = 0;
@@ -119,9 +131,17 @@ describe('BlastQueue (chain safety)', () => {
     expect(q.pending).toBe(0);
   });
 
-  it('keeps the chain origin and caps the queue', () => {
+  it('caps chain links but never drops a root blast (a real bomb)', () => {
+    const q = new BlastQueue<B>(1, 5);
+    for (let i = 0; i < 10; i++) q.push({ source: 'bomb', n: i });
+    expect(q.pending).toBe(10);
+    quiet(() => q.run(() => { for (let i = 0; i < 10; i++) q.push({ source: 'chain', n: i }); }));
+    expect(q.pending).toBe(9 + 0); // the queue was already over the cap: every link dropped
+  });
+
+  it('keeps the chain origin', () => {
     const q = new BlastQueue<B>(8, 5);
-    quiet(() => { for (let i = 0; i < 10; i++) q.push({ source: 'x', n: i }); });
+    quiet(() => { for (let i = 0; i < 5; i++) q.push({ source: 'x', n: i }); });
     expect(q.pending).toBe(5);
     const origins: string[] = [];
     q.run(b => { origins.push(b.cause.origin); });

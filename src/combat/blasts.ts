@@ -1,6 +1,7 @@
 // Chain safety for explosions (docs/architecture/ACTORS.md §1). Explosions never run inside
 // another event: they are queued here and run a few per frame. A blast queued while another one
-// runs joins its chain (`gen + 1`); chains stop after `maxGen` links and the queue has a hard cap.
+// runs joins its chain (`gen + 1`); chains stop after `maxGen` links, and chain links (never
+// root blasts) are dropped past the queue cap.
 
 import type { Cause } from '../game/events';
 
@@ -27,7 +28,8 @@ export class BlastQueue<B extends { source: string; cause: Cause }> {
   push(blast: Omit<B, 'cause'>): boolean {
     const cause = this.nextCause(blast.source);
     if (cause.gen > this.maxGen) return this.warn('chain', `[blasts] chain from "${cause.origin}" stopped at ${this.maxGen} links`);
-    if (this.queue.length >= this.max) return this.warn('queue', `[blasts] more than ${this.max} explosions queued; dropping new ones`);
+    // only chain links can be dropped: a root blast (a real bomb, a burst) always goes off
+    if (cause.gen > 0 && this.queue.length >= this.max) return this.warn('queue', `[blasts] more than ${this.max} explosions queued; dropping chain links`);
     this.queue.push({ ...blast, cause } as B);
     return true;
   }

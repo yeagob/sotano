@@ -108,4 +108,7 @@ export interface IntentSpec {
 }
 
 export type GameBus = EventBus<GameEvents>;
-export const createBus = (): GameBus => new EventBus<GameEvents>();
+/** Emitted only by the core loop (depth 0). `death` is emitted right after `playerDamage`
+ *  returns, at the same depth, so a hit that passed the depth cap also reaches `death`. */
+export const ROOT_EVENTS = ['death', 'doorOpen', 'enemySpawn', 'roomClear', 'floorEnter'] as const satisfies readonly (keyof GameEvents)[];
+export const createBus = (): GameBus => new EventBus<GameEvents>(ROOT_EVENTS);
