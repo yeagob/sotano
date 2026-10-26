@@ -35,6 +35,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 
 ### Reviews — architecture decisions
 - [Items](docs/reviews/items-architecture.md), [entities](docs/reviews/entities.md) and [RNG](docs/reviews/rng.md) reviews — engineer, architect and mediator: critique, ruling, resolution.
+- [Architecture stress test](docs/reviews/stress-test.md) — extreme items (wind, clones, friendly enemies, a HUD that falls into the world…) against the architecture, and the refactoring plan before scaling.
 
 ### Working on the project
 - Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log), [lore](.claude/skills/sotano-lore/SKILL.md) (how references become content).
