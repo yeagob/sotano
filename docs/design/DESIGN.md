@@ -99,6 +99,8 @@ There's no floating "item drop" like in Minecraft: the broken block *is* the obj
 - You can carry **one block** by default. No inventory. (Items can raise it: the `carry` stat. Builder's Hands gives +1.)
 - **Walking over** a loose block picks it up… if your hand is free.
 - If you already carry one, **you kick it**: it flies off with physics. A kicked block hurts enemies (more if heavy) and can break fragile blocks. This is a combat mechanic, not just an inconvenience.
+- **Loose blocks are tough but not eternal:** intentions push them, and after 4 hits (`DEBRIS_HITS`) they shatter. Enemies shove the loose blocks and bombs they walk into. A block that clips into a wall or another block **hops upward** (`HOP`) instead of staying wedged.
+- **Bombs are loose cubes too:** you can kick them, enemies and intentions push them, and **an intention hit sets a bomb off at once**.
 - **Place:** aim at a block face and place it (like Minecraft, ~5 blocks of reach).
 - **Throw:** launch the block you hold (Q, or right click when there's nowhere to place it).
 - **Use:** some blocks have an active effect when placed or dropped (the equivalent of cards and runes):

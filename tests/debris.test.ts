@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DebrisSystem, DEBRIS_LIFETIME } from '../src/physics/debris';
+import { DebrisSystem, DEBRIS_HITS, DEBRIS_LIFETIME } from '../src/physics/debris';
 
 const floor = (_x: number, y: number, _z: number) => y < 0;
 const step = (d: DebrisSystem, seconds: number) => { for (let t = 0; t < seconds; t += 1 / 60) d.update(1 / 60); };
@@ -76,5 +76,27 @@ describe('loose cubes', () => {
     const t0 = performance.now();
     for (let f = 0; f < 60; f++) d.update(1 / 60);
     expect(performance.now() - t0).toBeLessThan(1500);
+  });
+
+  it('hop upward instead of staying wedged against a wall', () => {
+    const wall = (x: number, y: number) => y < 0 || x >= 3;
+    const d = new DebrisSystem(4, wall, () => {});
+    const c = d.spawn(1, 2.4, 0.4, 0.5);
+    step(d, 0.3); // let it land
+    d.launch(c, 6, 0, 0);
+    let peak = 0;
+    for (let t = 0; t < 0.3; t += 1 / 60) { d.update(1 / 60); peak = Math.max(peak, d.pos[c * 3 + 1]); }
+    expect(peak).toBeGreaterThan(0.6);
+  });
+
+  it('shatter after enough hits, and a hit sets a bomb off at once', () => {
+    const d = new DebrisSystem(4, floor, () => {});
+    const c = d.spawn(1, 0.5, 0.4, 0.5);
+    for (let k = 1; k < DEBRIS_HITS; k++) expect(d.strike(c, 1, 0, 0)).toBe('pushed');
+    expect(d.strike(c, 1, 0, 0)).toBe('shattered');
+    const b = d.spawn(1, 2.5, 0.4, 0.5);
+    d.fuse[b] = 1.8;
+    expect(d.strike(b, 1, 0, 0)).toBe('ignited');
+    expect(d.fuse[b]).toBeLessThanOrEqual(0.01);
   });
 });

@@ -141,7 +141,7 @@ export class Game {
       debrisAt: (x, y, z, r) => this.debrisAt(x, y, z, r),
       hitDebris: (i, v, t) => {
         const k = t.knock * 6 / Math.max(1, v.length());
-        this.debris.push(i, v.x * k, v.y * k + 1, v.z * k);
+        this.strikeCube(i, v.x * k, v.y * k + 1, v.z * k);
       },
       // the player's intentions pass through allies
       enemyAt: (x, y, z, r) => this.enemies.at(x, y, z, r, e => hostile(this.player.faction, e.faction)),
@@ -635,6 +635,36 @@ export class Game {
     return -1;
   }
 
+  /** A shot or a shove hits a loose block: it moves, and after enough hits it shatters; a bomb goes off at once. */
+  private strikeCube(i: number, vx: number, vy: number, vz: number) {
+    const d = this.debris, i3 = i * 3;
+    const r = d.strike(i, vx, vy, vz);
+    if (r === 'ignited') { this.bombCause.set(i, this.blasts.nextCause('bomb')); return; }
+    if (r !== 'shattered') return;
+    const x = d.pos[i3], y = d.pos[i3 + 1], z = d.pos[i3 + 2], m = d.material[i];
+    d.remove(i);
+    this.particles.burst(x, y, z, mat(m).colors[0], 14, 3.5, 0.1);
+    sfx.break(Math.min(3, mat(m).tier));
+  }
+
+  /** Enemies shove the loose blocks and bombs they walk into. */
+  private shoveCubes() {
+    const d = this.debris;
+    for (const e of this.enemies.list) {
+      const b = e.body;
+      for (let i = 0; i < d.max; i++) {
+        if (!d.isAlive(i)) continue;
+        const i3 = i * 3, dx = d.pos[i3] - b.x, dz = d.pos[i3 + 2] - b.z, cy = d.pos[i3 + 1];
+        const horiz = Math.hypot(dx, dz);
+        if (horiz > b.hw + DEBRIS_SIZE / 2 + 0.1 || cy < b.y - 0.5 || cy > b.y + b.h) continue;
+        const nx = horiz > 0.01 ? dx / horiz : 1, nz = horiz > 0.01 ? dz / horiz : 0;
+        // a steady shove, not an impulse every frame: only speed up to walking pace away from the enemy
+        const along = d.vel[i3] * nx + d.vel[i3 + 2] * nz;
+        if (along < 3.5) d.push(i, nx * (3.5 - along), d.isResting(i) ? 1.5 : 0, nz * (3.5 - along));
+      }
+    }
+  }
+
   private onDebrisImpact(i: number, x: number, y: number, z: number, speed: number) {
     const tags = this.debris.tags[i];
     if (!tags) return;
@@ -936,6 +966,7 @@ export class Game {
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.touchDebris();
+    this.shoveCubes();
     this.touchPickups();
     this.intents.update(dt);
     this.enemies.update(dt);

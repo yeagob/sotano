@@ -138,7 +138,7 @@ URL parameter `?seed=123` picks the seed; `?lang=es` picks the language.
 
 ## Tests (`tests/`)
 
-Vitest, Node, no rendering (100 tests):
+Vitest, Node, no rendering (102 tests):
 
 - `core.test.ts` — event bus, RNG, stats, block damage.
 - `world.test.ts` — templates, mesher, DDA, collision, plans (one start/treasure/boss; from all 49 start cells), stacked dungeon (doorways, global room ids, bands), the hole landing in the next start room.
