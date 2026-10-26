@@ -1,5 +1,6 @@
 // Cube particles (intention splashes and block chips) in a single InstancedMesh.
 
+import { fx } from '../core/fx';
 import * as THREE from 'three';
 
 interface P { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; max: number; s: number }
@@ -25,11 +26,11 @@ export class Particles {
   burst(x: number, y: number, z: number, color: number, n: number, speed = 3, size = 0.08) {
     for (let i = 0; i < n; i++) {
       if (this.list.length >= this.max) { this.list.shift(); this.rgb.shift(); }
-      const life = 0.35 + Math.random() * 0.4;
+      const life = 0.35 + fx.random() * 0.4;
       this.list.push({
         x, y, z,
-        vx: (Math.random() - 0.5) * 2 * speed, vy: Math.random() * speed * 1.2, vz: (Math.random() - 0.5) * 2 * speed,
-        life, max: life, s: size * (0.6 + Math.random() * 0.8),
+        vx: (fx.random() - 0.5) * 2 * speed, vy: fx.random() * speed * 1.2, vz: (fx.random() - 0.5) * 2 * speed,
+        life, max: life, s: size * (0.6 + fx.random() * 0.8),
       });
       this.rgb.push(color);
     }

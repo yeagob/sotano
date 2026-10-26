@@ -7,6 +7,7 @@
 // content/synergies.ts. Effects from other sources (rooms, curses…) on the same StatSheet
 // and bus are left alone: only our own sources are removed.
 
+import { Rng } from '../core/rng';
 import { StatSheet, diffStats, type Stats } from '../core/stats';
 import type { GameBus } from '../game/events';
 import type { Effect, ItemApi, ItemDef, ItemInstance, Req, SynergyDef } from './types';
@@ -29,7 +30,19 @@ export class Inventory {
     readonly stats: StatSheet,
     private bus: () => GameBus,
     private api: () => ItemApi,
+    /** The RNG for one held copy of an item: `fork('item', id, copyIndex)` in the game. */
+    private rngFor: (id: string, copy: number) => Rng = (id, copy) => new Rng(id.length * 7919 + copy),
   ) {}
+
+  /** Per-copy RNGs, kept across rebuilds so a pickup doesn't replay another item's rolls. */
+  private rngs = new Map<string, Rng>();
+
+  private itemRng(id: string, copy: number) {
+    const k = `${id}#${copy}`;
+    let r = this.rngs.get(k);
+    if (!r) { r = this.rngFor(id, copy); this.rngs.set(k, r); }
+    return r;
+  }
 
   get items(): readonly ItemInstance[] { return this.held; }
   get synergiesActive(): readonly SynergyDef[] { return this.active; }
@@ -47,7 +60,8 @@ export class Inventory {
     const instance = { uid: this.nextUid++, def };
     this.held.push(instance);
     this.rebuild();
-    def.onGain?.({ ...this.api(), defer: fn => this.bus().defer(fn, `item:${instance.uid}`) });
+    const copy = this.held.filter(h => h.def.id === id).length - 1;
+    def.onGain?.({ ...this.api(), defer: fn => this.bus().defer(fn, `item:${instance.uid}`), rng: () => this.itemRng(id, copy) });
     return {
       instance,
       changes: diffStats(before, this.stats.all),
@@ -70,6 +84,7 @@ export class Inventory {
   /** Restores from ids. Does not run `onGain` (those effects already happened). */
   restore(ids: readonly string[]) {
     this.held = [];
+    this.rngs.clear();
     for (const id of ids) {
       const def = this.catalog.get(id);
       if (def) this.held.push({ uid: this.nextUid++, def });
@@ -87,13 +102,18 @@ export class Inventory {
     this.active = this.synergies.filter(s => s.requires.every(r => this.meets(r)));
     const suppressed = new Set(this.active.flatMap(s => s.suppress ?? []));
 
-    for (const it of this.held) this.install(`item:${it.uid}`, it.def.id, it.def, suppressed);
-    for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed);
+    const copies = new Map<string, number>();
+    for (const it of this.held) {
+      const copy = copies.get(it.def.id) ?? 0;
+      copies.set(it.def.id, copy + 1);
+      this.install(`item:${it.uid}`, it.def.id, it.def, suppressed, this.itemRng(it.def.id, copy));
+    }
+    for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed, this.itemRng(`syn:${s.id}`, 0));
   }
 
-  private install(source: string, ownerId: string, e: Effect, suppressed: Set<string>) {
+  private install(source: string, ownerId: string, e: Effect, suppressed: Set<string>, rng: Rng) {
     const bus = this.bus();
-    const api: ItemApi = { ...this.api(), defer: fn => bus.defer(fn, source) };
+    const api: ItemApi = { ...this.api(), defer: fn => bus.defer(fn, source), rng: () => rng };
     for (const m of e.stats ?? []) this.stats.add({ ...m, source });
     for (const h of e.hooks ?? []) {
       if (h.id && suppressed.has(`${ownerId}.${h.id}`)) continue;

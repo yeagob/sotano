@@ -22,6 +22,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Items](docs/architecture/ITEMS.md) — the item model, the stat and event contract, synergies and exceptions, safety layers.
 - [Rooms and floors](docs/architecture/ROOMS.md) — floor plans, room templates and their rules, doors and keys.
 - [Entities](docs/architecture/ENTITIES.md) — stacked floors, health, pickups, bombs, enemies and their navigation.
+- [Seeds and randomness](docs/architecture/RNG.md) — every run unique and replayable: seed codes, structure/runtime/cosmetic randomness, weighted tables.
 - [Elements plan](docs/architecture/ELEMENTS.md) — architecture and step-by-step plan for elements and containers.
 
 ### Lore — references and cosmology
@@ -33,7 +34,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Technical research and proposal](docs/research/TECHNICAL.md) — how Isaac and Noita are built, the target architecture, budgets, IP notes, roadmap.
 
 ### Reviews — architecture decisions
-- [Items architecture review](docs/reviews/items-architecture.md) and [entities review](docs/reviews/entities.md) — engineer, architect and mediator: critique, ruling, resolution.
+- [Items](docs/reviews/items-architecture.md), [entities](docs/reviews/entities.md) and [RNG](docs/reviews/rng.md) reviews — engineer, architect and mediator: critique, ruling, resolution.
 
 ### Working on the project
 - Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log), [lore](.claude/skills/sotano-lore/SKILL.md) (how references become content).
@@ -42,6 +43,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 
 ## What you can do
 
+- **Play a unique run every time** — each run has a seed (shown as `ABCD EFGH` on the pause, inventory and death screens; click to copy a link). Layouts, room moods and decor, rock, projections, practices and rewards all come from it, and `?seed=ABCD-EFGH` replays a run exactly.
 - **Descend a stacked dungeon** — four floors, each 8–11 rooms built from hand-made templates and laid out Isaac-style (start, normal rooms, **treasure**, **boss** and sometimes a locked **vault**). Entering the boss room loads the next floor and opens a hole in the floor: you **fall** into the next one. Floors above remember what you broke. A minimap fills in as you go.
 - **Face projections** — Doubt (chases you), the Inner Critic (keeps its distance and lobs judgements) and Panic (rushes you and bursts). They **materialise from the centre of the room**, the doors seal, and they open again when every projection is gone.
 - **Survive** — Isaac-style hearts (half-hearts), a moment of invulnerability after each hit, and a death screen when the intention fades.
@@ -117,7 +119,7 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5174. Add `?seed=42` to the URL for a specific seed.
+Then open http://localhost:5174. Every run gets a fresh seed; add `?seed=ABCD-EFGH` to replay one.
 
 | Script | What it does |
 |---|---|
@@ -140,7 +142,8 @@ S.god()                 // invulnerable
 S.bombs(5); S.keys(2)   // counters
 S.floor()               // open the hole and drop to the next floor
 S.enemies()             // live projections
-S.restart(7)            // new run with seed 7
+S.seed()                // this run's seed code
+S.restart('ABCD-EFGH')  // replay a seed (no argument: a fresh one)
 ```
 
 The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md#debug-console).
@@ -156,7 +159,8 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 | Enemies | Data + behaviour factories, per-room flow-field navigation |
 | Art | Pixel-art textures and item icons generated at runtime: no image files |
 | Audio | Synthesised with WebAudio: no sound files |
-| Tests | Vitest: rules, generation, physics, items, a 378-combination synergy matrix and a contract test |
+| Randomness | Seed codes with checksum; structure decided at run start from path-derived forks; weighted tables; cosmetic randomness isolated |
+| Tests | Vitest: rules, generation, physics, items, seeds (determinism, isolation, variety), a 378-combination synergy matrix and a contract test |
 | Hosting | Static site (Vercel) |
 
 The core idea, borrowed from how Isaac is built: **items don't call into the game; the game emits events and items hook into them.** Anything an item might want to change reads a stat or emits an event (a test enforces it). Stats are recomputed from layered modifiers, damage goes through one pipeline, chain reactions are deferred and budgeted, exceptions between items live in one file, and five safety layers keep powerful items from breaking the game. Key designs go through an architect and a mediator review before being built.

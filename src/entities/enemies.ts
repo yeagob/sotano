@@ -3,6 +3,7 @@
 // Rules and numbers come from the definitions (src/content/enemies); every outcome that items
 // could care about goes back to the game through `EnemyHost`, which emits the events.
 
+import { fx } from '../core/fx';
 import * as THREE from 'three';
 import { ROOM_D, ROOM_W } from '../content/rooms';
 import { FlowField, type RoomArea } from '../enemies/flowfield';
@@ -127,9 +128,9 @@ export class Enemies {
       if (e.spawning > 0) {
         // materialising: cubes converge on the spot, harmless and unhittable
         e.spawning -= dt;
-        if (Math.random() < 0.6) {
-          const a = Math.random() * Math.PI * 2, r = 1.2 + Math.random();
-          host.particles(b.x + Math.cos(a) * r, b.y + 0.2 + Math.random() * 1.4, b.z + Math.sin(a) * r, e.def.model[0].color, 1, 0.6, 0.08);
+        if (fx.random() < 0.6) {
+          const a = fx.random() * Math.PI * 2, r = 1.2 + fx.random();
+          host.particles(b.x + Math.cos(a) * r, b.y + 0.2 + fx.random() * 1.4, b.z + Math.sin(a) * r, e.def.model[0].color, 1, 0.6, 0.08);
         }
         if (e.spawning <= 0) {
           // step off the spawn spot so a queue of spawns doesn't stack

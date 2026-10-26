@@ -10,7 +10,10 @@
 //   o  obsidian, 1 high       d  dirt, 1 high
 //   i  iron ore, 1 high       #  brick up to the ceiling
 //   T  item pedestal          K  key spot (where the floor's key may appear)
-//   H  trapdoor to the next floor (boss rooms)
+//   H  where the hole to the next floor opens (boss rooms)
+//   ?  decor slot: maybe a crate         ~  decor slot: maybe dirt, stone or ore
+//   !  decor slot: ore or obsidian       (slots are rolled per room, biased by its mood:
+//                                         src/content/tables/rooms.ts)
 
 import type { RoomType } from '../world/floorplan';
 import { MAT } from './materials';
@@ -40,6 +43,17 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
       '.............',
       'c...........c',
+    ],
+  },
+  {
+    id: 'hall', types: ['start'], rows: [
+      '?...........?',
+      '.............',
+      '.~.........~.',
+      '......P......',
+      '.~.........~.',
+      '.............',
+      '?...........?',
     ],
   },
   // ── normal ──
@@ -98,6 +112,72 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
     ],
   },
+  {
+    id: 'garden', types: ['normal'], rows: [
+      '.?.~.....~.?.',
+      '..~?.....?~..',
+      '.....!.!.....',
+      '.~....K....~.',
+      '.....!.!.....',
+      '..~?.....?~..',
+      '.?.~.....~.?.',
+    ],
+  },
+  {
+    id: 'rubble', types: ['normal'], rows: [
+      '??.~.....~.??',
+      '?~~.......~~?',
+      '.~..R...R..~.',
+      '...?.....?...',
+      '.~..R...R..~.',
+      '?~~.......~~?',
+      '??.~.....~.??',
+    ],
+  },
+  {
+    id: 'veins', types: ['normal'], rows: [
+      '!...........!',
+      '.!!.~...~.!!.',
+      '...~.....~...',
+      '.#.........#.',
+      '...~.....~...',
+      '.!!.~...~.!!.',
+      '!...........!',
+    ],
+  },
+  {
+    id: 'checker', types: ['normal'], rows: [
+      '.?.?.....?.?.',
+      '?.?.?.?.?.?.?',
+      '.?.?.?.?.?.?.',
+      '..?.?...?.?..',
+      '.?.?.?.?.?.?.',
+      '?.?.?.?.?.?.?',
+      '.?.?.....?.?.',
+    ],
+  },
+  {
+    id: 'ring', types: ['normal'], rows: [
+      '.............',
+      '..~~~~.~~~~..',
+      '.~.........~.',
+      '.~...R.R...~.',
+      '.~.........~.',
+      '..~~~~.~~~~..',
+      '.............',
+    ],
+  },
+  {
+    id: 'colonnade', types: ['normal'], rows: [
+      '.#.?.....?.#.',
+      '.#.........#.',
+      '...C.....C...',
+      '..!...K...!..',
+      '...C.....C...',
+      '.#.........#.',
+      '.#.?.....?.#.',
+    ],
+  },
   // ── treasure ──
   {
     id: 'shrine', types: ['treasure'], rows: [
@@ -121,6 +201,17 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       'R...........R',
     ],
   },
+  {
+    id: 'nook', types: ['treasure'], rows: [
+      '.............',
+      '..!.......!..',
+      '....~...~....',
+      '......T......',
+      '....~...~....',
+      '..!.......!..',
+      '.............',
+    ],
+  },
   // ── boss ──
   {
     id: 'arena', types: ['boss'], rows: [
@@ -131,6 +222,17 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
       '.R.........R.',
       '.............',
+    ],
+  },
+  {
+    id: 'pit', types: ['boss'], rows: [
+      '.?.........?.',
+      '..R.......R..',
+      '....r...r....',
+      '......H......',
+      '....r...r....',
+      '..R.......R..',
+      '.?.........?.',
     ],
   },
   // ── vault ──
@@ -158,6 +260,9 @@ export const CELL_STACK: Record<string, { m: number; h: number }> = {
 /** Characters that mark something but leave the tile walkable. */
 export const MARKERS = new Set(['.', 'P', 'K', 'T', 'H']);
 
+/** Decor slots, rolled per room (src/content/tables/rooms.ts). Treated as solid by every rule. */
+export const DECOR_CHARS = new Set(['?', '~', '!']);
+
 /** Tiles in front of each door, as [col, row]. They must stay walkable. */
 export const DOOR_APPROACH: Record<'N' | 'S' | 'E' | 'W', [number, number][]> = {
   N: [[5, 0], [6, 0], [7, 0]],
@@ -173,7 +278,7 @@ export function validateTemplate(t: RoomTemplate): string[] {
   if (t.rows.length !== ROOM_D) errs.push(`${t.id}: ${t.rows.length} rows (expected ${ROOM_D})`);
   t.rows.forEach((r, i) => {
     if (r.length !== ROOM_W) errs.push(`${t.id}: row ${i} is ${r.length} wide (expected ${ROOM_W})`);
-    for (const ch of r) if (!MARKERS.has(ch) && !CELL_STACK[ch]) errs.push(`${t.id}: unknown character "${ch}"`);
+    for (const ch of r) if (!MARKERS.has(ch) && !CELL_STACK[ch] && !DECOR_CHARS.has(ch)) errs.push(`${t.id}: unknown character "${ch}"`);
   });
   for (const [side, tiles] of Object.entries(DOOR_APPROACH)) {
     for (const [c, r] of tiles) {
@@ -187,6 +292,21 @@ export function validateTemplate(t: RoomTemplate): string[] {
     if (need && !all.includes(need)) errs.push(`${t.id}: ${type} rooms need a "${need}"`);
   }
   if ((all.match(/[PTH]/g) ?? []).length > 1) errs.push(`${t.id}: at most one of P, T, H`);
+  const walk = (c: number, r: number) => MARKERS.has(t.rows[r]?.[c] ?? '#');
+  // the pedestal must be reachable from at least one side (the item is taken by walking up to it)
+  t.rows.forEach((r, ri) => {
+    const c = r.indexOf('T');
+    if (c >= 0 && ![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dc, dr]) => walk(c + dc, ri + dr)))
+      errs.push(`${t.id}: the pedestal can't be reached from any side`);
+  });
+  // projections materialise on the centre tile of normal rooms
+  if (t.types.includes('normal') && !walk(6, 3)) errs.push(`${t.id}: the centre tile (6,3) must be walkable (projections spawn there)`);
+  // the 2×2 shaft: from the H tile in boss rooms, onto the P tile in start rooms
+  for (const mark of ['H', 'P']) t.rows.forEach((r, ri) => {
+    const c = r.indexOf(mark);
+    if (c >= 0 && ![[0, 0], [1, 0], [0, 1], [1, 1]].every(([dc, dr]) => walk(c + dc, ri + dr)))
+      errs.push(`${t.id}: the 2×2 shaft tiles at "${mark}" must be clear`);
+  });
   return errs;
 }
 

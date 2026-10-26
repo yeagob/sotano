@@ -11,7 +11,10 @@ import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import { ROOM_D, ROOM_H, ROOM_TEMPLATES, ROOM_W } from '../content/rooms';
 import { SYNERGIES } from '../content/synergies';
 import { blockDamage, type DamageKind } from '../core/damage';
-import { RunRng } from '../core/rng';
+import { fx } from '../core/fx';
+import { RunRandom } from '../core/rng';
+import { decodeSeed, encodeSeed, formatSeed, GEN_VERSION, randomRoot } from '../core/seed';
+import { ROOM_CLEAR } from '../content/tables/rewards';
 import { StatSheet } from '../core/stats';
 import type { Enemy } from '../enemies/types';
 import { Doors, type Door } from '../entities/doors';
@@ -32,7 +35,8 @@ import { CrackView, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import {
-  bandOf, carveFloor, cellOf, createDungeonWorld, FLOORS, openHole, SURFACE_Y,
+  bandOf, carveFloor, cellOf, createDungeonWorld, FLOORS, openHole, planDungeon, ROOM_ID_STRIDE, SURFACE_Y,
+  type DungeonPlan,
   type FloorResult, type RoomInfo,
 } from '../world/floor';
 import type { VoxelWorld } from '../world/world';
@@ -66,9 +70,13 @@ export class Game {
   readonly stats = new StatSheet();
   readonly inventory: Inventory;
   bus: GameBus = createBus();
-  rng!: RunRng;
+  /** All of the run's randomness, derived from its root (docs/architecture/RNG.md). */
+  rng!: RunRandom;
+  dungeon!: DungeonPlan;
   pools!: ItemPools;
-  seed: number;
+  /** The run's 32-bit root seed and its shareable code ("ABCDEFGH"). */
+  seed = 0;
+  seedCode = '';
   /** Floor the player is on now (by height), and the deepest one reached. */
   depth = 1;
   maxDepth = 1;
@@ -99,8 +107,7 @@ export class Game {
   private fpsAcc = 0; private fpsN = 0; fps = 0;
   private fogColor = new THREE.Color();
 
-  constructor(canvas: HTMLCanvasElement, seed: number) {
-    this.seed = seed;
+  constructor(canvas: HTMLCanvasElement, seed?: string) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.autoClear = false;
@@ -132,7 +139,8 @@ export class Game {
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
     });
     this.api = this.makeApi();
-    this.inventory = new Inventory(ITEM_BY_ID, SYNERGIES, this.stats, () => this.bus, () => this.api);
+    this.inventory = new Inventory(ITEM_BY_ID, SYNERGIES, this.stats, () => this.bus, () => this.api,
+      (id, copy) => this.rng.fork('item', id, copy));
     document.addEventListener('mousedown', unlockAudio);
     addEventListener('keydown', unlockAudio);
     addEventListener('resize', () => this.resize());
@@ -142,16 +150,33 @@ export class Game {
 
   // ───────────────────────── runs and floors ─────────────────────────
 
-  /** Starts a new run: a fresh dungeon, items, counters and pools; floor 1. */
-  newRun(seed = this.seed) {
-    this.seed = seed;
-    this.rng = new RunRng(seed);
-    this.pools = new ItemPools(PLAYABLE_ITEMS, this.rng.get('loot'));
+  /**
+   * Starts a new run: a fresh dungeon, items, counters and pools; floor 1.
+   * `seed`: a seed code ("ABCD-EFGH"), a numeric root (tests), or nothing for a fresh random run.
+   * Everything structural (all floor plans, rock themes, pedestal items) is decided here.
+   */
+  newRun(seed?: string | number) {
+    let root: number | null = typeof seed === 'number' ? seed >>> 0 : typeof seed === 'string' ? decodeSeed(seed) : null;
+    const invalid = typeof seed === 'string' && root === null;
+    root ??= randomRoot();
+    this.seed = root;
+    this.seedCode = encodeSeed(root);
+    this.rng = new RunRandom(root);
+    this.hud.setSeed(this.seedLabel);
+    this.dungeon = planDungeon(this.rng);
+    this.pools = new ItemPools(PLAYABLE_ITEMS);
+    // reserve every pedestal of every floor now, in (floor, room) order
+    const slots: { key: string; pool: 'treasure' | 'vault' }[] = [];
+    this.dungeon.plans.forEach((plan, i) => {
+      for (const r of plan.rooms) if (r.type === 'treasure' || r.type === 'vault')
+        slots.push({ key: String((i + 1) * ROOM_ID_STRIDE + r.id), pool: r.type });
+    });
+    this.pools.reserve(slots, this.rng.fork('reserve'));
     this.chunks?.dispose();
     this.doors?.dispose();
     this.pickups?.dispose();
     this.enemies?.dispose();
-    this.world = createDungeonWorld(seed);
+    this.world = createDungeonWorld(this.rng, this.dungeon);
     this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 48);
     this.debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
     this.debris.onFuse = (_i, x, y, z) => this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', 'player', 2);
@@ -172,21 +197,24 @@ export class Game {
     this.room = -1;
     this.visited = new Set();
     this.hud.hideDeath();
+    this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(1)!, 1);
     this.bus.emit('floorEnter', { depth: 1 });
-    this.hud.toast(`Floor 1 · seed ${seed}`);
+    this.hud.toast(invalid ? `"${seed}" isn't a valid seed: new run ${this.seedLabel}` : `Floor 1 · seed ${this.seedLabel}`);
   }
 
-  /** Carves floor k into the world (one floor ahead of the player). */
+  /** "ABCD EFGH · v1": what the player shares to replay this run. */
+  get seedLabel() {
+    return `${formatSeed(this.seedCode)} · v${GEN_VERSION}`;
+  }
+
+  /** Carves floor k into the world (one floor ahead of the player), from the run's plan. */
   private carve(k: number) {
     if (k > FLOORS || this.floors.has(k)) return;
-    const above = this.floors.get(k - 1);
-    const boss = above?.rooms.find(r => r.type === 'boss');
-    const f = carveFloor(this.world, this.rng, k, {
+    const f = carveFloor(this.world, this.rng, k, this.dungeon.plans[k - 1], {
       templates: ROOM_TEMPLATES,
-      startCell: boss ? [boss.gx, boss.gz] : undefined,
-      drawItem: pool => this.pools.draw(pool),
+      pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
     });
     this.floors.set(k, f);
@@ -202,7 +230,14 @@ export class Game {
     if (!f || this.activated.has(k)) return;
     this.activated.add(k);
     this.doors.add(f.doors);
-    for (const p of f.pedestals) this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, p.item ? ITEM_BY_ID.get(p.item) ?? null : null);
+    for (const p of f.pedestals) {
+      // the reserved item, unless the player already got it some other way: then a runtime draw
+      let id = p.item;
+      if (id && (this.inventory.has(id) || this.pools.isTaken(id))) {
+        id = this.pools.drawRuntime(this.rooms.get(p.room)?.type === 'vault' ? 'vault' : 'treasure', this.rng.stream('loot'));
+      }
+      this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, id ? ITEM_BY_ID.get(id) ?? null : null);
+    }
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
   }
 
@@ -239,7 +274,7 @@ export class Game {
       has: id => this.inventory.has(id),
       hasTag: tag => this.inventory.hasTag(tag),
       held: () => this.player.hand,
-      rng: () => this.rng.get('items'),
+      rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, 1, kind, src),
       explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, 'player', 2),
@@ -352,7 +387,7 @@ export class Game {
 
   private onEnemyDeath(e: Enemy) {
     this.bus.off(null, `enemy:${e.uid}`); // reserved for enemy-owned hooks (M2)
-    const rng = this.rng.get('drops');
+    const rng = this.rng.stream('drops');
     const drops = (Object.entries(e.def.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
     const b = e.body;
     const ev = this.bus.emit('enemyDeath', { uid: e.uid, def: e.def.id, x: b.x, y: b.y, z: b.z, drops });
@@ -383,10 +418,12 @@ export class Game {
       if (this.enemies.aliveIn(id) === 0) {
         st.cleared = true;
         this.doors.seal(id, false);
-        const rng = this.rng.get('drops');
-        // Isaac-style clear reward; luck makes it likelier
-        const chance = Math.min(0.9, 0.4 * (1 + 0.25 * Math.max(0, this.stats.get('luck'))));
-        const drops: PickupKind[] = rng.chance(chance) ? [rng.pick(['heart', 'bomb', 'key'] as PickupKind[])] : [];
+        // Isaac-style clear reward, pre-rolled per room: the room's own fork gives one uniform
+        // number, and luck only reweights the table against it (same seed + same luck = same reward)
+        const r0 = this.rooms.get(id)!;
+        const u = this.rng.fork('floor', r0.floor, 'room', id % ROOM_ID_STRIDE, 'clear').next();
+        const reward = ROOM_CLEAR.pickU(u, { floor: r0.floor, luck: this.stats.get('luck') });
+        const drops: PickupKind[] = reward ? [reward] : [];
         const ev = this.bus.emit('roomClear', { room: id, drops });
         for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, id, null, 0.3);
         this.hud.toast('Room clear');
@@ -441,8 +478,8 @@ export class Game {
     this.debris.wake(x, y, z);
     this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 10, 3.5, 0.09);
     if (ev.spawnDebris) {
-      const r = () => (Math.random() - 0.5) * 1.5;
-      this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, r(), 1 + Math.random(), r());
+      // launch direction is cosmetic (variable dt means debris never replays anyway)
+      this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(0.75), fx.range(1, 2), fx.spread(0.75));
     }
     sfx.break(Math.min(3, mat(id).tier));
     this.rollLoot(x, y, z, id, source);
@@ -757,7 +794,7 @@ export class Game {
     dt = Math.min(dt, 0.05);
     const inp = this.input;
     if (inp.pressed.has('KeyR') && (this.player.dead || inp.locked || this.simulateUnlocked)) {
-      this.newRun(this.seed + 1 + Math.floor(Math.random() * 1000));
+      this.newRun(); // every new run gets a fresh seed
     }
     // an information banner stays until clicked; that click only dismisses it
     if (this.hud.bannerOpen && inp.clicked) {
@@ -775,7 +812,7 @@ export class Game {
     // camera with a little walking bob and explosion shake
     const bob = Math.sin(p.walkPhase * 3.2) * 0.035;
     const sh = this.hud.shakeAmount();
-    this.camera.position.set(e.x + (Math.random() - 0.5) * sh, e.y + bob + (Math.random() - 0.5) * sh, e.z + (Math.random() - 0.5) * sh);
+    this.camera.position.set(e.x + fx.spread(sh / 2), e.y + bob + fx.spread(sh / 2), e.z + fx.spread(sh / 2));
     this.camera.rotation.set(p.pitch, p.yaw, 0, 'YXZ');
 
     // fog: dark dungeon below, sky above

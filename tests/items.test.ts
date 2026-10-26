@@ -141,13 +141,14 @@ describe('inventory', () => {
 });
 
 describe('pools', () => {
-  it('draw without repeats, deterministically', () => {
-    const p1 = new ItemPools(ITEMS, new Rng(3)), p2 = new ItemPools(ITEMS, new Rng(3));
-    const a: string[] = [], b: string[] = [];
-    for (let k = 0; k < ITEMS.length; k++) { a.push(p1.draw('treasure')!); b.push(p2.draw('treasure')!); }
+  it('reserve deterministically, without repeats, and runtime draws skip reserved items', () => {
+    const slots = Array.from({ length: 6 }, (_, i) => ({ key: String(i), pool: 'treasure' as const }));
+    const p1 = new ItemPools(ITEMS), p2 = new ItemPools(ITEMS);
+    p1.reserve(slots, new Rng(3)); p2.reserve(slots, new Rng(3));
+    const a = slots.map(s => p1.reservedFor(s.key)), b = slots.map(s => p2.reservedFor(s.key));
     expect(a).toEqual(b);
-    expect(new Set(a).size).toBe(ITEMS.length);
-    expect(p1.draw('treasure')).toBeNull();
+    expect(new Set(a).size).toBe(6);
+    for (let i = 0; i < 5; i++) expect(a).not.toContain(p1.drawRuntime('treasure', new Rng(i)));
   });
 });
 

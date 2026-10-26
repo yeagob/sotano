@@ -26,7 +26,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
 
 ## Runs and floors
 
-- `Game.newRun(seed)` — new `RunRng` and `ItemPools`, a fresh dungeon world (rock column filled once), floor 1 carved and activated, floor 2 carved, counters reset (1 bomb, 3 hearts), empty inventory.
+- `Game.newRun(seed?)` — a seed code (or a fresh crypto seed), `RunRandom`, the whole run planned (`planDungeon`) and every pedestal reserved, new `ItemPools`, a fresh dungeon world (rock column filled once), floor 1 carved and activated, floor 2 carved, counters reset (1 bomb, 3 hearts), empty inventory.
 - `carve(k)` — carves floor *k* one floor ahead of the player (per-floor RNG; pedestal items drawn now). `activate(k)` — adds its doors, pedestals and keys ("the next floor loads"), on entering the boss room above or digging into its band.
 - `trackPlace()` — derives `depth` from the player's height; going deeper than `maxDepth` activates that floor, carves the next one, clears deferred chain reactions and emits `floorEnter`. Entering a boss room schedules its hole to open.
 - See [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts).
@@ -72,9 +72,9 @@ See [ITEMS.md](ITEMS.md). `Inventory.gain/lose/restore` → `rebuild()` reinstal
 
 `blockDamage(amount, mining, material) = max(amount × mining − armor, 10%)`; `Game.damageBlock` → `blockDamage` event → HP in `world.damaged` → `breakBlock` (`blockBreak`, with `source`) → loose cube, `blockLoot`. Actors: `damagePlayer` (`playerDamage`, invulnerability, `death`), `heal`, `damageEnemy` (`enemyDamage`, knock-back). `explode()` covers blocks, actors, cubes and chained bombs.
 
-### RNG (`core/rng.ts`)
+### Seeds and randomness (`core/seed.ts`, `core/rng.ts`, `core/tables.ts`, `core/fx.ts`)
 
-`Rng` is sfc32 seeded through splitmix32. `RunRng.get(name)` / `named(name)` derive independent streams: `loot` (pools), `drops` (enemy and room rewards), `items` (item effects), and per-floor `floor<k>:plan|rooms|loot|enemies`.
+See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure from path-derived forks decided at run start (`planDungeon`, pedestal reservation) and at carve time (per-room forks); runtime streams for drops and procs; weighted tables for every choice; cosmetic randomness only through `fx`.
 
 ## World (`world/`)
 
@@ -122,17 +122,20 @@ Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, d
 | `S.god()` / `S.god(false)` | Invulnerable |
 | `S.floor()` | Open this floor's hole and drop into the next |
 | `S.enemies()`, `S.room()` | Live projections; the current room |
-| `S.restart(seed?)`, `S.tp(x, y, z)`, `S.debug(false)` | New run, teleport, hide the readout |
+| `S.seed()`, `S.restart('ABCD-EFGH')` | This run's seed; replay one (no argument: fresh) |
+| `S.tp(x, y, z)`, `S.debug(false)` | Teleport, hide the readout |
 | `S.game` | The whole `Game` |
 
 URL parameter `?seed=123` picks the seed.
 
 ## Tests (`tests/`)
 
-Vitest, Node, no rendering (50 tests):
+Vitest, Node, no rendering (69 tests):
 
 - `core.test.ts` — event bus, RNG, stats, block damage.
 - `world.test.ts` — templates, mesher, DDA, collision, plans (one start/treasure/boss; from all 49 start cells), stacked dungeon (doorways, global room ids, bands), the hole landing in the next start room.
 - `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, cubes spawned at one spot repelling each other (and never into walls), 2000 cubes.
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
+- `rng.test.ts` — seed codes, fork purity, determinism (same seed, same four floors), isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
+- `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
 - `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (378 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.

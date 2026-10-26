@@ -40,6 +40,7 @@ A feature is done only when all of this is true:
 | Messages | Information banners stay until clicked; short notices (toasts) can fade |
 | Enemies | Spawn visibly from the room centre, never by the doors; telegraph attacks (wind-up, swelling) |
 | Performance | 60 fps on desktop with 2000 cubes; budgets for remeshing, chain reactions, simulations |
+| Randomness | Every random choice reads a weighted table and a seed path from RNG.md; structure never reads player state; only `core/fx.ts` uses `Math.random` |
 
 ## 4. Before you hand off
 

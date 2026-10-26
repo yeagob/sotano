@@ -1,11 +1,14 @@
 import { Game } from './game/game';
 import { ITEMS } from './content/items';
 import { MAT } from './content/materials';
+import { GEN_VERSION } from './core/seed';
 
 async function boot() {
   const params = new URLSearchParams(location.search);
-  const seed = Number(params.get('seed')) || 1;
-  const game = new Game(document.getElementById('game') as HTMLCanvasElement, seed);
+  // ?seed=ABCD-EFGH replays a run; without it every run is new
+  const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
+  const v = params.get('v');
+  if (v && Number(v) !== GEN_VERSION) game.hud.toast(`This seed is from generator v${v}; this build is v${GEN_VERSION}: the run may differ`);
 
   // debug shortcuts in the browser console
   const S = {
@@ -13,7 +16,8 @@ async function boot() {
     give: (id: string) => game.give(id),
     items: ITEMS.map(i => i.id),
     stats: () => game.stats.all,
-    restart: (s?: number) => game.newRun(s ?? game.seed),
+    restart: (s?: string) => game.newRun(s),
+    seed: () => game.seedLabel,
     hold: (...keys: string[]) => { game.player.hand = keys.map(k => MAT[k]).filter(Boolean); },
     keys: (n = 1) => { game.collect('key', n); },
     bombs: (n = 1) => { game.collect('bomb', n); },

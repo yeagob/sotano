@@ -6,6 +6,8 @@
 // moved one axis at a time against the voxel grid; resting cubes act as floor for falling
 // ones (via a per-column hash), so piles stack. Rotation is visual only.
 
+import { fx } from '../core/fx';
+
 export const DEBRIS_SIZE = 0.72;     // loose cube edge length
 export const DEBRIS_LIFETIME = 90;   // seconds until it despawns
 export const DEBRIS_BLINK = 8;       // blinks for the last seconds
@@ -86,9 +88,9 @@ export class DebrisSystem {
     this.pos[i3] = x; this.pos[i3 + 1] = y; this.pos[i3 + 2] = z;
     this.vel[i3] = vx; this.vel[i3 + 1] = vy; this.vel[i3 + 2] = vz;
     this.quat[i4] = 0; this.quat[i4 + 1] = 0; this.quat[i4 + 2] = 0; this.quat[i4 + 3] = 1;
-    const ax = Math.random() - 0.5, ay = Math.random() - 0.5, az = Math.random() - 0.5;
+    const ax = fx.random() - 0.5, ay = fx.random() - 0.5, az = fx.random() - 0.5;
     const al = Math.hypot(ax, ay, az) || 1;
-    this.spin[i4] = ax / al; this.spin[i4 + 1] = ay / al; this.spin[i4 + 2] = az / al; this.spin[i4 + 3] = 3 + Math.random() * 6;
+    this.spin[i4] = ax / al; this.spin[i4 + 1] = ay / al; this.spin[i4 + 2] = az / al; this.spin[i4 + 3] = 3 + fx.random() * 6;
     this.material[i] = material;
     this.state[i] = MOVING;
     this.age[i] = 0;
@@ -412,7 +414,7 @@ export class DebrisSystem {
   /** Resting cubes sit flat: keep only a random yaw so piles look like real blocks. */
   private settleRotation(i: number) {
     const i4 = i * 4;
-    const yaw = Math.random() * Math.PI * 2;
+    const yaw = fx.random() * Math.PI * 2;
     this.quat[i4] = 0; this.quat[i4 + 1] = Math.sin(yaw / 2); this.quat[i4 + 2] = 0; this.quat[i4 + 3] = Math.cos(yaw / 2);
   }
 }

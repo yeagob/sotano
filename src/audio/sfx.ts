@@ -1,5 +1,7 @@
 // Sound effects synthesised with WebAudio: zero audio files, zero licensing headaches.
 
+import { fx } from '../core/fx';
+
 let ctx: AudioContext | null = null;
 let master: GainNode;
 
@@ -30,7 +32,7 @@ function noise(dur: number, vol: number, freq: number, q = 1) {
   const len = Math.ceil(ctx.sampleRate * dur);
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);
   const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  for (let i = 0; i < len; i++) d[i] = (fx.random() * 2 - 1) * (1 - i / len);
   const src = ctx.createBufferSource();
   src.buffer = buf;
   const f = ctx.createBiquadFilter();
@@ -42,7 +44,7 @@ function noise(dur: number, vol: number, freq: number, q = 1) {
   src.start(t);
 }
 
-const jitter = (f: number) => f * (0.92 + Math.random() * 0.16);
+const jitter = (f: number) => f * (0.92 + fx.random() * 0.16);
 
 export const sfx = {
   shoot: () => tone(jitter(520), 0.09, 'sine', 0.25, 0.6),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EventBus } from '../src/core/events';
-import { Rng, RunRng } from '../src/core/rng';
+import { Rng, RunRandom } from '../src/core/rng';
 import { computeStats, BASE_STATS, StatSheet } from '../src/core/stats';
 import { blockDamage, hitsToBreak } from '../src/core/damage';
 import { MAT, mat, MATERIALS } from '../src/content/materials';
@@ -50,9 +50,9 @@ describe('Rng', () => {
     for (let i = 0; i < 100; i++) expect(a.u32()).toBe(b.u32());
   });
   it('keeps streams independent', () => {
-    const r1 = new RunRng(7), r2 = new RunRng(7);
-    for (let i = 0; i < 50; i++) r1.get('combat').next(); // lots of combat randomness...
-    expect(r1.get('loot').next()).toBe(r2.get('loot').next()); // ...does not change loot
+    const r1 = new RunRandom(7), r2 = new RunRandom(7);
+    for (let i = 0; i < 50; i++) r1.stream('ai').next(); // lots of AI randomness...
+    expect(r1.stream('loot').next()).toBe(r2.stream('loot').next()); // ...does not change loot
   });
   it('stays in range', () => {
     const r = new Rng(1);

@@ -201,13 +201,34 @@ export class Hud {
     this.toastTimer = performance.now() + 2500;
   }
 
+  private seedText = '';
+  private seedListener = false;
+
+  /** Shown on the pause card, the inventory and the death screen; clicking it copies a share link. */
+  setSeed(label: string) {
+    this.seedText = label;
+    const el = document.getElementById('seed');
+    if (el) el.textContent = `Seed ${label} · click to copy`;
+    if (this.seedListener) return;
+    this.seedListener = true;
+    // capture phase: copying must not also capture the mouse or fire
+    addEventListener('mousedown', e => {
+      const t = (e.target as HTMLElement | null)?.closest?.('.seed');
+      if (!t) return;
+      e.stopPropagation();
+      const [code, v] = this.seedText.split(' · v');
+      const url = `${location.origin}${location.pathname}?seed=${code.replace(' ', '-')}&v=${v}`;
+      navigator.clipboard?.writeText(url).then(() => this.toast('Seed link copied'), () => this.toast(`Seed ${this.seedText}`));
+    }, true);
+  }
+
   showDeath(depth: number, items: readonly ItemDef[], source: string) {
     this.dismissBanner();
     document.exitPointerLock?.();
     this.deathEl.innerHTML =
       `<div class="card"><h1>The intention faded</h1><p>Overcome by ${esc(source)} on floor ${depth}.</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(i.name)}" alt="">`).join('')}</div>` +
-      `<p class="go">Press R to begin again</p></div>`;
+      `<p class="seed">Seed ${esc(this.seedText)}</p><p class="go">Press R to begin again</p></div>`;
     this.deathEl.classList.add('show');
   }
 
@@ -251,7 +272,7 @@ export class Hud {
     const stats = STAT_ORDER.map(n => `<tr><td>${STAT_INFO[n].label}</td><td>${STAT_INFO[n].fmt(s[n])}</td></tr>`).join('');
 
     this.invEl.innerHTML =
-      `<div class="card"><header><h2>Practices</h2><small>${held.length} held · Tab to close</small></header>` +
+      `<div class="card"><header><h2>Practices</h2><small>${held.length} held · <span class="seed">seed ${esc(this.seedText)}</span> · Tab to close</small></header>` +
       `<div class="cols"><section class="left"><div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>Synergies and states of being</h3><ul class="syns">${synRows || '<li class="none">None discovered yet.</li>'}</ul></section>` +
       `<section class="right"><h3>State</h3><table>${stats}</table></section></div></div>`;

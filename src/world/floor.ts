@@ -17,8 +17,10 @@
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
 import { AIR, MAT } from '../content/materials';
-import { CELL_STACK, cellAt, ROOM_D, ROOM_H, ROOM_W, type RoomTemplate } from '../content/rooms';
-import { hash3, type Rng, type RunRng } from '../core/rng';
+import { CELL_STACK, cellAt, DECOR_CHARS, ROOM_D, ROOM_H, ROOM_W, type RoomTemplate } from '../content/rooms';
+import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
+import { DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
+import { hash3, type Rng, type RunRandom } from '../core/rng';
 import { generatePlan, OPPOSITE, type FloorPlan, type RoomType, type Side } from './floorplan';
 import { VoxelWorld } from './world';
 
@@ -55,6 +57,8 @@ export interface RoomInfo {
   x0: number; y0: number; z0: number;
   template: string;
   flipX: boolean; flipZ: boolean;
+  /** Rolled per room: biases decor slots; 'reinforced' hardens obstacles inside. */
+  mood: RoomMood;
   doors: Partial<Record<Side, number>>;
   /** Enemy ids that will spawn on the first visit (normal rooms). */
   enemies: string[];
@@ -93,9 +97,30 @@ export function cellOf(x: number, z: number): [number, number] {
   return [Math.floor((x - MARGIN - 1) / PITCH_X), Math.floor((z - MARGIN - 1) / PITCH_Z)];
 }
 
-export function createDungeonWorld(seed: number): VoxelWorld {
+/**
+ * The whole run's structure, decided when the run starts (docs/architecture/RNG.md §3):
+ * every floor's plan (floor k+1 starts under floor k's boss room) and every floor's rock theme.
+ * Voxels are carved later, one floor ahead, from these decisions only.
+ */
+export interface DungeonPlan {
+  plans: FloorPlan[];          // index k-1
+  themes: RockTheme[];         // index k-1
+}
+
+export function planDungeon(rr: RunRandom): DungeonPlan {
+  const plans: FloorPlan[] = [], themes: RockTheme[] = [];
+  for (let k = 1; k <= FLOORS; k++) {
+    const above = plans[k - 2];
+    const boss = above?.rooms.find(r => r.type === 'boss');
+    plans.push(generatePlan(rr.fork('plan', k), undefined, boss ? [boss.gx, boss.gz] : undefined));
+    themes.push(ROCK_THEME.roll(rr.fork('floor', k, 'theme'), { floor: k })!);
+  }
+  return { plans, themes };
+}
+
+export function createDungeonWorld(rr: RunRandom, dungeon: DungeonPlan): VoxelWorld {
   const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
-  fillRock(w, seed);
+  fillRock(w, [rr.fork('rock', 0).u32(), rr.fork('rock', 1).u32()], dungeon.themes);
   return w;
 }
 
@@ -104,18 +129,19 @@ export interface EnemyBudget { pick(rng: Rng, floor: number): string[] }
 
 export interface CarveOptions {
   templates: readonly RoomTemplate[];
-  /** Grid cell for the start room (under the boss room above). Default: centre. */
-  startCell?: [number, number];
-  drawItem(pool: 'treasure' | 'vault'): string | null;
+  /** The item reserved for a pedestal room at run start (global room id), or null. */
+  pedestalItem(room: number): string | null;
   enemies: EnemyBudget;
 }
 
-/** Carves floor k into the world. Deterministic per (run seed, floor). */
-export function carveFloor(w: VoxelWorld, rng: RunRng, k: number, opt: CarveOptions): FloorResult {
-  const r = (name: string) => rng.named(`floor${k}:${name}`);
-  const plan = generatePlan(r('plan'), undefined, opt.startCell);
+/**
+ * Carves floor k into the world from its pre-decided plan. Every room draws from its own forks
+ * (`floor/k/room/i/layout` for template → flipX → flipZ → mood → decor slots row by row, and
+ * `floor/k/room/i/roster`), so changing one room never changes another.
+ */
+export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorPlan, opt: CarveOptions): FloorResult {
   const y0 = floorY(k), y1 = y0 + ROOM_H - 1;
-  const roomRng = r('rooms'), lootRng = r('loot'), enemyRng = r('enemies');
+  const keyRng = rr.fork('floor', k, 'key');
   const gid = (i: number) => k * ROOM_ID_STRIDE + i;
 
   const rooms: RoomInfo[] = [];
@@ -131,25 +157,35 @@ export function carveFloor(w: VoxelWorld, rng: RunRng, k: number, opt: CarveOpti
     const x1 = x0 + ROOM_W - 1, z1 = z0 + ROOM_D - 1;
     fillBox(w, x0 - 2, y0 - 2, z0 - 2, x1 + 2, y1 + 2, z1 + 2, MAT.brick);
     fillBox(w, x0, y0, z0, x1, y1, z1, AIR);
-    const t = pickTemplate(opt.templates, pr.type, roomRng);
+    const layout = rr.fork('floor', k, 'room', pr.id, 'layout');
+    const t = pickTemplate(opt.templates, pr.type, layout);
     const mirror = t.mirror !== false && pr.type !== 'start';
-    const flipX = mirror && roomRng.chance(0.5), flipZ = mirror && roomRng.chance(0.5);
+    const flipX = mirror && layout.chance(0.5), flipZ = mirror && layout.chance(0.5);
+    const mood: RoomMood = pr.type === 'normal' ? ROOM_MOOD.roll(layout, { floor: k })! : 'normal';
     for (let row = 0; row < ROOM_D; row++) for (let col = 0; col < ROOM_W; col++) {
       const ch = cellAt(t, col, row, flipX, flipZ);
       const x = x0 + col, z = z0 + row;
       const s = CELL_STACK[ch];
-      if (s) for (let h = 0; h < s.h; h++) w.data[w.idx(x, y0 + h, z)] = s.m;
+      if (s) {
+        const m = mood === 'reinforced' ? hardened(s.m) : s.m;
+        for (let h = 0; h < s.h; h++) w.data[w.idx(x, y0 + h, z)] = m;
+      }
+      if (DECOR_CHARS.has(ch)) {
+        // decor slot: rolled in row order from the room's own layout fork
+        const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
+        if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+      }
       if (ch === 'P') spawn = [x + 0.5, y0, z + 0.5];
       if (ch === 'T') {
         w.data[w.idx(x, y0, z)] = MAT.pedestal;
-        pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item: opt.drawItem(pr.type === 'vault' ? 'vault' : 'treasure') });
+        pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item: opt.pedestalItem(gid(pr.id)) });
       }
       if (ch === 'K') keySpots.push({ room: gid(pr.id), x, y: y0, z });
       if (ch === 'H') holeAt = [x, y0, z];
     }
     rooms.push({
-      id: gid(pr.id), floor: k, type: pr.type, gx: pr.gx, gz: pr.gz, x0, y0, z0, template: t.id, flipX, flipZ, doors: {},
-      enemies: pr.type === 'normal' ? opt.enemies.pick(enemyRng, k) : [],
+      id: gid(pr.id), floor: k, type: pr.type, gx: pr.gx, gz: pr.gz, x0, y0, z0, template: t.id, flipX, flipZ, mood, doors: {},
+      enemies: pr.type === 'normal' ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k) : [],
     });
   }
 
@@ -180,9 +216,9 @@ export function carveFloor(w: VoxelWorld, rng: RunRng, k: number, opt: CarveOpti
   if (doors.some(d => d.locked)) {
     const normal = new Set(rooms.filter(rm => rm.type === 'normal').map(rm => rm.id));
     const spots = keySpots.filter(s => normal.has(s.room));
-    if (spots.length) keys.push(lootRng.pick(spots));
+    if (spots.length) keys.push(keyRng.pick(spots));
     else {
-      const rm = lootRng.pick(rooms.filter(x => x.type === 'normal'));
+      const rm = keyRng.pick(rooms.filter(x => x.type === 'normal'));
       keys.push({ room: rm.id, x: rm.x0 + 6, y: y0, z: rm.z0 + 3 });
     }
   }
@@ -221,23 +257,34 @@ function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, rng: R
   return options[options.length - 1];
 }
 
-/** The whole column, once per run: harder rock the deeper you go. */
-function fillRock(w: VoxelWorld, seed: number) {
-  const n = (x: number, y: number, z: number, s = 1) => hash3(seed + s, x, y, z);
+/** "reinforced" rooms: soft obstacles become harder materials (interior only). */
+function hardened(m: number): number {
+  for (const [from, to] of Object.entries(REINFORCE)) if (m === MAT[from]) return MAT[to];
+  return m;
+}
+
+/**
+ * The whole column, once per run: harder rock the deeper you go, shaped by each floor's theme.
+ * Two independent noise layers, each seeded from its own fork (never `seed + n`, which would
+ * make nearby seeds share layers).
+ */
+function fillRock(w: VoxelWorld, layers: [number, number], themes: RockTheme[]) {
+  const n = (x: number, y: number, z: number, layer: 0 | 1) => hash3(layers[layer], x, y, z);
   for (let z = 0; z < w.sz; z++) for (let y = 0; y < w.sy; y++) for (let x = 0; x < w.sx; x++) {
     let m: number;
     const band = bandOf(y);
     if (y === 0) m = MAT.bedrock;
     else if (y === SURFACE_Y) m = MAT.grass;
     else if (y > floorY(1) + ROOM_H + 1) m = MAT.dirt;
-    else if (y <= 5) m = n(x >> 1, y >> 1, z >> 1) < 0.12 ? MAT.obsidian : MAT.deepstone;
+    else if (y <= 5) m = n(x >> 1, y >> 1, z >> 1, 0) < 0.12 ? MAT.obsidian : MAT.deepstone;
     else {
-      const v = n(x >> 1, y >> 1, z >> 1, 7);
-      // floors 1–2: stone with dirt pockets; 3: mixed; 4: deepstone
-      if (band >= 4) m = v < 0.1 ? MAT.obsidian : MAT.deepstone;
-      else if (band === 3) m = v < 0.45 ? MAT.deepstone : MAT.stone;
-      else m = v < 0.12 ? MAT.dirt : MAT.stone;
-      if (v > 0.93) m = MAT.ore;
+      const v = n(x >> 1, y >> 1, z >> 1, 1);
+      const t = themes[Math.max(1, band) - 1];
+      // floors 1–2: stone with dirt pockets; 3: stone and deepstone; 4: deepstone and obsidian
+      if (band >= 4) m = v < 0.1 + t.hard * 0.3 ? MAT.obsidian : MAT.deepstone;
+      else if (band === 3) m = v < 0.35 + t.hard ? MAT.deepstone : MAT.stone;
+      else m = v < t.pockets ? MAT.dirt : v < t.pockets + t.hard * 0.5 ? MAT.deepstone : MAT.stone;
+      if (v > 1 - t.ore) m = MAT.ore;
     }
     if (y < SURFACE_Y && (x === 0 || z === 0 || x === w.sx - 1 || z === w.sz - 1)) m = MAT.bedrock;
     w.data[w.idx(x, y, z)] = m;

@@ -10,7 +10,7 @@ Isaac-style (see [TECHNICAL.md §1.6](../research/TECHNICAL.md#16-floor-generati
 2. Rooms with a single neighbour are **dead ends**. The farthest one (by steps from the start) becomes the **boss** room; another one at random the **treasure** room; a third, if there is one, a locked **vault**.
 3. If there aren't enough rooms or dead ends, or the boss would be next to the start, try again. Starts on an edge or a corner have fewer ways to grow, so after many failed attempts the minimum room count is relaxed step by step (tested from all 49 start cells).
 
-Same seed, same plan. Tests check every plan has one start, one treasure and one boss room, that every room is reachable, and that it's a tree.
+Every floor's plan is decided when the run starts, from the run's seed (see [RNG.md](RNG.md)): same seed, same plans. Tests check every plan has one start, one treasure and one boss room, that every room is reachable, and that it's a tree.
 
 ## 2. From plan to voxels
 
@@ -57,6 +57,10 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 | `o` | obsidian, 1 high | `H` | where the hole to the next floor opens (boss) |
 | `d` | dirt, 1 high | `#` | brick up to the ceiling |
 | `i` | iron ore, 1 high | | |
+| `?` | decor slot: maybe a crate | `~` | decor slot: maybe dirt, stone or ore |
+| `!` | decor slot: ore or obsidian | | |
+
+Decor slots are rolled per room from the room's own seed fork, biased by its **mood** (sparse, normal, cluttered, reinforced; see [RNG.md §6](RNG.md#6-what-varies-per-run)). Reinforced rooms also harden their obstacles (dirt and crates become stone, stone becomes deepstone), never the shared walls.
 
 Optional fields: `weight` (relative chance among templates of the same type, default 1) and `mirror` (default true: the generator may flip it on X and/or Z for variety; start rooms are never flipped).
 
@@ -65,9 +69,10 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 - Exactly 7 rows of 13 characters, only known characters.
 - **The three tiles in front of every door must be walkable**, because any room may get a door on any side: row 0 and row 6, columns 5–7; column 0 and column 12, rows 2–4.
 - Start rooms need a `P`, treasure and vault rooms a `T`, boss rooms an `H`. At most one of `P`, `T`, `H`.
-- Keep the **pedestal reachable** from at least one side (the item is taken by walking up to it).
-- Keep the **centre tile** (column 6, row 3) free in normal rooms if you can: projections materialise there (they spawn on top of an obstacle otherwise).
-- The 2×2 shaft from a boss room lands on tiles 6–7, rows 3–4 of the start room below: keep those clear in start templates.
+- Decor slots count as solid for every rule below.
+- The **pedestal must be reachable** from at least one side (checked).
+- The **centre tile** (column 6, row 3) of normal rooms must be walkable: projections materialise there (checked).
+- The 2×2 shaft tiles at `H` (boss) and `P` (start) must be clear (checked): the hole opens there and lands there.
 - Every room type must have at least one template.
 
 ### Adding a template

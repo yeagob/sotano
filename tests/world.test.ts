@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { meshChunk } from '../src/world/mesher';
 import { raycastVoxels } from '../src/physics/raycast';
 import { moveBody, type Body } from '../src/physics/voxel-collide';
-import { bandOf, carveFloor, createDungeonWorld, FLOORS, openHole } from '../src/world/floor';
-import { ENEMY_BUDGET } from '../src/content/enemies';
+import { bandOf, FLOORS, openHole } from '../src/world/floor';
 import { generatePlan, DEFAULT_PLAN } from '../src/world/floorplan';
 import { ROOM_TEMPLATES, validateTemplate } from '../src/content/rooms';
-import { Rng, RunRng } from '../src/core/rng';
+import { Rng } from '../src/core/rng';
+import { buildRun } from './helpers';
 import { AIR, MAT } from '../src/content/materials';
 import { VoxelWorld } from '../src/world/world';
 
@@ -58,17 +58,9 @@ describe('voxel collision', () => {
   });
 });
 
-const carveOpts = { templates: ROOM_TEMPLATES, drawItem: () => null, enemies: ENEMY_BUDGET };
-
 function dungeon(seed: number, floors = 2) {
-  const rng = new RunRng(seed);
-  const w = createDungeonWorld(seed);
-  const out = [carveFloor(w, rng, 1, carveOpts)];
-  for (let k = 2; k <= floors; k++) {
-    const boss = out[k - 2].rooms.find(r => r.type === 'boss')!;
-    out.push(carveFloor(w, rng, k, { ...carveOpts, startCell: [boss.gx, boss.gz] }));
-  }
-  return { w, floors: out };
+  const run = buildRun(seed, floors);
+  return { w: run.w, floors: run.floors };
 }
 
 describe('dungeon generation', () => {
