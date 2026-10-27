@@ -15,7 +15,7 @@ A first-person *roguelite* inside a **fully breakable** voxel dungeon: you desce
 2. **Everything interacts with everything.** An item is not "+1 damage": it changes rules. Intentions, bombs, blocks, enemies, doors and health all share the same damage and event systems, so combinations emerge on their own (and sometimes break the game — that's fine).
 3. **Down to get strong, up to win.** The natural direction is down (more items, more danger). The goal is up. That tension is the heart of a run.
 4. **The world is only limited by what you know.** As in Noita, there are places that aren't shown, aren't announced and aren't on any map. You reach them with resources, skill… or because someone told you.
-5. **Short runs, readable on mobile and PC.** A "normal" run lasts 20–40 minutes. Controls fit on a joystick and three buttons.
+5. **Short runs, readable on mobile and PC.** A "normal" run lasts 20–40 minutes. Controls fit on a joystick and three buttons, and every action exists on keyboard and mouse, gamepad and touch.
 
 ## 3. Game loop
 
@@ -251,7 +251,7 @@ If that's fun, it grows to 4 floors, bosses and secrets.
 4. **Bosses or waves?** Recommendation: one boss per floor; waves as a special room type ("challenge room").
 5. **Fall damage:** yes or no? It strongly affects the freedom to dig down.
 6. **Camera:** first person as requested. Worth prototyping a 45° top-down camera too (closer to Isaac, more readable on mobile) before locking it in.
-7. **Platforms:** mobile and PC from the start? The Joel gift project proves mobile is viable, but it constrains performance and controls. (M0 is desktop-only; touch controls are planned for M1.)
+7. **Platforms:** mobile and PC from the start? The Joel gift project proves mobile is viable, but it constrains performance and controls. (Decided: keyboard and mouse, gamepad and touch in landscape all ship complete; docs/architecture/input/README.md.)
 
 ## Surface, sky and new runs
 

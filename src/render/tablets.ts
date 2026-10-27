@@ -6,6 +6,8 @@
 import * as THREE from 'three';
 import { palCss } from '../content/palette';
 import { t, type MessageKey } from '../i18n';
+import { activeDevice } from '../input/input';
+import { controlParams, sentenceCase } from '../input/labels';
 
 /** Every lesson the roots can teach (rooms carry theirs: `RoomTemplate.lesson`). */
 export const LESSONS = ['move', 'intent', 'polarity', 'step', 'kick', 'pit', 'bridge', 'bomb', 'water', 'practice', 'down', 'carry'] as const;
@@ -69,7 +71,7 @@ export class Tablets {
     g.fillStyle = palCss('ink.line');
     g.font = '26px system-ui, "Segoe UI", sans-serif';
     let y = 82;
-    for (const line of wrap(g, t(`lesson.${tab.lesson}.text` as MessageKey), PX - 56)) { g.fillText(line, 28, y); y += 33; }
+    for (const line of wrap(g, sentenceCase(t(`lesson.${tab.lesson}.text` as MessageKey, controlParams(activeDevice()))), PX - 56)) { g.fillText(line, 28, y); y += 33; }
     tab.texture.needsUpdate = true;
   }
 }

@@ -82,8 +82,7 @@ export class Player implements Actor {
     this.yaw -= input.lookDX * input.sensitivity;
     this.pitch = Math.max(-1.55, Math.min(1.55, this.pitch - input.lookDY * input.sensitivity));
 
-    const f = input.axis(['KeyS', 'ArrowDown'], ['KeyW', 'ArrowUp']);
-    const s = input.axis(['KeyA', 'ArrowLeft'], ['KeyD', 'ArrowRight']);
+    const { x: s, y: f } = input.move;
     const sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);
     let wx = -sin * f + cos * s, wz = -cos * f - sin * s;
     const l = Math.hypot(wx, wz);
@@ -101,15 +100,15 @@ export class Player implements Actor {
     b.vz += (wz * speed - b.vz) * blend;
 
     // jump with a little leeway (coyote time and input buffer)
-    if (input.pressed.has('Space')) this.jumpBuffer = 0.12;
+    if (input.hit('jump')) this.jumpBuffer = 0.12;
     this.jumpBuffer -= dt;
     this.coyote = b.onGround ? 0.1 : this.coyote - dt;
     if (swim) {
       // you lose your footing: you sink slowly, and holding Space swims up (and out at the edge)
       this.jumpBuffer = 0;
       b.vy = Math.max(b.vy - GRAVITY * SWIM_G * dt, -SINK);
-      if (input.keys.has('Space')) b.vy += (SWIM_UP * Math.sqrt(stats.jump) - b.vy) * (1 - Math.exp(-6 * dt));
-    } else if (fluid?.swim && !b.onGround && input.keys.has('Space')) {
+      if (input.held('jump')) b.vy += (SWIM_UP * Math.sqrt(stats.jump) - b.vy) * (1 - Math.exp(-6 * dt));
+    } else if (fluid?.swim && !b.onGround && input.held('jump')) {
       // treading at the surface: Space lifts you out over the edge, like climbing onto a jetty
       b.vy = Math.max(b.vy - GRAVITY * dt, SWIM_OUT * Math.sqrt(stats.jump));
     } else {

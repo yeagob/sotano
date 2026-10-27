@@ -17,7 +17,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ physics/     voxel raycast, box-vs-grid collision, loose cubes and bombs
              ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts
              ├─ entities/    player, doors, pickups, enemies (system)
-             ├─ input/       keyboard + mouse (pointer lock)
+             ├─ input/       actions bound to keyboard + mouse, gamepad and touch (input/README.md)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
              ├─ audio/       synthesised sound effects
              ├─ i18n/        localization: t(), number formats, catalogs (en source, es), content
@@ -156,4 +156,5 @@ Vitest, Node, no rendering (102 tests):
 - `rng.test.ts` — seed codes, fork purity, determinism (same seed, same ten floors), a golden seed hash per `GEN_VERSION`, practices lasting ten floors, isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
 - `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
 - `i18n.test.ts` — every locale has every message with the same placeholders; every item, synergy, enemy and material translated, no stale ids; translated effect lines keep English's numbers; no empty strings or markup; fallback, plurals, number formats, language detection; every damage source names a cause; the language never changes a run.
+- `controls.test.ts` — every action mapped on keyboard and mouse, gamepad and touch with its Minecraft, Noita and Isaac references; no shared input in one context; double taps ride on live buttons; touch glyphs exist; every control row and prompt has its words per device.
 - `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (378 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.

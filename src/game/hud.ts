@@ -20,6 +20,9 @@ import { applyPaletteCss, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level } from '../content/levels';
 import type { Game } from './game';
+import { CONTROL_ROWS, type Device } from '../input/bindings';
+import { activeDevice, onDeviceChange } from '../input/input';
+import { controlKey, forDevice } from '../input/labels';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -87,6 +90,8 @@ export class Hud {
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
+  rumble: ((strength: number, ms: number) => void) | null = null;
+  onAct: ((act: string) => void) | null = null;
   private lastCleared = new Set<number>();
 
   constructor() {
@@ -96,6 +101,16 @@ export class Hud {
     this.fadeEl.style.setProperty('--fade-ink', palCss('bone.paper'));
     this.renderLanguages();
     onLocaleChange(() => this.relocalize());
+    onDeviceChange(d => { this.applyDevice(d); this.relocalize(); });
+    this.applyDevice(activeDevice());
+    this.renderControls();
+    addEventListener('click', e => {
+      const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-act]');
+      if (el) { e.stopPropagation(); this.onAct?.(el.dataset.act!); return; }
+      if (activeDevice() !== 'touch' || !this.overlay.contains(e.target as Node)) return;
+      if ((e.target as HTMLElement).closest('[data-lang], .seed')) return;
+      this.onAct?.('resume');
+    });
     // capture phase, like the seed: choosing a language must not also capture the mouse
     addEventListener('mousedown', e => {
       const b = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-lang]');
@@ -113,10 +128,28 @@ export class Hud {
     this.renderSeed();
     this.renderPolarity();
     this.renderLanguages();
+    this.renderControls();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.inventoryOpen && this.game) this.renderInventory(this.game);
     this.toastEl.classList.remove('show');
+  }
+
+  private applyDevice(d: Device) {
+    for (const k of ['keyboard', 'gamepad', 'touch']) document.body.classList.toggle(`dev-${k}`, k === d);
+  }
+
+  private renderControls() {
+    const d = activeDevice();
+    const table = document.getElementById('controls');
+    if (table) table.innerHTML = CONTROL_ROWS.map(r =>
+      `<tr><td>${th(controlKey(r, d))}</td><td>${th(`controls.${r}` as MessageKey)}</td></tr>`).join('');
+    const go = document.getElementById('play');
+    if (go) go.textContent = t(forDevice('intro.play', d));
+    const nr = document.getElementById('newrun');
+    if (nr) nr.textContent = t('pause.newRun');
+    const rot = document.getElementById('rotate');
+    if (rot) rot.textContent = t('touch.rotate');
   }
 
   /** The selector on the pause card: every shipped language by its own name. */
@@ -330,7 +363,7 @@ export class Hud {
       `<span>${esc(tx.description)}</span>` +
       `<p class="effect">${esc(tx.effect)}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
-      `${lines.concat(syn).join('')}<p class="dismiss">${th('banner.continue')}</p></div></div>`;
+      `${lines.concat(syn).join('')}<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
   }
 
   /** Information banners stay until the player clicks (owner rule). */
@@ -369,7 +402,10 @@ export class Hud {
     this.fadeEl.classList.remove('on');
   }
 
-  shake(seconds: number) { this.shakeT = Math.max(this.shakeT, seconds); }
+  shake(seconds: number) {
+    this.shakeT = Math.max(this.shakeT, seconds);
+    this.rumble?.(Math.min(1, seconds * 2), Math.min(400, seconds * 1000));
+  }
   shakeAmount() { return this.shakeT > 0 ? Math.min(0.25, this.shakeT * 0.6) : 0; }
 
   /** A short notice that fades: a message key, in the player's language. */
@@ -426,7 +462,7 @@ export class Hud {
     this.deathEl.innerHTML =
       `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
-      `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><p class="go">${th('death.restart')}</p></div>`;
+      `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
   }
 
   hideDeath() { this.deathEl.classList.remove('show'); }
@@ -436,12 +472,27 @@ export class Hud {
   toggleInventory(g: Game) {
     this.inventoryOpen = !this.inventoryOpen;
     this.invEl.classList.toggle('show', this.inventoryOpen);
+    const kb = g.input.device === 'keyboard';
     if (this.inventoryOpen) {
       this.game = g;
-      document.exitPointerLock?.();
+      g.input.unlockFor();
       this.selected = g.inventory.items.at(-1)?.def.id ?? null;
       this.renderInventory(g);
-    } else g.input.lock();
+    } else if (kb) { g.input.release(); g.input.lock(); }
+    else g.input.resume();
+  }
+
+  moveSelection(dx: number, dy: number) {
+    const g = this.game;
+    if (!g) return;
+    const tiles = [...this.invEl.querySelectorAll<HTMLElement>('.tile')];
+    if (!tiles.length) return;
+    const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
+    const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
+    const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
+    this.selected = tiles[next].dataset.id!;
+    this.renderInventory(g);
+    this.invEl.querySelector<HTMLElement>('.tile.sel')?.scrollIntoView({ block: 'nearest' });
   }
 
   private renderInventory(g: Game) {
@@ -471,7 +522,7 @@ export class Hud {
     const stats = STAT_ORDER.map(n => `<tr><td>${esc(statLabel(n))}</td><td>${esc(fmtStat(n, s[n]))}</td></tr>`).join('');
 
     this.invEl.innerHTML =
-      `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th('inv.close')}</small></header>` +
+      `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
       `<div class="cols"><section class="left"><div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;

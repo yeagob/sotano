@@ -79,22 +79,26 @@ SÓTANO is made by people who grew up inside games, and the project is full of s
 
 ## Controls
 
-| Action | Input |
-|---|---|
-| Look | Mouse (click the game to capture it; **Esc** releases it and pauses) |
-| Move · jump | **WASD** · **Space** |
-| Cast intentions | **Left click** (hold) |
-| Switch the intention's polarity | **F**: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks (the round mark at the counters shows which) |
-| Pick up a block | Walk over it with room in your hand |
-| Kick a block or a bomb | Walk into it (blocks: with your hand full) |
-| Place the top block | **Right click** (throws it if there's nowhere to place it) |
-| Throw the top block | **Q** |
-| Drop a bomb | **E** |
-| Open a door | Doors open by themselves when there are no projections; locked ones open when you walk up with a key; a breakthrough destroys any door |
-| Inventory and stats | **Tab** (or **I**) |
-| New run | **R** |
+Three complete schemes; the game follows whichever device you used last (details: [docs/architecture/input/](docs/architecture/input/README.md)).
 
-Language: English or Spanish, picked from your browser. Switch it on the pause card (it's remembered) or with `?lang=es` in the URL. Touch controls are *planned*.
+| Action | Keyboard and mouse | Gamepad | Touch (landscape) |
+|---|---|---|---|
+| Look | Mouse (click to capture it; **Esc** releases it and pauses) | Right stick | Drag on the right |
+| Move | **WASD** | Left stick | Left thumb (floating stick) |
+| Jump (hold to swim up) | **Space** | **A** | The arrow |
+| Cast intentions | **Left click** (hold) | **RT** (hold) | The bead of light (hold; drag to aim) |
+| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | Double tap the bead of light |
+| Pick up a block | Walk over it with room in your hand | same | same |
+| Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
+| Place the top block (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
+| Throw the top block | **Q** | **B** | The flying block |
+| Drop a bomb | **E** | **RB** | The seed |
+| Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
+| Inventory and stats | **Tab** (or **I**) | **Y** (d-pad moves, **B** closes) | The grid (top) |
+| Pause | **Esc** | **Menu** | The two bars (top) |
+| New run | **R** | **View** (paused or dead) | "New run" on the pause card |
+
+Language: English or Spanish, picked from your browser. Switch it on the pause card (it's remembered) or with `?lang=es` in the URL.
 
 ---
 

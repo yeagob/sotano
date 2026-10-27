@@ -207,13 +207,14 @@ describe('player head bump', () => {
     const solid = (_x: number, y: number) => y <= 0 || y >= 4;
     const p = new Player();
     p.spawnAt(0.5, 1, 0.5);
-    const input = { pressed: new Set(['Space']), lookDX: 0, lookDY: 0, sensitivity: 0, axis: () => 0 } as unknown as Input;
+    const pressed = new Set(['jump']);
+    const input = { hit: (a: string) => pressed.has(a), held: () => false, move: { x: 0, y: 0 }, lookDX: 0, lookDY: 0, sensitivity: 0 } as unknown as Input;
     const stats = { ...BASE_STATS, jump: 4 };
     const bumps: number[] = [];
     const hooks = { jump: (v: number) => v, land: () => {}, bump: (v: number) => { bumps.push(v); return 0; } };
     // standing on the floor: let it settle, then jump into the ceiling 3 blocks up
     p.body.onGround = true;
-    for (let i = 0; i < 60; i++) { p.update(1 / 60, input, stats, solid, hooks); input.pressed.clear(); }
+    for (let i = 0; i < 60; i++) { p.update(1 / 60, input, stats, solid, hooks); pressed.clear(); }
     expect(bumps.length).toBe(1);
     expect(bumps[0]).toBeGreaterThan(0);
     expect(p.body.y + p.body.h).toBeLessThanOrEqual(4);
