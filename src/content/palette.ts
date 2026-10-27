@@ -69,7 +69,7 @@ export const PALETTE = {
   'fog.f3': '#15151F',
   'fog.f4': '#0C0910',
 
-  // Material ramps (outline, dark, base, hi): DECISIONS §6.2. Brick and frames take the floor rock ramp.
+  // Material ramps (outline, dark, base, hi): DECISIONS §6.2. Brick and door frames take rock.f1.
   'mat.dirt.outline': '#2E1F14', 'mat.dirt.dark': '#4F3624', 'mat.dirt.base': '#6B4A30', 'mat.dirt.hi': '#87603F',
   'mat.grass.outline': '#24361A', 'mat.grass.dark': '#3D5A2A', 'mat.grass.base': '#557A37', 'mat.grass.hi': '#78A24A',
   'mat.stone.outline': '#2A2A2E', 'mat.stone.dark': '#47474D', 'mat.stone.base': '#626268', 'mat.stone.hi': '#82828A',
@@ -78,6 +78,14 @@ export const PALETTE = {
   'mat.obsidian.outline': '#07050C', 'mat.obsidian.dark': '#140F20', 'mat.obsidian.base': '#221935', 'mat.obsidian.hi': '#3B2B55', 'mat.obsidian.accent': '#6E58A0',
   'mat.bedrock.outline': '#060507', 'mat.bedrock.dark': '#0E0D10', 'mat.bedrock.base': '#18161B', 'mat.bedrock.hi': '#24212A',
   'mat.seed.dark': '#1E1626', 'mat.seed.base': '#2A2233', 'mat.seed.hi': '#3A3046',
+  // Building materials: each floor builds its rooms from its own (DECISIONS §6.5).
+  'mat.loam.outline': '#423624', 'mat.loam.dark': '#645237', 'mat.loam.base': '#846D4D', 'mat.loam.hi': '#968163',
+  'mat.flagstone.outline': '#1C1712', 'mat.flagstone.dark': '#312A22', 'mat.flagstone.base': '#443B32', 'mat.flagstone.hi': '#5F564D',
+  'mat.rubble.outline': '#393927', 'mat.rubble.dark': '#56583C', 'mat.rubble.base': '#737452', 'mat.rubble.hi': '#868768',
+  'mat.wetbrick.outline': '#0D262A', 'mat.wetbrick.dark': '#183E45', 'mat.wetbrick.base': '#27555E', 'mat.wetbrick.hi': '#487079',
+  'mat.ashlar.outline': '#293C3B', 'mat.ashlar.dark': '#3F5C59', 'mat.ashlar.base': '#567977', 'mat.ashlar.hi': '#6C8C89',
+  'mat.slate.outline': '#3F343F', 'mat.slate.dark': '#604F60', 'mat.slate.base': '#7F697F', 'mat.slate.hi': '#917D91',
+  'mat.darkbrick.outline': '#271724', 'mat.darkbrick.dark': '#42293E', 'mat.darkbrick.base': '#5A3C56', 'mat.darkbrick.hi': '#755871',
 
   // Elements (DECISIONS §3.8): owned by the world. Fire and lava are the only warm emitters that
   // are not the player's, and they hurt: warmth that isn't yours burns. Water never glows.

@@ -433,6 +433,13 @@ export const ES: Catalog = {
       log: 'Madera viva',
       leaves: 'Hojas',
       starstone: 'Piedra estelar',
+      loam: 'Tierra apisonada',
+      flagstone: 'Losa',
+      rubble: 'Mampostería',
+      wetbrick: 'Ladrillo mojado',
+      ashlar: 'Sillar',
+      slate: 'Pizarra',
+      darkbrick: 'Ladrillo oscuro',
     },
   },
 };

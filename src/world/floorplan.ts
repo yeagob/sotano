@@ -27,8 +27,8 @@ export interface PlanRoom {
   dist: number;
   /** Neighbouring room id on each side, if any (doors only ever open from the room's own cell). */
   links: Partial<Record<Side, number>>;
-  /** Footprint in grid cells, [east, south] from this cell (docs/architecture/LEVELS.md §7.4).
-   *  The extra cells hold no doors: they make the room bigger. Default [1, 1]. */
+  /** A footprint decided with the plan, in grid cells [east, south] from this cell (the great pit's
+   *  crown). The extra cells hold no doors and never show on the map. Default [1, 1]. */
   size?: [number, number];
 }
 
@@ -36,14 +36,14 @@ export interface PlanRoom {
 export const sizeOf = (r: PlanRoom): [number, number] => r.size ?? [1, 1];
 
 /**
- * Grows a room into the empty cells east of it (2×1) or south of it (1×2). Returns false when the
- * cells are taken or off the grid. The new cells point at the room in the grid; no links change.
+ * Presets a room's footprint into the empty cells east of it (2×1) or south of it (1×2). Returns false
+ * when the cells are taken or off the grid. The grid (the map) is never touched: the room stays one
+ * cell on it, and the carver gives it the cells (docs/architecture/LEVELS.md §10.1).
  */
 export function growFootprint(plan: FloorPlan, room: PlanRoom, size: [number, number]): boolean {
   const cells: [number, number][] = [];
   for (let dz = 0; dz < size[1]; dz++) for (let dx = 0; dx < size[0]; dx++) if (dx || dz) cells.push([room.gx + dx, room.gz + dz]);
   if (!cells.every(([x, z]) => x >= 0 && z >= 0 && x < plan.w && z < plan.h && plan.grid[x + z * plan.w] === -1)) return false;
-  for (const [x, z] of cells) plan.grid[x + z * plan.w] = room.id;
   room.size = size;
   return true;
 }

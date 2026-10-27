@@ -73,7 +73,7 @@ No pure `#000`/`#FFF` anywhere except 1–4 px cores of `light.core` (Dir).
 
 ### 3.2 World neutrals: floor rock ramps (outline / dark / base / hi)
 
-The floor's rock ramp recolours the structural materials (`brick`, `frame`) at floor load (atlas repaint, ms). All are husk-legal (measured chroma ≤ 0.05).
+These ramps are the floors' rock and fog family. `brick` and `frame` take `rock.f1`. **Room shells no longer take the floor rock ramp:** each floor builds its rooms from its own materials with their own ramps (§6.5, ruling of 2026-10-27, replacing "brick takes the floor rock ramp" for room shells). All are husk-legal (measured chroma ≤ 0.05).
 
 | Token group | outline | dark | base | hi | Feel |
 |---|---|---|---|---|---|
@@ -289,19 +289,26 @@ Synthesis of Dir r1 §6 and Mat r1 §1, with Tech's measurable versions.
 |---|---|---|---|---|
 | **Dirt** (a passing excuse) | `#2E1F14 / #4F3624 / #6B4A30 / #87603F` | soft clumps: 2×3 dark blobs + 3–4 bevelled 2×2 pebbles; no straight lines | short crumbling 3-px strokes | 8 chips + 4 dust puffs (0.18, `#6B4A30` 50 %, rise 0.3 m, 0.5 s) |
 | **Grass** (surface life) | top `#24361A / #3D5A2A / #557A37 / #78A24A`; side = dirt + 3–5 px ragged fringe | 1×2 `hi` blade ticks in 30 % of cells; grain horizontal | as dirt | 6 chips + 3 blade slivers (0.04×0.12, gravity 4). Painter takes dirt by key, not `MATERIALS[1]` |
-| **Brick** (a habit) | floor rock ramp (`rock.fN`) | running bond, bricks 7×3 + 1 px mortar, every brick bevelled; 1 in 6 bricks ±1 step | mortar first (70 %) | 10 chips, 30 % as brick halves (0.14×0.07×0.07) |
+| **Brick** (a habit) | `rock.f1` (floor 1's walls; floor 2's trim) | running bond, bricks 7×3 + 1 px mortar, every brick bevelled; 1 in 6 bricks ±1 step | mortar first (70 %) | 10 chips, 30 % as brick halves (0.14×0.07×0.07) |
 | **Stone** | `#2A2A2E / #47474D / #626268 / #82828A` | 4–5 Voronoi plates, each one tone, plate edges `outline`, top-left edges `hi`: brick is rhythm, stone is facets | long straight strokes turning at plate edges | 10 angular chips, gravity 22 |
 | **Deepstone** (an old fear) | `#121119 / #22212C / #33313F / #4A4759` | 3 horizontal strata of 4–6 px offset in tone; 2–3 hairline veins in `outline` (Mat's pre-glowing indigo veins lost: warm or coloured light before the player acts breaks pillar 2) | strata, then branch | 12 chips |
 | **Crate** (what you stored and never opened; Mea) | `#2E1D0F / #5A3A1E / #7D5530 / #A3743E` | 3 horizontal planks of 5 px, 1 px gaps, 1×4 grain streaks, nail heads (1 px `hi`); a 2-px **rope band** on the sides instead of any brace | splinters along grain | 8 chips + 6 splinters (0.03×0.03×0.16, tumbling) |
 | **Obsidian** (a core belief) | `#07050C / #140F20 / #221935 / #3B2B55`, accent `#6E58A0` | 3 large glassy triangles, diagonal 1×4 accent streaks; never noise | radial from the impact point (conchoidal) | 14 chips, 40 % flat glass slivers (0.12×0.02×0.08) |
 | **Bedrock** (the floor of the world) | `#060507 / #0E0D10 / #18161B / #24212A` | dense cobble, low contrast, **no bevel highlight**, no glow ever | never cracks | dull puff of 4 `#3A3740` particles, no light |
 | **Iron ore** | stone ramp + `copper` nodules | 4–5 bevelled 2×2/3×2 nuggets on stone | as stone | stone chips + 4 copper chips |
-| **Door frame** | floor rock ramp | 2 px bevelled border + 4 rivets; texture at 16 px/block (bug fix); door leaf in crate ramp with vertical grain (built) | as brick | as brick |
+| **Door frame** | `rock.f1` | 2 px bevelled border + 4 rivets; texture at 16 px/block (bug fix); door leaf in crate ramp with vertical grain (built) | as brick | as brick |
 | **Treasure frame** (rename "Gilded" → "Brass frame", OWNER Q3) | `brass` ramp | as frame; keystone emits `light.gold` 0.8 + 1 mote/s once the current room is cleared | | |
 | **Boss frame** (rename "Bone frame" → "Obsidian frame", Mea/Dir/Mat; OWNER Q3) | obsidian ramp | one long crack of `captive.ember` pulsing at 0.4 Hz (dim 0.2 → 0.5): the oldest pattern holding its light, about to give way. Bone lost: gore-adjacent and Isaac-flavoured | | |
 | **Locked door** | frame | keyhole pixel `light.gold` (a key is an insight) | | |
 | **Pedestal** | `limestone` ramp | big bevelled blocks, vertical grain (built); 1 px top rim in the practice's path glow at 0.7 **only while a practice sits on it** (light belongs to practices) | as brick | 10 chips |
 | **Breakthrough** (seed) | `ink.void / #1E1626 / #2A2233 / #3A3046` | round dark core, 4 bevelled branching cracks of `light.ember`, 2×2 `light.core` heart | — | see §7.4 |
+| **Packed earth** `loam` (the ground you were raised on) | `mat.loam`: `#423624 / #645237 / #846D4D / #968163` | strata (rammed earth: horizontal layers, found and laid down) | strata, then branch | as dirt, no dust |
+| **Flagstone** `flagstone` (a path worn by repetition) | `mat.flagstone`: `#1C1712 / #312A22 / #443B32 / #5F564D` | plates (worn slabs) | as stone | as stone |
+| **Rubble masonry** `rubble` (what the winds tore down, piled up again) | `mat.rubble`: `#393927 / #56583C / #737452 / #868768` (green earth) | cobble (dense piled stones) | as stone | as stone |
+| **Wet brick** `wetbrick` (a habit soaked in feeling) | `mat.wetbrick`: `#0D262A / #183E45 / #27555E / #487079` (water-darkened teal) | brick | as brick | as brick |
+| **Ashlar** `ashlar` (a burden cut into blocks) | `mat.ashlar`: `#293C3B / #3F5C59 / #567977 / #6C8C89` (sea-grey) | plates | as stone | as stone |
+| **Slate** `slate` (layers of what was never said) | `mat.slate`: `#3F343F / #604F60 / #7F697F / #917D91` (mauve slate) | strata | strata, then branch | as deepstone |
+| **Dark brick** `darkbrick` (a habit gone dark) | `mat.darkbrick`: `#271724 / #42293E / #5A3C56 / #755871` (plum) | brick | as brick | as brick |
 
 Keystones of normal doors emit `light.ember` at 0.3 (block light 3) once the current room is cleared, never before (Dir r2: pre-lit warm decoration breaks pillar 2).
 
@@ -367,6 +374,32 @@ Breaking reveals light from the first hit. Strokes follow the material's logic (
 | **Inner light** (`inner`, hidden while shut) | a stepped mound of light: `light.ember` floor, `light.gold`, `light.hot`, a `light.core` heart; an additive `glowTexture` halo in `light.hot` at 0.7 | | | Gold is legitimate here: it is the light that was kept |
 
 The keyholes may be tinted by the game (for example, lit when the player holds enough keys); each owns its material. Captures: `?gallery=chests` (closed, open, and at 8 and 20 blocks in floor-1 fog).
+
+### 6.6 Building palettes: every floor is built of something else (ruling, 2026-10-27)
+
+**Why.** Owner: the first five floors looked the same; you never felt you were going down or into another zone. Each level now names what its rooms are built from (`palette: { wall, floor, trim }` in `src/content/levels.ts`): the shell walls and ceiling, the floor under the interior, and the trim (`#` pillars take the wall; `b` and the `1`–`4` terraces take the trim). This **replaces "brick takes the floor rock ramp" for room shells**. Set by the dedicated art agent (Opus 5.5); the owner confirms the look.
+
+**Rules.**
+1. **Every building material has its own ramp** (`mat.<key>.*`, §6.2), never a strata ramp (`rock.fN`, `mat.stone`, `mat.dirt`), so a room never melts into the rock you dig through.
+2. **Walls are unique per floor on 0–5**, and the hue walks with the descent table (§4): ochre → umber → green earth (earth, floors 0–2) → teal → sea-grey (water, 3–4) → mauve slate (air, 5–6) → plum (fire, 7–9).
+3. **World band holds:** every base ≤ OKL 0.55, every hi ≤ 0.62, chroma ≤ 0.06 (§2). The pale materials share one value (L* ≈ 47.5), so they part by hue and pattern; the dark ones (`flagstone`, `wetbrick`, `darkbrick`) give each floor its value structure.
+4. **Against the strata and the teaching blocks.** No building material is `stone` (the `r`/`R` obstacles, which REINFORCE hardens) or `dirt` (the `D`/`E` plugs: *the soft spot is the door*), and none is flammable (`log` lost as floor 0's trim). Measured OKLab ΔE ×100 of the bases (atlas averages differ more, since patterns differ): vs `stone` 6.3–14.2 (hue ≥ 40° from stone's), vs `deepstone` 5.6 (flagstone, floors 0–1 only, deep ≤ 5 %) and 9.0–24 elsewhere, vs `dirt` 9.0–14.3 (floor 0's loam 11.1). The weakest pair is floor 1's `brick` against the `dirt` plugs (3.1, unchanged from before): there the plug reads by pattern (clumps against a mortar grid).
+5. **Reserved colours.** All ≥ 54 CIE ΔE76 from `life.heart`; no gold, no `cold.*` hue (slate sits 56° from the cold's blue-violet; wet brick and ashlar sit on the water's teal side, not the cold's); no path true hue. Every base is ≤ L* 47.5, so a pale husk (≥ host + 20 and ≥ 55; the Lectern is ≈ 83) and a dark husk (≤ 14) both keep their value class on every floor.
+
+| Floor | Walls | Floor | Trim | Why |
+|---|---|---|---|---|
+| 0 Roots | `loam` (pale ochre clay) | `loam` | `flagstone` | A dug-out of the ground you were raised on, lightest and closest to the surface; the first worn stones set into it. Pale clay against brown dirt plugs, dark trim against pale walls |
+| 1 Cellar of habits | `brick` (umber) | `flagstone` (dark) | `brick` | The canon cellar brick (§3.2) on dark worn paving; the trim is brick, not the obstacle stone |
+| 2 The winds | `rubble` (green earth) | `rubble` | `brick` | What the winds tore down, piled up again: the cellar's brick is what still stands. Green earth turns the earth toward water |
+| 3 Rooms of feeling | `wetbrick` (dark teal) | `ashlar` (sea-grey) | `wetbrick` | Dark walls soaked in feeling over pale slabs |
+| 4 The weights | `ashlar` (sea-grey) | `wetbrick` | `ashlar` | Floor 3 inverted: pale cut burdens over dark wet ground, so the two water floors never read alike |
+| 5 The marsh | `slate` (mauve) | `darkbrick` (plum) | `slate` | Air: layers of what was never said, and the first plum of the fire floors underfoot |
+| 6 | `darkbrick` | `slate` | `darkbrick` | The fire band begins: dark habits close in, slate underfoot |
+| 7 | `darkbrick` | `darkbrick` | `slate` | |
+| 8 | `darkbrick` | `slate` | `slate` | |
+| 9 Frozen | `darkbrick` | `ashlar` | `ashlar` | The frozen bottom: pale sea-grey slabs under the ice |
+
+Capture (tiles at ×2, 3 × 3, flat light; the strata each floor sits in on the right): [colour](img/built/floor-palettes.png), [greyscale](img/built/floor-palettes-grey.png). Not yet captured: rooms in the game at distance in fog, and the colour-blindness filters.
 
 ---
 

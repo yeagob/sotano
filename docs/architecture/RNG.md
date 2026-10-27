@@ -4,7 +4,7 @@ Status: **built**, after the three-party review in [../reviews/rng.md](../review
 
 ## 1. In one paragraph
 
-A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH · v3`; v2 added the boss rooms' pedestals, which changed every reservation; v3 added the element and tall room templates, which changes template picks; v4 the ten floors of [LEVELS.md](LEVELS.md), the tutorial floor's gentle reservations and deep floors without vaults; v5 the chests; v6 the Tree-of-Life floors; v7 the challenge rooms; v8 the rooms reworked so building is the key on every floor; v9 big rooms and the great pit; v10 the giant tree, silence and the ice; v11 the giant tree rebuilt in stories). New runs take their root from the browser's crypto RNG, the only place true randomness enters the game. Everything else derives from the root: the **structure** of the whole run (all four floor plans, rock themes, every pedestal item) is decided when the run starts, from **path-derived forks** (`fork('floor', 2, 'room', 5, 'layout')`) that never depend on what the player does. **Runtime** outcomes (drops, item procs, runtime item draws) use isolated streams. **Cosmetic** randomness (particles, sound, shake, cube spin and launch) goes through one module and never decides an outcome. Every random choice reads a **weighted table**.
+A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH · v3`; v2 added the boss rooms' pedestals, which changed every reservation; v3 added the element and tall room templates, which changes template picks; v4 the ten floors of [LEVELS.md](LEVELS.md), the tutorial floor's gentle reservations and deep floors without vaults; v5 the chests; v6 the Tree-of-Life floors; v7 the challenge rooms; v8 the rooms reworked so building is the key on every floor; v9 big rooms and the great pit; v10 the giant tree, silence and the ice; v11 rooms bigger than their cell, new ceilings and a building palette per floor; v12 the giant tree rebuilt in stories). New runs take their root from the browser's crypto RNG, the only place true randomness enters the game. Everything else derives from the root: the **structure** of the whole run (all four floor plans, rock themes, every pedestal item) is decided when the run starts, from **path-derived forks** (`fork('floor', 2, 'room', 5, 'layout')`) that never depend on what the player does. **Runtime** outcomes (drops, item procs, runtime item draws) use isolated streams. **Cosmetic** randomness (particles, sound, shake, cube spin and launch) goes through one module and never decides an outcome. Every random choice reads a **weighted table**.
 
 ## 2. Seeds
 
@@ -30,7 +30,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'theme')` | Structure | Floor k's rock theme |
 | `fork('rock', 0)`, `fork('rock', 1)` | Structure | The two rock noise layers (seeds for `hash3`) |
 | `fork('reserve')` | Structure | Every pedestal's item, in (floor, room) order, at run start |
-| `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template → flipX → flipZ → mood → decor slots, row by row, in that order |
+| `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template (among those whose space fits its allotment) → flips (one draw among the flips that fit) → mood → decor slots, row by row, in that order |
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
 | `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
@@ -39,7 +39,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('tree', story)` | Structure | One story of the giant tree (`GiantTree.grow`, lazily, when the player comes near): its knot windows, rings, ramps, columns, branches, limbs and stars. One fork per story, so the tree grows the same in any order |
 | `fork('sandbox', 'layout')` | Structure | The sandbox room's decor slots ([SANDBOX.md](SANDBOX.md)) |
 | `fork('floor', 0, 'creatures')` | Structure | Where the roots' peaceful creatures start |
-| `fork('plan', k, 'grow')` | Structure | Which normal rooms of floor k grow into a bigger footprint, and which way |
+| `fork('floor', k, 'space')` | Structure | Which room may spread into each empty cell of floor k (`allotSpace`), drawn before any room's layout |
 | `fork('plan', k, 'challenge')` | Structure | Whether floor k keeps a challenge room (`CHALLENGE_ROOM`) and which |
 | `fork('floor', k, 'room', i, 'wave', visit, wave)` | Runtime | A challenge room's wave (`pickWave`) |
 | `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |

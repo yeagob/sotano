@@ -51,7 +51,7 @@ import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
 import { onLocaleChange } from '../i18n';
 import {
-  BAND, bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
+  BAND, bandOf, carveFloor, cellOf, createDungeonWorld, inRoomSpace, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
@@ -539,7 +539,7 @@ export class Game {
     for (const r of f.rooms) {
       const tpl = ROOM_TEMPLATES.find(q => q.id === r.template);
       const lesson = tpl?.lesson, second = tpl?.lesson2;
-      if (lesson && isLesson(lesson)) this.tablets.add(lesson, r.x0, r.y0, r.z0, second && isLesson(second) ? second : lesson);
+      if (lesson && isLesson(lesson)) this.tablets.add(lesson, r.hx, r.y0, r.hz, second && isLesson(second) ? second : lesson);
     }
   }
 
@@ -595,7 +595,8 @@ export class Game {
     if (!f) return null;
     const [gx, gz] = cellOf(x, z);
     if (gx < 0 || gz < 0 || gx >= f.plan.w || gz >= f.plan.h) return null;
-    const i = f.plan.grid[gx + gz * f.plan.w];
+    // the room whose space holds the cell (a room may spread into empty cells the map never shows)
+    const i = f.space[gx + gz * f.plan.w];
     return i < 0 ? null : f.rooms[i];
   }
 
@@ -944,8 +945,9 @@ export class Game {
     for (const [id, st] of this.roomState) {
       if (st.cleared) continue;
       const r = this.rooms.get(id)!;
+      // inside its open space (a tunnel dug through the rock of an irregular room is not the room)
       const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + r.w && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + r.d
-        && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
+        && inRoomSpace(r, b.x, b.z) && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
       if (inside && !st.sealed) {
         st.sealed = true;
         this.doors.seal(id, true);
@@ -976,7 +978,7 @@ export class Game {
         const reward = ROOM_CLEAR.pickU(u, { floor: r0.floor, luck: this.stats.get('luck') });
         const drops: PickupKind[] = reward ? [reward] : [];
         const ev = this.bus.emit('roomClear', { room: id, drops });
-        for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, id, null, 0.3);
+        for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
         this.hud.toast('toast.roomClear');
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
@@ -999,8 +1001,9 @@ export class Game {
       if (r.type !== 'challenge') continue;
       let st = this.challenges.get(r.id);
       if (!st) this.challenges.set(r.id, st = { entries: 0, wave: 0, active: false, queue: [], next: 0, wasInside: false });
+      // inside its open space (a tunnel dug through the rock of an irregular room is not the room)
       const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + r.w && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + r.d
-        && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
+        && inRoomSpace(r, b.x, b.z) && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
       if (!st.active && inside && !st.wasInside) {
         st.entries++; st.wave = 0; st.active = true; st.next = 0.8;
         this.doors.seal(r.id, true);
@@ -1019,7 +1022,7 @@ export class Game {
       const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
       const reward = ROOM_CLEAR.pickU(u, { floor: r.floor, luck: this.stats.get('luck') + st.wave });
       const ev = this.bus.emit('roomClear', { room: r.id, drops: reward ? [reward] : [] });
-      for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, r.id, null, 0.3);
+      for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3);
       if (st.wave < CHALLENGE_WAVES) { this.nextWave(r, st); st.next = WAVE_GAP; sfx3.clear(); continue; }
       st.active = false;
       this.doors.seal(r.id, false);
@@ -1060,7 +1063,7 @@ export class Game {
     const doors: Cell[] = this.doors.list.filter(d => d.rooms.includes(r.id)).map(d => ({ x: d.cx, z: d.cz }));
     const b = this.player.body;
     const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'spawn', seq);
-    const cell = pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng) ?? { x: r.x0 + 6.5, z: r.z0 + 3.5 };
+    const cell = pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
     let y = r.y0;
     while (y < r.y0 + 3 && this.solid(Math.floor(cell.x), y, Math.floor(cell.z))) y++;
     return { x: cell.x, y, z: cell.z };

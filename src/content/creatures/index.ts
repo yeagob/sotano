@@ -19,7 +19,7 @@ export function ambientCreatures(f: FloorResult, rng: Rng): { def: string; room:
   const n = 2 + rng.int(0, 2);
   for (let i = 0; i < n && rooms.length; i++) {
     const r = rng.pick(rooms);
-    out.push({ def: 'wonder', room: r.id, x: r.x0 + 6.5 + rng.range(-3, 3), y: r.y0 + 1.5, z: r.z0 + 3.5 + rng.range(-1.5, 1.5) });
+    out.push({ def: 'wonder', room: r.id, x: r.hx + 6.5 + rng.range(-3, 3), y: r.y0 + 1.5, z: r.hz + 3.5 + rng.range(-1.5, 1.5) });
   }
   return out;
 }

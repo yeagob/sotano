@@ -11,7 +11,8 @@ type Solid = (x: number, y: number, z: number) => boolean;
 /** How the projection treats the element at a standing cell (null: no element there). */
 export type Hazard = (x: number, y: number, z: number) => 'avoid' | 'cross' | 'dwell' | null;
 
-export interface RoomArea { id: number; x0: number; y0: number; z0: number; height?: number; w?: number; d?: number }
+/** `hx`, `hz`: the home cell's interior corner (its centre is always open). */
+export interface RoomArea { id: number; x0: number; y0: number; z0: number; height?: number; w?: number; d?: number; hx?: number; hz?: number }
 
 const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 /** Deepest standing height below the floor (pits and pools are at most 2 deep). */
@@ -20,7 +21,7 @@ const PIT = 2;
 const TERRACE = 4;
 
 export class FlowField {
-  /** The room's interior in tiles (13 × 7, bigger for a footprint). */
+  /** The room's interior in tiles (13 × 7, up to 43 × 25 for a big room). */
   private readonly W: number;
   private readonly D: number;
   private dist: Int16Array;
@@ -58,27 +59,31 @@ export class FlowField {
     if (!dwells) this.cost.fill(1);
     this.dist.fill(-1);
     if (cx < 0 || cz < 0 || cx >= this.W || cz >= this.D) return;
-    // Dijkstra over 91 cells: a linear scan for the next cell is cheaper than a heap at this size
+    // Dijkstra with a bucket queue (Dial's): steps cost 1 or 3, and big rooms reach a thousand cells
     const done = this.done;
     done.fill(0);
     const start = cx + cz * this.W;
     this.dist[start] = 0;
-    for (;;) {
-      let i = -1;
-      for (let k = 0; k < this.dist.length; k++) if (!done[k] && this.dist[k] >= 0 && (i < 0 || this.dist[k] < this.dist[i])) i = k;
-      if (i < 0) break;
-      done[i] = 1;
-      const c = i % this.W, r = (i / this.W) | 0, h = this.height[i];
-      for (const [dc, dr] of DIRS) {
-        const nc = c + dc, nr = r + dr;
-        if (nc < 0 || nr < 0 || nc >= this.W || nr >= this.D) continue;
-        const n = nc + nr * this.W;
-        if (done[n] || this.height[n] < 0) continue;
-        if (h >= 0 && Math.abs(this.height[n] - h) > 1) continue;
-        // no cutting corners diagonally past an obstacle
-        if (dc && dr && (this.height[c + dc + r * this.W] < 0 || this.height[c + (r + dr) * this.W] < 0)) continue;
-        const d = this.dist[i] + this.cost[n];
-        if (this.dist[n] < 0 || d < this.dist[n]) this.dist[n] = d;
+    const buckets: number[][] = [[start]];
+    for (let d0 = 0; d0 < buckets.length; d0++) {
+      const bucket = buckets[d0];
+      if (!bucket) continue;
+      for (let q = 0; q < bucket.length; q++) {
+        const i = bucket[q];
+        if (done[i] || this.dist[i] !== d0) continue;
+        done[i] = 1;
+        const c = i % this.W, r = (i / this.W) | 0, h = this.height[i];
+        for (const [dc, dr] of DIRS) {
+          const nc = c + dc, nr = r + dr;
+          if (nc < 0 || nr < 0 || nc >= this.W || nr >= this.D) continue;
+          const n = nc + nr * this.W;
+          if (done[n] || this.height[n] < 0) continue;
+          if (h >= 0 && Math.abs(this.height[n] - h) > 1) continue;
+          // no cutting corners diagonally past an obstacle
+          if (dc && dr && (this.height[c + dc + r * this.W] < 0 || this.height[c + (r + dr) * this.W] < 0)) continue;
+          const d = d0 + this.cost[n];
+          if (this.dist[n] < 0 || d < this.dist[n]) { this.dist[n] = d; (buckets[d] ??= []).push(n); }
+        }
       }
     }
   }

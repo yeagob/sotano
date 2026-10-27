@@ -202,6 +202,7 @@ export function carveSandbox(w: VoxelWorld, rr: RunRandom, s: Scenario): Sandbox
   const room: RoomInfo = {
     id, floor: k, type: 'normal', gx: CELL[0], gz: CELL[1], x0, y0, z0, height, w: width, d: depth,
     template: t.id, flipX, flipZ, mood: s.mood ?? 'normal', doors: {}, enemies: [],
+    hx: x0, hz: z0, open: new Uint8Array(width * depth).fill(1),
   };
   for (let x = x0 - 2; x <= x0 + width + 2; x += 8) for (let z = z0 - 2; z <= z0 + depth + 2; z += 8)
     for (let y = y0 - 4; y <= y0 + height + 2; y += 4) if (w.inside(x, y, z)) { w.markDirty(x, y, z); w.markElemDirty(x, y, z); }
@@ -213,6 +214,7 @@ export function carveSandbox(w: VoxelWorld, rr: RunRandom, s: Scenario): Sandbox
     floor: k, plan, rooms: [room], doors: [], spawn, chests: [], hole: null, silence: null,
     pedestals: pedestals.map(([x, y, z]) => ({ room: id, x, y, z, item: s.pedestal ?? null, boss: false, chest: false })),
     keys: keys.map(([x, y, z]) => ({ room: id, x, y, z })),
+    space: Int16Array.from(grid),
   };
   return { floor, room, template: t, origin, pedestals, keys };
 }
