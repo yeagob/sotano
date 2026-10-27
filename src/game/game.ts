@@ -33,7 +33,8 @@ import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
 import { Pickups } from '../entities/pickups';
 import { EYE, Player, type PlayerMedium } from '../entities/player';
-import { Input } from '../input/input';
+import { Input, onDeviceChange } from '../input/input';
+import { TouchControls } from '../input/touch';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
 import type { HostApi } from '../items/types';
@@ -103,6 +104,7 @@ const SPAWN_GAP = 0.45;
 const HOLE_DELAY = 1.5;
 /** Seconds of the fade to black before a new run (R). The fade back waits for the world's meshes. */
 const RESTART_FADE = 0.45;
+const DEATH_GRACE = 1.2;
 const RESTART_HOLD_MAX = 2;
 /** Per frame: at most this many block-break sounds and particle bursts (a great cut breaks dozens). */
 const BREAK_SFX_PER_FRAME = 4;
@@ -181,6 +183,8 @@ export class Game {
   visited = new Set<number>();
   /** Keep simulating while the mouse isn't captured (for automated tests). */
   simulateUnlocked = false;
+  private deadT = 0;
+  readonly touch: TouchControls;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -212,6 +216,7 @@ export class Game {
   private blasts = new BlastQueue<Blast>();
   /** The loaded intention's polarity (BESTIARY §1.1); F switches it. */
   private polarity: Polarity = 'positive';
+  get polarityNow() { return this.polarity; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
    *  already warmed, so a beam warms a projection once, not on every tick. */
   private stroke = { polarity: 'positive' as Polarity, warmed: new Set<number>() };
@@ -253,6 +258,7 @@ export class Game {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.autoClear = false;
     this.input = new Input(canvas);
+    this.touch = new TouchControls(this.input);
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
     this.scene.add(new THREE.HemisphereLight(pal('light.core'), pal('rock.f1.outline'), 2.0));
@@ -290,6 +296,10 @@ export class Game {
     addEventListener('keydown', unlockAudio);
     addEventListener('resize', () => this.resize());
     onLocaleChange(() => this.tablets?.redraw());
+    onDeviceChange(() => this.tablets?.redraw());
+    this.input.onPadChange = on => this.hud.toast(on ? 'toast.padConnected' : 'toast.padDisconnected');
+    this.hud.rumble = (strength, ms) => this.input.rumble(strength, ms);
+    this.hud.onAct = act => this.act(act);
     this.resize();
     this.newRun(seed);
   }
@@ -503,7 +513,7 @@ export class Game {
       stats: () => this.stats.all,
       eye: () => p.eye,
       forward: () => p.forward,
-      casting: () => this.input.fireHeld && !this.hands.holding,
+      casting: () => this.input.held('cast') && !this.hands.holding,
       strike: (weapon, damage, mining, reach) => {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
@@ -1358,7 +1368,7 @@ export class Game {
 
   private fire() {
     const p = this.player;
-    if (!this.input.fireHeld || p.fireCooldown > 0 || this.hands.holding) return;
+    if (!this.input.held('cast') || p.fireCooldown > 0 || this.hands.holding) return;
     const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all, this.polarity) });
     if (ev.cancelled) return;
     p.fireCooldown = 1 / this.stats.get('fireRate');
@@ -1373,7 +1383,7 @@ export class Game {
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
   private tryPlace() {
     const p = this.player;
-    if (!this.input.placePressed) return;
+    if (!this.input.hit('place')) return;
     if (!p.hand.length) { sfx.denied(); return; }
     const e = p.eye, d = p.forward;
     const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, this.stats.get('reach'));
@@ -1730,12 +1740,15 @@ export class Game {
   frame(dt: number) {
     dt = Math.min(dt, 0.05);
     const inp = this.input;
-    if (inp.pressed.has('KeyR') && !this.transitioning && (this.player.dead || inp.locked || this.simulateUnlocked)) {
-      // every new run gets a fresh seed, behind a short fade to black
-      this.restartT = RESTART_FADE;
-      this.hud.fadeOut(RESTART_FADE);
-      sfx3.restart();
-    }
+    inp.poll(dt);
+    this.deadT = this.player.dead ? this.deadT + dt : 0;
+    const playing = inp.playing || this.simulateUnlocked;
+    const ctx = this.player.dead ? 'dead' : this.hud.inventoryOpen ? 'inventory' : playing ? 'play' : 'paused';
+    const restartBy = inp.hitBy('restart');
+    if (restartBy === 'keyboard' ? ctx === 'play' || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
+    else if (ctx === 'dead' && this.deadT > DEATH_GRACE && inp.hitBy('confirm') === 'gamepad') this.requestRestart();
+    if (ctx === 'paused' && (inp.hit('confirm') || (inp.hitBy('pause') ?? 'keyboard') !== 'keyboard')) inp.resume();
+    else if (ctx === 'play' && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
       if (this.restartT <= 0) { this.newRun(); this.revealT = 0; }
@@ -1745,13 +1758,17 @@ export class Game {
       if (!this.chunks.busy || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
     // an information banner stays until clicked; that click only dismisses it
-    if (this.hud.bannerOpen && inp.clicked) {
+    if (this.hud.bannerOpen && ctx === 'play' && inp.hit('confirm')) {
       this.hud.dismissBanner();
-      inp.fireHeld = false;
-      inp.placePressed = false;
+      inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }
-    if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleInventory(this);
-    const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen && !this.transitioning;
+    if ((ctx === 'play' || ctx === 'inventory') && inp.hit('inventory')) this.hud.toggleInventory(this);
+    else if (ctx === 'inventory') {
+      if (inp.hit('back')) this.hud.toggleInventory(this);
+      else { const n = inp.navigate(); if (n.x || n.y) this.hud.moveSelection(n.x, n.y); }
+    }
+    this.touch.update(this, ctx);
+    const running = playing && !this.player.dead && !this.hud.inventoryOpen && !this.transitioning;
     if (running) this.simulate(dt);
     this.chunks.update();
     const p = this.player, e = p.eye;
@@ -1819,9 +1836,9 @@ export class Game {
     if (this.weapon) this.weapon.update(dt);
     else this.fire();
     this.tryPlace();
-    if (inp.pressed.has('KeyQ')) this.throwTop();
-    if (inp.pressed.has('KeyE')) this.placeBomb();
-    if (inp.pressed.has('KeyF')) this.togglePolarity();
+    if (inp.hit('throw')) this.throwTop();
+    if (inp.hit('bomb')) this.placeBomb();
+    if (inp.hit('polarity')) this.togglePolarity();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);
@@ -1848,6 +1865,19 @@ export class Game {
     this.cracks.update(this.world);
     const hand = this.player.hand;
     this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);
+  }
+
+  requestRestart() {
+    if (this.transitioning) return;
+    this.restartT = RESTART_FADE;
+    this.hud.fadeOut(RESTART_FADE);
+    sfx3.restart();
+  }
+
+  act(act: string) {
+    if (act === 'restart' && (this.player.dead || !this.input.playing)) this.requestRestart();
+    else if (act === 'resume' && !this.player.dead && !this.hud.inventoryOpen) this.input.resume();
+    else if (act === 'inventory' && this.hud.inventoryOpen) this.hud.toggleInventory(this);
   }
 
   /** Rooms whose projections are all released (the minimap lights them). */
