@@ -3,7 +3,7 @@
 // generation, no physics, no randomness. A developer tool: English only, like the debug readout.
 //
 //   ?gallery                 every section
-//   ?gallery=materials|items|enemies|pickups|hud|palette
+//   ?gallery=materials|items|parts|enemies|pickups|hud|palette
 //   &filter=grey|deutan|protan|tritan|silhouette
 //   &angle=35                turntable angle for enemies and pickups (degrees)
 //   &id=critic               one enemy or item only
@@ -14,6 +14,7 @@ import { HUD_ICONS } from '../content/hud-icons';
 import { ITEMS } from '../content/items';
 import { MATERIALS } from '../content/materials';
 import { PALETTE, pal, palCss, type PalToken } from '../content/palette';
+import { PART_ICONS } from '../content/part-icons';
 import { CRACK_STAGES } from '../content/tiles';
 import { buildModel } from '../entities/enemies';
 import { pickupMesh } from '../entities/pickups';
@@ -116,6 +117,21 @@ export function runGallery(params: URLSearchParams) {
       // the renderer caches its canvases: show copies at the game's integer scales
       for (const k of [2, 3, 5]) box.appendChild(scaled(iconCanvas(d, k), 1));
       fig(r, box, d.id);
+      fig(r, scaled(iconCanvas(d, 1), 3), '', 'on-black');
+      fig(r, scaled(iconCanvas(d, 1), 3), '', 'on-white');
+    }
+  }
+
+  if (show('parts')) {
+    head('Parts (flesh, heart, mind, essence): icons at ×2, ×3, ×5 on slate, and ×3 on black and white');
+    const r = row();
+    for (const [id, icon] of Object.entries(PART_ICONS)) {
+      if (only && id !== only) continue;
+      const d = { id, icon };
+      const box = document.createElement('div');
+      box.className = 'row';
+      for (const k of [2, 3, 5]) box.appendChild(scaled(iconCanvas(d, k), 1));
+      fig(r, box, id);
       fig(r, scaled(iconCanvas(d, 1), 3), '', 'on-black');
       fig(r, scaled(iconCanvas(d, 1), 3), '', 'on-white');
     }
