@@ -120,8 +120,9 @@ describe('what an intention meets', () => {
     expect(meetsIntention('self', 12, 12, 'negative')).toBe(true);
   });
 
-  it('a hurt ally absorbs a positive intention (it heals), and neutral actors are never met', () => {
+  it('a hurt ally absorbs a positive intention (it heals); a negative one meets any creature; a healthy neutral lets positive pass', () => {
     expect(meetsIntention('self', 6, 12, 'positive')).toBe(true);
-    expect(meetsIntention('neutral', 1, 12, 'negative')).toBe(false);
+    expect(meetsIntention('neutral', 1, 12, 'negative')).toBe(true);
+    expect(meetsIntention('neutral', 3, 3, 'positive')).toBe(false);
   });
 });

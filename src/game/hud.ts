@@ -93,6 +93,9 @@ export class Hud {
   rumble: ((strength: number, ms: number) => void) | null = null;
   onAct: ((act: string) => void) | null = null;
   private lastCleared = new Set<number>();
+  private mapState: { floor: FloorResult; room: number; visited: Set<number> } | null = null;
+  private mapYaw = 0;
+  private mapYawKey = NaN;
 
   constructor() {
     applyPaletteCss(HUD_ICONS);
@@ -179,6 +182,13 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     this.overlay.style.display = running || this.inventoryOpen || g.player.dead ? 'none' : 'flex';
 
+    this.mapYaw = g.player.yaw;
+    const yawKey = Math.round(this.mapYaw * 64);
+    if (this.mapState && yawKey !== this.mapYawKey) {
+      this.mapYawKey = yawKey;
+      this.drawMap(this.mapState.floor, this.mapState.room, this.mapState.visited);
+    }
+
     // hearts: each container drawn in quarters (2 points each), filled from the left
     const max = Math.floor(g.stats.get('maxHearts')), hp = g.player.hp;
     const hk = `${max}:${hp}:${g.player.invulnT > 0 ? 1 : 0}`;
@@ -264,11 +274,13 @@ export class Hud {
   setFloor(floor: FloorResult, depth: number) {
     this.lastDepth = depth;
     this.depthEl.textContent = floorLabel(depth);
+    this.mapState = null;
     this.drawMap(floor, -1, new Set());
   }
 
   setRoom(floor: FloorResult, room: number, visited: Set<number>, cleared: Set<number> = this.lastCleared) {
     this.lastCleared = cleared;
+    this.mapState = { floor, room, visited };
     this.drawMap(floor, room, visited);
   }
 
@@ -322,6 +334,19 @@ export class Hud {
       paint(x, y, rw, rh);
       if (r.type !== 'normal') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
     }
+    const here = current >= 0 ? floor.rooms.find(r => r.id === current) : undefined;
+    if (here) this.mapArrow(g, gap + here.gx * (cw + gap) + cw / 2, gap + here.gz * (ch + gap) + ch / 2);
+  }
+
+  private mapArrow(g: CanvasRenderingContext2D, cx: number, cy: number) {
+    const dx = -Math.sin(this.mapYaw), dz = -Math.cos(this.mapYaw);
+    g.fillStyle = palCss('ink.void');
+    g.beginPath();
+    g.moveTo(cx + dx * 4.5, cy + dz * 4.5);
+    g.lineTo(cx - dx * 2.5 + dz * 3, cy - dz * 2.5 - dx * 3);
+    g.lineTo(cx - dx * 2.5 - dz * 3, cy - dz * 2.5 + dx * 3);
+    g.closePath();
+    g.fill();
   }
 
   /** Room marks are glyphs, never colour alone: a house, a hollow ◇, a ▭, a ▣. */

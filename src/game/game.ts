@@ -10,7 +10,7 @@ import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import {
-  gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, splitWaves,
+  gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen,
 } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
@@ -747,8 +747,6 @@ export class Game {
   damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch): boolean {
     const p = this.player;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
-    // peaceful creatures are part of the place: nothing hurts them
-    if (t.faction === 'neutral') return false;
     if (t === p && p.invulnT > 0) return false;
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -858,7 +856,7 @@ export class Game {
   private intentTouch(id: number, damage: number, kx: number, kz: number, kind: DamageKind, source: string, polarity: Polarity, warm: boolean) {
     const e = this.enemies.get(id);
     if (!e) return;
-    if (e.faction === 'self' && polarity === 'positive') {
+    if (e.faction !== 'projection' && polarity === 'positive') {
       const heal = allyHeal(damage, e.hp, e.maxHp);
       if (heal > 0) {
         e.hp += heal;
@@ -1082,17 +1080,19 @@ export class Game {
       const o = this.omens[i];
       o.t += dt;
       if (o.t < OMEN_GATHER) {
-        // 24 motes spread through the gather, none born in its last 0.3 s (DECISIONS §7.3)
+        // 72 motes accelerate through the gather, none born in its last 0.3 s (DECISIONS §7.3)
         const n = gatherMotesDue(o);
-        if (n > 0) this.particles.gather(o.x, o.y + 0.8, o.z, pal(gatherMoteColor(o.t)), n, 2.2, OMEN_GATHER - o.t, 0.05, o.y);
+        if (n > 0) this.particles.gather(o.x, o.y + 0.8, o.z, pal(gatherMoteColor(o.t)), n, 3, OMEN_GATHER - o.t, 0.08, o.y);
         continue;
       }
+      if (!o.breached && this.spawnHeld(o)) { o.t = OMEN_GATHER; continue; }
       if (!o.breached) {
         o.breached = true;
         spatial.breach(o.x, o.y + 0.5, o.z);
         this.particles.burst(o.x, o.y + 0.5, o.z, pal(OMEN_BREACH_COLOR), 10, 1.5, 0.05, true);
       }
       if (o.t < OMEN_GATHER + OMEN_BREACH) continue;
+      if (this.spawnHeld(o)) { o.t = OMEN_GATHER + OMEN_BREACH; continue; }
       this.omens.splice(i, 1);
       const r = this.rooms.get(o.room);
       if (r) this.spawnEnemy(o.def, r, o.x, o.y, o.z);
@@ -1112,6 +1112,10 @@ export class Game {
       this.particles.burstRamp(d.cx, threshold, d.cz, mat(DOOR_FRAME[d.kind]).colors, motes, 2.5, 0.12);
     }
     this.hud.shake(SLAM_SHAKE);
+  }
+
+  private spawnHeld(o: Omen): boolean {
+    return spawnBlocked({ x: o.x, z: o.z }, { x: this.player.body.x, z: this.player.body.z });
   }
 
   /** Materialise one projection where its omen breached. */

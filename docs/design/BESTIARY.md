@@ -97,7 +97,7 @@ A **spawn point** is a place in the room where a projection may rise. Templates 
 **Fairness rules** (all validated):
 
 1. **Never through a door** and never within 3 blocks of one.
-2. **Never within 3.5 blocks of the player** at the moment the omen opens; if no point qualifies, use the farthest point.
+2. **Never within 3.5 blocks of the player.** A point is chosen only among the cells that qualify; if you stand within 3.5 blocks of an omen's point, the omen holds at its crack and nothing appears there until you move away (owner, 2026-10-27).
 3. **Never directly behind the player in a narrow room** without a wall-, ceiling- or floor-borne sound first: every spawn is heard before it is seen.
 4. **At most 4 open omens at once**; spawns are staggered by ≥ 0.25 s so each sound is separable.
 5. **A point is used at most once per wave**, and a point that just spawned rests 3 s.

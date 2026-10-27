@@ -117,7 +117,7 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## HUD (`game/hud.ts`, `index.html`)
 
-Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap and floor, debug readout, the **pickup banner** (icon, quality, description, plain effect, inspiration, every stat change, new synergies; it stays until you click, and that click doesn't fire) with a coloured screen flash, damage vignette and screen shake, toasts, the **inventory window** (Tab: practices with icons and details, synergies and states of being with progress, all stats; pauses and releases the mouse), the pause card (with the **language selector** and the **build version**) and the **death screen**.
+Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap (with an arrow in your room: where you stand, and where you look) and floor, debug readout, the **pickup banner** (icon, quality, description, plain effect, inspiration, every stat change, new synergies; it stays until you click, and that click doesn't fire) with a coloured screen flash, damage vignette and screen shake, toasts, the **inventory window** (Tab: practices with icons and details, synergies and states of being with progress, all stats; pauses and releases the mouse), the pause card (with the **language selector** and the **build version**) and the **death screen**.
 
 **Build version.** `vite.config.ts` defines `APP_VERSION` as `v<package.json version> · <YYMMDDHHmm>` (UTC build time), so every build and deploy shows a new number at the foot of the pause card. Declared in `src/version.d.ts`, shown in `main.ts`, checked by `tests/version.test.ts`.
 

@@ -1,4 +1,4 @@
-// The omen's art rules (docs/art/DECISIONS.md §3.6, §7.3, §7.4): an omen gathers exactly 24 cold
+// The omen's art rules (docs/art/DECISIONS.md §3.6, §7.3, §7.4): an omen gathers exactly 72 cold
 // motes spread through its gather and none in the last 0.3 s; every omen particle is from the cold
 // ramp; a slamming door throws at most 12 dust chips from its frame ramp.
 
@@ -33,23 +33,23 @@ describe('omen gather schedule', () => {
     it(`emits exactly ${OMEN_MOTES} motes at ${fps} fps, none in the last ${MOTE_MIN_LIFE} s`, () => {
       const frames = runGather(1 / fps);
       const total = frames.reduce((a, [, n]) => a + n, 0);
-      expect(OMEN_MOTES).toBe(24);
-      expect(total).toBe(24);
+      expect(OMEN_MOTES).toBe(72);
+      expect(total).toBe(72);
       for (const [t] of frames) expect(OMEN_GATHER - t).toBeGreaterThanOrEqual(MOTE_MIN_LIFE);
     });
   }
 
-  it('spreads the motes evenly (never a burst at 60 fps)', () => {
+  it('builds up gradually (never a burst at 60 fps)', () => {
     const frames = runGather(1 / 60);
-    for (const [, n] of frames) expect(n).toBeLessThanOrEqual(1);
-    expect(frames.length).toBe(24);
+    for (const [, n] of frames) expect(n).toBeLessThanOrEqual(2);
+    expect(frames[frames.length - 1][1]).toBeGreaterThan(0);
   });
 
   it('never exceeds the cap, however long it is asked', () => {
     const o = omen();
     let total = 0;
     for (let i = 0; i < 1000; i++) { o.t = (i / 1000) * OMEN_GATHER; total += gatherMotesDue(o); }
-    expect(total).toBeLessThanOrEqual(24);
+    expect(total).toBeLessThanOrEqual(OMEN_MOTES);
   });
 });
 

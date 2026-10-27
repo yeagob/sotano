@@ -108,6 +108,32 @@ export function burst(opt: { trigger: number; fuse: number; radius: number; rush
 }
 
 /**
+ * Keeps away from you (the roots' Wonders): it runs from you inside `scared` blocks and otherwise
+ * drifts, hovering, never toward you.
+ */
+export function flee(opt: { hover: number; scared: number }): Behaviour {
+  return {
+    name: 'flee',
+    update(e, ctx) {
+      e.timer -= ctx.dt;
+      const you = ctx.near(e);
+      if (e.timer <= 0) {
+        e.timer = 1.2 + fx.random() * 2;
+        const a = fx.random() * Math.PI * 2;
+        e.wishX = Math.cos(a) * 0.6; e.wishZ = Math.sin(a) * 0.6;
+      }
+      if (you) {
+        const dx = you.x - e.body.x, dz = you.z - e.body.z, d = Math.hypot(dx, dz) || 1;
+        if (d < opt.scared) { e.wishX = -dx / d; e.wishZ = -dz / d; }
+      }
+      e.pulse = 0.5 + 0.5 * Math.sin(e.timer * 3);
+      const lift = opt.hover + Math.sin(e.timer * 2.4) * 0.25;
+      if (e.body.vy < 2 && e.body.onGround || e.body.vy < 0) e.body.vy += (lift * 4 - e.body.vy) * Math.min(1, ctx.dt * 6);
+    },
+  };
+}
+
+/**
  * A peaceful creature (the roots, L6): it hovers at about a block over the ground and drifts, now
  * toward you (curious) and now away, never touching. Cosmetic randomness only (`fx`).
  */
