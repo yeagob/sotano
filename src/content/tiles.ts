@@ -8,12 +8,14 @@ export const ATLAS_ROWS = 4;
 
 // tiles 0..23 are materials (tile = material id)
 export const TILE_GRASS_TOP = 24;
+export const TILE_LOG_TOP = 25;
 export const TILE_CRACK0 = 28; // 4 crack stages: 28..31
 export const CRACK_STAGES = 4;
 
 /** Faces in the mesher's FACES order: +X, -X, +Y, -Y, +Z, -Z. */
 export function tileFor(matId: number, face: number): number {
   if (matId === MAT.grass) return face === 2 ? TILE_GRASS_TOP : face === 3 ? MAT.dirt : MAT.grass;
+  if (matId === MAT.log) return face === 2 || face === 3 ? TILE_LOG_TOP : MAT.log;
   return matId;
 }
 

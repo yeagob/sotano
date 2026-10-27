@@ -2,51 +2,60 @@ import * as THREE from 'three';
 import { pal, type PalToken } from '../content/palette';
 import { glowTexture } from './icons';
 
-export const SEED_VOXEL = 0.036;
+export const SEED_VOXEL = 0.042;
 export const SEED_W = 9;
 export const SEED_H = 11;
 export const SEED_FUSE_REF = 1.8;
 
 const PROFILE = [2.0, 3.0, 3.6, 4.1, 4.3, 4.3, 4.1, 3.7, 3.0, 2.1, 1.1];
 const C = (SEED_W - 1) / 2;
+const SEAM = [0, 0, 0, 1, 1, 0, 0, -1, -1, 0, 0];
+const BRANCHES = ['6,5,1', '7,4,1', '2,6,1', '1,7,1', '6,6,-1', '7,7,-1', '2,3,-1', '1,2,-1'];
 
 type Cell = { t: PalToken; glow: boolean };
 
+function inBounds(x: number, y: number, z: number): boolean {
+  return y >= 0 && y < SEED_H && x >= 0 && z >= 0 && x < SEED_W && z < SEED_W;
+}
+
 function filled(x: number, y: number, z: number): boolean {
-  if (y < 0 || y >= SEED_H || x < 0 || z < 0 || x >= SEED_W || z >= SEED_W) return false;
+  if (!inBounds(x, y, z)) return false;
   const r = PROFILE[y];
   return (x - C) ** 2 + (z - C) ** 2 <= r * r + 0.35;
 }
 
-function surface(x: number, y: number, z: number): boolean {
-  return !filled(x + 1, y, z) || !filled(x - 1, y, z) || !filled(x, y + 1, z) || !filled(x, y - 1, z) || !filled(x, y, z + 1) || !filled(x, y, z - 1);
+const DIRS: [number, number, number][] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+
+function shell(x: number, y: number, z: number): boolean {
+  return filled(x, y, z) && DIRS.some(([dx, dy, dz]) => !filled(x + dx, y + dy, z + dz));
 }
 
-const SEAM = [0, 0, 0, 1, 1, 0, 0, -1, -1, 0, 0];
-const HEART = new Set(['4,4', '4,5', '4,6', '5,5']);
+function seam(x: number, y: number, z: number): boolean {
+  if (y < 1 || y > 9 || z === C || !shell(x, y, z) || filled(x, y, z + (z > C ? 1 : -1))) return false;
+  const sx = z > C ? x : 2 * C - x;
+  const at = C + SEAM[y];
+  return sx === at || (y >= 3 && y <= 7 && sx === at + 1);
+}
+
+function solid(x: number, y: number, z: number): boolean {
+  return filled(x, y, z) && !seam(x, y, z);
+}
 
 function cell(x: number, y: number, z: number): Cell {
-  const sx = C + SEAM[y];
-  const front = z > C, back = z < C;
-  if (y >= 1 && y <= 9 && (front || back) && x === (front ? sx : 2 * C - sx)) {
-    if (front && HEART.has(`${x},${y}`)) return { t: 'light.core', glow: true };
-    if (front && y >= 3 && y <= 7) return { t: 'light.hot', glow: true };
-    return { t: 'light.ember', glow: true };
-  }
-  if (front && y >= 3 && y <= 7 && x === sx + 1) return { t: 'light.dusk', glow: true };
-  if (y === 5 && z > C && x === sx + 2 && x < SEED_W - 1) return { t: 'light.ember', glow: true };
-  if (y === 6 && z > C && x === sx + 3 && filled(x + 1, y, z) === false) return { t: 'light.ember', glow: true };
-  if (y === 3 && z > C && x === sx - 2) return { t: 'light.ember', glow: true };
+  const nearSeam = DIRS.some(([dx, dy, dz]) => seam(x + dx, y + dy, z + dz));
+  if (nearSeam && !shell(x, y, z)) return { t: y >= 4 && y <= 6 ? 'light.core' : 'light.hot', glow: true };
+  if (nearSeam) return { t: y >= 3 && y <= 7 ? 'light.ember' : 'light.dusk', glow: true };
+  const side = z > C ? 1 : -1;
+  if (BRANCHES.includes(`${side > 0 ? x : 2 * C - x},${y},${side}`) && !filled(x, y, z + side)) return { t: 'light.dusk', glow: true };
   if (y === SEED_H - 1) return { t: 'mat.seed.dark', glow: false };
   const nx = (x - C) / 4.3, ny = (y - 5) / 5.5, nz = (z - C) / 4.3;
   const lit = -0.45 * nx + 0.75 * ny + 0.45 * nz;
-  if (lit > 0.5) return { t: 'mat.seed.hi', glow: false };
-  if (lit < -0.35 || y <= 1) return { t: 'mat.seed.dark', glow: false };
-  if ((y + Math.round(Math.atan2(z - C, x - C) * 2.6)) % 4 === 0) return { t: 'mat.seed.dark', glow: false };
+  const rib = Math.round(((Math.atan2(z - C, x - C) + Math.PI) / (Math.PI * 2)) * 12) % 3 === 0;
+  if (y <= 1 || lit < -0.4) return { t: 'mat.seed.dark', glow: false };
+  if (rib) return { t: lit > -0.1 ? 'mat.seed.hi' : 'mat.seed.base', glow: false };
+  if (lit > 0.45) return { t: 'mat.seed.hi', glow: false };
   return { t: 'mat.seed.base', glow: false };
 }
-
-const DIRS: [number, number, number][] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 
 const QUADS: number[][][] = [
   [[1, 0, 1], [1, 0, 0], [1, 1, 0], [1, 1, 1]],
@@ -69,13 +78,13 @@ function geometries() {
   const out = { husk: { p: [] as number[], c: [] as number[] }, glow: { p: [] as number[], c: [] as number[] } };
   const col = new THREE.Color();
   for (let y = 0; y < SEED_H; y++) for (let z = 0; z < SEED_W; z++) for (let x = 0; x < SEED_W; x++) {
-    if (!filled(x, y, z) || !surface(x, y, z)) continue;
+    if (!solid(x, y, z) || DIRS.every(([dx, dy, dz]) => solid(x + dx, y + dy, z + dz))) continue;
     const k = cell(x, y, z);
     const dst = k.glow ? out.glow : out.husk;
     col.setHex(pal(k.t));
     for (let d = 0; d < 6; d++) {
       const [dx, dy, dz] = DIRS[d];
-      if (filled(x + dx, y + dy, z + dz)) continue;
+      if (solid(x + dx, y + dy, z + dz)) continue;
       const q = faceQuad(x, y, z, d);
       for (let i = 0; i < q.length; i += 3) {
         dst.p.push((q[i] - SEED_W / 2) * SEED_VOXEL, q[i + 1] * SEED_VOXEL, (q[i + 2] - SEED_W / 2) * SEED_VOXEL);
