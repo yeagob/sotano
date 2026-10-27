@@ -1,4 +1,4 @@
-# Bestiary: projections, inhabitants and presences
+# Bestiary: projections, creatures and presences
 
 Status: **design proposal**, answered by the owner on 2026-10-27 (§13 records the answers). Built today: Doubt, the Lectern (Inner Critic) and Panic ([ENTITIES.md §5](../architecture/ENTITIES.md)), and intention polarity (§1.1, built 2026-10-27). Everything else here is direction, to be built milestone by milestone (§12) and to pass the art gate ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)) one creature at a time. Names marked *(proposal)* wait for the owner (§13).
 
@@ -15,16 +15,16 @@ Everything that moves in the depths is one of three kinds. The kind decides its 
 | Kind | What it is in the story | Faction | Can be hurt | Speaks | Side (art) |
 |---|---|---|---|---|---|
 | **Projections** | Patterns that block intention, given a body of the room's own matter ([STORY §4](STORY.md#4-enemies-projections-of-what-blocks-intention)) | `projection` (hostile) | Yes, and they are **released**, never killed | Never (art guide §11 rule 2) | Projections: cold, husks |
-| **Inhabitants** *(proposal)* | What was always alive down here: instinct, curiosity, play, rest, care. Not patterns: the healthy life of the inner world | `neutral` | Yes, by intention polarity (§1.1): negative intentions harm them, positive ones heal them. Blasts only push them | No (they sing, chirp, hum) | **New: the living** (art ruling needed, §10) |
+| **Creatures** *(proposal)* | What was always alive down here: instinct, curiosity, play, rest, care. Not patterns: the healthy life of the inner world | `neutral` | Yes, by intention polarity (§1.1): negative intentions harm them, positive ones heal them. Blasts only push them | No (they sing, chirp, hum) | **New: the living** (art ruling needed, §10) |
 | **Presences** *(proposal)* | Wise beings of the depths: the parts of you that already know. They ask, they listen, they teach | `neutral`, immortal | Never: no health at all | Yes, kindly, in short lines | **The light**: they shine only with your lantern, while you listen (§8.1) |
 
-**One line for each:** projections are *what blocks you*; inhabitants are *what keeps living in you anyway*; presences are *what in you already knows*.
+**One line for each:** projections are *what blocks you*; creatures are *what keeps living in you anyway*; presences are *what in you already knows*.
 
 Rules that hold for all three:
 
 - **Patterns, never people.** No being is a person, a group, a diagnosis, a tradition or a figure from a tradition. Presences are archetypes (the gardener, the listener, the witness), never gods, saints, prophets or real people, and they never speak in a real person's words.
 - **Made of the world.** All three are built from 16-texel boxes and the room's materials (art pillar 3).
-- **Readable without text.** A child must tell the three kinds apart at a glance: projections have the family eye (a cold light in a dark socket); inhabitants have the living tell (§7.1); presences have no eyes at all until you come close, and then they look like light held in your lantern (§8.1).
+- **Readable without text.** A child must tell the three kinds apart at a glance: projections have the family eye (a cold light in a dark socket); creatures have the living tell (§7.1); presences have no eyes at all until you come close, and then they look like light held in your lantern (§8.1).
 
 ---
 
@@ -37,10 +37,10 @@ Everything in the depths is made by the mind, and so are its patterns. Every int
 
 Polarity decides what an intention does to each kind of being. The numbers are proposals, to be tuned in play.
 
-| | Projection (hostile) | Ally (a converted projection) | Inhabitant | Presence |
+| | Projection (hostile) | Ally (a converted projection) | Creature | Presence |
 |---|---|---|---|---|
 | **Positive** | Half damage, and it **mends**: every hit adds warmth; at full warmth it **turns to your side** (`factionChange`, integrated, not destroyed) | Healed, and its gold seams grow (a visual). At full health it gives a small gift, once per floor | Healed and nourished. Its gift: a heart, once per visit | Nothing to heal. It glows and speaks more openly, and its Lessons grow clearer |
-| **Negative** | Full damage. A projection killed this way **releases** (a shard), as today | Harmed. At zero health it **turns hostile again** (`factionChange` back) | Harmed: it flees and hides until the room clears. It never dies (default, §13) | Silent: it turns its light away and says nothing until you cast positively again. Never harmed |
+| **Negative** | Full damage. A projection killed this way **releases** (a shard), as today | Harmed. At zero health it **turns hostile again** (`factionChange` back) | Harmed: it flees and vanishes into the blocks until the room clears. It never dies (§13) | Silent: it turns its light away and says nothing until you cast positively again. Never harmed |
 
 **Blocks.** A positive intention never breaks a block: it mends one that is damaged (its cracks close). A negative intention breaks blocks as always. The same holds for the strokes of weapons (a positive blade or beam only mends). The first time a positive intention meets an undamaged block, a hint says that gold only mends and F breaks (owner, 2026-10-27).
 
@@ -56,7 +56,7 @@ Polarity decides what an intention does to each kind of being. The numbers are p
 
 - **Built:** the toggle on **F**; `polarity` on every shot and on every weapon stroke (Occam's Razor, Kiai, One Clear Cut); half damage and warmth for positive intentions against projections (+0.2 per hit, full at 1); a negative intention deals full damage and cools warmth by 0.25; a converted projection keeps its pattern (`factionChange` to the self); allies are healed by positive intentions and harmed by negative ones; an ally at zero under a negative intention turns hostile again at half health; the room clear counts hostile projections only; the HUD mark.
 - **Added rules, for owner ruling** (the review's mediator added them; the owner's text does not say them): a positive intention never kills a projection (the last point is kept, so the warmth still fills); a converted projection, or a relapsed ally, returns with at least half its maximum health; a warmed target gains warmth once per stroke (a beam's ticks do not stack it); a relapsed projection in a cleared room does not reseal the room; a healthy ally lets positive intentions pass, while a negative one always hits it.
-- **Not built:** inhabitants and presences (no actors yet); the gifts of allies at full health (the agreements session); warmth decay (no design yet); the Threshold Guardian's two routes (§6.5: the Guardian itself is not built).
+- **Not built:** creatures and presences (no actors yet); the gifts of allies at full health (the agreements session); warmth decay (no design yet); the Threshold Guardian's two routes (§6.5: the Guardian itself is not built).
 
 ---
 
@@ -73,7 +73,7 @@ When the player's box is fully inside a room that holds projections (today's tri
 | 0.00 | Every door of the room **drops shut at once**, fast (0.18 s, ease-in, no bounce) | Sight |
 | 0.18 | **Impact**: a heavy stone slam at each door, **positioned at that door** (spatial, §2.3); dust bursts along each threshold (matter chips in the door's ramp, 12 per door); a short positional camera nudge (art §7: max of chained events, never summed, obeys the shake setting) | Sound, sight, body |
 | 0.20 | A low **seal tone** rises under the slam (one cold chord in the floor's key) and the room's mood tints cold (`mood.held`, 6 %) | Sound, light |
-| 0.20 | **Inhabitants scatter**: crickets go silent, little creatures dive into burrows (§7). The silence is the first warning | Sound |
+| 0.20 | **Creatures scatter**: crickets go silent, little creatures dive into burrows (§7). The silence is the first warning | Sound |
 | 0.50 | The **first omens** open (§2.3) | All |
 
 Rules: the seal is a **root event** (`roomSeal`, emitted by the core loop like `enemySpawn`). Doors never close *on* the player: a door whose opening holds the player's box waits until it is clear, as the floor never opens under the player (feature log). Floor 0 never seals (tutorial floor rule, [LEVELS.md](LEVELS.md)).
@@ -152,12 +152,12 @@ A room's roster is split into **waves**. A small **director** per sealed room de
 **Special room types for waves:**
 
 - **Trial room** *(approved 2026-10-27; Isaac's challenge rooms)*: a marked door; inside, a pedestal whose practice appears only after 4–6 waves on timers. You may leave before the first wave opens; once it opens, the doors slam.
-- **Ambush**: a room that seems empty (no seal on entry); taking its reward or breaking a marked wall triggers the seal and a wave from walls and ceiling. Telegraphed by silent inhabitants and a faint cold draught (motes moving towards the walls). Never on floors 0–1.
+- **Ambush**: a room that seems empty (no seal on entry); taking its reward or breaking a marked wall triggers the seal and a wave from walls and ceiling. Telegraphed by silent creatures and a faint cold draught (motes moving towards the walls). Never on floors 0–1.
 - **Gauntlet corridor** (Tree floors, the paths between emanations): no seal; projections rise from the walls as you pass. Each one is announced; you choose to fight or run.
 
 ### 2.5 The clear
 
-Unchanged in spirit: when no hostile projection remains and the blast queue is empty, the doors rise (with a lighter, warm sound: the player's light now), the room warms and stays warm (art pillar 5), the reward appears, and **inhabitants come back out** (§7): the crickets start again. The return of the small sounds is the clear's second signal.
+Unchanged in spirit: when no hostile projection remains and the blast queue is empty, the doors rise (with a lighter, warm sound: the player's light now), the room warms and stays warm (art pillar 5), the reward appears, and **creatures come back out** (§7): the crickets start again. The return of the small sounds is the clear's second signal.
 
 ---
 
@@ -204,7 +204,7 @@ Projections live in the same matter as you, as in Noita: chargers smash soft blo
 
 ### 4.1 The great zones
 
-The ten floors below group into **five great zones**. Each zone has its rock ramp (art ledger §3.2), its circle(s) of Dante (structure and images only, never his figures, no punishment of people: [LEVELS.md](LEVELS.md)), a **theme of patterns**, its own **unique projections**, its own **inhabitants**, and its own **boss pool**.
+The ten floors below group into **five great zones**. Each zone has its rock ramp (art ledger §3.2), its circle(s) of Dante (structure and images only, never his figures, no punishment of people: [LEVELS.md](LEVELS.md)), a **theme of patterns**, its own **unique projections**, its own **creatures**, and its own **boss pool**.
 
 | Zone | Floors | Rock | Dante (image only) | Theme of patterns | Element |
 |---|---|---|---|---|---|
@@ -402,7 +402,7 @@ Running too hot and pretending. The seventh circle's image is a burning river an
 |---|---|---|---|---|---|
 | **Burnout** | "I can't stop." · running past empty · to be enough | Will · medium · dark · `⇶` | Born from fire (spawn kind "element source"). **Accelerates** the whole fight: faster every second, leaving short-lived fire on the floor. After 8 s it **collapses, exhausted** (3 s, takes ×2 damage), then starts again, slower each time. The fight is **outlasting** it, not racing it | It sits down by a cold flame and the flame goes out · It never wanted to win; it wanted permission to stop | — |
 | **Spark** | "Is that—? What was—?" · restlessness, always on edge · to never be caught off guard | Body · small · dark · `ϟ` | Lives on conductive blocks (ore, metal). **Jumps between them**, and two Sparks link with an **arc across the room** (a Line) for 2 s: a wall you can't cross while it's live. Break the blocks it lands on to ground it | It grounds, one last crackle, and goes still · It stayed on edge so nothing could surprise it; still, it finally rests | Noita's electric creatures |
-| **Pretence** | "I'm fine." · the mask · to be accepted | Emotion · medium · pale (mask) over dark · `◠` (a smile) | A **mimic**: disguises itself as something good: a pickup, a pedestal's glow, an inhabitant's silhouette. Within 2 blocks it opens (0.5 s, the smile splits) and bites. Its mask is hard; its back is hollow | The mask comes off and lies face up on the floor; behind it, a small honest face, briefly · It smiled so no one would ask; released, it doesn't have to | Isaac's mimics |
+| **Pretence** | "I'm fine." · the mask · to be accepted | Emotion · medium · pale (mask) over dark · `◠` (a smile) | A **mimic**: disguises itself as something good: a pickup, a pedestal's glow, an creature's silhouette. Within 2 blocks it opens (0.5 s, the smile splits) and bites. Its mask is hard; its back is hollow | The mask comes off and lies face up on the floor; behind it, a small honest face, briefly · It smiled so no one would ask; released, it doesn't have to | Isaac's mimics |
 | **Shortcut** | "There's an easier way." · cutting corners · to not have to try | Will · small · dark · `↗` | Appears **next to locked doors and vaults**, offering a way in (it opens a crack in the wall). Walk through and the crack closes behind you: you're in a small sealed pocket with a wave. Hit it before it opens the crack and it flees | It points, honestly this time, at the real door · It wasn't lying about wanting to help; it just didn't know the long way was the way | Noita's trick rooms |
 
 ### 5.6 Zone V · The Frozen Bottom (floor 9)
@@ -422,7 +422,7 @@ Numbness and turning away from yourself. The ninth circle's image is a frozen la
 
 When a projection is released, it may leave **parts** of itself: its **flesh** (carne), its **heart** (corazón), its **mind** (mente) or its **essence** (esencia). Each part is a collectible item, shown in the inventory with its name. Converted allies leave nothing: they are not released, they are integrated (§1.1).
 
-**Chances per release** (proposal, tuned in play): flesh 30 %, mind 12 %, heart 5 %, essence 2 %. A rooted projection (§4.2) rolls once more. Parts are drawn from the room's RNG fork.
+**Chances per release** (owner, 2026-10-27, tuned in play): flesh 30 %, mind 12 %, heart 5 %, essence 2 %. A rooted projection (§4.2) rolls once more. Parts are drawn from the room's RNG fork.
 
 **Names.** Every projection names its four parts after its own pattern, so a part tells you what it was.
 
@@ -434,7 +434,7 @@ When a projection is released, it may leave **parts** of itself: its **flesh** (
 
 The rest are named when they are built, with the same rule: the part's noun comes from the creature's own body or pattern, never from another game. Names go through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md) in both languages.
 
-**Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room the owner mentions is not designed yet (§13).
+**Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room, the Compost, is designed in §8.8.
 
 ---
 
@@ -504,20 +504,20 @@ At the great pit of floor 5, the Guardian is the gate that asks. It lets you pas
 
 ---
 
-## 7. Inhabitants: the living things of the depths *(proposal)*
+## 7. Creatures: the living things of the depths *(proposal)*
 
 ### 7.1 Rules
 
 - **What they are:** instincts, curiosity, play, rest, care: what keeps living in you even with the patterns around. They are not projections and never become projections.
 - **Faction `neutral`:** hostile to no one, and no one targets them (except where stated). **Intention polarity applies to them (§1.1):** a negative intention harms them, a positive one heals them. Explosions only push them gently. Owner ruling (2026-10-27): they can be harmed, and the harm is the player's choice.
-- **They react to the room:** they hide when doors slam and come back when a room clears (§2.1, §2.5). Their silence and return are signals the player learns.
+- **They react to the room:** they vanish into the blocks when doors slam and come back when a room clears (§2.1, §2.5). Their silence and return are signals the player learns.
 - **Look:** a new **side**, *the living*, needs an art ruling (§10): world materials with a **living tell**: a slow, soft, 2 × 1 glow that breathes (never a 2 × 2 eye in a socket, which is the projections' family mark).
 - **Sound:** small, consonant sounds (chirps, purrs, hums) that never resolve because they never needed to.
 - **No dialogue.** Some can be **befriended** (they follow you for the floor) by a gentle act: standing still near them, placing a block for them, putting out a fire near them.
 
 ### 7.2 Roster by zone
 
-| Inhabitant | Zone | What it stands for | What it does | What you can do with it |
+| Creature | Zone | What it stands for | What it does | What you can do with it |
 |---|---|---|---|---|
 | **Rootlings** | 0 Roots | Curiosity | Tiny root-shaped creatures that potter along the roots and **burrow toward hidden pockets** | Follow them to secrets; on floor 0 they also show the tutorial's next step |
 | **Mosslings** | 0 Roots | Rest | Round moss creatures asleep on soft blocks | Sit (stand still) beside one for 3 s: heals a quarter heart, once per Mossling |
@@ -705,11 +705,36 @@ The Presences give **gifts**: objects with a name, a line of text and a plain ef
 | Seal | The Witness | Seeing and keeping |
 | Light | The Listener (after the last Lesson) | What was heard |
 
-Holding all four completes the Covenant. Its set effect is a proposal (§13): every Presence remembers you in the run.
+Holding all four completes the Covenant. Its set effect: every Presence remembers you in the run (owner, 2026-10-27).
 
-**The common trait (proposal, the owner left it open):** **Promised.** Every gift bears a thin **gold seam** (kintsugi: what was mended is stronger, art §12). A promised item cannot be dropped, destroyed or stolen (Scarcity cannot take it), and it stays in your pack when you throw the rest away. Its label says *promised* in small type. The mark belongs only to gifts, so the player learns that a seam means "given".
+**The common trait (owner, 2026-10-27):** **Promised.** Every gift bears a thin **gold seam** (kintsugi: what was mended is stronger, art §12). A promised item cannot be dropped, destroyed or stolen (Scarcity cannot take it), and it stays in your pack when you throw the rest away. Its label says *promised* in small type. The mark belongs only to gifts, so the player learns that a seam means "given".
 
-**Inventory labels (all items).** Every inventory slot shows a small label with the item's name, always visible, in the player's language. This covers practices, blocks, parts, gifts and the Covenant. The labels are text, so they go through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md).
+**Inventory labels (owner, 2026-10-27).** Every inventory slot shows a small label with the item's name, always visible, in the player's language. This covers practices, blocks, parts, gifts and the Covenant. Labels exist only in the inventory: the world never writes names over the items you find or hold. The labels are text, so they go through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md).
+
+---
+
+### 8.8 The Compost: the farming room (design proposal, owner asked for it, 2026-10-27)
+
+Parts (§5.7) and agreements (§8.6) need a steady supply, and the game must not make that supply a grind. The Compost is the room where it is made, in the open and with limits. The name is a proposal: what a pattern leaves goes back into the soil, and something grows from it.
+
+**Where.** One Compost per zone, in a side emanation of its floors, reachable from the main path and never behind a Presence's sanctuary. Five rooms in all: Zone I (floor 1–2), II (3–4), III (5–6), IV (7–8), V (9). Each draws only from its zone's lineage (§5.2–5.6). No Presence lives here: the Compost is work, and the dwellers keep their own rooms.
+
+**The plot.** A template with raised beds of the zone's material (6 to 8 beds). Each bed is a **spawn point** (floor seam, §2.2), and the room has two wall faces for Avoidance-type projections. Water runs in a channel in Zone II, lava in Zone IV; no channel in I, III and V. The room seals like any other room (§2.1), with the seal tone turned down to a soil rustle.
+
+**One harvest.** A visit is one harvest: the beds spawn six projections in two waves, announced by omens (§2.3) with the same fairness rules (§2.2). Nothing is elite and no boss appears: the plot is an ordinary fight, made for the parts.
+
+**Both ways pay.** A release leaves parts (§5.7). A conversion leaves an ally, which gives its small gift once per floor (§1.1). Force gives you parts, care gives you a friend, and the agreements need both. The Compost teaches the trade without punishing either.
+
+**Limits (no grind).**
+
+- **Refill at the door.** The beds refill when you leave and come back. A visit is always a fresh harvest, never a loop inside one room.
+- **Three harvests per Compost per run.** The drop chances fall at each harvest: 100 % of the base table in the first, 75 % in the second, 50 % in the third (proposal, tuned in play).
+- **Resting.** After the third harvest the beds rest: no spawns, the room stays calm, and each bed shows a closed cold sprout. Nothing is said. The rest is a visual, not a line of text.
+- **Kept on death.** Parts already in the pack stay; a harvest cut short by death drops nothing new.
+
+**Red lines.** No timer on screen, no kill counter, no score, no reward for repetition past the limit, no dialogue in the room, and no part that the rest of the game cannot also give: the Compost is one source among others, never the only one for an agreement (§8.6).
+
+**Build.** After the Gardener (E5), once its zone's lineage exists (E2–E4). Art ruling needed for the bed and the closed sprout ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)); every line and name goes through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md).
 
 ---
 
@@ -718,7 +743,7 @@ Holding all four completes the Covenant. Its set effect is a proposal (§13): ev
 The inventory window gains a **codex** *(proposal)*, filled by playing:
 
 - **Projections:** their glyph and silhouette after the first release; their *pattern* after 3 releases; their *need* after 10; their *touching moment* after you release a rooted one. Learning a pattern is learning to see it.
-- **Inhabitants:** their name and what they do, after you first see them.
+- **Creatures:** their name and what they do, after you first see them.
 - **Presences:** every line they told you, kept.
 - **Bosses:** their release image.
 
@@ -728,7 +753,7 @@ The inventory window gains a **codex** *(proposal)*, filled by playing:
 
 - **Every projection passes the art gate** ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)): need, glyph (unique; list in §5), four face frames, release clip, the touching moment, the meaning test, the red lines. The cards above give the need, glyph, motion, release and touching moment; faces, palettes and sounds are written per creature when it is built.
 - **Art rulings needed** (art ledger §14 style, for the owner):
-  1. **The living** as a fourth side for inhabitants: a small `living.*` ramp (moss and lichen tones, low chroma, a soft breathing glow) that must stay ΔE ≥ 15 from `cold.body`, the path hues and `life.heart` in every vision simulation.
+  1. **The living** as a fourth side for creatures: a small `living.*` ramp (moss and lichen tones, low chroma, a soft breathing glow) that must stay ΔE ≥ 15 from `cold.body`, the path hues and `life.heart` in every vision simulation.
   2. **Presences on the light side**: warm only near your lantern and while listening.
   3. **Floor 9's ice** and the Tree floors' ramps (the ledger has four ramps for ten floors).
   4. **Omen particles and the edge marker** as new uses of the cold ramp.
@@ -755,8 +780,8 @@ These are the systems this design needs. Each key one goes through the **three-p
 | **Rooted variants** | A modifier layer on `EnemyDef` at spawn (`enemySpawn` is already mutable) | — |
 | **Zones and pools** | `LevelDef` gains `zone`; rosters and boss pools by zone; `floor<k>:boss` stream | Roster by `minFloor` |
 | **Voxel bosses** | Bosses built of real blocks with a core vessel; phases; release into architecture | — |
-| **Inhabitants** | `neutral` actors with simple behaviours, hide/return on seal/clear | Faction `neutral` exists (ACTORS §4) |
-| **Intention polarity** | A `polarity` on intentions and a toggle control; warmth meter on projections; `factionChange` in both directions; ally harm and heal rules; a room clear that counts converted projections | Built (§1.1 status); inhabitants and presences not |
+| **Creatures** | `neutral` actors with simple behaviours, hide/return on seal/clear | Faction `neutral` exists (ACTORS §4) |
+| **Intention polarity** | A `polarity` on intentions and a toggle control; warmth meter on projections; `factionChange` in both directions; ally harm and heal rules; a room clear that counts converted projections | Built (§1.1 status); creatures and presences not |
 | **Presences and dialogue** | Immortal actors, sanctuary rings, a dialogue card, localised lines, a profile save | — |
 | **Codex** | Release counters in the profile; a codex tab in the inventory | — |
 
@@ -768,9 +793,9 @@ These are the systems this design needs. Each key one goes through the **three-p
 |---|---|---|
 | E1 | **Intention polarity (the control, positive conversion, negative harm), spatial audio, the seal, omens, spawn points and waves** *(seal, spatial sound, floor omens, waves and polarity built)* | The owner's core ask; it changes how every fight starts and reads |
 | E2 | Attack families and movement classes (Line, Leap, Sweep; charger, leaper, mounted) with Zone I's projections (Autopilot, Craving, Impulse, Avoidance) and Procrastination, Distraction | Cross-room attacks; the first zone complete |
-| E3 | Lineage forms II, rooted variants, Zone II projections; Inhabitants of floor 0 and Zone I–II | Evolution with depth becomes visible |
+| E3 | Lineage forms II, rooted variants, Zone II projections; Creatures of floor 0 and Zone I–II | Evolution with depth becomes visible |
 | E4 | Voxel bosses: Resistance, Inertia, The Insatiable; then Overwhelm, The Hoard, The Downpour; the zone pools | Random bosses by zone |
-| E5 | Presences: the Gardener (floor 0), the Wanderer, the Listener, the Cartographer; the dialogue card; the codex | The non-hostile layer |
+| E5 | Presences: the Gardener (floor 0), the Wanderer, the Listener, the Cartographer; the dialogue card; the codex; the Compost (§8.8) | The non-hostile layer |
 | E6 | Zones III–V, the Threshold Guardian, the Shadow, the remaining Presences | The deep floors |
 | E7 | The Tree's patterns and bosses | With the Tree milestone (L5) |
 
@@ -780,7 +805,7 @@ These are the systems this design needs. Each key one goes through the **three-p
 
 **Answered:**
 
-1. **Inhabitants can be harmed, by polarity** (§1.1): negative intentions harm them, positive ones heal them. This is my reading of the owner's message; if they should be untouchable by every intention, say so.
+1. **Creatures can be harmed, by polarity** (§1.1): negative intentions harm them, positive ones heal them. This is my reading of the owner's message; if they should be untouchable by every intention, say so.
 2. **Presences are immortal** and never take damage; negative intentions silence them (§8.1).
 3. **Keystone bosses**: the Threshold Guardian on floor 5 and the Shadow on floor 9 are fixed. The other floors draw from their zone's pool (§6.2).
 4. **The Elder and the Child** are Presences (§8.3).
@@ -790,14 +815,19 @@ These are the systems this design needs. Each key one goes through the **three-p
 8. **The Threshold Guardian has two routes** (§6.5). The shadow route's outcome (the pit stays shut, a hole beside it) is my proposal.
 9. **Intention polarity** with a toggle control (§1.1). Built: the key is **F** (chosen against the controls; docs/reviews/polarity.md).
 
-**Still open.** My defaults stay in the document until the owner decides:
+**Decided (owner, 2026-10-27, second round):**
 
-a. **Names:** "Inhabitants" and "Presences" (default).
-b. **Presence voice:** text with a wordless voice (default).
-c. **Floor 0:** pure peace, with no projections and no Boundary (default).
-d. **Inhabitants at zero health under negative intentions:** they flee and hide, and never die (default).
-e. **The toggle's key**, and the colour of a negative intention (art §10, ruling 6).
-f. **Balance numbers** in §1.1 and the shadow route: proposals to tune in play.
+a. **Names:** "Creatures" for the non-hostile living beings (formerly "Creatures"; the owner's word was "Criaturas"). "Presences" stays.
+b. **Presence voice:** text with a wordless voice.
+c. **Floor 0:** pure peace, with no projections and no Boundary.
+d. **Creatures at zero health under negative intentions:** they flee and vanish into the blocks until the room clears. They never die.
+e. **The toggle** is on **F**. The negative intention keeps its darker colour (art §10, ruling 6).
+f. **Balance numbers** in §1.1 and the shadow route: proposals, tuned in play.
+p. **The common trait:** **Promised** (a gold seam, cannot be lost), §8.7.
+q. **Labels:** on inventory slots only, never over items in the world (§8.7).
+r. **The farming room:** designed as the Compost (§8.8).
+s. **The Covenant's set effect:** every Presence remembers you in the run.
+t. **The numbers:** part chances 30 / 12 / 5 / 2 % (§5.7) and the reward table (§8.5).
 
 **Answered on requests (§8.5), 2026-10-27:**
 
@@ -806,7 +836,7 @@ h. **Trust per run:** approved. The Elder may remember the result as knowledge o
 i. **Early yes:** approved as a smaller reward, never nothing.
 j. **Allowed requests:** breathe, be still, write, draw, move, as listed in §8.5.
 
-**Decided on agreements (2026-10-27), my readings to confirm:**
+**Decided on agreements (2026-10-27), my readings, still to confirm:**
 
 k. **Requests** run in a 30–60 s idle window, never longer than a minute. The trust meter is secret and per run; the rewards vary by its hidden step (§8.5).
 l. **"Tier"** is read as the item tier, 1 to 3. **"Cierre"** is read as a closed set: the Covenant (§8.7).
@@ -814,10 +844,4 @@ m. **Parts:** every projection can leave flesh, heart, mind or essence, named af
 n. **Inventory:** every slot shows a name label (§8.7).
 o. **Agreements:** Presences ask for stage materials and parts, with complexity by floor, reasons that fit the floor and the character (§8.6).
 
-**Still open:**
-
-p. **The common trait:** "Promised" (a gold seam, cannot be lost) is a proposal; the owner left it free. Confirm or change.
-q. **Labels:** on inventory slots only (proposed), or also over the items you hold in the world?
-r. **The farming room:** is it designed yet, and does it respawn one roster over and over?
-s. **The Covenant's set effect** (proposal: every Presence remembers you in the run).
-t. **The numbers:** part chances (30/12/5/2 %) and the reward table in §8.5.
+**Still open:** only the agreements readings k–o, which the owner has not confirmed yet.

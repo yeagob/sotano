@@ -29,7 +29,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **The threshold guardian** (the fear at the edge of change) | `monomyth` | The keystone boss at floor 5's great pit, which steps aside instead of falling |
 | **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/BESTIARY.md)) |
 | **The witness** (seeing without judging) | `jung` (concept generic) | The Witness in silence reads your run back to you |
-| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Inhabitants: the living creatures of the depths, never hostile ([BESTIARY §7](../design/BESTIARY.md)) |
+| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Creatures: the living beings of the depths, never hostile ([BESTIARY §7](../design/BESTIARY.md)) |
 | **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it |
 | **Resistance** | `war-of-art` | A future boss |
 | **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |

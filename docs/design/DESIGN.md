@@ -61,7 +61,7 @@ The player doesn't shoot tears: they cast **intentions** — small orbs of will 
 | Luck | Chance of special effects | 0 |
 | **Mining** | Damage multiplier against blocks | 1.0 |
 
-Intentions fly straight for their range, then **fall under gravity** and break on contact. Each intention also has a **polarity**, positive or negative, switched by a control: positive intentions mend projections and damaged blocks, and can turn projections to your side; only negative ones break blocks; negative ones wound everything that is yours too, inhabitants included ([BESTIARY §1.1](BESTIARY.md)). Casting upwards digs ceilings; arcing them reaches enemies behind cover.
+Intentions fly straight for their range, then **fall under gravity** and break on contact. Each intention also has a **polarity**, positive or negative, switched by a control: positive intentions mend projections and damaged blocks, and can turn projections to your side; only negative ones break blocks; negative ones wound everything that is yours too, creatures included ([BESTIARY §1.1](BESTIARY.md)). Casting upwards digs ceilings; arcing them reaches enemies behind cover.
 
 **Mining** is deliberately separate from damage: it allows items that make you a good fighter but a poor miner, and vice versa. It's a very useful design lever.
 
@@ -177,7 +177,7 @@ Only the current floor and its neighbours are kept "alive". What you broke is re
 
 ## 8. Enemies (first iteration)
 
-> Superseded for content by [BESTIARY.md](BESTIARY.md) (projections by zone and lineage, bosses, inhabitants, presences, seals, omens and waves). The table below is the original prototype brief, kept for history.
+> Superseded for content by [BESTIARY.md](BESTIARY.md) (projections by zone and lineage, bosses, creatures, presences, seals, omens and waves). The table below is the original prototype brief, kept for history.
 
 Minecraft look: bodies made of cubes, simple animations. **Original** names and designs (see the IP note in the technical doc).
 
