@@ -232,7 +232,7 @@ export interface CarveOptions {
  * `floor/k/room/i/roster`), so changing one room never changes another.
  */
 export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorPlan, opt: CarveOptions): FloorResult {
-  const y0 = floorY(k), y1 = y0 + ROOM_H - 1;
+  const y0 = floorY(k);
   const keyRng = rr.fork('floor', k, 'key');
   const gid = (i: number) => roomGid(k, i);
   const lv = level(k);
@@ -253,7 +253,6 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   for (const pr of plan.rooms) {
     const [x0, z0] = roomOrigin(pr.gx, pr.gz);
     const size = sizeOf(pr), [RW, RD] = roomDims(size);
-    const x1 = x0 + RW - 1, z1 = z0 + RD - 1;
     const layout = rr.fork('floor', k, 'room', pr.id, 'layout');
     let t = pickTemplate(opt.templates, pr.type, k, layout, !!lv.tutorial, size);
     if (lv.tutorial && pr.type === 'normal') {
@@ -261,42 +260,12 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       t = opt.templates.find(q => q.lesson === lesson && q.types.includes('normal')) ?? t;
     }
     const height = t.height ?? ROOM_H;
-    fillBox(w, x0 - 2, y0 - 2, z0 - 2, x1 + 2, y0 + height + 1, z1 + 2, MAT.brick);
-    fillBox(w, x0, y0, z0, x1, y1, z1, AIR);
     const mirror = t.mirror !== false && pr.type !== 'start';
     const flipX = mirror && layout.chance(0.5), flipZ = mirror && layout.chance(0.5);
     const fights = pr.type === 'normal' || pr.type === 'path';
     const mood: RoomMood = fights ? ROOM_MOOD.roll(layout, { floor: k })! : 'normal';
     const chestRng = rr.fork('floor', k, 'room', pr.id, 'chest');
-    for (let row = 0; row < RD; row++) for (let col = 0; col < RW; col++) {
-      const ch = cellAt(t, col, row, flipX, flipZ);
-      const x = x0 + col, z = z0 + row;
-      // the height above ROOM_H, shaped into a vault or a dome
-      const top = y1 + ceilingRise(t.ceiling ?? 'flat', height - ROOM_H, col, row, RW, RD);
-      for (let y = y1 + 1; y <= top; y++) w.data[w.idx(x, y, z)] = AIR;
-      const s = CELL_STACK[ch];
-      if (s) {
-        const m = mood === 'reinforced' ? hardened(s.m) : s.m;
-        // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
-        const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
-        for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
-        // a plug's wall goes on above its dirt
-        const plug = CELL_PLUG[ch];
-        if (plug) for (let h = s.h; h < top - y0 + 1 - plug.under; h++) w.data[w.idx(x, y0 + h, z)] = mood === 'reinforced' ? hardened(plug.m) : plug.m;
-      }
-      const el = CELL_ELEMENT[ch];
-      if (el) carveElement(w, x, y0, z, el, !!lv.frozen);
-      for (const layer of t.layers ?? []) {
-        const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
-        const ls = CELL_STACK[lc];
-        if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(ls.m) : ls.m;
-        else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
-      }
-      if (DECOR_CHARS.has(ch)) {
-        // decor slot: rolled in row order from the room's own layout fork
-        const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-        if (key) w.data[w.idx(x, y0, z)] = MAT[key];
-      }
+    for (const { ch, x, z } of carveInterior(w, t, x0, y0, z0, flipX, flipZ, mood, layout, k)) {
       if (ch === 'P') spawn = [x + 0.5, y0, z + 0.5];
       if (ch === 'T') {
         const boss = pr.type === 'boss' && !lv.tutorial;
@@ -409,6 +378,54 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
 
   for (const rm of rooms) markRoomDirty(w, rm);
   return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence };
+}
+
+/**
+ * A room's shell and interior from its template, at interior corner (x0, y0, z0): the brick shell,
+ * the air, stacks, element cells, layers and the decor slots (rolled from `layout` in row order).
+ * Returns the marker tiles (P, T, K, H) in row order, in world blocks; the caller decides what
+ * they hold. Shared by the floor generator and the sandbox (docs/architecture/SANDBOX.md).
+ */
+export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: number, z0: number, flipX: boolean, flipZ: boolean, mood: RoomMood, layout: Rng, k: number): { ch: string; x: number; z: number }[] {
+  const RW = t.rows[0].length, RD = t.rows.length;
+  const x1 = x0 + RW - 1, z1 = z0 + RD - 1, y1 = y0 + ROOM_H - 1;
+  const height = t.height ?? ROOM_H;
+  const frozen = !!level(k).frozen;
+  const markers: { ch: string; x: number; z: number }[] = [];
+  fillBox(w, x0 - 2, y0 - 2, z0 - 2, x1 + 2, y0 + height + 1, z1 + 2, MAT.brick);
+  fillBox(w, x0, y0, z0, x1, y1, z1, AIR);
+  for (let row = 0; row < RD; row++) for (let col = 0; col < RW; col++) {
+    const ch = cellAt(t, col, row, flipX, flipZ);
+    const x = x0 + col, z = z0 + row;
+    // the height above ROOM_H, shaped into a vault or a dome
+    const top = y1 + ceilingRise(t.ceiling ?? 'flat', height - ROOM_H, col, row, RW, RD);
+    for (let y = y1 + 1; y <= top; y++) w.data[w.idx(x, y, z)] = AIR;
+    const s = CELL_STACK[ch];
+    if (s) {
+      const m = mood === 'reinforced' ? hardened(s.m) : s.m;
+      // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
+      const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
+      for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
+      // a plug's wall goes on above its dirt
+      const plug = CELL_PLUG[ch];
+      if (plug) for (let h = s.h; h < top - y0 + 1 - plug.under; h++) w.data[w.idx(x, y0 + h, z)] = mood === 'reinforced' ? hardened(plug.m) : plug.m;
+    }
+    const el = CELL_ELEMENT[ch];
+    if (el) carveElement(w, x, y0, z, el, frozen);
+    for (const layer of t.layers ?? []) {
+      const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
+      const ls = CELL_STACK[lc];
+      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(ls.m) : ls.m;
+      else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
+    }
+    if (DECOR_CHARS.has(ch)) {
+      // decor slot: rolled in row order from the room's own layout fork
+      const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
+      if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+    }
+    if ('PTKH'.includes(ch)) markers.push({ ch, x, z });
+  }
+  return markers;
 }
 
 /** The shell of a room (its two-block walls, floor and ceiling) turned from brick into obsidian. */

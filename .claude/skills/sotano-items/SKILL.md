@@ -54,6 +54,7 @@ Then add it to `src/content/items/index.ts`.
 | 3. Synergy matrix | `tests/synergy-matrix.test.ts` | Every item alone and every pair, every event fired with sample payloads: no errors, finite stats within limits, chain reactions settle |
 | 4. Inventory invariants | `tests/items.test.ts` | Gain then lose leaves no residue; serialize/restore is identical; `onGain` runs once |
 | 5. Contract | `tests/items.test.ts` "contract" | Every event has an emit site; every stat is read by the game |
+| 6. Sandbox lab | `src/sandbox/scenarios/`, `npm run sandbox -- --check` | The real game, scripted and deterministic: what the item actually does in water, lava, fire, among crates, against projections, with the items it touches; any change in any other scenario shows as a diff ([SANDBOX.md](../../../docs/architecture/SANDBOX.md)) |
 
 When you add an **event**, add a sample payload to `SAMPLES` in the synergy matrix (TypeScript forces it) and add it to the contract list. When you add a **stat**, add limits, its format in `STAT_FMT` and its `stat.<name>` label in every catalog (`sotano-i18n` skill).
 
@@ -66,5 +67,6 @@ When you add an **event**, add a sample payload to `SAMPLES` in the synergy matr
 - [ ] Uses stats where possible; hooks have ids and correct priorities.
 - [ ] Icon reviewed in the browser (pedestal, banner, inventory window).
 - [ ] `npm test` green (matrix included). If it interacts with another item in a special way, add a synergy and a test for it.
+- [ ] Sandbox: a scenario per environment and item it may meet (`src/sandbox/scenarios/<item>-<case>.json`), its report read and saved (`npm run sandbox -- --all`); `npm run sandbox -- --check` shows no other scenario moved, or every move is explained.
 - [ ] Docs: STORY.md §5 catalogue row; ITEMS.md if you added a stat/event/API verb; README items table.
 - [ ] Browser check: pick it up, read the banner, open Tab, see the effect.

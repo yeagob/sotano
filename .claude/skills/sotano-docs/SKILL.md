@@ -38,6 +38,7 @@ docs/architecture/             How the code works today
     KEYBOARD.md                Keyboard and mouse
     GAMEPAD.md                 Gamepad
     TOUCH.md                   Touch (mobile, landscape)
+  SANDBOX.md                   The sandbox (creative room) and the lab (deterministic scripted runs)
 docs/lore/                     References and lore (see the sotano-lore skill)
   README.md, SOURCES.md (library), CONCEPTS.md (glossary), COSMOLOGY.md (as above, so below)
 docs/research/                 Background research, target architecture, roadmap

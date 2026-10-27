@@ -20,7 +20,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 |---|---|---|---|
 | **Structure** | Floor plans, rock themes and noise, room templates, mirroring, moods, decor slots, rosters, the floor key, pedestal items | `rng.fork(...path)`, at run start or carve time | Never reads player state, stats or luck. Integer and RNG arithmetic only (no engine-dependent maths). |
 | **Runtime** | Room-clear rewards, enemy drops, item procs, runtime item draws (chests, effects) | Per-room forks (`â€¦'clear'`), per-item-copy forks, `rng.stream('drops' \| 'loot' \| 'ai')` | Isolated from structure; may use luck. No replay promise (the game runs on variable frame time and real-time input). |
-| **Cosmetic** | Particles, sound jitter, camera shake, cube spin, debris launch direction, spawn particles | `fx` (`src/core/fx.ts`) | Must never decide an outcome. **Only `core/fx.ts` may call `Math.random`**; `src/world` and `src/content` may not import `fx` (both checked by tests). |
+| **Cosmetic** | Particles, sound jitter, camera shake, cube spin, debris launch direction, spawn particles | `fx` (`src/core/fx.ts`) | Must never decide an outcome. **Only `core/fx.ts` may call `Math.random`**; `src/world` and `src/content` may not import `fx` (both checked by tests). The sandbox seeds it (`seedFx`) so a scripted scenario replays exactly; a normal run never does. |
 
 ## 4. Paths (the only ones in use)
 
@@ -37,6 +37,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 | `fork('floor', k, 'chestkeys')` | Structure | Where the extra keys for floor k's chests lie |
 | `fork('plan', k, kind)` | Structure | Floor k's plan for its kind (random planners); Tree floors draw nothing |
 | `fork('tree', story)` | Structure | One story of the giant tree (`GiantTree.grow`, lazily, when the player comes near): its knot windows, rings, ramps, columns, branches, limbs and stars. One fork per story, so the tree grows the same in any order |
+| `fork('sandbox', 'layout')` | Structure | The sandbox room's decor slots ([SANDBOX.md](SANDBOX.md)) |
 | `fork('floor', 0, 'creatures')` | Structure | Where the roots' peaceful creatures start |
 | `fork('plan', k, 'grow')` | Structure | Which normal rooms of floor k grow into a bigger footprint, and which way |
 | `fork('plan', k, 'challenge')` | Structure | Whether floor k keeps a challenge room (`CHALLENGE_ROOM`) and which |

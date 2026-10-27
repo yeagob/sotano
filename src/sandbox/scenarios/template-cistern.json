@@ -1,0 +1,8 @@
+{
+  "note": "The cistern template on floor 3, untouched: its pools settle and nothing reacts",
+  "floor": 3,
+  "template": "cistern",
+  "ticks": 120,
+  "report": [0, 120],
+  "view": [-1, 0, 1]
+}

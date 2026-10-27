@@ -145,7 +145,7 @@ S.seed()                // this run's seed code
 S.restart('ABCD-EFGH')  // replay a seed
 ```
 
-The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md#debug-console).
+The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md#debug-console). For testing, `?sandbox` opens a creative room and `npm run sandbox` runs scripted scenarios headless ([docs/architecture/SANDBOX.md](docs/architecture/SANDBOX.md)).
 
 ---
 
@@ -229,6 +229,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Seeds and randomness](docs/architecture/RNG.md): seed codes, structure and runtime randomness, weighted tables.
 - [Localization](docs/architecture/LOCALIZATION.md): English and Spanish, catalogs, live language switching.
 - [Elements](docs/architecture/ELEMENTS.md): the element layer, reactions, rendering and the plan for containers.
+- [Sandbox and lab](docs/architecture/SANDBOX.md): a creative room for testing, and deterministic scripted runs with text reports.
 
 **Lore: references and cosmology**
 - [Source library](docs/lore/SOURCES.md): every book, tradition, technique, therapy and game the work draws on.

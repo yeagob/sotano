@@ -1,0 +1,36 @@
+# intent-doubt — The player fires intentions at a Doubt across an empty room
+floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 12.0/12 · projection · at 10.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 8.5/12 · projection · at 9.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 2 · fire 3 · roomEnter 1
+
+t 180 (3.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 9.5/12 · self · at 8.8 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 3 · factionChange:doubt>self 1 · fire 5
+
+map t 180 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 

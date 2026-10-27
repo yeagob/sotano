@@ -1,0 +1,11 @@
+{
+  "note": "Catharsis: a thrown stone goes off where it hits the crate wall",
+  "rows": [".............", "..........c..", "..........c..", "..........c..", "..........c..", "..........c..", "............."],
+  "player": [6, 0, 3],
+  "god": true,
+  "items": ["catharsis"],
+  "hand": ["stone"],
+  "ticks": 120,
+  "report": [0, 120],
+  "actions": [{ "t": 0, "do": "look", "at": [10, 1, 3] }, { "t": 1, "do": "key", "code": "KeyQ" }]
+}
