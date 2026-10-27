@@ -225,7 +225,9 @@ export class Hud {
     for (const r of floor.rooms) {
       if (!known.has(r.id)) continue;
       let x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
-      let rw = cw, rh = ch;
+      // a bigger room spans its cells and the gaps between them
+      const [sx, sz] = floor.plan.rooms[r.id % ROOM_ID_STRIDE].size ?? [1, 1];
+      let rw = sx * cw + (sx - 1) * gap, rh = sz * ch + (sz - 1) * gap;
       // a path of the Tree reads as a corridor: a narrow band between two rooms, not a room
       if (r.type === 'path') {
         const links = floor.plan.rooms[r.id % ROOM_ID_STRIDE].links;
@@ -403,7 +405,7 @@ export class Hud {
     const sel = unique.find(d => d.id === this.selected) ?? unique.at(-1);
 
     const grid = unique.map(d => `<button class="tile${d === sel ? ' sel' : ''}" data-id="${d.id}" style="--c:${hex(d.color)}">` +
-      `<img src="${iconDataUrl(d, 3)}" alt="">${(counts.get(d.id) ?? 1) > 1 ? `<i>×${counts.get(d.id)}</i>` : ''}</button>`).join('');
+      `<img src="${iconDataUrl(d, 3)}" alt=""><span class="lbl">${esc(itemText(d).name)}</span>${(counts.get(d.id) ?? 1) > 1 ? `<i>×${counts.get(d.id)}</i>` : ''}</button>`).join('');
 
     const detail = sel ? this.itemDetail(sel) : `<p class="none">${th('inv.empty')}</p>`;
 

@@ -116,11 +116,12 @@
     #inventory h3 { margin: 14px 0 6px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
     #inventory .cols { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
     #inventory .grid { display: flex; flex-wrap: wrap; gap: 6px; }
-    /* 56 px tiles with the icon at an integer ×3 (42 px) */
-    #inventory .tile { position: relative; width: 56px; height: 56px; padding: 7px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
+    /* 72 px tiles: the icon at an integer ×3 (42 px) and a name label under it (every item names itself, BESTIARY §8.7) */
+    #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
     #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
     #inventory .tile img { width: 42px; height: 42px; }
-    #inventory .tile i { position: absolute; right: 2px; bottom: 0; font-style: normal; font-size: 14px; color: var(--ui-gold); }
+    #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: anywhere; font-size: 14px; line-height: 1.15; color: var(--ui-text); }
+    #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
     #inventory .detail { display: flex; gap: 14px; margin-top: 12px; padding: 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--c); }
     #inventory .detail img { width: 84px; height: 84px; flex: none; }
     #inventory .detail b { font-size: 20px; }

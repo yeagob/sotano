@@ -62,6 +62,24 @@ export interface RoomTemplate {
   layers?: TemplateLayer[];
   /** The lesson this room teaches on the tutorial floor (`lesson.<key>` texts). */
   lesson?: string;
+  /** Footprint in grid cells [east, south] (default [1, 1]): 28 × 7 for [2, 1], 13 × 16 for [1, 2].
+   *  Its doors are those of its first cell (north-west); bigger templates are never mirrored. */
+  size?: [number, number];
+}
+
+/** A template's size in blocks (columns, rows). */
+export const templateDims = (t: RoomTemplate): [number, number] => {
+  const [sx, sz] = t.size ?? [1, 1];
+  return [ROOM_W * sx + 2 * (sx - 1), ROOM_D * sz + 2 * (sz - 1)];
+};
+
+/** The door approaches a template can have: a big room's doors are those of its first cell. */
+export function doorApproach(t: RoomTemplate): Partial<Record<'N' | 'S' | 'E' | 'W', [number, number][]>> {
+  const [sx, sz] = t.size ?? [1, 1];
+  const out: Partial<Record<'N' | 'S' | 'E' | 'W', [number, number][]>> = { N: DOOR_APPROACH.N, W: DOOR_APPROACH.W };
+  if (sz === 1) out.S = DOOR_APPROACH.S;
+  if (sx === 1) out.E = DOOR_APPROACH.E;
+  return out;
 }
 
 export const ROOM_TEMPLATES: RoomTemplate[] = [
@@ -706,6 +724,64 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.r.........r.',
     ],
   },
+  // ── big rooms (L3): footprints of two cells; their doors are those of their first cell ──
+  {
+    // the great pit (floor 5): the crown spreads east into a hall of still water and braziers; its
+    // middle opens a 4×4 shaft into the next layer of the world
+    id: 'abyss', types: ['boss'], floors: [5, 5], size: [2, 1], mirror: false, height: 8, ceiling: 'vault-x', rows: [
+      '...............WW.........WW',
+      '.r.........r...W...2...2...W',
+      '............................',
+      '......H.............T.......',
+      '............................',
+      '.r.........r...W...2...2...W',
+      '...............WW.........WW',
+    ],
+    layers: [{ y: 2, rows: [
+      '............................',
+      '...................f...f....',
+      '............................',
+      '............................',
+      '............................',
+      '...................f...f....',
+      '............................',
+    ] }],
+  },
+  {
+    // an antechamber split by a river of lava: the doors are walled off north and south, and the
+    // key may wait across the river
+    id: 'antechamber', types: ['normal'], floors: [6, 9], size: [2, 1], mirror: false, weight: 3, height: 7, rows: [
+      '.r.........r.LLL..d......d..',
+      'XXXXXXXXXXXXXLLL............',
+      '.............LLL....rr......',
+      '......K......LLL.....K......',
+      '.............LLL....rr......',
+      'XXXXXXXXXXXXXLLL............',
+      '.r.........r.LLL..d......d..',
+    ],
+  },
+  {
+    // the giants' well: trenches cut the west and east doors off, and below an obsidian wall a ring
+    // of pits guards whatever lies at the bottom
+    id: 'giants-well', types: ['normal'], floors: [7, 9], size: [1, 2], mirror: false, weight: 3, height: 8, ceiling: 'dome', rows: [
+      '.d===...===d.',
+      '..===...===..',
+      '..===...===..',
+      '..===.K.===..',
+      '..===...===..',
+      '..===...===..',
+      '.............',
+      'XXXXXXXXXXXXX',
+      '.............',
+      '.d.========..',
+      '...=......=..',
+      '...=..K...=..',
+      '...=......=..',
+      '...========..',
+      '.r.........r.',
+      '.............',
+    ],
+  },
   // ── challenge rooms: three waves every time you enter (any hostile floor) ──
   {
     // an open ring with four low walls to hide behind
@@ -911,12 +987,15 @@ const REQUIRED: Partial<Record<RoomType, string[]>> = { start: ['P'], treasure: 
 
 export function validateTemplate(t: RoomTemplate): string[] {
   const errs: string[] = [];
-  if (t.rows.length !== ROOM_D) errs.push(`${t.id}: ${t.rows.length} rows (expected ${ROOM_D})`);
+  const [TW, TD] = templateDims(t);
+  if ((t.size ?? [1, 1]).some(n => n !== 1 && n !== 2) || (t.size?.[0] === 2 && t.size?.[1] === 2)) errs.push(`${t.id}: size must be [1, 1], [2, 1] or [1, 2]`);
+  if (t.size && (t.size[0] > 1 || t.size[1] > 1) && t.mirror !== false) errs.push(`${t.id}: a big template must set mirror: false (its doors are on its first cell)`);
+  if (t.rows.length !== TD) errs.push(`${t.id}: ${t.rows.length} rows (expected ${TD})`);
   t.rows.forEach((r, i) => {
-    if (r.length !== ROOM_W) errs.push(`${t.id}: row ${i} is ${r.length} wide (expected ${ROOM_W})`);
+    if (r.length !== TW) errs.push(`${t.id}: row ${i} is ${r.length} wide (expected ${TW})`);
     for (const ch of r) if (!MARKERS.has(ch) && !CELL_STACK[ch] && !DECOR_CHARS.has(ch) && !CELL_ELEMENT[ch]) errs.push(`${t.id}: unknown character "${ch}"`);
   });
-  for (const [side, tiles] of Object.entries(DOOR_APPROACH)) {
+  for (const [side, tiles] of Object.entries(doorApproach(t))) {
     for (const [c, r] of tiles) {
       const ch = t.rows[r]?.[c];
       if (ch !== undefined && !MARKERS.has(ch)) errs.push(`${t.id}: tile ${c},${r} in front of the ${side} door is blocked ("${ch}")`);
@@ -957,13 +1036,19 @@ export function validateTemplate(t: RoomTemplate): string[] {
   for (const mark of ['P', 'H']) t.rows.forEach((row, r) => { const c = row.indexOf(mark); if (c >= 0 && (c !== 6 || r !== 3)) errs.push(`${t.id}: "${mark}" must be at the centre (6,3)`); });
   // building puzzles never trap: you land in a start room you can walk out of, and the projections
   // materialise where they can reach at least one door
-  if (t.rows.length === ROOM_D && t.rows.every(r => r.length === ROOM_W)) {
+  if (t.rows.length === TD && t.rows.every(r => r.length === TW)) {
     const parts = walkParts(t);
     // a puzzle you solve by building carries its own material: soft blocks you can break and carry
     // (the room's brick walls work too, but a puzzle shouldn't send you digging into them)
     if (needsBuilding(t) && !/[dcCrRb1-4?~#i]/.test(t.rows.join('') + (t.layers ?? []).map(l => l.rows.join('')).join('')))
       errs.push(`${t.id}: it needs building but holds nothing to build with`);
     if (t.types.includes('start') && new Set(parts.values()).size > 1) errs.push(`${t.id}: a start room must never need building`);
+    // the great pit opens 4×4 around a wide crown's H: keep that clear too
+    if (t.types.includes('boss') && t.size) for (let r = 2; r <= 5; r++) for (let c = 5; c <= 8; c++)
+      if (!MARKERS.has(t.rows[r]?.[c] ?? '#') || t.rows[r][c] === 'T') errs.push(`${t.id}: the great pit's 4×4 shaft (columns 5–8, rows 2–5) must be clear`);
+    // the great pit's 4×4 shaft lands on the centre of a start room: keep it clear
+    if (t.types.includes('start')) for (let r = 2; r <= 5; r++) for (let c = 5; c <= 8; c++)
+      if (!MARKERS.has(t.rows[r]?.[c] ?? '#')) errs.push(`${t.id}: the start room's 4×4 centre (columns 5–8, rows 2–5) must be clear for the great pit`);
     const centre = parts.get('centre');
     if (centre !== undefined && !['N', 'S', 'E', 'W'].some(d => parts.get(d) === centre)) errs.push(`${t.id}: the centre must reach at least one door on foot (projections spawn there)`);
   }
@@ -1004,12 +1089,13 @@ function validateVolume(t: RoomTemplate, shaftTiles: number[][]): string[] {
     if (!Number.isInteger(layer.y) || layer.y < 1 || layer.y > h - 3) errs.push(`${t.id}: layer ${li} at y ${layer.y} (must be 1–${h - 3}: two blocks of headroom above it)`);
     if (seen.has(layer.y)) errs.push(`${t.id}: two layers at y ${layer.y}`);
     seen.add(layer.y);
-    if (layer.rows.length !== ROOM_D || layer.rows.some(r => r.length !== ROOM_W)) errs.push(`${t.id}: layer ${li} must be ${ROOM_D} rows of ${ROOM_W}`);
+    const [LW, LD] = templateDims(t);
+    if (layer.rows.length !== LD || layer.rows.some(r => r.length !== LW)) errs.push(`${t.id}: layer ${li} must be ${LD} rows of ${LW}`);
     for (const ch of layer.rows.join('')) if (!LAYER_CHARS.has(ch)) errs.push(`${t.id}: layer ${li} can't use "${ch}"`);
     check(layer.rows, where);
     const clear = (c: number, r: number) => at(layer.rows, c, r) === '.';
     // doorways are 3 high: layers under that height keep the approach tiles free
-    if (layer.y < DOOR_HEIGHT) for (const [side, tiles] of Object.entries(DOOR_APPROACH)) for (const [c, r] of tiles)
+    if (layer.y < DOOR_HEIGHT) for (const [side, tiles] of Object.entries(doorApproach(t))) for (const [c, r] of tiles!)
       if (!clear(c, r)) errs.push(`${t.id}: layer ${li} blocks the ${side} door at ${c},${r}`);
     // the spawn column, the pedestal (its practice floats above it) and the shaft stay open all the way up
     if ((t.types.includes('normal') || t.types.includes('path')) && layer.y < DOOR_HEIGHT && !clear(6, 3)) errs.push(`${t.id}: layer ${li} covers the centre tile (projections spawn there)`);
@@ -1035,8 +1121,8 @@ const DOOR_HEIGHT = 3;
 
 /** Template cell after optional mirroring. */
 export function cellAt(t: RoomTemplate, col: number, row: number, flipX: boolean, flipZ: boolean): string {
-  const c = flipX ? ROOM_W - 1 - col : col;
-  const r = flipZ ? ROOM_D - 1 - row : row;
+  const c = flipX ? t.rows[0].length - 1 - col : col;
+  const r = flipZ ? t.rows.length - 1 - row : row;
   return t.rows[r][c];
 }
 
@@ -1070,7 +1156,7 @@ function standLevels(t: RoomTemplate, col: number, row: number): number[] {
  * centre, markers); a room **needs building** when they are not all in one part.
  */
 export function walkParts(t: RoomTemplate): Map<string, number> {
-  const W = ROOM_W, D = ROOM_D;
+  const [W, D] = [t.rows[0].length, t.rows.length];
   const levels: number[][][] = [];
   for (let r = 0; r < D; r++) { levels.push([]); for (let c = 0; c < W; c++) levels[r].push(standLevels(t, c, r)); }
   const id = (c: number, r: number, i: number) => `${c},${r},${i}`;
@@ -1111,7 +1197,7 @@ export function walkParts(t: RoomTemplate): Map<string, number> {
     if (!ls.length) return;
     keys.set(name, part.get(id(c, r, ls.indexOf(Math.min(...ls))))!);
   };
-  for (const [side, tiles] of Object.entries(DOOR_APPROACH)) tiles.forEach(([c, r], i) => at(i === 1 ? side : `${side}${i}`, c, r));
+  for (const [side, tiles] of Object.entries(doorApproach(t))) tiles!.forEach(([c, r], i) => at(i === 1 ? side : `${side}${i}`, c, r));
   if (t.types.includes('normal') || t.types.includes('path')) at('centre', 6, 3);
   t.rows.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'P' || ch === 'H' || ch === 'K') at(ch, c, r); }));
   // the pedestal is taken from a tile beside it: the best-placed side counts

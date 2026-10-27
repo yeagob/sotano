@@ -4,7 +4,7 @@ Status: **built**, after the three-party review in [../reviews/rng.md](../review
 
 ## 1. In one paragraph
 
-A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH · v3`; v2 added the boss rooms' pedestals, which changed every reservation; v3 added the element and tall room templates, which changes template picks; v4 the ten floors of [LEVELS.md](LEVELS.md), the tutorial floor's gentle reservations and deep floors without vaults; v5 the chests; v6 the Tree-of-Life floors; v7 the challenge rooms; v8 the rooms reworked so building is the key on every floor). New runs take their root from the browser's crypto RNG, the only place true randomness enters the game. Everything else derives from the root: the **structure** of the whole run (all four floor plans, rock themes, every pedestal item) is decided when the run starts, from **path-derived forks** (`fork('floor', 2, 'room', 5, 'layout')`) that never depend on what the player does. **Runtime** outcomes (drops, item procs, runtime item draws) use isolated streams. **Cosmetic** randomness (particles, sound, shake, cube spin and launch) goes through one module and never decides an outcome. Every random choice reads a **weighted table**.
+A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH · v3`; v2 added the boss rooms' pedestals, which changed every reservation; v3 added the element and tall room templates, which changes template picks; v4 the ten floors of [LEVELS.md](LEVELS.md), the tutorial floor's gentle reservations and deep floors without vaults; v5 the chests; v6 the Tree-of-Life floors; v7 the challenge rooms; v8 the rooms reworked so building is the key on every floor; v9 big rooms and the great pit). New runs take their root from the browser's crypto RNG, the only place true randomness enters the game. Everything else derives from the root: the **structure** of the whole run (all four floor plans, rock themes, every pedestal item) is decided when the run starts, from **path-derived forks** (`fork('floor', 2, 'room', 5, 'layout')`) that never depend on what the player does. **Runtime** outcomes (drops, item procs, runtime item draws) use isolated streams. **Cosmetic** randomness (particles, sound, shake, cube spin and launch) goes through one module and never decides an outcome. Every random choice reads a **weighted table**.
 
 ## 2. Seeds
 
@@ -36,6 +36,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
 | `fork('floor', k, 'chestkeys')` | Structure | Where the extra keys for floor k's chests lie |
 | `fork('plan', k, kind)` | Structure | Floor k's plan for its kind (random planners); Tree floors draw nothing |
+| `fork('plan', k, 'grow')` | Structure | Which normal rooms of floor k grow into a bigger footprint, and which way |
 | `fork('plan', k, 'challenge')` | Structure | Whether floor k keeps a challenge room (`CHALLENGE_ROOM`) and which |
 | `fork('floor', k, 'room', i, 'wave', visit, wave)` | Runtime | A challenge room's wave (`pickWave`) |
 | `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |

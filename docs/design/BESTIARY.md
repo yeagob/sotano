@@ -737,11 +737,11 @@ These are the systems this design needs. Each key one goes through the **three-p
 
 | System | What it needs | Today |
 |---|---|---|
-| **Spatial audio** | A 3D sound layer: `PannerNode` per voice, listener on the camera, voice limits, occlusion later | Not built (`src/audio/sfx.ts` is stereo) |
-| **Seal** | `roomSeal` root event; door slam animation and sound; door waits for the player's box | Doors seal (built); slam, dust and sound are new |
-| **Spawn points** | Template legend (`s`/`w`/`c`), generator fallback, validator for the fairness rules (§2.2) | Centre column only |
-| **Omens** | An omen entity (point, kind, timer, particles, sound) before every spawn | Materialisation only (0.9 s) |
-| **Room director** | Waves as data per room (triggers §2.4), seeded | One queue, one spawn every 0.45 s |
+| **Spatial audio** | A 3D sound layer: `PannerNode` per voice, listener on the camera, voice limits, occlusion later | Built for omens, breaches and door slams (`spatial` in `src/audio/sfx.ts`); occlusion and voice limits later |
+| **Seal** | `roomSeal` root event; door slam animation and sound; door waits for the player's box | Doors seal with a spatial slam and dust (built); the faster door animation and `roomSeal` event are still to do |
+| **Spawn points** | Template legend (`s`/`w`/`c`), generator fallback, validator for the fairness rules (§2.2) | Floor points built (`pickSpawnCell`, door and player clearance); wall, ceiling and liquid points and the template legend to do |
+| **Omens** | An omen entity (point, kind, timer, particles, sound) before every spawn | Built for floor spawns (1.0 s gather, 0.2 s breach); the art gate on the omen motes is pending |
+| **Room director** | Waves as data per room (triggers §2.4), seeded | Waves of at most 3, the next opens at one left, with a breath and a swell (built); the other triggers to do |
 | **Movement classes** | Leaper, charger, flyer, swimmer, burrower, mounted, phaser controllers | Walker (flow field), ranged, burst |
 | **Attack families** | One telegraph component per family (floor lines, landing rings, ridges) | Touch, lob, burst |
 | **Rooted variants** | A modifier layer on `EnemyDef` at spawn (`enemySpawn` is already mutable) | — |
@@ -758,7 +758,7 @@ These are the systems this design needs. Each key one goes through the **three-p
 
 | Step | What | Why first |
 |---|---|---|
-| E1 | **Intention polarity (the control, positive conversion, negative harm), spatial audio, the seal, omens, spawn points and waves** | The owner's core ask; it changes how every fight starts and reads |
+| E1 | **Intention polarity (the control, positive conversion, negative harm), spatial audio, the seal, omens, spawn points and waves** *(seal, spatial sound, floor omens and waves built; polarity not yet)* | The owner's core ask; it changes how every fight starts and reads |
 | E2 | Attack families and movement classes (Line, Leap, Sweep; charger, leaper, mounted) with Zone I's projections (Autopilot, Craving, Impulse, Avoidance) and Procrastination, Distraction | Cross-room attacks; the first zone complete |
 | E3 | Lineage forms II, rooted variants, Zone II projections; Inhabitants of floor 0 and Zone I–II | Evolution with depth becomes visible |
 | E4 | Voxel bosses: Resistance, Inertia, The Insatiable; then Overwhelm, The Hoard, The Downpour; the zone pools | Random bosses by zone |

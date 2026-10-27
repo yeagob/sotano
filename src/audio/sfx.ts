@@ -13,7 +13,7 @@ export function unlockAudio() {
   master.connect(ctx.destination);
 }
 
-function tone(freq: number, dur: number, type: OscillatorType, vol: number, slide = 0) {
+function tone(freq: number, dur: number, type: OscillatorType, vol: number, slide = 0, out: AudioNode = master) {
   if (!ctx) return;
   const t = ctx.currentTime;
   const o = ctx.createOscillator(), g = ctx.createGain();
@@ -22,11 +22,11 @@ function tone(freq: number, dur: number, type: OscillatorType, vol: number, slid
   if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * slide), t + dur);
   g.gain.setValueAtTime(vol, t);
   g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  o.connect(g).connect(master);
+  o.connect(g).connect(out);
   o.start(t); o.stop(t + dur);
 }
 
-function noise(dur: number, vol: number, freq: number, q = 1) {
+function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = master) {
   if (!ctx) return;
   const t = ctx.currentTime;
   const len = Math.ceil(ctx.sampleRate * dur);
@@ -40,7 +40,7 @@ function noise(dur: number, vol: number, freq: number, q = 1) {
   const g = ctx.createGain();
   g.gain.setValueAtTime(vol, t);
   g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  src.connect(f).connect(g).connect(master);
+  src.connect(f).connect(g).connect(out);
   src.start(t);
 }
 
@@ -73,6 +73,59 @@ export const sfx2 = {
   beam: () => { tone(110, 1.0, 'sawtooth', 0.09, 0.9); tone(220, 1.0, 'sine', 0.14, 1.05); noise(1.0, 0.18, 700, 0.7); },
   /** One Clear Cut: a deep, long sweep. */
   greatcut: () => { noise(0.5, 0.5, 1400, 0.6); tone(160, 0.5, 'sawtooth', 0.1, 0.5); tone(80, 0.6, 'sine', 0.3, 0.6); },
+};
+
+/**
+ * Spatial sound (BESTIARY §2.3): a 3D panner at each source, with the listener on the camera.
+ * Sounds meant to be found start with a transient (a click, a crack) so the ear can locate the onset.
+ */
+function panner(x: number, y: number, z: number): AudioNode | null {
+  if (!ctx) return null;
+  const p = ctx.createPanner();
+  p.panningModel = 'HRTF';
+  p.distanceModel = 'inverse';
+  p.refDistance = 2;
+  p.rolloffFactor = 1;
+  p.maxDistance = 24;
+  p.positionX.value = x; p.positionY.value = y; p.positionZ.value = z;
+  p.connect(master);
+  return p;
+}
+
+export const spatial = {
+  /** The listener is the camera: its position and where it looks. */
+  listener(x: number, y: number, z: number, dx: number, dz: number) {
+    if (!ctx) return;
+    const l = ctx.listener;
+    l.positionX.value = x; l.positionY.value = y; l.positionZ.value = z;
+    l.forwardX.value = dx; l.forwardY.value = 0; l.forwardZ.value = dz;
+    l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
+  },
+  /** An omen opens: a short click, then a hum that rises from the floor and falls from a ceiling. */
+  omenHum(x: number, y: number, z: number, kind: 'floor' | 'wall' | 'ceiling') {
+    const out = panner(x, y, z);
+    noise(0.03, 0.3, 3000, 3, out ?? master);
+    if (kind === 'floor') tone(jitter(140), 1.0, 'sine', 0.16, 1.4, out ?? master);
+    else if (kind === 'ceiling') tone(jitter(260), 1.0, 'sine', 0.16, 0.85, out ?? master);
+    else tone(jitter(180), 1.0, 'sine', 0.14, 1.0, out ?? master);
+  },
+  /** The crack opens and the projection breaks out of the room. */
+  breach(x: number, y: number, z: number) {
+    const out = panner(x, y, z);
+    noise(0.12, 0.5, jitter(900), 1.5, out ?? master);
+    tone(jitter(220), 0.2, 'square', 0.1, 0.5, out ?? master);
+  },
+  /** A door slams shut at its own place in the room. */
+  slam(x: number, y: number, z: number) {
+    const out = panner(x, y, z);
+    noise(0.35, 0.6, 160, 0.7, out ?? master);
+    tone(60, 0.3, 'sawtooth', 0.4, 0.6, out ?? master);
+  },
+  /** Before a later wave: a low, unpositioned swell that says more are coming. */
+  swell() {
+    tone(110, 1.5, 'sine', 0.14, 1.6);
+    tone(165, 1.5, 'triangle', 0.08, 1.5);
+  },
 };
 
 export const sfx3 = {

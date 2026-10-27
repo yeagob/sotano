@@ -65,8 +65,10 @@ describe('levels: rooms with height and elements', () => {
       // the centre of a room is open to its full height (vaults rise above it)
       const t = ROOM_TEMPLATES.find(q => q.id === r.template)!;
       expect(r.height).toBe(t.height ?? 5);
-      expect(w.get(r.x0 + 6, r.y0 + r.height - 1, r.z0 + 3), `${r.template} top`).toBe(AIR);
-      expect(w.get(r.x0 + 6, r.y0 + r.height, r.z0 + 3), `${r.template} ceiling`).not.toBe(AIR);
+      // the middle of the room (of its whole footprint) rises to its full height
+      const cx = r.x0 + (r.w >> 1), cz = r.z0 + (r.d >> 1);
+      expect(w.get(cx, r.y0 + r.height - 1, cz), `${r.template} top`).toBe(AIR);
+      expect(w.get(cx, r.y0 + r.height, cz), `${r.template} ceiling`).not.toBe(AIR);
     }
     expect([...seen].sort()).toEqual([EL_WATER, EL_LAVA, EL_FIRE]);
   });
@@ -122,5 +124,42 @@ describe('rooms as carved, with their real doors (L3c)', () => {
   it('a template mirrored is still the same room (the flip of a flip is the template)', async () => {
     const { flipped } = await import('../src/content/rooms');
     for (const t of ROOM_TEMPLATES) expect(flipped(flipped(t, true, true), true, true).rows).toEqual(t.rows);
+  });
+});
+
+describe('big rooms and the great pit (L3a, L3b)', () => {
+  it('floor 5 ends in a wide crown whose 4×4 shaft lands in the centre of the start room of floor 6', async () => {
+    const { buildRun } = await import('./helpers');
+    const { openHole } = await import('../src/world/floor');
+    for (const seed of [3, 9, 27]) {
+      const run = buildRun(seed, 7);
+      const f5 = run.floors[5], f6 = run.floors[6];
+      const crown = f5.rooms.find(r => r.type === 'boss')!;
+      expect(crown.w, 'the crown spans two cells').toBe(28);
+      expect(f5.hole!.size).toBe(4);
+      openHole(run.w, f5.hole!);
+      const start = f6.rooms.find(r => r.type === 'start')!;
+      for (let dz = 0; dz < 4; dz++) for (let dx = 0; dx < 4; dx++) {
+        const x = f5.hole!.x + dx, z = f5.hole!.z + dz;
+        expect(x >= start.x0 && x < start.x0 + start.w && z >= start.z0 && z < start.z0 + start.d).toBe(true);
+        expect(run.w.get(x, start.y0, z)).toBe(AIR);
+      }
+    }
+  });
+
+  it('deeper random floors grow bigger rooms, with a bigger roster, and nothing is carved into a neighbour', async () => {
+    const { buildRun } = await import('./helpers');
+    let big = 0;
+    for (let s = 1; s <= 8; s++) {
+      const run = buildRun(s * 4243);
+      for (const f of run.floors.slice(6)) for (const r of f.rooms) {
+        if (r.w === 13 && r.d === 7) continue;
+        big++;
+        // a big room's interior is open from wall to wall where its cells meet
+        const midX = r.w > 13 ? r.x0 + 13 : r.x0 + 6, midZ = r.d > 7 ? r.z0 + 8 : r.z0 + 3;
+        expect(run.w.get(midX, r.y0 + 3, midZ), `${r.template}`).toBe(AIR);
+      }
+    }
+    expect(big).toBeGreaterThan(5);
   });
 });

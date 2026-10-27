@@ -36,9 +36,9 @@ export function pickWave(rng: Rng, floor: number, budget: number): string[] {
 export const waveBudget = (floor: number, wave: number, entry: number) => Math.min(3 + floor + 2 * wave + entry, 16);
 
 export const ENEMY_BUDGET = {
-  pick(rng: Rng, floor: number): string[] {
+  pick(rng: Rng, floor: number, cells = 1): string[] {
     if (QUIET_ROOM.roll(rng, { floor })) return [];
-    let budget = Math.min(2 + floor, 8);
+    let budget = Math.min(2 + floor, 8) * cells;
     const out: string[] = [];
     for (let guard = 0; guard < 12 && budget > 0; guard++) {
       const id = ROSTER.roll(rng, { floor });
@@ -48,6 +48,6 @@ export const ENEMY_BUDGET = {
       out.push(def.id);
       budget -= def.cost;
     }
-    return out.slice(0, 5);
+    return out.slice(0, 5 * cells);
   },
 };

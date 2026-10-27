@@ -3,7 +3,7 @@
 import { fx } from '../core/fx';
 import * as THREE from 'three';
 
-interface P { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; max: number; s: number }
+interface P { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; max: number; s: number; calm?: boolean }
 
 export class Particles {
   private list: P[] = [];
@@ -36,13 +36,28 @@ export class Particles {
     }
   }
 
+  /** Motes that drift in from a ring around a point and arrive there when `life` runs out (an omen gathering). */
+  gather(x: number, y: number, z: number, color: number, n: number, radius: number, life: number, size = 0.05) {
+    for (let i = 0; i < n; i++) {
+      if (this.list.length >= this.max) { this.list.shift(); this.rgb.shift(); }
+      const a = fx.random() * Math.PI * 2;
+      const sx = x + Math.cos(a) * radius, sy = y + (fx.random() - 0.5) * radius, sz = z + Math.sin(a) * radius;
+      this.list.push({
+        x: sx, y: sy, z: sz,
+        vx: (x - sx) / life, vy: (y - sy) / life, vz: (z - sz) / life,
+        life, max: life, s: size * (0.6 + fx.random() * 0.8), calm: true,
+      });
+      this.rgb.push(color);
+    }
+  }
+
   update(dt: number) {
     let n = 0;
     for (let i = this.list.length - 1; i >= 0; i--) {
       const p = this.list[i];
       p.life -= dt;
       if (p.life <= 0) { this.list.splice(i, 1); this.rgb.splice(i, 1); continue; }
-      p.vy -= 18 * dt;
+      if (!p.calm) p.vy -= 18 * dt;
       p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
     }
     for (let i = 0; i < this.list.length; i++) {

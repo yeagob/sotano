@@ -79,6 +79,11 @@ A room template can be taller than the standard 5 blocks (up to **8**), shape it
 | `reliquary` | vault | Braziers on pillars, lava in the corners | Breaking the floor next to the lava lets it spill (it slopes like a ramp) |
 | `caldera` | boss | Lava pools around the arena, braziers on pillars | — |
 | `well` | start | Shallow pools under a high vault: a first taste of wading | — |
+| `abyss` | boss, floor 5 | The great pit: a hall two rooms long, still water and braziers, the crown's practice at the far end and a 4×4 shaft into the next layer of the world | Fall into the random floors |
+| `antechamber` | normal, 2×1, floors 6–9 | A hall split by a river of lava, its north and south doors walled off | Bridge the river to the key; climb the walls |
+| `giants-well` | normal, 1×2, floors 7–9 | Trenches cut the side doors off; below an obsidian wall, a ring of pits | Build across, climb down, build out |
+| `gauntlet`, `colosseum` | challenge | Three waves every time you walk in | Farm; use the pit and the cover |
+| `roots-*` | floor 0 | The tutorial, a lesson on each room's walls | Break, step, kick, pit, bridge, breakthrough |
 
 ## 5. What makes a good room (the bar)
 

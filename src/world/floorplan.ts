@@ -25,8 +25,27 @@ export interface PlanRoom {
   type: RoomType;
   /** Steps from the start room. */
   dist: number;
-  /** Neighbouring room id on each side, if any. */
+  /** Neighbouring room id on each side, if any (doors only ever open from the room's own cell). */
   links: Partial<Record<Side, number>>;
+  /** Footprint in grid cells, [east, south] from this cell (docs/architecture/LEVELS.md §7.4).
+   *  The extra cells hold no doors: they make the room bigger. Default [1, 1]. */
+  size?: [number, number];
+}
+
+/** A room's footprint (cells east, cells south). */
+export const sizeOf = (r: PlanRoom): [number, number] => r.size ?? [1, 1];
+
+/**
+ * Grows a room into the empty cells east of it (2×1) or south of it (1×2). Returns false when the
+ * cells are taken or off the grid. The new cells point at the room in the grid; no links change.
+ */
+export function growFootprint(plan: FloorPlan, room: PlanRoom, size: [number, number]): boolean {
+  const cells: [number, number][] = [];
+  for (let dz = 0; dz < size[1]; dz++) for (let dx = 0; dx < size[0]; dx++) if (dx || dz) cells.push([room.gx + dx, room.gz + dz]);
+  if (!cells.every(([x, z]) => x >= 0 && z >= 0 && x < plan.w && z < plan.h && plan.grid[x + z * plan.w] === -1)) return false;
+  for (const [x, z] of cells) plan.grid[x + z * plan.w] = room.id;
+  room.size = size;
+  return true;
 }
 
 export interface FloorPlan {
@@ -160,7 +179,7 @@ export const treeCell = ([x, z]: [number, number], mirrored: boolean): [number, 
  * the plan has loops, like the Tree. `mirrored` flips it north–south so the crown of one floor lies
  * over the kingdom of the next (as above, so below). `vault`: does the foundation keep a vault?
  */
-export function treePlan(mirrored: boolean, vault: boolean): FloorPlan {
+export function treePlan(mirrored: boolean, vault: boolean, wideCrown = false): FloorPlan {
   const w = 7, h = 7;
   const grid = new Int16Array(w * h).fill(-1);
   const rooms: PlanRoom[] = [];
@@ -181,5 +200,8 @@ export function treePlan(mirrored: boolean, vault: boolean): FloorPlan {
   }
   const start = rooms.find(r => r.type === 'start')!.id;
   distances(rooms, start);
-  return { w, h, rooms, grid, start };
+  const plan = { w, h, rooms, grid, start };
+  // the last Tree floor ends in the great pit: its crown spreads into the empty cell east of it
+  if (wideCrown) growFootprint(plan, rooms.find(r => r.type === 'boss')!, [2, 1]);
+  return plan;
 }

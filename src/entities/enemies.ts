@@ -192,9 +192,10 @@ export class Enemies {
       e.spec.behaviour.update(e, ctx);
       // leash: an enemy that wandered out of its room heads back to the centre
       const rm = host.room(e.room);
-      const inside = b.x > rm.x0 - 0.5 && b.x < rm.x0 + ROOM_W + 0.5 && b.z > rm.z0 - 0.5 && b.z < rm.z0 + ROOM_D + 0.5;
+      const rw = rm.w ?? ROOM_W, rd = rm.d ?? ROOM_D;
+      const inside = b.x > rm.x0 - 0.5 && b.x < rm.x0 + rw + 0.5 && b.z > rm.z0 - 0.5 && b.z < rm.z0 + rd + 0.5;
       if (!inside) {
-        const dx = rm.x0 + ROOM_W / 2 - b.x, dz = rm.z0 + ROOM_D / 2 - b.z, l = Math.hypot(dx, dz) || 1;
+        const dx = rm.x0 + rw / 2 - b.x, dz = rm.z0 + rd / 2 - b.z, l = Math.hypot(dx, dz) || 1;
         e.wishX = dx / l; e.wishZ = dz / l;
       }
       const blend = 1 - Math.exp(-(b.onGround ? 10 : 2) * dt);

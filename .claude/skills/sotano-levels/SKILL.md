@@ -55,7 +55,7 @@ Run `npm test`: `validateTemplate` lists every broken rule with the tile.
 
 Ground grid (13 × 7, first row north): `.` floor · `P` `T` `K` `H` markers · `r R` stone 1/2 · `c C` crate 1/2 · `o` obsidian · `d` dirt · `i` ore · `b` brick · `1`–`4` brick terraces · `#` brick to the ceiling · `X` obsidian to two under the ceiling · `?` `~` `!` decor slots · `w W` water 1/2 deep · `l L` lava 1/2 deep · `f` eternal flame · `_` a 1-deep dip · `=` a 2-deep pit.
 Layers: `.` `r` `c` `o` `d` `i` `b` `f`.
-Fields: `height`, `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`), `layers: [{ y, rows }]`, `floors: [first, last]`, `lesson` (floor 0), `weight`, `mirror`. Types: `start`, `normal`, `treasure`, `vault`, `boss`, `path` (the Tree's corridors).
+Fields: `height`, `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`), `layers: [{ y, rows }]`, `floors: [first, last]`, `lesson` (floor 0), `size` ([2, 1] = 28 × 7, [1, 2] = 13 × 16: doors only on the first cell, `mirror: false`), `weight`, `mirror`. Types: `start`, `normal`, `treasure`, `vault`, `boss`, `path` (the Tree's corridors).
 
 ## 5b. Building is the key (owner, 2026-10-27)
 
@@ -91,3 +91,4 @@ New floor types (Tree-of-Life plans, multi-cell rooms, the trunk, branches and l
 - **2026-10-27, owner:** floor 0 is the friendly tutorial: everything pretty, every door open, lessons through its rooms, practices of quality 1–3 only. → `tutorial` levels, lessons per template.
 - **2026-10-27, owner:** go ahead with the Tree, and redesign most levels: at least half must need building with blocks (isolated parts, great pits, walls you pass only by breaking and placing), from floor 0, with ever more original themed puzzles. → §5b, L2 (Tree floors, paths, roots tutorial, circle rooms), the walk check and its test.
 - **2026-10-27, owner:** the tutorial is written on the walls (tablets), never an overlay; challenge rooms (three waves per visit, repeatable, harder each time) on any hostile floor; doors open when there are no projections and on clearing; breakthroughs destroy doors. → `src/render/tablets.ts`, `RoomType 'challenge'`, ROOMS.md §2.
+- **2026-10-27, owner:** continue without asking; trust the engineer's judgement. → L3 built: the 2×1 great pit on floor 5, footprints on floors 6–9, checks per carved room.

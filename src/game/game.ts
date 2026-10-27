@@ -3,17 +3,18 @@
 // anything an item might want to change reads a stat or emits an event (docs/architecture/ITEMS.md §3).
 
 import * as THREE from 'three';
-import { sfx, sfx2, sfx3, unlockAudio } from '../audio/sfx';
+import { sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
+import { OMEN_BREACH, OMEN_GATHER, pickSpawnCell, splitWaves, type Cell, type Omen } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
   DEFAULT_AFFINITY, ELEMENTS, elemDef, elemKind, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
-import { ROOM_D, ROOM_H, ROOM_TEMPLATES, ROOM_W } from '../content/rooms';
+import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS } from '../content/levels';
@@ -99,12 +100,20 @@ const CUBE_HIT_SPEED = 4;
 
 interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
 
-interface RoomState { cleared: boolean; started: boolean; queue: string[]; next: number; sealed: boolean }
+/** A normal room: its roster in waves (BESTIARY §2.4). `wave` is -1 until the first one starts. */
+interface RoomState {
+  cleared: boolean; started: boolean; sealed: boolean;
+  waves: string[][]; wave: number;
+  /** The current wave's projections still to announce, the gap to the next, and the breath before the next wave. */
+  queue: string[]; next: number; breath: number; armed: boolean;
+}
 
 /** A challenge room: every time you walk in, three waves (harder each wave and each visit). */
 interface ChallengeState { entries: number; wave: number; active: boolean; queue: string[]; next: number; wasInside: boolean }
 const CHALLENGE_WAVES = 3;
 const WAVE_GAP = 1.4;
+/** The breath between two waves of a normal room (BESTIARY §2.4). */
+const BREATH = 1.5;
 
 /** A boss room once entered: the boss's practice and the way down appear when `t` runs out;
  *  the floor only gives way while nobody stands on the hole. */
@@ -146,6 +155,11 @@ export class Game {
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
   private challenges = new Map<number, ChallengeState>();
+  /** Omens open now: projections announcing themselves at a spawn point (BESTIARY §2.3). */
+  private omens: Omen[] = [];
+  /** Per room: how many spawns it has announced, so each spawn point roll has its own seed path. */
+  private spawnSeq = new Map<number, number>();
+  private camDir = new THREE.Vector3();
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean }[] = [];
   private bosses = new Map<number, BossState>();   // floor → its boss room's state
@@ -286,7 +300,7 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.bosses.clear(); this.chests = [];
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.bosses.clear(); this.chests = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -330,10 +344,13 @@ export class Game {
     });
     this.floors.set(k, f);
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
-    for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + ROOM_W, r.y0 + r.height, r.z0 + ROOM_D);
+    for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
     for (const r of f.rooms) {
       this.rooms.set(r.id, r);
-      this.roomState.set(r.id, { cleared: !r.enemies.length, started: false, queue: [...r.enemies], next: 0, sealed: false });
+      this.roomState.set(r.id, {
+        cleared: !r.enemies.length, started: false, sealed: false,
+        waves: splitWaves(r.enemies), wave: -1, queue: [], next: 0, breath: 0, armed: false,
+      });
     }
   }
 
@@ -375,7 +392,7 @@ export class Game {
     const st = this.bosses.get(this.depth);
     if (st) st.open = true;
     openHole(this.world, f.hole);
-    this.player.spawnAt(f.hole.x + 1, f.hole.yTop + 1, f.hole.z + 1);
+    this.player.spawnAt(f.hole.x + f.hole.size / 2, f.hole.yTop + 1, f.hole.z + f.hole.size / 2);
   }
 
   /** World voxels plus closed doors. */
@@ -624,28 +641,36 @@ export class Game {
     sfx3.dissolve();
   }
 
-  /** Room combat: seal when the player is fully inside, materialise the queue at the centre,
-   *  open the doors when every projection of the room is gone. */
+  /** Room combat: seal when the player is fully inside, announce the roster wave by wave at spawn
+   *  points, open the doors when every projection of the room is gone (BESTIARY §2). */
   private updateCombat(dt: number) {
     const b = this.player.body;
     for (const [id, st] of this.roomState) {
       if (st.cleared) continue;
       const r = this.rooms.get(id)!;
-      const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + ROOM_W && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + ROOM_D
+      const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + r.w && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + r.d
         && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
       if (inside && !st.sealed) {
         st.sealed = true;
         this.doors.seal(id, true);
-        if (!st.started) { st.started = true; st.next = 0.5; sfx3.seal(); }
+        if (!st.started) { st.started = true; st.breath = 0.5; st.armed = true; this.slamDoors(id); }
       }
       if (!st.started) continue;
+      const remaining = this.enemies.blockingIn(id);
+      const lastWave = st.wave + 1 >= st.waves.length;
+      // the next wave opens once the last one is nearly down, after a breath (a swell says more are coming)
+      if (!lastWave && st.queue.length === 0 && this.omensIn(id) === 0 && (st.wave < 0 || remaining <= 1)) {
+        if (!st.armed) { st.armed = true; st.breath = BREATH; spatial.swell(); }
+        st.breath -= dt;
+        if (st.breath <= 0) { st.armed = false; st.wave++; st.queue = [...st.waves[st.wave]]; st.next = 0; }
+      }
       if (st.queue.length) {
         st.next -= dt;
-        if (st.next <= 0) { st.next = SPAWN_GAP; this.spawnEnemy(st.queue.shift()!, r); }
+        if (st.next <= 0) { st.next = SPAWN_GAP; this.announce(st.queue.shift()!, r); }
         continue;
       }
-      // a room only clears once queued blasts (e.g. a last Panic's burst) have gone off
-      if (this.enemies.blockingIn(id) === 0 && this.blasts.pending === 0) {
+      // a room only clears once its last wave is down and queued blasts (e.g. a last Panic's burst) have gone off
+      if (lastWave && remaining === 0 && this.omensIn(id) === 0 && this.blasts.pending === 0) {
         st.cleared = true;
         this.doors.seal(id, false);
         // Isaac-style clear reward, pre-rolled per room: the room's own fork gives one uniform
@@ -678,7 +703,7 @@ export class Game {
       if (r.type !== 'challenge') continue;
       let st = this.challenges.get(r.id);
       if (!st) this.challenges.set(r.id, st = { entries: 0, wave: 0, active: false, queue: [], next: 0, wasInside: false });
-      const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + ROOM_W && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + ROOM_D
+      const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + r.w && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + r.d
         && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
       if (!st.active && inside && !st.wasInside) {
         st.entries++; st.wave = 0; st.active = true; st.next = 0.8;
@@ -690,10 +715,10 @@ export class Game {
       if (!st.active) continue;
       if (st.queue.length) {
         st.next -= dt;
-        if (st.next <= 0) { st.next = SPAWN_GAP; this.spawnEnemy(st.queue.shift()!, r); }
+        if (st.next <= 0) { st.next = SPAWN_GAP; this.announce(st.queue.shift()!, r); }
         continue;
       }
-      if (this.enemies.blockingIn(r.id) > 0 || this.blasts.pending > 0) continue;
+      if (this.enemies.blockingIn(r.id) > 0 || this.omensIn(r.id) > 0 || this.blasts.pending > 0) continue;
       // a wave is down: its reward, then the next wave or the end
       const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
       const reward = ROOM_CLEAR.pickU(u, { floor: r.floor, luck: this.stats.get('luck') + st.wave });
@@ -716,33 +741,81 @@ export class Game {
     this.hud.toast('toast.challengeWave', { n: st.wave });
   }
 
-  /** Materialise one projection at the room's centre column, on the first free height. */
-  private spawnEnemy(defId: string, r: RoomInfo) {
+  /** Opens an omen for one projection at a spawn point of the room (BESTIARY §2.2–§2.3). */
+  private announce(defId: string, r: RoomInfo) {
     const def = ENEMY_BY_ID.get(defId);
     if (!def) return;
-    let x = r.x0 + 6.5, z = r.z0 + 3.5;
-    // if the player is standing on the centre (arrived by falling or digging), step aside
-    const b = this.player.body;
-    const dx = x - b.x, dz = z - b.z, d = Math.hypot(dx, dz);
-    if (d < 1.8) { x += (d > 0.01 ? dx / d : 1) * 2; z += (d > 0.01 ? dz / d : 0) * 1.5; }
-    // never inside fire, lava or a pool: the nearest dry tile of the room instead
-    if (this.world.elemAt(Math.floor(x), r.y0, Math.floor(z)) || this.world.elemAt(Math.floor(x), r.y0 - 1, Math.floor(z))) {
-      let best: [number, number] | null = null, bd = Infinity;
-      for (let row = 0; row < ROOM_D; row++) for (let col = 0; col < ROOM_W; col++) {
-        const cx = r.x0 + col, cz = r.z0 + row;
-        if (this.solid(cx, r.y0, cz) || !this.solid(cx, r.y0 - 1, cz) || this.world.elemAt(cx, r.y0, cz)) continue;
-        const dd = Math.hypot(cx + 0.5 - x, cz + 0.5 - z);
-        if (dd < bd) { bd = dd; best = [cx + 0.5, cz + 0.5]; }
-      }
-      if (best) [x, z] = best;
+    const seq = this.spawnSeq.get(r.id) ?? 0;
+    this.spawnSeq.set(r.id, seq + 1);
+    const spot = this.spawnSpot(r, seq);
+    this.omens.push({ def: defId, room: r.id, x: spot.x, y: spot.y, z: spot.z, t: 0, breached: false });
+    spatial.omenHum(spot.x, spot.y + 0.5, spot.z, 'floor');
+  }
+
+  /** A seeded spawn point among the room's standable floor cells (never by a door, away from the player). */
+  private spawnSpot(r: RoomInfo, seq: number): { x: number; y: number; z: number } {
+    const cells: Cell[] = [];
+    for (let row = 0; row < r.d; row++) for (let col = 0; col < r.w; col++) {
+      const cx = r.x0 + col, cz = r.z0 + row;
+      if (!this.solid(cx, r.y0 - 1, cz) || this.solid(cx, r.y0, cz) || this.solid(cx, r.y0 + 1, cz)) continue;
+      if (this.world.elemAt(cx, r.y0, cz) || this.world.elemAt(cx, r.y0 - 1, cz)) continue;
+      cells.push({ x: cx + 0.5, z: cz + 0.5 });
     }
+    const doors: Cell[] = this.doors.list.filter(d => d.rooms.includes(r.id)).map(d => ({ x: d.cx, z: d.cz }));
+    const b = this.player.body;
+    const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'spawn', seq);
+    const cell = pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng) ?? { x: r.x0 + 6.5, z: r.z0 + 3.5 };
     let y = r.y0;
-    while (y < r.y0 + 3 && this.solid(Math.floor(x), y, Math.floor(z))) y++;
+    while (y < r.y0 + 3 && this.solid(Math.floor(cell.x), y, Math.floor(cell.z))) y++;
+    return { x: cell.x, y, z: cell.z };
+  }
+
+  /** How many omens of a room are still open (its projections are not out yet). */
+  private omensIn(room: number): number {
+    let n = 0;
+    for (const o of this.omens) if (o.room === room) n++;
+    return n;
+  }
+
+  /** Advances the open omens: motes gather, the crack opens, and the projection breaches out. */
+  private updateOmens(dt: number) {
+    for (let i = this.omens.length - 1; i >= 0; i--) {
+      const o = this.omens[i];
+      o.t += dt;
+      if (o.t < OMEN_GATHER) {
+        this.particles.gather(o.x, o.y + 0.8, o.z, pal('cold.dim'), 2, 2.2, OMEN_GATHER - o.t);
+        continue;
+      }
+      if (!o.breached) {
+        o.breached = true;
+        spatial.breach(o.x, o.y + 0.5, o.z);
+        this.particles.burst(o.x, o.y + 0.5, o.z, pal('cold.white'), 10, 1.5, 0.05);
+      }
+      if (o.t < OMEN_GATHER + OMEN_BREACH) continue;
+      this.omens.splice(i, 1);
+      const r = this.rooms.get(o.room);
+      if (r) this.spawnEnemy(o.def, r, o.x, o.y, o.z);
+    }
+  }
+
+  /** The doors of a sealed room slam shut, each with its own sound, dust and a gentle nudge. */
+  private slamDoors(room: number) {
+    for (const d of this.doors.list) {
+      if (!d.rooms.includes(room)) continue;
+      spatial.slam(d.cx, d.cy, d.cz);
+      this.particles.burst(d.cx, d.cy, d.cz, pal('ink.ash'), 14, 2.5, 0.12);
+    }
+    this.hud.shake(0.25);
+  }
+
+  /** Materialise one projection where its omen breached. */
+  private spawnEnemy(defId: string, r: RoomInfo, x: number, y: number, z: number) {
+    const def = ENEMY_BY_ID.get(defId);
+    if (!def) return;
     const id = this.actors.newId();
     const ev = this.bus.emit('enemySpawn', { id, def: defId, hp: def.hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(), x, y, z });
     if (ev.cancelled) return;
     this.actors.add(this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags));
-    sfx3.spawn();
   }
 
   // ───────────────────────── blocks ─────────────────────────
@@ -1386,13 +1459,13 @@ export class Game {
       st.dust -= dt;
       if (st.dust <= 0) {
         st.dust = 0.25;
-        this.particles.burst(hole.x + 1, hole.yTop + 1.05, hole.z + 1, pal('limestone.dark'), 6, 1.2, 0.06);
+        this.particles.burst(hole.x + hole.size / 2, hole.yTop + 1.05, hole.z + hole.size / 2, pal('limestone.dark'), 6, 1.2, 0.06);
       }
       return;
     }
     st.open = true;
     openHole(this.world, hole);
-    this.particles.burst(hole.x + 1, hole.yTop + 1, hole.z + 1, pal('limestone.dark'), 40, 4, 0.15);
+    this.particles.burst(hole.x + hole.size / 2, hole.yTop + 1, hole.z + hole.size / 2, pal('limestone.dark'), 40, 4, 0.15);
     this.hud.shake(0.5);
     this.hud.toast('toast.wayDown');
     sfx3.rumble();
@@ -1400,7 +1473,7 @@ export class Game {
 
   /** The hole's top blocks show real crack stages as `p` goes 0 → 1 (the floor is about to give way). */
   private crackHole(hole: NonNullable<FloorResult['hole']>, p: number) {
-    for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) {
+    for (let dz = 0; dz < hole.size; dz++) for (let dx = 0; dx < hole.size; dx++) {
       const x = hole.x + dx, z = hole.z + dz, id = this.world.get(x, hole.yTop, z);
       if (id === AIR) continue;
       const max = mat(id).hp, i = this.world.idx(x, hole.yTop, z);
@@ -1411,7 +1484,7 @@ export class Game {
   /** Is the player standing (or hovering) over the 2×2 hole? */
   private standsOnHole(hole: NonNullable<FloorResult['hole']>) {
     const b = this.player.body;
-    return b.x + b.hw > hole.x && b.x - b.hw < hole.x + 2 && b.z + b.hw > hole.z && b.z - b.hw < hole.z + 2
+    return b.x + b.hw > hole.x && b.x - b.hw < hole.x + hole.size && b.z + b.hw > hole.z && b.z - b.hw < hole.z + hole.size
       && b.y >= hole.yTop && b.y < hole.yTop + 1 + ROOM_H;
   }
 
@@ -1484,6 +1557,8 @@ export class Game {
     this.chunks.animate(this.time);
     this.renderer.setClearColor(this.fogColor);
 
+    this.camera.getWorldDirection(this.camDir);
+    spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
     this.renderer.clear();
     this.renderer.render(this.scene, this.camera);
     this.renderer.clearDepth();
@@ -1534,6 +1609,7 @@ export class Game {
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
     this.trackPlace(dt);
+    this.updateOmens(dt);
     this.updateCombat(dt);
     this.updateChallenges(dt);
     this.pickups.update(dt, solid);

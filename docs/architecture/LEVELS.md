@@ -1,6 +1,6 @@
 # Levels: architecture of the thirteen floors
 
-Status: **L1, L2 and L3c built (2026-10-27)**; L3a, L3b and L4–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
+Status: **L1, L2 and L3 built (2026-10-27)**; L4–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
 
 ## 1. Goal
 
@@ -156,7 +156,7 @@ The review dropped "merge separate plan cells": a big room is **one plan room wi
 | Step | What | Status |
 |---|---|---|
 | **L3c** | The walk check as carved: `flipped(t, flipX, flipZ)` and `needsBuildingIn(t, flipX, flipZ, sides)` (memoized) restrict the check to the doors a room really has. Test: over 24 seeds, on every floor, at least half the fighting rooms with two or more doors need building (aggregate per floor, so no single seed can flake). To meet it on the random floors, the trench, wall, lava-bridge and ember corridors also serve as normal rooms there, `tombs` gained tomb walls you climb (a single row of flame can be jumped), a new `gates` room shuts three sides away, and the gentlest element rooms (amphitheatre, font, water bridge) live on floors 1–5. `GEN_VERSION` 8. | **Built** |
-| **L3a** | The great pit: floor 5's crown as a 2×1 footprint (the crown cell and its empty east neighbour), a 4×4 shaft centred on the crown cell, so it lands in floor 6's start room, whose templates keep a clear 4×4 centre; `openHole` with a size; `pickTemplate` filters by size; doors as a list; the minimap draws a footprint's bounding box. | Next |
-| **L3b** | Footprints on the random floors (6–9): growth inside the planner, density per level, rosters, rewards, chests and key homes scaled by cell count, the flow field over bigger rooms, a phone performance pass. Touches the chests code: coordinate with it. | Later |
+| **L3a** | The great pit: floor 5's crown as a 2×1 footprint (the crown cell and its empty east neighbour; owner left it to us: 2×1), a 4×4 shaft centred on the crown cell, so it lands in floor 6's start room, whose templates keep a clear 4×4 centre; `openHole` with a size; `pickTemplate` filters by size; the minimap draws a footprint's bounding box. Template `abyss`. | **Built** |
+| **L3b** | Footprints on the random floors (6–9): after planning, a normal room may grow into an empty cell east (2×1) or south (1×2) (`LevelDef.grow`, 0.35 on floor 6 to 0.5 on floor 9, `fork('plan', k, 'grow')`); its doors stay on its first cell, so links, chaining and the shaft are untouched; its roster budget and cap grow with its cells; the flow field and the leash use the room's size; challenge rooms stay 1×1. Templates `antechamber` (2×1) and `giants-well` (1×2), never mirrored. Chests and key homes still use the first cell only (the chests code); a phone performance pass is still owed. | **Built** |
 
-Open for the owner: is a 2×1 crown (an arena 28 × 7 with a 4 × 4 pit) great enough, or should floor 5 get its own Tree layout so the crown can be 2×2?
+The owner left the crown's size to us: 2×1 (a hall 28 × 7 with a 4 × 4 pit). `GEN_VERSION` 9.
