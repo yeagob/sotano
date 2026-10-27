@@ -430,7 +430,10 @@ export class Game {
     this.doors.add(f.doors);
     // the boss's pedestal stays bare until the boss is overcome (revealBossItem)
     for (const p of f.pedestals) if (!p.boss && !p.chest) this.placePedestalItem(p);
-    for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, this.chestFacing(spec)) });
+    for (const spec of f.chests) {
+      const face = this.chestFacing(spec);
+      this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, face.angle, face.tight) });
+    }
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
     for (const c of ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
@@ -475,8 +478,15 @@ export class Game {
         if (d.rooms.includes(s.room) && dist < best) { best = dist; tx = d.cx; tz = d.cz; }
       }
     }
-    const dx = tx - cx, dz = tz - cz;
-    return Math.abs(dx) > Math.abs(dz) ? Math.sign(dx) * Math.PI / 2 : dz >= 0 ? 0 : Math.PI;
+    const dx = tx - cx, dz = tz - cz, len = Math.hypot(dx, dz) || 1;
+    const free = (x: number, z: number) => !this.solid(x, s.y, z) && !this.solid(x, s.y + 1, z);
+    let best = { angle: 0, tight: true }, score = -Infinity;
+    for (const [fx, fz] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+      const back = free(s.x - fx, s.z - fz), front = free(s.x + fx, s.z + fz);
+      const sc = (back ? 4 : 0) + (front ? 2 : 0) + (fx * dx + fz * dz) / len;
+      if (sc > score) { score = sc; best = { angle: Math.atan2(fx, fz), tight: !back }; }
+    }
+    return best;
   }
 
   /** Down a floor (console shortcut): open the hole and drop the player into it. */
