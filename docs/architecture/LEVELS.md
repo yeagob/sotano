@@ -187,3 +187,23 @@ Peaceful creatures on floor 0 (faction `neutral`, never sealing doors, never hur
 - `GEN_VERSION` 10.
 
 Still open: what ends a run; the climb from the roots to the surface (today you dig or build up); creatures for the tree and more for the roots; the circles' own mechanics beyond their rooms (winds that push, rain that soaks); a phone performance pass over the whole world; captures in the art guide for ice, the tree and Wonder.
+
+## 10. The tree in stories, and loading by level (2026-10-27, owner)
+
+The owner asked for the tree **at least three times bigger**, built as **stories you climb**: every story is a hall the size of a whole floor, a **spiral stair** rises from each story's floor into the next, and the tree's foot spreads over the whole surface. And: the tree must not be loaded all the time; only the current level and its neighbours are.
+
+**The tree (`world/tree.ts`, `GiantTree`).** `SKY_LIMIT` is 260 (the world is 428 high). Seven stories (`TREE_STORIES`), heights above the grass:
+
+| Story | Zone (HUD) | Height | Trunk radius | The hall |
+|---|---|---|---|---|
+| `roots` | trunk | 0–21 | 34 | Buttress roots from the trunk to the edges of the world, four great doorways at its foot, root ridges radiating from a mound of earth, six root columns |
+| `rings` | trunk | 22–43 | 30 | The tree's years as low concentric walls (one and two high) with a few gaps, the pith as a central column |
+| `galleries` | trunk | 44–65 | 26 | A balcony round the wall reached by two ramps along it, hanging leaves under the ceiling |
+| `hollows` | trunk | 66–87 | 23 | A forest of wooden columns with bridges between them half way up |
+| `branches` | branches | 88–111 | 20 | Seven to nine great branches leave through arches, rising gently, each to a platform under a blob of leaves |
+| `canopy` | leaves | 112–145 | — | A floor of woven wood under a dome of leaves 108 × 72 with windows onto the sky, limbs climbing inside |
+| `stars` | heaven | 146–260 | — | The crown's platform where the last stair arrives, with a star pad, and three constellations above; every pad carries you to the next star, the last one back to the crown |
+
+Every trunk story has a two-block floor slab, a wall three blocks thick and knot windows at eye height. Each story's stair (`stairAt(i)`) turns 137° from the one below and stands inside its hall, so every hall is crossed: a core of wood, a step a block higher every two blocks of tread, three blocks of air over every step; the opening in the next floor is the air over the last steps (a fall into it is a few blocks). A story's stair is drawn by both stories it touches, each clipped to its own heights, so stories grow in any order. No projections live in the tree yet. Tested: same seed same tree in any order, ranges contiguous, the foot nearly as wide as a floor, and a walk from the grass to the crown through every story.
+
+**Loading by level (`Game.stream`, `ChunkRenderer.setLoadedRange`).** The world has a single axis of levels: floors 0–9 below (silence counts with 9), and the tree's stories as −1 (the roots, which also holds the dirt and the grass) to −7 (the stars). Each frame the game finds the player's level `s`; when it changes, the tree's stories in `s − 1 … s + 1` grow if they never have, and the chunk renderer keeps meshes only for the chunk rows covering those three levels: meshes outside are disposed, rows coming in are queued for meshing, and replies for rows that left are dropped. Scope (owner): only the tree and the block and element meshes; voxels, doors, pickups and projections are untouched (the world is still one array; what is grown or dug stays). Seen from the grass, the tree shows its first two stories; the rest appears as you climb. `GEN_VERSION` 11.

@@ -49,14 +49,14 @@ import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
 import { onLocaleChange } from '../i18n';
 import {
-  bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, DOOR_FRAME, FIRST_FLOOR, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
+  BAND, bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
 import { CHEST_CONTENTS } from '../content/tables/chests';
-import type { VoxelWorld } from '../world/world';
+import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
-import { buildTree, TREE_ZONES, type TreeResult } from '../world/tree';
+import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
@@ -236,8 +236,8 @@ export class Game {
   private breakFx = 0;
   private fogColor = new THREE.Color();
   /** The giant tree above the surface (L5) and whether its chunks were sent to be meshed. */
-  tree!: TreeResult;
-  private treeMeshed = false;
+  tree!: GiantTree;
+  private story = NaN;
   /** The loop (L4): silence once visited opens the sky's top; seconds standing still in it. */
   private silenceSeen = false;
   private stillT = 0;
@@ -334,8 +334,8 @@ export class Game {
     this.tablets = new Tablets(this.scene);
     this.world = createDungeonWorld(this.rng, this.dungeon);
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
-    this.tree = buildTree(this.world, SURFACE_Y, this.rng.fork('tree'));
-    this.treeMeshed = false; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = '';
+    this.tree = new GiantTree(this.world, SURFACE_Y, i => this.rng.fork('tree', i));
+    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = '';
     setMasterTarget(0.35);
     this.elements = new ElementSim(this.world, {
       seed: this.rng.fork('elements').u32(),
@@ -381,6 +381,7 @@ export class Game {
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(FIRST_FLOOR)!.spawn);
     p.yaw = 0; p.pitch = 0;
+    this.stream();
     this.depth = this.maxDepth = this.groundBand = FIRST_FLOOR;
     this.room = -1;
     this.visited = new Set();
@@ -1678,20 +1679,40 @@ export class Game {
       this.teleport(to.x + 0.5, to.y, to.z + 0.5);
       sfx2.charged();
     }
-    // the tree is meshed the first time you come up near the surface (not at run start)
-    if (!this.treeMeshed && b.y > SURFACE_Y - 12) {
-      this.treeMeshed = true;
-      const [x0, y0, z0, x1, y1, z1] = this.tree.box;
-      for (let x = x0; x <= x1 + 8; x += 8) for (let y = y0; y <= y1 + 8; y += 8) for (let z = z0; z <= z1 + 8; z += 8) if (this.world.inside(x, y, z)) this.world.markDirty(x, y, z);
-    }
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
-    const above = b.y - SURFACE_Y;
-    const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : above >= TREE_ZONES.heaven ? 'heaven' : above >= TREE_ZONES.leaves ? 'leaves' : above >= TREE_ZONES.branches ? 'branches' : 'trunk';
+    const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {
       this.zone = zone;
       if (zone) this.hud.setZone(zone);
       else if (this.floors.get(this.depth)) this.hud.setFloor(this.floors.get(this.depth)!, this.depth);
     }
+  }
+
+  private stream() {
+    const s = this.storyOf(this.player.eye.y);
+    if (s === this.story) return;
+    this.story = s;
+    for (const n of [s - 1, s, s + 1]) {
+      const i = -n - 1;
+      if (i < 0 || i >= TREE_STORIES.length || this.tree.isGrown(i)) continue;
+      this.tree.grow(i);
+      const [y0, y1] = this.tree.range(i);
+      for (let y = y0; y <= y1 + CHUNK; y += CHUNK) for (let z = 0; z < this.world.sz + CHUNK; z += CHUNK) for (let x = 0; x < this.world.sx + CHUNK; x += CHUNK)
+        this.world.markDirty(Math.min(x, this.world.sx - 1), Math.min(y, y1), Math.min(z, this.world.sz - 1));
+      this.world.version++;
+    }
+    this.chunks.setLoadedRange(this.storyRange(s + 1)[0], this.storyRange(s - 1)[1]);
+  }
+
+  private storyOf(y: number) {
+    const band = bandOf(y);
+    return band !== SURFACE ? band : -1 - Math.max(0, this.tree.storyAt(y));
+  }
+
+  private storyRange(s: number): [number, number] {
+    if (s < 0) return this.tree.range(Math.min(-s - 1, TREE_STORIES.length - 1));
+    if (s > LAST_FLOOR) return [0, floorY(LAST_FLOOR) - 3];
+    return [floorY(s) - 2, floorY(s) - 2 + BAND - 1];
   }
 
   /** Floors, rooms and the way down. */
@@ -1819,9 +1840,11 @@ export class Game {
     if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleInventory(this);
     const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen && !this.transitioning;
     if (running) this.simulate(dt);
+    this.stream();
     this.chunks.update();
     const p = this.player, e = p.eye;
-    this.chunks.setVisibleRange(e.y - 22, e.y + (e.y > SURFACE_Y - 4 ? 110 : 22));
+    const sky = e.y > SURFACE_Y - 4;
+    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22));
     this.stars.position.set(e.x, 0, e.z);
 
     // camera with a little walking bob and explosion shake

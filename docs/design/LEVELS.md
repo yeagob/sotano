@@ -39,7 +39,7 @@ Ten floors below and three in the tree: thirteen. Down is the unconscious, layer
 7. **Challenge rooms** may appear on any hostile floor: three waves of projections every time you enter, harder each time, for as long as you like (farming).
 8. **Doors work as in Isaac**: open whenever there are no projections, sealed while you fight, open again on their own when the room is clear; **a breakthrough destroys a door for good**.
 
-**Built (2026-10-27):** the circles' names on the HUD, the frozen ninth (ice you slide on), silence under it (stand still and you are carried to heaven; the top of the sky brings you back), the giant tree with its stair, branches, leaves and stars that carry you from one to the next, a night sky above it, and Wonder, the first creature of the roots (a paper moth of curiosity that keeps you company).
+**Built (2026-10-27):** the giant tree in seven stories, each a hall the size of a floor joined by spiral stairs, loaded only as you come near ([architecture §10](../architecture/LEVELS.md)); the circles' names on the HUD, the frozen ninth (ice you slide on), silence under it (stand still and you are carried to heaven; the top of the sky brings you back), the giant tree with its stair, branches, leaves and stars that carry you from one to the next, a night sky above it, and Wonder, the first creature of the roots (a paper moth of curiosity that keeps you company).
 
 So the world, top to bottom: heaven · leaves · branches · trunk · the surface · **0** roots (peaceful) · **1–5** Tree of Life and the first five circles (5 ends in the great pit) · **6–9** random floors, circles six to nine (9 frozen) · silence (which loops back to heaven).
 

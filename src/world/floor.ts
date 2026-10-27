@@ -4,7 +4,7 @@
 //
 // Vertical layout (y), floor k = 0 (the roots, top) … 9 (the frozen bottom), each on a 16-block band:
 //
-//  168–267    open sky: you can build up to SKY_LIMIT blocks above the grass (the tree, L5)
+//  168–427    open sky: you can build up to SKY_LIMIT blocks above the grass (the tree, L5)
 //  167        grass (surface, open sky above)
 //  159–166    dirt
 //  152–156    floor 0 interiors   (ceiling 157–158, brick floor 150–151)
@@ -41,7 +41,7 @@ export const DOOR_H = 3;
 export const SURFACE_Y = floorY(FIRST_FLOOR) + 15; // 167
 /** How many blocks of open sky sit above the grass (the build limit). It is depth 0 to anything that
  *  asks how deep you are (`depthOf`), and the band `SURFACE` to the structure (`bandOf`). */
-export const SKY_LIMIT = 100;
+export const SKY_LIMIT = 260;
 export const WORLD_SIZE = { sx: MARGIN * 2 + 2 + GRID * PITCH_X, sy: SURFACE_Y + 1 + SKY_LIMIT, sz: MARGIN * 2 + 2 + GRID * PITCH_Z };
 /** Global room id = levelIndex(floor) × ROOM_ID_STRIDE + room index in that floor's plan; doors
  *  likewise. Always positive (tree floors below 0 will fit too). */
