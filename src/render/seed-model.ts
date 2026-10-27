@@ -30,11 +30,15 @@ function shell(x: number, y: number, z: number): boolean {
   return filled(x, y, z) && DIRS.some(([dx, dy, dz]) => !filled(x + dx, y + dy, z + dz));
 }
 
-function seam(x: number, y: number, z: number): boolean {
+function seamZ(x: number, y: number, z: number, wide: boolean): boolean {
   if (y < 1 || y > 9 || z === C || !shell(x, y, z) || filled(x, y, z + (z > C ? 1 : -1))) return false;
   const sx = z > C ? x : 2 * C - x;
   const at = C + SEAM[y];
-  return sx === at || (y >= 3 && y <= 7 && sx === at + 1);
+  return sx === at || (wide && y >= 3 && y <= 7 && sx === at + 1);
+}
+
+function seam(x: number, y: number, z: number): boolean {
+  return seamZ(x, y, z, true) || (y >= 3 && y <= 8 && seamZ(z, y, 2 * C - x, false));
 }
 
 function solid(x: number, y: number, z: number): boolean {

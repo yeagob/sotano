@@ -23,7 +23,6 @@ export const HUD_ICONS = {
   heart: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'life.heart', h: 'bone.paper', d: 'life.dark' } },
   /** An empty container. */
   heartEmpty: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'life.empty', h: 'life.rim', d: 'life.rim' } },
-  /** A breakthrough is a seed: a dark husk split by an ember seam, its white-hot heart showing. */
   seed: {
     rows: [
       '....oo....',

@@ -77,15 +77,14 @@ export class DebrisView {
     let m = this.seeds.get(i);
     if (!m) {
       m = buildSeed();
-      m.body.position.y = -SEED_H * SEED_VOXEL / 2;
       this.scene.add(m.root);
       this.seeds.set(i, m);
     }
     this.live.add(i);
-    const i3 = i * 3, i4 = i * 4;
+    const i3 = i * 3;
     const k = SEED_SCALE * fuseSeed(m, sys.fuse[i]);
-    m.root.position.set(sys.pos[i3], sys.pos[i3 + 1], sys.pos[i3 + 2]);
-    m.root.quaternion.set(sys.quat[i4], sys.quat[i4 + 1], sys.quat[i4 + 2], sys.quat[i4 + 3]);
+    m.root.position.set(sys.pos[i3], sys.pos[i3 + 1] - DEBRIS_SIZE / 2, sys.pos[i3 + 2]);
+    m.root.rotation.set(0, i * 1.3, 0);
     m.root.scale.setScalar(k);
   }
 }

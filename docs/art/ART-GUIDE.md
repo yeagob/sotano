@@ -175,20 +175,23 @@ Fog far is never under 24; floor 4 ambient is never under 0.30. A cleared room i
 
 | Material | Look | Cracks follow | Break particles |
 |---|---|---|---|
-| **Dirt** | Soft clumps and bevelled pebbles; no straight lines | Short crumbling strokes | 8 chips, 4 dust puffs |
+| **Dirt** | Soft round clods lit on their top rims, a few crumbs and two small pale pebbles; no straight lines | Short crumbling strokes | 8 chips, 4 dust puffs |
 | **Grass** | Top: bladed greens with 1×2 highlight ticks. Side: dirt with a ragged fringe | As dirt | Chips and blade slivers |
 | **Brick** | Running bond, 7×3 bricks, warm floor-rock ramp | Mortar first | 10 chips, some brick halves |
 | **Stone** | 4–5 Voronoi plates, each one tone, facets | Long straight strokes that turn at plate edges | Angular chips, heavy |
-| **Deepstone** | Three horizontal strata, hairline veins | Along strata | 12 chips |
-| **Crate** | Three planks, nail heads, a rope band (no X brace) | Splinters along the grain | Chips and tumbling splinters |
+| **Deepstone** | Three horizontal strata with lit bedding seams, flattened lenses, hairline veins | Along strata | 12 chips |
+| **Crate** | A raised mitred frame around three recessed slats, grain streaks, a knot, six iron nail heads (no X brace, no rope band) | Splinters along the grain | Chips and tumbling splinters |
+| **Living wood** | Sides: vertical bark with wandering crevices, splits and a little moss. Top and bottom: end grain with growth rings, a pith and a check crack | Along the grain | As crate |
+| **Leaves** | Overlapping bevelled leaf clusters over dark gaps | As dirt | As grass |
 | **Obsidian** | Three glassy triangles, diagonal accent streaks | Radial from the impact (conchoidal) | Chips and flat glass slivers |
 | **Bedrock** | Dense low-contrast cobble, no highlight, never glows | Never cracks | A dull puff, no light |
 | **Iron ore** | Stone with copper nuggets | As stone | Stone chips and copper chips |
-| **Door frame** | Floor-rock ramp with a bevelled border and rivets | As brick | As brick |
+| **Door frame** | Floor-rock ramp, dressed ashlar blocks in bond (never boards) | As brick | As brick |
+| **Door leaves** | Six vertical boards with offset butt joints, long grain and knots, two iron bands | — | — |
 | **Brass frame** (was "Gilded") | Brass ramp; keystone lights gold once the room is cleared | — | — |
 | **Obsidian frame** (was "Bone") | Obsidian ramp with one crack of `captive.ember` pulsing at 0.4 Hz | — | — |
 | **Pedestal** | Limestone, big bevelled blocks; a rim in the practice's path glow while a practice sits on it | As brick | 10 chips |
-| **Breakthrough** (seed) | Round dark core with four branching cracks of `light.ember` and a 2×2 `light.core` heart | — | See §7 |
+| **Breakthrough** (seed) | A dark seed with a pointed top split by one jagged `light.ember` seam with a white-hot heart (never a cross: on a cube it read as ✗). In the world it is a voxel seed model, not a cube | — | See §7 |
 
 ### 6.3 Cracks of light
 
@@ -223,7 +226,7 @@ Numbers and tokens: DECISIONS §6.5. Captures: `?gallery=chests`.
 
 **Particles** are two pools. *Matter* chips use the material's ramp (50 % base, 30 % dark, 20 % hi). *Light* is additive, with fog reduced. Each event has a cap, and above 80 % pool fill the events spawn half as many particles.
 
-**Screen feedback is gentle.** Shake is positional only, with no camera roll, and chained events take the maximum, never the sum. Player hits give a short, muted vignette. Breakthroughs flash once at most and fade over 0.15 s. Health at one heart beats the last heart on the HUD.
+**Screen feedback is gentle.** Shake is positional only, with no camera roll, and chained events take the maximum, never the sum. Player hits give a short, muted vignette. Breakthroughs flash once at most and fade over 0.15 s. A placed breakthrough never blinks: the seed swells to 1.25 × and its seam and halo pulse faster as the fuse runs, from 0.8 Hz up to 2.5 Hz at most. Health at one heart beats the last heart on the HUD.
 
 ---
 
@@ -490,6 +493,7 @@ The owner asked to review every element of the game against this guide, fix what
 | **HUD** | The cellar slate on every panel (bevel, chamfered corners, no radius); minimap top-right with glyph marks (house, hollow ◇, ▭, ▣) and cleared rooms in gold; toasts top-centre at 22 %; hearts, seed and key drawn from pixel strings; path chips carry their glyph (■ ● ◆ ▲); quality stars and ▲ in gold, ▼ in cold; the debug readout off by default (F3) | §10.2 |
 | **Gentleness** | No blinking hearts (invulnerable hearts are steady at 55 % with an outline); the last heart beats at 1.1 Hz; item flash peak 0.45 over 0.5 s with a 333 ms flash budget; hurt vignette `life.dark` at 0.35 | §10.4 |
 | **Death** | Night to ink, an ensō that does not close, "The intention faded", the pattern as the agent ("Panic held you") | §10.2, §10.5 |
+| **Wood, dirt and the seed** (owner, 2026-10-27: "several wood textures are very bad, dirt is so-so, the bombs are very ugly") | Crates are framed crate faces with recessed slats and iron nails; living wood has bark on its sides and end grain with rings on top and bottom (its own atlas tile); door leaves are wide boards with butt joints and knots; door frames are dressed ashlar instead of a board-like plate; dirt is soft round clods with pebbles; leaves have their own leaf clusters; deepstone strata gained lit seams and lenses. Brick and obsidian are untouched. The breakthrough is one voxel seed (pickup and placed) split by a glowing seam, with a matching HUD icon; the placed one swells and pulses up to 2.5 Hz instead of blinking at 8–16 Hz | §6.2, §7, DECISIONS §6.2, §7.4, §10.2 |
 | **Tests** | `tests/art-content.test.ts`: ramps dark to light, a concept for every material, icon colours and namespaces, item colour = path glow, icon silhouettes IoU < 0.8, creatures on the texel grid with a cold tell, no warm/life/skin/path hues in projections, dark and pale husk values | DECISIONS §12.6 |
 
 ### 15.2 Captures
