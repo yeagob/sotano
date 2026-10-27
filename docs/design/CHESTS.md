@@ -4,7 +4,16 @@ Status: **built** (GEN_VERSION 5). Owner direction, 2026-10-27: walls around loc
 
 ## 1. What a chest is
 
-A chest is a **block** (`chest`, closed; `chestopen`, open), not an entity: it stands on the floor of a room, one cube, solid, with a banded wooden look and a brass lock plate. Both are **unbreakable** (tier and HP infinite, like bedrock): no intention, bomb, beam, blade, kick or fire changes them. What you keep shut you open **on purpose**, with keys or by walking up.
+A chest is a **block with a model** (owner redesign, 2026-10-27: "a chest must look like a chest"). The voxel (`chest`, closed; `chestopen`, open) stays a solid, **unbreakable** cell (tier and HP infinite, like bedrock): no intention, bomb, beam, blade, kick or fire changes it, and you can stand on it. The mesher does not draw it (`MaterialDef.model`, `MODEL_DRAWN`): the `Chests` entity (`src/entities/chests.ts`) draws a real chest on it from `src/render/chest-model.ts`, a wooden body with bands and a hinged lid, turned to face the middle of its room (or its nearest door when it stands in the middle). What you keep shut you open **on purpose**, with keys or by walking up.
+
+It reads with no text (art entry in [../art/DECISIONS.md](../art/DECISIONS.md)):
+
+| Look | Means |
+|---|---|
+| Simple brass clasp, no lock | **Free**: walk up and it opens |
+| Iron padlock on the front with **1, 2 or 3 keyholes**, heavier iron bands | **Locked**: it asks for that many keys. Its keyholes **glint** while you carry enough |
+| Brass corners and trim | It holds a **practice** (a pedestal chest) |
+| Lid thrown back, warm light inside | **Open**: already given what it kept; the light settles to a low glow |
 
 Story: a chest is *what you keep shut until you are ready* (closed) and *what was kept, given* (open). A key is an insight (STORY.md); a lock is a belief that asks for as many insights as it holds.
 
@@ -12,15 +21,17 @@ Story: a chest is *what you keep shut until you are ready* (closed) and *what wa
 
 Walk up to it (within about 1.5 blocks, at its height). The `chestOpen` event fires (`cost` in keys, changeable by items, or cancel):
 
-- enough keys: they are **spent**, the block turns into the open chest, gold particles, a small shake, a toast (`Chest opened · keys spent: n`) and the unlock chime (a free chest plays the key chirp);
+- enough keys: they are **spent**, the block turns into the open chest and the model plays the opening: a short shudder, the padlock drops and shrinks away, the lid is thrown back on its hinge with a small overshoot, the light inside swells; a creak, the unlock chime (a free chest plays the key chirp), a small shake and a toast (`Chest opened · keys spent: n`);
 - not enough: a toast (`Locked chest · keys needed: n`) and the denied sound, once per approach (step 3 blocks away to try again).
 
 ## 3. What is inside
 
+What a chest kept is **spat out**: as the lid opens, each thing leaps out of its mouth on an arc (about one block up) and lands **in front of you**, a block and a half from the chest towards where you stand, fanned out when there are several, one every 0.16 s, each with a pop and a spark of gold (a practice gets the reveal chord). It can be collected once it lands (0.6 s).
+
 | Chest | Holds |
 |---|---|
-| **Pedestal chest** (stands where a pedestal would, in treasure and vault rooms) | The practice reserved for that room at run start. **60 %** of treasure and vault practices are shut in a chest (never the boss's: it is earned, not locked away). Opening it makes the practice appear above it, with the usual pop and glow |
-| **Room chest** (free-standing, normal rooms: **40 %** of them, every floor including the roots) | One to three rolls of the `chest` table (key, bomb, heart, or, rarely, a practice from the treasure pool drawn at runtime), lying beside it |
+| **Pedestal chest** (stands where a pedestal would, in treasure and vault rooms) | The practice reserved for that room at run start. **60 %** of treasure and vault practices are shut in a chest (never the boss's: it is earned, not locked away). It leaps out and floats where it lands |
+| **Room chest** (free-standing, normal rooms: **40 %** of them, every floor including the roots) | One to three rolls of the `chest` table (key, bomb, heart, or, rarely, a **practice** from the treasure pool drawn at runtime: at most one per chest, about one room chest in seven) |
 
 ## 4. Locks
 

@@ -24,6 +24,7 @@ export interface MaterialDef {
   pattern: 'clumps' | 'grass' | 'brick' | 'plates' | 'strata' | 'planks' | 'facets' | 'cobble' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen';
   /** What it stands for (the art's meaning test). */
   concept?: string;
+  model?: boolean;
 }
 
 export const AIR = 0;
@@ -61,8 +62,8 @@ const DEFS: Def[] = [
   // a bomb ('breakthrough' in the story): only ever exists as a loose cube with a fuse
   { id: 14, key: 'bomb', name: 'Breakthrough', tier: 0, hp: 1, armor: 0, ramp: 'seed', accent: 'light.ember', pattern: 'seed', concept: 'a breakthrough waiting to happen' },
   // chests: unbreakable (nothing digs, burns or blasts them); only keys, or just walking up, open them
-  { id: 15, key: 'chest', name: 'Chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'brass.base', pattern: 'chest', concept: 'what you keep shut until you are ready' },
-  { id: 16, key: 'chestopen', name: 'Open chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'light.gold', pattern: 'chestopen', concept: 'what was kept, given' },
+  { id: 15, key: 'chest', name: 'Chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'brass.base', pattern: 'chest', model: true, concept: 'what you keep shut until you are ready' },
+  { id: 16, key: 'chestopen', name: 'Open chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'light.gold', pattern: 'chestopen', model: true, concept: 'what was kept, given' },
   // the ninth circle and the tree (docs/architecture/LEVELS.md §8)
   { id: 17, key: 'ice', name: 'Ice', tier: 1, hp: 6, armor: 0, slippery: true, ramp: 'ice', pattern: 'facets', concept: 'a feeling frozen still' },
   { id: 18, key: 'log', name: 'Living wood', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'crate', pattern: 'strata', concept: 'the tree that holds the world' },
@@ -76,5 +77,7 @@ export const MATERIALS: MaterialDef[] = DEFS.map(d => {
 });
 
 export const MAT: Record<string, number> = Object.fromEntries(MATERIALS.map(m => [m.key, m.id]));
+
+export const MODEL_DRAWN = Uint8Array.from({ length: 256 }, (_, i) => (MATERIALS[i]?.model ? 1 : 0));
 
 export function mat(id: number): MaterialDef { return MATERIALS[id]; }

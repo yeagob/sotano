@@ -3,7 +3,7 @@
 // generation, no physics, no randomness. A developer tool: English only, like the debug readout.
 //
 //   ?gallery                 every section
-//   ?gallery=materials|items|enemies|pickups|hud|palette
+//   ?gallery=materials|items|enemies|pickups|chests|hud|palette
 //   &filter=grey|deutan|protan|tritan|silhouette
 //   &angle=35                turntable angle for enemies and pickups (degrees)
 //   &id=critic               one enemy or item only
@@ -18,6 +18,7 @@ import { CRACK_STAGES } from '../content/tiles';
 import { buildModel } from '../entities/enemies';
 import { pickupMesh } from '../entities/pickups';
 import { materialCanvas, paintCracks } from '../render/atlas';
+import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
 
 // Machado et al. 2009 at full severity (the same matrices as tests/art.test.ts), applied in sRGB here
@@ -161,6 +162,48 @@ export function runGallery(params: URLSearchParams) {
     for (const k of ['key', 'bomb', 'heart'] as const) {
       const c = three(scene => { const o = pickupMesh(k); scene.add(o); return o; }, 180, 180, 1.4, 0.2, 'rock.f1.base');
       fig(r, c, k);
+    }
+  }
+
+  if (show('chests')) {
+    const kinds: [string, number, boolean][] = [['free', 0, false], ['1 key', 1, false], ['2 keys', 2, false], ['3 keys', 3, false], ['practice, free', 0, true], ['practice, 2 keys', 2, true]];
+    const chest = (keys: number, practice: boolean, open: boolean) => {
+      const c = buildChest({ keys, practice });
+      if (open) {
+        c.lid.rotation.x = -1.9;
+        c.inner.visible = true;
+        if (c.lock) c.lock.visible = false;
+      }
+      return c.root;
+    };
+    for (const open of [false, true]) {
+      head(`Chests ${open ? 'open' : 'closed'}: what you keep shut, and what was kept`);
+      const r = row();
+      for (const [label, keys, practice] of kinds) {
+        const c = three(scene => {
+          const tilt = new THREE.Group(), o = new THREE.Group();
+          tilt.rotation.x = 0.45;
+          tilt.position.y = 0.2;
+          o.add(chest(keys, practice, open));
+          tilt.add(o);
+          scene.add(tilt);
+          return o;
+        }, 300, 260, 2.3, 0.45, 'rock.f1.base');
+        fig(r, c, label);
+      }
+    }
+    head('Chests at 8 and 20 blocks in floor-1 fog');
+    const r = row();
+    for (const far of [8, 20]) for (const [label, keys, practice] of kinds) {
+      const c = three(scene => {
+        scene.fog = new THREE.Fog(pal('fog.f1'), 6, 34);
+        scene.background = new THREE.Color(pal('fog.f1'));
+        const o = chest(keys, practice, false);
+        o.position.set(0, -0.2, 2.1 - far);
+        scene.add(o);
+        return o;
+      }, 120, 120, 2.1, 0.45, 'fog.f1');
+      fig(r, c, `${label} · ${far}`);
     }
   }
 

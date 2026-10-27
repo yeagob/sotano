@@ -1,7 +1,7 @@
 // Chunk meshing: visible faces only, per-vertex ambient occlusion and per-face shading.
 // A pure function (no three.js, no DOM) so it can run inside a Web Worker.
 
-import { AIR } from '../content/materials';
+import { AIR, MODEL_DRAWN } from '../content/materials';
 import { tileFor, tileUV } from '../content/tiles';
 
 type V3 = [number, number, number];
@@ -45,11 +45,12 @@ export function meshChunk(padded: Uint8Array, size: number, elem?: Uint8Array): 
 
   for (let z = 0; z < size; z++) for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     const m = at(x, y, z);
-    if (m === AIR) continue;
+    if (m === AIR || MODEL_DRAWN[m]) continue;
     for (let f = 0; f < 6; f++) {
       const F = FACES[f];
       const fx = x + F.n[0], fy = y + F.n[1], fz = z + F.n[2];
-      if (at(fx, fy, fz) !== AIR) continue;
+      const n = at(fx, fy, fz);
+      if (n !== AIR && !MODEL_DRAWN[n]) continue;
       const tile = tileFor(m, f);
       const v0 = pos.length / 3;
       // light from an element in the cell in front of the face, or one step beyond it

@@ -125,7 +125,7 @@ Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md
 
 ## Debug console
 
-The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)).
+The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|chests|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)).
 
 
 `window.S` in the browser console:

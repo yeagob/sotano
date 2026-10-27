@@ -5,6 +5,9 @@ import { blockDamage } from '../src/core/damage';
 import { CHEST_LOCK } from '../src/content/tables/chests';
 import { Rng } from '../src/core/rng';
 import { buildRun } from './helpers';
+import { meshChunk } from '../src/world/mesher';
+import { Pickups } from '../src/entities/pickups';
+import * as THREE from 'three';
 
 const ROOTS = [1, 7, 42, 999, 0xBEEF];
 
@@ -67,6 +70,37 @@ describe('chests', () => {
     expect(Math.max(...early)).toBeLessThanOrEqual(1);
     const rng = new Rng(3);
     expect(CHEST_LOCK.roll(rng, { floor: 0 })).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('chest models', () => {
+  it('are drawn by their entity: the mesher skips the cell and keeps the faces around it', () => {
+    const P = 4;
+    const stone = new Uint8Array(P ** 3);
+    stone[1 + P * (1 + P * 1)] = MAT.stone;
+    for (const m of [MAT.chest, MAT.chestopen]) {
+      const lone = new Uint8Array(P ** 3);
+      lone[1 + P * (1 + P * 1)] = m;
+      expect(meshChunk(lone, 2).indices.length).toBe(0);
+      const pair = stone.slice();
+      pair[2 + P * (1 + P * 1)] = m;
+      expect(meshChunk(pair, 2).indices.length).toBe(6 * 6);
+    }
+  });
+
+  it('spit what they kept up on an arc that lands in front of them', () => {
+    const solid = (_x: number, y: number) => y < 0;
+    const pickups = new Pickups(new THREE.Scene());
+    for (const type of ['key', 'item'] as const) {
+      const p = pickups.add(type, 0.5, 1.02, 0.5, 0, null, 0.6);
+      pickups.launch(p, 0, 6.5, 2.2);
+      let top = p.y;
+      for (let i = 0; i < 120; i++) { pickups.update(1 / 60, solid); top = Math.max(top, p.y); }
+      expect(top).toBeGreaterThan(1.8);
+      expect(p.flying).toBe(false);
+      expect(p.y).toBe(0);
+      expect(p.z).toBeGreaterThan(1.5);
+    }
   });
 });
 
