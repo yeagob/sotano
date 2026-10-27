@@ -1,164 +1,161 @@
 # SÓTANO
 
-**A first-person roguelite in a fully breakable voxel dungeon, about unlocking your inner potential.** You go down into the basement of your own mind, where reality bends to intention. Break the walls you built, face the projections of what blocks you, pick up practices that change who you are, and find your way back up to the surface.
+**A first-person roguelite in a fully breakable voxel dungeon, about unlocking your inner potential.**
 
-Inspired by the block worlds of *Minecraft*, the runs and item synergies of *The Binding of Isaac*, and the knowledge-gated secrets of *Noita*. Open source, runs in the browser (WebGL), no install.
-
-> **Status: prototype M1.5.** Ten stacked floors, from the peaceful roots (a tutorial) down to the ninth circle, that you descend by falling through each last room; rooms sealed while projections (enemies) fight you, Isaac-style hearts, bombs and keys, 30 practices (items) with icons, a clear effect line, quality up to 4 and synergies, and an inventory window. Fire, water and lava are built; chests and furnaces are planned. The Tree-of-Life maps and the giant tree above are planned ([Levels](docs/design/LEVELS.md)). Things marked *planned* are design, not code.
-
----
-
-## Documentation
-
-The full index is [docs/README.md](docs/README.md). By block:
-
-### Design — the game and what it means
-- [Game design document](docs/design/DESIGN.md) — pillars, loop, blocks and tiers, the block slot, dungeon structure, the Noita-style hidden world, scope, open questions.
-- [Story and metaphor](docs/design/STORY.md) — the premise, what every mechanic stands for, states of being, enemies as projections, practices named after real techniques and works, naming rules.
-- [Elements](docs/design/ELEMENTS.md) — fire, water and lava *(built)*; mud, electricity, burning barrels, furnaces, chests *(planned)*.
-- [Levels](docs/design/LEVELS.md) — the thirteen floors *(direction)*, rooms with height and element rooms *(built)*.
-
-### Architecture — how the code works
-- [Overview](docs/architecture/OVERVIEW.md) — module map, frame order, core systems, debug console, tests.
-- [Items](docs/architecture/ITEMS.md) — the item model, the stat and event contract, synergies and exceptions, safety layers.
-- [Rooms and floors](docs/architecture/ROOMS.md) — floor plans, room templates and their rules, doors and keys.
-- [Entities](docs/architecture/ENTITIES.md) — stacked floors, health, pickups, bombs, enemies and their navigation.
-- [Actors and factions](docs/architecture/ACTORS.md) — the player and projections as actors, one damage pipeline, sides (allies), chain safety.
-- [Seeds and randomness](docs/architecture/RNG.md) — every run unique and replayable: seed codes, structure/runtime/cosmetic randomness, weighted tables.
-- [Localization](docs/architecture/LOCALIZATION.md) — English and Spanish: catalogs, content texts by id, item messages, live language switching.
-- [Elements](docs/architecture/ELEMENTS.md) — the element layer, flow, reactions, rendering, projections in the elements (built), and the plan for containers.
-
-### Lore — references and cosmology
-- [Source library](docs/lore/SOURCES.md) — every book, tradition, technique, therapy and game the work draws on, with naming status and where it shows up.
-- [Concept glossary](docs/lore/CONCEPTS.md) — each idea and its expressions in the game.
-- [Cosmology](docs/lore/COSMOLOGY.md) — the depth and the surface as mirrors (as above, so below) and the endgame connection.
-
-### Research — background and long-term plan
-- [Technical research and proposal](docs/research/TECHNICAL.md) — how Isaac and Noita are built, the target architecture, budgets, IP notes, roadmap.
-
-### Reviews — architecture decisions
-- [Items](docs/reviews/items-architecture.md), [entities](docs/reviews/entities.md), [RNG](docs/reviews/rng.md) and [actors](docs/reviews/actors.md) reviews — engineer, architect and mediator: critique, ruling, resolution.
-- [Architecture stress test](docs/reviews/stress-test.md) — extreme items (wind, clones, friendly enemies, a HUD that falls into the world…) against the architecture, and the refactoring plan before scaling.
-
-### Working on the project
-- Project skills (for contributors and AI agents): [docs](.claude/skills/sotano-docs/SKILL.md) (documentation rules), [items](.claude/skills/sotano-items/SKILL.md) (how to build safe, compatible items), [feature](.claude/skills/sotano-feature/SKILL.md) (the production quality bar and the owner's feedback log), [lore](.claude/skills/sotano-lore/SKILL.md) (how references become content), [i18n](.claude/skills/sotano-i18n/SKILL.md) (every player-facing text in every language).
+<p align="center">
+  <a href="https://sotano-yeagobs-projects.vercel.app"><b>▶ PLAY IN YOUR BROWSER</b></a><br>
+  <a href="https://sotano-yeagobs-projects.vercel.app">https://sotano-yeagobs-projects.vercel.app</a><br>
+  <sub>No install. Desktop browser with a keyboard and mouse. Runs on WebGL.</sub>
+</p>
 
 ---
 
-## What you can do
+## What it is
 
-- **Play a unique run every time** — each run has a seed (shown as `ABCD EFGH` on the pause, inventory and death screens; click to copy a link). Layouts, room moods and decor, rock, projections, practices and rewards all come from it, and `?seed=ABCD-EFGH` replays a run exactly.
-- **Descend a stacked dungeon** — ten floors: the roots (floor 0) are a friend, with every door open, a lesson in each room and only gentle practices; then nine circles, each 8–11 rooms built from hand-made templates and laid out Isaac-style (start, normal rooms, **treasure**, **boss** and sometimes a locked **vault**). Entering the boss room loads the next floor, reveals the boss's practice on its pedestal and cracks open a hole in the floor (never under your feet): you **fall** into the next one. Up top you can build 100 blocks into the sky. Floors above remember what you broke. A minimap fills in as you go.
-- **Face projections** — Doubt (chases you), the Inner Critic (keeps its distance and lobs judgements) and Panic (rushes you and bursts). They **materialise from the centre of the room**, the doors seal, and they open again when every projection is gone.
-- **Survive** — Isaac-style hearts drawn in quarters (every point of damage counts), a moment of invulnerability after each hit, and a death screen when the intention fades.
-- **Use bombs ("breakthroughs")** — E drops one; it's a cube with a fuse you can kick, and it chains with other bombs.
-- **Open doors by walking up to them** — they slide up like in Doom; gold frames lead to treasure, red ones to the boss, a padlock needs a key.
-- **Pick up practices** — from pedestals: they're held up with both hands, and a banner (which stays until you click) tells you what they mean, **what they do** in plain words, where they come from and exactly which stats changed. **Tab** opens the inventory: your practices, their descriptions and inspirations, synergies and states of being with progress, and every stat.
-- **Cast intentions** — your shot: straight for a moment, then it drops.
-- **Break anything** — every block has a tier, HP and armor; weak shots still do 10%, so everything breaks (except bedrock). Broken blocks drop nothing but themselves.
-- **Catch the debris** — broken blocks become cubes that tumble and pile up (thousands, smoothly). Walk over one to pick it up; with your hand full, you kick it. Carry more than one and the next shows in your other hand.
-- **Place and throw** — right click places the top block (or throws it if there's nowhere to place it); Q throws it. A cube that flies into a projection hurts it, harder the harder the block (obsidian hits like two intentions).
-- **Wade, swim, burn** — water, lava and fire flow and react ([Elements](docs/design/ELEMENTS.md)): wade through shallow water, lose your footing in deep water (watch your breath), keep out of lava; water on lava makes obsidian, fire eats crates and goes out when its block breaks. Projections each live the elements their own way: Panic calms in water and goes off in fire.
-- **Explore rooms with height** — vaults and domes, galleries, bridges, terraces, pools and pits ([Levels](docs/design/LEVELS.md)).
+You go down into the basement of your own mind, where reality bends to intention. Every wall is something you built to stay safe and that now keeps you small. Every creature is a pattern that stops you from going after what you want. Every item is a practice that people have used to grow, and picking it up changes not only what you can do, but **who you are**.
 
-### Practices (items)
+The goal isn't to stay down there. It's to dig your way back up to the surface, changed, and live from there.
 
-| Practice | Q | Effect | Inspired by |
-|---|---|---|---|
-| Stoic Resolve | ★★ | +damage, heavier intentions | Marcus Aurelius; Epictetus |
-| Deep Focus | ★★ | ×2 mining, less damage | *Deep Work* (Cal Newport) |
-| Kaizen | ★★ | Pierce two soft blocks | Kaizen |
-| Habit Stacking | ★★★ | Breaks spread to same-material neighbours | Habit stacking (James Clear; BJ Fogg) |
-| Second Brain | ★★★ | Carry one more block | *Building a Second Brain* (Tiago Forte) |
-| Exposure | ★★ | Soft blocks shatter on contact | Exposure therapy |
-| Symbolic Act | ★★★ | Thrown blocks burst | *Psychomagic* (Jodorowsky); psychodrama |
-| Growth Mindset | ★ | Jump much higher | *Mindset* (Carol Dweck) |
-| Flow | ★★ | Move and cast faster | *Flow* (Csikszentmihalyi) |
-| Visualization | ★ | Intentions fly further and faster | Mental rehearsal |
-| Grounding | ★ | Kick twice as hard | Somatic grounding |
-| Gratitude Journal | ★ | +luck: cleared rooms reward you more | Gratitude journaling |
-| Box Breathing | ★★ | +1 heart, full heal | Box breathing |
-| Radical Acceptance | ★★ | Your own bombs don't hurt you | Dialectical Behaviour Therapy |
-| Socratic Questioning | ★ | +2 keys; locks sometimes give way | Cognitive behavioural therapy |
-| Meditations | ★★★★ | ×3 damage, +2 | Marcus Aurelius (public domain) |
-| Self-Reliance | ★★★★ | ×2 fire rate, +damage | Emerson (public domain) |
-| Tao Te Ching | ★★★★ | Intentions flow through five blocks of anything | Lao Tzu (public domain) |
-| As a Man Thinketh | ★★★★ | ×4 mining, ×1.5 damage | James Allen (public domain) |
-| Letters from a Stoic | ★★★★ | +3 carry, ×2 kick and throw, +2 reach | Seneca (public domain) |
-| Satori | ★★★★ | A little more of everything | Zen |
-| Forgiveness | ★★★ | Projections that touch you are hurt; half their hits ignored | *A Course in Miracles* |
-| Nothing Personal | ★★ | Two in three contact hits do nothing | *The Four Agreements* (don Miguel Ruiz) |
-| Systemic Constellation | ★★★ | Projections spawn weaker and slower | Family and systemic constellations |
-| Art Therapy | ★★ | Placing blocks may heal you | Art therapy |
-| Thinking, Waiting, Fasting | ★★ | Range, longer recovery, luck | *Siddhartha* (Hesse) |
-| Follow the Omens | ★★ | Luck; every cleared room leaves a reward | *The Alchemist* (Coelho) |
-| Occam's Razor | ★★★★ | Your intentions become a blade of light that cuts every block in reach | Occam's razor; a wink at swords of light |
-| Kiai | ★★★★ | Your intentions become a charged beam that burns through blocks | Kiai (martial arts); a wink at charged beams |
-| Lion's Mane | ★★ | Jump ×2; break soft blocks with your head | The lion's mane mushroom; a wink at classic platformers |
+Inspired by the block worlds of *Minecraft*, the runs and item synergies of *The Binding of Isaac*, and the knowledge-gated secrets of *Noita*.
 
-Every practice has a meaning (its description) and a plain **effect** line with numbers. Synergies: **Somatic Release**, **Compound Effect**, **Flooding**, and four **states of being** (Embodied, Lucid, Open-hearted, Resolute) for holding three practices of the same path. Details: [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names).
+> **Status: prototype M1.5.** Ten stacked floors you descend by falling through each boss room, sealed rooms full of projections, hearts, bombs and keys, 30 practices with synergies and states of being, and an inventory window. Fire, water and lava are built; chests, furnaces and the climb back up are planned. Things marked *planned* are design, not code.
+
+---
+
+## The concept
+
+SÓTANO is a game about a person unlocking their inner potential through **intention**. The dungeon, the blocks, the enemies, the items, the way down and the way back up are all a metaphor for that process.
+
+| In the game | What it stands for |
+|---|---|
+| **Intentions** (your shot) | Focused will: they fly straight while you hold your focus, then drop if you don't follow through |
+| **Breaking blocks** | Dismantling a limiting structure: a belief, a habit, an avoidance |
+| **Block tiers** | How deep a limitation runs: dirt is a passing excuse, obsidian is a belief from childhood |
+| **Loose cubes you carry** | What you dismantle becomes material to build with |
+| **Going down** | Going inward: introspection, shadow work |
+| **Coming back up** | Integration: bringing what you learned into daily life |
+| **Keys** | Insights, found by breaking through something |
+| **Bombs** | Breakthroughs: rare, powerful, and dangerous if you're careless |
+| **Hearts** | Resilience and self-worth; patterns take them, care restores them |
+| **Bosses** | The big, old patterns behind the small ones, made of the same blocks as everything else |
+| **The surface** | Life after the change: the next layer of the game |
+
+The descent-and-return shape is the classic hero's journey. The "basement of your own mind" echoes Jung's descent into the unconscious. Neither is named in the game; they are its skeleton.
+
+### You are a state of being, not a collection of gear
+
+Items are **practices**, and each one moves the person along one of four paths:
+
+| Path | What it develops | Practices (examples) |
+|---|---|---|
+| **Body** | Presence, energy, nervous-system regulation | Grounding, Box Breathing, Flow |
+| **Mind** | Clarity, focus, belief | Deep Focus, Visualization, Growth Mindset |
+| **Emotion** | Feeling instead of avoiding; release; compassion | Exposure, Gratitude Journal, Radical Acceptance |
+| **Will** | Consistency, discipline, small steps compounding | Kaizen, Habit Stacking, Stoic Resolve |
+
+Hold **three practices of the same path** and you reach a **state of being** (Embodied, Lucid, Open-hearted or Resolute): a bigger change you can see and feel.
+
+### Enemies are projections, not monsters
+
+Enemies are **mental projections** of the patterns that stop people going after their goals, given a body made of the same cubes as the walls. They are always patterns, never people or diagnoses. Each one behaves like the pattern it stands for, so the mechanic teaches the metaphor without a word of text:
+
+- **Doubt** walks at you, stops to reconsider, and reaches for you before its touch can hurt. Slow, persistent, easy to outpace if you keep moving.
+- **The Inner Critic** keeps its distance and lobs judgements in arcs. Dangerous when you stand still.
+- **Panic** rushes you, swells in three steps and **bursts**, breaking the blocks around it. Destructive, but it also opens paths.
+
+Rooms work like Isaac's: when you enter, the doors seal and the projections materialise from the centre of the room. They open again when every projection is gone. Projections come from inside you, not from outside.
+
+### Practices are real, and credited
+
+Practices are named after **techniques and concepts** people use to grow: Kaizen, Exposure, Box Breathing, Deep Focus, Habit Stacking, and titles of public-domain works such as Marcus Aurelius' *Meditations*, Seneca's *Letters*, Lao Tzu's *Tao Te Ching*, Emerson's *Self-Reliance* and James Allen's *As a Man Thinketh*. Modern books, courses and branded methods are credited as inspiration in each item's description, never used as a name. Practices aren't magic cures, and therapies aren't jokes.
+
+The full story, metaphors and naming rules are in [Story and metaphor](docs/design/STORY.md). The references behind everything are in the [source library](docs/lore/SOURCES.md).
+
+### A love letter to games
+
+SÓTANO is made by people who grew up inside games, and the project is full of small winks at them: a phrase that echoes a famous line, a mechanic that feels like an old friend. Winks, never copies: no names, assets, music or trademarks from other games. Every wink must still mean something in the story. A humble mushroom that makes you jump higher and break bricks with your head is one of them.
+
+---
 
 ## Controls
 
 | Action | Input |
 |---|---|
-| Look | Mouse (click anywhere to capture it; Esc releases it and pauses) |
-| Move · jump | WASD · Space |
-| Cast intentions | Left click (hold) |
+| Look | Mouse (click the game to capture it; **Esc** releases it and pauses) |
+| Move · jump | **WASD** · **Space** |
+| Cast intentions | **Left click** (hold) |
 | Pick up a block | Walk over it with room in your hand |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) |
-| Place the top block | Right click (throws it if there's nowhere to place it) |
-| Throw the top block | Q |
-| Drop a bomb | E |
-| Open a door | Walk up to it (locked doors use a key) |
-| Inventory and stats | Tab (or I) |
-| New run | R |
+| Place the top block | **Right click** (throws it if there's nowhere to place it) |
+| Throw the top block | **Q** |
+| Drop a bomb | **E** |
+| Open a door | Walk up to it (locked doors need a key) |
+| Inventory and stats | **Tab** (or **I**) |
+| New run | **R** |
 
-Language: English or Spanish, picked from your browser; switch it on the pause card (remembered) or with `?lang=es` in the URL.
+Language: English or Spanish, picked from your browser. Switch it on the pause card (it's remembered) or with `?lang=es` in the URL. Touch controls are *planned*.
 
-Touch controls are *planned*.
+---
 
-## Run it locally
+## Quickstart
 
-Requires Node 20+.
+### Play it
+
+Open **[sotano-yeagobs-projects.vercel.app](https://sotano-yeagobs-projects.vercel.app)** and click the screen. That's it.
+
+Every run gets a fresh seed, shown as `ABCD EFGH` on the pause, inventory and death screens. Share a run by adding `?seed=ABCD-EFGH` to the URL: it replays exactly.
+
+### Run it locally
+
+Requires **Node 20+**.
 
 ```bash
+git clone https://github.com/yeagob/sotano.git
+cd sotano
 npm install
-```
-
-```bash
 npm run dev
 ```
 
-Then open http://localhost:5174. Every run gets a fresh seed; add `?seed=ABCD-EFGH` to replay one.
+Then open **http://localhost:5174**.
 
 | Script | What it does |
 |---|---|
-| `npm test` | Unit tests (Vitest), including the synergy matrix |
+| `npm run dev` | Start the dev server with hot reload |
+| `npm test` | Unit tests (Vitest), including a 378-combination synergy matrix |
 | `npm run typecheck` | TypeScript, no emit |
-| `npm run build` | Typecheck + production build into `dist/` |
-| `npm run preview` | Serve the production build |
+| `npm run build` | Typecheck and production build into `dist/` |
+| `npm run preview` | Serve the production build locally |
 
 ### Debug console
 
-**F3** toggles the debug readout. **`?gallery`** opens the art review page (materials, practices, projections, pickups, HUD, palette, with colour-blindness filters). Open the browser console and use `S`:
+**F3** toggles the debug readout. **`?gallery`** opens the art review page. In the browser console, the `S` object gives you tools:
 
 ```js
-S.items                 // every item id
-S.give('taoteching')    // gain a practice (banner, hold-up, flash)
-S.give('exposure'); S.give('habitstack')
-S.synergies()           // ['flooding']
-S.hooks()               // every hook per event, in run order
+S.give('taoteching')    // gain a practice
 S.god()                 // invulnerable
 S.bombs(5); S.keys(2)   // counters
-S.floor()               // open the hole and drop to the next floor
+S.floor()               // drop to the next floor
 S.enemies()             // live projections
 S.seed()                // this run's seed code
-S.charm()               // the nearest projection becomes an ally (factions)
-S.restart('ABCD-EFGH')  // replay a seed (no argument: a fresh one)
+S.restart('ABCD-EFGH')  // replay a seed
 ```
 
 The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md#debug-console).
+
+---
+
+## What's in the game today
+
+- **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a lesson in each room. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Beating a boss reveals its practice and cracks a hole in the floor: you fall into the next one. A minimap fills in as you go.
+- **Projections** that seal the room and fight you: Doubt, the Inner Critic and Panic, with more planned (Procrastination, Distraction, Perfectionism, Comparison).
+- **Survival** with Isaac-style hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
+- **Elements.** Water to wade or drown in, lava to keep away from, fire that eats crates. Water on lava makes obsidian. Each projection reacts to elements in its own way: Panic calms in water and goes off in fire.
+- **Practices and synergies.** Thirty practices from quality 1 to 4, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
+- **Unique runs.** Layouts, room moods, rewards and projections all come from the seed.
+
+The full catalogue is in [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names).
+
+---
 
 ## How it's built
 
@@ -166,62 +163,98 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 |---|---|
 | Language | TypeScript (strict) |
 | Build | Vite |
-| Rendering | three.js, chunked voxel meshes built in a Web Worker, baked ambient occlusion, all loose cubes in one instanced mesh |
-| Physics | All custom: box-vs-grid for the player and enemies, DDA raycasts for intentions, typed-array cube physics with stacking (2000 cubes ≈ 4 ms/frame) |
-| Enemies | Data + behaviour factories, per-room flow-field navigation |
-| Art | Pixel-art textures and item icons generated at runtime: no image files |
-| Audio | Synthesised with WebAudio: no sound files |
-| Randomness | Seed codes with checksum; structure decided at run start from path-derived forks; weighted tables; cosmetic randomness isolated |
-| Tests | Vitest: rules, generation, physics, items, seeds (determinism, isolation, variety), a 378-combination synergy matrix and a contract test |
-| Hosting | Static site (Vercel) |
+| Rendering | three.js, chunked voxel meshes built in a Web Worker, baked ambient occlusion, loose cubes in one instanced mesh |
+| Physics | All custom: box-vs-grid for the player and enemies, DDA raycasts for intentions, typed-array cube physics with stacking |
+| Art and audio | Pixel-art textures and icons generated at runtime, and sound synthesised with WebAudio. No image or sound files |
+| Randomness | Seed codes with checksum, deterministic structure, weighted tables |
+| Hosting | Static site on Vercel |
 
-The core idea, borrowed from how Isaac is built: **items don't call into the game; the game emits events and items hook into them.** Anything an item might want to change reads a stat or emits an event (a test enforces it). Stats are recomputed from layered modifiers, damage goes through one pipeline, chain reactions are deferred and budgeted, exceptions between items live in one file, and five safety layers keep powerful items from breaking the game. Key designs go through an architect and a mediator review before being built.
+The core idea: **items don't call into the game; the game emits events and items hook into them.** Stats are recomputed from layered modifiers, damage goes through one pipeline, and safety layers keep powerful items from breaking the game. Key decisions go through an engineer, architect and mediator review before they are built.
 
 ```
 src/
-  core/      events, RNG, stats, damage                 (no three.js, no DOM)
+  core/      events, RNG, stats, damage          (no three.js, no DOM)
   items/     item machinery: types, inventory, pools, validation
   enemies/   enemy types, behaviour factories, flow field
-  content/   materials, room templates, items, synergies, enemies (data)
-  world/     voxel storage, floor plan, stacked dungeon, mesher + worker
+  content/   materials, rooms, items, synergies, enemies (data)
+  world/     voxel storage, floor plans, stacked dungeon, mesher + worker
   physics/   raycast, voxel collision, loose cubes and bombs
   combat/    intentions
   entities/  player, doors, pickups, enemies
-  render/    atlas, icons, chunks, hands, debris, cracks, particles
+  render/    atlas, icons, chunks, hands, debris, particles
   game/      event catalogue, HUD, game loop
 tests/       Vitest suites
-docs/        design, architecture, research, reviews
+docs/        design, architecture, lore, art, reviews
 ```
+
+---
 
 ## Roadmap
 
 | Milestone | Goal |
 |---|---|
-| **M0 — Toy** ✔ | One breakable room; cast, break, pick up, kick, place, throw |
-| **M1 — One floor** ✔ | Generated floors from templates, doors and keys, treasure/boss/vault rooms, items and synergies, minimap |
-| **M1.5 — Combat and depth** ✔ | Stacked floors descended by falling, projections with flow-field navigation, health, bombs, inventory window, quality-4 practices, item safety layers |
-| E — Elements | Chests (keys move there), fire and burning barrels, water, lava, mud and sand, furnaces, electricity ([plan](docs/architecture/ELEMENTS.md)) |
-| M2 — Synergies | Projectile behaviours, weapon types, enemy-owned hooks, more projections, bosses made of breakable voxels |
-| M4 — The climb | Special blocks and practices to get back up; save runs |
-| M5 — Secrets | Hidden pockets, side biomes, seed-dependent recipes, meta-progression |
+| **M0 — Toy** ✔ | One breakable room: cast, break, pick up, kick, place, throw |
+| **M1 — One floor** ✔ | Generated floors from templates, doors and keys, treasure, boss and vault rooms, items, synergies, minimap |
+| **M1.5 — Combat and depth** ✔ | Stacked floors descended by falling, projections with navigation, health, bombs, inventory, quality-4 practices |
+| **E — Elements** | Chests, fire and burning barrels, water, lava, mud and sand, furnaces, electricity ([plan](docs/architecture/ELEMENTS.md)) |
+| **M2 — Synergies** | Projectile behaviours, weapon types, more projections, bosses made of breakable voxels |
+| **M4 — The climb** | Special blocks and practices to get back up; save runs |
+| **M5 — Secrets** | Hidden pockets, side biomes, seed-dependent recipes, meta-progression |
+
+---
+
+## Documentation
+
+The full index is [docs/README.md](docs/README.md). By block:
+
+**Design: the game and what it means**
+- [Game design document](docs/design/DESIGN.md): pillars, loop, blocks and tiers, dungeon structure, scope, open questions.
+- [Story and metaphor](docs/design/STORY.md): premise, mechanics as metaphor, states of being, enemies as projections, naming rules.
+- [Elements](docs/design/ELEMENTS.md): fire, water and lava *(built)*; mud, electricity, furnaces, chests *(planned)*.
+- [Levels](docs/design/LEVELS.md): the thirteen floors *(direction)*, rooms with height and element rooms *(built)*.
+- [Stations, props and zones](docs/design/STATIONS.md): kitchen, forge, laboratory, garden and how they help you climb *(ideas)*.
+
+**Architecture: how the code works**
+- [Overview](docs/architecture/OVERVIEW.md): module map, frame order, core systems, debug console, tests.
+- [Items](docs/architecture/ITEMS.md): the item model, the stat and event contract, synergies, safety layers.
+- [Rooms and floors](docs/architecture/ROOMS.md): floor plans, room templates, doors and keys.
+- [Entities](docs/architecture/ENTITIES.md): stacked floors, health, pickups, bombs, enemies and navigation.
+- [Actors and factions](docs/architecture/ACTORS.md): the player and projections as actors, one damage pipeline.
+- [Seeds and randomness](docs/architecture/RNG.md): seed codes, structure and runtime randomness, weighted tables.
+- [Localization](docs/architecture/LOCALIZATION.md): English and Spanish, catalogs, live language switching.
+- [Elements](docs/architecture/ELEMENTS.md): the element layer, reactions, rendering and the plan for containers.
+
+**Lore: references and cosmology**
+- [Source library](docs/lore/SOURCES.md): every book, tradition, technique, therapy and game the work draws on.
+- [Concept glossary](docs/lore/CONCEPTS.md): each idea and where it shows up in the game.
+- [Cosmology](docs/lore/COSMOLOGY.md): the depth and the surface as mirrors (as above, so below), and the endgame.
+
+**Research and reviews**
+- [Technical research and proposal](docs/research/TECHNICAL.md): how Isaac and Noita are built, the target architecture, roadmap.
+- [Architecture reviews](docs/reviews/README.md): engineer, architect and mediator reviews of key decisions.
+
+---
 
 ## Contributing
 
-Early days, but welcome. Before opening a PR:
+Early days, but welcome. Before opening a pull request:
 
 ```bash
 npm run typecheck && npm test
 ```
 
-- Comments, docs and identifiers in **English**; follow the [project skills](.claude/skills/).
-- Content (materials, items, rooms, enemies) is data in `src/content/`; prefer adding data and hooks over special cases in the game loop.
-- If you change behaviour, update the matching doc in `docs/` in the same PR.
-- **No third-party game assets or names.** No Mojang textures/sounds/mob names, no Isaac item or character names; practices use generic technique names or public-domain works, and credit modern works only as inspiration.
+- Comments, docs and identifiers are in **English**. Follow the [project skills](.claude/skills/).
+- Content (materials, items, rooms, enemies) is data in `src/content/`. Prefer adding data and hooks over special cases in the game loop.
+- Player-facing text lives in `src/i18n/` in every shipped language.
+- If you change behaviour, update the matching doc in `docs/` in the same change.
+- **No third-party game assets or names.** Practices use generic technique names or public-domain works, and credit modern works only as inspiration.
+
+---
 
 ## License
 
-Not chosen yet. The proposal is MIT for code and CC BY 4.0 (or BY-SA) for original art and sound — see [docs/research/TECHNICAL.md §14](docs/research/TECHNICAL.md#14-open-source-and-intellectual-property-important).
+Not chosen yet. The proposal is MIT for code and CC BY 4.0 (or BY-SA) for original art and sound. See [docs/research/TECHNICAL.md §14](docs/research/TECHNICAL.md#14-open-source-and-intellectual-property-important).
 
 ## Credits
 
-Born from a voxel gift game made for a friend who finished *The Binding of Isaac*. Inspired by *Minecraft* (Mojang), *The Binding of Isaac* (Edmund McMillen / Nicalis) and *Noita* (Nolla Games). Practices are inspired by the works and techniques credited in the [source library](docs/lore/SOURCES.md). SÓTANO is not affiliated with or endorsed by any of them.
+Born from a voxel gift game made for a friend who finished *The Binding of Isaac*. Inspired by *Minecraft* (Mojang), *The Binding of Isaac* (Edmund McMillen / Nicalis) and *Noita* (Nolla Games). Practices draw on the works and techniques credited in the [source library](docs/lore/SOURCES.md). SÓTANO is not affiliated with or endorsed by any of them.
