@@ -1,14 +1,14 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { materialTexture } from '../render/atlas';
 import { palCss } from '../content/palette';
-import { BINDINGS, DOUBLE_TAP_MS, type Action, type Context } from './bindings';
+import { BINDINGS, DOUBLE_TAP_MS, TAP_MS, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
 
-interface Track { kind: 'stick' | 'look' | 'button'; action?: Action; x: number; y: number; ox: number; oy: number }
+interface Track { kind: 'stick' | 'look' | 'button'; action?: Action; x: number; y: number; ox: number; oy: number; t: number }
 
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
 const DOUBLE_TAPS = BINDINGS.filter(b => b.touch.control === 'doubleTap' && b.touch.on);
@@ -69,18 +69,20 @@ export class TouchControls {
         const a = btn.dataset.a as Action;
         inp.touchHeld.add(a); inp.touchPressed.add(a);
         const now = performance.now();
-        if (now - (this.lastTap.get(a) ?? -1e9) < DOUBLE_TAP_MS) {
-          for (const d of DOUBLE_TAPS) if (d.touch.on === a) inp.touchPressed.add(d.action);
+        const doubles = DOUBLE_TAPS.filter(d => d.touch.on === a);
+        if (doubles.length && now - (this.lastTap.get(a) ?? -1e9) < DOUBLE_TAP_MS) {
+          for (const d of doubles) inp.touchPressed.add(d.action);
+          inp.suppress(a);
           this.lastTap.delete(a);
-        } else this.lastTap.set(a, now);
+        }
         btn.classList.add('on');
-        this.tracks.set(tc.identifier, { kind: 'button', action: a, x, y, ox: x, oy: y });
+        this.tracks.set(tc.identifier, { kind: 'button', action: a, x, y, ox: x, oy: y, t: performance.now() });
       } else if (x < innerWidth * STICK_SPLIT && this.stickId < 0) {
         this.stickId = tc.identifier;
-        this.tracks.set(tc.identifier, { kind: 'stick', x, y, ox: x, oy: y });
+        this.tracks.set(tc.identifier, { kind: 'stick', x, y, ox: x, oy: y, t: 0 });
         this.stick.classList.add('on');
         this.placeStick(x, y, 0, 0);
-      } else this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y });
+      } else this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t: 0 });
     }
   }
 
@@ -113,6 +115,8 @@ export class TouchControls {
       if (!tr) continue;
       if (tr.kind === 'stick') this.releaseStick();
       else if (tr.kind === 'button' && tr.action) {
+        const now = performance.now();
+        if (now - tr.t < TAP_MS && Math.hypot(tr.x - tr.ox, tr.y - tr.oy) < 12) this.lastTap.set(tr.action, now);
         if (![...this.tracks.values()].some(o => o.action === tr.action)) {
           this.input.touchHeld.delete(tr.action);
           this.buttons.get(tr.action)?.classList.remove('on');
@@ -137,7 +141,7 @@ export class TouchControls {
     this.knob.style.transform = '';
   }
 
-  private clear() {
+  clear() {
     this.tracks.clear();
     this.input.touchHeld.clear();
     this.releaseStick();
@@ -145,7 +149,7 @@ export class TouchControls {
   }
 
   update(g: Game, ctx: Context) {
-    const show = this.input.device === 'touch' && ctx === 'play';
+    const show = this.input.device === 'touch' && (ctx === 'play' || ctx === 'prompt');
     if (!show && this.tracks.size) this.clear();
     this.root.classList.toggle('show', show);
     if (!show) return;

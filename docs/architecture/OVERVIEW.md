@@ -17,7 +17,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ physics/     voxel raycast, box-vs-grid collision, loose cubes and bombs
              ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts
              ├─ entities/    player, doors, pickups, enemies (system)
-             ├─ input/       actions bound to keyboard + mouse, gamepad and touch (INPUT.md)
+             ├─ input/       actions bound to keyboard + mouse, gamepad and touch (input/README.md)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
              ├─ audio/       synthesised sound effects
              ├─ i18n/        localization: t(), number formats, catalogs (en source, es), content

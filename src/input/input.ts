@@ -1,5 +1,5 @@
 import {
-  BINDING, BINDINGS, deadzone, lookCurve, PAD, PAD_LOOK_SPEED, PAD_TRIGGER, TOUCH_LOOK_SPEED,
+  BINDING, BINDINGS, deadzone, lookCurve, MOVE_KEYS, NAV_KEYS, NAV_PAD, PAD_LOOK_SPEED, PAD_TRIGGER, PAD_WAKE, TOUCH_LOOK_SPEED,
   type Action, type Device,
 } from './bindings';
 
@@ -33,6 +33,9 @@ export class Input {
   private padIndex = -1;
   private suppressed = new Set<Action>();
   private lastTouch = -1e9;
+  private expectUnlock = false;
+  private stickWake = 0;
+  onBlur: (() => void) | null = null;
   lookDX = 0; lookDY = 0;
   locked = false;
   engaged = false;
@@ -41,13 +44,14 @@ export class Input {
 
   constructor(private el: HTMLElement) {
     addEventListener('keydown', e => {
-      if (!this.keys.has(e.code)) this.pressed.add(e.code);
+      if (!e.repeat && !this.keys.has(e.code)) this.pressed.add(e.code);
       this.keys.add(e.code);
       this.use('keyboard');
       if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
     });
     addEventListener('keyup', e => this.keys.delete(e.code));
-    addEventListener('blur', () => { this.keys.clear(); this.mouse.clear(); this.touchHeld.clear(); });
+    addEventListener('blur', () => this.lost());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this.lost(); });
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
@@ -61,8 +65,9 @@ export class Input {
       this.locked = document.pointerLockElement === this.el;
       if (!this.locked) {
         this.mouse.clear(); this.keys.clear();
-        if (current === 'keyboard') this.engaged = false;
+        if (!this.expectUnlock) this.engaged = false;
       }
+      this.expectUnlock = false;
     });
     addEventListener('mousemove', e => {
       if (!this.locked) return;
@@ -87,7 +92,6 @@ export class Input {
   use(d: Device) {
     if (d === current) return;
     current = d;
-    if (d !== 'keyboard' && this.locked) { this.engaged = true; }
     for (const fn of deviceListeners) fn(d);
   }
 
@@ -103,6 +107,7 @@ export class Input {
     if (current === 'touch') this.fullscreen();
     this.engaged = true;
     this.suppress(...BUTTON_ACTIONS);
+    this.touchHeld.clear();
   }
 
   private fullscreen() {
@@ -111,6 +116,20 @@ export class Input {
     doc.requestFullscreen({ navigationUI: 'hide' })
       .then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape'))
       .catch(() => {});
+  }
+
+  private lost() {
+    this.keys.clear(); this.mouse.clear(); this.touchHeld.clear();
+    this.touchMove.x = this.touchMove.y = 0;
+    this.onBlur?.();
+    this.release();
+  }
+
+  unlockFor() {
+    if (!this.locked) return;
+    this.expectUnlock = true;
+    this.engaged = true;
+    document.exitPointerLock?.();
   }
 
   release() {
@@ -149,9 +168,9 @@ export class Input {
   }
 
   get move(): { x: number; y: number } {
-    const k = (codes: string[]) => codes.some(c => this.keys.has(c)) ? 1 : 0;
-    let x = k(['KeyD', 'ArrowRight']) - k(['KeyA', 'ArrowLeft']);
-    let y = k(['KeyW', 'ArrowUp']) - k(['KeyS', 'ArrowDown']);
+    const k = (codes: readonly string[]) => codes.some(c => this.keys.has(c)) ? 1 : 0;
+    let x = k(MOVE_KEYS.right) - k(MOVE_KEYS.left);
+    let y = k(MOVE_KEYS.up) - k(MOVE_KEYS.down);
     x += this.padMove.x + this.touchMove.x;
     y += this.padMove.y + this.touchMove.y;
     const l = Math.hypot(x, y);
@@ -160,10 +179,10 @@ export class Input {
   }
 
   navigate(): { x: number; y: number } {
-    const k = (code: string, i: number) => this.pressed.has(code) || (this.padHeld.has(i) && !this.padPrev.has(i)) ? 1 : 0;
+    const k = (codes: readonly string[], i: number) => codes.some(c => this.pressed.has(c)) || (this.padHeld.has(i) && !this.padPrev.has(i)) ? 1 : 0;
     return {
-      x: k('ArrowRight', PAD.RIGHT) - k('ArrowLeft', PAD.LEFT),
-      y: k('ArrowDown', PAD.DOWN) - k('ArrowUp', PAD.UP),
+      x: k(NAV_KEYS.right, NAV_PAD.right) - k(NAV_KEYS.left, NAV_PAD.left),
+      y: k(NAV_KEYS.down, NAV_PAD.down) - k(NAV_KEYS.up, NAV_PAD.up),
     };
   }
 
@@ -173,13 +192,17 @@ export class Input {
   }
 
   poll(dt: number) {
+    this.readPad(dt);
     for (const a of [...this.suppressed]) if (!this.raw(a)) this.suppressed.delete(a);
+  }
+
+  private readPad(dt: number) {
     this.padMove.x = this.padMove.y = 0;
     const pads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
     let pad: Gamepad | null = pads[this.padIndex] ?? null;
     if (!pad) {
       pad = null;
-      for (const p of pads) if (p?.connected) { pad = p; break; }
+      for (const p of pads) if (p?.connected && p.mapping === 'standard') { pad = p; break; }
       this.padIndex = pad?.index ?? -1;
     }
     this.padPrev = this.padHeld;
@@ -188,7 +211,11 @@ export class Input {
     pad.buttons.forEach((b, i) => { if (b.pressed || b.value > PAD_TRIGGER) this.padHeld.add(i); });
     const [mx, my] = deadzone(pad.axes[0] ?? 0, pad.axes[1] ?? 0);
     const [lx, ly] = deadzone(pad.axes[2] ?? 0, pad.axes[3] ?? 0);
-    if (this.padHeld.size || mx || my || lx || ly) this.use('gamepad');
+    const stick = Math.max(Math.hypot(mx, my), Math.hypot(lx, ly));
+    const woke = stick > PAD_WAKE && this.stickWake <= PAD_WAKE;
+    this.stickWake = stick;
+    if (woke || [...this.padHeld].some(i => !this.padPrev.has(i))) this.use('gamepad');
+    if (current !== 'gamepad') return;
     this.padMove.x = mx; this.padMove.y = -my;
     this.lookDX += lookCurve(lx) * PAD_LOOK_SPEED * dt / this.sensitivity;
     this.lookDY += lookCurve(ly) * PAD_LOOK_SPEED * 0.75 * dt / this.sensitivity;

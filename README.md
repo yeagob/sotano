@@ -79,7 +79,7 @@ SÓTANO is made by people who grew up inside games, and the project is full of s
 
 ## Controls
 
-Three complete schemes; the game follows whichever device you used last (details: [docs/architecture/INPUT.md](docs/architecture/INPUT.md)).
+Three complete schemes; the game follows whichever device you used last (details: [docs/architecture/input/](docs/architecture/input/README.md)).
 
 | Action | Keyboard and mouse | Gamepad | Touch (landscape) |
 |---|---|---|---|

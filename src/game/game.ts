@@ -300,6 +300,7 @@ export class Game {
     this.input.onPadChange = on => this.hud.toast(on ? 'toast.padConnected' : 'toast.padDisconnected');
     this.hud.rumble = (strength, ms) => this.input.rumble(strength, ms);
     this.hud.onAct = act => this.act(act);
+    this.input.onBlur = () => this.touch.clear();
     this.resize();
     this.newRun(seed);
   }
@@ -1743,12 +1744,13 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.inventoryOpen ? 'inventory' : playing ? 'play' : 'paused';
+    const ctx = this.player.dead ? 'dead' : this.hud.inventoryOpen ? 'inventory' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
-    if (restartBy === 'keyboard' ? ctx === 'play' || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
-    else if (ctx === 'dead' && this.deadT > DEATH_GRACE && inp.hitBy('confirm') === 'gamepad') this.requestRestart();
+    const live = ctx === 'play' || ctx === 'prompt';
+    if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
+    else if (ctx === 'dead' && this.deadT > DEATH_GRACE && inp.hit('confirm')) this.requestRestart();
     if (ctx === 'paused' && (inp.hit('confirm') || (inp.hitBy('pause') ?? 'keyboard') !== 'keyboard')) inp.resume();
-    else if (ctx === 'play' && inp.hit('pause')) inp.release();
+    else if (live && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
       if (this.restartT <= 0) { this.newRun(); this.revealT = 0; }
@@ -1758,11 +1760,11 @@ export class Game {
       if (!this.chunks.busy || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
     // an information banner stays until clicked; that click only dismisses it
-    if (this.hud.bannerOpen && ctx === 'play' && inp.hit('confirm')) {
+    if (ctx === 'prompt' && inp.hit('confirm')) {
       this.hud.dismissBanner();
       inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }
-    if ((ctx === 'play' || ctx === 'inventory') && inp.hit('inventory')) this.hud.toggleInventory(this);
+    if ((live || ctx === 'inventory') && inp.hit('inventory')) this.hud.toggleInventory(this);
     else if (ctx === 'inventory') {
       if (inp.hit('back')) this.hud.toggleInventory(this);
       else { const n = inp.navigate(); if (n.x || n.y) this.hud.moveSelection(n.x, n.y); }

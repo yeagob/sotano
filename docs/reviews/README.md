@@ -23,3 +23,4 @@ Each review records the critique, the ruling and the engineer's resolution.
 | [levels.md](levels.md) | Levels L1: ten floors, the tutorial roots, ids, surface band, pools, rock by depth ([../architecture/LEVELS.md](../architecture/LEVELS.md)) | Accepted with changes; L1 built |
 | [polarity.md](polarity.md) | Intention polarity: positive mends, negative harms, warmth, allies that heal and relapse, the F toggle ([../design/BESTIARY.md](../design/BESTIARY.md) §1.1) | Accepted with changes; built (added rules for owner ruling in §3) |
 | [elements.md](elements.md) | Fire, water and lava: element layer, flow, reactions, rendering, actors and rooms with height ([../architecture/ELEMENTS.md](../architecture/ELEMENTS.md) §9) | Accepted with changes; built |
+| [input.md](input.md) | Input: keyboard and mouse, gamepad, touch from one action table ([../architecture/input/](../architecture/input/README.md)) | Accepted with changes; built |

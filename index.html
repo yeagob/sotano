@@ -113,6 +113,7 @@
     #lang button { font: inherit; color: var(--ui-text); background: var(--ui-line); border: 0; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); padding: 2px 10px; cursor: pointer; }
     #lang button:hover, #lang button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     .go { margin-top: 12px; text-align: center; font-weight: bold; color: var(--ui-gold); }
+    #play { display: block; width: 100%; font: inherit; font-weight: bold; color: var(--ui-gold); background: none; border: 0; cursor: pointer; }
     #version { margin-top: 10px; text-align: center; font-size: 12px; color: var(--ui-faded); font-variant-numeric: tabular-nums; }
 
     #inventory { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
@@ -211,7 +212,6 @@
     body.dev-touch #banner .ribbon img { width: 52px; height: 52px; }
     body.dev-touch #banner b { font-size: 20px; }
     body.dev-touch #toast { top: 18%; }
-    body.dev-touch #overlay { cursor: default; }
     body.dev-touch #overlay .card { max-height: 94vh; overflow: auto; max-width: min(920px, 94vw); padding: calc(4 * var(--u)) calc(6 * var(--u)); }
     body.dev-touch #overlay .card { display: flex; flex-direction: column; }
     body.dev-touch #overlay h1 { font-size: 28px; order: -2; }
@@ -224,7 +224,6 @@
     body.dev-touch #inventory .card { width: 96vw; max-height: 94vh; padding: calc(4 * var(--u)) calc(5 * var(--u)); }
     body.dev-touch #inventory .cols { grid-template-columns: 1fr 220px; }
     body.dev-touch #inventory header .close { width: 44px; height: 44px; }
-    body.dev-gamepad #overlay { cursor: default; }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
   </style>
 </head>
@@ -256,7 +255,7 @@
       <table id="controls"></table>
       <p id="seed" class="seed"></p>
       <div id="lang"></div>
-      <div class="go" id="play" data-i18n="intro.play">Click to play</div>
+      <button type="button" class="go" id="play" data-act="resume" data-i18n="intro.play">Click to play</button>
       <button type="button" id="newrun" class="touch-only" data-act="restart" data-i18n="pause.newRun">New run</button>
       <div id="version"></div>
     </div>

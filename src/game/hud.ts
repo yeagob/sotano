@@ -457,11 +457,11 @@ export class Hud {
     const kb = g.input.device === 'keyboard';
     if (this.inventoryOpen) {
       this.game = g;
-      if (kb) document.exitPointerLock?.();
+      g.input.unlockFor();
       this.selected = g.inventory.items.at(-1)?.def.id ?? null;
       this.renderInventory(g);
-    } else if (kb) g.input.lock();
-    else g.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'inventory');
+    } else if (kb) { g.input.release(); g.input.lock(); }
+    else g.input.resume();
   }
 
   moveSelection(dx: number, dy: number) {

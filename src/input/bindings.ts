@@ -25,10 +25,14 @@ export interface Binding {
   refs: { minecraft: string; noita: string; isaac: string };
 }
 
+export const MOVE_KEYS = { up: ['KeyW', 'ArrowUp'], down: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'] } as const;
+export const NAV_KEYS = { up: ['ArrowUp'], down: ['ArrowDown'], left: ['ArrowLeft'], right: ['ArrowRight'] } as const;
+export const NAV_PAD = { up: PAD.UP, down: PAD.DOWN, left: PAD.LEFT, right: PAD.RIGHT } as const;
+
 export const BINDINGS: readonly Binding[] = [
   {
     action: 'move', kind: 'axis', when: ['play'],
-    keyboard: { keys: ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'] },
+    keyboard: { keys: Object.values(MOVE_KEYS).flat() },
     gamepad: { stick: 'left' },
     touch: { control: 'stick' },
     refs: { minecraft: 'WASD; left stick; a thumb joystick on the left in the pocket edition', noita: 'WASD; left stick', isaac: 'WASD; left stick' },
@@ -112,8 +116,8 @@ export const BINDINGS: readonly Binding[] = [
   },
   {
     action: 'navigate', kind: 'axis', when: ['inventory'],
-    keyboard: { keys: ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'] },
-    gamepad: { buttons: [PAD.UP, PAD.DOWN, PAD.LEFT, PAD.RIGHT] },
+    keyboard: { keys: Object.values(NAV_KEYS).flat() },
+    gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },
     refs: { minecraft: 'the d-pad moves between slots', noita: 'the d-pad moves between slots', isaac: 'the d-pad moves the selection' },
   },
@@ -142,6 +146,8 @@ export function contextsFor(b: Binding, device: Device): readonly Context[] {
 export const DOUBLE_TAP_MS = 300;
 
 export const PAD_DEADZONE = 0.18;
+export const PAD_WAKE = 0.5;
+export const TAP_MS = 180;
 export const PAD_TRIGGER = 0.35;
 export const PAD_LOOK_SPEED = 3.4;
 export const TOUCH_LOOK_SPEED = 0.0055;

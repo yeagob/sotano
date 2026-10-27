@@ -11,7 +11,7 @@ How the code that exists today works.
 | [ENTITIES.md](ENTITIES.md) | Stacked floors (going down by gravity), health, pickups and counters, bombs, enemies (projections): definitions, spawning, flow-field navigation, combat events |
 | [RNG.md](RNG.md) | Seeds and randomness: seed codes, the three classes (structure, runtime, cosmetic), the path table, weighted tables, what varies per run, item pools, guarantees |
 | [ACTORS.md](ACTORS.md) | Actors, factions, one damage pipeline (points), split actor/block damage, chain safety for explosions and deep event chains |
-| [INPUT.md](INPUT.md) | Input: one action table for keyboard and mouse, gamepad and touch; pausing per device, the landscape touch screen, words per device, rumble |
+| [input/](input/README.md) | Input, a folder: the action table and contexts (README), then one document per scheme: [keyboard and mouse](input/KEYBOARD.md), [gamepad](input/GAMEPAD.md), [touch](input/TOUCH.md) |
 | [LOCALIZATION.md](LOCALIZATION.md) | Localization: English source and Spanish, `t()` and catalogs, content texts by id, item messages, numbers, choosing the language, live switching, death causes, tests, how to add text or a language |
 | [ELEMENTS.md](ELEMENTS.md) | Elements: the element layer, flow, reactions, rendering and projections in fire, water and lava (built); electricity and block entities (chests, furnaces, barrels) still plan |
 | [LEVELS.md](LEVELS.md) | Levels: the ten floors and the tutorial roots (L1, built), and the milestones to the Tree-of-Life maps, multi-cell rooms, the circles, silence and heaven, and the giant tree (L2–L6) |

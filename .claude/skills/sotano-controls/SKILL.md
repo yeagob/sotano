@@ -5,7 +5,7 @@ description: Input discipline for SÓTANO. Use it EVERY time a control is added,
 
 # SÓTANO controls skill
 
-SÓTANO ships in three versions that are always complete: **keyboard and mouse**, **gamepad** (any controller with the browser's standard mapping) and **touch** (mobile, always landscape). A control that exists on one of them and not on the others is a bug. The design is in [docs/architecture/INPUT.md](../../../docs/architecture/INPUT.md); this is the checklist.
+SÓTANO ships in three versions that are always complete: **keyboard and mouse**, **gamepad** (any controller with the browser's standard mapping) and **touch** (mobile, always landscape). A control that exists on one of them and not on the others is a bug. The design is in [docs/architecture/input/](../../../docs/architecture/input/README.md) (the README for the table and contexts, then one document per scheme: KEYBOARD.md, GAMEPAD.md, TOUCH.md); this is the checklist.
 
 ## 1. The rule
 
@@ -40,4 +40,4 @@ SÓTANO ships in three versions that are always complete: **keyboard and mouse**
 - [ ] Messages in every catalog; the pause card and tablets read right on each device.
 - [ ] Verified in the browser: keyboard, a gamepad (a real one or `navigator.getGamepads` stubbed) and touch emulation in landscape and portrait.
 - [ ] `npm run typecheck && npm test` (`tests/controls.test.ts`).
-- [ ] [docs/architecture/INPUT.md](../../../docs/architecture/INPUT.md) table and the README controls updated.
+- [ ] The action table in [docs/architecture/input/README.md](../../../docs/architecture/input/README.md), the device's own document (KEYBOARD.md, GAMEPAD.md, TOUCH.md) and the root README controls updated.
