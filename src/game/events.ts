@@ -5,6 +5,7 @@
 import { EventBus } from '../core/events';
 import type { DamageKind } from '../core/damage';
 import type { ActorId, ActorKind, Faction, Owner } from '../entities/actors';
+import type { Polarity } from '../combat/polarity';
 
 export type { Owner } from '../entities/actors';
 
@@ -22,10 +23,13 @@ export interface GameEvents {
   // ── shooting ──
   /** On cast: the intention can be modified or the shot cancelled. */
   fire: { intent: IntentSpec };
+  /** The player toggled the loaded intention's polarity (BESTIARY §1.1). React only. */
+  polarityChange: { from: Polarity; to: Polarity };
   /** A weapon that replaces the intention is about to act (a swing, a beam's release, a great cut).
    *  `damage` (to each actor hit, per tick for the beam), `mining` (to blocks) and `reach` (blocks)
    *  can be changed, or cancel to stop it. */
-  strike: { weapon: WeaponId; damage: number; mining: number; reach: number; color: number; tags: Set<string> };
+  /** `polarity` is the loaded intention's: every hit of the stroke follows it (combat/polarity.ts). */
+  strike: { weapon: WeaponId; damage: number; mining: number; reach: number; color: number; tags: Set<string>; polarity: Polarity };
 
   // ── blocks in the world ──
   /** Before damage is applied to a block. `amount` already accounts for the material's armor. */
@@ -86,8 +90,9 @@ export interface GameEvents {
   // Hooks on actorDamage, contact and actorDeath must say which actors they are for
   // (`hook(..., { target: 'player' })`): one event covers everyone.
   /** Anything about to hurt an actor, in damage points (a heart is 8; the player loses exactly
-   *  that, shown in quarter hearts). Cancel to ignore it. */
-  actorDamage: { target: ActorId; targetKind: ActorKind; def: string; amount: number; kind: DamageKind; source: string; owner: Owner; knockback: number; cause?: Cause };
+   *  that, shown in quarter hearts). Cancel to ignore it. `polarity` is set for player intentions
+   *  (shots and weapon strokes), already halved if positive; the ceiling of positive ones is applied after this event. */
+  actorDamage: { target: ActorId; targetKind: ActorKind; def: string; amount: number; kind: DamageKind; source: string; owner: Owner; knockback: number; cause?: Cause; polarity: Polarity | null };
   /** A projection touches an actor it is hostile to (at most once per pair every 0.5 s):
    *  `toTarget` and `toAttacker` are damage points. */
   contact: { attacker: ActorId; attackerDef: string; target: ActorId; targetKind: ActorKind; toTarget: number; toAttacker: number };
@@ -125,6 +130,8 @@ export interface GameEvents {
 export interface IntentSpec {
   /** Damage to actors (projections). */
   damage: number;
+  /** Positive mends what it touches; negative harms it (combat/polarity.ts). */
+  polarity: Polarity;
   /** Damage to blocks, before the material's armor. */
   mining: number;
   /** How hard it shoves loose cubes. */

@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
+import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
@@ -124,6 +125,9 @@ const BREATH_REFILL = 4;
 /** A loose cube must fly at least this fast (blocks/s) to hurt a projection it hits. */
 const CUBE_HIT_SPEED = 4;
 
+/** An intention's touch on an actor: its polarity, and whether this touch may warm the target (once per stroke). */
+interface IntentTouch { polarity: Polarity; warm: boolean }
+
 interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
 
 /** A normal room: its roster in waves (BESTIARY §2.4). `wave` is -1 until the first one starts. */
@@ -206,6 +210,11 @@ export class Game {
   private contacts = new ContactGate();
   /** Queued explosions (chain safety: a few per frame, chains capped). */
   private blasts = new BlastQueue<Blast>();
+  /** The loaded intention's polarity (BESTIARY §1.1); F switches it. */
+  private polarity: Polarity = 'positive';
+  /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
+   *  already warmed, so a beam warms a projection once, not on every tick. */
+  private stroke = { polarity: 'positive' as Polarity, warmed: new Set<number>() };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
   private fpsAcc = 0; private fpsN = 0; fps = 0;
@@ -264,12 +273,10 @@ export class Game {
         const k = t.knock * 6 / Math.max(1, v.length());
         this.hitCube(i, v.x * k, v.y * k + 1, v.z * k);
       },
-      // the player's intentions pass through allies
-      enemyAt: (x, y, z, r) => this.enemies.at(x, y, z, r, e => hostile(this.player.faction, e.faction)),
+      enemyAt: (x, y, z, r, polarity) => this.enemies.at(x, y, z, r, e => this.meets(e, polarity)),
       hitEnemy: (uid, v, t) => {
-        const e = this.enemies.get(uid);
         const l = Math.hypot(v.x, v.z) || 1;
-        if (e) this.damageActor(e, t.damage, 'intent', 'intent', this.player.id, v.x / l, v.z / l);
+        this.intentTouch(uid, t.damage, v.x / l, v.z / l, 'intent', 'intent', t.polarity, true);
       },
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
       elementAt: (x, y, z) => this.elementAt(x, y, z)?.key ?? null,
@@ -302,6 +309,8 @@ export class Game {
     this.seedCode = encodeSeed(root);
     this.rng = new RunRandom(root);
     this.hud.setSeed(this.seedLabel);
+    this.polarity = 'positive';
+    this.hud.setPolarity(this.polarity);
     this.dungeon = planDungeon(this.rng);
     this.pools = new ItemPools(PLAYABLE_ITEMS);
     // reserve every pedestal of every floor now (boss rooms included), in (floor, room) order
@@ -496,8 +505,9 @@ export class Game {
       forward: () => p.forward,
       casting: () => this.input.fireHeld && !this.hands.holding,
       strike: (weapon, damage, mining, reach) => {
-        const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set() });
+        const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
+        this.stroke = { polarity: this.polarity, warmed: new Set() };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach };
       },
@@ -507,11 +517,12 @@ export class Game {
       cut: (x, y, z, source) => { this.damageBlock(x, y, z, 1e6, 'cut', source, this.strikeDebris-- > 0); },
       burn: (x, y, z, amount, source) => this.damageBlock(x, y, z, amount, 'beam', source),
       targets: () => this.enemies.list
-        .filter(e => e.alive && e.spawning <= 0 && hostile(p.faction, e.faction))
+        .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
         .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
       hit: (id, damage, kx, kz, source) => {
-        const e = this.enemies.get(id);
-        if (e) this.damageActor(e, damage, source === 'beam' ? 'beam' : 'cut', source, p.id, kx, kz);
+        const warm = !this.stroke.warmed.has(id);
+        this.stroke.warmed.add(id);
+        this.intentTouch(id, damage, kx, kz, source === 'beam' ? 'beam' : 'cut', source, this.stroke.polarity, warm);
       },
       clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
       clearCubes: inside => {
@@ -581,7 +592,7 @@ export class Game {
    * player loses exactly those points (shown as quarter hearts) and gets invulnerability.
    * Returns true if the hit landed.
    */
-  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0): boolean {
+  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch): boolean {
     const p = this.player;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     // peaceful creatures are part of the place: nothing hurts them
@@ -589,13 +600,11 @@ export class Game {
     if (t === p && p.invulnT > 0) return false;
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
-      knockback: t === p ? 0 : 3, cause: this.blasts.current ?? undefined,
+      knockback: t === p ? 0 : 3, cause: this.blasts.current ?? undefined, polarity: intent?.polarity ?? null,
     });
-    if (ev.cancelled || ev.amount <= 0) return false;
-    if (t !== p) {
-      this.enemies.hurt(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback);
-      return true;
-    }
+    if (ev.cancelled) return false;
+    if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
+    if (ev.amount <= 0) return false;
     p.hp = Math.max(0, p.hp - ev.amount);
     p.invulnT = this.stats.get('invuln');
     this.hud.hurt();
@@ -680,6 +689,88 @@ export class Game {
     a.faction = faction;
     if (a.kind === 'projection') (a as Enemy).targetId = -1; // look again with new eyes
     this.bus.emit('factionChange', { target: a.id, targetKind: a.kind, def: a.def, from, to: faction, source });
+  }
+
+  /** Whether an intention of this polarity meets an actor (docs/reviews/polarity.md, ruling 6):
+   *  hostile projections always; allies when it is negative (it harms them) or when they are hurt
+   *  (a positive one heals them). A healthy ally lets positive intentions pass. */
+  private meets(e: Enemy, polarity: Polarity) {
+    return meetsIntention(e.faction, e.hp, e.maxHp, polarity);
+  }
+
+  /**
+   * An intention (a shot, or a stroke of a held weapon) touches an actor. A positive one heals an
+   * ally and halves its damage against a projection; a negative one hits an ally at full damage.
+   * The rules are in combat/polarity.ts. `warm` is false for the repeat ticks of a beam.
+   */
+  private intentTouch(id: number, damage: number, kx: number, kz: number, kind: DamageKind, source: string, polarity: Polarity, warm: boolean) {
+    const e = this.enemies.get(id);
+    if (!e) return;
+    if (e.faction === 'self' && polarity === 'positive') {
+      const heal = allyHeal(damage, e.hp, e.maxHp);
+      if (heal > 0) {
+        e.hp += heal;
+        const b = e.body;
+        this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
+      }
+      return;
+    }
+    this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
+  }
+
+  /**
+   * An enemy takes `amount` after the `actorDamage` hooks. Without an intention it is plain damage.
+   * With one, the rules of combat/polarity.ts decide (`resolveHit`): warmth, relapse, the ceiling
+   * of positive intentions, and conversion.
+   */
+  private hurtEnemy(e: Enemy, amount: number, kx: number, kz: number, intent?: IntentTouch): boolean {
+    if (!intent) {
+      if (amount <= 0) return false;
+      this.enemies.hurt(e, amount, kx, kz);
+      return true;
+    }
+    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth }, amount);
+    e.warmth = r.warmth;
+    if (r.relapse) { this.relapse(e, kx, kz); return true; }
+    if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
+    if (r.convert && e.alive) this.convert(e);
+    return true;
+  }
+
+  /** A projection's warmth is full: it turns to your side (not destroyed). */
+  private convert(e: Enemy) {
+    e.hp = convertedHp(e.hp, e.maxHp);
+    this.setFaction(e, 'self', 'polarity');
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 16, 2.2, 0.06);
+    sfx3.converted();
+    this.hud.toast('toast.converted');
+  }
+
+  /**
+   * An ally at zero under a negative intention turns hostile again, with half its health. Not
+   * resealed: a room that is cleared stays cleared (docs/reviews/polarity.md, ruling 5).
+   */
+  private relapse(e: Enemy, kx: number, kz: number) {
+    e.hp = relapseHp(e.maxHp);
+    e.warmth = 0;
+    e.flash = 0.15;
+    e.body.vx += kx; e.body.vz += kz;
+    this.setFaction(e, 'projection', 'polarity');
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 12, 2, 0.06);
+    sfx3.relapsed();
+    this.hud.toast('toast.relapsed');
+  }
+
+  /** F: the loaded intention switches between positive (it mends) and negative (it harms). */
+  private togglePolarity() {
+    const from = this.polarity;
+    this.polarity = from === 'positive' ? 'negative' : 'positive';
+    this.hud.setPolarity(this.polarity);
+    this.bus.emit('polarityChange', { from, to: this.polarity });
+    this.hud.toast(this.polarity === 'positive' ? 'toast.polarityPositive' : 'toast.polarityNegative');
+    sfx3.polarity(this.polarity === 'negative');
   }
 
   private onEnemyDeath(e: Enemy) {
@@ -1268,7 +1359,7 @@ export class Game {
   private fire() {
     const p = this.player;
     if (!this.input.fireHeld || p.fireCooldown > 0 || this.hands.holding) return;
-    const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all) });
+    const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all, this.polarity) });
     if (ev.cancelled) return;
     p.fireCooldown = 1 / this.stats.get('fireRate');
     const dir = p.forward;
@@ -1730,6 +1821,7 @@ export class Game {
     this.tryPlace();
     if (inp.pressed.has('KeyQ')) this.throwTop();
     if (inp.pressed.has('KeyE')) this.placeBomb();
+    if (inp.pressed.has('KeyF')) this.togglePolarity();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);

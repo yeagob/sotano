@@ -83,6 +83,8 @@ export interface Enemy extends Actor {
   /** The element its body is in now (null on dry ground), and seconds until the element can hurt it again. */
   inElement: ElementKey | null;
   elemT: number;
+  /** Intention warmth, 0–1: positive intentions fill it, and at full warmth it turns to your side (combat/polarity.ts). */
+  warmth: number;
   /** Visual-only: hit flash and scale pulse. */
   flash: number;
   pulse: number;

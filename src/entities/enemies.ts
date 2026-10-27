@@ -54,6 +54,10 @@ export interface View {
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
 const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
+/** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
+ *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest
+ *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
+const WARM_GLOW = new THREE.Color(pal('captive.ember')).multiplyScalar(0.35);
 
 /** A projection's cube model, exactly as the game draws it (the gallery uses it too). */
 export function buildModel(def: EnemyDef): View {
@@ -109,7 +113,7 @@ export class Enemies {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
-      elemSpeed: 1, inElement: null, elemT: 0,
+      elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -357,7 +361,8 @@ export class Enemies {
     // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
       if (e.flash > 0) m.emissive.copy(HURT_FLASH);
-      else if (e.faction === 'self') m.emissive.copy(ALLY_GLOW);
+      else if (e.faction === 'self') m.emissive.copy(ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
+      else if (e.warmth > 0) m.emissive.copy(WARM_GLOW).multiplyScalar(e.warmth);
       else m.emissive.setRGB(0, 0, 0);
     }
     v.tells.forEach((m, i) => m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse)));

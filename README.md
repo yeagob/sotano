@@ -84,6 +84,7 @@ SÓTANO is made by people who grew up inside games, and the project is full of s
 | Look | Mouse (click the game to capture it; **Esc** releases it and pauses) |
 | Move · jump | **WASD** · **Space** |
 | Cast intentions | **Left click** (hold) |
+| Switch the intention's polarity | **F**: positive mends projections into allies, negative harms them and your allies (the round mark at the counters shows which) |
 | Pick up a block | Walk over it with room in your hand |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) |
 | Place the top block | **Right click** (throws it if there's nowhere to place it) |

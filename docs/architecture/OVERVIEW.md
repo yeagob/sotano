@@ -15,7 +15,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ world/       voxel storage + element layer, floor plan, stacked dungeon (carve, holes),
              │               element simulation, meshing worker (blocks and elements)
              ├─ physics/     voxel raycast, box-vs-grid collision, loose cubes and bombs
-             ├─ combat/      intentions (the player's projectiles), weapons, blasts
+             ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts
              ├─ entities/    player, doors, pickups, enemies (system)
              ├─ input/       keyboard + mouse (pointer lock)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles

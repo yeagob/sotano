@@ -12,6 +12,7 @@ import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Param
 import { causeName, effectMessage, isPath, itemText, materialName, pathName, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
+import type { Polarity } from '../combat/polarity';
 import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
 import { materialTexture } from '../render/atlas';
@@ -59,6 +60,8 @@ export class Hud {
   private breathKey = '';
   private bombsEl = $('bombs');
   private keysEl = $('keys');
+  private polarityEl = $('polarity');
+  private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
   private flashEl = $('flash');
@@ -108,6 +111,7 @@ export class Hud {
     this.setItems(this.lastItems);
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
+    this.renderPolarity();
     this.renderLanguages();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
@@ -121,6 +125,21 @@ export class Hud {
     if (!el) return;
     el.innerHTML = `<span>${th('intro.language')}</span>` + locales().map(l =>
       `<button type="button" data-lang="${l.code}"${l.code === locale() ? ' class="on" aria-pressed="true"' : ''}>${esc(l.name)}</button>`).join('');
+  }
+
+  /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
+  setPolarity(p: Polarity) {
+    this.lastPolarity = p;
+    this.renderPolarity();
+  }
+
+  private renderPolarity() {
+    const el = this.polarityEl;
+    const positive = this.lastPolarity === 'positive';
+    el.dataset.polarity = this.lastPolarity;
+    // the full light, or the eclipsed one (an ember ring round a dark centre): never cold, it is yours
+    el.style.setProperty('--pol', palCss(positive ? 'light.gold' : 'light.ember'));
+    el.title = t(positive ? 'hud.polarity.positive' : 'hud.polarity.negative');
   }
 
   update(g: Game, running: boolean, dt: number) {

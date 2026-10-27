@@ -1,6 +1,6 @@
 # Bestiary: projections, inhabitants and presences
 
-Status: **design proposal**, answered by the owner on 2026-10-27 (§13 records the answers). Built today: Doubt, the Lectern (Inner Critic) and Panic ([ENTITIES.md §5](../architecture/ENTITIES.md)). Everything else here is direction, to be built milestone by milestone (§12) and to pass the art gate ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)) one creature at a time. Names marked *(proposal)* wait for the owner (§13).
+Status: **design proposal**, answered by the owner on 2026-10-27 (§13 records the answers). Built today: Doubt, the Lectern (Inner Critic) and Panic ([ENTITIES.md §5](../architecture/ENTITIES.md)), and intention polarity (§1.1, built 2026-10-27). Everything else here is direction, to be built milestone by milestone (§12) and to pass the art gate ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)) one creature at a time. Names marked *(proposal)* wait for the owner (§13).
 
 The owner's brief (translated): *"Design the whole layer of enemies, final bosses and creatures in general. Not everything has to be hostile. Projections no longer have to be born in the middle of the room: they can appear at different spawn points, announced by particles. When you enter a room with enemies, the doors close with force and a sound, and they start to appear with particles that make them evident. There can be waves at given moments, but it must be very clear, with spatial sound, where they appear, and particles must announce them before they appear. There can be enemies whose attacks cross the room, that launch themselves. Take inspiration from the bestiaries of Noita and Isaac (not Minecraft, which is poor in this sense), mix ideas and combine them with the floors' themes. Enemies must evolve as the floors evolve; there are unique enemies per great zone and random bosses depending on the zone. Also: beings who live in the depths and are not hostile, whom we can talk to and get knowledge, wisdom and lessons from. They can be permanent, or come to give a message and vanish. These non-hostile actors are immortal and live in key layouts."*
 
@@ -48,7 +48,13 @@ Polarity decides what an intention does to each kind of being. The numbers are p
 
 **Where it comes from.** The Kybalion's polarity (opposites are degrees of one thing) and its mental transmutation (move a state along its own pole rather than fight it): [COSMOLOGY §4](../lore/COSMOLOGY.md#the-kybalion-further). Concept: [CONCEPTS](../lore/CONCEPTS.md).
 
-**Review first.** This changes damage, factions and the room clear, so it goes through the three-party review before it is built ([`sotano-docs` §4](../../.claude/skills/sotano-docs/SKILL.md)), in `docs/reviews/polarity.md`.
+**Review first.** This changes damage, factions and the room clear, so it goes through the three-party review before it is built ([`sotano-docs` §4](../../.claude/skills/sotano-docs/SKILL.md)), in [`docs/reviews/polarity.md`](../reviews/polarity.md).
+
+**Status (built, 2026-10-27).** The rules are in `src/combat/polarity.ts` and applied by `Game` (ENTITIES §5.1).
+
+- **Built:** the toggle on **F**; `polarity` on every shot and on every weapon stroke (Occam's Razor, Kiai, One Clear Cut); half damage and warmth for positive intentions against projections (+0.2 per hit, full at 1); a negative intention deals full damage and cools warmth by 0.25; a converted projection keeps its pattern (`factionChange` to the self); allies are healed by positive intentions and harmed by negative ones; an ally at zero under a negative intention turns hostile again at half health; the room clear counts hostile projections only; the HUD mark.
+- **Added rules, for owner ruling** (the review's mediator added them; the owner's text does not say them): a positive intention never kills a projection (the last point is kept, so the warmth still fills); a converted projection, or a relapsed ally, returns with at least half its maximum health; a warmed target gains warmth once per stroke (a beam's ticks do not stack it); a relapsed projection in a cleared room does not reseal the room; a healthy ally lets positive intentions pass, while a negative one always hits it.
+- **Not built:** inhabitants and presences (no actors yet); the gifts of allies at full health (the agreements session); warmth decay (no design yet); the Threshold Guardian's two routes (§6.5: the Guardian itself is not built).
 
 ---
 
@@ -748,7 +754,7 @@ These are the systems this design needs. Each key one goes through the **three-p
 | **Zones and pools** | `LevelDef` gains `zone`; rosters and boss pools by zone; `floor<k>:boss` stream | Roster by `minFloor` |
 | **Voxel bosses** | Bosses built of real blocks with a core vessel; phases; release into architecture | — |
 | **Inhabitants** | `neutral` actors with simple behaviours, hide/return on seal/clear | Faction `neutral` exists (ACTORS §4) |
-| **Intention polarity** | A `polarity` on intentions and a toggle control; warmth meter on projections; `factionChange` in both directions; ally harm and heal rules; a room clear that counts converted projections | Not built (intentions are one kind) |
+| **Intention polarity** | A `polarity` on intentions and a toggle control; warmth meter on projections; `factionChange` in both directions; ally harm and heal rules; a room clear that counts converted projections | Built (§1.1 status); inhabitants and presences not |
 | **Presences and dialogue** | Immortal actors, sanctuary rings, a dialogue card, localised lines, a profile save | — |
 | **Codex** | Release counters in the profile; a codex tab in the inventory | — |
 
@@ -758,7 +764,7 @@ These are the systems this design needs. Each key one goes through the **three-p
 
 | Step | What | Why first |
 |---|---|---|
-| E1 | **Intention polarity (the control, positive conversion, negative harm), spatial audio, the seal, omens, spawn points and waves** *(seal, spatial sound, floor omens and waves built; polarity not yet)* | The owner's core ask; it changes how every fight starts and reads |
+| E1 | **Intention polarity (the control, positive conversion, negative harm), spatial audio, the seal, omens, spawn points and waves** *(seal, spatial sound, floor omens, waves and polarity built)* | The owner's core ask; it changes how every fight starts and reads |
 | E2 | Attack families and movement classes (Line, Leap, Sweep; charger, leaper, mounted) with Zone I's projections (Autopilot, Craving, Impulse, Avoidance) and Procrastination, Distraction | Cross-room attacks; the first zone complete |
 | E3 | Lineage forms II, rooted variants, Zone II projections; Inhabitants of floor 0 and Zone I–II | Evolution with depth becomes visible |
 | E4 | Voxel bosses: Resistance, Inertia, The Insatiable; then Overwhelm, The Hoard, The Downpour; the zone pools | Random bosses by zone |
@@ -780,7 +786,7 @@ These are the systems this design needs. Each key one goes through the **three-p
 6. **"Transformations"** is read as the lineage forms of projections (§4.2). If the owner meant the states of being, say so.
 7. **Memory across runs**: Dwellers remember you, as knowledge only, in a small profile save, never as stats (§8.4).
 8. **The Threshold Guardian has two routes** (§6.5). The shadow route's outcome (the pit stays shut, a hole beside it) is my proposal.
-9. **Intention polarity** with a toggle control (§1.1). The key is still to be chosen with the controls.
+9. **Intention polarity** with a toggle control (§1.1). Built: the key is **F** (chosen against the controls; docs/reviews/polarity.md).
 
 **Still open.** My defaults stay in the document until the owner decides:
 

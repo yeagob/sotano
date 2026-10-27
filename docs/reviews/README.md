@@ -21,4 +21,5 @@ Each review records the critique, the ruling and the engineer's resolution.
 | [levels-l3.md](levels-l3.md) | Levels L3: footprint rooms, the great pit, checks per carved room ([../architecture/LEVELS.md](../architecture/LEVELS.md) §7) | Accepted with changes; split L3c (built), L3a, L3b |
 | [levels-l2.md](levels-l2.md) | Levels L2: Tree-of-Life floors, paths, and rooms you build your way through ([../architecture/LEVELS.md](../architecture/LEVELS.md) §5) | Accepted with changes; built |
 | [levels.md](levels.md) | Levels L1: ten floors, the tutorial roots, ids, surface band, pools, rock by depth ([../architecture/LEVELS.md](../architecture/LEVELS.md)) | Accepted with changes; L1 built |
+| [polarity.md](polarity.md) | Intention polarity: positive mends, negative harms, warmth, allies that heal and relapse, the F toggle ([../design/BESTIARY.md](../design/BESTIARY.md) §1.1) | Accepted with changes; built (added rules for owner ruling in §3) |
 | [elements.md](elements.md) | Fire, water and lava: element layer, flow, reactions, rendering, actors and rooms with height ([../architecture/ELEMENTS.md](../architecture/ELEMENTS.md) §9) | Accepted with changes; built |

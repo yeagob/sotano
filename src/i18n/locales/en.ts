@@ -33,6 +33,8 @@ const messages = {
   'controls.restart': 'new run',
   'controls.pause.key': 'Esc',
   'controls.pause': 'release the mouse (pause)',
+  'controls.polarity.key': 'F',
+  'controls.polarity': 'switch the intention: positive mends, negative harms',
 
   // ── HUD ──
   'hud.floor': 'Floor {n}',
@@ -96,6 +98,12 @@ const messages = {
   'toast.chestUnlocked': 'Chest opened · keys spent: {n}',
   'toast.wayDown': 'A way down opens',
   'toast.holeWait': 'The floor trembles under you: step aside and it will open',
+  'toast.polarityPositive': 'Positive intention: it mends',
+  'toast.polarityNegative': 'Negative intention: it harms',
+  'toast.converted': 'A projection turned to your side',
+  'toast.relapsed': 'An ally turned hostile again',
+  'hud.polarity.positive': 'Positive intention (F to switch)',
+  'hud.polarity.negative': 'Negative intention (F to switch)',
 
   // ── death screen ──
   'death.title': 'The intention faded',

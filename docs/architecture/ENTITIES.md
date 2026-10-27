@@ -78,6 +78,17 @@ defineEnemy({
 
 A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world changes (`VoxelWorld.version`). Outside the room, steering is a straight line. Blocked enemies hop up one block.
 
+### Intention polarity (`combat/polarity.ts`, `game/game.ts`)
+
+The rules are pure functions (`intentDamage`, `intentCeiling`, `warmthAfter`, `allyHeal`, `convertedHp`, `relapseHp`, `meetsIntention`, `resolveHit`); `Game` applies their result inside the one damage pipeline (`damageActor`), after the `actorDamage` hooks. Constants: `POSITIVE_DAMAGE` 0.5, `WARMTH_PER_HIT` 0.2, `WARMTH_COOL` 0.25, `ALLY_HEAL` 0.5, `TURN_HP` 0.5. Review and ruling: [reviews/polarity.md](../reviews/polarity.md).
+
+- **Loaded:** `Game.polarity` (positive at the start of each run), switched by **F** (`togglePolarity`), with `polarityChange`. Shots carry it in `IntentSpec.polarity`; weapon strokes carry it in `strike.polarity`, and every hit of a stroke follows it.
+- **Halving and the ceiling.** A positive intention halves its damage before `actorDamage` (`polarity` in that payload says so). After the hooks, a positive hit never takes a projection's last point (`intentCeiling`). Negative hits are full damage; a kill is a release, as before.
+- **Warmth.** `Enemy.warmth` (0 to 1): +0.2 per positive hit, −0.25 per negative hit, once per target per stroke. At 1 the projection converts: `setFaction(e, 'self', 'polarity')`, with its health raised to at least half its maximum.
+- **Allies.** Positive intentions heal them (`allyHeal`, half the damage, never past the maximum) and pass them when healthy (`meetsIntention`); negative ones hit them at full damage. At zero under a negative intention an ally relapses: `setFaction(e, 'projection', 'polarity')` with half its maximum health, warmth 0. Nothing reseals a room.
+- **Cancelled hits** (an item cancels `actorDamage`) give no warmth and no conversion.
+- **Still not polarity:** bombs, blasts, lava, fire, kicks and contact keep today's damage. A projection they kill is released; an ally they kill is released too.
+
 ### Combat events
 
 These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
@@ -85,7 +96,8 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 - `actorDamage { target, targetKind, def, amount, kind, source, owner, knockback, cause? }` before any damage to any actor (intentions, explosions, contact, projectiles).
 - `contact { attacker, attackerDef, target, targetKind, toTarget, toAttacker }` when a projection touches an actor it is hostile to, at most once per pair every 0.5 s (thorns, Forgiveness…).
 - `actorDeath { target, targetKind, def, x, y, z, drops }` (react only); the source `actor:<id>` is removed from the bus on death (reserved for actor-owned hooks).
-- `factionChange` when a projection changes side (`S.charm()` in the console).
+- `factionChange` when a projection changes side (`S.charm()` in the console, or a converted projection or relapsed ally: source `polarity`).
+- `polarityChange { from, to }` when the player switches the loaded intention with **F** (react only).
 
 ## 6. Events added in this milestone
 
