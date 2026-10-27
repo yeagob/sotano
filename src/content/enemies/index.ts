@@ -16,6 +16,25 @@ export const ENEMY_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(ENEMIES.map(e 
  * A normal room's roster on floor k (structure: rolled at carve time from the room's own fork).
  * Budget 2 + floor (at most 8 until the deep floors are tuned, docs/architecture/LEVELS.md L4), spent on enemies drawn from the ROSTER table that fit the remaining budget.
  */
+/**
+ * One wave of a challenge room: `budget` points spent on the ROSTER table, never quiet, at most
+ * seven projections (structure for the floor, runtime for the wave: the caller passes the fork).
+ */
+export function pickWave(rng: Rng, floor: number, budget: number): string[] {
+  const out: string[] = [];
+  for (let guard = 0; guard < 24 && budget > 0 && out.length < 7; guard++) {
+    const id = ROSTER.roll(rng, { floor });
+    const def = id ? ENEMY_BY_ID.get(id) : undefined;
+    if (!def || def.minFloor > floor || def.cost > budget) continue;
+    out.push(def.id);
+    budget -= def.cost;
+  }
+  return out;
+}
+
+/** A challenge wave's budget: the floor, the wave (1–3) and how many times you have come back. */
+export const waveBudget = (floor: number, wave: number, entry: number) => Math.min(3 + floor + 2 * wave + entry, 16);
+
 export const ENEMY_BUDGET = {
   pick(rng: Rng, floor: number): string[] {
     if (QUIET_ROOM.roll(rng, { floor })) return [];

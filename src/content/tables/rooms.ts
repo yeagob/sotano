@@ -9,6 +9,12 @@ import { table, type Table } from '../../core/tables';
 
 export type RoomMood = 'sparse' | 'normal' | 'cluttered' | 'reinforced';
 
+/** Does a hostile floor keep a challenge room (three waves every time you enter)? */
+export const CHALLENGE_ROOM = table<boolean>('challenge-room', 'structure', [
+  { value: true, weight: 2 },
+  { value: false, weight: 3 },
+]);
+
 export const ROOM_MOOD = table<RoomMood>('room-mood', 'structure', [
   { value: 'sparse', weight: 2 },
   { value: 'normal', weight: 5 },

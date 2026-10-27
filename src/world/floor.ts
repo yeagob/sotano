@@ -24,7 +24,7 @@ import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
 import { CELL_ELEMENT, CELL_STACK, TUTORIAL_ORDER, cellAt, DECOR_CHARS, ROOM_D, ROOM_H, ROOM_W, type CeilingShape, type RoomTemplate } from '../content/rooms';
 import { CHEST_LOCK, ITEM_IN_CHEST, ROOM_CHEST } from '../content/tables/chests';
 import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
-import { DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
+import { CHALLENGE_ROOM, DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
 import { hash3, type Rng, type RunRandom } from '../core/rng';
 import { DEFAULT_PLAN, generatePlan, OPPOSITE, TREE_ENTRY, treeCell, treePlan, type FloorPlan, type RoomType, type Side } from './floorplan';
 import { VoxelWorld } from './world';
@@ -63,7 +63,7 @@ export function bandOf(y: number): number {
 /** How deep a height is for anything that asks (items, the HUD): the surface counts as 0. */
 export function depthOf(y: number): number { return Math.max(FIRST_FLOOR, bandOf(y)); }
 
-export type DoorKind = 'normal' | 'treasure' | 'boss' | 'vault';
+export type DoorKind = 'normal' | 'treasure' | 'boss' | 'vault' | 'challenge';
 
 export interface RoomInfo {
   /** Global id (levelIndex(floor) × ROOM_ID_STRIDE + index). */
@@ -157,6 +157,17 @@ export function planDungeon(rr: RunRandom): DungeonPlan {
     }
     // deep floors keep no vault (the catalogue of practices must last the run): it stays a quiet room
     if (!lv.vaults) for (const r of plan.rooms) if (r.type === 'vault') r.type = 'normal';
+    // hostile floors may keep a challenge room, a dead end when there is one, never next to the start
+    if (!lv.tutorial) {
+      const ch = rr.fork('plan', k, 'challenge');
+      if (CHALLENGE_ROOM.roll(ch, { floor: k })) {
+        const start = plan.rooms[plan.start];
+        const ok = plan.rooms.filter(r => r.type === 'normal' && !Object.values(start.links).includes(r.id));
+        const dead = ok.filter(r => Object.keys(r.links).length === 1);
+        const pool = dead.length ? dead : ok;
+        if (pool.length) pool[ch.int(0, pool.length - 1)].type = 'challenge';
+      }
+    }
     plans.push(plan);
     themes.push(ROCK_THEME.roll(rr.fork('floor', k, 'theme'), { floor: k })!);
   }
@@ -305,7 +316,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       const other = pr.links[side];
       if (other === undefined) continue;
       const a = rooms[pr.id], b = rooms[other];
-      const special = [a.type, b.type].find(t => t === 'treasure' || t === 'boss' || t === 'vault');
+      const special = [a.type, b.type].find(t => t === 'treasure' || t === 'boss' || t === 'vault' || t === 'challenge');
       // on the tutorial floor every door is open: no padlock, and the way down is a plain door
       let kind: DoorKind = (special as DoorKind) ?? 'normal';
       if (lv.tutorial && kind === 'boss') kind = 'normal';
@@ -490,6 +501,8 @@ function fillRock(w: VoxelWorld, layers: [number, number], themes: RockTheme[]) 
 
 const FRAME: Record<DoorKind, number> = {
   normal: MAT.frame, treasure: MAT.goldframe, boss: MAT.bossframe, vault: MAT.goldframe,
+  // a challenge room: the obsidian of old patterns, like the boss's (its own look is an art follow-up)
+  challenge: MAT.bossframe,
 };
 
 /** Frame the doorway (one block around it, through the whole wall) and carve the opening. */

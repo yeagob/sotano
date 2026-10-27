@@ -36,14 +36,10 @@ const pathColor = (p: string) => palCss(`path.${p}.base` as PalToken);
 /** Minimap tones (docs/art/DECISIONS.md §10.2). */
 const MAP = {
   unvisited: palCss('bone.faded'), visited: palCss('ink.ash'), cleared: palCss('light.gold'), current: palCss('bone.paper'),
-  treasure: palCss('light.gold'), vault: palCss('brass.base'), boss: palCss('cold.white'), start: palCss('bone.dim'),
+  treasure: palCss('light.gold'), vault: palCss('brass.base'), boss: palCss('cold.white'), start: palCss('bone.dim'), challenge: palCss('cold.body'),
 };
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
-
-/** Every lesson of the roots (rooms carry theirs: `RoomTemplate.lesson`, docs/design/LEVELS.md §1). */
-export const LESSONS = ['move', 'intent', 'step', 'kick', 'pit', 'bridge', 'bomb', 'water', 'practice', 'down', 'carry'] as const;
-export type LessonKey = typeof LESSONS[number];
 
 export class Hud {
   private hand = $('hand');
@@ -75,7 +71,6 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
-  private lastLesson: LessonKey | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   inventoryOpen = false;
@@ -108,8 +103,7 @@ export class Hud {
     if (this.lastDepth >= 0) this.depthEl.textContent = t('hud.floor', { n: this.lastDepth });
     this.renderSeed();
     this.renderLanguages();
-    if (this.bannerOpen && this.lastLesson !== null) this.renderLesson(this.lastLesson);
-    else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
+    if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.inventoryOpen && this.game) this.renderInventory(this.game);
     this.toastEl.classList.remove('show');
@@ -256,6 +250,7 @@ export class Hud {
     if (type === 'start') { dot(0, -2); dot(-1, -1); dot(0, -1); dot(1, -1); g.fillRect(x - 1, y, 3, 2); }
     else if (type === 'treasure') { dot(0, -2); dot(-1, -1); dot(1, -1); dot(-2, 0); dot(2, 0); dot(-1, 1); dot(1, 1); dot(0, 2); }
     else if (type === 'vault') { g.fillRect(x - 2, y - 1, 5, 1); g.fillRect(x - 2, y + 1, 5, 1); dot(-2, 0); dot(2, 0); }
+    else if (type === 'challenge') { for (let i = -2; i <= 2; i++) { dot(i, i); dot(i, -i); } }
     else if (type === 'boss') { g.fillRect(x - 2, y - 2, 5, 5); g.fillStyle = palCss('ink.void'); g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = MAP.boss; dot(0, 0); }
   }
 
@@ -264,7 +259,6 @@ export class Hud {
   /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
     this.lastBanner = [def, changes, synergies];
-    this.lastLesson = null;
     this.renderBanner(def, changes, synergies);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
@@ -287,23 +281,6 @@ export class Hud {
       `<p class="effect">${esc(tx.effect)}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
       `${lines.concat(syn).join('')}<p class="dismiss">${th('banner.continue')}</p></div></div>`;
-  }
-
-  /** A lesson of the tutorial floor (the roots): how to play, one per room, until clicked. */
-  lessonBanner(key: string) {
-    if (!(LESSONS as readonly string[]).includes(key)) return;
-    this.lastLesson = key as LessonKey;
-    this.renderLesson(this.lastLesson);
-    this.bannerEl.classList.remove('show');
-    void this.bannerEl.offsetWidth;
-    this.bannerEl.classList.add('show');
-    this.bannerOpen = true;
-  }
-
-  private renderLesson(k: LessonKey) {
-    this.bannerEl.style.setProperty('--c', 'var(--ui-gold)');
-    this.bannerEl.innerHTML = `<div class="ribbon slate"><div><b>${th(`lesson.${k}.title`)}</b>` +
-      `<span>${th(`lesson.${k}.text`)}</span><p class="dismiss">${th('banner.continue')}</p></div></div>`;
   }
 
   /** Information banners stay until the player clicks (owner rule). */

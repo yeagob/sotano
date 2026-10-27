@@ -35,7 +35,9 @@ Ten floors below and three in the tree: thirteen. Down is the unconscious, layer
 4. **There is no house on the surface.** You climb from floor 0, the roots, however you can (blocks, the tree itself).
 5. **Heaven and the bottom are connected**; how, to be decided.
 
-6. **Floor 0 is the tutorial and the friend**: everything beautiful, **every door open** (no locks, no combat seals), **instructions on how to play spread through its rooms**, and **only practices of quality 1–3** on its pedestals.
+6. **Floor 0 is the tutorial and the friend**: everything beautiful, **every door open** (no locks, no combat seals), **instructions on how to play spread through its rooms**, and **only practices of quality 1–3** on its pedestals. The instructions are **carved on stone tablets on the walls** of each room (north and south walls, beside the doors), never an overlay on the screen (owner, 2026-10-27).
+7. **Challenge rooms** may appear on any hostile floor: three waves of projections every time you enter, harder each time, for as long as you like (farming).
+8. **Doors work as in Isaac**: open whenever there are no projections, sealed while you fight, open again on their own when the room is clear; **a breakthrough destroys a door for good**.
 
 So the world, top to bottom: heaven · leaves · branches · trunk · the surface · **0** roots (peaceful) · **1–5** Tree of Life and the first five circles (5 ends in the great pit) · **6–9** random floors, circles six to nine (9 frozen) · silence (which loops back to heaven).
 

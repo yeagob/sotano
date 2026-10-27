@@ -291,3 +291,25 @@ describe('rooms you build your way through', () => {
     expect(needsBuilding(room(open.map(() => '...1.........')))).toBe(false);  // one high: step up
   });
 });
+
+describe('challenge rooms', () => {
+  it('appear on some hostile floors, never on the roots, and their waves grow', async () => {
+    const { pickWave, waveBudget } = await import('../src/content/enemies');
+    let seen = 0;
+    for (let s = 1; s <= 12; s++) {
+      const run = buildRun(s * 101, 4);
+      expect(run.floors[0].rooms.some(r => r.type === 'challenge')).toBe(false);
+      for (const f of run.floors.slice(1)) {
+        const ch = f.rooms.filter(r => r.type === 'challenge');
+        expect(ch.length).toBeLessThanOrEqual(1);
+        seen += ch.length;
+        for (const r of ch) expect(r.enemies).toEqual([]);
+      }
+    }
+    expect(seen).toBeGreaterThan(5);
+    expect(waveBudget(3, 2, 0)).toBeGreaterThan(waveBudget(3, 1, 0));
+    expect(waveBudget(3, 1, 4)).toBeGreaterThan(waveBudget(3, 1, 0));
+    const { Rng } = await import('../src/core/rng');
+    expect(pickWave(new Rng(1), 3, waveBudget(3, 3, 5)).length).toBeGreaterThan(pickWave(new Rng(1), 3, waveBudget(3, 1, 0)).length - 1);
+  });
+});

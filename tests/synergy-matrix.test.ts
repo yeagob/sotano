@@ -47,6 +47,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, type: 'normal', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
+  doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
   ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
   materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),
   elementEnter: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water', depth: 'head' }),

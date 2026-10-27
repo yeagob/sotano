@@ -137,6 +137,10 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 | **Open-hearted** | 3 Emotion practices | State of being: +2 luck |
 | **Resolute** | 3 Will practices | State of being: ×1.15 damage, ×1.2 mining |
 
+### Gifts and parts (planned)
+
+Projections leave **parts** (flesh, heart, mind, essence) that are items, and some Presences make **agreements** for them. Their gifts come in three tiers and a closed set, the Covenant; every gift is marked *promised* by a gold seam. Design: [BESTIARY.md §5.7 and §8.5–§8.7](BESTIARY.md).
+
 ## A love letter to games
 
 SÓTANO is made by people who grew up inside games, and it says so. The project will be **full of references to other games**, as an expression of love for that culture: winks, not copies.

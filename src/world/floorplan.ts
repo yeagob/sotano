@@ -11,7 +11,9 @@
 import type { Rng } from '../core/rng';
 
 /** `path`: a corridor of a Tree-of-Life floor between two emanations (docs/architecture/LEVELS.md §5). */
-export type RoomType = 'start' | 'normal' | 'treasure' | 'boss' | 'vault' | 'path';
+/** `challenge`: waves of projections every time you walk in, for as long as you like (Isaac's
+ *  challenge rooms; docs/design/LEVELS.md). */
+export type RoomType = 'start' | 'normal' | 'treasure' | 'boss' | 'vault' | 'path' | 'challenge';
 export type Side = 'N' | 'S' | 'E' | 'W';
 
 export const SIDES: Record<Side, [number, number]> = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };

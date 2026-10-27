@@ -50,6 +50,8 @@ export const ES: Catalog = {
     'toast.seedVersion': 'Esta semilla es del generador v{v}; esta versión es la v{build}: la partida puede cambiar',
     'toast.floor': 'Piso {n}',
     'toast.roomClear': 'Sala despejada',
+    'toast.challengeWave': 'Oleada {n} de 3',
+    'toast.challengeDone': 'Desafío superado: vuelve cuando quieras',
     'toast.noBombs': 'No te quedan bombas',
     'toast.locked': 'Cerrada: necesitas una llave',
     'toast.unlocked': 'Abierta',

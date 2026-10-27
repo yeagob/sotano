@@ -24,6 +24,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
 | **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/BESTIARY.md)) |
 | **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/BESTIARY.md)) |
+| **Keeping your word** (agreements, promises) | `four-agreements` | Presences make agreements; the gifts are *promised* and cannot be lost ([BESTIARY §8.6–§8.7](../design/BESTIARY.md)) |
 | **Patterns deepen when left alone** | `jung`, `dante` | Lineages: Doubt → Second-Guessing → Paralysis; rooted variants ([BESTIARY §4](../design/BESTIARY.md)) |
 | **The threshold guardian** (the fear at the edge of change) | `monomyth` | The keystone boss at floor 5's great pit, which steps aside instead of falling |
 | **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/BESTIARY.md)) |

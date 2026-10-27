@@ -410,6 +410,26 @@ Numbness and turning away from yourself. The ninth circle's image is a frozen la
 
 ---
 
+### 5.7 What projections leave behind (owner, 2026-10-27, proposal)
+
+When a projection is released, it may leave **parts** of itself: its **flesh** (carne), its **heart** (corazón), its **mind** (mente) or its **essence** (esencia). Each part is a collectible item, shown in the inventory with its name. Converted allies leave nothing: they are not released, they are integrated (§1.1).
+
+**Chances per release** (proposal, tuned in play): flesh 30 %, mind 12 %, heart 5 %, essence 2 %. A rooted projection (§4.2) rolls once more. Parts are drawn from the room's RNG fork.
+
+**Names.** Every projection names its four parts after its own pattern, so a part tells you what it was.
+
+| Projection | Flesh | Heart | Mind | Essence |
+|---|---|---|---|---|
+| Doubt | Doubt's sack-stone | Doubt's pause | Doubt's question | Doubt's upright light |
+| The Lectern | The Lectern's ruled page | The Lectern's ink tick | The Lectern's margin note | The Lectern's blank page |
+| Panic | Panic's cracked husk | Panic's captive ember | Panic's alarm | Panic's shut eyes |
+
+The rest are named when they are built, with the same rule: the part's noun comes from the creature's own body or pattern, never from another game. Names go through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md) in both languages.
+
+**Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room the owner mentions is not designed yet (§13).
+
+---
+
 ## 6. Bosses
 
 ### 6.1 Rules for every boss
@@ -563,41 +583,125 @@ Dwellers **remember**: which runs you began, how deep you went, which Lessons yo
 
 ---
 
-### 8.5 Requests from the depths: trust (owner, 2026-10-27, proposal)
+### 8.5 Requests from the depths (owner, 2026-10-27: approved and refined)
 
-Some Presences ask for something in the real world, and then let you go on. The game is a game: nothing here is a therapy, a cure or a test of you.
+Some Presences ask for something in the real world, in a line of story, and then let you go on. The game is a game: nothing here is a therapy, a cure or a test of you.
 
-**What they ask** (one request at a time, always in a line of story, with a card that says what to do and when to come back):
+**The idle window.** A request runs in an **idle window of 30 to 60 seconds**. The game waits until it sees no keys and no mouse for at least 30 s, and the window never goes past one minute. The card says what to do and that the game will wait. The player can always refuse. The game cannot know whether the player really stepped away: it only sees input, and it does not pretend otherwise.
 
-| Request | What the player does | Time | Asked by |
-|---|---|---|---|
-| **Breathe** | A paced breath, with the game's own gentle cue (no countdown in red) | 60–120 s | The Gardener, the Listener |
-| **Be still** | Sit or stand quietly, without the game, until the time is up | 2–5 min | The Listener, the Elder |
-| **Write** | One line on paper, or in your head if you prefer. Never recorded, never sent, never read by the game | none: come back when done | The Elder |
-| **Draw** | A small sketch of anything, or a shape. Never judged | none | The Child |
-| **Move** | Gentle movement: stand up and sit down, roll your shoulders, walk to another room and back | 30–60 s | The Child, the Boatman |
+| Request | What the player does in the window | Asked by |
+|---|---|---|
+| **Breathe** | A paced breath, with a gentle cue (no red countdown) | The Gardener, the Listener |
+| **Be still** | Sit or stand quietly, without the game | The Listener, the Elder |
+| **Write** | One line, on paper or in your head. Never recorded, sent or read | The Elder |
+| **Draw** | A small sketch, of anything. Never judged | The Child |
+| **Move** | Stand up and sit down, roll your shoulders, walk to another room and back | The Child, the Boatman |
 
-**The question.** When the time is up, or when you come back, the Presence asks: *"Have you done it?"* You answer:
+**The question.** When the window closes, the Presence asks: *"Have you done it?"*
 
-- **Yes, after the time:** the full reward (an advance, a Lesson, a gift).
-- **Yes, straight away:** the reward is smaller, and the trust meter drops one step. The game doesn't say you lied; it says the Presence noticed and it will ask again later.
-- **Not yet, or not now:** the Presence waits (it never leaves, it never punishes). Or it lets you go on with no reward.
+- **Yes, after at least 30 s idle:** the reward for an honest completion.
+- **Yes, before 30 s idle:** a lower reward. The game never says the player lied; the check is a guess, and the game treats it as one.
+- **Not yet, or not now:** the Presence waits and gives nothing. It never punishes.
 
-**The trust meter.** Starts full, shown as a row of light (five steps), per run (owner ruling, §13). Each early yes lowers it one step; each honest, timed yes raises it one step, slowly. Rewards get worse as it falls. **It never reaches zero progress:** at the lowest step you can still go on, with the smallest reward. A meter that only punishes would turn a request into a test, so it always leaves a way through.
+**The trust meter is secret.** It is a hidden number, kept per run. It is never drawn, named or said: not in the HUD, not in the codex, not in a line of dialogue. Only the rewards show it. Developer tools may read it, and only in development builds.
+
+- It starts at the top.
+- Each early yes lowers it one step. Each honest completion raises it one step.
+- It never locks progress. At the bottom you can still go on.
+
+**Rewards vary.** A request's reward is drawn from a table by the hidden step, not a fixed amount:
+
+| Hidden step | Reward |
+|---|---|
+| Top | The request's full tier (a tier 1, 2 or 3 gift, §8.7) |
+| One below | The gift one tier lower (never below tier 1) |
+| Two below | A plain gift: a small item of the floor you are on, or a shard of light |
+| Bottom | The smallest gift, still a gift: a stone from the way. Never nothing |
+
+Rolls come from the room's own RNG fork, so a seed plays the same ([RNG.md](../architecture/RNG.md)).
 
 **Safety, all required:**
 
 1. **Every request is optional** and has a "not now" answer. Saying no never blocks the way, only the reward.
 2. **Every physical request has an alternative** the player can pick: seated or lying down, no hands, a quiet room, write it in your head, say it aloud. Nothing that needs a special place, strength, a partner or a tool.
-3. **Gentle, never urgent.** No timers in red, no sounds that startle, no screen effects, no pressure. The meter never shakes, flickers or distorts the HUD (art §11).
-4. **No judgement, no insults, no quoting failure back.** "Have you done it?" is a question; the early yes is "the Presence noticed", never "you cheated". The timing check is a guess, and the game treats it as one.
+3. **Gentle, never urgent.** No red timers, no startling sounds, no screen effects, no pressure. The hidden meter never shakes, flickers or distorts the HUD (art §11).
+4. **No judgement, no insults, no quoting failure back.** The early yes is "the Presence noticed", never "you cheated".
 5. **No therapy claims.** Breathing and stillness are offered as a practice, never as a cure. A short note in the settings says the game is not therapy, and where to find help if you are struggling (STORY §7, question 4).
-6. **Private.** Writing and drawing are never saved, sent, read or judged. The game stores only the meter and the request count, in the profile save.
+6. **Private.** Writing and drawing are never saved, sent, read or judged. The game stores only the hidden number and the request count, in the run and the profile save.
 7. **No camera or microphone.** Requests are played on the player's own word.
+8. **Maximum one minute.** No request ever asks for longer than the idle window.
 
-**How it fits the rules.** Presences "never give orders" (§8.1). These are *requests*: they can be declined, and the Presence says so kindly. This is the rule's one exception, approved by the owner (§13).
+**How it fits the rules.** Presences "never give orders" (§8.1). These are requests: they can be declined, and the Presence says so kindly. This is the one exception, approved by the owner.
 
-**Build.** The request card and the question are dialogue (localised, [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md)); the meter is a small piece of profile state; the timing check is a simple timer. It joins the Presences milestone (E5) and goes through review before it is built.
+**Build.** The request card and the question are dialogue (localised, [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md)). The idle check is a timer on input. The hidden meter is run state. It joins the Presences milestone (E5) and goes through review before it is built.
+
+---
+
+### 8.6 Agreements: things you bring (owner, 2026-10-27, proposal)
+
+Some Presences make an agreement instead of asking for an action: *bring me this.* They ask for objects from the world: hard, valuable materials (obsidian, deepstone, ore veins, the stone of the roots) or **parts of projections** (flesh, heart, mind, essence, §5.7). You deliver in person, in the Presence's room. Handing the item over closes the agreement and gives its gift.
+
+**Rules:**
+
+- **Every request has a reason** in one line of story, and the reason fits the floor and the character of the Presence. A request that does not fit is never made.
+- **It is doable with what the run offers.** The items are on the floor you are on, or one above, unless the card says "bring it from the deep". The game never asks for a part you cannot get where you are.
+- **Complexity grows with depth:**
+
+| Floors | What is asked | Example |
+|---|---|---|
+| 0 | One plain item | A root from the roots |
+| 1–2 | One part, or one common material | The stone from a Doubt's sack |
+| 3–4 | Two items, one of them hard | Obsidian, and a Lectern's ink tick |
+| 5–6 | Three items, with one condition | A heart, a mind, and a block carried to the edge of the room |
+| 7–9 | A set with a condition the world enforces | A flesh of a Burnout, cooled in water; an essence brought from a room with no fire |
+| Silence | The Witness asks for one part of each pattern you released | (the last agreement of the run) |
+
+- **Conditions are things the world does.** "Cooled in water", "from a room with a window", "not from a projection you converted". Polarity counts (§1.1): "a mind of a Numbness, thawed by a positive intention" uses the rule as it is.
+
+**The agreements by Presence:**
+
+| Presence | Floors | Asks for | Why (one line) | Gift |
+|---|---|---|---|---|
+| The Gardener | 0 | A root, a tuft of moss | To plant something where you were | Tier 1 |
+| The Child | 1–2 | Three loose cubes of different materials | To build a small tower | Tier 1 |
+| The Wanderer | 1 and up | The mind of the first pattern you met | To learn what it wanted | Tier 1 |
+| The Echo | Your last run | A part you did not use | Learning from failure | Tier 1 |
+| The Listener | 1–5 | A heart of a pattern you released | To know what weighs on you | Tier 1–2 |
+| The Cartographer | Tree floors | One ore from every zone you crossed | To chart the floor | Tier 2 |
+| The Boatman | 2–4 | A block of deep stone, to leave on the shore | The ferry takes its toll (§8.3) | Tier 2 |
+| The Elder | 3–6 | A page of ledger stone and the essence of a rule | What was once held as a rule | Tier 2 |
+| The Trickster | 3 and up | A trade: a heart for a practice (a plain cost) | The shortcut that teaches | Tier 2 |
+| The Mender | 5–8 | Three shards of different essences, to mend a vessel | Repair (kintsugi) | Tier 3 |
+| The Witness | Silence | One part of each pattern you released | To see the run whole | Tier 3, and a Covenant piece |
+
+---
+
+### 8.7 Gifts of the depths: the items (owner, 2026-10-27, proposal)
+
+The Presences give **gifts**: objects with a name, a line of text and a plain effect line, like practices, shown in the inventory. Effects are designed with [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md); the names here are proposals.
+
+**Three tiers**, matching the floors of the agreements:
+
+| Tier | Gift names (proposals) | Given by |
+|---|---|---|
+| 1 | Gardener's Seed · Stone from the Way · Small Promise | The Gardener, the Child, the Wanderer, the Echo |
+| 2 | Listener's Ear · Cartographer's Ore · Ledger Page · Trickster's Coin | The Listener, the Cartographer, the Elder, the Boatman, the Trickster |
+| 3 | Mender's Thread · Witness's Mirror | The Mender, the Witness |
+
+**The Covenant: a closed set.** Four pieces that only these Presences give. No other source, no shop, no drop. Each piece comes from one Presence:
+
+| Piece | From | Its meaning |
+|---|---|---|
+| Thread | The Mender | Repair that holds |
+| Page | The Elder | The rule you chose to keep |
+| Seal | The Witness | Seeing and keeping |
+| Light | The Listener (after the last Lesson) | What was heard |
+
+Holding all four completes the Covenant. Its set effect is a proposal (§13): every Presence remembers you in the run.
+
+**The common trait (proposal, the owner left it open):** **Promised.** Every gift bears a thin **gold seam** (kintsugi: what was mended is stronger, art §12). A promised item cannot be dropped, destroyed or stolen (Scarcity cannot take it), and it stays in your pack when you throw the rest away. Its label says *promised* in small type. The mark belongs only to gifts, so the player learns that a seam means "given".
+
+**Inventory labels (all items).** Every inventory slot shows a small label with the item's name, always visible, in the player's language. This covers practices, blocks, parts, gifts and the Covenant. The labels are text, so they go through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md).
 
 ---
 
@@ -693,3 +797,19 @@ g. **Requests, not orders:** approved. Presences ask, and the player can decline
 h. **Trust per run:** approved. The Elder may remember the result as knowledge only.
 i. **Early yes:** approved as a smaller reward, never nothing.
 j. **Allowed requests:** breathe, be still, write, draw, move, as listed in §8.5.
+
+**Decided on agreements (2026-10-27), my readings to confirm:**
+
+k. **Requests** run in a 30–60 s idle window, never longer than a minute. The trust meter is secret and per run; the rewards vary by its hidden step (§8.5).
+l. **"Tier"** is read as the item tier, 1 to 3. **"Cierre"** is read as a closed set: the Covenant (§8.7).
+m. **Parts:** every projection can leave flesh, heart, mind or essence, named after its pattern, collectible and in the inventory (§5.7).
+n. **Inventory:** every slot shows a name label (§8.7).
+o. **Agreements:** Presences ask for stage materials and parts, with complexity by floor, reasons that fit the floor and the character (§8.6).
+
+**Still open:**
+
+p. **The common trait:** "Promised" (a gold seam, cannot be lost) is a proposal; the owner left it free. Confirm or change.
+q. **Labels:** on inventory slots only (proposed), or also over the items you hold in the world?
+r. **The farming room:** is it designed yet, and does it respawn one roster over and over?
+s. **The Covenant's set effect** (proposal: every Presence remembers you in the run).
+t. **The numbers:** part chances (30/12/5/2 %) and the reward table in §8.5.

@@ -70,6 +70,8 @@ const messages = {
   'toast.seedVersion': 'This seed is from generator v{v}; this build is v{build}: the run may differ',
   'toast.floor': 'Floor {n}',
   'toast.roomClear': 'Room clear',
+  'toast.challengeWave': 'Wave {n} of 3',
+  'toast.challengeDone': 'Challenge overcome: come back for more',
   'toast.noBombs': 'No bombs',
   'toast.locked': 'Locked: you need a key',
   'toast.unlocked': 'Unlocked',

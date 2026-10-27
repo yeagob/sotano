@@ -7,7 +7,7 @@ import { sfx, sfx2, sfx3, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
-import { ENEMY_BUDGET, ENEMY_BY_ID } from '../content/enemies';
+import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
@@ -16,7 +16,7 @@ import {
 import { ROOM_D, ROOM_H, ROOM_TEMPLATES, ROOM_W } from '../content/rooms';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
-import { level, LEVELS } from '../content/levels';
+import { LEVELS } from '../content/levels';
 import { blockDamage, cubeDamage, type DamageKind } from '../core/damage';
 import { fx } from '../core/fx';
 import { RunRandom } from '../core/rng';
@@ -41,6 +41,8 @@ import { ChunkRenderer } from '../render/chunks';
 import { CrackView, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
+import { isLesson, Tablets } from '../render/tablets';
+import { onLocaleChange } from '../i18n';
 import {
   bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, FIRST_FLOOR, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SURFACE_Y,
   type DungeonPlan,
@@ -99,6 +101,11 @@ interface Blast { x: number; y: number; z: number; radius: number; damage: numbe
 
 interface RoomState { cleared: boolean; started: boolean; queue: string[]; next: number; sealed: boolean }
 
+/** A challenge room: every time you walk in, three waves (harder each wave and each visit). */
+interface ChallengeState { entries: number; wave: number; active: boolean; queue: string[]; next: number; wasInside: boolean }
+const CHALLENGE_WAVES = 3;
+const WAVE_GAP = 1.4;
+
 /** A boss room once entered: the boss's practice and the way down appear when `t` runs out;
  *  the floor only gives way while nobody stands on the hole. */
 interface BossState { t: number; revealed: boolean; open: boolean; warned: boolean; dust: number }
@@ -138,6 +145,7 @@ export class Game {
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
+  private challenges = new Map<number, ChallengeState>();
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean }[] = [];
   private bosses = new Map<number, BossState>();   // floor → its boss room's state
@@ -169,6 +177,8 @@ export class Game {
   private breakSfx = 0;
   private breakFx = 0;
   private fogColor = new THREE.Color();
+  /** The tutorial's lessons, carved into the roots' walls. */
+  private tablets!: Tablets;
   /** Fire, water and lava (docs/architecture/ELEMENTS.md §9). */
   elements!: ElementSim;
   private elemFx = 0;
@@ -219,6 +229,7 @@ export class Game {
     document.addEventListener('mousedown', unlockAudio);
     addEventListener('keydown', unlockAudio);
     addEventListener('resize', () => this.resize());
+    onLocaleChange(() => this.tablets?.redraw());
     this.resize();
     this.newRun(seed);
   }
@@ -246,6 +257,8 @@ export class Game {
     this.doors?.dispose();
     this.pickups?.dispose();
     this.enemies?.dispose();
+    this.tablets?.dispose();
+    this.tablets = new Tablets(this.scene);
     this.world = createDungeonWorld(this.rng, this.dungeon);
     this.elements = new ElementSim(this.world, {
       seed: this.rng.fork('elements').u32(),
@@ -273,7 +286,7 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.bosses.clear(); this.chests = [];
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.bosses.clear(); this.chests = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -334,6 +347,11 @@ export class Game {
     for (const p of f.pedestals) if (!p.boss && !p.chest) this.placePedestalItem(p);
     for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false });
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
+    // the tutorial is carved into the walls of its rooms (never an overlay)
+    for (const r of f.rooms) {
+      const lesson = ROOM_TEMPLATES.find(q => q.id === r.template)?.lesson;
+      if (lesson && isLesson(lesson)) this.tablets.add(lesson, r.x0, r.y0, r.z0);
+    }
   }
 
   /** Puts a pedestal's practice in the world: the reserved one, unless the player already got it
@@ -648,6 +666,56 @@ export class Game {
     }
   }
 
+  /**
+   * Challenge rooms (Isaac's, for farming): walking in seals the doors and starts three waves, each
+   * harder than the last and every visit harder than the one before; each wave cleared drops a
+   * reward rolled on the room's own fork (wave and visit in the path). Leave and come back as often
+   * as you like.
+   */
+  private updateChallenges(dt: number) {
+    const b = this.player.body;
+    for (const r of this.rooms.values()) {
+      if (r.type !== 'challenge') continue;
+      let st = this.challenges.get(r.id);
+      if (!st) this.challenges.set(r.id, st = { entries: 0, wave: 0, active: false, queue: [], next: 0, wasInside: false });
+      const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + ROOM_W && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + ROOM_D
+        && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
+      if (!st.active && inside && !st.wasInside) {
+        st.entries++; st.wave = 0; st.active = true; st.next = 0.8;
+        this.doors.seal(r.id, true);
+        sfx3.seal();
+        this.nextWave(r, st);
+      }
+      st.wasInside = inside;
+      if (!st.active) continue;
+      if (st.queue.length) {
+        st.next -= dt;
+        if (st.next <= 0) { st.next = SPAWN_GAP; this.spawnEnemy(st.queue.shift()!, r); }
+        continue;
+      }
+      if (this.enemies.blockingIn(r.id) > 0 || this.blasts.pending > 0) continue;
+      // a wave is down: its reward, then the next wave or the end
+      const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
+      const reward = ROOM_CLEAR.pickU(u, { floor: r.floor, luck: this.stats.get('luck') + st.wave });
+      const ev = this.bus.emit('roomClear', { room: r.id, drops: reward ? [reward] : [] });
+      for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, r.id, null, 0.3);
+      if (st.wave < CHALLENGE_WAVES) { this.nextWave(r, st); st.next = WAVE_GAP; sfx3.clear(); continue; }
+      st.active = false;
+      this.doors.seal(r.id, false);
+      this.roomState.get(r.id)!.cleared = true;
+      this.hud.toast('toast.challengeDone');
+      if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
+      sfx3.reveal();
+    }
+  }
+
+  private nextWave(r: RoomInfo, st: ChallengeState) {
+    st.wave++;
+    const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'wave', st.entries, st.wave);
+    st.queue = pickWave(rng, r.floor, waveBudget(r.floor, st.wave, st.entries - 1));
+    this.hud.toast('toast.challengeWave', { n: st.wave });
+  }
+
   /** Materialise one projection at the room's centre column, on the first free height. */
   private spawnEnemy(defId: string, r: RoomInfo) {
     const def = ENEMY_BY_ID.get(defId);
@@ -746,6 +814,7 @@ export class Game {
       if (d > r) continue;
       this.damageBlock(bx, by, bz, ev.damage * (1 - 0.5 * d / r), 'explosion', `explosion:${source}`);
     }
+    this.blastDoors(x, y, z, r, source);
     for (let i = 0; i < this.debris.max; i++) {
       if (!this.debris.isAlive(i)) continue;
       const i3 = i * 3;
@@ -1172,8 +1241,26 @@ export class Game {
       sfx2.unlock();
     }
     if (d.locked) this.doors.unlock(d);
-    sfx2.door();
+    // doors of open rooms rise on their own: only the ones near you are heard
+    const b = this.player.body;
+    if (Math.hypot(d.cx - b.x, d.cz - b.z) < 9 && Math.abs(d.y0 - b.y) < 4) sfx2.door();
     return true;
+  }
+
+  /** A blast that reaches a door blows it apart for good (`doorBreak`): Isaac's bombed doors. */
+  private blastDoors(x: number, y: number, z: number, r: number, source: string) {
+    for (const d of this.doors.list) {
+      if (d.broken) continue;
+      // distance from the blast to the nearest point of the doorway
+      const nx = Math.max(d.x0, Math.min(d.x1 + 1, x)), ny = Math.max(d.y0, Math.min(d.y1 + 1, y)), nz = Math.max(d.z0, Math.min(d.z1 + 1, z));
+      if (Math.hypot(nx - x, ny - y, nz - z) > r) continue;
+      const ev = this.bus.emit('doorBreak', { door: d.id, locked: d.locked, source });
+      if (ev.cancelled) continue;
+      this.doors.break(d);
+      this.particles.burst(d.cx, d.cy, d.cz, mat(MAT.crate).colors[0], 30, 6, 0.14);
+      this.particles.burst(d.cx, d.cy, d.cz, pal('ink.ash'), 16, 3, 0.2);
+      sfx.break(2);
+    }
   }
 
   private touchPickups() {
@@ -1271,8 +1358,6 @@ export class Game {
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
       this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
-      const lesson = first && level(r.floor).tutorial ? this.lessonFor(r) : null;
-      if (lesson) this.hud.lessonBanner(lesson);
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       // the boss room: the next floor loads, and (no boss yet) the boss counts as overcome shortly
       if (r.type === 'boss' && !this.bosses.has(r.floor)) {
@@ -1450,17 +1535,13 @@ export class Game {
     this.bus.flush();
     this.trackPlace(dt);
     this.updateCombat(dt);
+    this.updateChallenges(dt);
     this.pickups.update(dt, solid);
     this.particles.update(dt);
     this.debrisView.update(this.debris, this.time);
     this.cracks.update(this.world);
     const hand = this.player.hand;
     this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);
-  }
-
-  /** The lesson a room of the tutorial floor teaches (its template's), if any. */
-  private lessonFor(r: RoomInfo): string | null {
-    return ROOM_TEMPLATES.find(t => t.id === r.template)?.lesson ?? null;
   }
 
   /** Rooms whose projections are all released (the minimap lights them). */

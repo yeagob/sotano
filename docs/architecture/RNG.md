@@ -35,6 +35,10 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
 | `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
 | `fork('floor', k, 'chestkeys')` | Structure | Where the extra keys for floor k's chests lie |
+| `fork('plan', k, kind)` | Structure | Floor k's plan for its kind (random planners); Tree floors draw nothing |
+| `fork('plan', k, 'challenge')` | Structure | Whether floor k keeps a challenge room (`CHALLENGE_ROOM`) and which |
+| `fork('floor', k, 'room', i, 'wave', visit, wave)` | Runtime | A challenge room's wave (`pickWave`) |
+| `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |
 | `fork('elements')` | Runtime | One seed for the element simulation: each fire-spread roll is `hash3(seed, cell, tick, side)`, stateless, so one fire never changes another's luck. Template elements (pools, flames) are fixed by the template and draw nothing |
 | `fork('floor', k, 'room', i, 'clear')` | Runtime | Room i's clear reward: one uniform `u`, then luck reweights the table against it |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |

@@ -131,3 +131,20 @@ Floors 1–5 use a fixed Tree layout on the 7×7 grid instead of the Isaac plann
 - `rooms.ts`: cells `X` (obsidian to two under the ceiling, carved per tile under vaults) and `=` (a 2-deep dry pit); `walkParts` / `needsBuilding` (steps of 1, any drop, jumps over one-tile gaps only, all three tiles of each door approach, the centre, `K`, `P`, `H` and the pedestal's best side); validator: `P` and `H` at the centre, start rooms never need building, the centre reaches a door on foot, a room that needs building carries soft blocks to build with, hazards off floor 0.
 - Templates: the roots' tutorial set (`roots-*`, a lesson each, assigned in the order the rooms are reached: break, step, kick, pit, bridge, breakthrough; floor 0 uses only its own rooms), Tree paths (`path-*`, `nave`), and rooms themed on the circles (limbo, gale, downpour, weights, marsh, tombs, river, ditches, cocytus, islet, bulwarks). Old plain rooms live on floors 1–4 only; building rooms weigh 3. Test: on every floor at least half the fighting rooms need building, by weight (measured: 0.94 on floor 0, 0.55–0.70 below).
 - Later: walk checks per carved room over its real doors (L3), a phone performance pass (Tree floors carve 23 rooms), the floor-5 great pit and multi-cell rooms (L3).
+
+## 7. L3 proposal (2026-10-27): rooms that span several cells, the great pit, checks per carved room
+
+### 7.1 Merged rooms
+
+- The plan stays cell-based (one `PlanRoom` per grid cell, its links per side). A new structure decision **merges** groups of touching cells into one room: 2×1, 1×2 or 2×2 cells (interiors 28×7, 13×16, 28×16). Floors decide how much they merge (`LevelDef.merge`: none on the roots, growing on deeper Tree floors, most on the random floors), from `fork('plan', k, 'merge')`, drawn after the challenge room. Only `normal` and `path` cells merge, and only with cells of the same type, so start, exit, treasure, vault and challenge rooms stay 1×1 (the shaft and the pedestals keep their rules).
+- `FloorResult.rooms` holds one `RoomInfo` per merged room, with `w`, `d` (interior blocks) and `cells`; `FloorResult.roomOfCell[planId]` maps every cell to its room. `roomAt`, the minimap and door carving go through it. No door is carved between cells of one room: their shared walls are carved away.
+- Everything sized by `ROOM_W`/`ROOM_D` reads the room's `w`/`d`: combat bounds, the spawn centre, the clear reward, the enemies' leash, the flow field, mirroring (`cellAt`), the validator and the walk check.
+- Templates gain `size: [cellsX, cellsZ]` (default `[1, 1]`); their door approaches are those of every outer cell side (`doorApproaches(size)`).
+
+### 7.2 The great pit (floor 5)
+
+Floor 5's exit is a 2×2 room whose middle is a shaft four blocks wide into floor 6: the way down to the next layer of the world. Its template is a `boss` template with `size: [2, 2]`, the only exit allowed to merge, and the hole is 4×4.
+
+### 7.3 Checks per carved room
+
+`walkParts` runs on the carved room with the doors it really has: a test over many seeds checks that every carved room's real doors are joined either on foot or by building (never by nothing), and that at least half of each floor's fighting rooms that have two or more doors need building.

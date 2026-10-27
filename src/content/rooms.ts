@@ -693,6 +693,31 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.r.........r.',
     ],
   },
+  // ── challenge rooms: three waves every time you enter (any hostile floor) ──
+  {
+    // an open ring with four low walls to hide behind
+    id: 'gauntlet', types: ['challenge'], floors: [1, 9], height: 6, ceiling: 'dome', rows: [
+      '.............',
+      '..R.......R..',
+      '....r...r....',
+      '......K......',
+      '....r...r....',
+      '..R.......R..',
+      '.............',
+    ],
+  },
+  {
+    // a pit in the middle: projections that fall in come back out; you can too, with a block
+    id: 'colosseum', types: ['challenge'], floors: [1, 9], height: 7, ceiling: 'vault-x', rows: [
+      '.r.........r.',
+      '....=====....',
+      '...==...==...',
+      '...=..K..=...',
+      '...==...==...',
+      '....=====....',
+      '.r.........r.',
+    ],
+  },
   // ── the circles (floors 1–9): themed rooms that ask to be built across ──
   {
     // limbo: grey ledges over dry trenches, nothing to hurt you, nowhere to stand still
@@ -898,7 +923,7 @@ export function validateTemplate(t: RoomTemplate): string[] {
       errs.push(`${t.id}: the pedestal can't be reached from any side`);
   });
   // projections materialise on the centre tile of normal rooms
-  if ((t.types.includes('normal') || t.types.includes('path')) && !walk(6, 3)) errs.push(`${t.id}: the centre tile (6,3) must be walkable (projections spawn there)`);
+  if ((t.types.includes('normal') || t.types.includes('path') || t.types.includes('challenge')) && !walk(6, 3)) errs.push(`${t.id}: the centre tile (6,3) must be walkable (projections spawn there)`);
   // the 2×2 shaft: from the H tile in boss rooms, onto the P tile in start rooms. It is carved at
   // +1 on each world axis, so a mirrored template reaches the other way in template space.
   const flips = t.mirror === false ? [[1, 1]] : [[1, 1], [-1, 1], [1, -1], [-1, -1]];

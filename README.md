@@ -63,7 +63,7 @@ Enemies are **mental projections** of the patterns that stop people going after 
 - **The Inner Critic** keeps its distance and lobs judgements in arcs. Dangerous when you stand still.
 - **Panic** rushes you, swells in three steps and **bursts**, breaking the blocks around it. Destructive, but it also opens paths.
 
-Rooms work like Isaac's: when you enter, the doors seal and the projections materialise from the centre of the room. They open again when every projection is gone. Projections come from inside you, not from outside.
+Rooms work like Isaac's: doors stand open while a room holds no projections; when you enter one that does, they seal and the projections materialise from the centre of the room, and they open again by themselves when every projection is gone. A breakthrough destroys a door for good. Some floors keep a challenge room: three waves every time you walk in, harder each time, as often as you like. Projections come from inside you, not from outside.
 
 ### Practices are real, and credited
 
@@ -89,7 +89,7 @@ SÓTANO is made by people who grew up inside games, and the project is full of s
 | Place the top block | **Right click** (throws it if there's nowhere to place it) |
 | Throw the top block | **Q** |
 | Drop a bomb | **E** |
-| Open a door | Walk up to it (locked doors need a key) |
+| Open a door | Doors open by themselves when there are no projections; locked ones open when you walk up with a key; a breakthrough destroys any door |
 | Inventory and stats | **Tab** (or **I**) |
 | New run | **R** |
 

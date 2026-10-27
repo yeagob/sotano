@@ -27,7 +27,7 @@ function carveAll(root: number, templates: readonly RoomTemplate[]) {
 }
 
 describe('levels: rooms with height and elements', () => {
-  const types: RoomType[] = ['start', 'normal', 'treasure', 'vault', 'boss'];
+  const types: RoomType[] = ['start', 'normal', 'treasure', 'vault', 'boss', 'path', 'challenge'];
   const templates = [...new Set(only(types))];
 
   it('there are element rooms for every room type', () => {
