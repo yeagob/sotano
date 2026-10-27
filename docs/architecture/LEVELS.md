@@ -187,3 +187,67 @@ Peaceful creatures on floor 0 (faction `neutral`, never sealing doors, never hur
 - `GEN_VERSION` 10.
 
 Still open: what ends a run; the climb from the roots to the surface (today you dig or build up); creatures for the tree and more for the roots; the circles' own mechanics beyond their rooms (winds that push, rain that soaks); a phone performance pass over the whole world; captures in the art guide for ice, the tree and Wonder.
+
+## 10. L7 proposal (2026-10-27): rooms bigger than their cell, new ceilings, deep holes, a building palette per floor
+
+Owner: *"The layouts are boring and repetitive. Bigger rooms, even if they keep their place on the map; vaulted ceilings of different shapes; platforming; deeper holes. The first five floors all look the same: more difference in the materials the rooms are built from. Above all, new layouts, and spaces that are bigger but count as one room on the map: the map only says how many rooms there are and how they connect."*
+
+### 10.1 The map is a graph, the space is not
+
+- The plan (`FloorPlan`) keeps one grid cell per room and its links: that is **the map** (the minimap, distances, special rooms, the Tree's shape). Nothing about a room's size reaches it: the minimap draws every room as one cell (the great pit's crown included).
+- A room's **space** may spread from its home cell into empty grid cells around it: any rectangle of cells that holds the home cell, every other cell empty in the plan and not claimed by another room. The extra cells hold no doors (an empty cell has no link), so links, door positions and the shaft never move.
+- Claims are decided **when the floor is carved**, from the room's own `layout` fork (template, then flips that fit): rooms with a preset footprint first (the crown of the great pit), then every other room by id. `FloorResult.space` maps every grid cell to the room that owns it; `roomAt` reads it. *(Changed by the review: see §11.)*
+- The old plan-time growth (`LevelDef.grow`, `fork('plan', k, 'grow')`, `growFootprint` writing the grid) goes: a level's `bigRooms` multiplies the weight of the templates bigger than one cell instead. Tree floors may grow too: the Tree's shape is its map, and the map does not change (this replaces review L3's "no footprints on Tree floors").
+
+### 10.2 Templates of any shape
+
+- `size: [cellsX, cellsZ]` (1–3 each; *1–2 after the review*) and `home: [cx, cz]` (default `[0, 0]`, the cell that is the room on the map). Rows are `roomDims(size)` blocks (13, 28, 43 × 7, 16, 25).
+- A new character, space ` `, is **not room**: the rock stays. With it a template draws irregular halls (an L, a cross, a round cavern, a long gallery that only uses half of the next cell).
+- The shell hugs the open tiles (two blocks of wall around every open tile); rock beyond it is left as the strata made it.
+- Door approaches, the centre where projections materialise, `P` and `H` are the home cell's. `RoomInfo` gains `hx, hz` (the home cell's interior corner); the clear reward, the spawn fallback, the tablets and the fallback key use it.
+- Big templates may be mirrored: the home cell flips with the rows.
+
+### 10.3 Ceilings
+
+New shapes for the height above five: `pointed-x` / `pointed-z` (a pointed, gothic barrel), `cross` (a groin vault: two barrels crossing), `stepped` (a ziggurat of terraces upside down) and `cave` (an uneven rock roof from a fixed hash of the tile: no randomness drawn). The height cap (8) and every vertical rule stay.
+
+### 10.4 Deep holes and platforming, inside the band
+
+The three layers of rock between floors stay. Holes get deeper by **raising the ground**, not by digging further: a plateau of terraces (3 or 4 high) with `=` pits in it gives holes five or six blocks deep, and single pillars over a pit field (jumps of one tile) make platforming. The walk check already understands steps, drops and jumps.
+
+### 10.5 A building palette per floor
+
+*(The table below was the proposal; the art agent's final palette and ramps are in the art ledger, [../art/DECISIONS.md](../art/DECISIONS.md) §6.5.)*
+
+Every room was built from one dungeon brick in the colour of floor 1. Each level now names its **palette**: the material of its walls, its floor, and its trim (the `#`, `b` and `1`–`4` built pieces). New materials, appended after id 20 (saves and seeds keep their ids), with brick's toughness (tier 1, hp 12) so digging feels the same and only the look and the meaning change:
+
+| Floor | Walls | Floor | Trim |
+|---|---|---|---|
+| 0 roots | loam (packed earth) | loam | living wood (roots) |
+| 1 limbo | dungeon brick | flagstone | stone |
+| 2 the winds | rubble masonry | flagstone | brick |
+| 3 the rain | wet brick (blue rock) | slate | wet brick |
+| 4 the weights | ashlar (great blocks) | slate | deepstone |
+| 5 the marsh | slate | slate | ashlar |
+| 6–9 | dark masonry | slate, obsidian at the bottom | as the walls |
+
+The lining of deep pools, the obsidian of a vault's shell (`hardenShell`) and the "reinforced" mood follow the palette.
+
+### 10.6 RNG
+
+Template choice already draws from `floor/k/room/i/layout`; flips are now drawn only among the flips that fit, so every room's draws change: `GEN_VERSION` 11.
+
+## 11. L7 as built (after the review, [../reviews/levels-l7.md](../reviews/levels-l7.md))
+
+- **The map is a graph.** `plan.grid` keeps one cell per room; the minimap draws every room as one cell (the great pit's crown too). `growFootprint` only presets a footprint (`PlanRoom.size`); it never writes the grid. `LevelDef.grow` and `fork('plan', k, 'grow')` are gone; `LevelDef.bigRooms` (1 on the roots, 1.5 on floor 1 rising to 4 at the bottom) multiplies the weight of templates bigger than one cell.
+- **Space is shared out first** (`allotSpace`, `fork('floor', k, 'space')`): a preset footprint takes its cells; every empty cell beside a room goes to one of them; every empty cell beside a cell given away goes to that room too. A room's template is picked only among those whose space fits its allotment (after flips), and its flips only among those that fit, so a room depends on the plan, the floor's `space` fork and its own `layout` fork, never on another room (review point 4). What a room really takes is `FloorResult.space`; `roomAt` reads it.
+- **Templates** take `size` (1–2 cells each way, so at most 28 × 16 blocks) and `home` (the cell that is the room on the map). Door approaches are the home cell's, only on the sides where the home is the edge of the space; the centre, `P` and `H` are the home cell's centre (`homeAt`, `centreOf`, `flipped` flips the home too). The character space (` `, `ROCK`) is not room: the shell (Chebyshev distance 2 around open tiles) hugs the outline and the strata beyond stay. Rock never fills the home cell; layers never put a block over rock. Big templates may be mirrored. A vault keeps to one cell (its shell turns to obsidian box by box).
+- **RoomInfo** gains `hx, hz` (the home cell's interior corner: doors, the clear reward, the spawn fallback, tablets, creatures, the fallback key and hole) and `open` (the room's tiles; `inRoomSpace`): the doors seal when you stand in the room's open space, not in its box, so a tunnel through an irregular room's rock never seals it. The leash pulls projections to the home centre.
+- **Ceilings:** `pointed-x`, `pointed-z`, `cross`, `stepped`, `cave` (`ceilingAt` in `rooms.ts`, `ceilingRise` in `floor.ts` is the same function). The cave roof is a fixed hash of the tile and always full height over the middle.
+- **Deep holes and platforming** stay inside the band: plateaus of trim three high (`3`) with `=` pits make holes five deep; single pillars one tile apart are jumped. The validator now checks two blocks of headroom over every stack under the vault or dome at that tile. There is no fall damage today, so a five-block drop is safe.
+- **The flow field** uses a bucket queue (Dial's Dijkstra): a 28 × 16 room is 448 tiles.
+- **A building palette per floor** (`LevelDef.palette`: wall, floor, trim): the shell's walls and ceiling, the floor under the interior, `#` and a plug's upper wall from `wall`, `b` and `1`–`4` from `trim`; the lining of deep pools is the floor; a vault's shell turns from wall and floor into obsidian. Seven materials (ids 21–27), as tough as brick. Colours and the table per floor: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md)). In game, floors 1–4: [../art/img/built/l7-rooms-floors-1-4.png](../art/img/built/l7-rooms-floors-1-4.png).
+- **Rooms** (templates): `long-gallery`, `cloister`, `bastions`, `wind-hall`, `stepped-well`, `drowned-nave`, `strongroom`, `styx-cavern`, `crown-hall`, `chasm`, `dis-hall` ([../design/LEVELS.md](../design/LEVELS.md) §4).
+- Tests: rooms spread only into empty cells and never into each other, the map keeps one cell per room, every open tile has air, big rooms appear on every hostile floor (Tree floors included), the new ceilings rise in the middle; deep pools are lined with their level's floor. `GEN_VERSION` 11.
+
+Later (from the review): the chamber of silence still takes the boss room's box (no big boss on floor 9 today); `ceilingRise` over the bounding box of an irregular room; templates three cells long (the flow field is ready for them); `hardenShell` on irregular vaults.

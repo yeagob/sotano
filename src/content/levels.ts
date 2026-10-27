@@ -26,8 +26,11 @@ export interface LevelDef {
   vaults: boolean;
   /** Rooms in its plan. */
   plan: { minRooms: number; maxRooms: number };
-  /** Chance that a normal room grows into a bigger footprint (2×1 or 1×2), random floors only. */
-  grow: number;
+  /** How much more often templates bigger than one cell are chosen where they fit (× their weight). */
+  bigRooms: number;
+  /** What its rooms are built from (material keys): the walls and ceiling, the floor under the
+   *  interior, and the trim (the `#`, `b` and `1`–`4` pieces of a template). */
+  palette: { wall: string; floor: string; trim: string };
   /** Points a normal room spends on projections (a bigger room spends more per cell). */
   enemyBudget: number;
   /** The ninth circle: the water the templates carve is ice. */
@@ -37,22 +40,22 @@ export interface LevelDef {
 }
 
 const L = (floor: number, key: string, kind: LevelKind, rock: LevelDef['rock'], strata: LevelDef['strata'], extra: Partial<LevelDef> = {}): LevelDef => ({
-  floor, key, kind, rock, fog: `fog.${rock}` as PalToken, vaults: floor <= 5, plan: { minRooms: 8, maxRooms: 11 }, grow: 0, enemyBudget: Math.min(2 + Math.ceil(floor * 0.8), 9), strata, ...extra,
+  floor, key, kind, rock, fog: `fog.${rock}` as PalToken, vaults: floor <= 5, plan: { minRooms: 8, maxRooms: 11 }, bigRooms: 1, palette: { wall: 'brick', floor: 'flagstone', trim: 'brick' }, enemyBudget: Math.min(2 + Math.ceil(floor * 0.8), 9), strata, ...extra,
 });
 
 /** Underground floors, top to bottom. */
 export const LEVELS: readonly LevelDef[] = [
   L(0, 'roots', 'roots', 'f1', { deep: 0, obsidian: 0, pockets: 0.45, ore: 0.04 },
-    { tutorial: true, maxQuality: 3, plan: { minRooms: 10, maxRooms: 11 } }),
-  L(1, 'circle1', 'tree', 'f1', { deep: 0.05, obsidian: 0, pockets: 0.15, ore: 0.07 }, { circle: 1 }),
-  L(2, 'circle2', 'tree', 'f1', { deep: 0.15, obsidian: 0, pockets: 0.1, ore: 0.08 }, { circle: 2 }),
-  L(3, 'circle3', 'tree', 'f2', { deep: 0.3, obsidian: 0.02, pockets: 0.06, ore: 0.08 }, { circle: 3 }),
-  L(4, 'circle4', 'tree', 'f2', { deep: 0.45, obsidian: 0.04, pockets: 0.04, ore: 0.09 }, { circle: 4 }),
-  L(5, 'circle5', 'tree', 'f3', { deep: 0.6, obsidian: 0.06, pockets: 0.02, ore: 0.1 }, { circle: 5 }),
-  L(6, 'circle6', 'random', 'f3', { deep: 0.75, obsidian: 0.1, pockets: 0, ore: 0.1 }, { circle: 6, grow: 0.35 }),
-  L(7, 'circle7', 'random', 'f4', { deep: 0.85, obsidian: 0.15, pockets: 0, ore: 0.11 }, { circle: 7, grow: 0.4 }),
-  L(8, 'circle8', 'random', 'f4', { deep: 0.9, obsidian: 0.22, pockets: 0, ore: 0.12 }, { circle: 8, grow: 0.45 }),
-  L(9, 'circle9', 'random', 'f4', { deep: 0.9, obsidian: 0.3, pockets: 0, ore: 0.12 }, { circle: 9, grow: 0.5, frozen: true }),
+    { tutorial: true, maxQuality: 3, plan: { minRooms: 10, maxRooms: 11 }, palette: { wall: 'loam', floor: 'loam', trim: 'flagstone' } }),
+  L(1, 'circle1', 'tree', 'f1', { deep: 0.05, obsidian: 0, pockets: 0.15, ore: 0.07 }, { circle: 1, bigRooms: 1.5, palette: { wall: 'brick', floor: 'flagstone', trim: 'brick' } }),
+  L(2, 'circle2', 'tree', 'f1', { deep: 0.15, obsidian: 0, pockets: 0.1, ore: 0.08 }, { circle: 2, bigRooms: 2, palette: { wall: 'rubble', floor: 'rubble', trim: 'brick' } }),
+  L(3, 'circle3', 'tree', 'f2', { deep: 0.3, obsidian: 0.02, pockets: 0.06, ore: 0.08 }, { circle: 3, bigRooms: 2.5, palette: { wall: 'wetbrick', floor: 'ashlar', trim: 'wetbrick' } }),
+  L(4, 'circle4', 'tree', 'f2', { deep: 0.45, obsidian: 0.04, pockets: 0.04, ore: 0.09 }, { circle: 4, bigRooms: 3, palette: { wall: 'ashlar', floor: 'wetbrick', trim: 'ashlar' } }),
+  L(5, 'circle5', 'tree', 'f3', { deep: 0.6, obsidian: 0.06, pockets: 0.02, ore: 0.1 }, { circle: 5, bigRooms: 3, palette: { wall: 'slate', floor: 'darkbrick', trim: 'slate' } }),
+  L(6, 'circle6', 'random', 'f3', { deep: 0.75, obsidian: 0.1, pockets: 0, ore: 0.1 }, { circle: 6, bigRooms: 3, palette: { wall: 'darkbrick', floor: 'slate', trim: 'darkbrick' } }),
+  L(7, 'circle7', 'random', 'f4', { deep: 0.85, obsidian: 0.15, pockets: 0, ore: 0.11 }, { circle: 7, bigRooms: 3.5, palette: { wall: 'darkbrick', floor: 'darkbrick', trim: 'slate' } }),
+  L(8, 'circle8', 'random', 'f4', { deep: 0.9, obsidian: 0.22, pockets: 0, ore: 0.12 }, { circle: 8, bigRooms: 4, palette: { wall: 'darkbrick', floor: 'slate', trim: 'slate' } }),
+  L(9, 'circle9', 'random', 'f4', { deep: 0.9, obsidian: 0.3, pockets: 0, ore: 0.12 }, { circle: 9, bigRooms: 4, frozen: true, palette: { wall: 'darkbrick', floor: 'ashlar', trim: 'ashlar' } }),
 ];
 
 export const FIRST_FLOOR = 0;

@@ -56,7 +56,7 @@ Respect rules for Dante: his structure and images, never his figures as projecti
 | Type | Floors | Plan | What grows with depth |
 |---|---|---|---|
 | **Roots** | 0 | The earth: root tunnels and hollows, non-aggressive creatures, the way up to the surface | — |
-| **Tree of Life** | 1–5 | Ten emanation rooms at the Tree's positions (three pillars), joined by the paths as corridors; seeded variation in which paths are open, locked or hidden | Room footprint (1×1 → 2×1 → 2×2 grid cells), height (5 → 8), template complexity (layers, elements, terraces), theme |
+| **Tree of Life** | 1–5 | Ten emanation rooms at the Tree's positions (three pillars), joined by the paths as corridors; seeded variation in which paths are open, locked or hidden | Rooms spread into the empty cells beside them (the map keeps the Tree's shape), height (5 → 8), template complexity (layers, elements, terraces), theme, the materials the rooms are built from |
 | **Random** | 6–9 | Isaac-style plans (today's generator) with special rooms at dead ends | Harder rock, deeper elements, the circles' themes; the ninth is frozen |
 | **Trunk** | L1 | A vertical map: rooms stacked inside the trunk, joined by climbs and shafts | — |
 | **Branches** | L2 | A 3D map: platforms and hollows in every direction, joined by branches | — |
@@ -65,6 +65,10 @@ Respect rules for Dante: his structure and images, never his figures as projecti
 ## 3. Rooms that use height (built)
 
 A room template can be taller than the standard 5 blocks (up to **8**), shape its extra height into a **barrel vault** (along X or Z) or a **dome**, dig pools and dips up to **2** blocks into its floor, and add **layers**: grids of blocks above the floor for bridges, balconies and galleries. Built **terraces** (`1`–`4`) make stairs and tiers. These limits keep three layers of rock between floors, so no room ever touches the floor above or below (tested over every pair of bands).
+
+## 3b. Rooms bigger than their cell (built, owner 2026-10-27)
+
+*"Bigger spaces that still count as one room on the map: the map only says how many rooms there are and how they connect."* A room may spread into the empty cells around it (up to 2 × 2 cells, any outline: a long gallery, a hall and a cavern of rock). The map always draws it as one cell. Ceilings take new shapes (pointed, crossing, stepped, an uneven cave roof); plateaus three high make holes five deep and pillars to jump; every floor is built from its own materials (walls, floor, trim). Architecture: [LEVELS.md §11](../architecture/LEVELS.md#11-l7-as-built-after-the-review-reviewslevels-l7md).
 
 ## 4. Rooms where the elements are the protagonists (built)
 
@@ -86,6 +90,17 @@ A room template can be taller than the standard 5 blocks (up to **8**), shape it
 | `giants-well` | normal, 1×2, floors 7–9 | Trenches cut the side doors off; below an obsidian wall, a ring of pits | Build across, climb down, build out |
 | `gauntlet`, `colosseum` | challenge | Three waves every time you walk in | Farm; use the pit and the cover |
 | `roots-*` | floor 0 | The tutorial, a lesson on each room's walls | Break, step, kick, pit, bridge, breakthrough |
+| `long-gallery` | normal/path, 2×1, floors 1–3 | Limbo's gallery under a pointed vault: its far half a plateau riddled with holes five deep, pillars to jump, the key at the bottom of a well | Jump the pillars; drop to the key and build your way out |
+| `cloister` | normal/path, floors 1–2 | A walk around a sunken garth under crossing vaults | Fight from the walk; whatever falls in builds out |
+| `bastions` | normal/path, floors 1–5 | Towers three high in the corners, ringed by holes five deep, under a pointed vault | Climb the stair for a vantage; knock projections into the holes |
+| `wind-hall` | normal/path, 2×1, floors 2–3 | The winds: a hall two cells long cut by obsidian walls with plugs, a stair at the far end | Dig the plugs or climb the walls |
+| `stepped-well` | normal/path, 1×2, floors 2–4 | A stepped well: terraces around a pit five deep under a stepped ceiling, the key at the bottom | Jump the rim, drop to the key, build out |
+| `drowned-nave` | normal/path, 2×1, floors 3–4 | The rain: a nave drowned wall to wall, stepping stones, galleries, the key on an island | Swim or step across; fight from the galleries |
+| `strongroom` | normal/path, 2×1, floors 4–5 | The weights: great blocks packed with aisles, each one shut | Break or climb your way to the key |
+| `styx-cavern` | normal/path, 2×1, floors 5–6 | The marsh: an irregular cavern of mud and still water under an uneven roof | Wade and swim to the hummock |
+| `crown-hall` | boss, 2×1, floors 1–4 | The crown as a long dome, the way down at its heart, the practice on a dais | — |
+| `chasm` | normal/path, 1×2, floors 6–9 | A plateau of holes five deep, a bridge of pillars, the key in the deepest hole | Jump the bridge; drop and build out |
+| `dis-hall` | normal/path, 2×1, floors 6–7 | The walls of Dis: a ditch of lava and graves of flame beyond | Bridge the lava |
 
 ## 5. What makes a good room (the bar)
 

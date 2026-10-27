@@ -34,6 +34,8 @@ const R = (prefix: string): [PalToken, PalToken, PalToken, PalToken] =>
 const RAMPS: Record<string, [PalToken, PalToken, PalToken, PalToken]> = {
   dirt: R('mat.dirt'), grass: R('mat.grass'), stone: R('mat.stone'), deepstone: R('mat.deepstone'), crate: R('mat.crate'),
   obsidian: R('mat.obsidian'), bedrock: R('mat.bedrock'), rock: R('rock.f1'),
+  loam: R('mat.loam'), flagstone: R('mat.flagstone'), rubble: R('mat.rubble'), wetbrick: R('mat.wetbrick'),
+  ashlar: R('mat.ashlar'), slate: R('mat.slate'), darkbrick: R('mat.darkbrick'),
   brass: ['ink.line', 'brass.dark', 'brass.base', 'brass.hi'],
   limestone: ['ink.ash', 'limestone.dark', 'limestone.base', 'limestone.hi'],
   seed: ['ink.void', 'mat.seed.dark', 'mat.seed.base', 'mat.seed.hi'],
@@ -68,6 +70,14 @@ const DEFS: Def[] = [
   { id: 18, key: 'log', name: 'Living wood', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'crate', pattern: 'strata', concept: 'the tree that holds the world' },
   { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'grass', pattern: 'clumps', concept: 'what grows when you rise' },
   { id: 20, key: 'starstone', name: 'Star stone', tier: 3, hp: 60, armor: 3, ramp: 'limestone', accent: 'bone.paper', pattern: 'cobble', concept: 'a fixed point to steer by' },
+  // each floor builds its rooms from its own palette (src/content/levels.ts, DECISIONS §6.5), as tough as brick
+  { id: 21, key: 'loam', name: 'Packed earth', tier: 1, hp: 12, armor: 0.5, ramp: 'loam', pattern: 'strata', concept: 'the ground you were raised on' },
+  { id: 22, key: 'flagstone', name: 'Flagstone', tier: 1, hp: 12, armor: 0.5, ramp: 'flagstone', pattern: 'plates', concept: 'a path worn by repetition' },
+  { id: 23, key: 'rubble', name: 'Rubble masonry', tier: 1, hp: 12, armor: 0.5, ramp: 'rubble', pattern: 'cobble', concept: 'what the winds tore down, piled up again' },
+  { id: 24, key: 'wetbrick', name: 'Wet brick', tier: 1, hp: 12, armor: 0.5, ramp: 'wetbrick', pattern: 'brick', concept: 'a habit soaked in feeling' },
+  { id: 25, key: 'ashlar', name: 'Ashlar', tier: 1, hp: 12, armor: 0.5, ramp: 'ashlar', pattern: 'plates', concept: 'a burden cut into blocks' },
+  { id: 26, key: 'slate', name: 'Slate', tier: 1, hp: 12, armor: 0.5, ramp: 'slate', pattern: 'strata', concept: 'layers of what was never said' },
+  { id: 27, key: 'darkbrick', name: 'Dark brick', tier: 1, hp: 12, armor: 0.5, ramp: 'darkbrick', pattern: 'brick', concept: 'a habit gone dark' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

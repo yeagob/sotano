@@ -21,12 +21,12 @@
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
 import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
-import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_ORDER, cellAt, DECOR_CHARS, ROOM_D, ROOM_H, ROOM_W, type CeilingShape, type RoomTemplate } from '../content/rooms';
+import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_ORDER, cellAt, ceilingAt, DECOR_CHARS, homeAt, ROCK, ROOM_D, ROOM_H, ROOM_W, templateDims, type RoomTemplate } from '../content/rooms';
 import { CHEST_LOCK, ITEM_IN_CHEST, ROOM_CHEST } from '../content/tables/chests';
 import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
 import { CHALLENGE_ROOM, DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
 import { hash3, type Rng, type RunRandom } from '../core/rng';
-import { DEFAULT_PLAN, generatePlan, growFootprint, OPPOSITE, sizeOf, TREE_ENTRY, treeCell, treePlan, type FloorPlan, type RoomType, type Side } from './floorplan';
+import { DEFAULT_PLAN, generatePlan, OPPOSITE, sizeOf, TREE_ENTRY, treeCell, treePlan, type FloorPlan, type PlanRoom, type RoomType, type Side } from './floorplan';
 import { VoxelWorld } from './world';
 
 /** How many floors go down (0 … LAST_FLOOR). */
@@ -71,12 +71,16 @@ export interface RoomInfo {
   floor: number;
   type: RoomType;
   gx: number; gz: number;
-  /** Interior corner (inclusive) in world blocks, and the floor height. */
+  /** Interior corner (inclusive) in world blocks of its whole space, and the floor height. */
   x0: number; y0: number; z0: number;
+  /** Interior corner of its home cell (the room on the map): its doors, its centre, its tablets. */
+  hx: number; hz: number;
   /** Interior height in blocks (ROOM_H unless the template asks for more; vaults rise above it). */
   height: number;
-  /** Interior width (x) and depth (z) in blocks: 13 × 7 for one cell, 28 or 16 for a bigger footprint. */
+  /** Interior width (x) and depth (z) in blocks of its space: 13 × 7 for one cell, up to 28 × 16. */
   w: number; d: number;
+  /** Which tiles of that box are room (1) and which the rock keeps (0), row by row. */
+  open: Uint8Array;
   template: string;
   flipX: boolean; flipZ: boolean;
   /** Rolled per room: biases decor slots; 'reinforced' hardens obstacles inside. */
@@ -121,6 +125,9 @@ export interface FloorResult {
   hole: { room: number; x: number; z: number; size: number; yTop: number; yBottom: number } | null;
   /** Under the last floor: the chamber of silence (L4), or null. */
   silence: { x0: number; z0: number; x1: number; z1: number; y0: number; y1: number } | null;
+  /** The room (plan index) whose space holds each grid cell, -1 for rock: rooms may spread into
+   *  empty cells around their own, which the map never shows (docs/architecture/LEVELS.md §10). */
+  space: Int16Array;
 }
 
 export function roomOrigin(gx: number, gz: number): [number, number] {
@@ -162,15 +169,6 @@ export function planDungeon(rr: RunRandom): DungeonPlan {
     }
     // deep floors keep no vault (the catalogue of practices must last the run): it stays a quiet room
     if (!lv.vaults) for (const r of plan.rooms) if (r.type === 'vault') r.type = 'normal';
-    // deeper random floors grow bigger rooms: a normal room spreads into an empty cell east or south
-    if (lv.grow > 0) {
-      const g = rr.fork('plan', k, 'grow');
-      for (const r of plan.rooms) {
-        if (r.type !== 'normal' || !g.chance(lv.grow)) continue;
-        const dirs: [number, number][] = g.chance(0.5) ? [[2, 1], [1, 2]] : [[1, 2], [2, 1]];
-        for (const size of dirs) if (growFootprint(plan, r, size)) break;
-      }
-    }
     // hostile floors may keep a challenge room, a dead end when there is one, never next to the start
     if (!lv.tutorial) {
       const ch = rr.fork('plan', k, 'challenge');
@@ -249,47 +247,81 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   // the tutorial teaches in order: its normal rooms, by steps from the start, get the lessons in turn
   const lessonRank = new Map(plan.rooms.filter(r => r.type === 'normal').sort((a, b) => a.dist - b.dist || a.id - b.id).map((r, i) => [r.id, i]));
 
-  // 1. room shells and interiors
+  // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
+  //    from the plan and the floor's own fork, so a room's choice never depends on another room's
+  const allot = allotSpace(plan, rr.fork('floor', k, 'space'));
+  const space = new Int16Array(plan.grid);
+  const fitted = new Map<number, { t: RoomTemplate; flipX: boolean; flipZ: boolean; layout: Rng }>();
   for (const pr of plan.rooms) {
-    const [x0, z0] = roomOrigin(pr.gx, pr.gz);
-    const size = sizeOf(pr), [RW, RD] = roomDims(size);
-    const x1 = x0 + RW - 1, z1 = z0 + RD - 1;
     const layout = rr.fork('floor', k, 'room', pr.id, 'layout');
-    let t = pickTemplate(opt.templates, pr.type, k, layout, !!lv.tutorial, size);
+    const mirror = (t: RoomTemplate) => t.mirror !== false && pr.type !== 'start';
+    const fits = (t: RoomTemplate) => flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t)).length > 0;
+    let t = pickTemplate(opt.templates, pr.type, k, layout, !!lv.tutorial, pr.size, fits, lv.bigRooms);
     if (lv.tutorial && pr.type === 'normal') {
       const lesson = TUTORIAL_ORDER[(lessonRank.get(pr.id) ?? 0) % TUTORIAL_ORDER.length];
       t = opt.templates.find(q => q.lesson === lesson && q.types.includes('normal')) ?? t;
     }
+    const flips = flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t));
+    const [flipX, flipZ] = flips.length ? flips[layout.int(0, flips.length - 1)] : [false, false];
+    for (const [cx, cz] of spaceCells(t, pr, flipX, flipZ)) space[cx + cz * plan.w] = pr.id;
+    fitted.set(pr.id, { t, flipX, flipZ, layout });
+  }
+  const pal = { wall: MAT[lv.palette.wall], floor: MAT[lv.palette.floor], trim: MAT[lv.palette.trim] };
+
+  // 1. room shells and interiors
+  for (const pr of plan.rooms) {
+    const { t, flipX, flipZ, layout } = fitted.get(pr.id)!;
+    const [hx, hz] = roomOrigin(pr.gx, pr.gz);
+    const [oc, or] = homeAt(t, flipX, flipZ);
+    const x0 = hx - oc, z0 = hz - or;
+    const [RW, RD] = templateDims(t);
     const height = t.height ?? ROOM_H;
-    fillBox(w, x0 - 2, y0 - 2, z0 - 2, x1 + 2, y0 + height + 1, z1 + 2, MAT.brick);
-    fillBox(w, x0, y0, z0, x1, y1, z1, AIR);
-    const mirror = t.mirror !== false && pr.type !== 'start';
-    const flipX = mirror && layout.chance(0.5), flipZ = mirror && layout.chance(0.5);
+    const open = (col: number, row: number) => col >= 0 && row >= 0 && col < RW && row < RD && cellAt(t, col, row, flipX, flipZ) !== ROCK;
+    // the shell hugs the open tiles: two blocks of wall around each of them, the rock beyond untouched
+    for (let row = -2; row < RD + 2; row++) for (let col = -2; col < RW + 2; col++) {
+      if (open(col, row)) continue;
+      let near = false;
+      for (let dz = -2; dz <= 2 && !near; dz++) for (let dx = -2; dx <= 2 && !near; dx++) near = open(col + dx, row + dz);
+      if (near) fillBox(w, x0 + col, y0 - 2, z0 + row, x0 + col, y0 + height + 1, z0 + row, pal.wall);
+    }
     const fights = pr.type === 'normal' || pr.type === 'path';
     const mood: RoomMood = fights ? ROOM_MOOD.roll(layout, { floor: k })! : 'normal';
     const chestRng = rr.fork('floor', k, 'room', pr.id, 'chest');
+    let openTiles = 0;
+    const openMask = new Uint8Array(RW * RD);
     for (let row = 0; row < RD; row++) for (let col = 0; col < RW; col++) {
       const ch = cellAt(t, col, row, flipX, flipZ);
+      if (ch === ROCK) continue;
+      openTiles++;
+      openMask[col + row * RW] = 1;
       const x = x0 + col, z = z0 + row;
       // the height above ROOM_H, shaped into a vault or a dome
       const top = y1 + ceilingRise(t.ceiling ?? 'flat', height - ROOM_H, col, row, RW, RD);
-      for (let y = y1 + 1; y <= top; y++) w.data[w.idx(x, y, z)] = AIR;
+      fillBox(w, x, y0 - 2, z, x, y0 - 1, z, pal.floor);
+      fillBox(w, x, y0, z, x, top, z, AIR);
+      fillBox(w, x, top + 1, z, x, y0 + height + 1, z, pal.wall);
       const s = CELL_STACK[ch];
       if (s) {
-        const m = mood === 'reinforced' ? hardened(s.m) : s.m;
+        // built pieces take the floor's palette: '#' and a plug's upper wall are walls, the rest trim
+        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : m);
+        const harden = (m: number) => (mood === 'reinforced' ? hardened(m) : m);
+        const m = harden(built(s.m, ch === '#'));
         // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
         const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
         for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
         // a plug's wall goes on above its dirt
         const plug = CELL_PLUG[ch];
-        if (plug) for (let h = s.h; h < top - y0 + 1 - plug.under; h++) w.data[w.idx(x, y0 + h, z)] = mood === 'reinforced' ? hardened(plug.m) : plug.m;
+        if (plug) for (let h = s.h; h < top - y0 + 1 - plug.under; h++) w.data[w.idx(x, y0 + h, z)] = harden(built(plug.m, true));
       }
       const el = CELL_ELEMENT[ch];
-      if (el) carveElement(w, x, y0, z, el, !!lv.frozen);
+      if (el) carveElement(w, x, y0, z, el, !!lv.frozen, pal.floor);
       for (const layer of t.layers ?? []) {
         const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
         const ls = CELL_STACK[lc];
-        if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(ls.m) : ls.m;
+        if (ls) {
+          const m = ls.m === MAT.brick ? pal.trim : ls.m;
+          w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(m) : m;
+        }
         else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
       }
       if (DECOR_CHARS.has(ch)) {
@@ -322,10 +354,10 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       freeByRoom.set(gid(pr.id), spots.map(([c, r]) => [x0 + c, z0 + r]));
     }
     rooms.push({
-      id: gid(pr.id), floor: k, type: pr.type, gx: pr.gx, gz: pr.gz, x0, y0, z0, height, w: RW, d: RD, template: t.id, flipX, flipZ, mood, doors: {},
+      id: gid(pr.id), floor: k, type: pr.type, gx: pr.gx, gz: pr.gz, x0, y0, z0, hx, hz, height, w: RW, d: RD, open: openMask, template: t.id, flipX, flipZ, mood, doors: {},
       // the tutorial floor is peaceful: no roster at all
-      // a bigger room holds more of them (the roster budget grows with its cells)
-      enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, size[0] * size[1]) : [],
+      // a bigger room holds more of them (the roster budget grows with its open floor, a cell at a time)
+      enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D)))) : [],
     });
   }
 
@@ -344,9 +376,9 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       const dy1 = y0 + DOOR_H - 1;
       const spec: DoorSpec = side === 'E'
         ? { id, rooms: [a.id, b.id], kind, locked: kind === 'vault', axis: 'x',
-            x0: a.x0 + ROOM_W, x1: a.x0 + ROOM_W + 1, y0, y1: dy1, z0: a.z0 + 2, z1: a.z0 + 4 }
+            x0: a.hx + ROOM_W, x1: a.hx + ROOM_W + 1, y0, y1: dy1, z0: a.hz + 2, z1: a.hz + 4 }
         : { id, rooms: [a.id, b.id], kind, locked: kind === 'vault', axis: 'z',
-            x0: a.x0 + 5, x1: a.x0 + 7, y0, y1: dy1, z0: a.z0 + ROOM_D, z1: a.z0 + ROOM_D + 1 };
+            x0: a.hx + 5, x1: a.hx + 7, y0, y1: dy1, z0: a.hz + ROOM_D, z1: a.hz + ROOM_D + 1 };
       carveDoorway(w, spec);
       doors.push(spec);
       a.doors[side] = id;
@@ -357,7 +389,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   // 2b. every wall around a locked door is made of obsidian: very hard to break, never impossible
   for (const d of doors) if (d.locked) for (const id of d.rooms) {
     const rm = rooms.find(r => r.id === id)!;
-    if (rm.type === 'vault') hardenShell(w, rm);
+    if (rm.type === 'vault') hardenShell(w, rm, [pal.wall, pal.floor]);
   }
 
   // 3. a key in a normal room if there is a locked door (prefer K spots)
@@ -368,7 +400,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     if (spots.length) keys.push(keyRng.pick(spots));
     else {
       const rm = keyRng.pick(rooms.filter(x => x.type === 'normal'));
-      keys.push({ room: rm.id, x: rm.x0 + 6, y: y0, z: rm.z0 + 3 });
+      keys.push({ room: rm.id, x: rm.hx + 6, y: y0, z: rm.hz + 3 });
     }
   }
   // 3b. keys for the chests: about three for every four the floor's chests ask (the rest come out of
@@ -391,55 +423,114 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     // below the frozen bottom: silence, a sealed chamber on the bedrock under the last way down
     // (air y 1–4, a roof of rock at 5 under the floor's own slab, docs/architecture/LEVELS.md §8)
     const boss = rooms.find(rm => rm.type === 'boss')!;
-    const [hx, , hz] = holeAt ?? [boss.x0 + 6, y0, boss.z0 + 3];
+    const [hx, , hz] = holeAt ?? [boss.hx + 6, y0, boss.hz + 3];
     silence = { x0: boss.x0, z0: boss.z0, x1: boss.x0 + boss.w - 1, z1: boss.z0 + boss.d - 1, y0: 1, y1: 4 };
     fillBox(w, silence.x0, 1, silence.z0, silence.x1, 4, silence.z1, AIR);
     hole = { room: boss.id, x: hx, z: hz, size: 2, yTop: y0 - 1, yBottom: 1 };
   }
   if (k < LAST_FLOOR) {
     const boss = rooms.find(rm => rm.type === 'boss')!;
-    const [hx, , hz] = holeAt ?? [boss.x0 + 6, y0, boss.z0 + 3];
+    const [hx, , hz] = holeAt ?? [boss.hx + 6, y0, boss.hz + 3];
     // the great pit: a wide crown opens a 4×4 shaft centred on its own cell (it lands on the
     // centre of the start room below, whose templates keep that clear)
-    const great = boss.w > ROOM_W || boss.d > ROOM_D;
+    const [bsx, bsz] = sizeOf(plan.rooms[boss.id % ROOM_ID_STRIDE]);
+    const great = bsx * bsz > 1;
     hole = great
       ? { room: boss.id, x: hx - 1, z: hz - 1, size: 4, yTop: y0 - 1, yBottom: floorY(k + 1) + ROOM_H }
       : { room: boss.id, x: hx, z: hz, size: 2, yTop: y0 - 1, yBottom: floorY(k + 1) + ROOM_H };
   }
 
   for (const rm of rooms) markRoomDirty(w, rm);
-  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence };
+  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence, space };
 }
 
-/** The shell of a room (its two-block walls, floor and ceiling) turned from brick into obsidian. */
-function hardenShell(w: VoxelWorld, rm: RoomInfo) {
+/** Is (x, z) on the room's open floor plan (inside its box and not rock)? */
+export function inRoomSpace(rm: RoomInfo, x: number, z: number): boolean {
+  const c = Math.floor(x) - rm.x0, r = Math.floor(z) - rm.z0;
+  return c >= 0 && r >= 0 && c < rm.w && r < rm.d && rm.open[c + r * rm.w] === 1;
+}
+
+/** The shell of a room (its two-block walls, floor and ceiling) turned from its palette into obsidian. */
+function hardenShell(w: VoxelWorld, rm: RoomInfo, shell: number[]) {
   const x1 = rm.x0 + rm.w - 1, z1 = rm.z0 + rm.d - 1, top = rm.y0 + rm.height - 1;
   for (let z = rm.z0 - 2; z <= z1 + 2; z++) for (let y = rm.y0 - 2; y <= top + 2; y++) for (let x = rm.x0 - 2; x <= x1 + 2; x++) {
     if (x >= rm.x0 && x <= x1 && z >= rm.z0 && z <= z1 && y >= rm.y0 && y <= top) continue;
     if (!w.inside(x, y, z)) continue;
     const i = w.idx(x, y, z);
-    if (w.data[i] === MAT.brick) w.data[i] = MAT.obsidian;
+    if (shell.includes(w.data[i])) w.data[i] = MAT.obsidian;
   }
 }
 
 /** Ground tiles (col, row, after flips) where a chest or a key may lie: plain floor with clear air above,
- *  away from the door approaches, the centre where projections materialise, and the markers. */
+ *  away from the home cell's door approaches, the centre where projections materialise, and the markers. */
 export function freeSpots(t: RoomTemplate, flipX: boolean, flipZ: boolean): [number, number][] {
   const spots: [number, number][] = [];
+  const [W, D] = templateDims(t), [oc, or] = homeAt(t, flipX, flipZ);
   const ground = (c: number, r: number) => cellAt(t, c, r, flipX, flipZ);
-  for (let row = 0; row < ROOM_D; row++) for (let col = 0; col < ROOM_W; col++) {
+  for (let row = 0; row < D; row++) for (let col = 0; col < W; col++) {
     if (ground(col, row) !== '.') continue;
-    const approach = (row >= 2 && row <= 4 && (col <= 2 || col >= ROOM_W - 3)) || (col >= 5 && col <= 7 && (row <= 2 || row >= ROOM_D - 3));
-    if (approach || (Math.abs(col - 6) <= 1 && Math.abs(row - 3) <= 1)) continue;
+    const hc = col - oc, hr = row - or;
+    const inHome = hc >= 0 && hr >= 0 && hc < ROOM_W && hr < ROOM_D;
+    const approach = inHome && ((hr >= 2 && hr <= 4 && (hc <= 2 || hc >= ROOM_W - 3)) || (hc >= 5 && hc <= 7 && (hr <= 2 || hr >= ROOM_D - 3)));
+    if (approach || (Math.abs(hc - 6) <= 1 && Math.abs(hr - 3) <= 1)) continue;
     let ok = true;
     for (let dz = -1; dz <= 1 && ok; dz++) for (let dx = -1; dx <= 1 && ok; dx++) {
       const c = col + dx, r = row + dz;
-      if (c >= 0 && r >= 0 && c < ROOM_W && r < ROOM_D && 'PTKH'.includes(ground(c, r))) ok = false;
+      if (c >= 0 && r >= 0 && c < W && r < D && 'PTKH'.includes(ground(c, r))) ok = false;
     }
     for (const layer of t.layers ?? []) if (ok && cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ) !== '.') ok = false;
     if (ok) spots.push([col, row]);
   }
   return spots;
+}
+
+/** The grid cells a template takes when its home cell is `pr`'s, with these flips. */
+export function spaceCells(t: RoomTemplate, pr: PlanRoom, flipX: boolean, flipZ: boolean): [number, number][] {
+  const [sx, sz] = t.size ?? [1, 1], [hx, hz] = t.home ?? [0, 0];
+  const ex = flipX ? sx - 1 - hx : hx, ez = flipZ ? sz - 1 - hz : hz;
+  const cells: [number, number][] = [];
+  for (let dz = 0; dz < sz; dz++) for (let dx = 0; dx < sx; dx++) cells.push([pr.gx - ex + dx, pr.gz - ez + dz]);
+  return cells;
+}
+
+/** The flips with which a template's space fits around `pr`: every cell but its home allotted to it. */
+function flipsThatFit(t: RoomTemplate, pr: PlanRoom, allot: Int16Array, gw: number, gh: number, mirror: boolean): [boolean, boolean][] {
+  const all: [boolean, boolean][] = mirror ? [[false, false], [true, false], [false, true], [true, true]] : [[false, false]];
+  return all.filter(([fx, fz]) => spaceCells(t, pr, fx, fz).every(([x, z]) =>
+    (x === pr.gx && z === pr.gz) || (x >= 0 && z >= 0 && x < gw && z < gh && allot[x + z * gw] === pr.id)));
+}
+
+/**
+ * Which room may spread into each empty cell of a floor (docs/architecture/LEVELS.md §10.1), from the
+ * plan and the floor's `space` fork only: a preset footprint takes its cells; then every empty cell
+ * beside a room goes to one of them; then every empty cell beside a cell given away goes to that
+ * room too (so a room can grow two cells long, or round a corner). Rooms only take what fits them.
+ */
+export function allotSpace(plan: FloorPlan, rng: Rng): Int16Array {
+  const { w, h } = plan;
+  const own = new Int16Array(plan.grid);
+  for (const r of plan.rooms) if (r.size) {
+    const [sx, sz] = r.size;
+    for (let dz = 0; dz < sz; dz++) for (let dx = 0; dx < sx; dx++) {
+      const x = r.gx + dx, z = r.gz + dz;
+      if (x < w && z < h && own[x + z * w] === -1) own[x + z * w] = r.id;
+    }
+  }
+  for (let pass = 0; pass < 2; pass++) {
+    const was = new Int16Array(own);
+    for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
+      if (was[x + z * w] !== -1) continue;
+      const by = new Set<number>();
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, nz = z + dz;
+        if (nx < 0 || nz < 0 || nx >= w || nz >= h) continue;
+        const o = was[nx + nz * w], home = plan.grid[nx + nz * w] >= 0;
+        if (o >= 0 && (pass === 0 ? home : !home)) by.add(o);
+      }
+      if (by.size) own[x + z * w] = [...by][rng.int(0, by.size - 1)];
+    }
+  }
+  return own;
 }
 
 /** Opens the shaft (2×2, or 4×4 for the great pit) from a boss room floor down into the start room below. */
@@ -449,7 +540,7 @@ export function openHole(w: VoxelWorld, hole: NonNullable<FloorResult['hole']>) 
 }
 
 /** Interior size in blocks of a footprint of [cells east, cells south]: the walls between its
- *  cells become floor too (13 + 2 + 13 = 28; 7 + 2 + 7 = 16). */
+ *  cells become floor too (13 + 2 + 13 = 28, 43 for three; 7 + 2 + 7 = 16, 25 for three). */
 export function roomDims([sx, sz]: [number, number]): [number, number] {
   return [ROOM_W * sx + 2 * (sx - 1), ROOM_D * sz + 2 * (sz - 1)];
 }
@@ -460,23 +551,15 @@ function markRoomDirty(w: VoxelWorld, rm: RoomInfo) {
       for (let y = rm.y0 - 4; y <= rm.y0 + rm.height + 2; y += 4) if (w.inside(x, y, z)) { w.markDirty(x, y, z); w.markElemDirty(x, y, z); }
 }
 
-/** Extra blocks of air above ROOM_H at a tile, for a ceiling of `rise` extra blocks. */
-export function ceilingRise(shape: CeilingShape, rise: number, col: number, row: number, w = ROOM_W, d = ROOM_D): number {
-  if (rise <= 0) return 0;
-  const u = (col + 0.5 - w / 2) / (w / 2), v = (row + 0.5 - d / 2) / (d / 2);
-  const p = shape === 'flat' ? 1
-    : shape === 'vault-x' ? Math.sqrt(Math.max(0, 1 - v * v))
-    : shape === 'vault-z' ? Math.sqrt(Math.max(0, 1 - u * u))
-    : Math.sqrt(Math.max(0, 1 - Math.min(1, u * u + v * v)));
-  return Math.round(rise * p);
-}
+/** Extra blocks of air above ROOM_H at a tile, for a ceiling of `rise` extra blocks (`ceilingAt`). */
+export const ceilingRise = ceilingAt;
 
 const EL_ID = { water: EL_WATER, lava: EL_LAVA, fire: EL_FIRE } as const;
 const elemByteOf = (kind: number) => (kind << 6) | SOURCE;
 
 /** A pool (dug `depth` blocks into the floor and filled with a source), a dry dip, or an eternal
  *  flame on the floor. Pools 2 deep get a brick lining under them. */
-function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el: 'water' | 'lava' | 'fire' | null; depth: number }, frozen = false) {
+function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el: 'water' | 'lava' | 'fire' | null; depth: number }, frozen = false, lining: number = MAT.brick) {
   for (let d = 1; d <= el.depth; d++) {
     const i = w.idx(x, y0 - d, z);
     // the ninth circle is frozen: its pools are ice (solid, slippery, breakable), never water
@@ -485,24 +568,28 @@ function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el:
     w.data[i] = AIR;
     w.elem[i] = el.el && el.el !== 'fire' ? elemByteOf(EL_ID[el.el]) : 0;
   }
-  if (el.depth >= 2) w.data[w.idx(x, y0 - el.depth - 1, z)] = MAT.brick;
+  if (el.depth >= 2) w.data[w.idx(x, y0 - el.depth - 1, z)] = lining;
   if (el.el === 'fire') w.elem[w.idx(x, y0, z)] = elemByteOf(EL_FIRE);
 }
 
 /** `own`: only the templates made for this floor (the tutorial uses its own rooms throughout).
- *  `size`: the room's footprint; only templates of that size fit it. */
-function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, floor: number, rng: Rng, own = false, size: [number, number] = [1, 1]): RoomTemplate {
-  const fits = (t: RoomTemplate) => (t.size ?? [1, 1])[0] === size[0] && (t.size ?? [1, 1])[1] === size[1];
-  const ofType = templates.filter(t => t.types.includes(type) && fits(t));
+ *  `size`: a footprint decided with the plan (the great pit's crown); only templates of that size fit it.
+ *  `fits`: does a template's space fit around the room? Templates bigger than a cell weigh `big` times more. */
+function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, floor: number, rng: Rng, own = false, size: [number, number] | undefined, fits: (t: RoomTemplate) => boolean, big = 1): RoomTemplate {
+  const cells = (t: RoomTemplate) => (t.size ?? [1, 1])[0] * (t.size ?? [1, 1])[1];
+  const sized = (t: RoomTemplate) => (size ? (t.size ?? [1, 1])[0] === size[0] && (t.size ?? [1, 1])[1] === size[1] : true);
+  const ofType = templates.filter(t => t.types.includes(type) && sized(t));
   const allowed = ofType.filter(t => !t.floors || (floor >= t.floors[0] && floor <= t.floors[1]));
   const mine = allowed.filter(t => t.floors);
   const here = own && mine.length ? mine : allowed;
   // a floor with no template of its own for this type borrows any (never a missing room)
-  const options = here.length ? here : ofType;
+  const pool = here.length ? here : ofType;
+  const options = pool.filter(fits).length ? pool.filter(fits) : ofType.filter(t => cells(t) === 1);
   if (!options.length) throw new Error(`no room template for type "${type}"`);
-  const total = options.reduce((s, t) => s + (t.weight ?? 1), 0);
+  const weight = (t: RoomTemplate) => (t.weight ?? 1) * (cells(t) > 1 ? big : 1);
+  const total = options.reduce((s, t) => s + weight(t), 0);
   let r = rng.next() * total;
-  for (const t of options) { r -= t.weight ?? 1; if (r <= 0) return t; }
+  for (const t of options) { r -= weight(t); if (r <= 0) return t; }
   return options[options.length - 1];
 }
 

@@ -255,9 +255,8 @@ export class Hud {
     for (const r of floor.rooms) {
       if (!known.has(r.id)) continue;
       const x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
-      // a bigger room spans its cells and the gaps between them
-      const [sx, sz] = floor.plan.rooms[r.id % ROOM_ID_STRIDE].size ?? [1, 1];
-      const rw = sx * cw + (sx - 1) * gap, rh = sz * ch + (sz - 1) * gap;
+      // every room is one cell: the map tells how many rooms and how they join, never their size or shape
+      const rw = cw, rh = ch;
       const visitedHere = visited.has(r.id);
       const paint = (px: number, py: number, pw: number, ph: number) => {
         if (visitedHere) {
