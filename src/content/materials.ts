@@ -21,7 +21,7 @@ export interface MaterialDef {
   /** [base, dark, hi] as numbers, for particles and anything that needs a plain colour. */
   colors: [number, number, number];
   /** Shape grammar of its 16×16 tile (src/render/atlas.ts): shapes, never noise. */
-  pattern: 'clumps' | 'grass' | 'leaves' | 'brick' | 'plates' | 'strata' | 'planks' | 'bark' | 'facets' | 'cobble' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen';
+  pattern: 'clumps' | 'grass' | 'leaves' | 'brick' | 'plates' | 'strata' | 'planks' | 'bark' | 'facets' | 'cobble' | 'earth' | 'rubble' | 'ashlar' | 'slate' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen';
   /** What it stands for (the art's meaning test). */
   concept?: string;
   model?: boolean;
@@ -72,12 +72,12 @@ const DEFS: Def[] = [
   { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'grass', pattern: 'leaves', concept: 'what grows when you rise' },
   { id: 20, key: 'starstone', name: 'Star stone', tier: 3, hp: 60, armor: 3, ramp: 'limestone', accent: 'bone.paper', pattern: 'cobble', concept: 'a fixed point to steer by' },
   // each floor builds its rooms from its own palette (src/content/levels.ts, DECISIONS §6.5), as tough as brick
-  { id: 21, key: 'loam', name: 'Packed earth', tier: 1, hp: 12, armor: 0.5, ramp: 'loam', pattern: 'strata', concept: 'the ground you were raised on' },
+  { id: 21, key: 'loam', name: 'Packed earth', tier: 1, hp: 12, armor: 0.5, ramp: 'loam', accent: 'limestone.base', pattern: 'earth', concept: 'the ground you were raised on' },
   { id: 22, key: 'flagstone', name: 'Flagstone', tier: 1, hp: 12, armor: 0.5, ramp: 'flagstone', pattern: 'plates', concept: 'a path worn by repetition' },
-  { id: 23, key: 'rubble', name: 'Rubble masonry', tier: 1, hp: 12, armor: 0.5, ramp: 'rubble', pattern: 'cobble', concept: 'what the winds tore down, piled up again' },
+  { id: 23, key: 'rubble', name: 'Rubble masonry', tier: 1, hp: 12, armor: 0.5, ramp: 'rubble', pattern: 'rubble', concept: 'what the winds tore down, piled up again' },
   { id: 24, key: 'wetbrick', name: 'Wet brick', tier: 1, hp: 12, armor: 0.5, ramp: 'wetbrick', pattern: 'brick', concept: 'a habit soaked in feeling' },
-  { id: 25, key: 'ashlar', name: 'Ashlar', tier: 1, hp: 12, armor: 0.5, ramp: 'ashlar', pattern: 'plates', concept: 'a burden cut into blocks' },
-  { id: 26, key: 'slate', name: 'Slate', tier: 1, hp: 12, armor: 0.5, ramp: 'slate', pattern: 'strata', concept: 'layers of what was never said' },
+  { id: 25, key: 'ashlar', name: 'Ashlar', tier: 1, hp: 12, armor: 0.5, ramp: 'ashlar', pattern: 'ashlar', concept: 'a burden cut into blocks' },
+  { id: 26, key: 'slate', name: 'Slate', tier: 1, hp: 12, armor: 0.5, ramp: 'slate', pattern: 'slate', concept: 'layers of what was never said' },
   { id: 27, key: 'darkbrick', name: 'Dark brick', tier: 1, hp: 12, armor: 0.5, ramp: 'darkbrick', pattern: 'brick', concept: 'a habit gone dark' },
 ];
 

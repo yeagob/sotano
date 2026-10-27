@@ -181,6 +181,82 @@ function paintDeepstone(px: Px, r: Ramp, rng: Rng) {
   }
 }
 
+const EARTH_COURSES: [number, number][] = [[0, 0.6], [6, 2.4], [11, 4.4]];
+const EARTH_CRACKS: [number, number, number][] = [[5, 1, 3], [12, 2, 2], [9, 7, 3], [1, 8, 2], [4, 12, 3], [14, 13, 2]];
+const EARTH_STONES: [number, number, boolean][] = [[10, 3, true], [2, 9, false], [12, 13, false]];
+const EARTH_PORES: [number, number][] = [[7, 4], [14, 9], [6, 14]];
+
+function paintEarth(px: Px, r: Ramp) {
+  const w = wrap(px);
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) w(x, y, r.b);
+  for (const [y0, ph] of EARTH_COURSES) for (let x = 0; x < T; x++) {
+    const y = y0 + Math.round(Math.sin((x / T) * Math.PI * 2 + ph) * 0.8);
+    w(x, y, r.d);
+    if (Math.sin((x / T) * Math.PI * 4 + ph * 2) > -0.3) w(x, y + 1, r.h);
+  }
+  for (const [x, y0, l] of EARTH_CRACKS) for (let k = 0; k < l; k++) w(x + (k === l - 1 ? 1 : 0), y0 + k, r.d);
+  const pale = r.a ?? r.h;
+  for (const [x, y, light] of EARTH_STONES) { w(x, y, light ? pale : r.h); w(x + 1, y, r.h); w(x, y + 1, r.d); w(x + 1, y + 1, r.d); w(x + 1, y + 2, r.o); w(x, y + 2, r.d); }
+  for (const [x, y] of EARTH_PORES) w(x, y, r.o);
+}
+
+function paintRubble(px: Px, r: Ramp, rng: Rng) {
+  const seeds = [[2, 2], [9, 1], [14, 4], [5, 7], [11, 8], [1, 11], [7, 13], [13, 13]].map(([x, y]) => [x + rng.int(0, 1), y + rng.int(0, 1)]);
+  const tones = seeds.map((_, i) => (i % 3 === 1 ? r.d : i % 4 === 2 ? r.h : r.b));
+  const owner = (x: number, y: number) => {
+    x = ((x % T) + T) % T; y = ((y % T) + T) % T;
+    let best = 0, bd = Infinity;
+    seeds.forEach(([sx, sy], i) => {
+      const dx = Math.min(Math.abs(x - sx), T - Math.abs(x - sx)), dy = Math.min(Math.abs(y - sy), T - Math.abs(y - sy));
+      const d = dx * dx + dy * dy * 1.3;
+      if (d < bd) { bd = d; best = i; }
+    });
+    return best;
+  };
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const p = owner(x, y);
+    if (owner(x + 1, y) !== p || owner(x, y + 1) !== p) px(x, y, r.o);
+    else if (owner(x - 1, y) !== p || owner(x, y - 1) !== p) px(x, y, tones[p] === r.h ? r.h : tones[p] === r.d ? r.b : r.h);
+    else if (owner(x + 2, y) !== p || owner(x, y + 2) !== p) px(x, y, r.d);
+    else px(x, y, tones[p]);
+  }
+}
+
+const ASHLAR_COURSES: [number, number, number[]][] = [[0, 8, [0, 10]], [8, 8, [5, 13]]];
+
+function paintAshlar(px: Px, r: Ramp) {
+  const w = wrap(px);
+  for (const [y0, h, joints] of ASHLAR_COURSES) for (let y = y0; y < y0 + h; y++) for (let x = 0; x < T; x++) {
+    const ly = y - y0;
+    const lx = Math.min(...joints.map(j => (x - j + T) % T));
+    const toJoint = Math.min(...joints.map(j => (j - 1 - x + 2 * T) % T));
+    if (ly === h - 1 || toJoint === 0) w(x, y, r.o);
+    else if (ly === 0 || lx === 0) w(x, y, r.h);
+    else if (ly === h - 2 || toJoint === 1) w(x, y, r.d);
+    else w(x, y, r.b);
+  }
+  for (const [x, y] of [[4, 3], [12, 11], [8, 12]]) { w(x, y, r.d); }
+}
+
+const SLATE_ROWS: [number, number[]][] = [[3, [0, 6, 11]], [2, [3, 9, 14]], [4, [1, 7, 12]], [3, [4, 10]], [4, [2, 8, 13]]];
+
+function paintSlate(px: Px, r: Ramp) {
+  const w = wrap(px);
+  let y0 = 0;
+  SLATE_ROWS.forEach(([h, joints], row) => {
+    for (let y = y0; y < y0 + h; y++) for (let x = 0; x < T; x++) {
+      const ly = y - y0;
+      const toJoint = Math.min(...joints.map(j => (j - x + T) % T));
+      const fromJoint = Math.min(...joints.map(j => (x - j - 1 + T) % T));
+      const shade = (joints.findIndex(j => j > x) + row) % 3 === 0 ? r.d : r.b;
+      if (ly === h - 1 || toJoint === 0) w(x, y, r.o);
+      else if (ly === 0 && h > 2) w(x, y, fromJoint < 2 ? r.b : r.h);
+      else w(x, y, shade);
+    }
+    y0 += h;
+  });
+}
+
 const ASHLAR: [number, number, number, number][] = [[0, 0, 16, 7], [0, 7, 7, 9], [7, 7, 9, 9]];
 
 function paintFrame(px: Px, r: Ramp, rng: Rng) {
@@ -269,6 +345,18 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
     }
     case 'strata':
       paintDeepstone(px, r, rng);
+      break;
+    case 'earth':
+      paintEarth(px, r);
+      break;
+    case 'rubble':
+      paintRubble(px, r, rng);
+      break;
+    case 'ashlar':
+      paintAshlar(px, r);
+      break;
+    case 'slate':
+      paintSlate(px, r);
       break;
     case 'planks':
       paintCrate(px, r, r.a ?? r.h);
