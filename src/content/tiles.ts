@@ -4,12 +4,12 @@ import { MAT } from './materials';
 
 export const TILE_PX = 16;
 export const ATLAS_COLS = 8;
-export const ATLAS_ROWS = 4;
+export const ATLAS_ROWS = 6;
 
-// tiles 0..23 are materials (tile = material id)
-export const TILE_GRASS_TOP = 24;
-export const TILE_LOG_TOP = 25;
-export const TILE_CRACK0 = 28; // 4 crack stages: 28..31
+// tiles 0..39 are materials (tile = material id)
+export const TILE_GRASS_TOP = 40;
+export const TILE_LOG_TOP = 41;
+export const TILE_CRACK0 = 44; // 4 crack stages: 44..47
 export const CRACK_STAGES = 4;
 
 /** Faces in the mesher's FACES order: +X, -X, +Y, -Y, +Z, -Z. */

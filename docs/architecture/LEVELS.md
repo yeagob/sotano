@@ -175,7 +175,7 @@ A structure built once per run in the sky band above the surface, from `fork('tr
 
 ### L6: the creatures of the roots
 
-Peaceful creatures on floor 0 (faction `neutral`, never sealing doors, never hurting): a first one, **Wonder** (a small moth-like creature of pale paper that drifts toward you and away again; it stands for the curiosity that leads you down), two to four per tutorial floor, through the enemy system with a `wander` behaviour. Its art passes the sotano-art gate (no warm glow: light is the player's).
+Peaceful creatures on floor 0 (faction `neutral`, never sealing doors, never fighting): a first one, **Wonder** (a small moth-like creature of pale paper that keeps away from you; it stands for the curiosity that leads you down), two to four per tutorial floor, through the enemy system with a `flee` behaviour. You can hurt and kill it with a negative intention (owner, 2026-10-27); a positive one mends it. Its art passes the sotano-art gate (no warm glow: light is the player's).
 
 ## 9. L4–L6 as built (after the review, [../reviews/levels-l4-l6.md](../reviews/levels-l4-l6.md))
 
@@ -183,7 +183,91 @@ Peaceful creatures on floor 0 (faction `neutral`, never sealing doors, never hur
 - **Ice (L4):** material 17 (`slippery`, tier 1, the water's own tokens). On the frozen floor (9) the surface layer of every pool a template digs is ice, with water still under it; standing on ice you keep sliding (grip × 0.12).
 - **Silence (L4):** floor 9's way down opens into a sealed chamber on the bedrock under its exit room (air y 1–4, `FloorResult.silence`). In it the world's volume fades to nothing; **stand still three seconds** and you are carried up to heaven, above the tree, falling slowly (`Player.float`, gravity × 0.15, the first landing never hurts). Once silence is known, reaching the top of the sky takes you back down into it. Every jump goes through `teleport`, which finds room to stand (never inside blocks) and refreshes the HUD and the floor bookkeeping without counting as depth.
 - **The tree (L5):** `world/tree.ts` `buildTree` from `fork('tree')` after the rock: a hollow trunk of living wood (radius 5, 50 high, doors at its foot, a spiral stair inside, an opening at its crown), 6–8 branches from its upper third that open the trunk where they leave it and end in platforms, leaf blobs over every branch and over the crown, and three constellations of star-stone platforms above the canopy whose pads carry you to the next star (re-armed once you step off). About 10k–20k cubes, meshed only when you first come near the surface. Going up, the HUD names the trunk, the branches, the leaves and heaven, and the sky turns to night with a dome of faint stars (never warm light).
-- **Creatures of the roots (L6):** `content/creatures` (outside the projections' art rules: they are not projections): **Wonder**, a small paper moth that drifts toward you and away again (`wander` behaviour, `near` in the enemy context). Two to four on floor 0 from `fork('floor', 0, 'creatures')`, ambient (never in a roster), faction `neutral`: nothing hurts them, they never change side, never seal or block a room.
+- **Creatures of the roots (L6):** `content/creatures` (outside the projections' art rules: they are not projections): **Wonder**, a small paper moth that runs from you when you come within 4 blocks (`flee` behaviour). Two to four on floor 0 from `fork('floor', 0, 'creatures')`, ambient (never in a roster), faction `neutral`: they never attack and never change side, never seal or block a room. Intentions meet them: a negative one hurts them (lethal at 0), a positive one heals them when hurt, and a healthy one passes through (`meetsIntention`).
 - `GEN_VERSION` 10.
 
 Still open: what ends a run; the climb from the roots to the surface (today you dig or build up); creatures for the tree and more for the roots; the circles' own mechanics beyond their rooms (winds that push, rain that soaks); a phone performance pass over the whole world; captures in the art guide for ice, the tree and Wonder.
+
+## 10. L7 proposal (2026-10-27): rooms bigger than their cell, new ceilings, deep holes, a building palette per floor
+
+Owner: *"The layouts are boring and repetitive. Bigger rooms, even if they keep their place on the map; vaulted ceilings of different shapes; platforming; deeper holes. The first five floors all look the same: more difference in the materials the rooms are built from. Above all, new layouts, and spaces that are bigger but count as one room on the map: the map only says how many rooms there are and how they connect."*
+
+### 10.1 The map is a graph, the space is not
+
+- The plan (`FloorPlan`) keeps one grid cell per room and its links: that is **the map** (the minimap, distances, special rooms, the Tree's shape). Nothing about a room's size reaches it: the minimap draws every room as one cell (the great pit's crown included).
+- A room's **space** may spread from its home cell into empty grid cells around it: any rectangle of cells that holds the home cell, every other cell empty in the plan and not claimed by another room. The extra cells hold no doors (an empty cell has no link), so links, door positions and the shaft never move.
+- Claims are decided **when the floor is carved**, from the room's own `layout` fork (template, then flips that fit): rooms with a preset footprint first (the crown of the great pit), then every other room by id. `FloorResult.space` maps every grid cell to the room that owns it; `roomAt` reads it. *(Changed by the review: see §11.)*
+- The old plan-time growth (`LevelDef.grow`, `fork('plan', k, 'grow')`, `growFootprint` writing the grid) goes: a level's `bigRooms` multiplies the weight of the templates bigger than one cell instead. Tree floors may grow too: the Tree's shape is its map, and the map does not change (this replaces review L3's "no footprints on Tree floors").
+
+### 10.2 Templates of any shape
+
+- `size: [cellsX, cellsZ]` (1–3 each; *1–2 after the review*) and `home: [cx, cz]` (default `[0, 0]`, the cell that is the room on the map). Rows are `roomDims(size)` blocks (13, 28, 43 × 7, 16, 25).
+- A new character, space ` `, is **not room**: the rock stays. With it a template draws irregular halls (an L, a cross, a round cavern, a long gallery that only uses half of the next cell).
+- The shell hugs the open tiles (two blocks of wall around every open tile); rock beyond it is left as the strata made it.
+- Door approaches, the centre where projections materialise, `P` and `H` are the home cell's. `RoomInfo` gains `hx, hz` (the home cell's interior corner); the clear reward, the spawn fallback, the tablets and the fallback key use it.
+- Big templates may be mirrored: the home cell flips with the rows.
+
+### 10.3 Ceilings
+
+New shapes for the height above five: `pointed-x` / `pointed-z` (a pointed, gothic barrel), `cross` (a groin vault: two barrels crossing), `stepped` (a ziggurat of terraces upside down) and `cave` (an uneven rock roof from a fixed hash of the tile: no randomness drawn). The height cap (8) and every vertical rule stay.
+
+### 10.4 Deep holes and platforming, inside the band
+
+The three layers of rock between floors stay. Holes get deeper by **raising the ground**, not by digging further: a plateau of terraces (3 or 4 high) with `=` pits in it gives holes five or six blocks deep, and single pillars over a pit field (jumps of one tile) make platforming. The walk check already understands steps, drops and jumps.
+
+### 10.5 A building palette per floor
+
+*(The table below was the proposal; the art agent's final palette and ramps are in the art ledger, [../art/DECISIONS.md](../art/DECISIONS.md) §6.6.)*
+
+Every room was built from one dungeon brick in the colour of floor 1. Each level now names its **palette**: the material of its walls, its floor, and its trim (the `#`, `b` and `1`–`4` built pieces). New materials, appended after id 20 (saves and seeds keep their ids), with brick's toughness (tier 1, hp 12) so digging feels the same and only the look and the meaning change:
+
+| Floor | Walls | Floor | Trim |
+|---|---|---|---|
+| 0 roots | loam (packed earth) | loam | living wood (roots) |
+| 1 limbo | dungeon brick | flagstone | stone |
+| 2 the winds | rubble masonry | flagstone | brick |
+| 3 the rain | wet brick (blue rock) | slate | wet brick |
+| 4 the weights | ashlar (great blocks) | slate | deepstone |
+| 5 the marsh | slate | slate | ashlar |
+| 6–9 | dark masonry | slate, obsidian at the bottom | as the walls |
+
+The lining of deep pools, the obsidian of a vault's shell (`hardenShell`) and the "reinforced" mood follow the palette.
+
+### 10.6 RNG
+
+Template choice already draws from `floor/k/room/i/layout`; flips are now drawn only among the flips that fit, so every room's draws change: `GEN_VERSION` 11.
+
+## 11. L7 as built (after the review, [../reviews/levels-l7.md](../reviews/levels-l7.md))
+
+- **The map is a graph.** `plan.grid` keeps one cell per room; the minimap draws every room as one cell (the great pit's crown too). `growFootprint` only presets a footprint (`PlanRoom.size`); it never writes the grid. `LevelDef.grow` and `fork('plan', k, 'grow')` are gone; `LevelDef.bigRooms` (1 on the roots, 1.5 on floor 1 rising to 4 at the bottom) multiplies the weight of templates bigger than one cell.
+- **Space is shared out first** (`allotSpace`, `fork('floor', k, 'space')`): a preset footprint takes its cells; every empty cell beside a room goes to one of them; every empty cell beside a cell given away goes to that room too. A room's template is picked only among those whose space fits its allotment (after flips), and its flips only among those that fit, so a room depends on the plan, the floor's `space` fork and its own `layout` fork, never on another room (review point 4). What a room really takes is `FloorResult.space`; `roomAt` reads it.
+- **Templates** take `size` (1–2 cells each way, so at most 28 × 16 blocks) and `home` (the cell that is the room on the map). Door approaches are the home cell's, only on the sides where the home is the edge of the space; the centre, `P` and `H` are the home cell's centre (`homeAt`, `centreOf`, `flipped` flips the home too). The character space (` `, `ROCK`) is not room: the shell (Chebyshev distance 2 around open tiles) hugs the outline and the strata beyond stay. Rock never fills the home cell; layers never put a block over rock. Big templates may be mirrored. A vault keeps to one cell (its shell turns to obsidian box by box).
+- **RoomInfo** gains `hx, hz` (the home cell's interior corner: doors, the clear reward, the spawn fallback, tablets, creatures, the fallback key and hole) and `open` (the room's tiles; `inRoomSpace`): the doors seal when you stand in the room's open space, not in its box, so a tunnel through an irregular room's rock never seals it. The leash pulls projections to the home centre.
+- **Ceilings:** `pointed-x`, `pointed-z`, `cross`, `stepped`, `cave` (`ceilingAt` in `rooms.ts`, `ceilingRise` in `floor.ts` is the same function). The cave roof is a fixed hash of the tile and always full height over the middle.
+- **Deep holes and platforming** stay inside the band: plateaus of trim three high (`3`) with `=` pits make holes five deep; single pillars one tile apart are jumped. The validator now checks two blocks of headroom over every stack under the vault or dome at that tile. There is no fall damage today, so a five-block drop is safe.
+- **The flow field** uses a bucket queue (Dial's Dijkstra): a 28 × 16 room is 448 tiles.
+- **A building palette per floor** (`LevelDef.palette`: wall, floor, trim): the shell's walls and ceiling, the floor under the interior, `#` and a plug's upper wall from `wall`, `b` and `1`–`4` from `trim`; the lining of deep pools is the floor; a vault's shell turns from wall and floor into obsidian. Seven materials (ids 21–27), as tough as brick. Colours and the table per floor: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md)). In game, floors 1–4: [../art/img/built/l7-rooms-floors-1-4.png](../art/img/built/l7-rooms-floors-1-4.png).
+- **Rooms** (templates): `long-gallery`, `cloister`, `bastions`, `wind-hall`, `stepped-well`, `drowned-nave`, `strongroom`, `styx-cavern`, `crown-hall`, `chasm`, `dis-hall` ([../design/LEVELS.md](../design/LEVELS.md) §4).
+- Tests: rooms spread only into empty cells and never into each other, the map keeps one cell per room, every open tile has air, big rooms appear on every hostile floor (Tree floors included), the new ceilings rise in the middle; deep pools are lined with their level's floor. `GEN_VERSION` 11.
+
+Later (from the review): the chamber of silence still takes the boss room's box (no big boss on floor 9 today); `ceilingRise` over the bounding box of an irregular room; templates three cells long (the flow field is ready for them); `hardenShell` on irregular vaults.
+
+## 12. The tree in stories, and loading by level (2026-10-27, owner)
+
+The owner asked for the tree **at least three times bigger**, built as **stories you climb**: every story is a hall the size of a whole floor, a **spiral stair** rises from each story's floor into the next, and the tree's foot spreads over the whole surface. And: the tree must not be loaded all the time; only the current level and its neighbours are.
+
+**The tree (`world/tree.ts`, `GiantTree`).** `SKY_LIMIT` is 260 (the world is 428 high). Seven stories (`TREE_STORIES`), heights above the grass:
+
+| Story | Zone (HUD) | Height | Trunk radius | The hall |
+|---|---|---|---|---|
+| `roots` | trunk | 0–21 | 34 | Buttress roots from the trunk to the edges of the world, four great doorways at its foot, root ridges radiating from a mound of earth, six root columns |
+| `rings` | trunk | 22–43 | 30 | The tree's years as low concentric walls (one and two high) with a few gaps, the pith as a central column |
+| `galleries` | trunk | 44–65 | 26 | A balcony round the wall reached by two ramps along it, hanging leaves under the ceiling |
+| `hollows` | trunk | 66–87 | 23 | A forest of wooden columns with bridges between them half way up |
+| `branches` | branches | 88–111 | 20 | Seven to nine great branches leave through arches, rising gently, each to a platform under a blob of leaves |
+| `canopy` | leaves | 112–145 | — | A floor of woven wood under a dome of leaves 108 × 72 with windows onto the sky, limbs climbing inside |
+| `stars` | heaven | 146–260 | — | The crown's platform where the last stair arrives, with a star pad, and three constellations above; every pad carries you to the next star, the last one back to the crown |
+
+Every trunk story has a two-block floor slab, a wall three blocks thick and knot windows at eye height. Each story's stair (`stairAt(i)`) turns 137° from the one below and stands inside its hall, so every hall is crossed: a core of wood, a step a block higher every two blocks of tread, three blocks of air over every step; the opening in the next floor is the air over the last steps (a fall into it is a few blocks). A story's stair is drawn by both stories it touches, each clipped to its own heights, so stories grow in any order. No projections live in the tree yet. Tested: same seed same tree in any order, ranges contiguous, the foot nearly as wide as a floor, and a walk from the grass to the crown through every story.
+
+**Loading by level (`Game.stream`, `ChunkRenderer.setLoadedRange`).** The world has a single axis of levels: floors 0–9 below (silence counts with 9), and the tree's stories as −1 (the roots, which also holds the dirt and the grass) to −7 (the stars). Each frame the game finds the player's level `s`; when it changes, the tree's stories in `s − 1 … s + 1` grow if they never have, and the chunk renderer keeps meshes only for the chunk rows covering those three levels: meshes outside are disposed, rows coming in are queued for meshing, and replies for rows that left are dropped. Scope (owner): only the tree and the block and element meshes; voxels, doors, pickups and projections are untouched (the world is still one array; what is grown or dug stays). Seen from the grass, the tree shows its first two stories; the rest appears as you climb. `GEN_VERSION` 12.

@@ -71,7 +71,7 @@ Each one behaves like the pattern it stands for, so the mechanic teaches the met
 
 **Bosses** (later): **Resistance** (the force that stops creative work; Pressfield's term), **The Impostor**, **The Shadow** (Jung). Each built from breakable voxels, with phases that mirror how that pattern fights back.
 
-Rooms are cleared like in Isaac: entering a room with enemies **slams its doors shut** until every projection is gone. Projections come from inside, never through the doors: they **rise from the room's own matter** (its floor, walls, ceiling, water or fire) at spawn points, each one **announced by an omen** (particles and a spatial sound) before it exists, sometimes in waves (owner, 2026-10-27; this replaces "always at the centre of the room"). The whole bestiary, its evolution with depth, the bosses by zone, and the two non-hostile kinds of beings (**inhabitants**, the living creatures of the depths, and **presences**, immortal beings you can talk to) are designed in [BESTIARY.md](BESTIARY.md). Intentions have a **polarity**: positive ones mend projections and can turn them to your side; negative ones wound everything that is yours too, inhabitants included ([BESTIARY §1.1](BESTIARY.md#11-intention-polarity-owner-2026-10-27)). Future projections tied to elements (see [ELEMENTS.md](ELEMENTS.md)): **Burnout** (fire), **Overwhelm** (deep water), **Stagnation** (mud), **Spark** (electricity).
+Rooms are cleared like in Isaac: entering a room with enemies **slams its doors shut** until every projection is gone. Projections come from inside, never through the doors: they **rise from the room's own matter** (its floor, walls, ceiling, water or fire) at spawn points, each one **announced by an omen** (particles and a spatial sound) before it exists, sometimes in waves (owner, 2026-10-27; this replaces "always at the centre of the room"). The whole bestiary, its evolution with depth, the bosses by zone, and the two non-hostile kinds of beings (**creatures**, the living beings of the depths, and **presences**, immortal beings you can talk to) are designed in [BESTIARY.md](BESTIARY.md). Intentions have a **polarity**: positive ones mend projections and can turn them to your side; negative ones wound everything that is yours too, creatures included ([BESTIARY §1.1](BESTIARY.md#11-intention-polarity-owner-2026-10-27)). Future projections tied to elements (see [ELEMENTS.md](ELEMENTS.md)): **Burnout** (fire), **Overwhelm** (deep water), **Stagnation** (mud), **Spark** (electricity).
 
 ## 5. Items: practices with real names
 
@@ -113,7 +113,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Forgiveness** | Emotion | 3 | Projections that touch you take 4 damage; half their contact hits are ignored | *A Course in Miracles* (Helen Schucman) |
 | **Nothing Personal** | Emotion, Mind | 2 | Two in three contact hits do nothing | *The Four Agreements* (don Miguel Ruiz) |
 | **Systemic Constellation** | Emotion, Mind | 3 | Projections materialise with 30% less health, 15% slower | Family and systemic constellations (Bert Hellinger and others) |
-| **Art Therapy** | Emotion, Body | 2 | Each block you place has a 20% chance to heal half a heart | Art therapy; art transforms the maker |
+| **Art Therapy** | Emotion, Body | 2 | Placing 4 connected blocks in the same room heals one heart (once per room) | Art therapy; art transforms the maker |
 | **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
 | **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
 | **Occam's Razor** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Occam's razor (William of Ockham); a wink at the swords of light of space opera |
@@ -139,7 +139,7 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 ### Gifts and parts (planned)
 
-Projections leave **parts** (flesh, heart, mind, essence) that are items, and some Presences make **agreements** for them. Their gifts come in three tiers and a closed set, the Covenant; every gift is marked *promised* by a gold seam. Design: [BESTIARY.md §5.7 and §8.5–§8.7](BESTIARY.md).
+Projections leave **parts** (flesh, heart, mind, essence): collectibles named after their pattern, held in the inventory but not practices, with no effect. Some Presences make **agreements** for them. Their gifts come in three tiers and a closed set, the Covenant; every gift is marked *promised* by a gold seam. Design: [BESTIARY.md §5.7 and §8.5–§8.7](BESTIARY.md).
 
 ## A love letter to games
 

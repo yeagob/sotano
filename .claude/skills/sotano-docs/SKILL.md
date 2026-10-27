@@ -33,6 +33,12 @@ docs/architecture/             How the code works today
   RNG.md                       Seeds and randomness: classes, paths, tables, guarantees
   LOCALIZATION.md              i18n: catalogs, content texts, item messages, live switching
   ELEMENTS.md                  Elements and containers: architecture + step-by-step plan
+  input/                       Input (a subsystem folder; sotano-controls skill)
+    README.md                  What input is, index, the action table, contexts, pausing
+    KEYBOARD.md                Keyboard and mouse
+    GAMEPAD.md                 Gamepad
+    TOUCH.md                   Touch (mobile, landscape)
+  SANDBOX.md                   The sandbox (creative room) and the lab (deterministic scripted runs)
 docs/lore/                     References and lore (see the sotano-lore skill)
   README.md, SOURCES.md (library), CONCEPTS.md (glossary), COSMOLOGY.md (as above, so below)
 docs/research/                 Background research, target architecture, roadmap
@@ -53,7 +59,19 @@ docs/reviews/                  Three-party architecture reviews
 | A new reference (book, technique, therapy, game) or lore | `docs/lore/` via the sotano-lore skill |
 | Player-facing text, a new language, or the localization mechanism | The catalogs in `src/i18n/locales/` (`sotano-i18n` skill); `docs/architecture/LOCALIZATION.md` if the mechanism changed |
 | Anything random (a new table, a new random decision, a new seed path) | `docs/architecture/RNG.md` (path table, tables list) |
+| Controls: an action, a binding, a device | `docs/architecture/input/README.md` (the table) and the device's own document (`KEYBOARD.md`, `GAMEPAD.md`, `TOUCH.md`), via the `sotano-controls` skill |
 | A key architecture decision | Run the three-party review (below) and add `docs/reviews/<topic>.md` |
+
+### Hierarchy
+
+Documentation is a tree, never a pile. Every level answers one question: a section says *which part of the game*, a subsystem folder says *which system*, a document says *which variant or facet* of it.
+
+- **Split by variant, never merge.** When a subject has variants that a reader looks up one at a time (devices, element types, floor kinds, platforms), each variant gets its own document inside a folder named after the subject. One document per variant; nothing about one variant lives in another's file.
+- **A folder for every subsystem with more than one document**, inside its section (`docs/architecture/input/`, not `docs/architecture/INPUT-*.md`). Folder names are lowercase; document names are UPPERCASE.
+- **Every folder has a `README.md`** that says in one paragraph what the subject is, holds the index of its documents (a table: document, contents), and keeps only what is shared by all of them (the common contract, the shared table, what the variants have in common). Detail specific to one variant goes down into its document.
+- **Every document says where it belongs** in its first lines (a link up to its folder's README) and links sideways only when it must.
+- **Each level is indexed by the level above**: a new document in its folder's README, a new folder in its section's README, a new section in `docs/README.md` and the root README.
+- **Move, don't copy.** When a document grows a second variant, turn it into a folder and move the text; fix every link in the same commit (the link check below).
 
 A **new document** must be added to its section `README.md` index. A **new section (folder)** must have its own `README.md` with an index, and be listed in `docs/README.md` and in the root `README.md` documentation index.
 

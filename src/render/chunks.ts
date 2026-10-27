@@ -4,7 +4,7 @@
 // everything opaque; lava full-bright; fire alpha-tested). Element textures animate by offset.
 
 import * as THREE from 'three';
-import { CHUNK, parseChunkKey, type VoxelWorld } from '../world/world';
+import { CHUNK, chunkKey, parseChunkKey, type VoxelWorld } from '../world/world';
 import type { MeshData } from '../world/mesher';
 import type { MeshRequest } from '../world/mesher.worker';
 import { elementTextures } from './element-textures';
@@ -23,6 +23,7 @@ export class ChunkRenderer {
   readonly material: THREE.MeshBasicMaterial;
   private elemMaterials: THREE.MeshBasicMaterial[];
   private tex = elementTextures();
+  private rows: [number, number] | null = null;
 
   constructor(private world: VoxelWorld, private scene: THREE.Scene, atlas: THREE.Texture, private perFrame = 4, private elemPerFrame = 3) {
     this.material = new THREE.MeshBasicMaterial({ map: atlas, vertexColors: true });
@@ -53,6 +54,7 @@ export class ChunkRenderer {
     for (const key of dirty) {
       if (n >= max) break;
       if (this.inFlight[layer].has(key)) continue; // it will be sent again once the reply arrives
+      if (!this.loaded(key)) { dirty.delete(key); continue; }
       dirty.delete(key);
       const [cx, cy, cz] = parseChunkKey(key);
       const v = (this.version[layer].get(key) ?? 0) + 1;
@@ -74,7 +76,7 @@ export class ChunkRenderer {
   private receive(d: Reply) {
     const layer = d.layer;
     this.inFlight[layer].delete(d.key);
-    if (d.version !== this.version[layer].get(d.key)) return;
+    if (d.version !== this.version[layer].get(d.key) || !this.loaded(d.key)) return;
     const meshes = this.meshes[layer];
     const old = meshes.get(d.key);
     if (old) { old.geometry.dispose(); this.scene.remove(old); meshes.delete(d.key); }
@@ -106,6 +108,30 @@ export class ChunkRenderer {
     this.material.dispose();
     for (const m of this.elemMaterials) m.dispose();
     for (const t of Object.values(this.tex)) t.dispose();
+  }
+
+  setLoadedRange(y0: number, y1: number) {
+    const r0 = Math.max(0, Math.floor(y0 / CHUNK)), r1 = Math.min(this.world.ncy - 1, Math.floor(y1 / CHUNK));
+    const old = this.rows;
+    if (old && old[0] === r0 && old[1] === r1) return;
+    this.rows = [r0, r1];
+    for (const layer of ['blocks', 'elem'] as Layer[]) for (const [key, m] of this.meshes[layer]) {
+      if (this.loaded(key)) continue;
+      m.geometry.dispose(); this.scene.remove(m); this.meshes[layer].delete(key);
+    }
+    for (let cy = r0; cy <= r1; cy++) {
+      if (old && cy >= old[0] && cy <= old[1]) continue;
+      for (let cz = 0; cz < this.world.ncz; cz++) for (let cx = 0; cx < this.world.ncx; cx++) {
+        this.world.dirty.add(chunkKey(cx, cy, cz));
+        this.world.elemDirty.add(chunkKey(cx, cy, cz));
+      }
+    }
+  }
+
+  private loaded(key: string) {
+    if (!this.rows) return true;
+    const cy = parseChunkKey(key)[1];
+    return cy >= this.rows[0] && cy <= this.rows[1];
   }
 
   /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). */

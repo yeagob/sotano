@@ -21,6 +21,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Personal legend and omens** | `the-alchemist` | **Follow the Omens**: luck; the treasure that was where you started (endgame) |
 | **Inner alchemy** (transmutation) | `emerald-tablet`, `the-alchemist` | Furnaces turning raw blocks into refined ones; states of being |
 | **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
+| **Parts of a projection** (flesh, heart, mind, essence) | — | What a released projection leaves behind, named after its pattern (the Doubt's pause, the Lectern's margin note); collected, never practices ([BESTIARY §5.7](../design/BESTIARY.md)) |
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
 | **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/BESTIARY.md)) |
 | **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/BESTIARY.md)) |
@@ -29,7 +30,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **The threshold guardian** (the fear at the edge of change) | `monomyth` | The keystone boss at floor 5's great pit, which steps aside instead of falling |
 | **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/BESTIARY.md)) |
 | **The witness** (seeing without judging) | `jung` (concept generic) | The Witness in silence reads your run back to you |
-| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Inhabitants: the living creatures of the depths, never hostile ([BESTIARY §7](../design/BESTIARY.md)) |
+| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Creatures: the living beings of the depths, never hostile ([BESTIARY §7](../design/BESTIARY.md)) |
 | **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it |
 | **Resistance** | `war-of-art` | A future boss |
 | **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |

@@ -6,7 +6,7 @@ import type { PalToken } from '../content/palette';
 import type { Rng } from '../core/rng';
 
 /** Seconds of gathering motes before the crack, then the breach that lets the projection out. */
-export const OMEN_GATHER = 1.0;
+export const OMEN_GATHER = 1.3;
 export const OMEN_BREACH = 0.2;
 /** Projections per wave at most (BESTIARY §2.4: a wave is one clear announcement, not a flood). */
 export const WAVE_SIZE = 3;
@@ -20,6 +20,8 @@ export interface Cell { x: number; z: number }
 export interface Omen {
   def: string;
   room: number;
+  /** The room's spawn count when this omen opened: the seed path of the projection's parts. */
+  seq: number;
   x: number; y: number; z: number;
   /** Seconds since the omen opened. */
   t: number;
@@ -30,14 +32,16 @@ export interface Omen {
 
 // ── The omen's motes (art: DECISIONS §3.6, §7.3) ──
 
-/** Motes one omen gathers in all (DECISIONS §7.3 cap: an omen is a whisper, not a swarm). */
-export const OMEN_MOTES = 24;
+/** Motes one omen gathers in all (owner, 2026-10-27: more and clearer than the 24 of DECISIONS §7.3). */
+export const OMEN_MOTES = 72;
 /** A light mote lives at least this long (DECISIONS §7.3), so none is born in the gather's last 0.3 s. */
 export const MOTE_MIN_LIFE = 0.3;
 /** The longest frame the game runs (Game.frame clamps dt): the schedule ends this early, so a slow frame never skips a mote. */
 const MAX_FRAME = 0.05;
-/** Seconds between two motes: the 24 are spread evenly over the part of the gather that leaves them a full life. */
-export const MOTE_STEP = (OMEN_GATHER - MOTE_MIN_LIFE - MAX_FRAME) / OMEN_MOTES;
+/** The part of the gather that motes are born in: the last MOTE_MIN_LIFE and a frame stay free. */
+export const MOTE_WINDOW = OMEN_GATHER - MOTE_MIN_LIFE - MAX_FRAME;
+/** Share of the motes born at the steady start rate (the rest accelerate toward the crack). */
+export const MOTE_EARLY = 0.5;
 /** The cold ramp an omen is drawn from (projections' side only; never warm, never gold). */
 export const OMEN_COLORS: readonly PalToken[] = ['cold.dim', 'cold.body', 'cold.white'];
 /** The breach flare: the family eye's colour. */
@@ -50,7 +54,8 @@ export const OMEN_BREACH_COLOR: PalToken = 'cold.white';
  */
 export function gatherMotesDue(o: Omen): number {
   if (o.t < 0 || OMEN_GATHER - o.t < MOTE_MIN_LIFE) return 0;
-  const target = Math.min(OMEN_MOTES, Math.floor(o.t / MOTE_STEP) + 1);
+  const u = Math.min(1, o.t / MOTE_WINDOW);
+  const target = Math.floor(OMEN_MOTES * (MOTE_EARLY * u + (1 - MOTE_EARLY) * u * u));
   const due = Math.max(0, target - o.emitted);
   o.emitted += due;
   return due;
@@ -85,17 +90,13 @@ export function splitWaves(roster: readonly string[], size = WAVE_SIZE): string[
 const dist = (a: Cell, b: Cell) => Math.hypot(a.x - b.x, a.z - b.z);
 
 /**
- * Picks one spawn cell from the room's standable cells, seeded through `rng`:
- * never within DOOR_CLEARANCE of a door; preferably PLAYER_CLEARANCE away from the player.
- * When no cell is far enough from the player, the farthest one is used. Returns null only when
- * no cell is clear of the doors at all.
+ * Picks one spawn cell from the room's standable cells, seeded through `rng`: never within
+ * DOOR_CLEARANCE of a door, and never within PLAYER_CLEARANCE of the player. Null when no cell is
+ * clear of both.
  */
 export function pickSpawnCell(cells: readonly Cell[], doors: readonly Cell[], player: Cell, rng: Rng): Cell | null {
-  const clear = cells.filter(c => doors.every(d => dist(c, d) >= DOOR_CLEARANCE));
-  if (clear.length === 0) return null;
-  const far = clear.filter(c => dist(c, player) >= PLAYER_CLEARANCE);
-  if (far.length > 0) return rng.pick(far);
-  let best = clear[0];
-  for (const c of clear) if (dist(c, player) > dist(best, player)) best = c;
-  return best;
+  const far = cells.filter(c => doors.every(d => dist(c, d) >= DOOR_CLEARANCE) && dist(c, player) >= PLAYER_CLEARANCE);
+  return far.length > 0 ? rng.pick(far) : null;
 }
+
+export const spawnBlocked = (o: Cell, player: Cell) => dist(o, player) < PLAYER_CLEARANCE;

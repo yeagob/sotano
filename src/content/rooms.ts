@@ -21,6 +21,7 @@
 //   f  an eternal flame on the floor     _  a dip, 1 deep
 //   X  an obsidian wall up to two blocks under the ceiling (climb over it with blocks you place)
 //   =  a dry pit, 2 deep (too deep to climb out of without a block)
+//  ' ' (space) not room: the rock stays (irregular halls in templates bigger than one cell)
 //
 // Height (docs/design/LEVELS.md, the sotano-levels skill): `height` raises the interior up to
 // MAX_ROOM_H, `ceiling` shapes the extra height into a vault or a dome, and `layers` add grids of
@@ -28,6 +29,7 @@
 // below: the validator caps height and depth so rock always remains between bands.
 
 import type { RoomType } from '../world/floorplan';
+import { hash3 } from '../core/rng';
 import { MAT } from './materials';
 
 export const ROOM_W = 13;
@@ -38,7 +40,9 @@ export const ROOM_H = 5;
 export const MAX_ROOM_H = 8;
 export const MAX_PIT = 2;
 
-export type CeilingShape = 'flat' | 'vault-x' | 'vault-z' | 'dome';
+/** `pointed-*` a gothic barrel, `cross` two barrels crossing (a groin vault), `stepped` a dome of
+ *  terraces upside down, `cave` an uneven roof of rock (a fixed hash of the tile, nothing drawn). */
+export type CeilingShape = 'flat' | 'vault-x' | 'vault-z' | 'dome' | 'pointed-x' | 'pointed-z' | 'cross' | 'stepped' | 'cave';
 
 /** Extra blocks a grid at height `y` above the floor (1 = right on top of the floor blocks). */
 export interface TemplateLayer { y: number; rows: string[] }
@@ -64,9 +68,11 @@ export interface RoomTemplate {
   lesson?: string;
   /** A second lesson, carved on the south tablet instead of repeating the first. */
   lesson2?: string;
-  /** Footprint in grid cells [east, south] (default [1, 1]): 28 × 7 for [2, 1], 13 × 16 for [1, 2].
-   *  Its doors are those of its first cell (north-west); bigger templates are never mirrored. */
+  /** Space in grid cells [east, south], 1–2 each (default [1, 1]): 13 or 28 blocks wide, 7 or 16
+   *  deep. The room is one cell on the map wherever its space reaches (docs/architecture/LEVELS.md §10). */
   size?: [number, number];
+  /** The cell of `size` that is the room on the map (default [0, 0]): its doors, its centre, `P` and `H`. */
+  home?: [number, number];
 }
 
 /** A template's size in blocks (columns, rows). */
@@ -75,13 +81,26 @@ export const templateDims = (t: RoomTemplate): [number, number] => {
   return [ROOM_W * sx + 2 * (sx - 1), ROOM_D * sz + 2 * (sz - 1)];
 };
 
-/** The door approaches a template can have: a big room's doors are those of its first cell. */
+/** Template tile of the home cell's interior corner, after flips. */
+export function homeAt(t: RoomTemplate, flipX = false, flipZ = false): [number, number] {
+  const [sx, sz] = t.size ?? [1, 1], [hx, hz] = t.home ?? [0, 0];
+  return [(flipX ? sx - 1 - hx : hx) * (ROOM_W + 2), (flipZ ? sz - 1 - hz : hz) * (ROOM_D + 2)];
+}
+
+/** The door approaches a template can have: those of its home cell on the sides where it is the edge
+ *  of the space (a side with more space beyond it borders an empty cell, which never holds a door). */
 export function doorApproach(t: RoomTemplate): Partial<Record<'N' | 'S' | 'E' | 'W', [number, number][]>> {
-  const [sx, sz] = t.size ?? [1, 1];
-  const out: Partial<Record<'N' | 'S' | 'E' | 'W', [number, number][]>> = { N: DOOR_APPROACH.N, W: DOOR_APPROACH.W };
-  if (sz === 1) out.S = DOOR_APPROACH.S;
-  if (sx === 1) out.E = DOOR_APPROACH.E;
+  const [sx, sz] = t.size ?? [1, 1], [hx, hz] = t.home ?? [0, 0], [oc, or] = homeAt(t);
+  const out: Partial<Record<'N' | 'S' | 'E' | 'W', [number, number][]>> = {};
+  const edge = { N: hz === 0, S: hz === sz - 1, W: hx === 0, E: hx === sx - 1 };
+  for (const side of ['N', 'S', 'W', 'E'] as const) if (edge[side]) out[side] = DOOR_APPROACH[side].map(([c, r]) => [c + oc, r + or]);
   return out;
+}
+
+/** The centre tile of the home cell, where projections materialise and the shafts open. */
+export function centreOf(t: RoomTemplate): [number, number] {
+  const [oc, or] = homeAt(t);
+  return [oc + 6, or + 3];
 }
 
 export const ROOM_TEMPLATES: RoomTemplate[] = [
@@ -784,6 +803,179 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
     ],
   },
+  // ── L7: rooms bigger than their cell, new ceilings, deep holes (docs/architecture/LEVELS.md §10) ──
+  {
+    // a long gallery under a pointed vault: its far half is a plateau three high, riddled with holes five
+    // deep; pillars to jump across, and the key at the bottom of a well (jump down, build your way out)
+    id: 'long-gallery', types: ['normal', 'path'], floors: [1, 3], size: [2, 1], weight: 2, height: 8, ceiling: 'pointed-x', rows: [
+      'd...........d..1233333333333',
+      '...............123=3=3=3====',
+      '...#.....#.....123==========',
+      '...............1233=3=3==K==',
+      '...#.....#.....123==========',
+      '...............123=3=3=3====',
+      'd...........d..1233333333333',
+    ],
+  },
+  {
+    // limbo's cloister: a walk around a sunken garth two blocks down, under crossing vaults; the doors
+    // open onto the walk, the garth is a trap you build out of
+    id: 'cloister', types: ['normal', 'path'], floors: [1, 2], weight: 2, height: 7, ceiling: 'cross', rows: [
+      '.............',
+      '.d#=======#d.',
+      '..=========..',
+      '.............',
+      '..=========..',
+      '.d#=======#d.',
+      '.............',
+    ],
+  },
+  {
+    // the winds: a hall two cells long cut by three obsidian walls, each with a plug where a door would be;
+    // a high walk of trim runs over them, reached by a stair, for whoever builds up to it
+    id: 'wind-hall', types: ['normal', 'path'], floors: [2, 3], size: [2, 1], weight: 2, height: 8, ceiling: 'cross', rows: [
+      '.d.........dX.....X.....X..4',
+      '............X.....X.....X..3',
+      '............E.....E..K..X..2',
+      '............E.....E.....X..1',
+      '............E.....E.....X...',
+      '............X.....X.....X...',
+      '.d.........dX...d.X.....X..d',
+    ],
+  },
+  {
+    // a stepped well: the room drops south into a second cell where terraces climb in a spiral around a
+    // pit five deep; the key waits on the floor of the pit
+    id: 'stepped-well', types: ['normal', 'path'], floors: [2, 4], size: [1, 2], weight: 2, height: 8, ceiling: 'stepped', rows: [
+      '.d.........d.',
+      '.............',
+      '.............',
+      '.............',
+      '.............',
+      '...#.....#...',
+      '.............',
+      '.............',
+      '.............',
+      '1233333333321',
+      '2===========2',
+      '3=3=======3=3',
+      '3=====K=====3',
+      '3=3=======3=3',
+      '3===========3',
+      '3333333333333',
+    ],
+  },
+  {
+    // the rain: the room opens east into a drowned nave, deep water from wall to wall with a line of
+    // stepping stones; galleries along the walls, the key on an island at the far end
+    id: 'drowned-nave', types: ['normal', 'path'], floors: [3, 4], size: [2, 1], weight: 2, height: 8, ceiling: 'vault-x', rows: [
+      '.c.........c...2WWWWWWWWWWW2',
+      '...............WWWWWWWWWWWWW',
+      '...w.....w.....W.WWrWWrWWWWW',
+      '.................WWWWWWWW.K.',
+      '...w.....w.....W.WWrWWrWWWWW',
+      '...............WWWWWWWWWWWWW',
+      '.c.........c...2WWWWWWWWWWW2',
+    ],
+    layers: [
+      { y: 2, rows: [
+        '............................',
+        '................bbbbbbbbbbb.',
+        '............................',
+        '............................',
+        '............................',
+        '................bbbbbbbbbbb.',
+        '............................',
+      ] },
+    ],
+  },
+  {
+    // the weights: a strongroom that runs on into a second cell of great blocks two high, packed with
+    // narrow aisles; the key lies in the middle of them, and every aisle is shut by another block
+    id: 'strongroom', types: ['normal', 'path'], floors: [4, 5], size: [2, 1], weight: 2, height: 7, ceiling: 'stepped', rows: [
+      '.R.........R...XXXXXXXXXXXXX',
+      '................2.2.2.2.2.2X',
+      '...R.....R......2X2X2X2X2.2X',
+      '..................2.2.2X2KXX',
+      '...R.....R......2X2X2X2X2.2X',
+      '................2.2.2.2.2.2X',
+      '.R.........R...XXXXXXXXXXXXX',
+    ],
+  },
+  {
+    // the marsh: the room breaks into a low cavern of rock, irregular, under an uneven roof: still water
+    // and dips of mud, and the key on a hummock across the deep channel
+    id: 'styx-cavern', types: ['normal', 'path'], floors: [5, 6], size: [2, 1], weight: 2, height: 7, ceiling: 'cave', rows: [
+      '.............      ..dd..   ',
+      '.__.......__...  ..__WW__.. ',
+      '............... .._WWWWW_.. ',
+      '.................._WWKWW_...',
+      '............... .._WWWWW_.. ',
+      '.__.......__...  ..__WW__.. ',
+      '.............      ..dd..   ',
+    ],
+  },
+  {
+    // a crown that spreads into the cell beside it: a long dome, the way down at its heart, the boss's
+    // practice on a dais at the far end
+    id: 'crown-hall', types: ['boss'], floors: [1, 4], size: [2, 1], weight: 2, height: 8, ceiling: 'dome', rows: [
+      '............................',
+      '..r.......r.......2.....2...',
+      '......................1.....',
+      '......H..............1T.....',
+      '......................1.....',
+      '..r.......r.......2.....2...',
+      '............................',
+    ],
+  },
+  {
+    // a chasm: the room's second cell is a plateau of trim broken by holes five deep, joined by a bridge
+    // of single blocks with gaps you jump; the key at the bottom of the deepest hole
+    id: 'chasm', types: ['normal', 'path'], floors: [6, 9], size: [1, 2], weight: 3, height: 8, ceiling: 'cave', rows: [
+      '.d.........d.',
+      '.............',
+      '.............',
+      '......K......',
+      '.............',
+      '.............',
+      '.d.........d.',
+      '.............',
+      '.............',
+      '1233333333321',
+      '3===========3',
+      '3=3=3=3=3=3=3',
+      '3===========3',
+      '3===========3',
+      '3=====K=====3',
+      '3===========3',
+    ],
+  },
+  {
+    // the walls of Dis: a hall in two cells, a ditch of lava between them and graves of flame beyond;
+    // the key lies among the graves
+    id: 'dis-hall', types: ['normal', 'path'], floors: [6, 7], size: [2, 1], weight: 2, height: 7, ceiling: 'pointed-x', rows: [
+      '.r.........r.LLL.f.f.f.f.f..',
+      '.............LLL............',
+      '.............LLL.f.f.f.f.f..',
+      '.............LLL.......K....',
+      '.............LLL.f.f.f.f.f..',
+      '.............LLL............',
+      '.r.........r.LLL.f.f.f.f.f..',
+    ],
+  },
+  {
+    // bastions: towers of trim three high in the four corners, each ringed by holes five deep, under a
+    // pointed vault; a vantage over the fight for whoever climbs the stair
+    id: 'bastions', types: ['normal', 'path'], floors: [1, 5], height: 8, ceiling: 'pointed-z', rows: [
+      '33=2.....2=33',
+      '3==1.....1==3',
+      '.............',
+      '......K......',
+      '.............',
+      '3==1.....1==3',
+      '33=2.....2=33',
+    ],
+  },
   // ── challenge rooms: three waves every time you enter (any hostile floor) ──
   {
     // an open ring with four low walls to hide behind
@@ -979,6 +1171,9 @@ export const CELL_ELEMENT: Record<string, { el: 'water' | 'lava' | 'fire' | null
 /** Characters a layer may use: single blocks, a flame, or nothing. */
 export const LAYER_CHARS = new Set(['.', 'r', 'c', 'o', 'd', 'i', 'b', 'f']);
 
+/** Not room: the rock stays (a template's irregular outline). */
+export const ROCK = ' ';
+
 /** Characters that mark something but leave the tile walkable. */
 export const MARKERS = new Set(['.', 'P', 'K', 'T', 'H']);
 
@@ -998,12 +1193,16 @@ const REQUIRED: Partial<Record<RoomType, string[]>> = { start: ['P'], treasure: 
 export function validateTemplate(t: RoomTemplate): string[] {
   const errs: string[] = [];
   const [TW, TD] = templateDims(t);
-  if ((t.size ?? [1, 1]).some(n => n !== 1 && n !== 2) || (t.size?.[0] === 2 && t.size?.[1] === 2)) errs.push(`${t.id}: size must be [1, 1], [2, 1] or [1, 2]`);
-  if (t.size && (t.size[0] > 1 || t.size[1] > 1) && t.mirror !== false) errs.push(`${t.id}: a big template must set mirror: false (its doors are on its first cell)`);
+  const [SX, SZ] = t.size ?? [1, 1], [HX, HZ] = t.home ?? [0, 0];
+  if (![SX, SZ].every(n => Number.isInteger(n) && n >= 1 && n <= 2)) errs.push(`${t.id}: size must be 1–2 cells each way`);
+  // a vault's shell turns to obsidian box by box: it keeps to one cell
+  if (t.types.includes('vault') && SX * SZ > 1) errs.push(`${t.id}: a vault keeps to one cell`);
+  if (!(HX >= 0 && HX < SX && HZ >= 0 && HZ < SZ)) errs.push(`${t.id}: home ${HX},${HZ} is outside its size`);
+  const [CC, CR] = centreOf(t);
   if (t.rows.length !== TD) errs.push(`${t.id}: ${t.rows.length} rows (expected ${TD})`);
   t.rows.forEach((r, i) => {
     if (r.length !== TW) errs.push(`${t.id}: row ${i} is ${r.length} wide (expected ${TW})`);
-    for (const ch of r) if (!MARKERS.has(ch) && !CELL_STACK[ch] && !DECOR_CHARS.has(ch) && !CELL_ELEMENT[ch]) errs.push(`${t.id}: unknown character "${ch}"`);
+    for (const ch of r) if (!MARKERS.has(ch) && !CELL_STACK[ch] && !DECOR_CHARS.has(ch) && !CELL_ELEMENT[ch] && ch !== ROCK) errs.push(`${t.id}: unknown character "${ch}"`);
   });
   for (const [side, tiles] of Object.entries(doorApproach(t))) {
     for (const [c, r] of tiles) {
@@ -1025,7 +1224,9 @@ export function validateTemplate(t: RoomTemplate): string[] {
       errs.push(`${t.id}: the pedestal can't be reached from any side`);
   });
   // projections materialise on the centre tile of normal rooms
-  if ((t.types.includes('normal') || t.types.includes('path') || t.types.includes('challenge')) && !walk(6, 3)) errs.push(`${t.id}: the centre tile (6,3) must be walkable (projections spawn there)`);
+  if ((t.types.includes('normal') || t.types.includes('path') || t.types.includes('challenge')) && !walk(CC, CR)) errs.push(`${t.id}: the centre tile (${CC},${CR}) must be walkable (projections spawn there)`);
+  // the home cell is the room on the map: rock never fills it
+  for (let r = 0; r < ROOM_D; r++) for (let c = 0; c < ROOM_W; c++) if (t.rows[CR - 3 + r]?.[CC - 6 + c] === ROCK) { errs.push(`${t.id}: rock (" ") inside the home cell at ${CC - 6 + c},${CR - 3 + r}`); r = ROOM_D; break; }
   // the 2×2 shaft: from the H tile in boss rooms, onto the P tile in start rooms. It is carved at
   // +1 on each world axis, so a mirrored template reaches the other way in template space.
   const flips = t.mirror === false ? [[1, 1]] : [[1, 1], [-1, 1], [1, -1], [-1, -1]];
@@ -1043,7 +1244,7 @@ export function validateTemplate(t: RoomTemplate): string[] {
   });
   errs.push(...validateVolume(t, shaftTiles));
   // the shaft lands on P and opens at H: both at the centre, which every flip keeps in place
-  for (const mark of ['P', 'H']) t.rows.forEach((row, r) => { const c = row.indexOf(mark); if (c >= 0 && (c !== 6 || r !== 3)) errs.push(`${t.id}: "${mark}" must be at the centre (6,3)`); });
+  for (const mark of ['P', 'H']) t.rows.forEach((row, r) => { const c = row.indexOf(mark); if (c >= 0 && (c !== CC || r !== CR)) errs.push(`${t.id}: "${mark}" must be at the centre (${CC},${CR})`); });
   // building puzzles never trap: you land in a start room you can walk out of, and the projections
   // materialise where they can reach at least one door
   if (t.rows.length === TD && t.rows.every(r => r.length === TW)) {
@@ -1054,11 +1255,11 @@ export function validateTemplate(t: RoomTemplate): string[] {
       errs.push(`${t.id}: it needs building but holds nothing to build with`);
     if (t.types.includes('start') && new Set(parts.values()).size > 1) errs.push(`${t.id}: a start room must never need building`);
     // the great pit opens 4×4 around a wide crown's H: keep that clear too
-    if (t.types.includes('boss') && t.size) for (let r = 2; r <= 5; r++) for (let c = 5; c <= 8; c++)
-      if (!MARKERS.has(t.rows[r]?.[c] ?? '#') || t.rows[r][c] === 'T') errs.push(`${t.id}: the great pit's 4×4 shaft (columns 5–8, rows 2–5) must be clear`);
+    if (t.types.includes('boss') && t.size) for (let r = CR - 1; r <= CR + 2; r++) for (let c = CC - 1; c <= CC + 2; c++)
+      if (!MARKERS.has(t.rows[r]?.[c] ?? '#') || t.rows[r][c] === 'T') errs.push(`${t.id}: the great pit's 4×4 shaft (columns ${CC - 1}–${CC + 2}, rows ${CR - 1}–${CR + 2}) must be clear`);
     // the great pit's 4×4 shaft lands on the centre of a start room: keep it clear
-    if (t.types.includes('start')) for (let r = 2; r <= 5; r++) for (let c = 5; c <= 8; c++)
-      if (!MARKERS.has(t.rows[r]?.[c] ?? '#')) errs.push(`${t.id}: the start room's 4×4 centre (columns 5–8, rows 2–5) must be clear for the great pit`);
+    if (t.types.includes('start')) for (let r = CR - 1; r <= CR + 2; r++) for (let c = CC - 1; c <= CC + 2; c++)
+      if (!MARKERS.has(t.rows[r]?.[c] ?? '#')) errs.push(`${t.id}: the start room's 4×4 centre (columns ${CC - 1}–${CC + 2}, rows ${CR - 1}–${CR + 2}) must be clear for the great pit`);
     const centre = parts.get('centre');
     if (centre !== undefined && !['N', 'S', 'E', 'W'].some(d => parts.get(d) === centre)) errs.push(`${t.id}: the centre must reach at least one door on foot (projections spawn there)`);
   }
@@ -1093,6 +1294,13 @@ function validateVolume(t: RoomTemplate, shaftTiles: number[][]): string[] {
     }
   }));
   check(t.rows, '');
+  // two blocks of headroom over anything you stand on, under the vault or dome at that tile
+  const [VW, VD] = templateDims(t);
+  const roof = (c: number, r: number) => h - (ROOM_H < h ? (h - ROOM_H) - ceilingAt(t.ceiling ?? 'flat', h - ROOM_H, c, r, VW, VD) : 0);
+  t.rows.forEach((row, r) => [...row].forEach((ch, c) => {
+    const s = CELL_STACK[ch];
+    if (s && !'#XDE'.includes(ch) && s.h + 2 > roof(c, r)) errs.push(`${t.id}: "${ch}" at ${c},${r} leaves less than two blocks under the ceiling`);
+  }));
   const seen = new Set<number>();
   for (const [li, layer] of (t.layers ?? []).entries()) {
     const where = ` (layer ${li})`;
@@ -1108,11 +1316,12 @@ function validateVolume(t: RoomTemplate, shaftTiles: number[][]): string[] {
     if (layer.y < DOOR_HEIGHT) for (const [side, tiles] of Object.entries(doorApproach(t))) for (const [c, r] of tiles!)
       if (!clear(c, r)) errs.push(`${t.id}: layer ${li} blocks the ${side} door at ${c},${r}`);
     // the spawn column, the pedestal (its practice floats above it) and the shaft stay open all the way up
-    if ((t.types.includes('normal') || t.types.includes('path')) && layer.y < DOOR_HEIGHT && !clear(6, 3)) errs.push(`${t.id}: layer ${li} covers the centre tile (projections spawn there)`);
+    if ((t.types.includes('normal') || t.types.includes('path')) && layer.y < DOOR_HEIGHT && !clear(...centreOf(t))) errs.push(`${t.id}: layer ${li} covers the centre tile (projections spawn there)`);
     t.rows.forEach((row, r) => { const c = row.indexOf('T'); if (c >= 0 && layer.y <= 3 && !clear(c, r)) errs.push(`${t.id}: layer ${li} covers the pedestal`); });
     for (const [c, r] of shaftTiles) if (!clear(c, r)) errs.push(`${t.id}: layer ${li} blocks the 2×2 shaft at ${c},${r}`);
     // a layer block must stand on something or span between supports: no floating single blocks
     layer.rows.forEach((row, r) => [...row].forEach((ch, c) => {
+      if (ch !== '.' && t.rows[r]?.[c] === ROCK) errs.push(`${t.id}: layer ${li} puts a block in the rock at ${c},${r}`);
       if (ch === '.' || ch === 'f') return;
       const below = layer.y === 1 ? t.rows[r][c] : '.';
       const held = CELL_STACK[below] || N4.some(([dc, dr]) => at(layer.rows, c + dc, r + dr) !== '.' && at(layer.rows, c + dc, r + dr) !== '#');
@@ -1124,6 +1333,26 @@ function validateVolume(t: RoomTemplate, shaftTiles: number[][]): string[] {
     }));
   }
   return errs;
+}
+
+/** Extra blocks of air above ROOM_H at a tile, for a ceiling of `rise` extra blocks. */
+export function ceilingAt(shape: CeilingShape, rise: number, col: number, row: number, w = ROOM_W, d = ROOM_D): number {
+  if (rise <= 0) return 0;
+  const u = (col + 0.5 - w / 2) / (w / 2), v = (row + 0.5 - d / 2) / (d / 2);
+  const arc = (a: number) => Math.sqrt(Math.max(0, 1 - a * a));
+  // a pointed arch: two arcs meeting at a ridge, steeper than a round barrel
+  const point = (a: number) => Math.max(0, 1 - Math.abs(a)) ** 0.6;
+  const p = shape === 'flat' ? 1
+    : shape === 'vault-x' ? arc(v)
+    : shape === 'vault-z' ? arc(u)
+    : shape === 'pointed-x' ? point(v)
+    : shape === 'pointed-z' ? point(u)
+    : shape === 'cross' ? Math.max(arc(u), arc(v))
+    : shape === 'stepped' ? Math.floor((1 - Math.max(Math.abs(u), Math.abs(v))) * (rise + 1)) / rise
+    // an uneven roof, full height over the middle
+    : shape === 'cave' ? Math.max(0, Math.min(1, arc(Math.min(1, Math.hypot(u, v))) * 1.3 - 0.3 * hash3(0x5ca7e, col >> 1, 0, row >> 1)))
+    : arc(Math.min(1, Math.hypot(u, v)));
+  return Math.max(0, Math.min(rise, Math.round(rise * p)));
 }
 
 /** Doorways are this many blocks high (src/world/floor.ts DOOR_H). */
@@ -1144,7 +1373,7 @@ function standLevels(t: RoomTemplate, col: number, row: number): number[] {
   const ch = t.rows[row][col];
   let ground: number | null;
   const el = CELL_ELEMENT[ch];
-  if (ch === '#') ground = null;
+  if (ch === '#' || ch === ROCK) ground = null;
   else if (ch === 'X') ground = h - 2;
   // shallow water: you wade on its bottom; deep water: you swim at the surface and can climb out
   else if (el) ground = el.el === 'lava' || el.el === 'fire' ? null : el.el === 'water' ? (el.depth === 1 ? -1 : 0) : -el.depth;
@@ -1172,7 +1401,7 @@ export function walkParts(t: RoomTemplate): Map<string, number> {
   const id = (c: number, r: number, i: number) => `${c},${r},${i}`;
   const part = new Map<string, number>();
   let next = 0;
-  const maxAt = (c: number, r: number) => (levels[r]?.[c]?.length ? Math.max(...levels[r][c]) : (t.rows[r]?.[c] === '#' ? Infinity : -Infinity));
+  const maxAt = (c: number, r: number) => (levels[r]?.[c]?.length ? Math.max(...levels[r][c]) : (t.rows[r]?.[c] === '#' || t.rows[r]?.[c] === ROCK ? Infinity : -Infinity));
   for (let r0 = 0; r0 < D; r0++) for (let c0 = 0; c0 < W; c0++) levels[r0][c0].forEach((_, i0) => {
     if (part.has(id(c0, r0, i0))) return;
     const p = next++;
@@ -1208,7 +1437,7 @@ export function walkParts(t: RoomTemplate): Map<string, number> {
     keys.set(name, part.get(id(c, r, ls.indexOf(Math.min(...ls))))!);
   };
   for (const [side, tiles] of Object.entries(doorApproach(t))) tiles!.forEach(([c, r], i) => at(i === 1 ? side : `${side}${i}`, c, r));
-  if (t.types.includes('normal') || t.types.includes('path')) at('centre', 6, 3);
+  if (t.types.includes('normal') || t.types.includes('path')) at('centre', ...centreOf(t));
   t.rows.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'P' || ch === 'H' || ch === 'K') at(ch, c, r); }));
   // the pedestal is taken from a tile beside it: the best-placed side counts
   t.rows.forEach((row, r) => { const c = row.indexOf('T'); if (c >= 0) for (const [dc, dr] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) if (levels[r + dr]?.[c + dc]?.length) { at('T', c + dc, r + dr); break; } });
@@ -1224,7 +1453,9 @@ export function needsBuilding(t: RoomTemplate): boolean {
 export function flipped(t: RoomTemplate, flipX: boolean, flipZ: boolean): RoomTemplate {
   if (!flipX && !flipZ) return t;
   const flipRows = (rows: string[]) => rows.map((_, r) => [...rows[0]].map((__, c) => cellAt({ ...t, rows }, c, r, flipX, flipZ)).join(''));
-  return { ...t, rows: flipRows(t.rows), layers: t.layers?.map(l => ({ ...l, rows: flipRows(l.rows) })) };
+  const [sx, sz] = t.size ?? [1, 1], [hx, hz] = t.home ?? [0, 0];
+  const home: [number, number] = [flipX ? sx - 1 - hx : hx, flipZ ? sz - 1 - hz : hz];
+  return { ...t, home, rows: flipRows(t.rows), layers: t.layers?.map(l => ({ ...l, rows: flipRows(l.rows) })) };
 }
 
 const partsMemo = new Map<string, Map<string, number>>();

@@ -6,6 +6,7 @@
 import { ENEMY_BY_ID } from '../content/enemies';
 import { ITEM_BY_ID } from '../content/items';
 import { mat } from '../content/materials';
+import type { PartDef } from '../content/parts';
 import type { EnemyDef } from '../enemies/types';
 import type { ItemDef, SynergyDef } from '../items/types';
 import { catalog, fill, t, type MessageKey, type Params } from '.';
@@ -39,6 +40,11 @@ export function synergyText(s: SynergyDef) {
 export function enemyText(e: EnemyDef) {
   const tr = catalog().content.enemies[e.id] ?? {};
   return { name: tr.name ?? e.name, pattern: tr.pattern ?? e.pattern };
+}
+
+export function partText(p: PartDef) {
+  const tr = catalog().content.parts[p.id] ?? {};
+  return { name: tr.name ?? p.name, description: tr.description ?? p.description };
 }
 
 export function materialName(id: number) {

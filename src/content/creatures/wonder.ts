@@ -1,22 +1,22 @@
 import { pal } from '../palette';
-import { wander } from '../../enemies/behaviours';
+import { flee } from '../../enemies/behaviours';
 import { defineEnemy, TX } from '../../enemies/types';
 
-// Wonder: the curiosity that leads you down. A small moth of pale paper that drifts toward you and
-// away again among the roots; it never touches you and nothing harms it. Not a projection: no
-// husk, no cold eye, no glow (light is yours). Texel units.
+// Wonder: the curiosity that leads you down. A small moth of pale paper that drifts among the roots
+// and keeps away from you; it never touches you and never fights. A negative intention can kill it,
+// a positive one mends it. Not a projection: no husk, no cold eye, no glow (light is yours). Texel units.
 export default defineEnemy({
   id: 'wonder',
   name: 'Wonder',
   pattern: 'Curiosity',
-  hp: 1,
+  hp: 3,
   speed: 1.4,
   size: [0.2, 0.4],
   contactDamage: 0,
   // never part of a roster: only spawned as the roots' ambient life
   cost: 99,
   minFloor: 99,
-  behaviour: wander({ hover: 1.1, near: 2.5, far: 6 }),
+  behaviour: flee({ hover: 1.1, scared: 4 }),
   model: [
     { size: [3 * TX, 3 * TX, 5 * TX], pos: [0, 4 * TX, 0], color: pal('paper.base'), name: 'body' },
     { size: [2 * TX, 2 * TX, 2 * TX], pos: [0, 5 * TX, 3 * TX], color: pal('paper.hi'), name: 'head' },

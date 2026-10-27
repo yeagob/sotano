@@ -36,10 +36,9 @@ describe('spawn points', () => {
     }
   });
 
-  it('falls back to the farthest cell when every cell is near the player', () => {
+  it('never picks a cell within the safety radius of the player', () => {
     const cells = [{ x: 1.5, z: 1.5 }, { x: 2.5, z: 1.5 }];
-    const c = pickSpawnCell(cells, [], { x: 1.5, z: 1.5 }, new Rng(3))!;
-    expect(c).toEqual({ x: 2.5, z: 1.5 });
+    expect(pickSpawnCell(cells, [], { x: 1.5, z: 1.5 }, new Rng(3))).toBeNull();
   });
 
   it('returns null when no cell is clear of the doors', () => {

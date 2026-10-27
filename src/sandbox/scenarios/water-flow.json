@@ -1,0 +1,10 @@
+{
+  "note": "A water source on a flat floor spreads 7 cells and settles; removed, it recedes",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [0, 0, 0],
+  "place": [{ "at": [6, 0, 3], "element": "water" }],
+  "ticks": 240,
+  "report": [0, 120, 240],
+  "maps": [120, 240],
+  "actions": [{ "t": 120, "at": [6, 0, 3], "clear": true }]
+}

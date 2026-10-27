@@ -1,0 +1,44 @@
+# template-cistern — The cistern template on floor 3, untouched: its pools settle and nothing reacts
+floor 3 · seed 1 · room 13×7×8 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  blocks brick 88
+  elements water 80 (80 src)
+  cubes — · pickups 2
+
+t 120 (2.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  blocks brick 88
+  elements water 80 (80 src)
+  cubes — · pickups 2
+  events pickupCollect 2 · roomEnter 1
+
+map t 120 · h -1
+  bbbbbbbbbbbbb
+  bWWWWbbbWWWWb
+  bWWWWbbbWWWWb
+  bWWWWbbbWWWWb
+  bWWWWbbbWWWWb
+  bWWWWbbbWWWWb
+  bbbbbbbbbbbbb
+
+map t 120 · h 0
+  bb.........bb
+  .............
+  .............
+  .............
+  .............
+  .............
+  bb.........bb
+
+map t 120 · h 1
+  .b.........b.
+  .............
+  .............
+  .............
+  .............
+  .............
+  .b.........b.
+
+legend b brick · W water source

@@ -79,22 +79,26 @@ SÓTANO is made by people who grew up inside games, and the project is full of s
 
 ## Controls
 
-| Action | Input |
-|---|---|
-| Look | Mouse (click the game to capture it; **Esc** releases it and pauses) |
-| Move · jump | **WASD** · **Space** |
-| Cast intentions | **Left click** (hold) |
-| Switch the intention's polarity | **F**: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks (the round mark at the counters shows which) |
-| Pick up a block | Walk over it with room in your hand |
-| Kick a block or a bomb | Walk into it (blocks: with your hand full) |
-| Place the top block | **Right click** (throws it if there's nowhere to place it) |
-| Throw the top block | **Q** |
-| Drop a bomb | **E** |
-| Open a door | Doors open by themselves when there are no projections; locked ones open when you walk up with a key; a breakthrough destroys any door |
-| Inventory and stats | **Tab** (or **I**) |
-| New run | **R** |
+Three complete schemes; the game follows whichever device you used last (details: [docs/architecture/input/](docs/architecture/input/README.md)).
 
-Language: English or Spanish, picked from your browser. Switch it on the pause card (it's remembered) or with `?lang=es` in the URL. Touch controls are *planned*.
+| Action | Keyboard and mouse | Gamepad | Touch (landscape) |
+|---|---|---|---|
+| Look | Mouse (click to capture it; **Esc** releases it and pauses) | Right stick | Drag on the right |
+| Move | **WASD** | Left stick | Left thumb (floating stick) |
+| Jump (hold to swim up) | **Space** | **A** | The arrow |
+| Cast intentions | **Left click** (hold) | **RT** (hold) | The bead of light (hold; drag to aim) |
+| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | Double tap the bead of light |
+| Pick up a block | Walk over it with room in your hand | same | same |
+| Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
+| Place the top block (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
+| Throw the top block | **Q** | **B** | The flying block |
+| Drop a bomb | **E** | **RB** | The seed |
+| Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
+| Inventory and stats | **Tab** (or **I**) | **Y** (d-pad moves, **B** closes) | The grid (top) |
+| Pause | **Esc** | **Menu** | The two bars (top) |
+| New run | **R** | **View** (paused or dead) | "New run" on the pause card |
+
+Language: English or Spanish, picked from your browser. Switch it on the pause card (it's remembered) or with `?lang=es` in the URL.
 
 ---
 
@@ -141,13 +145,13 @@ S.seed()                // this run's seed code
 S.restart('ABCD-EFGH')  // replay a seed
 ```
 
-The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md#debug-console).
+The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.md#debug-console). For testing, `?sandbox` opens a creative room and `npm run sandbox` runs scripted scenarios headless ([docs/architecture/SANDBOX.md](docs/architecture/SANDBOX.md)).
 
 ---
 
 ## What's in the game today
 
-- **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a lesson in each room. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Beating a boss reveals its practice and cracks a hole in the floor: you fall into the next one. A minimap fills in as you go.
+- **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a lesson in each room. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Rooms can spread into the empty space around them (long galleries, stepped wells, caverns) while the map keeps one cell per room, under vaults of many shapes, and every floor is built from its own materials. Beating a boss reveals its practice and cracks a hole in the floor: you fall into the next one. A minimap fills in as you go.
 - **Projections** that seal the room and fight you: Doubt, the Inner Critic and Panic, with more planned (Procrastination, Distraction, Perfectionism, Comparison).
 - **Survival** with Isaac-style hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
 - **Elements.** Water to wade or drown in, lava to keep away from, fire that eats crates. Water on lava makes obsidian. Each projection reacts to elements in its own way: Panic calms in water and goes off in fire.
@@ -225,6 +229,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Seeds and randomness](docs/architecture/RNG.md): seed codes, structure and runtime randomness, weighted tables.
 - [Localization](docs/architecture/LOCALIZATION.md): English and Spanish, catalogs, live language switching.
 - [Elements](docs/architecture/ELEMENTS.md): the element layer, reactions, rendering and the plan for containers.
+- [Sandbox and lab](docs/architecture/SANDBOX.md): a creative room for testing, and deterministic scripted runs with text reports.
 
 **Lore: references and cosmology**
 - [Source library](docs/lore/SOURCES.md): every book, tradition, technique, therapy and game the work draws on.

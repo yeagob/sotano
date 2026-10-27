@@ -1,0 +1,10 @@
+{
+  "note": "The player fires intentions at a Doubt across an empty room",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [1, 0, 3],
+  "god": true,
+  "enemies": [{ "def": "doubt", "at": [10, 0, 3] }],
+  "ticks": 180,
+  "report": [0, 60, 180],
+  "actions": [{ "t": 0, "do": "look", "at": [10, 1, 3] }, { "t": 0, "do": "fire", "ticks": 180 }]
+}

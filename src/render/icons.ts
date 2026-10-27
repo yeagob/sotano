@@ -5,14 +5,17 @@
 import * as THREE from 'three';
 import type { HudIcon } from '../content/hud-icons';
 import { palCss, PALETTE, PATHS, type PalToken } from '../content/palette';
-import type { ItemDef } from '../items/types';
+import type { ItemIcon } from '../items/types';
+
+/** Anything drawn with a 12×12 icon: an item, or a part (content/parts.ts). */
+export interface IconSource { id: string; icon: ItemIcon }
 
 const cache = new Map<string, HTMLCanvasElement>();
 
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
 
 /** The icon at `scale` pixels per icon pixel, plus a 1-pixel outline on every side. */
-export function iconCanvas(def: ItemDef, scale = 4): HTMLCanvasElement {
+export function iconCanvas(def: IconSource, scale = 4): HTMLCanvasElement {
   const key = `${def.id}@${scale}`;
   const hit = cache.get(key);
   if (hit) return hit;
@@ -42,7 +45,7 @@ export function iconCanvas(def: ItemDef, scale = 4): HTMLCanvasElement {
   return c;
 }
 
-export function iconDataUrl(def: ItemDef, scale = 4) { return iconCanvas(def, scale).toDataURL(); }
+export function iconDataUrl(def: IconSource, scale = 4) { return iconCanvas(def, scale).toDataURL(); }
 
 /** A HUD glyph (src/content/hud-icons.ts) as a data URL, one canvas pixel per glyph pixel. */
 export function hudIconUrl(icon: HudIcon): string {
@@ -78,7 +81,7 @@ export function applyPaletteCss(icons: Record<string, HudIcon>) {
 
 const texCache = new Map<string, THREE.CanvasTexture>();
 
-export function iconTexture(def: ItemDef): THREE.CanvasTexture {
+export function iconTexture(def: IconSource): THREE.CanvasTexture {
   let t = texCache.get(def.id);
   if (!t) {
     t = new THREE.CanvasTexture(iconCanvas(def, 4));

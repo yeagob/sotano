@@ -4,8 +4,9 @@
 import { describe, expect, it } from 'vitest';
 import { ENEMY_BUDGET } from '../src/content/enemies';
 import { EL_FIRE, EL_LAVA, EL_WATER, elemKind } from '../src/content/elements';
+import { level } from '../src/content/levels';
 import { AIR, MAT } from '../src/content/materials';
-import { MAX_PIT, MAX_ROOM_H, ROOM_D, ROOM_TEMPLATES, ROOM_W, validateTemplate, type RoomTemplate } from '../src/content/rooms';
+import { cellAt, MAX_PIT, MAX_ROOM_H, ROOM_D, ROOM_TEMPLATES, ROOM_W, validateTemplate, type RoomTemplate } from '../src/content/rooms';
 import { RunRandom } from '../src/core/rng';
 import { carveFloor, ceilingRise, createDungeonWorld, FIRST_FLOOR, floorY, LAST_FLOOR, planDungeon } from '../src/world/floor';
 import type { RoomType } from '../src/world/floorplan';
@@ -73,10 +74,10 @@ describe('levels: rooms with height and elements', () => {
     expect([...seen].sort()).toEqual([EL_WATER, EL_LAVA, EL_FIRE]);
   });
 
-  it('deep pools have a brick lining', () => {
+  it('deep pools are lined with the floor of their level', () => {
     const { w, floors } = carveAll(5, templates);
-    for (const f of floors) for (const r of f.rooms) for (let z = r.z0; z < r.z0 + ROOM_D; z++) for (let x = r.x0; x < r.x0 + ROOM_W; x++)
-      if (w.elemAt(x, r.y0 - 2, z)) expect(w.get(x, r.y0 - 3, z)).toBe(MAT.brick);
+    for (const f of floors) for (const r of f.rooms) for (let z = r.z0; z < r.z0 + r.d; z++) for (let x = r.x0; x < r.x0 + r.w; x++)
+      if (w.elemAt(x, r.y0 - 2, z)) expect(w.get(x, r.y0 - 3, z)).toBe(MAT[level(f.floor).palette.floor]);
   });
 
   it('vaults and domes rise highest in the middle', () => {
@@ -147,12 +148,12 @@ describe('big rooms and the great pit (L3a, L3b)', () => {
     }
   });
 
-  it('deeper random floors grow bigger rooms, with a bigger roster, and nothing is carved into a neighbour', async () => {
+  it('deeper floors grow bigger rooms, and a big room is open where its cells meet', async () => {
     const { buildRun } = await import('./helpers');
     let big = 0;
     for (let s = 1; s <= 8; s++) {
       const run = buildRun(s * 4243);
-      for (const f of run.floors.slice(6)) for (const r of f.rooms) {
+      for (const f of run.floors.slice(1)) for (const r of f.rooms) {
         if (r.w === 13 && r.d === 7) continue;
         big++;
         // a big room's interior is open from wall to wall where its cells meet
@@ -163,3 +164,53 @@ describe('big rooms and the great pit (L3a, L3b)', () => {
     expect(big).toBeGreaterThan(5);
   });
 });
+
+describe('rooms bigger than their cell (L7)', () => {
+  it('a room spreads only into empty cells, never into another room, and the map keeps one cell per room', async () => {
+    const { buildRun } = await import('./helpers');
+    const { inRoomSpace } = await import('../src/world/floor');
+    let big = 0;
+    for (const seed of [5, 77, 901]) {
+      const run = buildRun(seed);
+      for (const f of run.floors) {
+        expect(f.plan.grid.filter(i => i >= 0).length, 'one cell per room on the map').toBe(f.plan.rooms.length);
+        f.space.forEach((i, c) => { if (i >= 0 && f.plan.grid[c] < 0) big++; if (f.plan.grid[c] >= 0) expect(i).toBe(f.plan.grid[c]); });
+        const owner = new Map<string, number>();
+        for (const r of f.rooms) {
+          expect(inRoomSpace(r, r.hx + 6, r.hz + 3), `${r.template}: its home centre is open`).toBe(true);
+          for (let z = r.z0; z < r.z0 + r.d; z++) for (let x = r.x0; x < r.x0 + r.w; x++) {
+            if (!inRoomSpace(r, x, z)) continue;
+            const key = `${x},${z}`;
+            expect(owner.get(key), `${r.template} overlaps another room at ${key}`).toBeUndefined();
+            owner.set(key, r.id);
+            // every open tile but a wall piece has air above its floor (no shell carved into a room)
+            const t = ROOM_TEMPLATES.find(q => q.id === r.template)!;
+            if ('#DE'.includes(cellAt(t, x - r.x0, z - r.z0, r.flipX, r.flipZ))) continue;
+            let air = false;
+            for (let y = r.y0; y < r.y0 + r.height && !air; y++) air = run.w.get(x, y, z) === AIR;
+            expect(air, `${r.template} open tile ${key} is solid to the ceiling`).toBe(true);
+          }
+        }
+      }
+    }
+    expect(big, 'rooms do spread').toBeGreaterThan(10);
+  });
+
+  it('big rooms appear on every hostile floor, the Tree floors included', async () => {
+    const { buildRun } = await import('./helpers');
+    const seen = new Set<number>();
+    for (let s = 1; s <= 6; s++) for (const f of buildRun(s * 131).floors) if (f.rooms.some(r => r.w > ROOM_W || r.d > ROOM_D)) seen.add(f.floor);
+    for (let k = 1; k <= LAST_FLOOR; k++) expect(seen.has(k), `floor ${k}`).toBe(true);
+  });
+
+  it('the new ceilings stay under the room\'s height and rise in the middle', () => {
+    for (const shape of ['pointed-x', 'pointed-z', 'cross', 'stepped', 'cave'] as const) {
+      expect(ceilingRise(shape, 3, 6, 3), shape).toBe(3);
+      for (let r = 0; r < ROOM_D; r++) for (let c = 0; c < ROOM_W; c++) {
+        const v = ceilingRise(shape, 3, c, r);
+        expect(v >= 0 && v <= 3, `${shape} ${c},${r}`).toBe(true);
+      }
+    }
+  });
+});
+

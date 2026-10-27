@@ -1,0 +1,41 @@
+# water-flow — A water source on a flat floor spreads 7 cells and settles; removed, it recedes
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements water 1 (1 src)
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements water 79 (1 src)
+  cubes — · pickups 0
+  events roomEnter 1
+
+map t 120 · h 0
+  ..wwwwwwwww..
+  .wwwwwwwwwww.
+  wwwwwwwwwwwww
+  wwwwwwWwwwwww
+  wwwwwwwwwwwww
+  .wwwwwwwwwww.
+  ..wwwwwwwww..
+
+t 240 (4.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend w water · W water source

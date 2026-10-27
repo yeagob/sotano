@@ -207,13 +207,14 @@ describe('player head bump', () => {
     const solid = (_x: number, y: number) => y <= 0 || y >= 4;
     const p = new Player();
     p.spawnAt(0.5, 1, 0.5);
-    const input = { pressed: new Set(['Space']), lookDX: 0, lookDY: 0, sensitivity: 0, axis: () => 0 } as unknown as Input;
+    const pressed = new Set(['jump']);
+    const input = { hit: (a: string) => pressed.has(a), held: () => false, move: { x: 0, y: 0 }, lookDX: 0, lookDY: 0, sensitivity: 0 } as unknown as Input;
     const stats = { ...BASE_STATS, jump: 4 };
     const bumps: number[] = [];
     const hooks = { jump: (v: number) => v, land: () => {}, bump: (v: number) => { bumps.push(v); return 0; } };
     // standing on the floor: let it settle, then jump into the ceiling 3 blocks up
     p.body.onGround = true;
-    for (let i = 0; i < 60; i++) { p.update(1 / 60, input, stats, solid, hooks); input.pressed.clear(); }
+    for (let i = 0; i < 60; i++) { p.update(1 / 60, input, stats, solid, hooks); pressed.clear(); }
     expect(bumps.length).toBe(1);
     expect(bumps[0]).toBeGreaterThan(0);
     expect(p.body.y + p.body.h).toBeLessThanOrEqual(4);
@@ -335,25 +336,66 @@ describe('silence, the ice and the tree (L4, L5)', () => {
     expect(ice).toBeGreaterThanOrEqual(0);
   });
 
-  it('the giant tree grows the same for a seed, inside the world, a few tens of thousands of cubes', async () => {
-    const { buildTree } = await import('../src/world/tree');
+  it('the giant tree grows the same for a seed in any order, story by story, as big as a floor', async () => {
+    const { GiantTree, TREE_STORIES } = await import('../src/world/tree');
     const { VoxelWorld } = await import('../src/world/world');
     const { WORLD_SIZE } = await import('../src/world/floor');
-    const grow = (seed: number) => {
+    const grow = (seed: number, order: number[]) => {
       const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
-      const t = buildTree(w, SURFACE_Y, new Rng(seed));
+      const t = new GiantTree(w, SURFACE_Y, i => new Rng(seed * 31 + i));
+      for (const i of order) t.grow(i);
       let h = 0;
       for (let i = 0; i < w.data.length; i++) if (w.data[i]) h = (h * 31 + i * 7 + w.data[i]) >>> 0;
-      return { t, h };
+      return { t, h, w };
     };
-    const a = grow(5), b = grow(5), c = grow(6);
+    const all = TREE_STORIES.map((_, i) => i);
+    const a = grow(5, all), b = grow(5, [...all].reverse()), c = grow(6, all);
     expect(a.h).toBe(b.h);
     expect(a.h).not.toBe(c.h);
-    expect(a.t.voxels).toBeGreaterThan(5000);
-    expect(a.t.voxels).toBeLessThan(40000);
-    expect(a.t.box[4]).toBeLessThan(SURFACE_Y + SKY_LIMIT);
-    expect(a.t.pads.length).toBeGreaterThanOrEqual(9);
+    expect(a.t.voxels).toBeGreaterThan(100000);
+    expect(a.t.pads.length).toBeGreaterThanOrEqual(13);
     for (const p of a.t.pads) expect(a.t.pads[p.to]).toBeDefined();
+    for (let i = 1; i < TREE_STORIES.length; i++) expect(a.t.range(i)[0]).toBe(a.t.range(i - 1)[1] + 1);
+    expect(a.t.range(0)[0]).toBe(SURFACE_Y - 1);
+    expect(a.t.range(TREE_STORIES.length - 1)[1]).toBe(SURFACE_Y + SKY_LIMIT);
+    expect(TREE_STORIES[0].r * 2).toBeGreaterThan(WORLD_SIZE.sz * 0.85);
+    const lazy = grow(5, [0]);
+    expect(lazy.t.isGrown(1)).toBe(false);
+    expect(lazy.t.voxels).toBeLessThan(a.t.voxels / 3);
+  });
+
+  it('a spiral stair climbs from the foot of the tree, story by story, to the crown', async () => {
+    const { GiantTree, TREE_STORIES } = await import('../src/world/tree');
+    const { VoxelWorld } = await import('../src/world/world');
+    const { WORLD_SIZE } = await import('../src/world/floor');
+    const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
+    for (let z = 0; z < w.sz; z++) for (let x = 0; x < w.sx; x++) w.data[w.idx(x, SURFACE_Y, z)] = MAT.grass;
+    const t = new GiantTree(w, SURFACE_Y, i => new Rng(77 + i));
+    TREE_STORIES.forEach((_, i) => t.grow(i));
+    const solid = (x: number, y: number, z: number) => w.get(x, y, z) !== AIR;
+    const stand = (x: number, y: number, z: number) => w.inside(x, y, z) && solid(x, y - 1, z) && !solid(x, y, z) && !solid(x, y + 1, z);
+    const key = (x: number, y: number, z: number) => w.idx(x, y, z);
+    const seen = new Uint8Array(w.data.length);
+    const queue: [number, number, number][] = [[2, SURFACE_Y + 1, 2]];
+    seen[key(2, SURFACE_Y + 1, 2)] = 1;
+    const reached = new Set<number>();
+    while (queue.length) {
+      const [x, y, z] = queue.pop()!;
+      reached.add(t.storyAt(y));
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, nz = z + dz;
+        for (const dy of [1, 0, -1, -2, -3]) {
+          const ny = y + dy;
+          if (dy === 1 && solid(x, y + 2, z)) continue;
+          if (dy < 0 && [...Array(-dy)].some((_, k) => solid(nx, y - k, nz) || solid(nx, y - k + 1, nz))) continue;
+          if (!stand(nx, ny, nz) || seen[key(nx, ny, nz)]) continue;
+          seen[key(nx, ny, nz)] = 1;
+          queue.push([nx, ny, nz]);
+          break;
+        }
+      }
+    }
+    for (let i = 0; i < TREE_STORIES.length; i++) expect(reached.has(i), `story ${TREE_STORIES[i].key}`).toBe(true);
   });
 
   it('the roots keep peaceful creatures, never in a roster', async () => {

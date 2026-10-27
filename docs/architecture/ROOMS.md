@@ -14,7 +14,7 @@ Every floor's plan is decided when the run starts, from the run's seed (see [RNG
 
 ## 2. From plan to voxels
 
-Each grid cell is a **13×7 interior, 5 blocks high**, surrounded by a 2-block brick wall shared with its neighbour, so rooms sit on a 15×9 pitch. The ten floors (0–9, [LEVELS.md](LEVELS.md)) are **stacked** in one world, 16 blocks apart, with rock in between (each level's `strata`: soil at the roots, obsidian at the bottom), bedrock at the bottom and grass with open sky above floor 0: you can always dig out, up or down. Templates may name the floors they belong on (`floors: [first, last]`). Room and door ids are global (`levelIndex(floor) × 100 + index`, always positive). Details: [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts).
+Each grid cell is a **13×7 interior, 5 blocks high**, surrounded by a 2-block brick wall shared with its neighbour, so rooms sit on a 15×9 pitch. The ten floors (0–9, [LEVELS.md](LEVELS.md)) are **stacked** in one world, 16 blocks apart, with rock in between (each level's `strata`: soil at the roots, obsidian at the bottom), bedrock at the bottom and grass with open sky above floor 0: you can always dig out, up or down. Templates may name the floors they belong on (`floors: [first, last]`). Room and door ids are global (`levelIndex(floor) × 100 + index`, always positive). Details: [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts). One room's shell and interior are carved by `carveInterior` (shell, air, stacks, elements, layers, decor slots; it returns the `P T K H` marker tiles and `carveFloor` decides what they hold); the sandbox carves its room with the same function ([SANDBOX.md](SANDBOX.md)).
 
 Linked rooms get a **3×3 doorway** through the middle of the shared wall, framed with a material that tells you what's behind it:
 
@@ -64,6 +64,7 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 | `1`–`4` | a built terrace (brick) of that height | `_` | a dip, 1 deep |
 | `w` / `W` | water 1 / 2 deep (dug into the floor, a source) | `l` / `L` | lava 1 / 2 deep |
 | `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a breakthrough) |
+| ` ` (space) | not room: the rock stays (the outline of a template bigger than one cell) | | |
 | `=` | a dry pit, 2 deep (you need a block to climb out) | `D` / `E` | a door-shaped plug (3 wide, 3 high) of dirt set in a `#` / `X` wall; above the dirt the wall goes on |
 
 A wall that seals the whole room (a full row or column of `#` or `X`) carries a plug where a door would stand on its far side (columns 5–7 of a row wall, rows 2–4 of a column wall). Owner, 2026-10-27: a sealing wall must not hide the door behind it, and it gives way to the softest material.
@@ -73,9 +74,10 @@ A wall that seals the whole room (a full row or column of `#` or `X`) carries a 
 Optional fields (design and authoring rules: [LEVELS.md](../design/LEVELS.md), the [`sotano-levels`](../../.claude/skills/sotano-levels/SKILL.md) skill):
 
 - `height` (5–8, default 5): the interior height. `#` columns reach the ceiling, whatever its height. `RoomInfo.height` carries it to the game (combat bounds, flow fields).
-- `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`): how the height above 5 is shaped (`ceilingRise` in `floor.ts`).
+- `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`, `pointed-x`, `pointed-z`, `cross`, `stepped`, `cave`): how the height above 5 is shaped (`ceilingAt` in `rooms.ts`). Two blocks of headroom stay over every stack under it (checked).
+- `size: [cellsX, cellsZ]` (1–2 each) and `home: [cx, cz]`: a room bigger than its cell. On the map it is only its home cell; its space spreads into empty cells around it that the floor allotted to it ([LEVELS.md](LEVELS.md) §11). Doors, the centre, `P` and `H` are the home cell's. Big templates may be mirrored; vaults keep to one cell.
 - `layers: [{ y, rows }]`: extra 13×7 grids of single blocks at `y` blocks above the floor (1…height − 3): bridges, balconies, galleries. Layers use `.`, `r`, `c`, `o`, `d`, `i`, `b` and `f` (a flame on a terrace exactly `y` high: a brazier on a pillar). Layers are mirrored with the room.
-- Pools dig up to 2 blocks (`MAX_PIT`) and 2-deep ones get a brick lining; the room's shell grows with its height. Rooms with height and elements draw no randomness of their own.
+- Pools dig up to 2 blocks (`MAX_PIT`) and 2-deep ones are lined with the level's floor material; the room's shell grows with its height. Rooms with height and elements draw no randomness of their own.
 
 Decor slots are rolled per room from the room's own seed fork, biased by its **mood** (sparse, normal, cluttered, reinforced; see [RNG.md §6](RNG.md#6-what-varies-per-run)). Reinforced rooms also harden their obstacles (dirt and crates become stone, stone becomes deepstone), never the shared walls.
 
@@ -100,7 +102,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 
 1. Add an entry to `ROOM_TEMPLATES` in `src/content/rooms.ts`.
 2. Run `npm test`: the validator tells you if a doorway is blocked or a marker is missing.
-3. Play a few seeds (`?seed=N`, or R in game) and use `S.game.floor.rooms` in the console to see which template each room got.
+3. Play a few seeds (`?seed=N`, or R in game) and use `S.game.floor.rooms` in the console to see which template each room got. To walk straight into it: `?sandbox` and `S.sb.template('<id>', { floor: k })` ([SANDBOX.md](SANDBOX.md)).
 
 ## 4. What's on a floor today (M1.5)
 
@@ -114,10 +116,14 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 
 ## 5. Next
 
-- Double and L-shaped rooms (2×1, 1×2, 2×2 grid cells).
+- ~~Double and L-shaped rooms (2×1, 1×2, 2×2 grid cells).~~ Built: rooms bigger than their cell, any outline inside 2 × 2 cells ([LEVELS.md](LEVELS.md) §11).
 - ~~Room interiors that use height: pits, platforms, multi-level rooms.~~ Built (height, vaults, layers, terraces, pools, dips).
 - The thirteen-floor world and Tree-of-Life plans ([LEVELS.md](../design/LEVELS.md) §1–§2).
 - Bosses in boss rooms (the hole opens when the boss falls).
 - Chests, furnaces and barrels as template markers ([ELEMENTS.md](ELEMENTS.md)); water, lava and fire are built.
 - Secret rooms with no door, and hidden pockets in the rock.
 - A small in-browser template editor.
+
+## 6. What rooms are built from
+
+Each level names its building palette (`LevelDef.palette`: wall, floor, trim). The shell's walls and ceiling and every `#` are the wall, the ground under the interior is the floor, `b` and `1`–`4` are the trim. Colours and the per-floor table: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md) §6.5).

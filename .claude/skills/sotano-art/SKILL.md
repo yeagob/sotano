@@ -62,6 +62,7 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 - **Review everything against the guide, fix what strays, and put the captures in the guide.** Done in ART-GUIDE §15. Lessons: (1) the gate catches real problems the eye misses (five colours in one icon, two silhouettes 98 % alike, an icon that read as the Critic's ✗); always run `tests/art-content.test.ts` and look at `?gallery`; (2) the pane must be visible for honest captures (a hidden pane returns stale frames); (3) freeze the simulation, not the renderer, when capturing a moment.
 - **Zero hex outside `palette.ts` is the baseline now**: the ratchet is empty, so any new literal fails the build.
 - **Dedicated art agent** (2026-10-27, owner): every art element, from characters to scenery, is made by a dedicated Opus 5.5 agent, briefed with this skill and the guide, and checked against the gate before it ships (§0).
+- **Floors built from different things (2026-10-27, owner):** the first five floors all looked alike. Lesson: floors must differ in what they are built from, not only in fog: each floor gets its own wall, floor and trim materials with their own ramps (DECISIONS §6.5).
 
 *Owner feedback, round 3 (2026-10-27):*
 
