@@ -17,6 +17,7 @@ import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/pal
 import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
+import { level } from '../content/levels';
 import type { Game } from './game';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -40,6 +41,11 @@ const MAP = {
 };
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
+
+/** "Floor 3 · The rain": the number and the circle's image (docs/design/LEVELS.md). */
+export function floorLabel(depth: number): string {
+  return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
+}
 
 export class Hud {
   private hand = $('hand');
@@ -100,7 +106,7 @@ export class Hud {
   relocalize() {
     this.handKey = '';
     this.setItems(this.lastItems);
-    if (this.lastDepth >= 0) this.depthEl.textContent = t('hud.floor', { n: this.lastDepth });
+    if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
     this.renderLanguages();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
@@ -198,9 +204,14 @@ export class Hud {
     this.itemsBar.innerHTML = items.map(it => `<img src="${iconDataUrl(it, 2)}" title="${esc(itemText(it).name)}" alt="">`).join('');
   }
 
+  /** Somewhere that is not a floor: a level of the tree, heaven or silence (`level.<zone>`). */
+  setZone(zone: string) {
+    this.depthEl.textContent = t(`level.${zone}` as MessageKey);
+  }
+
   setFloor(floor: FloorResult, depth: number) {
     this.lastDepth = depth;
-    this.depthEl.textContent = t('hud.floor', { n: depth });
+    this.depthEl.textContent = floorLabel(depth);
     this.drawMap(floor, -1, new Set());
   }
 

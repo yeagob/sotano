@@ -97,6 +97,9 @@ export interface EnemyCtx {
   dt: number;
   /** The enemy's current target, or null (then it idles). */
   target(e: Enemy): TargetView | null;
+  /** The nearest actor of the self (the player, its allies), whatever the enemy's side: peaceful
+   *  creatures use it to keep you company. */
+  near(e: Enemy): TargetView | null;
   /** Horizontal distance to a target. */
   dist(e: Enemy, t: TargetView): number;
   /** Direction to walk towards a target inside the room (flow field), or straight at it. */

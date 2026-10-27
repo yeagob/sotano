@@ -11,6 +11,8 @@ export interface MaterialDef {
   hp: number;
   armor: number;         // subtracted from damage (never below 10%, see core/damage.ts)
   flammable?: boolean;
+  /** You slide on it (less grip underfoot). */
+  slippery?: boolean;
   heavy?: boolean;
   /** The material's ramp (docs/art/DECISIONS.md §6.2): outline, dark, base, hi. Light from the top-left. */
   ramp: [PalToken, PalToken, PalToken, PalToken];
@@ -36,6 +38,8 @@ const RAMPS: Record<string, [PalToken, PalToken, PalToken, PalToken]> = {
   limestone: ['ink.ash', 'limestone.dark', 'limestone.base', 'limestone.hi'],
   seed: ['ink.void', 'mat.seed.dark', 'mat.seed.base', 'mat.seed.hi'],
   air: ['ink.void', 'ink.void', 'ink.void', 'ink.void'],
+  // ice is water held still: the water's own tokens, never the projections' cold
+  ice: ['el.water.fog', 'el.water.body', 'el.water.surface', 'el.water.foam'],
 };
 
 const DEFS: Def[] = [
@@ -59,6 +63,11 @@ const DEFS: Def[] = [
   // chests: unbreakable (nothing digs, burns or blasts them); only keys, or just walking up, open them
   { id: 15, key: 'chest', name: 'Chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'brass.base', pattern: 'chest', concept: 'what you keep shut until you are ready' },
   { id: 16, key: 'chestopen', name: 'Open chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'light.gold', pattern: 'chestopen', concept: 'what was kept, given' },
+  // the ninth circle and the tree (docs/architecture/LEVELS.md §8)
+  { id: 17, key: 'ice', name: 'Ice', tier: 1, hp: 6, armor: 0, slippery: true, ramp: 'ice', pattern: 'facets', concept: 'a feeling frozen still' },
+  { id: 18, key: 'log', name: 'Living wood', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'crate', pattern: 'strata', concept: 'the tree that holds the world' },
+  { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'grass', pattern: 'clumps', concept: 'what grows when you rise' },
+  { id: 20, key: 'starstone', name: 'Star stone', tier: 3, hp: 60, armor: 3, ramp: 'limestone', accent: 'bone.paper', pattern: 'cobble', concept: 'a fixed point to steer by' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

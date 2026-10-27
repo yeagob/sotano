@@ -127,7 +127,9 @@ describe('dungeon generation', () => {
         expect(f.doors).toHaveLength(touching);
         if (level(f.floor).kind !== 'tree') expect(f.doors).toHaveLength(f.rooms.length - 1);
         for (const r of f.rooms) { expect(ids.has(r.id)).toBe(false); ids.add(r.id); expect(bandOf(r.y0)).toBe(f.floor); }
-        expect(f.hole === null).toBe(f.floor === LAST_FLOOR);
+        // every floor has a way down; the last one's opens into silence (L4)
+        expect(f.hole).not.toBeNull();
+        expect(f.silence !== null).toBe(f.floor === LAST_FLOOR);
       }
     }
   });
@@ -311,5 +313,55 @@ describe('challenge rooms', () => {
     expect(waveBudget(3, 1, 4)).toBeGreaterThan(waveBudget(3, 1, 0));
     const { Rng } = await import('../src/core/rng');
     expect(pickWave(new Rng(1), 3, waveBudget(3, 3, 5)).length).toBeGreaterThan(pickWave(new Rng(1), 3, waveBudget(3, 1, 0)).length - 1);
+  });
+});
+
+describe('silence, the ice and the tree (L4, L5)', () => {
+  it('under the frozen bottom lies silence, and the last way down opens into it', () => {
+    const run = buildRun(11);
+    const f9 = run.floors[LAST_FLOOR];
+    const s = f9.silence!;
+    expect(s.y0).toBe(1);
+    openHole(run.w, f9.hole!);
+    expect(run.w.get(f9.hole!.x, s.y0, f9.hole!.z)).toBe(AIR);
+    expect(run.w.get(s.x0, 0, s.z0)).toBe(MAT.bedrock);
+    for (let x = s.x0; x <= s.x1; x += 3) expect(run.w.get(x, 3, s.z0)).toBe(AIR);
+    // the ninth circle is frozen: no water source on its surface, only ice
+    let ice = 0;
+    for (const r of f9.rooms) for (let z = r.z0; z < r.z0 + r.d; z++) for (let x = r.x0; x < r.x0 + r.w; x++) {
+      if (run.w.get(x, r.y0 - 1, z) === MAT.ice) ice++;
+      expect(run.w.elemAt(x, r.y0 - 1, z) >> 6, 'no open water on the ninth').not.toBe(1);
+    }
+    expect(ice).toBeGreaterThanOrEqual(0);
+  });
+
+  it('the giant tree grows the same for a seed, inside the world, a few tens of thousands of cubes', async () => {
+    const { buildTree } = await import('../src/world/tree');
+    const { VoxelWorld } = await import('../src/world/world');
+    const { WORLD_SIZE } = await import('../src/world/floor');
+    const grow = (seed: number) => {
+      const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
+      const t = buildTree(w, SURFACE_Y, new Rng(seed));
+      let h = 0;
+      for (let i = 0; i < w.data.length; i++) if (w.data[i]) h = (h * 31 + i * 7 + w.data[i]) >>> 0;
+      return { t, h };
+    };
+    const a = grow(5), b = grow(5), c = grow(6);
+    expect(a.h).toBe(b.h);
+    expect(a.h).not.toBe(c.h);
+    expect(a.t.voxels).toBeGreaterThan(5000);
+    expect(a.t.voxels).toBeLessThan(40000);
+    expect(a.t.box[4]).toBeLessThan(SURFACE_Y + SKY_LIMIT);
+    expect(a.t.pads.length).toBeGreaterThanOrEqual(9);
+    for (const p of a.t.pads) expect(a.t.pads[p.to]).toBeDefined();
+  });
+
+  it('the roots keep peaceful creatures, never in a roster', async () => {
+    const { ambientCreatures, CREATURES } = await import('../src/content/creatures');
+    const run = buildRun(4, 2);
+    const c = ambientCreatures(run.floors[0], new Rng(1));
+    expect(c.length).toBeGreaterThanOrEqual(2);
+    expect(ambientCreatures(run.floors[1], new Rng(1))).toEqual([]);
+    for (const f of run.floors) for (const r of f.rooms) for (const e of r.enemies) expect(CREATURES.some(q => q.id === e)).toBe(false);
   });
 });

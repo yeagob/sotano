@@ -140,10 +140,10 @@ Final set, measured: minimum pairwise ΔE 24.4 (tritan, Body/Emotion); distance 
 | Token | Hex | Use |
 |---|---|---|
 | `cold.deep` | `#2A2F45` | Hostile shadows, danger-ring dark dash |
-| `cold.dim` | `#6F7891` | Doubt's wisps, obsidian sheen on Comparison, Distraction's wing shimmer |
+| `cold.dim` | `#6F7891` | Doubt's wisps, obsidian sheen on Comparison, Distraction's wing shimmer; omen motes, first half of the gather (BESTIARY §2) |
 | `cold.rim` | `#8E98B4` | The 1-texel rim on dark husks (§8.2) |
-| `cold.body` | `#B9C6E6` | Hostile projectile body and halo, danger ring, stat-down, boss marker |
-| `cold.white` | `#EEF2FA` | **The family eye of every projection** (idle 0.6, telegraph 1.0), hostile projectile core, telegraph flare, Panic's final swell, electricity core |
+| `cold.body` | `#B9C6E6` | Hostile projectile body and halo, danger ring, stat-down, boss marker; omen motes, second half of the gather |
+| `cold.white` | `#EEF2FA` | **The family eye of every projection** (idle 0.6, telegraph 1.0), hostile projectile core, telegraph flare, Panic's final swell, electricity core; the omen's breach flare (calm motes, no gravity) |
 | `captive.smoulder` | `#4A1E12` | Captive light, dim (Panic idle core, Procrastination's banked ember) |
 | `captive.ember` | `#8F3A1C` | Captive light, swelling; boss-frame crack (ΔE 30 from `life.heart`) |
 | `mood.held` | `#2A3550` | Cold tint of an uncleared room (6 %) |
@@ -370,7 +370,7 @@ Hard rules: no hostile projectile is warm; no player shot is a cube. The Compari
 
 ### 7.3 Particles
 
-Two pools, each one `InstancedMesh`, ring buffer with swap-remove (today's `shift()` is O(n²)): **matter** (unlit `voxelShade`, opaque, takes fog, gravity 18; stone 22, mud 30, dust −0.5; size 0.06–0.18; life 0.4–0.9 s; cap 900 PC / 400 mobile) and **light** (additive, `depthWrite: false`, fog ×0.4, gravity 0 to −1.5, size 0.03–0.08, life 0.3–1.5 s, cap 300 / 150). Matter chips use the material ramp: 50 % base, 30 % dark, 20 % hi. Chips bounce once off the room floor (restitution 0.3). Per-event caps: block break 14 + 6; projection release 24 + 16; breakthrough 40 + 20; never more than 60 per event; above 80 % pool fill, events spawn half. Particles within 8° of the crosshair render at 50 % scale (Tech's opaque version of Ply's 30 % opacity). A `fxScale` setting scales bursts on mobile.
+Two pools, each one `InstancedMesh`, ring buffer with swap-remove (today's `shift()` is O(n²)): **matter** (unlit `voxelShade`, opaque, takes fog, gravity 18; stone 22, mud 30, dust −0.5; size 0.06–0.18; life 0.4–0.9 s; cap 900 PC / 400 mobile) and **light** (additive, `depthWrite: false`, fog ×0.4, gravity 0 to −1.5, size 0.03–0.08, life 0.3–1.5 s, cap 300 / 150). Matter chips use the material ramp: 50 % base, 30 % dark, 20 % hi. Chips bounce once off the room floor (restitution 0.3). Per-event caps: block break 14 + 6; projection release 24 + 16; breakthrough 40 + 20; door slam 12 per door (fewer when many doors share the 60), from the door's frame ramp at its threshold; **omen ≤ 24 light motes**, spread evenly through the gather; never more than 60 per event; **light life ≥ 0.3 s** (no light mote is born to live a frame or two: an omen emits none in its last 0.3 s); above 80 % pool fill, events spawn half. Particles within 8° of the crosshair render at 50 % scale (Tech's opaque version of Ply's 30 % opacity). A `fxScale` setting scales bursts on mobile.
 
 ### 7.4 Screen feedback (Mat's table, made gentle by Ply)
 
@@ -382,6 +382,7 @@ Shake is positional only (**no camera roll**: Mat's 1° roll lost), offset = amp
 | Block breaks, tier 0–1 | 0.04 | 0 | block pop 1.08, 0.03 s |
 | Block breaks, tier 2–3 | 0.10 | 0 | low thud, +6 light motes |
 | Projection released | 0.08 | 0 | §8.6 |
+| Room seals (doors slam) | 0.12 s (`hud.shake`) | 0 | ≤ 12 dust chips per door from the frame ramp at the threshold (§7.3) |
 | Player hit | 0.20 | 0 | vignette `life.dark` peak 0.35 → 0 in 0.4 s, world desaturates 30 % for 0.15 s |
 | Breakthrough fuse | 0 | 0 | crack emissive pulse ≤ 2.5 Hz with rising brightness, scale swell 1.0 → 1.25, rising pitch (Mat's 12 Hz ramp lost) |
 | Breakthrough explodes | 0.50 within 4 m → 0 at 12 m | `light.core` 35 % → 0 in 0.15 s (Reduced 15 %, Off 0) | white-hot sphere 0.08 s, ring 0 → radius in 0.2 s, virtual light 0 → 3 → 0 in 0.3 s, debris shards at 2× glow |
@@ -613,7 +614,7 @@ The lantern grows +0.5 m per state; the HUD shows states with glyphs (§10.2).
 - **Banners** (keep click-to-dismiss): slate, max 640 px, top 12 %; icon 70 px with a glow in the item colour; name 28 px; quality stars in `light.gold` (count carries meaning; q4 adds a 6 px glow); description 16 px italic `bone.dim`; effect 15 px in an inset bar; stat lines **▲ `light.gold` / ▼ `cold.body`** with arrows; synergy lines ✦ `light.gold`.
 - **Toasts:** slate mini-panel, 16 px, **top-centre at 22 %**, 2.5 s, max 2 stacked (no longer near the hand slots).
 - **Room/floor title:** 40 px, fade in 300 ms, hold 1.5 s.
-- **Inventory (Tab):** slate `min(960px, 94vw)`, columns `1fr 260px`; 56 px tiles; selected = 2 `--u` frame in the item colour + 1 `--u` `bone.paper` inner frame; detail icon ×6; path chips with glyph + word; undiscovered synergies `✧ ???` at 60 % (≥ 14 px); stat table labels `bone.dim`, values `bone.paper`, changes with ▲/▼; full keyboard navigation with a visible focus ring.
+- **Inventory (Tab):** slate `min(960px, 94vw)`, columns `1fr 260px`; **72 px tiles** (was 56 px, widened so the two-line name label fits; the icon stays at 3×; labels wrap at word boundaries with `hyphens: auto`, line height 1.3); selected = 2 `--u` frame in the item colour + 1 `--u` `bone.paper` inner frame; detail icon ×6; path chips with glyph + word; undiscovered synergies `✧ ???` at 60 % (≥ 14 px); stat table labels `bone.dim`, values `bone.paper`, changes with ▲/▼; full keyboard navigation with a visible focus ring (`:focus-visible`, 2 px `ui-text` outline).
 - **Debug readout off by default**, F3 toggles.
 
 **Death screen:** background `ui.night` → `ink.void` (vertical); an **ensō** drawn in `bone.paper` (2 `--u` weight) over 1.2 s that closes *almost* fully; "The intention faded" 40 px; the cause phrased with the pattern as agent: "Panic held you on floor 3" (never "Overcome by"); the run's hexagram small with completed stations lit; "Begin again" on a slate button. No blood red.

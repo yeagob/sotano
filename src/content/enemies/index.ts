@@ -5,6 +5,7 @@
 import type { EnemyDef } from '../../enemies/types';
 import type { Rng } from '../../core/rng';
 import { QUIET_ROOM, ROSTER } from '../tables/enemies';
+import { level } from '../levels';
 import critic from './critic';
 import doubt from './doubt';
 import panic from './panic';
@@ -38,7 +39,7 @@ export const waveBudget = (floor: number, wave: number, entry: number) => Math.m
 export const ENEMY_BUDGET = {
   pick(rng: Rng, floor: number, cells = 1): string[] {
     if (QUIET_ROOM.roll(rng, { floor })) return [];
-    let budget = Math.min(2 + floor, 8) * cells;
+    let budget = level(floor).enemyBudget * cells;
     const out: string[] = [];
     for (let guard = 0; guard < 12 && budget > 0; guard++) {
       const id = ROSTER.roll(rng, { floor });

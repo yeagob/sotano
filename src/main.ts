@@ -7,6 +7,8 @@ import { initDom } from './i18n/dom';
 
 async function boot() {
   initDom(); // language first: everything below may show text
+  const version = document.getElementById('version');
+  if (version) version.textContent = APP_VERSION;
   const params = new URLSearchParams(location.search);
   // ?gallery: deterministic art captures instead of the game (docs/art/DECISIONS.md §12.5)
   if (params.has('gallery')) {

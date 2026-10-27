@@ -165,6 +165,11 @@ export class Enemies {
     const ctx: EnemyCtx = {
       dt,
       target: e => this.target(e, actors),
+      near: e => {
+        let best: Actor | null = null, bd = Infinity;
+        for (const a of actors) if (a.alive && a.faction === 'self') { const d = Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z); if (d < bd) { bd = d; best = a; } }
+        return best ? { id: best.id, x: best.body.x, y: best.body.y, z: best.body.z } : null;
+      },
       dist: (e, t) => Math.hypot(t.x - e.body.x, t.z - e.body.z),
       toward: (e, t) => this.toward(e, t),
       shootAt: (e, x, y, z) => this.shoot(e, x, y, z),

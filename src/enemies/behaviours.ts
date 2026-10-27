@@ -3,6 +3,7 @@
 // switch in the enemy system.
 
 import type { Behaviour, Enemy, EnemyCtx } from './types';
+import { fx } from '../core/fx';
 
 /**
  * Walk at the target and keep pressing on it (Doubt). With `hesitate`, it stops every so often to
@@ -102,6 +103,34 @@ export function burst(opt: { trigger: number; fuse: number; radius: number; rush
       const [dx, dz] = ctx.toward(e, t);
       e.wishX = dx * opt.rush; e.wishZ = dz * opt.rush;
       if (ctx.dist(e, t) < opt.trigger) { e.state = 'swell'; e.timer = opt.fuse; }
+    },
+  };
+}
+
+/**
+ * A peaceful creature (the roots, L6): it hovers at about a block over the ground and drifts, now
+ * toward you (curious) and now away, never touching. Cosmetic randomness only (`fx`).
+ */
+export function wander(opt: { hover: number; near: number; far: number }): Behaviour {
+  return {
+    name: 'wander',
+    update(e, ctx) {
+      e.timer -= ctx.dt;
+      const you = ctx.near(e);
+      if (e.timer <= 0) {
+        e.timer = 1.2 + fx.random() * 2;
+        const a = fx.random() * Math.PI * 2;
+        e.wishX = Math.cos(a) * 0.6; e.wishZ = Math.sin(a) * 0.6;
+        if (you) {
+          const dx = you.x - e.body.x, dz = you.z - e.body.z, d = Math.hypot(dx, dz) || 1;
+          // come closer when you are far, keep a little distance when you are near
+          if (d > opt.far) { e.wishX = dx / d; e.wishZ = dz / d; } else if (d < opt.near) { e.wishX = -dx / d; e.wishZ = -dz / d; }
+        }
+      }
+      // hover: lift toward the hovering height, a slow bob
+      e.pulse = 0.5 + 0.5 * Math.sin(e.timer * 3);
+      const lift = opt.hover + Math.sin(e.timer * 2.4) * 0.25;
+      if (e.body.vy < 2 && e.body.onGround || e.body.vy < 0) e.body.vy += (lift * 4 - e.body.vy) * Math.min(1, ctx.dt * 6);
     },
   };
 }

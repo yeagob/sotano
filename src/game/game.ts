@@ -3,12 +3,15 @@
 // anything an item might want to change reads a stat or emits an event (docs/architecture/ITEMS.md §3).
 
 import * as THREE from 'three';
-import { sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
+import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
-import { OMEN_BREACH, OMEN_GATHER, pickSpawnCell, splitWaves, type Cell, type Omen } from './omens';
+import {
+  gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, splitWaves,
+  type Cell, type Omen,
+} from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
@@ -45,13 +48,15 @@ import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
 import { onLocaleChange } from '../i18n';
 import {
-  bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, FIRST_FLOOR, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SURFACE_Y,
+  bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, DOOR_FRAME, FIRST_FLOOR, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
 import { CHEST_CONTENTS } from '../content/tables/chests';
 import type { VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
+import { buildTree, TREE_ZONES, type TreeResult } from '../world/tree';
+import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
@@ -68,6 +73,27 @@ const DUNGEON_FOG = new THREE.Color(pal('fog.f1'));
 /** The fog of each underground floor (its level's), blended to the sky near the surface. */
 const LEVEL_FOG = LEVELS.map(l => new THREE.Color(pal(l.fog)));
 const SKY = new THREE.Color(pal('sky.day'));
+/** The cosmos above the tree. */
+const NIGHT = new THREE.Color(pal('ui.night'));
+/** Seconds of stillness in silence before you are carried up to heaven. */
+const SILENCE_STILL = 3;
+
+/** A dome of faint stars, shown as you climb into the night above the tree (never warm light). */
+function makeStars(): THREE.Points {
+  const n = 600, pos = new Float32Array(n * 3);
+  let s = 1;
+  const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < n; i++) {
+    const a = r() * Math.PI * 2, h = 0.15 + r() * 0.85, d = 400;
+    pos.set([Math.cos(a) * Math.sqrt(1 - h * h) * d, h * d, Math.sin(a) * Math.sqrt(1 - h * h) * d], i * 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const m = new THREE.Points(g, new THREE.PointsMaterial({ color: pal('bone.dim'), size: 1.6, sizeAttenuation: false, transparent: true, fog: false, depthWrite: false }));
+  m.frustumCulled = false;
+  m.visible = false;
+  return m;
+}
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
 const COUNTER_CAP = 99;
@@ -191,6 +217,17 @@ export class Game {
   private breakSfx = 0;
   private breakFx = 0;
   private fogColor = new THREE.Color();
+  /** The giant tree above the surface (L5) and whether its chunks were sent to be meshed. */
+  tree!: TreeResult;
+  private treeMeshed = false;
+  /** The loop (L4): silence once visited opens the sky's top; seconds standing still in it. */
+  private silenceSeen = false;
+  private stillT = 0;
+  /** The star pad you arrived on (re-armed once you step off it). */
+  private padLock = -1;
+  /** What the HUD says about where you are (a floor, or a level of the tree). */
+  private zone = '';
+  private stars: THREE.Points;
   /** The tutorial's lessons, carved into the roots' walls. */
   private tablets!: Tablets;
   /** Fire, water and lava (docs/architecture/ELEMENTS.md §9). */
@@ -214,6 +251,8 @@ export class Game {
     sun.position.set(0.4, 1, 0.3);
     this.scene.add(sun);
     this.particles = new Particles(this.scene, 900);
+    this.stars = makeStars();
+    this.scene.add(this.stars);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
     this.cracks = new CrackView(this.scene);
     this.intents = new Intents(this.scene, {
@@ -274,6 +313,10 @@ export class Game {
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
     this.world = createDungeonWorld(this.rng, this.dungeon);
+    // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
+    this.tree = buildTree(this.world, SURFACE_Y, this.rng.fork('tree'));
+    this.treeMeshed = false; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = '';
+    setMasterTarget(0.35);
     this.elements = new ElementSim(this.world, {
       seed: this.rng.fork('elements').u32(),
       blocked: (x, y, z) => this.solid(x, y, z),
@@ -364,6 +407,14 @@ export class Game {
     for (const p of f.pedestals) if (!p.boss && !p.chest) this.placePedestalItem(p);
     for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false });
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
+    // the roots are home to peaceful creatures: they wander, they never fight (L6)
+    for (const c of ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
+      const def = CREATURE_BY_ID.get(c.def)!;
+      const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, def.hp, def.speed, 0, new Set(['creature']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+    }
     // the tutorial is carved into the walls of its rooms (never an overlay)
     for (const r of f.rooms) {
       const lesson = ROOM_TEMPLATES.find(q => q.id === r.template)?.lesson;
@@ -533,6 +584,8 @@ export class Game {
   damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0): boolean {
     const p = this.player;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
+    // peaceful creatures are part of the place: nothing hurts them
+    if (t.faction === 'neutral') return false;
     if (t === p && p.invulnT > 0) return false;
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -622,7 +675,7 @@ export class Game {
 
   /** Moves an actor to another side (e.g. a projection that becomes part of the self). */
   setFaction(a: Actor, faction: Faction, source: string) {
-    if (a.faction === faction) return;
+    if (a.faction === faction || a.faction === 'neutral') return;
     const from = a.faction;
     a.faction = faction;
     if (a.kind === 'projection') (a as Enemy).targetId = -1; // look again with new eyes
@@ -748,7 +801,7 @@ export class Game {
     const seq = this.spawnSeq.get(r.id) ?? 0;
     this.spawnSeq.set(r.id, seq + 1);
     const spot = this.spawnSpot(r, seq);
-    this.omens.push({ def: defId, room: r.id, x: spot.x, y: spot.y, z: spot.z, t: 0, breached: false });
+    this.omens.push({ def: defId, room: r.id, x: spot.x, y: spot.y, z: spot.z, t: 0, breached: false, emitted: 0 });
     spatial.omenHum(spot.x, spot.y + 0.5, spot.z, 'floor');
   }
 
@@ -783,13 +836,15 @@ export class Game {
       const o = this.omens[i];
       o.t += dt;
       if (o.t < OMEN_GATHER) {
-        this.particles.gather(o.x, o.y + 0.8, o.z, pal('cold.dim'), 2, 2.2, OMEN_GATHER - o.t);
+        // 24 motes spread through the gather, none born in its last 0.3 s (DECISIONS §7.3)
+        const n = gatherMotesDue(o);
+        if (n > 0) this.particles.gather(o.x, o.y + 0.8, o.z, pal(gatherMoteColor(o.t)), n, 2.2, OMEN_GATHER - o.t, 0.05, o.y);
         continue;
       }
       if (!o.breached) {
         o.breached = true;
         spatial.breach(o.x, o.y + 0.5, o.z);
-        this.particles.burst(o.x, o.y + 0.5, o.z, pal('cold.white'), 10, 1.5, 0.05);
+        this.particles.burst(o.x, o.y + 0.5, o.z, pal(OMEN_BREACH_COLOR), 10, 1.5, 0.05, true);
       }
       if (o.t < OMEN_GATHER + OMEN_BREACH) continue;
       this.omens.splice(i, 1);
@@ -798,14 +853,19 @@ export class Game {
     }
   }
 
-  /** The doors of a sealed room slam shut, each with its own sound, dust and a gentle nudge. */
+  /**
+   * The doors of a sealed room slam shut, each with its own sound, dust and a gentle nudge. The dust is
+   * chipped from the door's own frame ramp at its threshold (DECISIONS §7.3: ≤ 12 per door, ≤ 60 per event).
+   */
   private slamDoors(room: number) {
-    for (const d of this.doors.list) {
-      if (!d.rooms.includes(room)) continue;
+    const doors = this.doors.list.filter(d => d.rooms.includes(room));
+    const motes = slamMotesPerDoor(doors.length);
+    for (const d of doors) {
       spatial.slam(d.cx, d.cy, d.cz);
-      this.particles.burst(d.cx, d.cy, d.cz, pal('ink.ash'), 14, 2.5, 0.12);
+      const threshold = d.cy - (d.y1 - d.y0 + 1) / 2 + 0.2;
+      this.particles.burstRamp(d.cx, threshold, d.cz, mat(DOOR_FRAME[d.kind]).colors, motes, 2.5, 0.12);
     }
-    this.hud.shake(0.25);
+    this.hud.shake(SLAM_SHAKE);
   }
 
   /** Materialise one projection where its omen breached. */
@@ -1102,7 +1162,7 @@ export class Game {
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
     const m = this.bodyMedium(b, EYE);
-    this.playerMedium = m;
+    this.playerMedium = { ...m, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
     const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0).sort((a, c) => c.harm - a.harm)[0];
@@ -1409,6 +1469,74 @@ export class Game {
     }
   }
 
+  /** Somewhere new without walking there (a star pad, heaven, silence): find room to stand, then
+   *  let the HUD, the fog and the floor bookkeeping catch up (review L4–L6 points 3 and 5). */
+  private teleport(x: number, y: number, z: number) {
+    const fx0 = Math.floor(x), fz0 = Math.floor(z);
+    let fy = Math.floor(y);
+    for (let i = 0; i < 24 && (this.solid(fx0, fy, fz0) || this.solid(fx0, fy + 1, fz0)); i++) fy++;
+    if (this.solid(fx0, fy, fz0) || this.solid(fx0, fy + 1, fz0)) { this.world.set(fx0, fy, fz0, AIR); this.world.set(fx0, fy + 1, fz0, AIR); }
+    this.player.spawnAt(fx0 + 0.5, fy, fz0 + 0.5);
+    this.groundBand = bandOf(fy);
+    this.room = -1;
+    this.zone = '';
+  }
+
+  /**
+   * The world's loop (L4): in silence, under the frozen bottom, everything goes quiet; stand still
+   * there and you are carried up to heaven, above the tree, falling slowly onto its leaves. Once
+   * you have known silence, the top of the sky takes you back down to it. And the stars of the
+   * tree: each pad carries you to the next star of its constellation.
+   */
+  private updateLoop(dt: number) {
+    const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
+    const inSilence = !!last && b.x >= last.x0 && b.x <= last.x1 + 1 && b.z >= last.z0 && b.z <= last.z1 + 1 && b.y >= last.y0 - 0.5 && b.y <= last.y1 + 1;
+    setMasterTarget(inSilence ? 0 : 0.35);
+    if (inSilence) {
+      if (!this.silenceSeen) { this.silenceSeen = true; this.hud.toast('toast.silence'); }
+      const still = Math.hypot(b.vx, b.vz) < 0.15 && Math.abs(b.vy) < 0.2;
+      this.stillT = still ? this.stillT + dt : 0;
+      if (this.stillT >= SILENCE_STILL) {
+        this.stillT = 0;
+        p.float = true;
+        this.teleport(this.tree.cx + 0.5, SURFACE_Y + SKY_LIMIT - 3, this.tree.cz + 0.5);
+        this.particles.burst(b.x, b.y + 1, b.z, pal('bone.paper'), 24, 2, 0.08);
+        this.hud.toast('toast.heaven');
+        sfx3.reveal();
+      }
+    } else this.stillT = 0;
+    // the top of the sky, once silence is known, opens down into it (it loops)
+    if (last && this.silenceSeen && b.y > SURFACE_Y + SKY_LIMIT - 1.5) {
+      this.teleport((last.x0 + last.x1) / 2 + 2, last.y0, (last.z0 + last.z1) / 2 + 2);
+      sfx3.rumble();
+    }
+    // star pads: step on one and you are on the next star of its constellation
+    const fx0 = Math.floor(b.x), fy = Math.floor(b.y + 0.05), fz0 = Math.floor(b.z);
+    const pad = b.onGround ? this.tree.pads.findIndex(q => q.x === fx0 && q.y === fy && q.z === fz0) : -1;
+    if (pad < 0) this.padLock = -1;
+    else if (pad !== this.padLock) {
+      const to = this.tree.pads[this.tree.pads[pad].to];
+      this.padLock = this.tree.pads[pad].to;
+      this.particles.burst(b.x, b.y + 0.5, b.z, pal('bone.paper'), 16, 2.5, 0.07);
+      this.teleport(to.x + 0.5, to.y, to.z + 0.5);
+      sfx2.charged();
+    }
+    // the tree is meshed the first time you come up near the surface (not at run start)
+    if (!this.treeMeshed && b.y > SURFACE_Y - 12) {
+      this.treeMeshed = true;
+      const [x0, y0, z0, x1, y1, z1] = this.tree.box;
+      for (let x = x0; x <= x1 + 8; x += 8) for (let y = y0; y <= y1 + 8; y += 8) for (let z = z0; z <= z1 + 8; z += 8) if (this.world.inside(x, y, z)) this.world.markDirty(x, y, z);
+    }
+    // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
+    const above = b.y - SURFACE_Y;
+    const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : above >= TREE_ZONES.heaven ? 'heaven' : above >= TREE_ZONES.leaves ? 'leaves' : above >= TREE_ZONES.branches ? 'branches' : 'trunk';
+    if (zone !== this.zone) {
+      this.zone = zone;
+      if (zone) this.hud.setZone(zone);
+      else if (this.floors.get(this.depth)) this.hud.setFloor(this.floors.get(this.depth)!, this.depth);
+    }
+  }
+
   /** Floors, rooms and the way down. */
   private trackPlace(dt: number) {
     const b = this.player.body;
@@ -1536,7 +1664,8 @@ export class Game {
     if (running) this.simulate(dt);
     this.chunks.update();
     const p = this.player, e = p.eye;
-    this.chunks.setVisibleRange(e.y - 22, e.y + 22);
+    this.chunks.setVisibleRange(e.y - 22, e.y + (e.y > SURFACE_Y - 4 ? 110 : 22));
+    this.stars.position.set(e.x, 0, e.z);
 
     // camera with a little walking bob and explosion shake
     const bob = Math.sin(p.walkPhase * 3.2) * 0.035;
@@ -1553,7 +1682,15 @@ export class Game {
       this.fogColor.setHex(pal(under.fog.color));
       fog.near = 0; fog.far = under.fog.far;
     } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
+    // up the tree the sky turns to night and the stars come out (the cosmos); silence is dark
+    const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven);
+    if (night > 0) { this.fogColor.lerp(NIGHT, night); fog.far = 34 + k * 80 + night * 60; }
+    this.stars.visible = night > 0.05;
+    (this.stars.material as THREE.PointsMaterial).opacity = night;
+    const deep = this.floors.get(LAST_FLOOR)?.silence;
+    if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
     fog.color.copy(this.fogColor);
+    easeMaster(dt);
     this.chunks.animate(this.time);
     this.renderer.setClearColor(this.fogColor);
 
@@ -1609,6 +1746,7 @@ export class Game {
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
     this.trackPlace(dt);
+    this.updateLoop(dt);
     this.updateOmens(dt);
     this.updateCombat(dt);
     this.updateChallenges(dt);

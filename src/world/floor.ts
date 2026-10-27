@@ -119,6 +119,8 @@ export interface FloorResult {
   keys: { room: number; x: number; y: number; z: number }[];
   /** Where the hole to the next floor opens (boss room), if there is a next floor. */
   hole: { room: number; x: number; z: number; size: number; yTop: number; yBottom: number } | null;
+  /** Under the last floor: the chamber of silence (L4), or null. */
+  silence: { x0: number; z0: number; x1: number; z1: number; y0: number; y1: number } | null;
 }
 
 export function roomOrigin(gx: number, gz: number): [number, number] {
@@ -280,7 +282,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
       }
       const el = CELL_ELEMENT[ch];
-      if (el) carveElement(w, x, y0, z, el);
+      if (el) carveElement(w, x, y0, z, el, !!lv.frozen);
       for (const layer of t.layers ?? []) {
         const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
         const ls = CELL_STACK[lc];
@@ -381,6 +383,16 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   // 4. where the hole to the next floor will open: the boss room's H (its 2×2 shaft lands in
   //    the next floor's start room, which is generated under it)
   let hole: FloorResult['hole'] = null;
+  let silence: FloorResult['silence'] = null;
+  if (k === LAST_FLOOR) {
+    // below the frozen bottom: silence, a sealed chamber on the bedrock under the last way down
+    // (air y 1–4, a roof of rock at 5 under the floor's own slab, docs/architecture/LEVELS.md §8)
+    const boss = rooms.find(rm => rm.type === 'boss')!;
+    const [hx, , hz] = holeAt ?? [boss.x0 + 6, y0, boss.z0 + 3];
+    silence = { x0: boss.x0, z0: boss.z0, x1: boss.x0 + boss.w - 1, z1: boss.z0 + boss.d - 1, y0: 1, y1: 4 };
+    fillBox(w, silence.x0, 1, silence.z0, silence.x1, 4, silence.z1, AIR);
+    hole = { room: boss.id, x: hx, z: hz, size: 2, yTop: y0 - 1, yBottom: 1 };
+  }
   if (k < LAST_FLOOR) {
     const boss = rooms.find(rm => rm.type === 'boss')!;
     const [hx, , hz] = holeAt ?? [boss.x0 + 6, y0, boss.z0 + 3];
@@ -393,7 +405,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   for (const rm of rooms) markRoomDirty(w, rm);
-  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole };
+  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence };
 }
 
 /** The shell of a room (its two-block walls, floor and ceiling) turned from brick into obsidian. */
@@ -461,9 +473,12 @@ const elemByteOf = (kind: number) => (kind << 6) | SOURCE;
 
 /** A pool (dug `depth` blocks into the floor and filled with a source), a dry dip, or an eternal
  *  flame on the floor. Pools 2 deep get a brick lining under them. */
-function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el: 'water' | 'lava' | 'fire' | null; depth: number }) {
+function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el: 'water' | 'lava' | 'fire' | null; depth: number }, frozen = false) {
   for (let d = 1; d <= el.depth; d++) {
     const i = w.idx(x, y0 - d, z);
+    // the ninth circle is frozen: its pools are ice (solid, slippery, breakable), never water
+    // (only its surface: the water stays liquid under the ice, review levels L4–L6 point 9)
+    if (frozen && el.el === 'water' && d === 1) { w.data[i] = MAT.ice; w.elem[i] = 0; continue; }
     w.data[i] = AIR;
     w.elem[i] = el.el && el.el !== 'fire' ? elemByteOf(EL_ID[el.el]) : 0;
   }
@@ -526,7 +541,8 @@ function fillRock(w: VoxelWorld, layers: [number, number], themes: RockTheme[]) 
   for (let x = 0; x < w.sx; x += 8) for (let z = 0; z < w.sz; z += 8) for (let y = SURFACE_Y - 2; y <= SURFACE_Y + 1; y++) w.markDirty(x, y, z);
 }
 
-const FRAME: Record<DoorKind, number> = {
+/** The frame material of each kind of door (the game also chips its dust from this ramp). */
+export const DOOR_FRAME: Record<DoorKind, number> = {
   normal: MAT.frame, treasure: MAT.goldframe, boss: MAT.bossframe, vault: MAT.goldframe,
   // a challenge room: the obsidian of old patterns, like the boss's (its own look is an art follow-up)
   challenge: MAT.bossframe,
@@ -534,7 +550,7 @@ const FRAME: Record<DoorKind, number> = {
 
 /** Frame the doorway (one block around it, through the whole wall) and carve the opening. */
 function carveDoorway(w: VoxelWorld, d: DoorSpec) {
-  const f = FRAME[d.kind];
+  const f = DOOR_FRAME[d.kind];
   if (d.axis === 'x') fillBox(w, d.x0, d.y0, d.z0 - 1, d.x1, d.y1 + 1, d.z1 + 1, f);
   else fillBox(w, d.x0 - 1, d.y0, d.z0, d.x1 + 1, d.y1 + 1, d.z1, f);
   fillBox(w, d.x0, d.y0, d.z0, d.x1, d.y1, d.z1, AIR);

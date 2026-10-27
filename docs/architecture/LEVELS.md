@@ -1,6 +1,6 @@
 # Levels: architecture of the thirteen floors
 
-Status: **L1, L2 and L3 built (2026-10-27)**; L4–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
+Status: **L1–L6 built (2026-10-27)**, first versions; see §9 for what is still open. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
 
 ## 1. Goal
 
@@ -160,3 +160,30 @@ The review dropped "merge separate plan cells": a big room is **one plan room wi
 | **L3b** | Footprints on the random floors (6–9): after planning, a normal room may grow into an empty cell east (2×1) or south (1×2) (`LevelDef.grow`, 0.35 on floor 6 to 0.5 on floor 9, `fork('plan', k, 'grow')`); its doors stay on its first cell, so links, chaining and the shaft are untouched; its roster budget and cap grow with its cells; the flow field and the leash use the room's size; challenge rooms stay 1×1. Templates `antechamber` (2×1) and `giants-well` (1×2), never mirrored. Chests and key homes still use the first cell only (the chests code); a phone performance pass is still owed. | **Built** |
 
 The owner left the crown's size to us: 2×1 (a hall 28 × 7 with a 4 × 4 pit). `GEN_VERSION` 9.
+
+## 8. L4–L6 proposal (2026-10-27)
+
+### L4: the circles, the ice, silence and heaven
+
+- **Themes per circle** in `LevelDef`: an image name (`level.<key>` texts: limbo, the winds, the rain, the weights, the marsh, the walls, the rivers, the ditches, the ice), shown with the floor number on the HUD and the new-floor notice; an `enemyBudget` per level instead of `min(2 + floor, 8)`.
+- **Ice** (material 17, tier 1, fragile): on the frozen floor (9), every water source a template carves is ice instead, and standing on ice you slide (less grip). Its ramp reuses the water tokens (never the projections' cold).
+- **Silence**: floor 9's way down opens into a sealed chamber in the band under it (y 1–6, above the bedrock): dark, no sound (the master volume fades out), nothing to fight. **Stand still in it** for three seconds and you are carried up to **heaven**: the top of the sky, above the tree's crown, falling slowly onto the leaves. Reaching the top of the sky from below (climbing the tree past the stars) brings you down into silence. The loop is cyclic, as the owner asked; what ends a run stays open.
+
+### L5: the giant tree
+
+A structure built once per run in the sky band above the surface, from `fork('tree')`: a **trunk** (radius 5, wood, hollow, with a spiral stair of wood inside and openings at its foot), **branches** (6–8 thick beams radiating from its upper third, each ending in a platform), and **leaves** (a canopy of leaf blobs) with **stars** above it: small platforms of star stone floating in constellation patterns, each with a pad that carries you to another star (teleport doors), and a sky that darkens to night as you rise (the cosmos). HUD labels by height: the trunk, the branches, the leaves, heaven. All of it within `SKY_LIMIT` (the tree tops out under the sky's ceiling).
+
+### L6: the creatures of the roots
+
+Peaceful creatures on floor 0 (faction `neutral`, never sealing doors, never hurting): a first one, **Wonder** (a small moth-like creature of pale paper that drifts toward you and away again; it stands for the curiosity that leads you down), two to four per tutorial floor, through the enemy system with a `wander` behaviour. Its art passes the sotano-art gate (no warm glow: light is the player's).
+
+## 9. L4–L6 as built (after the review, [../reviews/levels-l4-l6.md](../reviews/levels-l4-l6.md))
+
+- **Circles (L4):** each level has an image name (`level.<key>`, EN + ES: the roots, limbo, the winds, the rain, the weights, the marsh, the walls, the rivers, the ditches, the ice) shown with its number on the HUD (`floorLabel`), and an `enemyBudget` (`min(2 + ⌈0.8·floor⌉, 9)`, ×cells for big rooms).
+- **Ice (L4):** material 17 (`slippery`, tier 1, the water's own tokens). On the frozen floor (9) the surface layer of every pool a template digs is ice, with water still under it; standing on ice you keep sliding (grip × 0.12).
+- **Silence (L4):** floor 9's way down opens into a sealed chamber on the bedrock under its exit room (air y 1–4, `FloorResult.silence`). In it the world's volume fades to nothing; **stand still three seconds** and you are carried up to heaven, above the tree, falling slowly (`Player.float`, gravity × 0.15, the first landing never hurts). Once silence is known, reaching the top of the sky takes you back down into it. Every jump goes through `teleport`, which finds room to stand (never inside blocks) and refreshes the HUD and the floor bookkeeping without counting as depth.
+- **The tree (L5):** `world/tree.ts` `buildTree` from `fork('tree')` after the rock: a hollow trunk of living wood (radius 5, 50 high, doors at its foot, a spiral stair inside, an opening at its crown), 6–8 branches from its upper third that open the trunk where they leave it and end in platforms, leaf blobs over every branch and over the crown, and three constellations of star-stone platforms above the canopy whose pads carry you to the next star (re-armed once you step off). About 10k–20k cubes, meshed only when you first come near the surface. Going up, the HUD names the trunk, the branches, the leaves and heaven, and the sky turns to night with a dome of faint stars (never warm light).
+- **Creatures of the roots (L6):** `content/creatures` (outside the projections' art rules: they are not projections): **Wonder**, a small paper moth that drifts toward you and away again (`wander` behaviour, `near` in the enemy context). Two to four on floor 0 from `fork('floor', 0, 'creatures')`, ambient (never in a roster), faction `neutral`: nothing hurts them, they never change side, never seal or block a room.
+- `GEN_VERSION` 10.
+
+Still open: what ends a run; the climb from the roots to the surface (today you dig or build up); creatures for the tree and more for the roots; the circles' own mechanics beyond their rooms (winds that push, rain that soaks); a phone performance pass over the whole world; captures in the art guide for ice, the tree and Wonder.

@@ -263,7 +263,7 @@ Absolute cap of 24 parts. Projections about safety or belonging get large heads;
 
 ### 8.5 Timing
 
-- **Materialisation (0.9 s), at its spawn point** (owner, 2026-10-27: no longer always the centre; each spawn is first announced by an omen of cold motes, a crack and a spatial sound, [BESTIARY §2](../design/BESTIARY.md); the art ruling on omen particles is pending): a crack appears on the floor (or wall, ceiling, water), host cubes rise from the floor and walls, a hum starts, the body assembles bottom-up, and the eyes open last. It looks at you first. Invulnerable while it appears.
+- **Materialisation (0.9 s), at its spawn point** (owner, 2026-10-27: no longer always the centre; each spawn is first announced by an omen of cold motes, a crack and a spatial sound, [BESTIARY §2](../design/BESTIARY.md). The omen's 24 motes are `cold.dim`, turning `cold.body` in the second half of the gather, and the breach flares `cold.white`): a crack appears on the floor (or wall, ceiling, water), host cubes rise from the floor and walls, a hum starts, the body assembles bottom-up, and the eyes open last. It looks at you first. Invulnerable while it appears.
 - **Animation:** poses step at 12 fps; positions move smoothly. Breath is ±3 % at the creature's rhythm. Joints (hips, shoulders) are pivots, never box centres.
 - **Telegraph:** at least 0.4 s, on three channels at once: a face frame, one body part moving to an extreme, and a sound.
 - **Hurt:** the hurt face for 0.15 s, the head knocked back 6–10°, a brief flash to the host's highlight (never pure white).

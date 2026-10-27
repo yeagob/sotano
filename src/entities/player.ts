@@ -12,10 +12,11 @@ import type { Actor, ActorId, Faction } from './actors';
 export const EYE = 1.62;
 const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
 /** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
+const ICE_GRIP = 0.12;
 const SWIM_G = 0.2, SINK = 1.5, SWIM_UP = 3.4, SWIM_OUT = 5.2, WADE_JUMP = 0.7, SWIM_CONTROL = 0.5;
 
 /** What the player's body is in this frame (docs/design/ELEMENTS.md §2: wade with your feet in, swim with your head under). */
-export interface PlayerMedium { feet: ElementDef | null; head: ElementDef | null }
+export interface PlayerMedium { feet: ElementDef | null; head: ElementDef | null; slippery?: boolean }
 
 export interface PlayerHooks {
   /** Asked before jumping with the stat-based velocity; return the velocity to use, or null to cancel. */
@@ -54,6 +55,8 @@ export class Player implements Actor {
   walkPhase = 0;
   /** Seconds of breath left (refills at the surface; the game drains it under water). */
   breath = 8;
+  /** Falling from heaven: gravity is gentle until the first landing, which never hurts. */
+  float = false;
   /** Swimming this frame (head under a fluid you can swim in). */
   swimming = false;
   /** Direction the player is trying to move this frame (unit or zero), for contact checks. */
@@ -91,7 +94,8 @@ export class Player implements Actor {
     this.swimming = swim;
     const speed = WALK * stats.moveSpeed * (fluid ? fluid.wade : 1);
     const b = this.body;
-    const k = swim ? SWIM_CONTROL : b.onGround ? 1 : AIR_CONTROL;
+    // on ice you keep sliding: far less grip to start, turn or stop
+    const k = swim ? SWIM_CONTROL : b.onGround ? (medium.slippery ? ICE_GRIP : 1) : AIR_CONTROL;
     const blend = 1 - Math.exp(-14 * k * dt);
     b.vx += (wx * speed - b.vx) * blend;
     b.vz += (wz * speed - b.vz) * blend;
@@ -114,11 +118,12 @@ export class Player implements Actor {
         if (v !== null) b.vy = v;
         this.jumpBuffer = 0; this.coyote = 0;
       }
-      b.vy = Math.max(b.vy - GRAVITY * dt, fluid ? -SINK * 4 : -40);
+      b.vy = Math.max(b.vy - GRAVITY * (this.float ? 0.15 : 1) * dt, this.float ? -6 : fluid ? -SINK * 4 : -40);
     }
     const wasGround = b.onGround, fall = -b.vy, rise = b.vy;
     moveBody(solid, b, dt);
-    if (b.onGround && !wasGround && fall > 2) hooks.land(fall);
+    if (b.onGround && this.float) this.float = false;
+    else if (b.onGround && !wasGround && fall > 2) hooks.land(fall);
     if (rise > 0 && b.vy === 0 && !b.onGround) b.vy = hooks.bump(rise);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;

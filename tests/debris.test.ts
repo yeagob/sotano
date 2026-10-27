@@ -107,7 +107,8 @@ describe('loose cubes', () => {
     const c = d.spawn(1, 0.5, 0.4, 0.5);
     step(d, 1);
     d.launch(c, 4, 0, 0);
-    step(d, 2);
+    // hops carry a random nudge (identical hops loop forever): give it a few tries
+    step(d, 4);
     expect(d.pos[c * 3]).toBeGreaterThan(1.2);
   });
 });

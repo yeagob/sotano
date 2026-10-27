@@ -5,6 +5,14 @@ import { fx } from '../core/fx';
 let ctx: AudioContext | null = null;
 let master: GainNode;
 
+let masterTarget = 0.35;
+/** The volume the world wants now (silence: nothing), eased in `easeMaster`. */
+export function setMasterTarget(v: number) { masterTarget = v; }
+export function easeMaster(dt: number) {
+  if (!ctx) return;
+  master.gain.value += (masterTarget - master.gain.value) * (1 - Math.exp(-2 * dt));
+}
+
 export function unlockAudio() {
   if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
   ctx = new AudioContext();
