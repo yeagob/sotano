@@ -202,6 +202,17 @@ Damage shows light from the first hit. Each crack stroke is a 1 px outline with 
 - **Held block:** 1.5 times the intensity. It lights your hand gold in a dark corridor.
 - **Placed block (mended):** a 1 px gold seam along one or two edges, plus one crossing crack, steady at 0.30. Seams are always gold. Gold seams are the repair, the principle of kintsugi, which is proposed for the lore library *(owner)*.
 
+### 6.5 Chests
+
+A chest is *what you keep shut until you are ready*; open, it is *what was kept, given*. It is a small model on an invisible block, not a textured cube, so it must read as a chest by its silhouette alone: a long, low plank box (14 × 8 × 10 texels) under a stepped, domed lid, two metal bands, corner feet.
+
+- **Free:** thin dark iron bands and a brass latch. No keyhole.
+- **Locked:** heavier bands, pale iron feet and plinth, and a padlock hanging on the front with **one keyhole per key** it asks for. A lock is a belief that asks for as many insights as it holds.
+- **Practice:** the same chest dressed in brass (bands, feet, trims); free or locked.
+- **Open:** the lid swings back on its hinge, the padlock falls, and the dark inside holds a mound of gold light. The light is the only warm thing about a chest, and only once it is open.
+
+Numbers and tokens: DECISIONS §6.5. Captures: `?gallery=chests`.
+
 ---
 
 ## 7. Intentions, hostile shots and particles

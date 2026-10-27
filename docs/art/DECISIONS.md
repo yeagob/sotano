@@ -334,6 +334,40 @@ Breaking reveals light from the first hit. Strokes follow the material's logic (
 
 **Kintsugi** is the named visual source (OWNER Q7: add to the library).
 
+### 6.5 Chests: a model on an invisible block (owner, 2026-10-27)
+
+**Ruling.** The textured chest cube (`atlas.ts` `chest`/`chestopen`) is retired: the owner could not tell a chest, an open chest or a locked chest apart. A chest is now a box model (`src/render/chest-model.ts`, `buildChest({ keys, practice })`) drawn on top of an invisible solid voxel, with a lid that really opens. Silhouette first: a long low box with a stepped, domed lid, never a crate cube.
+
+- **Side:** world / vessel. It holds the light; it never glows while shut.
+- **Meaning:** closed is *what you keep shut until you are ready*; open is *what was kept, given*. A lock is a belief that asks for as many insights (keys, STORY.md) as it holds, so it shows one keyhole per key. The intention cannot break it; only keys or walking up open it ([CHESTS.md](../design/CHESTS.md)).
+- **What the intention does:** nothing (unbreakable by rule). What opens it is a choice: spending insights.
+
+**Dimensions (texels, 16 per block; origin bottom centre, lock side +Z):**
+
+| Part | Size | Notes |
+|---|---|---|
+| Body | 14 × 8 × 10 | Hollow: 1-texel walls, floor 3 texels thick, so the inside is 12 × 5 × 8 |
+| Lid | 14 wide, 5 tall, three steps (11 → 9 → 5 deep) | 1-texel overhang at the front; hinge on the body's top-back edge (y 8, z −5); `lid.rotation.x = −1.9` is fully open |
+| Bands | 2 per chest, 1 texel proud, wrapping body front, back and every lid step | 2 wide on a free chest, 3 wide on a locked one; top of the bands is the highest point, 14 texels |
+| Feet / corner caps | 2 × 2 × 2 at the four bottom corners, 1 texel proud on both faces | |
+| Plinth trim | 12 × 1 on the body front, bottom | Locked and practice chests only |
+| Lock (padlock) | plate 6 / 8 / 10 × 5 × 2 for 1 / 2 / 3 keys, shackle 4 × 3 | Hangs on the front under the lid lip; one 2 × 3 keyhole per key, 1 texel apart |
+| Latch (free) | brass hasp 2 × 4 on the lid over a 4 × 2 catch | No keyhole |
+
+≤ 36 meshes for the richest variant. Materials are shared module-wide (wood, inside wood, iron, brass) except the lock, the keyholes and everything in `inner`, which are per chest so the game can fade and tint them.
+
+**Variants and tokens (no text needed):**
+
+| Variant | Wood | Bands | Caps, trim | Front |
+|---|---|---|---|---|
+| **Free** (0 keys) | planks `mat.crate.*` (hi / base / dark rows, outline joints) | `iron.dark`, 2 wide | `iron.dark` | brass latch: `brass.base` hasp, `brass.dark` catch |
+| **Locked** (1–3 keys) | same | `iron.dark`, 3 wide | `iron.base`, plinth trim | padlock: plate `iron.base`, shackle `iron.hi`, keyholes `ink.void` (one per key). In fog at 8 blocks the pale plate is what tells it apart from a free chest |
+| **Practice** (holds a reserved practice; free or locked) | same | `brass.base` | `brass.hi`, brass lid trim and plinth | latch or padlock as above. Brass is the treasure door's metal, never gold |
+| **Inside** (seen when open) | `mat.crate.dark` / `outline` rows on every inner face and the lid's underside | | | |
+| **Inner light** (`inner`, hidden while shut) | a stepped mound of light: `light.ember` floor, `light.gold`, `light.hot`, a `light.core` heart; an additive `glowTexture` halo in `light.hot` at 0.7 | | | Gold is legitimate here: it is the light that was kept |
+
+The keyholes may be tinted by the game (for example, lit when the player holds enough keys); each owns its material. Captures: `?gallery=chests` (closed, open, and at 8 and 20 blocks in floor-1 fog).
+
 ---
 
 ## 7. Intentions, hostile projectiles, particles, feedback
@@ -763,7 +797,7 @@ In order of preference (Tech): (1) emissive texels (same draw call); (2) halos: 
 
 ### 12.5 `?gallery`
 
-`src/debug/gallery.ts`, code-split, booted by `main.ts` before `Game`. Same renderer, atlas, shading chunk, palette and `FloorLook` uniforms; no physics or world generation. Sections `?gallery=materials|enemies|items|pickups|hud|palette|room|all`: material swatches 3 × 3 with 4 crack stages, loose vs placed vs mended side by side; every projection on a turntable × every host material × floors 1 and 4, with clip buttons (idle, walk, telegraph, hurt, spawn, release), counts and a hitbox toggle; icons on pedestals and at ×2/×3/×5/×6 on panel, black and white; hearts in all quarter states, banners, minimap; palette with tokens, L*, the contrast matrix and the CVD matrix; `room` with `cleared=0|1`. Filters: greyscale, deutan, protan, tritan, solid-black silhouette, 20-blocks-in-fog. Controls: drag orbit, `F` cycles FloorLooks, `B` background, `Space` pause, `P` PNG. **Deterministic captures** (`?gallery=enemies&id=critic&t=0.4&angle=35&floor=f4&filter=deutan`) feed the PDF and every before/after review.
+`src/debug/gallery.ts`, code-split, booted by `main.ts` before `Game`. Same renderer, atlas, shading chunk, palette and `FloorLook` uniforms; no physics or world generation. Sections `?gallery=materials|enemies|items|pickups|chests|hud|palette|room|all`: material swatches 3 × 3 with 4 crack stages, loose vs placed vs mended side by side; every projection on a turntable × every host material × floors 1 and 4, with clip buttons (idle, walk, telegraph, hurt, spawn, release), counts and a hitbox toggle; icons on pedestals and at ×2/×3/×5/×6 on panel, black and white; hearts in all quarter states, banners, minimap; palette with tokens, L*, the contrast matrix and the CVD matrix; `room` with `cleared=0|1`. Filters: greyscale, deutan, protan, tritan, solid-black silhouette, 20-blocks-in-fog. Controls: drag orbit, `F` cycles FloorLooks, `B` background, `Space` pause, `P` PNG. **Deterministic captures** (`?gallery=enemies&id=critic&t=0.4&angle=35&floor=f4&filter=deutan`) feed the PDF and every before/after review.
 
 ### 12.6 Tests (`tests/art.test.ts`, Vitest, Node)
 
