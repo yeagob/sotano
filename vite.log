@@ -1,7 +1,0 @@
-
-  VITE v8.3.5  ready in 232 ms
-
-  ➜  Local:   http://localhost:5200/
-  ➜  Network: use --host to expose
-10:46:46 PM [vite] (client) page reload src/render/atlas.ts
-10:47:17 PM [vite] (client) page reload src/content/hud-icons.ts
