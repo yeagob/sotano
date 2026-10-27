@@ -441,5 +441,55 @@ export const ES: Catalog = {
       slate: 'Pizarra',
       darkbrick: 'Ladrillo oscuro',
     },
+    parts: {
+      'doubt.flesh': {
+        name: 'La piedra-saco de la Duda',
+        description: 'Pesada de tanto cargar cada quizá.',
+      },
+      'doubt.heart': {
+        name: 'La pausa de la Duda',
+        description: 'El aliento antes de un sí o un no, guardado.',
+      },
+      'doubt.mind': {
+        name: 'La pregunta de la Duda',
+        description: 'Una pregunta sin signo de interrogación.',
+      },
+      'doubt.essence': {
+        name: 'La luz erguida de la Duda',
+        description: 'Una luz que se levanta cuando nada más se levanta.',
+      },
+      'critic.flesh': {
+        name: 'La página reglada del Atril',
+        description: 'Rayada y marcada de antemano.',
+      },
+      'critic.heart': {
+        name: 'La marca de tinta del Atril',
+        description: 'Una marca pequeña que cuenta lo que estaba mal.',
+      },
+      'critic.mind': {
+        name: 'La nota al margen del Atril',
+        description: 'Una nota al margen, sobre ti.',
+      },
+      'critic.essence': {
+        name: 'La página en blanco del Atril',
+        description: 'Nada escrito todavía. Nada juzgado todavía.',
+      },
+      'panic.flesh': {
+        name: 'La cáscara rota del Pánico',
+        description: 'La cáscara que se rompió y conservó su forma.',
+      },
+      'panic.heart': {
+        name: 'La brasa cautiva del Pánico',
+        description: 'Una chispa tibia, retenida cerrada sin apagarse.',
+      },
+      'panic.mind': {
+        name: 'La alarma del Pánico',
+        description: 'Una campana que sonó una vez y nunca paró.',
+      },
+      'panic.essence': {
+        name: 'Los ojos cerrados del Pánico',
+        description: 'Ojos cerrados, para que nada más entre.',
+      },
+    },
   },
 };

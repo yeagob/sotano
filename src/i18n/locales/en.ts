@@ -217,5 +217,5 @@ export const EN: Catalog = {
   code: 'en',
   name: 'English',
   messages,
-  content: { items: {}, synergies: {}, enemies: {}, materials: {} },
+  content: { items: {}, synergies: {}, enemies: {}, materials: {}, parts: {} },
 };

@@ -12,7 +12,7 @@ import {
 } from '../src/game/omens';
 import { rampSplit } from '../src/render/particles';
 
-const omen = (): Omen => ({ def: 'doubt', room: 0, x: 0, y: 0, z: 0, t: 0, breached: false, emitted: 0 });
+const omen = (): Omen => ({ def: 'doubt', room: 0, seq: 0, x: 0, y: 0, z: 0, t: 0, breached: false, emitted: 0 });
 
 /** Runs one omen's gather at a fixed frame time; returns [time, motes] for every frame that emitted. */
 function runGather(dt: number): [number, number][] {

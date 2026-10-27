@@ -7,9 +7,10 @@
 
 import { heartQuarters } from '../entities/actors';
 import { SYNERGIES } from '../content/synergies';
+import { PARTS, type PartDef } from '../content/parts';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
-import { causeName, effectMessage, isPath, itemText, materialName, pathName, synergyText } from '../i18n/content';
+import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
 import type { Polarity } from '../combat/polarity';
@@ -525,12 +526,21 @@ export class Hud {
     const counts = new Map<string, number>();
     for (const d of held) counts.set(d.id, (counts.get(d.id) ?? 0) + 1);
     const unique = [...new Map(held.map(d => [d.id, d])).values()];
-    const sel = unique.find(d => d.id === this.selected) ?? unique.at(-1);
+    const partCounts = new Map<string, number>();
+    for (const id of g.parts) partCounts.set(id, (partCounts.get(id) ?? 0) + 1);
+    const parts = [...partCounts.keys()].map(id => PARTS.find(p => p.id === id)!);
+    const ids = [...unique.map(d => d.id), ...parts.map(p => p.id)];
+    const selId = ids.find(id => id === this.selected) ?? ids.at(-1);
+    const sel = unique.find(d => d.id === selId);
+    const selPart = parts.find(p => p.id === selId);
 
-    const grid = unique.map(d => `<button class="tile${d === sel ? ' sel' : ''}" data-id="${d.id}" style="--c:${hex(d.color)}">` +
-      `<img src="${iconDataUrl(d, 3)}" alt=""><span class="lbl">${esc(itemText(d).name)}</span>${(counts.get(d.id) ?? 1) > 1 ? `<i>×${counts.get(d.id)}</i>` : ''}</button>`).join('');
+    const tile = (id: string, c: number, icon: { id: string; icon: PartDef['icon'] }, name: string, n: number) =>
+      `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
+      `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
+    const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('') +
+      parts.map(p => tile(p.id, p.color, p, partText(p).name, partCounts.get(p.id) ?? 1)).join('');
 
-    const detail = sel ? this.itemDetail(sel) : `<p class="none">${th('inv.empty')}</p>`;
+    const detail = sel ? this.itemDetail(sel) : selPart ? this.partDetail(selPart) : `<p class="none">${th('inv.empty')}</p>`;
 
     const active = new Set(g.inventory.synergiesActive.map(x => x.id));
     const synRows = SYNERGIES.map(sy => {
@@ -555,6 +565,12 @@ export class Hud {
       b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
       b.addEventListener('click', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
     }
+  }
+
+  private partDetail(p: PartDef) {
+    const tx = partText(p);
+    return `<div class="detail" style="--c:${hex(p.color)}"><img src="${iconDataUrl(p, 6)}" alt="">` +
+      `<div><b>${esc(tx.name)}</b><p>${esc(tx.description)}</p></div></div>`;
   }
 
   private itemDetail(d: ItemDef) {

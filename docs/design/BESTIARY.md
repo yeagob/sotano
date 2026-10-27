@@ -436,6 +436,8 @@ The rest are named when they are built, with the same rule: the part's noun come
 
 **Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room, the Compost, is designed in §8.8.
 
+**Status (built, Change A, 2026-10-27).** The twelve parts of the three built projections are in `src/content/parts.ts` (chances 30 / 12 / 5 / 2 %, rolled per release on the projection's own RNG path, [RNG.md §4](../architecture/RNG.md)). They drop as pickups, are collected into `Game.parts` (not items), and show in the inventory with their name. Their icons are by the art agent, passing the gate in `src/content/part-icons.ts`. Agreements, gifts and the rest of §8 are not built.
+
 ---
 
 ## 6. Bosses

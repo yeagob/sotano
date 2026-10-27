@@ -6,10 +6,11 @@
 import * as THREE from 'three';
 import type { PickupKind } from '../game/events';
 import type { ItemDef } from '../items/types';
+import type { PartDef } from '../content/parts';
 import { pal } from '../content/palette';
 import { glowTexture, iconTexture } from '../render/icons';
 
-export type PickupType = PickupKind | 'item';
+export type PickupType = PickupKind | 'item' | 'part';
 
 export interface Pickup {
   type: PickupType;
@@ -19,6 +20,8 @@ export interface Pickup {
   room: number;
   /** Pedestal item (null = empty pedestal). */
   item: ItemDef | null;
+  /** The part a projection left (type 'part'). */
+  part: PartDef | null;
   taken: boolean;
   /** Can't be collected yet (just dropped). */
   delay: number;
@@ -74,6 +77,15 @@ function heartMesh(): THREE.Object3D {
   return g;
 }
 
+function partMesh(def: PartDef): THREE.Object3D {
+  const g = new THREE.Group();
+  const icon = new THREE.Sprite(new THREE.SpriteMaterial({ map: iconTexture(def), transparent: true }));
+  icon.scale.set(0.5, 0.5, 1);
+  icon.name = 'icon';
+  g.add(icon);
+  return g;
+}
+
 function pedestalItem(def: ItemDef | null): THREE.Object3D {
   const g = new THREE.Group();
   if (!def) return g;
@@ -101,11 +113,11 @@ export class Pickups {
 
   dispose() { this.scene.remove(this.group); }
 
-  add(type: PickupType, x: number, y: number, z: number, room: number, item: ItemDef | null = null, delay = 0): Pickup {
-    const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : pedestalItem(item);
+  add(type: PickupType, x: number, y: number, z: number, room: number, item: ItemDef | null = null, delay = 0, part: PartDef | null = null): Pickup {
+    const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : type === 'part' && part ? partMesh(part) : pedestalItem(item);
     obj.position.set(x, y, z);
     this.group.add(obj);
-    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, taken: false, delay, age: 0, obj };
+    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, part, taken: false, delay, age: 0, obj };
     obj.scale.setScalar(0.001);
     this.list.push(p);
     return p;
@@ -150,7 +162,7 @@ export class Pickups {
       }
       p.obj.rotation.y = this.time * 1.6 + p.x;
       const bob = Math.sin(this.time * 2.2 + p.x) * (p.type === 'item' ? 0.08 : 0.04);
-      p.obj.position.set(p.x, p.y + (p.type === 'item' ? 0.55 : 0.12) + bob, p.z);
+      p.obj.position.set(p.x, p.y + (p.type === 'item' ? 0.55 : p.type === 'part' ? 0.3 : 0.12) + bob, p.z);
       if (p.type === 'item') {
         p.obj.rotation.y = 0;
         const glow = p.obj.getObjectByName('glow') as THREE.Sprite | undefined;
