@@ -165,6 +165,8 @@ export const sfx3 = {
   splash: () => { noise(0.35, 0.35, jitter(900), 0.6); tone(jitter(240), 0.15, 'sine', 0.1, 0.5); },
   /** Out of breath: a dull bubble. */
   gulp: () => tone(jitter(150), 0.18, 'sine', 0.2, 1.8),
+  creak: () => { tone(jitter(140), 0.35, 'sawtooth', 0.05, 1.8); noise(0.3, 0.12, jitter(700), 3); },
+  spit: () => { tone(jitter(420), 0.09, 'sine', 0.16, 2.2); noise(0.05, 0.12, jitter(2400), 2); },
   /** R: a soft breath out as the screen goes dark. */
   restart: () => { tone(294, 0.6, 'sine', 0.14, 0.5); noise(0.5, 0.08, 500, 0.8); },
 };

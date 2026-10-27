@@ -31,12 +31,13 @@ import { StatSheet } from '../core/stats';
 import type { Enemy } from '../enemies/types';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
-import { Pickups } from '../entities/pickups';
+import { Pickups, type Pickup } from '../entities/pickups';
+import { Chests, type ChestView } from '../entities/chests';
 import { EYE, Player, type PlayerMedium } from '../entities/player';
 import { Input } from '../input/input';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
-import type { HostApi } from '../items/types';
+import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
@@ -195,7 +196,9 @@ export class Game {
   private spawnSeq = new Map<number, number>();
   private camDir = new THREE.Vector3();
   /** Every chest of the activated floors (the blocks themselves live in the world). */
-  private chests: { spec: ChestSpec; opened: boolean; refused: boolean }[] = [];
+  private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
+  private chestViews!: Chests;
+  private spits: { t: number; run: () => void }[] = [];
   private bosses = new Map<number, BossState>();   // floor → its boss room's state
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -329,6 +332,7 @@ export class Game {
     this.chunks?.dispose();
     this.doors?.dispose();
     this.pickups?.dispose();
+    this.chestViews?.dispose();
     this.enemies?.dispose();
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
@@ -362,8 +366,9 @@ export class Game {
     this.blasts.clear(); this.bombCause.clear();
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
+    this.chestViews = new Chests(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.bosses.clear(); this.chests = [];
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.bosses.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -425,7 +430,7 @@ export class Game {
     this.doors.add(f.doors);
     // the boss's pedestal stays bare until the boss is overcome (revealBossItem)
     for (const p of f.pedestals) if (!p.boss && !p.chest) this.placePedestalItem(p);
-    for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false });
+    for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, this.chestFacing(spec)) });
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
     for (const c of ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
@@ -446,14 +451,32 @@ export class Game {
   /** Puts a pedestal's practice in the world: the reserved one, unless the player already got it
    *  some other way (then a runtime draw from the room's pool). */
   private placePedestalItem(p: { room: number; x: number; y: number; z: number; item: string | null }) {
+    const def = this.pedestalDef(p);
+    this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, def);
+    return def;
+  }
+
+  private pedestalDef(p: { room: number; item: string | null }) {
     let id = p.item;
     if (id && (this.inventory.has(id) || this.pools.isTaken(id))) {
       const type = this.rooms.get(p.room)?.type;
       id = this.pools.drawRuntime(type === 'vault' || type === 'boss' ? type : 'treasure', this.rng.stream('loot'));
     }
-    const def = id ? ITEM_BY_ID.get(id) ?? null : null;
-    this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, def);
-    return def;
+    return id ? ITEM_BY_ID.get(id) ?? null : null;
+  }
+
+  private chestFacing(s: ChestSpec) {
+    const r = this.rooms.get(s.room), cx = s.x + 0.5, cz = s.z + 0.5;
+    let tx = r ? r.x0 + r.w / 2 : cx, tz = r ? r.z0 + r.d / 2 : cz + 1;
+    if (Math.hypot(tx - cx, tz - cz) < 1.5) {
+      let best = Infinity;
+      for (const d of this.doors.list) {
+        const dist = Math.hypot(d.cx - cx, d.cz - cz);
+        if (d.rooms.includes(s.room) && dist < best) { best = dist; tx = d.cx; tz = d.cz; }
+      }
+    }
+    const dx = tx - cx, dz = tz - cz;
+    return Math.abs(dx) > Math.abs(dz) ? Math.sign(dx) * Math.PI / 2 : dz >= 0 ? 0 : Math.PI;
   }
 
   /** Down a floor (console shortcut): open the hole and drop the player into it. */
@@ -1599,31 +1622,45 @@ export class Game {
     }
   }
 
-  /** The chest block turns into its open twin and gives what it kept: the practice reserved for it, or loot. */
-  private openChest(c: { spec: ChestSpec; opened: boolean }, cost: number) {
+  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number) {
     c.opened = true;
     const s = c.spec;
     this.world.set(s.x, s.y, s.z, MAT.chestopen);
+    const lead = this.chestViews.open(c.view);
     const cx = s.x + 0.5, cz = s.z + 0.5;
-    this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), 24, 3, 0.08);
-    this.particles.burst(cx, s.y + 1, cz, pal('brass.base'), 10, 2, 0.06);
+    this.particles.burst(cx, s.y + 0.5, cz, pal('brass.base'), 10, 2, 0.06);
     this.hud.shake(0.08);
     if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
-    if (s.item) { this.placePedestalItem({ room: s.room, x: s.x, y: s.y + 1, z: s.z, item: s.item }); return; }
-    const rng = this.rng.stream('loot'), floor = depthOf(s.y), luck = this.stats.get('luck');
-    const n = 1 + (rng.chance(0.4) ? 1 : 0) + (rng.chance(0.15) ? 1 : 0);
-    const dirs: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-    for (let i = 0; i < n; i++) {
-      const what = CHEST_CONTENTS.roll(rng, { floor, luck }) ?? 'key';
-      // loot lies beside the chest, on a free tile (the chest itself is solid ground too)
-      const free = dirs.filter(([dx, dz]) => !this.solid(s.x + dx, s.y, s.z + dz));
-      const [dx, dz] = free.length ? free[(i + Math.floor(rng.next() * free.length)) % free.length] : [0, 0];
-      const x = cx + dx * 0.9, z = cz + dz * 0.9;
-      if (what === 'item') {
-        const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng)) ?? null;
-        this.pickups.add('item', free.length ? x : cx, s.y + 1, free.length ? z : cz, s.room, def, 0.3);
-      } else this.pickups.add(what, x, s.y + 1.2, z, s.room, null, 0.4);
+    sfx3.creak();
+    const b = this.player.body;
+    const len = Math.hypot(b.x - cx, b.z - cz) || 1, ax = (b.x - cx) / len, az = (b.z - cz) / len;
+    const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
+    if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
+    else {
+      const rng = this.rng.stream('loot'), floor = depthOf(s.y), luck = this.stats.get('luck');
+      const n = 1 + (rng.chance(0.4) ? 1 : 0) + (rng.chance(0.15) ? 1 : 0);
+      let practice = false;
+      for (let i = 0; i < n; i++) {
+        const what = CHEST_CONTENTS.roll(rng, { floor, luck }) ?? 'key';
+        const def = what === 'item' && !practice ? ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng)) ?? null : null;
+        if (def) { practice = true; out.push({ type: 'item', def }); }
+        else out.push({ type: what === 'item' ? 'key' : what, def: null });
+      }
     }
+    out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
+      const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
+      const dx = ax * Math.cos(spread) - az * Math.sin(spread), dz = az * Math.cos(spread) + ax * Math.sin(spread);
+      const p: Pickup = this.pickups.add(o.type, cx, s.y + 1.02, cz, s.room, o.def, 0.6);
+      const speed = (o.type === 'item' ? 1.7 : 1.5) / 0.68;
+      this.pickups.launch(p, dx * speed, 6.5, dz * speed);
+      this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), o.type === 'item' ? 22 : 10, 2.5, 0.07);
+      if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
+    } }));
+  }
+
+  private updateSpits(dt: number) {
+    for (const q of this.spits) { q.t -= dt; if (q.t <= 0) q.run(); }
+    this.spits = this.spits.filter(q => q.t > 0);
   }
 
   /** Somewhere new without walking there (a star pad, heaven, silence): find room to stand, then
@@ -1908,7 +1945,9 @@ export class Game {
     this.updateOmens(dt);
     this.updateCombat(dt);
     this.updateChallenges(dt);
+    this.updateSpits(dt);
     this.pickups.update(dt, solid);
+    this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris, this.time);
     this.cutHalves.update(dt);

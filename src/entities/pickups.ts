@@ -14,7 +14,8 @@ export type PickupType = PickupKind | 'item';
 export interface Pickup {
   type: PickupType;
   x: number; y: number; z: number;   // base position (bottom of the visual)
-  vy: number;
+  vx: number; vy: number; vz: number;
+  flying: boolean;
   room: number;
   /** Pedestal item (null = empty pedestal). */
   item: ItemDef | null;
@@ -104,10 +105,15 @@ export class Pickups {
     const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : pedestalItem(item);
     obj.position.set(x, y, z);
     this.group.add(obj);
-    const p: Pickup = { type, x, y, z, vy: type === 'item' ? 0 : 3, room, item, taken: false, delay, age: 0, obj };
+    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, taken: false, delay, age: 0, obj };
     obj.scale.setScalar(0.001);
     this.list.push(p);
     return p;
+  }
+
+  launch(p: Pickup, vx: number, vy: number, vz: number) {
+    p.vx = vx; p.vy = vy; p.vz = vz;
+    p.flying = true;
   }
 
   take(p: Pickup) {
@@ -126,7 +132,12 @@ export class Pickups {
         const k = p.age / POP_IN - 1;
         p.obj.scale.setScalar(Math.max(0.001, 1 + 2.2 * k * k * k + 1.2 * k * k));
       }
-      if (p.type !== 'item') {
+      if (p.flying && (p.vx || p.vz)) {
+        const nx = p.x + p.vx * dt, nz = p.z + p.vz * dt, cy = Math.floor(p.y + 0.05);
+        if (solid(Math.floor(nx), cy, Math.floor(p.z))) p.vx *= -0.3; else p.x = nx;
+        if (solid(Math.floor(p.x), cy, Math.floor(nz))) p.vz *= -0.3; else p.z = nz;
+      }
+      if (p.type !== 'item' || p.flying) {
         // fall until resting on something solid (re-checked every frame: the floor may break)
         const below = solid(Math.floor(p.x), Math.floor(p.y - 0.01), Math.floor(p.z));
         if (!below || p.vy > 0) {
@@ -135,7 +146,7 @@ export class Pickups {
           if (p.vy < 0 && solid(Math.floor(p.x), Math.floor(ny), Math.floor(p.z))) { ny = Math.floor(ny) + 1; p.vy = 0; }
           p.y = ny;
           if (p.y < -10) { this.take(p); continue; }
-        }
+        } else if (p.flying) { p.flying = false; p.vx = 0; p.vz = 0; }
       }
       p.obj.rotation.y = this.time * 1.6 + p.x;
       const bob = Math.sin(this.time * 2.2 + p.x) * (p.type === 'item' ? 0.08 : 0.04);
