@@ -95,14 +95,17 @@ Thematic reading: a projection that changes side becomes part of the **self**. I
   - It is re-chosen at 4 Hz, and only switched for one at least 1.5 blocks closer, so equidistant targets don't make it jitter.
 - **Flow fields** are cached per (room, target). Each field is 13×7, so this is cheap.
 - **Who hits whom.**
-  - The player's intents pass through allies.
+  - The player's intentions meet allies by polarity: a positive one passes a healthy ally and heals a hurt one; a negative one always hits an ally (`meetsIntention`, [ENTITIES.md §5](ENTITIES.md §5)).
   - Projectiles hit the first actor hostile to their thrower's side.
   - Contact is checked between every hostile pair.
   - Explosions hit every actor in range (friendly fire, as bombs always hurt the player).
 - **Room clear.** A room clears when no live projection of faction `projection` is left in it (`Enemies.blockingIn`). Allies don't keep doors shut, so turning the last hostile into an ally clears the room.
 - **Allies stay in their room** (leash unchanged), fight hostiles there and otherwise idle. Following the player across rooms and floors is a later design, with controllers (PR7).
 - **Changing side.** `Game.setFaction(actor, faction, source)` emits react-only **`factionChange { target, targetKind, def, from, to, source }`** and makes the actor look for a new target.
-- **Look.** Allies glow a steady warm gold.
+  - **Converted:** a projection whose warmth is full under positive intentions becomes `self`, at least half its maximum health.
+  - **Relapsed:** an ally at zero under a negative intention becomes `projection` again, at half its maximum health. It is not released, and a cleared room stays cleared.
+  - **Dissolved:** anything else that takes an ally to zero (a blast, lava, fire, contact, a projectile) releases it, as a projection is released. Only a negative intention relapses one.
+- **Look.** Allies glow a steady ember light, which grows with their health (DECISIONS §14.1).
 - **Debug.** `S.charm()` turns the nearest projection into an ally. A practice that does this is a later design (named through the lore skill, with the owner).
 
 ## 5. What did not change

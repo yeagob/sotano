@@ -6,10 +6,12 @@ import { pal } from '../content/palette';
 import type { Stats } from '../core/stats';
 import type { IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import type { Polarity } from './polarity';
 
-export function intentFromStats(s: Stats): IntentSpec {
+export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
   return {
     damage: s.damage,
+    polarity,
     mining: s.mining,
     knock: 0.46,
     speed: 16 * s.shotSpeed,
@@ -18,12 +20,20 @@ export function intentFromStats(s: Stats): IntentSpec {
     radius: 0.12 * s.size,
     pierce: 0,
     pierceTier: 0,
-    color: pal('light.gold'), // the shell; items may tint it, the core always stays white-hot
+    // the shell; items may tint it. A negative intention is your light charred: an ash shell (never
+    // cold, which is the projections'); its core and halo dim in draw() (docs/art/DECISIONS.md §7.1)
+    color: polarity === 'negative' ? pal('ink.ash') : pal('light.gold'),
     tags: new Set(),
   };
 }
 
 interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number }
+
+/** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
+const CORE_POSITIVE = new THREE.Color(pal('light.core'));
+const CORE_NEGATIVE = new THREE.Color(pal('light.ember'));
+/** The negative halo's strength relative to the positive one (additive, so colour × strength). */
+const HALO_NEGATIVE = 0.6;
 
 export interface IntentHooks {
   solid(x: number, y: number, z: number): boolean;
@@ -35,8 +45,8 @@ export interface IntentHooks {
   debrisAt(x: number, y: number, z: number, r: number): number;
   /** Something hit a loose cube with this velocity. */
   hitDebris(i: number, vel: THREE.Vector3, intent: IntentSpec): void;
-  /** Actor id of an enemy touching this sphere, or -1. */
-  enemyAt(x: number, y: number, z: number, r: number): number;
+  /** Actor id of an enemy this intention meets at this sphere, or -1 (allies let positive ones pass when healthy). */
+  enemyAt(x: number, y: number, z: number, r: number, polarity: Polarity): number;
   hitEnemy(id: number, vel: THREE.Vector3, intent: IntentSpec): void;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
   /** The element at a point ('water' slows an intention, 'lava' puts it out), or null. */
@@ -64,10 +74,13 @@ export class Intents {
       scene.add(m);
       return m;
     };
-    this.core = inst(new THREE.MeshBasicMaterial({ color: pal('light.core') }));
+    // core and halo take a per-instance colour so polarity costs no extra draw call
+    this.core = inst(new THREE.MeshBasicMaterial());
+    this.core.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
     this.mesh = inst(new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.6, depthWrite: false }));
     this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
     this.halo = inst(new THREE.MeshBasicMaterial({ color: pal('light.ember'), transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+    this.halo.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
   }
 
   get count() { return this.list.length; }
@@ -94,7 +107,7 @@ export class Intents {
 
       // against loose cubes: push them
       // against projections: damage and knock them back
-      const foe = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius);
+      const foe = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius, t.spec.polarity);
       if (foe >= 0) {
         h.hitEnemy(foe, t.vel, t.spec);
         h.splash(t.pos, t.spec.color, true);
@@ -132,13 +145,21 @@ export class Intents {
       this.m.makeScale(r, r, r).setPosition(t.pos);
       this.mesh.setMatrixAt(n, this.m);
       this.mesh.setColorAt(n, this.c.setHex(t.spec.color));
+      // polarity is carried by the core and the halo, so an item that tints the shell never hides it:
+      // positive is white-hot in a full ember halo; negative is a banked ember in a dimmer one
+      const neg = t.spec.polarity === 'negative';
       this.m.makeScale(r * 0.55, r * 0.55, r * 0.55).setPosition(t.pos);
       this.core.setMatrixAt(n, this.m);
+      this.core.setColorAt(n, neg ? CORE_NEGATIVE : CORE_POSITIVE);
       this.m.makeScale(r * 2.4, r * 2.4, r * 2.4).setPosition(t.pos);
       this.halo.setMatrixAt(n, this.m);
+      this.halo.setColorAt(n, this.c.setScalar(neg ? HALO_NEGATIVE : 1));
       n++;
     }
-    for (const m of [this.mesh, this.core, this.halo]) { m.count = n; m.instanceMatrix.needsUpdate = true; }
-    if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
+    for (const m of [this.mesh, this.core, this.halo]) {
+      m.count = n;
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
   }
 }

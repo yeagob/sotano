@@ -48,6 +48,12 @@
     .counter .ico { width: 20px; height: 20px; background: no-repeat center/contain; image-rendering: pixelated; }
     .ico.bomb { background-image: var(--ico-seed); }
     .ico.key { background-image: var(--ico-key); }
+    /* the loaded intention (F): a round mark, the same size and place in both states; static, never flickers.
+       Positive: a filled gold disc. Negative: an ember ring round an ink centre (shape first, value confirms).
+       The 1 px ink outline keeps it readable over any floor or the sky, like the counters' text outline. */
+    #polarity { width: 14px; height: 14px; margin: 4px 0 2px 3px; border-radius: 50%; border: 2px solid var(--pol); background: var(--pol);
+      box-shadow: 0 0 0 1px var(--ui-line); }
+    #polarity[data-polarity="negative"] { background: var(--ui-line); }
     #items { display: flex; flex-wrap: wrap; gap: 3px; max-width: 220px; margin-top: 8px; }
     #items img { width: 28px; height: 28px; }
 
@@ -173,6 +179,7 @@
     <div id="breath"></div>
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
+    <div id="polarity" data-polarity="positive"></div>
     <div id="items"></div>
   </div>
   <div id="hand"></div>
@@ -191,6 +198,7 @@
         <tr><td data-i18n="controls.look.key">Mouse</td><td data-i18n="controls.look">look</td></tr>
         <tr><td data-i18n="controls.move.key">WASD · Space</td><td data-i18n="controls.move">move · jump</td></tr>
         <tr><td data-i18n="controls.cast.key">Left click (hold)</td><td data-i18n="controls.cast">cast intentions</td></tr>
+        <tr><td data-i18n="controls.polarity.key">F</td><td data-i18n="controls.polarity">switch the intention: positive mends, negative harms</td></tr>
         <tr><td data-i18n="controls.pickup.key">Walk over</td><td data-i18n="controls.pickup">pick up a loose block (or kick it if your hand is full)</td></tr>
         <tr><td data-i18n="controls.place.key">Right click</td><td data-i18n="controls.place">place the top block (throws it if there's nowhere to place it)</td></tr>
         <tr><td data-i18n="controls.throw.key">Q</td><td data-i18n="controls.throw">throw the top block</td></tr>

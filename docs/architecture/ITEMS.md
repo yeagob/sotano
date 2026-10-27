@@ -83,12 +83,12 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 
 | Event | Hooks can change | Emitted when |
 |---|---|---|
-| `fire` | the whole `IntentSpec` (damage, pierce, pierceTier, colour…), or cancel | casting |
+| `fire` | the whole `IntentSpec` (damage, `polarity`, pierce, pierceTier, colour…), or cancel | casting |
 | `blockDamage` | `amount`, or cancel | any damage to a block (intent, explosion, crush, contact…) |
 | `blockBreak` | `spawnDebris`, or cancel | a block reaches 0 HP (`source` says who broke it) |
 | `blockPlace` | `material` (swap what gets placed), or cancel | placing the top block of your hand |
 | `touchBlock` | `crush` (shatter it or not) | the player walks into a solid block |
-| `strike` | `damage`, `mining`, `reach`, `tags`, `color`, or cancel | a weapon that replaces the intention acts (once per swing, beam or sweep; [WEAPONS.md](WEAPONS.md)) |
+| `strike` | `damage`, `mining`, `reach`, `tags`, `color`, or cancel; `polarity` is read-only (every hit of the stroke follows it) | a weapon that replaces the intention acts (once per swing, beam or sweep; [WEAPONS.md](WEAPONS.md)) |
 | `headBump` | `breaks` (break it or not) | the player's head hits a solid block while jumping (once per block above) |
 | `explosion` | `radius`, `damage`, or cancel | anything explodes |
 | `touchCube` | `action`: `'pickup'`, `'kick'` or `'ignore'` | walking into a loose cube (pre-filled from `carry`) |
@@ -103,12 +103,13 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
-| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is) | anything hurting the player or a projection |
+| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |
 | `death` | cancel (survive) | the player reaching 0 hearts |
 | `actorDeath` *(target required)* | `drops` (react otherwise) | an actor is gone |
-| `factionChange` | — (react) | an actor changed side (e.g. a projection became an ally) |
+| `factionChange` | — (react) | an actor changed side (e.g. a projection became an ally, through polarity or a charm) |
+| `polarityChange` | — (react) | the player switched the loaded intention between positive and negative with **F** |
 | `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
 | `roomClear` | `drops` | a room cleared |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |

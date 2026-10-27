@@ -893,3 +893,16 @@ On 2026-10-26 the owner accepted **every recommendation in §13** without change
 | Q14 | Optional bloom as a High setting: **later**; never in review captures |
 
 **Done:** phase 0 (palette, source-scan test at zero, gallery v1) and every phase B/C item that fits today's renderer (ART-GUIDE §15). **Next:** phase A, after the three-party review of its architecture decisions.
+
+### 14.1 Intention polarity (art ruling, 2026-10-27; OWNER to confirm the colour)
+
+Set by the dedicated art agent (Opus 5.5) for [BESTIARY §1.1](../design/BESTIARY.md#11-intention-polarity-owner-2026-10-27), built in [reviews/polarity.md](../reviews/polarity.md). The owner confirms or changes the colours.
+
+- **Both polarities are round and warm.** No `cold.*` on any player intention, mark or trail: cold is the projections' (§3.12.3).
+- **Positive:** unchanged (`light.gold` shell, `light.core` core).
+- **Negative:** shell `ink.ash` (your light charred), core `light.ember` (banked, not white-hot), halo `light.ember` at 0.6 of the positive strength. Its impacts throw ash chips. The core and halo carry the polarity, so a shell tint from an item never hides it. This is the one allowed exception to "the core never changes".
+- **HUD mark:** positive is a filled `light.gold` disc; negative is a 2 px `light.ember` ring round an `ink.void` centre. Both are 14 px with a 1 px `ink.void` outline and never animate.
+- **Warming a projection:** its warmth is captive light, `captive.ember` × 0.35 × warmth on the body's emissive. Never `light.*` (gold on a living projection would read as an ally). At the highest warmth a hostile can show (0.8), it stays under half the dimmest ally glow.
+- **Allies:** a steady `light.ember` glow × 0.25 × (0.5 + 0.5 × hp/maxHp).
+
+Not verified by capture: an intention in flight (the pane does not take pointer lock, and `?gallery` has no intention section), the warming tint, the ally glow, and CVD captures. Values come from the palette and the Machado script.

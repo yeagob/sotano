@@ -37,6 +37,8 @@ export const ES: Catalog = {
     'controls.restart': 'nueva partida',
     'controls.pause.key': 'Esc',
     'controls.pause': 'soltar el ratón (pausa)',
+    'controls.polarity.key': 'F',
+    'controls.polarity': 'cambiar la intención: la positiva sana, la negativa daña',
 
     'hud.floor': 'Piso {n}',
     'seed.label': 'Semilla {seed}',
@@ -59,6 +61,12 @@ export const ES: Catalog = {
     'toast.chestUnlocked': 'Cofre abierto · llaves gastadas: {n}',
     'toast.wayDown': 'Se abre un camino hacia abajo',
     'toast.holeWait': 'El suelo tiembla bajo tus pies: apártate y se abrirá',
+    'toast.polarityPositive': 'Intención positiva: sana',
+    'toast.polarityNegative': 'Intención negativa: daña',
+    'toast.converted': 'Una proyección se vuelve a tu lado',
+    'toast.relapsed': 'Un aliado vuelve a ser hostil',
+    'hud.polarity.positive': 'Intención positiva (F para cambiar)',
+    'hud.polarity.negative': 'Intención negativa (F para cambiar)',
 
     'death.title': 'La intención se apagó',
     'death.cause': 'En el piso {n}, {cause} te retuvo.',

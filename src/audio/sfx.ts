@@ -138,6 +138,12 @@ export const sfx3 = {
   seal: () => { noise(0.4, 0.3, 120, 0.8); tone(70, 0.4, 'sawtooth', 0.08, 0.8); },
   clear: () => [392, 523, 659].forEach((f, i) => setTimeout(() => tone(f, 0.22, 'triangle', 0.14), i * 110)),
   rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
+  /** The loaded intention switches (F): a short tick, rising to positive, falling to negative. */
+  polarity: (negative: boolean) => tone(negative ? 360 : 620, 0.09, 'triangle', 0.14, negative ? 0.7 : 1.5),
+  /** A projection turns to your side: a warm, rising pair. */
+  converted: () => { tone(523, 0.14, 'sine', 0.14); setTimeout(() => tone(784, 0.2, 'sine', 0.14), 110); },
+  /** An ally turns hostile again: a cold, falling pair. */
+  relapsed: () => { tone(330, 0.16, 'triangle', 0.16, 0.6); setTimeout(() => tone(220, 0.25, 'triangle', 0.14, 0.7), 110); },
   judge: () => tone(880, 0.12, 'sawtooth', 0.06, 0.5),
   death: () => [392, 330, 262, 196].forEach((f, i) => setTimeout(() => tone(f, 0.4, 'sine', 0.2), i * 220)),
   /** The boss's practice appears: a rising, open chord. */
