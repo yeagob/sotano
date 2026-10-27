@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import type { PickupKind } from '../game/events';
 import type { ItemDef } from '../items/types';
+import { pal } from '../content/palette';
 import { glowTexture, iconTexture } from '../render/icons';
 
 export type PickupType = PickupKind | 'item';
@@ -20,10 +21,15 @@ export interface Pickup {
   taken: boolean;
   /** Can't be collected yet (just dropped). */
   delay: number;
+  /** Seconds since it appeared (drives the pop-in). */
+  age: number;
   obj: THREE.Object3D;
 }
 
 type Solid = (x: number, y: number, z: number) => boolean;
+
+/** Seconds a pickup takes to grow into view. */
+const POP_IN = 0.45;
 
 function box(g: THREE.Group, m: THREE.Material, w: number, h: number, d: number, x: number, y: number, z = 0) {
   const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
@@ -33,9 +39,9 @@ function box(g: THREE.Group, m: THREE.Material, w: number, h: number, d: number,
 
 function keyMesh(): THREE.Object3D {
   const g = new THREE.Group();
-  const m = new THREE.MeshLambertMaterial({ color: 0xf2c84b, emissive: 0x4a3505 });
-  const eye = new THREE.MeshBasicMaterial({ color: 0x9fd3ff });
-  // a key built from cubes, with an "eye" in the bow: an insight
+  // a key with an eye (an insight): gold body, brass shade, a white-hot eye (docs/art/DECISIONS.md §10.2)
+  const m = new THREE.MeshLambertMaterial({ color: pal('light.gold'), emissive: pal('brass.dark') });
+  const eye = new THREE.MeshBasicMaterial({ color: pal('light.core') });
   box(g, m, 0.32, 0.08, 0.08, 0, 0.36); box(g, m, 0.32, 0.08, 0.08, 0, 0.12);
   box(g, m, 0.08, 0.32, 0.08, -0.12, 0.24); box(g, m, 0.08, 0.32, 0.08, 0.12, 0.24);
   box(g, eye, 0.1, 0.1, 0.1, 0, 0.24);
@@ -46,18 +52,21 @@ function keyMesh(): THREE.Object3D {
 
 function bombMesh(): THREE.Object3D {
   const g = new THREE.Group();
-  const shell = new THREE.MeshLambertMaterial({ color: 0x2a2233, emissive: 0x120c18 });
-  const glow = new THREE.MeshBasicMaterial({ color: 0xffb347 });
-  box(g, shell, 0.34, 0.34, 0.34, 0, 0.17);
-  box(g, glow, 0.36, 0.06, 0.06, 0, 0.2);
-  box(g, glow, 0.06, 0.06, 0.36, 0, 0.12);
-  box(g, glow, 0.06, 0.14, 0.06, 0, 0.4);
+  // a breakthrough is a seed, never a cartoon bomb: a dark husk split by ember cracks, a white-hot heart
+  const shell = new THREE.MeshLambertMaterial({ color: pal('mat.seed.base'), emissive: pal('ink.void') });
+  const ember = new THREE.MeshBasicMaterial({ color: pal('light.ember') });
+  const heart = new THREE.MeshBasicMaterial({ color: pal('light.core') });
+  box(g, shell, 0.3, 0.34, 0.3, 0, 0.17);
+  box(g, shell, 0.22, 0.08, 0.22, 0, 0.38);
+  box(g, ember, 0.32, 0.04, 0.04, 0, 0.22);
+  box(g, ember, 0.04, 0.2, 0.32, 0.02, 0.16);
+  box(g, heart, 0.08, 0.08, 0.32, 0, 0.17);
   return g;
 }
 
 function heartMesh(): THREE.Object3D {
   const g = new THREE.Group();
-  const m = new THREE.MeshLambertMaterial({ color: 0xe0303c, emissive: 0x3a0508 });
+  const m = new THREE.MeshLambertMaterial({ color: pal('life.heart'), emissive: pal('life.dark') });
   // a pixel heart, 5 columns × 4 rows of small cubes
   const rows = ['.X.X.', 'XXXXX', '.XXX.', '..X..'];
   rows.forEach((r, j) => [...r].forEach((c, i) => { if (c === 'X') box(g, m, 0.08, 0.08, 0.1, (i - 2) * 0.08, 0.36 - j * 0.08); }));
@@ -77,6 +86,11 @@ function pedestalItem(def: ItemDef | null): THREE.Object3D {
   return g;
 }
 
+/** The mesh of a key, bomb (seed) or heart, as the game draws it (the gallery uses it too). */
+export function pickupMesh(type: PickupKind): THREE.Object3D {
+  return type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : heartMesh();
+}
+
 export class Pickups {
   readonly list: Pickup[] = [];
   private group = new THREE.Group();
@@ -90,7 +104,8 @@ export class Pickups {
     const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : pedestalItem(item);
     obj.position.set(x, y, z);
     this.group.add(obj);
-    const p: Pickup = { type, x, y, z, vy: type === 'item' ? 0 : 3, room, item, taken: false, delay, obj };
+    const p: Pickup = { type, x, y, z, vy: type === 'item' ? 0 : 3, room, item, taken: false, delay, age: 0, obj };
+    obj.scale.setScalar(0.001);
     this.list.push(p);
     return p;
   }
@@ -105,6 +120,12 @@ export class Pickups {
     for (const p of this.list) {
       if (p.taken) continue;
       p.delay = Math.max(0, p.delay - dt);
+      if (p.age < POP_IN) {
+        // pop in: grow with a small overshoot (ease-out-back)
+        p.age = Math.min(POP_IN, p.age + dt);
+        const k = p.age / POP_IN - 1;
+        p.obj.scale.setScalar(Math.max(0.001, 1 + 2.2 * k * k * k + 1.2 * k * k));
+      }
       if (p.type !== 'item') {
         // fall until resting on something solid (re-checked every frame: the floor may break)
         const below = solid(Math.floor(p.x), Math.floor(p.y - 0.01), Math.floor(p.z));

@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Siddhartha (Hermann Hesse): "I can think, I can wait, I can fast"',
   pools: { treasure: 1 },
   tags: ['mind', 'will'],
-  color: 0x6fa8a0,
+  color: pal('path.mind.glow'),
   quality: 2,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '............',
       '............',
     ],
-    palette: { a: 0xc9f3fa, b: 0x6fa8a0, c: 0x2a6a7a },
+    palette: { a: pal('bone.paper'), b: pal('iron.hi'), c: pal('rock.f2.hi') },
   },
   stats: [
     { stat: 'range', layer: 'mul', value: 1.25 },

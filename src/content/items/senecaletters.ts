@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,24 +9,24 @@ export default defineItem({
   inspiredBy: 'Seneca, Moral Letters to Lucilius (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'body', 'blocks'],
-  color: 0xc0392b,
+  color: pal('path.will.glow'),
   quality: 4,
   icon: {
     rows: [
-      '............',
-      '............',
-      'aaaaaaaaaaaa',
-      'abbbbbbbbbba',
-      'abbbbbbbbbba',
-      'aabbbbbbbbaa',
-      'abaabbbbaaba',
-      'abbbaccabbba',
-      'abbbbccbbbba',
-      'abbbbbbbbbba',
-      'aaaaaaaaaaaa',
+      '..aaaaaaaa..',
+      '.abbbbbbbba.',
+      '..abbbbbba..',
+      '..abccccba..',
+      '..abbbbbba..',
+      '..abccccba..',
+      '..abbbbbba..',
+      '..abccbbba..',
+      '..abbbbdda..',
+      '.abbbbbddba.',
+      '..aaaaaaaa..',
       '............',
     ],
-    palette: { a: 0x8a6d3b, b: 0xf3e7c9, c: 0xc0392b },
+    palette: { a: pal('brass.base'), b: pal('sky.horizon'), c: pal('rock.f1.dark'), d: pal('path.will.glow') },
   },
   stats: [
     { stat: 'carry', layer: 'add', value: 3 },

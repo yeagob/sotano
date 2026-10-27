@@ -4,13 +4,13 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 
 ## 1. Stacked floors (`world/floor.ts`)
 
-- One `VoxelWorld` (119 × 72 × 77) holds the whole dungeon: **4 floors on 16-block bands**, deep rock and bedrock below, dirt, grass and sky above.
+- One `VoxelWorld` (119 × 268 × 77) holds the whole dungeon: **10 floors (0–9) on 16-block bands** ([LEVELS.md](LEVELS.md)), deep rock and bedrock below, dirt, grass and **100 blocks of open sky** above (`SKY_LIMIT`: the build limit). Above floor 0's band, `bandOf` returns `SURFACE` (−1) to the structure, and `depthOf` returns **0** to anything that asks how deep you are (the surface counts as depth 0).
   - Floor *k* (1 = top) has its room interiors at `floorY(k) = 8 + (4 − k) · 16`: 56, 40, 24, 8. `bandOf(y)` maps a height to its floor.
   - Rock between floors gets harder with depth: stone and dirt (floors 1–2), stone and deepstone (3), deepstone and obsidian (4).
 - `createDungeonWorld(seed)` fills the whole column once per run. `carveFloor(world, rng, k, opts)` carves one floor with **per-floor RNG streams** (`floor<k>:plan`, `:rooms`, `:loot`, `:enemies`), so a floor's layout never depends on when it was carved. Pedestal items are drawn at carve time, so a seed always gives the same items.
 - **One floor ahead**: floor 1 and 2 are carved at run start; floor *k+1* is carved when you arrive on floor *k*. You can never dig into a band that will be overwritten later.
 - **Activation = "the next floor loads"**: when you enter floor *k*'s boss room, floor *k+1* is activated (its doors, pedestals and keys appear). Digging into a deeper band also activates it.
-- **Going down by gravity**: floor *k+1*'s plan starts **right under floor *k*'s boss room** (`generatePlan(rng, opts, startCell)`, with a fallback that relaxes the room count for edge and corner starts). 1.5 s after entering the boss room (there's no boss yet), a **2×2 shaft** opens from the boss room floor straight into the start room below. You walk in and fall; `land` fires with `cause: 'descent'`.
+- **Going down by gravity**: floor *k+1*'s plan starts **right under floor *k*'s boss room** (`generatePlan(rng, opts, startCell)`, with a fallback that relaxes the room count for edge and corner starts). 1.5 s after entering the boss room (there's no boss yet, so it counts as overcome), two things happen: the **boss's practice** appears on the room's pedestal (reserved at run start from the `boss` pool, popping in with light and a chime), and a **2×2 shaft** opens from the boss room floor straight into the start room below. During those 1.5 s the four floor blocks over the shaft show real crack stages (the telegraph). **The floor never opens under the player**: while you stand or hover over the 2×2, it waits, trickling dust, and a toast tells you to step aside; it opens the moment you step off. You walk in and fall; `land` fires with `cause: 'descent'`.
 - **Depth**: `depth` is the band you're in now; `maxDepth` the deepest reached. `floorEnter` fires only when going deeper (climbing back up and dropping again doesn't re-trigger it). On `floorEnter` the deferred chain-reaction queue is cleared.
 - **Room ids are global**: `floor × 100 + index`. One `Doors` and one `Pickups` hold every activated floor; floors above keep their state.
 - Rendering only draws chunk rows within ±22 blocks of the eye; fog switches to sky colours near `SURFACE_Y` (71).
@@ -98,4 +98,6 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 |---|---|
 | M2 | Enemy-owned hooks (Comparison mirrors your intentions), installed as `actor:<id>` |
 | M2 | Procrastination (splits on death), Perfectionism (armour shell), bosses made of breakable voxels |
+
+Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |

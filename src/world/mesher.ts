@@ -26,10 +26,19 @@ export interface MeshData {
   indices: Uint32Array;
 }
 
-/** `padded` is a (size+2)³ cube with the chunk in the middle and a 1-voxel border from its neighbours. */
-export function meshChunk(padded: Uint8Array, size: number): MeshData {
+/** Warm glow baked on faces lit by lava or fire (until block light lands, art guide §8). */
+const GLOW: [number, number, number] = [0.75, 0.32, -0.1];
+
+/** `padded` is a (size+2)³ cube with the chunk in the middle and a 1-voxel border from its neighbours.
+ *  `elem`, the same cube of the element layer, bakes a warm glow on faces next to lava or fire. */
+export function meshChunk(padded: Uint8Array, size: number, elem?: Uint8Array): MeshData {
   const P = size + 2;
   const at = (x: number, y: number, z: number) => padded[(x + 1) + P * ((y + 1) + P * (z + 1))];
+  const lit = (x: number, y: number, z: number) => {
+    if (!elem || x < -1 || y < -1 || z < -1 || x > size || y > size || z > size) return 0;
+    const k = elem[(x + 1) + P * ((y + 1) + P * (z + 1))] >> 6;
+    return k === 2 ? 1 : k === 3 ? 0.8 : 0;
+  };
   const occ = (x: number, y: number, z: number) => (at(x, y, z) !== AIR ? 1 : 0);
 
   const pos: number[] = [], uv: number[] = [], col: number[] = [], idx: number[] = [];
@@ -43,6 +52,10 @@ export function meshChunk(padded: Uint8Array, size: number): MeshData {
       if (at(fx, fy, fz) !== AIR) continue;
       const tile = tileFor(m, f);
       const v0 = pos.length / 3;
+      // light from an element in the cell in front of the face, or one step beyond it
+      let g = lit(fx, fy, fz);
+      if (elem && g < 1) for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]])
+        g = Math.max(g, lit(fx + dx, fy + dy, fz + dz) * 0.55);
       const ao: number[] = [];
       for (const [a, b] of CORNERS) {
         const cx = F.base[0] + a * F.u[0] + b * F.v[0];
@@ -61,7 +74,7 @@ export function meshChunk(padded: Uint8Array, size: number): MeshData {
         const level = s1 && s2 ? 0 : 3 - (s1 + s2 + c);
         ao.push(level);
         const l = AO_CURVE[level] * F.shade;
-        col.push(l, l, l);
+        col.push(l + g * GLOW[0], l + g * GLOW[1], l + g * GLOW[2]);
       }
       // flip the quad diagonal so the occlusion does not look anisotropic
       if (ao[0] + ao[2] < ao[1] + ao[3]) idx.push(v0 + 1, v0 + 2, v0 + 3, v0 + 1, v0 + 3, v0);

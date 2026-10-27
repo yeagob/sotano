@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Socratic questioning (cognitive behavioural therapy)',
   pools: { treasure: 1 },
   tags: ['mind'],
-  color: 0x9fd3ff,
+  color: pal('path.mind.glow'),
   quality: 1,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.....aa.....',
       '............',
     ],
-    palette: { a: 0x9fd3ff },
+    palette: { a: pal('sky.day') },
   },
   messages: { lock: 'The lock gives way to a good question' },
   onGain(api) { api.collect('key', 2); },

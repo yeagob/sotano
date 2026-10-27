@@ -13,6 +13,12 @@ export const DEBRIS_LIFETIME = 90;   // seconds until it despawns
 export const DEBRIS_BLINK = 8;       // blinks for the last seconds
 export const HOP = 8.5;              // launch speed of a hop over an obstacle (apex ~1.4 blocks)
 export const HOP_COOLDOWN = 0.7;     // seconds between hops, so a cube pinned against a wall doesn't jitter
+/** Hops a cube gets before it gives up pushing into the same wall (reset when it is launched again):
+ *  a cube pinned in a corner never bounces forever. */
+export const HOPS = 4;
+
+/** A hop's launch speed, a little different every time (identical hops fall into identical loops). */
+const hopSpeed = () => HOP * (0.95 + fx.random() * 0.2);
 
 const G = 26;
 const HS = DEBRIS_SIZE / 2;
@@ -42,8 +48,9 @@ export class DebrisSystem {
   /** Seconds left on a bomb's fuse (0 = not a bomb). Bombs are pinned: never recycled, never age out. */
   readonly fuse: Float32Array;
   onFuse: FuseFn = () => {};
-  /** Seconds until this cube may hop again. */
+  /** Seconds until this cube may hop again, and hops it has left before it gives up. */
   private readonly hopT: Float32Array;
+  private readonly hopsLeft: Uint8Array;
   private cursor = 0;
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
@@ -68,6 +75,7 @@ export class DebrisSystem {
     this.tags = new Array(max).fill(null);
     this.fuse = new Float32Array(max);
     this.hopT = new Float32Array(max);
+    this.hopsLeft = new Uint8Array(max);
     this.stepped = new Uint8Array(max);
     this.unsettled = new Uint8Array(max);
   }
@@ -103,6 +111,7 @@ export class DebrisSystem {
     this.tags[i] = null;
     this.fuse[i] = 0;
     this.hopT[i] = 0;
+    this.hopsLeft[i] = HOPS;
     this.unsettled[i] = 1;
     return i;
   }
@@ -121,6 +130,7 @@ export class DebrisSystem {
     this.vel[i3] = vx; this.vel[i3 + 1] = vy; this.vel[i3 + 2] = vz;
     this.spin[i * 4 + 3] = spin;
     this.state[i] = MOVING;
+    this.hopsLeft[i] = HOPS;
   }
 
   /**
@@ -318,14 +328,14 @@ export class DebrisSystem {
         x = this.pos[i3];
         // a hop keeps most of the forward speed so a cube in a pit can climb out; while already
         // rising it slides up the wall with its speed intact; otherwise it bounces back
-        if (this.tryHop(i, vy)) { vy = HOP; vx *= 0.8; } else if (vy <= 0.5) vx *= -0.35;
+        if (this.tryHop(i, vy)) { vy = hopSpeed(); vx *= 0.8; vz += fx.spread(2); } else if (vy <= 0.5) { vx *= -0.35; vz += fx.spread(0.8); }
       }
       this.pos[i3] = x;
       let z = this.pos[i3 + 2] + vz * h;
       if (this.boxSolid(this.pos[i3], this.pos[i3 + 1], z)) {
         impact = Math.max(impact, Math.abs(vz));
         z = this.pos[i3 + 2];
-        if (this.tryHop(i, vy)) { vy = HOP; vz *= 0.8; } else if (vy <= 0.5) vz *= -0.35;
+        if (this.tryHop(i, vy)) { vy = hopSpeed(); vz *= 0.8; vx += fx.spread(2); } else if (vy <= 0.5) { vz *= -0.35; vx += fx.spread(0.8); }
       }
       this.pos[i3 + 2] = z;
       let y = this.pos[i3 + 1] + vy * h;
@@ -356,8 +366,9 @@ export class DebrisSystem {
 
   /** Starts a hop if the cube is not already rising and its cooldown is over. */
   private tryHop(i: number, vy: number): boolean {
-    if (vy > 0.5 || this.hopT[i] > 0) return false;
-    this.hopT[i] = HOP_COOLDOWN;
+    if (vy > 0.5 || this.hopT[i] > 0 || this.hopsLeft[i] === 0) return false;
+    this.hopT[i] = HOP_COOLDOWN * (0.8 + fx.random() * 0.4);
+    this.hopsLeft[i]--;
     return true;
   }
 
@@ -375,7 +386,8 @@ export class DebrisSystem {
         const nx = x + dx * d, ny = y + dy * d, nz = z + dz * d;
         if (this.boxSolid(nx, ny, nz)) continue;
         this.pos[i3] = nx; this.pos[i3 + 1] = ny; this.pos[i3 + 2] = nz;
-        this.vel[i3] = dx * 2; this.vel[i3 + 1] = Math.max(0, dy * 2); this.vel[i3 + 2] = dz * 2;
+        // pushed out the free way, with a random sideways nudge so two cubes never trade places forever
+        this.vel[i3] = dx * 2 + fx.spread(1.2); this.vel[i3 + 1] = Math.max(0, dy * 2) + fx.random(); this.vel[i3 + 2] = dz * 2 + fx.spread(1.2);
         this.state[i] = MOVING;
         return;
       }

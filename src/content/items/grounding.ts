@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Somatic grounding techniques',
   pools: { treasure: 1 },
   tags: ['body', 'contact'],
-  color: 0x4a5568,
+  color: pal('path.body.glow'),
   quality: 1,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '..b..bb..b..',
       '.b...b....b.',
     ],
-    palette: { a: 0x6fa83a, b: 0x8b5a2b },
+    palette: { a: pal('mat.grass.hi'), b: pal('mat.crate.base') },
   },
   stats: [{ stat: 'kick', layer: 'mul', value: 2 }],
 });

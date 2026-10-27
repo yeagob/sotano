@@ -9,6 +9,9 @@ import type { ActorId, ActorKind, Faction, Owner } from '../entities/actors';
 export type { Owner } from '../entities/actors';
 
 export type CubeAction = 'pickup' | 'kick' | 'ignore';
+/** How the player casts (docs/architecture/WEAPONS.md). `intent` is the default shot. */
+export type WeaponId = 'intent' | 'blade' | 'beam' | 'greatcut';
+export const WEAPON_IDS: readonly WeaponId[] = ['intent', 'blade', 'beam', 'greatcut'];
 export type PickupKind = 'key' | 'bomb' | 'heart';
 /** Where a chain reaction started and how many links deep it is (an explosion set off by an
  *  explosion has `gen + 1`). Chains stop at MAX_CHAIN_GEN. */
@@ -19,6 +22,10 @@ export interface GameEvents {
   // ── shooting ──
   /** On cast: the intention can be modified or the shot cancelled. */
   fire: { intent: IntentSpec };
+  /** A weapon that replaces the intention is about to act (a swing, a beam's release, a great cut).
+   *  `damage` (to each actor hit, per tick for the beam), `mining` (to blocks) and `reach` (blocks)
+   *  can be changed, or cancel to stop it. */
+  strike: { weapon: WeaponId; damage: number; mining: number; reach: number; color: number; tags: Set<string> };
 
   // ── blocks in the world ──
   /** Before damage is applied to a block. `amount` already accounts for the material's armor. */
@@ -31,12 +38,27 @@ export interface GameEvents {
   /** The player walked into a solid block. The core shatters it when `crush` is true
    *  (it starts as "tier ≤ the crush stat"; hooks may flip it either way). */
   touchBlock: { x: number; y: number; z: number; material: number; crush: boolean };
+  /** The player's head hit a solid block while jumping (once per block above). The core breaks it
+   *  when `breaks` is true (it starts as "tier ≤ the headbutt stat"; hooks may flip it). */
+  headBump: { x: number; y: number; z: number; material: number; speed: number; breaks: boolean };
   /** Something exploded. Radius and damage can be changed before blocks are hit.
    *  `damage` is for blocks, `actorDamage` (points) for every actor in range.
    *  Explosions are queued and run a few per frame; `cause` says which chain this one belongs to. */
   explosion: { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause };
   /** Loot rolled for a broken block (after the break). Hooks may add, remove or replace drops. */
   blockLoot: { x: number; y: number; z: number; material: number; source: string; drops: PickupKind[] };
+
+  // ── elements (docs/architecture/ELEMENTS.md §9) ──
+  /** Fire or lava is about to set a flammable block alight (the block burns away into a flame).
+   *  Cancel to keep it. `by` says what lit it. */
+  ignite: { x: number; y: number; z: number; material: number; by: 'fire' | 'lava' };
+  /** Two elements meet (`reaction` is a row of content/reactions.ts): the cell at (x, y, z) becomes
+   *  `result` (a material id; 0 = it is simply gone). Change it to another material, or cancel. */
+  materialReact: { x: number; y: number; z: number; reaction: string; result: number };
+  /** An actor's body went into an element (`depth`: 'feet' or 'head'). React only. */
+  elementEnter: { target: ActorId; targetKind: ActorKind; def: string; element: 'water' | 'lava' | 'fire'; depth: 'feet' | 'head' };
+  /** An actor's body left an element. React only. */
+  elementLeave: { target: ActorId; targetKind: ActorKind; def: string; element: 'water' | 'lava' | 'fire' };
 
   // ── loose cubes ──
   /** Walking into a loose cube. The core pre-fills `action` (pickup if your hand has room,

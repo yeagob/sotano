@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 /** Cube tag: explodes on its next hard impact. */
@@ -11,24 +12,24 @@ export default defineItem({
   inspiredBy: 'Psychomagic (Alejandro Jodorowsky); catharsis in psychodrama (J. L. Moreno)',
   pools: { treasure: 1 },
   tags: ['emotion', 'blocks', 'explosive'],
-  color: 0xff5a1f,
+  color: pal('path.emotion.glow'),
   quality: 3,
   icon: {
     rows: [
-      '............',
-      '.....a......',
-      '..a..a..a...',
-      '...a.b.a....',
-      '....bcb.....',
-      'aabbcccbbaa.',
-      '....bcb.....',
-      '...a.b.a....',
-      '..a..a..a...',
-      '.....a......',
-      '............',
-      '............',
+      'a..........a',
+      '.a........a.',
+      '..a......a..',
+      '...bbbbbb...',
+      '...bccccb...',
+      '...bccccb...',
+      '...bccccb...',
+      '...bccccb...',
+      '...bbbbbb...',
+      '..a......a..',
+      '.a........a.',
+      'a..........a',
     ],
-    palette: { a: 0xff5a1f, b: 0xffb347, c: 0xfff3c4 },
+    palette: { a: pal('path.will.glow'), b: pal('path.will.base'), c: pal('sky.horizon') },
   },
   causes: ['volatile'],
   stats: [{ stat: 'throw', layer: 'mul', value: 1.3 }],

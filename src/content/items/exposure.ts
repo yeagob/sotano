@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,24 +9,24 @@ export default defineItem({
   inspiredBy: 'Exposure therapy (cognitive behavioural therapy)',
   pools: { treasure: 1 },
   tags: ['emotion', 'body', 'contact'],
-  color: 0xb5651d,
+  color: pal('path.emotion.glow'),
   quality: 2,
   icon: {
     rows: [
-      '............',
-      '.aaaaaaaaaa.',
-      '.abbbbbcbbb.',
-      '.abbbbcbbbb.',
-      '.abbbccbbbb.',
-      '.abbcbbcbbb.',
-      '.abcbbbbcbb.',
-      '.acbbbbbbcb.',
-      '.abbbbbbbbc.',
-      '.abbbbbbbbb.',
+      '.........cc.',
+      '.aaaaaaa.cc.',
+      '.abbbbcb....',
+      '.abbbcbbb...',
+      '.abbccbbbba.',
+      '.abcbbcbbba.',
+      '.acbbbbcbba.',
+      '.abbbbbbcba.',
+      '.abbbbbbbca.',
+      '.abbbbbbbba.',
       '.aaaaaaaaaa.',
       '............',
     ],
-    palette: { a: 0x5e3d25, b: 0xb5651d, c: 0xffe08a },
+    palette: { a: pal('mat.crate.dark'), b: pal('path.will.base'), c: pal('brass.hi') },
   },
   // contact breaking is a core rule driven by the `crush` stat: -1 (none) + 1 = tier 0
   stats: [{ stat: 'crush', layer: 'add', value: 1 }],

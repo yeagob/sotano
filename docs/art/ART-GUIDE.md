@@ -455,3 +455,71 @@ Principle: **one grid, one light, one palette, one review screen. Every rule has
 12. **Floor order** earth, water, air, fire, and floor-1 lamps unlit until cleared? [yes]
 13. **Phase D motifs** (the surface tree, the side-view map): with the Tree-of-Life milestone, not now? [yes]
 14. **Optional bloom** as a High setting, later? [later]
+
+---
+
+## 15. As built (art pass, 2026-10-26)
+
+The owner asked to review every element of the game against this guide, fix whatever strayed, and put the captures here. This section is the record: what the build looks like now, what conforms, and what still waits for its phase. Captures come from the game and from `?gallery` (the deterministic review page, §13); regenerate them with the URLs given.
+
+### 15.1 What now follows the guide
+
+| Area | Now | Rule |
+|---|---|---|
+| **Colour sources** | Every colour is a palette token: **0 hex literals** outside `palette.ts` (there were 264). The ratchet test fails on any new one | §3, DECISIONS §12.6 |
+| **Blocks** | All 15 materials repainted from their ramps with the shape grammar: running-bond brick, stone plates, dirt clumps, deepstone strata, crates with a rope band (no X brace), obsidian facets, bedrock cobble without highlights, copper nuggets in ore, bevelled frames with rivets, a limestone pedestal, a seed for the breakthrough. Light from the top-left everywhere | §6.1, §6.2 |
+| **Cracks** | Cracks of light: an ink edge and a gold core whose intensity grows with the stage | §6.3 |
+| **Frames and doors** | "Bone frame" is now the **Obsidian frame** (with one long crack of captive light) and "Gilded frame" the **Brass frame**. Door leaves are built wood with vertical boards and iron bands at 16 texels per block; the boss door has a captive-light crack instead of a skull; the locked door a gold keyhole | §6.2, OWNER Q3 |
+| **Projections** | Doubt, the Lectern (Inner Critic) and Panic rebuilt to their final specs in whole texels: dark husks with a cold rim, the pale paper Lectern, one family eye (2 × 2 cold lights in dark sockets). No skin, no warm light, no true path hues. The hit flash is a short cold lift, never white; the telegraph brightens the tell toward cold white instead of tinting the body red. Panic swells in three steps; Doubt pauses to reconsider and reaches for you for 0.5 s before it can hurt (OWNER Q4). Their GPU memory is freed on release | §8, OWNER Q4 |
+| **Release** | Host chips fall and gold motes rise; no gore | §8.6 |
+| **Intentions** | A bead of light: white-hot core, gold shell, ember halo. Hostile projectiles are cold cubes tumbling on two axes, with cold chips on impact | §7.1, §7.2 |
+| **Pickups** | A gold key with an eye (an insight), the breakthrough as a seed (never a cartoon bomb), life's red heart | §10.2 |
+| **Hands** | Whole texels: skin tone `t3`, the knitted jumper from the house above (rib-knit, cuff band) and a thumb | §9 |
+| **Practices** | Every practice's colour is its primary path's glow; icon palettes use tokens and never life or cold (light only where the concept is light: Satori, Occam's Razor, Kiai). Satori is an open ensō; Tao Te Ching is a stream parting around a stone (no yin-yang); Box Breathing is one bold square; Stoic is tinted. Clashing silhouettes redrawn (Exposure, Gratitude, Symbolic Act, Letters from a Stoic, Deep Focus, Second Brain, Nothing Personal, Art Therapy) | §10.1, OWNER Q6 |
+| **HUD** | The cellar slate on every panel (bevel, chamfered corners, no radius); minimap top-right with glyph marks (house, hollow ◇, ▭, ▣) and cleared rooms in gold; toasts top-centre at 22 %; hearts, seed and key drawn from pixel strings; path chips carry their glyph (■ ● ◆ ▲); quality stars and ▲ in gold, ▼ in cold; the debug readout off by default (F3) | §10.2 |
+| **Gentleness** | No blinking hearts (invulnerable hearts are steady at 55 % with an outline); the last heart beats at 1.1 Hz; item flash peak 0.45 over 0.5 s with a 333 ms flash budget; hurt vignette `life.dark` at 0.35 | §10.4 |
+| **Death** | Night to ink, an ensō that does not close, "The intention faded", the pattern as the agent ("Panic held you") | §10.2, §10.5 |
+| **Tests** | `tests/art-content.test.ts`: ramps dark to light, a concept for every material, icon colours and namespaces, item colour = path glow, icon silhouettes IoU < 0.8, creatures on the texel grid with a cold tell, no warm/life/skin/path hues in projections, dark and pale husk values | DECISIONS §12.6 |
+
+### 15.2 Captures
+
+**Materials and cracks of light** (`?gallery=materials`)
+
+![Materials](img/built/gallery-materials.jpg)
+
+**Projections** on floor 1 and floor 4 backgrounds (`?gallery=enemies&angle=30`)
+
+![Projections](img/built/gallery-projections.jpg)
+
+**Practices** at ×2, ×3, ×5 and on black and white (`?gallery=items`)
+
+![Practices](img/built/gallery-items.jpg)
+
+**In the game:** a room with its doors (brass frame, padlock with a gold keyhole), crates and Doubt holding its value against the brick; the slate minimap top-right
+
+![A room](img/built/game-room.jpg)
+
+**The banner, Panic up close and the hands** (jumper, cuff, thumb)
+
+![Banner and Panic](img/built/game-banner-panic.jpg)
+
+**The intention, cracks of light on the wall and the HUD** (hearts, seed, key, toast at 22 %)
+
+![Intention and HUD](img/built/game-intention-hud.jpg)
+
+**Inventory** (slate, icons at ×3, path glyphs) and **death** (night, ensō, no red)
+
+![Inventory](img/built/game-inventory.jpg)
+
+![Death](img/built/game-death.jpg)
+
+### 15.3 What still waits for its phase
+
+These need the architecture of phases A and B, which goes through its own three-party review first (DECISIONS §12.9):
+
+- **One shading model** (unlit baked cubes, zero scene lights), the per-floor `FloorLook` and fog table, the sRGB vertex-colour fix: today the world and the creatures are still lit by scene lights.
+- **Block light** (BFS), the lantern, the clear wave, warm cleared rooms.
+- **`DataArrayTexture` atlas** with four variants per material, mipmaps and the mended (placed) layer with kintsugi seams; shards on loose and held blocks.
+- **The creature pipeline**: face frames swapped by UV, host-material skins, stepped 12 fps poses, joints at pivots, materialisation from room blocks, and each projection's motif sound.
+- **Fonts** (Pixelify Sans, Atkinson Hyperlegible Next: OWNER Q2) and the settings page (shake, flashes, FOV, UI scale, reduced motion, skin tone).
+- **The hexagram** on start, pause and death screens.

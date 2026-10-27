@@ -3,6 +3,8 @@
 // animation and the inventory window. Cached per item and scale.
 
 import * as THREE from 'three';
+import type { HudIcon } from '../content/hud-icons';
+import { palCss, PALETTE, PATHS, type PalToken } from '../content/palette';
 import type { ItemDef } from '../items/types';
 
 const cache = new Map<string, HTMLCanvasElement>();
@@ -20,7 +22,7 @@ export function iconCanvas(def: ItemDef, scale = 4): HTMLCanvasElement {
   const g = c.getContext('2d')!;
   const solid = (x: number, y: number) => y >= 0 && y < N && x >= 0 && x < N && rows[y][x] !== '.';
   // outline: any empty pixel next to a filled one
-  g.fillStyle = '#120d0a';
+  g.fillStyle = palCss('ink.line');
   for (let y = -1; y <= N; y++) for (let x = -1; x <= N; x++) {
     if (solid(x, y)) continue;
     if (solid(x - 1, y) || solid(x + 1, y) || solid(x, y - 1) || solid(x, y + 1)) g.fillRect((x + 1) * scale, (y + 1) * scale, scale, scale);
@@ -41,6 +43,38 @@ export function iconCanvas(def: ItemDef, scale = 4): HTMLCanvasElement {
 }
 
 export function iconDataUrl(def: ItemDef, scale = 4) { return iconCanvas(def, scale).toDataURL(); }
+
+/** A HUD glyph (src/content/hud-icons.ts) as a data URL, one canvas pixel per glyph pixel. */
+export function hudIconUrl(icon: HudIcon): string {
+  const h = icon.rows.length, w = icon.rows[0].length;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d')!;
+  icon.rows.forEach((r, y) => [...r].forEach((ch, x) => {
+    const tok = icon.palette[ch];
+    if (!tok) return;
+    g.fillStyle = palCss(tok); g.fillRect(x, y, 1, 1);
+  }));
+  return c.toDataURL();
+}
+
+/**
+ * The UI tokens of docs/art/DECISIONS.md §3.10, written as CSS variables on :root, plus every
+ * palette token as `--pal-<token>` and the HUD glyphs as `--ico-*`. Run once at boot; the
+ * stylesheet in index.html reads only these (no hex there).
+ */
+export function applyPaletteCss(icons: Record<string, HudIcon>) {
+  const s = document.documentElement.style;
+  for (const t of Object.keys(PALETTE) as PalToken[]) s.setProperty(`--pal-${t.replace(/\./g, '-')}`, palCss(t));
+  const ui: Record<string, PalToken> = {
+    'ui-text': 'bone.paper', 'ui-text-2': 'bone.dim', 'ui-faded': 'bone.faded', 'ui-panel': 'ink.panel', 'ui-line': 'ink.void',
+    'ui-bevel-hi': 'ink.bevel', 'ui-heart': 'life.heart', 'ui-gold': 'light.gold', 'ui-up': 'light.gold', 'ui-down': 'cold.body',
+    'ui-threat': 'cold.body', 'ui-night': 'ui.night',
+  };
+  for (const [k, t] of Object.entries(ui)) s.setProperty(`--${k}`, palCss(t));
+  for (const p of PATHS) s.setProperty(`--path-${p}`, palCss(`path.${p}.base` as PalToken));
+  for (const [k, icon] of Object.entries(icons)) s.setProperty(`--ico-${k}`, `url("${hudIconUrl(icon)}")`);
+}
 
 const texCache = new Map<string, THREE.CanvasTexture>();
 

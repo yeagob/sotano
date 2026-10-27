@@ -3,14 +3,23 @@
 // tests (problems fail the build). See the sotano-items skill for the rules it enforces.
 
 import { BASE_STATS, type StatName } from '../core/stats';
-import { ACTOR_EVENTS, type ItemDef, type SynergyDef } from './types';
+import { WEAPON_IDS } from '../game/events';
+import { ACTOR_EVENTS, type Effect, type ItemDef, type SynergyDef } from './types';
 
 export const PATHS = ['body', 'mind', 'emotion', 'will'] as const;
 const STATS = new Set(Object.keys(BASE_STATS) as StatName[]);
 const ID = /^[a-z][a-z0-9_]*$/;
 
-export function validateItem(d: ItemDef): string[] {
+function validateWeapon(d: Effect, at: string): string[] {
+  if (!d.weapon) return [];
   const e: string[] = [];
+  if (!WEAPON_IDS.includes(d.weapon.id)) e.push(`${at}: unknown weapon "${d.weapon.id}"`);
+  if (!(d.weapon.priority >= 0 && d.weapon.priority <= 999)) e.push(`${at}: weapon priority must be within 0..999`);
+  return e;
+}
+
+export function validateItem(d: ItemDef): string[] {
+  const e: string[] = validateWeapon(d, `item "${d.id}"`);
   const at = `item "${d.id}"`;
   if (!ID.test(d.id)) e.push(`${at}: id must be lowercase letters, digits or _`);
   if (!d.name?.trim()) e.push(`${at}: missing name`);
@@ -59,6 +68,7 @@ export function validateCatalogue(items: readonly ItemDef[], synergies: readonly
       suppressedBy.set(k, s.id);
     }
     for (const m of s.stats ?? []) if (!STATS.has(m.stat) || !Number.isFinite(m.value)) e.push(`${at}: bad stat modifier ${m.stat}`);
+    e.push(...validateWeapon(s, at));
   }
   return e;
 }

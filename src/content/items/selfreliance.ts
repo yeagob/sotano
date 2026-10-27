@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Ralph Waldo Emerson, Self-Reliance (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'intent'],
-  color: 0xf2c84b,
+  color: pal('path.will.glow'),
   quality: 4,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       'cccdddddddcc',
       'dddddddddddd',
     ],
-    palette: { a: 0xffd27a, b: 0xffffff, c: 0x9aa0aa, d: 0x4a5568 },
+    palette: { a: pal('brass.hi'), b: pal('bone.paper'), c: pal('iron.hi'), d: pal('rock.f2.base') },
   },
   stats: [
     { stat: 'fireRate', layer: 'mul', value: 2 },

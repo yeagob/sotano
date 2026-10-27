@@ -4,7 +4,7 @@
 
 Inspired by the block worlds of *Minecraft*, the runs and item synergies of *The Binding of Isaac*, and the knowledge-gated secrets of *Noita*. Open source, runs in the browser (WebGL), no install.
 
-> **Status: prototype M1.5.** Four stacked floors you descend by falling through the boss room, rooms sealed while projections (enemies) fight you, Isaac-style hearts, bombs and keys, 27 practices (items) with icons, a clear effect line, quality up to 4 and synergies, and an inventory window. Elements (fire, water, lava, chests, furnaces) are designed and planned, not built yet. Things marked *planned* are design, not code.
+> **Status: prototype M1.5.** Ten stacked floors, from the peaceful roots (a tutorial) down to the ninth circle, that you descend by falling through each last room; rooms sealed while projections (enemies) fight you, Isaac-style hearts, bombs and keys, 30 practices (items) with icons, a clear effect line, quality up to 4 and synergies, and an inventory window. Fire, water and lava are built; chests and furnaces are planned. The Tree-of-Life maps and the giant tree above are planned ([Levels](docs/design/LEVELS.md)). Things marked *planned* are design, not code.
 
 ---
 
@@ -15,7 +15,8 @@ The full index is [docs/README.md](docs/README.md). By block:
 ### Design — the game and what it means
 - [Game design document](docs/design/DESIGN.md) — pillars, loop, blocks and tiers, the block slot, dungeon structure, the Noita-style hidden world, scope, open questions.
 - [Story and metaphor](docs/design/STORY.md) — the premise, what every mechanic stands for, states of being, enemies as projections, practices named after real techniques and works, naming rules.
-- [Elements](docs/design/ELEMENTS.md) — fire, water, lava, mud, electricity, burning barrels, furnaces, chests *(planned)*.
+- [Elements](docs/design/ELEMENTS.md) — fire, water and lava *(built)*; mud, electricity, burning barrels, furnaces, chests *(planned)*.
+- [Levels](docs/design/LEVELS.md) — the thirteen floors *(direction)*, rooms with height and element rooms *(built)*.
 
 ### Architecture — how the code works
 - [Overview](docs/architecture/OVERVIEW.md) — module map, frame order, core systems, debug console, tests.
@@ -25,7 +26,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Actors and factions](docs/architecture/ACTORS.md) — the player and projections as actors, one damage pipeline, sides (allies), chain safety.
 - [Seeds and randomness](docs/architecture/RNG.md) — every run unique and replayable: seed codes, structure/runtime/cosmetic randomness, weighted tables.
 - [Localization](docs/architecture/LOCALIZATION.md) — English and Spanish: catalogs, content texts by id, item messages, live language switching.
-- [Elements plan](docs/architecture/ELEMENTS.md) — architecture and step-by-step plan for elements and containers.
+- [Elements](docs/architecture/ELEMENTS.md) — the element layer, flow, reactions, rendering, projections in the elements (built), and the plan for containers.
 
 ### Lore — references and cosmology
 - [Source library](docs/lore/SOURCES.md) — every book, tradition, technique, therapy and game the work draws on, with naming status and where it shows up.
@@ -47,7 +48,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 ## What you can do
 
 - **Play a unique run every time** — each run has a seed (shown as `ABCD EFGH` on the pause, inventory and death screens; click to copy a link). Layouts, room moods and decor, rock, projections, practices and rewards all come from it, and `?seed=ABCD-EFGH` replays a run exactly.
-- **Descend a stacked dungeon** — four floors, each 8–11 rooms built from hand-made templates and laid out Isaac-style (start, normal rooms, **treasure**, **boss** and sometimes a locked **vault**). Entering the boss room loads the next floor and opens a hole in the floor: you **fall** into the next one. Floors above remember what you broke. A minimap fills in as you go.
+- **Descend a stacked dungeon** — ten floors: the roots (floor 0) are a friend, with every door open, a lesson in each room and only gentle practices; then nine circles, each 8–11 rooms built from hand-made templates and laid out Isaac-style (start, normal rooms, **treasure**, **boss** and sometimes a locked **vault**). Entering the boss room loads the next floor, reveals the boss's practice on its pedestal and cracks open a hole in the floor (never under your feet): you **fall** into the next one. Up top you can build 100 blocks into the sky. Floors above remember what you broke. A minimap fills in as you go.
 - **Face projections** — Doubt (chases you), the Inner Critic (keeps its distance and lobs judgements) and Panic (rushes you and bursts). They **materialise from the centre of the room**, the doors seal, and they open again when every projection is gone.
 - **Survive** — Isaac-style hearts drawn in quarters (every point of damage counts), a moment of invulnerability after each hit, and a death screen when the intention fades.
 - **Use bombs ("breakthroughs")** — E drops one; it's a cube with a fuse you can kick, and it chains with other bombs.
@@ -56,7 +57,9 @@ The full index is [docs/README.md](docs/README.md). By block:
 - **Cast intentions** — your shot: straight for a moment, then it drops.
 - **Break anything** — every block has a tier, HP and armor; weak shots still do 10%, so everything breaks (except bedrock). Broken blocks drop nothing but themselves.
 - **Catch the debris** — broken blocks become cubes that tumble and pile up (thousands, smoothly). Walk over one to pick it up; with your hand full, you kick it. Carry more than one and the next shows in your other hand.
-- **Place and throw** — right click places the top block (or throws it if there's nowhere to place it); Q throws it.
+- **Place and throw** — right click places the top block (or throws it if there's nowhere to place it); Q throws it. A cube that flies into a projection hurts it, harder the harder the block (obsidian hits like two intentions).
+- **Wade, swim, burn** — water, lava and fire flow and react ([Elements](docs/design/ELEMENTS.md)): wade through shallow water, lose your footing in deep water (watch your breath), keep out of lava; water on lava makes obsidian, fire eats crates and goes out when its block breaks. Projections each live the elements their own way: Panic calms in water and goes off in fire.
+- **Explore rooms with height** — vaults and domes, galleries, bridges, terraces, pools and pits ([Levels](docs/design/LEVELS.md)).
 
 ### Practices (items)
 
@@ -89,6 +92,9 @@ The full index is [docs/README.md](docs/README.md). By block:
 | Art Therapy | ★★ | Placing blocks may heal you | Art therapy |
 | Thinking, Waiting, Fasting | ★★ | Range, longer recovery, luck | *Siddhartha* (Hesse) |
 | Follow the Omens | ★★ | Luck; every cleared room leaves a reward | *The Alchemist* (Coelho) |
+| Occam's Razor | ★★★★ | Your intentions become a blade of light that cuts every block in reach | Occam's razor; a wink at swords of light |
+| Kiai | ★★★★ | Your intentions become a charged beam that burns through blocks | Kiai (martial arts); a wink at charged beams |
+| Lion's Mane | ★★ | Jump ×2; break soft blocks with your head | The lion's mane mushroom; a wink at classic platformers |
 
 Every practice has a meaning (its description) and a plain **effect** line with numbers. Synergies: **Somatic Release**, **Compound Effect**, **Flooding**, and four **states of being** (Embodied, Lucid, Open-hearted, Resolute) for holding three practices of the same path. Details: [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names).
 
@@ -135,7 +141,7 @@ Then open http://localhost:5174. Every run gets a fresh seed; add `?seed=ABCD-EF
 
 ### Debug console
 
-Open the browser console and use `S`:
+**F3** toggles the debug readout. **`?gallery`** opens the art review page (materials, practices, projections, pickups, HUD, palette, with colour-blindness filters). Open the browser console and use `S`:
 
 ```js
 S.items                 // every item id

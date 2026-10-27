@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,16 +9,16 @@ export default defineItem({
   inspiredBy: 'Art therapy; the idea that making art transforms people',
   pools: { treasure: 1 },
   tags: ['emotion', 'body', 'blocks'],
-  color: 0xe88f4a,
+  color: pal('path.emotion.glow'),
   quality: 2,
   icon: {
     rows: [
       '............',
       '...aaaaaa...',
       '..abbbbbba..',
-      '.abcbbdbbba.',
-      '.abbbbbbeba.',
-      '.abfbbbbbba.',
+      '.abcbbcbbba.',
+      '.abbbbbbcba.',
+      '.abcbbbbbba.',
       '.abbbbbbba..',
       '..abbbaaa...',
       '...aaa.gg...',
@@ -25,7 +26,7 @@ export default defineItem({
       '......gg....',
       '............',
     ],
-    palette: { a: 0x6b4a2b, b: 0xe6d3b0, c: 0xe0303c, d: 0x5ad1e6, e: 0xf2c84b, f: 0x6fd36f, g: 0x8a6d3b },
+    palette: { a: pal('mat.dirt.base'), b: pal('sky.horizon'), c: pal('path.emotion.glow'), g: pal('brass.base') },
   },
   hooks: [
     hook('drop', (e, api) => {

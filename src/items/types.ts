@@ -11,7 +11,7 @@ import type { EventCtx } from '../core/events';
 import type { Rng } from '../core/rng';
 import type { StatLayer, StatName, Stats } from '../core/stats';
 import type { ActorId, ActorKind, Owner } from '../entities/actors';
-import type { GameBus, GameEvents, PickupKind } from '../game/events';
+import type { GameBus, GameEvents, PickupKind, WeaponId } from '../game/events';
 import type { Params } from '../i18n';
 
 /** What effects can do to the world. A small facade so items never depend on `Game`. */
@@ -85,6 +85,9 @@ export interface Effect {
   hooks?: HookSpec<any>[];
   /** Hooks to switch off while this is active, as "itemId.hookId". This is where exceptions live. */
   suppress?: string[];
+  /** Replaces how the player casts (docs/architecture/WEAPONS.md). The highest priority among held
+   *  items and active synergies wins (ties: the latest gained); items use 10, synergies 100. */
+  weapon?: { id: WeaponId; priority: number };
 }
 
 export type PoolName = 'treasure' | 'boss' | 'vault';

@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { mat } from '../materials';
 import { defineItem, hook } from '../../items/types';
 
@@ -14,7 +15,7 @@ export default defineItem({
   inspiredBy: 'Habit stacking (Atomic Habits, James Clear; Tiny Habits, BJ Fogg)',
   pools: { treasure: 1 },
   tags: ['will', 'blocks'],
-  color: 0xe05d5d,
+  color: pal('path.will.glow'),
   quality: 3,
   icon: {
     rows: [
@@ -31,7 +32,7 @@ export default defineItem({
       'cccccccccccc',
       '............',
     ],
-    palette: { a: 0xf6efe2, b: 0xc9b9a0, c: 0xe05d5d },
+    palette: { a: pal('bone.paper'), b: pal('bone.dim'), c: pal('path.will.glow') },
   },
   hooks: [
     hook('blockBreak', (e, api) => {

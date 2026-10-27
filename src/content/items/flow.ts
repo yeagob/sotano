@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -6,9 +7,9 @@ export default defineItem({
   description: 'Absorbed in the task, everything speeds up: move and cast faster.',
   effect: 'Movement speed +30%. Fire rate +0.5 per second.',
   inspiredBy: 'Flow (Mihaly Csikszentmihalyi)',
-  pools: { treasure: 1 },
+  pools: { treasure: 1, boss: 1 },
   tags: ['body', 'movement'],
-  color: 0x5ad1e6,
+  color: pal('path.body.glow'),
   quality: 2,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '............',
       '............',
     ],
-    palette: { a: 0x9fe8f5, b: 0x2a8ab0 },
+    palette: { a: pal('sky.day'), b: pal('path.emotion.base') },
   },
   stats: [
     { stat: 'moveSpeed', layer: 'add', value: 0.3 },

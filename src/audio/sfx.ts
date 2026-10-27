@@ -54,6 +54,8 @@ export const sfx = {
   kick: () => { noise(0.1, 0.5, 300, 1); tone(110, 0.12, 'sine', 0.4, 0.5); },
   place: () => { noise(0.08, 0.4, 500, 1.5); tone(200, 0.08, 'triangle', 0.2, 0.7); },
   denied: () => tone(160, 0.12, 'square', 0.12, 0.8),
+  /** A block breaks against your head: a dull knock and a little upward chirp. */
+  headbutt: () => { noise(0.12, 0.45, jitter(420), 1.2); tone(jitter(380), 0.14, 'square', 0.1, 1.9); },
 };
 
 export const sfx2 = {
@@ -63,6 +65,14 @@ export const sfx2 = {
   key: () => { tone(1320, 0.08, 'triangle', 0.15); setTimeout(() => tone(1760, 0.12, 'triangle', 0.15), 80); },
   item: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.18, 'triangle', 0.16), i * 90)),
   descend: () => { tone(330, 0.5, 'sine', 0.25, 0.3); noise(0.6, 0.2, 200, 0.7); },
+  /** Occam's Razor: a quick airy cut. */
+  swish: () => { noise(0.14, 0.35, jitter(2600), 1.4); tone(jitter(900), 0.1, 'sine', 0.08, 0.5); },
+  /** A charge is full: a small clear bell. */
+  charged: () => { tone(1175, 0.18, 'triangle', 0.12); setTimeout(() => tone(1568, 0.25, 'triangle', 0.1), 70); },
+  /** Kiai: the held breath let out, a warm sustained roar for the beam's second. */
+  beam: () => { tone(110, 1.0, 'sawtooth', 0.09, 0.9); tone(220, 1.0, 'sine', 0.14, 1.05); noise(1.0, 0.18, 700, 0.7); },
+  /** One Clear Cut: a deep, long sweep. */
+  greatcut: () => { noise(0.5, 0.5, 1400, 0.6); tone(160, 0.5, 'sawtooth', 0.1, 0.5); tone(80, 0.6, 'sine', 0.3, 0.6); },
 };
 
 export const sfx3 = {
@@ -77,4 +87,16 @@ export const sfx3 = {
   rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
   judge: () => tone(880, 0.12, 'sawtooth', 0.06, 0.5),
   death: () => [392, 330, 262, 196].forEach((f, i) => setTimeout(() => tone(f, 0.4, 'sine', 0.2), i * 220)),
+  /** The boss's practice appears: a rising, open chord. */
+  reveal: () => [392, 587, 784, 1175].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'sine', 0.12), i * 120)),
+  /** Water meets fire or lava: a hiss of steam (louder for a quench). */
+  hiss: (big: boolean) => { noise(big ? 0.6 : 0.3, big ? 0.35 : 0.18, jitter(5200), 0.7); if (big) tone(jitter(180), 0.3, 'sine', 0.08, 0.6); },
+  /** Something catches fire: a soft whump and a crackle. */
+  catch: () => { noise(0.25, 0.3, jitter(380), 0.9); setTimeout(() => noise(0.08, 0.15, jitter(3000), 3), 90); },
+  /** Into the water: a splash. */
+  splash: () => { noise(0.35, 0.35, jitter(900), 0.6); tone(jitter(240), 0.15, 'sine', 0.1, 0.5); },
+  /** Out of breath: a dull bubble. */
+  gulp: () => tone(jitter(150), 0.18, 'sine', 0.2, 1.8),
+  /** R: a soft breath out as the screen goes dark. */
+  restart: () => { tone(294, 0.6, 'sine', 0.14, 0.5); noise(0.5, 0.08, 500, 0.8); },
 };

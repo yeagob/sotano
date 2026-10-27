@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -6,9 +7,9 @@ export default defineItem({
   description: 'Weighty, steady intentions: more damage, and they drop hard.',
   effect: 'Damage +2. Intentions are 40% bigger and drop twice as fast.',
   inspiredBy: 'Marcus Aurelius, Meditations; Epictetus, Enchiridion',
-  pools: { treasure: 1 },
+  pools: { treasure: 1, boss: 1 },
   tags: ['will', 'intent'],
-  color: 0x8a8f99,
+  color: pal('path.will.glow'),
   quality: 2,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '..aaaaaaaa..',
       '............',
     ],
-    palette: { a: 0xe6e1d8, b: 0xb8b2a8, c: 0x8f897f },
+    palette: { a: pal('bone.paper'), b: pal('path.will.glow'), c: pal('path.will.dark') },
   },
   stats: [
     { stat: 'damage', layer: 'add', value: 2 },

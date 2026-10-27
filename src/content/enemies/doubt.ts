@@ -1,8 +1,11 @@
+import { pal } from '../palette';
 import { chase } from '../../enemies/behaviours';
-import { defineEnemy } from '../../enemies/types';
+import { defineEnemy, TX } from '../../enemies/types';
 
-// Self-doubt: slow, persistent, presses on you until you move on. A hunched grey figure
-// with hollow eyes and arms that hang.
+// Doubt, "Are you sure?" (docs/art/DECISIONS.md §8.8). It wants you to not fail; it keeps you
+// still because still is safe. Medium, dark husk, glyph "?": a hunched torso on a dragging sack of
+// stones, head hooked forward, forearms crossed over its chest (it holds its own elbows). One family
+// eye: 2×2 cold lights in dark sockets that can't hold your gaze. Units are texels (1/16 block).
 export default defineEnemy({
   id: 'doubt',
   name: 'Doubt',
@@ -14,17 +17,34 @@ export default defineEnemy({
   cost: 1,
   minFloor: 1,
   drops: { heart: 0.12, key: 0.04, bomb: 0.05 },
-  behaviour: chase({ lunge: 1.5 }),
+  behaviour: chase({ lunge: 1.5, hesitate: { every: 1.4, pause: 0.5 }, reach: 0.5 }),
+  // it keeps you still because still is safe: it won't follow you into your feelings (it walks
+  // around the water), and its sack of stones drags it down when it falls in
+  elements: { water: { path: 'avoid', speed: 0.35 } },
   model: [
-    { size: [0.62, 0.62, 0.36], pos: [0, 0.62, 0], color: 0x6c6f78 },               // torso
-    { size: [0.5, 0.5, 0.5], pos: [0, 1.17, 0.08], color: 0x80838c, tilt: 0.35, name: 'head' },
-    { size: [0.1, 0.08, 0.04], pos: [-0.11, 1.18, 0.34], color: 0x0b0b10, name: 'eye' },  // hollow eyes
-    { size: [0.1, 0.08, 0.04], pos: [0.11, 1.18, 0.34], color: 0x0b0b10, name: 'eye' },
-    { size: [0.04, 0.04, 0.02], pos: [-0.11, 1.18, 0.36], color: 0xbfc7ff, glow: true },
-    { size: [0.04, 0.04, 0.02], pos: [0.11, 1.18, 0.36], color: 0xbfc7ff, glow: true },
-    { size: [0.16, 0.58, 0.16], pos: [-0.4, 0.5, 0.04], color: 0x5c5f68, name: 'armL' },
-    { size: [0.16, 0.58, 0.16], pos: [0.4, 0.5, 0.04], color: 0x5c5f68, name: 'armR' },
-    { size: [0.2, 0.32, 0.2], pos: [-0.15, 0.16, 0], color: 0x4b4d55, name: 'legL' },
-    { size: [0.2, 0.32, 0.2], pos: [0.15, 0.16, 0], color: 0x4b4d55, name: 'legR' },
+    // sack of stones (root): what doubt carries
+    { size: [10 * TX, 4 * TX, 8 * TX], pos: [0, 2 * TX, -1 * TX], color: pal('husk.doubt.dark') },
+    { size: [10 * TX, TX, 8 * TX], pos: [0, 4.5 * TX, -1 * TX], color: pal('cold.rim') },
+    // torso, pitched 20° forward
+    { size: [8 * TX, 7 * TX, 6 * TX], pos: [0, 8 * TX, 0], color: pal('husk.doubt.base'), tilt: 0.35 },
+    // neck, the hook of the "?"
+    { size: [3 * TX, 4 * TX, 3 * TX], pos: [0, 12 * TX, 2.5 * TX], color: pal('husk.doubt.base'), tilt: 0.78 },
+    // head, 4 texels forward and tilted 25° down; its face and rim ride on it
+    { size: [9 * TX, 8 * TX, 8 * TX], pos: [0, 15 * TX, 5 * TX], color: pal('husk.doubt.hi'), tilt: 0.44, name: 'head' },
+    { size: [9 * TX, TX, 8 * TX], pos: [0, 4.5 * TX, 0], color: pal('cold.rim'), parent: 'head' },
+    { size: [3 * TX, 3 * TX, TX / 2], pos: [-2 * TX, 0.5 * TX, 4.25 * TX], color: pal('ink.void'), parent: 'head' },
+    { size: [3 * TX, 3 * TX, TX / 2], pos: [2 * TX, 0.5 * TX, 4.25 * TX], color: pal('ink.void'), parent: 'head' },
+    { size: [2 * TX, 2 * TX, TX / 2], pos: [-2.5 * TX, 0, 4.5 * TX], color: pal('cold.white'), glow: true, parent: 'head', name: 'tell' },
+    { size: [2 * TX, 2 * TX, TX / 2], pos: [1.5 * TX, 0, 4.5 * TX], color: pal('cold.white'), glow: true, parent: 'head', name: 'tell' },
+    { size: [3 * TX, TX, TX / 2], pos: [-2 * TX, 2.5 * TX, 4.25 * TX], color: pal('ink.void'), parent: 'head' },
+    { size: [3 * TX, TX, TX / 2], pos: [2 * TX, 2.5 * TX, 4.25 * TX], color: pal('ink.void'), parent: 'head' },
+    // upper arms hanging from the shoulders, forearms crossed over the chest
+    { size: [2 * TX, 5 * TX, 2 * TX], pos: [-5 * TX, 8.5 * TX, 1 * TX], color: pal('husk.doubt.base'), name: 'armL' },
+    { size: [2 * TX, 5 * TX, 2 * TX], pos: [5 * TX, 8.5 * TX, 1 * TX], color: pal('husk.doubt.base'), name: 'armR' },
+    { size: [6 * TX, 2 * TX, 2 * TX], pos: [-0.5 * TX, 8 * TX, 4 * TX], color: pal('husk.doubt.hi'), rot: [0, 0.2, 0] },
+    { size: [6 * TX, 2 * TX, 2 * TX], pos: [0.5 * TX, 10 * TX, 4 * TX], color: pal('husk.doubt.hi'), rot: [0, -0.2, 0] },
+    // two cold wisps drifting on its back (its overlay motif)
+    { size: [2 * TX, TX, TX / 2], pos: [-1 * TX, 9 * TX, -3.25 * TX], color: pal('cold.dim') },
+    { size: [2 * TX, TX, TX / 2], pos: [2 * TX, 6 * TX, -3.25 * TX], color: pal('cold.dim') },
   ],
 });

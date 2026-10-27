@@ -10,6 +10,14 @@ import { VOLATILE } from './items/catharsis';
 
 export const SYNERGIES: readonly SynergyDef[] = [
   defineSynergy({
+    id: 'one_clear_cut',
+    name: 'One Clear Cut',
+    description: 'Clarity and the shout become one gesture: charge, release, and a giant blade of light sweeps everything unnecessary away.',
+    requires: ['occamsrazor', 'kiai'],
+    // the combination outranks both items' weapons (docs/architecture/WEAPONS.md §1)
+    weapon: { id: 'greatcut', priority: 100 },
+  }),
+  defineSynergy({
     id: 'somatic_release',
     name: 'Somatic Release',
     description: 'Kicked blocks burst too.',

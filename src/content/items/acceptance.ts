@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Radical acceptance (Dialectical Behaviour Therapy)',
   pools: { treasure: 1 },
   tags: ['emotion'],
-  color: 0xe88fb5,
+  color: pal('path.emotion.glow'),
   quality: 2,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '............',
       '............',
     ],
-    palette: { a: 0xe88fb5, b: 0xfbd3e4, c: 0x3a8a5a },
+    palette: { a: pal('path.mind.glow'), b: pal('limestone.hi'), c: pal('path.body.dark') },
   },
   hooks: [
     hook('actorDamage', (e, api) => {

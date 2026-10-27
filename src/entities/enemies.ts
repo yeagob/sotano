@@ -5,6 +5,7 @@
 
 import { fx } from '../core/fx';
 import * as THREE from 'three';
+import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
 import { FlowField, type RoomArea } from '../enemies/flowfield';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
@@ -27,6 +28,10 @@ export interface EnemyHost {
   actors(): Iterable<Actor>;
   actor(id: number): Actor | undefined;
   room(id: number): RoomArea;
+  /** Elements version (flow fields rebuild when a hazard appears or goes). */
+  elemVersion(): number;
+  /** How `e` treats the element standing at this cell (feet), or null if there is none. */
+  hazard(e: Enemy, x: number, y: number, z: number): 'avoid' | 'cross' | 'dwell' | null;
   /** This enemy touches an actor it is hostile to (the game emits `contact`, rate-limited). */
   contact(e: Enemy, target: Actor): void;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
@@ -40,7 +45,36 @@ export interface EnemyHost {
 
 interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction'] }
 
-interface View { group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[] }
+export interface View {
+  group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[];
+  /** Glowing parts named 'tell' or 'core', and their idle colours. */
+  tells: THREE.MeshBasicMaterial[]; tellBase: THREE.Color[];
+}
+
+const TELL_HOT = new THREE.Color(pal('cold.white'));
+const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
+const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
+
+/** A projection's cube model, exactly as the game draws it (the gallery uses it too). */
+export function buildModel(def: EnemyDef): View {
+  const group = new THREE.Group();
+  const parts = new Map<string, THREE.Object3D[]>();
+  const mats: THREE.MeshLambertMaterial[] = [];
+  const tells: THREE.MeshBasicMaterial[] = [];
+  for (const p of def.model) {
+    const mat = p.glow ? new THREE.MeshBasicMaterial({ color: p.color }) : new THREE.MeshLambertMaterial({ color: p.color });
+    if (!p.glow) mats.push(mat as THREE.MeshLambertMaterial);
+    else if (p.name === 'tell' || p.name === 'core') tells.push(mat as THREE.MeshBasicMaterial);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...p.size), mat);
+    mesh.position.set(...p.pos);
+    if (p.rot) mesh.rotation.set(...p.rot);
+    else if (p.tilt) mesh.rotation.x = p.tilt;
+    const parent = p.parent ? parts.get(p.parent)?.[0] : undefined;
+    (parent ?? group).add(mesh);
+    if (p.name) parts.set(p.name, [...(parts.get(p.name) ?? []), mesh]);
+  }
+  return { group, parts, mats, tells, tellBase: tells.map(m => m.color.clone()) };
+}
 
 export class Enemies {
   readonly list: Enemy[] = [];
@@ -51,12 +85,13 @@ export class Enemies {
   private projMesh: THREE.InstancedMesh;
   private group = new THREE.Group();
   private m = new THREE.Matrix4();
+  private euler = new THREE.Euler();
   private time = 0;
 
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
-      new THREE.MeshBasicMaterial({ color: 0xe9e2d6 }), 64);
+      new THREE.MeshBasicMaterial({ color: pal('cold.body') }), 64);
     this.projMesh.frustumCulled = false;
     this.projMesh.count = 0;
     scene.add(this.projMesh);
@@ -65,6 +100,7 @@ export class Enemies {
   dispose() {
     this.scene.remove(this.group);
     this.scene.remove(this.projMesh);
+    this.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
   }
 
   /** Creates an enemy (already approved by `enemySpawn`). It materialises over SPAWN_TIME. */
@@ -72,7 +108,8 @@ export class Enemies {
     const e: Enemy = {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
-      spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
+      spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
+      elemSpeed: 1, inElement: null, elemT: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -107,10 +144,16 @@ export class Enemies {
     if (!e.alive) return;
     e.alive = false;
     const b = e.body;
-    // dissolve into the cubes it was made of
-    for (const p of e.spec.model) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
+    // release (docs/art/DECISIONS.md §8.6): host chips fall, light rises; no gore, no flash
+    for (const p of e.spec.model.slice(0, 8)) if (!p.glow) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
+    this.host.particles(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 12, 1.6, 0.05);
     const v = this.views.get(e.id);
-    if (v) { this.group.remove(v.group); this.views.delete(e.id); }
+    if (v) {
+      this.group.remove(v.group);
+      // free its GPU memory: every part has its own geometry and material
+      v.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
+      this.views.delete(e.id);
+    }
     this.host.died(e);
   }
 
@@ -155,8 +198,8 @@ export class Enemies {
         e.wishX = dx / l; e.wishZ = dz / l;
       }
       const blend = 1 - Math.exp(-(b.onGround ? 10 : 2) * dt);
-      b.vx += (e.wishX * e.speed - b.vx) * blend;
-      b.vz += (e.wishZ * e.speed - b.vz) * blend;
+      b.vx += (e.wishX * e.speed * e.elemSpeed - b.vx) * blend;
+      b.vz += (e.wishZ * e.speed * e.elemSpeed - b.vz) * blend;
       b.vy = Math.max(b.vy - GRAVITY * dt, -30);
       const wantX = b.vx, wantZ = b.vz;
       moveBody(host.solid, b, dt);
@@ -168,6 +211,7 @@ export class Enemies {
       if (b.y < -10) { this.kill(e); continue; }
       // touching actors it is hostile to (the game rate-limits each pair)
       for (const a of actors) {
+        if (!e.armed) break;
         if (a === e || !a.alive || a.spawning > 0 || !hostile(e.faction, a.faction)) continue;
         const o = a.body;
         if (Math.abs(o.x - b.x) < o.hw + b.hw && Math.abs(o.z - b.z) < o.hw + b.hw && o.y < b.y + b.h && o.y + o.h > b.y) host.contact(e, a);
@@ -206,18 +250,33 @@ export class Enemies {
   /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
   private toward(e: Enemy, t: TargetView): [number, number] {
     const b = e.body, tx = t.x, tz = t.z;
-    const key = `${e.room}:${t.id}`;
+    // one field per room, target and kind of projection (each treats the elements its own way)
+    const key = `${e.room}:${t.id}:${e.def}`;
     let f = this.flows.get(key);
     if (!f) {
       if (this.flows.size > 128) this.flows.clear(); // fields are tiny; just drop stale ones now and then
       f = new FlowField(this.host.room(e.room));
       this.flows.set(key, f);
     }
-    f.update(this.host.solid, tx, tz, this.host.worldVersion());
+    f.update(this.host.solid, tx, tz, `${this.host.worldVersion()}:${this.host.elemVersion()}`, (x, y, z) => this.host.hazard(e, x, y, z));
     const d = f.direction(b.x, b.z);
     if (d) return d;
     const dx = tx - b.x, dz = tz - b.z, l = Math.hypot(dx, dz) || 1;
     return [dx / l, dz / l];
+  }
+
+  /** Destroys every projectile hostile to `side` for which `inside` is true (a blade or a beam
+   *  swept through it); allies' projectiles are left alone. Returns how many. */
+  clearProjectiles(side: Actor['faction'], inside: (x: number, y: number, z: number) => boolean): number {
+    let n = 0;
+    for (let i = this.projectiles.length - 1; i >= 0; i--) {
+      const p = this.projectiles[i];
+      if (!hostile(side, p.faction) || !inside(p.x, p.y, p.z)) continue;
+      this.host.particles(p.x, p.y, p.z, pal('cold.body'), 6, 2, 0.06);
+      this.projectiles.splice(i, 1);
+      n++;
+    }
+    return n;
   }
 
   /** A lobbed projectile that lands on the target point. */
@@ -248,13 +307,14 @@ export class Enemies {
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
         this.host.projectileBlock(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));
-        this.host.particles(p.x, p.y, p.z, 0xe9e2d6, 6, 2, 0.06);
+        this.host.particles(p.x, p.y, p.z, pal('cold.dim'), 6, 2, 0.06);
         dead = true;
       }
       if (dead) { this.projectiles.splice(i, 1); continue; }
     }
     for (const p of this.projectiles) {
-      this.m.makeRotationY(p.age * 8).setPosition(p.x, p.y, p.z);
+      // a cold cube tumbling on two axes (docs/art/DECISIONS.md §7.2): never round, never warm
+      this.m.makeRotationFromEuler(this.euler.set(p.age * 9.4, p.age * 6.3, 0)).setPosition(p.x, p.y, p.z);
       this.projMesh.setMatrixAt(n++, this.m);
     }
     this.projMesh.count = n;
@@ -264,20 +324,9 @@ export class Enemies {
   // ───────────────────────── visuals ─────────────────────────
 
   private buildView(def: EnemyDef): View {
-    const group = new THREE.Group();
-    const parts = new Map<string, THREE.Object3D[]>();
-    const mats: THREE.MeshLambertMaterial[] = [];
-    for (const p of def.model) {
-      const mat = p.glow ? new THREE.MeshBasicMaterial({ color: p.color }) : new THREE.MeshLambertMaterial({ color: p.color });
-      if (!p.glow) mats.push(mat as THREE.MeshLambertMaterial);
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(...p.size), mat);
-      mesh.position.set(...p.pos);
-      if (p.tilt) mesh.rotation.x = p.tilt;
-      group.add(mesh);
-      if (p.name) parts.set(p.name, [...(parts.get(p.name) ?? []), mesh]);
-    }
-    this.group.add(group);
-    return { group, parts, mats };
+    const v = buildModel(def);
+    this.group.add(v.group);
+    return v;
   }
 
   private draw(e: Enemy) {
@@ -298,13 +347,13 @@ export class Enemies {
     for (const l of v.parts.get('legR') ?? []) l.rotation.x = -walk;
     for (const l of v.parts.get('armL') ?? []) l.rotation.x = -walk * 0.6;
     for (const l of v.parts.get('armR') ?? []) l.rotation.x = walk * 0.6;
-    // hit flash and Panic's colour shift
+    // the hit flash is a short cold lift, never white; allies (part of the self) keep a dim warm glow.
+    // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
-      // white on hit; otherwise a red heat that builds as it winds up or swells.
-      // Allies (part of the self) glow a steady warm gold.
-      if (e.flash > 0) m.emissive.setRGB(0.9, 0.9, 0.9);
-      else if (e.faction === 'self') m.emissive.setRGB(0.32 + e.pulse * 0.4, 0.24, 0.05);
-      else m.emissive.setRGB(e.pulse * 0.75, e.pulse * 0.06, 0);
+      if (e.flash > 0) m.emissive.copy(HURT_FLASH);
+      else if (e.faction === 'self') m.emissive.copy(ALLY_GLOW);
+      else m.emissive.setRGB(0, 0, 0);
     }
+    v.tells.forEach((m, i) => m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse)));
   }
 }

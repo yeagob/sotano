@@ -69,13 +69,13 @@ describe('derivation', () => {
 });
 
 describe('determinism and isolation', () => {
-  it('the same seed builds the same four floors (voxels, rooms, pedestals, rosters)', () => {
+  it('the same seed builds the same ten floors (voxels, rooms, pedestals, rosters)', { timeout: 60000 }, () => {
     const a = buildRun(0xC0FFEE), b = buildRun(0xC0FFEE);
     expect(signature(a)).toBe(signature(b));
     expect(a.w.data).toEqual(b.w.data);
   });
 
-  it('runtime randomness never changes the structure', () => {
+  it('runtime randomness never changes the structure', { timeout: 60000 }, () => {
     const plain = buildRun(42);
     const busy = buildRun(42, undefined, (rr, pools) => {
       // the player draws items at runtime, gets some from elsewhere, and burns through streams
@@ -90,7 +90,19 @@ describe('determinism and isolation', () => {
   it('runtime draws never take a reserved pedestal item', () => {
     const run = buildRun(7);
     const reserved = new Set(run.floors.flatMap(f => f.pedestals.map(p => p.item)));
-    for (let i = 0; i < 6; i++) expect(reserved.has(run.pools.drawRuntime('treasure', run.rr.stream('loot')))).toBe(false);
+    // while unreserved practices remain, a runtime draw never takes a reserved one
+    for (let i = 0; i < 6 && run.pools.size('treasure') > 0; i++) expect(reserved.has(run.pools.drawRuntime('treasure', run.rr.stream('loot')))).toBe(false);
+  });
+
+  it('ten floors of pedestals leave practices for runtime draws; the roots hold only gentle ones', { timeout: 60000 }, () => {
+    const gentle = new Map(ITEMS.map(i => [i.id, i.quality]));
+    for (let s = 1; s <= 20; s++) {
+      const run = buildRun(s * 7919);
+      const reserved = run.floors.flatMap(f => f.pedestals.map(p => p.item)).filter(Boolean);
+      expect(new Set(reserved).size, `seed ${s}`).toBe(reserved.length);
+      expect(reserved.length).toBeLessThanOrEqual(ITEMS.length - 3);
+      for (const p of run.floors[0].pedestals) expect(gentle.get(p.item!)!, `floor 0, seed ${s}`).toBeLessThanOrEqual(3);
+    }
   });
 
   it('a room\'s layout depends only on its own fork (rosters and items are separate)', () => {
@@ -113,27 +125,28 @@ describe('determinism and isolation', () => {
 });
 
 describe('variety', () => {
-  it('200 seeds give 200 different runs, with every template, mood and item in use', () => {
+  it('200 seeds give 200 different runs, with every template, mood and item in use', { timeout: 120000 }, () => {
     const sigs = new Set<string>();
     const templates = new Map<string, number>(), moods = new Map<string, number>(), items = new Map<string, number>();
     const rng = new Rng(1234);
     for (let i = 0; i < 200; i++) {
-      const run = buildRun(rng.u32(), 1);
+      const run = buildRun(rng.u32(), 2);
       sigs.add(signature(run));
-      for (const r of run.floors[0].rooms) {
+      for (const r of run.floors.flatMap(f => f.rooms)) {
         templates.set(r.template, (templates.get(r.template) ?? 0) + 1);
         moods.set(r.mood, (moods.get(r.mood) ?? 0) + 1);
       }
-      for (const p of run.floors[0].pedestals) items.set(p.item!, (items.get(p.item!) ?? 0) + 1);
+      for (const p of run.floors.flatMap(f => f.pedestals)) items.set(p.item!, (items.get(p.item!) ?? 0) + 1);
     }
     expect(sigs.size).toBe(200);
-    for (const t of ROOM_TEMPLATES) expect(templates.get(t.id) ?? 0, `template ${t.id} never used`).toBeGreaterThan(0);
+    // every template allowed on the first two floors shows up (deeper ones: tests/levels.test.ts)
+    for (const t of ROOM_TEMPLATES.filter(q => !q.floors || q.floors[0] <= 1)) expect(templates.get(t.id) ?? 0, `template ${t.id} never used`).toBeGreaterThan(0);
     for (const m of ['sparse', 'normal', 'cluttered']) expect(moods.get(m) ?? 0).toBeGreaterThan(0);
     // no single item dominates the pedestals
     const total = [...items.values()].reduce((a, b) => a + b, 0);
     expect(Math.max(...items.values()) / total).toBeLessThan(0.15);
     expect(items.size).toBeGreaterThan(ITEMS.length * 0.7);
-  });
+  }); // 200 whole worlds of two floors (with 100 blocks of sky each)
 });
 
 describe('tables and templates', () => {
@@ -185,3 +198,28 @@ describe('randomness discipline', () => {
     for (const k of ['a', 'b', 'c']) expect(pools.reservedFor(k)).toBeTruthy();
   });
 });
+
+describe('golden seed', () => {
+  // A fixed seed's structure, hashed: plans, rock themes and reserved practices on every floor.
+  // If this changes, every shared seed code plays differently: bump GEN_VERSION (src/core/seed.ts)
+  // and update both numbers here in the same change.
+  it('seed 0xBEEF builds the same world it always did (for this GEN_VERSION)', async () => {
+    const { GEN_VERSION } = await import('../src/core/seed');
+    const { pedestalSlots } = await import('../src/world/floor');
+    const rr = new RunRandom(0xBEEF);
+    const d = planDungeon(rr);
+    const pools = new ItemPools(ITEMS);
+    const slots = pedestalSlots(d);
+    pools.reserve(slots, rr.fork('reserve'));
+    const text = JSON.stringify({
+      plans: d.plans.map(p => p.rooms.map(r => [r.gx, r.gz, r.type])),
+      themes: d.themes.map(t => t.id),
+      items: slots.map(s => pools.reservedFor(s.key)),
+    });
+    let h = 0x811c9dc5;
+    for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
+    expect([GEN_VERSION, h.toString(16)]).toEqual([4, GOLDEN]);
+  });
+});
+// adding a practice to the catalogue changes reservations too: that also changes every seed
+const GOLDEN = '103f9f1d';

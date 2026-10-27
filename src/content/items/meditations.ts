@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Marcus Aurelius, Meditations (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['will', 'mind', 'intent'],
-  color: 0xd8b26a,
+  color: pal('path.will.glow'),
   quality: 4,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.aaaaaaaaaa.',
       '............',
     ],
-    palette: { a: 0x6b3a1e, b: 0xf3e7c9, c: 0xa89470 },
+    palette: { a: pal('path.will.dark'), b: pal('sky.horizon'), c: pal('brass.hi') },
   },
   stats: [
     { stat: 'damage', layer: 'mul', value: 3 },

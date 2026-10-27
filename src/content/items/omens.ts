@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'The Alchemist (Paulo Coelho): omens and the personal legend',
   pools: { treasure: 1 },
   tags: ['mind', 'emotion'],
-  color: 0xf2c84b,
+  color: pal('path.mind.glow'),
   quality: 2,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.....a......',
       '............',
     ],
-    palette: { a: 0xc9a227, b: 0xf2c84b, c: 0xffffff },
+    palette: { a: pal('path.will.base'), b: pal('brass.hi'), c: pal('bone.paper') },
   },
   stats: [{ stat: 'luck', layer: 'add', value: 1 }],
   hooks: [

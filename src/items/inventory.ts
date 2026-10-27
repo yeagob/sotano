@@ -9,7 +9,7 @@
 
 import { Rng } from '../core/rng';
 import { StatSheet, diffStats, type Stats } from '../core/stats';
-import type { GameBus } from '../game/events';
+import type { GameBus, WeaponId } from '../game/events';
 import type { HostApi, ItemApi, ItemDef, ItemInstance, Req, SynergyDef } from './types';
 
 export interface GainResult {
@@ -23,6 +23,7 @@ export class Inventory {
   private installed = new Set<string>();
   private active: SynergyDef[] = [];
   private nextUid = 1;
+  private activeWeapon: WeaponId = 'intent';
 
   constructor(
     private catalog: ReadonlyMap<string, ItemDef>,
@@ -46,6 +47,8 @@ export class Inventory {
 
   get items(): readonly ItemInstance[] { return this.held; }
   get synergiesActive(): readonly SynergyDef[] { return this.active; }
+  /** How the player casts now: resolved on every rebuild (docs/architecture/WEAPONS.md §1). */
+  get weapon(): WeaponId { return this.activeWeapon; }
   has(id: string) { return this.held.some(i => i.def.id === id); }
   countTag(tag: string) { return this.held.filter(i => i.def.tags?.includes(tag)).length; }
   hasTag(tag: string) { return this.countTag(tag) > 0; }
@@ -109,6 +112,13 @@ export class Inventory {
       this.install(`item:${it.uid}`, it.def.id, it.def, suppressed, this.itemRng(it.def.id, copy));
     }
     for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed, this.itemRng(`syn:${s.id}`, 0));
+
+    // the active weapon: highest priority wins, ties go to the latest gained (synergies come last)
+    let best: { id: WeaponId; priority: number } | null = null;
+    for (const e of [...this.held.map(h => h.def), ...this.active]) {
+      if (e.weapon && (!best || e.weapon.priority >= best.priority)) best = e.weapon;
+    }
+    this.activeWeapon = best?.id ?? 'intent';
   }
 
   /** The game's API with toasts bound to the effect that raises them. */

@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -6,26 +7,26 @@ export default defineItem({
   description: 'Undistracted effort breaks through obstacles twice as fast, at some cost to force.',
   effect: 'Breaks blocks twice as fast (mining ×2). Damage ×0.8.',
   inspiredBy: 'Deep Work (Cal Newport)',
-  pools: { treasure: 1 },
+  pools: { treasure: 1, boss: 1 },
   tags: ['mind', 'will', 'mining'],
-  color: 0xd8a77a,
+  color: pal('path.mind.glow'),
   quality: 2,
   icon: {
     rows: [
       '............',
-      '....aaaa....',
+      '....a..a....',
       '..aabbbbaa..',
       '.abbccccbba.',
-      'abbcddddcbba',
-      'abbcdeedcbba',
-      'abbcdeedcbba',
-      'abbcddddcbba',
+      '..bcddddcb..',
+      '..bcdaadcb..',
+      '..bcdaadcb..',
+      '..bcddddcb..',
       '.abbccccbba.',
       '..aabbbbaa..',
-      '....aaaa....',
+      '....a..a....',
       '............',
     ],
-    palette: { a: 0x3a2e5a, b: 0x6a5acd, c: 0xb8a9ff, d: 0xf4f0ff, e: 0xe05d5d },
+    palette: { a: pal('mat.obsidian.hi'), b: pal('path.mind.base'), c: pal('path.mind.glow'), d: pal('bone.paper') },
   },
   stats: [
     { stat: 'mining', layer: 'mul', value: 2 },

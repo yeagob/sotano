@@ -4,7 +4,7 @@ Status: **built**, after the three-party review in [../reviews/rng.md](../review
 
 ## 1. In one paragraph
 
-A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH · v1`). New runs take their root from the browser's crypto RNG, the only place true randomness enters the game. Everything else derives from the root: the **structure** of the whole run (all four floor plans, rock themes, every pedestal item) is decided when the run starts, from **path-derived forks** (`fork('floor', 2, 'room', 5, 'layout')`) that never depend on what the player does. **Runtime** outcomes (drops, item procs, runtime item draws) use isolated streams. **Cosmetic** randomness (particles, sound, shake, cube spin and launch) goes through one module and never decides an outcome. Every random choice reads a **weighted table**.
+A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH · v3`; v2 added the boss rooms' pedestals, which changed every reservation; v3 added the element and tall room templates, which changes template picks; v4 the ten floors of [LEVELS.md](LEVELS.md), the tutorial floor's gentle reservations and deep floors without vaults). New runs take their root from the browser's crypto RNG, the only place true randomness enters the game. Everything else derives from the root: the **structure** of the whole run (all four floor plans, rock themes, every pedestal item) is decided when the run starts, from **path-derived forks** (`fork('floor', 2, 'room', 5, 'layout')`) that never depend on what the player does. **Runtime** outcomes (drops, item procs, runtime item draws) use isolated streams. **Cosmetic** randomness (particles, sound, shake, cube spin and launch) goes through one module and never decides an outcome. Every random choice reads a **weighted table**.
 
 ## 2. Seeds
 
@@ -33,6 +33,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template → flipX → flipZ → mood → decor slots, row by row, in that order |
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
+| `fork('elements')` | Runtime | One seed for the element simulation: each fire-spread roll is `hash3(seed, cell, tick, side)`, stateless, so one fire never changes another's luck. Template elements (pools, flames) are fixed by the template and draw nothing |
 | `fork('floor', k, 'room', i, 'clear')` | Runtime | Room i's clear reward: one uniform `u`, then luck reweights the table against it |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
 | `stream('drops')` | Runtime | Enemy drops |
@@ -70,13 +71,13 @@ ROOM_CLEAR.roll(rng, { floor, luck });   // or pickU(u, ctx) against a pre-drawn
 
 ## 7. Item pools
 
-At run start every treasure and vault room of every floor gets its practice **reserved** (in floor and room order, from `fork('reserve')`). Runtime draws (`drawRuntime`, on `stream('loot')`) only take items that are neither reserved nor taken, so nothing the player does can change a pedestal. If the player already holds a reserved practice when its floor activates, that pedestal gets a runtime draw instead. An exhausted pool falls back to the treasure pool, then any unused item, then any item: a pedestal is never empty.
+At run start every treasure, vault and boss room of every floor gets its practice **reserved** (boss rooms from the `boss` pool; their practice only appears once the boss is overcome) (in floor and room order, from `fork('reserve')`). Runtime draws (`drawRuntime`, on `stream('loot')`) only take items that are neither reserved nor taken, so nothing the player does can change a pedestal. If the player already holds a reserved practice when its floor activates, that pedestal gets a runtime draw instead. An exhausted pool falls back to the treasure pool, then any unused item, then any item: a pedestal is never empty.
 
 ## 8. Guarantees (tests, `tests/rng.test.ts`)
 
 1. Seed codes round-trip every root; spaces, dashes and case are normalised; >95% of single-character typos are rejected.
 2. `fork` is a pure function of (root, path); paths don't collide by concatenation; non-integer parts throw.
-3. The same seed builds the same four floors (voxels, rooms, moods, rosters, pedestals).
+3. The same seed builds the same ten floors (voxels, rooms, moods, rosters, pedestals); a golden test pins seed 0xBEEF's structure hash to the current `GEN_VERSION`.
 4. Runtime randomness (runtime draws, removals, every stream, item forks) never changes the structure.
 5. A room's layout doesn't depend on rosters or items.
 6. Room-clear rewards don't depend on clearing order.

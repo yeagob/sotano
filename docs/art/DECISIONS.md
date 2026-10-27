@@ -830,6 +830,8 @@ Non-unit-testable pillars (frame histogram, room +20 %) are judged on determinis
 23. ~140 hex literals in `src/` + 32 in CSS, no shared source.
 24. Satori icon is a 1-px ring.
 
+**Status (art pass, 2026-10-26):** fixed: 1 (GPU leak), 4 (icons at integer scales), 8 (door leaves at 16 px per block), 11 (minimap top-right), 12 (debug readout off, F3), 13 (no blink), 14 (flash 0.45 with a budget, hurt vignette `life.dark` 0.35), 15 (toasts at 22 %), 17 (hostile projectiles `cold.body`), 18 (Panic near-black with cold eyes), 19 (Doubt's eyes are 2 × 2 texel lights), 20 (path chips and colours from tokens, with glyphs), 21 (the seed), 22 (the grass painter takes dirt by key), 23 (**zero** hex literals outside `palette.ts`), 24 (Satori's ensō). Open, with their phase: 2, 3, 5, 6, 7, 9, 10, 16. See ART-GUIDE §15.
+
 ### 12.9 Phased plan (engineering days, art included where noted)
 
 Key architecture decisions (unified shading model, creature pipeline on `SkinnedMesh`, `DataArrayTexture` + `placed` flag, block light in the worker) go through the **three-party review** (engineer, architect, mediator) before Phase A starts, per CLAUDE.md.
@@ -890,4 +892,4 @@ On 2026-10-26 the owner accepted **every recommendation in §13** without change
 | Q13 | Phase D world motifs (surface tree, side-view map) **with the Tree-of-Life milestone** |
 | Q14 | Optional bloom as a High setting: **later**; never in review captures |
 
-**Next:** phase 0 (palette, source-scan test, gallery v1). Phase A starts only after the three-party review of the architecture decisions.
+**Done:** phase 0 (palette, source-scan test at zero, gallery v1) and every phase B/C item that fits today's renderer (ART-GUIDE §15). **Next:** phase A, after the three-party review of its architecture decisions.

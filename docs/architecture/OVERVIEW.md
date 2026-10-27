@@ -12,9 +12,10 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ enemies/     enemy types, behaviour factories, per-room flow field
              ├─ content/     data: materials, room templates, items (one file each), synergies,
              │               enemies (one file each), atlas layout
-             ├─ world/       voxel storage, floor plan, stacked dungeon (carve, holes), meshing worker
+             ├─ world/       voxel storage + element layer, floor plan, stacked dungeon (carve, holes),
+             │               element simulation, meshing worker (blocks and elements)
              ├─ physics/     voxel raycast, box-vs-grid collision, loose cubes and bombs
-             ├─ combat/      intentions (the player's projectiles)
+             ├─ combat/      intentions (the player's projectiles), weapons, blasts
              ├─ entities/    player, doors, pickups, enemies (system)
              ├─ input/       keyboard + mouse (pointer lock)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
@@ -43,10 +44,11 @@ The simulation runs only while the mouse is captured, the inventory is closed an
 4. `tryPlace` / `throwTop` / `placeBomb` — right click, Q, E (`blockPlace`, `throw`, `drop`, `bombPlace`).
 5. `Doors.update` — slide doors; sealed doors stay shut; `requestDoor` handles locks (`doorOpen`).
 6. `DebrisSystem.update` — loose-cube physics, depenetration, bomb fuses (→ `explode`), tagged impacts (→ `debrisImpact`).
-7. `touchDebris` — `touchCube`: pick up, kick (`kick`), bombs are always kicked.
+   Then `ElementSim.update` (10 Hz: flows, reactions → `materialReact`, fires catching → `ignite`), loose cubes in elements, and the player in elements (wade, swim, breath, burns; `elementEnter` / `elementLeave`).
+7. `touchDebris` — `touchCube`: pick up, kick (`kick`), bombs are always kicked. Then `cubeStrikes`: a flying cube hurts the projection it hits, by its hardness and speed (`core/damage.ts` `cubeDamage`).
 8. `touchPickups` — keys, bombs, hearts (`pickupCollect`), pedestal items (`Inventory.gain` → banner, flash, hold-up).
 9. `Intents.update` — move intentions; hit hostile projections (`actorDamage`), push cubes, damage voxels (pierce up to `pierceTier`).
-10. `Enemies.update` — behaviours (each chases its target: the nearest hostile actor), flow-field steering, leash, contact between hostile actors (`contact`, rate-limited), projectiles.
+10. Projections in elements (senses: speed, paced hits, `enter` reactions), then `Enemies.update` — behaviours (each chases its target: the nearest hostile actor), flow-field steering, leash, contact between hostile actors (`contact`, rate-limited), projectiles.
     Then queued explosions run (`BlastQueue`, 8 per frame) before deferred chain reactions.
 11. `bus.flush()` — deferred chain reactions (64 per frame).
 12. `trackPlace` — floors, rooms (`roomEnter`), boss-room hole.
@@ -81,7 +83,9 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## World (`world/`)
 
-- `VoxelWorld` — `Uint8Array` of materials, sparse `damaged` HP, dirty 16³ chunks, a `version` counter bumped on every change.
+- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters.
+- `elements.ts` — the element simulation (active cells, 10 Hz, budgeted; [ELEMENTS.md](ELEMENTS.md) §10).
+- `elem-mesher.ts` — water and lava surfaces sloped from their levels, fire quads; runs in the meshing worker.
 - `floorplan.ts` — Isaac-style plans from any start cell, with a fallback. See [ROOMS.md](ROOMS.md).
 - `floor.ts` — the stacked dungeon: `createDungeonWorld`, `carveFloor`, `openHole`, `floorY`, `bandOf`, `roomOrigin`, `cellOf`.
 - `mesher.ts` / `mesher.worker.ts` — visible faces, per-vertex AO and face shade baked into vertex colours, in a worker.
@@ -117,6 +121,9 @@ Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md
 
 ## Debug console
 
+The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15).
+
+
 `window.S` in the browser console:
 
 | Call | What it does |
@@ -144,7 +151,7 @@ Vitest, Node, no rendering (102 tests):
 - `world.test.ts` — templates, mesher, DDA, collision, plans (one start/treasure/boss; from all 49 start cells), stacked dungeon (doorways, global room ids, bands), the hole landing in the next start room.
 - `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, cubes spawned at one spot repelling each other (and never into walls), 2000 cubes.
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
-- `rng.test.ts` — seed codes, fork purity, determinism (same seed, same four floors), isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
+- `rng.test.ts` — seed codes, fork purity, determinism (same seed, same ten floors), a golden seed hash per `GEN_VERSION`, practices lasting ten floors, isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
 - `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
 - `i18n.test.ts` — every locale has every message with the same placeholders; every item, synergy, enemy and material translated, no stale ids; translated effect lines keep English's numbers; no empty strings or markup; fallback, plurals, number formats, language detection; every damage source names a cause; the language never changes a run.
 - `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (378 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.

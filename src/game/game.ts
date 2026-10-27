@@ -6,12 +6,18 @@ import * as THREE from 'three';
 import { sfx, sfx2, sfx3, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { intentFromStats, Intents } from '../combat/intents';
+import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID } from '../content/enemies';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
+import {
+  DEFAULT_AFFINITY, ELEMENTS, elemDef, elemKind, fluidHeight, isFalling, type ElementDef, type ElementKey,
+} from '../content/elements';
 import { ROOM_D, ROOM_H, ROOM_TEMPLATES, ROOM_W } from '../content/rooms';
 import { SYNERGIES } from '../content/synergies';
-import { blockDamage, type DamageKind } from '../core/damage';
+import { pal } from '../content/palette';
+import { level, LEVELS } from '../content/levels';
+import { blockDamage, cubeDamage, type DamageKind } from '../core/damage';
 import { fx } from '../core/fx';
 import { RunRandom } from '../core/rng';
 import { decodeSeed, encodeSeed, formatSeed, GEN_VERSION, randomRoot } from '../core/seed';
@@ -21,7 +27,7 @@ import type { Enemy } from '../enemies/types';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
 import { Pickups } from '../entities/pickups';
-import { Player } from '../entities/player';
+import { EYE, Player, type PlayerMedium } from '../entities/player';
 import { Input } from '../input/input';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
@@ -36,14 +42,15 @@ import { CrackView, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import {
-  bandOf, carveFloor, cellOf, createDungeonWorld, FLOORS, openHole, planDungeon, ROOM_ID_STRIDE, SURFACE_Y,
+  bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, FIRST_FLOOR, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SURFACE_Y,
   type DungeonPlan,
   type FloorResult, type RoomInfo,
 } from '../world/floor';
 import type { VoxelWorld } from '../world/world';
+import { ElementSim } from '../world/elements';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
-import { createBus, type Cause, type GameBus, type Owner, type PickupKind } from './events';
-import { Hud } from './hud';
+import { createBus, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
+import { Hud, LESSONS } from './hud';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -53,17 +60,47 @@ for (const e of CATALOGUE_ERRORS) console.error('[items]', e);
 const PLAYABLE_ITEMS = ITEMS.filter(i => validateItem(i).length === 0);
 
 const MAX_CUBES = IS_TOUCH ? 1000 : 2000;
-const DUNGEON_FOG = new THREE.Color(0x15110e);
-const SKY = new THREE.Color(0x8ec5ee);
+const DUNGEON_FOG = new THREE.Color(pal('fog.f1'));
+/** The fog of each underground floor (its level's), blended to the sky near the surface. */
+const LEVEL_FOG = LEVELS.map(l => new THREE.Color(pal(l.fog)));
+const SKY = new THREE.Color(pal('sky.day'));
+/** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
+const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
 const COUNTER_CAP = 99;
 const SPAWN_GAP = 0.45;
+/** Seconds after entering a boss room until the boss counts as overcome (no bosses yet). */
 const HOLE_DELAY = 1.5;
+/** Seconds of the fade to black before a new run (R). The fade back waits for the world's meshes. */
+const RESTART_FADE = 0.45;
+const RESTART_HOLD_MAX = 2;
+/** Per frame: at most this many block-break sounds and particle bursts (a great cut breaks dozens). */
+const BREAK_SFX_PER_FRAME = 4;
+const BREAK_FX_PER_FRAME = 24;
+/** Loose cubes a single weapon strike may leave behind; the rest of its cuts vanish as dust. */
+const STRIKE_DEBRIS: Record<WeaponId, number> = { intent: 0, blade: 16, beam: 24, greatcut: 24 };
 /** Damage points a blast deals to every actor in range (8 = one heart to the player). */
 const BLAST_ACTOR_DAMAGE = 2 * HALF_HEART;
+
+/** Element effects per frame at most (particles, sounds): a big fire or a flood never floods the screen. */
+const ELEMENT_FX_PER_FRAME = 10;
+const ELEMENT_SFX_PER_FRAME = 2;
+/** Seconds between element hits on a projection (the player has its invulnerability). */
+const ELEMENT_HIT_GAP = 0.5;
+/** Seconds between drowning hits once breath runs out. */
+const DROWN_GAP = 1.5;
+/** Breath refills this many times faster than it drains. */
+const BREATH_REFILL = 4;
+
+/** A loose cube must fly at least this fast (blocks/s) to hurt a projection it hits. */
+const CUBE_HIT_SPEED = 4;
 
 interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
 
 interface RoomState { cleared: boolean; started: boolean; queue: string[]; next: number; sealed: boolean }
+
+/** A boss room once entered: the boss's practice and the way down appear when `t` runs out;
+ *  the floor only gives way while nobody stands on the hole. */
+interface BossState { t: number; revealed: boolean; open: boolean; warned: boolean; dust: number }
 
 export class Game {
   readonly renderer: THREE.WebGLRenderer;
@@ -85,7 +122,7 @@ export class Game {
   seedCode = '';
   /** Floor the player is on now (by height), and the deepest one reached. */
   depth = 1;
-  maxDepth = 1;
+  maxDepth = FIRST_FLOOR;
   world!: VoxelWorld;
   floors = new Map<number, FloorResult>();
   rooms = new Map<number, RoomInfo>();
@@ -100,8 +137,11 @@ export class Game {
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
-  private holes = new Map<number, number>();   // floor → seconds until its hole opens
-  private groundBand = 1;
+  private bosses = new Map<number, BossState>();   // floor → its boss room's state
+  /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
+  private restartT = 0;
+  private revealT = -1;
+  private groundBand = FIRST_FLOOR;
   private atlas = buildAtlas();
   private chunks!: ChunkRenderer;
   private debrisView: DebrisView;
@@ -118,7 +158,22 @@ export class Game {
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
   private fpsAcc = 0; private fpsN = 0; fps = 0;
+  /** The weapon replacing the intention, if any (docs/architecture/WEAPONS.md). */
+  private weapon: Weapon | null = null;
+  private weaponId: WeaponId = 'intent';
+  private weaponHost: WeaponHost;
+  private strikeDebris = 0;
+  private breakSfx = 0;
+  private breakFx = 0;
   private fogColor = new THREE.Color();
+  /** Fire, water and lava (docs/architecture/ELEMENTS.md §9). */
+  elements!: ElementSim;
+  private elemFx = 0;
+  private elemSfx = 0;
+  private drownT = 0;
+  /** Elements the player's body was in last frame (for elementEnter / elementLeave). */
+  private playerIn = new Set<ElementKey>();
+  private playerMedium: PlayerMedium = { feet: null, head: null };
 
   constructor(canvas: HTMLCanvasElement, seed?: string) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
@@ -127,8 +182,8 @@ export class Game {
     this.input = new Input(canvas);
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
-    this.scene.add(new THREE.HemisphereLight(0xfff0dd, 0x302824, 2.0));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+    this.scene.add(new THREE.HemisphereLight(pal('light.core'), pal('rock.f1.outline'), 2.0));
+    const sun = new THREE.DirectionalLight(pal('sky.albedo'), 1.0);
     sun.position.set(0.4, 1, 0.3);
     this.scene.add(sun);
     this.particles = new Particles(this.scene, 900);
@@ -151,8 +206,11 @@ export class Game {
         if (e) this.damageActor(e, t.damage, 'intent', 'intent', this.player.id, v.x / l, v.z / l);
       },
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
+      elementAt: (x, y, z) => this.elementAt(x, y, z)?.key ?? null,
+      quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
     });
     this.api = this.makeApi();
+    this.weaponHost = this.makeWeaponHost();
     this.inventory = new Inventory(ITEM_BY_ID, SYNERGIES, this.stats, () => this.bus, () => this.api,
       (id, copy) => this.rng.fork('item', id, copy));
     document.addEventListener('mousedown', unlockAudio);
@@ -179,18 +237,26 @@ export class Game {
     this.hud.setSeed(this.seedLabel);
     this.dungeon = planDungeon(this.rng);
     this.pools = new ItemPools(PLAYABLE_ITEMS);
-    // reserve every pedestal of every floor now, in (floor, room) order
-    const slots: { key: string; pool: 'treasure' | 'vault' }[] = [];
-    this.dungeon.plans.forEach((plan, i) => {
-      for (const r of plan.rooms) if (r.type === 'treasure' || r.type === 'vault')
-        slots.push({ key: String((i + 1) * ROOM_ID_STRIDE + r.id), pool: r.type });
-    });
-    this.pools.reserve(slots, this.rng.fork('reserve'));
+    // reserve every pedestal of every floor now (boss rooms included), in (floor, room) order
+    this.pools.reserve(pedestalSlots(this.dungeon), this.rng.fork('reserve'));
     this.chunks?.dispose();
     this.doors?.dispose();
     this.pickups?.dispose();
     this.enemies?.dispose();
     this.world = createDungeonWorld(this.rng, this.dungeon);
+    this.elements = new ElementSim(this.world, {
+      seed: this.rng.fork('elements').u32(),
+      blocked: (x, y, z) => this.solid(x, y, z),
+      ignite: (x, y, z, material, by) => this.ignite(x, y, z, material, by),
+      react: (x, y, z, r, result) => {
+        const ev = this.bus.emit('materialReact', { x, y, z, reaction: r.id, result });
+        if (ev.cancelled) return null;
+        // a hook may swap the result, but only for a real material (or nothing)
+        return Number.isInteger(ev.result) && ev.result >= 0 && ev.result < MATERIALS.length ? ev.result : result;
+      },
+      fx: (kind, x, y, z) => this.elementFx(kind, x, y, z),
+    });
+    this.playerIn.clear(); this.drownT = 0;
     this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 48);
     this.debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
     this.debris.onFuse = (i, x, y, z) => {
@@ -204,30 +270,32 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.holes.clear();
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.bosses.clear();
     this.bus = createBus();
     this.inventory.restore([]);
+    this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.maxHp; p.dead = false; p.invulnT = 0;
+    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
     p.id = this.actors.newId();
     p.room = -1;
     this.actors.add(p);
-    this.carve(1);
-    this.activate(1);
-    this.carve(2);
-    p.spawnAt(...this.floors.get(1)!.spawn);
+    // the run starts among the roots (floor 0, the tutorial)
+    this.carve(FIRST_FLOOR);
+    this.activate(FIRST_FLOOR);
+    this.carve(FIRST_FLOOR + 1);
+    p.spawnAt(...this.floors.get(FIRST_FLOOR)!.spawn);
     p.yaw = 0; p.pitch = 0;
-    this.depth = this.maxDepth = this.groundBand = 1;
+    this.depth = this.maxDepth = this.groundBand = FIRST_FLOOR;
     this.room = -1;
     this.visited = new Set();
     this.hud.hideDeath();
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
-    this.hud.setFloor(this.floors.get(1)!, 1);
-    this.bus.emit('floorEnter', { depth: 1 });
+    this.hud.setFloor(this.floors.get(FIRST_FLOOR)!, FIRST_FLOOR);
+    this.bus.emit('floorEnter', { depth: FIRST_FLOOR });
     this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
   }
 
@@ -238,13 +306,15 @@ export class Game {
 
   /** Carves floor k into the world (one floor ahead of the player), from the run's plan. */
   private carve(k: number) {
-    if (k > FLOORS || this.floors.has(k)) return;
-    const f = carveFloor(this.world, this.rng, k, this.dungeon.plans[k - 1], {
+    if (k > LAST_FLOOR || this.floors.has(k)) return;
+    const f = carveFloor(this.world, this.rng, k, this.dungeon.plans[k], {
       templates: ROOM_TEMPLATES,
       pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
     });
     this.floors.set(k, f);
+    // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
+    for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + ROOM_W, r.y0 + r.height, r.z0 + ROOM_D);
     for (const r of f.rooms) {
       this.rooms.set(r.id, r);
       this.roomState.set(r.id, { cleared: !r.enemies.length, started: false, queue: [...r.enemies], next: 0, sealed: false });
@@ -257,15 +327,22 @@ export class Game {
     if (!f || this.activated.has(k)) return;
     this.activated.add(k);
     this.doors.add(f.doors);
-    for (const p of f.pedestals) {
-      // the reserved item, unless the player already got it some other way: then a runtime draw
-      let id = p.item;
-      if (id && (this.inventory.has(id) || this.pools.isTaken(id))) {
-        id = this.pools.drawRuntime(this.rooms.get(p.room)?.type === 'vault' ? 'vault' : 'treasure', this.rng.stream('loot'));
-      }
-      this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, id ? ITEM_BY_ID.get(id) ?? null : null);
-    }
+    // the boss's pedestal stays bare until the boss is overcome (revealBossItem)
+    for (const p of f.pedestals) if (!p.boss) this.placePedestalItem(p);
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
+  }
+
+  /** Puts a pedestal's practice in the world: the reserved one, unless the player already got it
+   *  some other way (then a runtime draw from the room's pool). */
+  private placePedestalItem(p: FloorResult['pedestals'][number]) {
+    let id = p.item;
+    if (id && (this.inventory.has(id) || this.pools.isTaken(id))) {
+      const type = this.rooms.get(p.room)?.type;
+      id = this.pools.drawRuntime(type === 'vault' || type === 'boss' ? type : 'treasure', this.rng.stream('loot'));
+    }
+    const def = id ? ITEM_BY_ID.get(id) ?? null : null;
+    this.pickups.add('item', p.x + 0.5, p.y, p.z + 0.5, p.room, def);
+    return def;
   }
 
   /** Down a floor (console shortcut): open the hole and drop the player into it. */
@@ -273,6 +350,8 @@ export class Game {
     const f = this.floors.get(this.depth);
     if (!f?.hole) return;
     this.activate(this.depth + 1);
+    const st = this.bosses.get(this.depth);
+    if (st) st.open = true;
     openHole(this.world, f.hole);
     this.player.spawnAt(f.hole.x + 1, f.hole.yTop + 1, f.hole.z + 1);
   }
@@ -318,6 +397,62 @@ export class Game {
     };
   }
 
+  /** What weapons may do: everything through the shared damage pipeline (docs/architecture/WEAPONS.md). */
+  private makeWeaponHost(): WeaponHost {
+    const p = this.player;
+    return {
+      stats: () => this.stats.all,
+      eye: () => p.eye,
+      forward: () => p.forward,
+      casting: () => this.input.fireHeld && !this.hands.holding,
+      strike: (weapon, damage, mining, reach) => {
+        const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set() });
+        if (ev.cancelled) return null;
+        this.strikeDebris = STRIKE_DEBRIS[weapon];
+        return { damage: ev.damage, mining: ev.mining, reach: ev.reach };
+      },
+      solid: (x, y, z) => this.solid(x, y, z),
+      breakable: (x, y, z) => { const id = this.world.get(x, y, z); return id !== AIR && isFinite(mat(id).hp); },
+      // a clean cut: far more than any block's HP, so armor never saves it (hooks still may)
+      cut: (x, y, z, source) => { this.damageBlock(x, y, z, 1e6, 'cut', source, this.strikeDebris-- > 0); },
+      burn: (x, y, z, amount, source) => this.damageBlock(x, y, z, amount, 'beam', source),
+      targets: () => this.enemies.list
+        .filter(e => e.alive && e.spawning <= 0 && hostile(p.faction, e.faction))
+        .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
+      hit: (id, damage, kx, kz, source) => {
+        const e = this.enemies.get(id);
+        if (e) this.damageActor(e, damage, source === 'beam' ? 'beam' : 'cut', source, p.id, kx, kz);
+      },
+      clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
+      clearCubes: inside => {
+        const d = this.debris;
+        let fxLeft = 6;
+        for (let i = 0; i < d.max; i++) {
+          if (!d.isAlive(i)) continue;
+          const i3 = i * 3, x = d.pos[i3], y = d.pos[i3 + 1], z = d.pos[i3 + 2];
+          if (!inside(x, y, z)) continue;
+          if (d.isBomb(i)) { d.fuse[i] = Math.min(d.fuse[i], 0.05); continue; }
+          if (fxLeft-- > 0) this.particles.burst(x, y, z, mat(d.material[i]).colors[0], 8, 3, 0.08);
+          d.remove(i);
+        }
+      },
+      particles: (x, y, z, c, n, s, size) => this.particles.burst(x, y, z, c, n, s, size),
+      shake: s => this.hud.shake(s),
+      swingHands: () => this.hands.fire(),
+      chargeHands: k => this.hands.charge(k),
+      sound: name => sfx2[name](),
+    };
+  }
+
+  /** The inventory decides the weapon; swapping drops any charge or strike in progress. */
+  private syncWeapon() {
+    const id = this.inventory.weapon;
+    if (id === this.weaponId) return;
+    this.weapon?.dispose();
+    this.weaponId = id;
+    this.weapon = createWeapon(id, this.scene, this.weaponHost);
+  }
+
   /** Gives an item (pedestal or console) with the full pickup feedback. */
   give(id: string) {
     const r = this.inventory.gain(id);
@@ -332,7 +467,7 @@ export class Game {
     this.hands.holdUp(def);
     const b = this.player.body;
     this.particles.burst(b.x, b.y + 1.6, b.z, def.color, 30, 4, 0.08);
-    this.particles.burst(b.x, b.y + 1.6, b.z, 0xfff3c4, 16, 3, 0.06);
+    this.particles.burst(b.x, b.y + 1.6, b.z, pal('light.core'), 16, 3, 0.06);
     sfx2.item();
   }
 
@@ -413,6 +548,11 @@ export class Game {
       actors: () => this.actors.all(),
       actor: (id: number) => this.actors.get(id),
       room: (id: number) => this.rooms.get(id)!,
+      elemVersion: () => this.world.elemVersion,
+      hazard: (e: Enemy, x: number, y: number, z: number) => {
+        const d = elemDef(this.world.elemAt(x, y, z)) ?? elemDef(this.world.elemAt(x, y + 1, z));
+        return d ? this.affinity(e, d.key).path : null;
+      },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
       projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
       projectileBlock: (x: number, y: number, z: number) => {
@@ -470,7 +610,7 @@ export class Game {
       if (st.cleared) continue;
       const r = this.rooms.get(id)!;
       const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + ROOM_W && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + ROOM_D
-        && b.y > r.y0 - 1 && b.y < r.y0 + ROOM_H;
+        && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
       if (inside && !st.sealed) {
         st.sealed = true;
         this.doors.seal(id, true);
@@ -495,6 +635,7 @@ export class Game {
         const ev = this.bus.emit('roomClear', { room: id, drops });
         for (const k of ev.drops) this.pickups.add(k, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, id, null, 0.3);
         this.hud.toast('toast.roomClear');
+        if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
       } else if (!inside && st.sealed) {
         // the player dug their way out: keep the doors shut until it's cleared, reseal on return
@@ -512,6 +653,17 @@ export class Game {
     const b = this.player.body;
     const dx = x - b.x, dz = z - b.z, d = Math.hypot(dx, dz);
     if (d < 1.8) { x += (d > 0.01 ? dx / d : 1) * 2; z += (d > 0.01 ? dz / d : 0) * 1.5; }
+    // never inside fire, lava or a pool: the nearest dry tile of the room instead
+    if (this.world.elemAt(Math.floor(x), r.y0, Math.floor(z)) || this.world.elemAt(Math.floor(x), r.y0 - 1, Math.floor(z))) {
+      let best: [number, number] | null = null, bd = Infinity;
+      for (let row = 0; row < ROOM_D; row++) for (let col = 0; col < ROOM_W; col++) {
+        const cx = r.x0 + col, cz = r.z0 + row;
+        if (this.solid(cx, r.y0, cz) || !this.solid(cx, r.y0 - 1, cz) || this.world.elemAt(cx, r.y0, cz)) continue;
+        const dd = Math.hypot(cx + 0.5 - x, cz + 0.5 - z);
+        if (dd < bd) { bd = dd; best = [cx + 0.5, cz + 0.5]; }
+      }
+      if (best) [x, z] = best;
+    }
     let y = r.y0;
     while (y < r.y0 + 3 && this.solid(Math.floor(x), y, Math.floor(z))) y++;
     const id = this.actors.newId();
@@ -524,7 +676,7 @@ export class Game {
   // ───────────────────────── blocks ─────────────────────────
 
   /** Damages a block through the shared pipeline (`amount` is block damage, before armor). Returns true if it breaks. */
-  damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string): boolean {
+  damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string, debris = true): boolean {
     const id = this.world.get(x, y, z);
     if (id === AIR) return false;
     const m = mat(id);
@@ -535,24 +687,26 @@ export class Game {
       this.world.damaged.set(this.world.idx(x, y, z), hp);
       return false;
     }
-    return this.breakBlock(x, y, z, kind, source);
+    return this.breakBlock(x, y, z, kind, source, debris);
   }
 
-  breakBlock(x: number, y: number, z: number, kind: DamageKind, source: string): boolean {
+  /** `debris = false` starts the event with no loose cube (hooks may still ask for one). */
+  breakBlock(x: number, y: number, z: number, kind: DamageKind, source: string, debris = true): boolean {
     const id = this.world.get(x, y, z);
-    const ev = this.bus.emit('blockBreak', { x, y, z, material: id, kind, source, spawnDebris: true });
+    const ev = this.bus.emit('blockBreak', { x, y, z, material: id, kind, source, spawnDebris: debris });
     if (ev.cancelled) return false;
     this.world.set(x, y, z, AIR);
     this.debris.wake(x, y, z);
-    this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 10, 3.5, 0.09);
+    if (this.breakFx++ < BREAK_FX_PER_FRAME) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 10, 3.5, 0.09);
     if (ev.spawnDebris) {
       // launch direction is cosmetic (variable dt means debris never replays anyway)
-      this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(0.75), fx.range(1, 2), fx.spread(0.75));
+      this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(1.6), fx.range(1, 2.8), fx.spread(1.6));
     }
-    sfx.break(Math.min(3, mat(id).tier));
-    this.rollLoot(x, y, z, id, source);
+    if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.break(Math.min(3, mat(id).tier));
+    // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
+    if (kind !== 'fire') this.rollLoot(x, y, z, id, source);
     // digging into the next floor's band activates it
-    if (bandOf(y) > this.maxDepth) this.activate(bandOf(y));
+    if (depthOf(y) > this.maxDepth) this.activate(depthOf(y));
     return true;
   }
 
@@ -565,7 +719,7 @@ export class Game {
     const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops: [] });
     for (const k of ev.drops) {
       this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
-      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, k === 'key' ? 0xf2c84b : k === 'bomb' ? 0xffb347 : 0xe0303c, 14, 2.5, 0.07);
+      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
     }
   }
 
@@ -607,9 +761,10 @@ export class Game {
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
-    this.particles.burst(x, y, z, 0xffa040, 50, 8, 0.15);
-    this.particles.burst(x, y, z, 0xfff3c4, 20, 5, 0.1);
-    this.particles.burst(x, y, z, 0x555555, 24, 4, 0.22);
+    // a breakthrough: white-hot core, ember sparks, ash (docs/art/DECISIONS.md §7.4)
+    this.particles.burst(x, y, z, pal('light.ember'), 40, 8, 0.15);
+    this.particles.burst(x, y, z, pal('light.core'), 20, 5, 0.1);
+    this.particles.burst(x, y, z, pal('ink.ash'), 24, 4, 0.22);
     this.hud.shake(0.35);
     sfx2.boom();
   }
@@ -643,6 +798,33 @@ export class Game {
     d.remove(i);
     this.particles.burst(x, y, z, mat(m).colors[0], 14, 3.5, 0.1);
     sfx.break(Math.min(3, mat(m).tier));
+  }
+
+  /**
+   * A loose cube flying into a projection hurts it, harder the harder the material (a thrown
+   * obsidian hits like two intentions; dirt barely bruises) and the faster it flies. The cube
+   * bounces back, so it never hits twice in one pass. Bombs don't: they have their own blast.
+   */
+  private cubeStrikes() {
+    const d = this.debris;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || !hostile(this.player.faction, e.faction)) continue;
+      const b = e.body;
+      for (let i = 0; i < d.max; i++) {
+        if (!d.isAlive(i) || d.isResting(i) || d.isBomb(i)) continue;
+        const i3 = i * 3, vx = d.vel[i3], vy = d.vel[i3 + 1], vz = d.vel[i3 + 2];
+        const speed = Math.hypot(vx, vy, vz);
+        if (speed < CUBE_HIT_SPEED) continue;
+        const cx = d.pos[i3], cy = d.pos[i3 + 1], cz = d.pos[i3 + 2], r = DEBRIS_SIZE / 2;
+        if (Math.abs(cx - b.x) > b.hw + r || Math.abs(cz - b.z) > b.hw + r || cy + r < b.y || cy - r > b.y + b.h) continue;
+        const dmg = cubeDamage(d.material[i], speed);
+        const l = Math.hypot(vx, vz) || 1;
+        this.damageActor(e, dmg, 'kick', 'cube', this.player.id, vx / l, vz / l);
+        d.launch(i, -vx * 0.25 + fx.spread(1), Math.abs(vy) * 0.3 + 1.5, -vz * 0.25 + fx.spread(1));
+        this.particles.burst(cx, cy, cz, mat(d.material[i]).colors[0], 8, 2.5, 0.07);
+        sfx.kick();
+      }
+    }
   }
 
   /** Enemies shove the loose blocks they walk into. Bombs are only ever moved by your own shots. */
@@ -726,6 +908,155 @@ export class Game {
     sfx3.fuse();
   }
 
+  // ───────────────────────── elements ─────────────────────────
+
+  /** Fire or lava sets a flammable block alight (`ignite`): it burns away, leaving a flame. */
+  private ignite(x: number, y: number, z: number, material: number, by: 'fire' | 'lava'): boolean {
+    const ev = this.bus.emit('ignite', { x, y, z, material, by });
+    if (ev.cancelled) return false;
+    return this.breakBlock(x, y, z, 'fire', by, false);
+  }
+
+  /** Particles and sounds of the elements, budgeted per frame. */
+  private elementFx(kind: 'steam' | 'hiss' | 'catch' | 'out', x: number, y: number, z: number) {
+    if (this.elemFx++ >= ELEMENT_FX_PER_FRAME) return;
+    const cx = x + 0.5, cy = y + 0.6, cz = z + 0.5, sound = this.elemSfx++ < ELEMENT_SFX_PER_FRAME;
+    if (kind === 'steam' || kind === 'hiss') {
+      this.particles.burst(cx, cy, cz, pal('el.water.foam'), kind === 'steam' ? 14 : 6, 2.2, 0.12);
+      if (sound) sfx3.hiss(kind === 'steam');
+    } else if (kind === 'catch') {
+      this.particles.burst(cx, cy, cz, pal('el.fire.hi'), 10, 2.5, 0.07);
+      this.particles.burst(cx, cy, cz, pal('el.ember.hot'), 6, 3.5, 0.05);
+      if (sound) sfx3.catch();
+    } else {
+      this.particles.burst(cx, y + 0.3, cz, pal('el.smoke'), 6, 1.2, 0.14);
+    }
+  }
+
+  /** How a projection treats an element: its definition's senses over the defaults. */
+  private affinity(e: Enemy, key: ElementKey) {
+    return { ...DEFAULT_AFFINITY[key], ...e.spec.elements?.[key] };
+  }
+
+  /** The element at a point, counting a fluid only below its surface. */
+  elementAt(x: number, y: number, z: number): ElementDef | null {
+    const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
+    const b = this.world.elemAt(ix, iy, iz), d = elemDef(b);
+    if (!d) return null;
+    if (d.fluid && !isFalling(b) && elemKind(this.world.elemAt(ix, iy + 1, iz)) !== elemKind(b) && y - iy > fluidHeight(b)) return null;
+    return d;
+  }
+
+  /** The elements touching an actor's body: at its feet, its middle and its head (or eyes). */
+  private bodyMedium(b: { x: number; y: number; z: number; h: number }, eye: number): PlayerMedium & { mid: ElementDef | null } {
+    return { feet: this.elementAt(b.x, b.y + 0.1, b.z), mid: this.elementAt(b.x, b.y + b.h * 0.5, b.z), head: this.elementAt(b.x, b.y + eye, b.z) };
+  }
+
+  /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
+  private playerElements(dt: number) {
+    const p = this.player, b = p.body;
+    const m = this.bodyMedium(b, EYE);
+    this.playerMedium = m;
+    this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
+    // the hottest thing touching you hurts (the invulnerability window paces it)
+    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0).sort((a, c) => c.harm - a.harm)[0];
+    if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
+    // breath: drains with your head under water, refills fast at the surface
+    const max = this.stats.get('breath');
+    if (m.head?.breath) {
+      p.breath = Math.max(0, p.breath - dt);
+      if (p.breath <= 0) {
+        this.drownT -= dt;
+        if (this.drownT <= 0) {
+          this.drownT = DROWN_GAP;
+          sfx3.gulp();
+          this.particles.burst(b.x, b.y + EYE, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
+          this.damageActor(p, HALF_HEART, 'drown', 'drown', 'world');
+        }
+      }
+    } else {
+      p.breath = Math.min(max, p.breath + dt * BREATH_REFILL);
+      this.drownT = 0;
+    }
+  }
+
+  /** Emits elementEnter / elementLeave as the player's body goes in and out of elements. */
+  private actorEnterLeave(id: number, kind: 'player' | 'projection', def: string, inside: Set<ElementKey>, m: PlayerMedium & { mid: ElementDef | null }) {
+    const now = new Set<ElementKey>();
+    for (const d of [m.feet, m.mid, m.head]) if (d) now.add(d.key);
+    for (const key of now) if (!inside.has(key)) {
+      inside.add(key);
+      this.bus.emit('elementEnter', { target: id, targetKind: kind, def, element: key, depth: m.head?.key === key ? 'head' : 'feet' });
+      if (kind === 'player' && key === 'water') {
+        const b = this.player.body;
+        this.particles.burst(b.x, b.y + 0.4, b.z, pal('el.water.foam'), 16, 3, 0.08);
+        sfx3.splash();
+      }
+    }
+    for (const key of [...inside]) if (!now.has(key)) {
+      inside.delete(key);
+      this.bus.emit('elementLeave', { target: id, targetKind: kind, def, element: key });
+    }
+  }
+
+  /** Projections in the elements: their senses set their speed, element hits (paced), and reactions on entering. */
+  private enemyElements(dt: number) {
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0) continue;
+      const m = this.bodyMedium(e.body, e.body.h * 0.8);
+      const d = m.mid ?? m.feet ?? m.head;
+      e.elemT = Math.max(0, e.elemT - dt);
+      const was = e.inElement;
+      e.inElement = d?.key ?? null;
+      if (!d) {
+        e.elemSpeed = 1;
+        if (was) this.bus.emit('elementLeave', { target: e.id, targetKind: 'projection', def: e.def, element: was });
+        continue;
+      }
+      const a = this.affinity(e, d.key);
+      e.elemSpeed = a.speed;
+      if (was !== d.key) {
+        if (was) this.bus.emit('elementLeave', { target: e.id, targetKind: 'projection', def: e.def, element: was });
+        this.bus.emit('elementEnter', { target: e.id, targetKind: 'projection', def: e.def, element: d.key, depth: m.head ? 'head' : 'feet' });
+        e.spec.elements?.[d.key]?.enter?.(e);
+        if (d.key === 'water') this.particles.burst(e.body.x, e.body.y + 0.3, e.body.z, pal('el.water.foam'), 8, 2, 0.06);
+      }
+      if (d.harm > 0 && a.harm > 0 && e.elemT <= 0) {
+        e.elemT = ELEMENT_HIT_GAP;
+        this.damageActor(e, d.harm * a.harm, 'fire', d.key, 'world');
+      }
+    }
+  }
+
+  /** Loose cubes in the elements: lava consumes them, fire burns the flammable ones, water drags
+   *  them and floats the ones that float (wood). */
+  private debrisElements(dt: number) {
+    const d = this.debris;
+    const drag = Math.exp(-3 * dt);
+    for (let i = 0; i < d.max; i++) {
+      if (!d.isAlive(i)) continue;
+      const i3 = i * 3, x = d.pos[i3], y = d.pos[i3 + 1], z = d.pos[i3 + 2];
+      const b = this.world.elemAt(Math.floor(x), Math.floor(y), Math.floor(z));
+      if (!b) continue;
+      const k = ELEMENTS[elemKind(b)]!.key, m = d.material[i];
+      if (k === 'lava' || (k === 'fire' && mat(m).flammable)) {
+        // a breakthrough in the fire goes off at once
+        if (d.isBomb(i)) { d.fuse[i] = Math.min(d.fuse[i], 0.05); continue; }
+        // old pain can't melt a core belief
+        if (k === 'lava' && m === MAT.obsidian) continue;
+        d.remove(i);
+        this.elementFx('catch', Math.floor(x), Math.floor(y), Math.floor(z));
+        continue;
+      }
+      if (k === 'water') {
+        d.vel[i3] *= drag; d.vel[i3 + 2] *= drag;
+        // wood rises to the surface; everything else sinks slowly
+        if (mat(m).flammable) d.push(i, 0, (3.2 - d.vel[i3 + 1]) * (1 - drag), 0);
+        else if (d.vel[i3 + 1] < -2) d.vel[i3 + 1] *= drag;
+      }
+    }
+  }
+
   // ───────────────────────── player actions ─────────────────────────
 
   private fire() {
@@ -803,6 +1134,28 @@ export class Game {
     }
   }
 
+  /**
+   * The player's head hit a ceiling at `speed` blocks/s: `headBump` decides, per block above, whether
+   * it breaks (it starts as "tier ≤ the headbutt stat"). Breaking keeps a little of the jump, so
+   * you pop up into the gap. Returns the upward speed to keep (0 = stop).
+   */
+  private headBump(speed: number): number {
+    const b = this.player.body, hb = this.stats.get('headbutt');
+    const y = Math.floor(b.y + b.h + 0.01);
+    let broke = false;
+    for (let z = Math.floor(b.z - b.hw + 1e-3); z <= Math.floor(b.z + b.hw - 1e-3); z++)
+      for (let x = Math.floor(b.x - b.hw + 1e-3); x <= Math.floor(b.x + b.hw - 1e-3); x++) {
+        const id = this.world.get(x, y, z);
+        if (id === AIR) continue;
+        const ev = this.bus.emit('headBump', { x, y, z, material: id, speed, breaks: mat(id).tier <= hb });
+        if (!ev.cancelled && ev.breaks && this.damageBlock(x, y, z, 1e6, 'crush', 'head')) broke = true;
+      }
+    if (!broke) return 0;
+    this.hud.shake(0.12);
+    sfx.headbutt();
+    return speed * 0.45;
+  }
+
   // ───────────────────────── dungeon ─────────────────────────
 
   private requestDoor(d: Door): boolean {
@@ -839,7 +1192,7 @@ export class Game {
       if (p.type === 'heart' && this.player.hp >= this.maxHp) continue;
       if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {
         this.pickups.take(p);
-        this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'key' ? 0xf2c84b : p.type === 'bomb' ? 0xffb347 : 0xe0303c, 10, 2, 0.06);
+        this.particles.burst(p.x, p.y + 0.3, p.z, PICKUP_FX[p.type], 10, 2, 0.06);
       }
     }
   }
@@ -847,7 +1200,7 @@ export class Game {
   /** Floors, rooms and the way down. */
   private trackPlace(dt: number) {
     const b = this.player.body;
-    const band = Math.max(1, bandOf(b.y));
+    const band = depthOf(b.y);
     this.depth = band;
     if (band > this.maxDepth) {
       this.maxDepth = band;
@@ -866,27 +1219,73 @@ export class Game {
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
       this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
-      this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited);
-      // the boss room: the next floor loads, and (no boss yet) the way down opens shortly
-      const f = this.floors.get(r.floor)!;
-      if (r.type === 'boss' && f.hole && !this.holes.has(r.floor)) {
+      if (first && level(r.floor).tutorial) this.hud.lessonBanner(this.lessonFor(r));
+      this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
+      // the boss room: the next floor loads, and (no boss yet) the boss counts as overcome shortly
+      if (r.type === 'boss' && !this.bosses.has(r.floor)) {
         this.activate(r.floor + 1);
-        this.holes.set(r.floor, HOLE_DELAY);
+        this.bosses.set(r.floor, { t: HOLE_DELAY, revealed: false, open: !this.floors.get(r.floor)!.hole, warned: false, dust: 0 });
       }
     }
-    for (const [k, t] of this.holes) {
-      if (t <= 0) continue;
-      const left = t - dt;
-      this.holes.set(k, left);
-      if (left <= 0) {
-        const hole = this.floors.get(k)!.hole!;
-        openHole(this.world, hole);
-        this.particles.burst(hole.x + 1, hole.yTop + 1, hole.z + 1, 0x8a7a6a, 40, 4, 0.15);
-        this.hud.shake(0.5);
-        this.hud.toast('toast.wayDown');
-        sfx3.rumble();
+    for (const [k, st] of this.bosses) this.updateBoss(k, st, dt);
+  }
+
+  /**
+   * A boss room after its boss is overcome: the practice appears on the pedestal and the floor
+   * cracks (real crack stages as a telegraph) until it opens. It never opens under the player:
+   * it waits, trickling dust, until they step off the hole (owner rule).
+   */
+  private updateBoss(k: number, st: BossState, dt: number) {
+    if (st.revealed && st.open) return;
+    const f = this.floors.get(k)!, hole = f.hole;
+    st.t -= dt;
+    if (hole && !st.open) this.crackHole(hole, Math.min(1, 1 - st.t / HOLE_DELAY));
+    if (st.t > 0) return;
+    if (!st.revealed) { st.revealed = true; this.revealBossItem(f); }
+    if (!hole || st.open) return;
+    if (this.standsOnHole(hole)) {
+      if (!st.warned) { st.warned = true; this.hud.toast('toast.holeWait'); sfx3.rumble(); }
+      st.dust -= dt;
+      if (st.dust <= 0) {
+        st.dust = 0.25;
+        this.particles.burst(hole.x + 1, hole.yTop + 1.05, hole.z + 1, pal('limestone.dark'), 6, 1.2, 0.06);
       }
+      return;
     }
+    st.open = true;
+    openHole(this.world, hole);
+    this.particles.burst(hole.x + 1, hole.yTop + 1, hole.z + 1, pal('limestone.dark'), 40, 4, 0.15);
+    this.hud.shake(0.5);
+    this.hud.toast('toast.wayDown');
+    sfx3.rumble();
+  }
+
+  /** The hole's top blocks show real crack stages as `p` goes 0 → 1 (the floor is about to give way). */
+  private crackHole(hole: NonNullable<FloorResult['hole']>, p: number) {
+    for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) {
+      const x = hole.x + dx, z = hole.z + dz, id = this.world.get(x, hole.yTop, z);
+      if (id === AIR) continue;
+      const max = mat(id).hp, i = this.world.idx(x, hole.yTop, z);
+      this.world.damaged.set(i, Math.min(this.world.damaged.get(i) ?? max, max * (1 - 0.95 * Math.max(0.05, p))));
+    }
+  }
+
+  /** Is the player standing (or hovering) over the 2×2 hole? */
+  private standsOnHole(hole: NonNullable<FloorResult['hole']>) {
+    const b = this.player.body;
+    return b.x + b.hw > hole.x && b.x - b.hw < hole.x + 2 && b.z + b.hw > hole.z && b.z - b.hw < hole.z + 2
+      && b.y >= hole.yTop && b.y < hole.yTop + 1 + ROOM_H;
+  }
+
+  /** The boss's practice appears on its pedestal, with light and a chime. */
+  private revealBossItem(f: FloorResult) {
+    const p = f.pedestals.find(q => q.boss);
+    if (!p) return;
+    const def = this.placePedestalItem(p);
+    const x = p.x + 0.5, y = p.y + 0.6, z = p.z + 0.5;
+    this.particles.burst(x, y, z, def?.color ?? pal('light.gold'), 28, 3, 0.08);
+    this.particles.burst(x, y, z, pal('light.core'), 14, 2, 0.06);
+    sfx3.reveal();
   }
 
   // ───────────────────────── loop ─────────────────────────
@@ -901,8 +1300,19 @@ export class Game {
   frame(dt: number) {
     dt = Math.min(dt, 0.05);
     const inp = this.input;
-    if (inp.pressed.has('KeyR') && (this.player.dead || inp.locked || this.simulateUnlocked)) {
-      this.newRun(); // every new run gets a fresh seed
+    if (inp.pressed.has('KeyR') && !this.transitioning && (this.player.dead || inp.locked || this.simulateUnlocked)) {
+      // every new run gets a fresh seed, behind a short fade to black
+      this.restartT = RESTART_FADE;
+      this.hud.fadeOut(RESTART_FADE);
+      sfx3.restart();
+    }
+    if (this.restartT > 0) {
+      this.restartT -= dt;
+      if (this.restartT <= 0) { this.newRun(); this.revealT = 0; }
+    } else if (this.revealT >= 0) {
+      // stay dark until the new world is meshed, so it never pops in
+      this.revealT += dt;
+      if (!this.chunks.busy || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
     // an information banner stays until clicked; that click only dismisses it
     if (this.hud.bannerOpen && inp.clicked) {
@@ -911,7 +1321,7 @@ export class Game {
       inp.placePressed = false;
     }
     if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleInventory(this);
-    const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen;
+    const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen && !this.transitioning;
     if (running) this.simulate(dt);
     this.chunks.update();
     const p = this.player, e = p.eye;
@@ -923,12 +1333,17 @@ export class Game {
     this.camera.position.set(e.x + fx.spread(sh / 2), e.y + bob + fx.spread(sh / 2), e.z + fx.spread(sh / 2));
     this.camera.rotation.set(p.pitch, p.yaw, 0, 'YXZ');
 
-    // fog: dark dungeon below, sky above
+    // fog: dark dungeon below, sky above; the element your eyes are in closes it in
     const k = THREE.MathUtils.smoothstep(e.y, SURFACE_Y - 3, SURFACE_Y + 2);
-    this.fogColor.copy(DUNGEON_FOG).lerp(SKY, k);
+    this.fogColor.copy(LEVEL_FOG[Math.min(LAST_FLOOR, depthOf(e.y))] ?? DUNGEON_FOG).lerp(SKY, k);
     const fog = this.scene.fog as THREE.Fog;
+    const under = this.world ? this.elementAt(e.x, e.y, e.z) : null;
+    if (under?.fog) {
+      this.fogColor.setHex(pal(under.fog.color));
+      fog.near = 0; fog.far = under.fog.far;
+    } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
     fog.color.copy(this.fogColor);
-    fog.near = 6 + k * 30; fog.far = 34 + k * 80;
+    this.chunks.animate(this.time);
     this.renderer.setClearColor(this.fogColor);
 
     this.renderer.clear();
@@ -938,35 +1353,44 @@ export class Game {
 
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
-    this.hud.update(this, running, dt);
+    this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }
 
   private simulate(dt: number) {
     this.time += dt;
+    this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
     const inp = this.input;
     const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: fall => {
-        const cause = Math.max(1, bandOf(b.y)) !== this.groundBand ? 'descent' : 'fall';
+        const cause = bandOf(b.y) !== this.groundBand ? 'descent' : 'fall';
         this.bus.emit('land', { fallSpeed: fall, cause });
       },
-    });
-    if (b.onGround) this.groundBand = Math.max(1, bandOf(b.y));
+      bump: speed => this.headBump(speed),
+    }, this.playerMedium);
+    if (b.onGround) this.groundBand = bandOf(b.y);
     this.clampHealth();
     this.touchBlocks();
-    this.fire();
+    this.syncWeapon();
+    if (this.weapon) this.weapon.update(dt);
+    else this.fire();
     this.tryPlace();
     if (inp.pressed.has('KeyQ')) this.throwTop();
     if (inp.pressed.has('KeyE')) this.placeBomb();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
+    this.elements.update(dt);
+    this.debrisElements(dt);
+    this.playerElements(dt);
     this.touchDebris();
+    this.cubeStrikes();
     this.shoveCubes();
     this.touchPickups();
     this.intents.update(dt);
+    this.enemyElements(dt);
     this.enemies.update(dt);
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
@@ -980,6 +1404,25 @@ export class Game {
     this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);
   }
 
+  /** Which lesson a room of the tutorial floor teaches: rooms in the order they are reached (by
+   *  steps from the start), the way down always last. */
+  private lessonFor(r: RoomInfo): number {
+    if (r.type === 'boss') return LESSONS.length - 1;
+    const f = this.floors.get(r.floor)!;
+    const order = f.plan.rooms.filter(q => q.type !== 'boss').sort((a, b) => a.dist - b.dist || a.id - b.id);
+    return Math.min(LESSONS.length - 2, order.findIndex(q => q.id === r.id % ROOM_ID_STRIDE));
+  }
+
+  /** Rooms whose projections are all released (the minimap lights them). */
+  private clearedRooms() {
+    const out = new Set<number>();
+    for (const [id, st] of this.roomState) if (st.cleared && this.visited.has(id)) out.add(id);
+    return out;
+  }
+
+  /** Fading between runs (R): the world is frozen and the screen goes dark. */
+  get transitioning() { return this.restartT > 0 || this.revealT >= 0; }
+
   /** What the debug HUD shows. */
   get debug() {
     const r = this.room >= 0 ? this.rooms.get(this.room) : undefined;
@@ -990,6 +1433,7 @@ export class Game {
       intents: this.intents.count,
       enemies: this.enemies.list.length,
       damaged: this.world.damaged.size,
+      elements: `${this.elements.pending} active · ${this.elements.lastWork}/tick`,
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
       held: this.player.hand.length ? this.player.hand.map(m => MATERIALS[m].name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',

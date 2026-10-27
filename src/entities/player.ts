@@ -6,16 +6,24 @@ import * as THREE from 'three';
 import type { Input } from '../input/input';
 import { moveBody, type Body } from '../physics/voxel-collide';
 import type { Stats } from '../core/stats';
+import type { ElementDef } from '../content/elements';
 import type { Actor, ActorId, Faction } from './actors';
 
 export const EYE = 1.62;
 const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
+/** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
+const SWIM_G = 0.2, SINK = 1.5, SWIM_UP = 3.4, SWIM_OUT = 5.2, WADE_JUMP = 0.7, SWIM_CONTROL = 0.5;
+
+/** What the player's body is in this frame (docs/design/ELEMENTS.md §2: wade with your feet in, swim with your head under). */
+export interface PlayerMedium { feet: ElementDef | null; head: ElementDef | null }
 
 export interface PlayerHooks {
   /** Asked before jumping with the stat-based velocity; return the velocity to use, or null to cancel. */
   jump(velocity: number): number | null;
   /** Touched the ground after falling at `fallSpeed` blocks/s. */
   land(fallSpeed: number): void;
+  /** The head hit a ceiling while rising at `speed` blocks/s; returns the upward speed to keep. */
+  bump(speed: number): number;
 }
 
 /** The player: an actor like any projection (docs/architecture/ACTORS.md), plus input, a hand and counters. */
@@ -44,6 +52,10 @@ export class Player implements Actor {
   fireCooldown = 0;
   /** Distance walked on the ground (drives camera and hand bobbing). */
   walkPhase = 0;
+  /** Seconds of breath left (refills at the surface; the game drains it under water). */
+  breath = 8;
+  /** Swimming this frame (head under a fluid you can swim in). */
+  swimming = false;
   /** Direction the player is trying to move this frame (unit or zero), for contact checks. */
   wishX = 0; wishZ = 0;
   private jumpBuffer = 0;
@@ -62,7 +74,8 @@ export class Player implements Actor {
     return new THREE.Vector3(-Math.sin(this.yaw) * cp, Math.sin(this.pitch), -Math.cos(this.yaw) * cp);
   }
 
-  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks) {
+  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks,
+    medium: PlayerMedium = { feet: null, head: null }) {
     this.yaw -= input.lookDX * input.sensitivity;
     this.pitch = Math.max(-1.55, Math.min(1.55, this.pitch - input.lookDY * input.sensitivity));
 
@@ -73,9 +86,12 @@ export class Player implements Actor {
     const l = Math.hypot(wx, wz);
     if (l > 1) { wx /= l; wz /= l; }
     this.wishX = wx; this.wishZ = wz;
-    const speed = WALK * stats.moveSpeed;
+    const fluid = medium.feet?.fluid ? medium.feet : null;
+    const swim = !!medium.head?.swim;
+    this.swimming = swim;
+    const speed = WALK * stats.moveSpeed * (fluid ? fluid.wade : 1);
     const b = this.body;
-    const k = b.onGround ? 1 : AIR_CONTROL;
+    const k = swim ? SWIM_CONTROL : b.onGround ? 1 : AIR_CONTROL;
     const blend = 1 - Math.exp(-14 * k * dt);
     b.vx += (wx * speed - b.vx) * blend;
     b.vz += (wz * speed - b.vz) * blend;
@@ -84,15 +100,26 @@ export class Player implements Actor {
     if (input.pressed.has('Space')) this.jumpBuffer = 0.12;
     this.jumpBuffer -= dt;
     this.coyote = b.onGround ? 0.1 : this.coyote - dt;
-    if (this.jumpBuffer > 0 && this.coyote > 0) {
-      const v = hooks.jump(JUMP_V * Math.sqrt(stats.jump));
-      if (v !== null) b.vy = v;
-      this.jumpBuffer = 0; this.coyote = 0;
+    if (swim) {
+      // you lose your footing: you sink slowly, and holding Space swims up (and out at the edge)
+      this.jumpBuffer = 0;
+      b.vy = Math.max(b.vy - GRAVITY * SWIM_G * dt, -SINK);
+      if (input.keys.has('Space')) b.vy += (SWIM_UP * Math.sqrt(stats.jump) - b.vy) * (1 - Math.exp(-6 * dt));
+    } else if (fluid?.swim && !b.onGround && input.keys.has('Space')) {
+      // treading at the surface: Space lifts you out over the edge, like climbing onto a jetty
+      b.vy = Math.max(b.vy - GRAVITY * dt, SWIM_OUT * Math.sqrt(stats.jump));
+    } else {
+      if (this.jumpBuffer > 0 && this.coyote > 0) {
+        const v = hooks.jump(JUMP_V * Math.sqrt(stats.jump) * (fluid ? Math.sqrt(WADE_JUMP) : 1));
+        if (v !== null) b.vy = v;
+        this.jumpBuffer = 0; this.coyote = 0;
+      }
+      b.vy = Math.max(b.vy - GRAVITY * dt, fluid ? -SINK * 4 : -40);
     }
-    b.vy = Math.max(b.vy - GRAVITY * dt, -40);
-    const wasGround = b.onGround, fall = -b.vy;
+    const wasGround = b.onGround, fall = -b.vy, rise = b.vy;
     moveBody(solid, b, dt);
     if (b.onGround && !wasGround && fall > 2) hooks.land(fall);
+    if (rise > 0 && b.vy === 0 && !b.onGround) b.vy = hooks.bump(rise);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
     this.invulnT = Math.max(0, this.invulnT - dt);

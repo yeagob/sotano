@@ -17,10 +17,13 @@ import gratitude from './gratitude';
 import grounding from './grounding';
 import habitstack from './habitstack';
 import kaizen from './kaizen';
+import kiai from './kiai';
+import lionsmane from './lionsmane';
 import manthinketh from './manthinketh';
 import meditations from './meditations';
 import mindset from './mindset';
 import nothingpersonal from './nothingpersonal';
+import occamsrazor from './occamsrazor';
 import omens from './omens';
 import satori from './satori';
 import secondbrain from './secondbrain';
@@ -38,6 +41,7 @@ export const ITEMS: readonly ItemDef[] = [
   selfreliance, taoteching, manthinketh, senecaletters, satori,
   gratitude, boxbreathing, acceptance, socratic,
   forgiveness, nothingpersonal, constellation, arttherapy, thinkwaitfast, omens,
+  lionsmane, occamsrazor, kiai,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

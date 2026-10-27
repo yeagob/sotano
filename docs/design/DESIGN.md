@@ -32,7 +32,7 @@ Enter room ─► (combat: doors close) ─► room cleared ─► reward
 
 - **Micro (seconds):** aim, cast, dodge, break a block, pick up a block, place it.
 - **Mid (minutes):** clear a room, decide whether to spend a key or a bomb, decide whether to dig instead of following the path.
-- **Macro (run):** go down 4 floors, assemble a "build" from items, climb back to the surface.
+- **Macro (run):** go down through the ten floors below the roots (and, later, up the giant tree: [LEVELS.md](LEVELS.md)), assemble a "build" from items.
 - **Meta (between runs):** unlock items and knowledge (not raw power) that open new places.
 
 ## 4. The player
@@ -99,8 +99,8 @@ There's no floating "item drop" like in Minecraft: the broken block *is* the obj
 - You can carry **one block** by default. No inventory. (Items can raise it: the `carry` stat. Builder's Hands gives +1.)
 - **Walking over** a loose block picks it up… if your hand is free.
 - If you already carry one, **you kick it**: it flies off with physics. A kicked block hurts enemies (more if heavy) and can break fragile blocks. This is a combat mechanic, not just an inconvenience.
-- **Loose blocks shatter on one hit** (an intention or a sword cut breaks them). Enemies shove the loose blocks they walk into. A block that clips into a wall or another block **hops upward** (`HOP`, about 1.4 blocks) and keeps its forward speed, so it climbs out of pits instead of jittering.
-- **Bombs are loose cubes too:** you can kick them, and **your own intentions push them** (like Isaac's bombs). Enemies never touch them. They go off only when their fuse runs out or an explosion reaches them.
+- **Loose blocks are tough but not eternal:** intentions push them, and after 4 hits (`DEBRIS_HITS`) they shatter. Enemies shove the loose blocks and bombs they walk into. A block that clips into a wall or another block **hops upward** (`HOP`) instead of staying wedged.
+- **Bombs are loose cubes too:** you can kick them, enemies and intentions push them, and **an intention hit sets a bomb off at once**.
 - **Place:** aim at a block face and place it (like Minecraft, ~5 blocks of reach).
 - **Throw:** launch the block you hold (Q, or right click when there's nowhere to place it).
 - **Use:** some blocks have an active effect when placed or dropped (the equivalent of cards and runes):
@@ -144,7 +144,7 @@ So "how do I get back up" becomes something you plan on the way down. See §13 (
 
 ### Rooms
 
-- Base size inspired by Isaac: **13×7 block** interior, 5–6 high, 1–2 block walls. There are double rooms (26×7, 13×14) and L-shapes.
+- Base size inspired by Isaac: **13×7 block** interior, 5–8 high (vaults and domes, galleries and bridges, terraces, pools and dips: [LEVELS.md](LEVELS.md)), 1–2 block walls. Double rooms (26×7, 13×14) and L-shapes are planned with the Tree-of-Life floors.
 - Rooms are **hand-designed** as templates and picked at random from a catalogue per floor and type. The floor *plan* (which room goes where) is procedural.
 - Room types (version 1):
   - **Start:** no enemies.
@@ -167,7 +167,7 @@ So digging is a **decision**, not an exploit.
 
 ### Going down
 
-- **Trapdoor** in the boss room (fast and safe).
+- **Trapdoor** in the boss room (fast and safe). Today: 1.5 s after you enter, the boss's practice appears on the room's pedestal and the floor cracks open over a 2×2 shaft. It **never opens under you**: it waits until you step aside.
 - **Your own hole**, at any time: if there's a room below, you drop into it (enemies included!). If there's nothing, you keep digging rock until you reach the next floor.
 - Falling far hurts (TBD; maybe half a heart beyond N blocks).
 
@@ -250,3 +250,12 @@ If that's fun, it grows to 4 floors, bosses and secrets.
 5. **Fall damage:** yes or no? It strongly affects the freedom to dig down.
 6. **Camera:** first person as requested. Worth prototyping a 45° top-down camera too (closer to Isaac, more readable on mobile) before locking it in.
 7. **Platforms:** mobile and PC from the start? The Joel gift project proves mobile is viable, but it constrains performance and controls. (M0 is desktop-only; touch controls are planned for M1.)
+
+## Surface, sky and new runs
+
+- **The sky has a ceiling**: you can build up to **100 blocks above the grass**. The whole surface layer, from just above floor 1 up to that limit, counts as **depth 0** for anything that asks "how deep am I?".
+- **R starts a new run behind a short fade**: the screen eases to black (0.45 s, a slow ensō turning in the middle), the new run is built while it's dark, and the screen comes back only once the new world is meshed (at most 2 s), so nothing pops in.
+
+## Weapons that replace the intention
+
+Like in Isaac, some practices **replace** the intention (owner decision, 2026-10-26): **Occam's Razor** (a blade of light that cuts every block in reach, projections and their projectiles) and **Kiai** (hold to charge, release a beam that burns through blocks tick by tick). Both are quality 4 and only come from bosses. Together they become **One Clear Cut**: a charged, giant blade of light that sweeps the room. How it works: [../architecture/WEAPONS.md](../architecture/WEAPONS.md).

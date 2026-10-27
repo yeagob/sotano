@@ -62,6 +62,9 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `positive-psychology` | Gratitude journaling | Practice | Concept | Noticing what goes well | **Gratitude Journal** |
 | `breathwork` | Box breathing (paced breathing) | Practice | Concept | Regulating the nervous system | **Box Breathing** |
 | `somatic` | Somatic grounding | Practice | Concept | Coming back to the body | **Grounding** |
+| `occam` | Occam's razor (William of Ockham, 14th century) | Philosophical principle | PD / Concept | Among competing explanations, prefer the one with the fewest assumptions; cut away what isn't needed | **Occam's Razor**: a blade of light that cuts everything in reach |
+| `kiai` | Kiai, the focused shout of the Japanese martial arts | Practice | Concept | Gathering breath, body and intent into one released moment | **Kiai**: hold to gather, release a beam that burns through |
+| `lions-mane` | Lion's mane mushroom (*Hericium erinaceus*) | Natural history, folk tradition | Concept (a common name) | A shaggy mushroom that grows on old wood, in the dark; traditionally linked to the mind and nerves (no medical claim) | **Lion's Mane**: growing past the ceiling you were told was the limit (with the `platformers` wink) |
 | `kaizen` | Kaizen | Practice | Concept | Small continuous improvement | **Kaizen** |
 | `sports-psych` | Mental rehearsal (sports psychology) | Technique | Concept | Visualising before doing | **Visualization** |
 
@@ -97,3 +100,8 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `minecraft` | *Minecraft* | Blocks, breaking and placing, materials, furnaces, chests, fluids | Textures, mob names, sounds |
 | `noita` | *Noita* | Material interactions, secrets by knowledge, parallel worlds | Assets |
 | `doom` | *Doom* | Doors that slide up as you approach | Assets |
+| `space-opera` | The swords of light of space opera (*Star Wars*, Lucasfilm, 1977, and its heirs) | A blade made of light that cuts through anything | Names, sounds, designs, the word for it |
+| `charged-beams` | The charged beams of dungeon crawlers (*The Binding of Isaac*'s blood beam) | Hold to charge, release a beam that passes through everything | Names, blood imagery, art |
+| `platformers` | The classic 2D platformers (*Super Mario Bros.*, Nintendo, 1985, and its heirs) | The mushroom that makes you bigger, breaking bricks with your head, the princess who is "in another castle" (as a paraphrased wink) | Names, characters, sprites, music, exact quotes |
+
+The project is meant to be full of these winks, out of love for games (see [STORY.md, A love letter to games](../design/STORY.md#a-love-letter-to-games)): every game we wink at gets a row here, with what we take and what we never take.

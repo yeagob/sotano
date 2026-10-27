@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -6,9 +7,9 @@ export default defineItem({
   description: 'Believing you can grow lifts you higher: jump much higher.',
   effect: 'Jump height ×1.7.',
   inspiredBy: 'Mindset (Carol Dweck)',
-  pools: { treasure: 1 },
+  pools: { treasure: 1, boss: 1 },
   tags: ['mind', 'movement'],
-  color: 0x6fd36f,
+  color: pal('path.mind.glow'),
   quality: 1,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.....bb.c...',
       '....dddd....',
     ],
-    palette: { a: 0x8fe38f, b: 0x4a8a3a, c: 0x6fd36f, d: 0x7a5233 },
+    palette: { a: pal('path.body.glow'), b: pal('mat.grass.base'), c: pal('path.body.base'), d: pal('mat.crate.base') },
   },
   stats: [{ stat: 'jump', layer: 'mul', value: 1.7 }],
 });

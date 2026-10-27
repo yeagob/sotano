@@ -23,6 +23,7 @@ docs/design/                   The game from the player's side
   STORY.md                     Story, metaphor, identity, paths/states of being,
                                enemies as projections, item naming rules, vocabulary
   ELEMENTS.md                  Fire, water, lava, mud, electricity, furnaces, chests (design)
+  LEVELS.md                    The thirteen floors, rooms with height, element rooms (sotano-levels skill)
 docs/architecture/             How the code works today
   README.md                    Index of this section
   OVERVIEW.md                  Module map, frame order, core systems, debug console, tests
@@ -46,7 +47,7 @@ docs/reviews/                  Three-party architecture reviews
 | Story, metaphor, names, identity, an item's or enemy's meaning | `docs/design/STORY.md` (it wins on names and tone) |
 | An item, synergy, stat or event | `docs/architecture/ITEMS.md` (tables in §3, §5) and `docs/design/STORY.md` §5 catalogue |
 | An enemy, health, bombs, loot, floors stacking | `docs/architecture/ENTITIES.md`, plus STORY.md §4 for enemies |
-| Room templates, floor generation, doors | `docs/architecture/ROOMS.md` |
+| Room templates, floor generation, doors | `docs/architecture/ROOMS.md` (+ `docs/design/LEVELS.md` and the `sotano-levels` skill) |
 | Module layout, frame order, debug console, tests | `docs/architecture/OVERVIEW.md` |
 | Roadmap / milestone status, a technical decision change | `docs/research/TECHNICAL.md` (§15 roadmap, and note decision changes where the old decision was described) and the README roadmap |
 | A new reference (book, technique, therapy, game) or lore | `docs/lore/` via the sotano-lore skill |

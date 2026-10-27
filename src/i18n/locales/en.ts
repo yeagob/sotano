@@ -35,13 +35,28 @@ const messages = {
   'controls.pause': 'release the mouse (pause)',
 
   // ── HUD ──
-  'hud.hand': 'hand',
   'hud.floor': 'Floor {n}',
   'seed.label': 'Seed {seed}',
   'seed.copy': 'Seed {seed} · click to copy',
   'seed.copied': 'Seed link copied',
   'banner.inspired': 'Inspired by {credit}',
   'banner.continue': 'Click to continue',
+  'lesson.move.title': 'The roots',
+  'lesson.move.text': 'This floor is a friend: nothing here will hurt you. WASD to move, the mouse to look, Space to jump. Click anywhere to take the mouse; Esc to let it go.',
+  'lesson.intent.title': 'Intentions',
+  'lesson.intent.text': 'Left click casts an intention. Everything breaks with enough intent, except bedrock: the harder the block, the more it takes.',
+  'lesson.carry.title': 'Carry what breaks',
+  'lesson.carry.text': 'A broken block becomes a loose cube. Walk over it to pick it up. Right click places it; Q throws it.',
+  'lesson.kick.title': 'Kick',
+  'lesson.kick.text': 'With your hands full you kick the cubes you walk into. A flying cube hurts what it hits: the harder the block, the harder the blow.',
+  'lesson.bomb.title': 'Breakthroughs',
+  'lesson.bomb.text': 'E drops a breakthrough at your feet. Kick it where you need it before it bursts. They chain.',
+  'lesson.water.title': 'Water, fire, lava',
+  'lesson.water.text': 'Shallow water slows you; deep water takes your footing: hold Space to swim up and watch your breath. Fire and lava burn, and water calms both.',
+  'lesson.practice.title': 'Practices',
+  'lesson.practice.text': 'Practices wait on pedestals: walk up to one to take it. Tab shows yours, what they do, their synergies and your stats.',
+  'lesson.down.title': 'The way down',
+  'lesson.down.text': 'This room opens the way down into the first circle. Below, the doors close while projections are near. The deeper you go, the less gentle it gets.',
 
   // ── toasts ──
   'toast.newRun': 'Floor 1 · seed {seed}',
@@ -53,10 +68,11 @@ const messages = {
   'toast.locked': 'Locked: you need a key',
   'toast.unlocked': 'Unlocked',
   'toast.wayDown': 'A way down opens',
+  'toast.holeWait': 'The floor trembles under you: step aside and it will open',
 
   // ── death screen ──
   'death.title': 'The intention faded',
-  'death.cause': 'Overcome by {cause} on floor {n}.',
+  'death.cause': 'On floor {n}, {cause} held you.',
   'death.restart': 'Press R to begin again',
   'cause.unknown': 'the depths',
   'cause.judgement': 'judgement',
@@ -65,6 +81,9 @@ const messages = {
   'cause.contact': 'contact',
   'cause.item': 'a practice',
   'cause.console': 'the console',
+  'cause.lava': 'the lava',
+  'cause.fire': 'the fire',
+  'cause.drown': 'the deep water',
 
   // ── inventory window ──
   'inv.title': 'Practices',
@@ -98,8 +117,10 @@ const messages = {
   'stat.kick': 'Kick',
   'stat.throw': 'Throw',
   'stat.crush': 'Crush',
+  'stat.headbutt': 'Headbutt',
   'stat.maxHearts': 'Hearts',
   'stat.invuln': 'Recovery',
+  'stat.breath': 'Breath',
   'stat.bombRadius': 'Bomb radius',
   'stat.bombDamage': 'Bomb power',
   'unit.times': '×{n}',

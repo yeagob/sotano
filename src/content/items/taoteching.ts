@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,24 +9,24 @@ export default defineItem({
   inspiredBy: 'Lao Tzu, Tao Te Ching (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['mind', 'emotion', 'intent', 'mining'],
-  color: 0xe8e4da,
+  color: pal('path.mind.glow'),
   quality: 4,
   icon: {
     rows: [
       '............',
-      '....bbbb....',
-      '..aabbbbbb..',
-      '.aaaabbbbbb.',
-      '.aaaaabbabb.',
-      '.aaaaaabbbb.',
-      '.aaaaaaabbb.',
-      '.aabaaaaabb.',
-      '.aaaaaaaabb.',
-      '..aaaaaaab..',
+      '....aaaa....',
+      'aaaa....aaaa',
+      '....cccc....',
+      '...cddddc...',
+      'a.cdddddbc.a',
+      '.acdddbbbca.',
+      '...cccccc...',
+      'aaaa....aaaa',
       '....aaaa....',
       '............',
+      '............',
     ],
-    palette: { a: 0xf4f0e6, b: 0x2a2633 },
+    palette: { a: pal('path.emotion.glow'), b: pal('mat.stone.dark'), c: pal('mat.stone.outline'), d: pal('mat.stone.hi') },
   },
   stats: [
     { stat: 'mining', layer: 'mul', value: 1.5 },
@@ -34,7 +35,7 @@ export default defineItem({
     hook('fire', e => {
       e.intent.pierce += 5;
       e.intent.pierceTier = Math.max(e.intent.pierceTier, 3);
-      e.intent.color = 0xe8e4da;
+      e.intent.color = pal('bone.paper');
     }, { id: 'flow-through', priority: 10 }),
   ],
 });

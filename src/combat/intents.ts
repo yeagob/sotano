@@ -2,6 +2,7 @@
 // gravity (see docs/DESIGN.md §4).
 
 import * as THREE from 'three';
+import { pal } from '../content/palette';
 import type { Stats } from '../core/stats';
 import type { IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
@@ -17,7 +18,7 @@ export function intentFromStats(s: Stats): IntentSpec {
     radius: 0.12 * s.size,
     pierce: 0,
     pierceTier: 0,
-    color: 0x9fd3ff,
+    color: pal('light.gold'), // the shell; items may tint it, the core always stays white-hot
     tags: new Set(),
   };
 }
@@ -38,22 +39,35 @@ export interface IntentHooks {
   enemyAt(x: number, y: number, z: number, r: number): number;
   hitEnemy(id: number, vel: THREE.Vector3, intent: IntentSpec): void;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
+  /** The element at a point ('water' slows an intention, 'lava' puts it out), or null. */
+  elementAt?(x: number, y: number, z: number): 'water' | 'lava' | 'fire' | null;
+  /** An intention went out in lava (effects only). */
+  quenched?(p: THREE.Vector3): void;
 }
 
 export class Intents {
   private list: Intent[] = [];
   private mesh: THREE.InstancedMesh;
+  /** A bead of light (docs/art/DECISIONS.md §7.1): white-hot core, gold shell, an ember halo. */
+  private core: THREE.InstancedMesh;
+  private halo: THREE.InstancedMesh;
   private m = new THREE.Matrix4();
   private c = new THREE.Color();
 
   constructor(scene: THREE.Scene, private hooks: IntentHooks, private max = 200) {
-    const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85 });
-    this.mesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), mat, max);
-    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    const geo = new THREE.IcosahedronGeometry(1, 0);
+    const inst = (mat: THREE.Material) => {
+      const m = new THREE.InstancedMesh(geo, mat, max);
+      m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      m.frustumCulled = false;
+      m.count = 0;
+      scene.add(m);
+      return m;
+    };
+    this.core = inst(new THREE.MeshBasicMaterial({ color: pal('light.core') }));
+    this.mesh = inst(new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.6, depthWrite: false }));
     this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
-    this.mesh.frustumCulled = false;
-    this.mesh.count = 0;
-    scene.add(this.mesh);
+    this.halo = inst(new THREE.MeshBasicMaterial({ color: pal('light.ember'), transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
   }
 
   get count() { return this.list.length; }
@@ -70,6 +84,10 @@ export class Intents {
       const t = this.list[i];
       t.age += dt;
       if (t.age > t.spec.flight) t.vel.y -= t.spec.gravity * dt;
+      // water drags an intention (it keeps going, slower); lava puts it out
+      const el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
+      if (el === 'water') t.vel.multiplyScalar(Math.exp(-2.5 * dt));
+      else if (el === 'lava') { h.quenched?.(t.pos); this.list.splice(i, 1); continue; }
       const step = t.vel.clone().multiplyScalar(dt);
       const dist = step.length();
       let dead = false;
@@ -114,10 +132,13 @@ export class Intents {
       this.m.makeScale(r, r, r).setPosition(t.pos);
       this.mesh.setMatrixAt(n, this.m);
       this.mesh.setColorAt(n, this.c.setHex(t.spec.color));
+      this.m.makeScale(r * 0.55, r * 0.55, r * 0.55).setPosition(t.pos);
+      this.core.setMatrixAt(n, this.m);
+      this.m.makeScale(r * 2.4, r * 2.4, r * 2.4).setPosition(t.pos);
+      this.halo.setMatrixAt(n, this.m);
       n++;
     }
-    this.mesh.count = n;
-    this.mesh.instanceMatrix.needsUpdate = true;
+    for (const m of [this.mesh, this.core, this.halo]) { m.count = n; m.instanceMatrix.needsUpdate = true; }
     if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
   }
 }

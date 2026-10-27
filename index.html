@@ -5,134 +5,160 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>SÓTANO</title>
   <style>
-    :root { --ink: #f3ead8; --shadow: #000a; --accent: #9fd3ff; --panel: #1d1813f2; --edge: #5a4a3a; }
+    /* Vessel Light UI (docs/art/DECISIONS.md §10.2). Every colour is a palette token written by
+       applyPaletteCss() (src/render/icons.ts) as a CSS variable: no hex in this file. */
+    :root { --u: clamp(2px, calc(100vh / 384), 5px); }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: #15110e; overflow: hidden; color: var(--ink);
-      font: 14px/1.35 ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; user-select: none; }
+    html, body { margin: 0; height: 100%; background: var(--pal-ink-void); overflow: hidden; color: var(--ui-text);
+      font: 15px/1.4 system-ui, "Segoe UI", Roboto, sans-serif; user-select: none; }
     #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
     img { image-rendering: pixelated; }
+    /* the cellar slate: ink panel, ink outline, inner bevel, chamfered corners, no radius, no blur */
+    .slate { background: color-mix(in srgb, var(--ui-panel) 95%, transparent); outline: 1px solid var(--ui-line);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi), inset -2px -2px 0 var(--ui-line);
+      clip-path: polygon(calc(2 * var(--u)) 0, calc(100% - 2 * var(--u)) 0, 100% calc(2 * var(--u)), 100% calc(100% - 2 * var(--u)),
+        calc(100% - 2 * var(--u)) 100%, calc(2 * var(--u)) 100%, 0 calc(100% - 2 * var(--u)), 0 calc(2 * var(--u))); }
 
-    /* crosshair */
+    /* crosshair: shape, not colour */
     #crosshair { position: fixed; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; pointer-events: none; }
-    #crosshair::before, #crosshair::after { content: ""; position: absolute; background: #fffc; box-shadow: 0 0 2px #000; }
+    #crosshair::before, #crosshair::after { content: ""; position: absolute; background: var(--ui-text); box-shadow: 0 0 0 1px var(--ui-line); }
     #crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
     #crosshair::after { top: 8px; left: 0; height: 2px; width: 18px; }
 
-    /* Isaac corner: hearts, bombs, keys, item icons */
-    #status { position: fixed; top: 10px; left: 12px; text-shadow: 0 2px 0 #000; pointer-events: none; }
-    #hearts { display: flex; gap: 3px; margin-bottom: 6px; }
-    #hearts.blink { animation: blink .18s steps(2) infinite; }
-    .heart { position: relative; width: 22px; height: 20px; display: inline-block; background: no-repeat center/contain;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23140808' d='M1 0h3v1h1v1h1V1h1V0h3v1h1v4h-1v1H9v1H8v1H7v1H6v1H5V9H4V8H3V7H2V6H1V5H0V1h1z'/%3E%3Cpath fill='%233a1416' d='M1 1h3v1h1v1h1V2h1V1h3v4H9v1H8v1H7v1H6v1H5V8H4V7H3V6H2V5H1z'/%3E%3C/svg%3E"); }
-    .heart.full { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23140808' d='M1 0h3v1h1v1h1V1h1V0h3v1h1v4h-1v1H9v1H8v1H7v1H6v1H5V9H4V8H3V7H2V6H1V5H0V1h1z'/%3E%3Cpath fill='%23e0303c' d='M1 1h3v1h1v1h1V2h1V1h3v4H9v1H8v1H7v1H6v1H5V8H4V7H3V6H2V5H1z'/%3E%3Cpath fill='%23ff8a8a' d='M2 2h1v1H2z'/%3E%3C/svg%3E"); }
+    /* Isaac corner: hearts, breakthroughs (seeds), keys, practices */
+    #status { position: fixed; top: 10px; left: 12px; pointer-events: none; }
+    #hearts { display: flex; gap: var(--u); margin-bottom: 6px; }
+    .heart { position: relative; width: calc(11 * var(--u)); height: calc(10 * var(--u)); display: inline-block;
+      background: no-repeat center/contain var(--ico-heartEmpty); image-rendering: pixelated; }
+    .heart.full { background-image: var(--ico-heart); }
     .heart > .heart { position: absolute; left: 0; top: 0; }
-    .counter { display: flex; align-items: center; gap: 6px; font-size: 18px; font-weight: bold; margin: 2px 0; }
-    .counter .ico { width: 20px; height: 20px; background: no-repeat center/contain; }
-    .ico.bomb { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23120c18' d='M2 2h6v1h1v5H8v1H2V8H1V3h1z'/%3E%3Cpath fill='%232a2233' d='M2 3h6v5H2z'/%3E%3Cpath fill='%23ffb347' d='M4 4h2v2H4zM3 6h1v1H3zM6 3h1v1H6zM5 0h1v2H5z'/%3E%3Cpath fill='%23fff3c4' d='M5 0h1v1H5z'/%3E%3C/svg%3E"); }
-    .ico.key { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%23140c04' d='M0 0h6v5H5v5H2V5H0z'/%3E%3Cpath fill='%23f2c84b' d='M1 1h4v3H1zM3 4h1v5H3zM4 6h1v1H4zM4 8h1v1H4z'/%3E%3Cpath fill='%239fd3ff' d='M2 2h2v1H2z'/%3E%3C/svg%3E"); }
+    /* invulnerable: steady at 55 % with a paper outline (the 5.5 Hz blink is gone) */
+    #hearts.safe > .heart { opacity: .55; outline: 1px solid var(--ui-text); }
+    /* low health: the last heart beats at 1.1 Hz */
+    #hearts.low > .heart:last-child { animation: beat .9s ease-in-out infinite; }
+    @keyframes beat { 50% { transform: scale(1.12); } }
+    /* breath under water: bubbles that pop one by one; the last one pulses when it is almost gone */
+    #breath { display: none; gap: calc(var(--u) / 2); margin-bottom: 6px; }
+    #breath.on { display: flex; }
+    .bubble { width: calc(8 * var(--u)); height: calc(8 * var(--u)); background: no-repeat center/contain var(--ico-bubble); image-rendering: pixelated; }
+    .bubble.empty { background-image: var(--ico-bubbleEmpty); opacity: .6; }
+    #breath.low > .bubble.last { animation: beat .7s ease-in-out infinite; }
+    .counter { display: flex; align-items: center; gap: 6px; font-size: 20px; font-weight: bold; margin: 2px 0;
+      font-variant-numeric: tabular-nums; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
+    .counter .ico { width: 20px; height: 20px; background: no-repeat center/contain; image-rendering: pixelated; }
+    .ico.bomb { background-image: var(--ico-seed); }
+    .ico.key { background-image: var(--ico-key); }
     #items { display: flex; flex-wrap: wrap; gap: 3px; max-width: 220px; margin-top: 8px; }
-    #items img { width: 28px; height: 28px; filter: drop-shadow(0 1px 1px #000); }
+    #items img { width: 28px; height: 28px; }
 
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
-    .slot { position: relative; width: 56px; height: 56px; border: 3px solid #0009; background: #0005; outline: 2px solid #fff3; }
-    .slot.top { outline-color: #fffb; }
+    .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
+    .slot.top { box-shadow: inset 0 0 0 2px var(--ui-text); }
     .slot img { width: 100%; height: 100%; display: block; }
-    #hand::after { content: attr(data-label); position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 10px; opacity: .6; }
 
-    /* minimap, floor */
-    #corner { position: fixed; right: 12px; bottom: 14px; text-align: right; text-shadow: 0 1px 2px #000; pointer-events: none; }
-    #minimap { display: block; margin: 0 0 6px auto; width: 180px; background: #0006; outline: 2px solid #0008; }
-    #depth { font-size: 15px; }
-    #debug { position: fixed; right: 10px; top: 8px; text-align: right; white-space: pre; font-size: 11px; opacity: .7; text-shadow: 0 1px 2px #000; pointer-events: none; }
+    /* minimap top-right (the right hand used to cover it), floor label underneath */
+    #corner { position: fixed; right: 12px; top: 10px; text-align: right; pointer-events: none; }
+    #minimap { display: block; margin: 0 0 4px auto; width: 180px; padding: 4px; }
+    #depth { font-size: 15px; color: var(--ui-text-2); }
+    #debug { position: fixed; right: 10px; bottom: 8px; text-align: right; white-space: pre; font: 12px/1.3 ui-monospace, Consolas, monospace; opacity: .8; pointer-events: none; display: none; }
 
-    /* item banner */
-    #banner { position: fixed; left: 50%; top: 13%; transform: translate(-50%, -14px); pointer-events: none; opacity: 0; max-width: min(640px, 92vw); }
+    /* practice banner: slate, top 12 %, click to dismiss */
+    #banner { position: fixed; left: 50%; top: 12%; transform: translate(-50%, -14px); pointer-events: none; opacity: 0; max-width: min(640px, 92vw); }
     #banner.show { animation: bannerIn .5s ease forwards; }
     @keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -14px) scale(.96); } 60% { opacity: 1; transform: translate(-50%, 0) scale(1.03); }
       100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
-    #banner .dismiss { margin: 8px 0 0; font-size: 11px; opacity: .6; text-align: right; animation: blink 1.4s infinite; }
-    #banner .ribbon { display: flex; gap: 14px; align-items: flex-start; padding: 12px 18px 12px 12px; background: linear-gradient(180deg, #241c16f0, #15100cf0);
-      border: 3px solid #000; outline: 2px solid var(--c); box-shadow: 0 0 30px color-mix(in srgb, var(--c) 45%, transparent); }
+    @media (prefers-reduced-motion: reduce) { #banner.show { animation: none; opacity: 1; transform: translate(-50%, 0); } }
+    #banner .dismiss { margin: 8px 0 0; font-size: 14px; color: var(--ui-faded); text-align: right; }
+    #banner .ribbon { display: flex; gap: 14px; align-items: flex-start; padding: calc(6 * var(--u)); border-left: calc(2 * var(--u)) solid var(--c); }
     #banner .ribbon img { width: 70px; height: 70px; flex: none; filter: drop-shadow(0 0 8px var(--c)); }
-    #banner b { display: block; font-size: 26px; letter-spacing: 1px; text-shadow: 0 3px 0 #000; }
-    #banner span { display: block; margin-top: 2px; font-size: 14px; }
-    #banner small { display: block; margin-top: 3px; font-size: 11px; opacity: .65; font-style: italic; }
-    #banner span { font-style: italic; opacity: .85; }
-    .effect { margin: 6px 0 2px; padding: 4px 8px; background: #ffffff0f; border-left: 3px solid var(--c, #9fd3ff); font-size: 13px; color: #fff; }
-    #banner i { display: block; font-style: normal; font-size: 13px; margin-top: 3px; }
-    #banner i.up { color: #8fe38f; } #banner i.down { color: #f08a8a; } #banner i.syn { color: #f2c84b; }
-    .q { font-style: normal; letter-spacing: 1px; font-size: 13px; }
-    .q0, .q1 { color: #bdb4a6; } .q2 { color: #9fd3ff; } .q3 { color: #c9a0ff; } .q4 { color: #f2c84b; text-shadow: 0 0 6px #f2c84b88; }
+    #banner b { display: block; font-size: 28px; letter-spacing: 1px; }
+    #banner span { display: block; margin-top: 2px; font-size: 16px; font-style: italic; color: var(--ui-text-2); }
+    #banner small { display: block; margin-top: 3px; font-size: 14px; color: var(--ui-faded); }
+    .effect { margin: 6px 0 2px; padding: 4px 8px; background: var(--ui-line); border-left: 3px solid var(--c, var(--ui-text-2)); font-size: 15px; color: var(--ui-text); }
+    #banner i { display: block; font-style: normal; font-size: 15px; margin-top: 3px; }
+    #banner i.up { color: var(--ui-up); } #banner i.down { color: var(--ui-down); } #banner i.syn { color: var(--ui-gold); }
+    .q { font-style: normal; letter-spacing: 1px; font-size: 15px; color: var(--ui-gold); }
+    .q4 { text-shadow: 0 0 6px var(--ui-gold); }
 
-    /* screen effects */
-    #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 45%, #fff 0%, var(--c) 30%, transparent 75%); }
-    #flash.on { animation: flash .7s ease-out; }
-    @keyframes flash { 0% { opacity: .75; } 100% { opacity: 0; } }
-    #hurt { position: fixed; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 160px 40px #c0101c; }
-    #hurt.on { animation: hurt .5s ease-out; }
-    @keyframes hurt { 0% { opacity: .9; } 100% { opacity: 0; } }
+    /* screen effects, gentle (§10.4): item flash peak .45 over .5 s; hurt vignette life.dark peak .35 over .4 s */
+    #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 45%, var(--c) 0%, transparent 70%); }
+    #flash.on { animation: flash .5s ease-out; }
+    @keyframes flash { 0% { opacity: .45; } 100% { opacity: 0; } }
+    #hurt { position: fixed; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 160px 40px var(--pal-life-dark); }
+    #hurt.on { animation: hurt .4s ease-out; }
+    @keyframes hurt { 0% { opacity: .35; } 100% { opacity: 0; } }
 
-    #toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: #000a; padding: 6px 12px;
-      border-radius: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    /* toasts: slate, 16 px, top-centre at 22 % (away from the hand slots) */
+    #toast { position: fixed; left: 50%; top: 22%; transform: translateX(-50%); padding: calc(3 * var(--u)) calc(6 * var(--u));
+      font-size: 16px; opacity: 0; transition: opacity .3s; pointer-events: none; }
     #toast.show { opacity: 1; }
 
     /* panels */
-    #overlay .card, #inventory .card, #death .card { background: var(--panel); border: 3px solid #000; outline: 2px solid var(--edge); }
-    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #0008; cursor: pointer; }
-    #overlay .card { max-width: 460px; padding: 22px 26px; }
-    #overlay h1 { margin: 0 0 4px; font-size: 34px; letter-spacing: 4px; }
-    #overlay p { margin: 6px 0; opacity: .85; }
+    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 55%, transparent); cursor: pointer; }
+    #overlay .card { max-width: 480px; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
+    #overlay h1 { margin: 0 0 4px; font-size: 40px; letter-spacing: 4px; }
+    #overlay p { margin: 6px 0; color: var(--ui-text-2); }
     #overlay table { border-collapse: collapse; margin: 10px 0; }
     #overlay td { padding: 2px 10px 2px 0; }
-    #overlay td:first-child { color: var(--accent); white-space: nowrap; }
-    #lang { display: flex; gap: 6px; align-items: center; justify-content: center; margin: 10px 0 2px; font-size: 12px; }
-    #lang span { opacity: .65; margin-right: 2px; }
-    #lang button { font: inherit; color: var(--ink); background: #0006; border: 2px solid #0009; outline: 1px solid #fff2; padding: 2px 10px; cursor: pointer; }
-    #lang button:hover { outline-color: var(--accent); }
-    #lang button.on { color: var(--accent); outline-color: var(--accent); }
-    .go { margin-top: 12px; text-align: center; font-weight: bold; animation: blink 1.2s infinite; }
-    @keyframes blink { 50% { opacity: .4; } }
+    #overlay td:first-child { color: var(--ui-gold); white-space: nowrap; }
+    #lang { display: flex; gap: 6px; align-items: center; justify-content: center; margin: 10px 0 2px; font-size: 14px; }
+    #lang span { color: var(--ui-faded); margin-right: 2px; }
+    #lang button { font: inherit; color: var(--ui-text); background: var(--ui-line); border: 0; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); padding: 2px 10px; cursor: pointer; }
+    #lang button:hover, #lang button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    .go { margin-top: 12px; text-align: center; font-weight: bold; color: var(--ui-gold); }
 
-    #inventory { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: #000a; }
+    #inventory { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
     #inventory.show { display: flex; }
-    #inventory .card { width: min(900px, 94vw); max-height: 88vh; overflow: auto; padding: 16px 20px; }
-    #inventory header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #0008; margin-bottom: 10px; }
-    #inventory h2 { margin: 0 0 6px; letter-spacing: 3px; color: var(--accent); }
-    #inventory h3 { margin: 14px 0 6px; font-size: 13px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
-    #inventory .cols { display: grid; grid-template-columns: 1fr 230px; gap: 18px; }
+    #inventory .card { width: min(960px, 94vw); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
+    #inventory header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--ui-line); margin-bottom: 10px; }
+    #inventory h2 { margin: 0 0 6px; letter-spacing: 3px; }
+    #inventory h3 { margin: 14px 0 6px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
+    #inventory .cols { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
     #inventory .grid { display: flex; flex-wrap: wrap; gap: 6px; }
-    #inventory .tile { position: relative; width: 52px; height: 52px; padding: 4px; background: #0006; border: 2px solid #0009; outline: 2px solid transparent; cursor: pointer; }
-    #inventory .tile.sel, #inventory .tile:hover { outline-color: var(--c); background: #ffffff10; }
-    #inventory .tile img { width: 100%; height: 100%; }
-    #inventory .tile i { position: absolute; right: 2px; bottom: 0; font-style: normal; font-size: 11px; text-shadow: 0 1px 0 #000; }
-    #inventory .detail { display: flex; gap: 14px; margin-top: 12px; padding: 10px; background: #0005; border-left: 4px solid var(--c); }
+    /* 56 px tiles with the icon at an integer ×3 (42 px) */
+    #inventory .tile { position: relative; width: 56px; height: 56px; padding: 7px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
+    #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
+    #inventory .tile img { width: 42px; height: 42px; }
+    #inventory .tile i { position: absolute; right: 2px; bottom: 0; font-style: normal; font-size: 14px; color: var(--ui-gold); }
+    #inventory .detail { display: flex; gap: 14px; margin-top: 12px; padding: 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--c); }
     #inventory .detail img { width: 84px; height: 84px; flex: none; }
-    #inventory .detail b { font-size: 18px; }
+    #inventory .detail b { font-size: 20px; }
     #inventory .detail p { margin: 6px 0 4px; }
-    #inventory .detail small { opacity: .65; font-style: italic; }
+    #inventory .detail small { color: var(--ui-faded); font-size: 14px; }
     #inventory .fx { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
-    #inventory .fx i { font-style: normal; color: #8fe38f; font-size: 12px; }
-    .path { font-style: normal; font-size: 11px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); border-radius: 2px; margin-left: 4px; }
+    #inventory .fx i { font-style: normal; color: var(--ui-up); font-size: 14px; }
+    .path { font-style: normal; font-size: 14px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); margin-left: 4px; }
     #inventory .syns { list-style: none; margin: 0; padding: 0; }
-    #inventory .syns li { padding: 5px 8px; margin: 4px 0; background: #0004; }
-    #inventory .syns li.on b { color: #f2c84b; } #inventory .syns li.off { opacity: .6; }
-    #inventory .syns span { display: block; font-size: 12px; } #inventory .syns small { display: block; font-size: 11px; opacity: .75; }
+    #inventory .syns li { padding: 5px 8px; margin: 4px 0; background: var(--ui-line); }
+    #inventory .syns li.on b { color: var(--ui-gold); } #inventory .syns li.off { opacity: .6; }
+    #inventory .syns span { display: block; font-size: 14px; } #inventory .syns small { display: block; font-size: 14px; color: var(--ui-faded); }
     #inventory table { width: 100%; border-collapse: collapse; }
-    #inventory td { padding: 2px 0; border-bottom: 1px solid #ffffff0d; } #inventory td:last-child { text-align: right; color: var(--accent); }
-    .none { opacity: .6; }
+    #inventory td { padding: 2px 0; border-bottom: 1px solid var(--ui-line); color: var(--ui-text-2); } #inventory td:last-child { text-align: right; color: var(--ui-text); }
+    .none { color: var(--ui-faded); }
 
-    #death { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: radial-gradient(circle, #200608cc, #000e); }
+    /* death is rest: night to ink, an ensō that almost closes, no blood red */
+    #death { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: linear-gradient(var(--ui-night), var(--pal-ink-void)); }
     #death.show { display: flex; animation: fadeIn 1.2s ease; }
     @keyframes fadeIn { from { opacity: 0; } }
-    #death .card { padding: 24px 30px; text-align: center; max-width: 520px; }
-    #death h1 { margin: 0 0 8px; letter-spacing: 3px; color: #e0303c; }
+    #death .card { padding: calc(8 * var(--u)) calc(10 * var(--u)); text-align: center; max-width: 520px; }
+    #death .card::before { content: ""; display: block; width: 64px; height: 64px; margin: 0 auto 10px; border-radius: 50%;
+      border: calc(2 * var(--u)) solid var(--ui-text); border-right-color: transparent; transform: rotate(-20deg); }
+    #death h1 { margin: 0 0 8px; letter-spacing: 3px; font-size: 40px; color: var(--ui-text); }
     #death .icons { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 12px 0; }
     #death .icons img { width: 42px; height: 42px; }
 
-    .seed { font-size: 12px; opacity: .7; letter-spacing: 1px; text-align: center; cursor: copy; }
-    .seed:hover { opacity: 1; color: var(--accent); }
-    #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #15110e; }
+    /* R: the fade between runs, with a slow ensō (beginning again) */
+    #fade { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: 0; display: flex; align-items: center; justify-content: center;
+      background: var(--fade-bg); transition: opacity var(--fade-t, .45s) ease-in-out; }
+    #fade.on { opacity: 1; }
+    #fade i { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--fade-ink); border-top-color: transparent;
+      transform: rotate(-30deg); opacity: .8; animation: enso 2.4s linear infinite; }
+    @keyframes enso { to { transform: rotate(330deg); } }
+    @media (prefers-reduced-motion: reduce) { #fade i { animation: none; } }
+    .seed { font-size: 14px; color: var(--ui-faded); letter-spacing: 1px; text-align: center; cursor: copy; }
+    .seed:hover { color: var(--ui-gold); }
+    #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--pal-ink-void); color: var(--pal-bone-paper); }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
   </style>
 </head>
@@ -143,19 +169,21 @@
   <div id="hurt"></div>
   <div id="status">
     <div id="hearts"></div>
+    <div id="breath"></div>
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
     <div id="items"></div>
   </div>
-  <div id="hand" data-label="hand" data-i18n-label="hud.hand"></div>
-  <div id="corner"><canvas id="minimap"></canvas><div id="depth"></div></div>
+  <div id="hand"></div>
+  <div id="corner"><canvas id="minimap" class="slate"></canvas><div id="depth"></div></div>
   <div id="debug"></div>
   <div id="banner"></div>
-  <div id="toast"></div>
+  <div id="toast" class="slate"></div>
   <div id="inventory"></div>
   <div id="death"></div>
+  <div id="fade"><i></i></div>
   <div id="overlay">
-    <div class="card">
+    <div class="card slate">
       <h1>SÓTANO</h1>
       <p data-i18n="intro.tagline">Go down into yourself. Break what holds you. Find the way back up.</p>
       <table>

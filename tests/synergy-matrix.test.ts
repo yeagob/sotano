@@ -17,10 +17,12 @@ const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed
 
 const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   fire: () => ({ intent: intent() }),
+  strike: () => ({ weapon: 'blade', damage: 10, mining: 3, reach: 2.5, color: 0, tags: new Set() }),
   blockDamage: () => ({ x: 1, y: 1, z: 1, material: 4, amount: 3, kind: 'intent', source: 'intent' }),
   blockBreak: () => ({ x: 1, y: 1, z: 1, material: 4, kind: 'intent', source: 'intent', spawnDebris: true }),
   blockPlace: () => ({ x: 1, y: 1, z: 1, material: 4 }),
   touchBlock: () => ({ x: 1, y: 1, z: 1, material: 1, crush: false }),
+  headBump: () => ({ x: 1, y: 2, z: 1, material: 4, speed: 6, breaks: false }),
   explosion: () => ({ x: 1, y: 1, z: 1, radius: 2, damage: 10, actorDamage: 8, source: 'test', owner: 1, cause: { origin: 'test', gen: 0 } }),
   blockLoot: () => ({ x: 1, y: 1, z: 1, material: 4, source: 'intent', drops: ['key'] }),
   touchCube: () => ({ cube: 0, material: 1, held: 0, carry: 1, bomb: false, action: 'pickup' }),
@@ -44,6 +46,10 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, type: 'normal', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
+  ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
+  materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),
+  elementEnter: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water', depth: 'head' }),
+  elementLeave: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water' }),
 };
 
 function sandbox() {

@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Kaizen, the practice of continuous small improvement',
   pools: { treasure: 1 },
   tags: ['will', 'intent', 'mining'],
-  color: 0xffb347,
+  color: pal('path.will.glow'),
   quality: 2,
   icon: {
     rows: [
@@ -25,9 +26,9 @@ export default defineItem({
       '.abbbbbbbbb.',
       '............',
     ],
-    palette: { a: 0xffe3a3, b: 0xffb347 },
+    palette: { a: pal('sky.horizon'), b: pal('path.will.base') },
   },
   hooks: [
-    hook('fire', e => { e.intent.pierce += 2; e.intent.color = 0xffb347; }, { id: 'pierce', priority: 10 }),
+    hook('fire', e => { e.intent.pierce += 2; e.intent.color = pal('path.will.base'); }, { id: 'pierce', priority: 10 }),
   ],
 });

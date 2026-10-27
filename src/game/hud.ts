@@ -12,9 +12,11 @@ import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Param
 import { causeName, effectMessage, isPath, itemText, materialName, pathName, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
+import { HUD_ICONS } from '../content/hud-icons';
+import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
 import { materialTexture } from '../render/atlas';
-import { iconDataUrl, qualityStars } from '../render/icons';
-import type { FloorResult } from '../world/floor';
+import { applyPaletteCss, iconDataUrl, qualityStars } from '../render/icons';
+import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import type { Game } from './game';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -25,15 +27,22 @@ const th = (key: MessageKey, params?: Params) => esc(t(key, params));
 
 const STAT_ORDER: StatName[] = [
   'damage', 'fireRate', 'shotSpeed', 'range', 'gravity', 'size', 'mining',
-  'moveSpeed', 'jump', 'maxHearts', 'invuln', 'carry', 'kick', 'throw', 'crush', 'reach',
+  'moveSpeed', 'jump', 'maxHearts', 'invuln', 'carry', 'kick', 'throw', 'crush', 'headbutt', 'reach',
   'bombRadius', 'bombDamage', 'luck',
 ];
 
-const ROOM_COLORS: Record<string, string> = {
-  start: '#9fd3ff', normal: '#cfc6b8', treasure: '#f2c84b', boss: '#e05d5d', vault: '#c9a227',
+/** Path chips: the path's base colour, always next to its glyph and word (§10.2). */
+const pathColor = (p: string) => palCss(`path.${p}.base` as PalToken);
+/** Minimap tones (docs/art/DECISIONS.md §10.2). */
+const MAP = {
+  unvisited: palCss('bone.faded'), visited: palCss('ink.ash'), cleared: palCss('light.gold'), current: palCss('bone.paper'),
+  treasure: palCss('light.gold'), vault: palCss('brass.base'), boss: palCss('cold.white'), start: palCss('bone.dim'),
 };
+/** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
+const FLASH_BUDGET_MS = 333;
 
-const PATH_COLORS: Record<string, string> = { body: '#e0884a', mind: '#9b7bff', emotion: '#e88fb5', will: '#c9a227' };
+/** The lessons of the roots, in the order their rooms are reached (docs/design/LEVELS.md §1). */
+export const LESSONS = ['move', 'intent', 'carry', 'kick', 'bomb', 'water', 'practice', 'down'] as const;
 
 export class Hud {
   private hand = $('hand');
@@ -43,6 +52,8 @@ export class Hud {
   private bannerEl = $('banner');
   private toastEl = $('toast');
   private heartsEl = $('hearts');
+  private breathEl = $('breath');
+  private breathKey = '';
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private depthEl = $('depth');
@@ -50,6 +61,7 @@ export class Hud {
   private flashEl = $('flash');
   private hurtEl = $('hurt');
   private deathEl = $('death');
+  private fadeEl = $('fade');
   private map = $('minimap') as HTMLCanvasElement;
   private handKey = '';
   private heartsKey = '';
@@ -60,15 +72,23 @@ export class Hud {
   private selected: string | null = null;
   // last inputs of each surface, to redraw them in another language (relocalize)
   private lastItems: readonly ItemDef[] = [];
-  private lastDepth = 0;
+  private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
+  private lastLesson: number | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   inventoryOpen = false;
   bannerOpen = false;
-  showDebug = true;
+  /** The debug readout is off by default; F3 toggles it (it's for developers). */
+  showDebug = false;
+  private lastFlash = 0;
+  private lastCleared = new Set<number>();
 
   constructor() {
+    applyPaletteCss(HUD_ICONS);
+    addEventListener('keydown', e => { if (e.code === 'F3') { e.preventDefault(); this.showDebug = !this.showDebug; } });
+    this.fadeEl.style.setProperty('--fade-bg', palCss('ink.void'));
+    this.fadeEl.style.setProperty('--fade-ink', palCss('bone.paper'));
     this.renderLanguages();
     onLocaleChange(() => this.relocalize());
     // capture phase, like the seed: choosing a language must not also capture the mouse
@@ -84,10 +104,11 @@ export class Hud {
   relocalize() {
     this.handKey = '';
     this.setItems(this.lastItems);
-    if (this.lastDepth) this.depthEl.textContent = t('hud.floor', { n: this.lastDepth });
+    if (this.lastDepth >= 0) this.depthEl.textContent = t('hud.floor', { n: this.lastDepth });
     this.renderSeed();
     this.renderLanguages();
-    if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
+    if (this.bannerOpen && this.lastLesson !== null) this.renderLesson(this.lastLesson);
+    else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.inventoryOpen && this.game) this.renderInventory(this.game);
     this.toastEl.classList.remove('show');
@@ -119,7 +140,21 @@ export class Hud {
           : `<span class="heart"><span class="heart full" style="clip-path: inset(0 ${shown.toFixed(1)}% 0 0)"></span></span>`;
       }
       this.heartsEl.innerHTML = html;
-      this.heartsEl.classList.toggle('blink', g.player.invulnT > 0);
+      // invulnerable: steady and outlined, never blinking; one heart or less: the last one beats
+      this.heartsEl.classList.toggle('safe', g.player.invulnT > 0);
+      this.heartsEl.classList.toggle('low', hp > 0 && hp <= 8);
+    }
+    // breath: only while it isn't full (under water, or catching it back)
+    const bmax = g.stats.get('breath'), bubbles = 8;
+    const full = Math.ceil(g.player.breath / bmax * bubbles - 1e-6);
+    const bk = g.player.breath >= bmax - 1e-3 ? '' : String(full);
+    if (bk !== this.breathKey) {
+      this.breathKey = bk;
+      this.breathEl.classList.toggle('on', bk !== '');
+      this.breathEl.classList.toggle('low', full <= 2);
+      let html = '';
+      for (let i = 0; i < bubbles; i++) html += `<span class="bubble${i < full ? (i === full - 1 ? ' last' : '') : ' empty'}"></span>`;
+      this.breathEl.innerHTML = bk ? html : '';
     }
     this.bombsEl.textContent = String(g.player.bombs).padStart(2, '0');
     this.keysEl.textContent = String(g.player.keys).padStart(2, '0');
@@ -174,7 +209,8 @@ export class Hud {
     this.drawMap(floor, -1, new Set());
   }
 
-  setRoom(floor: FloorResult, room: number, visited: Set<number>) {
+  setRoom(floor: FloorResult, room: number, visited: Set<number>, cleared: Set<number> = this.lastCleared) {
+    this.lastCleared = cleared;
     this.drawMap(floor, room, visited);
   }
 
@@ -189,15 +225,30 @@ export class Hud {
     for (const r of floor.rooms) {
       if (!visited.has(r.id)) continue;
       known.add(r.id);
-      for (const i of Object.values(floor.plan.rooms[r.id % 100].links)) known.add(floor.rooms[i as number].id);
+      for (const i of Object.values(floor.plan.rooms[r.id % ROOM_ID_STRIDE].links)) known.add(floor.rooms[i as number].id);
     }
     for (const r of floor.rooms) {
       if (!known.has(r.id)) continue;
       const x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
-      if (visited.has(r.id)) { g.fillStyle = r.id === current ? '#ffffff' : '#8a8178'; g.fillRect(x, y, cw, ch); }
-      else { g.strokeStyle = '#8a8178'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1); }
-      if (r.type !== 'normal') { g.fillStyle = ROOM_COLORS[r.type]; g.fillRect(x + cw / 2 - 2, y + ch / 2 - 2, 4, 4); }
+      if (visited.has(r.id)) {
+        g.globalAlpha = this.lastCleared.has(r.id) && r.id !== current ? 0.5 : 1;
+        g.fillStyle = r.id === current ? MAP.current : this.lastCleared.has(r.id) ? MAP.cleared : MAP.visited;
+        g.fillRect(x, y, cw, ch);
+        g.globalAlpha = 1;
+      } else { g.globalAlpha = 0.25; g.strokeStyle = MAP.unvisited; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1); g.globalAlpha = 1; }
+      if (r.type !== 'normal') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
     }
+  }
+
+  /** Room marks are glyphs, never colour alone: a house, a hollow ◇, a ▭, a ▣. */
+  private mapMark(g: CanvasRenderingContext2D, type: string, cx: number, cy: number) {
+    const x = Math.round(cx), y = Math.round(cy);
+    const dot = (dx: number, dy: number) => g.fillRect(x + dx, y + dy, 1, 1);
+    g.fillStyle = (MAP as Record<string, string>)[type] ?? MAP.start;
+    if (type === 'start') { dot(0, -2); dot(-1, -1); dot(0, -1); dot(1, -1); g.fillRect(x - 1, y, 3, 2); }
+    else if (type === 'treasure') { dot(0, -2); dot(-1, -1); dot(1, -1); dot(-2, 0); dot(2, 0); dot(-1, 1); dot(1, 1); dot(0, 2); }
+    else if (type === 'vault') { g.fillRect(x - 2, y - 1, 5, 1); g.fillRect(x - 2, y + 1, 5, 1); dot(-2, 0); dot(2, 0); }
+    else if (type === 'boss') { g.fillRect(x - 2, y - 2, 5, 5); g.fillStyle = palCss('ink.void'); g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = MAP.boss; dot(0, 0); }
   }
 
   // ───────────────────────── feedback ─────────────────────────
@@ -205,6 +256,7 @@ export class Hud {
   /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
     this.lastBanner = [def, changes, synergies];
+    this.lastLesson = null;
     this.renderBanner(def, changes, synergies);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
@@ -221,12 +273,29 @@ export class Hud {
     const tx = itemText(def);
     this.bannerEl.style.setProperty('--c', hex(def.color));
     this.bannerEl.innerHTML =
-      `<div class="ribbon"><img src="${iconDataUrl(def, 5)}" alt=""><div>` +
+      `<div class="ribbon slate"><img src="${iconDataUrl(def, 5)}" alt=""><div>` +
       `<b>${esc(tx.name)}</b><em class="q q${def.quality}">${qualityStars(def.quality)}</em>` +
       `<span>${esc(tx.description)}</span>` +
       `<p class="effect">${esc(tx.effect)}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
       `${lines.concat(syn).join('')}<p class="dismiss">${th('banner.continue')}</p></div></div>`;
+  }
+
+  /** A lesson of the tutorial floor (the roots): how to play, one per room, until clicked. */
+  lessonBanner(n: number) {
+    this.lastLesson = n;
+    this.renderLesson(n);
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  private renderLesson(n: number) {
+    const k = LESSONS[Math.min(n, LESSONS.length - 1)];
+    this.bannerEl.style.setProperty('--c', 'var(--ui-gold)');
+    this.bannerEl.innerHTML = `<div class="ribbon slate"><div><b>${th(`lesson.${k}.title`)}</b>` +
+      `<span>${th(`lesson.${k}.text`)}</span><p class="dismiss">${th('banner.continue')}</p></div></div>`;
   }
 
   /** Information banners stay until the player clicks (owner rule). */
@@ -236,6 +305,10 @@ export class Hud {
   }
 
   flash(color: number) {
+    // the flash budget: a full-screen effect never retriggers within 333 ms
+    const now = performance.now();
+    if (now - this.lastFlash < FLASH_BUDGET_MS) return;
+    this.lastFlash = now;
     this.flashEl.style.setProperty('--c', hex(color));
     this.flashEl.classList.remove('on');
     void this.flashEl.offsetWidth;
@@ -247,6 +320,18 @@ export class Hud {
     void this.hurtEl.offsetWidth;
     this.hurtEl.classList.add('on');
     this.shake(0.2);
+  }
+
+  /** R: the screen eases to black over `seconds` (one transition, within the flash budget). */
+  fadeOut(seconds: number) {
+    this.fadeEl.style.setProperty('--fade-t', `${seconds}s`);
+    this.fadeEl.classList.add('on');
+  }
+
+  /** …and back, a little slower, once the new run is ready. */
+  fadeIn() {
+    this.fadeEl.style.setProperty('--fade-t', '0.6s');
+    this.fadeEl.classList.remove('on');
   }
 
   shake(seconds: number) { this.shakeT = Math.max(this.shakeT, seconds); }
@@ -304,7 +389,7 @@ export class Hud {
 
   private renderDeath(depth: number, items: readonly ItemDef[], source: string) {
     this.deathEl.innerHTML =
-      `<div class="card"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
+      `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
       `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><p class="go">${th('death.restart')}</p></div>`;
   }
@@ -351,7 +436,7 @@ export class Hud {
     const stats = STAT_ORDER.map(n => `<tr><td>${esc(statLabel(n))}</td><td>${esc(fmtStat(n, s[n]))}</td></tr>`).join('');
 
     this.invEl.innerHTML =
-      `<div class="card"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th('inv.close')}</small></header>` +
+      `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th('inv.close')}</small></header>` +
       `<div class="cols"><section class="left"><div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
@@ -368,7 +453,7 @@ export class Hud {
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
       return `<i>${esc(statLabel(m.stat))} ${esc(v)}</i>`;
     }).join('');
-    const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${PATH_COLORS[p]}">${esc(pathName(p))}</em>`).join('');
+    const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${pathColor(p)}">${PATH_GLYPH[p as PathName]} ${esc(pathName(p))}</em>`).join('');
     const tx = itemText(d);
     return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
       `<div><b>${esc(tx.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
@@ -379,8 +464,8 @@ export class Hud {
   private reqLabel(r: Req, g: Game) {
     if (typeof r !== 'string') {
       const have = g.inventory.countTag(r.tag), need = r.count ?? 1;
-      const label = isPath(r.tag) ? pathName(r.tag) : r.tag;
-      return `<em class="path" style="--p:${PATH_COLORS[r.tag] ?? '#aaa'}">${esc(label)} ${Math.min(have, need)}/${need}</em>`;
+      const label = isPath(r.tag) ? `${PATH_GLYPH[r.tag as PathName]} ${pathName(r.tag)}` : r.tag;
+      return `<em class="path" style="--p:${isPath(r.tag) ? pathColor(r.tag) : palCss('bone.dim')}">${esc(label)} ${Math.min(have, need)}/${need}</em>`;
     }
     const held = g.inventory.has(r);
     const def = g.inventory.items.find(i => i.def.id === r)?.def;

@@ -2,27 +2,49 @@
 // (clearing only depth), so they never clip through walls.
 
 import * as THREE from 'three';
+import { pal, palCss } from '../content/palette';
 import type { ItemDef } from '../items/types';
 import { materialTexture } from './atlas';
 import { glowTexture, iconTexture } from './icons';
 
-const SKIN = 0xd9a07a, SLEEVE = 0x3d5a80;
+// The hands (docs/art/DECISIONS.md §9): skin (a player setting later; t3 today), the knitted
+// jumper from the house above with a cuff band, a thumb so it reads as a hand. Whole texels.
+const TX = 1 / 16;
+let knit: THREE.CanvasTexture | null = null;
+/** Rib-knit: alternating 1-texel columns of the jumper's base and hi, and one loose-thread pixel. */
+function knitTexture() {
+  if (knit) return knit;
+  const c = document.createElement('canvas');
+  c.width = 4; c.height = 7;
+  const g = c.getContext('2d')!;
+  for (let x = 0; x < 4; x++) { g.fillStyle = palCss(x % 2 ? 'cloth.hi' : 'cloth.base'); g.fillRect(x, 0, 1, 7); }
+  g.fillStyle = palCss('cloth.cuff'); g.fillRect(2, 5, 1, 1);
+  knit = new THREE.CanvasTexture(c);
+  knit.magFilter = knit.minFilter = THREE.NearestFilter;
+  knit.colorSpace = THREE.SRGBColorSpace;
+  return knit;
+}
 
-function arm(): THREE.Group {
+function arm(side: 1 | -1): THREE.Group {
   const g = new THREE.Group();
-  const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.42), new THREE.MeshLambertMaterial({ color: SLEEVE }));
+  const sleeve = new THREE.Mesh(new THREE.BoxGeometry(4 * TX, 4 * TX, 7 * TX), new THREE.MeshLambertMaterial({ map: knitTexture() }));
   sleeve.position.z = 0.16;
-  const hand = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.19, 0.3), new THREE.MeshLambertMaterial({ color: SKIN }));
-  hand.position.z = -0.18;
-  g.add(sleeve, hand);
+  const cuff = new THREE.Mesh(new THREE.BoxGeometry(4.2 * TX, 4.2 * TX, 3 * TX), new THREE.MeshLambertMaterial({ color: pal('cloth.cuff') }));
+  cuff.position.z = 0.16 - 5 * TX;
+  const skin = new THREE.MeshLambertMaterial({ color: pal('skin.t3') });
+  const hand = new THREE.Mesh(new THREE.BoxGeometry(3 * TX, 3 * TX, 5 * TX), skin);
+  hand.position.z = -0.16;
+  const thumb = new THREE.Mesh(new THREE.BoxGeometry(TX, TX, 2 * TX), skin);
+  thumb.position.set(-side * 2 * TX, TX, -0.16 - TX);
+  g.add(sleeve, cuff, hand, thumb);
   return g;
 }
 
 export class Hands {
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
-  private right = arm();
-  private left = arm();
+  private right = arm(1);
+  private left = arm(-1);
   /** The top block of your hand rides in the left hand; the next one (if you carry 2+) in the right. */
   private block: THREE.Mesh;
   private second: THREE.Mesh;
@@ -35,12 +57,15 @@ export class Hands {
   private holdT = 0;
   private holdItem: THREE.Sprite;
   private holdGlow: THREE.Sprite;
+  /** Light gathering in the right palm while a weapon charges (Kiai, One Clear Cut). */
+  private chargeGlow: THREE.Sprite;
+  private chargeK = 0;
   static readonly HOLD_TIME = 1.6;
 
   constructor(aspect: number) {
     this.camera = new THREE.PerspectiveCamera(60, aspect, 0.01, 10);
-    this.scene.add(new THREE.HemisphereLight(0xfff2e0, 0x404050, 2.2));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+    this.scene.add(new THREE.HemisphereLight(pal('light.core'), pal('ink.ash'), 2.2));
+    const sun = new THREE.DirectionalLight(pal('sky.albedo'), 1.2);
     sun.position.set(0.5, 1, 0.6);
     this.scene.add(sun);
     this.right.position.set(0.42, -0.42, -0.62);
@@ -62,7 +87,13 @@ export class Hands {
     this.holdItem = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false }));
     this.holdGlow.visible = this.holdItem.visible = false;
     this.scene.add(this.holdGlow, this.holdItem);
+    this.chargeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: pal('light.hot'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.chargeGlow.visible = false;
+    this.scene.add(this.chargeGlow);
   }
+
+  /** 0 → 1 while charging; 0 hides it. Grows steadily (never flickers); full charge glows white-gold. */
+  charge(k: number) { this.chargeK = k; }
 
   /** Raise `def` above both hands for HOLD_TIME seconds. */
   holdUp(def: ItemDef) {
@@ -79,6 +110,14 @@ export class Hands {
 
   /** `held` = top block of the hand (left), `second` = the one below it (right), 0 = none. */
   update(dt: number, walkPhase: number, held: number, second = 0) {
+    this.chargeGlow.visible = this.chargeK > 0;
+    if (this.chargeK > 0) {
+      const k = 0.08 + this.chargeK * 0.22;
+      this.chargeGlow.scale.set(k, k, 1);
+      this.chargeGlow.position.set(0.3, -0.24, -0.7);
+      (this.chargeGlow.material as THREE.SpriteMaterial).color.setHex(pal(this.chargeK >= 1 ? 'light.core' : 'light.hot'));
+      (this.chargeGlow.material as THREE.SpriteMaterial).opacity = 0.5 + 0.5 * this.chargeK;
+    }
     this.swing = Math.max(0, this.swing - dt * 7);
     this.holdT = Math.max(0, this.holdT - dt);
     this.place = Math.max(0, this.place - dt * 5);

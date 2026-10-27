@@ -72,6 +72,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `carry` | How many blocks you can hold (1 by default) |
 | `kick`, `throw` | Strength of kicks and throws |
 | `crush` | Highest block tier that shatters when you walk into it (-1 = none) |
+| `headbutt` | Highest block tier your head breaks when you jump into it (-1 = none); breaking keeps 45 % of the jump |
 | `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
 | `bombRadius`, `bombDamage` | Your bombs |
 | `luck` | Chance of a reward when a room is cleared (more uses to come: chests) |
@@ -87,6 +88,8 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `blockBreak` | `spawnDebris`, or cancel | a block reaches 0 HP (`source` says who broke it) |
 | `blockPlace` | `material` (swap what gets placed), or cancel | placing the top block of your hand |
 | `touchBlock` | `crush` (shatter it or not) | the player walks into a solid block |
+| `strike` | `damage`, `mining`, `reach`, `tags`, `color`, or cancel | a weapon that replaces the intention acts (once per swing, beam or sweep; [WEAPONS.md](WEAPONS.md)) |
+| `headBump` | `breaks` (break it or not) | the player's head hits a solid block while jumping (once per block above) |
 | `explosion` | `radius`, `damage`, or cancel | anything explodes |
 | `touchCube` | `action`: `'pickup'`, `'kick'` or `'ignore'` | walking into a loose cube (pre-filled from `carry`) |
 | `kick` | `speed`, `lift`, `tags`, or cancel | kicking a cube |
@@ -176,7 +179,8 @@ on gain / lose / restore / new floor:
 
 - **Definitions** are code (TypeScript modules), versioned with the game.
 - **A player's items** are ids in acquisition order: `inventory.serialize() → ['kaizen', 'deepfocus']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
-- **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault` (falling back to `treasure`).
+- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Occam's Razor → blade, Kiai → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
+- **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault`, the boss room's pedestal from `boss` (both falling back to `treasure`). Every pedestal, boss rooms included, is reserved at run start (`pedestalSlots` in `world/floor.ts`).
 
 ## 8. Debugging an interaction
 

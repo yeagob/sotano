@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,24 +9,24 @@ export default defineItem({
   inspiredBy: 'The Four Agreements (don Miguel Ruiz): "don\'t take anything personally"',
   pools: { treasure: 1 },
   tags: ['emotion', 'mind'],
-  color: 0x9fd3ff,
+  color: pal('path.emotion.glow'),
   quality: 2,
   icon: {
     rows: [
       '............',
-      '..aaaaaaaa..',
+      '.aaaaaaaaaa.',
       '.abbbbbbbba.',
-      '.abbcbbcbba.',
-      '.abbbbbbbba.',
-      '.abbbbbbbba.',
-      '.abcccccbba.',
-      '.abbbbbbbba.',
-      '..abbbbbba..',
+      '.acbbbbbbba.',
+      '.abcbbbbbba.',
+      '..abcbbbba..',
+      '..abbcbbba..',
+      '...abbcba...',
       '...abbbba...',
-      '....aaaa....',
+      '....abba....',
+      '.....aa.....',
       '............',
     ],
-    palette: { a: 0x2a5a7a, b: 0x9fd3ff, c: 0x2a2633 },
+    palette: { a: pal('path.emotion.dark'), b: pal('sky.day'), c: pal('rock.source.base') },
   },
   hooks: [
     hook('contact', (e, api) => {

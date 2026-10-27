@@ -8,6 +8,13 @@ import { initDom } from './i18n/dom';
 async function boot() {
   initDom(); // language first: everything below may show text
   const params = new URLSearchParams(location.search);
+  // ?gallery: deterministic art captures instead of the game (docs/art/DECISIONS.md §12.5)
+  if (params.has('gallery')) {
+    const { runGallery } = await import('./debug/gallery');
+    runGallery(params);
+    document.getElementById('loading')?.remove();
+    return;
+  }
   // ?seed=ABCD-EFGH replays a run; without it every run is new
   const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
   const v = params.get('v');

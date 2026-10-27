@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'James Allen, As a Man Thinketh (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['mind', 'mining'],
-  color: 0xfff3c4,
+  color: pal('path.mind.glow'),
   quality: 4,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.....dd.....',
       '............',
     ],
-    palette: { a: 0xc9a227, b: 0xfff3c4, c: 0xffffff, d: 0x8a8f99 },
+    palette: { a: pal('path.will.base'), b: pal('sky.horizon'), c: pal('bone.paper'), d: pal('mat.stone.hi') },
   },
   stats: [
     { stat: 'mining', layer: 'mul', value: 4 },

@@ -16,4 +16,6 @@ Each review records the critique, the ruling and the engineer's resolution.
 | [stress-test.md](stress-test.md) | 28 extreme items run against the whole architecture; root causes and a prioritised refactoring plan (P0–P2) | Report; refactors pending the owner's go-ahead |
 | [actors.md](actors.md) | Actors, split damage, chain safety, factions ([../architecture/ACTORS.md](../architecture/ACTORS.md)) | Accepted with changes; built |
 | [localization.md](localization.md) | Localization: English source + Spanish, catalogs, item messages, live switching ([../architecture/LOCALIZATION.md](../architecture/LOCALIZATION.md)) | Accepted with changes; built |
-| *elements.md* | Fire, water, lava, chests, furnaces ([../architecture/ELEMENTS.md](../architecture/ELEMENTS.md)) | Planned before step E0 |
+| [weapons.md](weapons.md) | Weapons that replace the intention: Occam's Razor, Kiai, One Clear Cut ([../architecture/WEAPONS.md](../architecture/WEAPONS.md)) | Accepted with changes; built |
+| [levels.md](levels.md) | Levels L1: ten floors, the tutorial roots, ids, surface band, pools, rock by depth ([../architecture/LEVELS.md](../architecture/LEVELS.md)) | Accepted with changes; L1 built |
+| [elements.md](elements.md) | Fire, water and lava: element layer, flow, reactions, rendering, actors and rooms with height ([../architecture/ELEMENTS.md](../architecture/ELEMENTS.md) §9) | Accepted with changes; built |

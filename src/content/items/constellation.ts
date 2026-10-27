@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Family and systemic constellations (Bert Hellinger and later systemic practitioners)',
   pools: { treasure: 1 },
   tags: ['emotion', 'mind'],
-  color: 0xc9a0ff,
+  color: pal('path.emotion.glow'),
   quality: 3,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.....a......',
       '............',
     ],
-    palette: { a: 0xfff3c4, b: 0x6a5acd, c: 0xc9a0ff },
+    palette: { a: pal('sky.horizon'), b: pal('path.mind.base'), c: pal('path.mind.glow') },
   },
   hooks: [
     hook('enemySpawn', e => {

@@ -5,6 +5,17 @@
 
 import type { PickupKind } from '../game/events';
 import type { Actor } from '../entities/actors';
+import type { ElementAffinity, ElementKey } from '../content/elements';
+
+/** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
+ *  fills what is left out) and an optional reaction when its body goes in. */
+export type ElementSense = Partial<ElementAffinity> & {
+  /** Called once when the projection's body enters the element. */
+  enter?(e: Enemy): void;
+};
+
+/** One texel: creature boxes are whole texels (docs/art/DECISIONS.md §8.2). */
+export const TX = 1 / 16;
 
 /** One box of an enemy's cube model, relative to its feet. */
 export interface ModelPart {
@@ -15,6 +26,12 @@ export interface ModelPart {
   glow?: boolean;
   /** Tilt around X in radians (a hunched head, a pointing arm). */
   tilt?: number;
+  /** Full rotation [x, y, z] in radians (overrides `tilt`). */
+  rot?: [number, number, number];
+  /** Attach to the first part with this name: `pos` and rotation become relative to it (eyes on a tilted head). */
+  parent?: string;
+  /** Named parts can be animated: legL/legR/armL/armR (walk), head; 'tell' and 'core' glow brighter as
+   *  it winds up or swells (the telegraph, docs/art/DECISIONS.md §8.5). */
   name?: string;
 }
 
@@ -36,6 +53,9 @@ export interface EnemyDef {
   /** Spawn budget cost and the earliest floor it appears on. */
   cost: number;
   minFloor: number;
+  /** How it reacts to, avoids or lives in each element (docs/architecture/ELEMENTS.md §9.3).
+   *  Its meaning comes from the pattern: Panic calms in water and goes off in fire. */
+  elements?: Partial<Record<ElementKey, ElementSense>>;
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
 }
@@ -53,9 +73,16 @@ export interface Enemy extends Actor {
   retarget: number;
   /** Behaviour state machine slot and timer, free for the behaviour to use. */
   state: string;
+  /** False while it can't hurt by touch (Doubt before its reach telegraph ends). */
+  armed: boolean;
   timer: number;
   /** Desired horizontal direction this frame (set by the behaviour). */
   wishX: number; wishZ: number;
+  /** Speed multiplier from the element it stands in (1 on dry ground). */
+  elemSpeed: number;
+  /** The element its body is in now (null on dry ground), and seconds until the element can hurt it again. */
+  inElement: ElementKey | null;
+  elemT: number;
   /** Visual-only: hit flash and scale pulse. */
   flash: number;
   pulse: number;

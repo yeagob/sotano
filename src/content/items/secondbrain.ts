@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'Building a Second Brain (Tiago Forte); external memory',
   pools: { treasure: 1 },
   tags: ['mind', 'blocks'],
-  color: 0xc9a227,
+  color: pal('path.mind.glow'),
   quality: 3,
   icon: {
     rows: [
@@ -16,16 +17,16 @@ export default defineItem({
       '...aaaaaa...',
       '..abbabbba..',
       '.abbbabbbba.',
-      '.abaabbaaba.',
-      '.abbbbabbba.',
+      'abaabbaabbaa',
+      'abbbbbabbbba',
       '.abbabbbbba.',
       '..abbbabba..',
       '...aaaaaa...',
       '.....cc.....',
-      '.....cc.....',
-      '............',
+      '....cccc....',
+      '..cccccccc..',
     ],
-    palette: { a: 0xb05c8a, b: 0xf2a7c9, c: 0x8a8f99 },
+    palette: { a: pal('mat.obsidian.accent'), b: pal('path.mind.glow'), c: pal('mat.stone.hi') },
   },
   stats: [{ stat: 'carry', layer: 'add', value: 1 }],
 });

@@ -3,15 +3,15 @@
 //
 // Everything the player can do is driven by a stat here, so any item can change it:
 // shooting, moving, jumping, how many blocks you carry, how hard you kick or throw,
-// and which blocks shatter just by walking into them.
+// which blocks shatter just by walking into them, and which ones your head breaks.
 
 import { fmtNum, t } from '../i18n';
 
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
   | 'moveSpeed' | 'jump' | 'reach'
-  | 'carry' | 'kick' | 'throw' | 'crush'
-  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage';
+  | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
+  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -40,10 +40,12 @@ export const BASE_STATS: Stats = {
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier
   crush: -1,       // highest block tier that shatters on contact (-1 = none)
+  headbutt: -1,    // highest block tier your head breaks when you jump into it (-1 = none)
   maxHearts: 3,    // heart containers (each holds 8 damage points, drawn in quarters)
   invuln: 1,       // seconds of invulnerability after being hit
   bombRadius: 2.6, // blocks
   bombDamage: 40,  // damage to blocks at the centre of a bomb
+  breath: 8,       // seconds you can stay with your head under water before you start drowning
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -60,10 +62,12 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   kick: [0.2, 6],
   throw: [0.2, 6],
   crush: [-1, 3],
+  headbutt: [-1, 3],
   maxHearts: [1, 12],
   invuln: [0.2, 5],
   bombRadius: [1, 8],
   bombDamage: [5, 500],
+  breath: [1, 120],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -86,10 +90,12 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   kick: times,
   throw: times,
   crush: v => (v < 0 ? t('unit.crushNone') : t('unit.crushTier', { n: Math.floor(v) })),
+  headbutt: v => (v < 0 ? t('unit.crushNone') : t('unit.crushTier', { n: Math.floor(v) })),
   maxHearts: v => fmtNum(Math.floor(v), 0),
   invuln: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   bombRadius: v => blocks(v, 1),
   bombDamage: v => fmtNum(v, 0),
+  breath: v => t('unit.seconds', { n: fmtNum(v, 1) }),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

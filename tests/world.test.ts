@@ -2,13 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { meshChunk } from '../src/world/mesher';
 import { raycastVoxels } from '../src/physics/raycast';
 import { moveBody, type Body } from '../src/physics/voxel-collide';
-import { bandOf, FLOORS, openHole } from '../src/world/floor';
+import { bandOf, depthOf, floorY, FLOORS, LAST_FLOOR, openHole, SKY_LIMIT, SURFACE, SURFACE_Y } from '../src/world/floor';
+import { level } from '../src/content/levels';
 import { generatePlan, DEFAULT_PLAN } from '../src/world/floorplan';
 import { ROOM_TEMPLATES, validateTemplate } from '../src/content/rooms';
 import { Rng } from '../src/core/rng';
 import { buildRun } from './helpers';
 import { AIR, MAT } from '../src/content/materials';
 import { VoxelWorld } from '../src/world/world';
+import { Player } from '../src/entities/player';
+import type { Input } from '../src/input/input';
+import { BASE_STATS } from '../src/core/stats';
 
 describe('room templates', () => {
   it('are all valid', () => {
@@ -64,7 +68,7 @@ function dungeon(seed: number, floors = 2) {
 }
 
 describe('dungeon generation', () => {
-  it('is deterministic per seed', () => {
+  it('is deterministic per seed', { timeout: 60000 }, () => {
     const a = dungeon(5), b = dungeon(5);
     expect(a.floors.map(f => f.rooms.map(r => r.template))).toEqual(b.floors.map(f => f.rooms.map(r => r.template)));
     expect(a.w.data).toEqual(b.w.data);
@@ -117,7 +121,7 @@ describe('dungeon generation', () => {
         expect(f.keys.length).toBe(f.doors.some(d => d.locked) ? 1 : 0);
         expect(f.doors).toHaveLength(f.rooms.length - 1);
         for (const r of f.rooms) { expect(ids.has(r.id)).toBe(false); ids.add(r.id); expect(bandOf(r.y0)).toBe(f.floor); }
-        expect(f.hole === null).toBe(f.floor === FLOORS);
+        expect(f.hole === null).toBe(f.floor === LAST_FLOOR);
       }
     }
   });
@@ -142,5 +146,68 @@ describe('dungeon generation', () => {
     const w = new VoxelWorld(32, 32, 32);
     w.set(15, 3, 3, MAT.stone);
     expect([...w.dirty].sort()).toEqual(['0,0,0', '1,0,0']);
+  });
+});
+
+describe('boss rooms and the sky', () => {
+  it('every boss room holds a reserved practice on a pedestal beside (never on) the hole', () => {
+    for (const root of [1, 7, 42, 999]) {
+      const run = buildRun(root);
+      for (const f of run.floors) {
+        // the tutorial floor has no boss: its last room is only the way down, its pedestal a gentle practice
+        if (level(f.floor).tutorial) { expect(f.pedestals.some(p => p.boss)).toBe(false); continue; }
+        const boss = f.rooms.find(r => r.type === 'boss')!;
+        const ped = f.pedestals.filter(p => p.boss);
+        expect(ped.length, `floor ${f.floor}`).toBe(1);
+        expect(ped[0].room).toBe(boss.id);
+        expect(ped[0].item).toBeTruthy();
+        expect(run.w.get(ped[0].x, ped[0].y - 1, ped[0].z)).toBe(MAT.pedestal);
+        if (f.hole) {
+          const onHole = ped[0].x >= f.hole.x && ped[0].x < f.hole.x + 2 && ped[0].z >= f.hole.z && ped[0].z < f.hole.z + 2;
+          expect(onHole).toBe(false);
+        }
+      }
+      // every pedestal of the run holds a different practice
+      const items = run.floors.flatMap(f => f.pedestals.map(p => p.item));
+      expect(new Set(items).size).toBe(items.length);
+    }
+  });
+
+  it('rejects a boss template whose pedestal stands on the shaft', () => {
+    const rows = Array(7).fill('.............');
+    rows[3] = '......HT.....';
+    expect(validateTemplate({ id: 'bad', types: ['boss'], rows }).join()).toMatch(/pedestal can't stand on the 2×2 shaft/);
+  });
+
+  it('the open sky reaches SKY_LIMIT blocks above the grass, and all of it is depth 0', () => {
+    const run = buildRun(3, 1);
+    const top = SURFACE_Y + SKY_LIMIT;
+    expect(run.w.inside(10, top, 10)).toBe(true);
+    expect(run.w.inside(10, top + 1, 10)).toBe(false);
+    expect(run.w.get(10, SURFACE_Y, 10)).toBe(MAT.grass);
+    for (let y = SURFACE_Y + 1; y <= top; y += 7) expect(run.w.get(10, y, 10)).toBe(AIR);
+    // the surface is its own band to the structure, and depth 0 to anything that asks how deep you are
+    for (const y of [SURFACE_Y - 1, SURFACE_Y, SURFACE_Y + 1, top]) { expect(bandOf(y), `y ${y}`).toBe(SURFACE); expect(depthOf(y)).toBe(0); }
+    expect(bandOf(floorY(0))).toBe(0);
+    expect(bandOf(floorY(1))).toBe(1);
+    expect(bandOf(1)).toBe(LAST_FLOOR);
+  });
+});
+
+describe('player head bump', () => {
+  it('reports the rising speed once when the head hits a ceiling, and keeps what the hook returns', () => {
+    const solid = (_x: number, y: number) => y <= 0 || y >= 4;
+    const p = new Player();
+    p.spawnAt(0.5, 1, 0.5);
+    const input = { pressed: new Set(['Space']), lookDX: 0, lookDY: 0, sensitivity: 0, axis: () => 0 } as unknown as Input;
+    const stats = { ...BASE_STATS, jump: 4 };
+    const bumps: number[] = [];
+    const hooks = { jump: (v: number) => v, land: () => {}, bump: (v: number) => { bumps.push(v); return 0; } };
+    // standing on the floor: let it settle, then jump into the ceiling 3 blocks up
+    p.body.onGround = true;
+    for (let i = 0; i < 60; i++) { p.update(1 / 60, input, stats, solid, hooks); input.pressed.clear(); }
+    expect(bumps.length).toBe(1);
+    expect(bumps[0]).toBeGreaterThan(0);
+    expect(p.body.y + p.body.h).toBeLessThanOrEqual(4);
   });
 });

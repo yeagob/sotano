@@ -59,11 +59,11 @@ Enemies are not monsters "out there". They are **mental projections** of the pat
 
 Each one behaves like the pattern it stands for, so the mechanic teaches the metaphor without text:
 
-| Enemy | Pattern | Behaviour (and why) | Minecraft-ish look |
+| Enemy | Pattern | Behaviour (and why) | Look (Vessel Light, [art guide §8](../art/ART-GUIDE.md)) |
 |---|---|---|---|
-| **Doubt** *(built)* | Self-doubt | Walks straight at you and drains you on contact. Slow, persistent, easy to outpace if you keep moving | Grey hunched figure, hollow eyes with a faint light |
-| **Inner Critic** *(built)* | The judging voice | Keeps its distance, strafes, winds up and lobs "judgements" in arcs; dangerous when you stand still | Tall, thin, pale figure with a frown and a pointing arm |
-| **Panic** *(built)* | Anxiety spiralling into panic | Rushes towards you, swells red and **bursts**, breaking blocks around it: destructive, but it also opens paths | Dark red cube with green eyes and a jagged mouth |
+| **Doubt** *(built)* | Self-doubt | Walks at you, stops now and then to reconsider (an escape window) and reaches for you for half a second before its touch can hurt. Slow, persistent, easy to outpace if you keep moving | A dark husk hunched over a sack of stones it drags, head hooked forward like a "?", forearms crossed (it holds its own elbows); cold eyes that can't hold your gaze |
+| **Inner Critic** *(built)* | The judging voice | Keeps its distance, strafes, winds up and lobs "judgements" in arcs; dangerous when you stand still | The Lectern: a stack of ruled pages on a post, a mask with two slits, a quill pointing at you; on its back, an ✗ |
+| **Panic** *(built)* | Anxiety spiralling into panic | Rushes towards you, swells in three steps (the alarm goes white) and **bursts**, breaking blocks around it: destructive, but it also opens paths | A tiny near-black husk, all head, hands up, with captive light showing through hairline cracks |
 | **Procrastination** *(next)* | Putting things off | Slow blob; when you hit it, it splits into smaller ones (tasks pile up) | Translucent green cube |
 | **Distraction** *(next)* | Scattered attention | Erratic flyer; never threatening alone, deadly when you lose focus | Small fluttering cube with a glow |
 | **Perfectionism** *(next)* | "Not good enough yet" | Armoured; takes almost no damage until you break its shell blocks first | Polished stone golem |
@@ -116,6 +116,9 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Art Therapy** | Emotion, Body | 2 | Each block you place has a 20% chance to heal half a heart | Art therapy; art transforms the maker |
 | **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
 | **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
+| **Occam's Razor** | Mind | 4 | Replaces intentions with a blade of light that cuts every block in reach, hits projections ×3 and destroys their projectiles (boss) | Occam's razor (William of Ockham); a wink at the swords of light of space opera |
+| **Kiai** | Will | 4 | Replaces intentions with a charged beam that burns through blocks, 10 ticks a second (boss) | Kiai, the focused shout of Japanese martial arts; a wink at the charged beams of dungeon crawlers |
+| **Lion's Mane** | Body | 2 | Jump height ×2; your head breaks tier-1 blocks (dirt, crates, stone, brick) | The lion's mane mushroom; a wink at the platformers that taught a generation to jump |
 
 Every practice has two texts: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, plainly, with numbers). Both are shown on pickup and in the inventory. References and their naming status live in [../lore/SOURCES.md](../lore/SOURCES.md).
 
@@ -125,6 +128,7 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 | Synergy | Requires | Effect |
 |---|---|---|
+| **One Clear Cut** | Occam's Razor + Kiai | Charge and release a giant blade of light that sweeps 140° and cuts everything in it |
 | **Somatic Release** | Symbolic Act + Grounding | Kicked blocks burst too |
 | **Compound Effect** | Kaizen + Deep Focus | Pierce through stone and brick as well |
 | **Flooding** | Exposure + Habit Stacking | Blocks you shatter by contact break their neighbours outright |
@@ -132,6 +136,15 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 | **Lucid** | 3 Mind practices | State of being: ×1.25 range, +1 reach |
 | **Open-hearted** | 3 Emotion practices | State of being: +2 luck |
 | **Resolute** | 3 Will practices | State of being: ×1.15 damage, ×1.2 mining |
+
+## A love letter to games
+
+SÓTANO is made by people who grew up inside games, and it says so. The project will be **full of references to other games**, as an expression of love for that culture: winks, not copies.
+
+- **How:** a phrase that echoes a famous line, a mechanic that feels like an old friend, a situation a player of that game will smile at. Lion's Mane is the model: a humble mushroom that makes you jump higher and break bricks with your head, and now and then a toast that says *"Thank you! But your ceiling is in another castle."* Nobody is named; everyone who played it knows.
+- **Never:** names, characters, logos, assets, music, sprites, exact layouts or trademarks of another game (Nintendo, Mojang, Isaac, Noita…). The wink lives in the idea and the wording, never in protected material. Quotes are short paraphrases, at most one line.
+- **Always the metaphor first:** a reference must still mean something in SÓTANO's story (the mushroom is about growing past the ceiling you were told was the limit). If the only reason is the joke, it isn't ready.
+- **Where:** item `messages` (toasts), descriptions, `inspiredBy` ("a nod to…"), room names and secrets. The game references we draw on are catalogued in [../lore/SOURCES.md](../lore/SOURCES.md#games).
 
 ## 6. Words used in the game
 

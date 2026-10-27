@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,24 +9,24 @@ export default defineItem({
   inspiredBy: 'Satori, sudden awakening in Zen Buddhism',
   pools: { treasure: 1, vault: 2 },
   tags: ['body', 'mind', 'emotion', 'will'],
-  color: 0xf2c84b,
+  color: pal('path.body.glow'),
   quality: 4,
   icon: {
     rows: [
-      '............',
-      '....aaaaa...',
-      '..aa.....a..',
-      '.a........a.',
-      '.a.........a',
-      'a..........a',
-      'a..........a',
-      'a.........a.',
-      '.a.......a..',
-      '..aa...aa...',
-      '....aaa.....',
-      '............',
+      '....aaaa....',
+      '..aaaaaab...',
+      '.aabbb......',
+      '.ab.........',
+      'aab.......b.',
+      'aab.......aa',
+      'aab.......aa',
+      'aab......baa',
+      '.aab....baa.',
+      '.aaabbbbaaa.',
+      '..aaaaaaaa..',
+      '....aaaa....',
     ],
-    palette: { a: 0xf2c84b },
+    palette: { a: pal('light.gold'), b: pal('light.core') },
   },
   stats: [
     { stat: 'damage', layer: 'add', value: 1.5 },

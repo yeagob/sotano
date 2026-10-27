@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
 export default defineItem({
@@ -8,7 +9,7 @@ export default defineItem({
   inspiredBy: 'A Course in Miracles (Helen Schucman): forgiveness as release; perception as a mirror',
   pools: { treasure: 1 },
   tags: ['emotion'],
-  color: 0xfff3c4,
+  color: pal('path.emotion.glow'),
   quality: 3,
   icon: {
     rows: [
@@ -25,7 +26,7 @@ export default defineItem({
       '.....aa.....',
       '............',
     ],
-    palette: { a: 0xc9a227, b: 0xf2c84b, c: 0xfff3c4, d: 0xffffff },
+    palette: { a: pal('path.will.base'), b: pal('brass.hi'), c: pal('sky.horizon'), d: pal('bone.paper') },
   },
   hooks: [
     hook('contact', (e, api) => {

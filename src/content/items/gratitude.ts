@@ -1,3 +1,4 @@
+import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 export default defineItem({
@@ -8,24 +9,24 @@ export default defineItem({
   inspiredBy: 'Gratitude journaling (positive psychology)',
   pools: { treasure: 1 },
   tags: ['emotion'],
-  color: 0xe05d5d,
+  color: pal('path.emotion.glow'),
   quality: 1,
   icon: {
     rows: [
-      '............',
-      '.aaaaaaaaa..',
-      '.abbbbbbbab.',
-      '.abbcbcbbab.',
-      '.abcccccbab.',
-      '.abcccccbab.',
-      '.abbcccbbab.',
-      '.abbbcbbbab.',
-      '.abbbbbbbab.',
-      '.aaaaaaaaab.',
-      '..bbbbbbbbb.',
-      '............',
+      'aaaaaaa.....',
+      'abbbbbab....',
+      'abcbcbab....',
+      'abcccbab....',
+      'abbcbbab....',
+      'abbbbbab....',
+      'abbbbbab....',
+      'abbbbbab....',
+      'aaaaaaab....',
+      '.bbbbbbb.c..',
+      '........c...',
+      '.......c....',
     ],
-    palette: { a: 0x7a4a2a, b: 0xf3e7c9, c: 0xe05d5d },
+    palette: { a: pal('mat.crate.base'), b: pal('sky.horizon'), c: pal('path.will.glow') },
   },
   stats: [{ stat: 'luck', layer: 'add', value: 1.5 }],
 });

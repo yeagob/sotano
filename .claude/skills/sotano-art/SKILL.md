@@ -52,3 +52,8 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 - **A human silhouette breaks "patterns, never people"**: the Inner Critic read as a naked salmon man. Projections are objects and patterns, never bodies.
 - **Panic's red body with green eyes fails for colour-blind players and disappears in fog**: every projection needs a value that holds against its floor.
 - **Warm light is earned**: the world's glow is the player's. Projections never throw warm light; light held inside them is captive.
+
+*Owner feedback, round 2 (2026-10-26):*
+
+- **Review everything against the guide, fix what strays, and put the captures in the guide.** Done in ART-GUIDE §15. Lessons: (1) the gate catches real problems the eye misses (five colours in one icon, two silhouettes 98 % alike, an icon that read as the Critic's ✗); always run `tests/art-content.test.ts` and look at `?gallery`; (2) the pane must be visible for honest captures (a hidden pane returns stale frames); (3) freeze the simulation, not the renderer, when capturing a moment.
+- **Zero hex outside `palette.ts` is the baseline now**: the ratchet is empty, so any new literal fails the build.

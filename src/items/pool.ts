@@ -16,9 +16,11 @@ export class ItemPools {
   private reservedIds = new Set<string>();
   private taken = new Set<string>();
   private all: string[];
+  private quality = new Map<string, number>();
 
   constructor(items: readonly ItemDef[]) {
     this.all = items.map(i => i.id);
+    for (const item of items) this.quality.set(item.id, item.quality);
     for (const item of items) {
       for (const [pool, weight] of Object.entries(item.pools) as [PoolName, number][]) {
         if (!weight) continue;
@@ -28,10 +30,15 @@ export class ItemPools {
     }
   }
 
-  /** Reserve one item per slot, in order, from a single fork (run start). */
-  reserve(slots: readonly { key: string; pool: PoolName }[], rng: Rng) {
+  /** Reserve one item per slot, in order, from a single fork (run start). `maxQuality` caps a slot
+   *  (the tutorial floor holds only gentle practices); if nothing that gentle is left, the cap is
+   *  dropped rather than leaving a pedestal empty. */
+  reserve(slots: readonly { key: string; pool: PoolName; maxQuality?: number }[], rng: Rng) {
     for (const s of slots) {
-      const id = this.pick(s.pool, rng, id => !this.reservedIds.has(id));
+      const cap = s.maxQuality ?? Infinity;
+      const free = (id: string) => !this.reservedIds.has(id);
+      const gentle = (id: string) => free(id) && (this.quality.get(id) ?? 0) <= cap;
+      const id = this.pick(s.pool, rng, this.all.some(gentle) ? gentle : free);
       this.reserved.set(s.key, id);
       this.reservedIds.add(id);
     }

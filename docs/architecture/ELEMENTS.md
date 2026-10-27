@@ -1,6 +1,6 @@
 # Elements: architecture and implementation plan
 
-Status: **plan.** What the player experiences is in [../design/ELEMENTS.md](../design/ELEMENTS.md). Before step E0 is built, this design goes through the three-party review ([../reviews/](../reviews/README.md)), as for items and entities.
+Status: **E-core (fire, water, lava) built** (§9, §10); chests, furnaces, sand, mud and electricity are still plan. §9–§10 win where they differ from §2–§3. Review: [../reviews/elements.md](../reviews/elements.md). What the player experiences is in [../design/ELEMENTS.md](../design/ELEMENTS.md). Before step E0 is built, this design goes through the three-party review ([../reviews/](../reviews/README.md)), as for items and entities.
 
 ## 1. Principles
 
@@ -156,3 +156,109 @@ Each step is a mergeable unit with its own tests, docs and browser check (per th
 ### E9 — Polish and performance
 - [ ] Budgets measured on desktop and a mid-range phone; scheduler limits tuned.
 - [ ] Docs, README and STORY updated; owner playtest; feedback recorded in the `sotano-feature` skill.
+
+## 9. E-core proposal (2026-10-26): fire, water and lava first
+
+The owner asked for the elements first (fire, water, lava), then rooms built around them, then
+projections that react to or live in each element. Chests, furnaces, sand, mud and electricity
+stay in E1/E5–E7. This section replaces E0, E2–E4 where it differs from §2–§3.
+
+### 9.1 One element layer, not fluid materials
+
+`VoxelWorld.elem: Uint8Array`, one byte per voxel. *As built (review point 2):* bits 6–7 kind, bit 5 falling, bits 0–3 level; helpers `elemByte`, `elemKind`, `elemLevel`, `isFalling`, `isSource`, `fluidHeight` in [`content/elements.ts`](../../src/content/elements.ts).
+
+| kind | Name | level |
+|---|---|---|
+| 0 | none | 0 |
+| 1 | water | 1–7 flowing (7 = falling), 8 = source |
+| 2 | lava | same as water |
+| 3 | fire | 1–7 seconds-ish of fuel left, 8 = eternal (a template brazier) |
+
+A cell with an element is **air in `data`**. Every `solid()` / `!== AIR` check stays exactly as it
+is (collision, raycasts, mining, meshing of blocks, flow fields), which is the main reason for
+this choice over §2's "water and lava are materials". Setting a solid block into an element cell
+displaces the element (`set` clears `elem`). Breaking a block next to an element wakes it.
+
+### 9.2 Simulation (`src/world/elements.ts`)
+
+- An active set of voxel indices; `world.set` and `setElem` wake the cell and its 6 neighbours.
+- Fixed tick 10 Hz; water every tick, lava every 3rd, fire every tick. Budget 3000 cells per tick;
+  overflow carries to the next tick. Cells drop from the set when nothing changed.
+- **Flow is Minecraft-style and bounded**, not finite (owner question 2 stays open): sources never
+  change; a flowing cell's level is recomputed from its neighbours (falling if the same fluid is
+  above; otherwise max(horizontal neighbour − drop)), drop 1 for water (reach 7), 2 for lava
+  (reach 3). Fluids go down first; they only spread sideways from cells that rest on something.
+  Remove the source and the flow recedes. A template pool is all sources, so it never drains;
+  breaking its wall spills a bounded tongue.
+- **Reactions are data** (`src/content/reactions.ts`), checked on active cells against their 6
+  neighbours: water + lava source → obsidian, water + lava flow → stone (steam, hiss); water next
+  to non-eternal fire → put out; fire/lava next to a flammable block → it ignites (block becomes a
+  fire cell with level 6 and breaks through `breakBlock(kind 'fire')`, no loose cube); fire
+  decays 1 level per 0.5 s unless eternal; fire spreads to flammables with a chance per tick
+  (table + `elements` stream, cosmetic timing is fx).
+- Events (new, all in the contract test): `ignite` (cancellable), `materialReact` (cancellable,
+  result changeable), `elementEnter` / `elementLeave` for actors (react only).
+
+### 9.3 Actors, cubes, intentions
+
+- `elementAt(x,y,z)` sampled at feet and eyes. Player: **wading** (feet only, water) × 0.6 speed,
+  jump × 0.7; **swimming** (head under) gravity × 0.2, sink cap 1.5 b/s, Space swims up, breath
+  drains (new stat `breath`, seconds, base 8) then `drown` damage (half a heart per 1.5 s). Lava:
+  × 0.4 speed, swim-like, 1 heart per hit (`fire` kind, source `lava`). Fire: half a heart.
+  All through `damageActor`.
+- Projections get `EnemyDef.elements` (affinity per element: `harm` multiplier, `speed` multiplier,
+  `path: 'avoid' | 'cross' | 'dwell'`, optional `enter` reaction). Defaults: water cross ×0.6
+  harm 0; lava and fire avoid, harm 1. The flow field reads a `hazard` callback: avoided cells are
+  not walkable; `dwell` cells cost less (projections that live there stay in them).
+- Loose cubes: lava destroys any non-obsidian cube (flammable ones flare); fire burns flammable
+  cubes; water drags all cubes and floats flammable ones.
+- Intentions slow in water (× 0.5 per second, exponential) and go out in lava.
+
+### 9.4 Rendering
+
+- The mesher returns a second mesh per chunk: element faces with heights from `level` (source top
+  at 7/8, full when the same fluid is above), drawn in three geometry groups: water (transparent
+  α 0.7, double-sided, no depth write), lava (opaque, full-bright, scrolling), fire (two crossed
+  quads per cell, alpha-tested, 4 frames at 8 fps). Textures painted from palette tokens added
+  from DECISIONS §3.8.
+- Until block light (Phase B) lands, solid faces next to lava or fire get a baked warm tint in
+  their vertex colours (radius 1). Eye under water: fog `#0D2A3A`, far 10; in lava: lava fog.
+
+### 9.5 Rooms that use height and elements
+
+Templates gain optional `height` (5–9, interior), `ceiling` (`flat` | `vault-x` | `vault-z` |
+`dome`), `layers` (extra 13×7 grids at a height above the floor, for bridges and balconies) and
+new cell chars: `w`/`W` water 1/3 deep (dug into the floor), `l`/`L` lava 1/2 deep, `f` eternal
+fire, `_` a 1-deep dip, `1`–`4` rock terraces of that height. The validator keeps doors, centre,
+pedestal and shaft rules, forbids water next to lava and fire next to flammables at carve time,
+and caps vertical reach so a room never touches the floor above or below (test: rock buffer
+between bands is intact for every template).
+
+## 10. As built (2026-10-26)
+
+| Piece | Where | Notes |
+|---|---|---|
+| Element data | [`content/elements.ts`](../../src/content/elements.ts) | Water, lava, fire: flow drop and beat, harm, wade speed, swim, breath, emissive, palette ramp, fog. `DEFAULT_AFFINITY` for projections |
+| Reactions | [`content/reactions.ts`](../../src/content/reactions.ts) | `quench` (water + lava source → obsidian, + flow → stone), `douse` (water puts fire out) |
+| Layer | [`world/world.ts`](../../src/world/world.ts) | `elem`, `setElem`, `elemDirty`, `elemVersion`, `onChange`; a block placed in a cell displaces its element (intended, review point 7) |
+| Simulation | [`world/elements.ts`](../../src/world/elements.ts) | 10 Hz, 3000 cells per tick, at most 3 ticks per frame; read-then-apply; flames need a block under them; at most 12 blocks catch per tick |
+| Meshing | [`world/elem-mesher.ts`](../../src/world/elem-mesher.ts), [`render/chunks.ts`](../../src/render/chunks.ts) | Corner heights averaged with neighbours (flows slope like ramps); fire as crossed quads; water α 0.72 after opaque; lava full-bright; textures in [`render/element-textures.ts`](../../src/render/element-textures.ts) animated by offset (fire 4 frames at 8 fps); block faces next to lava or fire get a baked warm glow |
+| Game | [`game/game.ts`](../../src/game/game.ts) "elements" section | Ignite through `ignite` → `breakBlock(kind 'fire')` (no loot); reactions through `materialReact`; player wading/swimming/breath/burns; projections' senses; loose cubes (lava consumes all but obsidian, fire burns wood, water drags and floats wood, a bomb in fire or lava goes off); intentions slow in water and go out in lava; fog of the element your eyes are in |
+| Events | [`game/events.ts`](../../src/game/events.ts) | `ignite`, `materialReact`, `elementEnter`, `elementLeave` |
+| Stat | `breath` (8 s) | HUD: eight bubbles under the hearts while breath isn't full |
+
+### Projections in the elements
+
+`EnemyDef.elements` overrides `DEFAULT_AFFINITY` per element: `harm` (multiplier, 0 = immune), `speed` (inside it), `path` (`avoid`: its flow field won't step there; `cross`; `dwell`: cheap cells, it keeps to them) and `enter(e)` (a reaction when its body goes in). Flow fields are per room, target and kind of projection. Element hits on a projection come at most every 0.5 s.
+
+| Projection | Water | Fire / lava | Why |
+|---|---|---|---|
+| Doubt | avoids it; × 0.35 if it falls in | default (avoid, hurts) | It keeps you still because still is safe: it won't follow you into your feelings |
+| Inner Critic | crosses at × 0.45 | avoids; hurts × 2 | A stack of paper: soaked pages shuffle, paper burns |
+| Panic | crosses at × 0.5; entering **calms** it for 2.5 s, even mid-swell | avoids; entering sets it off at once | An alarm that rings when nothing is on fire: feeling it calms it; real fire is what it was waiting for |
+
+No projection dwells in an element yet: the first dwellers (Overwhelm in deep water, Burnout in fire) come with their art ([../design/ELEMENTS.md](../design/ELEMENTS.md) §3).
+
+### Later
+
+Band freezing (review 16), a distance-from-source cap if playtests show runaway cascades (3), block light (art Phase B) replacing the baked glow, burning status on actors, steam as a gas.

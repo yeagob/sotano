@@ -38,6 +38,7 @@ The owner will keep sharing references (books, courses, techniques, therapies, g
 - **Credit every practice**: `inspiredBy` names the source as in SOURCES.md.
 - **No impersonation**: don't present quotes as said by real people in the game; don't use authors' likenesses.
 - **Short quotes only**, in docs, when needed; never reproduce substantial text.
+- **Winks at games** (owner rule: the project is a love letter to games): a reference to another game is welcome as a paraphrased line, a familiar mechanic or a situation, never as its names, characters, assets or exact quotes. Each game gets a row in SOURCES.md "Games" (what we take, what we never take), and the wink must still mean something in our story (STORY.md, "A love letter to games").
 - **As above, so below**: when adding a place or a mechanic in the depth, consider its mirror at the surface (COSMOLOGY.md §1) and note it.
 
 ## 4. Checklist

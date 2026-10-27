@@ -69,6 +69,28 @@ export const PALETTE = {
   'fog.f3': '#15151F',
   'fog.f4': '#0C0910',
 
+  // Material ramps (outline, dark, base, hi): DECISIONS §6.2. Brick and frames take the floor rock ramp.
+  'mat.dirt.outline': '#2E1F14', 'mat.dirt.dark': '#4F3624', 'mat.dirt.base': '#6B4A30', 'mat.dirt.hi': '#87603F',
+  'mat.grass.outline': '#24361A', 'mat.grass.dark': '#3D5A2A', 'mat.grass.base': '#557A37', 'mat.grass.hi': '#78A24A',
+  'mat.stone.outline': '#2A2A2E', 'mat.stone.dark': '#47474D', 'mat.stone.base': '#626268', 'mat.stone.hi': '#82828A',
+  'mat.deepstone.outline': '#121119', 'mat.deepstone.dark': '#22212C', 'mat.deepstone.base': '#33313F', 'mat.deepstone.hi': '#4A4759',
+  'mat.crate.outline': '#2E1D0F', 'mat.crate.dark': '#5A3A1E', 'mat.crate.base': '#7D5530', 'mat.crate.hi': '#A3743E',
+  'mat.obsidian.outline': '#07050C', 'mat.obsidian.dark': '#140F20', 'mat.obsidian.base': '#221935', 'mat.obsidian.hi': '#3B2B55', 'mat.obsidian.accent': '#6E58A0',
+  'mat.bedrock.outline': '#060507', 'mat.bedrock.dark': '#0E0D10', 'mat.bedrock.base': '#18161B', 'mat.bedrock.hi': '#24212A',
+  'mat.seed.dark': '#1E1626', 'mat.seed.base': '#2A2233', 'mat.seed.hi': '#3A3046',
+
+  // Elements (DECISIONS §3.8): owned by the world. Fire and lava are the only warm emitters that
+  // are not the player's, and they hurt: warmth that isn't yours burns. Water never glows.
+  'el.water.body': '#1D4B6E', 'el.water.surface': '#4F9CC8', 'el.water.foam': '#BFE6F2', 'el.water.fog': '#0D2A3A',
+  'el.lava.crust': '#1A0703', 'el.lava.crust2': '#3A0D05', 'el.lava.molten': '#C2410C', 'el.lava.hot': '#FF7A1A', 'el.lava.vein': '#FFD25A',
+  'el.fire.deep': '#A8200D', 'el.fire.base': '#FF5A1F', 'el.fire.hi': '#FFB13B', 'el.fire.core': '#FFF1A8',
+  'el.ember.hot': '#FFD070', 'el.ember.dead': '#5A1A0A', 'el.smoke': '#2B2522',
+
+  // Projection husks (DECISIONS §8.8–8.10): dark husks near-black with a cold rim; the Lectern's cold paper.
+  'husk.doubt.dark': '#1A1520', 'husk.doubt.base': '#262030', 'husk.doubt.hi': '#352C42',
+  'husk.panic.dark': '#16100E', 'husk.panic.base': '#1F1714', 'husk.panic.hi': '#2E2219',
+  'paper.dark': '#8C93A0', 'paper.base': '#C9CFD8', 'paper.hi': '#E4E8EE',
+
   // Skin (a player setting, hands only) and the house's jumper.
   'skin.t1': '#F3D2B3', 'skin.t2': '#E2B48F', 'skin.t3': '#B98260',
   'skin.t4': '#9A6844', 'skin.t5': '#6F4A30', 'skin.t6': '#4A3020',
