@@ -94,7 +94,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Kaizen** | Will | 2 | Intentions go on through two soft blocks | Kaizen: continuous small improvement |
 | **Habit Stacking** | Will | 3 | Breaking a block damages its same-material neighbours | Habit stacking (*Atomic Habits*, James Clear; *Tiny Habits*, BJ Fogg) |
 | **Second Brain** | Mind | 3 | Carry one more block (shown in your other hand) | *Building a Second Brain* (Tiago Forte); external memory |
-| **Exposure** | Emotion, Body | 2 | Soft blocks shatter when you walk into them | Exposure therapy (CBT) |
+| **Exposure** | Emotion, Body | 2 | Every block you press against wears away (20 damage per second, armor counts), never the ones below | Exposure therapy (CBT) |
 | **Symbolic Act** | Emotion | 3 | Thrown blocks burst on impact | *Psychomagic* (Alejandro Jodorowsky); catharsis in psychodrama |
 | **Growth Mindset** | Mind | 1 | Jump much higher | *Mindset* (Carol Dweck) |
 | **Flow** | Body | 2 | Move and cast faster | *Flow* (Mihaly Csikszentmihalyi) |
@@ -106,7 +106,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Socratic Questioning** | Mind | 1 | +2 keys now; locked doors sometimes open without one | Socratic questioning (CBT) |
 | **Meditations** | Will, Mind | 4 | ×3 damage, +2 damage | Marcus Aurelius, *Meditations* (public domain) |
 | **Self-Reliance** | Will | 4 | ×2 fire rate, +1.5 damage | Ralph Waldo Emerson, *Self-Reliance* (public domain) |
-| **Tao Te Ching** | Mind, Emotion | 4 | Intentions flow through five blocks of any kind; ×1.5 mining | Lao Tzu, *Tao Te Ching* (public domain) |
+| **Tao Te Ching** | Mind, Emotion | 4 | Intentions pass through five blocks of any kind, damaging each; ×1.5 mining | Lao Tzu, *Tao Te Ching* (public domain) |
 | **As a Man Thinketh** | Mind | 4 | ×4 mining, ×1.5 damage, faster and flatter intentions | James Allen, *As a Man Thinketh* (public domain) |
 | **Letters from a Stoic** | Will, Body | 4 | Carry three more blocks, ×2 kick and throw, +2 reach | Seneca, *Moral Letters to Lucilius* (public domain) |
 | **Satori** | All four | 4 | A little more of everything (damage, fire rate, speed, range, jump, luck, mining) | Satori, sudden awakening in Zen Buddhism |
@@ -116,7 +116,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Art Therapy** | Emotion, Body | 2 | Each block you place has a 20% chance to heal half a heart | Art therapy; art transforms the maker |
 | **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
 | **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
-| **Occam's Razor** | Mind | 4 | Replaces intentions with a blade of light that cuts every block in reach, hits projections ×3 and destroys their projectiles (boss) | Occam's razor (William of Ockham); a wink at the swords of light of space opera |
+| **Occam's Razor** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Occam's razor (William of Ockham); a wink at the swords of light of space opera |
 | **Kiai** | Will | 4 | Replaces intentions with a charged beam that burns through blocks, 10 ticks a second (boss) | Kiai, the focused shout of Japanese martial arts; a wink at the charged beams of dungeon crawlers |
 | **Lion's Mane** | Body | 2 | Jump height ×2; your head breaks tier-1 blocks (dirt, crates, stone, brick) | The lion's mane mushroom; a wink at the platformers that taught a generation to jump |
 

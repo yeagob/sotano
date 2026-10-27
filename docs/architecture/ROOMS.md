@@ -64,7 +64,9 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 | `1`–`4` | a built terrace (brick) of that height | `_` | a dip, 1 deep |
 | `w` / `W` | water 1 / 2 deep (dug into the floor, a source) | `l` / `L` | lava 1 / 2 deep |
 | `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a breakthrough) |
-| `=` | a dry pit, 2 deep (you need a block to climb out) | | |
+| `=` | a dry pit, 2 deep (you need a block to climb out) | `D` / `E` | a door-shaped plug (3 wide, 3 high) of dirt set in a `#` / `X` wall; above the dirt the wall goes on |
+
+A wall that seals the whole room (a full row or column of `#` or `X`) carries a plug where a door would stand on its far side (columns 5–7 of a row wall, rows 2–4 of a column wall). Owner, 2026-10-27: a sealing wall must not hide the door behind it, and it gives way to the softest material.
 
 ### Height and layers
 

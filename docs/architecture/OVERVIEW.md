@@ -39,7 +39,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
 The simulation runs only while the mouse is captured, the inventory is closed and the player is alive (`S.game.simulateUnlocked = true` overrides the mouse rule for automated tests).
 
 1. `Player.update` — look, walk, jump (`jump` event), land (`land` with `cause`), collision against voxels and closed doors.
-2. `touchBlocks` — walking into blocks emits `touchBlock`; tiers ≤ `crush` shatter.
+2. `touchBlocks` — pressing against the blocks around you (feet, waist, head; never below) every 0.25 s emits `touchBlock` and wears them down by `crush` damage per second (armor counts).
 3. `fire` — `IntentSpec` from stats, `fire` event, spawn (not while holding up a new item).
 4. `tryPlace` / `throwTop` / `placeBomb` — right click, Q, E (`blockPlace`, `throw`, `drop`, `bombPlace`).
 5. `Doors.update` — slide doors; sealed doors stay shut; `requestDoor` handles locks (`doorOpen`).
@@ -47,7 +47,7 @@ The simulation runs only while the mouse is captured, the inventory is closed an
    Then `ElementSim.update` (10 Hz: flows, reactions → `materialReact`, fires catching → `ignite`), loose cubes in elements, and the player in elements (wade, swim, breath, burns; `elementEnter` / `elementLeave`).
 7. `touchDebris` — `touchCube`: pick up, kick (`kick`), bombs are always kicked. Then `cubeStrikes`: a flying cube hurts the projection it hits, by its hardness and speed (`core/damage.ts` `cubeDamage`).
 8. `touchPickups` — keys, bombs, hearts (`pickupCollect`), pedestal items (`Inventory.gain` → banner, flash, hold-up).
-9. `Intents.update` — move intentions; hit hostile projections (`actorDamage`), push cubes, damage voxels (pierce up to `pierceTier`).
+9. `Intents.update` — move intentions; hit hostile projections (`actorDamage`), push cubes, damage voxels (pierce up to `pierceTier`; `phase` passes through blocks of any tier, damaging each). A positive intention never damages a block: it mends damaged ones.
 10. Projections in elements (senses: speed, paced hits, `enter` reactions), then `Enemies.update` — behaviours (each chases its target: the nearest hostile actor), flow-field steering, leash, contact between hostile actors (`contact`, rate-limited), projectiles.
     Then queued explosions run (`BlastQueue`, 8 per frame) before deferred chain reactions.
 11. `bus.flush()` — deferred chain reactions (64 per frame).

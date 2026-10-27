@@ -21,7 +21,7 @@
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
 import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
-import { CELL_ELEMENT, CELL_STACK, TUTORIAL_ORDER, cellAt, DECOR_CHARS, ROOM_D, ROOM_H, ROOM_W, type CeilingShape, type RoomTemplate } from '../content/rooms';
+import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_ORDER, cellAt, DECOR_CHARS, ROOM_D, ROOM_H, ROOM_W, type CeilingShape, type RoomTemplate } from '../content/rooms';
 import { CHEST_LOCK, ITEM_IN_CHEST, ROOM_CHEST } from '../content/tables/chests';
 import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
 import { CHALLENGE_ROOM, DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
@@ -280,6 +280,9 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
         const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
         for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
+        // a plug's wall goes on above its dirt
+        const plug = CELL_PLUG[ch];
+        if (plug) for (let h = s.h; h < top - y0 + 1 - plug.under; h++) w.data[w.idx(x, y0 + h, z)] = mood === 'reinforced' ? hardened(plug.m) : plug.m;
       }
       const el = CELL_ELEMENT[ch];
       if (el) carveElement(w, x, y0, z, el, !!lv.frozen);

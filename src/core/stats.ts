@@ -39,7 +39,7 @@ export const BASE_STATS: Stats = {
   carry: 1,        // how many blocks you can hold (floored)
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier
-  crush: -1,       // highest block tier that shatters on contact (-1 = none)
+  crush: 0,        // block damage per second of contact with the blocks around you (0 = none)
   headbutt: -1,    // highest block tier your head breaks when you jump into it (-1 = none)
   maxHearts: 3,    // heart containers (each holds 8 damage points, drawn in quarters)
   invuln: 1,       // seconds of invulnerability after being hit
@@ -61,7 +61,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   carry: [1, 9],
   kick: [0.2, 6],
   throw: [0.2, 6],
-  crush: [-1, 3],
+  crush: [0, 200],
   headbutt: [-1, 3],
   maxHearts: [1, 12],
   invuln: [0.2, 5],
@@ -89,7 +89,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   carry: v => blocks(Math.floor(v), 0),
   kick: times,
   throw: times,
-  crush: v => (v < 0 ? t('unit.crushNone') : t('unit.crushTier', { n: Math.floor(v) })),
+  crush: v => (v <= 0 ? t('unit.crushNone') : t('unit.crushRate', { n: fmtNum(v, 0) })),
   headbutt: v => (v < 0 ? t('unit.crushNone') : t('unit.crushTier', { n: Math.floor(v) })),
   maxHearts: v => fmtNum(Math.floor(v), 0),
   invuln: v => t('unit.seconds', { n: fmtNum(v, 1) }),

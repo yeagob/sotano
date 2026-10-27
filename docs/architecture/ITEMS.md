@@ -71,7 +71,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `reach` | How far you can place blocks |
 | `carry` | How many blocks you can hold (1 by default) |
 | `kick`, `throw` | Strength of kicks and throws |
-| `crush` | Highest block tier that shatters when you walk into it (-1 = none) |
+| `crush` | Block damage per second dealt to every block you press against while walking (feet, waist and head height, never below; armor counts; 0 = none) |
 | `headbutt` | Highest block tier your head breaks when you jump into it (-1 = none); breaking keeps 45 % of the jump |
 | `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
 | `bombRadius`, `bombDamage` | Your bombs |
@@ -83,11 +83,11 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 
 | Event | Hooks can change | Emitted when |
 |---|---|---|
-| `fire` | the whole `IntentSpec` (damage, `polarity`, pierce, pierceTier, colour…), or cancel | casting |
+| `fire` | the whole `IntentSpec` (damage, `polarity`, pierce, pierceTier, `phase`, colour…), or cancel | casting |
 | `blockDamage` | `amount`, or cancel | any damage to a block (intent, explosion, crush, contact…) |
 | `blockBreak` | `spawnDebris`, or cancel | a block reaches 0 HP (`source` says who broke it) |
 | `blockPlace` | `material` (swap what gets placed), or cancel | placing the top block of your hand |
-| `touchBlock` | `crush` (shatter it or not) | the player walks into a solid block |
+| `touchBlock` | `crush` (wear it down or not) | every 0.25 s the player presses against a solid block with contact wear |
 | `strike` | `damage`, `mining`, `reach`, `tags`, `color`, or cancel; `polarity` is read-only (every hit of the stroke follows it) | a weapon that replaces the intention acts (once per swing, beam or sweep; [WEAPONS.md](WEAPONS.md)) |
 | `headBump` | `breaks` (break it or not) | the player's head hits a solid block while jumping (once per block above) |
 | `explosion` | `radius`, `damage`, or cancel | anything explodes |

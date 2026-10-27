@@ -34,6 +34,9 @@ export interface WeaponHost {
   /** Destroys the loose cubes for which `inside` is true (bombs in reach go off): a strike never
    *  leaves the rubble it made standing in the way. */
   clearCubes(inside: (x: number, y: number, z: number) => boolean): void;
+  /** Like `clearCubes`, but each cube is shown cut in two along the stroke (`along` runs down the
+   *  blade's path, `across` is the normal of the cut plane). */
+  sliceCubes(inside: (x: number, y: number, z: number) => boolean, along: THREE.Vector3, across: THREE.Vector3): void;
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
   shake(seconds: number): void;
   /** Hands: a casting push, and the glow of a charge (0 → 1). */
@@ -70,6 +73,7 @@ function glowMaterial(color: number, opacity: number) {
 /** Half-angle of the blade's cone. */
 const BLADE_HALF_ANGLE = (55 * Math.PI) / 180;
 const BLADE_SHOW = 0.18;
+const SLASH_TILT = 0.45;
 /** Reach caps, so `size` items grow the weapons without making a single strike unbounded. */
 export const BLADE_MAX_REACH = 6;
 export const GREATCUT_MAX_REACH = 18;
@@ -125,7 +129,10 @@ export class Blade implements Weapon {
       this.host.hit(t.id, ev.damage, (t.x - eye.x) / l, (t.z - eye.z) / l, 'blade');
     }
     this.host.clearProjectiles((x, y, z) => inCone(x, y, z, 0.2));
-    this.host.clearCubes((x, y, z) => inCone(x, y, z, 0.2));
+    // the stroke runs across the aim, tilted like a diagonal slash; the cut halves leave perpendicular to it
+    const right = new THREE.Vector3().crossVectors(f, UP).normalize();
+    const along = right.clone().multiplyScalar(Math.cos(SLASH_TILT)).addScaledVector(UP, -this.side * Math.sin(SLASH_TILT)).normalize();
+    this.host.sliceCubes((x, y, z) => inCone(x, y, z, 0.2), along, new THREE.Vector3().crossVectors(f, along).normalize());
     // the visual: a crescent from one side to the other, alternating
     this.side = -this.side;
     this.arc.position.copy(eye).addScaledVector(UP, -0.25);

@@ -13,6 +13,8 @@ export type CubeAction = 'pickup' | 'kick' | 'ignore';
 /** How the player casts (docs/architecture/WEAPONS.md). `intent` is the default shot. */
 export type WeaponId = 'intent' | 'blade' | 'beam' | 'greatcut';
 export const WEAPON_IDS: readonly WeaponId[] = ['intent', 'blade', 'beam', 'greatcut'];
+/** Weapons that are used alongside the intention instead of replacing it. */
+export const WEAPONS_KEEPING_SHOT: ReadonlySet<WeaponId> = new Set<WeaponId>(['blade']);
 export type PickupKind = 'key' | 'bomb' | 'heart';
 /** Where a chain reaction started and how many links deep it is (an explosion set off by an
  *  explosion has `gen + 1`). Chains stop at MAX_CHAIN_GEN. */
@@ -142,6 +144,7 @@ export interface IntentSpec {
   radius: number;
   pierce: number;     // blocks it can break through and keep going
   pierceTier: number; // highest tier `pierce` works on (0 = soft blocks only)
+  phase: number;      // blocks of any tier it passes through, damaging each one on the way
   color: number;
   /** Labels effects can add and react to (e.g. 'burning'). */
   tags: Set<string>;

@@ -10,7 +10,7 @@ import { fx } from '../core/fx';
 
 export const DEBRIS_SIZE = 0.72;     // loose cube edge length
 export const DEBRIS_LIFETIME = 90;   // seconds until it despawns
-export const DEBRIS_BLINK = 8;       // blinks for the last seconds
+export const DEBRIS_SHRINK = 8;      // shrinks away over the last seconds
 export const HOP = 8.5;              // launch speed of a hop over an obstacle (apex ~1.4 blocks)
 export const HOP_COOLDOWN = 0.7;     // seconds between hops, so a cube pinned against a wall doesn't jitter
 /** Hops a cube gets before it gives up pushing into the same wall (reset when it is launched again):
@@ -170,11 +170,17 @@ export class DebrisSystem {
     }
   }
 
-  /** Visible this frame? (blinks near the end of its life) */
+  /** Visible this frame? (a bomb about to go off blinks) */
   visible(i: number, time: number) {
     if (this.fuse[i] > 0) return this.fuse[i] > 1.2 || Math.floor(time * (this.fuse[i] < 0.5 ? 16 : 8)) % 2 === 0;
-    const left = DEBRIS_LIFETIME - this.age[i];
-    return left > DEBRIS_BLINK || Math.floor(time * (left < 3 ? 12 : 5)) % 2 === 0;
+    return true;
+  }
+
+  /** 1 for most of its life, then it shrinks smoothly to nothing before it despawns. */
+  scale(i: number) {
+    if (this.fuse[i] > 0) return 1;
+    const k = Math.min(1, (DEBRIS_LIFETIME - this.age[i]) / DEBRIS_SHRINK);
+    return k * k * (3 - 2 * k);
   }
 
   update(dt: number) {

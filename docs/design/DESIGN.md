@@ -61,7 +61,7 @@ The player doesn't shoot tears: they cast **intentions** — small orbs of will 
 | Luck | Chance of special effects | 0 |
 | **Mining** | Damage multiplier against blocks | 1.0 |
 
-Intentions fly straight for their range, then **fall under gravity** and break on contact. Each intention also has a **polarity**, positive or negative, switched by a control: positive intentions mend projections and can turn them to your side; negative ones wound everything that is yours too, inhabitants included ([BESTIARY §1.1](BESTIARY.md)). Casting upwards digs ceilings; arcing them reaches enemies behind cover.
+Intentions fly straight for their range, then **fall under gravity** and break on contact. Each intention also has a **polarity**, positive or negative, switched by a control: positive intentions mend projections and damaged blocks, and can turn projections to your side; only negative ones break blocks; negative ones wound everything that is yours too, inhabitants included ([BESTIARY §1.1](BESTIARY.md)). Casting upwards digs ceilings; arcing them reaches enemies behind cover.
 
 **Mining** is deliberately separate from damage: it allows items that make you a good fighter but a poor miner, and vice versa. It's a very useful design lever.
 
@@ -89,7 +89,7 @@ Rule: **every breakable block breaks with enough hits.** Material armor reduces 
 
 1. The block breaks → it **becomes a physics cube** (same look, slightly smaller) that falls, rolls and bounces.
 2. Once it settles, it can be **picked up**.
-3. After **60–120 s** it blinks and despawns.
+3. After **60–120 s** it shrinks smoothly to nothing and despawns.
 4. There's a **cap on active cubes**; past it, the oldest disappear first.
 
 There's no floating "item drop" like in Minecraft: the broken block *is* the object.
@@ -260,4 +260,4 @@ If that's fun, it grows to 4 floors, bosses and secrets.
 
 ## Weapons that replace the intention
 
-Like in Isaac, some practices **replace** the intention (owner decision, 2026-10-26): **Occam's Razor** (a blade of light that cuts every block in reach, projections and their projectiles) and **Kiai** (hold to charge, release a beam that burns through blocks tick by tick). Both are quality 4 and only come from bosses. Together they become **One Clear Cut**: a charged, giant blade of light that sweeps the room. How it works: [../architecture/WEAPONS.md](../architecture/WEAPONS.md).
+Like in Isaac, some practices **replace** the intention (owner decision, 2026-10-26): **Kiai** (hold to charge, release a beam that burns through blocks tick by tick). **Occam's Razor** (a blade of light that cuts every block in reach, projections and their projectiles) does not replace it: the intentions keep flying beside the blade (owner, 2026-10-27), and the rubble it cuts is sliced in two before it vanishes. Both are quality 4 and only come from bosses. Together they become **One Clear Cut**: a charged, giant blade of light that sweeps the room. How it works: [../architecture/WEAPONS.md](../architecture/WEAPONS.md).

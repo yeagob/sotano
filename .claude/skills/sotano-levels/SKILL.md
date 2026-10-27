@@ -53,7 +53,7 @@ Run `npm test`: `validateTemplate` lists every broken rule with the tile.
 
 ## 5. The characters
 
-Ground grid (13 × 7, first row north): `.` floor · `P` `T` `K` `H` markers · `r R` stone 1/2 · `c C` crate 1/2 · `o` obsidian · `d` dirt · `i` ore · `b` brick · `1`–`4` brick terraces · `#` brick to the ceiling · `X` obsidian to two under the ceiling · `?` `~` `!` decor slots · `w W` water 1/2 deep · `l L` lava 1/2 deep · `f` eternal flame · `_` a 1-deep dip · `=` a 2-deep pit.
+Ground grid (13 × 7, first row north): `.` floor · `P` `T` `K` `H` markers · `r R` stone 1/2 · `c C` crate 1/2 · `o` obsidian · `d` dirt · `i` ore · `b` brick · `1`–`4` brick terraces · `#` brick to the ceiling · `X` obsidian to two under the ceiling · `?` `~` `!` decor slots · `w W` water 1/2 deep · `l L` lava 1/2 deep · `f` eternal flame · `_` a 1-deep dip · `=` a 2-deep pit · `D` `E` a door-shaped dirt plug (3 wide, 3 high) set in a `#` / `X` wall.
 Layers: `.` `r` `c` `o` `d` `i` `b` `f`.
 Fields: `height`, `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`), `layers: [{ y, rows }]`, `floors: [first, last]`, `lesson` (floor 0), `size` ([2, 1] = 28 × 7, [1, 2] = 13 × 16: doors only on the first cell, `mirror: false`), `weight`, `mirror`. Types: `start`, `normal`, `treasure`, `vault`, `boss`, `path` (the Tree's corridors).
 
@@ -93,3 +93,4 @@ New floor types (Tree-of-Life plans, multi-cell rooms, the trunk, branches and l
 - **2026-10-27, owner:** the tutorial is written on the walls (tablets), never an overlay; challenge rooms (three waves per visit, repeatable, harder each time) on any hostile floor; doors open when there are no projections and on clearing; breakthroughs destroy doors. → `src/render/tablets.ts`, `RoomType 'challenge'`, ROOMS.md §2.
 - **2026-10-27, owner:** continue without asking; trust the engineer's judgement. → L3 built: the 2×1 great pit on floor 5, footprints on floors 6–9, checks per carved room.
 - **2026-10-27, owner:** continue with L4, L5 and L6. → circles named on the HUD, ice on the ninth, silence and heaven looping, the giant tree (trunk, branches, leaves, stars with pads), Wonder in the roots. Creatures of the place live in `content/creatures` (not projections, faction `neutral`).
+- **2026-10-27, owner:** a wall that seals a whole room must show where a door would be, with a door-shaped plug of the softest material (dirt); some walls hide a door on their far side. → `D` / `E` in `rooms.ts` (`CELL_PLUG`), set in every full `#` / `X` wall.

@@ -254,23 +254,41 @@ export class Hud {
     }
     for (const r of floor.rooms) {
       if (!known.has(r.id)) continue;
-      let x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
+      const x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
       // a bigger room spans its cells and the gaps between them
       const [sx, sz] = floor.plan.rooms[r.id % ROOM_ID_STRIDE].size ?? [1, 1];
-      let rw = sx * cw + (sx - 1) * gap, rh = sz * ch + (sz - 1) * gap;
-      // a path of the Tree reads as a corridor: a narrow band between two rooms, not a room
+      const rw = sx * cw + (sx - 1) * gap, rh = sz * ch + (sz - 1) * gap;
+      const visitedHere = visited.has(r.id);
+      const paint = (px: number, py: number, pw: number, ph: number) => {
+        if (visitedHere) {
+          g.globalAlpha = this.lastCleared.has(r.id) && r.id !== current ? 0.5 : 1;
+          g.fillStyle = r.id === current ? MAP.current : this.lastCleared.has(r.id) ? MAP.cleared : MAP.visited;
+          g.fillRect(px, py, pw, ph);
+        } else {
+          g.globalAlpha = r.type === 'path' ? 0.35 : 0.25;
+          if (r.type === 'path') { g.fillStyle = MAP.unvisited; g.fillRect(px, py, pw, ph); }
+          else { g.strokeStyle = MAP.unvisited; g.lineWidth = 1; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1); }
+        }
+        g.globalAlpha = 1;
+      };
+      // a path of the Tree is a connector: a thin band from the middle of its cell to each neighbour,
+      // reaching across the gap so the emanations it joins touch it with no break
       if (r.type === 'path') {
         const links = floor.plan.rooms[r.id % ROOM_ID_STRIDE].links;
-        const across = (links.E !== undefined || links.W !== undefined) && links.N === undefined && links.S === undefined;
-        if (across) { y += ch / 3; rh = ch / 3; } else { x += cw / 3; rw = cw / 3; }
+        const bx = x + Math.floor(cw / 2) - 1, by = y + Math.floor(ch / 2) - 1;
+        const west = links.W !== undefined, east = links.E !== undefined, north = links.N !== undefined, south = links.S !== undefined;
+        if (west || east) {
+          const x0 = west ? x - gap : bx, x1 = east ? x + cw + gap : bx + 3;
+          paint(x0, by, x1 - x0, 3);
+        }
+        if (north || south) {
+          const y0 = north ? y - gap : by, y1 = south ? y + ch + gap : by + 3;
+          paint(bx, y0, 3, y1 - y0);
+        }
+        continue;
       }
-      if (visited.has(r.id)) {
-        g.globalAlpha = this.lastCleared.has(r.id) && r.id !== current ? 0.5 : 1;
-        g.fillStyle = r.id === current ? MAP.current : this.lastCleared.has(r.id) ? MAP.cleared : MAP.visited;
-        g.fillRect(x, y, rw, rh);
-        g.globalAlpha = 1;
-      } else { g.globalAlpha = 0.25; g.strokeStyle = MAP.unvisited; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1); g.globalAlpha = 1; }
-      if (r.type !== 'normal' && r.type !== 'path') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
+      paint(x, y, rw, rh);
+      if (r.type !== 'normal') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
     }
   }
 

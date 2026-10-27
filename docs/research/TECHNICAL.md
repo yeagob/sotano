@@ -206,7 +206,7 @@ There are three distinct problems, and they shouldn't share one tool:
 - One cube = an axis-aligned 0.72 box moved one axis at a time against the voxel grid (and closed doors), with substeps against tunnelling.
 - Resting cubes are hashed per column; falling cubes land on them, so piles stack. A resting cube that loses its support falls again.
 - Rotation is visual only: tumbling in the air, flat with a random yaw at rest.
-- A ring buffer of 2000 cubes (1000 on touch devices): when full, the oldest slot is reused. Cubes despawn after 90 s, blinking for the last 8.
+- A ring buffer of 2000 cubes (1000 on touch devices): when full, the oldest slot is reused. Cubes despawn after 90 s, shrinking smoothly to nothing over the last 8.
 - All cubes render in one `InstancedMesh`; each instance picks its atlas tile in the shader.
 - Measured in the browser: 2000 moving cubes ≈ 3.7 ms per frame (median), 5.2 ms p95.
 

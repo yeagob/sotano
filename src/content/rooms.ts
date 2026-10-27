@@ -62,6 +62,8 @@ export interface RoomTemplate {
   layers?: TemplateLayer[];
   /** The lesson this room teaches on the tutorial floor (`lesson.<key>` texts). */
   lesson?: string;
+  /** A second lesson, carved on the south tablet instead of repeating the first. */
+  lesson2?: string;
   /** Footprint in grid cells [east, south] (default [1, 1]): 28 × 7 for [2, 1], 13 × 16 for [1, 2].
    *  Its doors are those of its first cell (north-west); bigger templates are never mirrored. */
   size?: [number, number];
@@ -144,11 +146,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // brick walls from wall to wall shut the north and south doors off: dig through
     id: 'split', types: ['normal'], floors: [1, 5], weight: 3, rows: [
       '.............',
-      '#############',
+      '#####DDD#####',
       '.............',
       '.............',
       '.............',
-      '#############',
+      '#####DDD#####',
       '.............',
     ],
   },
@@ -520,13 +522,13 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a wall of brick between you and the south door: break through it
-    id: 'roots-dig', types: ['normal'], floors: [0, 0], lesson: 'intent', weight: 3, rows: [
+    id: 'roots-dig', types: ['normal'], floors: [0, 0], lesson: 'intent', lesson2: 'polarity', weight: 3, rows: [
       '.............',
       '.............',
       '.....d.d.....',
       '......K......',
       '.............',
-      '#############',
+      '#####DDD#####',
       '.............',
     ],
   },
@@ -583,9 +585,9 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     id: 'roots-seal', types: ['normal'], floors: [0, 0], lesson: 'bomb', weight: 3, height: 6, rows: [
       '...X.....X...',
       '.d.X.....X.d.',
-      '...X.....X...',
-      '...X..K..X...',
-      '...X.....X...',
+      '...E.....E...',
+      '...E..K..E...',
+      '...E.....E...',
       '.d.X.....X.d.',
       '...X.....X...',
     ],
@@ -641,11 +643,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // obsidian walls shut the north and south doors off: over them, or through them with a breakthrough
     id: 'path-wall', types: ['path', 'normal'], floors: [1, 9], weight: 3, height: 7, rows: [
       '.d.........d.',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.............',
       '......K......',
       '.............',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.d.........d.',
     ],
   },
@@ -716,11 +718,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // only the west is open, so every other way out is built
     id: 'gates', types: ['normal'], floors: [4, 9], weight: 3, height: 7, ceiling: 'vault-x', rows: [
       '.r.........rd',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '........===..',
       '......K.===..',
       '........===..',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.r.........r.',
     ],
   },
@@ -771,7 +773,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '..===...===..',
       '..===...===..',
       '.............',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.............',
       '.d.========..',
       '...=......=..',
@@ -825,9 +827,9 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     id: 'gale', types: ['normal'], floors: [2, 3], weight: 3, height: 8, ceiling: 'vault-x', rows: [
       '.d.X.....X.d.',
       '...X.....X...',
-      '...X.....X...',
-      '...X..K..X...',
-      '...X.....X...',
+      '...E.....E...',
+      '...E..K..E...',
+      '...E.....E...',
       '...X.....X...',
       '.d.X.....X.d.',
     ],
@@ -859,11 +861,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // the weights: heavy walls quarter the room; every way out goes over them
     id: 'weights', types: ['normal'], floors: [4, 5], weight: 3, height: 7, rows: [
       '.d.........d.',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '..X.......X..',
       '..X...K...X..',
       '..X.......X..',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.d.........d.',
     ],
   },
@@ -884,11 +886,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // the tombs: rows of open graves of flame, and tomb walls between you and the north and south doors
     id: 'tombs', types: ['normal'], floors: [6, 7], weight: 3, height: 6, ceiling: 'vault-z', rows: [
       '.r.........r.',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.f.f.f.f.f.f.',
       '......K......',
       '.f.f.f.f.f.f.',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.r.........r.',
     ],
   },
@@ -920,11 +922,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // the cold bottom: deep, still water walled in by obsidian (ice comes later)
     id: 'cocytus', types: ['normal'], floors: [9, 9], weight: 3, height: 8, ceiling: 'dome', rows: [
       'WWr.......rWW',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       '.WWWW...WWWW.',
       '.WWW..K..WWW.',
       '.WWWW...WWWW.',
-      'XXXXXXXXXXXXX',
+      'XXXXXEEEXXXXX',
       'WW.........WW',
     ],
   },
@@ -955,7 +957,15 @@ export const CELL_STACK: Record<string, { m: number; h: number }> = {
   b: { m: MAT.brick, h: 1 },
   // X: obsidian up to two blocks under the ceiling; its real height is set when the room is carved
   X: { m: MAT.obsidian, h: ROOM_H - 2 },
+  // D and E: a door-shaped plug of dirt (three blocks) set in a '#' or an 'X' wall, so a wall that
+  // seals the room still shows where a door would be and gives way to the softest material
+  D: { m: MAT.dirt, h: 3 }, E: { m: MAT.dirt, h: 3 },
   1: { m: MAT.brick, h: 1 }, 2: { m: MAT.brick, h: 2 }, 3: { m: MAT.brick, h: 3 }, 4: { m: MAT.brick, h: 4 },
+};
+
+/** What stands above a plug's dirt: its wall's material, and how many blocks it stops under the ceiling. */
+export const CELL_PLUG: Record<string, { m: number; under: number }> = {
+  D: { m: MAT.brick, under: 0 }, E: { m: MAT.obsidian, under: 2 },
 };
 
 /** Element cells (docs/architecture/ELEMENTS.md §9): `depth` blocks dug below the floor and filled
@@ -1040,7 +1050,7 @@ export function validateTemplate(t: RoomTemplate): string[] {
     const parts = walkParts(t);
     // a puzzle you solve by building carries its own material: soft blocks you can break and carry
     // (the room's brick walls work too, but a puzzle shouldn't send you digging into them)
-    if (needsBuilding(t) && !/[dcCrRb1-4?~#i]/.test(t.rows.join('') + (t.layers ?? []).map(l => l.rows.join('')).join('')))
+    if (needsBuilding(t) && !/[dDEcCrRb1-4?~#i]/.test(t.rows.join('') + (t.layers ?? []).map(l => l.rows.join('')).join('')))
       errs.push(`${t.id}: it needs building but holds nothing to build with`);
     if (t.types.includes('start') && new Set(parts.values()).size > 1) errs.push(`${t.id}: a start room must never need building`);
     // the great pit opens 4×4 around a wide crown's H: keep that clear too
