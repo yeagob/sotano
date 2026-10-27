@@ -139,7 +139,7 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 ### Gifts and parts (planned)
 
-Projections leave **parts** (flesh, heart, mind, essence) that are items, and some Presences make **agreements** for them. Their gifts come in three tiers and a closed set, the Covenant; every gift is marked *promised* by a gold seam. Design: [BESTIARY.md §5.7 and §8.5–§8.7](BESTIARY.md).
+Projections leave **parts** (flesh, heart, mind, essence): collectibles named after their pattern, held in the inventory but not practices, with no effect. Some Presences make **agreements** for them. Their gifts come in three tiers and a closed set, the Covenant; every gift is marked *promised* by a gold seam. Design: [BESTIARY.md §5.7 and §8.5–§8.7](BESTIARY.md).
 
 ## A love letter to games
 

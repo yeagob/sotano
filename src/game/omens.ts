@@ -20,6 +20,8 @@ export interface Cell { x: number; z: number }
 export interface Omen {
   def: string;
   room: number;
+  /** The room's spawn count when this omen opened: the seed path of the projection's parts. */
+  seq: number;
   x: number; y: number; z: number;
   /** Seconds since the omen opened. */
   t: number;

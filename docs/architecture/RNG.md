@@ -44,6 +44,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 | `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |
 | `fork('elements')` | Runtime | One seed for the element simulation: each fire-spread roll is `hash3(seed, cell, tick, side)`, stateless, so one fire never changes another's luck. Template elements (pools, flames) are fixed by the template and draw nothing |
 | `fork('floor', k, 'room', i, 'clear')` | Runtime | Room i's clear reward: one uniform `u`, then luck reweights the table against it |
+| `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
 | `stream('drops')` | Runtime | Enemy drops |
 | `stream('loot')` | Runtime | Runtime item draws (never reserved items) |

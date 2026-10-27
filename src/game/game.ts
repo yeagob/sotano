@@ -19,6 +19,7 @@ import {
   DEFAULT_AFFINITY, ELEMENTS, elemDef, elemKind, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
+import { rollParts } from '../content/parts';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS } from '../content/levels';
@@ -177,6 +178,8 @@ export class Game {
   doors!: Doors;
   pickups!: Pickups;
   enemies!: Enemies;
+  /** Parts collected this run, by part id, in pick-up order (BESTIARY §5.7). Not items: no effects. */
+  parts: string[] = [];
   room = -1;
   visited = new Set<number>();
   /** Keep simulating while the mouse isn't captured (for automated tests). */
@@ -189,6 +192,8 @@ export class Game {
   private omens: Omen[] = [];
   /** Per room: how many spawns it has announced, so each spawn point roll has its own seed path. */
   private spawnSeq = new Map<number, number>();
+  /** Per live projection: the spawn count of its omen, the seed path of its parts. */
+  private projectionSeq = new Map<number, number>();
   private camDir = new THREE.Vector3();
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean }[] = [];
@@ -352,7 +357,7 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.bosses.clear(); this.chests = [];
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.parts = []; this.bosses.clear(); this.chests = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -782,6 +787,13 @@ export class Game {
     const b = e.body;
     const ev = this.bus.emit('actorDeath', { target: e.id, targetKind: 'projection', def: e.def, x: b.x, y: b.y, z: b.z, drops });
     for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    const floor = this.rooms.get(e.room)?.floor;
+    const seq = this.projectionSeq.get(e.id) ?? 0;
+    this.projectionSeq.delete(e.id);
+    if (floor !== undefined) {
+      const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
+      for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
+    }
     sfx3.dissolve();
   }
 
@@ -892,7 +904,7 @@ export class Game {
     const seq = this.spawnSeq.get(r.id) ?? 0;
     this.spawnSeq.set(r.id, seq + 1);
     const spot = this.spawnSpot(r, seq);
-    this.omens.push({ def: defId, room: r.id, x: spot.x, y: spot.y, z: spot.z, t: 0, breached: false, emitted: 0 });
+    this.omens.push({ def: defId, room: r.id, seq, x: spot.x, y: spot.y, z: spot.z, t: 0, breached: false, emitted: 0 });
     spatial.omenHum(spot.x, spot.y + 0.5, spot.z, 'floor');
   }
 
@@ -940,7 +952,7 @@ export class Game {
       if (o.t < OMEN_GATHER + OMEN_BREACH) continue;
       this.omens.splice(i, 1);
       const r = this.rooms.get(o.room);
-      if (r) this.spawnEnemy(o.def, r, o.x, o.y, o.z);
+      if (r) this.spawnEnemy(o.def, r, o.seq, o.x, o.y, o.z);
     }
   }
 
@@ -960,12 +972,13 @@ export class Game {
   }
 
   /** Materialise one projection where its omen breached. */
-  private spawnEnemy(defId: string, r: RoomInfo, x: number, y: number, z: number) {
+  private spawnEnemy(defId: string, r: RoomInfo, seq: number, x: number, y: number, z: number) {
     const def = ENEMY_BY_ID.get(defId);
     if (!def) return;
     const id = this.actors.newId();
     const ev = this.bus.emit('enemySpawn', { id, def: defId, hp: def.hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(), x, y, z });
     if (ev.cancelled) return;
+    this.projectionSeq.set(id, seq);
     this.actors.add(this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags));
   }
 
@@ -1503,6 +1516,10 @@ export class Game {
         continue;
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
+      if (p.type === 'part') {
+        if (p.part) { this.pickups.take(p); this.parts.push(p.part.id); this.particles.burst(p.x, p.y + 0.3, p.z, PICKUP_FX.key, 10, 2, 0.06); }
+        continue;
+      }
       // hearts stay on the floor while you're at full health, like in Isaac
       if (p.type === 'heart' && this.player.hp >= this.maxHp) continue;
       if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {

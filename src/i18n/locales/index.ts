@@ -16,6 +16,7 @@ export interface ContentTexts {
   enemies: Record<string, { name?: string; pattern?: string }>;
   /** By material key ('stone'). */
   materials: Record<string, string>;
+  parts: Record<string, { name?: string; description?: string }>;
 }
 
 export interface Catalog {

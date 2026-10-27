@@ -21,6 +21,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Personal legend and omens** | `the-alchemist` | **Follow the Omens**: luck; the treasure that was where you started (endgame) |
 | **Inner alchemy** (transmutation) | `emerald-tablet`, `the-alchemist` | Furnaces turning raw blocks into refined ones; states of being |
 | **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
+| **Parts of a projection** (flesh, heart, mind, essence) | — | What a released projection leaves behind, named after its pattern (the Doubt's pause, the Lectern's margin note); collected, never practices ([BESTIARY §5.7](../design/BESTIARY.md)) |
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
 | **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/BESTIARY.md)) |
 | **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/BESTIARY.md)) |
