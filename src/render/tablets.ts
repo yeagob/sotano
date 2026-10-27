@@ -8,7 +8,7 @@ import { palCss } from '../content/palette';
 import { t, type MessageKey } from '../i18n';
 
 /** Every lesson the roots can teach (rooms carry theirs: `RoomTemplate.lesson`). */
-export const LESSONS = ['move', 'intent', 'step', 'kick', 'pit', 'bridge', 'bomb', 'water', 'practice', 'down', 'carry'] as const;
+export const LESSONS = ['move', 'intent', 'polarity', 'step', 'kick', 'pit', 'bridge', 'bomb', 'water', 'practice', 'down', 'carry'] as const;
 export type LessonKey = typeof LESSONS[number];
 export const isLesson = (k: string): k is LessonKey => (LESSONS as readonly string[]).includes(k);
 
@@ -24,10 +24,10 @@ export class Tablets {
   constructor(private scene: THREE.Scene) { scene.add(this.group); }
 
   /** Mounts a lesson in a room: interior corner (x0, y0, z0), 13 × 7. */
-  add(lesson: LessonKey, x0: number, y0: number, z0: number) {
+  add(lesson: LessonKey, x0: number, y0: number, z0: number, second: LessonKey = lesson) {
     // north wall, west of the door (facing south); south wall, east of the door (facing north)
     this.mount(lesson, x0 + 2.0, y0 + 2.0, z0 + 0.02, 0);
-    this.mount(lesson, x0 + 13 - 2.0, y0 + 2.0, z0 + 7 - 0.02, Math.PI);
+    this.mount(second, x0 + 13 - 2.0, y0 + 2.0, z0 + 7 - 0.02, Math.PI);
   }
 
   private mount(lesson: LessonKey, x: number, y: number, z: number, rotY: number) {
@@ -67,9 +67,9 @@ export class Tablets {
     g.fillStyle = palCss('ink.bevel');
     g.fillRect(28, 62, PX - 56, 3);
     g.fillStyle = palCss('ink.line');
-    g.font = '18px system-ui, "Segoe UI", sans-serif';
-    let y = 78;
-    for (const line of wrap(g, t(`lesson.${tab.lesson}.text` as MessageKey), PX - 56)) { g.fillText(line, 28, y); y += 23; }
+    g.font = '26px system-ui, "Segoe UI", sans-serif';
+    let y = 82;
+    for (const line of wrap(g, t(`lesson.${tab.lesson}.text` as MessageKey), PX - 56)) { g.fillText(line, 28, y); y += 33; }
     tab.texture.needsUpdate = true;
   }
 }

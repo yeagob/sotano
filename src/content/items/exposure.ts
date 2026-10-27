@@ -4,8 +4,8 @@ import { defineItem } from '../../items/types';
 export default defineItem({
   id: 'exposure',
   name: 'Exposure',
-  description: 'Walk into small fears and they shatter: soft blocks break on contact.',
-  effect: 'Walking into soft blocks (dirt, grass, crates) shatters them instantly.',
+  description: 'Walk into your fears and they wear away: whatever you press against crumbles, little by little.',
+  effect: 'Walking into any block around you (never the ones below) wears it down: 20 block damage per second, armor still counts. Soft blocks fall at once, obsidian takes seconds.',
   inspiredBy: 'Exposure therapy (cognitive behavioural therapy)',
   pools: { treasure: 1 },
   tags: ['emotion', 'body', 'contact'],
@@ -28,6 +28,6 @@ export default defineItem({
     ],
     palette: { a: pal('mat.crate.dark'), b: pal('path.will.base'), c: pal('brass.hi') },
   },
-  // contact breaking is a core rule driven by the `crush` stat: -1 (none) + 1 = tier 0
-  stats: [{ stat: 'crush', layer: 'add', value: 1 }],
+  // contact wear is a core rule driven by the `crush` stat (block damage per second of contact)
+  stats: [{ stat: 'crush', layer: 'add', value: 20 }],
 });

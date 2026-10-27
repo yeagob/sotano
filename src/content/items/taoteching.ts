@@ -5,7 +5,7 @@ export default defineItem({
   id: 'taoteching',
   name: 'Tao Te Ching',
   description: 'The softest thing overcomes the hardest: intentions flow through five blocks of any kind.',
-  effect: 'Intentions break through up to 5 blocks of ANY tier (even obsidian) and keep flying. Mining ×1.5.',
+  effect: 'Intentions pass through up to 5 blocks of ANY tier (even obsidian), damaging every block they cross, and keep flying. Mining ×1.5.',
   inspiredBy: 'Lao Tzu, Tao Te Ching (public domain)',
   pools: { treasure: 1, vault: 2 },
   tags: ['mind', 'emotion', 'intent', 'mining'],
@@ -33,8 +33,7 @@ export default defineItem({
   ],
   hooks: [
     hook('fire', e => {
-      e.intent.pierce += 5;
-      e.intent.pierceTier = Math.max(e.intent.pierceTier, 3);
+      e.intent.phase += 5;
       e.intent.color = pal('bone.paper');
     }, { id: 'flow-through', priority: 10 }),
   ],

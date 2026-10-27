@@ -20,6 +20,7 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
     radius: 0.12 * s.size,
     pierce: 0,
     pierceTier: 0,
+    phase: 0,
     // the shell; items may tint it. A negative intention is your light charred: an ash shell (never
     // cold, which is the projections'); its core and halo dim in draw() (docs/art/DECISIONS.md §7.1)
     color: polarity === 'negative' ? pal('ink.ash') : pal('light.gold'),
@@ -27,7 +28,10 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
   };
 }
 
-interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number }
+/** Blocks: how far an intention that phases moves into a block it has just hit. */
+const PHASE_NUDGE = 1e-3;
+
+interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -88,7 +92,7 @@ export class Intents {
   fire(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0 });
+    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null });
   }
 
   update(dt: number) {
@@ -121,17 +125,37 @@ export class Intents {
         dead = true;
       }
 
-      // against the world (piercing through soft blocks)
+      // against the world: piercing through soft blocks, or phasing through any block
       if (!dead) {
-        const hit = raycastVoxels(h.solid, t.pos.x, t.pos.y, t.pos.z, step.x, step.y, step.z, dist);
-        if (hit) {
-          const hitPos = t.pos.clone().addScaledVector(step, dist ? hit.t / dist : 0);
+        const ph = t.phased;
+        if (ph && (Math.floor(t.pos.x) !== ph[0] || Math.floor(t.pos.y) !== ph[1] || Math.floor(t.pos.z) !== ph[2])) t.phased = null;
+        const origin = t.pos.clone();
+        let left = dist;
+        while (!dead) {
+          const skip = t.phased;
+          const hit = raycastVoxels(
+            (x, y, z) => !(skip && skip[0] === x && skip[1] === y && skip[2] === z) && h.solid(x, y, z),
+            origin.x, origin.y, origin.z, step.x, step.y, step.z, left,
+          );
+          if (!hit) { t.pos.copy(origin).addScaledVector(step, dist ? left / dist : 0); break; }
+          const hitPos = origin.clone().addScaledVector(step, dist ? hit.t / dist : 0);
           const pierceable = h.tier(hit.x, hit.y, hit.z) <= t.spec.pierceTier;
           const broke = h.hitBlock(hit, t.spec);
           h.splash(hitPos, t.spec.color, broke);
-          if (broke && pierceable && t.spec.pierce > 0) { t.spec = { ...t.spec, pierce: t.spec.pierce - 1 }; t.pos.copy(hitPos); }
-          else dead = true;
-        } else t.pos.add(step);
+          if (t.spec.phase > 0) {
+            t.spec = { ...t.spec, phase: t.spec.phase - 1 };
+            t.phased = [hit.x, hit.y, hit.z];
+            // step just inside the block, so the cell it left is never found again on its face
+            origin.copy(hitPos).addScaledVector(step, dist ? PHASE_NUDGE / dist : 0);
+            left -= hit.t + PHASE_NUDGE;
+            t.pos.copy(origin);
+            if (left <= 0) break;
+          } else if (broke && pierceable && t.spec.pierce > 0) {
+            t.spec = { ...t.spec, pierce: t.spec.pierce - 1 };
+            t.pos.copy(hitPos);
+            break;
+          } else dead = true;
+        }
       }
       if (dead || t.age > 6) this.list.splice(i, 1);
     }

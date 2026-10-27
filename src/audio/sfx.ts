@@ -62,6 +62,7 @@ export const sfx = {
   kick: () => { noise(0.1, 0.5, 300, 1); tone(110, 0.12, 'sine', 0.4, 0.5); },
   place: () => { noise(0.08, 0.4, 500, 1.5); tone(200, 0.08, 'triangle', 0.2, 0.7); },
   denied: () => tone(160, 0.12, 'square', 0.12, 0.8),
+  mend: () => tone(jitter(700), 0.09, 'sine', 0.1, 1.4),
   /** A block breaks against your head: a dull knock and a little upward chirp. */
   headbutt: () => { noise(0.12, 0.45, jitter(420), 1.2); tone(jitter(380), 0.14, 'square', 0.1, 1.9); },
 };

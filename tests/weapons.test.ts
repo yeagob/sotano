@@ -6,7 +6,7 @@ import { SYNERGIES } from '../src/content/synergies';
 import { Beam, Blade, BLADE_MAX_REACH, chargeTime, GreatCut, GREATCUT_MAX_REACH, type WeaponHost } from '../src/combat/weapons';
 import { Rng } from '../src/core/rng';
 import { BASE_STATS, StatSheet, type Stats } from '../src/core/stats';
-import { createBus } from '../src/game/events';
+import { createBus, WEAPONS_KEEPING_SHOT } from '../src/game/events';
 import { Inventory } from '../src/items/inventory';
 import type { HostApi } from '../src/items/types';
 
@@ -18,7 +18,7 @@ function fakeHost(opts: { stats?: Partial<Stats>; unbreakable?: Set<string>; fil
   const fill = opts.fill ?? 6;
   for (let x = -fill; x <= fill; x++) for (let y = 0; y <= 3; y++) for (let z = -fill * 3; z <= fill; z++)
     if (!(x === 0 && z === 0)) blocks.add(key(x, y, z));
-  const state = { casting: false, cuts: [] as string[], burns: 0, strikes: 0, hits: [] as number[], cancel: false, cubes: [] as [number, number, number][] };
+  const state = { casting: false, cuts: [] as string[], burns: 0, strikes: 0, hits: [] as number[], cancel: false, cubes: [] as [number, number, number][], slashes: [] as [THREE.Vector3, THREE.Vector3][] };
   const stats = { ...BASE_STATS, ...opts.stats };
   const host: WeaponHost = {
     stats: () => stats,
@@ -35,6 +35,9 @@ function fakeHost(opts: { stats?: Partial<Stats>; unbreakable?: Set<string>; fil
     clearProjectiles: () => {},
     // a loose cube in front of the player, 1.5 blocks ahead at eye height
     clearCubes: inside => { if (inside(0.5, 1.6, -1)) state.cubes.push([0.5, 1.6, -1]); },
+    sliceCubes: (inside, along, across) => {
+      if (inside(0.5, 1.6, -1)) { state.cubes.push([0.5, 1.6, -1]); state.slashes.push([along.clone(), across.clone()]); }
+    },
     particles: () => {}, shake: () => {}, swingHands: () => {}, chargeHands: () => {}, sound: () => {},
   };
   return { host, blocks, state };
@@ -72,6 +75,12 @@ describe('active weapon', () => {
     inv.restore(['kiai', 'stoic']);
     expect(inv.weapon).toBe('beam');
     expect(inv.serialize()).toEqual(['kiai', 'stoic']);
+  });
+
+  it('the razor is used alongside the intention; the other weapons replace it', () => {
+    expect(WEAPONS_KEEPING_SHOT.has('blade')).toBe(true);
+    expect(WEAPONS_KEEPING_SHOT.has('beam')).toBe(false);
+    expect(WEAPONS_KEEPING_SHOT.has('greatcut')).toBe(false);
   });
 
   it('both weapons are quality 4 and drop only from bosses', () => {

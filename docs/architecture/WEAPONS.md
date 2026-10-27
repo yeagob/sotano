@@ -12,17 +12,21 @@ Until now the player had one way to act at range: the **intention** (`src/combat
 | Weapon | Declared by | Input | Does |
 |---|---|---|---|
 | `intent` | (default) | hold left click | the intention, unchanged |
-| `blade` | Occam's Razor | hold left click (swings at 80 % of the fire rate) | a cut in a 55° cone, reach 2.5 × `size` (at most 6): every breakable block in it is cut loose (it falls as a loose cube), every hostile projection in it takes `damage` × 3, every hostile projectile in it is destroyed |
+| `blade` | Occam's Razor | hold left click (swings at 80 % of the fire rate, **alongside the intention**: the shot keeps firing) | a cut in a 55° cone, reach 2.5 × `size` (at most 6): every breakable block in it is cut loose (it falls as a loose cube), every hostile projection in it takes `damage` × 3, every hostile projectile in it is destroyed; loose cubes in it (the rubble it just cut) are sliced in two along the stroke, Beat Saber style, and the halves fly apart and shrink away (at most 24 sliced per swing, the rest turn to dust) |
 | `beam` | Kiai | hold to charge, release when charged | a beam for 1 s along your aim: 10 ticks/s; each tick deals `mining` × 2 to the first solid block on its path (the beam goes on through it once it breaks) and `damage` × 1 to every hostile projection on the beam; destroys projectiles on it |
 | `greatcut` | One Clear Cut (Razor + Kiai) | hold to charge, release when charged | a giant blade of light, 9 × `size` long (at most 18), sweeps 140° in front of you in 0.45 s: cuts every breakable block it passes (3 layers thick), `damage` × 4 to each projection it crosses (once per sweep), destroys projectiles |
 
 Charge time for `beam` and `greatcut` is `clamp(2.7 / fireRate, 0.35, 2)` seconds: fire-rate items charge faster, like Brimstone.
 
+`WEAPONS_KEEPING_SHOT` (`game/events.ts`) lists the weapons used alongside the shot; today only `blade`. Beam and great cut still replace it (they share its button for charging).
+
+A positive stroke never breaks a block either: it reaches only damaged blocks and mends them (owner, 2026-10-27).
+
 ## 2. Contract with items
 
 - **Stats drive everything**: `damage`, `mining`, `fireRate`, `size` already change every weapon; no weapon-specific stats.
 - **One new event**, `strike: { weapon, damage, mining, reach, color, tags }`, emitted **once** per swing, beam release or sweep, before it happens. Its result is frozen for the whole strike (the beam's ticks read the frozen copy). Hooks can scale it, tag it or cancel it; a cancelled beam or great cut gives the charge back. It covers what `fire` covers for intentions.
-- **Items that only hook `fire`** do nothing while a weapon replaces the intention, as in Isaac. Today: Kaizen and Tao Te Ching (pierce) and the Compound Effect synergy (pierce stone). The beam already burns through blocks and the blade cuts everything, so nothing is lost in practice; mapping pierce onto the weapons is left for the balance milestone.
+- **Items that only hook `fire`** do nothing while a weapon replaces the intention, as in Isaac. Today: Kaizen and Tao Te Ching (pierce, phase) and the Compound Effect synergy (pierce stone). The blade is the exception: the shot keeps firing beside it, so these items still work with it. The beam already burns through blocks and the blade cuts everything, so nothing is lost in practice; mapping pierce onto the weapons is left for the balance milestone.
 - Blocks broken by weapons go through `damageBlock` / `breakBlock` with kind `'cut'` (blade, great cut; amount = the block's full HP, so armor never saves it) or `'beam'`; actors go through `damageActor`. So `blockBreak`, `blockLoot`, `actorDamage` and every existing item keep working.
 - A cut deals 1e6 block damage (kind `'cut'`), so armor never saves a block; `blockDamage` hooks still may. Unbreakable blocks (tier `Infinity`: bedrock) are never cut. Doors are not world blocks and are not cut. **Nothing inside the reach is filtered** (owner: "it cuts all blocks in its range"): walls, floors and frames are cut too, like any digging.
 - Projectiles of allied (converted) projections survive: only projectiles hostile to the player are destroyed.

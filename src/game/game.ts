@@ -43,7 +43,7 @@ import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import { boxHits } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
-import { CrackView, DebrisView } from '../render/debris-view';
+import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
@@ -59,7 +59,7 @@ import { ElementSim } from '../world/elements';
 import { buildTree, TREE_ZONES, type TreeResult } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
-import { createBus, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
+import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
@@ -109,6 +109,10 @@ const BREAK_SFX_PER_FRAME = 4;
 const BREAK_FX_PER_FRAME = 24;
 /** Loose cubes a single weapon strike may leave behind; the rest of its cuts vanish as dust. */
 const STRIKE_DEBRIS: Record<WeaponId, number> = { intent: 0, blade: 16, beam: 24, greatcut: 24 };
+/** Cubes a single blade swing shows cut in two; the rest of the rubble in reach turns to dust. */
+const SLICED_CUBES_PER_STRIKE = 24;
+/** Seconds between contact wear ticks (the `crush` stat is damage per second). */
+const CONTACT_TICK = 0.25;
 /** Damage points a blast deals to every actor in range (8 = one heart to the player). */
 const BLAST_ACTOR_DAMAGE = 2 * HALF_HEART;
 
@@ -200,6 +204,7 @@ export class Game {
   private atlas = buildAtlas();
   private chunks!: ChunkRenderer;
   private debrisView: DebrisView;
+  private cutHalves: CutHalves;
   private cracks: CrackView;
   private particles: Particles;
   private intents: Intents;
@@ -223,6 +228,10 @@ export class Game {
   private weaponId: WeaponId = 'intent';
   private weaponHost: WeaponHost;
   private strikeDebris = 0;
+  /** Seconds the player has been pressing against blocks since the last contact tick. */
+  private contactT = 0;
+  /** The hint that gold only mends has been shown this run. */
+  private polarityHinted = false;
   private breakSfx = 0;
   private breakFx = 0;
   private fogColor = new THREE.Color();
@@ -263,11 +272,12 @@ export class Game {
     this.stars = makeStars();
     this.scene.add(this.stars);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
+    this.cutHalves = new CutHalves(this.scene, this.atlas);
     this.cracks = new CrackView(this.scene);
     this.intents = new Intents(this.scene, {
       solid: (x, y, z) => this.solid(x, y, z),
       tier: (x, y, z) => mat(this.world.get(x, y, z)).tier,
-      hitBlock: (hit, t) => this.intentHitsBlock(hit, t.mining),
+      hitBlock: (hit, t) => this.intentHitsBlock(hit, t.mining, t.polarity),
       debrisAt: (x, y, z, r) => this.debrisAt(x, y, z, r),
       hitDebris: (i, v, t) => {
         const k = t.knock * 6 / Math.max(1, v.length());
@@ -310,6 +320,7 @@ export class Game {
     this.rng = new RunRandom(root);
     this.hud.setSeed(this.seedLabel);
     this.polarity = 'positive';
+    this.polarityHinted = false;
     this.hud.setPolarity(this.polarity);
     this.dungeon = planDungeon(this.rng);
     this.pools = new ItemPools(PLAYABLE_ITEMS);
@@ -426,8 +437,9 @@ export class Game {
     }
     // the tutorial is carved into the walls of its rooms (never an overlay)
     for (const r of f.rooms) {
-      const lesson = ROOM_TEMPLATES.find(q => q.id === r.template)?.lesson;
-      if (lesson && isLesson(lesson)) this.tablets.add(lesson, r.x0, r.y0, r.z0);
+      const tpl = ROOM_TEMPLATES.find(q => q.id === r.template);
+      const lesson = tpl?.lesson, second = tpl?.lesson2;
+      if (lesson && isLesson(lesson)) this.tablets.add(lesson, r.x0, r.y0, r.z0, second && isLesson(second) ? second : lesson);
     }
   }
 
@@ -512,10 +524,21 @@ export class Game {
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach };
       },
       solid: (x, y, z) => this.solid(x, y, z),
-      breakable: (x, y, z) => { const id = this.world.get(x, y, z); return id !== AIR && isFinite(mat(id).hp); },
+      // a positive stroke only reaches blocks it can mend: the damaged ones
+      breakable: (x, y, z) => {
+        const id = this.world.get(x, y, z);
+        if (id === AIR || !isFinite(mat(id).hp)) return false;
+        return this.stroke.polarity === 'negative' || this.world.damaged.has(this.world.idx(x, y, z));
+      },
       // a clean cut: far more than any block's HP, so armor never saves it (hooks still may)
-      cut: (x, y, z, source) => { this.damageBlock(x, y, z, 1e6, 'cut', source, this.strikeDebris-- > 0); },
-      burn: (x, y, z, amount, source) => this.damageBlock(x, y, z, amount, 'beam', source),
+      cut: (x, y, z, source) => {
+        if (this.stroke.polarity === 'positive') this.repairBlock(x, y, z, 1e6);
+        else this.damageBlock(x, y, z, 1e6, 'cut', source, this.strikeDebris-- > 0);
+      },
+      burn: (x, y, z, amount, source) => {
+        if (this.stroke.polarity === 'positive') { this.repairBlock(x, y, z, amount); return false; }
+        return this.damageBlock(x, y, z, amount, 'beam', source);
+      },
       targets: () => this.enemies.list
         .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
         .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
@@ -525,24 +548,34 @@ export class Game {
         this.intentTouch(id, damage, kx, kz, source === 'beam' ? 'beam' : 'cut', source, this.stroke.polarity, warm);
       },
       clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
-      clearCubes: inside => {
-        const d = this.debris;
-        let fxLeft = 6;
-        for (let i = 0; i < d.max; i++) {
-          if (!d.isAlive(i)) continue;
-          const i3 = i * 3, x = d.pos[i3], y = d.pos[i3 + 1], z = d.pos[i3 + 2];
-          if (!inside(x, y, z)) continue;
-          if (d.isBomb(i)) { d.fuse[i] = Math.min(d.fuse[i], 0.05); continue; }
-          if (fxLeft-- > 0) this.particles.burst(x, y, z, mat(d.material[i]).colors[0], 8, 3, 0.08);
-          d.remove(i);
-        }
-      },
+      clearCubes: inside => this.clearCubesIn(inside),
+      sliceCubes: (inside, along, across) => this.clearCubesIn(inside, { along, across }),
       particles: (x, y, z, c, n, s, size) => this.particles.burst(x, y, z, c, n, s, size),
       shake: s => this.hud.shake(s),
       swingHands: () => this.hands.fire(),
       chargeHands: k => this.hands.charge(k),
       sound: name => sfx2[name](),
     };
+  }
+
+  /**
+   * Destroys the loose cubes for which `inside` is true (bombs in reach go off). With a `slash`, the
+   * first few are shown cut in two along it, Beat Saber style; the rest turn to dust.
+   */
+  private clearCubesIn(inside: (x: number, y: number, z: number) => boolean, slash?: { along: THREE.Vector3; across: THREE.Vector3 }) {
+    const d = this.debris;
+    let fxLeft = 6, slices = SLICED_CUBES_PER_STRIKE;
+    for (let i = 0; i < d.max; i++) {
+      if (!d.isAlive(i)) continue;
+      const i3 = i * 3, x = d.pos[i3], y = d.pos[i3 + 1], z = d.pos[i3 + 2];
+      if (!inside(x, y, z)) continue;
+      if (d.isBomb(i)) { d.fuse[i] = Math.min(d.fuse[i], 0.05); continue; }
+      if (slash && slices-- > 0) {
+        this.cutHalves.cut(d.material[i], new THREE.Vector3(x, y, z), slash.along, slash.across, this.player.forward, 3.2 + fx.range(0, 1.2));
+        if (fxLeft-- > 0) this.particles.burst(x, y, z, pal('light.hot'), 4, 2, 0.05);
+      } else if (fxLeft-- > 0) this.particles.burst(x, y, z, mat(d.material[i]).colors[0], 8, 3, 0.08);
+      d.remove(i);
+    }
   }
 
   /** The inventory decides the weapon; swapping drops any charge or strike in progress. */
@@ -766,6 +799,7 @@ export class Game {
   /** F: the loaded intention switches between positive (it mends) and negative (it harms). */
   private togglePolarity() {
     const from = this.polarity;
+    this.polarityHinted = true;
     this.polarity = from === 'positive' ? 'negative' : 'positive';
     this.hud.setPolarity(this.polarity);
     this.bus.emit('polarityChange', { from, to: this.polarity });
@@ -1066,12 +1100,30 @@ export class Game {
     sfx2.boom();
   }
 
-  private intentHitsBlock(hit: VoxelHit, mining: number) {
+  /** A positive intention mends a damaged block and never breaks one; a negative one damages it. */
+  private intentHitsBlock(hit: VoxelHit, mining: number, polarity: Polarity) {
     const id = this.world.get(hit.x, hit.y, hit.z);
     if (id === AIR) return false; // a door
+    if (polarity === 'positive') {
+      if (!this.repairBlock(hit.x, hit.y, hit.z, mining) && !this.polarityHinted) { this.polarityHinted = true; this.hud.toast('toast.polarityHint'); }
+      return false;
+    }
     const broke = this.damageBlock(hit.x, hit.y, hit.z, mining, 'intent', 'intent');
     if (!broke) sfx.hit(Math.min(3, isFinite(mat(id).tier) ? mat(id).tier : 3));
     return broke;
+  }
+
+  /** Restores `amount` of a damaged block's HP (a positive intention's touch); false if there was nothing to mend. */
+  private repairBlock(x: number, y: number, z: number, amount: number): boolean {
+    const id = this.world.get(x, y, z);
+    if (id === AIR) return false;
+    const full = mat(id).hp, i = this.world.idx(x, y, z), hp = this.world.damaged.get(i);
+    if (hp === undefined || !isFinite(full)) return false;
+    const next = Math.min(full, hp + amount);
+    if (next >= full - 1e-6) this.world.damaged.delete(i); else this.world.damaged.set(i, next);
+    if (this.breakFx++ < BREAK_FX_PER_FRAME) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, pal('light.gold'), 4, 1.2, 0.06);
+    if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.mend();
+    return true;
   }
 
   // ───────────────────────── loose cubes and bombs ─────────────────────────
@@ -1412,22 +1464,36 @@ export class Game {
     sfx.kick();
   }
 
-  /** Walking into solid blocks: `touchBlock` decides whether they shatter (the `crush` stat). */
-  private touchBlocks() {
+  /**
+   * Walking into solid blocks wears them down (the `crush` stat is the block damage per second of
+   * contact; armor still counts). Every block around you that you press against takes it, at feet,
+   * waist and head height, never the ones below. Each tick `touchBlock` can still veto or add.
+   */
+  private touchBlocks(dt: number) {
     const p = this.player, b = p.body;
-    if (Math.hypot(p.wishX, p.wishZ) < 0.1) return;
     const crush = this.stats.get('crush');
-    const fx = b.x + p.wishX * (b.hw + 0.12), fz = b.z + p.wishZ * (b.hw + 0.12);
+    if (crush <= 0 || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
+    this.contactT += dt;
+    if (this.contactT < CONTACT_TICK) return;
+    this.contactT -= CONTACT_TICK;
+    const reach = b.hw + 0.12, sx = Math.sign(p.wishX), sz = Math.sign(p.wishZ);
+    const spots: [number, number][] = [[b.x + p.wishX * reach, b.z + p.wishZ * reach]];
+    if (sx) spots.push([b.x + sx * reach, b.z]);
+    if (sz) spots.push([b.x, b.z + sz * reach]);
     const seen = new Set<number>();
-    for (const oy of [0.1, 1.0, 1.7]) {
+    for (const [fx, fz] of spots) for (const oy of [0.1, 1.0, 1.7]) {
       const x = Math.floor(fx), y = Math.floor(b.y + oy), z = Math.floor(fz);
       const id = this.world.get(x, y, z);
       if (id === AIR) continue;
       const k = this.world.idx(x, y, z);
       if (seen.has(k)) continue;
       seen.add(k);
-      const ev = this.bus.emit('touchBlock', { x, y, z, material: id, crush: mat(id).tier <= crush });
-      if (!ev.cancelled && ev.crush) this.damageBlock(x, y, z, 1e6, 'crush', 'contact');
+      const ev = this.bus.emit('touchBlock', { x, y, z, material: id, crush: true });
+      if (ev.cancelled || !ev.crush) continue;
+      if (!this.damageBlock(x, y, z, crush * CONTACT_TICK, 'crush', 'contact')) {
+        if (this.breakFx++ < BREAK_FX_PER_FRAME) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 3, 1.5, 0.06);
+        if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.hit(Math.min(3, isFinite(mat(id).tier) ? mat(id).tier : 3));
+      }
     }
   }
 
@@ -1814,10 +1880,10 @@ export class Game {
     }, this.playerMedium);
     if (b.onGround) this.groundBand = bandOf(b.y);
     this.clampHealth();
-    this.touchBlocks();
+    this.touchBlocks(dt);
     this.syncWeapon();
     if (this.weapon) this.weapon.update(dt);
-    else this.fire();
+    if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
     if (inp.pressed.has('KeyQ')) this.throwTop();
     if (inp.pressed.has('KeyE')) this.placeBomb();
@@ -1845,6 +1911,7 @@ export class Game {
     this.pickups.update(dt, solid);
     this.particles.update(dt);
     this.debrisView.update(this.debris, this.time);
+    this.cutHalves.update(dt);
     this.cracks.update(this.world);
     const hand = this.player.hand;
     this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);

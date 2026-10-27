@@ -13,7 +13,7 @@ import { Inventory } from '../src/items/inventory';
 import type { HostApi } from '../src/items/types';
 import { validateCatalogue } from '../src/items/validate';
 
-const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, color: 0, tags: new Set(), polarity: 'positive' });
+const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, phase: 0, color: 0, tags: new Set(), polarity: 'positive' });
 
 const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   fire: () => ({ intent: intent() }),
