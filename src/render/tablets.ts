@@ -62,16 +62,19 @@ export class Tablets {
     g.fillStyle = palCss('limestone.dark'); g.fillRect(0, 0, PX, PY);
     g.fillStyle = palCss('limestone.base'); g.fillRect(8, 8, PX - 16, PY - 16);
     g.fillStyle = palCss('limestone.hi'); g.fillRect(8, 8, PX - 16, 4); g.fillRect(8, 8, 4, PY - 16);
+    g.fillStyle = palCss('ink.bevel'); g.fillRect(8, PY - 12, PX - 16, 4); g.fillRect(PX - 12, 8, 4, PY - 16);
+    g.fillStyle = palCss('light.gold');
+    g.beginPath(); g.moveTo(40, 26); g.lineTo(50, 36); g.lineTo(40, 46); g.lineTo(30, 36); g.closePath(); g.fill();
     g.fillStyle = palCss('ink.line');
     g.textBaseline = 'top';
-    g.font = 'bold 30px system-ui, "Segoe UI", sans-serif';
-    g.fillText(t(`lesson.${tab.lesson}.title` as MessageKey), 28, 22);
+    g.font = 'bold 32px system-ui, "Segoe UI", sans-serif';
+    g.fillText(t(`lesson.${tab.lesson}.title` as MessageKey), 64, 22);
     g.fillStyle = palCss('ink.bevel');
-    g.fillRect(28, 62, PX - 56, 3);
+    g.fillRect(36, 72, PX - 72, 2);
     g.fillStyle = palCss('ink.line');
-    g.font = '26px system-ui, "Segoe UI", sans-serif';
-    let y = 82;
-    for (const line of wrap(g, sentenceCase(t(`lesson.${tab.lesson}.text` as MessageKey, controlParams(activeDevice()))), PX - 56)) { g.fillText(line, 28, y); y += 33; }
+    g.font = '24px system-ui, "Segoe UI", sans-serif';
+    let y = 92;
+    for (const line of wrap(g, sentenceCase(t(`lesson.${tab.lesson}.text` as MessageKey, controlParams(activeDevice()))), PX - 72)) { g.fillText(line, 36, y); y += 32; }
     tab.texture.needsUpdate = true;
   }
 }

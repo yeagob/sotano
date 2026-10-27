@@ -113,7 +113,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Forgiveness** | Emotion | 3 | Projections that touch you take 4 damage; half their contact hits are ignored | *A Course in Miracles* (Helen Schucman) |
 | **Nothing Personal** | Emotion, Mind | 2 | Two in three contact hits do nothing | *The Four Agreements* (don Miguel Ruiz) |
 | **Systemic Constellation** | Emotion, Mind | 3 | Projections materialise with 30% less health, 15% slower | Family and systemic constellations (Bert Hellinger and others) |
-| **Art Therapy** | Emotion, Body | 2 | Each block you place has a 20% chance to heal half a heart | Art therapy; art transforms the maker |
+| **Art Therapy** | Emotion, Body | 2 | Placing 4 connected blocks in the same room heals one heart (once per room) | Art therapy; art transforms the maker |
 | **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
 | **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
 | **Occam's Razor** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Occam's razor (William of Ockham); a wink at the swords of light of space opera |

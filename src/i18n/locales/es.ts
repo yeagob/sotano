@@ -219,8 +219,8 @@ export const ES: Catalog = {
       },
       arttherapy: {
         name: 'Arteterapia',
-        description: 'Crear algo transforma a quien lo crea: cada bloque que colocas puede curarte medio corazón.',
-        effect: 'Cada bloque que colocas tiene un 20 % de probabilidad de curar medio corazón.',
+        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte un corazón.',
+        effect: 'Colocar 4 bloques conectados en la misma sala cura un corazón. Una vez por sala.',
         inspiredBy: 'la arteterapia; la idea de que crear arte transforma a las personas',
       },
       boxbreathing: {
