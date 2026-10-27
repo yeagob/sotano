@@ -1949,7 +1949,7 @@ export class Game {
     this.pickups.update(dt, solid);
     this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
-    this.debrisView.update(this.debris, this.time);
+    this.debrisView.update(this.debris);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
     const hand = this.player.hand;
