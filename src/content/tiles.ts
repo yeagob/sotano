@@ -6,9 +6,9 @@ export const TILE_PX = 16;
 export const ATLAS_COLS = 8;
 export const ATLAS_ROWS = 4;
 
-// tiles 0..15 are materials (tile = material id)
-export const TILE_GRASS_TOP = 16;
-export const TILE_CRACK0 = 20; // 4 crack stages: 20..23
+// tiles 0..23 are materials (tile = material id)
+export const TILE_GRASS_TOP = 24;
+export const TILE_CRACK0 = 28; // 4 crack stages: 28..31
 export const CRACK_STAGES = 4;
 
 /** Faces in the mesher's FACES order: +X, -X, +Y, -Y, +Z, -Z. */

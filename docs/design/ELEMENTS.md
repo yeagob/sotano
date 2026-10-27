@@ -1,6 +1,6 @@
 # Elements, materials and containers (design)
 
-Status: **fire, water and lava are built** (wading, swimming, breath, burning, flows, water + lava → obsidian, crates that catch, projections that react); mud, sand, electricity, furnaces, barrels and chests are still design. How it works and what each projection does in each element: [../architecture/ELEMENTS.md](../architecture/ELEMENTS.md) §10.
+Status: **fire, water and lava are built** (wading, swimming, breath, burning, flows, water + lava → obsidian, crates that catch, projections that react); mud, sand, electricity, furnaces and barrels are still design; **chests are built in a first form** (unbreakable blocks opened by walking up and spending keys: [CHESTS.md](CHESTS.md)); storing things inside them remains design. How it works and what each projection does in each element: [../architecture/ELEMENTS.md](../architecture/ELEMENTS.md) §10.
 
 The owner's brief (translated): *inspired by Noita and Minecraft: flammable materials affected by fire; water, and everything about moving through it (one block deep you can wade, slower; two deep and you lose your footing); water and fire interacting; lava; other liquids; materials affected in different ways by electricity, fire and lava; mud (sand + water); blocks that transform and, above all, can be destroyed; flammable blocks that burn; burning barrels you can throw blocks into to destroy them; furnaces in some rooms where stone becomes something else; chests you can put things into, not only take valuables out of. Breaking blocks no longer drops keys or items: those live in chests. More Minecraft.*
 
@@ -110,6 +110,8 @@ Every material declares (as data) how it reacts. Existing and new materials:
 - If you put something it can't smelt, it **stores** it (it pops back out when you take it, like a small chest). That satisfies the "at least store it" part of the brief.
 
 ### Chests
+
+> **Built so far** (see [CHESTS.md](CHESTS.md)): unbreakable chest blocks on every floor, free or costing 1–3 keys, holding shut practices and loot; opened by walking up (not F). The rest below (storing blocks, per-run memory, the F key) is still design.
 
 - **Where keys and treasures live now.** Rooms get chests from their templates; some are in the open, some hidden in the rock.
 - **Opening**: walk up and press **F** (use). It opens with an animation and its contents pop out as pickups (keys, bombs, hearts), or as loose cubes. Rarely a practice (item) from a `chest` pool.

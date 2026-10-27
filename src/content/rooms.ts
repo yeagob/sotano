@@ -19,6 +19,8 @@
 //   w  water, 1 deep (dug into the floor: you wade)     W  water, 2 deep (you swim)
 //   l  lava, 1 deep                      L  lava, 2 deep
 //   f  an eternal flame on the floor     _  a dip, 1 deep
+//   X  an obsidian wall up to two blocks under the ceiling (climb over it with blocks you place)
+//   =  a dry pit, 2 deep (too deep to climb out of without a block)
 //
 // Height (docs/design/LEVELS.md, the sotano-levels skill): `height` raises the interior up to
 // MAX_ROOM_H, `ceiling` shapes the extra height into a vault or a dome, and `layers` add grids of
@@ -58,6 +60,8 @@ export interface RoomTemplate {
   ceiling?: CeilingShape;
   /** Grids of single blocks above the floor: bridges, balconies, galleries. */
   layers?: TemplateLayer[];
+  /** The lesson this room teaches on the tutorial floor (`lesson.<key>` texts). */
+  lesson?: string;
 }
 
 export const ROOM_TEMPLATES: RoomTemplate[] = [
@@ -86,7 +90,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   // ── normal ──
   {
-    id: 'pillars', types: ['normal'], rows: [
+    id: 'pillars', types: ['normal'], floors: [1, 4], rows: [
       '.............',
       '..R.......R..',
       '.............',
@@ -97,7 +101,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'crates', types: ['normal'], rows: [
+    id: 'crates', types: ['normal'], floors: [1, 4], rows: [
       'cc.........cc',
       'c...........c',
       '.....ddd.....',
@@ -108,7 +112,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'quarry', types: ['normal'], rows: [
+    id: 'quarry', types: ['normal'], floors: [1, 4], rows: [
       '.............',
       '.ii.......oo.',
       '.iRR.....Roo.',
@@ -119,18 +123,19 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'split', types: ['normal'], rows: [
+    // brick walls from wall to wall shut the north and south doors off: dig through
+    id: 'split', types: ['normal'], floors: [1, 5], weight: 3, rows: [
+      '.............',
+      '#############',
       '.............',
       '.............',
-      '..####.####..',
       '.............',
-      '..####.####..',
-      '.............',
+      '#############',
       '.............',
     ],
   },
   {
-    id: 'storeroom', types: ['normal'], rows: [
+    id: 'storeroom', types: ['normal'], floors: [1, 4], rows: [
       '.............',
       '.c.c.c.c.c.c.',
       '.............',
@@ -141,7 +146,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'garden', types: ['normal'], rows: [
+    id: 'garden', types: ['normal'], floors: [1, 4], rows: [
       '.?.~.....~.?.',
       '..~?.....?~..',
       '.....!.!.....',
@@ -152,7 +157,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'rubble', types: ['normal'], rows: [
+    id: 'rubble', types: ['normal'], floors: [1, 4], rows: [
       '??.~.....~.??',
       '?~~.......~~?',
       '.~..R...R..~.',
@@ -163,7 +168,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'veins', types: ['normal'], rows: [
+    id: 'veins', types: ['normal'], floors: [1, 4], rows: [
       '!...........!',
       '.!!.~...~.!!.',
       '...~.....~...',
@@ -174,7 +179,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'checker', types: ['normal'], rows: [
+    id: 'checker', types: ['normal'], floors: [1, 4], rows: [
       '.?.?.....?.?.',
       '?.?.?.?.?.?.?',
       '.?.?.?.?.?.?.',
@@ -185,7 +190,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'ring', types: ['normal'], rows: [
+    id: 'ring', types: ['normal'], floors: [1, 4], rows: [
       '.............',
       '..~~~~.~~~~..',
       '.~.........~.',
@@ -196,7 +201,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'colonnade', types: ['normal'], rows: [
+    id: 'colonnade', types: ['normal'], floors: [1, 4], rows: [
       '.#.?.....?.#.',
       '.#.........#.',
       '...C.....C...',
@@ -480,7 +485,352 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       'ww.........ww',
     ],
   },
+  // ── the roots (floor 0): the tutorial, one lesson per room, in the order they are reached ──
+  // Door approaches: rows 0/6 columns 5–7 (north, south) and columns 0/12 rows 2–4 (west, east).
+  // A room "needs building" when walking alone can't join them (walkParts): trenches three wide
+  // between columns, walls between rows.
+  {
+    id: 'roots-hall', types: ['start'], floors: [0, 0], lesson: 'move', rows: [
+      'd...........d',
+      '.~.........~.',
+      '.............',
+      '......P......',
+      '.............',
+      '.~.........~.',
+      'd...........d',
+    ],
+  },
+  {
+    // a wall of brick between you and the south door: break through it
+    id: 'roots-dig', types: ['normal'], floors: [0, 0], lesson: 'intent', weight: 3, rows: [
+      '.............',
+      '.............',
+      '.....d.d.....',
+      '......K......',
+      '.............',
+      '#############',
+      '.............',
+    ],
+  },
+  {
+    // a step two blocks high on each side: break a block, pick it up, place it, climb
+    id: 'roots-step', types: ['normal'], floors: [0, 0], lesson: 'step', weight: 3, rows: [
+      '.d.2.....2.d.',
+      '...2.....2...',
+      '...2.....2...',
+      '...2..K..2...',
+      '...2.....2...',
+      '...2.....2...',
+      '.d.2.....2.d.',
+    ],
+  },
+  {
+    // a trench too wide to jump and too deep to climb: drop in and build your way out
+    id: 'roots-pit', types: ['normal'], floors: [0, 0], lesson: 'pit', weight: 3, rows: [
+      'd.===...===.d',
+      '..===...===..',
+      '..===...===..',
+      '..===.K.===..',
+      '..===...===..',
+      '..===...===..',
+      'd.===...===.d',
+    ],
+  },
+  {
+    // a wide trench: bridge it, one block at a time, placed against the edge in front of you
+    id: 'roots-bridge', types: ['normal'], floors: [0, 0], lesson: 'bridge', weight: 3, height: 6, rows: [
+      '.====...====.',
+      '.====.d.====.',
+      '.====...====.',
+      '.====.K.====.',
+      '.====...====.',
+      '.====.d.====.',
+      '.====...====.',
+    ],
+  },
+  {
+    // crates in the way: kick them aside or shoot them
+    id: 'roots-crates', types: ['normal'], floors: [0, 0], lesson: 'kick', rows: [
+      '..c.c...c.c..',
+      '.c.c.c.c.c.c.',
+      '..c.c...c.c..',
+      '......K......',
+      '..c.c...c.c..',
+      '.c.c.c.c.c.c.',
+      '..c.c...c.c..',
+    ],
+  },
+  {
+    // walls of obsidian: too hard to dig with intentions; a breakthrough opens them (or climb them)
+    id: 'roots-seal', types: ['normal'], floors: [0, 0], lesson: 'bomb', weight: 3, height: 6, rows: [
+      '...X.....X...',
+      '.d.X.....X.d.',
+      '...X.....X...',
+      '...X..K..X...',
+      '...X.....X...',
+      '.d.X.....X.d.',
+      '...X.....X...',
+    ],
+  },
+  {
+    // shallow pools to wade through, and soil to build with
+    id: 'roots-spring', types: ['vault'], floors: [0, 0], lesson: 'water', height: 7, ceiling: 'dome', rows: [
+      'dww.......wwd',
+      'ww.........ww',
+      '.....www.....',
+      '....w.T.w....',
+      '.....www.....',
+      'ww.........ww',
+      'dww.......wwd',
+    ],
+  },
+  {
+    id: 'roots-gift', types: ['treasure'], floors: [0, 0], lesson: 'practice', height: 6, ceiling: 'vault-x', rows: [
+      '.............',
+      '..d.......d..',
+      '....1...1....',
+      '......T......',
+      '....1...1....',
+      '..d.......d..',
+      '.............',
+    ],
+  },
+  {
+    id: 'roots-door', types: ['boss'], floors: [0, 0], lesson: 'down', height: 7, ceiling: 'dome', rows: [
+      '.............',
+      '..d...T...d..',
+      '.............',
+      '......H......',
+      '.............',
+      '..d.......d..',
+      '.............',
+    ],
+  },
+  // ── paths of the Tree (floors 1–5): corridors between emanations, most of them built across ──
+  {
+    // two dry trenches cut the path: east and west are islands until you bridge them
+    id: 'path-trench', types: ['path'], floors: [1, 9], weight: 3, rows: [
+      '.d===...===d.',
+      '..===...===..',
+      '..===...===..',
+      '..===.K.===..',
+      '..===...===..',
+      '..===...===..',
+      '.d===...===d.',
+    ],
+  },
+  {
+    // obsidian walls shut the north and south doors off: over them, or through them with a breakthrough
+    id: 'path-wall', types: ['path'], floors: [1, 9], weight: 3, height: 7, rows: [
+      '.d.........d.',
+      'XXXXXXXXXXXXX',
+      '.............',
+      '......K......',
+      '.............',
+      'XXXXXXXXXXXXX',
+      '.d.........d.',
+    ],
+  },
+  {
+    // a brick bridge over lava, broken in the middle: finish it
+    id: 'path-span', types: ['path'], floors: [3, 9], weight: 3, height: 7, ceiling: 'vault-z', rows: [
+      '.LLLL...LLLL.',
+      '.LLLL...LLLL.',
+      '.LLLL...LLLL.',
+      '.1LLL.K.LLL1.',
+      '.LLLL...LLLL.',
+      '.LLLL...LLLL.',
+      '.LLLL...LLLL.',
+    ],
+    layers: [{ y: 1, rows: ['.............', '.............', '.............', '..bb.....bb..', '.............', '.............', '.............'] }],
+  },
+  {
+    // a ford of deep water: swim it, or build stepping stones
+    id: 'path-ford', types: ['path'], floors: [1, 9], height: 6, rows: [
+      '.............',
+      '.WWW.WWW.WWW.',
+      '.WWW.WWW.WWW.',
+      '.WWW..K..WWW.',
+      '.WWW.WWW.WWW.',
+      '.WWW.WWW.WWW.',
+      '.............',
+    ],
+  },
+  {
+    // stepping stones over embers: a lava crossing to the east and the west
+    id: 'path-coals', types: ['path'], floors: [3, 9], weight: 3, rows: [
+      '.LLL.....LLL.',
+      '.LLL.r.r.LLL.',
+      '.LLL.....LLL.',
+      '.LLL..K..LLL.',
+      '.LLL.....LLL.',
+      '.LLL.r.r.LLL.',
+      '.LLL.....LLL.',
+    ],
+  },
+  {
+    // brick bulwarks three high at either side: build a step to get over, or dig through
+    id: 'bulwarks', types: ['normal'], floors: [1, 4], weight: 3, height: 6, rows: [
+      '.d.3.....3.d.',
+      '...3.....3...',
+      '...3.....3...',
+      '...3..K..3...',
+      '...3.....3...',
+      '...3.....3...',
+      '.d.3.....3.d.',
+    ],
+  },
+  {
+    // a sunken nave: the middle lies two blocks down; the north and south doors stand on ledges
+    // you reach only by building back up
+    id: 'nave', types: ['normal', 'path'], floors: [1, 5], weight: 3, height: 7, ceiling: 'vault-z', rows: [
+      '.r.........r.',
+      '#===========#',
+      '.===========.',
+      '......K......',
+      '.===========.',
+      '#===========#',
+      '.r.........r.',
+    ],
+  },
+  // ── the circles (floors 1–9): themed rooms that ask to be built across ──
+  {
+    // limbo: grey ledges over dry trenches, nothing to hurt you, nowhere to stand still
+    id: 'limbo', types: ['normal'], floors: [1, 2], weight: 3, height: 6, rows: [
+      '.r===...===r.',
+      '..===.r.===..',
+      '..===...===..',
+      '..===.K.===..',
+      '..===...===..',
+      '..===.r.===..',
+      '.r===...===r.',
+    ],
+  },
+  {
+    // the winds: walls tall as the room, a gallery high above; the way across is up there
+    id: 'gale', types: ['normal'], floors: [2, 3], weight: 3, height: 8, ceiling: 'vault-x', rows: [
+      '.d.X.....X.d.',
+      '...X.....X...',
+      '...X.....X...',
+      '...X..K..X...',
+      '...X.....X...',
+      '...X.....X...',
+      '.d.X.....X.d.',
+    ],
+    layers: [{
+      y: 4, rows: [
+        '.............',
+        '.............',
+        '.............',
+        '.............',
+        '.............',
+        '.............',
+        '.............',
+      ],
+    }],
+  },
+  {
+    // the rain: shallow water everywhere, walls of crates to burn or break
+    id: 'downpour', types: ['normal'], floors: [3, 4], weight: 3, rows: [
+      'w.w.w...w.w.w',
+      'CCCCCCCCCCCCC',
+      '.w.w.w.w.w.w.',
+      '..w...K...w..',
+      '.w.w.w.w.w.w.',
+      'CCCCCCCCCCCCC',
+      'w.w.w...w.w.w',
+    ],
+  },
+  {
+    // the weights: heavy walls quarter the room; every way out goes over them
+    id: 'weights', types: ['normal'], floors: [4, 5], weight: 3, height: 7, rows: [
+      '.d.........d.',
+      'XXXXXXXXXXXXX',
+      '..X.......X..',
+      '..X...K...X..',
+      '..X.......X..',
+      'XXXXXXXXXXXXX',
+      '.d.........d.',
+    ],
+  },
+  {
+    // the marsh: deep water and lava side by side, kept apart by obsidian; break it and emotion
+    // turns the lava's edge to stone
+    id: 'marsh', types: ['normal'], floors: [5, 6], height: 7, ceiling: 'dome', rows: [
+      '.............',
+      '.WWWW.o.LLLL.',
+      '.WWWW.o.LLLL.',
+      '.WWWW.K.LLLL.',
+      '.WWWW.o.LLLL.',
+      '.WWWW.o.LLLL.',
+      '.............',
+    ],
+  },
+  {
+    // the tombs: open graves of flame from wall to wall; build stepping stones, or run through and burn
+    id: 'tombs', types: ['normal'], floors: [6, 7], weight: 3, height: 6, ceiling: 'vault-z', rows: [
+      '.r.........r.',
+      'fffffffffffff',
+      '.............',
+      '..ff..K..ff..',
+      '.............',
+      'fffffffffffff',
+      '.r.........r.',
+    ],
+  },
+  {
+    // the river: two bands of lava from wall to wall; bridge them
+    id: 'river', types: ['normal'], floors: [7, 8], weight: 3, height: 7, rows: [
+      '.rLLL...LLLr.',
+      '..LLL...LLL..',
+      '..LLL...LLL..',
+      '..LLL.K.LLL..',
+      '..LLL...LLL..',
+      '..LLL...LLL..',
+      '.rLLL...LLLr.',
+    ],
+  },
+  {
+    // the ditches: trench after trench; one-block ledges between them
+    id: 'ditches', types: ['normal'], floors: [8, 9], weight: 3, height: 6, rows: [
+      '.===r....===.',
+      '.===.===.===.',
+      '.===.===.===.',
+      '.===..K..===.',
+      '.===.===.===.',
+      '.===.===.===.',
+      '.===.....===.',
+    ],
+  },
+  {
+    // the cold bottom: deep, still water walled in by obsidian (ice comes later)
+    id: 'cocytus', types: ['normal'], floors: [9, 9], weight: 3, height: 8, ceiling: 'dome', rows: [
+      'WWr.......rWW',
+      'XXXXXXXXXXXXX',
+      '.WWWW...WWWW.',
+      '.WWW..K..WWW.',
+      '.WWWW...WWWW.',
+      'XXXXXXXXXXXXX',
+      'WW.........WW',
+    ],
+  },
+  {
+    // a practice on an island in lava: the bridge to it is yours
+    id: 'islet', types: ['treasure'], floors: [3, 9], height: 7, ceiling: 'dome', rows: [
+      '.............',
+      '.LLLLLLLLLLL.',
+      '.LLL.....LLL.',
+      '.LLL..T..LLL.',
+      '.LLL.....LLL.',
+      '.LLLLLLLLLLL.',
+      '.............',
+    ],
+  },
 ];
+
+/** The tutorial's lessons for its normal rooms, in the order the rooms are reached (owner: the
+ *  roots teach how to play; building comes early and keeps coming). */
+export const TUTORIAL_ORDER = ['intent', 'step', 'kick', 'pit', 'bridge', 'bomb'] as const;
 
 /** Solid stacks per character: material and height in blocks. */
 export const CELL_STACK: Record<string, { m: number; h: number }> = {
@@ -489,13 +839,15 @@ export const CELL_STACK: Record<string, { m: number; h: number }> = {
   o: { m: MAT.obsidian, h: 1 }, d: { m: MAT.dirt, h: 1 },
   i: { m: MAT.ore, h: 1 }, '#': { m: MAT.brick, h: ROOM_H },
   b: { m: MAT.brick, h: 1 },
+  // X: obsidian up to two blocks under the ceiling; its real height is set when the room is carved
+  X: { m: MAT.obsidian, h: ROOM_H - 2 },
   1: { m: MAT.brick, h: 1 }, 2: { m: MAT.brick, h: 2 }, 3: { m: MAT.brick, h: 3 }, 4: { m: MAT.brick, h: 4 },
 };
 
 /** Element cells (docs/architecture/ELEMENTS.md §9): `depth` blocks dug below the floor and filled
  *  with a source, or an eternal flame standing on the floor (depth 0). `_` digs a dry dip. */
 export const CELL_ELEMENT: Record<string, { el: 'water' | 'lava' | 'fire' | null; depth: number }> = {
-  w: { el: 'water', depth: 1 }, W: { el: 'water', depth: 2 },
+  w: { el: 'water', depth: 1 }, W: { el: 'water', depth: 2 }, '=': { el: null, depth: 2 },
   l: { el: 'lava', depth: 1 }, L: { el: 'lava', depth: 2 },
   f: { el: 'fire', depth: 0 }, _: { el: null, depth: 1 },
 };
@@ -546,7 +898,7 @@ export function validateTemplate(t: RoomTemplate): string[] {
       errs.push(`${t.id}: the pedestal can't be reached from any side`);
   });
   // projections materialise on the centre tile of normal rooms
-  if (t.types.includes('normal') && !walk(6, 3)) errs.push(`${t.id}: the centre tile (6,3) must be walkable (projections spawn there)`);
+  if ((t.types.includes('normal') || t.types.includes('path')) && !walk(6, 3)) errs.push(`${t.id}: the centre tile (6,3) must be walkable (projections spawn there)`);
   // the 2×2 shaft: from the H tile in boss rooms, onto the P tile in start rooms. It is carved at
   // +1 on each world axis, so a mirrored template reaches the other way in template space.
   const flips = t.mirror === false ? [[1, 1]] : [[1, 1], [-1, 1], [1, -1], [-1, -1]];
@@ -563,6 +915,20 @@ export function validateTemplate(t: RoomTemplate): string[] {
     if (mark === 'H' && tiles.some(([x, z]) => t.rows[z]?.[x] === 'T')) errs.push(`${t.id}: the pedestal can't stand on the 2×2 shaft`);
   });
   errs.push(...validateVolume(t, shaftTiles));
+  // the shaft lands on P and opens at H: both at the centre, which every flip keeps in place
+  for (const mark of ['P', 'H']) t.rows.forEach((row, r) => { const c = row.indexOf(mark); if (c >= 0 && (c !== 6 || r !== 3)) errs.push(`${t.id}: "${mark}" must be at the centre (6,3)`); });
+  // building puzzles never trap: you land in a start room you can walk out of, and the projections
+  // materialise where they can reach at least one door
+  if (t.rows.length === ROOM_D && t.rows.every(r => r.length === ROOM_W)) {
+    const parts = walkParts(t);
+    // a puzzle you solve by building carries its own material: soft blocks you can break and carry
+    // (the room's brick walls work too, but a puzzle shouldn't send you digging into them)
+    if (needsBuilding(t) && !/[dcCrRb1-4?~#i]/.test(t.rows.join('') + (t.layers ?? []).map(l => l.rows.join('')).join('')))
+      errs.push(`${t.id}: it needs building but holds nothing to build with`);
+    if (t.types.includes('start') && new Set(parts.values()).size > 1) errs.push(`${t.id}: a start room must never need building`);
+    const centre = parts.get('centre');
+    if (centre !== undefined && !['N', 'S', 'E', 'W'].some(d => parts.get(d) === centre)) errs.push(`${t.id}: the centre must reach at least one door on foot (projections spawn there)`);
+  }
   return errs;
 }
 
@@ -608,7 +974,7 @@ function validateVolume(t: RoomTemplate, shaftTiles: number[][]): string[] {
     if (layer.y < DOOR_HEIGHT) for (const [side, tiles] of Object.entries(DOOR_APPROACH)) for (const [c, r] of tiles)
       if (!clear(c, r)) errs.push(`${t.id}: layer ${li} blocks the ${side} door at ${c},${r}`);
     // the spawn column, the pedestal (its practice floats above it) and the shaft stay open all the way up
-    if (t.types.includes('normal') && layer.y < DOOR_HEIGHT && !clear(6, 3)) errs.push(`${t.id}: layer ${li} covers the centre tile (projections spawn there)`);
+    if ((t.types.includes('normal') || t.types.includes('path')) && layer.y < DOOR_HEIGHT && !clear(6, 3)) errs.push(`${t.id}: layer ${li} covers the centre tile (projections spawn there)`);
     t.rows.forEach((row, r) => { const c = row.indexOf('T'); if (c >= 0 && layer.y <= 3 && !clear(c, r)) errs.push(`${t.id}: layer ${li} covers the pedestal`); });
     for (const [c, r] of shaftTiles) if (!clear(c, r)) errs.push(`${t.id}: layer ${li} blocks the 2×2 shaft at ${c},${r}`);
     // a layer block must stand on something or span between supports: no floating single blocks
@@ -634,4 +1000,88 @@ export function cellAt(t: RoomTemplate, col: number, row: number, flipX: boolean
   const c = flipX ? ROOM_W - 1 - col : col;
   const r = flipZ ? ROOM_D - 1 - row : row;
   return t.rows[r][c];
+}
+
+// ───────────────────────── reachability: does a room need building? ─────────────────────────
+
+/** Standing levels (blocks above the floor) on one tile, walking only; empty = you can't stand there. */
+function standLevels(t: RoomTemplate, col: number, row: number): number[] {
+  const h = t.height ?? ROOM_H;
+  const ch = t.rows[row][col];
+  let ground: number | null;
+  const el = CELL_ELEMENT[ch];
+  if (ch === '#') ground = null;
+  else if (ch === 'X') ground = h - 2;
+  // shallow water: you wade on its bottom; deep water: you swim at the surface and can climb out
+  else if (el) ground = el.el === 'lava' || el.el === 'fire' ? null : el.el === 'water' ? (el.depth === 1 ? -1 : 0) : -el.depth;
+  else if (CELL_STACK[ch]) ground = CELL_STACK[ch].h;
+  else if (DECOR_CHARS.has(ch) || ch === 'T') ground = 1;
+  else ground = 0;
+  const out: number[] = [];
+  const tops = (t.layers ?? []).filter(l => l.rows[row]?.[col] && l.rows[row][col] !== '.' && l.rows[row][col] !== 'f').map(l => l.y + 1);
+  // the ground counts if there is headroom under the lowest layer block above it
+  if (ground !== null && (tops.length === 0 || Math.min(...tops) - 1 - ground >= 2)) out.push(ground);
+  for (const y of tops) if (y <= h - 2) out.push(y);
+  return out;
+}
+
+/**
+ * Which parts of a room can reach each other on foot (docs/architecture/LEVELS.md §5.2): steps of up
+ * to one block, any drop, and jumps over gaps of up to two tiles to the same height or lower. Fire
+ * and lava block; water is swum. Returns the part id of every key tile (door approaches, the
+ * centre, markers); a room **needs building** when they are not all in one part.
+ */
+export function walkParts(t: RoomTemplate): Map<string, number> {
+  const W = ROOM_W, D = ROOM_D;
+  const levels: number[][][] = [];
+  for (let r = 0; r < D; r++) { levels.push([]); for (let c = 0; c < W; c++) levels[r].push(standLevels(t, c, r)); }
+  const id = (c: number, r: number, i: number) => `${c},${r},${i}`;
+  const part = new Map<string, number>();
+  let next = 0;
+  const maxAt = (c: number, r: number) => (levels[r]?.[c]?.length ? Math.max(...levels[r][c]) : (t.rows[r]?.[c] === '#' ? Infinity : -Infinity));
+  for (let r0 = 0; r0 < D; r0++) for (let c0 = 0; c0 < W; c0++) levels[r0][c0].forEach((_, i0) => {
+    if (part.has(id(c0, r0, i0))) return;
+    const p = next++;
+    const q: [number, number, number][] = [[c0, r0, i0]];
+    part.set(id(c0, r0, i0), p);
+    while (q.length) {
+      const [c, r, i] = q.pop()!;
+      const a = levels[r][c][i];
+      // jumps clear a gap of one tile; two is too marginal to count on (review L2 point 4)
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let dist = 1; dist <= 2; dist++) {
+        const nc = c + dc * dist, nr = r + dr * dist;
+        if (nc < 0 || nr < 0 || nc >= W || nr >= D) break;
+        // a jump (dist 2–3) needs nothing in the way taller than a step
+        if (dist > 1) {
+          let clear = true;
+          for (let k = 1; k < dist; k++) if (maxAt(c + dc * k, r + dr * k) > a + 1) clear = false;
+          if (!clear) break;
+        }
+        levels[nr][nc].forEach((b, j) => {
+          const ok = dist === 1 ? b - a <= 1 : b <= a;
+          if (!ok || part.has(id(nc, nr, j))) return;
+          part.set(id(nc, nr, j), p);
+          q.push([nc, nr, j]);
+        });
+      }
+    }
+  });
+  // key tiles: the middle of each door approach, the centre, and the markers
+  const keys = new Map<string, number>();
+  const at = (name: string, c: number, r: number) => {
+    const ls = levels[r][c];
+    if (!ls.length) return;
+    keys.set(name, part.get(id(c, r, ls.indexOf(Math.min(...ls))))!);
+  };
+  for (const [side, tiles] of Object.entries(DOOR_APPROACH)) tiles.forEach(([c, r], i) => at(i === 1 ? side : `${side}${i}`, c, r));
+  if (t.types.includes('normal') || t.types.includes('path')) at('centre', 6, 3);
+  t.rows.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'P' || ch === 'H' || ch === 'K') at(ch, c, r); }));
+  // the pedestal is taken from a tile beside it: the best-placed side counts
+  t.rows.forEach((row, r) => { const c = row.indexOf('T'); if (c >= 0) for (const [dc, dr] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) if (levels[r + dr]?.[c + dc]?.length) { at('T', c + dc, r + dr); break; } });
+  return keys;
+}
+
+/** True when walking alone can't join every key tile of the room: you have to break and place. */
+export function needsBuilding(t: RoomTemplate): boolean {
+  return new Set(walkParts(t).values()).size > 1;
 }

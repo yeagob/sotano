@@ -168,6 +168,26 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
       for (let x = 0; x < T; x++) px(x, T - 1, r.o);
       break;
     }
+    case 'chest':
+    case 'chestopen': {
+      // a banded wooden chest: bevelled planks, two brass straps, a brass lock plate with a keyhole;
+      // open, the lid seam gapes onto a dark inside with one glint of gold
+      const brass = { o: r.o, d: palCss('brass.dark'), b: palCss('brass.base'), h: palCss('brass.hi') };
+      bevel(px, 0, 0, T, T, r);
+      for (const x of [6, 9]) for (let y = 2; y < T - 2; y++) px(x, y, r.d);
+      bevel(px, 1, 0, 3, T, brass); bevel(px, 12, 0, 3, T, brass);
+      if (m.pattern === 'chest') {
+        for (let x = 4; x < 12; x++) { px(x, 6, r.o); px(x, 7, r.h); }
+        bevel(px, 6, 5, 4, 6, brass);
+        px(7, 7, r.o); px(8, 7, r.o); px(7, 8, r.o); px(8, 8, r.o); px(7, 9, r.o);
+      } else {
+        const inside = palCss('ink.void');
+        for (let y = 3; y < 12; y++) for (let x = 4; x < 12; x++) px(x, y, inside);
+        for (let x = 4; x < 12; x++) { px(x, 2, r.h); px(x, 12, r.d); }
+        px(7, 8, palCss('light.gold')); px(8, 8, palCss('light.gold')); px(8, 9, palCss('light.gold'));
+      }
+      break;
+    }
     case 'seed': {
       // a breakthrough: round dark core, four bevelled branching cracks of ember, a white-hot heart
       for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {

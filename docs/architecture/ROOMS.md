@@ -29,7 +29,7 @@ Linked rooms get a **3×3 doorway** through the middle of the shared wall, frame
 
 During combat a room's doors are **sealed** (they stay shut) until every projection in it is gone.
 
-If a floor has a locked door, it also has one **key**, placed on a `K` spot of a normal room (or the middle of one if no template has a `K`). Keys are moving into chests ([ELEMENTS.md](ELEMENTS.md)).
+If a floor has a locked door, it also has one **key**, placed on a `K` spot of a normal room (or the middle of one if no template has a `K`). **The room behind a locked door is wrapped in obsidian** (walls, floor, ceiling): very hard, still breakable. More keys lie on open tiles for the floor's **chests**, which are unbreakable blocks that hold shut practices and loot ([design/CHESTS.md](../design/CHESTS.md)); `freeSpots` picks the tiles and `carveFloor` returns `FloorResult.chests`. Chest decisions use the forks `floor/k/room/i/chest` and `floor/k/chestkeys`.
 
 ## 3. Templates
 
@@ -61,7 +61,8 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 | `!` | decor slot: ore or obsidian | `b` | brick, 1 high |
 | `1`–`4` | a built terrace (brick) of that height | `_` | a dip, 1 deep |
 | `w` / `W` | water 1 / 2 deep (dug into the floor, a source) | `l` / `L` | lava 1 / 2 deep |
-| `f` | an eternal flame on the floor | | |
+| `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a breakthrough) |
+| `=` | a dry pit, 2 deep (you need a block to climb out) | | |
 
 ### Height and layers
 
@@ -87,6 +88,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 - The 2×2 shaft tiles at `H` (boss) and `P` (start) must be clear (checked): the hole opens there and lands there. The shaft is carved at +1 on each world axis, so for mirrored templates the check covers every flip; the boss's `T` may never fall on any of those tiles.
 - Every room type must have at least one template.
 - **Height and elements** (`validateVolume`): `height` 5–8; a vault or dome needs extra height; no water next to lava and no flame next to something that burns (`c`, `C`, `?`), on the floor or in a layer; layers at 1…height − 3, never two at one height, never blocking the door approaches under door height, the centre (normal rooms), the pedestal or the shaft; no lone floating layer blocks; flames on layers need a terrace that high under them.
+- **Building** (`walkParts`, `needsBuilding`; [LEVELS.md](LEVELS.md) §5–§6): start rooms never need building; the centre of a fighting room reaches a door on foot; a room that needs building carries soft blocks to build with; `P` and `H` sit at the centre; fire, lava and deep water stay off floor 0. Optional fields `floors: [first, last]` and `lesson` (floor 0).
 - `tests/levels.test.ts` carves every element template across all ten floors for several seeds and checks that three layers of rock always remain between bands, that no element sits inside a block, that deep pools are lined, and that each room is as tall as its template.
 
 ### Adding a template

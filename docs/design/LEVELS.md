@@ -45,7 +45,7 @@ Respect rules for Dante: his structure and images, never his figures as projecti
 
 - Where the run starts (assumption: on floor 0, among the roots) and what ends it.
 - How silence and heaven connect (a fall, a door, a shaft of light).
-- Which creatures live in the roots (they need the projection art gate even though they are not hostile).
+- Which creatures live in the roots (they need the projection art gate even though they are not hostile). Proposal: Rootlings, Mosslings, Delvers and the Gardener ([BESTIARY.md §7–§8](BESTIARY.md)).
 
 ## 2. Floor types
 

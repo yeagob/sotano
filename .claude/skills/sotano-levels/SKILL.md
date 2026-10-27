@@ -53,9 +53,13 @@ Run `npm test`: `validateTemplate` lists every broken rule with the tile.
 
 ## 5. The characters
 
-Ground grid (13 × 7, first row north): `.` floor · `P` `T` `K` `H` markers · `r R` stone 1/2 · `c C` crate 1/2 · `o` obsidian · `d` dirt · `i` ore · `b` brick · `1`–`4` brick terraces · `#` brick to the ceiling · `?` `~` `!` decor slots · `w W` water 1/2 deep · `l L` lava 1/2 deep · `f` eternal flame · `_` a 1-deep dip.
+Ground grid (13 × 7, first row north): `.` floor · `P` `T` `K` `H` markers · `r R` stone 1/2 · `c C` crate 1/2 · `o` obsidian · `d` dirt · `i` ore · `b` brick · `1`–`4` brick terraces · `#` brick to the ceiling · `X` obsidian to two under the ceiling · `?` `~` `!` decor slots · `w W` water 1/2 deep · `l L` lava 1/2 deep · `f` eternal flame · `_` a 1-deep dip · `=` a 2-deep pit.
 Layers: `.` `r` `c` `o` `d` `i` `b` `f`.
-Fields: `height`, `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`), `layers: [{ y, rows }]`, `weight`, `mirror`.
+Fields: `height`, `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`), `layers: [{ y, rows }]`, `floors: [first, last]`, `lesson` (floor 0), `weight`, `mirror`. Types: `start`, `normal`, `treasure`, `vault`, `boss`, `path` (the Tree's corridors).
+
+## 5b. Building is the key (owner, 2026-10-27)
+
+At least half of the fighting rooms on every floor must **need building** (`needsBuilding`, tested by weight per floor): isolated parts, trenches too wide to jump (three tiles or more), walls too tall to climb (two blocks or more, `X`), lava rivers to bridge. From floor 0 (where the lessons teach it step by step) to the bottom, puzzles get more original and follow the floor's theme. Know the grid: the north and south doors sit in columns 5–7, the east and west doors in rows 2–4; cut between them (trenches between columns, walls between rows) and leave the centre joined to at least one door. Every building room carries its own soft blocks. Ask: what is the clever build here (a bridge, a stair, a dam of blocks against lava, breaking the obsidian so water makes the bridge, luring Panic to a wall)?
 
 ## 6. Elements as protagonists
 
@@ -83,3 +87,6 @@ New floor types (Tree-of-Life plans, multi-cell rooms, the trunk, branches and l
 - **2026-10-27, owner:** breaking a flame's block puts it out; spreading lava must slope like a ramp, not step with a gap. → elements rules in §6, sloped fluid meshing.
 - **2026-10-27, owner:** thirteen floors: 0–5 Tree-of-Life maps with ten emanations, ever bigger, themed and complex; 5–9 random; a giant tree of thousands of cubes above with trunk (vertical map), branches (3D map) and leaves (star map with teleport doors and cosmos views); down into the layers of the unconscious to the bottom of Dante's inferno and then silence; up to heaven. → LEVELS.md §1–§2 (open questions there).
 - **2026-10-27, owner (decisions):** floor 5 is the last Tree floor and ends in a great pit; floors 1–9 are Dante's circles in order (9 frozen); floor 0 is the earth and roots with non-aggressive creatures; no house on the surface, you climb from the roots however you can; silence connects cyclically with heaven; the run's end is still open. → LEVELS.md §1.
+- **2026-10-27, owner:** rooms behind locked doors are wrapped in obsidian (hard, breakable); chests (unbreakable blocks, free or costing 1–3 keys) stand in many normal rooms and shut away most treasure/vault practices. → `freeSpots` and `hardenShell` in `src/world/floor.ts`; never put a chest in a door approach, the centre, or beside `P T K H`; extra keys lie on the same tiles. GEN_VERSION 5.
+- **2026-10-27, owner:** floor 0 is the friendly tutorial: everything pretty, every door open, lessons through its rooms, practices of quality 1–3 only. → `tutorial` levels, lessons per template.
+- **2026-10-27, owner:** go ahead with the Tree, and redesign most levels: at least half must need building with blocks (isolated parts, great pits, walls you pass only by breaking and placing), from floor 0, with ever more original themed puzzles. → §5b, L2 (Tree floors, paths, roots tutorial, circle rooms), the walk check and its test.

@@ -47,6 +47,12 @@ const messages = {
   'lesson.intent.text': 'Left click casts an intention. Everything breaks with enough intent, except bedrock: the harder the block, the more it takes.',
   'lesson.carry.title': 'Carry what breaks',
   'lesson.carry.text': 'A broken block becomes a loose cube. Walk over it to pick it up. Right click places it; Q throws it.',
+  'lesson.step.title': 'Build a step',
+  'lesson.step.text': 'A wall two blocks high: you cannot jump it. Break a block, walk over the cube to carry it, then right click to place it against the wall, and climb.',
+  'lesson.pit.title': 'Build your way out',
+  'lesson.pit.text': 'A trench too wide to jump and too deep to climb. Drop in if you like: place a block at the foot of the wall and step up. Building is how you go on.',
+  'lesson.bridge.title': 'Build a bridge',
+  'lesson.bridge.text': 'A gap too wide to jump. Stand at the edge, look down at the side of the block under you, and place a block there. Step onto it and do it again.',
   'lesson.kick.title': 'Kick',
   'lesson.kick.text': 'With your hands full you kick the cubes you walk into. A flying cube hurts what it hits: the harder the block, the harder the blow.',
   'lesson.bomb.title': 'Breakthroughs',
@@ -59,7 +65,7 @@ const messages = {
   'lesson.down.text': 'This room opens the way down into the first circle. Below, the doors close while projections are near. The deeper you go, the less gentle it gets.',
 
   // ── toasts ──
-  'toast.newRun': 'Floor 1 · seed {seed}',
+  'toast.newRun': 'The roots · seed {seed}',
   'toast.seedInvalid': '"{input}" isn\'t a valid seed: new run {seed}',
   'toast.seedVersion': 'This seed is from generator v{v}; this build is v{build}: the run may differ',
   'toast.floor': 'Floor {n}',
@@ -67,6 +73,8 @@ const messages = {
   'toast.noBombs': 'No bombs',
   'toast.locked': 'Locked: you need a key',
   'toast.unlocked': 'Unlocked',
+  'toast.chestLocked': 'Locked chest · keys needed: {n}',
+  'toast.chestUnlocked': 'Chest opened · keys spent: {n}',
   'toast.wayDown': 'A way down opens',
   'toast.holeWait': 'The floor trembles under you: step aside and it will open',
 

@@ -7,7 +7,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |
 | **As above, so below** | `emerald-tablet`, `kybalion` (correspondence) | The depth and the surface mirror each other and connect in the endgame ([COSMOLOGY.md](COSMOLOGY.md)) |
 | **The obstacle is the way** | `meditations` | Broken blocks become material you carry and build with |
-| **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, materialising from the centre of the room, never from outside |
+| **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, rising from the room's own matter (announced by omens), never through the doors ([BESTIARY §2](../design/BESTIARY.md)) |
 | **A miracle is a shift in perception** | `course-in-miracles` | Practices that change how a hit is perceived (Forgiveness, Nothing Personal); future: rooms that change when seen differently |
 | **Forgiveness as release** | `course-in-miracles` | **Forgiveness**: what touches you is hurt instead of you |
 | **Don't take anything personally** | `four-agreements` | **Nothing Personal**: contact hits often slide off |
@@ -22,7 +22,14 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Inner alchemy** (transmutation) | `emerald-tablet`, `the-alchemist` | Furnaces turning raw blocks into refined ones; states of being |
 | **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
-| **The shadow** | `jung` | A future boss |
+| **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/BESTIARY.md)) |
+| **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/BESTIARY.md)) |
+| **Patterns deepen when left alone** | `jung`, `dante` | Lineages: Doubt → Second-Guessing → Paralysis; rooted variants ([BESTIARY §4](../design/BESTIARY.md)) |
+| **The threshold guardian** (the fear at the edge of change) | `monomyth` | The keystone boss at floor 5's great pit, which steps aside instead of falling |
+| **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/BESTIARY.md)) |
+| **The witness** (seeing without judging) | `jung` (concept generic) | The Witness in silence reads your run back to you |
+| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Inhabitants: the living creatures of the depths, never hostile ([BESTIARY §7](../design/BESTIARY.md)) |
+| **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it |
 | **Resistance** | `war-of-art` | A future boss |
 | **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |
 | **Rhythm and polarity** | `kybalion` | Fire and water, cycles of runs ([COSMOLOGY.md §2](COSMOLOGY.md#2-the-seven-principles-as-systems)) |

@@ -41,8 +41,9 @@ const MAP = {
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
 
-/** The lessons of the roots, in the order their rooms are reached (docs/design/LEVELS.md §1). */
-export const LESSONS = ['move', 'intent', 'carry', 'kick', 'bomb', 'water', 'practice', 'down'] as const;
+/** Every lesson of the roots (rooms carry theirs: `RoomTemplate.lesson`, docs/design/LEVELS.md §1). */
+export const LESSONS = ['move', 'intent', 'step', 'kick', 'pit', 'bridge', 'bomb', 'water', 'practice', 'down', 'carry'] as const;
+export type LessonKey = typeof LESSONS[number];
 
 export class Hud {
   private hand = $('hand');
@@ -74,7 +75,7 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
-  private lastLesson: number | null = null;
+  private lastLesson: LessonKey | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   inventoryOpen = false;
@@ -229,14 +230,21 @@ export class Hud {
     }
     for (const r of floor.rooms) {
       if (!known.has(r.id)) continue;
-      const x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
+      let x = gap + r.gx * (cw + gap), y = gap + r.gz * (ch + gap);
+      let rw = cw, rh = ch;
+      // a path of the Tree reads as a corridor: a narrow band between two rooms, not a room
+      if (r.type === 'path') {
+        const links = floor.plan.rooms[r.id % ROOM_ID_STRIDE].links;
+        const across = (links.E !== undefined || links.W !== undefined) && links.N === undefined && links.S === undefined;
+        if (across) { y += ch / 3; rh = ch / 3; } else { x += cw / 3; rw = cw / 3; }
+      }
       if (visited.has(r.id)) {
         g.globalAlpha = this.lastCleared.has(r.id) && r.id !== current ? 0.5 : 1;
         g.fillStyle = r.id === current ? MAP.current : this.lastCleared.has(r.id) ? MAP.cleared : MAP.visited;
-        g.fillRect(x, y, cw, ch);
+        g.fillRect(x, y, rw, rh);
         g.globalAlpha = 1;
-      } else { g.globalAlpha = 0.25; g.strokeStyle = MAP.unvisited; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, cw - 1, ch - 1); g.globalAlpha = 1; }
-      if (r.type !== 'normal') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
+      } else { g.globalAlpha = 0.25; g.strokeStyle = MAP.unvisited; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1); g.globalAlpha = 1; }
+      if (r.type !== 'normal' && r.type !== 'path') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
     }
   }
 
@@ -282,17 +290,17 @@ export class Hud {
   }
 
   /** A lesson of the tutorial floor (the roots): how to play, one per room, until clicked. */
-  lessonBanner(n: number) {
-    this.lastLesson = n;
-    this.renderLesson(n);
+  lessonBanner(key: string) {
+    if (!(LESSONS as readonly string[]).includes(key)) return;
+    this.lastLesson = key as LessonKey;
+    this.renderLesson(this.lastLesson);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth;
     this.bannerEl.classList.add('show');
     this.bannerOpen = true;
   }
 
-  private renderLesson(n: number) {
-    const k = LESSONS[Math.min(n, LESSONS.length - 1)];
+  private renderLesson(k: LessonKey) {
     this.bannerEl.style.setProperty('--c', 'var(--ui-gold)');
     this.bannerEl.innerHTML = `<div class="ribbon slate"><div><b>${th(`lesson.${k}.title`)}</b>` +
       `<span>${th(`lesson.${k}.text`)}</span><p class="dismiss">${th('banner.continue')}</p></div></div>`;

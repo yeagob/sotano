@@ -209,6 +209,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 
 **Design: the game and what it means**
 - [Game design document](docs/design/DESIGN.md): pillars, loop, blocks and tiers, dungeon structure, scope, open questions.
+- [Bestiary](docs/design/BESTIARY.md) — projections by zone and lineage, bosses by zone, living creatures and presences you can talk to, seals, omens and waves *(design)*.
 - [Story and metaphor](docs/design/STORY.md): premise, mechanics as metaphor, states of being, enemies as projections, naming rules.
 - [Elements](docs/design/ELEMENTS.md): fire, water and lava *(built)*; mud, electricity, furnaces, chests *(planned)*.
 - [Levels](docs/design/LEVELS.md): the thirteen floors *(direction)*, rooms with height and element rooms *(built)*.

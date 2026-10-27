@@ -64,6 +64,8 @@ defineEnemy({
 
 ### Spawning and rooms
 
+> As built today. The owner's new direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is designed in [../design/BESTIARY.md §2](../design/BESTIARY.md) and not built yet.
+
 - At carve time each normal room gets a roster from `ENEMY_BUDGET` (budget 2 + floor, 1 room in 5 is quiet).
 - **Sealing**: when the player's box is **fully inside** a room interior, its doors close and stay sealed. Spawns start 0.5 s later, one every 0.45 s.
 - **Spawning from the centre, visibly**: each projection materialises at the room's **centre column on the first free height**, over 0.9 s (cubes converge, it grows from nothing), harmless and unhittable meanwhile; then it steps off the spot. If you're standing on the centre (you fell or dug in), it appears beside you, never at the doors.

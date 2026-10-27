@@ -107,6 +107,8 @@ export interface GameEvents {
   // ── dungeon ──
   /** A door wants to open. Locked doors ask for a key: hooks may set `needsKey = false`. */
   doorOpen: { door: number; locked: boolean; needsKey: boolean };
+  /** The player walks up to a closed chest. `cost` (keys, 0 = free) can be changed; cancel to keep it shut. */
+  chestOpen: { x: number; y: number; z: number; cost: number };
   /** Collecting a key, bomb or heart. `amount` can be changed (or cancel to leave it there). */
   pickupCollect: { kind: PickupKind; amount: number };
   itemGained: { id: string; uid: number };

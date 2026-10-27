@@ -44,13 +44,14 @@ import { Particles } from '../render/particles';
 import {
   bandOf, carveFloor, cellOf, createDungeonWorld, depthOf, FIRST_FLOOR, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SURFACE_Y,
   type DungeonPlan,
-  type FloorResult, type RoomInfo,
+  type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
+import { CHEST_CONTENTS } from '../content/tables/chests';
 import type { VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
-import { Hud, LESSONS } from './hud';
+import { Hud } from './hud';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -137,6 +138,8 @@ export class Game {
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
+  /** Every chest of the activated floors (the blocks themselves live in the world). */
+  private chests: { spec: ChestSpec; opened: boolean; refused: boolean }[] = [];
   private bosses = new Map<number, BossState>();   // floor → its boss room's state
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -270,7 +273,7 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.bosses.clear();
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.bosses.clear(); this.chests = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -328,13 +331,14 @@ export class Game {
     this.activated.add(k);
     this.doors.add(f.doors);
     // the boss's pedestal stays bare until the boss is overcome (revealBossItem)
-    for (const p of f.pedestals) if (!p.boss) this.placePedestalItem(p);
+    for (const p of f.pedestals) if (!p.boss && !p.chest) this.placePedestalItem(p);
+    for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false });
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
   }
 
   /** Puts a pedestal's practice in the world: the reserved one, unless the player already got it
    *  some other way (then a runtime draw from the room's pool). */
-  private placePedestalItem(p: FloorResult['pedestals'][number]) {
+  private placePedestalItem(p: { room: number; x: number; y: number; z: number; item: string | null }) {
     let id = p.item;
     if (id && (this.inventory.has(id) || this.pools.isTaken(id))) {
       const type = this.rooms.get(p.room)?.type;
@@ -1197,6 +1201,54 @@ export class Game {
     }
   }
 
+  /** Walking up to a closed chest opens it, spending its keys (some cost none). */
+  private touchChests() {
+    const b = this.player.body;
+    for (const c of this.chests) {
+      if (c.opened) continue;
+      const s = c.spec, dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
+      if (dist > 3) c.refused = false;
+      if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
+      const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
+      const cost = Math.max(0, Math.floor(ev.cost));
+      if (ev.cancelled || this.player.keys < cost) {
+        c.refused = true;
+        this.hud.toast('toast.chestLocked', { n: cost });
+        sfx.denied();
+        continue;
+      }
+      this.player.keys -= cost;
+      this.openChest(c, cost);
+    }
+  }
+
+  /** The chest block turns into its open twin and gives what it kept: the practice reserved for it, or loot. */
+  private openChest(c: { spec: ChestSpec; opened: boolean }, cost: number) {
+    c.opened = true;
+    const s = c.spec;
+    this.world.set(s.x, s.y, s.z, MAT.chestopen);
+    const cx = s.x + 0.5, cz = s.z + 0.5;
+    this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), 24, 3, 0.08);
+    this.particles.burst(cx, s.y + 1, cz, pal('brass.base'), 10, 2, 0.06);
+    this.hud.shake(0.08);
+    if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
+    if (s.item) { this.placePedestalItem({ room: s.room, x: s.x, y: s.y + 1, z: s.z, item: s.item }); return; }
+    const rng = this.rng.stream('loot'), floor = depthOf(s.y), luck = this.stats.get('luck');
+    const n = 1 + (rng.chance(0.4) ? 1 : 0) + (rng.chance(0.15) ? 1 : 0);
+    const dirs: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    for (let i = 0; i < n; i++) {
+      const what = CHEST_CONTENTS.roll(rng, { floor, luck }) ?? 'key';
+      // loot lies beside the chest, on a free tile (the chest itself is solid ground too)
+      const free = dirs.filter(([dx, dz]) => !this.solid(s.x + dx, s.y, s.z + dz));
+      const [dx, dz] = free.length ? free[(i + Math.floor(rng.next() * free.length)) % free.length] : [0, 0];
+      const x = cx + dx * 0.9, z = cz + dz * 0.9;
+      if (what === 'item') {
+        const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng)) ?? null;
+        this.pickups.add('item', free.length ? x : cx, s.y + 1, free.length ? z : cz, s.room, def, 0.3);
+      } else this.pickups.add(what, x, s.y + 1.2, z, s.room, null, 0.4);
+    }
+  }
+
   /** Floors, rooms and the way down. */
   private trackPlace(dt: number) {
     const b = this.player.body;
@@ -1219,7 +1271,8 @@ export class Game {
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
       this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
-      if (first && level(r.floor).tutorial) this.hud.lessonBanner(this.lessonFor(r));
+      const lesson = first && level(r.floor).tutorial ? this.lessonFor(r) : null;
+      if (lesson) this.hud.lessonBanner(lesson);
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       // the boss room: the next floor loads, and (no boss yet) the boss counts as overcome shortly
       if (r.type === 'boss' && !this.bosses.has(r.floor)) {
@@ -1389,6 +1442,7 @@ export class Game {
     this.cubeStrikes();
     this.shoveCubes();
     this.touchPickups();
+    this.touchChests();
     this.intents.update(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
@@ -1404,13 +1458,9 @@ export class Game {
     this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);
   }
 
-  /** Which lesson a room of the tutorial floor teaches: rooms in the order they are reached (by
-   *  steps from the start), the way down always last. */
-  private lessonFor(r: RoomInfo): number {
-    if (r.type === 'boss') return LESSONS.length - 1;
-    const f = this.floors.get(r.floor)!;
-    const order = f.plan.rooms.filter(q => q.type !== 'boss').sort((a, b) => a.dist - b.dist || a.id - b.id);
-    return Math.min(LESSONS.length - 2, order.findIndex(q => q.id === r.id % ROOM_ID_STRIDE));
+  /** The lesson a room of the tutorial floor teaches (its template's), if any. */
+  private lessonFor(r: RoomInfo): string | null {
+    return ROOM_TEMPLATES.find(t => t.id === r.template)?.lesson ?? null;
   }
 
   /** Rooms whose projections are all released (the minimap lights them). */

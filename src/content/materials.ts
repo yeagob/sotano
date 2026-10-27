@@ -19,7 +19,7 @@ export interface MaterialDef {
   /** [base, dark, hi] as numbers, for particles and anything that needs a plain colour. */
   colors: [number, number, number];
   /** Shape grammar of its 16×16 tile (src/render/atlas.ts): shapes, never noise. */
-  pattern: 'clumps' | 'grass' | 'brick' | 'plates' | 'strata' | 'planks' | 'facets' | 'cobble' | 'nuggets' | 'frame' | 'pedestal' | 'seed';
+  pattern: 'clumps' | 'grass' | 'brick' | 'plates' | 'strata' | 'planks' | 'facets' | 'cobble' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen';
   /** What it stands for (the art's meaning test). */
   concept?: string;
 }
@@ -56,6 +56,9 @@ const DEFS: Def[] = [
   { id: 13, key: 'pedestal', name: 'Pedestal', tier: 3, hp: 60, armor: 3, ramp: 'limestone', pattern: 'pedestal', concept: 'where a practice waits' },
   // a bomb ('breakthrough' in the story): only ever exists as a loose cube with a fuse
   { id: 14, key: 'bomb', name: 'Breakthrough', tier: 0, hp: 1, armor: 0, ramp: 'seed', accent: 'light.ember', pattern: 'seed', concept: 'a breakthrough waiting to happen' },
+  // chests: unbreakable (nothing digs, burns or blasts them); only keys, or just walking up, open them
+  { id: 15, key: 'chest', name: 'Chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'brass.base', pattern: 'chest', concept: 'what you keep shut until you are ready' },
+  { id: 16, key: 'chestopen', name: 'Open chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'light.gold', pattern: 'chestopen', concept: 'what was kept, given' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

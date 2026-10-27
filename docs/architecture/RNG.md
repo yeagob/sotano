@@ -33,6 +33,8 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template → flipX → flipZ → mood → decor slots, row by row, in that order |
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
+| `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
+| `fork('floor', k, 'chestkeys')` | Structure | Where the extra keys for floor k's chests lie |
 | `fork('elements')` | Runtime | One seed for the element simulation: each fire-spread roll is `hash3(seed, cell, tick, side)`, stateless, so one fire never changes another's luck. Template elements (pools, flames) are fixed by the template and draw nothing |
 | `fork('floor', k, 'room', i, 'clear')` | Runtime | Room i's clear reward: one uniform `u`, then luck reweights the table against it |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |

@@ -42,6 +42,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   enemySpawn: () => ({ id: 2, def: 'doubt', hp: 12, speed: 1.7, contactDamage: 4, tags: new Set(), x: 1, y: 1, z: 1 }),
   roomClear: () => ({ room: 101, drops: [] }),
   doorOpen: () => ({ door: 0, locked: true, needsKey: true }),
+  chestOpen: () => ({ x: 1, y: 1, z: 1, cost: 2 }),
   pickupCollect: () => ({ kind: 'key', amount: 1 }),
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, type: 'normal', firstVisit: true }),

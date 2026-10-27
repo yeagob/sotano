@@ -118,8 +118,14 @@ describe('dungeon generation', () => {
           expect(w.get(d.x0, d.y0 - 1, d.z0)).not.toBe(AIR);
         }
         expect(f.pedestals.length).toBeGreaterThanOrEqual(1);
-        expect(f.keys.length).toBe(f.doors.some(d => d.locked) ? 1 : 0);
-        expect(f.doors).toHaveLength(f.rooms.length - 1);
+        // one key for a locked door, and about three for every four the chests ask
+        const want = (f.doors.some(d => d.locked) ? 1 : 0) + Math.ceil(0.75 * f.chests.reduce((s, c) => s + c.keys, 0));
+        expect(f.keys.length).toBeLessThanOrEqual(want);
+        expect(f.keys.length).toBeGreaterThanOrEqual(f.doors.some(d => d.locked) ? 1 : 0);
+        // random floors are trees (one door fewer than rooms); Tree-of-Life floors join every touching pair
+        const touching = f.plan.rooms.reduce((n, r) => n + Object.keys(r.links).length, 0) / 2;
+        expect(f.doors).toHaveLength(touching);
+        if (level(f.floor).kind !== 'tree') expect(f.doors).toHaveLength(f.rooms.length - 1);
         for (const r of f.rooms) { expect(ids.has(r.id)).toBe(false); ids.add(r.id); expect(bandOf(r.y0)).toBe(f.floor); }
         expect(f.hole === null).toBe(f.floor === LAST_FLOOR);
       }
@@ -209,5 +215,79 @@ describe('player head bump', () => {
     expect(bumps.length).toBe(1);
     expect(bumps[0]).toBeGreaterThan(0);
     expect(p.body.y + p.body.h).toBeLessThanOrEqual(4);
+  });
+});
+
+describe('Tree-of-Life floors', () => {
+  it('lay the ten emanations and their paths, symmetric links, one door per touching pair', async () => {
+    const { treePlan } = await import('../src/world/floorplan');
+    for (const mirrored of [false, true]) for (const vault of [false, true]) {
+      const p = treePlan(mirrored, vault);
+      expect(p.rooms.filter(r => r.type !== 'path')).toHaveLength(10);
+      for (const r of p.rooms) for (const [side, n] of Object.entries(r.links)) {
+        const back = { N: 'S', S: 'N', E: 'W', W: 'E' }[side]!;
+        expect(p.rooms[n as number].links[back as 'N']).toBe(r.id);
+      }
+      expect(p.rooms.every(r => r.dist >= 0)).toBe(true);
+      // the kingdom never opens only onto the vault: it has paths of its own
+      const start = p.rooms[p.start];
+      expect(Object.values(start.links).some(n => p.rooms[n as number].type === 'path')).toBe(true);
+    }
+  });
+
+  it('every crown lies over the next kingdom, floor 0 to 6 (the shaft lines up)', { timeout: 60000 }, () => {
+    for (const seed of [1, 2, 3, 77]) {
+      const run = buildRun(seed, 7);
+      for (let k = 1; k < 7; k++) {
+        const above = run.floors[k - 1].plan.rooms.find(r => r.type === 'boss')!;
+        const start = run.floors[k].plan.rooms.find(r => r.type === 'start')!;
+        expect([start.gx, start.gz], `floor ${k}, seed ${seed}`).toEqual([above.gx, above.gz]);
+      }
+    }
+  });
+
+  it('on every Tree floor you can walk from where you land to the way down and to the key without the vault', { timeout: 60000 }, () => {
+    const run = buildRun(5, 6);
+    for (const f of run.floors.filter(q => level(q.floor).kind === 'tree')) {
+      const open = new Map<number, number[]>();
+      for (const d of f.doors) if (!d.locked) for (const [a, b] of [d.rooms, [...d.rooms].reverse()]) open.set(a, [...(open.get(a) ?? []), b]);
+      const start = f.rooms.find(r => r.type === 'start')!.id, seen = new Set([start]), q = [start];
+      while (q.length) for (const n of open.get(q.pop()!) ?? []) if (!seen.has(n)) { seen.add(n); q.push(n); }
+      expect(seen.has(f.rooms.find(r => r.type === 'boss')!.id), `floor ${f.floor}`).toBe(true);
+      for (const k of f.keys) expect(seen.has(k.room), `key on floor ${f.floor}`).toBe(true);
+    }
+  });
+
+  it('floor 0 always has room for its lessons', { timeout: 60000 }, () => {
+    for (let s = 1; s <= 25; s++) {
+      const run = buildRun(s * 31, 1);
+      expect(run.floors[0].rooms.length, `seed ${s}`).toBeGreaterThanOrEqual(9);
+    }
+  });
+});
+
+describe('rooms you build your way through', () => {
+  it('on every floor at least half of the rooms that fight need building (by weight)', async () => {
+    const { needsBuilding } = await import('../src/content/rooms');
+    for (let f = 0; f <= LAST_FLOOR; f++) {
+      let all = 0, build = 0;
+      for (const t of ROOM_TEMPLATES) {
+        if (!t.types.includes('normal') && !t.types.includes('path')) continue;
+        if (t.floors && (f < t.floors[0] || f > t.floors[1])) continue;
+        all += t.weight ?? 1;
+        if (needsBuilding(t)) build += t.weight ?? 1;
+      }
+      expect(build / all, `floor ${f}`).toBeGreaterThanOrEqual(0.5);
+    }
+  });
+  it('the walk check sees what a wall, a trench and a gap do', async () => {
+    const { needsBuilding } = await import('../src/content/rooms');
+    const room = (rows: string[]) => ({ id: 't', types: ['normal' as const], rows });
+    const open = Array(7).fill('.............');
+    expect(needsBuilding(room(open))).toBe(false);
+    expect(needsBuilding(room(open.map(() => '..===........')))).toBe(true);   // three wide: too far to jump
+    expect(needsBuilding(room(open.map(() => '..=..........')))).toBe(false);  // one wide: jump it
+    expect(needsBuilding(room(open.map(() => '...2.........')))).toBe(true);   // two high: build a step
+    expect(needsBuilding(room(open.map(() => '...1.........')))).toBe(false);  // one high: step up
   });
 });

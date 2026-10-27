@@ -37,7 +37,7 @@ const L = (floor: number, key: string, kind: LevelKind, rock: LevelDef['rock'], 
 /** Underground floors, top to bottom. */
 export const LEVELS: readonly LevelDef[] = [
   L(0, 'roots', 'roots', 'f1', { deep: 0, obsidian: 0, pockets: 0.45, ore: 0.04 },
-    { tutorial: true, maxQuality: 3, plan: { minRooms: 8, maxRooms: 9 } }),
+    { tutorial: true, maxQuality: 3, plan: { minRooms: 10, maxRooms: 11 } }),
   L(1, 'circle1', 'tree', 'f1', { deep: 0.05, obsidian: 0, pockets: 0.15, ore: 0.07 }, { circle: 1 }),
   L(2, 'circle2', 'tree', 'f1', { deep: 0.15, obsidian: 0, pockets: 0.1, ore: 0.08 }, { circle: 2 }),
   L(3, 'circle3', 'tree', 'f2', { deep: 0.3, obsidian: 0.02, pockets: 0.06, ore: 0.08 }, { circle: 3 }),

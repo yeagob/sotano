@@ -1,6 +1,6 @@
 # Levels: architecture of the thirteen floors
 
-Status: **L1 built (2026-10-27)**; L2–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
+Status: **L1 and L2 built (2026-10-27)**; L3–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
 
 ## 1. Goal
 
@@ -82,3 +82,52 @@ Rock bands follow `strata` (dirt and roots near the top, stone, deepstone, obsid
 - Fog per level (`LEVEL_FOG`), blended to the sky near the surface. `GEN_VERSION` 4; golden test on seed 0xBEEF.
 
 Not built in L1 (with their milestone): a real `exit` room type and entry/exit cells per floor (L2); plan edges and corridors (L2), multi-cell rooms and grid sizes from the table (L3); per-level enemy budgets and threshold re-tuning (L4; the budget is `min(2 + floor, 8)` for now); silence and heaven (L4); a world height from per-level bands and the tree (L5); the roots' creatures and the lesson tablets' look (L6, art gate); a phone performance check of the larger world.
+
+## 5. L2 proposal (2026-10-27): Tree-of-Life floors and rooms you build your way through
+
+Owner, 2026-10-27: *"Go ahead with the tree, and redesign a large part of the levels: at least half must require building with blocks to get through, because something is isolated, because there are great pits, or because there are walls you can't pass unless you destroy and place blocks. Building must be key to many layouts, starting from floor 0, with ever more original puzzles and themed mechanics tied to each layout."*
+
+### 5.1 The Tree on the grid
+
+Floors 1–5 use a fixed Tree layout on the 7×7 grid instead of the Isaac planner (`kind: 'tree'`). Ten **emanation** rooms sit at the Tree's positions on three pillars; the **paths** between them are corridor cells (`RoomType 'path'`, their own templates). Two rooms connect when their cells touch (the Tree has loops: so do these plans).
+
+```
+. . . K . . .      K crown (exit: the way down)      C wisdom    B understanding
+. B + + + C .      M mercy (chesed)   G severity     T beauty (the heart: treasure)
+. + . + . + .      N victory          O splendour    Y foundation (vault)
+. G + T + M .      L kingdom (entry: you land here)
+. + . + . + .      + a path
+. O + Y + N .
+. . + L + . .      (the kingdom opens onto two paths, so the vault never stands between you and the floor)
+```
+
+- **Entry and exit.** You land in the kingdom (L, the start) and leave through the crown (K, the exit: today's boss room and its shaft). The soul climbs the Tree on every floor while the run descends. To land under the crown above, **every other Tree floor is mirrored north–south** (as above, so below): the crown of floor k sits over the kingdom of floor k+1.
+- **Roles from the layout**, not from dead ends: L start, K exit, T treasure, Y vault (locked) where the floor keeps one, the other emanations normal rooms with projections, paths `path`. Names are English meanings, never sacred names (lore respect rule).
+- **Floor 0** must end above floor 1's kingdom: its planner grows **from the exit cell** and makes the farthest dead end the start (the same Isaac rules, reversed roles).
+- RNG: `fork('plan', k, kind)`; the Tree layout itself draws nothing; templates, moods and rosters as before. `GEN_VERSION` 5.
+
+### 5.2 Rooms you build your way through
+
+- New cells: `X` an obsidian wall up to two blocks under the ceiling (you climb over it), `=` a 2-deep dry pit (you need a block to climb out). With `W`, `L` and `_`, rooms can split into parts that walking alone can't join.
+- **`reachable(t)`** (rooms.ts): a 2.5-D walk over the template (standing heights from stacks, pits, terraces and layer tops; step up 1, drop any, jump gaps of up to 2 at the same height or lower; fire and lava block; water is swum). A room **needs building** when some door approach or the centre can't reach another. Tests: at least half of the normal and path templates need building; every template that needs building has breakable supply (soft blocks) on every part, and everything is solvable with blocks (no unbreakable walls: bedrock never appears in templates).
+- Templates carry an optional `lesson` (floor 0 teaches building step by step) and their `floors`. Puzzles grow with depth and follow the circles' images (structure and images, never people):
+
+| Floors | Building idea |
+|---|---|
+| 0 roots | one block to climb a step; a 2-deep dip to climb out of; a dirt wall to break through; a short gap to bridge |
+| 1 limbo | wide dry trenches between grey ledges: bridges |
+| 2 winds | thin bridges across deep water; galleries you reach by stairs you build |
+| 3 rain | mud-coloured soil and shallow water; walls of crates to burn or break; lava begins |
+| 4 weights | heavy obsidian walls splitting the room: climb over them with what you break |
+| 5 marsh | deep water and lava side by side: break the obsidian between them and the water builds the bridge |
+| 6 tombs | rows of eternal flames and fire pits: build stepping stones over them |
+| 7 rivers | a lava river across the room: bridge it |
+| 8 ditches | ten-ditch rooms: many narrow trenches, bridges of single blocks |
+| 9 ice | (ice is not built yet: deep cold water, sealed walls) |
+
+## 6. L2 as built (after the review, [../reviews/levels-l2.md](../reviews/levels-l2.md))
+
+- `floorplan.ts`: `TREE_LAYOUT` (the kingdom opens onto two paths of its own, so the vault never stands between you and the floor), `treePlan(mirrored, vault)`, `TREE_ENTRY` / `TREE_EXIT`, `treeCell`; `generatePlan(…, fromExit)` grows floor 0 from its way down, right over floor 1's kingdom, and recomputes distances from the start. Tree floors 1–5 alternate north–south. `RoomType` gains `path`; the minimap draws paths as narrow bands. `GEN_VERSION` 6.
+- `rooms.ts`: cells `X` (obsidian to two under the ceiling, carved per tile under vaults) and `=` (a 2-deep dry pit); `walkParts` / `needsBuilding` (steps of 1, any drop, jumps over one-tile gaps only, all three tiles of each door approach, the centre, `K`, `P`, `H` and the pedestal's best side); validator: `P` and `H` at the centre, start rooms never need building, the centre reaches a door on foot, a room that needs building carries soft blocks to build with, hazards off floor 0.
+- Templates: the roots' tutorial set (`roots-*`, a lesson each, assigned in the order the rooms are reached: break, step, kick, pit, bridge, breakthrough; floor 0 uses only its own rooms), Tree paths (`path-*`, `nave`), and rooms themed on the circles (limbo, gale, downpour, weights, marsh, tombs, river, ditches, cocytus, islet, bulwarks). Old plain rooms live on floors 1–4 only; building rooms weigh 3. Test: on every floor at least half the fighting rooms need building, by weight (measured: 0.94 on floor 0, 0.55–0.70 below).
+- Later: walk checks per carved room over its real doors (L3), a phone performance pass (Tree floors carve 23 rooms), the floor-5 great pit and multi-cell rooms (L3).

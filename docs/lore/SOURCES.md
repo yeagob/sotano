@@ -84,7 +84,8 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | Id | Source | Status | In the game |
 |---|---|---|---|
 | `jung` | C. G. Jung: the shadow, the descent into the unconscious, *The Red Book* | Credit (concepts generic) | The descent into the basement; the boss **The Shadow** (planned) |
-| `monomyth` | Joseph Campbell, *The Hero with a Thousand Faces* (1949) | Credit (concept generic) | Descent and return as the shape of a run |
+| `monomyth` | Joseph Campbell, *The Hero with a Thousand Faces* (1949) | Credit (concept generic) | Descent and return as the shape of a run; the threshold guardian (boss of floor 5, [BESTIARY](../design/BESTIARY.md)) |
+| `dante` | Dante Alighieri, *Inferno* (*Divine Comedy*, c. 1308–1321) | PD (structure and images only; never his figures, never punishment of people) | The nine circles as floors 1–9 ([LEVELS](../design/LEVELS.md)); each zone's image (winds, rain, weights, marsh, tombs, burning sand, ditches, ice) shapes its projections and bosses ([BESTIARY §4](../design/BESTIARY.md)) |
 
 ### Fiction
 
@@ -96,9 +97,9 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 
 | Id | Game | What we take | What we never take |
 |---|---|---|---|
-| `isaac` | *The Binding of Isaac* | Rooms, floors, items and synergies, pools, quality, transformations | Names, characters, art, sounds |
+| `isaac` | *The Binding of Isaac* | Rooms, floors, items and synergies, pools, quality, transformations; bestiary mechanics (chargers, leapers, splitters, hiding hosts, wall shooters, mimics, thieves, champions as rooted variants, challenge rooms, deals with a cost) ([BESTIARY](../design/BESTIARY.md)) | Names, characters, art, sounds, silhouettes |
 | `minecraft` | *Minecraft* | Blocks, breaking and placing, materials, furnaces, chests, fluids | Textures, mob names, sounds |
-| `noita` | *Noita* | Material interactions, secrets by knowledge, parallel worlds | Assets |
+| `noita` | *Noita* | Material interactions, secrets by knowledge, parallel worlds; creatures that live in the matter (burrowing worms, slime trails, electric creatures, resurrecting casters, sanctuary guardians that wake when you break their place) ([BESTIARY](../design/BESTIARY.md)) | Assets, names, silhouettes |
 | `doom` | *Doom* | Doors that slide up as you approach | Assets |
 | `space-opera` | The swords of light of space opera (*Star Wars*, Lucasfilm, 1977, and its heirs) | A blade made of light that cuts through anything | Names, sounds, designs, the word for it |
 | `charged-beams` | The charged beams of dungeon crawlers (*The Binding of Isaac*'s blood beam) | Hold to charge, release a beam that passes through everything | Names, blood imagery, art |

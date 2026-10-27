@@ -99,6 +99,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `jump` | `velocity`, or cancel | jumping |
 | `land` | — (react) | touching ground after a fall |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
+| `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
 | `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
