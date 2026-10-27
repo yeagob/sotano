@@ -1,0 +1,10 @@
+{
+  "note": "Water poured beside lava: a lava source quenches to obsidian, its flow to stone",
+  "floor": 3,
+  "rows": [".............", ".............", "....LLll.....", "....LLll.....", ".............", ".............", "............."],
+  "player": [0, 0, 6],
+  "ticks": 180,
+  "report": [0, 30, 180],
+  "actions": [{ "t": 10, "at": [9, 0, 2, 9, 0, 3], "element": "water" }],
+  "view": [-1, 0]
+}

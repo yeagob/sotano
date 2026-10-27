@@ -1,0 +1,42 @@
+# water-lava — Water poured beside lava: a lava source quenches to obsidian, its flow to stone
+floor 3 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 0.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements lava 12 (12 src)
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 0.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements water 29 (2 src) · lava 10 (10 src)
+  cubes — · pickups 0
+  events materialReact:quench 2 · roomEnter 1
+
+t 180 (3.0 s)
+  player hp 24/24 · at 0.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements water 68 (2 src) · lava 4 (4 src)
+  cubes — · pickups 0
+  events materialReact:quench 6
+
+map t 180 · h -1
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbboooobbbbb
+  bbbboooobbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+
+map t 180 · h 0
+  ....wwwwwwwww
+  ...wwwwwwwwww
+  ..wwwwwwwWwww
+  ..wwwwwwwWwww
+  ...wwwwwwwwww
+  ....wwwwwwwww
+  .....wwwwwwww
+
+legend b brick · o obsidian · w water · W water source

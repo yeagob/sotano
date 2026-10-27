@@ -1,0 +1,8 @@
+{
+  "note": "An eternal flame beside a wall of crates: fire catches, spreads and burns them away; stone stays",
+  "rows": [".............", ".............", "...ccccrrr...", "...fcccrrr...", "...ccccrrr...", ".............", "............."],
+  "player": [12, 0, 6],
+  "ticks": 600,
+  "report": [0, 120, 600],
+  "view": [0]
+}

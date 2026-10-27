@@ -1,0 +1,33 @@
+# fire-crates — An eternal flame beside a wall of crates: fire catches, spreads and burns them away; stone stays
+floor 1 · seed 1 · room 13×7×5 · 600 ticks (10.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 12.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  blocks stone 9 · crate 11
+  elements fire 1 (1 src)
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 24/24 · at 12.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  blocks stone 9 · crate 5
+  elements fire 7 (1 src)
+  cubes — · pickups 0
+  events blockBreak:crate 6 · ignite:crate 6 · roomEnter 1
+
+t 600 (10.0 s)
+  player hp 24/24 · at 12.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  blocks stone 9
+  elements fire 1 (1 src)
+  cubes — · pickups 0
+  events blockBreak:crate 5 · ignite:crate 5
+
+map t 600 · h 0
+  .............
+  .............
+  .......rrr...
+  ...F...rrr...
+  .......rrr...
+  .............
+  .............
+
+legend r stone · F fire source

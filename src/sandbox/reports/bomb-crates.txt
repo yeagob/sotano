@@ -1,0 +1,33 @@
+# bomb-crates — A breakthrough among crates and stone: blast damage by distance, loose cubes, crates fly
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  blocks stone 8 · crate 16
+  elements —
+  cubes — · pickups 0
+
+t 110 (1.8 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  blocks crate 4
+  elements —
+  cubes brick 30 · crate 12 · stone 8 · pickups 0
+  events blockBreak:brick 30 · blockBreak:crate 12 · blockBreak:stone 8 · blockDamage:brick 30 · blockDamage:crate 12 · blockDamage:stone 8 · blockLoot:brick 30 · blockLoot:crate 12 · blockLoot:stone 8 · explosion 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [crate] · bombs 99 · keys 99
+  blocks crate 4
+  elements —
+  cubes brick 30 · crate 11 · stone 8 · pickups 0
+  events kick:stone 1 · touchCube:crate 1 · touchCube:stone 1
+
+map t 240 · h 0
+  .............
+  ....c...c....
+  .............
+  .............
+  .............
+  ....c...c....
+  .............
+
+legend c crate

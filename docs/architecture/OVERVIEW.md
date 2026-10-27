@@ -20,6 +20,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ input/       keyboard + mouse (pointer lock)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
              ├─ audio/       synthesised sound effects
+             ├─ sandbox/    the creative room and the lab: scenarios, their carving, reports, `S.sb`
              ├─ i18n/        localization: t(), number formats, catalogs (en source, es), content
              │               texts by id, language detection and the static HTML
              └─ game/        event catalogue, HUD (inventory window, banners, counters), game loop
@@ -29,6 +30,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
 
 ## Runs and floors
 
+- `Game.newSandbox(scenario)` — the same start (`begin()`), but one sealed room from a scenario instead of floor 1, fixed steps and seeded cosmetics ([SANDBOX.md](SANDBOX.md)).
 - `Game.newRun(seed?)` — a seed code (or a fresh crypto seed), `RunRandom`, the whole run planned (`planDungeon`) and every pedestal reserved, new `ItemPools`, a fresh dungeon world (rock column filled once), floor 1 carved and activated, floor 2 carved, counters reset (1 bomb, 3 hearts), empty inventory.
 - `carve(k)` — carves floor *k* one floor ahead of the player (per-floor RNG; pedestal items drawn now). `activate(k)` — adds its doors, pedestals and keys ("the next floor loads"), on entering the boss room above or digging into its band.
 - `trackPlace()` — derives `depth` from the player's height; going deeper than `maxDepth` activates that floor, carves the next one, clears deferred chain reactions and emits `floorEnter`. Entering a boss room schedules its hole to open.
@@ -123,7 +125,7 @@ Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md
 
 ## Debug console
 
-The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15).
+The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)).
 
 
 `window.S` in the browser console:
@@ -154,6 +156,7 @@ Vitest, Node, no rendering (102 tests):
 - `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, cubes spawned at one spot repelling each other (and never into walls), 2000 cubes.
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
 - `rng.test.ts` — seed codes, fork purity, determinism (same seed, same ten floors), a golden seed hash per `GEN_VERSION`, practices lasting ten floors, isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
+- `sandbox.test.ts` — every sandbox scenario validates and carves the same room twice; a scenario's rows land where it says, sealed by its shell. The scripted runs themselves are `npm run sandbox -- --check` (headless Chromium, [SANDBOX.md](SANDBOX.md) §4).
 - `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
 - `i18n.test.ts` — every locale has every message with the same placeholders; every item, synergy, enemy and material translated, no stale ids; translated effect lines keep English's numbers; no empty strings or markup; fallback, plurals, number formats, language detection; every damage source names a cause; the language never changes a run.
 - `synergy-matrix.test.ts` — **safety layer 3**: every item alone and every pair (378 combinations) under every event: no errors, finite stats in limits, chain reactions settle; the catalogue validates; NaN modifiers are neutralised.

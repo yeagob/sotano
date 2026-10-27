@@ -19,6 +19,14 @@ async function boot() {
   }
   // ?seed=ABCD-EFGH replays a run; without it every run is new
   const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
+  // ?sandbox[=scenario]: the creative room; &lab runs the scenario's script and prints its report
+  // (docs/architecture/SANDBOX.md)
+  let sb: Record<string, unknown> | null = null;
+  if (params.has('sandbox')) {
+    const { sandboxConsole } = await import('./sandbox/console');
+    sb = sandboxConsole(game, params.get('sandbox') || 'blank', params.has('lab'));
+    if (params.has('lab')) { document.getElementById('loading')?.remove(); return; }
+  }
   const v = params.get('v');
   if (v && Number(v) !== GEN_VERSION) game.hud.toast('toast.seedVersion', { v, build: GEN_VERSION });
 
@@ -58,6 +66,8 @@ async function boot() {
     trace: (on = true) => { game.bus.trace = on; },
     /** Switch language without saving the choice ('en', 'es'). */
     lang: (code: string) => setLocale(code),
+    /** The sandbox's console (only with ?sandbox): S.sb.help(). */
+    sb,
   };
   (window as any).S = S;
 

@@ -1,0 +1,28 @@
+# catharsis-throw — Catharsis: a thrown stone goes off where it hits the crate wall
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [stone] · bombs 99 · keys 99
+  practices catharsis · synergies —
+  blocks crate 5
+  elements —
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices catharsis · synergies —
+  blocks crate 2
+  elements —
+  cubes crate 3 · stone 1 · pickups 0
+  events blockBreak:crate 3 · blockDamage:crate 3 · blockLoot:crate 3 · debrisImpact:stone 1 · drop 1 · explosion 1 · roomEnter 1 · throw:stone 1
+
+map t 120 · h 0
+  .............
+  ..........c..
+  .............
+  .............
+  .............
+  ..........c..
+  .............
+
+legend c crate

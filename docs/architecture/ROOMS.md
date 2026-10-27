@@ -14,7 +14,7 @@ Every floor's plan is decided when the run starts, from the run's seed (see [RNG
 
 ## 2. From plan to voxels
 
-Each grid cell is a **13×7 interior, 5 blocks high**, surrounded by a 2-block brick wall shared with its neighbour, so rooms sit on a 15×9 pitch. The ten floors (0–9, [LEVELS.md](LEVELS.md)) are **stacked** in one world, 16 blocks apart, with rock in between (each level's `strata`: soil at the roots, obsidian at the bottom), bedrock at the bottom and grass with open sky above floor 0: you can always dig out, up or down. Templates may name the floors they belong on (`floors: [first, last]`). Room and door ids are global (`levelIndex(floor) × 100 + index`, always positive). Details: [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts).
+Each grid cell is a **13×7 interior, 5 blocks high**, surrounded by a 2-block brick wall shared with its neighbour, so rooms sit on a 15×9 pitch. The ten floors (0–9, [LEVELS.md](LEVELS.md)) are **stacked** in one world, 16 blocks apart, with rock in between (each level's `strata`: soil at the roots, obsidian at the bottom), bedrock at the bottom and grass with open sky above floor 0: you can always dig out, up or down. Templates may name the floors they belong on (`floors: [first, last]`). Room and door ids are global (`levelIndex(floor) × 100 + index`, always positive). Details: [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts). One room's shell and interior are carved by `carveInterior` (shell, air, stacks, elements, layers, decor slots; it returns the `P T K H` marker tiles and `carveFloor` decides what they hold); the sandbox carves its room with the same function ([SANDBOX.md](SANDBOX.md)).
 
 Linked rooms get a **3×3 doorway** through the middle of the shared wall, framed with a material that tells you what's behind it:
 
@@ -98,7 +98,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 
 1. Add an entry to `ROOM_TEMPLATES` in `src/content/rooms.ts`.
 2. Run `npm test`: the validator tells you if a doorway is blocked or a marker is missing.
-3. Play a few seeds (`?seed=N`, or R in game) and use `S.game.floor.rooms` in the console to see which template each room got.
+3. Play a few seeds (`?seed=N`, or R in game) and use `S.game.floor.rooms` in the console to see which template each room got. To walk straight into it: `?sandbox` and `S.sb.template('<id>', { floor: k })` ([SANDBOX.md](SANDBOX.md)).
 
 ## 4. What's on a floor today (M1.5)
 

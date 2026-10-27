@@ -1,0 +1,9 @@
+{
+  "note": "A breakthrough among crates and stone: blast damage by distance, loose cubes, crates fly",
+  "rows": [".............", "....ccccc....", "....crrrc....", "....cr.rc....", "....crrrc....", "....ccccc....", "............."],
+  "player": [0, 0, 0],
+  "god": true,
+  "ticks": 240,
+  "report": [0, 110, 240],
+  "actions": [{ "t": 0, "do": "bomb", "at": [6, 0, 3], "fuse": 1.8 }]
+}

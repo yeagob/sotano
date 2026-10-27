@@ -23,7 +23,7 @@ import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS } from '../content/levels';
 import { blockDamage, cubeDamage, type DamageKind } from '../core/damage';
-import { fx } from '../core/fx';
+import { fx, seedFx } from '../core/fx';
 import { RunRandom } from '../core/rng';
 import { decodeSeed, encodeSeed, formatSeed, GEN_VERSION, randomRoot } from '../core/seed';
 import { ROOM_CLEAR } from '../content/tables/rewards';
@@ -61,6 +61,7 @@ import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
+import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -98,6 +99,8 @@ function makeStars(): THREE.Points {
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
 const COUNTER_CAP = 99;
+/** The sandbox's fixed step (seconds). */
+export const SANDBOX_DT = 1 / 60;
 const SPAWN_GAP = 0.45;
 /** Seconds after entering a boss room until the boss counts as overcome (no bosses yet). */
 const HOLE_DELAY = 1.5;
@@ -181,6 +184,10 @@ export class Game {
   visited = new Set<number>();
   /** Keep simulating while the mouse isn't captured (for automated tests). */
   simulateUnlocked = false;
+  /** The scenario this world was built from, or null in a normal run (docs/architecture/SANDBOX.md). */
+  sandbox: Scenario | null = null;
+  /** Sandbox: the world only moves through `step()` (the console steps it). */
+  paused = false;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -305,6 +312,22 @@ export class Game {
     let root: number | null = typeof seed === 'number' ? seed >>> 0 : typeof seed === 'string' ? decodeSeed(seed) : null;
     const invalid = typeof seed === 'string' && root === null;
     root ??= randomRoot();
+    this.begin(root, null);
+    this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
+  }
+
+  /**
+   * The sandbox (docs/architecture/SANDBOX.md): the run's rock, but a single sealed room built from
+   * the scenario on its floor's band, with its items, hand and projections. Everything else runs
+   * unchanged. Cosmetic randomness is seeded too, so the same scenario stepped the same way replays.
+   */
+  newSandbox(s: Scenario) {
+    this.begin((s.seed ?? 1) >>> 0, s);
+  }
+
+  private begin(root: number, sandbox: Scenario | null) {
+    this.sandbox = sandbox;
+    seedFx(sandbox ? root : null);
     this.seed = root;
     this.seedCode = encodeSeed(root);
     this.rng = new RunRandom(root);
@@ -322,6 +345,7 @@ export class Game {
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
     this.world = createDungeonWorld(this.rng, this.dungeon);
+    const box = sandbox ? carveSandbox(this.world, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = buildTree(this.world, SURFACE_Y, this.rng.fork('tree'));
     this.treeMeshed = false; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = '';
@@ -364,21 +388,75 @@ export class Game {
     p.id = this.actors.newId();
     p.room = -1;
     this.actors.add(p);
-    // the run starts among the roots (floor 0, the tutorial)
-    this.carve(FIRST_FLOOR);
-    this.activate(FIRST_FLOOR);
+    // the run starts among the roots (floor 0, the tutorial); a sandbox on its own floor
+    const k = box ? box.floor.floor : FIRST_FLOOR;
+    if (box) {
+      this.addFloor(box.floor);
+      // what the scenario placed was set before the simulation existed: every cell of the room looks once
+      const r = box.room;
+      for (let z = r.z0 - 1; z <= r.z0 + r.d; z++) for (let y = r.y0 - 3; y <= r.y0 + r.height; y++)
+        for (let x = r.x0 - 1; x <= r.x0 + r.w; x++) this.elements.wake(x, y, z);
+    } else this.carve(FIRST_FLOOR);
+    this.activate(k);
     this.carve(FIRST_FLOOR + 1);
-    p.spawnAt(...this.floors.get(FIRST_FLOOR)!.spawn);
+    p.spawnAt(...this.floors.get(k)!.spawn);
     p.yaw = 0; p.pitch = 0;
-    this.depth = this.maxDepth = this.groundBand = FIRST_FLOOR;
+    this.depth = this.maxDepth = this.groundBand = k;
     this.room = -1;
     this.visited = new Set();
     this.hud.hideDeath();
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
-    this.hud.setFloor(this.floors.get(FIRST_FLOOR)!, FIRST_FLOOR);
-    this.bus.emit('floorEnter', { depth: FIRST_FLOOR });
-    this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
+    this.hud.setFloor(this.floors.get(k)!, k);
+    this.bus.emit('floorEnter', { depth: k });
+    if (box && sandbox) this.furnish(box, sandbox);
+  }
+
+  /** The sandbox room's contents: practices (quietly, no banners), hand, keys, counters and projections. */
+  private furnish(box: SandboxRoom, s: Scenario) {
+    for (const id of s.items ?? []) this.grant(id);
+    const p = this.player;
+    p.hand = (s.hand ?? []).map(k => MAT[k]);
+    p.bombs = p.keys = COUNTER_CAP;
+    p.hp = this.maxHp;
+    if (s.god) p.invulnT = 1e9;
+    for (const [x, y, z] of box.keys) this.pickups.add('key', x + 0.5, y + 0.5, z + 0.5, box.room.id);
+    const [ox, oy, oz] = box.origin;
+    for (const e of s.enemies ?? []) this.sandboxSpawn(e.def, ox + e.at[0] + 0.5, oy + e.at[1], oz + e.at[2] + 0.5, e.faction);
+  }
+
+  /** Gains a practice without its banner (the sandbox and the lab). */
+  grant(id: string) {
+    const r = this.inventory.gain(id);
+    if (!r) return false;
+    this.pools.remove(id);
+    this.bus.emit('itemGained', { id, uid: r.instance.uid });
+    this.clampHealth();
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    return true;
+  }
+
+  /** A projection (or a creature) at a world position in the sandbox room, out at once (no omen). */
+  sandboxSpawn(defId: string, x: number, y: number, z: number, faction?: Faction) {
+    const r = this.rooms.get(this.floors.get(this.depth)?.rooms[0]?.id ?? -1);
+    if (!r) return null;
+    const creature = CREATURE_BY_ID.get(defId);
+    if (creature) {
+      const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, creature.hp, creature.speed, 0, new Set(['creature']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+      return e;
+    }
+    const e = this.spawnEnemy(defId, r, x, y, z);
+    if (e) { e.spawning = 0; if (faction) this.setFaction(e, faction, 'sandbox'); }
+    return e;
+  }
+
+  /** Advances the world by one fixed step without input from the mouse (the lab, the paused sandbox). */
+  step(dt = SANDBOX_DT) {
+    this.simulate(dt);
+    this.input.endFrame();
   }
 
   /** "ABCD EFGH · v1": what the player shares to replay this run. */
@@ -389,12 +467,17 @@ export class Game {
   /** Carves floor k into the world (one floor ahead of the player), from the run's plan. */
   private carve(k: number) {
     if (k > LAST_FLOOR || this.floors.has(k)) return;
-    const f = carveFloor(this.world, this.rng, k, this.dungeon.plans[k], {
+    if (this.sandbox) return;
+    this.addFloor(carveFloor(this.world, this.rng, k, this.dungeon.plans[k], {
       templates: ROOM_TEMPLATES,
       pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
-    });
-    this.floors.set(k, f);
+    }));
+  }
+
+  /** Registers a carved floor: its rooms and their combat state. */
+  private addFloor(f: FloorResult) {
+    this.floors.set(f.floor, f);
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
     for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
     for (const r of f.rooms) {
@@ -417,7 +500,7 @@ export class Game {
     for (const spec of f.chests) this.chests.push({ spec, opened: false, refused: false });
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
-    for (const c of ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
+    for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
       const def = CREATURE_BY_ID.get(c.def)!;
       const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, def.hp, def.speed, 0, new Set(['creature']));
       e.faction = 'neutral';
@@ -962,11 +1045,13 @@ export class Game {
   /** Materialise one projection where its omen breached. */
   private spawnEnemy(defId: string, r: RoomInfo, x: number, y: number, z: number) {
     const def = ENEMY_BY_ID.get(defId);
-    if (!def) return;
+    if (!def) return null;
     const id = this.actors.newId();
     const ev = this.bus.emit('enemySpawn', { id, def: defId, hp: def.hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(), x, y, z });
-    if (ev.cancelled) return;
-    this.actors.add(this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags));
+    if (ev.cancelled) return null;
+    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
+    this.actors.add(e);
+    return e;
   }
 
   // ───────────────────────── blocks ─────────────────────────
@@ -1738,7 +1823,7 @@ export class Game {
     }
     if (this.restartT > 0) {
       this.restartT -= dt;
-      if (this.restartT <= 0) { this.newRun(); this.revealT = 0; }
+      if (this.restartT <= 0) { if (this.sandbox) this.newSandbox(this.sandbox); else this.newRun(); this.revealT = 0; }
     } else if (this.revealT >= 0) {
       // stay dark until the new world is meshed, so it never pops in
       this.revealT += dt;
@@ -1752,7 +1837,8 @@ export class Game {
     }
     if (inp.pressed.has('Tab') || inp.pressed.has('KeyI')) this.hud.toggleInventory(this);
     const running = (inp.locked || this.simulateUnlocked) && !this.player.dead && !this.hud.inventoryOpen && !this.transitioning;
-    if (running) this.simulate(dt);
+    // the sandbox moves in fixed steps, one per frame, so a session can be replayed
+    if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     this.chunks.update();
     const p = this.player, e = p.eye;
     this.chunks.setVisibleRange(e.y - 22, e.y + (e.y > SURFACE_Y - 4 ? 110 : 22));

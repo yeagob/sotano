@@ -33,6 +33,7 @@ docs/architecture/             How the code works today
   RNG.md                       Seeds and randomness: classes, paths, tables, guarantees
   LOCALIZATION.md              i18n: catalogs, content texts, item messages, live switching
   ELEMENTS.md                  Elements and containers: architecture + step-by-step plan
+  SANDBOX.md                   The sandbox (creative room) and the lab (deterministic scripted runs)
 docs/lore/                     References and lore (see the sotano-lore skill)
   README.md, SOURCES.md (library), CONCEPTS.md (glossary), COSMOLOGY.md (as above, so below)
 docs/research/                 Background research, target architecture, roadmap
