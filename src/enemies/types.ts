@@ -56,6 +56,9 @@ export interface EnemyDef {
   /** How it reacts to, avoids or lives in each element (docs/architecture/ELEMENTS.md §9.3).
    *  Its meaning comes from the pattern: Panic calms in water and goes off in fire. */
   elements?: Partial<Record<ElementKey, ElementSense>>;
+  /** Blocks it can smash when they stop it: any block of material tier ≤ `tier` (0 soft, 1 walls), at
+   *  `power` block damage per second (docs/design/BESTIARY.md §3.3). Never lava, never unbreakable blocks. */
+  breaks?: { tier: number; power: number };
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
 }

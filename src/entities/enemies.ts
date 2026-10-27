@@ -38,6 +38,8 @@ export interface EnemyHost {
   projectileHit(target: Actor, damage: number, thrower: number): void;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
+  /** Damage a block that stopped a projection, if it is breakable and no harder than `tier`. Returns true if it was one. */
+  smash(e: Enemy, x: number, y: number, z: number, tier: number, damage: number): boolean;
   burst(e: Enemy, radius: number): void;
   died(e: Enemy): void;
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
@@ -213,12 +215,15 @@ export class Enemies {
       b.vz += (e.wishZ * e.speed * e.elemSpeed - b.vz) * blend;
       b.vy = Math.max(b.vy - GRAVITY * dt, -30);
       const wantX = b.vx, wantZ = b.vz;
-      moveBody(host.solid, b, dt);
-      // blocked while walking: hop up one block if there is room
-      if (b.onGround && (Math.abs(wantX) > 0.3 && b.vx === 0 || Math.abs(wantZ) > 0.3 && b.vz === 0)) {
+      moveBody(host.solid, b, dt, this.avoidWalls(e));
+      // the velocity ramps up from rest, so a wall is felt as soon as the push is real (a blocked body never reaches 0.3)
+      const blockedX = Math.abs(wantX) > 0.05 && b.vx === 0, blockedZ = Math.abs(wantZ) > 0.05 && b.vz === 0;
+      // blocked by a solid while walking: hop up one block if there is room (never over what it avoids)
+      if (b.onGround && (blockedX || blockedZ)) {
         const fx = b.x + Math.sign(wantX) * (b.hw + 0.2), fz = b.z + Math.sign(wantZ) * (b.hw + 0.2);
-        if (!boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
+        if (boxHits(host.solid, fx, b.y, fz, b.hw, b.h) && !boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
       }
+      if (e.spec.breaks && (blockedX || blockedZ)) this.smashAhead(e, Math.sign(wantX) * +blockedX, Math.sign(wantZ) * +blockedZ, dt);
       if (b.y < -10) { this.kill(e); continue; }
       // touching actors it is hostile to (the game rate-limits each pair)
       for (const a of actors) {
@@ -258,6 +263,26 @@ export class Enemies {
     return cur ? { id: cur.id, x: cur.body.x, y: cur.body.y, z: cur.body.z } : null;
   }
 
+  /**
+   * The terrain a projection walks around and never walks into sideways (lava and fire for everyone,
+   * water for those that avoid it). Lifted while it stands in such a cell, so it can climb out. It can
+   * still fall in: knockback or a fall never turns the shore into a floor.
+   */
+  private avoidWalls(e: Enemy): Solid | undefined {
+    const b = e.body;
+    if (this.host.hazard(e, Math.floor(b.x), Math.floor(b.y), Math.floor(b.z)) === 'avoid') return undefined;
+    return (x, y, z) => this.host.hazard(e, x, y, z) === 'avoid';
+  }
+
+  /** Smashes the first breakable block in the direction it was stopped in (BESTIARY §3.3). */
+  private smashAhead(e: Enemy, sx: number, sz: number, dt: number) {
+    const b = e.body, tier = e.spec.breaks!.tier, damage = e.spec.breaks!.power * dt;
+    const x = Math.floor(b.x + sx * (b.hw + 0.1)), z = Math.floor(b.z + sz * (b.hw + 0.1));
+    for (let y = Math.floor(b.y + 0.1); y <= Math.floor(b.y + b.h - 0.1); y++) {
+      if (this.host.solid(x, y, z) && this.host.smash(e, x, y, z, tier, damage)) return;
+    }
+  }
+
   /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
   private toward(e: Enemy, t: TargetView): [number, number] {
     const b = e.body, tx = t.x, tz = t.z;
@@ -270,9 +295,15 @@ export class Enemies {
       this.flows.set(key, f);
     }
     f.update(this.host.solid, tx, tz, `${this.host.worldVersion()}:${this.host.elemVersion()}`, (x, y, z) => this.host.hazard(e, x, y, z));
+    if (f.unsafe(b.x, b.z)) {
+      const out = f.escape(b.x, b.z);
+      if (out) return out;
+    }
     const d = f.direction(b.x, b.z);
     if (d) return d;
+    // no route: a straight line only while it doesn't cross what the projection avoids (it waits at the shore)
     const dx = tx - b.x, dz = tz - b.z, l = Math.hypot(dx, dz) || 1;
+    if (this.host.hazard(e, Math.floor(b.x + dx / l * (b.hw + 0.3)), Math.floor(b.y), Math.floor(b.z + dz / l * (b.hw + 0.3))) === 'avoid') return [0, 0];
     return [dx / l, dz / l];
   }
 

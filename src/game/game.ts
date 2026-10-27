@@ -817,6 +817,12 @@ export class Game {
         const id = this.world.get(x, y, z);
         return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
       },
+      smash: (e: Enemy, x: number, y: number, z: number, tier: number, damage: number) => {
+        const id = this.world.get(x, y, z);
+        if (id === AIR || !isFinite(mat(id).tier) || mat(id).tier > tier) return false;
+        this.damageBlock(x, y, z, damage, 'crush', `enemy:${e.def}`);
+        return true;
+      },
       burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE),
       died: (e: Enemy) => this.onEnemyDeath(e),
       particles: (x: number, y: number, z: number, c: number, n: number, s: number, size: number) => this.particles.burst(x, y, z, c, n, s, size),

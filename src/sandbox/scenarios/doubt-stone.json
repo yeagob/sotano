@@ -1,0 +1,12 @@
+{
+  "note": "A walker stopped by a wall of stone does not smash through it: stone does not give way",
+  "floor": 1,
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "place": [{ "at": [5, 0, 0, 5, 1, 6], "block": "stone" }],
+  "enemies": [{ "def": "doubt", "at": [10, 0, 3] }],
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 600,
+  "report": [0, 120, 300, 600],
+  "view": [-1, 0]
+}

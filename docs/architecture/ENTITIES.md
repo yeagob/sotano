@@ -77,7 +77,15 @@ defineEnemy({
 
 ### Navigation (`enemies/flowfield.ts`)
 
-A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world changes (`VoxelWorld.version`). Outside the room, steering is a straight line. Blocked enemies hop up one block.
+A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world or its elements change (`VoxelWorld.version`, `elemVersion`). Outside the room, steering is a straight line.
+
+**Terrain it avoids** (lava and fire for everyone, water for those that avoid it, `ElementSense.path: 'avoid'`) is never walked into:
+
+- The flow field leaves avoided cells and every cell **within two blocks** of them out of the route (lava flows about three blocks a second, faster than a walker). A projection that stands within that margin steps back out (`FlowField.unsafe`, `escape`) before the front reaches it.
+- Sideways motion is blocked by avoided cells (`moveBody(..., walls)`), but falling is not: knockback can still drop a projection in, and a lift over lava never lands on it (`avoidWalls` lifts while it stands in one, so it can climb out).
+- A hop only goes over a solid block, never over what it avoids. With no route, a projection waits at the shore instead of walking straight through the lava.
+
+**Breaking blocks** (`EnemyDef.breaks`): a projection with `breaks: { tier, power }` smashes the first solid block that stops it, if its material tier is at most `tier` and it is not unbreakable (never lava, never bedrock or chests). Damage goes through the normal block pipeline (`EnemyHost.smash`), so armour, cracks and loose cubes behave as for any other blow. Chargers, burrowers and leapers use it (BESTIARY §3.3).
 
 ### Intention polarity (`combat/polarity.ts`, `game/game.ts`)
 

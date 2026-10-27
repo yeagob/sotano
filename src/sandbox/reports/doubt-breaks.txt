@@ -1,0 +1,53 @@
+# doubt-breaks — A walker stopped by a wall of packed earth smashes through it: soft blocks give way, stone does not
+floor 1 · seed 1 · room 13×7×5 · 600 ticks (10.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 12.0/12 · projection · at 10.5 0.0 3.5
+  blocks dirt 14
+  elements —
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 12.0/12 · projection · at 7.5 0.0 3.5
+  blocks dirt 14
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 300 (5.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 12.0/12 · projection · at 6.3 0.0 3.5
+  blocks dirt 14
+  elements —
+  cubes — · pickups 0
+  events blockDamage:dirt 85
+
+t 600 (10.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [dirt] · bombs 99 · keys 99
+  doubt#2 hp 12.0/12 · projection · at 2.9 0.0 3.5
+  blocks dirt 12
+  elements —
+  cubes dirt 1 · pickups 0
+  events blockBreak:dirt 2 · blockDamage:dirt 95 · blockLoot:dirt 2 · touchCube:dirt 1
+
+map t 600 · h -1
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+  bbbbbbbbbbbbb
+
+map t 600 · h 0
+  .....d.......
+  .....d.......
+  .....d.......
+  .............
+  .....d.......
+  .....d.......
+  .....d.......
+
+legend d dirt · b brick

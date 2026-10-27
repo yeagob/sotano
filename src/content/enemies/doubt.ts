@@ -18,6 +18,8 @@ export default defineEnemy({
   minFloor: 1,
   drops: { heart: 0.12, key: 0.04, bomb: 0.05 },
   behaviour: chase({ lunge: 1.5, hesitate: { every: 1.4, pause: 0.5 }, reach: 0.5 }),
+  // it pushes through what is soft in its way (packed earth, crates); stone stops it
+  breaks: { tier: 0, power: 2 },
   // it keeps you still because still is safe: it won't follow you into your feelings (it walks
   // around the water), and its sack of stones drags it down when it falls in
   elements: { water: { path: 'avoid', speed: 0.35 } },
