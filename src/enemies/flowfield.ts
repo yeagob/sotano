@@ -1,9 +1,6 @@
 // Per-room navigation: a flow field over the room's interior (13×7, or bigger for a footprint) towards the target. Each cell gets
 // a standing height: up over terraces (the first free 2-block gap), down into dips and pools (down to
 // two blocks below the floor); neighbours connect when the step is at most one block. Elements shape
-// it per projection (docs/architecture/ELEMENTS.md §9.3): cells it avoids are not walkable, and neither are
-// the cells within two blocks of them (lava flows faster than a walker, so it keeps well back from a front);
-// cells it lives in are cheap and everything else costs more, so a projection that dwells in water keeps to
 // the water. Recomputed only when the target changes cell or the world or its elements change.
 
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -20,8 +17,6 @@ const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, 
 const PIT = 2;
 /** Highest terrace a projection may stand on. */
 const TERRACE = 4;
-/** Blocks a projection keeps from what it avoids. Lava flows about three blocks a second, faster than a walker,
- *  so it steps back as soon as the front is two blocks away. */
 const KEEP_AWAY = 2;
 
 export class FlowField {
@@ -32,7 +27,6 @@ export class FlowField {
   private height: Int16Array;
   private cost: Uint8Array;
   private done: Uint8Array;
-  /** Cells whose element the projection avoids (the lava it keeps away from). */
   private avoided: Uint8Array;
   private key = '';
 
@@ -63,7 +57,6 @@ export class FlowField {
       this.cost[i] = h === 'dwell' ? 1 : 3;
       if (h === 'dwell') dwells = true;
     }
-    // it keeps one block from what it avoids: a lava front that spreads finds it already gone
     for (let i = 0; i < this.W * this.D; i++) if (this.height[i] >= 0 && this.touchesAvoided(i)) this.height[i] = -1;
     // without a dwelling element every step costs the same (a plain breadth-first search)
     if (!dwells) this.cost.fill(1);
@@ -98,7 +91,6 @@ export class FlowField {
     }
   }
 
-  /** Is the cell it stands on, or a cell beside it, something it avoids (then it must step back out)? */
   unsafe(x: number, z: number): boolean {
     const c = Math.floor(x) - this.room.x0, r = Math.floor(z) - this.room.z0;
     if (c < 0 || r < 0 || c >= this.W || r >= this.D) return false;
@@ -132,8 +124,6 @@ export class FlowField {
     return l > 1e-3 ? [bx / l, bz / l] : null;
   }
 
-  /** Unit direction to the nearest cell it may stand on, for a projection that is already standing in what
-   *  it avoids: it climbs out the short way. Null if the room has no such cell. */
   escape(x: number, z: number): [number, number] | null {
     const c = Math.floor(x) - this.room.x0, r = Math.floor(z) - this.room.z0;
     if (c < 0 || r < 0 || c >= this.W || r >= this.D) return null;

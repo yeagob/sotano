@@ -59,6 +59,9 @@ export class Hud {
   private overlay = $('overlay');
   private bannerEl = $('banner');
   private toastEl = $('toast');
+  private bossEl = $('boss');
+  private bossFill = $('bossfill');
+  private bossName = $('bossname');
   private heartsEl = $('hearts');
   private breathEl = $('breath');
   private breathKey = '';
@@ -165,6 +168,13 @@ export class Hud {
   }
 
   /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
+  bossBar(boss: { name: string; ratio: number } | null) {
+    this.bossEl.hidden = !boss;
+    if (!boss) return;
+    this.bossName.textContent = boss.name;
+    this.bossFill.style.width = `${Math.max(0, Math.min(1, boss.ratio)) * 100}%`;
+  }
+
   setPolarity(p: Polarity) {
     this.lastPolarity = p;
     this.renderPolarity();

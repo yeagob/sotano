@@ -130,6 +130,22 @@ export const spatial = {
     noise(0.35, 0.6, 160, 0.7, out ?? master);
     tone(60, 0.3, 'sawtooth', 0.4, 0.6, out ?? master);
   },
+  cue(kind: string, x: number, y: number, z: number) {
+    const out = panner(x, y, z) ?? master;
+    switch (kind) {
+      case 'line': noise(0.04, 0.35, 3200, 3, out); tone(jitter(300), 0.5, 'sawtooth', 0.06, 0.6, out); break;
+      case 'ring': noise(0.1, 0.4, 260, 1.2, out); tone(jitter(90), 0.8, 'sine', 0.2, 1.3, out); break;
+      case 'field': tone(jitter(330), 0.9, 'sine', 0.08, 1.1, out); tone(jitter(495), 0.9, 'sine', 0.05, 1.1, out); break;
+      case 'pull': noise(0.9, 0.12, 700, 0.6, out); break;
+      case 'sweep': noise(0.6, 0.3, 180, 0.8, out); tone(jitter(120), 0.7, 'triangle', 0.1, 1.2, out); break;
+      case 'bolt': noise(0.02, 0.4, 4500, 4, out); break;
+      case 'leap': noise(0.06, 0.4, 500, 1.5, out); tone(jitter(200), 0.15, 'square', 0.08, 0.6, out); break;
+      case 'hide': noise(0.2, 0.25, 220, 1, out); break;
+      case 'chirp': tone(jitter(2100), 0.07, 'sine', 0.05, 1.3, out); tone(jitter(2100), 0.07, 'sine', 0.04, 1.2, out); break;
+      case 'phase': tone(jitter(440), 1.2, 'sine', 0.1, 1.3, out); tone(jitter(660), 1.2, 'sine', 0.06, 1.2, out); break;
+      default: noise(0.05, 0.3, 800, 1, out);
+    }
+  },
   /** Before a later wave: a low, unpositioned swell that says more are coming. */
   swell() {
     tone(110, 1.5, 'sine', 0.14, 1.6);

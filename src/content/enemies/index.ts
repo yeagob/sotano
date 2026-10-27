@@ -9,9 +9,10 @@ import { level } from '../levels';
 import critic from './critic';
 import doubt from './doubt';
 import panic from './panic';
+import { BOSSES } from '../bosses';
 
 export const ENEMIES: readonly EnemyDef[] = [doubt, critic, panic];
-export const ENEMY_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(ENEMIES.map(e => [e.id, e]));
+export const ENEMY_BY_ID: ReadonlyMap<string, EnemyDef> = new Map([...ENEMIES, ...BOSSES].map(e => [e.id, e]));
 
 /**
  * A normal room's roster on floor k (structure: rolled at carve time from the room's own fork).

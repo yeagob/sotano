@@ -3,10 +3,11 @@ import { flee } from '../../enemies/behaviours';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // Wonder: the curiosity that leads you down. A small moth of pale paper that drifts among the roots
-// and keeps away from you; it never touches you and never fights. A negative intention can kill it,
-// a positive one mends it. Not a projection: no husk, no cold eye, no glow (light is yours). Texel units.
+// and keeps away from you; it never touches you and never fights. A negative intention sends it into the
+// blocks until its room clears, a positive one mends it. Not a projection: no husk, no cold eye, no glow (light is yours). Texel units.
 export default defineEnemy({
   id: 'wonder',
+  kind: 'creature',
   name: 'Wonder',
   pattern: 'Curiosity',
   hp: 3,

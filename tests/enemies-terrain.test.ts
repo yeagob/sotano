@@ -1,5 +1,3 @@
-// Projections and terrain (docs/architecture/ENTITIES.md §6): a projection never walks into what it avoids,
-// keeps back from it, and climbs out when it is already in it. Falling in is physics, not a walk.
 import { describe, expect, it } from 'vitest';
 import { FlowField, type RoomArea } from '../src/enemies/flowfield';
 import { moveBody, type Body } from '../src/physics/voxel-collide';

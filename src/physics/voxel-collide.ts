@@ -19,10 +19,6 @@ export function boxHits(solid: Solid, x: number, y: number, z: number, hw: numbe
   return false;
 }
 
-/**
- * Moves the body; on collision along an axis it snaps to the wall and zeroes that velocity.
- * `walls` blocks sideways moves only (an enemy never walks into what it avoids, but it still falls into it).
- */
 export function moveBody(solid: Solid, b: Body, dt: number, walls?: Solid) {
   b.onGround = false;
   // small substeps so nothing tunnels through blocks at high speed

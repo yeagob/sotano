@@ -10,7 +10,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 - `createDungeonWorld(seed)` fills the whole column once per run. `carveFloor(world, rng, k, opts)` carves one floor with **per-floor RNG streams** (`floor<k>:plan`, `:rooms`, `:loot`, `:enemies`), so a floor's layout never depends on when it was carved. Pedestal items are drawn at carve time, so a seed always gives the same items.
 - **One floor ahead**: floor 1 and 2 are carved at run start; floor *k+1* is carved when you arrive on floor *k*. You can never dig into a band that will be overwritten later.
 - **Activation = "the next floor loads"**: when you enter floor *k*'s boss room, floor *k+1* is activated (its doors, pedestals and keys appear). Digging into a deeper band also activates it.
-- **Going down by gravity**: floor *k+1*'s plan starts **right under floor *k*'s boss room** (`generatePlan(rng, opts, startCell)`, with a fallback that relaxes the room count for edge and corner starts). 1.5 s after entering the boss room (there's no boss yet, so it counts as overcome), two things happen: the **boss's practice** appears on the room's pedestal (reserved at run start from the `boss` pool, popping in with light and a chime), and a **2×2 shaft** opens from the boss room floor straight into the start room below. During those 1.5 s the four floor blocks over the shaft show real crack stages (the telegraph). **The floor never opens under the player**: while you stand or hover over the 2×2, it waits, trickling dust, and a toast tells you to step aside; it opens the moment you step off. You walk in and fall; `land` fires with `cause: 'descent'`.
+- **Going down by gravity**: floor *k+1*'s plan starts **right under floor *k*'s boss room** (`generatePlan(rng, opts, startCell)`, with a fallback that relaxes the room count for edge and corner starts). A **boss room seals** when you enter it, after a short rumble its boss rises from a spawn point (announced by an omen), and the way down is **closed until the boss is overcome** (`Game.bossDown`, §5.4). Then the boss's practice appears on the room's pedestal (popping in with light and a chime), the four floor blocks over a **2×2 shaft** crack (the telegraph) and the shaft opens into the start room below. **The floor never opens under the player**: while you stand or hover over the 2×2, it waits, trickling dust, and a toast tells you to step aside; it opens the moment you step off. You walk in and fall; `land` fires with `cause: 'descent'`. Floor 0 is peaceful and has no boss: its way down opens on entry, as before.
 - **Depth**: `depth` is the band you're in now; `maxDepth` the deepest reached. `floorEnter` fires only when going deeper (climbing back up and dropping again doesn't re-trigger it). On `floorEnter` the deferred chain-reaction queue is cleared.
 - **Room ids are global**: `floor × 100 + index`. One `Doors` and one `Pickups` hold every activated floor; floors above keep their state.
 - Rendering only draws chunk rows within ±22 blocks of the eye; fog switches to sky colours near `SURFACE_Y` (71).
@@ -74,6 +74,36 @@ defineEnemy({
 - **Every spawn goes through `enemySpawn`** (hp, speed, contact damage, tags, position all mutable).
 - **Leash**: projections belong to their room; one that leaves it walks back to the centre.
 - **Clear**: when no hostile projection of the room is left (wherever it went; allies don't count), the doors unseal, `roomClear { drops }` fires and the reward (if any) appears at the centre. If you dig out of a sealed room, its doors stay shut until it's cleared, and seal again when you're back inside.
+
+### Kinds of beings (BESTIARY §1)
+
+Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9).
+
+### Attacks (`enemies/attacks.ts`)
+
+Every attack is one **shape** with one telegraph (BESTIARY §3.2): a **line** (a charge or a beam), a **ring** (a leap landing, a shockwave), a **field** (`slow`, `mute` or `sting`, while you stand in it), a **pull** (a tether or wind toward its source) or a **sweep** (a wall that crosses the room). A shape is drawn as cold motes for its `lead` seconds (the announcement, dim), then it is live for `live` seconds (white) and hurts each target once. Fields and pulls act while you stand in them. Hazards are drawn by one instanced mesh and hit through the damage pipeline (`hurtActor`) and the player's statuses (`affectActor`: a slowed walk, a silence that stops casting, toast `toast.muted`). Bolts are straight cold cubes (`ctx.bolt`); lobs keep their arc (`ctx.shootAt`).
+
+Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers), `ranged`, `burst`, `flee`, `leap` (crouch, aim where you stand, land with a ring and crack the soft floor), `charge` (a line, then a run that smashes soft blocks, and a stun when it meets a hard one), `patrol` (a fixed loop), `emitter` (stationary, fires on a rhythm), `phase` (through blocks), `sleep` (asleep until moved), `phased` (a boss's phases) and `chirp` (sings while its room is quiet). A flyer keeps a height (`flyY`), a phaser or burrower moves through blocks (`ghost`). `ctx.quiet`, `ctx.safe`, `ctx.centre` and `ctx.bounds` read the room; `wobble(id, seq, k)` is the seeded choice a being makes (never cosmetic `fx`).
+
+### Creatures (`content/creatures/`)
+
+Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floor's own fork (`ambientCreatures`): Wonders, Rootlings and Mosslings on floor 0, Chirpers and Delvers on floors 1–3, Bubblers and Ferrybacks on 3–4, Drifters and Inkmites on 5–6, Cinderwalkers on 7–8, Huddlers on 9. They are spawned when their floor loads, outside every roster, so they never seal a room or count for clearing it.
+
+- **Sealing**: when a room seals, its creatures hide in the blocks (`Enemies.hideRoom`, neither drawn nor hittable), and they come back whole when it clears.
+- **Polarity** (§1.1): a positive intention heals them, and a creature healed to full gives a heart once (`gifted`). A negative intention that would kill one sends it into the blocks instead (`Enemies.hurt`): it never dies.
+- **Blasts** only push creatures; fire and lava still hurt them, so they must avoid it.
+- **Chirpers** sing every few seconds only while their room is quiet (no projection alive): their silence is the warning.
+- **Mosslings** heal a quarter heart the first time you sit still beside one for three seconds (`Game.updateRest`).
+
+### Bosses (`content/bosses/`, `Game.updateBossRoom`)
+
+- **One per floor**, drawn from its zone's pool with the run's fork `floor<k>:boss` and never met twice in one run (`bossFor`). Floors 5 and 9 are keystones: the Threshold Guardian and the Shadow. Zones: I (1–2) Resistance, Inertia, The Insatiable; II (3–4) Overwhelm, The Hoard, The Downpour; III (6) The Verdict, The Grudge, The Old Rule; IV (7–8) The Furnace, The Impostor, The Many Faces.
+- **The room**: entering seals the doors (`doors.seal`), a rumble, then the boss rises at a spawn point of the room (`summonBoss`). Its health shows in the bar at the top while you are in the room (`Hud.bossBar`).
+- **Phases** (`phased`): at 2/3 and 1/3 of its health the boss stops for `PHASE_HOLD` seconds, its arena changes by name (`Game.bossArena`: walls rise, water floods or drains, fire catches, loose cubes spill or fall, the toast says what happened, `boss.<id>.phase.<n>`), and the next phase's behaviour takes over.
+- **Overcome**: its death (or, for the Guardian, its turning to your side: the route of light) calls `bossDown`. The room unseals, the boss's practice appears on the pedestal, and the way down starts to crack.
+- **Route of light** (Threshold Guardian, BESTIARY §6.5): positive intentions fill its warmth and it turns to your side. The route of shadow fights it. Both open the same way down (the design's separate hole beside the pit is not built yet).
+- **The Shadow** wins by standing still beside it for three seconds: it shrinks into your hands (`ctx.kill`).
+- **Inertia** is asleep: it takes knockback only (bombs, kicks) until it moves at a speed of 1.5 blocks a second.
 
 ### Navigation (`enemies/flowfield.ts`)
 

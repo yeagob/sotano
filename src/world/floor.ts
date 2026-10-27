@@ -111,6 +111,7 @@ export interface ChestSpec {
 
 export interface FloorResult {
   floor: number;
+  boss: string | null;
   plan: FloorPlan;
   rooms: RoomInfo[];
   doors: DoorSpec[];
@@ -441,7 +442,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   for (const rm of rooms) markRoomDirty(w, rm);
-  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence, space };
+  return { floor: k, boss: null, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence, space };
 }
 
 /**

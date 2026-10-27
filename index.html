@@ -100,6 +100,12 @@
       font-size: 16px; opacity: 0; transition: opacity .3s; pointer-events: none; }
     #toast.show { opacity: 1; }
 
+    #boss { position: fixed; left: 50%; top: calc(6 * var(--u)); transform: translateX(-50%); width: min(60vw, 420px); text-align: center; pointer-events: none; }
+    #boss[hidden] { display: none; }
+    #boss span { display: block; font-size: 14px; letter-spacing: 2px; margin-bottom: 4px; color: var(--ui-text-2); }
+    #boss div { height: 6px; background: var(--pal-ink-void); border: 1px solid var(--pal-ink-bevel); }
+    #boss i { display: block; height: 100%; width: 100%; background: var(--pal-cold-body); transition: width .25s; }
+
     /* panels */
     #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 55%, transparent); cursor: pointer; }
     #overlay .card { max-width: 480px; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
@@ -245,6 +251,7 @@
   <div id="debug"></div>
   <div id="banner"></div>
   <div id="toast" class="slate"></div>
+  <div id="boss" hidden><span id="bossname"></span><div><i id="bossfill"></i></div></div>
   <div id="inventory"></div>
   <div id="death"></div>
   <div id="fade"><i></i></div>
