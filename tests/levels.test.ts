@@ -99,3 +99,28 @@ describe('levels: rooms with height and elements', () => {
     expect(v({ height: 7, layers: [{ y: 2, rows: row(1, '...f.........') }] })).toMatch(/terrace 2 high/);
   });
 });
+
+describe('rooms as carved, with their real doors (L3c)', () => {
+  it('over many seeds, at least half the fighting rooms with two or more doors need building, on every hostile floor', { timeout: 240000 }, async () => {
+    const { needsBuildingIn } = await import('../src/content/rooms');
+    const { buildRun } = await import('./helpers');
+    const tally = new Map<number, [number, number]>();
+    for (let s = 1; s <= 24; s++) {
+      const run = buildRun(s * 7717);
+      for (const f of run.floors) for (const r of f.rooms) {
+        if (r.type !== 'normal' && r.type !== 'path') continue;
+        const sides = Object.keys(r.doors);
+        if (sides.length < 2) continue;
+        const t = ROOM_TEMPLATES.find(q => q.id === r.template)!;
+        const [n, b] = tally.get(f.floor) ?? [0, 0];
+        tally.set(f.floor, [n + 1, b + (needsBuildingIn(t, r.flipX, r.flipZ, sides) ? 1 : 0)]);
+      }
+    }
+    for (const [floor, [n, b]] of tally) expect(b / n, `floor ${floor}: ${b} of ${n}`).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it('a template mirrored is still the same room (the flip of a flip is the template)', async () => {
+    const { flipped } = await import('../src/content/rooms');
+    for (const t of ROOM_TEMPLATES) expect(flipped(flipped(t, true, true), true, true).rows).toEqual(t.rows);
+  });
+});

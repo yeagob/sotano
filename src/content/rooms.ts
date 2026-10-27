@@ -284,7 +284,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // a flooded hall under a barrel vault: deep water on both sides of a causeway, a gallery on
     // each side over the water, reached by brick steps in the corners
-    id: 'cistern', floors: [1, 9], types: ['normal'], height: 8, ceiling: 'vault-x', rows: [
+    id: 'cistern', floors: [1, 6], types: ['normal'], height: 8, ceiling: 'vault-x', rows: [
       '12.........21',
       '.WWWW...WWWW.',
       '.WWWW...WWWW.',
@@ -346,7 +346,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // an amphitheatre: brick tiers climb into the four corners around a ring of shallow water;
     // flames burn on the top tier
-    id: 'terraces', floors: [1, 9], types: ['normal'], height: 8, rows: [
+    id: 'terraces', floors: [1, 5], types: ['normal'], height: 8, rows: [
       '4321.....1234',
       '321.......123',
       '.1...www...1.',
@@ -369,7 +369,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a cross of shallow water under a dome, braziers burning on four pillars
-    id: 'font', floors: [1, 9], types: ['normal'], height: 8, ceiling: 'dome', rows: [
+    id: 'font', floors: [1, 5], types: ['normal'], height: 8, ceiling: 'dome', rows: [
       '.............',
       '..2...w...2..',
       '......w......',
@@ -393,7 +393,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // a bridge over a flooded floor: deep water from wall to wall, a brick bridge one step up
     // with stairs at both ends, and a dry centre where the projections gather
-    id: 'crossing', floors: [1, 9], types: ['normal'], height: 7, ceiling: 'vault-z', rows: [
+    id: 'crossing', floors: [1, 5], types: ['normal'], height: 7, ceiling: 'vault-z', rows: [
       '.............',
       '.WWWWW.WWWWW.',
       '.WWWW...WWWW.',
@@ -609,7 +609,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   // ── paths of the Tree (floors 1–5): corridors between emanations, most of them built across ──
   {
     // two dry trenches cut the path: east and west are islands until you bridge them
-    id: 'path-trench', types: ['path'], floors: [1, 9], weight: 3, rows: [
+    id: 'path-trench', types: ['path', 'normal'], floors: [1, 9], weight: 3, rows: [
       '.d===...===d.',
       '..===...===..',
       '..===...===..',
@@ -621,7 +621,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // obsidian walls shut the north and south doors off: over them, or through them with a breakthrough
-    id: 'path-wall', types: ['path'], floors: [1, 9], weight: 3, height: 7, rows: [
+    id: 'path-wall', types: ['path', 'normal'], floors: [1, 9], weight: 3, height: 7, rows: [
       '.d.........d.',
       'XXXXXXXXXXXXX',
       '.............',
@@ -633,7 +633,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a brick bridge over lava, broken in the middle: finish it
-    id: 'path-span', types: ['path'], floors: [3, 9], weight: 3, height: 7, ceiling: 'vault-z', rows: [
+    id: 'path-span', types: ['path', 'normal'], floors: [3, 9], weight: 3, height: 7, ceiling: 'vault-z', rows: [
       '.LLLL...LLLL.',
       '.LLLL...LLLL.',
       '.LLLL...LLLL.',
@@ -658,7 +658,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // stepping stones over embers: a lava crossing to the east and the west
-    id: 'path-coals', types: ['path'], floors: [3, 9], weight: 3, rows: [
+    id: 'path-coals', types: ['path', 'normal'], floors: [3, 9], weight: 3, rows: [
       '.LLL.....LLL.',
       '.LLL.r.r.LLL.',
       '.LLL.....LLL.',
@@ -690,6 +690,19 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '......K......',
       '.===========.',
       '#===========#',
+      '.r.........r.',
+    ],
+  },
+  {
+    // the gates of the walled city: obsidian walls shut the north and south away, a trench the east;
+    // only the west is open, so every other way out is built
+    id: 'gates', types: ['normal'], floors: [4, 9], weight: 3, height: 7, ceiling: 'vault-x', rows: [
+      '.r.........rd',
+      'XXXXXXXXXXXXX',
+      '........===..',
+      '......K.===..',
+      '........===..',
+      'XXXXXXXXXXXXX',
       '.r.........r.',
     ],
   },
@@ -792,14 +805,14 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    // the tombs: open graves of flame from wall to wall; build stepping stones, or run through and burn
+    // the tombs: rows of open graves of flame, and tomb walls between you and the north and south doors
     id: 'tombs', types: ['normal'], floors: [6, 7], weight: 3, height: 6, ceiling: 'vault-z', rows: [
       '.r.........r.',
-      'fffffffffffff',
-      '.............',
-      '..ff..K..ff..',
-      '.............',
-      'fffffffffffff',
+      'XXXXXXXXXXXXX',
+      '.f.f.f.f.f.f.',
+      '......K......',
+      '.f.f.f.f.f.f.',
+      'XXXXXXXXXXXXX',
       '.r.........r.',
     ],
   },
@@ -1109,4 +1122,31 @@ export function walkParts(t: RoomTemplate): Map<string, number> {
 /** True when walking alone can't join every key tile of the room: you have to break and place. */
 export function needsBuilding(t: RoomTemplate): boolean {
   return new Set(walkParts(t).values()).size > 1;
+}
+
+/** A template as carved with these flips (rows and layers mirrored), for checks on real rooms. */
+export function flipped(t: RoomTemplate, flipX: boolean, flipZ: boolean): RoomTemplate {
+  if (!flipX && !flipZ) return t;
+  const flipRows = (rows: string[]) => rows.map((_, r) => [...rows[0]].map((__, c) => cellAt({ ...t, rows }, c, r, flipX, flipZ)).join(''));
+  return { ...t, rows: flipRows(t.rows), layers: t.layers?.map(l => ({ ...l, rows: flipRows(l.rows) })) };
+}
+
+const partsMemo = new Map<string, Map<string, number>>();
+
+/**
+ * Does this carved room need building between the doors it really has (and its centre)? The walk
+ * check of the template as carved (its flips), restricted to the sides that got a door
+ * (docs/architecture/LEVELS.md §7.3). Memoized per template and flips.
+ */
+export function needsBuildingIn(t: RoomTemplate, flipX: boolean, flipZ: boolean, sides: readonly string[]): boolean {
+  const key = `${t.id}|${+flipX}|${+flipZ}`;
+  let parts = partsMemo.get(key);
+  if (!parts) partsMemo.set(key, parts = walkParts(flipped(t, flipX, flipZ)));
+  const ids = new Set<number>();
+  for (const [name, part] of parts) {
+    const side = name.replace(/[0-9]$/, '');
+    if ((side === 'N' || side === 'S' || side === 'E' || side === 'W') && !sides.includes(side)) continue;
+    ids.add(part);
+  }
+  return ids.size > 1;
 }

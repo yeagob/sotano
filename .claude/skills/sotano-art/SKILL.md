@@ -9,6 +9,10 @@ Every visual proposal goes through this checklist before it is built. Nothing ne
 
 Source of truth, in order: [DECISIONS.md](../../../docs/art/DECISIONS.md) (the ledger, final numbers), [ART-GUIDE.md](../../../docs/art/ART-GUIDE.md) (the reading guide), then the feedback log below.
 
+## 0. Who draws (owner, 2026-10-27)
+
+**Every art element is made by a dedicated agent running Opus 5.5** (`claude-opus-5-5`, spawned with `model: "opus"`), never by the main session in passing. This covers every element the player can see: characters, projections, inhabitants, presences, bosses, blocks and scenery, textures, icons, the HUD, particles, lighting, colour and hands. The main session briefs the agent with this skill, the guide and the ledger, and reviews what comes back against the gate in §3.
+
 ## 1. Before you draw anything
 
 1. **Name the side.** World / vessel, the player's light, or projection (ART-GUIDE §2). The side fixes colour, value and glow.
@@ -57,3 +61,4 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 
 - **Review everything against the guide, fix what strays, and put the captures in the guide.** Done in ART-GUIDE §15. Lessons: (1) the gate catches real problems the eye misses (five colours in one icon, two silhouettes 98 % alike, an icon that read as the Critic's ✗); always run `tests/art-content.test.ts` and look at `?gallery`; (2) the pane must be visible for honest captures (a hidden pane returns stale frames); (3) freeze the simulation, not the renderer, when capturing a moment.
 - **Zero hex outside `palette.ts` is the baseline now**: the ratchet is empty, so any new literal fails the build.
+- **Dedicated art agent** (2026-10-27, owner): every art element, from characters to scenery, is made by a dedicated Opus 5.5 agent, briefed with this skill and the guide, and checked against the gate before it ships (§0).

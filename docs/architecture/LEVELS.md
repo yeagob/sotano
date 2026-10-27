@@ -1,6 +1,6 @@
 # Levels: architecture of the thirteen floors
 
-Status: **L1 and L2 built (2026-10-27)**; L3–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
+Status: **L1, L2 and L3c built (2026-10-27)**; L3a, L3b and L4–L6 planned. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
 
 ## 1. Goal
 
@@ -148,3 +148,15 @@ Floor 5's exit is a 2×2 room whose middle is a shaft four blocks wide into floo
 ### 7.3 Checks per carved room
 
 `walkParts` runs on the carved room with the doors it really has: a test over many seeds checks that every carved room's real doors are joined either on foot or by building (never by nothing), and that at least half of each floor's fighting rooms that have two or more doors need building.
+
+### 7.4 After the review ([../reviews/levels-l3.md](../reviews/levels-l3.md)): footprints, not merges, in three steps
+
+The review dropped "merge separate plan cells": a big room is **one plan room with a footprint** (`size: [cellsX, cellsZ]`, its id is its anchor cell, `cells`, and `roomOfCell` for grid lookups). Indices, forks and pedestal slots stay as they are. No footprints on Tree floors (the Tree's shape is its meaning).
+
+| Step | What | Status |
+|---|---|---|
+| **L3c** | The walk check as carved: `flipped(t, flipX, flipZ)` and `needsBuildingIn(t, flipX, flipZ, sides)` (memoized) restrict the check to the doors a room really has. Test: over 24 seeds, on every floor, at least half the fighting rooms with two or more doors need building (aggregate per floor, so no single seed can flake). To meet it on the random floors, the trench, wall, lava-bridge and ember corridors also serve as normal rooms there, `tombs` gained tomb walls you climb (a single row of flame can be jumped), a new `gates` room shuts three sides away, and the gentlest element rooms (amphitheatre, font, water bridge) live on floors 1–5. `GEN_VERSION` 8. | **Built** |
+| **L3a** | The great pit: floor 5's crown as a 2×1 footprint (the crown cell and its empty east neighbour), a 4×4 shaft centred on the crown cell, so it lands in floor 6's start room, whose templates keep a clear 4×4 centre; `openHole` with a size; `pickTemplate` filters by size; doors as a list; the minimap draws a footprint's bounding box. | Next |
+| **L3b** | Footprints on the random floors (6–9): growth inside the planner, density per level, rosters, rewards, chests and key homes scaled by cell count, the flow field over bigger rooms, a phone performance pass. Touches the chests code: coordinate with it. | Later |
+
+Open for the owner: is a 2×1 crown (an arena 28 × 7 with a 4 × 4 pit) great enough, or should floor 5 get its own Tree layout so the crown can be 2×2?
