@@ -6,11 +6,13 @@ import type { ChestSpec } from '../world/floor';
 const SHUDDER = 0.16;
 const SWING = 0.42;
 const OPEN_ANGLE = -1.9;
+const TIGHT_ANGLE = -0.5;
 
 export interface ChestView {
   spec: ChestSpec;
   model: ChestModel;
   t: number;
+  angle: number;
   lockVy: number;
   holes: { mat: THREE.Material & { color: THREE.Color }; base: THREE.Color }[];
 }
@@ -23,7 +25,7 @@ export class Chests {
 
   constructor(private scene: THREE.Scene) { scene.add(this.group); }
 
-  add(spec: ChestSpec, facing: number): ChestView {
+  add(spec: ChestSpec, facing: number, tight = false): ChestView {
     const model = buildChest({ keys: spec.keys, practice: spec.item !== null });
     model.root.position.set(spec.x + 0.5, spec.y, spec.z + 0.5);
     model.root.rotation.y = facing;
@@ -33,7 +35,7 @@ export class Chests {
       const mat = m.material as THREE.Material & { color: THREE.Color };
       return { mat, base: mat.color.clone() };
     });
-    const v: ChestView = { spec, model, t: -1, lockVy: 0, holes };
+    const v: ChestView = { spec, model, t: -1, angle: tight ? TIGHT_ANGLE : OPEN_ANGLE, lockVy: 0, holes };
     this.list.push(v);
     return v;
   }
@@ -65,7 +67,7 @@ export class Chests {
       }
       const s = Math.min(1, (t - SHUDDER) / SWING);
       const back = 1 + 2.4 * (s - 1) ** 3 + 1.4 * (s - 1) ** 2;
-      m.lid.rotation.x = OPEN_ANGLE * back;
+      m.lid.rotation.x = v.angle * back;
       const pop = Math.max(0, 1 - s * 2);
       m.root.scale.set(1 - 0.04 * pop, 1 + 0.1 * pop, 1 - 0.04 * pop);
       if (m.lock?.visible) {

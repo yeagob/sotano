@@ -9,6 +9,7 @@ import type { ItemDef } from '../items/types';
 import type { PartDef } from '../content/parts';
 import { pal } from '../content/palette';
 import { glowTexture, iconTexture } from '../render/icons';
+import { breatheSeed, buildSeed, disposeSeed, type SeedModel } from '../render/seed-model';
 
 export type PickupType = PickupKind | 'item' | 'part';
 
@@ -55,17 +56,9 @@ function keyMesh(): THREE.Object3D {
 }
 
 function bombMesh(): THREE.Object3D {
-  const g = new THREE.Group();
-  // a breakthrough is a seed, never a cartoon bomb: a dark husk split by ember cracks, a white-hot heart
-  const shell = new THREE.MeshLambertMaterial({ color: pal('mat.seed.base'), emissive: pal('ink.void') });
-  const ember = new THREE.MeshBasicMaterial({ color: pal('light.ember') });
-  const heart = new THREE.MeshBasicMaterial({ color: pal('light.core') });
-  box(g, shell, 0.3, 0.34, 0.3, 0, 0.17);
-  box(g, shell, 0.22, 0.08, 0.22, 0, 0.38);
-  box(g, ember, 0.32, 0.04, 0.04, 0, 0.22);
-  box(g, ember, 0.04, 0.2, 0.32, 0.02, 0.16);
-  box(g, heart, 0.08, 0.08, 0.32, 0, 0.17);
-  return g;
+  const m = buildSeed();
+  m.root.userData.seed = m;
+  return m.root;
 }
 
 function heartMesh(): THREE.Object3D {
@@ -131,6 +124,8 @@ export class Pickups {
   take(p: Pickup) {
     p.taken = true;
     this.group.remove(p.obj);
+    const seed = p.obj.userData.seed as SeedModel | undefined;
+    if (seed) disposeSeed(seed);
   }
 
   update(dt: number, solid: Solid) {
@@ -160,6 +155,8 @@ export class Pickups {
           if (p.y < -10) { this.take(p); continue; }
         } else if (p.flying) { p.flying = false; p.vx = 0; p.vz = 0; }
       }
+      const seed = p.obj.userData.seed as SeedModel | undefined;
+      if (seed) breatheSeed(seed, this.time + p.x);
       p.obj.rotation.y = this.time * 1.6 + p.x;
       const bob = Math.sin(this.time * 2.2 + p.x) * (p.type === 'item' ? 0.08 : 0.04);
       p.obj.position.set(p.x, p.y + (p.type === 'item' ? 0.55 : p.type === 'part' ? 0.3 : 0.12) + bob, p.z);

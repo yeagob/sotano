@@ -7,6 +7,9 @@ import { ATLAS_COLS, ATLAS_ROWS, CRACK_STAGES, tileFor } from '../content/tiles'
 import { DEBRIS_SIZE, type DebrisSystem } from '../physics/debris';
 import type { VoxelWorld } from '../world/world';
 import { crackTexture } from './atlas';
+import { buildSeed, disposeSeed, fuseSeed, SEED_H, SEED_VOXEL, type SeedModel } from './seed-model';
+
+const SEED_SCALE = DEBRIS_SIZE / (SEED_H * SEED_VOXEL);
 
 /** Lambert material that picks each instance's atlas tile from the `instTile` attribute. */
 function atlasCubeMaterial(atlas: THREE.Texture) {
@@ -32,8 +35,10 @@ export class DebrisView {
   private q = new THREE.Quaternion();
   private p = new THREE.Vector3();
   private s = new THREE.Vector3();
+  private seeds = new Map<number, SeedModel>();
+  private live = new Set<number>();
 
-  constructor(scene: THREE.Scene, atlas: THREE.Texture, max: number) {
+  constructor(private scene: THREE.Scene, atlas: THREE.Texture, max: number) {
     const geo = new THREE.BoxGeometry(DEBRIS_SIZE, DEBRIS_SIZE, DEBRIS_SIZE);
     this.tile = new THREE.InstancedBufferAttribute(new Float32Array(max), 1);
     this.tile.setUsage(THREE.DynamicDrawUsage);
@@ -45,12 +50,14 @@ export class DebrisView {
     scene.add(this.mesh);
   }
 
-  update(sys: DebrisSystem, time: number) {
+  update(sys: DebrisSystem) {
     let n = 0;
     const tiles = this.tile.array as Float32Array;
+    this.live.clear();
     for (let i = 0; i < sys.max; i++) {
-      if (!sys.isAlive(i) || !sys.visible(i, time)) continue;
+      if (!sys.isAlive(i)) continue;
       const i3 = i * 3, i4 = i * 4;
+      if (sys.isBomb(i)) { this.seed(sys, i); continue; }
       this.p.set(sys.pos[i3], sys.pos[i3 + 1], sys.pos[i3 + 2]);
       this.q.set(sys.quat[i4], sys.quat[i4 + 1], sys.quat[i4 + 2], sys.quat[i4 + 3]);
       const k = Math.min(1, 0.6 + sys.age[i] * 4) * sys.scale(i); // small spawn "pop", and a slow shrink at the end
@@ -63,6 +70,22 @@ export class DebrisView {
     this.mesh.count = n;
     this.mesh.instanceMatrix.needsUpdate = true;
     this.tile.needsUpdate = true;
+    for (const [i, m] of this.seeds) if (!this.live.has(i)) { disposeSeed(m); this.seeds.delete(i); }
+  }
+
+  private seed(sys: DebrisSystem, i: number) {
+    let m = this.seeds.get(i);
+    if (!m) {
+      m = buildSeed();
+      this.scene.add(m.root);
+      this.seeds.set(i, m);
+    }
+    this.live.add(i);
+    const i3 = i * 3;
+    const k = SEED_SCALE * fuseSeed(m, sys.fuse[i]);
+    m.root.position.set(sys.pos[i3], sys.pos[i3 + 1] - DEBRIS_SIZE / 2, sys.pos[i3 + 2]);
+    m.root.rotation.set(0, i * 1.3, 0);
+    m.root.scale.setScalar(k);
   }
 }
 

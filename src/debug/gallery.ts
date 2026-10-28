@@ -18,7 +18,7 @@ import { PART_ICONS } from '../content/part-icons';
 import { CRACK_STAGES } from '../content/tiles';
 import { buildModel } from '../entities/enemies';
 import { pickupMesh } from '../entities/pickups';
-import { materialCanvas, paintCracks } from '../render/atlas';
+import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
 import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
 
@@ -90,22 +90,31 @@ export function runGallery(params: URLSearchParams) {
 
   if (show('materials')) {
     head('Materials (×6) and cracks of light, stages 1–4');
-    for (const m of MATERIALS) {
-      if (m.id === 0) continue;
+    const tiles: [string, string, () => HTMLCanvasElement, boolean][] = MATERIALS.filter(m => m.id !== 0).flatMap(m => {
+      const own: [string, string, () => HTMLCanvasElement, boolean][] = [[m.key, m.concept ?? '', () => materialCanvas(m.id), isFinite(m.hp)]];
+      if (m.key === 'log') own.push(['log top', 'end grain', logTopCanvas, true]);
+      return own;
+    });
+    for (const [key, concept, canvas, breaks] of tiles) {
       const r = row();
-      fig(r, scaled(materialCanvas(m.id), 6), `${m.key} · ${m.concept ?? ''}`);
+      fig(r, scaled(canvas(), 6), `${key} · ${concept}`);
       for (let s = 0; s < CRACK_STAGES; s++) {
-        const c = materialCanvas(m.id);
-        if (isFinite(m.hp)) paintCracks(c.getContext('2d')!, 0, 0, s);
+        const c = canvas();
+        if (breaks) paintCracks(c.getContext('2d')!, 0, 0, s);
         fig(r, scaled(c, 6), `stage ${s + 1}`);
       }
-      // 3 × 3 to judge tiling
-      const tile = materialCanvas(m.id), big = document.createElement('canvas');
+      const tile = canvas(), big = document.createElement('canvas');
       big.width = big.height = tile.width * 3;
       const g = big.getContext('2d')!;
       for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) g.drawImage(tile, x * tile.width, y * tile.height);
       fig(r, scaled(big, 2), '3 × 3');
     }
+  }
+
+  if (show('materials')) {
+    head('Door leaves (3 × 3 blocks, ×3)');
+    const r = row();
+    for (const look of ['normal', 'locked', 'treasure', 'boss'] as DoorLook[]) fig(r, scaled(doorTexture(look).image as HTMLCanvasElement, 3), look);
   }
 
   if (show('items')) {

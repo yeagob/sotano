@@ -70,6 +70,5 @@ describe('old loose cubes', () => {
     expect(d.scale(i)).toBeLessThan(0.6);
     const sizes = [6, 4, 2, 1, 0.2].map(left => { d.age[i] = DEBRIS_LIFETIME - left; return d.scale(i); });
     for (let k = 1; k < sizes.length; k++) expect(sizes[k]).toBeLessThan(sizes[k - 1]);
-    for (const t of [0, 10, 40, 85, 89]) { d.age[i] = t; expect(d.visible(i, t * 7.3)).toBe(true); }
   });
 });

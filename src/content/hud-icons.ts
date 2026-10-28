@@ -23,21 +23,20 @@ export const HUD_ICONS = {
   heart: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'life.heart', h: 'bone.paper', d: 'life.dark' } },
   /** An empty container. */
   heartEmpty: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'life.empty', h: 'life.rim', d: 'life.rim' } },
-  /** A breakthrough is a seed: a dark husk with an ember crack and a white-hot heart. */
   seed: {
     rows: [
-      '...oooo...',
-      '.oohhbboo.',
-      '.ohhbebbo.',
-      'ohbbbebbdo',
-      'obeeccbbdo',
-      'obbbccebdo',
-      'obbbbebddo',
-      '.obbbebdo.',
-      '.ooddddoo.',
+      '....oo....',
+      '...ohbo...',
+      '..ohbeso..',
+      '.ohbbesbo.',
+      '.ohbecsbo.',
+      'ohbbccsbdo',
+      'obbbcesbdo',
+      '.obbesbdo.',
+      '..odesdo..',
       '...oooo...',
     ],
-    palette: { o: 'ink.void', b: 'mat.seed.base', h: 'mat.seed.hi', d: 'mat.seed.dark', e: 'light.ember', c: 'light.core' },
+    palette: { o: 'ink.void', b: 'mat.seed.base', h: 'mat.seed.hi', d: 'mat.seed.dark', e: 'light.ember', s: 'light.dusk', c: 'light.core' },
   },
   /** A key with an eye in its bow: an insight. */
   key: {

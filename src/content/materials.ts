@@ -21,7 +21,7 @@ export interface MaterialDef {
   /** [base, dark, hi] as numbers, for particles and anything that needs a plain colour. */
   colors: [number, number, number];
   /** Shape grammar of its 16×16 tile (src/render/atlas.ts): shapes, never noise. */
-  pattern: 'clumps' | 'grass' | 'brick' | 'plates' | 'strata' | 'planks' | 'facets' | 'cobble' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen';
+  pattern: 'clumps' | 'grass' | 'leaves' | 'brick' | 'plates' | 'strata' | 'planks' | 'bark' | 'facets' | 'cobble' | 'earth' | 'rubble' | 'ashlar' | 'slate' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen';
   /** What it stands for (the art's meaning test). */
   concept?: string;
   model?: boolean;
@@ -47,12 +47,12 @@ const RAMPS: Record<string, [PalToken, PalToken, PalToken, PalToken]> = {
 
 const DEFS: Def[] = [
   { id: 0, key: 'air', name: 'Air', tier: 0, hp: 0, armor: 0, ramp: 'air', pattern: 'clumps' },
-  { id: 1, key: 'dirt', name: 'Dirt', tier: 0, hp: 3, armor: 0, ramp: 'dirt', pattern: 'clumps', concept: 'a passing excuse' },
+  { id: 1, key: 'dirt', name: 'Dirt', tier: 0, hp: 3, armor: 0, ramp: 'dirt', accent: 'limestone.dark', pattern: 'clumps', concept: 'a passing excuse' },
   { id: 2, key: 'grass', name: 'Grass', tier: 0, hp: 3, armor: 0, ramp: 'grass', pattern: 'grass', concept: 'surface life' },
   { id: 3, key: 'brick', name: 'Dungeon brick', tier: 1, hp: 12, armor: 0.5, ramp: 'rock', pattern: 'brick', concept: 'a habit' },
   { id: 4, key: 'stone', name: 'Stone', tier: 1, hp: 10, armor: 0.5, ramp: 'stone', pattern: 'plates', concept: 'what was always there' },
   { id: 5, key: 'deepstone', name: 'Deepstone', tier: 2, hp: 25, armor: 1.5, ramp: 'deepstone', pattern: 'strata', concept: 'an old fear' },
-  { id: 6, key: 'crate', name: 'Crate', tier: 0, hp: 4, armor: 0, flammable: true, ramp: 'crate', pattern: 'planks', concept: 'what you stored and never opened' },
+  { id: 6, key: 'crate', name: 'Crate', tier: 0, hp: 4, armor: 0, flammable: true, ramp: 'crate', accent: 'iron.base', pattern: 'planks', concept: 'what you stored and never opened' },
   { id: 7, key: 'obsidian', name: 'Obsidian', tier: 3, hp: 40, armor: 3, heavy: true, ramp: 'obsidian', accent: 'mat.obsidian.accent', pattern: 'facets', concept: 'a core belief' },
   { id: 8, key: 'bedrock', name: 'Bedrock', tier: Infinity, hp: Infinity, armor: 0, ramp: 'bedrock', pattern: 'cobble', concept: 'the floor of the world' },
   { id: 9, key: 'ore', name: 'Iron ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'copper.base', pattern: 'nuggets', concept: 'value hidden in the rock' },
@@ -68,16 +68,16 @@ const DEFS: Def[] = [
   { id: 16, key: 'chestopen', name: 'Open chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'light.gold', pattern: 'chestopen', model: true, concept: 'what was kept, given' },
   // the ninth circle and the tree (docs/architecture/LEVELS.md §8)
   { id: 17, key: 'ice', name: 'Ice', tier: 1, hp: 6, armor: 0, slippery: true, ramp: 'ice', pattern: 'facets', concept: 'a feeling frozen still' },
-  { id: 18, key: 'log', name: 'Living wood', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'crate', pattern: 'strata', concept: 'the tree that holds the world' },
-  { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'grass', pattern: 'clumps', concept: 'what grows when you rise' },
+  { id: 18, key: 'log', name: 'Living wood', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'crate', accent: 'mat.grass.dark', pattern: 'bark', concept: 'the tree that holds the world' },
+  { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'grass', pattern: 'leaves', concept: 'what grows when you rise' },
   { id: 20, key: 'starstone', name: 'Star stone', tier: 3, hp: 60, armor: 3, ramp: 'limestone', accent: 'bone.paper', pattern: 'cobble', concept: 'a fixed point to steer by' },
   // each floor builds its rooms from its own palette (src/content/levels.ts, DECISIONS §6.5), as tough as brick
-  { id: 21, key: 'loam', name: 'Packed earth', tier: 1, hp: 12, armor: 0.5, ramp: 'loam', pattern: 'strata', concept: 'the ground you were raised on' },
+  { id: 21, key: 'loam', name: 'Packed earth', tier: 1, hp: 12, armor: 0.5, ramp: 'loam', accent: 'limestone.base', pattern: 'earth', concept: 'the ground you were raised on' },
   { id: 22, key: 'flagstone', name: 'Flagstone', tier: 1, hp: 12, armor: 0.5, ramp: 'flagstone', pattern: 'plates', concept: 'a path worn by repetition' },
-  { id: 23, key: 'rubble', name: 'Rubble masonry', tier: 1, hp: 12, armor: 0.5, ramp: 'rubble', pattern: 'cobble', concept: 'what the winds tore down, piled up again' },
+  { id: 23, key: 'rubble', name: 'Rubble masonry', tier: 1, hp: 12, armor: 0.5, ramp: 'rubble', pattern: 'rubble', concept: 'what the winds tore down, piled up again' },
   { id: 24, key: 'wetbrick', name: 'Wet brick', tier: 1, hp: 12, armor: 0.5, ramp: 'wetbrick', pattern: 'brick', concept: 'a habit soaked in feeling' },
-  { id: 25, key: 'ashlar', name: 'Ashlar', tier: 1, hp: 12, armor: 0.5, ramp: 'ashlar', pattern: 'plates', concept: 'a burden cut into blocks' },
-  { id: 26, key: 'slate', name: 'Slate', tier: 1, hp: 12, armor: 0.5, ramp: 'slate', pattern: 'strata', concept: 'layers of what was never said' },
+  { id: 25, key: 'ashlar', name: 'Ashlar', tier: 1, hp: 12, armor: 0.5, ramp: 'ashlar', pattern: 'ashlar', concept: 'a burden cut into blocks' },
+  { id: 26, key: 'slate', name: 'Slate', tier: 1, hp: 12, armor: 0.5, ramp: 'slate', pattern: 'slate', concept: 'layers of what was never said' },
   { id: 27, key: 'darkbrick', name: 'Dark brick', tier: 1, hp: 12, armor: 0.5, ramp: 'darkbrick', pattern: 'brick', concept: 'a habit gone dark' },
 ];
 

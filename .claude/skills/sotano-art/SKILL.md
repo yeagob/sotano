@@ -63,3 +63,7 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 - **Zero hex outside `palette.ts` is the baseline now**: the ratchet is empty, so any new literal fails the build.
 - **Dedicated art agent** (2026-10-27, owner): every art element, from characters to scenery, is made by a dedicated Opus 5.5 agent, briefed with this skill and the guide, and checked against the gate before it ships (§0).
 - **Floors built from different things (2026-10-27, owner):** the first five floors all looked alike. Lesson: floors must differ in what they are built from, not only in fog: each floor gets its own wall, floor and trim materials with their own ramps (DECISIONS §6.5).
+
+*Owner feedback, round 3 (2026-10-27):*
+
+- **"Several wood textures are very bad, dirt is so-so, the bombs are very ugly; brick and obsidian are very good."** Lessons: (1) wood reads from structure, not colour: frames, slats, butt joints, knots, bark crevices and end grain; flat bands in a wood ramp read as nothing; (2) vertical stripes on any tile read as boards whatever the ramp, so a stone door frame needs blocks, not grain; (3) a four-way cross of light on a cube face reads as the Critic's ✗; (4) a timer can break the 3 Hz rule unseen (the fused bomb blinked at 8 and 16 Hz): check every `Math.floor(time * k)` that toggles visibility; (5) a thing the player picks up and drops should be the same model in both states (the seed), not a model in the hand and a textured cube on the floor.

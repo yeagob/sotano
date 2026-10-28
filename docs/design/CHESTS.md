@@ -4,7 +4,7 @@ Status: **built** (GEN_VERSION 5). Owner direction, 2026-10-27: walls around loc
 
 ## 1. What a chest is
 
-A chest is a **block with a model** (owner redesign, 2026-10-27: "a chest must look like a chest"). The voxel (`chest`, closed; `chestopen`, open) stays a solid, **unbreakable** cell (tier and HP infinite, like bedrock): no intention, bomb, beam, blade, kick or fire changes it, and you can stand on it. The mesher does not draw it (`MaterialDef.model`, `MODEL_DRAWN`): the `Chests` entity (`src/entities/chests.ts`) draws a real chest on it from `src/render/chest-model.ts`, a wooden body with bands and a hinged lid, turned to face the middle of its room (or its nearest door when it stands in the middle). What you keep shut you open **on purpose**, with keys or by walking up.
+A chest is a **block with a model** (owner redesign, 2026-10-27: "a chest must look like a chest"). The voxel (`chest`, closed; `chestopen`, open) stays a solid, **unbreakable** cell (tier and HP infinite, like bedrock): no intention, bomb, beam, blade, kick or fire changes it, and you can stand on it. The mesher does not draw it (`MaterialDef.model`, `MODEL_DRAWN`): the `Chests` entity (`src/entities/chests.ts`) draws a real chest on it from `src/render/chest-model.ts`, a wooden body with bands and a hinged lid, turned so that the cell behind it is free (the lid swings back into air, never into a wall) and, among those sides, facing the middle of its room (or its nearest door when it stands in the middle). A chest walled in on every side only props its lid ajar. What you keep shut you open **on purpose**, with keys or by walking up.
 
 It reads with no text (art entry in [../art/DECISIONS.md](../art/DECISIONS.md)):
 

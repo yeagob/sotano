@@ -170,12 +170,6 @@ export class DebrisSystem {
     }
   }
 
-  /** Visible this frame? (a bomb about to go off blinks) */
-  visible(i: number, time: number) {
-    if (this.fuse[i] > 0) return this.fuse[i] > 1.2 || Math.floor(time * (this.fuse[i] < 0.5 ? 16 : 8)) % 2 === 0;
-    return true;
-  }
-
   /** 1 for most of its life, then it shrinks smoothly to nothing before it despawns. */
   scale(i: number) {
     if (this.fuse[i] > 0) return 1;
