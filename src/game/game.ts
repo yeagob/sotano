@@ -1683,6 +1683,7 @@ export class Game {
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
     const from = p.eye.addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
+    this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
     this.hands.fire();
     sfx.shoot();
   }

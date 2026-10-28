@@ -410,6 +410,14 @@ export class Enemies {
     });
   }
 
+  mirror(x: number, z: number, radius: number, dx: number, dy: number, dz: number) {
+    for (const e of this.list) {
+      if (!e.alive || e.hidden || e.spawning > 0 || e.def !== 'comparison') continue;
+      if (Math.hypot(e.body.x - x, e.body.z - z) > radius) continue;
+      this.bolt(e, -dx, -dy, -dz, 9, 4);
+    }
+  }
+
   private bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number) {
     const b = e.body, l = Math.hypot(dx, dy, dz) || 1;
     this.push({
