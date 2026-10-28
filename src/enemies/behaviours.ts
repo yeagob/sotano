@@ -286,6 +286,21 @@ export function emitter(opt: { every: number; follow?: { speed: number; keep: nu
   };
 }
 
+export function volley(opt: { every: number; shot(e: Enemy, ctx: EnemyCtx): void; then: Behaviour }): Behaviour {
+  return {
+    name: 'volley',
+    update(e, ctx) {
+      opt.then.update(e, ctx);
+      e.volley -= ctx.dt;
+      if (e.volley < 0.6) e.pulse = Math.max(e.pulse, 1 - Math.max(0, e.volley) / 0.6);
+      if (e.volley <= 0) {
+        e.volley = opt.every;
+        if (e.state !== 'stun') opt.shot(e, ctx);
+      }
+    },
+  };
+}
+
 export function phase(opt: { hover: number; speed: number }): Behaviour {
   return {
     name: 'phase',

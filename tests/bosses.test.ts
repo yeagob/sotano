@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BOSSES, BOSS_ZONES, bossFor, bossHp } from '../src/content/bosses';
 import { ENEMY_BY_ID } from '../src/content/enemies';
 import { RunRandom } from '../src/core/rng';
-import { emitter, phased, PHASE_HOLD } from '../src/enemies/behaviours';
+import { emitter, phased, PHASE_HOLD, volley } from '../src/enemies/behaviours';
 import type { Enemy, EnemyCtx } from '../src/enemies/types';
 
 describe('bosses: floors and pools', () => {
@@ -107,5 +107,25 @@ describe('bosses: they move towards you', () => {
     behaviour.update(e, ctx(3));
     expect(e.wishX).toBe(0);
     expect(shots.length).toBeGreaterThan(0);
+  });
+});
+
+describe('bosses: volleys', () => {
+  it('a volley waits its own time, shows its aim in the last half second, then fires once per period', () => {
+    const shots: number[] = [];
+    const idle = { name: 'idle', update: () => {} };
+    const behaviour = volley({ every: 1, shot: () => { shots.push(1); }, then: idle });
+    const ctx = { dt: 0.25 } as unknown as EnemyCtx;
+    const e = { volley: 1, pulse: 0, state: 'move' } as unknown as Enemy;
+    behaviour.update(e, ctx);
+    behaviour.update(e, ctx);
+    behaviour.update(e, ctx);
+    expect(e.pulse).toBeGreaterThan(0);
+    expect(shots).toEqual([]);
+    behaviour.update(e, ctx);
+    expect(shots).toEqual([1]);
+    e.state = 'stun';
+    for (let i = 0; i < 4; i++) behaviour.update(e, ctx);
+    expect(shots).toEqual([1]);
   });
 });

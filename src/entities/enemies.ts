@@ -132,7 +132,7 @@ export class Enemies {
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0,
+      hidden: false, stage: 0, hold: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0, volley: 2,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));

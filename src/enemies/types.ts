@@ -107,6 +107,7 @@ export interface Enemy extends Actor {
   ghost: boolean;
   seq: number;
   clock: number;
+  volley: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
