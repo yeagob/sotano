@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_TALK, placePresences } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, placePresences, type PresenceId } from '../src/content/presences';
 
-const rooms = (types: string[], enemies: string[][] = []) =>
+const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
 
 describe('presences: where they live', () => {
