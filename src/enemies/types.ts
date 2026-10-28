@@ -116,6 +116,12 @@ export interface TargetView { id: number; x: number; y: number; z: number; vx?: 
  *  target, the nearest actor hostile to them (docs/architecture/ACTORS.md §4). */
 export interface EnemyCtx {
   dt: number;
+  /** The nearest loose key, bomb or heart in its room (within 14 blocks), as a point to walk to. */
+  prize(e: Enemy): TargetView | null;
+  /** Takes the nearest loose prize within reach of the enemy; it carries it. True if one was taken. */
+  steal(e: Enemy): boolean;
+  /** How many prizes the enemy carries. */
+  carried(e: Enemy): number;
   strike(e: Enemy, s: Strike): void;
   bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number): void;
   safe(e: Enemy, x: number, y: number, z: number): boolean;

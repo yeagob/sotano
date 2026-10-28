@@ -7,6 +7,7 @@ import { ROOM_D, ROOM_W } from '../content/rooms';
 import { FlowField, type RoomArea } from '../enemies/flowfield';
 import { Hazards, shapePoint, type FieldEffect, type HazardHost, type Shape, type Strike } from '../enemies/attacks';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
+import type { PickupKind } from '../game/events';
 import { hostile, type Actor } from './actors';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
@@ -29,6 +30,7 @@ export interface EnemyHost {
   actors(): Iterable<Actor>;
   actor(id: number): Actor | undefined;
   room(id: number): RoomArea;
+  pickupsIn(room: number): { kind: PickupKind; x: number; y: number; z: number; take(): void }[];
   /** Elements version (flow fields rebuild when a hazard appears or goes). */
   elemVersion(): number;
   /** How `e` treats the element standing at this cell (feet), or null if there is none. */
@@ -99,6 +101,7 @@ export class Enemies {
   private euler = new THREE.Euler();
   private time = 0;
 
+  private carrying = new Map<number, PickupKind[]>();
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
@@ -160,6 +163,12 @@ export class Enemies {
     if (e.spec.kind === 'creature') { e.hp = 1; this.hide(e, true); return false; }
     this.kill(e);
     return true;
+  }
+
+  takeCarried(id: number): PickupKind[] {
+    const kinds = this.carrying.get(id) ?? [];
+    this.carrying.delete(id);
+    return kinds;
   }
 
   hideRoom(room: number, hidden: boolean) {
@@ -228,6 +237,19 @@ export class Enemies {
         && Math.hypot(o.body.x - e.body.x, o.body.z - e.body.z) < radius),
       bounds: e => { const rm = host.room(e.room); return [rm.x0, rm.z0, rm.x0 + (rm.w ?? ROOM_W) - 1, rm.z0 + (rm.d ?? ROOM_D) - 1]; },
       cue: (e, kind) => host.cue(kind, e.body.x, e.body.y, e.body.z),
+      prize: e => {
+        let best: { x: number; y: number; z: number } | null = null, bd = 14;
+        for (const p of host.pickupsIn(e.room)) { const d = Math.hypot(p.x - e.body.x, p.z - e.body.z); if (d < bd) { bd = d; best = p; } }
+        return best ? { id: -1, x: best.x, y: best.y, z: best.z } : null;
+      },
+      steal: e => {
+        const near = host.pickupsIn(e.room).find(p => Math.hypot(p.x - e.body.x, p.z - e.body.z) < 1.2);
+        if (!near) return false;
+        near.take();
+        this.carrying.set(e.id, [...(this.carrying.get(e.id) ?? []), near.kind]);
+        return true;
+      },
+      carried: e => this.carrying.get(e.id)?.length ?? 0,
       hide: (e, hidden) => this.hide(e, hidden),
       arena: (e, what) => host.arena(e, what),
       summon: (e, ids) => host.summon(e, ids),
