@@ -166,4 +166,7 @@ Status: **a proposal for the next level designs, not a decision.** It does not c
 2. Pass the `sotano-art` gate on each new block, light and colour, and the validator (`npm test`).
 3. Write the accepted rules into ART-GUIDE and this section, and move the adopted rules out of the proposal.
 
-**Owner questions.** (1) Is the cover's figure the protagonist, or key art only? (2) Is "lamps lit everywhere" meant for the climb only? (3) Is the great pit the only place where the cover's scale is allowed?
+**Owner decisions (2026-10-28).**
+1. **The cover's figure is key art only.** The game keeps the rule that the player's body is never shown (ART-GUIDE §9): only the hands.
+2. **The cavern richness goes into floors 1–5.** Those floors need more detail and decoration: lamps, plants, carved stone, hanging and supported islands, moss on the ledges. The warm light stays earned (one source per room, named by its fire, lamp, practice or cleared warmth), but the decoration is what makes the first five floors read as places.
+3. **The great pit is the only place where the cover's scale is allowed** (the floor-5 abyss, with its shaft into the next layer).
