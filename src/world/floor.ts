@@ -419,7 +419,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     const lootRng = rr.fork('floor', k, 'loot');
     const lootRooms = [...freeByRoom.keys()].filter(id => freeByRoom.get(id)!.length);
     for (const kind of ['key', 'bomb'] as const) {
-      if (!lootRooms.length || !lootRng.chance(0.5)) continue;
+      if (!lootRooms.length) continue;
       const room = lootRng.pick(lootRooms), spots = freeByRoom.get(room)!;
       const [x, z] = lootRng.pick(spots);
       (kind === 'key' ? keys : bombs).push({ room, x, y: y0, z });

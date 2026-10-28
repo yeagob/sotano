@@ -73,5 +73,5 @@ export function tollOf(floor: number): Toll | null {
   if (floor < FIRST_FLOOR || floor >= LAST_FLOOR) return null;
   return floor < PRACTICE_TOLL_FROM
     ? { count: floor + 1, practices: false }
-    : { count: floor - PRACTICE_TOLL_FROM + 2, practices: true };
+    : { count: floor - PRACTICE_TOLL_FROM + 1, practices: true };
 }

@@ -6,8 +6,8 @@ describe('the way down asks a toll', () => {
     for (let k = 0; k <= 4; k++) expect(tollOf(k), `floor ${k}`).toEqual({ count: k + 1, practices: false });
   });
 
-  it('asks practices from floor 5 on: two, three, four and five', () => {
-    for (let k = 5; k <= 8; k++) expect(tollOf(k), `floor ${k}`).toEqual({ count: k - 3, practices: true });
+  it('asks practices from floor 5 on: one, two, three and four', () => {
+    for (let k = 5; k <= 8; k++) expect(tollOf(k), `floor ${k}`).toEqual({ count: k - 4, practices: true });
   });
 
   it('is free from the last floor, which opens into silence, and above the roots', () => {

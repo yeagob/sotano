@@ -26,7 +26,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 
 ## 3. Pickups (`entities/pickups.ts`)
 
-- Kinds: `key`, `bomb` (also loose on the roots, by chance), `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
+- Kinds: `key`, `bomb` (the roots always lay one of each, as rewards), `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
 - A **part** is not an item: it has no effect and never enters `Inventory`. Touching one pushes its id onto `Game.parts` (run state, reset on a new run, no cap). Each projection rolls its parts when it dies, on its own RNG path (RNG.md §4), with chances 30 / 12 / 5 / 2 % for flesh, mind, heart and essence. The inventory lists them after the items, with the same tile and name label.
 - Collecting goes through **`pickupCollect { kind, amount }`** (mutable amount; cancel to leave it). Counters cap at 99. Keys and bombs show top-left with hearts, Isaac-style.
 - **Breaking blocks drops nothing but the block** (owner decision): `blockLoot` fires with an empty `drops` list so an item can add some. Keys and treasures are moving into **chests** ([ELEMENTS.md §7](ELEMENTS.md)). Today the floor's key for the vault sits on a key spot, and cleared rooms may drop a heart, bomb or key (40%, raised by `luck`).

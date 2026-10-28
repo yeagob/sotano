@@ -53,9 +53,9 @@ Respect rules for Dante: his structure and images, never his figures as projecti
 
 ## 1c. The way down costs something (owner, 2026-10-28)
 
-*"To go down from the first level to the second you have to give something: a heart, which is not permanent (it is like taking a heart of damage; if you have no life left, you die), a key, a bomb, a block you carry in your hand, or an item. On the first level you give one, on the second two, on the third three, on the fourth four and on the fifth five. From the sixth, practices start to be given: two on the sixth, three on the seventh, four on the eighth, five on the ninth. To continue the path you leave something behind and give something in return."*
+*"To go down from the first level to the second you have to give something: a heart, which is not permanent (it is like taking a heart of damage; if you have no life left, you die), a key, a bomb, a block you carry in your hand, or an item. On the first level you give one, on the second two, on the third three, on the fourth four and on the fifth five. From the sixth, practices start to be given: one on the sixth, two on the seventh, three on the eighth, four on the ninth. To continue the path you leave something behind and give something in return."*
 
-- Floors 0–4 (levels 1–5): the toll is one to five things from the hand, keys, bombs and hearts. Floors 5–8 (levels 6–9): two to five practices. The interface combines them: a window lists what you carry, and you choose exactly the number asked.
+- Floors 0–4 (levels 1–5): the toll is one to five things from the hand, keys, bombs and hearts. Floors 5–8 (levels 6–9): one to four practices. The interface combines them: a window lists what you carry, and you choose exactly the number asked.
 - Practices appear in that window from the sixth floor on, as the owner asked. The owner's sentence "on the fifth, one practice" contradicts that line, so **the fifth level asks five things and no practice**; to ask for one practice there, it is one line in `tollOf` and in the window's rule. Open question for the owner.
 - The way down is free from the ninth floor's hole into silence.
 

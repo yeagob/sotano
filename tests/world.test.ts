@@ -327,20 +327,16 @@ describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
     }
   });
 
-  it('may hold a key and a bomb in its lesson rooms, by chance, and never on the start, the treasure room or the way down', { timeout: 60000 }, () => {
-    let keys = 0, bombs = 0, none = 0;
-    const special = (f: { rooms: { id: number; type: string }[] }) => new Set(f.rooms.filter(r => r.type !== 'normal').map(r => r.id));
+  it('always lays one key and one bomb as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
+    const rooms = new Set<number>();
     for (let s = 1; s <= 40; s++) {
       const f = buildRun(s * 13, 1).floors[0];
-      const skip = special(f);
-      for (const k of f.keys) expect(skip.has(k.room), `key, seed ${s}`).toBe(false);
-      for (const b of f.bombs) expect(skip.has(b.room), `bomb, seed ${s}`).toBe(false);
-      keys += f.keys.length; bombs += f.bombs.length;
-      if (!f.keys.length && !f.bombs.length) none++;
+      const lesson = new Set(f.rooms.filter(r => r.type === 'normal').map(r => r.id));
+      expect(f.keys, `keys, seed ${s}`).toHaveLength(1);
+      expect(f.bombs, `bombs, seed ${s}`).toHaveLength(1);
+      for (const k of [...f.keys, ...f.bombs]) { expect(lesson.has(k.room), `seed ${s}`).toBe(true); rooms.add(k.room); }
     }
-    expect(keys).toBeGreaterThan(0);
-    expect(bombs).toBeGreaterThan(0);
-    expect(none).toBeGreaterThan(0);
+    expect(rooms.size).toBeGreaterThan(1);
   });
 });
 
