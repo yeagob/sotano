@@ -129,7 +129,7 @@ export class Enemies {
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0,
+      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -149,6 +149,13 @@ export class Enemies {
       if (Math.abs(x - b.x) < b.hw + r && Math.abs(z - b.z) < b.hw + r && y > b.y - r && y < b.y + b.h + r) return e.id;
     }
     return -1;
+  }
+
+  private flee(e: Enemy, ctx: EnemyCtx) {
+    const from = ctx.near(e);
+    if (!from) { e.wishX = 0; e.wishZ = 0; return; }
+    const dx = e.body.x - from.x, dz = e.body.z - from.z, l = Math.hypot(dx, dz) || 1;
+    e.wishX = dx / l; e.wishZ = dz / l;
   }
 
   hurt(e: Enemy, amount: number, kx: number, kz: number) {
@@ -246,7 +253,9 @@ export class Enemies {
         continue;
       }
       if (e.hidden) { b.vx = 0; b.vz = 0; this.draw(e); continue; }
-      if (e.hold > 0) { e.hold -= dt; e.wishX = 0; e.wishZ = 0; }
+      if (e.frozen > 0) { e.frozen -= dt; e.wishX = 0; e.wishZ = 0; }
+      else if (e.fear > 0) { e.fear -= dt; this.flee(e, ctx); }
+      else if (e.hold > 0) { e.hold -= dt; e.wishX = 0; e.wishZ = 0; }
       else e.spec.behaviour.update(e, ctx);
       // leash: an enemy that wandered out of its room heads back to the centre of its home cell (a
       // room's space may be any shape, its home cell is always open)
@@ -275,7 +284,7 @@ export class Enemies {
       if (b.y < -10) { this.kill(e); continue; }
       // touching actors it is hostile to (the game rate-limits each pair)
       for (const a of actors) {
-        if (!e.armed) break;
+        if (!e.armed || e.frozen > 0) break;
         if (a === e || !a.alive || a.spawning > 0 || !hostile(e.faction, a.faction)) continue;
         const o = a.body;
         if (Math.abs(o.x - b.x) < o.hw + b.hw && Math.abs(o.z - b.z) < o.hw + b.hw && o.y < b.y + b.h && o.y + o.h > b.y) host.contact(e, a);

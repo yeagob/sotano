@@ -93,7 +93,7 @@ t 900 (15.0 s)
   avoidance#5 hp 10.0/10 · projection · at 11.5 0.0 2.5
   procrastination#6 hp 18.0/18 · projection · at 8.3 -2.0 7.7
   distraction#7 hp 6.0/6 · projection · at 8.8 2.2 8.2
-  scarcity#10 hp 10.0/10 · projection · at 0.2 0.0 4.9
+  scarcity#10 hp 10.0/10 · projection · at 1.7 0.0 1.9
   gloom#12 hp 14.0/14 · projection · at 14.5 3.2 5.5
   noise#16 hp 4.0/4 · projection · at 10.8 2.2 6.0
   perfectionism#17 hp 18.5/30 · projection · at 8.3 -1.0 7.7

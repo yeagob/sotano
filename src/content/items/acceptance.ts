@@ -5,7 +5,7 @@ export default defineItem({
   id: 'acceptance',
   name: 'Radical Acceptance',
   description: 'Stop fighting what already happened: your own breakthroughs no longer hurt you.',
-  effect: 'Your own bomb and thrown-block explosions no longer damage you.',
+  effect: 'Your own bomb and thrown-block explosions no longer damage you. +1 heart container.',
   inspiredBy: 'Radical acceptance (Dialectical Behaviour Therapy)',
   pools: { treasure: 1 },
   tags: ['emotion'],
@@ -28,6 +28,7 @@ export default defineItem({
     ],
     palette: { a: pal('path.mind.glow'), b: pal('limestone.hi'), c: pal('path.body.dark') },
   },
+  stats: [{ stat: 'maxHearts', layer: 'add', value: 1 }],
   hooks: [
     hook('actorDamage', (e, api) => {
       if (api.isPlayer(e.owner) && e.kind === 'explosion') e.cancel();

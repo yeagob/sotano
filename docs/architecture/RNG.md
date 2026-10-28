@@ -83,7 +83,7 @@ ROOM_CLEAR.roll(rng, { floor, luck });   // or pickU(u, ctx) against a pre-drawn
 
 ## 7. Item pools
 
-At run start every treasure, vault and boss room of every floor gets its practice **reserved** (boss rooms from the `boss` pool; their practice only appears once the boss is overcome) (in floor and room order, from `fork('reserve')`). Runtime draws (`drawRuntime`, on `stream('loot')`) only take items that are neither reserved nor taken, so nothing the player does can change a pedestal. If the player already holds a reserved practice when its floor activates, that pedestal gets a runtime draw instead. An exhausted pool falls back to the treasure pool, then any unused item, then any item: a pedestal is never empty.
+At run start every treasure, vault and boss room of every floor gets its practice **reserved** (boss rooms from the `boss` pool; their practice only appears once the boss is overcome) (in floor and room order, from `fork('reserve')`). Runtime draws (`drawRuntime`, on `stream('loot')`) only take items that are neither reserved nor taken, so nothing the player does can change a pedestal. If the player already holds a reserved practice when its floor activates, that pedestal gets a runtime draw instead. An exhausted pool falls back to the treasure pool, then any unused item, then any item: a pedestal is never empty. `GEN_VERSION` 15 added fifteen practices, so the same seeds reserve different ones.
 
 ## 8. Guarantees (tests, `tests/rng.test.ts`)
 

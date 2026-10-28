@@ -32,6 +32,7 @@ export interface GameEvents {
    *  can be changed, or cancel to stop it. */
   /** `polarity` is the loaded intention's: every hit of the stroke follows it (combat/polarity.ts). */
   strike: { weapon: WeaponId; damage: number; mining: number; reach: number; color: number; tags: Set<string>; polarity: Polarity };
+  intentHit: { kind: 'actor' | 'cube' | 'block'; target: number; x: number; y: number; z: number; nx: number; ny: number; nz: number; vx: number; vy: number; vz: number; intent: IntentSpec };
 
   // ── blocks in the world ──
   /** Before damage is applied to a block. `amount` already accounts for the material's armor. */
@@ -86,7 +87,7 @@ export interface GameEvents {
   /** About to jump. Change `velocity` for higher jumps, or cancel. */
   jump: { velocity: number };
   /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor. */
-  land: { fallSpeed: number; cause: 'fall' | 'descent' };
+  land: { fallSpeed: number; cause: 'fall' | 'descent'; x: number; y: number; z: number };
 
   // ── actors (the player and projections; docs/architecture/ACTORS.md) ──
   // Hooks on actorDamage, contact and actorDeath must say which actors they are for
@@ -148,6 +149,9 @@ export interface IntentSpec {
   color: number;
   /** Labels effects can add and react to (e.g. 'burning'). */
   tags: Set<string>;
+  volley: number;
+  bounces: number;
+  homing: number;
 }
 
 export type GameBus = EventBus<GameEvents>;

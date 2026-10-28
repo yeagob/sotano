@@ -219,8 +219,8 @@ describe('golden seed', () => {
     });
     let h = 0x811c9dc5;
     for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
-    expect([GEN_VERSION, h.toString(16)]).toEqual([14, GOLDEN]);
+    expect([GEN_VERSION, h.toString(16)]).toEqual([15, GOLDEN]);
   });
 });
 // adding a practice to the catalogue changes reservations too: that also changes every seed
-const GOLDEN = '69314b54';
+const GOLDEN = '5b0e489c';

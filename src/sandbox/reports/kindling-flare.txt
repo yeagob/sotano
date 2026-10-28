@@ -1,0 +1,46 @@
+# kindling-flare — Kindling: a projection's hit sets off a ring of fire that catches the crates around you
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling · synergies —
+  doubt#2 hp 12.0/12 · projection · at 6.5 0.0 3.5
+  blocks crate 10
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 20/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling · synergies —
+  doubt#2 hp 8.0/12 · projection · at 5.8 0.0 3.5
+  blocks crate 8
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<item 1 · actorDamage:player<contact 1 · blockBreak:crate 2 · contact 1 · ignite:crate 2 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 20/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling · synergies —
+  doubt#2 hp 8.0/12 · projection · at 5.5 0.0 3.5
+  blocks crate 8
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 12/24 · at 5.5 0.0 3.5 · hand [doubt.mind] · bombs 99 · keys 99
+  practices kindling · synergies —
+  blocks crate 8
+  elements —
+  cubes — · pickups 1
+  events actorDamage:doubt<item 2 · actorDamage:player<contact 2 · actorDeath:doubt 1 · contact 2
+
+map t 240 · h 0
+  .............
+  ...c...c.....
+  ...c...c.....
+  .............
+  ...c...c.....
+  ...c...c.....
+  .............
+
+legend c crate

@@ -11,7 +11,8 @@ import type { EventCtx } from '../core/events';
 import type { Rng } from '../core/rng';
 import type { StatLayer, StatName, Stats } from '../core/stats';
 import type { ActorId, ActorKind, Owner } from '../entities/actors';
-import type { GameBus, GameEvents, PickupKind, WeaponId } from '../game/events';
+import type { GameBus, GameEvents, IntentSpec, PickupKind, WeaponId } from '../game/events';
+import type { Polarity } from '../combat/polarity';
 import type { Params } from '../i18n';
 
 /** What effects can do to the world. A small facade so items never depend on `Game`. */
@@ -46,6 +47,17 @@ export interface ItemApi {
   counts(): { keys: number; bombs: number; hp: number; maxHp: number };
   /** Drop a key, bomb or heart in the world. */
   spawnPickup(kind: PickupKind, x: number, y: number, z: number): void;
+  pulse(x: number, y: number, z: number, radius: number, damage: number, knock: number, color: number, source: string): void;
+  arc(x: number, y: number, z: number, to: ActorId, damage: number, source: string, polarity: Polarity): void;
+  nearestProjection(x: number, y: number, z: number, radius: number, except: readonly ActorId[]): { id: ActorId; x: number; y: number; z: number } | null;
+  actorAt(id: ActorId): { x: number; y: number; z: number } | null;
+  shove(id: ActorId, dx: number, dz: number, speed: number): void;
+  freeze(id: ActorId, seconds: number): void;
+  frighten(id: ActorId, seconds: number): void;
+  igniteArea(x: number, y: number, z: number, radius: number): void;
+  launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
+  tagFlying(x: number, y: number, z: number, radius: number, tag: string, except: IntentSpec): void;
+  tagCube(cube: number, tag: string): void;
 }
 
 /** What the game gives the installer: like `ItemApi`, but a toast names the effect it comes from

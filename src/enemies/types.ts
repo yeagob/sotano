@@ -99,6 +99,8 @@ export interface Enemy extends Actor {
   hidden: boolean;
   stage: number;
   hold: number;
+  frozen: number;
+  fear: number;
   aimX: number; aimZ: number;
   flyY: number;
   ghost: boolean;

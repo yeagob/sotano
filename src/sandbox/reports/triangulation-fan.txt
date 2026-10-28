@@ -1,0 +1,39 @@
+# triangulation-fan — Triangulation: every shot fires three intentions in a fan
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices triangulation · synergies —
+  doubt#2 hp 12.0/12 · projection · at 10.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices triangulation · synergies —
+  doubt#2 hp 8.5/12 · projection · at 9.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 2 · fire 3 · intentHit 4 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices triangulation · synergies —
+  doubt#2 hp 6.8/12 · projection · at 8.3 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 1 · intentHit 5
+
+map t 120 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 

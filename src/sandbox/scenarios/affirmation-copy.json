@@ -1,0 +1,56 @@
+{
+  "note": "Affirmation: a positive intention curves toward the nearest block and leaves a copy of it beside it",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "affirmation"
+  ],
+  "place": [
+    {
+      "at": [
+        8,
+        0,
+        2,
+        8,
+        0,
+        4
+      ],
+      "block": "crate"
+    }
+  ],
+  "ticks": 180,
+  "report": [
+    0,
+    30,
+    180
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        8,
+        1,
+        3
+      ]
+    },
+    {
+      "t": 1,
+      "do": "fire",
+      "ticks": 1
+    }
+  ]
+}

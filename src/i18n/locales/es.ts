@@ -276,10 +276,100 @@ export const ES: Catalog = {
 
   content: {
     items: {
+      ahamoment: {
+        name: 'Momento ajá',
+        description: 'La respuesta llega de golpe, y su destello salta de un pensamiento al siguiente.',
+        effect: 'Las intenciones que impactan una proyección saltan en arco a la proyección más cercana a menos de 4 bloques, con la mitad de su daño, hasta 2 veces.',
+        inspiredBy: 'el aprendizaje por intuición (Wolfgang Köhler, La mentalidad de los simios, 1925)',
+      },
+      rapport: {
+        name: 'Sintonía',
+        description: 'Dos cosas que se entienden se pasan la corriente.',
+        effect: 'Las intenciones que impactan un cubo suelto lo cargan. Un cubo cargado que cae con fuerza se descarga: 4 de daño a las proyecciones a menos de 2.5 bloques, empujadas hacia atrás.',
+        inspiredBy: 'el vínculo de trabajo de la terapia (Carl Rogers, 1961)',
+      },
+      resonance: {
+        name: 'Resonancia',
+        description: 'Cuando un pensamiento suena verdadero, los que están cerca empiezan a vibrar.',
+        effect: 'Cada intención que impacta carga a las otras intenciones en vuelo a menos de 3 bloques. Una intención cargada se descarga en su siguiente golpe: 3 de daño a las proyecciones a menos de 2 bloques.',
+        inspiredBy: 'la resonancia simpática (física); un guiño a la sintonía terapéutica',
+      },
+      discharge: {
+        name: 'Descarga',
+        description: 'La energía acumulada sale del cuerpo por el suelo que pisas.',
+        effect: 'Caer desde unos dos bloques o más lanza una onda de choque desde tus pies: 3 bloques, 4 de daño a cada proyección dentro, empujadas hacia atrás.',
+        inspiredBy: 'la experiencia somática (Peter Levine, Despertando al tigre, 1997)',
+      },
+      kindling: {
+        name: 'Yesca',
+        description: 'El dolor puede encender un calor que le responde.',
+        effect: 'Cuando una proyección te hiere, sale fuego de ti: 2.5 bloques, 4 de daño a las proyecciones dentro, y los bloques inflamables a menos de 2 bloques prenden.',
+        inspiredBy: 'el calor que crece como un fuego (un guiño al modelo de encendido de la neurociencia)',
+      },
+      dualprocess: {
+        name: 'Proceso dual',
+        description: 'Dos maneras de ver a la vez: una mirada rápida y una mirada atenta.',
+        effect: 'Cada disparo lanza dos intenciones; la segunda hace el 60 % del daño y de la minería.',
+        inspiredBy: 'la teoría de los dos procesos (Daniel Kahneman, Pensar rápido, pensar despacio, 2011)',
+      },
+      triangulation: {
+        name: 'Triangulación',
+        description: 'Tres puntos de vista, y la verdad está donde se cruzan.',
+        effect: 'Cada disparo lanza tres intenciones en abanico; las dos extra hacen el 60 % del daño y de la minería.',
+        inspiredBy: 'la triangulación: ver una cosa desde varios lugares a la vez (topografía y razonamiento)',
+      },
+      chunking: {
+        name: 'Agrupamiento',
+        description: 'Una cosa grande se convierte en piezas pequeñas que puedes cargar.',
+        effect: 'Una intención que impacta una proyección o un bloque se divide en dos: cada una hace la mitad del daño y de la minería, al 60 % de la velocidad, y sigue su propio camino.',
+        inspiredBy: 'el agrupamiento o chunking (George A. Miller, El número mágico siete, 1956)',
+      },
+      bounceback: {
+        name: 'Volver a levantarse',
+        description: 'Derribado, vuelve a levantarse.',
+        effect: 'Las intenciones que no rompen un bloque rebotan en él, hasta 2 veces, conservando el 75 % de su velocidad cada vez.',
+        inspiredBy: 'la resiliencia (psicología del desarrollo: recuperarse de los tropiezos)',
+      },
+      affirmation: {
+        name: 'Afirmación',
+        description: 'Lo que afirmas lo haces un poco más real, copia a copia.',
+        effect: 'Las intenciones se curvan hacia el bloque más cercano a menos de 6 bloques. Una positiva que impacta un bloque deja junto a él una copia suelta del mismo.',
+        inspiredBy: 'la autosugestión y el diálogo interior (Émile Coué, principios del siglo XX)',
+      },
+      boundaries: {
+        name: 'Límites',
+        description: 'Una línea que dice qué cercanía es suficiente.',
+        effect: 'Las intenciones no hacen daño a las proyecciones. A cada una que golpean la empujan 7 bloques/s hacia atrás, en la dirección del disparo.',
+        inspiredBy: 'Los límites (Henry Cloud y John Townsend, Límites, 1992)',
+      },
+      thoughtstopping: {
+        name: 'Detención del pensamiento',
+        description: 'Corta el bucle, y el pensamiento ya no tiene adónde ir.',
+        effect: 'Una proyección golpeada por una intención se congela durante 2 segundos: se detiene y no puede tocarte.',
+        inspiredBy: 'la detención del pensamiento (terapia cognitivo-conductual)',
+      },
+      selfefficacy: {
+        name: 'Autoeficacia',
+        description: 'Creer que puedes subir hace posible la subida.',
+        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar.',
+        inspiredBy: 'la autoeficacia (Albert Bandura, 1977)',
+      },
+      selfcompassion: {
+        name: 'Autocompasión',
+        description: 'Te hablas como le hablarías a un amigo, y se abre un poco más de espacio en ti.',
+        effect: '+1 contenedor de corazón, y cura un corazón al tomarlo.',
+        inspiredBy: 'la autocompasión (Kristin Neff, Autocompasión, 2011)',
+      },
+      sleephygiene: {
+        name: 'Higiene del sueño',
+        description: 'El descanso no es tiempo perdido: es donde el cuerpo reconstruye lo que el día desgastó.',
+        effect: '+1 contenedor de corazón, y la invulnerabilidad tras un golpe dura 0.5 s más.',
+        inspiredBy: 'la higiene del sueño (terapia cognitivo-conductual del insomnio)',
+      },
       acceptance: {
         name: 'Aceptación radical',
         description: 'Deja de luchar contra lo que ya pasó: tus propios avances ya no te hacen daño.',
-        effect: 'Las explosiones de tus bombas y de tus bloques lanzados ya no te dañan.',
+        effect: 'Las explosiones de tus bombas y de tus bloques lanzados ya no te dañan. +1 contenedor de corazón.',
         inspiredBy: 'la aceptación radical (terapia dialéctica conductual)',
       },
       arttherapy: {
@@ -326,7 +416,7 @@ export const ES: Catalog = {
       forgiveness: {
         name: 'Perdón',
         description: 'Suelta lo que te toca: las proyecciones que te golpean se hieren con ello, y la mitad de las veces tú no.',
-        effect: 'Las proyecciones que te tocan reciben 4 de daño. La mitad de sus golpes de contacto no te afectan.',
+        effect: 'Las proyecciones que te tocan reciben 4 de daño. La mitad de sus golpes de contacto no te afectan. +1 contenedor de corazón.',
         inspiredBy: 'Un curso de milagros (Helen Schucman): el perdón como liberación; la percepción como espejo',
       },
       gratitude: {

@@ -13,11 +13,12 @@ import { Inventory } from '../src/items/inventory';
 import type { HostApi } from '../src/items/types';
 import { validateCatalogue } from '../src/items/validate';
 
-const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, phase: 0, color: 0, tags: new Set(), polarity: 'positive' });
+const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, phase: 0, color: 0, tags: new Set(), polarity: 'positive', volley: 1, bounces: 0, homing: 0 });
 
 const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   fire: () => ({ intent: intent() }),
   polarityChange: () => ({ from: 'positive', to: 'negative' }),
+  intentHit: () => ({ kind: 'actor', target: 2, x: 1, y: 1, z: 1, nx: 0, ny: 0, nz: 0, vx: 8, vy: 0, vz: 0, intent: intent() }),
   strike: () => ({ weapon: 'blade', damage: 10, mining: 3, reach: 2.5, color: 0, tags: new Set(), polarity: 'positive' }),
   blockDamage: () => ({ x: 1, y: 1, z: 1, material: 4, amount: 3, kind: 'intent', source: 'intent' }),
   blockBreak: () => ({ x: 1, y: 1, z: 1, material: 4, kind: 'intent', source: 'intent', spawnDebris: true }),
@@ -33,7 +34,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   drop: () => ({ material: 1, how: 'throw' }),
   debrisImpact: () => ({ cube: 0, x: 1, y: 1, z: 1, material: 1, speed: 8, tags: new Set(['volatile']), keepTags: false }),
   jump: () => ({ velocity: 8.4 }),
-  land: () => ({ fallSpeed: 10, cause: 'fall' }),
+  land: () => ({ fallSpeed: 10, cause: 'fall', x: 1, y: 1, z: 1 }),
   actorDamage: () => ({ target: 1, targetKind: 'player', def: 'player', amount: 8, kind: 'explosion', source: 'bomb', owner: 1, knockback: 0, polarity: null }),
   contact: () => ({ attacker: 2, attackerDef: 'doubt', target: 1, targetKind: 'player', toTarget: 4, toAttacker: 0 }),
   factionChange: () => ({ target: 2, targetKind: 'projection', def: 'doubt', from: 'projection', to: 'self', source: 'test' }),
@@ -79,6 +80,17 @@ function sandbox() {
     collect: () => true,
     counts: () => ({ keys: 1, bombs: 1, hp: 24, maxHp: 24 }),
     spawnPickup: () => {},
+    pulse: () => {},
+    arc: () => {},
+    nearestProjection: () => null,
+    actorAt: () => null,
+    shove: () => {},
+    freeze: () => {},
+    frighten: () => {},
+    igniteArea: () => {},
+    launch: () => {},
+    tagFlying: () => {},
+    tagCube: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
   return { bus, stats, inv, calls };

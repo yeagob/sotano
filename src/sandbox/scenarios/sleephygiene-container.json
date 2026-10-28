@@ -1,0 +1,26 @@
+{
+  "note": "Sleep Hygiene: one heart container more, and invulnerability lasts half a second longer",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": false,
+  "items": [
+    "sleephygiene"
+  ],
+  "ticks": 60,
+  "report": [
+    0,
+    60
+  ]
+}

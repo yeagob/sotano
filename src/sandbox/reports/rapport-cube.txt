@@ -1,0 +1,46 @@
+# rapport-cube — Rapport: a cube charged by an intention discharges when it lands hard against a projection
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices rapport · synergies —
+  doubt#2 hp 12.0/12 · projection · at 12.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices rapport · synergies —
+  doubt#2 hp 10.3/12 · projection · at 11.2 0.0 3.5
+  blocks —
+  elements —
+  cubes stone 1 · pickups 0
+  events actorDamage:doubt<intent 1 · fire 1 · intentHit 1 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices rapport · synergies —
+  doubt#2 hp 10.3/12 · projection · at 9.7 0.0 3.5
+  blocks —
+  elements —
+  cubes stone 1 · pickups 0
+
+t 240 (4.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices rapport · synergies —
+  doubt#2 hp 10.3/12 · projection · at 7.3 0.0 3.5
+  blocks —
+  elements —
+  cubes stone 1 · pickups 0
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 

@@ -67,6 +67,14 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `lions-mane` | Lion's mane mushroom (*Hericium erinaceus*) | Natural history, folk tradition | Concept (a common name) | A shaggy mushroom that grows on old wood, in the dark; traditionally linked to the mind and nerves (no medical claim) | **Lion's Mane**: growing past the ceiling you were told was the limit (with the `platformers` wink) |
 | `kaizen` | Kaizen | Practice | Concept | Small continuous improvement | **Kaizen** |
 | `sports-psych` | Mental rehearsal (sports psychology) | Technique | Concept | Visualising before doing | **Visualization** |
+| `thought-stopping` | Thought stopping (a cognitive behavioural technique) | Therapy technique | Concept | Interrupting a looping thought before it runs on | **Thought Stopping**: a projection hit freezes |
+| `self-efficacy` | Self-efficacy (Albert Bandura, 1977) | Credit | Credit (psychology concept) | Belief in your own capacity to act changes what you dare | **Self-Efficacy**: a projection hit runs away |
+| `resilience` | Resilience (developmental psychology) | Concept | Concept | Bouncing back from setbacks, and being shaped by them | **Bounce Back**: intentions rebound from blocks |
+| `autosuggestion` | Autosuggestion and self-talk (Émile Coué, early 1900s) | Therapy / practice | PD (Coué died 1926) | Repeated, gentle self-statements shape what we expect | **Affirmation**: intentions aim at blocks and copy them |
+| `insight` | Insight learning (Wolfgang Köhler, 1925) | Psychology concept | Credit (the book); Concept (the idea) | The sudden solution that jumps from one thought to the next | **Aha Moment**: arcs between projections |
+| `somatic-discharge` | Somatic discharge (Peter Levine, *Waking the Tiger*, 1997) | Therapy | Credit (the book); Concept (discharge) | Energy held in the body released through movement | **Discharge**: landing sends a shockwave |
+| `kindling` | Kindling, a growing warmth (a nod to the neuroscience kindling model) | Concept | Concept | Small sparks that grow into a fire | **Kindling**: pain lights a ring of fire |
+| `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance** |
 
 ### Modern non-fiction (credit only)
 
@@ -78,6 +86,11 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `second-brain` | *Building a Second Brain* (Tiago Forte, 2022) | Credit | **Second Brain** |
 | `atomic-habits` | *Atomic Habits* (James Clear, 2018); *Tiny Habits* (BJ Fogg, 2019) | Credit | **Habit Stacking** |
 | `war-of-art` | *The War of Art* (Steven Pressfield, 2002) | Credit | The boss **Resistance** (planned) |
+| `dual-process` | *Thinking, Fast and Slow* (Daniel Kahneman, 2011) | Credit | **Dual Process** |
+| `chunking` | *The Magical Number Seven* (George A. Miller, 1956) | Credit | **Chunking** |
+| `boundaries` | *Boundaries* (Henry Cloud and John Townsend, 1992) | Credit | **Boundaries** |
+| `self-compassion` | *Self-Compassion* (Kristin Neff, 2011) | Credit | **Self-Compassion** |
+| `sleep-hygiene` | Sleep hygiene (cognitive behavioural therapy for insomnia) | Concept | **Sleep Hygiene** |
 
 ### Depth psychology and myth
 

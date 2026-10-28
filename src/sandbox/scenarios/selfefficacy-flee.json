@@ -1,0 +1,54 @@
+{
+  "note": "Self-Efficacy: a projection hit by an intention runs away for three seconds",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "selfefficacy"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        10,
+        0,
+        3
+      ]
+    }
+  ],
+  "ticks": 240,
+  "report": [
+    0,
+    60,
+    120,
+    240
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        10,
+        1,
+        3
+      ]
+    },
+    {
+      "t": 0,
+      "do": "fire",
+      "ticks": 10
+    }
+  ]
+}

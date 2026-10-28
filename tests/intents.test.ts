@@ -16,6 +16,8 @@ function rig(blocks: Set<string>, tier = 0) {
     enemyAt: () => -1,
     hitEnemy: () => {},
     splash: () => {},
+    hit: () => {},
+    nearestBlock: () => null,
   };
   const intents = new Intents(new THREE.Scene(), hooks);
   return { intents, state };

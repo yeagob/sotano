@@ -1,0 +1,28 @@
+# sleephygiene-container — Sleep Hygiene: one heart container more, and invulnerability lasts half a second longer
+floor 1 · seed 1 · room 13×7×5 · 60 ticks (1.0 s)
+
+t 0 (0.0 s)
+  player hp 32/32 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices sleephygiene · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 32/32 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices sleephygiene · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+map t 60 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 
