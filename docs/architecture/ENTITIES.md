@@ -102,6 +102,7 @@ Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floo
 ### Bosses (`content/bosses/`, `Game.updateBossRoom`)
 
 - **Movement:** every firing phase (`emitter`) carries `follow` (speed and keep distance), so the boss walks towards the player while it fires. The Shadow is the exception: it mirrors the player (`mirrors`, `reveals`).
+- **Breaking:** every walking boss has `breaks`, and while it stands on the floor `Enemies.smashSides` breaks the blocks at its sides (inside its room, never the floor under it), so it pushes through a room instead of sticking in it.
 
 - **One per floor**, drawn from its zone's pool with the run's fork `floor<k>:boss` and never met twice in one run (`bossFor`). Floors 5 and 9 are keystones: the Threshold Guardian and the Shadow. Zones: I (1–2) Resistance, Inertia, The Insatiable; II (3–4) Overwhelm, The Hoard, The Downpour; III (6) The Verdict, The Grudge, The Old Rule; IV (7–8) The Furnace, The Impostor, The Many Faces.
 - **The room**: entering seals the doors (`doors.seal`), a rumble, then the boss rises at a spawn point of the room (`summonBoss`). Its health shows in the bar at the top while you are in the room (`Hud.bossBar`).

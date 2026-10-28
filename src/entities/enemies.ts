@@ -277,6 +277,7 @@ export class Enemies {
         if (boxHits(host.solid, fx, b.y, fz, b.hw, b.h) && !boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
       }
       if (e.spec.breaks && (blockedX || blockedZ)) this.smashAhead(e, Math.sign(wantX) * +blockedX, Math.sign(wantZ) * +blockedZ, dt);
+      if (e.spec.kind === 'boss' && e.spec.breaks && rm && b.onGround) this.smashSides(e, rm, dt);
       if (b.y < -10) { this.kill(e); continue; }
       // touching actors it is hostile to (the game rate-limits each pair)
       for (const a of actors) {
@@ -337,6 +338,18 @@ export class Enemies {
     const y = Math.floor(b.y) - 1;
     for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) {
       if (this.host.solid(x, y, z)) this.host.smash(e, x, y, z, tier, damage);
+    }
+  }
+
+  private smashSides(e: Enemy, rm: RoomArea, dt: number) {
+    const b = e.body, tier = e.spec.breaks!.tier, damage = e.spec.breaks!.power * dt;
+    const w = rm.w ?? ROOM_W, d = rm.d ?? ROOM_D;
+    const x0 = Math.max(Math.floor(b.x - b.hw - 1), rm.x0), x1 = Math.min(Math.floor(b.x + b.hw + 1), rm.x0 + w - 1);
+    const z0 = Math.max(Math.floor(b.z - b.hw - 1), rm.z0), z1 = Math.min(Math.floor(b.z + b.hw + 1), rm.z0 + d - 1);
+    const y0 = Math.floor(b.y + 1), y1 = Math.floor(b.y + b.h - 0.1);
+    for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) {
+      if (x >= b.x - b.hw && x + 1 <= b.x + b.hw && z >= b.z - b.hw && z + 1 <= b.z + b.hw) continue;
+      for (let y = y0; y <= y1; y++) if (this.host.solid(x, y, z)) this.host.smash(e, x, y, z, tier, damage);
     }
   }
 

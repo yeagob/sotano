@@ -449,7 +449,7 @@ The rest are named when they are built, with the same rule: the part's noun come
 - **Random by zone.** Each zone has a **pool of three**; the floor's boss is drawn from its zone's pool by the floor's seed (`floor<k>:boss`), never the same one twice in a run. Floors 5 and 9 are **keystones** with a fixed boss.
 - **Three phases** (at 66 % and 33 %), each a new verb, each announced: the boss stops, the arena changes (blocks fall, water rises, walls open), a deep chord, then the new phase. Never a phase change without a pause.
 - **Entrance:** the boss room seals like any room (§2.1), then the boss **rises from the room itself** with a long omen (2.5 s: the whole arena's motes converge, the floor or walls crack along the boss's outline). It looks at you first.
-- **They move towards you** (owner, 2026-10-28): every phase that fires walks towards the player and keeps about three to four blocks away (`emitter` with `follow`), so a boss is never a turret you can wait out. The Shadow mirrors you instead (§6.3).
+- **They move towards you** (owner, 2026-10-28): every phase that fires walks towards the player and keeps about three to four blocks away (`emitter` with `follow`), so a boss is never a turret you can wait out. The Shadow mirrors you instead (§6.3). **Bosses break what is at their sides** as they move (owner, 2026-10-28): the blocks around the body, never the floor under it nor the room's walls, so a boss pushes through a room instead of sticking in it.
 - **Health** (floor-1 scale, ×1.35 per floor): about 140 on floor 1, 1 000 on floor 9. A health bar in the HUD, with the boss's glyph, never its name in red (red is life).
 - **Rewards:** the boss practice (feature log: the boss room holds a second practice) and the way down.
 

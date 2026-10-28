@@ -87,6 +87,10 @@ describe('bosses: they move towards you', () => {
     for (const b of BOSSES) if (b.id !== 'shadow') expect(b.speed, b.id).toBeGreaterThan(0);
   });
 
+  it('every boss that walks breaks the blocks at its sides, so no block holds it', () => {
+    for (const b of BOSSES) if (b.id !== 'shadow' && b.id !== 'downpour') expect(b.breaks, b.id).toBeDefined();
+  });
+
   it('an emitter with follow walks towards its target until it is within keep, and fires', () => {
     const shots: number[] = [];
     const behaviour = emitter({ every: 1, follow: { speed: 2, keep: 4 }, shot: () => { shots.push(1); } });

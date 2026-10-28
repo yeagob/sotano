@@ -19,6 +19,7 @@ export default defineEnemy({
   speed: 0.8,
   size: [0.9, 3],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 5,
   maxFloor: 5,
