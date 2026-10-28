@@ -7,7 +7,7 @@ The owner's brief (translated): *add and decorate the levels with interactive el
 ## 1. Principles (so ideas stay The Roots)
 
 1. **Everything is a cube.** The hand carries cubes, so anything the player can carry (an ingredient, a husk, a jar) is a small cube with its own texture, picked up by walking over it, kicked, thrown and placed like stone. No inventory grid, no menus ([DESIGN §6](DESIGN.md#6-the-block-slot)). Practices that raise `carry` make stations richer for free.
-2. **Stations are verbs, not menus.** You feed a station by throwing, kicking or placing a cube into its mouth (or `F`), and it answers in the world: a cube pops out, a flame grows, a door moves. Its state shows on the block itself (glow, smoke, a filled slot), readable with no text.
+2. **Stations are verbs, not menus.** You feed a station by throwing, kicking or placing a cube into its mouth (or the use key: the controls choose it, since `F` is polarity), and it answers in the world: a cube pops out, a flame grows, a door moves. Its state shows on the block itself (glow, smoke, a filled slot), readable with no text.
 3. **Every prop answers your intention.** Even pure decoration breaks into shards or reacts (the [meaning test](../art/ART-GUIDE.md#12-motifs-and-the-meaning-test): "what does the player's intention do to it?"). A prop that never reacts is a fixed point with a stated reason (an altar, a bell).
 4. **Transformation over loot.** Stations turn what you broke into something better: the obstacle becomes the way. They are where the alchemy of the descent (nigredo → rubedo, [art guide §4](../art/ART-GUIDE.md#4-the-descent)) becomes hands-on.
 5. **Projections live with them.** Each station changes a fight: Panic bursts next to a furnace and scatters coals; Doubt hesitates at a scale; the Inner Critic takes the lectern. Section 9.
@@ -39,7 +39,7 @@ Today the hand carries loose blocks and bombs. The brief asks for more: ingredie
 | **Coal, ash** | Furnace (crate → coal), pyre (anything → ash) | Spent fuel, what is left after letting go | Fuel; ash fertilises planters |
 | **Glass, iron, brick** | Furnace outputs ([ELEMENTS §2](ELEMENTS.md#furnaces)) | Refined matter | Building, lenses, conductive paths |
 | **Jar** | Laboratory shelves | Something preserved, waiting to be understood | Holds water, lava (!) or an essence; thrown, it shatters and spills |
-| **Meal** | Kitchen outputs | Care given to yourself | Eaten with `F` while held: heals or grants a short state |
+| **Meal** | Kitchen outputs | Care given to yourself | Eaten with the use key while held: heals or grants a short state |
 
 **Husks instead of meat.** Projections are patterns, not animals (STORY §4) and their release is gore-free ([art §8.6](../art/ART-GUIDE.md#86-release-death)), so "a piece of meat from an enemy" becomes a **husk**: the shell left behind. That keeps the brief's best idea, a choice about what to do with what defeated you, and gives it meaning:
 
@@ -76,7 +76,7 @@ Furnace, burning barrel and chest are designed in [ELEMENTS §2](ELEMENTS.md#2-r
 
 ### 4.2 Kitchen: nourishment
 
-The kitchen is care: you feed yourself between fights. Meals are cubes you carry and eat with `F` (the hands lift it to the mouth; no menu).
+The kitchen is care: you feed yourself between fights. Meals are cubes you carry and eat with the use key (the hands lift it to the mouth; no menu).
 
 | Station | What it does | Meaning | Tier |
 |---|---|---|---|
@@ -108,7 +108,7 @@ Tone: food never punishes (no "you ate too much" debuff); circle 3 is themed by 
 | **Sluice gate** | Hit it to open or close: releases a contained pool along a channel | Letting a feeling flow on purpose | Flood a vertical shaft to **swim up it** (a water elevator), or drain it to walk down | T1 |
 | **Pump / hand pump** | Kick it to raise water one block per kick into a basin above | Effort lifts emotion where it is needed | Fills raised basins: puts out fire on a gallery | T2 |
 | **Water wheel** | Turns while water flows past; powers whatever touches it (a bellows, a lift) | Emotion as energy | Drives the counterweight lift (§6) | T3 |
-| **Well with a bucket** | `F` lowers the bucket; it comes back with a water or a deep-water cube… or something lost | Reaching into depth | A rope down that you can also climb | T2 |
+| **Well with a bucket** | The use key lowers the bucket; it comes back with a water or a deep-water cube… or something lost | Reaching into depth | A rope down that you can also climb | T2 |
 | **Drain** | Swallows water and sends it to the room below | What you release goes somewhere | Floods the room under you (Noita-style chain) | T3 |
 
 ### 4.4 Laboratory: experiment and understand
@@ -119,7 +119,7 @@ Alchemy is already the descent's script; the laboratory is where the player does
 |---|---|---|---|
 | **Experiment table** | Place two cubes on it and hit it with an intention: they **combine** by a hidden reaction table (iron + water → rust, glass + light → lens, husk + salt → essence). Unknown results are a surprise; failures smoke and leave ash | Trying things out; you learn by doing | T2 |
 | **Field notes** (a lectern with a book) | Every reaction you discover is drawn there and **kept across runs** | Meta-progression as knowledge (STORY open question 3) | T3 |
-| **Alembic** | Distils: water + husk → **essence** (a jar: throw it to soothe a projection for a few seconds, or drink it for a short state) | Separating what matters from what clouds it | T2 |
+| **Alembic** | Distils: water + husk → **essence** (a jar: throw it to soothe a projection for a few seconds, or drink it for a short state) | Separating what matters from what clouds it. Brewing parts into potions: [POTIONS.md](POTIONS.md) | T2 |
 | **Mortar** | Kick a cube into it: grinds to sand, salt or powder (gunpowder from coal + salt?) | Breaking down to understand | T1 |
 | **Scales** | Weigh two cubes; balanced scales open a cabinet or a door | Polarity, balance (Kybalion) | T1 |
 | **Specimen shelf** | Jars with husks in them, labelled with ruled lines; breaking one releases its light (or the projection itself!) | What you keep at a distance to study | T1 |
@@ -136,7 +136,7 @@ Dante's structure and images are welcome; punishment of people is not (LEVELS §
 | **The Press** | Pressure that makes you hard | Two soft cubes in → one harder cube (dirt + dirt → stone, stone + stone → deepstone). Dense steps for climbing | Iron plate |
 | **The Stocks** | Shame, being put on display | A **trap**: a projection lured into it is held for a few seconds (patterns can be caught, not tortured) | Wood |
 | **The Hair Shirt rack** / **the scourge wall** *(maybe never)* | Penance | — | Owner to decide whether these images belong at all |
-| **The Weighing Chair** | Measuring your worth | Sit (`F`): it shows how many hearts you "weigh"; projections nearby turn to look at you | Brass |
+| **The Weighing Chair** | Measuring your worth | Sit (the use key): it shows how many hearts you "weigh"; projections nearby turn to look at you | Brass |
 
 Placement: circle 7 (violence) and the Critic's floor, always with a way to dismantle them. Never the wood of the suicides, never chains on a figure.
 
@@ -278,7 +278,7 @@ Results go through events (`stationOutput`, `carryableEaten`) so practices can h
 Cheapest path to the most feeling, in order:
 
 1. **Husks** as a carryable (T1): projections sometimes leave one; burnable in the existing fire.
-2. **Hearth** (T2, reuses the eternal flame): husk or mushroom in → meal out; `F` to eat.
+2. **Hearth** (T2, reuses the eternal flame): husk or mushroom in → meal out; the use key to eat.
 3. **Planter** (T2): plant a bomb → a vine. Solves part of the climbing problem and reads instantly.
 4. **The press** (T2, simplest instrument): two soft cubes in → one hard; dismantle it to warm the room.
 5. **Props pack** (T0): roots, shelves, candles, jars, chairs, through the existing decor slots.
@@ -289,7 +289,7 @@ Floor-crossing zones (chute, dumbwaiter, archive) wait for the Tree-of-Life floo
 ## 13. Open questions for the owner
 
 1. **Husks instead of meat**: does the shell left by a released projection fit what you imagined? And cooking it (integrating the shadow) versus burning it (letting go): a choice you like?
-2. **Eating**: `F` while holding a meal, instantly? Or a short animation that leaves you exposed?
+2. **Eating**: the use key while holding a meal, instantly? Or a short animation that leaves you exposed?
 3. **The instruments of self-punishment**: are they welcome at all (always empty, used as tools on cubes, dismantled as a reward), or should the torture imagery stay out entirely?
 4. **Field notes across runs**: should discoveries in the laboratory persist between runs (knowledge as meta-progression)?
 5. **Floor-crossing zones** (dumbwaiter, chutes, drains, a shared archive): worth breaking the "rooms never touch the floor above or below" rule for?
