@@ -18,6 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
+import { placePresences, type PresenceId } from '../content/presences';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
 import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
@@ -88,6 +89,8 @@ export interface RoomInfo {
   doors: Partial<Record<Side, number>>;
   /** Enemy ids that will spawn on the first visit (normal rooms). */
   enemies: string[];
+  /** A Presence that lives here (the Gardener on floor 0, a Listener on the Tree floors). */
+  presence?: PresenceId;
 }
 
 export interface DoorSpec {
@@ -361,6 +364,8 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D)))) : [],
     });
   }
+
+  placePresences(rooms, k, rr.fork('floor', k, 'presence'));
 
   // 2. doorways between linked rooms (each pair once: only east and south links)
   for (const pr of plan.rooms) {

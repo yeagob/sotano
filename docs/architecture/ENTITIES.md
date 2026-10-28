@@ -88,6 +88,13 @@ Every attack is one **shape** with one telegraph (BESTIARY §3.2): a **line** (a
 
 Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers), `ranged`, `burst`, `flee`, `leap` (crouch, aim where you stand, land with a ring and crack the soft floor), `charge` (a line, then a run that smashes soft blocks, and a stun when it meets a hard one), `patrol` (a fixed loop), `emitter` (stationary, fires on a rhythm), `phase` (through blocks), `sleep` (asleep until moved), `phased` (a boss's phases) and `chirp` (sings while its room is quiet). A flyer keeps a height (`flyY`), a phaser or burrower moves through blocks (`ghost`). `ctx.quiet`, `ctx.safe`, `ctx.centre` and `ctx.bounds` read the room; `wobble(id, seq, k)` is the seeded choice a being makes (never cosmetic `fx`).
 
+### Presences (`content/presences/`)
+
+- **Two so far:** the Gardener in the start room of floor 0 and one Listener in a normal room of each Tree floor (1–5), placed by `placePresences` from the floor's own fork (`floor<k>:presence`). When no normal room of a Tree floor is quiet, one is emptied so the Listener always has a room (GEN_VERSION 15).
+- **Immortal and kind:** a Presence is a creature (hp 1, never hit by a hit that is not positive) with `responds: 'positive'`: negative intentions pass through it, positive ones make only a gold burst.
+- **Talk by contact** (BESTIARY §8): walking within 2.2 blocks, on the same level, opens a card with its name and two lines (`Game.updatePresences`, `Hud.presenceCard`). Each Presence talks once. The Listener also heals a quarter heart once. There is no talk key: contact is the talk.
+- **Not built:** the other Presences, dialogue choices, the codex, requests (§8.5), agreements and gifts (§8.6–8.7), the sanctuary ring and the silence rule beyond "answers only positive".
+
 ### Creatures (`content/creatures/`)
 
 Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floor's own fork (`ambientCreatures`): Wonders, Rootlings and Mosslings on floor 0, Chirpers and Delvers on floors 1–3, Bubblers and Ferrybacks on 3–4, Drifters and Inkmites on 5–6, Cinderwalkers on 7–8, Huddlers on 9. They are spawned when their floor loads, outside every roster, so they never seal a room or count for clearing it.

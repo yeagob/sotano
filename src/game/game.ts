@@ -64,6 +64,7 @@ import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
+import { PRESENCE_BY_ID, PRESENCE_TALK, TALK_REACH, type PresenceId } from '../content/presences';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
@@ -549,6 +550,14 @@ export class Game {
     for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
       const def = CREATURE_BY_ID.get(c.def)!;
       const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, def.hp, def.speed, 0, new Set(['creature']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+    }
+    for (const r of this.sandbox ? [] : f.rooms) {
+      if (!r.presence) continue;
+      const def = PRESENCE_BY_ID.get(r.presence)!;
+      const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, def.hp, def.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -1971,8 +1980,23 @@ export class Game {
     }
   }
 
+  private updatePresences() {
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met')) continue;
+      if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
+      const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      e.tags.add('met');
+      if (talk.heals) this.heal(QUARTER_HEART, id);
+      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      this.hud.presenceCard(talk.name, talk.lines);
+      return;
+    }
+  }
+
   private updateLoop(dt: number) {
     this.updateRest(dt);
+    this.updatePresences();
     const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
     const inSilence = !!last && b.x >= last.x0 && b.x <= last.x1 + 1 && b.z >= last.z0 && b.z <= last.z1 + 1 && b.y >= last.y0 - 0.5 && b.y <= last.y1 + 1;
     setMasterTarget(inSilence ? 0 : 0.35);
