@@ -192,16 +192,48 @@ export function treePlan(mirrored: boolean, vault: boolean, wideCrown = false): 
     grid[c + gz * w] = room.id;
     rooms.push(room);
   }
-  for (const room of rooms) for (const [side, [dx, dz]] of Object.entries(SIDES) as [Side, [number, number]][]) {
-    const x = room.gx + dx, z = room.gz + dz;
-    if (x < 0 || z < 0 || x >= w || z >= h) continue;
-    const n = grid[x + z * w];
-    if (n >= 0) room.links[side] = n;
-  }
+  linkByAdjacency(rooms, grid, w, h);
   const start = rooms.find(r => r.type === 'start')!.id;
   distances(rooms, start);
   const plan = { w, h, rooms, grid, start };
   // the last Tree floor ends in the great pit: its crown spreads into the empty cell east of it
   if (wideCrown) growFootprint(plan, rooms.find(r => r.type === 'boss')!, [2, 1]);
   return plan;
+}
+
+export const TUTORIAL_LAYOUT: readonly string[] = [
+  '.......',
+  '.......',
+  '..fed..',
+  '..g.c..',
+  '..h.b..',
+  '..TSa..',
+  '...B...',
+];
+
+export function tutorialPlan(): FloorPlan {
+  const w = 7, h = 7;
+  const grid = new Int16Array(w * h).fill(-1);
+  const rooms: PlanRoom[] = [];
+  const roles: Record<string, RoomType> = { S: 'start', B: 'boss', T: 'treasure' };
+  for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
+    const ch = TUTORIAL_LAYOUT[z][x];
+    if (ch === '.') continue;
+    const room: PlanRoom = { id: rooms.length, gx: x, gz: z, type: roles[ch] ?? 'normal', dist: -1, links: {} };
+    grid[x + z * w] = room.id;
+    rooms.push(room);
+  }
+  linkByAdjacency(rooms, grid, w, h);
+  const start = rooms.find(r => r.type === 'start')!.id;
+  distances(rooms, start);
+  return { w, h, rooms, grid, start };
+}
+
+function linkByAdjacency(rooms: PlanRoom[], grid: Int16Array, w: number, h: number) {
+  for (const room of rooms) for (const [side, [dx, dz]] of Object.entries(SIDES) as [Side, [number, number]][]) {
+    const x = room.gx + dx, z = room.gz + dz;
+    if (x < 0 || z < 0 || x >= w || z >= h) continue;
+    const n = grid[x + z * w];
+    if (n >= 0) room.links[side] = n;
+  }
 }

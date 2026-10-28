@@ -5,7 +5,7 @@
 // it is for developers). Every player-facing word goes through i18n (docs/architecture/
 // LOCALIZATION.md); `relocalize()` redraws whatever is on screen when the language changes.
 
-import { heartQuarters } from '../entities/actors';
+import { heartQuarters, HEART } from '../entities/actors';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
@@ -16,13 +16,13 @@ import type { Polarity } from '../combat/polarity';
 import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
 import { materialTexture } from '../render/atlas';
-import { applyPaletteCss, iconDataUrl, qualityStars } from '../render/icons';
+import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
-import { level } from '../content/levels';
+import { level, tollOf } from '../content/levels';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
-import { controlKey, forDevice } from '../input/labels';
+import { controlKey, controlParams, forDevice } from '../input/labels';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -70,6 +70,10 @@ export class Hud {
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
+  private tollEl = $('toll');
+  tollOpen = false;
+  private tollFloor = 0;
+  private tollPicked = new Set<string>();
   private flashEl = $('flash');
   private hurtEl = $('hurt');
   private deathEl = $('death');
@@ -138,6 +142,7 @@ export class Hud {
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.inventoryOpen && this.game) this.renderInventory(this.game);
+    if (this.tollOpen && this.game) this.renderToll(this.game);
     this.toastEl.classList.remove('show');
   }
 
@@ -190,7 +195,7 @@ export class Hud {
 
   update(g: Game, running: boolean, dt: number) {
     this.shakeT = Math.max(0, this.shakeT - dt);
-    this.overlay.style.display = running || this.inventoryOpen || g.player.dead ? 'none' : 'flex';
+    this.overlay.style.display = running || this.inventoryOpen || this.tollOpen || g.player.dead ? 'none' : 'flex';
 
     this.mapYaw = g.player.yaw;
     const yawKey = Math.round(this.mapYaw * 64);
@@ -525,14 +530,104 @@ export class Hud {
   moveSelection(dx: number, dy: number) {
     const g = this.game;
     if (!g) return;
-    const tiles = [...this.invEl.querySelectorAll<HTMLElement>('.tile')];
+    const root = this.tollOpen ? this.tollEl : this.invEl;
+    const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
     if (!tiles.length) return;
     const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
     const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
     const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
     this.selected = tiles[next].dataset.id!;
-    this.renderInventory(g);
-    this.invEl.querySelector<HTMLElement>('.tile.sel')?.scrollIntoView({ block: 'nearest' });
+    if (this.tollOpen) this.renderToll(g); else this.renderInventory(g);
+    root.querySelector<HTMLElement>('.tile.sel, .tile.cur')?.scrollIntoView({ block: 'nearest' });
+  }
+
+  openToll(g: Game, k: number) {
+    this.game = g;
+    this.tollOpen = true;
+    this.tollFloor = k;
+    this.tollPicked.clear();
+    this.tollEl.classList.add('show');
+    g.input.unlockFor();
+    this.selected = this.tollIds(g)[0];
+    this.renderToll(g);
+  }
+
+  closeToll(g: Game) {
+    this.tollOpen = false;
+    this.tollEl.classList.remove('show');
+    if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
+    else g.input.resume();
+  }
+
+  confirmToll(g: Game) {
+    if (this.selected) this.tollAct(g, this.selected);
+  }
+
+  private tollIds(g: Game): string[] {
+    const toll = tollOf(this.tollFloor);
+    const p = g.player;
+    const ids: string[] = [];
+    if (toll?.practices) g.inventory.items.forEach((_, i) => ids.push(`item:${i}`));
+    else if (toll) {
+      p.hand.forEach((m, i) => { if (typeof m === 'number') ids.push(`hand:${i}`); });
+      for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
+      for (let i = 0; i < p.bombs; i++) ids.push(`bomb:${i}`);
+      for (let i = 0; i < Math.ceil(p.hp / HEART); i++) ids.push(`heart:${i}`);
+    }
+    return [...ids, 'pay', 'close'];
+  }
+
+  private tollAct(g: Game, id: string) {
+    const toll = tollOf(this.tollFloor);
+    if (!toll) return;
+    if (id === 'close') { this.closeToll(g); return; }
+    if (id === 'pay') {
+      if (this.tollPicked.size === toll.count && g.payToll(this.tollFloor, [...this.tollPicked])) { this.closeToll(g); return; }
+      this.toast('toll.need', { n: toll.count });
+      this.renderToll(g);
+      return;
+    }
+    if (this.tollPicked.has(id)) this.tollPicked.delete(id);
+    else if (this.tollPicked.size < toll.count) this.tollPicked.add(id);
+    this.renderToll(g);
+  }
+
+  private renderToll(g: Game) {
+    const toll = tollOf(this.tollFloor);
+    if (!toll) return;
+    const p = g.player;
+    const ids = this.tollIds(g);
+    const cur = this.selected && ids.includes(this.selected) ? this.selected : ids[0];
+    const tile = (id: string, icon: string, label: string) =>
+      `<button type="button" class="tile${this.tollPicked.has(id) ? ' on' : ''}${id === cur ? ' cur' : ''}" data-id="${id}"><img src="${icon}" alt=""><span class="lbl">${esc(label)}</span></button>`;
+    const section = (key: MessageKey, body: string) => (body ? `<h3>${th(key)}</h3>${body}` : '');
+    const hearts = Array.from({ length: Math.ceil(p.hp / HEART) }, (_, i) => tile(`heart:${i}`, hudIconUrl(HUD_ICONS.heart), t('toll.heart'))).join('');
+    const keys = Array.from({ length: p.keys }, (_, i) => tile(`key:${i}`, hudIconUrl(HUD_ICONS.key), t('toll.key'))).join('');
+    const bombs = Array.from({ length: p.bombs }, (_, i) => tile(`bomb:${i}`, hudIconUrl(HUD_ICONS.seed), t('toll.bomb'))).join('');
+    const hands = p.hand.flatMap((m, i) => (typeof m === 'number' ? [tile(`hand:${i}`, this.slotUrl(m), materialName(m))] : [])).join('');
+    const items = g.inventory.items.map((it, i) => tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
+    const body = toll.practices
+      ? section('toll.sec.item', items)
+      : section('toll.sec.hand', hands) + section('toll.sec.key', keys) + section('toll.sec.bomb', bombs) + section('toll.sec.heart', hearts);
+    const ready = this.tollPicked.size === toll.count;
+    const device = activeDevice();
+    this.tollEl.innerHTML =
+      `<div class="card slate"><header><h2>${th('toll.title')}</h2>` +
+      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · ${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</small></header>` +
+      `<p class="hint">${th('toll.hint', controlParams(device))}</p>` +
+      `<div class="grid">${body || `<p class="none">${th('toll.none')}</p>`}</div>` +
+      `<div class="go-row"><button type="button" class="tile go${ready ? '' : ' off'}${cur === 'pay' ? ' cur' : ''}" data-id="pay"><span class="lbl">${th('toll.go')}</span></button>` +
+      `<button type="button" class="tile go${cur === 'close' ? ' cur' : ''}" data-id="close"><span class="lbl">${th('toll.stay')}</span></button></div></div>`;
+    for (const b of this.tollEl.querySelectorAll<HTMLButtonElement>('.tile')) {
+      b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
+      b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.tollAct(g, b.dataset.id!); });
+    }
+  }
+
+  private moveCursor(id: string) {
+    this.selected = id;
+    this.tollEl.querySelector('.tile.cur')?.classList.remove('cur');
+    this.tollEl.querySelector(`.tile[data-id="${id}"]`)?.classList.add('cur');
   }
 
   private renderInventory(g: Game) {

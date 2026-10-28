@@ -24,7 +24,7 @@ import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
-import { LEVELS, level } from '../content/levels';
+import { LEVELS, level, tollOf } from '../content/levels';
 import { blockDamage, cubeDamage, type DamageKind } from '../core/damage';
 import { fx, seedFx } from '../core/fx';
 import { RunRandom } from '../core/rng';
@@ -162,7 +162,7 @@ const WAVE_GAP = 1.4;
 /** The breath between two waves of a normal room (BESTIARY §2.4). */
 const BREATH = 1.5;
 
-interface BossRoom { room: number; wake: number; spawned: boolean; defeated: boolean; t: number; open: boolean; warned: boolean; dust: number }
+interface BossRoom { room: number; wake: number; spawned: boolean; defeated: boolean; t: number; open: boolean; warned: boolean; dust: number; asked: boolean }
 
 export class Game {
   readonly renderer: THREE.WebGLRenderer;
@@ -543,6 +543,7 @@ export class Game {
       this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, face.angle, face.tight) });
     }
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
+    for (const bp of f.bombs) this.pickups.add('bomb', bp.x + 0.5, bp.y + 0.5, bp.z + 0.5, bp.room);
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
     for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
       const def = CREATURE_BY_ID.get(c.def)!;
@@ -2050,7 +2051,7 @@ export class Game {
 
   private enterBossRoom(r: RoomInfo) {
     const f = this.floors.get(r.floor)!;
-    const st: BossRoom = { room: r.id, wake: BOSS_WAKE, spawned: false, defeated: false, t: HOLE_DELAY, open: !f.hole, warned: false, dust: 0 };
+    const st: BossRoom = { room: r.id, wake: BOSS_WAKE, spawned: false, defeated: false, t: HOLE_DELAY, open: !f.hole, warned: false, dust: 0, asked: false };
     this.bossRooms.set(r.floor, st);
     if (!f.boss) { st.spawned = true; st.defeated = true; return; }
     this.doors.seal(r.id, true);
@@ -2093,6 +2094,11 @@ export class Game {
     st.t -= dt;
     if (hole) this.crackHole(hole, Math.min(1, 1 - st.t / HOLE_DELAY));
     if (st.t > 0 || !hole) return;
+    if (tollOf(k)) {
+      if (!this.standsOnHole(hole)) st.asked = false;
+      else if (!st.asked) { st.asked = true; this.hud.openToll(this, k); }
+      return;
+    }
     if (this.standsOnHole(hole)) {
       if (!st.warned) { st.warned = true; this.hud.toast('toast.holeWait'); sfx3.rumble(); }
       st.dust -= dt;
@@ -2108,6 +2114,40 @@ export class Game {
     this.hud.shake(0.5);
     this.hud.toast('toast.wayDown');
     sfx3.rumble();
+  }
+
+  payToll(k: number, ids: readonly string[]): boolean {
+    const toll = tollOf(k), f = this.floors.get(k), st = this.bossRooms.get(k);
+    const p = this.player;
+    if (!toll || !f?.hole || !st || p.dead || new Set(ids).size !== ids.length || ids.length !== toll.count) return false;
+    const hearts = Math.ceil(p.hp / HEART);
+    const hands: number[] = [], items: string[] = [];
+    let keys = 0, bombs = 0, paid = 0;
+    for (const id of ids) {
+      const [kind, at] = id.split(':'), i = Number(at);
+      if (kind === 'item' ? !toll.practices : toll.practices) return false;
+      if (kind === 'hand') { if (!(i < p.hand.length) || typeof p.hand[i] !== 'number') return false; hands.push(i); }
+      else if (kind === 'key') { if (!(i < p.keys)) return false; keys++; }
+      else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
+      else if (kind === 'heart') { if (!(i < hearts)) return false; paid++; }
+      else if (kind === 'item') { const held = this.inventory.items[i]; if (!held) return false; items.push(held.def.id); }
+      else return false;
+    }
+    for (const i of hands.sort((a, b) => b - a)) p.hand.splice(i, 1);
+    p.keys -= keys;
+    p.bombs -= bombs;
+    for (const id of items) this.inventory.lose(id);
+    if (items.length) this.hud.setItems(this.inventory.items.map(i => i.def));
+    if (paid) { p.invulnT = 0; this.damageActor(p, paid * HEART, 'toll', 'toll', p.id); }
+    if (p.dead) return true;
+    st.open = true;
+    openHole(this.world, f.hole);
+    const h = f.hole;
+    this.particles.burst(h.x + h.size / 2, h.yTop + 1, h.z + h.size / 2, pal('limestone.dark'), 40, 4, 0.15);
+    this.hud.shake(0.5);
+    this.hud.toast('toast.wayDown');
+    sfx3.rumble();
+    return true;
   }
 
   /** The hole's top blocks show real crack stages as `p` goes 0 → 1 (the floor is about to give way). */
@@ -2153,7 +2193,7 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.inventoryOpen ? 'inventory' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
+    const ctx = this.player.dead ? 'dead' : this.hud.inventoryOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
     const live = ctx === 'play' || ctx === 'prompt';
     if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
@@ -2178,8 +2218,16 @@ export class Game {
       if (inp.hit('back')) this.hud.toggleInventory(this);
       else { const n = inp.navigate(); if (n.x || n.y) this.hud.moveSelection(n.x, n.y); }
     }
+    if (ctx === 'toll') {
+      if (inp.hit('back')) this.hud.closeToll(this);
+      else {
+        const n = inp.navigate();
+        if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
+        if (inp.hit('confirm')) this.hud.confirmToll(this);
+      }
+    }
     this.touch.update(this, ctx);
-    const running = playing && !this.player.dead && !this.hud.inventoryOpen && !this.transitioning;
+    const running = playing && !this.player.dead && !this.hud.inventoryOpen && !this.hud.tollOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     this.stream();

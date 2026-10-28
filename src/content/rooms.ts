@@ -541,7 +541,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a wall of brick between you and the south door: break through it
-    id: 'roots-dig', types: ['normal'], floors: [0, 0], lesson: 'intent', lesson2: 'polarity', weight: 3, rows: [
+    id: 'roots-dig', types: ['normal'], floors: [0, 0], lesson: 'intent', weight: 3, rows: [
       '.............',
       '.............',
       '.....d.d.....',
@@ -612,12 +612,23 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
+    id: 'roots-mend', types: ['normal'], floors: [0, 0], lesson: 'polarity', rows: [
+      '.............',
+      '.d.........d.',
+      '.............',
+      '.....d.d.....',
+      '.............',
+      '.d.........d.',
+      '.............',
+    ],
+  },
+  {
     // shallow pools to wade through, and soil to build with
-    id: 'roots-spring', types: ['vault'], floors: [0, 0], lesson: 'water', height: 7, ceiling: 'dome', rows: [
+    id: 'roots-spring', types: ['normal'], floors: [0, 0], lesson: 'water', height: 7, ceiling: 'dome', rows: [
       'dww.......wwd',
       'ww.........ww',
       '.....www.....',
-      '....w.T.w....',
+      '....w...w....',
       '.....www.....',
       'ww.........ww',
       'dww.......wwd',
@@ -1136,9 +1147,19 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
 ];
 
-/** The tutorial's lessons for its normal rooms, in the order the rooms are reached (owner: the
- *  roots teach how to play; building comes early and keeps coming). */
-export const TUTORIAL_ORDER = ['intent', 'step', 'kick', 'pit', 'bridge', 'bomb'] as const;
+export const TUTORIAL_CELLS: Record<string, { template: string; flipZ?: boolean; maxQuality?: number }> = {
+  S: { template: 'roots-hall' },
+  B: { template: 'roots-door', maxQuality: 4 },
+  T: { template: 'roots-gift', maxQuality: 3 },
+  a: { template: 'roots-step' },
+  b: { template: 'roots-dig', flipZ: true },
+  c: { template: 'roots-mend' },
+  d: { template: 'roots-pit' },
+  e: { template: 'roots-bridge' },
+  f: { template: 'roots-seal' },
+  g: { template: 'roots-crates' },
+  h: { template: 'roots-spring' },
+};
 
 /** Solid stacks per character: material and height in blocks. */
 export const CELL_STACK: Record<string, { m: number; h: number }> = {

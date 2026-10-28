@@ -169,6 +169,7 @@ So digging is a **decision**, not an exploit.
 ### Going down
 
 - **Trapdoor** in the boss room (fast and safe). Today: 1.5 s after you enter, the boss's practice appears on the room's pedestal and the floor cracks open over a 2×2 shaft. It **never opens under you**: it waits until you step aside.
+- On floors 0–8, the trapdoor and your own hole ask a **toll** first: what you give (a heart, a key, a bomb, a block from your hand, from the sixth floor practices) and how many grows with the floor. See [LEVELS.md §1c](LEVELS.md).
 - **Your own hole**, at any time: if there's a room below, you drop into it (enemies included!). If there's nothing, you keep digging rock until you reach the next floor.
 - Falling far hurts (TBD; maybe half a heart beyond N blocks).
 

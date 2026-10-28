@@ -1,7 +1,7 @@
 export type Device = 'keyboard' | 'gamepad' | 'touch';
 export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 
-export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory';
+export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll';
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'bomb' | 'polarity'
@@ -108,21 +108,21 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'respawn from the death screen', noita: 'new game from the pause menu', isaac: 'hold R to restart; on a pad, restart from the pause menu' },
   },
   {
-    action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead'],
+    action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll'],
     keyboard: { keys: ['Enter'], mouse: [0, 1, 2] },
     gamepad: { buttons: [PAD.A] },
     touch: { control: 'tap' },
     refs: { minecraft: 'click / A accepts', noita: 'click / A continues', isaac: 'any shot key / A dismisses and continues' },
   },
   {
-    action: 'navigate', kind: 'axis', when: ['inventory'],
+    action: 'navigate', kind: 'axis', when: ['inventory', 'toll'],
     keyboard: { keys: Object.values(NAV_KEYS).flat() },
     gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },
     refs: { minecraft: 'the d-pad moves between slots', noita: 'the d-pad moves between slots', isaac: 'the d-pad moves the selection' },
   },
   {
-    action: 'back', kind: 'press', when: ['inventory'],
+    action: 'back', kind: 'press', when: ['inventory', 'toll'],
     keyboard: { keys: ['Escape'] },
     gamepad: { buttons: [PAD.B] },
     touch: { control: 'menuButton' },

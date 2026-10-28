@@ -18,6 +18,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 ## 2. Health (`entities/player.ts`, `game/game.ts`)
 
 - Damage points in `player.hp` (a heart is 8 points); containers are the **`maxHearts` stat** (base 3), so an item that grants a container takes it away again when lost. The HUD draws hearts in **quarters** (2 points each).
+- Giving a heart as a toll is one `toll` damage of 8 points through `damageActor` (`game/game.ts` `payToll`): it can kill, as owner rule (LEVELS §2.3c).
 - The player is an **actor** like every projection ([ACTORS.md](ACTORS.md)). Every hit goes through **`actorDamage`** (cancellable) in damage points: the player loses exactly those points, so small damage reductions count. After a hit you're invulnerable for the **`invuln` stat** (1 s) and the HUD shows a red vignette and a shake.
 - **`heal { amount, source }`** before healing; hearts on the floor are only picked up when you're hurt (Isaac rule).
 - At 0: **`death { source }`** (cancellable: a future "second chance" item). Otherwise the death screen shows the floor reached and your practices; R starts again.
@@ -25,7 +26,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 
 ## 3. Pickups (`entities/pickups.ts`)
 
-- Kinds: `key`, `bomb`, `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
+- Kinds: `key`, `bomb` (the roots always lay one of each, as rewards), `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
 - A **part** is not an item: it has no effect and never enters `Inventory`. It is carried in the hand beside blocks (`Player.hand` holds `Carried`: a material or a `PartDef`, DESIGN §6). Walking onto one with a free slot lifts it into the hand with the hold-up and no burst; with no free slot it stays on the floor. Placing (right click) drops it on the floor after `PART_DROP_DELAY` seconds, and Q throws it. Each projection rolls its parts when it dies, on its own RNG path (RNG.md §4), with chances 30 / 12 / 5 / 2 % for flesh, mind, heart and essence. `held()` for items lists block materials only.
 - Collecting goes through **`pickupCollect { kind, amount }`** (mutable amount; cancel to leave it). Counters cap at 99. Keys and bombs show top-left with hearts, Isaac-style.
 - **Breaking blocks drops nothing but the block** (owner decision): `blockLoot` fires with an empty `drops` list so an item can add some. Keys and treasures are moving into **chests** ([ELEMENTS.md §7](ELEMENTS.md)). Today the floor's key for the vault sits on a key spot, and cleared rooms may drop a heart, bomb or key (40%, raised by `luck`).
