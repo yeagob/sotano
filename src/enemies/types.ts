@@ -6,6 +6,7 @@
 import type { PickupKind } from '../game/events';
 import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
+import type { Strike } from './attacks';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -35,8 +36,11 @@ export interface ModelPart {
   name?: string;
 }
 
+export type BeingKind = 'projection' | 'creature' | 'boss';
+
 export interface EnemyDef {
   id: string;
+  kind?: BeingKind;
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
@@ -50,12 +54,16 @@ export interface EnemyDef {
   behaviour: Behaviour;
   /** Chance of each drop when it dissolves. */
   drops?: Partial<Record<PickupKind, number>>;
-  /** Spawn budget cost and the earliest floor it appears on. */
   cost: number;
   minFloor: number;
+  maxFloor?: number;
   /** How it reacts to, avoids or lives in each element (docs/architecture/ELEMENTS.md §9.3).
    *  Its meaning comes from the pattern: Panic calms in water and goes off in fire. */
   elements?: Partial<Record<ElementKey, ElementSense>>;
+  asleep?: boolean;
+  armor?: number;
+  split?: string[];
+  breaks?: { tier: number; power: number };
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
 }
@@ -88,15 +96,34 @@ export interface Enemy extends Actor {
   /** Visual-only: hit flash and scale pulse. */
   flash: number;
   pulse: number;
+  hidden: boolean;
+  stage: number;
+  hold: number;
+  aimX: number; aimZ: number;
+  flyY: number;
+  ghost: boolean;
+  seq: number;
+  clock: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
-export interface TargetView { id: number; x: number; y: number; z: number }
+export interface TargetView { id: number; x: number; y: number; z: number; vx?: number; vz?: number }
 
 /** What a behaviour can see and do. Behaviours never look for the player: they ask for their
  *  target, the nearest actor hostile to them (docs/architecture/ACTORS.md §4). */
 export interface EnemyCtx {
   dt: number;
+  strike(e: Enemy, s: Strike): void;
+  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number): void;
+  safe(e: Enemy, x: number, y: number, z: number): boolean;
+  centre(e: Enemy): [number, number];
+  quiet(e: Enemy): boolean;
+  others(e: Enemy, radius: number, ids: string[]): Enemy[];
+  bounds(e: Enemy): [number, number, number, number];
+  cue(e: Enemy, kind: string): void;
+  hide(e: Enemy, hidden: boolean): void;
+  arena(e: Enemy, what: string): void;
+  summon(e: Enemy, defIds: string[]): void;
   /** The enemy's current target, or null (then it idles). */
   target(e: Enemy): TargetView | null;
   /** The nearest actor of the self (the player, its allies), whatever the enemy's side: peaceful

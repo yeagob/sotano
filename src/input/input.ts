@@ -55,7 +55,7 @@ export class Input {
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
-      if (!this.locked) { this.lock(); return; }
+      if (!this.locked) { if (!this.engaged) this.lock(); return; }
       if (!this.mouse.has(e.button)) this.mousePressed.add(e.button);
       this.mouse.add(e.button);
     });

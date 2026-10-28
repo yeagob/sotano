@@ -10,7 +10,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 - `createDungeonWorld(seed)` fills the whole column once per run. `carveFloor(world, rng, k, opts)` carves one floor with **per-floor RNG streams** (`floor<k>:plan`, `:rooms`, `:loot`, `:enemies`), so a floor's layout never depends on when it was carved. Pedestal items are drawn at carve time, so a seed always gives the same items.
 - **One floor ahead**: floor 1 and 2 are carved at run start; floor *k+1* is carved when you arrive on floor *k*. You can never dig into a band that will be overwritten later.
 - **Activation = "the next floor loads"**: when you enter floor *k*'s boss room, floor *k+1* is activated (its doors, pedestals and keys appear). Digging into a deeper band also activates it.
-- **Going down by gravity**: floor *k+1*'s plan starts **right under floor *k*'s boss room** (`generatePlan(rng, opts, startCell)`, with a fallback that relaxes the room count for edge and corner starts). 1.5 s after entering the boss room (there's no boss yet, so it counts as overcome), two things happen: the **boss's practice** appears on the room's pedestal (reserved at run start from the `boss` pool, popping in with light and a chime), and a **2×2 shaft** opens from the boss room floor straight into the start room below. During those 1.5 s the four floor blocks over the shaft show real crack stages (the telegraph). **The floor never opens under the player**: while you stand or hover over the 2×2, it waits, trickling dust, and a toast tells you to step aside; it opens the moment you step off. You walk in and fall; `land` fires with `cause: 'descent'`.
+- **Going down by gravity**: floor *k+1*'s plan starts **right under floor *k*'s boss room** (`generatePlan(rng, opts, startCell)`, with a fallback that relaxes the room count for edge and corner starts). A **boss room seals** when you enter it, after a short rumble its boss rises from a spawn point (announced by an omen), and the way down is **closed until the boss is overcome** (`Game.bossDown`, §5.4). Then the boss's practice appears on the room's pedestal (popping in with light and a chime), the four floor blocks over a **2×2 shaft** crack (the telegraph) and the shaft opens into the start room below. **The floor never opens under the player**: while you stand or hover over the 2×2, it waits, trickling dust, and a toast tells you to step aside; it opens the moment you step off. You walk in and fall; `land` fires with `cause: 'descent'`. Floor 0 is peaceful and has no boss: its way down opens on entry, as before.
 - **Depth**: `depth` is the band you're in now; `maxDepth` the deepest reached. `floorEnter` fires only when going deeper (climbing back up and dropping again doesn't re-trigger it). On `floorEnter` the deferred chain-reaction queue is cleared.
 - **Room ids are global**: `floor × 100 + index`. One `Doors` and one `Pickups` hold every activated floor; floors above keep their state.
 - Rendering only draws chunk rows within ±22 blocks of the eye; fog switches to sky colours near `SURFACE_Y` (71).
@@ -18,6 +18,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 ## 2. Health (`entities/player.ts`, `game/game.ts`)
 
 - Damage points in `player.hp` (a heart is 8 points); containers are the **`maxHearts` stat** (base 3), so an item that grants a container takes it away again when lost. The HUD draws hearts in **quarters** (2 points each).
+- Giving a heart as a toll is one `toll` damage of 8 points through `damageActor` (`game/game.ts` `payToll`): it can kill, as owner rule (LEVELS §2.3c).
 - The player is an **actor** like every projection ([ACTORS.md](ACTORS.md)). Every hit goes through **`actorDamage`** (cancellable) in damage points: the player loses exactly those points, so small damage reductions count. After a hit you're invulnerable for the **`invuln` stat** (1 s) and the HUD shows a red vignette and a shake.
 - **`heal { amount, source }`** before healing; hearts on the floor are only picked up when you're hurt (Isaac rule).
 - At 0: **`death { source }`** (cancellable: a future "second chance" item). Otherwise the death screen shows the floor reached and your practices; R starts again.
@@ -25,8 +26,8 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 
 ## 3. Pickups (`entities/pickups.ts`)
 
-- Kinds: `key`, `bomb`, `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
-- A **part** is not an item: it has no effect and never enters `Inventory`. Touching one pushes its id onto `Game.parts` (run state, reset on a new run, no cap). Each projection rolls its parts when it dies, on its own RNG path (RNG.md §4), with chances 30 / 12 / 5 / 2 % for flesh, mind, heart and essence. The inventory lists them after the items, with the same tile and name label.
+- Kinds: `key`, `bomb` (the roots always lay one of each, as rewards), `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
+- A **part** is not an item: it has no effect and never enters `Inventory`. It is carried in the hand beside blocks (`Player.hand` holds `Carried`: a material or a `PartDef`, DESIGN §6). Walking onto one with a free slot lifts it into the hand with the hold-up and no burst; with no free slot it stays on the floor. Placing (right click) drops it on the floor after `PART_DROP_DELAY` seconds, and Q throws it. Each projection rolls its parts when it dies, on its own RNG path (RNG.md §4), with chances 30 / 12 / 5 / 2 % for flesh, mind, heart and essence. `held()` for items lists block materials only.
 - Collecting goes through **`pickupCollect { kind, amount }`** (mutable amount; cancel to leave it). Counters cap at 99. Keys and bombs show top-left with hearts, Isaac-style.
 - **Breaking blocks drops nothing but the block** (owner decision): `blockLoot` fires with an empty `drops` list so an item can add some. Keys and treasures are moving into **chests** ([ELEMENTS.md §7](ELEMENTS.md)). Today the floor's key for the vault sits on a key spot, and cleared rooms may drop a heart, bomb or key (40%, raised by `luck`).
 
@@ -63,9 +64,11 @@ defineEnemy({
 | **Inner Critic** | The judging voice | `ranged`: keeps ~6 blocks away, strafes, winds up and lobs a "judgement" that arcs onto you (breaks soft blocks) |
 | **Panic** | Anxiety spiralling into panic | `burst`: rushes you, swells for 0.9 s and explodes, breaking blocks (and hurting other projections) |
 
+The roster holds 40 projection entries in `content/enemies/` (38 files; Procrastination's two lineage forms live in its own file), weighted by floor in `content/tables/enemies.ts`. The table above shows the first three; the rest use the same definition and factories, and each one's pattern and zone is in [BESTIARY §5](../design/BESTIARY.md).
+
 ### Spawning and rooms
 
-> As built today. The owner's new direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is designed in [../design/BESTIARY.md §2](../design/BESTIARY.md) and not built yet.
+> As built today. The owner's direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is in [../design/BESTIARY.md §2](../design/BESTIARY.md) and is built. What is not built is listed in [BESTIARY §12.1](../design/BESTIARY.md).
 
 - At carve time each normal room gets a roster from `ENEMY_BUDGET` (budget 2 + floor, 1 room in 5 is quiet).
 - **Sealing and slam**: when the player's box is **fully inside** a room interior, its doors close and stay sealed, and each door slams with its own spatial sound and dust (`slamDoors`, `spatial.slam`). The first wave starts after a 0.5 s breath.
@@ -75,9 +78,47 @@ defineEnemy({
 - **Leash**: projections belong to their room; one that leaves it walks back to the centre.
 - **Clear**: when no hostile projection of the room is left (wherever it went; allies don't count), the doors unseal, `roomClear { drops }` fires and the reward (if any) appears at the centre. If you dig out of a sealed room, its doors stay shut until it's cleared, and seal again when you're back inside.
 
+### Kinds of beings (BESTIARY §1)
+
+Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9, a geometric curve of about ×1.28 a floor; the open question is in [BESTIARY §12.1](../design/BESTIARY.md)).
+
+### Attacks (`enemies/attacks.ts`)
+
+Every attack is one **shape** with one telegraph (BESTIARY §3.2): a **line** (a charge or a beam), a **ring** (a leap landing, a shockwave), a **field** (`slow`, `mute` or `sting`, while you stand in it), a **pull** (a tether or wind toward its source) or a **sweep** (a wall that crosses the room). A shape is drawn as cold motes for its `lead` seconds (the announcement, dim), then it is live for `live` seconds (white) and hurts each target once. Fields and pulls act while you stand in them. Hazards are drawn by one instanced mesh and hit through the damage pipeline (`hurtActor`) and the player's statuses (`affectActor`: a slowed walk, a silence that stops casting, toast `toast.muted`). Bolts are straight cold cubes (`ctx.bolt`); lobs keep their arc (`ctx.shootAt`).
+
+Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers), `ranged`, `burst`, `flee`, `leap` (crouch, aim where you stand, land with a ring and crack the soft floor), `charge` (a line, then a run that smashes soft blocks, and a stun when it meets a hard one), `patrol` (a fixed loop), `emitter` (stationary, fires on a rhythm), `phase` (through blocks), `sleep` (asleep until moved), `phased` (a boss's phases) and `chirp` (sings while its room is quiet). A flyer keeps a height (`flyY`), a phaser or burrower moves through blocks (`ghost`). `ctx.quiet`, `ctx.safe`, `ctx.centre` and `ctx.bounds` read the room; `wobble(id, seq, k)` is the seeded choice a being makes (never cosmetic `fx`).
+
+### Creatures (`content/creatures/`)
+
+Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floor's own fork (`ambientCreatures`): Wonders, Rootlings and Mosslings on floor 0, Chirpers and Delvers on floors 1–3, Bubblers and Ferrybacks on 3–4, Drifters and Inkmites on 5–6, Cinderwalkers on 7–8, Huddlers on 9. They are spawned when their floor loads, outside every roster, so they never seal a room or count for clearing it.
+
+- **Sealing**: when a room seals, its creatures hide in the blocks (`Enemies.hideRoom`, neither drawn nor hittable), and they come back whole when it clears.
+- **Polarity** (§1.1): a positive intention heals them, and a creature healed to full gives a heart once (`gifted`). A negative intention that would kill one sends it into the blocks instead (`Enemies.hurt`): it never dies.
+- **Blasts** only push creatures; fire and lava still hurt them, so they must avoid it.
+- **Chirpers** sing every few seconds only while their room is quiet (no projection alive): their silence is the warning.
+- **Mosslings** heal a quarter heart the first time you sit still beside one for three seconds (`Game.updateRest`).
+
+### Bosses (`content/bosses/`, `Game.updateBossRoom`)
+
+- **One per floor**, drawn from its zone's pool with the run's fork `floor<k>:boss` and never met twice in one run (`bossFor`). Floors 5 and 9 are keystones: the Threshold Guardian and the Shadow. Zones: I (1–2) Resistance, Inertia, The Insatiable; II (3–4) Overwhelm, The Hoard, The Downpour; III (6) The Verdict, The Grudge, The Old Rule; IV (7–8) The Furnace, The Impostor, The Many Faces.
+- **The room**: entering seals the doors (`doors.seal`), a rumble, then the boss rises at a spawn point of the room (`summonBoss`). Its health shows in the bar at the top while you are in the room (`Hud.bossBar`).
+- **Phases** (`phased`): at 2/3 and 1/3 of its health the boss stops for `PHASE_HOLD` seconds, its arena changes by name (`Game.bossArena`: walls rise, water floods or drains, fire catches, loose cubes spill or fall, the toast says what happened, `boss.<id>.phase.<n>`), and the next phase's behaviour takes over.
+- **Overcome**: its death (or, for the Guardian, its turning to your side: the route of light) calls `bossDown`. The room unseals, the boss's practice appears on the pedestal, and the way down starts to crack.
+- **Route of light** (Threshold Guardian, BESTIARY §6.5): positive intentions fill its warmth and it turns to your side. The route of shadow fights it. Both open the same way down (the design's separate hole beside the pit is not built yet).
+- **The Shadow** wins by standing still beside it for three seconds: it shrinks into your hands (`ctx.kill`).
+- **Inertia** is asleep: it takes knockback only (bombs, kicks) until it moves at a speed of 1.5 blocks a second.
+
 ### Navigation (`enemies/flowfield.ts`)
 
-A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world changes (`VoxelWorld.version`). Outside the room, steering is a straight line. Blocked enemies hop up one block.
+A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world or its elements change (`VoxelWorld.version`, `elemVersion`). Outside the room, steering is a straight line.
+
+**Terrain it avoids** (lava and fire for everyone, water for those that avoid it, `ElementSense.path: 'avoid'`) is never walked into:
+
+- The flow field leaves avoided cells and every cell **within two blocks** of them out of the route (lava flows about three blocks a second, faster than a walker). A projection that stands within that margin steps back out (`FlowField.unsafe`, `escape`) before the front reaches it.
+- Sideways motion is blocked by avoided cells (`moveBody(..., walls)`), but falling is not: knockback can still drop a projection in, and a lift over lava never lands on it (`avoidWalls` lifts while it stands in one, so it can climb out).
+- A hop only goes over a solid block, never over what it avoids. With no route, a projection waits at the shore instead of walking straight through the lava.
+
+**Breaking blocks** (`EnemyDef.breaks`): a projection with `breaks: { tier, power }` smashes the first solid block that stops it, if its material tier is at most `tier` and it is not unbreakable (never lava, never bedrock or chests). Damage goes through the normal block pipeline (`EnemyHost.smash`), so armour, cracks and loose cubes behave as for any other blow. Chargers, burrowers and leapers use it (BESTIARY §3.3).
 
 ### Intention polarity (`combat/polarity.ts`, `game/game.ts`)
 
@@ -114,6 +155,8 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 |---|---|
 | M2 | Enemy-owned hooks (Comparison mirrors your intentions), installed as `actor:<id>` |
 | M2 | Procrastination (splits on death), Perfectionism (armour shell), bosses made of breakable voxels |
+
+Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/BESTIARY.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
 
 Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |

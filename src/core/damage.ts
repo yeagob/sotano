@@ -4,7 +4,7 @@
 
 import { mat, type MaterialDef } from '../content/materials';
 
-export type DamageKind = 'intent' | 'explosion' | 'fire' | 'crush' | 'kick' | 'melee' | 'contact' | 'projectile' | 'item' | 'cut' | 'beam' | 'drown';
+export type DamageKind = 'intent' | 'explosion' | 'fire' | 'crush' | 'kick' | 'melee' | 'contact' | 'projectile' | 'item' | 'cut' | 'beam' | 'drown' | 'toll';
 
 /** Minimum fraction of damage that always gets through: "with enough intent, everything breaks". */
 export const MIN_DAMAGE_FRACTION = 0.1;

@@ -141,6 +141,10 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 Projections leave **parts** (flesh, heart, mind, essence): collectibles named after their pattern, held in the inventory but not practices, with no effect. Some Presences make **agreements** for them. Their gifts come in three tiers and a closed set, the Covenant; every gift is marked *promised* by a gold seam. Design: [BESTIARY.md §5.7 and §8.5–§8.7](BESTIARY.md).
 
+### The way down asks a price
+
+To go down you give something up: a heart (a heart of damage, which can cost you the run), a key, a bomb, a block from your hand and, from the sixth level, practices. Leaving something behind is how the path opens, and the deeper you go the more it asks. The toll never blocks a player who has played fair: hearts can always be given, so the first floors never trap anyone.
+
 ## A love letter to games
 
 The Roots is made by people who grew up inside games, and it says so. The project will be **full of references to other games**, as an expression of love for that culture: winks, not copies.

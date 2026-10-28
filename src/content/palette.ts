@@ -103,6 +103,8 @@ export const PALETTE = {
   'skin.t1': '#F3D2B3', 'skin.t2': '#E2B48F', 'skin.t3': '#B98260',
   'skin.t4': '#9A6844', 'skin.t5': '#6F4A30', 'skin.t6': '#4A3020',
   'cloth.base': '#3D4F73', 'cloth.cuff': '#2C3A57', 'cloth.hi': '#4E6290',
+
+  'living.dark': '#26331F', 'living.base': '#46603D', 'living.hi': '#7A9A62', 'living.glow': '#B5D39A',
 } as const;
 
 export type PalToken = keyof typeof PALETTE;

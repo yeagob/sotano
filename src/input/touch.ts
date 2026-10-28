@@ -1,5 +1,6 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { materialTexture } from '../render/atlas';
+import { iconDataUrl } from '../render/icons';
 import { palCss } from '../content/palette';
 import { BINDINGS, DOUBLE_TAP_MS, TAP_MS, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
@@ -154,13 +155,14 @@ export class TouchControls {
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
-    const key = `${p.top}:${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}`;
+    const top = p.hand.at(-1);
+    const key = `${typeof top === 'number' ? top : top?.id ?? 0}:${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}`;
     if (key === this.key) return;
     this.key = key;
     const place = this.buttons.get('place')!, thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
     place.classList.toggle('off', !p.hand.length);
     thr.classList.toggle('off', !p.hand.length);
-    place.style.setProperty('--block', p.top ? `url("${this.blockUrl(p.top)}")` : 'none');
+    place.style.setProperty('--block', top ? `url("${typeof top === 'number' ? this.blockUrl(top) : iconDataUrl(top, 3)}")` : 'none');
     bomb.classList.toggle('off', p.bombs <= 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     this.buttons.get('inventory')!.querySelector('span')!.textContent = g.inventory.items.length ? String(g.inventory.items.length) : '';

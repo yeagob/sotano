@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { ENEMIES } from '../src/content/enemies';
+import { BOSSES } from '../src/content/bosses';
+import { CREATURES } from '../src/content/creatures';
 import { ITEMS } from '../src/content/items';
 import { MATERIALS } from '../src/content/materials';
 import { SYNERGIES } from '../src/content/synergies';
@@ -30,6 +32,8 @@ function* strings(c: Catalog): Generator<[string, string]> {
   }
 }
 
+const BEINGS = [...ENEMIES, ...BOSSES, ...CREATURES];
+
 describe('catalogs', () => {
   it('locale codes are unique and English is first', () => {
     expect(LOCALES[0]).toBe(EN);
@@ -57,13 +61,13 @@ describe('catalogs', () => {
       expect(c.synergies[s.id]?.name && c.synergies[s.id]?.description, `${l.code} synergy ${s.id}`).toBeTruthy();
       for (const id of Object.keys(s.messages ?? {})) expect(c.synergies[s.id]?.messages?.[id], `${l.code} ${s.id} message ${id}`).toBeTruthy();
     }
-    for (const e of ENEMIES) expect(c.enemies[e.id]?.name && c.enemies[e.id]?.pattern, `${l.code} enemy ${e.id}`).toBeTruthy();
+    for (const e of BEINGS) expect(c.enemies[e.id]?.name && c.enemies[e.id]?.pattern, `${l.code} enemy ${e.id}`).toBeTruthy();
     for (const m of MATERIALS) expect(c.materials[m.key], `${l.code} material ${m.key}`).toBeTruthy();
     // stale entries: ids that no longer exist
     const ids = new Set(ITEMS.map(i => i.id));
     for (const id of Object.keys(c.items)) expect(ids.has(id), `${l.code} stale item ${id}`).toBe(true);
     for (const id of Object.keys(c.synergies)) expect(SYNERGIES.some(s => s.id === id), `${l.code} stale synergy ${id}`).toBe(true);
-    for (const id of Object.keys(c.enemies)) expect(ENEMIES.some(e => e.id === id), `${l.code} stale enemy ${id}`).toBe(true);
+    for (const id of Object.keys(c.enemies)) expect(BEINGS.some(e => e.id === id), `${l.code} stale enemy ${id}`).toBe(true);
     for (const k of Object.keys(c.materials)) expect(MATERIALS.some(m => m.key === k), `${l.code} stale material ${k}`).toBe(true);
     for (const d of ITEMS) for (const id of Object.keys(c.items[d.id]?.messages ?? {})) {
       expect(d.messages?.[id], `${l.code} ${d.id} message ${id} has no English`).toBeDefined();

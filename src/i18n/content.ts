@@ -57,7 +57,7 @@ export const pathName = (tag: PathTag) => t(`path.${tag}`);
 
 /** Causes with their own message (`cause.<id>`). */
 type CauseId<K = MessageKey> = K extends `cause.${infer C}` ? C : never;
-const CAUSES = ['judgement', 'bomb', 'contact', 'item', 'console', 'lava', 'fire', 'drown'] as const satisfies readonly CauseId[];
+const CAUSES = ['judgement', 'bomb', 'contact', 'item', 'console', 'lava', 'fire', 'drown', 'toll'] as const satisfies readonly CauseId[];
 
 /**
  * What a damage `source` id means to the player, for the death screen. Sources come from the

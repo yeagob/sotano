@@ -93,11 +93,11 @@ Three complete schemes; the game follows whichever device you used last (details
 | Move | **WASD** | Left stick | Left thumb (floating stick) |
 | Jump (hold to swim up) | **Space** | **A** | The arrow |
 | Cast intentions | **Left click** (hold) | **RT** (hold) | The bead of light (hold; drag to aim) |
-| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks the hardest blocks | **F** | **LB** | Double tap the bead of light |
-| Pick up a block | Walk over it with room in your hand | same | same |
+| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | Double tap the bead of light |
+| Pick up a block or a part | Walk over it with room in your hand | same | same |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
-| Place the top block (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
-| Throw the top block | **Q** | **B** | The flying block |
+| Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
+| Throw the top block or part | **Q** | **B** | The flying block |
 | Drop a bomb | **E** | **RB** | The seed |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
 | Inventory and stats | **Tab** (or **I**) | **Y** (d-pad moves, **B** closes) | The grid (top) |
@@ -157,13 +157,13 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 
 ## What's in the game today
 
-- **The roots and the circles.** Floor 0 is the earth: every door open, a lesson carved on the walls of each room, and peaceful creatures. Below it the circles are built from hand-made room templates, laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Rooms spread into the empty space around them (long galleries, stepped wells, caverns), and every floor is built from its own materials. Beating a boss reveals its practice and cracks a hole in the floor: you fall into the next one. A minimap fills in as you go.
+- **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a fixed plan: three doors from the start, a treasure room that teaches the practices, a way down, and a ring of lessons that comes back to the treasure room. You can skip it. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Rooms can spread into the empty space around them (long galleries, stepped wells, caverns) while the map keeps one cell per room, under vaults of many shapes, and every floor is built from its own materials. Beating a boss reveals its practice and cracks a hole in the floor. The way down asks a toll (a heart, a key, a bomb, a block from your hand; from the sixth floor practices, more on every floor), and you choose what to give in a window: then you fall into the next one. A minimap fills in as you go.
+- **Forty projections** that seal the room and fight you, from Doubt and the Inner Critic to Panic and What-if, each with its own attack and its own reaction to the elements.
 - **The giant tree above.** Built in stories, each a hall of its own joined by spiral stairs, loaded only as you come near.
-- **Projections** that seal the room and fight you: Doubt, the Inner Critic and Panic, with more designed (Procrastination, Distraction, Perfectionism, Comparison).
-- **Creatures.** Wonder, the first creature of the roots: a paper moth of curiosity that keeps you company.
-- **Survival** with hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
-- **Elements.** Water, lava and fire, and the reactions between them.
-- **Practices and synergies.** More than two dozen practices from quality 1 to 4, each with a clear effect line on pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
+- **Creatures** of the depths that never seal a room and never die: a positive intention heals them, a negative one sends them into the blocks.
+- **Survival** with Isaac-style hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
+- **Elements.** Water to wade or drown in, lava to keep away from, fire that eats crates. Water on lava makes obsidian. Each projection reacts to elements in its own way: Panic calms in water and goes off in fire.
+- **Practices and synergies.** Thirty practices from quality 1 to 4, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
 - **Unique runs.** Layouts, room moods, rewards and projections all come from the seed.
 
 The full catalogue is in [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names). The thirteen floors, as built and as designed, are in [LEVELS.md](docs/design/LEVELS.md).

@@ -19,24 +19,24 @@ export function boxHits(solid: Solid, x: number, y: number, z: number, hw: numbe
   return false;
 }
 
-/** Moves the body; on collision along an axis it snaps to the wall and zeroes that velocity. */
-export function moveBody(solid: Solid, b: Body, dt: number) {
+export function moveBody(solid: Solid, b: Body, dt: number, walls?: Solid) {
   b.onGround = false;
   // small substeps so nothing tunnels through blocks at high speed
   const steps = Math.max(1, Math.ceil(Math.max(Math.abs(b.vx), Math.abs(b.vy), Math.abs(b.vz)) * dt / 0.4));
   const h = dt / steps;
   for (let s = 0; s < steps; s++) {
     axis(solid, b, 'y', b.vy * h);
-    axis(solid, b, 'x', b.vx * h);
-    axis(solid, b, 'z', b.vz * h);
+    axis(solid, b, 'x', b.vx * h, walls);
+    axis(solid, b, 'z', b.vz * h, walls);
   }
 }
 
-function axis(solid: Solid, b: Body, a: 'x' | 'y' | 'z', d: number) {
+function axis(solid: Solid, b: Body, a: 'x' | 'y' | 'z', d: number, walls?: Solid) {
   if (d === 0) return;
   const prev = b[a];
   b[a] = prev + d;
-  if (!boxHits(solid, b.x, b.y, b.z, b.hw, b.h)) return;
+  const hit = () => boxHits(solid, b.x, b.y, b.z, b.hw, b.h) || (a !== 'y' && !!walls && boxHits(walls, b.x, b.y, b.z, b.hw, b.h));
+  if (!hit()) return;
   // back off to the block's edge
   if (a === 'y') {
     b.y = d > 0 ? Math.floor(prev + b.h + d) - b.h - EPS : Math.floor(prev + d) + 1;
@@ -45,8 +45,8 @@ function axis(solid: Solid, b: Body, a: 'x' | 'y' | 'z', d: number) {
   } else {
     const edge = d > 0 ? Math.floor(prev + b.hw + d) - b.hw - EPS : Math.floor(prev - b.hw + d) + 1 + b.hw + EPS;
     b[a] = edge;
-    if (boxHits(solid, b.x, b.y, b.z, b.hw, b.h)) b[a] = prev; // just in case
+    if (hit()) b[a] = prev; // just in case
     if (a === 'x') b.vx = 0; else b.vz = 0;
   }
-  if (a === 'y' && boxHits(solid, b.x, b.y, b.z, b.hw, b.h)) b.y = prev;
+  if (a === 'y' && hit()) b.y = prev;
 }

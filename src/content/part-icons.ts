@@ -2,7 +2,7 @@
 // shape (flesh heavy, heart compact, mind drawn, essence open); the source is the colour and mark.
 
 import type { ItemIcon } from '../items/types';
-import { pal } from './palette';
+import { pal, type PalToken } from './palette';
 
 export const PART_ICONS: Record<string, ItemIcon> = {
   'doubt.flesh': {
@@ -210,3 +210,76 @@ export const PART_ICONS: Record<string, ItemIcon> = {
     palette: { f: pal('cold.dim'), b: pal('cold.body'), w: pal('cold.white') },
   },
 };
+
+const BASE_ROWS: Record<string, string[]> = {
+    flesh: [
+      '............',
+      '....mmmm....',
+      '...mbbbbm...',
+      '..mbbwwbbm..',
+      '.mbbwwbbbbm.',
+      '.mbbbbbbbbm.',
+      '.mbbbdbbbbm.',
+      '.mbbbbbbdbm.',
+      '.mbbdbbbbbm.',
+      '..mbbbbbbm..',
+      '...mmmmmm...',
+      '............'
+    ],
+    heart: [
+      '............',
+      '...mm..mm...',
+      '..mbbmmbbm..',
+      '..mbwbbbbm..',
+      '..mbbbbbbm..',
+      '...mbbbbm...',
+      '....mbbm....',
+      '.....mm.....',
+      '............',
+      '............',
+      '............',
+      '............'
+    ],
+    mind: [
+      '............',
+      '...mmmmmm...',
+      '..mbbbbbbm..',
+      '.mbbbwwbbbm.',
+      '.mbbwwwwbbm.',
+      '.mbbwwwwbbm.',
+      '.mbbbwwbbbm.',
+      '..mbbbbbbm..',
+      '...mmmmmm...',
+      '............',
+      '............',
+      '............'
+    ],
+    essence: [
+      '.....w......',
+      '....wbw.....',
+      '....bwb.....',
+      '...bbwbb....',
+      '...bbwbb....',
+      '..bbbwbbb...',
+      '..bbbwbbb...',
+      '.bbbbwbbbb..',
+      '.dbbbwbbbd..',
+      '..dddddd....',
+      '............',
+      '............'
+    ],
+};
+
+const TONES: { w: string; b: string; d: string; m: string }[] = [
+  { w: 'cold.white', b: 'cold.body', d: 'cold.dim', m: 'cold.deep' },
+  { w: 'paper.hi', b: 'paper.base', d: 'paper.dark', m: 'ink.ash' },
+  { w: 'husk.doubt.hi', b: 'husk.doubt.base', d: 'husk.doubt.dark', m: 'ink.void' },
+  { w: 'husk.panic.hi', b: 'husk.panic.base', d: 'husk.panic.dark', m: 'ink.void' },
+];
+
+export function bestiaryPartIcon(source: string, kind: string): ItemIcon {
+  let h = 0;
+  for (const c of source) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const t = TONES[h % TONES.length];
+  return { rows: BASE_ROWS[kind], palette: { w: pal(t.w as PalToken), b: pal(t.b as PalToken), d: pal(t.d as PalToken), m: pal(t.m as PalToken) } };
+}

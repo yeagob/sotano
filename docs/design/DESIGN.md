@@ -103,6 +103,7 @@ There's no floating "item drop" like in Minecraft: the broken block *is* the obj
 - **Bombs are loose cubes too:** you can kick them, enemies and intentions push them, and **an intention hit sets a bomb off at once**.
 - **Place:** aim at a block face and place it (like Minecraft, ~5 blocks of reach).
 - **Throw:** launch the block you hold (Q, or right click when there's nowhere to place it).
+- **Parts** (what a released projection leaves, [BESTIARY §5.7](BESTIARY.md)) take a slot like a block: walking onto one lifts it into a free slot, and you place it on the floor (right click) or throw it (Q) the same way. They are not items and no inventory window lists them. Keys and bombs are the only counters that cost no slot, and only a carried thing can be handed to someone.
 - **Use:** some blocks have an active effect when placed or dropped (the equivalent of cards and runes):
   - TNT: placed, explodes after a delay.
   - Light block: lights up dark areas.
@@ -168,6 +169,7 @@ So digging is a **decision**, not an exploit.
 ### Going down
 
 - **Trapdoor** in the boss room (fast and safe). Today: 1.5 s after you enter, the boss's practice appears on the room's pedestal and the floor cracks open over a 2×2 shaft. It **never opens under you**: it waits until you step aside.
+- On floors 0–8, the trapdoor and your own hole ask a **toll** first: what you give (a heart, a key, a bomb, a block from your hand, from the sixth floor practices) and how many grows with the floor. See [LEVELS.md §1c](LEVELS.md).
 - **Your own hole**, at any time: if there's a room below, you drop into it (enemies included!). If there's nothing, you keep digging rock until you reach the next floor.
 - Falling far hurts (TBD; maybe half a heart beyond N blocks).
 
@@ -252,6 +254,7 @@ If that's fun, it grows to 4 floors, bosses and secrets.
 5. **Fall damage:** yes or no? It strongly affects the freedom to dig down.
 6. **Camera:** first person as requested. Worth prototyping a 45° top-down camera too (closer to Isaac, more readable on mobile) before locking it in.
 7. **Platforms:** mobile and PC from the start? The Joel gift project proves mobile is viable, but it constrains performance and controls. (Decided: keyboard and mouse, gamepad and touch in landscape all ship complete; docs/architecture/input/README.md.)
+8. **A shop for what you carry** (pending task, owner, 2026-10-28): items and parts need a purpose, and many have none yet. A shop where they can be traded for other things would give them one. Open: where the shop is (a room type, a vendor, a floor), what trades for what, and whether keys and bombs count as currency.
 
 ## Surface, sky and new runs
 

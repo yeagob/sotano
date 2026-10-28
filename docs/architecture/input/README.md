@@ -34,6 +34,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | `paused` | The pause card is up |
 | `dead` | The death screen |
 | `inventory` | The inventory window |
+| `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c) |
 
 ## 3. The actions
 
@@ -50,9 +51,9 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | inventory | press | play, inventory | Tab / I | Y | the grid |
 | pause | press | play, paused | Esc | Menu | the two bars |
 | restart | press | see each device | R | View | "New run" |
-| confirm | press | prompt, paused, dead | click / Enter | A | tap |
-| navigate | axis | inventory | arrows | d-pad | tap a tile |
-| back | press | inventory | Esc | B | ✕ |
+| confirm | press | prompt, paused, dead, toll | click / Enter | A | tap |
+| navigate | axis | inventory, toll | arrows | d-pad | tap a tile |
+| back | press | inventory, toll | Esc | B | ✕ |
 
 ## 4. Pausing
 

@@ -7,13 +7,18 @@ import type { Input } from '../input/input';
 import { moveBody, type Body } from '../physics/voxel-collide';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
+import type { PartDef } from '../content/parts';
 import type { Actor, ActorId, Faction } from './actors';
 
 export const EYE = 1.62;
 const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
+const SLOW_FACTOR = 0.5;
 /** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
 const ICE_GRIP = 0.12;
 const SWIM_G = 0.2, SINK = 1.5, SWIM_UP = 3.4, SWIM_OUT = 5.2, WADE_JUMP = 0.7, SWIM_CONTROL = 0.5;
+
+/** What the hand holds: a block (its material) or a part a projection left (DESIGN §6). */
+export type Carried = number | PartDef;
 
 /** What the player's body is in this frame (docs/design/ELEMENTS.md §2: wade with your feet in, swim with your head under). */
 export interface PlayerMedium { feet: ElementDef | null; head: ElementDef | null; slippery?: boolean }
@@ -41,14 +46,16 @@ export class Player implements Actor {
   set alive(v: boolean) { this.dead = !v; }
   body: Body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: false };
   yaw = 0; pitch = 0;
-  /** Blocks in your hand, bottom to top (materials). The top one is placed/thrown first. */
-  hand: number[] = [];
+  /** What your hand holds, bottom to top. The top one is placed or thrown first. */
+  hand: Carried[] = [];
   keys = 0;
   bombs = 1;
   /** Health in damage points (max = HEART × the maxHearts stat; the HUD draws quarter hearts). */
   hp = 24;
   /** Seconds of invulnerability left after a hit. */
   invulnT = 0;
+  slowT = 0;
+  muteT = 0;
   dead = false;
   fireCooldown = 0;
   /** Distance walked on the ground (drives camera and hand bobbing). */
@@ -64,7 +71,8 @@ export class Player implements Actor {
   private jumpBuffer = 0;
   private coyote = 0;
 
-  get top() { return this.hand.length ? this.hand[this.hand.length - 1] : 0; }
+  /** The material of the top block: 0 when the hand is empty or its top is a part. */
+  get top() { const c = this.hand.at(-1); return typeof c === 'number' ? c : 0; }
 
   spawnAt(x: number, y: number, z: number) {
     Object.assign(this.body, { x, y, z, vx: 0, vy: 0, vz: 0 });
@@ -91,7 +99,9 @@ export class Player implements Actor {
     const fluid = medium.feet?.fluid ? medium.feet : null;
     const swim = !!medium.head?.swim;
     this.swimming = swim;
-    const speed = WALK * stats.moveSpeed * (fluid ? fluid.wade : 1);
+    this.slowT = Math.max(0, this.slowT - dt);
+    this.muteT = Math.max(0, this.muteT - dt);
+    const speed = WALK * stats.moveSpeed * (fluid ? fluid.wade : 1) * (this.slowT > 0 ? SLOW_FACTOR : 1);
     const b = this.body;
     // on ice you keep sliding: far less grip to start, turn or stop
     const k = swim ? SWIM_CONTROL : b.onGround ? (medium.slippery ? ICE_GRIP : 1) : AIR_CONTROL;

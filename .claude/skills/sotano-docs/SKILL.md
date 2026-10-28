@@ -98,7 +98,7 @@ For key architecture decisions (new core systems, cross-cutting contracts), the 
 
 ## 5. Before you commit
 
-- [ ] Code comments in English, matching the surrounding density.
+- [ ] Code reads on its own; comments (English) only where the code cannot say why: a rule, a trap, a decision. Never narrate what the code does.
 - [ ] Every affected doc updated (table in §1), in this same commit.
 - [ ] New docs indexed in their section README; new sections indexed in `docs/README.md` and the root README.
 - [ ] Root README: "What you can do", controls, items table, roadmap and status line still true.

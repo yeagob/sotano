@@ -4,6 +4,8 @@
 import * as THREE from 'three';
 import { pal, palCss } from '../content/palette';
 import type { ItemDef } from '../items/types';
+import type { PartDef } from '../content/parts';
+import type { Carried } from '../entities/player';
 import { materialTexture } from './atlas';
 import { glowTexture, iconTexture } from './icons';
 
@@ -45,14 +47,17 @@ export class Hands {
   readonly camera: THREE.PerspectiveCamera;
   private right = arm(1);
   private left = arm(-1);
-  /** The top block of your hand rides in the left hand; the next one (if you carry 2+) in the right. */
+  /** The top block (or part) of your hand rides in the left hand; the next one (if you carry 2+) in the right. */
   private block: THREE.Mesh;
   private second: THREE.Mesh;
+  private card: THREE.Mesh;
+  private cardSecond: THREE.Mesh;
   private blockMats = new Map<number, THREE.Material>();
+  private cardMats = new Map<string, THREE.Material>();
   private swing = 0;
   private place = 0;
-  private heldNow = 0;
-  private secondNow = 0;
+  private heldNow: Carried | 0 = 0;
+  private secondNow: Carried | 0 = 0;
   /** Isaac-style "hold up": both hands raise a new item for a moment after picking it up. */
   private holdT = 0;
   private holdItem: THREE.Sprite;
@@ -82,6 +87,14 @@ export class Hands {
     this.second.rotation.set(0.3, -0.6, -0.1);
     this.second.visible = false;
     this.right.add(this.second);
+    this.card = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.28));
+    this.card.position.copy(this.block.position);
+    this.card.visible = false;
+    this.left.add(this.card);
+    this.cardSecond = new THREE.Mesh(this.card.geometry);
+    this.cardSecond.position.copy(this.second.position);
+    this.cardSecond.visible = false;
+    this.right.add(this.cardSecond);
     this.scene.add(this.right, this.left);
     this.holdGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.holdItem = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false }));
@@ -96,7 +109,7 @@ export class Hands {
   charge(k: number) { this.chargeK = k; }
 
   /** Raise `def` above both hands for HOLD_TIME seconds. */
-  holdUp(def: ItemDef) {
+  holdUp(def: ItemDef | PartDef) {
     this.holdT = Hands.HOLD_TIME;
     (this.holdItem.material as THREE.SpriteMaterial).map = iconTexture(def);
     (this.holdItem.material as THREE.SpriteMaterial).needsUpdate = true;
@@ -108,8 +121,8 @@ export class Hands {
   fire() { this.swing = 1; }
   placed() { this.place = 1; }
 
-  /** `held` = top block of the hand (left), `second` = the one below it (right), 0 = none. */
-  update(dt: number, walkPhase: number, held: number, second = 0) {
+  /** `held` = top of the hand (left), `second` = the one below it (right), 0 = none. */
+  update(dt: number, walkPhase: number, held: Carried | 0, second: Carried | 0 = 0) {
     this.chargeGlow.visible = this.chargeK > 0;
     if (this.chargeK > 0) {
       const k = 0.08 + this.chargeK * 0.22;
@@ -156,19 +169,36 @@ export class Hands {
     }
     if (held !== this.heldNow) {
       this.heldNow = held;
-      this.block.visible = held !== 0;
-      if (held) this.block.material = this.blockMaterial(held);
+      this.setCarried(this.block, this.card, held);
     }
     if (second !== this.secondNow) {
       this.secondNow = second;
-      this.second.visible = second !== 0;
-      if (second) this.second.material = this.blockMaterial(second);
+      this.setCarried(this.second, this.cardSecond, second);
     }
+    const raising = this.holdT > 0;
+    this.showCarried(this.block, this.card, held, !raising);
+    this.showCarried(this.second, this.cardSecond, second, !raising);
+  }
+
+  private setCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0) {
+    if (typeof c === 'number' && c) cube.material = this.blockMaterial(c);
+    if (typeof c === 'object') card.material = this.cardMaterial(c);
+  }
+
+  private showCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0, shown: boolean) {
+    cube.visible = shown && typeof c === 'number' && c !== 0;
+    card.visible = shown && typeof c === 'object';
   }
 
   private blockMaterial(m: number) {
     let mat = this.blockMats.get(m);
     if (!mat) { mat = new THREE.MeshLambertMaterial({ map: materialTexture(m) }); this.blockMats.set(m, mat); }
+    return mat;
+  }
+
+  private cardMaterial(def: PartDef) {
+    let mat = this.cardMats.get(def.id);
+    if (!mat) { mat = new THREE.MeshBasicMaterial({ map: iconTexture(def), transparent: true, depthWrite: false }); this.cardMats.set(def.id, mat); }
     return mat;
   }
 }

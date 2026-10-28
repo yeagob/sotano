@@ -1,6 +1,6 @@
 # Bestiary: projections, creatures and presences
 
-Status: **design proposal**, answered by the owner on 2026-10-27 (§13 records the answers). Built today: Doubt, the Lectern (Inner Critic) and Panic ([ENTITIES.md §5](../architecture/ENTITIES.md)), and intention polarity (§1.1, built 2026-10-27). Everything else here is direction, to be built milestone by milestone (§12) and to pass the art gate ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)) one creature at a time. Names marked *(proposal)* wait for the owner (§13).
+Status: **partly built** (2026-10-28), from the owner's answers of 2026-10-27 (§13). Built: the seal, omens and waves, intention polarity (§1.1), the attack engine, 40 projection entries, 11 creatures and 14 bosses ([ENTITIES.md §5](../architecture/ENTITIES.md)). Not built, or built simpler than designed: presences, rooted variants, and the rest listed in §12.1. Each new being must still pass the art gate ([`sotano-art`](../../.claude/skills/sotano-art/SKILL.md)); §12.1 says which have not. Names marked *(proposal)* wait for the owner (§13).
 
 The owner's brief (translated): *"Design the whole layer of enemies, final bosses and creatures in general. Not everything has to be hostile. Projections no longer have to be born in the middle of the room: they can appear at different spawn points, announced by particles. When you enter a room with enemies, the doors close with force and a sound, and they start to appear with particles that make them evident. There can be waves at given moments, but it must be very clear, with spatial sound, where they appear, and particles must announce them before they appear. There can be enemies whose attacks cross the room, that launch themselves. Take inspiration from the bestiaries of Noita and Isaac (not Minecraft, which is poor in this sense), mix ideas and combine them with the floors' themes. Enemies must evolve as the floors evolve; there are unique enemies per great zone and random bosses depending on the zone. Also: beings who live in the depths and are not hostile, whom we can talk to and get knowledge, wisdom and lessons from. They can be permanent, or come to give a message and vanish. These non-hostile actors are immortal and live in key layouts."*
 
@@ -420,7 +420,7 @@ Numbness and turning away from yourself. The ninth circle's image is a frozen la
 
 ### 5.7 What projections leave behind (owner, 2026-10-27, proposal)
 
-When a projection is released, it may leave **parts** of itself: its **flesh** (carne), its **heart** (corazón), its **mind** (mente) or its **essence** (esencia). Each part is a collectible item, shown in the inventory with its name. Converted allies leave nothing: they are not released, they are integrated (§1.1).
+When a projection is released, it may leave **parts** of itself: its **flesh** (carne), its **heart** (corazón), its **mind** (mente) or its **essence** (esencia). Each part is a collectible thing you carry in your hand or a block slot, like a block, and its name shows on its slot. Converted allies leave nothing: they are not released, they are integrated (§1.1).
 
 **Chances per release** (owner, 2026-10-27, tuned in play): flesh 30 %, mind 12 %, heart 5 %, essence 2 %. A rooted projection (§4.2) rolls once more. Parts are drawn from the room's RNG fork.
 
@@ -434,9 +434,9 @@ When a projection is released, it may leave **parts** of itself: its **flesh** (
 
 The rest are named when they are built, with the same rule: the part's noun comes from the creature's own body or pattern, never from another game. Names go through [`sotano-i18n`](../../.claude/skills/sotano-i18n/SKILL.md) in both languages.
 
-**Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room, the Compost, is designed in §8.8.
+**Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room, the Compost, is designed in §8.8. Until those exist, parts have no use: a shop where they can be traded is a pending task ([DESIGN §13](DESIGN.md), item 8).
 
-**Status (built, Change A, 2026-10-27).** The twelve parts of the three built projections are in `src/content/parts.ts` (chances 30 / 12 / 5 / 2 %, rolled per release on the projection's own RNG path, [RNG.md §4](../architecture/RNG.md)). They drop as pickups, are collected into `Game.parts` (not items), and show in the inventory with their name. Their icons are by the art agent, passing the gate in `src/content/part-icons.ts`. Agreements, gifts and the rest of §8 are not built.
+**Status (built, Change A, 2026-10-27).** The twelve parts of the three built projections are in `src/content/parts.ts` (chances 30 / 12 / 5 / 2 %, rolled per release on the projection's own RNG path, [RNG.md §4](../architecture/RNG.md)). They drop as pickups and are carried in the hand, not in the inventory, which keeps only items, keys and bombs. Collecting one lifts it into the hand with the hold-up, no burst. Their icons are by the art agent, passing the gate in `src/content/part-icons.ts`. Agreements, gifts and the rest of §8 are not built.
 
 ---
 
@@ -800,6 +800,31 @@ These are the systems this design needs. Each key one goes through the **three-p
 | E5 | Presences: the Gardener (floor 0), the Wanderer, the Listener, the Cartographer; the dialogue card; the codex; the Compost (§8.8) | The non-hostile layer |
 | E6 | Zones III–V, the Threshold Guardian, the Shadow, the remaining Presences | The deep floors |
 | E7 | The Tree's patterns and bosses | With the Tree milestone (L5) |
+
+---
+
+### 12.1 Status (2026-10-28)
+
+What the game holds against this plan. "Simpler" is what was built with less than the design above.
+
+| Area | Built | Simpler than designed | Not built |
+|---|---|---|---|
+| Seal, omens, waves (§2) | The seal and slam, omens on seeded floor cells, waves of at most three, the clear | Spawn points are floor cells only: no walls, ceilings or liquids | The room director beyond the basic waves (§2.4), room triggers |
+| Attacks and movement (§3) | Shapes: line, ring, field, pull, sweep. Movement: walker, leaper, charger, flyer, and through-block movement (`ghost`) for phasers and burrowers | Undertow walks; it does not swim. Burrowers are the `ghost` movement, not a voxel path through the rock | Swimmer and mounted classes (§3.1) |
+| Projections (§5) | 40 entries in `content/enemies/` (38 files), from Doubt, the Inner Critic and Panic to What-if | Scarcity: no theft of pickups. Isolation: no ice walls. Comparison: does not copy your intentions. Hall of Mirrors: no bounce. Shortcut: no passage. Avoidance: its `shut` tag stands in for the seal. Perfectionism: armour, not a shell. Procrastination: splits on death, not when hit | Rooted variants (§4.2) |
+| Creatures (§7) | Eleven: Wonder, Rootling and Mossling (floor 0), Chirper and Delver (1–3), Bubbler and Ferryback (3–4), Drifter and Inkmite (5–6), Cinderwalker (7–8), Huddler (9) | None recorded | Leaflings and Star-mites (the Tree, direction only); the Boundary (proposal, §7) |
+| Bosses (§6) | Fourteen, one per floor from its zone's pool: phases at 2/3 and 1/3, arena changes, the way down | The Threshold Guardian's two routes open the same hole (§6.5) | The separate hole of the route of light |
+| Polarity (§1.1) | Projections, allies and creatures. Positive intentions heal creatures; negative ones send them into the blocks | None recorded | Presences; ally gifts at full health (§8.6); warmth decay |
+| Presences and messengers (§8) | Nothing | Nothing | All of them: the Gardener, the Listener, the Cartographer, the Trickster, the Echo, the Star-reader and the rest of §8.3; the dialogue card; the codex (§9); the Compost (§8.8) |
+| Art and sound (§10) | Spatial sound for omens, slams and telegraphs | None recorded | The art gate for the new beings: no separate reviewer and no gallery captures yet. The living palette (`living.*` in `content/palette.ts`) is still a proposal |
+| Review | Three-party review for polarity ([reviews/polarity.md](../reviews/polarity.md)) | None recorded | Three-party review for bosses and creatures |
+| Tests and sandbox | 257 tests pass. The `bestiary-smoke` scenario runs every projection in one room, and its report is saved ([SANDBOX.md](../architecture/SANDBOX.md)) | None recorded | None recorded |
+
+**Open for the owner**
+
+1. **Boss health.** §6.1 gives about 140 on floor 1 and 1 000 on floor 9, and ×1.35 per floor. Those two numbers contradict each other: ×1.35 for eight floors from 140 reaches about 1 540. The build follows the two ends: a curve of about ×1.28 a floor (`bossHp` in `content/bosses/index.ts`). Which one stands?
+2. **The living palette** (§10) and the art gate for creatures and projections built in this iteration.
+3. **Names marked *(proposal)*** (§13).
 
 ---
 

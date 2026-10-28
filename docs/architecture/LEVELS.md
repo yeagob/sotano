@@ -52,11 +52,22 @@ Everything that today reads "floor k of 4" reads the table instead: plans, rock 
 - Enemy budget `2 + floor` is capped (e.g. `min(2 + floor, 8)`) until L4 rebalances deep floors.
 - `GEN_VERSION` → 4 (every seed's world changes).
 
-### 2.3b Floor 0, the tutorial (owner)
+### 2.3b Floor 0, the tutorial: a fixed level (owner, 2026-10-28)
 
-- `LevelDef.tutorial`: doors never lock or seal (no vault padlock: its key-less vault becomes a plain treasure room), no projections.
-- **Lessons**: each floor-0 room carries one lesson (move, break, pick up and place, throw and kick, bombs, wade and swim, practices and the inventory, the way down). A lesson is a text key (`tutorial.*`, both languages, `sotano-i18n`) shown when you first enter the room, as an information banner that stays until clicked (owner rule), and written on a stone **tablet** in the room (a template marker, the art gate for its look). Order is fixed by the plan's distance from the start, so the first rooms teach the first things.
-- **Pedestals** draw only practices of quality 1–3 (`ItemPools` reserve with a quality cap for floor-0 slots).
+- The roots always have the **same plan**: `TUTORIAL_LAYOUT` in `world/floorplan.ts` (a 7 × 7 grid), built by `tutorialPlan()`, which draws nothing. Three open doors leave the start `S`: the treasure room `T` (its pedestal offers a practice of tier 1–3), the way down `B` (a dead end, its pedestal offers a practice of tier 1–4, drawn at random from the treasure pool), and the first lesson. The eight lessons `a`–`h` form a ring that goes round and comes back to `T`, so you can walk the whole level or skip it straight to `B`.
+- Each letter is a fixed template in `TUTORIAL_CELLS` (`content/rooms.ts`), with a flip only where the lesson needs one: the dig room's wall stands between you and its north door (`flipZ`). Doors are open everywhere and the floor has no chests.
+- Lessons in ring order from the start: move (`S`), step (`a`), intent (`b`), polarity (`c`, `roots-mend`), pit (`d`), bridge (`e`), breakthrough (`f`), kick (`g`), water (`h`), practices (`T`), the way down (`B`). Each lesson is a tablet on its room's walls (`lesson` per template).
+- **Loose loot**: every run lays one key and one bomb as random rewards, each on a random free tile of a random lesson room (`fork('floor', 0, 'loot')`, `FloorResult.keys` and `FloorResult.bombs`, pickups added when the floor activates). Never in the start, the treasure room or the way down.
+- `pedestalSlots` reads the cell's `maxQuality`: 3 for `T`, 4 for `B`. Tutorial pedestals never sit in chests.
+
+### 2.3c The way down: the toll (owner, 2026-10-28)
+
+- `content/levels.ts`: `tollOf(floor)` returns `{ count, practices }`. Floors 0–4 cost `floor + 1` things, taken from the hand (blocks), keys, bombs and hearts. From floor 5 (`PRACTICE_TOLL_FROM`) the way down costs `floor − 4` practices (1 on floor 5 … 4 on floor 8). Floor 9, which opens into silence, is free, and so is the hole of any floor without a toll.
+- **The gate**: the boss room's hole stays shut on a toll floor, cracked as before. When its timer runs out and the player stands over it, `Hud.openToll(game, k)` opens the toll window, once per approach (`BossState.asked`; stepping off and on asks again).
+- **The window** (`#toll` in `index.html`, `game/hud.ts`): tiles for each hand block, key, bomb, heart (`ceil(hp / 8)`) and, from floor 5, each practice. The tile ids are `hand:i`, `key:i`, `bomb:i`, `heart:i`, `item:i`. You pick exactly `count`; **Go down** stays off until you do; **Stay** closes it. It runs in context `toll` (`input/bindings.ts`), where confirm, navigate and back are live, and it pauses the simulation.
+- **Payment** (`Game.payToll(k, ids)`): it refuses anything that is not exactly the toll (wrong count, duplicate, out of range, a kind the toll does not take). Then it removes the blocks from the hand (by index), the keys and bombs (by count), the practices (`Inventory.lose`), and damages the player for each heart (8 points, one `toll` damage through `damageActor`, so items see it; a death shows "the price of the way down"). If the player survives, `openHole` opens the shaft and they fall.
+- **Input**: mouse and touch activate a tile by click; keyboard and pad confirm the selection. A click on an unlocked pointer while `engaged` no longer relocks it (`Input` `mousedown`), so the window keeps its cursor.
+- The console shortcut `nextFloor()` still opens the hole without a toll (a development tool).
 
 ### 2.4 Where rooms may appear
 
@@ -77,7 +88,7 @@ Rock bands follow `strata` (dirt and roots near the top, stone, deepstone, obsid
 
 - `src/content/levels.ts`: `LEVELS` (floors 0–9), `level(floor)`, `FIRST_FLOOR`, `LAST_FLOOR`; per level `kind`, `circle`, `rock`, `fog`, `tutorial`, `maxQuality`, `vaults` (floors 6–9 keep none: the third dead end stays a quiet room), `plan`, `strata`.
 - `world/floor.ts`: `floorY(k)` from `LAST_FLOOR`; `bandOf` → 0–9 or `SURFACE` (−1); `depthOf` (the surface is depth 0); `levelIndex(floor) = floor + 4` and `roomGid` for room, door and pedestal ids (positive even for tree floors −3…−1); `planDungeon` indexes plans and themes by floor; `pedestalSlots` carries `maxQuality`; `fillRock` reads `strata` (same two noise forks); only the surface is meshed at start, floors when carved.
-- Tutorial floor 0: no roster, no locked or boss doors (the last room is a plain door and only opens the way down), no boss pedestal flag, pedestals from the treasure pool capped at quality 3 (`ItemPools.reserve` drops the cap only if nothing that gentle is left). A lesson banner (`lesson.*`, EN + ES) on first entering each room, in order of steps from the start, the way down last.
+- Tutorial floor 0: no roster, no locked or boss doors, no boss pedestal flag, a fixed plan (§2.3b). A lesson banner (`lesson.*`, EN + ES) on first entering each room, in the order of the ring from the start.
 - `RoomTemplate.floors`: hazards (fire, lava, deep water) can't be on floor 0 (validator); lava from floor 3.
 - Fog per level (`LEVEL_FOG`), blended to the sky near the surface. `GEN_VERSION` 4; golden test on seed 0xBEEF.
 
@@ -129,7 +140,7 @@ Floors 1–5 use a fixed Tree layout on the 7×7 grid instead of the Isaac plann
 
 - `floorplan.ts`: `TREE_LAYOUT` (the kingdom opens onto two paths of its own, so the vault never stands between you and the floor), `treePlan(mirrored, vault)`, `TREE_ENTRY` / `TREE_EXIT`, `treeCell`; `generatePlan(…, fromExit)` grows floor 0 from its way down, right over floor 1's kingdom, and recomputes distances from the start. Tree floors 1–5 alternate north–south. `RoomType` gains `path`; the minimap draws paths as narrow bands. `GEN_VERSION` 6.
 - `rooms.ts`: cells `X` (obsidian to two under the ceiling, carved per tile under vaults) and `=` (a 2-deep dry pit); `walkParts` / `needsBuilding` (steps of 1, any drop, jumps over one-tile gaps only, all three tiles of each door approach, the centre, `K`, `P`, `H` and the pedestal's best side); validator: `P` and `H` at the centre, start rooms never need building, the centre reaches a door on foot, a room that needs building carries soft blocks to build with, hazards off floor 0.
-- Templates: the roots' tutorial set (`roots-*`, a lesson each, assigned in the order the rooms are reached: break, step, kick, pit, bridge, breakthrough; floor 0 uses only its own rooms), Tree paths (`path-*`, `nave`), and rooms themed on the circles (limbo, gale, downpour, weights, marsh, tombs, river, ditches, cocytus, islet, bulwarks). Old plain rooms live on floors 1–4 only; building rooms weigh 3. Test: on every floor at least half the fighting rooms need building, by weight (measured: 0.94 on floor 0, 0.55–0.70 below).
+- Templates: the roots' tutorial set (`roots-*`, a lesson each, placed by `TUTORIAL_LAYOUT` and `TUTORIAL_CELLS`, §2.3b), Tree paths (`path-*`, `nave`), and rooms themed on the circles (limbo, gale, downpour, weights, marsh, tombs, river, ditches, cocytus, islet, bulwarks). Old plain rooms live on floors 1–4 only; building rooms weigh 3. Test: on every floor at least half the fighting rooms need building, by weight (measured: 0.94 on floor 0, 0.55–0.70 below).
 - Later: walk checks per carved room over its real doors (L3), a phone performance pass (Tree floors carve 23 rooms), the floor-5 great pit and multi-cell rooms (L3).
 
 ## 7. L3 proposal (2026-10-27): rooms that span several cells, the great pit, checks per carved room

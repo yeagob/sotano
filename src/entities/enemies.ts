@@ -1,6 +1,3 @@
-// The enemy system: projections materialise at the centre of their room, move with the room's
-// flow field, stay leashed to their room, throw projectiles and dissolve when beaten.
-// Rules and numbers come from the definitions (src/content/enemies); every outcome that items
 // could care about goes back to the game through `EnemyHost`, which emits the events.
 
 import { fx } from '../core/fx';
@@ -8,16 +5,20 @@ import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
 import { FlowField, type RoomArea } from '../enemies/flowfield';
+import { Hazards, shapePoint, type FieldEffect, type HazardHost, type Shape, type Strike } from '../enemies/attacks';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
 import { hostile, type Actor } from './actors';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
-const PROJECTILE_GRAVITY = 14;
+const LOB_GRAVITY = 14;
 /** Seconds between target choices, and how much closer (blocks) a new target must be to switch. */
 const RETARGET = 0.25;
 const RETARGET_MARGIN = 1.5;
+const FLY_GAIN = 3;
+const FLY_MAX = 4;
+const NO_SOLID = () => false;
 
 type Solid = (x: number, y: number, z: number) => boolean;
 
@@ -38,12 +39,18 @@ export interface EnemyHost {
   projectileHit(target: Actor, damage: number, thrower: number): void;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
+  smash(e: Enemy, x: number, y: number, z: number, tier: number, damage: number): boolean;
   burst(e: Enemy, radius: number): void;
   died(e: Enemy): void;
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
+  hurtActor(target: Actor, amount: number, cause: string, owner: number): void;
+  affectActor(target: Actor, effect: FieldEffect, seconds: number): void;
+  arena(e: Enemy, what: string): void;
+  summon(e: Enemy, defIds: string[]): void;
+  cue(kind: string, x: number, y: number, z: number): void;
 }
 
-interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction'] }
+interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction']; gravity: number }
 
 export interface View {
   group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[];
@@ -59,7 +66,6 @@ const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
  *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
 const WARM_GLOW = new THREE.Color(pal('captive.ember')).multiplyScalar(0.35);
 
-/** A projection's cube model, exactly as the game draws it (the gallery uses it too). */
 export function buildModel(def: EnemyDef): View {
   const group = new THREE.Group();
   const parts = new Map<string, THREE.Object3D[]>();
@@ -88,6 +94,7 @@ export class Enemies {
   private projectiles: Projectile[] = [];
   private projMesh: THREE.InstancedMesh;
   private group = new THREE.Group();
+  private hazards: Hazards;
   private m = new THREE.Matrix4();
   private euler = new THREE.Euler();
   private time = 0;
@@ -99,21 +106,30 @@ export class Enemies {
     this.projMesh.frustumCulled = false;
     this.projMesh.count = 0;
     scene.add(this.projMesh);
+    const hazardHost: HazardHost = {
+      actors: () => host.actors(),
+      hurt: (t, dmg, cause, owner) => host.hurtActor(t, dmg, cause, owner),
+      affect: (t, effect, seconds) => host.affectActor(t, effect, seconds),
+      push: (t, vx, vz) => { t.body.vx += vx; t.body.vz += vz; },
+      live: (shape: Shape) => { const [x, y, z] = shapePoint(shape); host.cue(shape.kind, x, y, z); },
+    };
+    this.hazards = new Hazards(scene, hazardHost);
   }
 
   dispose() {
     this.scene.remove(this.group);
     this.scene.remove(this.projMesh);
+    this.hazards.dispose();
     this.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
   }
 
-  /** Creates an enemy (already approved by `enemySpawn`). It materialises over SPAWN_TIME. */
   spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
     const e: Enemy = {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
+      hidden: false, stage: 0, hold: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -128,20 +144,30 @@ export class Enemies {
   /** Id of a hittable enemy touching the sphere (and passing `filter`), or -1. */
   at(x: number, y: number, z: number, r: number, filter?: (e: Enemy) => boolean): number {
     for (const e of this.list) {
-      if (!e.alive || e.spawning > 0 || (filter && !filter(e))) continue;
+      if (!e.alive || e.spawning > 0 || e.hidden || e.tags.has('shut') || (filter && !filter(e))) continue;
       const b = e.body;
       if (Math.abs(x - b.x) < b.hw + r && Math.abs(z - b.z) < b.hw + r && y > b.y - r && y < b.y + b.h + r) return e.id;
     }
     return -1;
   }
 
-  /** Applies damage already approved by `actorDamage`; returns true if it dissolved. */
   hurt(e: Enemy, amount: number, kx: number, kz: number) {
-    e.hp -= amount;
+    e.hp -= amount * (1 - (e.spec.armor ?? 0));
+    e.clock = 0;
     e.flash = 0.15;
     e.body.vx += kx; e.body.vz += kz;
-    if (e.hp <= 0) { this.kill(e); return true; }
-    return false;
+    if (e.hp > 0) return false;
+    if (e.spec.kind === 'creature') { e.hp = 1; this.hide(e, true); return false; }
+    this.kill(e);
+    return true;
+  }
+
+  hideRoom(room: number, hidden: boolean) {
+    for (const e of this.list) {
+      if (!e.alive || e.room !== room || e.spec.kind !== 'creature') continue;
+      if (!hidden) e.hp = e.maxHp;
+      this.hide(e, hidden);
+    }
   }
 
   kill(e: Enemy) {
@@ -151,6 +177,7 @@ export class Enemies {
     // release (docs/art/DECISIONS.md §8.6): host chips fall, light rises; no gore, no flash
     for (const p of e.spec.model.slice(0, 8)) if (!p.glow) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
     this.host.particles(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 12, 1.6, 0.05);
+    this.hazards.clear(e.id);
     const v = this.views.get(e.id);
     if (v) {
       this.group.remove(v.group);
@@ -159,6 +186,14 @@ export class Enemies {
       this.views.delete(e.id);
     }
     this.host.died(e);
+  }
+
+  hide(e: Enemy, hidden: boolean) {
+    if (e.hidden === hidden) return;
+    e.hidden = hidden;
+    const v = this.views.get(e.id);
+    if (v) v.group.visible = !hidden;
+    if (hidden) this.host.particles(e.body.x, e.body.y + 0.4, e.body.z, pal('mat.dirt.base'), 6, 1.5, 0.06);
   }
 
   update(dt: number) {
@@ -172,13 +207,25 @@ export class Enemies {
       near: e => {
         let best: Actor | null = null, bd = Infinity;
         for (const a of actors) if (a.alive && a.faction === 'self') { const d = Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z); if (d < bd) { bd = d; best = a; } }
-        return best ? { id: best.id, x: best.body.x, y: best.body.y, z: best.body.z } : null;
+        return best ? { id: best.id, x: best.body.x, y: best.body.y, z: best.body.z, vx: best.body.vx, vz: best.body.vz } : null;
       },
       dist: (e, t) => Math.hypot(t.x - e.body.x, t.z - e.body.z),
       toward: (e, t) => this.toward(e, t),
       shootAt: (e, x, y, z) => this.shoot(e, x, y, z),
       burst: (e, r) => host.burst(e, r),
       kill: e => this.kill(e),
+      strike: (e, s: Strike) => this.hazards.add(e.id, e.faction, `enemy:${e.def}`, s),
+      bolt: (e, dx, dy, dz, speed, damage) => this.bolt(e, dx, dy, dz, speed, damage),
+      safe: (e, x, y, z) => this.safeCell(e, x, y, z),
+      centre: e => { const rm = host.room(e.room); return [(rm.hx ?? rm.x0) + ROOM_W / 2, (rm.hz ?? rm.z0) + ROOM_D / 2]; },
+      quiet: e => this.blockingIn(e.room) === 0,
+      others: (e, radius, ids) => this.list.filter(o => o !== e && o.alive && o.room === e.room && ids.includes(o.def)
+        && Math.hypot(o.body.x - e.body.x, o.body.z - e.body.z) < radius),
+      bounds: e => { const rm = host.room(e.room); return [rm.x0, rm.z0, rm.x0 + (rm.w ?? ROOM_W) - 1, rm.z0 + (rm.d ?? ROOM_D) - 1]; },
+      cue: (e, kind) => host.cue(kind, e.body.x, e.body.y, e.body.z),
+      hide: (e, hidden) => this.hide(e, hidden),
+      arena: (e, what) => host.arena(e, what),
+      summon: (e, ids) => host.summon(e, ids),
     };
     for (const e of this.list) {
       if (!e.alive) continue;
@@ -198,7 +245,9 @@ export class Enemies {
         this.draw(e);
         continue;
       }
-      e.spec.behaviour.update(e, ctx);
+      if (e.hidden) { b.vx = 0; b.vz = 0; this.draw(e); continue; }
+      if (e.hold > 0) { e.hold -= dt; e.wishX = 0; e.wishZ = 0; }
+      else e.spec.behaviour.update(e, ctx);
       // leash: an enemy that wandered out of its room heads back to the centre of its home cell (a
       // room's space may be any shape, its home cell is always open)
       const rm = host.room(e.room);
@@ -208,17 +257,21 @@ export class Enemies {
         const dx = (rm.hx ?? rm.x0) + ROOM_W / 2 - b.x, dz = (rm.hz ?? rm.z0) + ROOM_D / 2 - b.z, l = Math.hypot(dx, dz) || 1;
         e.wishX = dx / l; e.wishZ = dz / l;
       }
-      const blend = 1 - Math.exp(-(b.onGround ? 10 : 2) * dt);
+      const blend = 1 - Math.exp(-(b.onGround || e.flyY >= 0 ? 10 : 2) * dt);
       b.vx += (e.wishX * e.speed * e.elemSpeed - b.vx) * blend;
       b.vz += (e.wishZ * e.speed * e.elemSpeed - b.vz) * blend;
-      b.vy = Math.max(b.vy - GRAVITY * dt, -30);
-      const wantX = b.vx, wantZ = b.vz;
-      moveBody(host.solid, b, dt);
-      // blocked while walking: hop up one block if there is room
-      if (b.onGround && (Math.abs(wantX) > 0.3 && b.vx === 0 || Math.abs(wantZ) > 0.3 && b.vz === 0)) {
+      if (e.flyY >= 0) b.vy += Math.max(-FLY_MAX, Math.min(FLY_MAX, (e.flyY - b.y) * FLY_GAIN)) - b.vy;
+      else b.vy = Math.max(b.vy - GRAVITY * dt, -30);
+      const wantX = b.vx, wantZ = b.vz, wasGround = b.onGround;
+      const walls = e.ghost || e.flyY >= 0 ? undefined : this.avoidWalls(e);
+      moveBody(e.ghost ? NO_SOLID : host.solid, b, dt, walls);
+      if (e.spec.breaks && b.onGround && !wasGround) this.crackBelow(e);
+      const blockedX = Math.abs(wantX) > 0.05 && b.vx === 0, blockedZ = Math.abs(wantZ) > 0.05 && b.vz === 0;
+      if (b.onGround && (blockedX || blockedZ)) {
         const fx = b.x + Math.sign(wantX) * (b.hw + 0.2), fz = b.z + Math.sign(wantZ) * (b.hw + 0.2);
-        if (!boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
+        if (boxHits(host.solid, fx, b.y, fz, b.hw, b.h) && !boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
       }
+      if (e.spec.breaks && (blockedX || blockedZ)) this.smashAhead(e, Math.sign(wantX) * +blockedX, Math.sign(wantZ) * +blockedZ, dt);
       if (b.y < -10) { this.kill(e); continue; }
       // touching actors it is hostile to (the game rate-limits each pair)
       for (const a of actors) {
@@ -230,6 +283,7 @@ export class Enemies {
       e.flash = Math.max(0, e.flash - dt);
       this.draw(e);
     }
+    this.hazards.update(dt);
     this.updateProjectiles(dt, actors);
     // forget the dead
     for (let i = this.list.length - 1; i >= 0; i--) if (!this.list[i].alive) this.list.splice(i, 1);
@@ -258,9 +312,42 @@ export class Enemies {
     return cur ? { id: cur.id, x: cur.body.x, y: cur.body.y, z: cur.body.z } : null;
   }
 
+  /**
+   */
+  private avoidWalls(e: Enemy): Solid | undefined {
+    const b = e.body;
+    if (this.host.hazard(e, Math.floor(b.x), Math.floor(b.y), Math.floor(b.z)) === 'avoid') return undefined;
+    return (x, y, z) => this.host.hazard(e, x, y, z) === 'avoid';
+  }
+
+  private safeCell(e: Enemy, x: number, y: number, z: number): boolean {
+    const cx = Math.floor(x), cy = Math.floor(y), cz = Math.floor(z);
+    return this.host.solid(cx, cy - 1, cz) && !this.host.solid(cx, cy, cz) && !this.host.solid(cx, cy + 1, cz)
+      && this.host.hazard(e, cx, cy, cz) !== 'avoid';
+  }
+
+  private crackBelow(e: Enemy) {
+    const b = e.body, tier = e.spec.breaks!.tier, damage = e.spec.breaks!.power;
+    const x0 = Math.floor(b.x - b.hw + 0.05), x1 = Math.floor(b.x + b.hw - 0.05), z0 = Math.floor(b.z - b.hw + 0.05), z1 = Math.floor(b.z + b.hw - 0.05);
+    const y = Math.floor(b.y) - 1;
+    for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) {
+      if (this.host.solid(x, y, z)) this.host.smash(e, x, y, z, tier, damage);
+    }
+  }
+
+  private smashAhead(e: Enemy, sx: number, sz: number, dt: number) {
+    const b = e.body, tier = e.spec.breaks!.tier, damage = e.spec.breaks!.power * dt;
+    const x = Math.floor(b.x + sx * (b.hw + 0.1)), z = Math.floor(b.z + sz * (b.hw + 0.1));
+    for (let y = Math.floor(b.y + 0.1); y <= Math.floor(b.y + b.h - 0.1); y++) {
+      if (this.host.solid(x, y, z) && this.host.smash(e, x, y, z, tier, damage)) return;
+    }
+  }
+
   /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
   private toward(e: Enemy, t: TargetView): [number, number] {
     const b = e.body, tx = t.x, tz = t.z;
+    const dx = tx - b.x, dz = tz - b.z, l = Math.hypot(dx, dz) || 1;
+    if (e.flyY >= 0 || e.ghost) return [dx / l, dz / l];
     // one field per room, target and kind of projection (each treats the elements its own way)
     const key = `${e.room}:${t.id}:${e.def}`;
     let f = this.flows.get(key);
@@ -270,9 +357,13 @@ export class Enemies {
       this.flows.set(key, f);
     }
     f.update(this.host.solid, tx, tz, `${this.host.worldVersion()}:${this.host.elemVersion()}`, (x, y, z) => this.host.hazard(e, x, y, z));
+    if (f.unsafe(b.x, b.z)) {
+      const out = f.escape(b.x, b.z);
+      if (out) return out;
+    }
     const d = f.direction(b.x, b.z);
     if (d) return d;
-    const dx = tx - b.x, dz = tz - b.z, l = Math.hypot(dx, dz) || 1;
+    if (this.host.hazard(e, Math.floor(b.x + dx / l * (b.hw + 0.3)), Math.floor(b.y), Math.floor(b.z + dz / l * (b.hw + 0.3))) === 'avoid') return [0, 0];
     return [dx / l, dz / l];
   }
 
@@ -296,9 +387,21 @@ export class Enemies {
     const sx = b.x, sy = b.y + b.h * 0.75, sz = b.z;
     const dx = tx - sx, dz = tz - sz, d = Math.hypot(dx, dz);
     const t = Math.max(0.5, d / 9);
-    this.projectiles.push({
-      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * PROJECTILE_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id, faction: e.faction,
+    this.push({
+      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * LOB_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id, faction: e.faction, gravity: LOB_GRAVITY,
     });
+  }
+
+  private bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number) {
+    const b = e.body, l = Math.hypot(dx, dy, dz) || 1;
+    this.push({
+      x: b.x, y: b.y + b.h * 0.6, z: b.z, vx: dx / l * speed, vy: dy / l * speed, vz: dz / l * speed, age: 0, damage, thrower: e.id, faction: e.faction, gravity: 0,
+    });
+    this.host.cue('bolt', b.x, b.y, b.z);
+  }
+
+  private push(p: Projectile) {
+    this.projectiles.push({ ...p, damage: p.damage });
     if (this.projectiles.length > 64) this.projectiles.shift();
   }
 
@@ -307,7 +410,7 @@ export class Enemies {
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const p = this.projectiles[i];
       p.age += dt;
-      p.vy -= PROJECTILE_GRAVITY * dt;
+      p.vy -= p.gravity * dt;
       p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
       let dead = p.age > 5;
       // the first actor hostile to the thrower's side that it touches

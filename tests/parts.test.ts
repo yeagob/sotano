@@ -7,10 +7,12 @@ import { Rng } from '../src/core/rng';
 import { LOCALES } from '../src/i18n/locales';
 
 describe('parts', () => {
-  it('has four parts for each of the three projections, named by their id', () => {
-    expect(PARTS).toHaveLength(12);
-    expect(new Set(PARTS.map(p => p.id)).size).toBe(12);
-    for (const source of ['doubt', 'critic', 'panic']) {
+  it('has four parts for each projection, named by their id', () => {
+    const sources = [...new Set(PARTS.map(p => p.source))];
+    expect(sources).toHaveLength(38);
+    expect(PARTS).toHaveLength(38 * 4);
+    expect(new Set(PARTS.map(p => p.id)).size).toBe(38 * 4);
+    for (const source of sources) {
       expect(PARTS.filter(p => p.source === source).map(p => p.kind).sort()).toEqual([...PART_KINDS].sort());
     }
     for (const p of PARTS) expect(p.id).toBe(`${p.source}.${p.kind}`);

@@ -56,7 +56,7 @@ export function runLab(game: Game, s: Scenario): LabResult {
     const snapshot = (t: number) => {
       const p = game.player, b = p.body;
       out.push('', `t ${t} (${num(t / TPS)} s)`);
-      out.push(`  player hp ${p.hp}/${game.maxHp} · at ${rel(b.x, b.y, b.z)} · hand [${p.hand.map(m => MATERIALS[m].key).join(' ')}] · bombs ${p.bombs} · keys ${p.keys}${p.dead ? ' · DEAD' : ''}`);
+      out.push(`  player hp ${p.hp}/${game.maxHp} · at ${rel(b.x, b.y, b.z)} · hand [${p.hand.map(c => typeof c === 'number' ? MATERIALS[c].key : c.id).join(' ')}] · bombs ${p.bombs} · keys ${p.keys}${p.dead ? ' · DEAD' : ''}`);
       const items = game.inventory.items.map(i => i.def.id);
       if (items.length) out.push(`  practices ${items.join(' ')} · synergies ${game.inventory.synergiesActive.map(x => x.id).join(' ') || '—'}`);
       for (const e of game.enemies.list) out.push(`  ${e.def}#${e.id} ${e.alive ? `hp ${num(e.hp)}/${e.maxHp}` : 'gone'} · ${e.faction} · at ${rel(e.body.x, e.body.y, e.body.z)}`);

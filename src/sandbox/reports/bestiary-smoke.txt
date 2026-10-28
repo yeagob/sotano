@@ -1,0 +1,143 @@
+# bestiary-smoke — Every projection of the bestiary in one room: no errors while they fight the player for a few seconds
+floor 9 · seed 1 · room 20×14×5 · 900 ticks (15.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 10.5 0.0 6.5 · hand [] · bombs 99 · keys 99
+  autopilot#2 hp 10.0/10 · projection · at 2.5 0.0 2.5
+  craving#3 hp 9.0/9 · projection · at 5.5 0.0 2.5
+  impulse#4 hp 8.0/8 · projection · at 8.5 0.0 2.5
+  avoidance#5 hp 10.0/10 · projection · at 11.5 0.0 2.5
+  procrastination#6 hp 18.0/18 · projection · at 14.5 0.0 2.5
+  distraction#7 hp 6.0/6 · projection · at 17.5 0.0 2.5
+  undertow#8 hp 14.0/14 · projection · at 2.5 0.0 5.5
+  rumination#9 hp 16.0/16 · projection · at 5.5 0.0 5.5
+  scarcity#10 hp 10.0/10 · projection · at 8.5 0.0 5.5
+  resentment#11 hp 14.0/14 · projection · at 11.5 0.0 5.5
+  gloom#12 hp 14.0/14 · projection · at 14.5 0.0 5.5
+  second-guessing#13 hp 26.0/26 · projection · at 17.5 0.0 5.5
+  alarm#14 hp 14.0/14 · projection · at 2.5 0.0 8.5
+  backlog#15 hp 60.0/60 · projection · at 5.5 0.0 8.5
+  noise#16 hp 4.0/4 · projection · at 8.5 0.0 8.5
+  perfectionism#17 hp 30.0/30 · projection · at 11.5 0.0 8.5
+  not-yet#18 hp 40.0/40 · projection · at 14.5 0.0 8.5
+  comparison#19 hp 30.0/30 · projection · at 17.5 0.0 8.5
+  hall-of-mirrors#20 hp 22.0/22 · projection · at 2.5 0.0 11.5
+  paralysis#21 hp 50.0/50 · projection · at 5.5 0.0 11.5
+  margin#22 hp 28.0/28 · projection · at 8.5 0.0 11.5
+  tribunal#23 hp 72.0/72 · projection · at 11.5 0.0 11.5
+  dread#24 hp 40.0/40 · projection · at 14.5 0.0 11.5
+  reactivity#25 hp 24.0/24 · projection · at 17.5 0.0 11.5
+  sulk#26 hp 18.0/18 · projection · at 2.5 0.0 14.5
+  shoulds#27 hp 16.0/16 · projection · at 5.5 0.0 14.5
+  dogma#28 hp 60.0/60 · projection · at 8.5 0.0 14.5
+  burnout#29 hp 26.0/26 · projection · at 11.5 0.0 14.5
+  spark#30 hp 12.0/12 · projection · at 14.5 0.0 14.5
+  pretence#31 hp 16.0/16 · projection · at 17.5 0.0 14.5
+  shortcut#32 hp 9.0/9 · projection · at 2.5 0.0 17.5
+  numbness#33 hp 30.0/30 · projection · at 5.5 0.0 17.5
+  cynicism#34 hp 26.0/26 · projection · at 8.5 0.0 17.5
+  isolation#35 hp 36.0/36 · projection · at 11.5 0.0 17.5
+  what-if#36 hp 34.0/34 · projection · at 14.5 0.0 17.5
+  doubt#37 hp 12.0/12 · projection · at 17.5 0.0 17.5
+  critic#38 hp 9.0/9 · projection · at 2.5 0.0 20.5
+  panic#39 hp 7.0/7 · projection · at 5.5 0.0 20.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 300 (5.0 s)
+  player hp 24/24 · at 10.0 -1.0 6.9 · hand [brick] · bombs 99 · keys 99
+  autopilot#2 hp 10.0/10 · projection · at 2.5 0.0 1.2
+  craving#3 hp 9.0/9 · projection · at 6.8 0.0 5.8
+  avoidance#5 hp 10.0/10 · projection · at 11.5 0.0 2.5
+  procrastination#6 hp 18.0/18 · projection · at 12.3 0.0 4.7
+  distraction#7 hp 6.0/6 · projection · at 11.5 2.2 7.3
+  undertow#8 hp 14.0/14 · projection · at 5.9 0.0 5.5
+  scarcity#10 hp 10.0/10 · projection · at 1.6 0.0 1.8
+  gloom#12 hp 14.0/14 · projection · at 14.5 3.2 5.5
+  second-guessing#13 hp 26.0/26 · projection · at 11.9 0.0 5.5
+  backlog#15 hp 56.4/60 · projection · at 7.2 0.0 8.5
+  noise#16 hp 4.0/4 · projection · at 7.6 2.2 5.2
+  perfectionism#17 hp 27.3/30 · projection · at 10.0 -1.0 6.9
+  not-yet#18 hp 39.2/40 · projection · at 11.4 0.0 7.5
+  comparison#19 hp 30.0/30 · projection · at 16.0 0.0 6.8
+  hall-of-mirrors#20 hp 22.0/22 · projection · at 2.5 0.0 11.5
+  paralysis#21 hp 50.0/50 · projection · at 5.5 0.0 11.5
+  margin#22 hp 28.0/28 · projection · at 8.5 0.0 11.5
+  tribunal#23 hp 63.0/72 · projection · at 12.0 0.0 11.4
+  dread#24 hp 40.0/40 · projection · at 14.5 0.0 11.5
+  reactivity#25 hp 24.0/24 · projection · at 15.8 0.0 11.4
+  sulk#26 hp 18.0/18 · projection · at 2.5 0.0 14.5
+  shoulds#27 hp 16.0/16 · projection · at 5.5 0.0 14.5
+  dogma#28 hp 60.0/60 · projection · at 8.5 0.0 14.5
+  burnout#29 hp 26.0/26 · projection · at 11.5 0.0 14.5
+  spark#30 hp 12.0/12 · projection · at 14.5 0.0 14.5
+  pretence#31 hp 16.0/16 · projection · at 17.5 0.0 14.5
+  shortcut#32 hp 9.0/9 · projection · at 2.5 0.0 17.5
+  numbness#33 hp 30.0/30 · projection · at 5.5 0.0 17.5
+  cynicism#34 hp 26.0/26 · projection · at 8.5 0.0 17.5
+  isolation#35 hp 36.0/36 · projection · at 11.5 0.0 17.5
+  what-if#36 hp 34.0/34 · projection · at 12.5 1.2 13.7
+  doubt#37 hp 12.0/12 · projection · at 17.5 0.0 17.5
+  critic#38 hp 9.0/9 · projection · at 2.5 0.0 20.5
+  panic#39 hp 7.0/7 · projection · at 5.5 0.0 20.5
+  blocks —
+  elements —
+  cubes brick 15 · pickups 1
+  events actorDamage:backlog<kick 1 · actorDamage:impulse<kick 3 · actorDamage:not-yet<kick 1 · actorDamage:perfectionism<explosion 1 · actorDamage:perfectionism<kick 2 · actorDamage:resentment<explosion 1 · actorDamage:resentment<kick 2 · actorDamage:tribunal<kick 3 · actorDeath:alarm 1 · actorDeath:impulse 1 · actorDeath:resentment 1 · actorDeath:rumination 1 · blockBreak:brick 16 · blockDamage:brick 17 · blockLoot:brick 16 · explosion 1 · kick:brick 1 · land 1 · roomEnter 1 · touchCube:brick 2
+
+t 900 (15.0 s)
+  player hp 24/24 · at 8.3 -2.0 7.7 · hand [brick] · bombs 99 · keys 99
+  autopilot#2 hp 10.0/10 · projection · at 5.8 0.0 1.2
+  craving#3 hp 9.0/9 · projection · at 10.7 0.0 9.4
+  avoidance#5 hp 10.0/10 · projection · at 11.5 0.0 2.5
+  procrastination#6 hp 18.0/18 · projection · at 8.3 -2.0 7.7
+  distraction#7 hp 6.0/6 · projection · at 8.8 2.2 8.2
+  scarcity#10 hp 10.0/10 · projection · at 0.2 0.0 4.9
+  gloom#12 hp 14.0/14 · projection · at 14.5 3.2 5.5
+  noise#16 hp 4.0/4 · projection · at 10.8 2.2 6.0
+  perfectionism#17 hp 18.5/30 · projection · at 8.3 -1.0 7.7
+  not-yet#18 hp 38.2/40 · projection · at 8.3 -1.0 7.7
+  comparison#19 hp 30.0/30 · projection · at 12.7 0.0 3.6
+  hall-of-mirrors#20 hp 22.0/22 · projection · at 2.5 0.0 11.5
+  paralysis#21 hp 50.0/50 · projection · at 5.5 0.0 11.5
+  margin#22 hp 28.0/28 · projection · at 8.5 0.0 11.5
+  tribunal#23 hp 63.0/72 · projection · at 12.0 0.0 11.4
+  dread#24 hp 40.0/40 · projection · at 14.5 0.0 11.5
+  reactivity#25 hp 24.0/24 · projection · at 11.6 0.0 9.5
+  sulk#26 hp 18.0/18 · projection · at 2.5 0.0 14.5
+  shoulds#27 hp 16.0/16 · projection · at 5.5 0.0 14.5
+  dogma#28 hp 60.0/60 · projection · at 8.5 0.0 14.5
+  burnout#29 hp 26.0/26 · projection · at 11.5 0.0 14.5
+  spark#30 hp 12.0/12 · projection · at 14.5 0.0 14.5
+  pretence#31 hp 16.0/16 · projection · at 17.5 0.0 14.5
+  shortcut#32 hp 9.0/9 · projection · at 2.5 0.0 17.5
+  numbness#33 hp 30.0/30 · projection · at 5.5 0.0 17.5
+  cynicism#34 hp 26.0/26 · projection · at 8.5 0.0 17.5
+  isolation#35 hp 36.0/36 · projection · at 11.5 0.0 17.5
+  what-if#36 hp 34.0/34 · projection · at 8.3 1.2 7.7
+  doubt#37 hp 12.0/12 · projection · at 17.5 0.0 17.5
+  critic#38 hp 9.0/9 · projection · at 2.5 0.0 20.5
+  panic#39 hp 7.0/7 · projection · at 5.5 0.0 20.5
+  blocks —
+  elements —
+  cubes brick 15 · pickups 3
+  events actorDamage:backlog<kick 20 · actorDamage:not-yet<kick 1 · actorDamage:perfectionism<kick 16 · actorDamage:second-guessing<kick 8 · actorDamage:undertow<kick 6 · actorDeath:backlog 1 · actorDeath:second-guessing 1 · actorDeath:undertow 1 · kick:brick 10 · land 1 · touchCube:brick 10
+
+map t 900 · h 0
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+  ....................
+
+legend 

@@ -1,8 +1,6 @@
 // Per-room navigation: a flow field over the room's interior (13×7, or bigger for a footprint) towards the target. Each cell gets
 // a standing height: up over terraces (the first free 2-block gap), down into dips and pools (down to
 // two blocks below the floor); neighbours connect when the step is at most one block. Elements shape
-// it per projection (docs/architecture/ELEMENTS.md §9.3): cells it avoids are not walkable, cells it
-// lives in are cheap and everything else costs more, so a projection that dwells in water keeps to
 // the water. Recomputed only when the target changes cell or the world or its elements change.
 
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -19,6 +17,7 @@ const DIRS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, 
 const PIT = 2;
 /** Highest terrace a projection may stand on. */
 const TERRACE = 4;
+const KEEP_AWAY = 2;
 
 export class FlowField {
   /** The room's interior in tiles (13 × 7, up to 43 × 25 for a big room). */
@@ -28,12 +27,14 @@ export class FlowField {
   private height: Int16Array;
   private cost: Uint8Array;
   private done: Uint8Array;
+  private avoided: Uint8Array;
   private key = '';
 
   constructor(readonly room: RoomArea) {
     this.W = room.w ?? ROOM_W; this.D = room.d ?? ROOM_D;
     const n = this.W * this.D;
     this.dist = new Int16Array(n); this.height = new Int16Array(n); this.cost = new Uint8Array(n); this.done = new Uint8Array(n);
+    this.avoided = new Uint8Array(n);
   }
 
   /** Rebuilds if the target cell, the world or its elements changed. */
@@ -51,10 +52,12 @@ export class FlowField {
       while (y > y0 - PIT && !solid(x, y - 1, z)) y--;
       const free = !solid(x, y, z) && !solid(x, y + 1, z) && y < y0 + TERRACE;
       const h = free ? hazard(x, y, z) : null;
+      this.avoided[i] = h === 'avoid' ? 1 : 0;
       this.height[i] = free && h !== 'avoid' ? y : -1;
       this.cost[i] = h === 'dwell' ? 1 : 3;
       if (h === 'dwell') dwells = true;
     }
+    for (let i = 0; i < this.W * this.D; i++) if (this.height[i] >= 0 && this.touchesAvoided(i)) this.height[i] = -1;
     // without a dwelling element every step costs the same (a plain breadth-first search)
     if (!dwells) this.cost.fill(1);
     this.dist.fill(-1);
@@ -88,6 +91,22 @@ export class FlowField {
     }
   }
 
+  unsafe(x: number, z: number): boolean {
+    const c = Math.floor(x) - this.room.x0, r = Math.floor(z) - this.room.z0;
+    if (c < 0 || r < 0 || c >= this.W || r >= this.D) return false;
+    const i = c + r * this.W;
+    return !!this.avoided[i] || this.touchesAvoided(i);
+  }
+
+  private touchesAvoided(i: number): boolean {
+    const c = i % this.W, r = (i / this.W) | 0;
+    for (let dr = -KEEP_AWAY; dr <= KEEP_AWAY; dr++) for (let dc = -KEEP_AWAY; dc <= KEEP_AWAY; dc++) {
+      const nc = c + dc, nr = r + dr;
+      if (nc >= 0 && nr >= 0 && nc < this.W && nr < this.D && this.avoided[nc + nr * this.W]) return true;
+    }
+    return false;
+  }
+
   /** Unit direction to walk from (x, z), or null if this cell isn't connected to the target. */
   direction(x: number, z: number): [number, number] | null {
     const c = Math.floor(x) - this.room.x0, r = Math.floor(z) - this.room.z0;
@@ -103,5 +122,34 @@ export class FlowField {
     }
     const l = Math.hypot(bx, bz);
     return l > 1e-3 ? [bx / l, bz / l] : null;
+  }
+
+  escape(x: number, z: number): [number, number] | null {
+    const c = Math.floor(x) - this.room.x0, r = Math.floor(z) - this.room.z0;
+    if (c < 0 || r < 0 || c >= this.W || r >= this.D) return null;
+    const start = c + r * this.W;
+    const parent = new Int32Array(this.W * this.D).fill(-1);
+    parent[start] = start;
+    const queue = [start];
+    for (let q = 0; q < queue.length; q++) {
+      const i = queue[q];
+      if (i !== start && this.height[i] >= 0) {
+        let step = i;
+        while (parent[step] !== start) step = parent[step];
+        const dx = (step % this.W) + 0.5 - (x - this.room.x0), dz = ((step / this.W) | 0) + 0.5 - (z - this.room.z0);
+        const l = Math.hypot(dx, dz);
+        return l > 1e-3 ? [dx / l, dz / l] : null;
+      }
+      const ci = i % this.W, ri = (i / this.W) | 0;
+      for (const [dc, dr] of DIRS) {
+        const nc = ci + dc, nr = ri + dr;
+        if (nc < 0 || nr < 0 || nc >= this.W || nr >= this.D) continue;
+        const n = nc + nr * this.W;
+        if (parent[n] >= 0) continue;
+        parent[n] = i;
+        queue.push(n);
+      }
+    }
+    return null;
   }
 }
