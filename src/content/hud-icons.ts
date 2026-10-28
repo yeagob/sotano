@@ -41,18 +41,20 @@ export const HUD_ICONS = {
   /** A key with an eye in its bow: an insight. */
   key: {
     rows: [
-      '.oooooo...',
-      'oggggggo..',
-      'ogkcckgo..',
-      'oggggsgo..',
-      '.oosgoo...',
-      '...ogo....',
-      '...oggo...',
-      '...ogo....',
-      '...oggo...',
-      '...ooo....',
+      '...oooooo...',
+      '..ohhggggo..',
+      '.ohggooggso.',
+      '.ohgohhogso.',
+      '.oggsoogsso.',
+      '..ogggggso..',
+      '...oggsso...',
+      '....ogsooo..',
+      '....ogggggo.',
+      '....ogsooo..',
+      '....ogsggo..',
+      '....oooooo..',
     ],
-    palette: { o: 'ink.void', g: 'light.gold', s: 'brass.base', k: 'ink.void', c: 'light.core' },
+    palette: { o: 'ink.void', g: 'light.gold', h: 'light.core', s: 'brass.base' },
   },
   /** A breath: a bubble of air, the foam of the water with a glint (never red: it is not life). */
   bubble: {
