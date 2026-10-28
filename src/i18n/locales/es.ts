@@ -491,6 +491,8 @@ export const ES: Catalog = {
       wonder: { name: 'Maravilla', pattern: 'La curiosidad' },
       rootling: { name: 'Raicilla', pattern: 'La curiosidad que escarba entre las raíces' },
       mossling: { name: 'Musguito', pattern: 'El descanso' },
+      leafling: { name: 'Hojita de luz', pattern: 'La maravilla' },
+      'star-mite': { name: 'Ácaro estelar', pattern: 'Unir lo que está separado' },
       chirper: { name: 'Grillo de sótano', pattern: 'La corazonada' },
       delver: { name: 'Excavador', pattern: 'El juego' },
       bubbler: { name: 'Burbujeador', pattern: 'El aliento, el ritmo del cuerpo' },

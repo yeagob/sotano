@@ -27,7 +27,7 @@ describe('creatures: life by floor', () => {
     const b = ambientCreatures(floor, new RunRandom(11).fork('floor', 1, 'creatures'));
     expect(a).toEqual(b);
     expect(a.length).toBeGreaterThan(0);
-    for (const c of a) expect(['chirper', 'delver']).toContain(c.def);
+    for (const c of a) expect(['chirper', 'delver', 'leafling', 'star-mite']).toContain(c.def);
   });
 });
 

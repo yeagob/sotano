@@ -474,7 +474,7 @@ describe('silence, the ice and the tree (L4, L5)', () => {
     const run = buildRun(4, 2);
     const c = ambientCreatures(run.floors[0], new Rng(1));
     expect(c.length).toBeGreaterThanOrEqual(2);
-    expect(ambientCreatures(run.floors[1], new Rng(1)).every(c => c.def === 'chirper' || c.def === 'delver')).toBe(true);
+    expect(ambientCreatures(run.floors[1], new Rng(1)).every(c => ['chirper', 'delver', 'leafling', 'star-mite'].includes(c.def))).toBe(true);
     for (const f of run.floors) for (const r of f.rooms) for (const e of r.enemies) expect(CREATURES.some(q => q.id === e)).toBe(false);
   });
 });
