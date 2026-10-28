@@ -1,6 +1,6 @@
 # Items, synergies and exceptions
 
-How items are defined, stored and installed, and how they can affect anything (and be affected by anything). This is the most important architectural piece of SÓTANO: the whole game is meant to be "everything can modify everything".
+How items are defined, stored and installed, and how they can affect anything (and be affected by anything). This is the most important architectural piece of The Roots: the whole game is meant to be "everything can modify everything".
 
 This design went through a three-party review (engineer, architect, mediator); the critique, the ruling and what changed are in [reviews/items-architecture.md](../reviews/items-architecture.md).
 

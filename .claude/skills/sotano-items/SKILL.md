@@ -1,9 +1,9 @@
 ---
 name: sotano-items
-description: How to create, change or fix SÓTANO items (practices) and synergies so they are compatible with every other item, testable, and cannot break the game. Use it whenever you add or edit anything in src/content/items/, src/content/synergies.ts or src/items/, or add a stat/event items could use. Also use the sotano-docs and sotano-i18n skills.
+description: How to create, change or fix The Roots items (practices) and synergies so they are compatible with every other item, testable, and cannot break the game. Use it whenever you add or edit anything in src/content/items/, src/content/synergies.ts or src/items/, or add a stat/event items could use. Also use the sotano-docs and sotano-i18n skills.
 ---
 
-# SÓTANO items skill
+# The Roots items skill
 
 Items are **practices** the protagonist picks up. They change the game only through **stats** and **event hooks**, installed and removed by the inventory. Read `docs/architecture/ITEMS.md` (the contract) and `docs/design/STORY.md` §5 (naming) before you start.
 

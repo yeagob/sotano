@@ -1,9 +1,9 @@
 ---
 name: sotano-lore
-description: SÓTANO's references and lore - the library of books, traditions, techniques, therapies and games the work draws on, its concepts, and its cosmology (as above, so below). Use it whenever the owner shares a new reference (book, course, technique, therapy, game, author), whenever you name or design a practice (item), projection (enemy), place, boss or endgame element, or whenever you write about the game's story, world or meaning. Also use sotano-docs (and sotano-items when items change).
+description: The Roots' references and lore - the library of books, traditions, techniques, therapies and games the work draws on, its concepts, and its cosmology (as above, so below). Use it whenever the owner shares a new reference (book, course, technique, therapy, game, author), whenever you name or design a practice (item), projection (enemy), place, boss or endgame element, or whenever you write about the game's story, world or meaning. Also use sotano-docs (and sotano-items when items change).
 ---
 
-# SÓTANO lore and references skill
+# The Roots lore and references skill
 
 The owner will keep sharing references (books, courses, techniques, therapies, games) to shape items, enemies, places and the endgame. This skill keeps them organised, credited correctly and actually used. Everything is written in **English**; chat with the owner in Spanish.
 

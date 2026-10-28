@@ -109,3 +109,61 @@ A room template can be taller than the standard 5 blocks (up to **8**), shape it
 3. **Projections live it too**: think about how each projection reads the room ([ELEMENTS architecture §10](../architecture/ELEMENTS.md)): Doubt won't follow you into water; Panic calms in it and goes off in fire.
 4. **Height means something**: a gallery is a vantage point, a pit is a trap, a vault is awe.
 5. **The rules of the house**: door approaches clear, the centre open for projections, the pedestal reachable, the shaft clear, nothing reacts on load, nothing reaches another floor. The validator checks all of it; the [`sotano-levels`](../../.claude/skills/sotano-levels/SKILL.md) skill explains why.
+
+## 6. Proposal: cavern scenery in the spirit of the cover art (owner reference, 2026-10-28)
+
+Status: **a proposal for the next level designs, not a decision.** It does not change the art ledger ([DECISIONS.md](../art/DECISIONS.md)). Anything it adopts goes through the [`sotano-art`](../../.claude/skills/sotano-art/SKILL.md) gate first. Reference: `public/the-roots-cover.jpg`.
+
+**Mood.** The cover is awe at the bottom of a shaft: a huge dark cavern of voxel stone, islands hanging in the air, columns coming down from the ceiling, and a few warm lights (a molten gorge, lamps on ledges, a shaft from above) that pull the eye down into the depth. The energy comes from contrast and scale, not brightness. Almost everything is dark and cool, the warm points are rare, so each one means something. The small figure on the ledge is the player's point of view: looking out, about to go down.
+
+**What to take from the image.**
+- *Scale.* Rooms should feel bigger than their walls: multi-cell footprints, tall vaults, layers seen across a gap. The sense of space past the walls comes from fog and occlusion, never from a painted backdrop.
+- *Floating islands and hanging columns as structure.* Islands are plateaus and layers; columns are pillars from the floor and stalactites from a `cave` ceiling. They form the room's vertical language and carry its verb (jump, climb, build).
+- *Warm light as the reward in the dark.* One warm focal point per room, readable from across the room.
+- *Cool haze for depth.* Far walls fade toward the floor's own fog colour (teal on the water floors), so distance reads cool and near reads warm.
+- *Moss and small plants on ledges.* Grass and leaves on the living edges; the yellow plants are made of the sand and copper ramps, never of gold.
+- *A shaft of light from above.* One vertical shaft per room at most.
+
+**How it fits Vessel Light.** Pillar 2 says warm is earned and yours. The cover bends that rule in five places, and each one needs a reconciliation:
+1. *Broad amber glows around the gorge.* In the guide, warm light comes from the player, or from lava and fire, which hurt. Reconcile: every warm light names its source (the `cause` field of pillar 2): lava or fire (block light 12 and 10), a lamp the player lit (7), a practice on a pedestal (6), or the warmth of a cleared room (8). No free-floating glow. The BFS radius keeps each glow local.
+2. *Lamps lit everywhere.* Floor-1 lamps are unlit until their room is cleared (DECISIONS §4). Reconcile: a cavern full of lit lamps is the climb (citrinitas). The cover shows the way up, not the way down.
+3. *The shaft from above.* Only the surface has a sky, and the surface is not a room. Reconcile: the shaft is the way up (rubedo), or the cold slit light of F3, which the ledger already allows pre-lit. Never a warm light falling from nothing.
+4. *Pale speckled faces.* Guide §6.1 forbids full-tile random speckle, and the palest rock must stay in the husk band. Keep the rhythm of pebbles and pits as shaped `stone` or `deepstone` patterns, at a lower value.
+5. *A full-body protagonist.* §9 says the hands are the only body. The figure belongs to key art only, and in play it is never drawn. (Owner question below.)
+
+**What it means for level design.**
+- Use height. A vault uses at least two of its heights (a layer, a pillar or a hanging column), not one empty ceiling.
+- Islands are carried, never floating: each stands on a pillar or spans between blocks, as the layer rule already requires. The cover's islands become supported islands.
+- Each room has one lit focal point at a height the player sees from the entrance: a pedestal, a lava pool or a lamp. Two focal points in one room compete; do not place them.
+- Three depth planes in every big room. Near: the floor, the door approach, the strongest value. Middle: pillars and islands, where the verb happens. Far: fog and a cooler wall or ceiling, read by colour, since fog far is never under 24.
+- A vantage ledge, out of every door approach, that looks over the room. It is where a vault's awe is given.
+- Floors own the cover's motifs: F1 umber ledges and lamps, F2 teal haze and water glints, F3 cold slits and slate islands, F4 the molten gorge. The cover is a glimpse of the descent, not one room.
+
+**Concrete rules for a room designer.**
+1. One warm focal point per room, with a named source (lava, fire, a lamp lit by the player, a practice on a pedestal, or the cleared-room warmth).
+2. Hanging columns and stalactites attach to a `cave`, `dome` or `vault` ceiling; they never float. Keep the centre column open up to door height (3), and nothing hangs within 3 blocks above the pedestal.
+3. Islands sit on a column or span between blocks, at layer heights `1…height − 3`. No island within 3 tiles of a door approach on a layer under door height.
+4. Room height stays at 8 or less, and no room touches the floor above or below. The cover's scale across several floors belongs to the great pit (floor 5) and the giant tree, never to a single room.
+5. Scale comes from footprints (2 × 1 and 2 × 2 cells), vaults and fog, never from a painted backdrop.
+6. Moss and plants only on ledges and wall tops, never on door approaches or in a shaft. Dry yellow plants use the `sand` and `copper` ramps, never `light.*` or `life.*`.
+7. At most one shaft of light per room: vertical, from the ceiling to the floor, in a cold or sky ramp allowed on that floor (F3, the climb, the surface).
+8. Scenery is built only from existing materials. No new material is added for decoration.
+
+**What to check before adopting.**
+- *Voxel count and performance.* The cover is far denser than any room needs. Count visible faces per room in the gallery and the mesher; hollow the shells, keep hanging columns to a few cubes, and check the draw-call budget (about 150 on PC and 90 on mobile, [ART-GUIDE §13](../art/ART-GUIDE.md)) and the meshing time per chunk. This proposal sets no face budget yet; engineering measures one first.
+- *Readability in the dark.* Capture each new room at distance (20 blocks in fog), in colour, greyscale and the three colour-blindness filters. The floor stays above OKL 0.12 with the lantern; every projection's cold eye still reads; a fired intention is the brightest thing in view; no island or column hides a door.
+- *The rules of the house* ([§5](#5-what-makes-a-good-room-the-bar)): door approaches clear, centre open, pedestal reachable, shaft clear, nothing reacting on load, nothing reaching another floor. The validator stays quiet, and a new test checks that scenery sits only on allowed layers.
+- *Gentleness.* Focal lights and lamps are steady, with breathing at 0.5 Hz or slower and no flicker (G2).
+- *Meaning.* Scenery adds no new concept: the cavern is the husk that holds the light ([ART-GUIDE §1](../art/ART-GUIDE.md)). A room that needs its own concept goes to the lore first.
+
+**What not to copy.**
+- The cover's surface detail as texture. Its speckle and its bright rock are a render's look; the game keeps shapes, bevels and the husk band.
+- Any plant, rock or lamp shape that matches a known game's asset. We copy the principle (scale, islands, one warm point), never the silhouette.
+- Bloom. The cover's glow is painted; ours is block light and emissive texels, with no default bloom ([ART-GUIDE §13](../art/ART-GUIDE.md)).
+
+**Adoption path (if the owner accepts).**
+1. Build one test room per floor type (a vault on floor 1, a pit on floor 3, a gorge on floor 4) and capture it in `?gallery`.
+2. Pass the `sotano-art` gate on each new block, light and colour, and the validator (`npm test`).
+3. Write the accepted rules into ART-GUIDE and this section, and move the adopted rules out of the proposal.
+
+**Owner questions.** (1) Is the cover's figure the protagonist, or key art only? (2) Is "lamps lit everywhere" meant for the climb only? (3) Is the great pit the only place where the cover's scale is allowed?

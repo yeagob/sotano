@@ -1,4 +1,4 @@
-// The one palette of SÓTANO (docs/art/DECISIONS.md §3, art guide §3).
+// The one palette of The Roots (docs/art/DECISIONS.md §3, art guide §3).
 // Every colour in the game is a named token here. Content and renderers refer to tokens,
 // never to hex, so a colour can be changed in one place and tested as a whole.
 // Vessel Light: dark, cold, quiet matter; warm light is earned and belongs to the player.

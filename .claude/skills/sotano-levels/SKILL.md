@@ -1,9 +1,9 @@
 ---
 name: sotano-levels
-description: How to add or change SÓTANO floors, levels and room layouts - room templates (src/content/rooms.ts), floor plans and generators (src/world/floor.ts, floorplan.ts), height (vaults, domes, layers, terraces, pits), element rooms (water, lava, fire) and the world's vertical structure (the thirteen floors, Tree-of-Life floors, random floors, the giant tree above). Use it EVERY time a room, a floor type, a floor's depth or theme, or the world's vertical layout changes. Also use sotano-art (anything visible), sotano-feature (quality bar), sotano-docs and sotano-lore (meaning of places).
+description: How to add or change The Roots floors, levels and room layouts - room templates (src/content/rooms.ts), floor plans and generators (src/world/floor.ts, floorplan.ts), height (vaults, domes, layers, terraces, pits), element rooms (water, lava, fire) and the world's vertical structure (the thirteen floors, Tree-of-Life floors, random floors, the giant tree above). Use it EVERY time a room, a floor type, a floor's depth or theme, or the world's vertical layout changes. Also use sotano-art (anything visible), sotano-feature (quality bar), sotano-docs and sotano-lore (meaning of places).
 ---
 
-# SÓTANO levels skill
+# The Roots levels skill
 
 A level is a **place with a meaning and a verb**. Read [docs/design/LEVELS.md](../../../docs/design/LEVELS.md) (the world's shape, floor types, the room bar) and [docs/architecture/ROOMS.md](../../../docs/architecture/ROOMS.md) (the template format and the generator) before you start. Elements: [docs/architecture/ELEMENTS.md](../../../docs/architecture/ELEMENTS.md) §9–§10.
 

@@ -1,11 +1,11 @@
 ---
 name: sotano-controls
-description: Input discipline for SÓTANO. Use it EVERY time a control is added, changed or removed - a new action from an item, a synergy, a weapon, an effect, an element, a menu or a screen - or when any key, mouse button, gamepad button, stick or touch control is bound or rebound. Every action must be mapped on keyboard and mouse, gamepad and touch, following Minecraft, Noita and The Binding of Isaac, and the controls test must stay green.
+description: Input discipline for The Roots. Use it EVERY time a control is added, changed or removed - a new action from an item, a synergy, a weapon, an effect, an element, a menu or a screen - or when any key, mouse button, gamepad button, stick or touch control is bound or rebound. Every action must be mapped on keyboard and mouse, gamepad and touch, following Minecraft, Noita and The Binding of Isaac, and the controls test must stay green.
 ---
 
-# SÓTANO controls skill
+# The Roots controls skill
 
-SÓTANO ships in three versions that are always complete: **keyboard and mouse**, **gamepad** (any controller with the browser's standard mapping) and **touch** (mobile, always landscape). A control that exists on one of them and not on the others is a bug. The design is in [docs/architecture/input/](../../../docs/architecture/input/README.md) (the README for the table and contexts, then one document per scheme: KEYBOARD.md, GAMEPAD.md, TOUCH.md); this is the checklist.
+The Roots ships in three versions that are always complete: **keyboard and mouse**, **gamepad** (any controller with the browser's standard mapping) and **touch** (mobile, always landscape). A control that exists on one of them and not on the others is a bug. The design is in [docs/architecture/input/](../../../docs/architecture/input/README.md) (the README for the table and contexts, then one document per scheme: KEYBOARD.md, GAMEPAD.md, TOUCH.md); this is the checklist.
 
 ## 1. The rule
 

@@ -1,9 +1,9 @@
 ---
 name: sotano-art
-description: The art bar for SÓTANO, Vessel Light. Use it EVERY time a proposal generates or changes anything the player sees - blocks, textures, enemies and projections, bosses, items and icons, HUD, particles, lighting, colour, hands, shards, seams, animation. It applies the art guide (docs/art/ART-GUIDE.md), the binding ledger (docs/art/DECISIONS.md), the five pillars, the meaning test and the gallery gate. Also use sotano-feature (quality bar), sotano-docs and sotano-lore.
+description: The art bar for The Roots, Vessel Light. Use it EVERY time a proposal generates or changes anything the player sees - blocks, textures, enemies and projections, bosses, items and icons, HUD, particles, lighting, colour, hands, shards, seams, animation. It applies the art guide (docs/art/ART-GUIDE.md), the binding ledger (docs/art/DECISIONS.md), the five pillars, the meaning test and the gallery gate. Also use sotano-feature (quality bar), sotano-docs and sotano-lore.
 ---
 
-# SÓTANO art skill (Vessel Light)
+# The Roots art skill (Vessel Light)
 
 Every visual proposal goes through this checklist before it is built. Nothing new the player sees ships without passing it. The owner's rule: *nothing is added again that does not have this finish.*
 

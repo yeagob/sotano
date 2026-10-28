@@ -1,9 +1,9 @@
 ---
 name: sotano-docs
-description: Documentation discipline for SÓTANO. Use it EVERY time you implement or change a feature, add or rename an item, enemy, room template, material, stat or event, or add anything about the game's story, identity, metaphor, characters or abilities (items/practices, states of being, enemies/projections). Keeps docs in English, in the right section, indexed, and asks the owner when something is unclear.
+description: Documentation discipline for The Roots. Use it EVERY time you implement or change a feature, add or rename an item, enemy, room template, material, stat or event, or add anything about the game's story, identity, metaphor, characters or abilities (items/practices, states of being, enemies/projections). Keeps docs in English, in the right section, indexed, and asks the owner when something is unclear.
 ---
 
-# SÓTANO documentation skill
+# The Roots documentation skill
 
 The owner wants **everything documented thoroughly, always in English**, in a predictable structure. Follow these steps for every change. Do not skip them because a change looks small.
 

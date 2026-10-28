@@ -1,6 +1,6 @@
 # Source library
 
-Every work, tradition, technique, therapy and game SÓTANO draws on. Add new references here first (see the [`sotano-lore`](../../.claude/skills/sotano-lore/SKILL.md) skill), then map their ideas in [CONCEPTS.md](CONCEPTS.md).
+Every work, tradition, technique, therapy and game The Roots draws on. Add new references here first (see the [`sotano-lore`](../../.claude/skills/sotano-lore/SKILL.md) skill), then map their ideas in [CONCEPTS.md](CONCEPTS.md).
 
 ## Naming status
 

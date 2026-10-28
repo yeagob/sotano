@@ -1,12 +1,12 @@
 # Story and metaphor
 
-SÓTANO is a game about a person unlocking their inner potential through **intention**. Everything in it — the dungeon, the blocks, the enemies, the items, the way down and the way back up — is a metaphor for that process. This document fixes that metaphor so mechanics, names and art all point in the same direction.
+The Roots is a game about a person unlocking their inner potential through **intention**. Everything in it — the dungeon, the blocks, the enemies, the items, the way down and the way back up — is a metaphor for that process. This document fixes that metaphor so mechanics, names and art all point in the same direction.
 
 ## 1. Premise
 
 A person goes down into the basement of their own mind. Down there, reality bends to intention: what you direct your will at changes. Every wall is something you once built to stay safe and that now keeps you small. Every creature is a pattern that blocks you from going after what you want. Every item is a practice — something people have used to grow: a book, a course, a technique, a therapy — and picking it up changes not only what you can do, but **who you are**.
 
-The goal isn't to stay down there. It's to come back up to the surface changed, and live from there.
+The way down is the work. The roots are the first layer, where every door is open and the first lessons are carved in the walls; each circle below is older, darker and harder than the one above, until the frozen bottom and the silence. Above the roots a giant tree rises into the sky. The depths and the tree are one journey seen from its two ends ([COSMOLOGY](../lore/COSMOLOGY.md)).
 
 ## 2. The core metaphor, mechanic by mechanic
 
@@ -19,7 +19,7 @@ The goal isn't to stay down there. It's to come back up to the surface changed, 
 | **Carry limit** (1 block) | Working memory, emotional bandwidth | You can only hold so much at once; practices expand it |
 | **Kicking, throwing** | Letting go; using momentum | Not everything needs to be carried |
 | **Going down** | Going inward: introspection, shadow work | The deeper you go, the older and harder the material |
-| **Coming back up** | Integration: bringing what you learned into daily life | The descent alone isn't the point; the hero must return |
+| **The silence and the tree** | Integration: what the depths taught reaches up into daily life | The deepest point and the highest one meet; the silence loops back to heaven |
 | **Keys** | Insights | Found by breaking through something; they open places that were locked to you |
 | **Bombs** | Breakthroughs | Rare, powerful, they clear a lot at once and can hurt you if you're careless |
 | **Hearts** | Resilience, self-worth | You lose them when patterns hit you; practices and care restore them |
@@ -27,7 +27,7 @@ The goal isn't to stay down there. It's to come back up to the surface changed, 
 | **Treasure rooms** | Moments of learning | Where a new practice is waiting |
 | **Bosses** | Core blocks: the big, old patterns behind the small ones | Made of the same blocks as everything else, so they can be dismantled piece by piece |
 | **Hidden pockets, side biomes** (Noita layer) | Parts of yourself you don't know yet | You only find them by digging where nobody told you to |
-| **The surface** | Life after the change | What it holds is the next layer of the game |
+| **The roots** | The earth, where you begin | Every door open and the first lessons on the walls: the start of every descent |
 
 The descent-and-return shape is the classic hero's journey (Joseph Campbell's monomyth), and the "going down into the basement" image echoes Jung's descent into the unconscious. Neither is named in the game; they are the skeleton.
 
@@ -143,11 +143,11 @@ Projections leave **parts** (flesh, heart, mind, essence): collectibles named af
 
 ## A love letter to games
 
-SÓTANO is made by people who grew up inside games, and it says so. The project will be **full of references to other games**, as an expression of love for that culture: winks, not copies.
+The Roots is made by people who grew up inside games, and it says so. The project will be **full of references to other games**, as an expression of love for that culture: winks, not copies.
 
 - **How:** a phrase that echoes a famous line, a mechanic that feels like an old friend, a situation a player of that game will smile at. Lion's Mane is the model: a humble mushroom that makes you jump higher and break bricks with your head, and now and then a toast that says *"Thank you! But your ceiling is in another castle."* Nobody is named; everyone who played it knows.
 - **Never:** names, characters, logos, assets, music, sprites, exact layouts or trademarks of another game (Nintendo, Mojang, Isaac, Noita…). The wink lives in the idea and the wording, never in protected material. Quotes are short paraphrases, at most one line.
-- **Always the metaphor first:** a reference must still mean something in SÓTANO's story (the mushroom is about growing past the ceiling you were told was the limit). If the only reason is the joke, it isn't ready.
+- **Always the metaphor first:** a reference must still mean something in The Roots' story (the mushroom is about growing past the ceiling you were told was the limit). If the only reason is the joke, it isn't ready.
 - **Where:** item `messages` (toasts), descriptions, `inspiredBy` ("a nod to…"), room names and secrets. The game references we draw on are catalogued in [../lore/SOURCES.md](../lore/SOURCES.md#games).
 
 ## 6. Words used in the game
@@ -165,6 +165,6 @@ SÓTANO is made by people who grew up inside games, and it says so. The project 
 ## 7. Open questions
 
 1. **Protagonist identity.** Gender-neutral and faceless (first person) by default. Do we ever show them? (Recommendation: only their hands, which change with their state of being.)
-2. **The surface.** What does "living from there" look like as a game layer? (Left open on purpose, as in the design doc.)
+2. **The tree above.** What does the sky at the top of the giant tree mean as a game layer, and how does silence connect with heaven? (Left open on purpose, as in the design doc; see [COSMOLOGY](../lore/COSMOLOGY.md) §3 and [LEVELS](LEVELS.md) §1.)
 3. **Death.** Losing all hearts: "the intention faded" and the run restarts. Could the next run carry a small insight (meta-progression as *knowledge*)? This fits pillar 4 of the design.
 4. **Resources.** Should the game link to real mental-health resources in its menu? (Recommendation: yes, a short, sober "if you're struggling" link, since we use therapy names.)

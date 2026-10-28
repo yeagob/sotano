@@ -1,6 +1,6 @@
 # Art guide: Vessel Light
 
-The reference for every visual element in SÓTANO: how it is built, what it means, its colours, proportions and rules. Anything the player sees must follow this guide. The full reasoning and every number are in [DECISIONS.md](DECISIONS.md), the binding ledger from the art-direction debate; where the two disagree, the ledger wins. Use the [`sotano-art`](../../.claude/skills/sotano-art/SKILL.md) skill for any proposal that generates art.
+The reference for every visual element in The Roots: how it is built, what it means, its colours, proportions and rules. Anything the player sees must follow this guide. The full reasoning and every number are in [DECISIONS.md](DECISIONS.md), the binding ledger from the art-direction debate; where the two disagree, the ledger wins. Use the [`sotano-art`](../../.claude/skills/sotano-art/SKILL.md) skill for any proposal that generates art.
 
 Status: **direction agreed in debate and accepted by the owner; not yet built.** Phase 0 (palette and gallery) is starting; see the ledger's §12.9.
 

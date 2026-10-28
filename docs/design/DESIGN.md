@@ -1,4 +1,4 @@
-# SÓTANO — Game Design Document (v0.2, draft)
+# The Roots — Game Design Document (v0.2, draft)
 
 > Working title. An open-source prototype for the browser (WebGL), deployed on Vercel.
 > The mix: **Minecraft's look and voxel world** + **The Binding of Isaac's run structure, items and synergies** + **Noita's world of secrets that open up through knowledge**.

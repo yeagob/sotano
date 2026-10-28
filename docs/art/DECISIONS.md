@@ -1,4 +1,4 @@
-# SÓTANO art direction: DECISIONS (binding ledger)
+# The Roots art direction: DECISIONS (binding ledger)
 
 *Mediator's rulings after two rounds of debate between the Art Director (Dir), Creature Designer (Cre), Materials/Light/FX (Mat), Meaning Keeper (Mea), Technical Artist (Tech) and Player Advocate (Ply). The art guide, the art skill and the PDF are written from this file alone. Where this ledger and a round-1 or round-2 paper disagree, this ledger wins. Items marked **OWNER** are recommendations that wait for the owner (§13).*
 

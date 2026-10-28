@@ -1,6 +1,6 @@
 # Lore and references
 
-The world's cosmology and the library of works, traditions, techniques and games SÓTANO draws on. Use it to name and design practices (items), projections (enemies), places and endgame. How to add to it is the project skill [`sotano-lore`](../../.claude/skills/sotano-lore/SKILL.md).
+The world's cosmology and the library of works, traditions, techniques and games The Roots draws on. Use it to name and design practices (items), projections (enemies), places and endgame. How to add to it is the project skill [`sotano-lore`](../../.claude/skills/sotano-lore/SKILL.md).
 
 | Document | Contents |
 |---|---|

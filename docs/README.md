@@ -1,4 +1,4 @@
-# SÓTANO documentation
+# The Roots documentation
 
 Everything about the game, organised in five sections. Each section has its own README with an index of what it contains.
 

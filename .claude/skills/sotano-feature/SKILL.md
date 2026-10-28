@@ -1,9 +1,9 @@
 ---
 name: sotano-feature
-description: The production quality bar for every SÓTANO feature, and a living log of the owner's feedback. Use it whenever you implement or change anything the player can see, hear or feel (mechanics, UI, items, enemies, rooms, effects). It is self-improving - after every piece of owner feedback, add the lesson to the log at the end of this file. Also use sotano-docs (and sotano-items for items).
+description: The production quality bar for every The Roots feature, and a living log of the owner's feedback. Use it whenever you implement or change anything the player can see, hear or feel (mechanics, UI, items, enemies, rooms, effects). It is self-improving - after every piece of owner feedback, add the lesson to the log at the end of this file. Also use sotano-docs (and sotano-items for items).
 ---
 
-# SÓTANO feature skill (self-improving)
+# The Roots feature skill (self-improving)
 
 The owner expects **production-level finish, as in a final game**, not prototypes. Every feature ships with visuals, feedback, sound, docs and tests. This file grows: after every round of owner feedback, append what you learned to §5 and, if it changes how features should be built, update §1–§4.
 
@@ -27,7 +27,7 @@ A feature is done only when all of this is true:
    - **Isaac: Repentance**: how would it read in one glance, with no text? What is the telegraph, the pickup pop, the sound sting? How does it combine with every other item (synergy first)? Is there a risk/reward or a "break the run" version?
    - **Minecraft**: what is the block-level rule, simple enough to guess? How does it feel in the hand (sound per material, crack stages, the little hop)? Does it respect the world's grammar (grid, tiers, gravity)?
    - **Noita**: what happens when it touches everything else (materials, explosions, loose cubes, enemies)? What emergent chain could it start? What secret could a curious player find with it?
-   Then build SÓTANO's version: borrow principles, never assets, names or exact layouts (art guide red lines), and make it mean something in the story.
+   Then build The Roots' version: borrow principles, never assets, names or exact layouts (art guide red lines), and make it mean something in the story.
 3. For key architecture, run the three-party review (engineer, architect agent, mediator agent) before building.
 4. Build the smallest complete version that meets every requirement, then add juice.
 5. Verify in the browser: drive it with `S.game` (see `docs/architecture/OVERVIEW.md` debug console), check the console for errors, take screenshots of the key moments.
@@ -105,3 +105,5 @@ A feature is done only when all of this is true:
 - **Chests that look like chests** (2026-10-27, owner): a full cube with a chest texture did not read as a chest, nor did its open state or its lock. A chest is now a model (body, banded lid on a hinge, a padlock with one keyhole per key, brass trim when it holds a practice) on an invisible solid cell; it opens with a shudder, a dropped lock and a thrown-back lid, and what it kept is spat up on an arc to land in front of the player. Lesson: state must read from silhouette with no text (open vs shut, locked vs free, how many keys), and a reward should be seen in the air before it is collected.
 - **Layouts and materials (2026-10-27, owner):** the rooms of the first floors were boring, repetitive and all built from the same brick; you never felt you were going somewhere new. Bigger rooms that keep their place on the map, ceilings of different shapes, platforming, deeper holes, and each floor built from its own materials. Lesson: progress must be visible in what the world is made of, not only in fog and numbers; the map tells how rooms join, never their size.
 - **Open lids never clip; wood, dirt and the bomb redone** (2026-10-27, owner): a chest's open lid went through the wall behind it, so chests now turn their back to free air. Wood (crates, living wood, door leaves), dirt and the breakthrough seed were redrawn; brick and obsidian were the bar. Lesson: check any moving part against its neighbours in the real room, not only in the gallery.
+- **Landing as the main menu, the support link stays small** (2026-10-28, owner): the start screen becomes the landing (cover art, play and new run, controls, language, open-source note, repository, version) and doubles as the pause menu. The coffee link is a small icon with a tooltip, never a call to action, and never shows during play. Lesson: a menu tells the player what the game is before it asks them to play; support and contribution belong on the menu, not in the HUD.
+- **The name and the story move together** (2026-10-28, owner): the project is renamed THE ROOTS (the repository keeps its name). The story is a descent through the layers of the mind, with the tree above; the README and STORY speak of going deeper, not of returning to the surface. Lesson: a rename touches every document, the README is the first page a player reads, and the identity has to read the same everywhere.

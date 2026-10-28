@@ -1,4 +1,4 @@
-# SÓTANO — instructions for Claude
+# The Roots — instructions for Claude
 
 - **Always use the project skills**:
   - `sotano-docs` (`.claude/skills/sotano-docs/SKILL.md`) when implementing or changing any feature, or when adding anything about the game's story, identity, metaphor or abilities. Documentation is part of the change, not a follow-up.

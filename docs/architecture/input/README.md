@@ -1,6 +1,6 @@
 # Input
 
-How the player's hands reach the game. SÓTANO ships three complete control schemes, keyboard and mouse, gamepad and touch, and switches between them by itself: whichever device you used last owns the prompts. Every action is defined once, in one table, and each device is a way of reaching it. How to add a control is the [`sotano-controls`](../../../.claude/skills/sotano-controls/SKILL.md) skill; the contract is checked by `tests/controls.test.ts`.
+How the player's hands reach the game. The Roots ships three complete control schemes, keyboard and mouse, gamepad and touch, and switches between them by itself: whichever device you used last owns the prompts. Every action is defined once, in one table, and each device is a way of reaching it. How to add a control is the [`sotano-controls`](../../../.claude/skills/sotano-controls/SKILL.md) skill; the contract is checked by `tests/controls.test.ts`.
 
 ## Contents
 

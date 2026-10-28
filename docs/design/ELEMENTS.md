@@ -4,7 +4,7 @@ Status: **fire, water and lava are built** (wading, swimming, breath, burning, f
 
 The owner's brief (translated): *inspired by Noita and Minecraft: flammable materials affected by fire; water, and everything about moving through it (one block deep you can wade, slower; two deep and you lose your footing); water and fire interacting; lava; other liquids; materials affected in different ways by electricity, fire and lava; mud (sand + water); blocks that transform and, above all, can be destroyed; flammable blocks that burn; burning barrels you can throw blocks into to destroy them; furnaces in some rooms where stone becomes something else; chests you can put things into, not only take valuables out of. Breaking blocks no longer drops keys or items: those live in chests. More Minecraft.*
 
-## 1. Why this fits SÓTANO
+## 1. Why this fits The Roots
 
 Everything in the dungeon is matter, and the game is about transforming what blocks you (see [STORY.md](STORY.md)). Elements give that transformation more verbs than "break": **burn, soak, melt, harden, refine, store**. They also give the Noita layer what it needs: systems that interact in ways the player discovers, not ones the game explains.
 

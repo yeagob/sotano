@@ -1,9 +1,9 @@
 ---
 name: sotano-i18n
-description: Localization discipline for SÓTANO. Use it EVERY time you add, change or remove any text the player can read, anywhere - HUD, toasts, banners, menus, the pause card, the inventory, the death screen, index.html, stat labels or units, item/synergy/enemy/material names, descriptions, effects or messages, damage causes - or add a new item, synergy, enemy, material, stat, damage source or language. Keeps every word in every shipped language (English source + Spanish) and the i18n tests green.
+description: Localization discipline for The Roots. Use it EVERY time you add, change or remove any text the player can read, anywhere - HUD, toasts, banners, menus, the pause card, the inventory, the death screen, index.html, stat labels or units, item/synergy/enemy/material names, descriptions, effects or messages, damage causes - or add a new item, synergy, enemy, material, stat, damage source or language. Keeps every word in every shipped language (English source + Spanish) and the i18n tests green.
 ---
 
-# SÓTANO localization skill
+# The Roots localization skill
 
 Every word the player reads must exist in **every shipped language** (today: English, the source, and Spanish). Nothing reaches the screen as an English literal. The full design is [docs/architecture/LOCALIZATION.md](../../../docs/architecture/LOCALIZATION.md); this is the checklist.
 
