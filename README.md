@@ -88,10 +88,10 @@ Three complete schemes; the game follows whichever device you used last (details
 | Jump (hold to swim up) | **Space** | **A** | The arrow |
 | Cast intentions | **Left click** (hold) | **RT** (hold) | The bead of light (hold; drag to aim) |
 | Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | Double tap the bead of light |
-| Pick up a block | Walk over it with room in your hand | same | same |
+| Pick up a block or a part | Walk over it with room in your hand | same | same |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
-| Place the top block (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
-| Throw the top block | **Q** | **B** | The flying block |
+| Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
+| Throw the top block or part | **Q** | **B** | The flying block |
 | Drop a bomb | **E** | **RB** | The seed |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
 | Inventory and stats | **Tab** (or **I**) | **Y** (d-pad moves, **B** closes) | The grid (top) |

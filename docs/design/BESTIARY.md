@@ -420,7 +420,7 @@ Numbness and turning away from yourself. The ninth circle's image is a frozen la
 
 ### 5.7 What projections leave behind (owner, 2026-10-27, proposal)
 
-When a projection is released, it may leave **parts** of itself: its **flesh** (carne), its **heart** (corazón), its **mind** (mente) or its **essence** (esencia). Each part is a collectible item, shown in the inventory with its name. Converted allies leave nothing: they are not released, they are integrated (§1.1).
+When a projection is released, it may leave **parts** of itself: its **flesh** (carne), its **heart** (corazón), its **mind** (mente) or its **essence** (esencia). Each part is a collectible thing you carry in your hand or a block slot, like a block, and its name shows on its slot. Converted allies leave nothing: they are not released, they are integrated (§1.1).
 
 **Chances per release** (owner, 2026-10-27, tuned in play): flesh 30 %, mind 12 %, heart 5 %, essence 2 %. A rooted projection (§4.2) rolls once more. Parts are drawn from the room's RNG fork.
 
@@ -436,7 +436,7 @@ The rest are named when they are built, with the same rule: the part's noun come
 
 **Where parts matter.** Agreements (§8.6) ask for them by name, so a part in the pack is a clue about the floor it came from. The farming room, the Compost, is designed in §8.8.
 
-**Status (built, Change A, 2026-10-27).** The twelve parts of the three built projections are in `src/content/parts.ts` (chances 30 / 12 / 5 / 2 %, rolled per release on the projection's own RNG path, [RNG.md §4](../architecture/RNG.md)). They drop as pickups, are collected into `Game.parts` (not items), and show in the inventory with their name. Their icons are by the art agent, passing the gate in `src/content/part-icons.ts`. Agreements, gifts and the rest of §8 are not built.
+**Status (built, Change A, 2026-10-27).** The twelve parts of the three built projections are in `src/content/parts.ts` (chances 30 / 12 / 5 / 2 %, rolled per release on the projection's own RNG path, [RNG.md §4](../architecture/RNG.md)). They drop as pickups and are carried in the hand, not in the inventory, which keeps only items, keys and bombs. Collecting one lifts it into the hand with the hold-up, no burst. Their icons are by the art agent, passing the gate in `src/content/part-icons.ts`. Agreements, gifts and the rest of §8 are not built.
 
 ---
 

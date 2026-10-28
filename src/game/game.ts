@@ -105,6 +105,7 @@ function makeStars(): THREE.Points {
 }
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
+const PART_DROP_DELAY = 0.6;
 const COUNTER_CAP = 99;
 /** The sandbox's fixed step (seconds). */
 export const SANDBOX_DT = 1 / 60;
@@ -191,8 +192,6 @@ export class Game {
   doors!: Doors;
   pickups!: Pickups;
   enemies!: Enemies;
-  /** Parts collected this run, by part id, in pick-up order (BESTIARY §5.7). Not items: no effects. */
-  parts: string[] = [];
   room = -1;
   visited = new Set<number>();
   /** Keep simulating while the mouse isn't captured (for automated tests). */
@@ -412,7 +411,7 @@ export class Game {
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.parts = []; this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -633,7 +632,7 @@ export class Game {
       stats: () => this.stats.all,
       has: id => this.inventory.has(id),
       hasTag: tag => this.inventory.hasTag(tag),
-      held: () => this.player.hand,
+      held: () => this.player.hand.filter((c): c is number => typeof c === 'number'),
       rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
@@ -1683,12 +1682,20 @@ export class Game {
       && !this.doors.inDoorway(x, y, z)
       && !boxHits((xx, yy, zz) => xx === x && yy === y && zz === z, b.x, b.y, b.z, b.hw, b.h);
     if (!ok) { this.throwTop(); return; }
+    const top = p.hand.at(-1)!;
+    if (typeof top !== 'number') {
+      this.pickups.add('part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
+      p.hand.pop();
+      this.hands.placed();
+      sfx.place();
+      return;
+    }
     const ev = this.bus.emit('blockPlace', { x, y, z, material: p.top });
     if (ev.cancelled) return;
     this.world.set(x, y, z, ev.material);
     this.debris.clearCell(x, y, z);
-    const m = p.hand.pop()!;
-    this.bus.emit('drop', { material: m, how: 'place' });
+    p.hand.pop();
+    this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
   }
@@ -1699,6 +1706,16 @@ export class Game {
     if (!p.hand.length) { sfx.denied(); return; }
     const e = p.eye.addScaledVector(p.forward, 0.7), dir = p.forward;
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
+    const top = p.hand.at(-1)!;
+    if (typeof top !== 'number') {
+      const part = this.pickups.add('part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
+      const speed = 9 * this.stats.get('throw');
+      this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
+      p.hand.pop();
+      this.hands.placed();
+      sfx.kick();
+      return;
+    }
     const m = p.top;
     const cube = this.debris.spawn(m, e.x, e.y, e.z);
     const ev = this.bus.emit('throw', { cube, material: m, speed: 9 * this.stats.get('throw'), lift: 2, tags: new Set() });
@@ -1818,7 +1835,13 @@ export class Game {
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
       if (p.type === 'part') {
-        if (p.part) { this.pickups.take(p); this.parts.push(p.part.id); this.particles.burst(p.x, p.y + 0.3, p.z, PICKUP_FX.key, 10, 2, 0.06); }
+        const part = p.part;
+        if (part && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
+          this.pickups.take(p);
+          this.player.hand.push(part);
+          this.hands.holdUp(part);
+          sfx.pickup();
+        }
         continue;
       }
       // hearts stay on the floor while you're at full health, like in Isaac
@@ -2258,7 +2281,7 @@ export class Game {
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
     const hand = this.player.hand;
-    this.hands.update(dt, this.player.walkPhase, this.player.top, hand.length > 1 ? hand[hand.length - 2] : 0);
+    this.hands.update(dt, this.player.walkPhase, hand.at(-1) ?? 0, hand.at(-2) ?? 0);
   }
 
   requestRestart() {
@@ -2296,7 +2319,7 @@ export class Game {
       damaged: this.world.damaged.size,
       elements: `${this.elements.pending} active · ${this.elements.lastWork}/tick`,
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
-      held: this.player.hand.length ? this.player.hand.map(m => MATERIALS[m].name).join(', ') : '—',
+      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : c.name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
     };
   }

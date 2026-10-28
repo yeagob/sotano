@@ -103,6 +103,7 @@ There's no floating "item drop" like in Minecraft: the broken block *is* the obj
 - **Bombs are loose cubes too:** you can kick them, enemies and intentions push them, and **an intention hit sets a bomb off at once**.
 - **Place:** aim at a block face and place it (like Minecraft, ~5 blocks of reach).
 - **Throw:** launch the block you hold (Q, or right click when there's nowhere to place it).
+- **Parts** (what a released projection leaves, [BESTIARY §5.7](BESTIARY.md)) take a slot like a block: walking onto one lifts it into a free slot, and you place it on the floor (right click) or throw it (Q) the same way. They are not items and no inventory window lists them. Keys and bombs are the only counters that cost no slot, and only a carried thing can be handed to someone.
 - **Use:** some blocks have an active effect when placed or dropped (the equivalent of cards and runes):
   - TNT: placed, explodes after a delay.
   - Light block: lights up dark areas.
