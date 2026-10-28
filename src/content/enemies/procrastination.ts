@@ -16,6 +16,7 @@ const laters = (id: string, name: string, hp: number, speed: number, scale: numb
   minFloor,
   maxFloor,
   split,
+  splitOnHit: split !== undefined,
   behaviour: chase({ hesitate: { every: 2.5, pause: 1 } }),
   model: [
     crate(-3, 0, 0, 6, 5),

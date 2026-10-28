@@ -177,6 +177,12 @@ export class Enemies {
     // release (docs/art/DECISIONS.md §8.6): host chips fall, light rises; no gore, no flash
     for (const p of e.spec.model.slice(0, 8)) if (!p.glow) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
     this.host.particles(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 12, 1.6, 0.05);
+    this.dissolve(e);
+    this.host.died(e);
+  }
+
+  dissolve(e: Enemy) {
+    e.alive = false;
     this.hazards.clear(e.id);
     const v = this.views.get(e.id);
     if (v) {
@@ -185,7 +191,6 @@ export class Enemies {
       v.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
       this.views.delete(e.id);
     }
-    this.host.died(e);
   }
 
   hide(e: Enemy, hidden: boolean) {

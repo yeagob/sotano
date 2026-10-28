@@ -65,6 +65,7 @@ export interface EnemyDef {
   asleep?: boolean;
   armor?: number;
   split?: string[];
+  splitOnHit?: boolean;
   breaks?: { tier: number; power: number };
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;

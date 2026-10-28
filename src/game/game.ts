@@ -981,6 +981,7 @@ export class Game {
     if (!intent) {
       if (amount <= 0) return false;
       this.enemies.hurt(e, amount, kx, kz);
+      if (e.alive) this.splitOnHit(e);
       return true;
     }
     const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth }, amount);
@@ -988,7 +989,25 @@ export class Game {
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
     if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
     if (r.convert && e.alive) this.convert(e);
+    else if (e.alive && r.dealt > 0) this.splitOnHit(e);
     return true;
+  }
+
+  private splitOnHit(e: Enemy) {
+    const r = this.rooms.get(e.room);
+    if (!r || !e.spec.splitOnHit || !e.spec.split || e.hp <= 0) return;
+    const b = e.body, seq = this.projectionSeq.get(e.id) ?? 0;
+    const share = Math.max(1, Math.round(e.hp / e.spec.split.length));
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 6, 1.2, 0.05);
+    this.enemies.dissolve(e);
+    this.bus.off(null, `actor:${e.id}`);
+    this.actors.remove(e.id);
+    this.contacts.forget(e.id);
+    this.projectionSeq.delete(e.id);
+    e.spec.split.forEach((id, i) => {
+      const child = this.spawnEnemy(id, r, seq, b.x + (i ? 0.7 : -0.7), b.y, b.z);
+      if (child) { child.hp = share; child.maxHp = share; }
+    });
   }
 
   /** A projection's warmth is full: it turns to your side (not destroyed). */
@@ -1043,7 +1062,7 @@ export class Game {
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor);
-    if (e.spec.split) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
+    if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
       for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
