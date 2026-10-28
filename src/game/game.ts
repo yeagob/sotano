@@ -64,6 +64,7 @@ import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
+import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, TALK_REACH, type PresenceId } from '../content/presences';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
@@ -1079,6 +1080,7 @@ export class Game {
     if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
+      if (e.tags.has('rooted')) parts.push(...rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq, 'rooted'), e.def));
       for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
     }
     sfx3.dissolve();
@@ -1273,8 +1275,11 @@ export class Game {
     const def = ENEMY_BY_ID.get(defId);
     if (!def) return null;
     const id = this.actors.newId();
-    const hp = def.kind === 'boss' ? bossHp(r.floor) : def.hp;
-    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(def.asleep ? ['asleep'] : []), x, y, z });
+    const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
+    const hp = def.kind === 'boss' ? bossHp(r.floor) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
+    const tags = new Set(def.asleep ? ['asleep'] : []);
+    if (rooted) tags.add('rooted');
+    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags, x, y, z });
     if (ev.cancelled) return null;
     this.projectionSeq.set(id, seq);
     const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
