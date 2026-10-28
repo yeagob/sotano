@@ -22,7 +22,7 @@ export default defineEnemy({
   name: 'The Many Faces',
   pattern: 'To be loved',
   hp: 140,
-  speed: 0,
+  speed: 1.0,
   size: [1.6, 2.4],
   contactDamage: 8,
   cost: 0,
@@ -31,9 +31,9 @@ export default defineEnemy({
   behaviour: phased({
     arena: ['faces', 'plain'],
     phases: [
-      emitter({ every: 6, shot: charm }),
-      emitter({ every: 3, shot: swap }),
-      emitter({ every: 2.2, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
+      emitter({ follow: { speed: 1.0, keep: 5 }, every: 6, shot: charm }),
+      emitter({ follow: { speed: 1.0, keep: 5 }, every: 3, shot: swap }),
+      emitter({ follow: { speed: 1.0, keep: 5 }, every: 2.2, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
   }),
   model: [

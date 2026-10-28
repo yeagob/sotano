@@ -5,6 +5,7 @@ import { defineEnemy, TX } from '../../enemies/types';
 export default defineEnemy({
   id: 'huddler',
   kind: 'creature',
+  responds: 'positive',
   name: 'Huddler',
   pattern: 'Warmth shared',
   hp: 4,

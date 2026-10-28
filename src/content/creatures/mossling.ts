@@ -5,6 +5,7 @@ import { defineEnemy, TX } from '../../enemies/types';
 export default defineEnemy({
   id: 'mossling',
   kind: 'creature',
+  responds: 'positive',
   name: 'Mossling',
   pattern: 'Rest',
   hp: 6,

@@ -26,7 +26,7 @@ export default defineEnemy({
   name: 'The Grudge',
   pattern: 'To never be hurt again',
   hp: 140,
-  speed: 0,
+  speed: 1.0,
   size: [1.3, 1.2],
   contactDamage: 8,
   cost: 0,
@@ -35,8 +35,8 @@ export default defineEnemy({
   behaviour: phased({
     arena: ['mud', 'surface'],
     phases: [
-      emitter({ every: 3.5, shot: surface }),
-      emitter({ every: 2.2, shot: erupt }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 3.5, shot: surface }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 2.2, shot: erupt }),
       charge({ aim: 0.7, speed: 4.2, run: 1.6, stun: 1.6, range: 12, cooldown: 1.4 }),
     ],
   }),

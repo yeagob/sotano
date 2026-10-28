@@ -94,11 +94,14 @@ Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floo
 
 - **Sealing**: when a room seals, its creatures hide in the blocks (`Enemies.hideRoom`, neither drawn nor hittable), and they come back whole when it clears.
 - **Polarity** (§1.1): a positive intention heals them, and a creature healed to full gives a heart once (`gifted`). A negative intention that would kill one sends it into the blocks instead (`Enemies.hurt`): it never dies.
+- **One polarity only** (`responds`, BESTIARY §7.1): a creature with `responds: 'positive'` (the Mossling and the Huddler) is met by positive intentions always, healthy or not (a gold burst), and never by negative ones: the shot passes through it (`meetsIntention`, `Game.meets`).
 - **Blasts** only push creatures; fire and lava still hurt them, so they must avoid it.
 - **Chirpers** sing every few seconds only while their room is quiet (no projection alive): their silence is the warning.
 - **Mosslings** heal a quarter heart the first time you sit still beside one for three seconds (`Game.updateRest`).
 
 ### Bosses (`content/bosses/`, `Game.updateBossRoom`)
+
+- **Movement:** every firing phase (`emitter`) carries `follow` (speed and keep distance), so the boss walks towards the player while it fires. The Shadow is the exception: it mirrors the player (`mirrors`, `reveals`).
 
 - **One per floor**, drawn from its zone's pool with the run's fork `floor<k>:boss` and never met twice in one run (`bossFor`). Floors 5 and 9 are keystones: the Threshold Guardian and the Shadow. Zones: I (1–2) Resistance, Inertia, The Insatiable; II (3–4) Overwhelm, The Hoard, The Downpour; III (6) The Verdict, The Grudge, The Old Rule; IV (7–8) The Furnace, The Impostor, The Many Faces.
 - **The room**: entering seals the doors (`doors.seal`), a rumble, then the boss rises at a spawn point of the room (`summonBoss`). Its health shows in the bar at the top while you are in the room (`Hud.bossBar`).

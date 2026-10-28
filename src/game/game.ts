@@ -947,7 +947,7 @@ export class Game {
    *  hostile projections always; allies when it is negative (it harms them) or when they are hurt
    *  (a positive one heals them). A healthy ally lets positive intentions pass. */
   private meets(e: Enemy, polarity: Polarity) {
-    return meetsIntention(e.faction, e.hp, e.maxHp, polarity);
+    return meetsIntention(e.faction, e.hp, e.maxHp, polarity, e.spec.responds);
   }
 
   /**
@@ -960,14 +960,12 @@ export class Game {
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
       const heal = allyHeal(damage, e.hp, e.maxHp);
-      if (heal > 0) {
-        e.hp += heal;
-        const b = e.body;
-        this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
-        if (e.spec.kind === 'creature' && e.hp >= e.maxHp && !e.tags.has('gifted')) {
-          e.tags.add('gifted');
-          this.pickups.add('heart', b.x, b.y + 0.6, b.z, e.room, null, 0.3);
-        }
+      const b = e.body;
+      e.hp += heal;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
+      if (heal > 0 && e.spec.kind === 'creature' && e.hp >= e.maxHp && !e.tags.has('gifted')) {
+        e.tags.add('gifted');
+        this.pickups.add('heart', b.x, b.y + 0.6, b.z, e.room, null, 0.3);
       }
       return;
     }

@@ -18,8 +18,8 @@ export default defineEnemy({
     arena: ['flood', 'drain'],
     phases: [
       chase({ lunge: 1 }),
-      emitter({ every: 3.2, shot: (e, ctx) => wave(e, ctx, 2.4) }),
-      emitter({ every: 6, shot: (e, ctx) => wave(e, ctx, 3) }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 3.2, shot: (e, ctx) => wave(e, ctx, 2.4) }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 6, shot: (e, ctx) => wave(e, ctx, 3) }),
     ],
   }),
   model: [

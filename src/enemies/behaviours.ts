@@ -267,11 +267,18 @@ export function patrol(opt: { route: [number, number][]; reach: number; onCross(
   };
 }
 
-export function emitter(opt: { every: number; shot(e: Enemy, ctx: EnemyCtx): void }): Behaviour {
+export function emitter(opt: { every: number; follow?: { speed: number; keep: number }; shot(e: Enemy, ctx: EnemyCtx): void }): Behaviour {
   return {
     name: 'emitter',
     update(e, ctx) {
       e.wishX = 0; e.wishZ = 0;
+      if (opt.follow) {
+        const t = ctx.target(e);
+        if (t && ctx.dist(e, t) > opt.follow.keep) {
+          const [dx, dz] = ctx.toward(e, t);
+          e.wishX = dx * opt.follow.speed / e.speed; e.wishZ = dz * opt.follow.speed / e.speed;
+        }
+      }
       e.timer -= ctx.dt;
       e.pulse = Math.max(0, 1 - e.timer / opt.every) * 0.5;
       if (e.timer <= 0) { e.timer = opt.every; opt.shot(e, ctx); }

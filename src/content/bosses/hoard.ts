@@ -19,8 +19,8 @@ export default defineEnemy({
     arena: ['clutch', 'spill'],
     phases: [
       charge({ aim: 0.7, speed: 3.8, run: 1.8, stun: 1.4, range: 10, cooldown: 1.2 }),
-      emitter({ every: 4.5, shot: (e, ctx) => ctx.strike(e, { lead: 0.8, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 6, force: 6 } }) }),
-      emitter({ every: 2.6, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
+      emitter({ follow: { speed: 1.2, keep: 4 }, every: 4.5, shot: (e, ctx) => ctx.strike(e, { lead: 0.8, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 6, force: 6 } }) }),
+      emitter({ follow: { speed: 1.2, keep: 4 }, every: 2.6, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
   }),
   model: [

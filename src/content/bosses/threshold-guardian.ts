@@ -25,8 +25,8 @@ export default defineEnemy({
   behaviour: phased({
     arena: ['gate', 'gap'],
     phases: [
-      emitter({ every: 3, shot: bars }),
-      emitter({
+      emitter({ follow: { speed: 0.8, keep: 4 }, every: 3, shot: bars }),
+      emitter({ follow: { speed: 0.8, keep: 4 },
         every: 1.8,
         shot: (e, ctx) => {
           const t = ctx.target(e);

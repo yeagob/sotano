@@ -8,7 +8,7 @@ export default defineEnemy({
   name: 'The Downpour',
   pattern: 'To be left alone',
   hp: 140,
-  speed: 0,
+  speed: 0.9,
   size: [1.4, 1.2],
   contactDamage: 8,
   cost: 0,
@@ -17,7 +17,7 @@ export default defineEnemy({
   behaviour: phased({
     arena: ['lower', 'thin'],
     phases: [
-      emitter({
+      emitter({ follow: { speed: 0.9, keep: 4 },
         every: 1.5,
         shot: (e, ctx) => {
           const t = ctx.target(e);
@@ -30,7 +30,7 @@ export default defineEnemy({
           e.seq++;
         },
       }),
-      emitter({
+      emitter({ follow: { speed: 0.9, keep: 4 },
         every: 1.5,
         shot: (e, ctx) => {
           const t = ctx.target(e);
@@ -39,7 +39,7 @@ export default defineEnemy({
           ctx.shootAt(e, t.x, t.y + 1, t.z);
         },
       }),
-      emitter({
+      emitter({ follow: { speed: 0.9, keep: 4 },
         every: 3,
         shot: (e, ctx) => {
           const a = wobble(e.id, e.seq, 2) * Math.PI * 2, r = 2 + wobble(e.id, e.seq, 4) * 3;

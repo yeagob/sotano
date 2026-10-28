@@ -7,6 +7,7 @@ import type { PickupKind } from '../game/events';
 import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
+import type { Polarity } from '../combat/polarity';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -41,6 +42,7 @@ export type BeingKind = 'projection' | 'creature' | 'boss';
 export interface EnemyDef {
   id: string;
   kind?: BeingKind;
+  responds?: Polarity;
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;

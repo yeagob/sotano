@@ -21,7 +21,7 @@ export default defineEnemy({
     phases: [
       sleep({ wakeSpeed: 1.5, then: charge({ aim: 0.8, speed: 4.8, run: 3, stun: 1.2, range: 14, cooldown: 0.8 }) }),
       charge({ aim: 0.6, speed: 5.4, run: 3, stun: 0.8, range: 14, cooldown: 0.6 }),
-      emitter({ every: 6, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 5, force: 5 } }) }),
+      emitter({ follow: { speed: 1.4, keep: 4 }, every: 6, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 5, force: 5 } }) }),
     ],
   }),
   model: [

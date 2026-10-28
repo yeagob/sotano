@@ -449,6 +449,7 @@ The rest are named when they are built, with the same rule: the part's noun come
 - **Random by zone.** Each zone has a **pool of three**; the floor's boss is drawn from its zone's pool by the floor's seed (`floor<k>:boss`), never the same one twice in a run. Floors 5 and 9 are **keystones** with a fixed boss.
 - **Three phases** (at 66 % and 33 %), each a new verb, each announced: the boss stops, the arena changes (blocks fall, water rises, walls open), a deep chord, then the new phase. Never a phase change without a pause.
 - **Entrance:** the boss room seals like any room (§2.1), then the boss **rises from the room itself** with a long omen (2.5 s: the whole arena's motes converge, the floor or walls crack along the boss's outline). It looks at you first.
+- **They move towards you** (owner, 2026-10-28): every phase that fires walks towards the player and keeps about three to four blocks away (`emitter` with `follow`), so a boss is never a turret you can wait out. The Shadow mirrors you instead (§6.3).
 - **Health** (floor-1 scale, ×1.35 per floor): about 140 on floor 1, 1 000 on floor 9. A health bar in the HUD, with the boss's glyph, never its name in red (red is life).
 - **Rewards:** the boss practice (feature log: the boss room holds a second practice) and the way down.
 
@@ -512,6 +513,7 @@ At the great pit of floor 5, the Guardian is the gate that asks. It lets you pas
 
 - **What they are:** instincts, curiosity, play, rest, care: what keeps living in you even with the patterns around. They are not projections and never become projections.
 - **Faction `neutral`:** hostile to no one, and no one targets them (except where stated). **Intention polarity applies to them (§1.1):** a negative intention harms them, a positive one heals them. Explosions only push them gently. Owner ruling (2026-10-27): they can be harmed, and the harm is the player's choice.
+- **Positive-only creatures (owner, 2026-10-28):** some creatures answer only positive intentions. A negative intention passes through them untouched: no harm and no fleeing. The **Mossling** and the **Huddler** are the first. A positive intention always reaches them (a gold burst, even when they are whole) and heals them when they are hurt.
 - **They react to the room:** they vanish into the blocks when doors slam and come back when a room clears (§2.1, §2.5). Their silence and return are signals the player learns.
 - **Look:** a new **side**, *the living*, needs an art ruling (§10): world materials with a **living tell**: a slow, soft, 2 × 1 glow that breathes (never a 2 × 2 eye in a socket, which is the projections' family mark).
 - **Sound:** small, consonant sounds (chirps, purrs, hums) that never resolve because they never needed to.
