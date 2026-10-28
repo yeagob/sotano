@@ -453,6 +453,160 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       ],
     }],
   },
+  {
+    id: 'sluice', floors: [1, 4], types: ['normal'], height: 6, rows: [
+      '.c===.......?',
+      '.c===........',
+      '..===........',
+      '..===........',
+      '..===........',
+      '.c===........',
+      '.c===........',
+    ],
+  },
+  {
+    id: 'balcony', floors: [2, 5], types: ['normal'], weight: 2, height: 6, ceiling: 'vault-z', rows: [
+      '.3.........3.',
+      '.............',
+      '.............',
+      '.............',
+      '.............',
+      '.............',
+      '.3.........3.',
+    ],
+    layers: [{
+      y: 3, rows: [
+        '.bbbbbbbbbbb.',
+        '.............',
+        '.............',
+        '.............',
+        '.............',
+        '.............',
+        '.bbbbbbbbbbb.',
+      ],
+    }],
+  },
+  {
+    id: 'lava-bridge', floors: [3, 5], types: ['normal'], height: 7, ceiling: 'cave', rows: [
+      '...ll........',
+      '...ll..c.....',
+      '...ll........',
+      '...ll........',
+      '...llc.......',
+      '...ll........',
+      '...ll.....?..',
+    ],
+    layers: [{
+      y: 1, rows: [
+        '.............',
+        '.............',
+        '.............',
+        '..bbbb.......',
+        '.............',
+        '.............',
+        '.............',
+      ],
+    }],
+  },
+  {
+    id: 'sunken-court', floors: [1, 4], types: ['normal'], height: 6, rows: [
+      '=====...=====',
+      '=====...=====',
+      '..c.....===..',
+      '........===..',
+      '..c.....===..',
+      '=====...=====',
+      '=====...=====',
+    ],
+  },
+  {
+    id: 'warren', floors: [2, 5], types: ['normal'], height: 7, ceiling: 'cave', rows: [
+      '.............',
+      '.X.X.X.X.X.X.',
+      '.............',
+      '..i.......i..',
+      '.............',
+      '.X.X.X.X.X.X.',
+      '.............',
+    ],
+  },
+  {
+    id: 'cave-lake', floors: [3, 5], types: ['normal'], height: 8, ceiling: 'cave', rows: [
+      '.............',
+      '.WWWWW.WWWWW.',
+      '.WWWWW.WWWWW.',
+      '..r.......r..',
+      '.WWWWW.WWWWW.',
+      '.WWWWW.WWWWW.',
+      '.............',
+    ],
+  },
+  {
+    id: 'crate-stacks', floors: [1, 3], types: ['normal'], weight: 2, height: 6, ceiling: 'stepped', rows: [
+      '.C.........C.',
+      '.............',
+      '..cc.....cc..',
+      '.............',
+      '..cc.....cc..',
+      '.............',
+      '.C.........C.',
+    ],
+  },
+  {
+    id: 'roofed-garden', floors: [2, 5], types: ['normal'], height: 6, ceiling: 'vault-z', rows: [
+      '3...........3',
+      '.dd.......dd.',
+      '.............',
+      '.............',
+      '.............',
+      '.dd.......dd.',
+      '3...........3',
+    ],
+    layers: [{
+      y: 3, rows: [
+        'dddddd.dddddd',
+        'dddddd.dddddd',
+        'dddddd.dddddd',
+        'dddddd.dddddd',
+        'dddddd.dddddd',
+        'dddddd.dddddd',
+        'dddddd.dddddd',
+      ],
+    }],
+  },
+  {
+    id: 'dig-field', floors: [1, 4], types: ['normal'], height: 6, rows: [
+      '.............',
+      '._._._._._._.',
+      '.............',
+      '._d.d...d.d_.',
+      '.............',
+      '._._._._._._.',
+      '.............',
+    ],
+  },
+  {
+    id: 'ore-vein', floors: [1, 5], types: ['normal'], height: 6, rows: [
+      '.i.........i.',
+      '..i.......i..',
+      '...i.....i...',
+      '....i...i....',
+      '...i.....i...',
+      '..i.......i..',
+      '.i.........i.',
+    ],
+  },
+  {
+    id: 'obsidian-maze', floors: [4, 5], types: ['normal'], height: 8, ceiling: 'pointed-x', rows: [
+      '.............',
+      '.XXXXX.XXXXX.',
+      '.............',
+      '.XXXXX.XXXXX.',
+      '.............',
+      '.XXXXXEXXXXX.',
+      '.............',
+    ],
+  },
   // ── element treasure, vault, boss and start rooms ──
   {
     // the practice waits on an island of dry stone inside a ring of shallow water
