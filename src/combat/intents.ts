@@ -31,7 +31,9 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
 /** Blocks: how far an intention that phases moves into a block it has just hit. */
 const PHASE_NUDGE = 1e-3;
 
-interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null }
+const MIRROR_CALM = 0.25;
+
+interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; calm: [number, number] | null }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -52,6 +54,8 @@ export interface IntentHooks {
   /** Actor id of an enemy this intention meets at this sphere, or -1 (allies let positive ones pass when healthy). */
   enemyAt(x: number, y: number, z: number, r: number, polarity: Polarity): number;
   hitEnemy(id: number, vel: THREE.Vector3, intent: IntentSpec): void;
+  /** The axis a mirror reflects along, or null for anything that is not a mirror. */
+  mirrorAxis?(id: number): 'x' | 'z' | null;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
   /** The element at a point ('water' slows an intention, 'lava' puts it out), or null. */
   elementAt?(x: number, y: number, z: number): 'water' | 'lava' | 'fire' | null;
@@ -92,7 +96,7 @@ export class Intents {
   fire(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null });
+    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, calm: null });
   }
 
   update(dt: number) {
@@ -111,10 +115,17 @@ export class Intents {
 
       // against loose cubes: push them
       // against projections: damage and knock them back
-      const foe = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius, t.spec.polarity);
+      const seen = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius, t.spec.polarity);
+      const foe = seen >= 0 && t.calm && t.calm[0] === seen && t.age < t.calm[1] ? -1 : seen;
       if (foe >= 0) {
+        const axis = h.mirrorAxis?.(foe) ?? null;
         h.hitEnemy(foe, t.vel, t.spec);
         h.splash(t.pos, t.spec.color, true);
+        if (axis) {
+          if (axis === 'x') t.vel.x = -t.vel.x; else t.vel.z = -t.vel.z;
+          t.calm = [foe, t.age + MIRROR_CALM];
+          continue;
+        }
         this.list.splice(i, 1);
         continue;
       }

@@ -72,3 +72,26 @@ describe('old loose cubes', () => {
     for (let k = 1; k < sizes.length; k++) expect(sizes[k]).toBeLessThan(sizes[k - 1]);
   });
 });
+
+describe('mirrors', () => {
+  it('an intention that meets a mirror is reflected along its axis, damages it, and keeps going', () => {
+    const hits: string[] = [];
+    const hooks: IntentHooks = {
+      solid: () => false,
+      hitBlock: () => false,
+      tier: () => 0,
+      debrisAt: () => -1,
+      hitDebris: () => {},
+      enemyAt: (x) => (x > 2 && x < 3 ? 7 : -1),
+      mirrorAxis: id => (id === 7 ? 'z' : null),
+      hitEnemy: (id) => hits.push(`hit ${id}`),
+      splash: () => {},
+    };
+    const intents = new Intents(new THREE.Scene(), hooks);
+    const spec = { ...intentFromStats(BASE_STATS, 'negative'), speed: 20, flight: 5 };
+    intents.fire(spec, new THREE.Vector3(0.5, 0.5, 0.5), new THREE.Vector3(1, 0, 1).normalize(), new THREE.Vector3());
+    for (let i = 0; i < 12; i++) intents.update(1 / 60);
+    expect(hits).toEqual(['hit 7']);
+    expect(intents.count).toBe(1);
+  });
+});

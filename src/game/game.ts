@@ -308,6 +308,7 @@ export class Game {
         this.hitCube(i, v.x * k, v.y * k + 1, v.z * k);
       },
       enemyAt: (x, y, z, r, polarity) => this.enemies.at(x, y, z, r, e => this.meets(e, polarity)),
+      mirrorAxis: id => (this.enemies.get(id)?.def === 'hall-of-mirrors' ? 'z' : null),
       hitEnemy: (uid, v, t) => {
         const l = Math.hypot(v.x, v.z) || 1;
         this.intentTouch(uid, t.damage, v.x / l, v.z / l, 'intent', 'intent', t.polarity, true);
