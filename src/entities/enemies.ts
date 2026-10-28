@@ -144,7 +144,7 @@ export class Enemies {
   /** Id of a hittable enemy touching the sphere (and passing `filter`), or -1. */
   at(x: number, y: number, z: number, r: number, filter?: (e: Enemy) => boolean): number {
     for (const e of this.list) {
-      if (!e.alive || e.spawning > 0 || e.hidden || (filter && !filter(e))) continue;
+      if (!e.alive || e.spawning > 0 || e.hidden || e.tags.has('shut') || (filter && !filter(e))) continue;
       const b = e.body;
       if (Math.abs(x - b.x) < b.hw + r && Math.abs(z - b.z) < b.hw + r && y > b.y - r && y < b.y + b.h + r) return e.id;
     }
@@ -152,7 +152,8 @@ export class Enemies {
   }
 
   hurt(e: Enemy, amount: number, kx: number, kz: number) {
-    e.hp -= amount;
+    e.hp -= amount * (1 - (e.spec.armor ?? 0));
+    e.clock = 0;
     e.flash = 0.15;
     e.body.vx += kx; e.body.vz += kz;
     if (e.hp > 0) return false;
@@ -218,6 +219,8 @@ export class Enemies {
       safe: (e, x, y, z) => this.safeCell(e, x, y, z),
       centre: e => { const rm = host.room(e.room); return [(rm.hx ?? rm.x0) + ROOM_W / 2, (rm.hz ?? rm.z0) + ROOM_D / 2]; },
       quiet: e => this.blockingIn(e.room) === 0,
+      others: (e, radius, ids) => this.list.filter(o => o !== e && o.alive && o.room === e.room && ids.includes(o.def)
+        && Math.hypot(o.body.x - e.body.x, o.body.z - e.body.z) < radius),
       bounds: e => { const rm = host.room(e.room); return [rm.x0, rm.z0, rm.x0 + (rm.w ?? ROOM_W) - 1, rm.z0 + (rm.d ?? ROOM_D) - 1]; },
       cue: (e, kind) => host.cue(kind, e.body.x, e.body.y, e.body.z),
       hide: (e, hidden) => this.hide(e, hidden),

@@ -95,6 +95,10 @@ npm run sandbox -- --check                    # every scenario against its saved
 
 **Testing a new practice**: add a scenario for each environment it may meet (water, lava, fire, crates, a projection, a bomb), give it the practice, and script the actions it reacts to; run `--check` to see that nothing else moved. `tests/sandbox.test.ts` checks in Vitest that every scenario validates and carves the same room twice.
 
+**Testing a new projection or creature**: put it in a scenario beside the terrain it reacts to (lava, water, crates, a blast), under `enemies` with its id as `def` (a creature id spawns a neutral creature; `"faction": "self"` makes it an ally), and script the blows or intentions it should take. `bestiary-smoke` puts every projection in one room on floor 9 (`npm run -s sandbox -- bestiary-smoke`); its report is saved in `src/sandbox/reports/`. A `console.error` ends a report as `ERROR` lines and fails the run (§3).
+
+**Bosses** spawn their body in the sandbox, but the sandbox room has no boss room (`boss: null`): the seal, the health bar and the way down run only on a generated floor.
+
 ## 5. The creative room (`?sandbox`)
 
 `?sandbox` opens an empty 13 × 7 room (invulnerable); `?sandbox=<id>` a scenario; `?sandbox={…}` an inline one. In the browser console, `S.sb.help()`:

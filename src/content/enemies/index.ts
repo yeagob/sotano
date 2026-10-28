@@ -9,9 +9,48 @@ import { level } from '../levels';
 import critic from './critic';
 import doubt from './doubt';
 import panic from './panic';
+import autopilot from './autopilot';
+import craving from './craving';
+import impulse from './impulse';
+import avoidance from './avoidance';
+import distraction from './distraction';
+import undertow from './undertow';
+import rumination from './rumination';
+import scarcity from './scarcity';
+import resentment from './resentment';
+import gloom from './gloom';
+import secondGuessing from './second-guessing';
+import alarm from './alarm';
+import backlog from './backlog';
+import noise from './noise';
+import perfectionism from './perfectionism';
+import notYet from './not-yet';
+import comparison from './comparison';
+import hallOfMirrors from './hall-of-mirrors';
+import paralysis from './paralysis';
+import margin from './margin';
+import tribunal from './tribunal';
+import dread from './dread';
+import reactivity from './reactivity';
+import sulk from './sulk';
+import shoulds from './shoulds';
+import dogma from './dogma';
+import burnout from './burnout';
+import spark from './spark';
+import pretence from './pretence';
+import shortcut from './shortcut';
+import numbness from './numbness';
+import cynicism from './cynicism';
+import isolation from './isolation';
+import whatIf from './what-if';
+import procrastination, { procrastinationB, procrastinationC } from './procrastination';
 import { BOSSES } from '../bosses';
 
-export const ENEMIES: readonly EnemyDef[] = [doubt, critic, panic];
+export const ENEMIES: readonly EnemyDef[] = [
+  doubt, critic, panic,
+  autopilot, craving, impulse, avoidance, procrastination, distraction, undertow, rumination, scarcity, resentment, gloom, secondGuessing, alarm, backlog, noise, perfectionism, notYet, comparison, hallOfMirrors, paralysis, margin, tribunal, dread, reactivity, sulk, shoulds, dogma, burnout, spark, pretence, shortcut, numbness, cynicism, isolation, whatIf,
+  procrastinationB, procrastinationC,
+];
 export const ENEMY_BY_ID: ReadonlyMap<string, EnemyDef> = new Map([...ENEMIES, ...BOSSES].map(e => [e.id, e]));
 
 /**

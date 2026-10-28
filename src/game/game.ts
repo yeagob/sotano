@@ -1035,6 +1035,7 @@ export class Game {
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor);
+    if (e.spec.split) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
       for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);

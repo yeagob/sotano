@@ -350,3 +350,11 @@ export function chirp(opt: { every: number; base: Behaviour }): Behaviour {
     },
   };
 }
+
+export function wave(e: Enemy, ctx: EnemyCtx, seconds: number, height = 2.2, width = 0.7): void {
+  const [x0, z0, x1, z1] = ctx.bounds(e);
+  const forward = wobble(e.id, e.seq, 1) < 0.5;
+  const from = forward ? x0 - 1.5 : x1 + 1.5, to = forward ? x1 + 1.5 : x0 - 1.5;
+  ctx.strike(e, { lead: 1.2, live: seconds, damage: 8, shape: { kind: 'sweep', axis: 'x', from, to, speed: Math.abs(to - from) / seconds, across: [z0, z1], y: e.body.y, height, width } });
+  e.seq++;
+}

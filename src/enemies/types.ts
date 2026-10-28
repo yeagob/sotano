@@ -61,6 +61,8 @@ export interface EnemyDef {
    *  Its meaning comes from the pattern: Panic calms in water and goes off in fire. */
   elements?: Partial<Record<ElementKey, ElementSense>>;
   asleep?: boolean;
+  armor?: number;
+  split?: string[];
   breaks?: { tier: number; power: number };
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
@@ -116,6 +118,7 @@ export interface EnemyCtx {
   safe(e: Enemy, x: number, y: number, z: number): boolean;
   centre(e: Enemy): [number, number];
   quiet(e: Enemy): boolean;
+  others(e: Enemy, radius: number, ids: string[]): Enemy[];
   bounds(e: Enemy): [number, number, number, number];
   cue(e: Enemy, kind: string): void;
   hide(e: Enemy, hidden: boolean): void;

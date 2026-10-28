@@ -1,14 +1,6 @@
 import { pal } from '../palette';
-import { chase, emitter, phased, wobble } from '../../enemies/behaviours';
-import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
-
-const sweep = (e: Enemy, ctx: EnemyCtx, seconds: number) => {
-  const [x0, z0, x1, z1] = ctx.bounds(e);
-  const forward = wobble(e.id, e.seq, 1) < 0.5;
-  const from = forward ? x0 - 1.5 : x1 + 1.5, to = forward ? x1 + 1.5 : x0 - 1.5;
-  ctx.strike(e, { lead: 1.2, live: seconds, damage: 8, shape: { kind: 'sweep', axis: 'x', from, to, speed: Math.abs(to - from) / seconds, across: [z0, z1], y: e.body.y, height: 2.2, width: 0.7 } });
-  e.seq++;
-};
+import { chase, emitter, phased, wave } from '../../enemies/behaviours';
+import { defineEnemy, TX } from '../../enemies/types';
 
 export default defineEnemy({
   id: 'overwhelm',
@@ -26,8 +18,8 @@ export default defineEnemy({
     arena: ['flood', 'drain'],
     phases: [
       chase({ lunge: 1 }),
-      emitter({ every: 3.2, shot: (e, ctx) => sweep(e, ctx, 2.4) }),
-      emitter({ every: 6, shot: (e, ctx) => sweep(e, ctx, 3) }),
+      emitter({ every: 3.2, shot: (e, ctx) => wave(e, ctx, 2.4) }),
+      emitter({ every: 6, shot: (e, ctx) => wave(e, ctx, 3) }),
     ],
   }),
   model: [
