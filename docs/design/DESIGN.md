@@ -253,6 +253,7 @@ If that's fun, it grows to 4 floors, bosses and secrets.
 5. **Fall damage:** yes or no? It strongly affects the freedom to dig down.
 6. **Camera:** first person as requested. Worth prototyping a 45° top-down camera too (closer to Isaac, more readable on mobile) before locking it in.
 7. **Platforms:** mobile and PC from the start? The Joel gift project proves mobile is viable, but it constrains performance and controls. (Decided: keyboard and mouse, gamepad and touch in landscape all ship complete; docs/architecture/input/README.md.)
+8. **A shop for what you carry** (pending task, owner, 2026-10-28): items and parts need a purpose, and many have none yet. A shop where they can be traded for other things would give them one. Open: where the shop is (a room type, a vendor, a floor), what trades for what, and whether keys and bombs count as currency.
 
 ## Surface, sky and new runs
 

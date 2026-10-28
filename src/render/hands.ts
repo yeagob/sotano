@@ -169,19 +169,25 @@ export class Hands {
     }
     if (held !== this.heldNow) {
       this.heldNow = held;
-      this.showCarried(this.block, this.card, held);
+      this.setCarried(this.block, this.card, held);
     }
     if (second !== this.secondNow) {
       this.secondNow = second;
-      this.showCarried(this.second, this.cardSecond, second);
+      this.setCarried(this.second, this.cardSecond, second);
     }
+    const raising = this.holdT > 0;
+    this.showCarried(this.block, this.card, held, !raising);
+    this.showCarried(this.second, this.cardSecond, second, !raising);
   }
 
-  private showCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0) {
-    cube.visible = typeof c === 'number' && c !== 0;
-    card.visible = typeof c === 'object';
+  private setCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0) {
     if (typeof c === 'number' && c) cube.material = this.blockMaterial(c);
     if (typeof c === 'object') card.material = this.cardMaterial(c);
+  }
+
+  private showCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0, shown: boolean) {
+    cube.visible = shown && typeof c === 'number' && c !== 0;
+    card.visible = shown && typeof c === 'object';
   }
 
   private blockMaterial(m: number) {
