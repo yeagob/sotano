@@ -38,7 +38,7 @@ describe('chests', () => {
       perFloor.set(f.floor, (perFloor.get(f.floor) ?? 0) + f.chests.length);
       for (const c of f.chests) costs.add(c.keys);
     }
-    for (const [floor, n] of perFloor) expect(n, `floor ${floor}`).toBeGreaterThan(0);
+    for (const [floor, n] of perFloor) if (floor > 0) expect(n, `floor ${floor}`).toBeGreaterThan(0);
     expect(costs.has(0)).toBe(true);
     expect(costs.has(1)).toBe(true);
     expect([...costs].some(k => k >= 2)).toBe(true);

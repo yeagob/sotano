@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { meshChunk } from '../src/world/mesher';
 import { raycastVoxels } from '../src/physics/raycast';
 import { moveBody, type Body } from '../src/physics/voxel-collide';
-import { bandOf, depthOf, floorY, FLOORS, LAST_FLOOR, openHole, SKY_LIMIT, SURFACE, SURFACE_Y } from '../src/world/floor';
+import { bandOf, depthOf, floorY, FLOORS, LAST_FLOOR, openHole, pedestalSlots, SKY_LIMIT, SURFACE, SURFACE_Y } from '../src/world/floor';
+import { ITEMS } from '../src/content/items';
 import { level } from '../src/content/levels';
 import { generatePlan, DEFAULT_PLAN } from '../src/world/floorplan';
 import { ROOM_TEMPLATES, validateTemplate } from '../src/content/rooms';
@@ -119,13 +120,13 @@ describe('dungeon generation', () => {
         }
         expect(f.pedestals.length).toBeGreaterThanOrEqual(1);
         // one key for a locked door, and about three for every four the chests ask
-        const want = (f.doors.some(d => d.locked) ? 1 : 0) + Math.ceil(0.75 * f.chests.reduce((s, c) => s + c.keys, 0));
+        const want = (f.doors.some(d => d.locked) ? 1 : 0) + Math.ceil(0.75 * f.chests.reduce((s, c) => s + c.keys, 0)) + (level(f.floor).tutorial ? 1 : 0);
         expect(f.keys.length).toBeLessThanOrEqual(want);
         expect(f.keys.length).toBeGreaterThanOrEqual(f.doors.some(d => d.locked) ? 1 : 0);
         // random floors are trees (one door fewer than rooms); Tree-of-Life floors join every touching pair
         const touching = f.plan.rooms.reduce((n, r) => n + Object.keys(r.links).length, 0) / 2;
         expect(f.doors).toHaveLength(touching);
-        if (level(f.floor).kind !== 'tree') expect(f.doors).toHaveLength(f.rooms.length - 1);
+        if (level(f.floor).kind !== 'tree' && !level(f.floor).tutorial) expect(f.doors).toHaveLength(f.rooms.length - 1);
         for (const r of f.rooms) { expect(ids.has(r.id)).toBe(false); ids.add(r.id); expect(bandOf(r.y0)).toBe(f.floor); }
         // every floor has a way down; the last one's opens into silence (L4)
         expect(f.hole).not.toBeNull();
@@ -266,6 +267,80 @@ describe('Tree-of-Life floors', () => {
       const run = buildRun(s * 31, 1);
       expect(run.floors[0].rooms.length, `seed ${s}`).toBeGreaterThanOrEqual(9);
     }
+  });
+});
+
+describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
+  const shape = (f: { rooms: { gx: number; gz: number; type: string; template: string }[] }) =>
+    f.rooms.map(r => [r.gx, r.gz, r.type, r.template]);
+
+  it('is the same plan and the same rooms in every run', { timeout: 60000 }, () => {
+    const first = shape(buildRun(1, 1).floors[0]);
+    for (const seed of [2, 77, 4096]) expect(shape(buildRun(seed, 1).floors[0])).toEqual(first);
+  });
+
+  it('starts with three open doors: the treasure room, the way down and the first lesson', { timeout: 60000 }, () => {
+    for (const seed of [1, 9]) {
+      const f = buildRun(seed, 1).floors[0];
+      const start = f.rooms.find(r => r.type === 'start')!;
+      expect(Object.keys(start.doors).sort()).toHaveLength(3);
+      expect(f.doors.filter(d => d.rooms.includes(start.id)).every(d => !d.locked)).toBe(true);
+      const types = Object.values(start.doors).map(id => {
+        const other = f.doors.find(d => d.id === id)!.rooms.find(x => x !== start.id)!;
+        return f.rooms.find(r => r.id === other)!.type;
+      });
+      expect(types.sort()).toEqual(['boss', 'normal', 'treasure']);
+    }
+  });
+
+  it('goes round in a ring and comes back to the treasure room, never through the start', { timeout: 60000 }, () => {
+    const f = buildRun(5, 1).floors[0];
+    const start = f.rooms.find(r => r.type === 'start')!.id;
+    const treasure = f.rooms.find(r => r.type === 'treasure')!.id;
+    const way = f.rooms.find(r => r.type === 'boss')!.id;
+    const open = new Map<number, number[]>();
+    for (const d of f.doors) for (const [a, b] of [d.rooms, [...d.rooms].reverse()]) open.set(a, [...(open.get(a) ?? []), b]);
+    expect(open.get(way)).toEqual([start]);
+    const reach = (from: number, avoid: number) => {
+      const seen = new Set([from]), q = [from];
+      while (q.length) for (const n of open.get(q.pop()!) ?? []) if (n !== avoid && !seen.has(n)) { seen.add(n); q.push(n); }
+      return seen;
+    };
+    const fromLesson = [...(open.get(start) ?? [])].find(n => n !== treasure && n !== way)!;
+    expect(reach(fromLesson, start).has(treasure)).toBe(true);
+    expect(reach(fromLesson, start).size).toBe(f.rooms.length - 2);
+  });
+
+  it('offers a tier 1–3 practice in the treasure room and a tier 1–4 one at the way down', { timeout: 60000 }, () => {
+    const run = buildRun(12, 1);
+    const f = run.floors[0];
+    const slots = pedestalSlots(run.dungeon);
+    const treasure = f.rooms.find(r => r.type === 'treasure')!.id, way = f.rooms.find(r => r.type === 'boss')!.id;
+    expect(slots.find(s => s.key === String(treasure))!.maxQuality).toBe(3);
+    expect(slots.find(s => s.key === String(way))!.maxQuality).toBe(4);
+    expect(f.pedestals.filter(p => p.chest)).toHaveLength(0);
+    expect(f.chests).toHaveLength(0);
+    expect(f.pedestals.map(p => p.room).sort()).toEqual([treasure, way].sort());
+    for (const p of f.pedestals) {
+      expect(p.item).toBeTruthy();
+      expect(ITEMS.find(i => i.id === p.item)!.quality).toBeLessThanOrEqual(p.room === treasure ? 3 : 4);
+    }
+  });
+
+  it('may hold a key and a bomb in its lesson rooms, by chance, and never on the start, the treasure room or the way down', { timeout: 60000 }, () => {
+    let keys = 0, bombs = 0, none = 0;
+    const special = (f: { rooms: { id: number; type: string }[] }) => new Set(f.rooms.filter(r => r.type !== 'normal').map(r => r.id));
+    for (let s = 1; s <= 40; s++) {
+      const f = buildRun(s * 13, 1).floors[0];
+      const skip = special(f);
+      for (const k of f.keys) expect(skip.has(k.room), `key, seed ${s}`).toBe(false);
+      for (const b of f.bombs) expect(skip.has(b.room), `bomb, seed ${s}`).toBe(false);
+      keys += f.keys.length; bombs += f.bombs.length;
+      if (!f.keys.length && !f.bombs.length) none++;
+    }
+    expect(keys).toBeGreaterThan(0);
+    expect(bombs).toBeGreaterThan(0);
+    expect(none).toBeGreaterThan(0);
   });
 });
 

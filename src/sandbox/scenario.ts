@@ -214,6 +214,7 @@ export function carveSandbox(w: VoxelWorld, rr: RunRandom, s: Scenario): Sandbox
     floor: k, plan, rooms: [room], doors: [], spawn, chests: [], hole: null, silence: null,
     pedestals: pedestals.map(([x, y, z]) => ({ room: id, x, y, z, item: s.pedestal ?? null, boss: false, chest: false })),
     keys: keys.map(([x, y, z]) => ({ room: id, x, y, z })),
+    bombs: [],
     space: Int16Array.from(grid),
   };
   return { floor, room, template: t, origin, pedestals, keys };

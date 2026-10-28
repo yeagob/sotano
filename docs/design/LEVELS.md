@@ -35,7 +35,7 @@ Ten floors below and three in the tree: thirteen. Down is the unconscious, layer
 4. **There is no house on the surface.** You climb from floor 0, the roots, however you can (blocks, the tree itself).
 5. **Heaven and the bottom are connected**; how, to be decided.
 
-6. **Floor 0 is the tutorial and the friend**: everything beautiful, **every door open** (no locks, no combat seals), **instructions on how to play spread through its rooms**, and **only practices of quality 1–3** on its pedestals. The instructions are **carved on stone tablets on the walls** of each room (north and south walls, beside the doors), never an overlay on the screen (owner, 2026-10-27).
+6. **Floor 0 is the tutorial and the friend**: everything beautiful, **every door open** (no locks, no combat seals), **instructions on how to play spread through its rooms**, and **a fixed plan** (owner, 2026-10-28, §1c): three open doors from the start, a treasure room that teaches the practices and offers one of tier 1–3, a way down that offers one of tier 1–4, and a ring of lessons that comes back to the treasure room. The instructions are **carved on stone tablets on the walls** of each room (north and south walls, beside the doors), never an overlay on the screen (owner, 2026-10-27).
 7. **Challenge rooms** may appear on any hostile floor: three waves of projections every time you enter, harder each time, for as long as you like (farming).
 8. **Doors work as in Isaac**: open whenever there are no projections, sealed while you fight, open again on their own when the room is clear; **a breakthrough destroys a door for good**.
 
@@ -50,6 +50,14 @@ Respect rules for Dante: his structure and images, never his figures as projecti
 - Where the run starts (assumption: on floor 0, among the roots) and what ends it.
 - How silence and heaven connect (a fall, a door, a shaft of light).
 - Which creatures live in the roots (they need the projection art gate even though they are not hostile). Proposal: Rootlings, Mosslings, Delvers and the Gardener ([BESTIARY.md §7–§8](BESTIARY.md)).
+
+## 1c. The way down costs something (owner, 2026-10-28)
+
+*"To go down from the first level to the second you have to give something: a heart, which is not permanent (it is like taking a heart of damage; if you have no life left, you die), a key, a bomb, a block you carry in your hand, or an item. On the first level you give one, on the second two, on the third three, on the fourth four and on the fifth five. From the sixth, practices start to be given: two on the sixth, three on the seventh, four on the eighth, five on the ninth. To continue the path you leave something behind and give something in return."*
+
+- Floors 0–4 (levels 1–5): the toll is one to five things from the hand, keys, bombs and hearts. Floors 5–8 (levels 6–9): two to five practices. The interface combines them: a window lists what you carry, and you choose exactly the number asked.
+- Practices appear in that window from the sixth floor on, as the owner asked. The owner's sentence "on the fifth, one practice" contradicts that line, so **the fifth level asks five things and no practice**; to ask for one practice there, it is one line in `tollOf` and in the window's rule. Open question for the owner.
+- The way down is free from the ninth floor's hole into silence.
 
 ## 2. Floor types
 
@@ -89,7 +97,7 @@ A room template can be taller than the standard 5 blocks (up to **8**), shape it
 | `antechamber` | normal, 2×1, floors 6–9 | A hall split by a river of lava, its north and south doors walled off | Bridge the river to the key; climb the walls |
 | `giants-well` | normal, 1×2, floors 7–9 | Trenches cut the side doors off; below an obsidian wall, a ring of pits | Build across, climb down, build out |
 | `gauntlet`, `colosseum` | challenge | Three waves every time you walk in | Farm; use the pit and the cover |
-| `roots-*` | floor 0 | The tutorial, a lesson on each room's walls | Break, step, kick, pit, bridge, breakthrough |
+| `roots-*` | floor 0 | The fixed tutorial, a lesson on each room's walls, a ring from the start back to the treasure room | Step, break, mend, pit, bridge, breakthrough, kick, water |
 | `long-gallery` | normal/path, 2×1, floors 1–3 | Limbo's gallery under a pointed vault: its far half a plateau riddled with holes five deep, pillars to jump, the key at the bottom of a well | Jump the pillars; drop to the key and build your way out |
 | `cloister` | normal/path, floors 1–2 | A walk around a sunken garth under crossing vaults | Fight from the walk; whatever falls in builds out |
 | `bastions` | normal/path, floors 1–5 | Towers three high in the corners, ringed by holes five deep, under a pointed vault | Climb the stair for a vantage; knock projections into the holes |

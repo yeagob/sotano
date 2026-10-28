@@ -21,12 +21,12 @@
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
 import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
-import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_ORDER, cellAt, ceilingAt, DECOR_CHARS, homeAt, ROCK, ROOM_D, ROOM_H, ROOM_W, templateDims, type RoomTemplate } from '../content/rooms';
+import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_CELLS, cellAt, ceilingAt, DECOR_CHARS, homeAt, ROCK, ROOM_D, ROOM_H, ROOM_W, templateDims, type RoomTemplate } from '../content/rooms';
 import { CHEST_LOCK, ITEM_IN_CHEST, ROOM_CHEST } from '../content/tables/chests';
 import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
 import { CHALLENGE_ROOM, DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
 import { hash3, type Rng, type RunRandom } from '../core/rng';
-import { DEFAULT_PLAN, generatePlan, OPPOSITE, sizeOf, TREE_ENTRY, treeCell, treePlan, type FloorPlan, type PlanRoom, type RoomType, type Side } from './floorplan';
+import { DEFAULT_PLAN, generatePlan, OPPOSITE, sizeOf, TREE_ENTRY, TUTORIAL_LAYOUT, treeCell, treePlan, tutorialPlan, type FloorPlan, type PlanRoom, type RoomType, type Side } from './floorplan';
 import { VoxelWorld } from './world';
 
 /** How many floors go down (0 … LAST_FLOOR). */
@@ -121,6 +121,7 @@ export interface FloorResult {
   pedestals: { room: number; x: number; y: number; z: number; item: string | null; boss: boolean; chest: boolean }[];
   chests: ChestSpec[];
   keys: { room: number; x: number; y: number; z: number }[];
+  bombs: { room: number; x: number; y: number; z: number }[];
   /** Where the hole to the next floor opens (boss room), if there is a next floor. */
   hole: { room: number; x: number; z: number; size: number; yTop: number; yBottom: number } | null;
   /** Under the last floor: the chamber of silence (L4), or null. */
@@ -157,7 +158,9 @@ export function planDungeon(rr: RunRandom): DungeonPlan {
     const lv = level(k);
     const below = LEVELS[k + 1];
     let plan: FloorPlan;
-    if (lv.kind === 'tree') {
+    if (lv.tutorial) {
+      plan = tutorialPlan();
+    } else if (lv.kind === 'tree') {
       // Tree floors alternate north–south so each crown lies over the next kingdom
       // the last Tree floor ends in the great pit (a wide crown over a 4×4 shaft)
       plan = treePlan(treeIndex(k) % 2 === 1, lv.vaults, below?.kind !== 'tree');
@@ -202,8 +205,10 @@ export function pedestalSlots(dungeon: DungeonPlan): PedestalSlot[] {
   const slots: PedestalSlot[] = [];
   dungeon.plans.forEach((plan, k) => {
     const lv = level(k);
-    for (const r of plan.rooms) if (r.type === 'treasure' || r.type === 'vault' || r.type === 'boss')
-      slots.push({ key: String(roomGid(k, r.id)), pool: lv.tutorial ? 'treasure' : r.type, maxQuality: lv.maxQuality });
+    for (const r of plan.rooms) if (r.type === 'treasure' || r.type === 'vault' || r.type === 'boss') {
+      const cell = lv.tutorial ? TUTORIAL_CELLS[TUTORIAL_LAYOUT[r.gz][r.gx]] : undefined;
+      slots.push({ key: String(roomGid(k, r.id)), pool: lv.tutorial ? 'treasure' : r.type, maxQuality: cell ? cell.maxQuality : lv.maxQuality });
+    }
   });
   return slots;
 }
@@ -244,9 +249,6 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   let spawn: [number, number, number] = [0, y0, 0];
   let holeAt: [number, number, number] | null = null;
 
-  // the tutorial teaches in order: its normal rooms, by steps from the start, get the lessons in turn
-  const lessonRank = new Map(plan.rooms.filter(r => r.type === 'normal').sort((a, b) => a.dist - b.dist || a.id - b.id).map((r, i) => [r.id, i]));
-
   // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
   //    from the plan and the floor's own fork, so a room's choice never depends on another room's
   const allot = allotSpace(plan, rr.fork('floor', k, 'space'));
@@ -255,14 +257,12 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   for (const pr of plan.rooms) {
     const layout = rr.fork('floor', k, 'room', pr.id, 'layout');
     const mirror = (t: RoomTemplate) => t.mirror !== false && pr.type !== 'start';
+    const cell = lv.tutorial ? TUTORIAL_CELLS[TUTORIAL_LAYOUT[pr.gz][pr.gx]] : undefined;
     const fits = (t: RoomTemplate) => flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t)).length > 0;
-    let t = pickTemplate(opt.templates, pr.type, k, layout, !!lv.tutorial, pr.size, fits, lv.bigRooms);
-    if (lv.tutorial && pr.type === 'normal') {
-      const lesson = TUTORIAL_ORDER[(lessonRank.get(pr.id) ?? 0) % TUTORIAL_ORDER.length];
-      t = opt.templates.find(q => q.lesson === lesson && q.types.includes('normal')) ?? t;
-    }
+    const fixed = cell && opt.templates.find(q => q.id === cell.template);
+    const t = fixed || pickTemplate(opt.templates, pr.type, k, layout, pr.size, fits, lv.bigRooms);
     const flips = flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t));
-    const [flipX, flipZ] = flips.length ? flips[layout.int(0, flips.length - 1)] : [false, false];
+    const [flipX, flipZ] = fixed ? [false, !!cell!.flipZ] : flips.length ? flips[layout.int(0, flips.length - 1)] : [false, false];
     for (const [cx, cz] of spaceCells(t, pr, flipX, flipZ)) space[cx + cz * plan.w] = pr.id;
     fitted.set(pr.id, { t, flipX, flipZ, layout });
   }
@@ -334,7 +334,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         const boss = pr.type === 'boss' && !lv.tutorial;
         const item = opt.pedestalItem(gid(pr.id));
         // the boss's practice is earned, never locked away; most others wait in a chest
-        const inChest = !boss && chestRng.chance(ITEM_IN_CHEST);
+        const inChest = !boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST);
         w.data[w.idx(x, y0, z)] = inChest ? MAT.chest : MAT.pedestal;
         if (inChest) chests.push({ room: gid(pr.id), x, y: y0, z, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item });
         pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item, boss, chest: inChest });
@@ -345,7 +345,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     if (pr.type === 'normal') {
       // a free-standing chest in many rooms; the rest of the open tiles stay free for keys
       let spots = freeSpots(t, flipX, flipZ);
-      if (spots.length && chestRng.chance(ROOM_CHEST)) {
+      if (spots.length && !lv.tutorial && chestRng.chance(ROOM_CHEST)) {
         const [col, row] = chestRng.pick(spots);
         w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.chest;
         chests.push({ room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item: null });
@@ -394,6 +394,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
 
   // 3. a key in a normal room if there is a locked door (prefer K spots)
   const keys: FloorResult['keys'] = [];
+  const bombs: FloorResult['bombs'] = [];
   if (doors.some(d => d.locked)) {
     const normal = new Set(rooms.filter(rm => rm.type === 'normal').map(rm => rm.id));
     const spots = keySpots.filter(s => normal.has(s.room));
@@ -413,6 +414,17 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     const [x, z] = extraRng.pick(spots);
     keys.push({ room, x, y: y0, z });
     if (spots.length > 1) spots.splice(spots.findIndex(([sx, sz]) => sx === x && sz === z), 1);
+  }
+  if (lv.tutorial) {
+    const lootRng = rr.fork('floor', k, 'loot');
+    const lootRooms = [...freeByRoom.keys()].filter(id => freeByRoom.get(id)!.length);
+    for (const kind of ['key', 'bomb'] as const) {
+      if (!lootRooms.length || !lootRng.chance(0.5)) continue;
+      const room = lootRng.pick(lootRooms), spots = freeByRoom.get(room)!;
+      const [x, z] = lootRng.pick(spots);
+      (kind === 'key' ? keys : bombs).push({ room, x, y: y0, z });
+      if (spots.length > 1) spots.splice(spots.findIndex(([sx, sz]) => sx === x && sz === z), 1);
+    }
   }
 
   // 4. where the hole to the next floor will open: the boss room's H (its 2×2 shaft lands in
@@ -441,7 +453,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   for (const rm of rooms) markRoomDirty(w, rm);
-  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, hole, silence, space };
+  return { floor: k, plan, rooms, doors, spawn, pedestals, chests, keys, bombs, hole, silence, space };
 }
 
 /**
@@ -623,15 +635,13 @@ function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el:
 /** `own`: only the templates made for this floor (the tutorial uses its own rooms throughout).
  *  `size`: a footprint decided with the plan (the great pit's crown); only templates of that size fit it.
  *  `fits`: does a template's space fit around the room? Templates bigger than a cell weigh `big` times more. */
-function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, floor: number, rng: Rng, own = false, size: [number, number] | undefined, fits: (t: RoomTemplate) => boolean, big = 1): RoomTemplate {
+function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, floor: number, rng: Rng, size: [number, number] | undefined, fits: (t: RoomTemplate) => boolean, big = 1): RoomTemplate {
   const cells = (t: RoomTemplate) => (t.size ?? [1, 1])[0] * (t.size ?? [1, 1])[1];
   const sized = (t: RoomTemplate) => (size ? (t.size ?? [1, 1])[0] === size[0] && (t.size ?? [1, 1])[1] === size[1] : true);
   const ofType = templates.filter(t => t.types.includes(type) && sized(t));
   const allowed = ofType.filter(t => !t.floors || (floor >= t.floors[0] && floor <= t.floors[1]));
-  const mine = allowed.filter(t => t.floors);
-  const here = own && mine.length ? mine : allowed;
   // a floor with no template of its own for this type borrows any (never a missing room)
-  const pool = here.length ? here : ofType;
+  const pool = allowed.length ? allowed : ofType;
   const options = pool.filter(fits).length ? pool.filter(fits) : ofType.filter(t => cells(t) === 1);
   if (!options.length) throw new Error(`no room template for type "${type}"`);
   const weight = (t: RoomTemplate) => (t.weight ?? 1) * (cells(t) > 1 ? big : 1);

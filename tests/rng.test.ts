@@ -101,7 +101,8 @@ describe('determinism and isolation', () => {
       const reserved = run.floors.flatMap(f => f.pedestals.map(p => p.item)).filter(Boolean);
       expect(new Set(reserved).size, `seed ${s}`).toBe(reserved.length);
       expect(reserved.length).toBeLessThanOrEqual(ITEMS.length - 3);
-      for (const p of run.floors[0].pedestals) expect(gentle.get(p.item!)!, `floor 0, seed ${s}`).toBeLessThanOrEqual(3);
+      const kind = new Map(run.floors[0].rooms.map(r => [r.id, r.type]));
+      for (const p of run.floors[0].pedestals) expect(gentle.get(p.item!)!, `floor 0, seed ${s}`).toBeLessThanOrEqual(kind.get(p.room) === 'treasure' ? 3 : 4);
     }
   });
 
@@ -218,8 +219,8 @@ describe('golden seed', () => {
     });
     let h = 0x811c9dc5;
     for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
-    expect([GEN_VERSION, h.toString(16)]).toEqual([12, GOLDEN]);
+    expect([GEN_VERSION, h.toString(16)]).toEqual([13, GOLDEN]);
   });
 });
 // adding a practice to the catalogue changes reservations too: that also changes every seed
-const GOLDEN = '713b78f7';
+const GOLDEN = '69314b54';
