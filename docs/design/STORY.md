@@ -144,6 +144,8 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 | Synergy | Requires | Effect |
 |---|---|---|
 | **One Clear Cut** | Occam's Razor + Kiai | Charge and release a giant blade of light that sweeps 140° and cuts everything in it |
+| **Chorus** | Kiai + Dual Process | The beam hits and digs 1.6 times harder: the second voice a shot item cannot give a beam |
+| **Choir** | Kiai + Triangulation | The beam hits and digs 2.2 times harder: three voices in one shout |
 | **Somatic Release** | Symbolic Act + Grounding | Kicked blocks burst too |
 | **Compound Effect** | Kaizen + Deep Focus | Pierce through stone and brick as well |
 | **Flooding** | Exposure + Habit Stacking | Blocks you shatter by contact break their neighbours outright |

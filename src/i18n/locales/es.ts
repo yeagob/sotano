@@ -551,6 +551,8 @@ export const ES: Catalog = {
 
     synergies: {
       one_clear_cut: { name: 'Un corte claro', description: 'La claridad y el grito se vuelven un solo gesto: carga, suelta, y una hoja de luz gigante barre todo lo que sobra.' },
+      chorus: { name: 'Coro', description: 'El grito encuentra una segunda voz: el rayo golpea y excava 1.6 veces más fuerte. Proceso dual no llega al rayo, así que la voz se añade aquí.' },
+      choir: { name: 'Coral', description: 'Tres voces en un solo grito: el rayo golpea y excava 2.2 veces más fuerte. Triangulación no llega al rayo, así que las voces se añaden aquí.' },
       somatic_release: { name: 'Liberación somática', description: 'Los bloques pateados también estallan.' },
       compound_effect: { name: 'Efecto compuesto', description: 'Los pasos pequeños con concentración profunda también atraviesan piedra y ladrillo.' },
       flooding: { name: 'Inundación', description: 'Los miedos que atraviesas se llevan a sus vecinos con ellos.' },

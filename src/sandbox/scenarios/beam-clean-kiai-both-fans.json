@@ -1,0 +1,69 @@
+{
+  "note": "Kiai with both fans: the beam is unchanged",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "floor": 1,
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    },
+    {
+      "def": "doubt",
+      "at": [
+        6,
+        0,
+        5
+      ]
+    }
+  ],
+  "ticks": 180,
+  "report": [
+    0,
+    90,
+    180
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "key",
+      "code": "KeyF"
+    },
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    },
+    {
+      "t": 0,
+      "do": "fire",
+      "ticks": 90
+    }
+  ],
+  "items": [
+    "kiai",
+    "dualprocess",
+    "triangulation"
+  ]
+}
