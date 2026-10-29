@@ -339,7 +339,7 @@ export const ES: Catalog = {
       boundaries: {
         name: 'Límites',
         description: 'Una línea que dice qué cercanía es suficiente.',
-        effect: 'Las intenciones no hacen daño a las proyecciones. A cada una que golpean la empujan 7 bloques/s hacia atrás, en la dirección del disparo.',
+        effect: 'Las intenciones y los trazos de tus armas no hacen daño a las proyecciones. A cada una que golpea una intención o un rayo la empujan 7 bloques/s hacia atrás, en la dirección del disparo.',
         inspiredBy: 'Los límites (Henry Cloud y John Townsend, Límites, 1992)',
       },
       thoughtstopping: {

@@ -19,7 +19,7 @@ export interface WeaponHost {
   /** Left button held, and nothing else (an item being held up) blocks casting. */
   casting(): boolean;
   /** Emits `strike`; null if a hook cancelled it. */
-  strike(weapon: WeaponId, damage: number, mining: number, reach: number): { damage: number; mining: number; reach: number } | null;
+  strike(weapon: WeaponId, damage: number, mining: number, reach: number): { damage: number; mining: number; reach: number; tags: Set<string> } | null;
   solid(x: number, y: number, z: number): boolean;
   /** A world block that weapons can break (not air, not unbreakable). */
   breakable(x: number, y: number, z: number): boolean;

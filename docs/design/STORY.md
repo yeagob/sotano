@@ -129,7 +129,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Chunking** | Mind | 3 | An intention that hits a projection or a block splits in two: half damage and mining each, 60% speed | Chunking (George A. Miller, *The Magical Number Seven*, 1956) |
 | **Bounce Back** | Will | 2 | Intentions that don't break a block bounce off it, up to 2 times, keeping 75% of their speed | Resilience (developmental psychology) |
 | **Affirmation** | Emotion | 3 | Intentions curve toward the nearest block within 6 blocks; a positive one that hits a block leaves a loose copy of it beside it | Autosuggestion and self-talk (Émile Coué, early 1900s) |
-| **Boundaries** | Emotion | 2 | Intentions deal no damage to projections; each one they hit is shoved 7 blocks/s back | *Boundaries* (Henry Cloud and John Townsend, 1992) |
+| **Boundaries** | Emotion | 2 | Intentions and weapon strokes deal no damage to projections; each one an intention or a beam hits is shoved 7 blocks/s back | *Boundaries* (Henry Cloud and John Townsend, 1992) |
 | **Thought Stopping** | Mind | 3 | A projection hit by an intention freezes for 2 seconds: it stops and cannot touch you | Thought stopping (cognitive behavioural therapy) |
 | **Self-Efficacy** | Will | 3 | A projection hit by an intention runs away from you for 3 seconds | Self-efficacy (Albert Bandura, 1977) |
 | **Self-Compassion** | Emotion | 2 | +1 heart container; heals one heart when taken | Self-compassion (Kristin Neff, 2011) |

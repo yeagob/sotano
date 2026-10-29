@@ -25,7 +25,7 @@ function fakeHost(opts: { stats?: Partial<Stats>; unbreakable?: Set<string>; fil
     eye: () => new THREE.Vector3(0.5, 1.6, 0.5),
     forward: () => new THREE.Vector3(0, 0, -1),
     casting: () => state.casting,
-    strike: (_w, damage, mining, reach) => { state.strikes++; return state.cancel ? null : { damage, mining, reach }; },
+    strike: (_w, damage, mining, reach) => { state.strikes++; return state.cancel ? null : { damage, mining, reach, tags: new Set() }; },
     solid: (x, y, z) => blocks.has(key(x, y, z)),
     breakable: (x, y, z) => blocks.has(key(x, y, z)) && !opts.unbreakable?.has(key(x, y, z)),
     cut: (x, y, z) => { blocks.delete(key(x, y, z)); state.cuts.push(key(x, y, z)); },

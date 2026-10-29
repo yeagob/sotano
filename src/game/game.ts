@@ -242,7 +242,7 @@ export class Game {
   get polarityNow() { return this.polarity; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
    *  already warmed, so a beam warms a projection once, not on every tick. */
-  private stroke = { polarity: 'positive' as Polarity, warmed: new Set<number>() };
+  private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
   private fpsAcc = 0; private fpsN = 0; fps = 0;
@@ -675,9 +675,10 @@ export class Game {
       strike: (weapon, damage, mining, reach) => {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
-        this.stroke = { polarity: this.polarity, warmed: new Set() };
+        const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
+        this.stroke = { polarity: this.polarity, warmed: new Set(), intent };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
-        return { damage: ev.damage, mining: ev.mining, reach: ev.reach };
+        return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
       },
       solid: (x, y, z) => this.solid(x, y, z),
       // a positive stroke only reaches blocks it can mend: the damaged ones
@@ -702,6 +703,7 @@ export class Game {
         const warm = !this.stroke.warmed.has(id);
         this.stroke.warmed.add(id);
         this.intentTouch(id, damage, kx, kz, source === 'beam' ? 'beam' : 'cut', source, this.stroke.polarity, warm);
+        if (warm && source !== 'blade' && this.stroke.intent) this.strokeHit(id, kx, kz, this.stroke.intent);
       },
       clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
       clearCubes: inside => this.clearCubesIn(inside),
@@ -1372,6 +1374,13 @@ export class Game {
     const broke = this.damageBlock(hit.x, hit.y, hit.z, mining, 'intent', 'intent');
     if (!broke) sfx.hit(Math.min(3, isFinite(mat(id).tier) ? mat(id).tier : 3));
     return broke;
+  }
+
+  private strokeHit(id: number, kx: number, kz: number, intent: IntentSpec) {
+    const e = this.enemies.get(id);
+    if (!e) return;
+    const b = e.body;
+    this.bus.emit('intentHit', { kind: 'actor', target: id, x: b.x, y: b.y + b.h / 2, z: b.z, nx: 0, ny: 0, nz: 0, vx: kx, vy: 0, vz: kz, intent });
   }
 
   private intentHit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, intent: IntentSpec) {
