@@ -220,6 +220,7 @@ export class Game {
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
   private chestViews!: Chests;
   private boundaryRing = new Map<number, [number, number, number][]>();
+  private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
   private bossUsed = new Set<string>();
@@ -892,6 +893,7 @@ export class Game {
   private bossArena(e: Enemy, what: string) {
     const r = this.rooms.get(e.room);
     if (!r) return;
+    if (what === 'ice') { this.raiseIce(e, r); return; }
     this.hud.toast(`boss.${e.def}.phase.${e.stage}` as MessageKey);
     switch (what) {
       case 'walls': this.raiseWalls(r); break;
@@ -927,6 +929,18 @@ export class Game {
   private dropOnPlayer(r: RoomInfo) {
     const p = this.player.body;
     this.debris.spawn(MAT[level(r.floor).palette.wall], p.x, r.y0 + r.height - 1, p.z, 0, -2, 0);
+  }
+
+  private raiseIce(e: Enemy, r: RoomInfo) {
+    const x = r.x0 + Math.floor(r.w / 2), p = this.player.body;
+    const cells: [number, number, number][] = [];
+    for (let z = r.z0; z < r.z0 + r.d; z++) for (let y = r.y0; y < r.y0 + 2; y++) {
+      if (!inRoomSpace(r, x + 0.5, z + 0.5) || this.world.get(x, y, z) !== AIR || (Math.floor(p.x) === x && Math.floor(p.z) === z)) continue;
+      this.world.set(x, y, z, MAT.ice);
+      cells.push([x, y, z]);
+    }
+    this.iceWalls.set(e.id, cells);
+    this.particles.burst(x + 0.5, r.y0 + 1, r.z0 + r.d / 2, pal('cold.white'), 14, 2, 0.05);
   }
 
   private raiseWalls(r: RoomInfo) {
@@ -1078,6 +1092,11 @@ export class Game {
   }
 
   private onEnemyDeath(e: Enemy) {
+    const ice = this.iceWalls.get(e.id);
+    if (ice) {
+      for (const [x, y, z] of ice) if (this.world.get(x, y, z) === MAT.ice) this.world.set(x, y, z, AIR);
+      this.iceWalls.delete(e.id);
+    }
     this.bus.off(null, `actor:${e.id}`); // reserved for actor-owned hooks
     this.actors.remove(e.id);
     this.contacts.forget(e.id);

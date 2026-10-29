@@ -61,3 +61,16 @@ describe('simplified projections: Scarcity', () => {
     expect(stole).toBe(false);
   });
 });
+
+describe('simplified projections: Isolation', () => {
+  it('raises its ice wall once, and never again', () => {
+    const iso = ENEMY_BY_ID.get('isolation')!;
+    const asked: string[] = [];
+    const ctx = { dt: 1 / 60, arena: (_e: unknown, what: string) => asked.push(what) };
+    const e = { timer: 0, tags: new Set<string>(), seq: 0, body: { x: 0, y: 0, z: 0 } };
+    const emit = iso.behaviour as unknown as { update: (e: unknown, c: unknown) => void };
+    emit.update(e, { ...ctx, dt: 3 } as never);
+    emit.update(e, { ...ctx, dt: 3 } as never);
+    expect(asked).toEqual(['ice']);
+  });
+});
