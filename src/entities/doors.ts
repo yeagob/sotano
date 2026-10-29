@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { doorTexture, type DoorLook } from '../render/atlas';
 import type { DoorSpec } from '../world/floor';
 
-const TOUCH = 0.2;       // a locked door asks when your body is this close to its doorway (blocks)
+const TOUCH = 0.05;      // a locked door asks only when your body touches its frame (blocks)
 const CLOSE_DIST = 5.5;  // a locked door may ask again once you are this far away
 const SPEED = 2.8;       // fraction of the travel per second
 const TRAVEL = 3.05;     // how far it slides up
