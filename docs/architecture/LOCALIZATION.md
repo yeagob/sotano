@@ -186,3 +186,9 @@ established name of the technique or public-domain work in that language (*Medit
 
 Not localized on purpose: the debug readout (top right) and the `S` console, the game's name
 (`<title>`, the logo), and the `???` of undiscovered synergies.
+
+## Search metadata
+
+The browser tab title and the search description are localized too: `seo.title` and `seo.description`
+are set by `applyDom()` (`src/i18n/dom.ts`) on every language change. The static head of `index.html`
+keeps English, and what crawlers read is described in [DISCOVERABILITY.md](DISCOVERABILITY.md).

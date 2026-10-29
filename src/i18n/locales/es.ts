@@ -55,6 +55,8 @@ export const ES: Catalog = {
     'controls.jump': 'saltar (mantén para nadar hacia arriba)',
     'controls.jump.key': 'Espacio',
     'intro.tagline': 'Baja dentro de ti. Rompe lo que te retiene. Encuentra lo que vive abajo.',
+    'seo.title': 'THE ROOTS: un roguelike voxel gratis en tu navegador',
+    'seo.description': 'Roguelike voxel gratuito en el navegador: rompe cubos como en Minecraft, lanza intenciones como en The Binding of Isaac y desciende por un mundo de cavernas como en Noita. Sin instalar.',
     'intro.play': 'Haz clic para jugar',
     'intro.language': 'Idioma',
     'intro.controls': 'Controles',

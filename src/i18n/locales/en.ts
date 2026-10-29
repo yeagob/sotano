@@ -9,6 +9,9 @@ const messages = {
   'app.loading': 'Loading…',
   'app.failed': 'Failed to start: {error}',
   'intro.tagline': 'Go down into yourself. Break what holds you. Find what lives below.',
+  // the browser tab title and meta description (set by applyDom; the static HTML keeps the English)
+  'seo.title': 'THE ROOTS: a voxel roguelite, free in your browser',
+  'seo.description': 'Free browser voxel roguelite: break cubes like Minecraft, shoot intentions like The Binding of Isaac, and go down through a cavern world like Noita. No install.',
   'intro.play': 'Click to play',
   'intro.language': 'Language',
   'intro.controls': 'Controls',
