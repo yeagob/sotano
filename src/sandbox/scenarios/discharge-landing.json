@@ -1,0 +1,38 @@
+{
+  "note": "Discharge: landing from two blocks up sends a shockwave that hurts and shoves projections",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    5,
+    3,
+    3
+  ],
+  "god": true,
+  "items": [
+    "discharge"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        7,
+        0,
+        3
+      ]
+    }
+  ],
+  "ticks": 240,
+  "report": [
+    0,
+    60,
+    120,
+    240
+  ]
+}

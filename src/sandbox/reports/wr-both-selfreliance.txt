@@ -1,0 +1,40 @@
+# wr-both-selfreliance — Weapon review: both weapon with selfreliance; two Doubts in front of the player (mid), negative polarity, 90 ticks of casting
+floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor kiai selfreliance · synergies one_clear_cut
+  doubt#2 hp 12.0/12 · projection · at 5.5 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 6.5 0.0 5.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 90 (1.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor kiai selfreliance · synergies one_clear_cut
+  doubt#2 hp 12.0/12 · projection · at 2.9 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 4.8 0.0 5.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events polarityChange 1 · roomEnter 1
+
+t 180 (3.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor kiai selfreliance · synergies one_clear_cut
+  blocks —
+  elements —
+  cubes brick 3 · dirt 1 · stone 2 · pickups 1
+  events actorDamage:doubt<cut 2 · actorDeath:doubt 2 · blockBreak:brick 124 · blockBreak:deepstone 1 · blockBreak:dirt 7 · blockBreak:ore 17 · blockBreak:stone 31 · blockDamage:brick 124 · blockDamage:deepstone 1 · blockDamage:dirt 7 · blockDamage:ore 17 · blockDamage:stone 31 · blockLoot:brick 124 · blockLoot:deepstone 1 · blockLoot:dirt 7 · blockLoot:ore 17 · blockLoot:stone 31 · strike 1
+
+map t 180 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 

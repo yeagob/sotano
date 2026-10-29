@@ -16,6 +16,8 @@ function rig(blocks: Set<string>, tier = 0) {
     enemyAt: () => -1,
     hitEnemy: () => {},
     splash: () => {},
+    hit: () => {},
+    nearestBlock: () => null,
   };
   const intents = new Intents(new THREE.Scene(), hooks);
   return { intents, state };
@@ -86,6 +88,8 @@ describe('mirrors', () => {
       mirrorAxis: id => (id === 7 ? 'z' : null),
       hitEnemy: (id) => hits.push(`hit ${id}`),
       splash: () => {},
+      hit: () => {},
+      nearestBlock: () => null,
     };
     const intents = new Intents(new THREE.Scene(), hooks);
     const spec = { ...intentFromStats(BASE_STATS, 'negative'), speed: 20, flight: 5 };

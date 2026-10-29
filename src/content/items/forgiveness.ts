@@ -5,7 +5,7 @@ export default defineItem({
   id: 'forgiveness',
   name: 'Forgiveness',
   description: 'Release what touches you: projections that hit you are hurt by it, and half the time you are not.',
-  effect: 'Projections that touch you take 4 damage. Half of their contact hits on you are ignored.',
+  effect: 'Projections that touch you take 4 damage. Half of their contact hits on you are ignored. +1 heart container.',
   inspiredBy: 'A Course in Miracles (Helen Schucman): forgiveness as release; perception as a mirror',
   pools: { treasure: 1 },
   tags: ['emotion'],
@@ -28,6 +28,7 @@ export default defineItem({
     ],
     palette: { a: pal('path.will.base'), b: pal('brass.hi'), c: pal('sky.horizon'), d: pal('bone.paper') },
   },
+  stats: [{ stat: 'maxHearts', layer: 'add', value: 1 }],
   hooks: [
     hook('contact', (e, api) => {
       // what touches you meets no resistance: it takes the blow, and often you don't

@@ -102,7 +102,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Grounding** | Body | 1 | Kick twice as hard | Somatic grounding techniques |
 | **Gratitude Journal** | Emotion | 1 | +luck: cleared rooms reward you more often | Gratitude journaling (positive psychology) |
 | **Box Breathing** | Body, Emotion | 2 | +1 heart container, heals fully | Box breathing (paced breathing) |
-| **Radical Acceptance** | Emotion | 2 | Your own breakthroughs (bombs) don't hurt you | Radical acceptance (Dialectical Behaviour Therapy) |
+| **Radical Acceptance** | Emotion | 2 | Your own breakthroughs (bombs) don't hurt you; +1 heart container | Radical acceptance (Dialectical Behaviour Therapy) |
 | **Socratic Questioning** | Mind | 1 | +2 keys now; locked doors sometimes open without one | Socratic questioning (CBT) |
 | **Meditations** | Will, Mind | 4 | ×3 damage, +2 damage | Marcus Aurelius, *Meditations* (public domain) |
 | **Self-Reliance** | Will | 4 | ×2 fire rate, +1.5 damage | Ralph Waldo Emerson, *Self-Reliance* (public domain) |
@@ -110,15 +110,30 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **As a Man Thinketh** | Mind | 4 | ×4 mining, ×1.5 damage, faster and flatter intentions | James Allen, *As a Man Thinketh* (public domain) |
 | **Letters from a Stoic** | Will, Body | 4 | Carry three more blocks, ×2 kick and throw, +2 reach | Seneca, *Moral Letters to Lucilius* (public domain) |
 | **Satori** | All four | 4 | A little more of everything (damage, fire rate, speed, range, jump, luck, mining) | Satori, sudden awakening in Zen Buddhism |
-| **Forgiveness** | Emotion | 3 | Projections that touch you take 4 damage; half their contact hits are ignored | *A Course in Miracles* (Helen Schucman) |
+| **Forgiveness** | Emotion | 3 | Projections that touch you take 4 damage; half their contact hits are ignored; +1 heart container | *A Course in Miracles* (Helen Schucman) |
 | **Nothing Personal** | Emotion, Mind | 2 | Two in three contact hits do nothing | *The Four Agreements* (don Miguel Ruiz) |
 | **Systemic Constellation** | Emotion, Mind | 3 | Projections materialise with 30% less health, 15% slower | Family and systemic constellations (Bert Hellinger and others) |
 | **Art Therapy** | Emotion, Body | 2 | Placing 4 connected blocks in the same room heals one heart (once per room) | Art therapy; art transforms the maker |
 | **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
 | **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
-| **Occam's Razor** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Occam's razor (William of Ockham); a wink at the swords of light of space opera |
-| **Kiai** | Will | 4 | Replaces intentions with a charged beam that burns through blocks, 10 ticks a second (boss) | Kiai, the focused shout of Japanese martial arts; a wink at the charged beams of dungeon crawlers |
+| **Cut Ties with Toxic People** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Cut Ties with Toxic People (William of Ockham); a wink at the swords of light of space opera |
+| **Remember Breathing** | Will | 4 | Replaces intentions with a charged beam that burns through blocks, 10 ticks a second (boss) | Remember Breathing, the focused shout of Japanese martial arts; a wink at the charged beams of dungeon crawlers |
 | **Lion's Mane** | Body | 2 | Jump height ×2; your head breaks tier-1 blocks (dirt, crates, stone, brick) | The lion's mane mushroom; a wink at the platformers that taught a generation to jump |
+| **Aha Moment** | Mind, electric | 2 | Intentions that hit a projection arc to the nearest other one within 4 blocks, half damage, up to 2 times | Insight learning (Wolfgang Köhler, *The Mentality of Apes*, 1925) |
+| **Rapport** | Emotion, electric | 2 | Intentions charge loose cubes; a charged cube that lands hard discharges: 4 damage to projections within 2.5 blocks | Rapport, the working alliance of therapy (Carl Rogers, 1961) |
+| **Resonance** | Mind, electric | 3 | Each intention that hits charges the intentions in flight within 3 blocks; a charged one discharges on its next hit: 3 damage within 2 blocks | Sympathetic resonance (physics); a nod to attunement in therapy |
+| **Discharge** | Body, electric | 2 | Landing from about two blocks up sends a shockwave out of your feet: 3 blocks, 4 damage to projections, shoved back | Somatic Experiencing (Peter Levine, *Waking the Tiger*, 1997) |
+| **Kindling** | Will | 2 | When a projection hurts you, fire bursts out of you: 2.5 blocks, 4 damage to projections; flammable blocks within 2 blocks catch fire | A nod to the kindling model in neuroscience |
+| **Dual Process** | Mind | 2 | Each shot fires two intentions; the second deals 60% damage and mining | Dual-process theory (Daniel Kahneman, *Thinking, Fast and Slow*, 2011) |
+| **Triangulation** | Mind | 4 | Each shot fires three intentions in a fan; the two extra ones deal 60% damage and mining | Triangulation (surveying and reasoning) |
+| **Chunking** | Mind | 3 | An intention that hits a projection or a block splits in two: half damage and mining each, 60% speed | Chunking (George A. Miller, *The Magical Number Seven*, 1956) |
+| **Bounce Back** | Will | 2 | Intentions that don't break a block bounce off it, up to 2 times, keeping 75% of their speed | Resilience (developmental psychology) |
+| **Affirmation** | Emotion | 3 | Intentions curve toward the nearest block within 6 blocks; a positive one that hits a block leaves a loose copy of it beside it | Autosuggestion and self-talk (Émile Coué, early 1900s) |
+| **Boundaries** | Emotion | 2 | Intentions and weapon strokes deal no damage to projections; each one an intention or a beam hits is shoved 7 blocks/s back | *Boundaries* (Henry Cloud and John Townsend, 1992) |
+| **Thought Stopping** | Mind | 3 | A projection hit by an intention freezes for 2 seconds: it stops and cannot touch you | Thought stopping (cognitive behavioural therapy) |
+| **Self-Efficacy** | Will | 3 | A projection hit by an intention runs away from you for 3 seconds | Self-efficacy (Albert Bandura, 1977) |
+| **Self-Compassion** | Emotion | 2 | +1 heart container; heals one heart when taken | Self-compassion (Kristin Neff, 2011) |
+| **Sleep Hygiene** | Body | 2 | +1 heart container; invulnerability after a hit lasts 0.5 s longer | Sleep hygiene (cognitive behavioural therapy for insomnia) |
 
 Every practice has two texts: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, plainly, with numbers). Both are shown on pickup and in the inventory. References and their naming status live in [../lore/SOURCES.md](../lore/SOURCES.md).
 
@@ -128,7 +143,9 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 | Synergy | Requires | Effect |
 |---|---|---|
-| **One Clear Cut** | Occam's Razor + Kiai | Charge and release a giant blade of light that sweeps 140° and cuts everything in it |
+| **One Clear Cut** | Cut Ties with Toxic People + Remember Breathing | Charge and release a giant blade of light that sweeps 140° and cuts everything in it |
+| **Chorus** | Remember Breathing + Dual Process | The beam hits and digs 1.6 times harder: the second voice a shot item cannot give a beam |
+| **Choir** | Remember Breathing + Triangulation | The beam hits and digs 2.2 times harder: three voices in one breath |
 | **Somatic Release** | Symbolic Act + Grounding | Kicked blocks burst too |
 | **Compound Effect** | Kaizen + Deep Focus | Pierce through stone and brick as well |
 | **Flooding** | Exposure + Habit Stacking | Blocks you shatter by contact break their neighbours outright |

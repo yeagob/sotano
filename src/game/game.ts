@@ -44,7 +44,7 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
-import { boxHits } from '../physics/voxel-collide';
+import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
 import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
@@ -66,7 +66,7 @@ import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, type Prese
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
-import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
+import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
 import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 
@@ -245,7 +245,7 @@ export class Game {
   get polarityNow() { return this.polarity; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
    *  already warmed, so a beam warms a projection once, not on every tick. */
-  private stroke = { polarity: 'positive' as Polarity, warmed: new Set<number>() };
+  private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
   private fpsAcc = 0; private fpsN = 0; fps = 0;
@@ -320,6 +320,8 @@ export class Game {
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
       elementAt: (x, y, z) => this.elementAt(x, y, z)?.key ?? null,
       quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
+      hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
+      nearestBlock: (p, r) => this.nearestSolid(p, r),
     });
     this.api = this.makeApi();
     this.weaponHost = this.makeWeaponHost();
@@ -674,6 +676,17 @@ export class Game {
       collect: (kind, n) => this.collect(kind, n),
       counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.maxHp }),
       spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
+      pulse: (x, y, z, r, d, k, c, src) => this.pulse(x, y, z, r, d, k, c, src),
+      arc: (x, y, z, to, d, src, pol) => this.arc(x, y, z, to, d, src, pol),
+      nearestProjection: (x, y, z, r, except) => this.nearestProjection(x, y, z, r, except),
+      actorAt: id => { const a = this.actors.get(id); return a ? { x: a.body.x, y: a.body.y + a.body.h / 2, z: a.body.z } : null; },
+      shove: (id, dx, dz, s) => this.shove(id, dx, dz, s),
+      freeze: (id, s) => this.affectProjection(id, 'frozen', s),
+      frighten: (id, s) => this.affectProjection(id, 'fear', s),
+      igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
+      launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
+      tagFlying: (x, y, z, r, tag, except) => { for (const s of this.intents.flying(new THREE.Vector3(x, y, z), r, except)) s.tags.add(tag); },
+      tagCube: (cube, tag) => this.tagCube(cube, tag),
     };
   }
 
@@ -688,9 +701,10 @@ export class Game {
       strike: (weapon, damage, mining, reach) => {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
-        this.stroke = { polarity: this.polarity, warmed: new Set() };
+        const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
+        this.stroke = { polarity: this.polarity, warmed: new Set(), intent };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
-        return { damage: ev.damage, mining: ev.mining, reach: ev.reach };
+        return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
       },
       solid: (x, y, z) => this.solid(x, y, z),
       // a positive stroke only reaches blocks it can mend: the damaged ones
@@ -715,6 +729,7 @@ export class Game {
         const warm = !this.stroke.warmed.has(id);
         this.stroke.warmed.add(id);
         this.intentTouch(id, damage, kx, kz, source === 'beam' ? 'beam' : 'cut', source, this.stroke.polarity, warm);
+        if (warm && source !== 'blade' && this.stroke.intent) this.strokeHit(id, kx, kz, this.stroke.intent);
       },
       clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
       clearCubes: inside => this.clearCubesIn(inside),
@@ -1459,6 +1474,104 @@ export class Game {
     const broke = this.damageBlock(hit.x, hit.y, hit.z, mining, 'intent', 'intent');
     if (!broke) sfx.hit(Math.min(3, isFinite(mat(id).tier) ? mat(id).tier : 3));
     return broke;
+  }
+
+  private strokeHit(id: number, kx: number, kz: number, intent: IntentSpec) {
+    const e = this.enemies.get(id);
+    if (!e) return;
+    const b = e.body;
+    this.bus.emit('intentHit', { kind: 'actor', target: id, x: b.x, y: b.y + b.h / 2, z: b.z, nx: 0, ny: 0, nz: 0, vx: kx, vy: 0, vz: kz, intent });
+  }
+
+  private intentHit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, intent: IntentSpec) {
+    this.bus.emit('intentHit', { kind, target, x: p.x, y: p.y, z: p.z, nx: n.x, ny: n.y, nz: n.z, vx: v.x, vy: v.y, vz: v.z, intent });
+  }
+
+  private nearestSolid(p: THREE.Vector3, r: number): THREE.Vector3 | null {
+    let best: THREE.Vector3 | null = null, bd = Infinity;
+    for (let x = Math.floor(p.x - r); x <= Math.floor(p.x + r); x++)
+      for (let y = Math.floor(p.y - r); y <= Math.floor(p.y + r); y++)
+        for (let z = Math.floor(p.z - r); z <= Math.floor(p.z + r); z++) {
+          if (!this.solid(x, y, z)) continue;
+          const c = new THREE.Vector3(x + 0.5, y + 0.5, z + 0.5);
+          const d = c.distanceToSquared(p);
+          if (d < bd) { bd = d; best = c; }
+        }
+    return best;
+  }
+
+  private pulse(x: number, y: number, z: number, radius: number, damage: number, knock: number, color: number, source: string) {
+    const p = this.player;
+    for (const a of [...this.actors.all()]) {
+      if (a.kind !== 'projection' || a.faction !== 'projection' || !a.alive || a.spawning > 0) continue;
+      const b = a.body;
+      const dx = b.x - x, dy = b.y + b.h / 2 - y, dz = b.z - z;
+      if (Math.hypot(dx, dy, dz) > radius) continue;
+      const l = Math.hypot(dx, dz) || 1;
+      this.damageActor(a, damage, 'item', source, p.id, dx / l * knock / 3, dz / l * knock / 3);
+    }
+    this.particles.burst(x, y, z, color, 24, radius * 2, 0.07);
+    spatial.cue('ring', x, y, z);
+    this.hud.shake(0.1);
+  }
+
+  private arc(x: number, y: number, z: number, to: number, damage: number, source: string, polarity: Polarity) {
+    const t = this.enemies.get(to);
+    if (!t) return;
+    this.bolt(x, y, z, t.body);
+    const dx = t.body.x - x, dz = t.body.z - z, l = Math.hypot(dx, dz) || 1;
+    this.intentTouch(to, damage, dx / l, dz / l, 'item', source, polarity, false);
+  }
+
+  private bolt(ax: number, ay: number, az: number, b: Body) {
+    const bx = b.x, by = b.y + b.h / 2, bz = b.z;
+    for (let k = 1; k < 6; k++) {
+      const t = k / 6, j = () => (fx.random() - 0.5) * 0.4;
+      this.particles.burst(ax + (bx - ax) * t + j(), ay + (by - ay) * t + j(), az + (bz - az) * t + j(), pal('light.core'), 2, 0.6, 0.06);
+    }
+    spatial.cue('bolt', bx, by, bz);
+  }
+
+  private nearestProjection(x: number, y: number, z: number, radius: number, except: readonly number[]) {
+    let best: { id: number; x: number; y: number; z: number } | null = null, bd = radius;
+    for (const a of this.actors.all()) {
+      if (a.kind !== 'projection' || a.faction !== 'projection' || !a.alive || a.spawning > 0 || except.includes(a.id)) continue;
+      const cx = a.body.x, cy = a.body.y + a.body.h / 2, cz = a.body.z;
+      const d = Math.hypot(cx - x, cy - y, cz - z);
+      if (d < bd) { bd = d; best = { id: a.id, x: cx, y: cy, z: cz }; }
+    }
+    return best;
+  }
+
+  private shove(id: number, dx: number, dz: number, speed: number) {
+    const e = this.enemies.get(id);
+    const l = Math.hypot(dx, dz);
+    if (!e || e.faction !== 'projection' || !l) return;
+    e.body.vx += dx / l * speed;
+    e.body.vz += dz / l * speed;
+  }
+
+  private affectProjection(id: number, field: 'frozen' | 'fear', seconds: number) {
+    const e = this.enemies.get(id);
+    if (!e || e.faction !== 'projection') return;
+    e[field] = Math.max(e[field], seconds);
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, field === 'frozen' ? pal('cold.body') : pal('cold.dim'), 10, 1.4, 0.06);
+    spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
+  }
+
+  private igniteArea(x: number, y: number, z: number, r: number) {
+    for (let dz = -r; dz <= r; dz++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dy * dy + dz * dz > r * r) continue;
+      const id = this.world.get(x + dx, y + dy, z + dz);
+      if (id !== AIR && mat(id).flammable) this.ignite(x + dx, y + dy, z + dz, id, 'fire');
+    }
+  }
+
+  private tagCube(cube: number, tag: string) {
+    const tags = this.debris.tags[cube] ?? new Set<string>();
+    tags.add(tag);
+    this.debris.tags[cube] = tags;
   }
 
   /** Restores `amount` of a damaged block's HP (a positive intention's touch); false if there was nothing to mend. */
@@ -2444,9 +2557,9 @@ export class Game {
     const b = this.player.body;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
-      land: fall => {
+      land: (fall, x, y, z) => {
         const cause = bandOf(b.y) !== this.groundBand ? 'descent' : 'fall';
-        this.bus.emit('land', { fallSpeed: fall, cause });
+        this.bus.emit('land', { fallSpeed: fall, cause, x, y, z });
       },
       bump: speed => this.headBump(speed),
     }, this.playerMedium);

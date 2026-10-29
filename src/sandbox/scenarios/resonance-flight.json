@@ -1,0 +1,61 @@
+{
+  "note": "Resonance: intentions in flight charge each other; a charged one discharges on its next hit",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "resonance"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        10,
+        0,
+        3
+      ]
+    },
+    {
+      "def": "doubt",
+      "at": [
+        10,
+        0,
+        5
+      ]
+    }
+  ],
+  "ticks": 180,
+  "report": [
+    0,
+    60,
+    180
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        10,
+        1,
+        4
+      ]
+    },
+    {
+      "t": 0,
+      "do": "fire",
+      "ticks": 90
+    }
+  ]
+}

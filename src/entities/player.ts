@@ -27,7 +27,7 @@ export interface PlayerHooks {
   /** Asked before jumping with the stat-based velocity; return the velocity to use, or null to cancel. */
   jump(velocity: number): number | null;
   /** Touched the ground after falling at `fallSpeed` blocks/s. */
-  land(fallSpeed: number): void;
+  land(fallSpeed: number, x: number, y: number, z: number): void;
   /** The head hit a ceiling while rising at `speed` blocks/s; returns the upward speed to keep. */
   bump(speed: number): number;
 }
@@ -132,7 +132,7 @@ export class Player implements Actor {
     const wasGround = b.onGround, fall = -b.vy, rise = b.vy;
     moveBody(solid, b, dt);
     if (b.onGround && this.float) this.float = false;
-    else if (b.onGround && !wasGround && fall > 2) hooks.land(fall);
+    else if (b.onGround && !wasGround && fall > 2) hooks.land(fall, b.x, b.y, b.z);
     if (rise > 0 && b.vy === 0 && !b.onGround) b.vy = hooks.bump(rise);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;

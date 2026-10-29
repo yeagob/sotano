@@ -1,0 +1,42 @@
+# ahamoment-chain — Aha Moment: an intention that hits a projection arcs to a second one 3 blocks away
+floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices ahamoment · synergies —
+  doubt#2 hp 12.0/12 · projection · at 10.5 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 12.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices ahamoment · synergies —
+  doubt#2 hp 8.5/12 · projection · at 9.5 0.0 3.5
+  doubt#3 hp 10.3/12 · projection · at 11.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 2 · actorDamage:doubt<item 2 · fire 3 · intentHit 2 · roomEnter 1
+
+t 180 (3.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices ahamoment · synergies —
+  doubt#2 hp 6.8/12 · projection · at 7.3 0.0 3.5
+  doubt#3 hp 9.4/12 · projection · at 9.3 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 1 · actorDamage:doubt<item 1 · intentHit 1
+
+map t 180 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 

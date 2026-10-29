@@ -1,0 +1,38 @@
+# wr-occam-bounceback — Weapon review: occam weapon with bounceback; two Doubts in front of the player (close), negative polarity, 90 ticks of casting
+floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor bounceback · synergies —
+  doubt#2 hp 12.0/12 · projection · at 3.5 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 4.5 0.0 5.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 90 (1.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor bounceback · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 1
+  events actorDamage:doubt<cut 4 · actorDamage:doubt<intent 1 · actorDeath:doubt 2 · blockBreak:brick 1 · blockDamage:brick 5 · blockLoot:brick 1 · fire 4 · intentHit 5 · polarityChange 1 · roomEnter 1 · strike 4
+
+t 180 (3.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor bounceback · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 1
+  events blockDamage:brick 5 · intentHit 5
+
+map t 180 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 

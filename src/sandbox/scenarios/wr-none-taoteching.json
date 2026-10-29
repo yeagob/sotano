@@ -1,0 +1,67 @@
+{
+  "note": "Weapon review: none weapon with taoteching; two Doubts in front of the player (mid), negative polarity, 90 ticks of casting",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "floor": 1,
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "taoteching"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    },
+    {
+      "def": "doubt",
+      "at": [
+        6,
+        0,
+        5
+      ]
+    }
+  ],
+  "ticks": 180,
+  "report": [
+    0,
+    90,
+    180
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "key",
+      "code": "KeyF"
+    },
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    },
+    {
+      "t": 0,
+      "do": "fire",
+      "ticks": 90
+    }
+  ]
+}

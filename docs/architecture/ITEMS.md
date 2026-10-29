@@ -49,6 +49,9 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 |---|---|
 | `stats()`, `held()` | Read current stats and the blocks in your hand |
 | `has(id)`, `hasTag(tag)` | Ask about other held items |
+| `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
+| `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
+| `launch`, `tagFlying`, `tagCube` | Fire a new intention, tag the intentions in flight around a point, tag a loose cube |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
@@ -97,7 +100,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `drop` | — (react) | a block leaves your hand (`how`: place or throw) |
 | `debrisImpact` | `keepTags` | a tagged cube hits something hard |
 | `jump` | `velocity`, or cancel | jumping |
-| `land` | — (react) | touching ground after a fall |
+| `land` | — (react) | touching ground after a fall (`fallSpeed` in blocks/s; the feet's position `x, y, z`) |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
 | `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
@@ -112,6 +115,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `polarityChange` | — (react) | the player switched the loaded intention between positive and negative with **F** |
 | `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
 | `roomClear` | `drops` | a room cleared |
+| `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
 
 **Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).
@@ -119,6 +123,8 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 `explosion` also carries `actorDamage` (damage points to every actor in range), `owner` and `cause` (its chain); `land` carries `cause` (`'fall'` or `'descent'` down a shaft).
 
 The owner's list, mapped: the carry limit is `carry` plus `touchCube`; health is `maxHearts` plus `actorDamage`/`heal`; enemies are `enemySpawn`/`actorDamage`/`contact`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
+
+**Intention shape** is carried by fields on `IntentSpec` that items set in a `fire` hook and the core reads: `volley` (how many intentions one shot launches; the extra ones deal 60% damage and mining and fan out), `bounces` (rebounds off blocks it doesn't break), `homing` (how hard it steers toward the nearest block within 6 blocks each second). What an intention does when it hits is an `intentHit` hook.
 
 **Tags on cubes** carry intent across time: a hook on `throw` or `kick` adds a tag, and a hook on `debrisImpact` reacts to it later. The core clears a cube's tags after its impact unless a hook sets `keepTags` (so a volatile cube explodes once, not on every bounce). Items export their tag names as constants.
 
@@ -181,7 +187,7 @@ on gain / lose / restore / new floor:
 
 - **Definitions** are code (TypeScript modules), versioned with the game.
 - **A player's items** are ids in acquisition order: `inventory.serialize() → ['kaizen', 'deepfocus']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
-- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Occam's Razor → blade, Kiai → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
+- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Cut Ties with Toxic People → blade, Remember Breathing → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
 - **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault`, the boss room's pedestal from `boss` (both falling back to `treasure`). Every pedestal, boss rooms included, is reserved at run start (`pedestalSlots` in `world/floor.ts`).
 
 ## 8. Debugging an interaction

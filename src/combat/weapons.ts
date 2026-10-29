@@ -1,5 +1,5 @@
 // Weapons that replace the intention, Isaac-style (docs/architecture/WEAPONS.md): the blade of
-// Occam's Razor, the charged beam of Kiai, and the great cut of both together. They only act
+// Cut Ties with Toxic People, the charged beam of Remember Breathing, and the great cut of both together. They only act
 // through the host (the game), so every block and actor they touch goes through the shared
 // damage pipeline and its events. No randomness: particles go through the host (core/fx).
 
@@ -19,7 +19,7 @@ export interface WeaponHost {
   /** Left button held, and nothing else (an item being held up) blocks casting. */
   casting(): boolean;
   /** Emits `strike`; null if a hook cancelled it. */
-  strike(weapon: WeaponId, damage: number, mining: number, reach: number): { damage: number; mining: number; reach: number } | null;
+  strike(weapon: WeaponId, damage: number, mining: number, reach: number): { damage: number; mining: number; reach: number; tags: Set<string> } | null;
   solid(x: number, y: number, z: number): boolean;
   /** A world block that weapons can break (not air, not unbreakable). */
   breakable(x: number, y: number, z: number): boolean;
@@ -68,7 +68,7 @@ function glowMaterial(color: number, opacity: number) {
   });
 }
 
-// ───────────────────────── Occam's Razor: the blade ─────────────────────────
+// ───────────────────────── Cut Ties with Toxic People: the blade ─────────────────────────
 
 /** Half-angle of the blade's cone. */
 const BLADE_HALF_ANGLE = (55 * Math.PI) / 180;
@@ -174,7 +174,7 @@ class Charge {
   }
 }
 
-// ───────────────────────── Kiai: the beam ─────────────────────────
+// ───────────────────────── Remember Breathing: the beam ─────────────────────────
 
 const BEAM_TIME = 1;
 const BEAM_TICK = 0.1;

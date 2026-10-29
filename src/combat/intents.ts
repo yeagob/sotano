@@ -21,6 +21,9 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
     pierce: 0,
     pierceTier: 0,
     phase: 0,
+    volley: 1,
+    bounces: 0,
+    homing: 0,
     // the shell; items may tint it. A negative intention is your light charred: an ash shell (never
     // cold, which is the projections'); its core and halo dim in draw() (docs/art/DECISIONS.md §7.1)
     color: polarity === 'negative' ? pal('ink.ash') : pal('light.gold'),
@@ -30,10 +33,17 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
 
 /** Blocks: how far an intention that phases moves into a block it has just hit. */
 const PHASE_NUDGE = 1e-3;
+const AIM_EVERY = 0.15;
+const AIM_RANGE = 6;
+const BOUNCE_KEEP = 0.75;
+export const VOLLEY_SHARE = 0.6;
+const VOLLEY_SPREAD = 0.12;
+const UP = new THREE.Vector3(0, 1, 0);
+const NO_NORMAL = new THREE.Vector3();
 
 const MIRROR_CALM = 0.25;
 
-interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; calm: [number, number] | null }
+interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -63,6 +73,8 @@ export interface IntentHooks {
   elementAt?(x: number, y: number, z: number): 'water' | 'lava' | 'fire' | null;
   /** An intention went out in lava (effects only). */
   quenched?(p: THREE.Vector3): void;
+  hit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, spec: IntentSpec): void;
+  nearestBlock(p: THREE.Vector3, r: number): THREE.Vector3 | null;
 }
 
 export class Intents {
@@ -96,9 +108,34 @@ export class Intents {
   get count() { return this.list.length; }
 
   fire(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
+    const n = Math.max(1, Math.round(spec.volley));
+    for (let k = 0; k < n; k++) {
+      if (k === 0) { this.push(spec, from, dir, inherit); continue; }
+      const turn = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * VOLLEY_SPREAD;
+      const share = { ...spec, damage: spec.damage * VOLLEY_SHARE, mining: spec.mining * VOLLEY_SHARE, tags: new Set(spec.tags) };
+      this.push(share, from, dir.clone().applyAxisAngle(UP, turn), inherit);
+    }
+  }
+
+  private push(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, calm: null });
+    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null });
+  }
+
+  flying(p: THREE.Vector3, r: number, except?: IntentSpec): IntentSpec[] {
+    return this.list.filter(t => t.spec !== except && t.pos.distanceTo(p) <= r).map(t => t.spec);
+  }
+
+  private steer(t: Intent, dt: number) {
+    t.aimT -= dt;
+    if (t.aimT <= 0) { t.aimT = AIM_EVERY; t.aim = this.hooks.nearestBlock(t.pos, AIM_RANGE); }
+    if (!t.aim) return;
+    const want = t.aim.clone().sub(t.pos);
+    if (want.lengthSq() < 1e-6) return;
+    const speed = t.vel.length();
+    want.normalize().multiplyScalar(speed);
+    t.vel.lerp(want, 1 - Math.exp(-t.spec.homing * dt));
   }
 
   update(dt: number) {
@@ -107,6 +144,7 @@ export class Intents {
       const t = this.list[i];
       t.age += dt;
       if (t.age > t.spec.flight) t.vel.y -= t.spec.gravity * dt;
+      if (t.spec.homing > 0) this.steer(t, dt);
       // water drags an intention (it keeps going, slower); lava puts it out
       const el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
       if (el === 'water') t.vel.multiplyScalar(Math.exp(-2.5 * dt));
@@ -124,6 +162,7 @@ export class Intents {
         const axis = h.mirrorAxis?.(foe) ?? null;
         h.hitEnemy(foe, t.vel, t.spec);
         h.splash(t.pos, t.spec.color, true);
+        h.hit('actor', foe, t.pos, NO_NORMAL, t.vel, t.spec);
         if (axis) {
           if (axis === 'x') t.vel.x = -t.vel.x; else t.vel.z = -t.vel.z;
           t.calm = [foe, t.age + MIRROR_CALM];
@@ -136,6 +175,7 @@ export class Intents {
       if (cube >= 0) {
         h.hitDebris(cube, t.vel, t.spec);
         h.splash(t.pos, t.spec.color, false);
+        h.hit('cube', cube, t.pos, NO_NORMAL, t.vel, t.spec);
         dead = true;
       }
 
@@ -156,6 +196,8 @@ export class Intents {
           const pierceable = h.tier(hit.x, hit.y, hit.z) <= t.spec.pierceTier;
           const broke = h.hitBlock(hit, t.spec);
           h.splash(hitPos, t.spec.color, broke);
+          const normal = new THREE.Vector3(hit.nx, hit.ny, hit.nz);
+          h.hit('block', -1, hitPos, normal, t.vel, t.spec);
           if (t.spec.phase > 0) {
             t.spec = { ...t.spec, phase: t.spec.phase - 1 };
             t.phased = [hit.x, hit.y, hit.z];
@@ -167,6 +209,12 @@ export class Intents {
           } else if (broke && pierceable && t.spec.pierce > 0) {
             t.spec = { ...t.spec, pierce: t.spec.pierce - 1 };
             t.pos.copy(hitPos);
+            break;
+          } else if (!broke && t.spec.bounces > 0) {
+            const along = t.vel.dot(normal);
+            t.vel.addScaledVector(normal, -2 * along).multiplyScalar(BOUNCE_KEEP);
+            t.spec = { ...t.spec, bounces: t.spec.bounces - 1 };
+            t.pos.copy(hitPos).addScaledVector(normal, PHASE_NUDGE);
             break;
           } else dead = true;
         }

@@ -1,0 +1,26 @@
+{
+  "note": "Self-Compassion: one heart container more, and one heart healed on taking it",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": false,
+  "items": [
+    "selfcompassion"
+  ],
+  "ticks": 60,
+  "report": [
+    0,
+    60
+  ]
+}

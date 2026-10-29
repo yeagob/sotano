@@ -25,7 +25,7 @@ function fakeHost(opts: { stats?: Partial<Stats>; unbreakable?: Set<string>; fil
     eye: () => new THREE.Vector3(0.5, 1.6, 0.5),
     forward: () => new THREE.Vector3(0, 0, -1),
     casting: () => state.casting,
-    strike: (_w, damage, mining, reach) => { state.strikes++; return state.cancel ? null : { damage, mining, reach }; },
+    strike: (_w, damage, mining, reach) => { state.strikes++; return state.cancel ? null : { damage, mining, reach, tags: new Set() }; },
     solid: (x, y, z) => blocks.has(key(x, y, z)),
     breakable: (x, y, z) => blocks.has(key(x, y, z)) && !opts.unbreakable?.has(key(x, y, z)),
     cut: (x, y, z) => { blocks.delete(key(x, y, z)); state.cuts.push(key(x, y, z)); },
@@ -92,7 +92,7 @@ describe('active weapon', () => {
   });
 });
 
-describe("Occam's Razor (blade)", () => {
+describe('Cut Ties with Toxic People (blade)', () => {
   it('cuts every breakable block in front, none behind, hits projections, and leaves the unbreakable', () => {
     const { host, state } = fakeHost({ unbreakable: new Set([key(0, 1, -1)]) });
     const b = new Blade(new THREE.Scene(), host);
@@ -117,7 +117,7 @@ describe("Occam's Razor (blade)", () => {
   });
 });
 
-describe('Kiai (beam)', () => {
+describe('Remember Breathing (beam)', () => {
   it('charges for 2.7 ÷ fire rate seconds (0.35–2), and only a full charge releases', () => {
     expect(chargeTime({ ...BASE_STATS, fireRate: 2.7 })).toBe(1);
     expect(chargeTime({ ...BASE_STATS, fireRate: 30 })).toBe(0.35);

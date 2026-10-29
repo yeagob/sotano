@@ -1,0 +1,53 @@
+{
+  "note": "Triangulation: every shot fires three intentions in a fan",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "triangulation"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        10,
+        0,
+        3
+      ]
+    }
+  ],
+  "ticks": 120,
+  "report": [
+    0,
+    60,
+    120
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        10,
+        1,
+        3
+      ]
+    },
+    {
+      "t": 0,
+      "do": "fire",
+      "ticks": 60
+    }
+  ]
+}

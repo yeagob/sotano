@@ -62,7 +62,7 @@ export class Hands {
   private holdT = 0;
   private holdItem: THREE.Sprite;
   private holdGlow: THREE.Sprite;
-  /** Light gathering in the right palm while a weapon charges (Kiai, One Clear Cut). */
+  /** Light gathering in the right palm while a weapon charges (Remember Breathing, One Clear Cut). */
   private chargeGlow: THREE.Sprite;
   private chargeK = 0;
   static readonly HOLD_TIME = 1.6;
