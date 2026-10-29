@@ -50,7 +50,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'room', i, 'rooted', seq)` | Runtime | Whether a projection spawns rooted (`rootedChance`, BESTIARY §4.3): `seq` as for parts; a rooted one rolls its parts once more on `fork(…, 'part', seq, 'rooted')` |
 | `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
-| `stream('drops')` | Runtime | Enemy drops |
+| `stream('drops')` | Runtime | Enemy drops, crate drops (`rollCrate`) |
 | `stream('loot')` | Runtime | Runtime item draws (never reserved items) |
 | `stream('ai')` | Runtime | Reserved for enemy decisions |
 

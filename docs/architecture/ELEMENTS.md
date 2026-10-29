@@ -85,7 +85,7 @@ All of them push their changes through the existing pipelines (`world.set` → r
 
 ## 7. Chests and keys (replaces loot from blocks)
 
-- Breaking blocks drops nothing but the block (done: `blockLoot` now starts empty).
+- Breaking blocks drops nothing but the block (done: `blockLoot` now starts empty), except crates, which sometimes drop a key, heart or small bomb (issue #6).
 - Room templates get chest markers (`h` chest, `H` is taken: use `$` for a locked gold chest). Floor generation rolls chest contents from a `chest` table on the per-floor RNG at carve time (keys, bombs, hearts; rarely a practice from a `chest` pool).
 - The vault key moves from the floor into a chest.
 - Chest storage: `{ items: (PickupKind | { material }) [] }`, capacity 9, persisted for the run.
