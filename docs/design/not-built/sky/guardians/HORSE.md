@@ -2,7 +2,7 @@
 
 Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
-The horse is the fifth and last deity of the sky tree's first five floors: a horse head that levitates over sky floor 5, a floor of fast runs, gusts of wind and fading platforms.
+The horse is the fifth and last deity of the sky tree's first five floors: a horse with a giant head on a small, soft plush body, over sky floor 5, a floor of fast runs, gusts of wind and fading platforms.
 
 Status: proposal. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
 

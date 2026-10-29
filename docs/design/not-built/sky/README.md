@@ -13,7 +13,7 @@ Status: mixed. Each section carries its own status line. Decided sections hold t
 Status: decided.
 
 - Above the surface begins the realm of the sky. Everything above the earth is sky.
-- The deities of the world live in the sky. Each deity is a giant animal head.
+- The deities of the world live in the sky. Each deity is a small, soft body under a giant animal head, cute like a plush toy.
 - The sky holds a sky tree. Its first five floors are guarded by five guardians, one per floor, in the order below.
 
 The owner's phrase is "el reino del cielo". The English name used here is "the realm of the sky". Whether this realm and the built word "heaven" are one place is open (see section 5).

@@ -2,7 +2,7 @@
 
 Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
-The lion is the fourth deity: a lion head that levitates over sky floor 4, a wide floor of ledges and gaps where a roar can freeze the player in place.
+The lion is the fourth deity: a lion with a giant head on a small, soft plush body, over sky floor 4, a wide floor of ledges and gaps where a roar can freeze the player in place.
 
 Status: proposal. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
 

@@ -2,7 +2,7 @@
 
 Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
-The koala is the second deity: a koala head that levitates over sky floor 2, which is built like a crown of branches. It holds the floor by holding on to its branch.
+The koala is the second deity: a koala with a giant head on a small, soft plush body, over sky floor 2, which is built like a crown of branches. It holds the floor by holding on to its branch.
 
 Status: proposal. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
 

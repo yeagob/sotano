@@ -2,7 +2,7 @@
 
 Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
-The elephant is the third deity: an elephant head that levitates over sky floor 3, a floor of channels and rivers that carry the player.
+The elephant is the third deity: an elephant with a giant head on a small, soft plush body, over sky floor 3, a floor of channels and rivers that carry the player.
 
 Status: proposal. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
 

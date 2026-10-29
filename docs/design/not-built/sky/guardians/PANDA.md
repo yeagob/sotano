@@ -2,13 +2,13 @@
 
 Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
-The giant panda is the first deity the player meets above the surface: a giant panda head that levitates over sky floor 1. It is the gentlest guardian and the one that teaches the sky's platforming.
+The giant panda is the first deity the player meets above the surface: a giant panda head on a small, soft plush body, over sky floor 1. It is the gentlest guardian and the one that teaches the sky's platforming.
 
 Status: proposal. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
 
 ## 1. Who it is
 
-A giant panda head, black and white, heavy-lidded, levitating at the height of the floor's tallest column. The panda is unhurried. In the wild it spends most of its day eating and resting, moving only when it has to. As a guardian it does not chase the player. It waits, and it asks the player to slow down.
+A small, soft, black-and-white plush body under a giant panda head, heavy-lidded, placed at the height of the floor's tallest column. The panda is unhurried. In the wild it spends most of its day eating and resting, moving only when it has to. As a guardian it does not chase the player. It waits, and it asks the player to slow down.
 
 **Mirror (proposal).** The panda mirrors rushing: the habit of never stopping long enough to rest, eat well or notice where you are. Its floor answers that pattern with pauses. The player who climbs slowly, one block at a time, is the player who passes. The practice the panda points to is patience: taking the time a climb needs.
 

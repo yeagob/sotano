@@ -2,7 +2,7 @@
 
 Up: [The realm of the sky](../README.md)
 
-The guardians are the five deities of the first five floors of the sky tree. Each one is a giant animal head that levitates over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
+The guardians are the five deities of the first five floors of the sky tree. Each one is a small, soft body under a giant animal head, placed over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
 
 Status: decided for the animals and their order. Proposal for the shared contract. Open for the points listed under open questions.
 
@@ -10,8 +10,8 @@ Status: decided for the animals and their order. Proposal for the shared contrac
 
 Status: decided for the first and the third rule. Proposal for the rest.
 
-1. **A giant animal head.** Each deity is the head of its animal, at giant size. The head is the deity. Whether the deity also has a body, neck or other parts is open. *(Decided: a giant animal head.)*
-2. **Levitation.** The deities levitate in general. Whether any of them does not, and why, is open. *(Decided: they levitate in general.)*
+1. **A small body under a giant head.** Each deity is a small, round, soft body, like a plush toy, that carries the giant head of its animal. The head is big and the body is small. The look is cute, not threatening. Exact proportions and any further parts are open. *(Decided: a small body with a giant animal head.)*
+2. **Levitation.** Open: whether the deities levitate or stand on their floor. The owner's latest description is a small body under a giant head, so the earlier decision is withdrawn until the owner decides.
 3. **The arena is the floor.** The fight takes place on the whole sky floor. There is no separate arena room. *(Decided: one giant boss fight per floor.)*
 4. **Each fight is a puzzle.** Each floor has a different puzzle, built from its platforming and from the hindrances in [abilities](../abilities/README.md). The puzzle is solved with the built world's verbs: jumping, building blocks, water, lava, cubes, and going straight up.
 5. **Platforming first.** Each floor is strong platforming before it is a fight. The player must be able to reach the deity by climbing, with or without practices. Each floor's platforming is different from the others (see the table in section 2).
@@ -86,7 +86,7 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 ## 5. Open questions
 
 1. **Which built stories are the sky floors.** Open: the mapping of the five sky floors onto the built tree's seven stories ([LEVELS](../../../built/levels/README.md)).
-2. **Levitation.** Open: whether all deities levitate, and which one does not, if any.
+2. **Levitation.** Open: whether the deities levitate or stand on their floor.
 3. **The stitch.** Open: the exact meaning of the owner's word "coser" (to stitch) and whether the stitch repairs, defeats, or both.
 4. **Which floor is platforming only.** Open: whether one floor has no minions, and which one.
 5. **The minions' part.** Open: whether a minion's help changes the fight's phases (see [minions](../minions/README.md)).
