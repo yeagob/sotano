@@ -14,8 +14,8 @@ The desktop scheme. Part of [Input](README.md).
 | throw | Q |
 | bomb | E |
 | polarity | F |
-| inventory | Tab or I; arrows move the selection, Esc or Tab closes |
-| pause | Esc (the browser releases the pointer) |
+| inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |
+| pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
 | restart | R, while playing or dead |
 | confirm | any mouse button while captured, or Enter |
 
@@ -25,7 +25,7 @@ References: Minecraft (WASD, left click to break, right click to place, Q to dro
 
 A click anywhere captures the mouse (`Input.lock()`); Esc releases it and the pause card shows. Browsers refuse a new lock for about a second after Esc: clicking again works. The emulated mouse events a phone fires after a tap are ignored for one second, so touch never asks for pointer lock.
 
-Opening the inventory releases the lock on purpose (`Input.unlockFor()`), so the cursor can click tiles while the game stays "engaged"; closing it with the keyboard captures the mouse again.
+Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cursor can click tiles and buttons while the game stays "engaged"; closing it with the keyboard captures the mouse again. Esc closes the screen when it is open.
 
 ## 3. Details
 

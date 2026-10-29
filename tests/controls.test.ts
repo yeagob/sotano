@@ -10,7 +10,7 @@ const messages = EN.messages as Record<string, unknown>;
 function inputs(b: Binding, d: Device): string[] {
   if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : [])];
   if (d === 'gamepad') return [...(b.gamepad.buttons ?? []).map(i => `button${i}`), ...(b.gamepad.stick ? [`stick-${b.gamepad.stick}`] : [])];
-  return b.touch.control === 'tap' ? [] : [b.touch.control === 'doubleTap' ? `double-${b.touch.on}` : `${b.touch.control}-${b.action}`];
+  return b.touch.control === 'tap' ? [] : [`${b.touch.control}-${b.action}`];
 }
 
 describe('controls contract', () => {
@@ -38,11 +38,15 @@ describe('controls contract', () => {
     }
   });
 
-  it('a double tap rides on a touch button that is live in the same contexts', () => {
-    for (const b of BINDINGS.filter(x => x.touch.control === 'doubleTap')) {
-      const on = BINDING[b.touch.on!];
-      expect(on.touch.control).toBe('button');
-      for (const c of contextsFor(b, 'touch')) expect(contextsFor(on, 'touch')).toContain(c);
+  it('a world tap and a half turn of the phone are live in play', () => {
+    for (const b of BINDINGS.filter(x => x.touch.control === 'worldTap' || x.touch.control === 'turn')) {
+      expect(contextsFor(b, 'touch'), b.action).toContain('play');
+    }
+  });
+
+  it('a touch action with no button of its own is reached through another control', () => {
+    for (const b of BINDINGS.filter(x => x.touch.control === 'none')) {
+      expect(BINDING.inventory.touch.control, b.action).toBe('systemButton');
     }
   });
 

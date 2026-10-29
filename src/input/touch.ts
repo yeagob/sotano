@@ -1,8 +1,6 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
-import { materialTexture } from '../render/atlas';
-import { iconDataUrl } from '../render/icons';
 import { palCss } from '../content/palette';
-import { BINDINGS, DOUBLE_TAP_MS, TAP_MS, type Action, type Context } from './bindings';
+import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
 
@@ -12,7 +10,6 @@ const STICK_DEAD = 0.12;
 interface Track { kind: 'stick' | 'look' | 'button'; action?: Action; x: number; y: number; ox: number; oy: number; t: number }
 
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
-const DOUBLE_TAPS = BINDINGS.filter(b => b.touch.control === 'doubleTap' && b.touch.on);
 
 export class TouchControls {
   private root: HTMLElement;
@@ -22,8 +19,8 @@ export class TouchControls {
   private tracks = new Map<number, Track>();
   private stickId = -1;
   private key = '';
-  private placeUrls = new Map<number, string>();
-  private lastTap = new Map<Action, number>();
+  /** The side of the phone the last landscape turn ended on (90 or 270); a change of side is a half turn. */
+  private side: number | null = null;
 
   constructor(private input: Input) {
     this.root = document.createElement('div');
@@ -50,6 +47,8 @@ export class TouchControls {
     this.root.addEventListener('touchmove', e => this.moveTouches(e), opts);
     this.root.addEventListener('touchend', e => this.end(e), opts);
     this.root.addEventListener('touchcancel', e => this.end(e), opts);
+    screen.orientation?.addEventListener('change', () => this.turned());
+    addEventListener('orientationchange', () => this.turned());
     this.label();
     onLocaleChange(() => this.label());
     onDeviceChange(() => this.clear());
@@ -65,25 +64,19 @@ export class TouchControls {
     for (const tc of e.changedTouches) {
       const btn = (tc.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-a]');
       const x = tc.clientX, y = tc.clientY;
+      const t = performance.now();
       inp.touchPressed.add('confirm');
       if (btn) {
         const a = btn.dataset.a as Action;
         inp.touchHeld.add(a); inp.touchPressed.add(a);
-        const now = performance.now();
-        const doubles = DOUBLE_TAPS.filter(d => d.touch.on === a);
-        if (doubles.length && now - (this.lastTap.get(a) ?? -1e9) < DOUBLE_TAP_MS) {
-          for (const d of doubles) inp.touchPressed.add(d.action);
-          inp.suppress(a);
-          this.lastTap.delete(a);
-        }
         btn.classList.add('on');
-        this.tracks.set(tc.identifier, { kind: 'button', action: a, x, y, ox: x, oy: y, t: performance.now() });
+        this.tracks.set(tc.identifier, { kind: 'button', action: a, x, y, ox: x, oy: y, t });
       } else if (x < innerWidth * STICK_SPLIT && this.stickId < 0) {
         this.stickId = tc.identifier;
-        this.tracks.set(tc.identifier, { kind: 'stick', x, y, ox: x, oy: y, t: 0 });
+        this.tracks.set(tc.identifier, { kind: 'stick', x, y, ox: x, oy: y, t });
         this.stick.classList.add('on');
         this.placeStick(x, y, 0, 0);
-      } else this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t: 0 });
+      } else this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t });
     }
   }
 
@@ -116,14 +109,31 @@ export class TouchControls {
       if (!tr) continue;
       if (tr.kind === 'stick') this.releaseStick();
       else if (tr.kind === 'button' && tr.action) {
-        const now = performance.now();
-        if (now - tr.t < TAP_MS && Math.hypot(tr.x - tr.ox, tr.y - tr.oy) < 12) this.lastTap.set(tr.action, now);
         if (![...this.tracks.values()].some(o => o.action === tr.action)) {
           this.input.touchHeld.delete(tr.action);
           this.buttons.get(tr.action)?.classList.remove('on');
         }
       }
+      // a short touch on the world that does not drag is a tap: the block under it is the one to place
+      if (tr.kind !== 'button' && performance.now() - tr.t < TAP_MS && Math.hypot(tr.x - tr.ox, tr.y - tr.oy) < TAP_SLOP) {
+        this.input.touchTap.x = tr.ox;
+        this.input.touchTap.y = tr.oy;
+        this.input.touchPressed.add('place');
+      }
     }
+  }
+
+  /**
+   * A half turn of the phone, like a steering wheel: the screen goes from one landscape side to the
+   * other. Each turn flips the intention's polarity. A turn through portrait counts once, and the
+   * first reading only sets the side.
+   */
+  private turned() {
+    const raw = screen.orientation?.angle ?? (window as { orientation?: number }).orientation ?? 0;
+    const side = ((raw % 360) + 360) % 360;
+    if (side !== 90 && side !== 270) return;
+    if (this.side !== null && this.side !== side) this.input.touchPressed.add('polarity');
+    this.side = side;
   }
 
   private radius() { return Math.min(innerWidth, innerHeight) * 0.13; }
@@ -155,25 +165,16 @@ export class TouchControls {
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
-    const top = p.hand.at(-1);
-    const key = `${typeof top === 'number' ? top : top?.id ?? 0}:${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}`;
+    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}`;
     if (key === this.key) return;
     this.key = key;
-    const place = this.buttons.get('place')!, thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
-    place.classList.toggle('off', !p.hand.length);
+    const thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
     thr.classList.toggle('off', !p.hand.length);
-    place.style.setProperty('--block', top ? `url("${typeof top === 'number' ? this.blockUrl(top) : iconDataUrl(top, 3)}")` : 'none');
     bomb.classList.toggle('off', p.bombs <= 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     this.buttons.get('inventory')!.querySelector('span')!.textContent = g.inventory.items.length ? String(g.inventory.items.length) : '';
     const pol = this.buttons.get('cast')!;
     pol.dataset.polarity = g.polarityNow;
     pol.style.setProperty('--pol', palCss(g.polarityNow === 'positive' ? 'light.gold' : 'light.ember'));
-  }
-
-  private blockUrl(m: number) {
-    let url = this.placeUrls.get(m);
-    if (!url) { url = (materialTexture(m).image as HTMLCanvasElement).toDataURL(); this.placeUrls.set(m, url); }
-    return url;
   }
 }

@@ -118,23 +118,6 @@ export const HUD_ICONS = {
     ],
     palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', f: 'bone.faded' },
   },
-  touchPlace: {
-    rows: [
-      '..oooooooo..',
-      '..oppppppo..',
-      '...oppppo...',
-      '....oppo....',
-      '.oooooooooo.',
-      '.ohhhhhhhho.',
-      '.obbbbbbbdo.',
-      '.obbbbbbbdo.',
-      '.obbbbbbbdo.',
-      'oooooooooooo',
-      'oppppppppppo',
-      'oooooooooooo',
-    ],
-    palette: { o: 'ink.void', p: 'bone.paper', h: 'mat.crate.hi', b: 'mat.crate.base', d: 'mat.crate.dark' },
-  },
   touchThrow: {
     rows: [
       '............',
@@ -168,22 +151,5 @@ export const HUD_ICONS = {
       'oooooooooooo',
     ],
     palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', k: 'ink.ash' },
-  },
-  touchPause: {
-    rows: [
-      'ooooo..ooooo',
-      'opppo..opppo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'oppdo..oppdo',
-      'offfo..offfo',
-      'ooooo..ooooo',
-    ],
-    palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', f: 'bone.faded' },
   },
 } satisfies Record<string, HudIcon>;

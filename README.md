@@ -92,15 +92,15 @@ Three complete schemes; the game follows whichever device you used last (details
 | Move | **WASD** | Left stick | Left thumb (floating stick) |
 | Jump (hold to swim up) | **Space** | **A** | The arrow |
 | Cast intentions | **Left click** (hold) | **RT** (hold) | The bead of light (hold; drag to aim) |
-| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | Double tap the bead of light |
+| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | A half turn of the phone, like a wheel |
 | Pick up a block or a part | Walk over it with room in your hand | same | same |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
 | Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
 | Throw the top block or part | **Q** | **B** | The flying block |
 | Drop a bomb | **E** | **RB** | The seed |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
-| Inventory and stats | **Tab** (or **I**) | **Y** (d-pad moves, **B** closes) | The grid (top) |
-| Pause | **Esc** | **Menu** | The two bars (top) |
+| Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
+| Menu and pause | **Esc**: the menu tab (controls, language, new run) | **Menu** | The tab button (top), the Menu tab |
 | New run | **R** | **View** (paused or dead) | "New run" on the landing and the pause card |
 
 Language: English or Spanish, picked from your browser. Switch it on the menu (it's remembered) or with `?lang=es` in the URL.

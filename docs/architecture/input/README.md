@@ -8,7 +8,7 @@ How the player's hands reach the game. The Roots ships three complete control sc
 |---|---|
 | [KEYBOARD.md](KEYBOARD.md) | Keyboard and mouse: the layout, pointer lock as pause, key repeat, the debug keys |
 | [GAMEPAD.md](GAMEPAD.md) | Gamepad: the standard mapping, sticks and dead zones, waking the device, menus with the d-pad, death and disconnection, rumble |
-| [TOUCH.md](TOUCH.md) | Touch: landscape only, the floating stick, look drag, the button arc, the double tap for polarity, what leaves the screen, fullscreen and the rotate card |
+| [TOUCH.md](TOUCH.md) | Touch: landscape only, the floating stick, look drag, the button arc, the half turn of the phone for polarity, the tab button and the screen, tap to place, what leaves the screen, fullscreen and the rotate card |
 
 Reviews: [../../reviews/input.md](../../reviews/input.md).
 
@@ -31,9 +31,9 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 |---|---|
 | `play` | Simulating |
 | `prompt` | Simulating with an information banner open (confirm dismisses it) |
-| `paused` | The pause card is up |
+| `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
-| `inventory` | The inventory window |
+| `inventory` | The screen is open on its menu or practices tab (it pauses the world) |
 | `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c) |
 
 ## 3. The actions
@@ -44,12 +44,12 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | look | axis | play | mouse | right stick | drag on the right |
 | jump | hold | play | Space | A | the arrow |
 | cast | hold | play | left click | RT | the bead of light |
-| place | press | play | right click | LT | the block with an arrow |
+| place | press | play | right click | LT | a tap on the block (aims at the tap) |
 | throw | press | play | Q | B | the flying block |
 | bomb | press | play | E | RB | the seed |
-| polarity | press | play | F | LB | double tap on cast |
-| inventory | press | play, inventory | Tab / I | Y | the grid |
-| pause | press | play, paused | Esc | Menu | the two bars |
+| polarity | press | play | F | LB | a half turn of the phone |
+| inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
+| pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
 | confirm | press | prompt, paused, dead, toll | click / Enter | A | tap |
 | navigate | axis | inventory, toll | arrows | d-pad | tap a tile |
@@ -57,7 +57,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 
 ## 4. Pausing
 
-`Input.playing` is true while the pointer is locked or the player is `engaged`. The keyboard pauses by losing pointer lock. The gamepad and touch have no pointer lock: `resume()` sets `engaged`, `release()` clears it. Losing the window (blur, a hidden tab) always pauses. Opening the inventory releases the pointer lock without pausing, so the window can be closed with any device.
+`Input.playing` is true while the pointer is locked or the player is `engaged`. The keyboard pauses by losing pointer lock. The gamepad and touch have no pointer lock: `resume()` sets `engaged`, `release()` clears it. Losing the window (blur, a hidden tab) always pauses. **The screen.** Esc, Tab, Menu, Y and the touch tab button all open one screen with two tabs, Menu and Practices (`Hud.screenKey`, `Hud.openScreen`, `Hud.closeScreen`). Opening it releases the pointer lock and stops the world; closing it resumes on the device that opened it. On the keyboard Tab opens the Practices tab, and pressed again while Practices is shown it closes the screen; pressed on the Menu tab it switches to Practices. The touch tab button opens the Menu tab and closes the screen when pressed again.
 
 ## 5. Words and juice
 
