@@ -64,6 +64,7 @@ export const ES: Catalog = {
     'intro.openSource': 'Este juego es de código abierto y está abierto a colaborar: si te apasionan los videojuegos y quieres aportar, aquí tienes tu sitio.',
     'intro.repo': 'Repositorio',
     'intro.coffee': 'Invítame a un café',
+    'intro.bug': 'Reportar un error',
     'controls.look.key': 'Ratón',
     'controls.look': 'mirar',
     'controls.move.key': 'WASD',

@@ -198,9 +198,12 @@
     #overlay .credits a { color: var(--ui-text-2); }
     #overlay .credits a:hover, #overlay .credits a:focus-visible { color: var(--ui-gold); }
     #version { flex: none; font-size: 14px; color: var(--ui-faded); font-variant-numeric: tabular-nums; }
-    #overlay .credits .coffee { flex: none; display: block; width: 28px; height: 28px; background: var(--ico-coffee) center / 24px 24px no-repeat var(--ui-line);
+    #overlay .credits .coffee, #overlay .credits .bug { flex: none; display: block; width: 28px; height: 28px; background: center / 24px 24px no-repeat var(--ui-line);
       box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); image-rendering: pixelated; }
-    #overlay .credits .coffee:hover, #overlay .credits .coffee:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold); outline: none; }
+    #overlay .credits .coffee { background-image: var(--ico-coffee); }
+    #overlay .credits .bug { background-image: var(--ico-bug); }
+    #overlay .credits .coffee:hover, #overlay .credits .coffee:focus-visible,
+    #overlay .credits .bug:hover, #overlay .credits .bug:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold); outline: none; }
     @media (max-width: 640px) {
       #overlay .menu { grid-template-columns: minmax(0, 1fr); padding: 0 12px; }
       #overlay .credits { flex-wrap: wrap; margin: 16px 12px 0; }
@@ -394,6 +397,7 @@
       <footer class="credits">
         <p><span data-i18n="intro.openSource">This game is open source and open to collaboration: if you love video games and want to help, you are welcome here.</span> <a href="https://github.com/yeagob/sotano" target="_blank" rel="noopener" data-i18n="intro.repo">Repository</a></p>
         <span id="version"></span>
+        <a class="bug" href="https://github.com/yeagob/sotano/issues/new?template=bug_report.md" target="_blank" rel="noopener" title="Report a bug" aria-label="Report a bug"></a>
         <a class="coffee" href="https://buymeacoffee.com/yeagob" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"></a>
       </footer>
       </div>
