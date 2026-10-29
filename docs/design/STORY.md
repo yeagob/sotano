@@ -117,7 +117,7 @@ Quality is Isaac-style, 0–4 stars. Quality-4 practices are meant to be able to
 | **Art Therapy** | Emotion, Body | 2 | Placing 4 connected blocks in the same room heals one heart (once per room) | Art therapy; art transforms the maker |
 | **Thinking, Waiting, Fasting** | Mind, Will | 2 | Range ×1.25, +0.6 s recovery, +1 luck | *Siddhartha* (Hermann Hesse) |
 | **Follow the Omens** | Mind, Emotion | 2 | +1 luck; every cleared room leaves a reward | *The Alchemist* (Paulo Coelho) |
-| **Cut Ties with Toxic People** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Cut Ties with Toxic People (William of Ockham); a wink at the swords of light of space opera |
+| **Cut Ties with Toxic Relationships** | Mind | 4 | Adds a blade of light beside your intentions: it cuts every block in reach and slices the rubble in two, hits projections ×3 and destroys their projectiles (boss) | Cut Ties with Toxic Relationships (William of Ockham); a wink at the swords of light of space opera |
 | **Remember Breathing** | Will | 4 | Replaces intentions with a charged beam that burns through blocks, 10 ticks a second (boss) | Remember Breathing, the focused shout of Japanese martial arts; a wink at the charged beams of dungeon crawlers |
 | **Lion's Mane** | Body | 2 | Jump height ×2; your head breaks tier-1 blocks (dirt, crates, stone, brick) | The lion's mane mushroom; a wink at the platformers that taught a generation to jump |
 | **Aha Moment** | Mind, electric | 2 | Intentions that hit a projection arc to the nearest other one within 4 blocks, half damage, up to 2 times | Insight learning (Wolfgang Köhler, *The Mentality of Apes*, 1925) |
@@ -144,7 +144,7 @@ Each practice has a 12×12 pixel-art icon (shown on its pedestal, in the pickup 
 
 | Synergy | Requires | Effect |
 |---|---|---|
-| **One Clear Cut** | Cut Ties with Toxic People + Remember Breathing | Charge and release a giant blade of light that sweeps 140° and cuts everything in it |
+| **One Clear Cut** | Cut Ties with Toxic Relationships + Remember Breathing | Charge and release a giant blade of light that sweeps 140° and cuts everything in it |
 | **Chorus** | Remember Breathing + Dual Process | The beam hits and digs 1.6 times harder: the second voice a shot item cannot give a beam |
 | **Choir** | Remember Breathing + Triangulation | The beam hits and digs 2.2 times harder: three voices in one breath |
 | **Somatic Release** | Symbolic Act + Grounding | Kicked blocks burst too |
