@@ -92,7 +92,7 @@ describe('active weapon', () => {
   });
 });
 
-describe('Walk Away from Toxic People (blade)', () => {
+describe('Cut Ties with Toxic People (blade)', () => {
   it('cuts every breakable block in front, none behind, hits projections, and leaves the unbreakable', () => {
     const { host, state } = fakeHost({ unbreakable: new Set([key(0, 1, -1)]) });
     const b = new Blade(new THREE.Scene(), host);

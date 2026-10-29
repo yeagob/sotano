@@ -74,7 +74,7 @@ export const sfx2 = {
   key: () => { tone(1320, 0.08, 'triangle', 0.15); setTimeout(() => tone(1760, 0.12, 'triangle', 0.15), 80); },
   item: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.18, 'triangle', 0.16), i * 90)),
   descend: () => { tone(330, 0.5, 'sine', 0.25, 0.3); noise(0.6, 0.2, 200, 0.7); },
-  /** Walk Away from Toxic People: a quick airy cut. */
+  /** Cut Ties with Toxic People: a quick airy cut. */
   swish: () => { noise(0.14, 0.35, jitter(2600), 1.4); tone(jitter(900), 0.1, 'sine', 0.08, 0.5); },
   /** A charge is full: a small clear bell. */
   charged: () => { tone(1175, 0.18, 'triangle', 0.12); setTimeout(() => tone(1568, 0.25, 'triangle', 0.1), 70); },
