@@ -11,7 +11,7 @@ export interface ChestModel {
 }
 
 const T = 1 / 16;
-const HINGE_Y = 8, HINGE_Z = -5;
+const HINGE_Y = 8, HINGE_Z = -6; // outside the back bands, so the open lid never swings into them
 
 type Ramp = { o: string; d: string; b: string; h: string };
 
@@ -129,7 +129,11 @@ export function buildChest(opts: { keys: number; practice: boolean }): ChestMode
     box(top, band, x, x + bw, 10, 13, -4, 6);
     box(top, band, x, x + bw, 12, 14, -2, 4);
   }
-  if (opts.practice) box(top, m.brassHi, -6, 6, 8, 9, 6, 7);
+  // the brass trim on the lid's front edge; a padlock's shackle takes the middle of it
+  if (opts.practice && locked) {
+    box(top, m.brassHi, -6, -2, 8, 9, 6, 7);
+    box(top, m.brassHi, 2, 6, 8, 9, 6, 7);
+  } else if (opts.practice) box(top, m.brassHi, -6, 6, 8, 9, 6, 7);
 
   let lock: THREE.Group | null = null;
   const keyholes: THREE.Mesh[] = [];
