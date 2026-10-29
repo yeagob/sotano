@@ -190,16 +190,4 @@ Fact-checked against the code. Blocker claims 1, 2, 6, 7, 8 and 9 hold at the ci
 
 ## 4. What was built from the ruling
 
-**Change A (milestones 1 and 2), built.**
-
-- **Parts** (`src/content/parts.ts`): twelve parts for Doubt, the Lectern (Inner Critic) and Panic, named after their pattern in English and Spanish (`content.parts`). `rollParts(rng, source)` rolls flesh, mind, heart, essence at 30 / 12 / 5 / 2 %, in that order.
-- **Per-projection roll (finding 6):** `Game` keeps `projectionSeq` (the omen's room spawn count, carried through `Omen.seq`), and a death rolls on `fork('floor', k, 'room', i, 'part', seq)`. `stream('drops')` is untouched. The path is in RNG.md §4.
-- **Pickups (finding 8):** type `'part'` with a sprite of its icon. It falls and rests like a key. `touchPickups` has an explicit part branch that pushes into `Game.parts`; it never goes through `collect`, so it never heals.
-- **Inventory:** part tiles follow the item tiles, with the same markup and a name label; the detail shows the icon, name and description. `index.html` is untouched.
-- **Icons:** `src/content/part-icons.ts`, drawn by a dedicated Opus art agent (the gate in sotano-art §0 and §3).
-- **Tests:** `tests/parts.test.ts` (count and ids, chances over 40 000 seeded rolls, determinism, unknown source, both languages).
-- **Doc fixes (§1.6):** `loadFloor` is `activate`; the stream and the per-projection path are now in RNG.md §4.
-
-**Not built in Change A (as the ruling sends them).** Change B: the Gardener and the Listener, dialogue, sanctuary placement, silence, and the dialogue dismiss fix (findings 1, 5, 9 and the silent Presence rule). LATER: agreements (4), gifts and the Covenant (5), the idle window and the hidden trust meter (6), trust in `Game.debug` only under DEV (10), `Inventory.lose(id, {force})` (11), and the request rules of finding 5.
-
-**Owner checks still open (§3).** The defaults (a) silence lifts on a positive cast within 8 blocks, (b) one reward per request per run, and (c) challenge rooms as a parts farm are not applied yet: they belong to Change B and the later milestones.
+*(filled after the build)*
