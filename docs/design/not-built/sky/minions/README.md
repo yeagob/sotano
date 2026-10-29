@@ -4,7 +4,7 @@ Up: [The realm of the sky](../README.md)
 
 The minions are the animals of the sky, embodied as smaller creatures. Each guardian has its own herd, pride or family of minions. A minion is the animal itself, not a creature shaped like it: its movement is the animal's own, and its behaviour follows the animal's habits. This README holds the rules every minion shares. The character and movement of each animal's minions are in that animal's guardian document, linked below.
 
-Status: decided for the allies rule and for the negative-intention rule. Proposal for the rest.
+Status: decided for the allies rule, for the negative-intention rule and for the rule that minions never die. Proposal for the rest.
 
 ## 1. The shared contract
 
@@ -50,17 +50,17 @@ An ally helps the player on the floor. The help must come from the animal's habi
 
 An ally does not do the player's platforming for them. The player still makes the jump, the block and the route.
 
-## 3. When the deity falls
+## 3. When the deity is stitched
 
 Status: proposal.
 
-What happens to the minions when their deity falls is open in form. The proposal: allies stay allies and keep their help on the floor; minions that are not allies fade and do not come back on that floor. Whether they stay after the floor is cleared is open (section 4).
+What happens to the minions when their deity is stitched is open in form. The proposal: allies stay allies and keep their help on the floor; minions that are not allies change their attitude with their deity, or leave the floor. Whether they stay after the floor is cleared is open (section 7).
 
-## 4. Can a minion die for good?
+## 4. Minions never die
 
-Status: open.
+Status: decided.
 
-Nothing in the sky is destroyed for good (see the realm's [law 3.1](../README.md#31-breaking-is-allowed-nothing-stays-broken)), and minions are sky creatures. Whether a minion can be removed for good, or always returns, is open. The owner has to decide whether minions are a special case.
+No minion dies, in any way (the realm's [law 3.7](../README.md#37-nothing-dies-in-the-sky)). At most a minion transforms, changes its attitude and behaviour (turning into an ally is one such change), or leaves the floor. A minion that leaves can come back; nothing in the sky is removed for good.
 
 ## 5. Are minions projections?
 
@@ -72,17 +72,19 @@ The rules for enemies in [STORY section 4](../../../built/projections/README.md)
 
 The minions of each guardian are described in that guardian's document. The shared rules are in this README.
 
-| Animal | Guardian | Minions (character, movement) | Status |
+Each guardian document's "Behaviour specification" holds the minions' count, spawn, movement, rules, ally help and targets (section B5 of each).
+
+| Animal | Guardian | Movement, in one line (proposal, specified) | Status |
 |---|---|---|---|
-| Giant panda | [PANDA](../guardians/PANDA.md) | Slow, rolling, sitting in the way | Proposal |
-| Koala | [KOALA](../guardians/KOALA.md) | Climbing, hanging, grabbing and holding | Proposal |
-| Elephant | [ELEPHANT](../guardians/ELEPHANT.md) | Heavy, herd-walking, pushing and spraying water | Proposal |
-| Lion | [LION](../guardians/LION.md) | Stalking, circling, pouncing from ledges | Proposal |
-| Horse | [HORSE](../guardians/HORSE.md) | Galloping in loops, rearing, bolting | Proposal |
+| Giant panda | [PANDA](../guardians/PANDA.md#behaviour-specification) | Walks slowly, climbs columns one block at a time, sits in the way, tucks and rolls down slopes, chews original blocks | Proposal, specified |
+| Koala | [KOALA](../guardians/KOALA.md#behaviour-specification) | Sleeps in clusters, climbs any face and hangs under branches, swings and drops, hugs and holds until shaken off | Proposal, specified |
+| Elephant | [ELEPHANT](../guardians/ELEPHANT.md#behaviour-specification) | Walks heavily in file at one steady pace, wades without slowing, trumpets to close the herd, flaps its ears and shoulders the player aside, sprays up channels, climbs no more than one block | Proposal, specified |
+| Lion | [LION](../guardians/LION.md#behaviour-specification) | Stalks low, faster when unseen and still when watched, circles, holds ledges, pounces from above, roars a small freeze | Proposal, specified |
+| Horse | [HORSE](../guardians/HORSE.md#behaviour-specification) | Gallops wide loops, passes close and turns away, grazes once a loop, kicks from behind, bolts when startled | Proposal, specified |
 
 ## 7. Open questions
 
-1. Can a minion die for good? (Section 4.)
-2. Are minions projections? (Section 5.)
-3. What happens to the minions after the floor is cleared? (Section 3.)
-4. How many minions does a floor have? Each guardian document may set a count as a target.
+1. Are minions projections? (Section 5.)
+2. What happens to the minions after the floor is cleared, and which of them transform, change attitude or leave when their deity is stitched? (Section 3.)
+3. How many minions does a floor have? Each guardian document now sets a count as a target (4, 6, 5, 6 and 5); the owner has to confirm them.
+4. Allies and negative intentions. In the built game a bad intention harms an ally and can turn it back. In the sky a negative intention does nothing to any sky creature, allies included, so an ally never turns back. Confirm.
