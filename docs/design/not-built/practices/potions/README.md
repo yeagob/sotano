@@ -1,6 +1,6 @@
 # Potions
 
-Status: proposal, owner-approved brewing rules. Nothing is built. The owner approved three brewing rules on 2026-10-28 (see [BREWING-RULES](BREWING-RULES.md)); the recipes, durations, the drink verb and the rest of the system are proposed.
+Status: proposal, owner-approved brewing rules. Built so far: the laboratory's alembic with those rules, in [built/laboratory](../../../built/laboratory/README.md). The flask, the drink, the recipes and the codex are not built. The owner approved three brewing rules on 2026-10-28 (see [BREWING-RULES](BREWING-RULES.md)); the recipes, durations, the drink verb and the rest of the system are proposed.
 
 A potion is a preparation of what a released pattern left behind. The alembic in a laboratory takes the captive matter (the parts) and brews it into a flask. Drinking the flask is a short state, never medicine. The proposal answers the owner's request to find a use for parts and to give the alchemy of the descent a hands-on form. It also gives one answer to the design question that asks for a purpose for items and parts ([DESIGN](../README.md) §13, item 8).
 

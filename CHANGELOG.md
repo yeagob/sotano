@@ -6,6 +6,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Added
 - Breaking a crate has a 30% chance to drop a key, a heart or a small bomb (#6).
+- A laboratory with an alembic on floors 2, 4, 6 and 8: feed it up to three things from your hand, a positive intention brews (three brews per run), a negative one boils the bulb off (#20).
 
 ### Fixed
 - Open chest lids no longer clip through the chest body or its padlock (#4).

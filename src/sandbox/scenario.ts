@@ -211,7 +211,7 @@ export function carveSandbox(w: VoxelWorld, rr: RunRandom, s: Scenario): Sandbox
   for (let gz = CELL[1]; gz <= gz1; gz++) for (let gx = CELL[0]; gx <= gx1; gx++) grid[gx + gz * GRID] = 0;
   const plan: FloorPlan = { w: GRID, h: GRID, rooms: [{ id: 0, gx: CELL[0], gz: CELL[1], type: 'normal', dist: 0, links: {} }], grid, start: 0 };
   const floor: FloorResult = {
-    floor: k, boss: null, plan, rooms: [room], doors: [], spawn, chests: [], hole: null, silence: null,
+    floor: k, boss: null, plan, rooms: [room], doors: [], spawn, chests: [], hole: null, silence: null, laboratory: null,
     pedestals: pedestals.map(([x, y, z]) => ({ room: id, x, y, z, item: s.pedestal ?? null, boss: false, chest: false })),
     keys: keys.map(([x, y, z]) => ({ room: id, x, y, z })),
     bombs: [],

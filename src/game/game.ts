@@ -45,6 +45,7 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import { BREWS, BULB, feed as labFeed, hit as labHit, newAlembic, tick as labTick, type Alembic } from './alembic';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
@@ -192,6 +193,8 @@ export class Game {
   maxDepth = FIRST_FLOOR;
   world!: VoxelWorld;
   floors = new Map<number, FloorResult>();
+  /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
+  private labs = new Map<number, Alembic>();
   rooms = new Map<number, RoomInfo>();
   debris!: DebrisSystem;
   doors!: Doors;
@@ -425,7 +428,7 @@ export class Game {
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.floors.clear(); this.labs.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -533,6 +536,7 @@ export class Game {
   /** Registers a carved floor: its rooms and their combat state. */
   private addFloor(f: FloorResult) {
     this.floors.set(f.floor, f);
+    if (f.laboratory) this.labs.set(this.world.idx(f.laboratory.x, f.laboratory.y, f.laboratory.z), newAlembic());
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
     for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
     for (const r of f.rooms) {
@@ -1480,6 +1484,7 @@ export class Game {
   private intentHitsBlock(hit: VoxelHit, mining: number, polarity: Polarity) {
     const id = this.world.get(hit.x, hit.y, hit.z);
     if (id === AIR) return false; // a door
+    if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
     if (polarity === 'positive') {
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
@@ -1917,6 +1922,39 @@ export class Game {
     sfx.shoot();
   }
 
+  /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */
+  private feedLab(x: number, y: number, z: number) {
+    const a = this.labs.get(this.world.idx(x, y, z));
+    const p = this.player;
+    if (!a) { sfx.denied(); return; }
+    const r = labFeed(a, p.hand.at(-1)!);
+    if (r !== 'fed') {
+      sfx.denied();
+      this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
+      return;
+    }
+    p.hand.pop();
+    this.hands.placed();
+    sfx.place();
+    this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
+  }
+
+  /** An intention on the alembic: a brew, a boil, or nothing (game/alembic.ts). */
+  private hitLab(x: number, y: number, z: number, polarity: Polarity) {
+    const a = this.labs.get(this.world.idx(x, y, z));
+    if (!a) return;
+    const r = labHit(a, polarity);
+    if (r === 'brew') {
+      this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
+      sfx3.reveal();
+      this.hud.toast('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+    } else if (r === 'boil') {
+      this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
+      sfx.hit(3);
+      this.hud.toast('lab.boiled');
+    } else if (r === 'cold') this.hud.toast('lab.cold');
+  }
+
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
   private tryPlace() {
     const p = this.player;
@@ -1926,6 +1964,7 @@ export class Game {
     const tap = this.input.hitBy('place') === 'touch' ? this.input.touchTap : null;
     const e = this.camera.position, d = tap ? this.tapDirection(tap) : p.forward;
     const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, this.stats.get('reach'));
+    if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.alembic) { this.feedLab(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
@@ -2248,6 +2287,7 @@ export class Game {
   }
 
   private updateLoop(dt: number) {
+    for (const a of this.labs.values()) labTick(a, dt);
     this.updateRest(dt);
     this.updatePresences();
     this.updateBoundaries();

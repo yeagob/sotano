@@ -148,6 +148,11 @@ export const ES: Catalog = {
     'toast.chestUnlocked': 'Cofre abierto · llaves gastadas: {n}',
     'toast.wayDown': 'Se abre un camino hacia abajo',
     'toast.holeWait': 'El suelo tiembla bajo tus pies: apártate y se abrirá',
+    'lab.fed': 'En el alambique: {n} de {total}',
+    'lab.full': 'El alambique está lleno: tres cosas como mucho',
+    'lab.cold': 'El alambique se ha enfriado: sus brebajes están gastados',
+    'lab.brewed': 'La mezcla se asienta: {left} de {total} brebajes usados',
+    'lab.boiled': 'La carga hierve y se pierde: no se brebaja, y no se gasta ningún brebaje',
     'toast.polarityPositive': 'Buena intención: cura',
     'toast.polarityNegative': 'Mala intención: rompe y destruye',
     'toast.polarityHint': 'Las buenas intenciones solo curan. Para romper, cambia a las malas: {polarity}.',
@@ -641,6 +646,7 @@ export const ES: Catalog = {
 
     materials: {
       air: 'Aire',
+      alembic: 'Alambique',
       dirt: 'Tierra',
       grass: 'Hierba',
       brick: 'Ladrillo de mazmorra',
