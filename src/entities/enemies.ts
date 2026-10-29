@@ -8,6 +8,7 @@ import { FlowField, type RoomArea } from '../enemies/flowfield';
 import { Hazards, shapePoint, type FieldEffect, type HazardHost, type Shape, type Strike } from '../enemies/attacks';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
 import type { PickupKind } from '../game/events';
+import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
@@ -102,6 +103,7 @@ export class Enemies {
   private time = 0;
 
   private carrying = new Map<number, PickupKind[]>();
+  private shells = new Map<number, ShellState>();
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
@@ -155,6 +157,12 @@ export class Enemies {
   }
 
   hurt(e: Enemy, amount: number, kx: number, kz: number) {
+    const shell = e.spec.shell;
+    if (shell) {
+      const next = shellHit(this.shells.get(e.id) ?? shellStart(shell), amount, shell);
+      this.shells.set(e.id, next.state);
+      if (next.shielded) { e.clock = 0; e.flash = 0.15; e.body.vx += kx; e.body.vz += kz; return false; }
+    }
     e.hp -= amount * (1 - (e.spec.armor ?? 0));
     e.clock = 0;
     e.flash = 0.15;

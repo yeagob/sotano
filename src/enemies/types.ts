@@ -66,6 +66,8 @@ export interface EnemyDef {
   armor?: number;
   split?: string[];
   splitOnHit?: boolean;
+  /** A shell of plates in front of the core: hits break plates first, and the core takes none until they are gone. */
+  shell?: { plates: number; plateHp: number };
   breaks?: { tier: number; power: number };
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
