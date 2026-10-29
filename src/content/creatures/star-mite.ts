@@ -17,9 +17,9 @@ export default defineEnemy({
   maxFloor: 5,
   behaviour: wander({ hover: 2, near: 2.5, far: 6 }),
   model: [
-    { size: [2 * TX, 2 * TX, 2 * TX], pos: [0, 2 * TX, 0], color: pal('living.dark'), name: 'body' },
-    { size: [TX / 2, TX / 2, TX / 2], pos: [-1.5 * TX, 3.5 * TX, 0], color: pal('living.glow'), glow: true, name: 'tell' },
-    { size: [TX / 2, TX / 2, TX / 2], pos: [1.5 * TX, 3.5 * TX, 0], color: pal('living.glow'), glow: true, name: 'tell' },
-    { size: [TX / 2, TX / 2, TX / 2], pos: [0, 3.5 * TX, 1.5 * TX], color: pal('living.glow'), glow: true, name: 'tell' },
+    { size: [3 * TX, 2 * TX, 3 * TX], pos: [0, 2 * TX, 0], color: pal('living.dark'), name: 'body' },
+    { size: [TX, TX, TX], pos: [-1 * TX, 3.5 * TX, -1 * TX], color: pal('living.glow'), glow: true, name: 'tell' },
+    { size: [TX, TX, TX], pos: [1 * TX, 3.5 * TX, -1 * TX], color: pal('living.glow'), glow: true, name: 'tell' },
+    { size: [TX, TX, TX], pos: [0, 3.5 * TX, 1 * TX], color: pal('living.glow'), glow: true, name: 'tell' },
   ],
 });

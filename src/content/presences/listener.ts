@@ -16,8 +16,12 @@ export default defineEnemy({
   minFloor: 99,
   behaviour: still,
   model: [
-    { size: [6 * TX, 24 * TX, 6 * TX], pos: [0, 12 * TX, 0], color: pal('bone.dim'), name: 'body' },
-    { size: [6 * TX, 4 * TX, 6 * TX], pos: [0, 26 * TX, 0], color: pal('bone.paper') },
-    { size: [2 * TX, 4 * TX, 2 * TX], pos: [3 * TX, 15 * TX, 2 * TX], color: pal('bone.paper') },
+    { size: [6 * TX, 26 * TX, 6 * TX], pos: [0, 13 * TX, 0], color: pal('bone.dim'), name: 'body' },
+    { size: [8 * TX, 2 * TX, 8 * TX], pos: [0, TX, 0], color: pal('bone.faded') },
+    { size: [6 * TX, 6 * TX, 6 * TX], pos: [0, 29 * TX, 0], color: pal('bone.paper') },
+    { size: [TX, 3 * TX, 3 * TX], pos: [-3.5 * TX, 29.5 * TX, 0.5 * TX], color: pal('bone.dim') },
+    { size: [TX, 2 * TX, 2 * TX], pos: [-3.5 * TX, 27 * TX, 0], color: pal('bone.dim') },
+    { size: [TX, 3 * TX, 3 * TX], pos: [3.5 * TX, 29.5 * TX, 0.5 * TX], color: pal('bone.dim') },
+    { size: [TX, 2 * TX, 2 * TX], pos: [3.5 * TX, 27 * TX, 0], color: pal('bone.dim') },
   ],
 });
