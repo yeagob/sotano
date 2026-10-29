@@ -33,12 +33,11 @@ The game is about intention. What you aim your will at changes the world around 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/art/img/readme/roots.jpg" alt="The roots: an open room with a lesson carved on the wall" width="49%">
-  <img src="docs/art/img/readme/circle.jpg" alt="A circle of the depths: projections sealed inside a room" width="49%">
+  <img src="docs/art/img/readme/landing.png" alt="The landing menu: the cover art, the menu, the controls and the links" width="100%">
 </p>
 <p align="center">
-  <img src="docs/art/img/readme/inventory.jpg" alt="The inventory window with practices and their effects" width="49%">
-  <img src="docs/art/img/readme/landing.jpg" alt="The landing menu with the cover art, controls, language and links" width="49%">
+  <img src="docs/art/img/readme/circle.png" alt="A room of the depths, with a locked door and the minimap" width="49%">
+  <img src="docs/art/img/readme/inventory.png" alt="The practices window with the practices held and their synergies" width="49%">
 </p>
 
 ---
@@ -102,7 +101,7 @@ Three complete schemes; the game follows whichever device you used last (details
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
 | Inventory and stats | **Tab** (or **I**) | **Y** (d-pad moves, **B** closes) | The grid (top) |
 | Pause | **Esc** | **Menu** | The two bars (top) |
-| New run | **R** | **View** (paused or dead) | "New run" on the pause card |
+| New run | **R** | **View** (paused or dead) | "New run" on the landing and the pause card |
 
 Language: English or Spanish, picked from your browser. Switch it on the menu (it's remembered) or with `?lang=es` in the URL.
 

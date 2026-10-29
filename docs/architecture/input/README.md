@@ -50,7 +50,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | polarity | press | play | F | LB | double tap on cast |
 | inventory | press | play, inventory | Tab / I | Y | the grid |
 | pause | press | play, paused | Esc | Menu | the two bars |
-| restart | press | see each device | R | View | "New run" |
+| restart | press | see each device | R | View | "New run" on the landing and the pause card |
 | confirm | press | prompt, paused, dead, toll | click / Enter | A | tap |
 | navigate | axis | inventory, toll | arrows | d-pad | tap a tile |
 | back | press | inventory, toll | Esc | B | ✕ |

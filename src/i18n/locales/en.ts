@@ -8,7 +8,7 @@ const messages = {
   // ── start / pause card (index.html) ──
   'app.loading': 'Loading…',
   'app.failed': 'Failed to start: {error}',
-  'intro.tagline': 'Go down into yourself. Break what holds you. Find the way back up.',
+  'intro.tagline': 'Go down into yourself. Break what holds you. Find what lives below.',
   'intro.play': 'Click to play',
   'intro.language': 'Language',
   'intro.controls': 'Controls',

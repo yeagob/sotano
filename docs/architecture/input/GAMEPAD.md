@@ -16,7 +16,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | polarity | LB |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | pause / resume | Menu |
-| restart | View, on the pause card or the death screen |
+| restart | View, on the landing, the pause card or the death screen |
 | confirm | A (dismisses banners, resumes, begins again after death) |
 
 Free in `play` for future actions: X, LS and RS (`sotano-controls` §2).
@@ -33,7 +33,7 @@ The gamepad becomes the active device only on new input: a button going down, or
 
 ## 4. Menus, death and disconnection
 
-- The pause card: A or Menu resume, View starts a new run.
+- The landing and the pause card: A or Menu resume, View starts a new run.
 - The inventory: Y opens it, the d-pad moves the selection by tile and row, B or Y closes it and play resumes.
 - The death screen: A or View begins again, A only after 1.2 s so a held button never skips it.
 - Disconnecting the pad while it is active pauses the game; a toast says the controller connected or disconnected.
