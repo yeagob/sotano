@@ -13,4 +13,6 @@ The built levels are in [built/levels](../../built/levels/README.md). This folde
 | [ENDING-AND-RETURN.md](ENDING-AND-RETURN.md) | open | What ends a run, the mechanism of the silence and heaven loop, and the link between heaven and the bottom |
 | [TOLL-OPEN.md](TOLL-OPEN.md) | open | Whether the fifth floor asks for a practice |
 | [HIDDEN-LAYER.md](HIDDEN-LAYER.md) | proposal, with two superseded parts | The world beyond the map: hidden pockets, side biomes, secret rooms, special doors, and the knowledge that opens them |
+| [TOTALITY.md](TOTALITY.md) | idea, to be defined | The tree's missing story of totality: its place, meaning and what the player does there |
+| [UNITY.md](UNITY.md) | idea, to be defined | The tree's missing story of unity: its place, meaning and what the player does there |
 | [CAVERN-SCENERY.md](CAVERN-SCENERY.md) | proposal (three owner decisions made) | Cavern scenery in the spirit of the cover art, for floors 1 to 5 and the great pit |

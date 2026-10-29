@@ -21,6 +21,8 @@ The design lists three floor kinds for the giant tree, each a different kind of 
 
 The design text calls the tree's upper part "three upper floors" in one place, and its built paragraph calls the tree "seven stories". Both are in the level design. The build follows seven stories. The owner has not said which to keep.
 
+The owner has also said that two stories are still missing from the tree, totality and unity, and that they are to be defined. They are documented as ideas in [totality](TOTALITY.md) and [unity](UNITY.md).
+
 ## What the three maps would need
 
 - A map kind per tree story: how rooms stack in a trunk, how branches join, how a star map links rooms.
