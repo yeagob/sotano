@@ -21,10 +21,11 @@ This is the rule for code, docs, art, levels, the bestiary and the process itsel
 
 ## Versions
 
-Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`, set in `package.json`. The build shows it next to the build stamp (`v0.2.0-dev · 2610291200`), so every tester can say which build they played.
+Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`, set in `package.json`. The build shows it next to the build stamp (`v0.1.1-dev · 2610291200`), so every tester can say which build they played.
 
-- **`main` carries the released version**, for example `0.1.0`. Each release is an annotated tag `v0.1.0` on that commit.
-- **`develop` carries the next version with a `-dev` suffix**, for example `0.2.0-dev`. The suffix ends when the release branch is cut.
+- **`main` carries the released version**, `0.1.0` today. Each release is an annotated tag `v0.1.0` on that commit.
+- **`develop` carries the next version with a `-dev` suffix**, `0.1.1-dev` today: the next release is a patch of 0.1.0 until the owner decides otherwise. The suffix ends when the release branch is cut.
+- **`main` and `develop` hold the same code**, except for the version number in `package.json`.
 - **Tester builds** are the tagged releases on `main`. `0.1.0` is the first one: the first stable version and the first one given to testers. A pre-release tag such as `v0.2.0-beta.1` can be cut from a `release/0.2.0` branch when testers need to try something before the stable tag.
 
 Which part of the version changes:
