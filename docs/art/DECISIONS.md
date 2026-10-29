@@ -198,7 +198,7 @@ Skin tones (player setting): `skin.t1 #F3D2B3`, `skin.t2 #E2B48F`, `skin.t3 #B98
 
 ### 3.12 Reserved-colour rules (enforced)
 
-1. **Gold (`light.*`) is the light and repair.** Never on a living projection (Perfectionism's seams and the Impostor's gilt are not gold while they are patterns; brass is "false gold"). Never a path colour. Allow-listed modules: intents, debris/shards, mesher (seams, cracks), items/practices, HUD, room-clear, hexagram, sky, lantern.
+1. **The light (`light.*`) is the light and repair.** Never on a living projection (Perfectionism's seams and the Impostor's gilt are not gold while they are patterns; brass is "false gold"). Never a path colour. Allow-listed modules: intents, debris/shards, mesher (seams, cracks), items/practices, HUD, room-clear, hexagram, sky, lantern.
 2. **Red (`life.*`) is life.** Hearts and heart-related UI only. No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
 3. **Cold (`cold.*`) is the projections'.** Never on a player shot, shard, seam or practice.
 4. **Path true hues** belong to the player (practices, rims, trails, states of being, halos). Projections may use only `path.*.shadow` (body tint); the true hue appears on a projection only on its release shard (drawn by the creature view, not referenced in content).

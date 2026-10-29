@@ -553,7 +553,7 @@ The bosses of floors 6–9 still fight the old way; they are the next pass.
 
 - **What they are:** instincts, curiosity, play, rest, care: what keeps living in you even with the patterns around. They are not projections and never become projections.
 - **Faction `neutral`:** hostile to no one, and no one targets them (except where stated). **Intention polarity applies to them (§1.1):** a negative intention harms them, a positive one heals them. Explosions only push them gently. Owner ruling (2026-10-27): they can be harmed, and the harm is the player's choice.
-- **Positive-only creatures (owner, 2026-10-28):** some creatures answer only positive intentions. A negative intention passes through them untouched: no harm and no fleeing. The **Mossling** and the **Huddler** are the first. A positive intention always reaches them (a gold burst, even when they are whole) and heals them when they are hurt.
+- **Positive-only creatures (owner, 2026-10-28):** some creatures answer only positive intentions. A negative intention passes through them untouched: no harm and no fleeing. The **Mossling** and the **Huddler** are the first. A positive intention always reaches them (a healing burst, even when they are whole) and heals them when they are hurt.
 - **They react to the room:** they vanish into the blocks when doors slam and come back when a room clears (§2.1, §2.5). Their silence and return are signals the player learns.
 - **Look:** a new **side**, *the living*, needs an art ruling (§10): world materials with a **living tell**: a slow, soft, 2 × 1 glow that breathes (never a 2 × 2 eye in a socket, which is the projections' family mark).
 - **Sound:** small, consonant sounds (chirps, purrs, hums) that never resolve because they never needed to.
@@ -804,7 +804,7 @@ The inventory window gains a **codex** *(proposal)*, filled by playing:
   3. **Floor 9's ice** and the Tree floors' ramps (the ledger has four ramps for ten floors).
   4. **Omen particles and the edge marker** as new uses of the cold ramp.
   5. **The art guide's rule "materialisation always at the room centre"** (§8.5) changes to "at its spawn point, announced by an omen" (this document, §2).
-  6. **Intention polarity** (§1.1): a positive intention stays round and gold (the light, yours). A negative one stays round, with a darker core and a cold rim: still yours, now dark. Never a cube, which is a hostile shot. Its exact colour is the owner's ruling (§13). Converted projections keep their pattern and gain gold seams that grow with healing.
+  6. **Intention polarity** (§1.1): a good intention stays round and bright (the light, yours). A negative one stays round, with a darker core and a cold rim: still yours, now dark. Never a cube, which is a hostile shot. Its exact colour is the owner's ruling (§13). Converted projections keep their pattern and gain gold seams that grow with healing.
 - **Safety** (art §11): no projection is a body, a person, a diagnosis or a tradition; none speaks; defeat is release; the player is never given simulated panic (Dread's rings are mechanical and telegraphed, not a screen effect). Dante: images only, never his figures, never punishment of people: the circles give each zone an *image* (wind, rain, weights, marsh, tombs, burning sand, ditches, ice), not a sentence. Patterns that touch clinical words are named in everyday language (Numbness, not a diagnosis; Panic is the pattern, not a disorder).
 - **Words:** every name, line and codex text the player reads goes through `src/i18n/` in English and Spanish when it is built.
 
