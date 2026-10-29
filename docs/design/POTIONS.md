@@ -87,7 +87,7 @@ Floor 0 has no laboratory (no projections, no parts). Tree floors (2, 4) place i
 | 8 | **Open-Hand Elixir** | emotion | One essence of an Emotion pattern | Contact hits on you are halved, and a projection that touches you gains 0.2 warmth | Floor | Essences drop 2 % |
 | 9 | **Ember Tonic** | will | One heart of a Will pattern (e.g. *Panic's captive ember*) | Fire rate ×1.3 | 3 rooms | Hearts drop 5 % |
 | 10 | **Patient Draught** | will | One flesh and one mind of the same Will pattern | Mining ×1.6 | Floor | Two kinds from one pattern; helps you dig, not fight |
-| 11 | **Distillate of** *(pattern)* | the pattern's path | The heart, mind and essence of the **same** pattern | That pattern and its lineage materialise with half warmth (three gold hits convert them) | Run | One per pattern per run; the whole bulb, an essence, and a full ferry |
+| 11 | **Distillate of** *(pattern)* | the pattern's path | The heart, mind and essence of the **same** pattern | That pattern and its lineage materialise with half warmth (three good hits convert them) | Run | One per pattern per run; the whole bulb, an essence, and a full ferry |
 
 The Distillate is one recipe and one name template ("Distillate of Doubt", "Distillate of the Lectern"), filled with the pattern's name already in the catalogs. It is the long game of the system: you prepared the whole pattern, so you know it when it comes again.
 
@@ -107,8 +107,8 @@ The Distillate is one recipe and one name template ("Distillate of Doubt", "Dist
 ### 4.1 Polarity (decided in this proposal)
 
 - **Parts carry no polarity mark.** Every part is released matter, so every part comes from a negative intention; converted allies leave nothing (BESTIARY §5.7). A "positive part" would need a new source and a doubled icon set. Not worth it.
-- **The brew's polarity is what counts.** Only a positive intention brews; a negative one boils the bulb off without spending a brew. This keeps the rule players already know: gold mends and makes, dark breaks.
-- **A thrown flask** shatters into a small gold splash (radius 1): one positive intention hit on everything in range. It warms projections, heals allies and creatures, mends damaged blocks, and never kills (the positive-intention floor of one point holds). The potion is lost. So throwing is a choice: drink it for yourself, or spend it on someone else.
+- **The brew's polarity is what counts.** Only a positive intention brews; a negative one boils the bulb off without spending a brew. This keeps the rule players already know: good intentions mend and make, bad ones break.
+- **A thrown flask** shatters into a small splash of good intention (radius 1): one positive intention hit on everything in range. It warms projections, heals allies and creatures, mends damaged blocks, and never kills (the positive-intention floor of one point holds). The potion is lost. So throwing is a choice: drink it for yourself, or spend it on someone else.
 
 ### 4.2 The promised trait
 
@@ -171,7 +171,7 @@ The kitchen's meals (STATIONS §4.2) could later share this action under a wider
 | 3 | **Effects that leak or vanish.** A rebuild removes a potion, or a floor-change leaves one on | Inventory test: drink, gain and lose a practice, the potion stays; clear *N* sealed rooms, it is gone; `floorEnter` removes room and floor potions and keeps the Distillate; a challenge room's waves do not tick it |
 | 4 | **RNG drift.** Brewing or drinking shifts structure or drops | `tests/rng.test.ts`: the same seed with 0 and with 10 brews gives the same structure hash and the same `stream('drops')` sequence; the resolver returns the same potion for every order of the same contents |
 | 5 | **Ambiguous recipes.** Two recipes tie, so the result depends on load order | A validator test: enumerate every multiset of up to three cubes (four kinds × 40 patterns × the recipe materials, plus ice) and assert at most one recipe of the top specificity matches, and that unmatched sets give Plain Tonic |
-| 6 | **Hand code assumes two kinds.** Toll, place, throw, Craving's pull or the hold-up break on a flask | Unit tests per path: the toll window lists and takes a flask; place stands it as a pickup; throw shatters it with the gold splash; `carry` counts it; Craving returns it on release |
+| 6 | **Hand code assumes two kinds.** Toll, place, throw, Craving's pull or the hold-up break on a flask | Unit tests per path: the toll window lists and takes a flask; place stands it as a pickup; throw shatters it with the splash; `carry` counts it; Craving returns it on release |
 | 7 | **A positive splash kills.** The thrown flask lowers a projection to zero | Combat test: a splash on a projection at 1 hp leaves it at 1 hp with warmth +0.2; on a creature it heals |
 | 8 | **Controls clash or a missing device** | `tests/controls.test.ts`: `drink` exists on all three devices, no shared input in `play`, and the touch arc stays at seven buttons or fewer with a flask in hand |
 | 9 | **Missing words, or claims of cure** | `tests/i18n.test.ts`: every potion's name, description and effect exist in English and Spanish with the same numbers; a content test rejects "cure", "treatment", "therapy", "medicine" and "medication" in potion text |
@@ -206,6 +206,6 @@ Each step goes through `sotano-docs`, `sotano-items`, `sotano-i18n` and `sotano-
 |---|---|---|
 | **P1 · The flask and the verb** | `PotionDef` and two potions (Plain Tonic, Restoring Draught); the flask as a third hand kind; the `drink` action on three devices; the `drink` event; timed effect sources with the room countdown; the HUD flasks; `S.givePotion(id)` in the sandbox | Risks 2, 3, 6, 8 and 9 tested; a potion given in the sandbox can be drunk, thrown, placed and given at the toll |
 | **P2 · The Alembic** | The alembic block entity and the `laboratory` template on one floor per zone (`fork('floor', k, 'lab')`, `GEN_VERSION` bump); the pure resolver and its validator; the `brew` event; positive-only brewing, three brews, the cold rest; `path` on `EnemyDef`; all eleven recipes except the Distillate; art gate for the alembic, the flask and eleven icons | Risks 1, 4, 5 and 10 tested; a seed brews every recipe in the sandbox |
-| **P3 · Into the world** | A `warmth` field on `actorDamage` and `enemySpawn` (Warm Cordial, Open-Hand Elixir, Distillate); the Distillate; the thrown gold splash; the state-of-being and Socratic Questioning hooks; codex recipes and the bulb's colour preview; agreements that ask for potions | Risk 7 tested; the synergy matrix covers potions with every practice |
+| **P3 · Into the world** | A `warmth` field on `actorDamage` and `enemySpawn` (Warm Cordial, Open-Hand Elixir, Distillate); the Distillate; the thrown splash; the state-of-being and Socratic Questioning hooks; codex recipes and the bulb's colour preview; agreements that ask for potions | Risk 7 tested; the synergy matrix covers potions with every practice |
 
 **Docs to update when built:** BESTIARY §5.7 (where parts matter, the stale count), STATIONS §4.4 and §8, DESIGN §6 and §13.8, ITEMS.md (a new effect source and two events), RNG.md §4 (the new paths), input README and the device documents, CONCEPTS (preparation as mental transmutation), LEVELS (the laboratory room).

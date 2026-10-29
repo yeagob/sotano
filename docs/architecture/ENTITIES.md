@@ -91,7 +91,7 @@ Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers)
 ### Presences (`content/presences/`)
 
 - **Where they live:** none on the tutorial floor, and never in a start room (owner, 2026-10-29: the Gardener was removed from floor 0's spawn room; a presence there would be a gift with nothing to give). The Gardener is defined but not placed until an agreement needs it. One Listener sits in a normal room of each Tree floor (1–5), placed by `placePresences` from the floor's own fork (`floor<k>:presence`). When no normal room of a Tree floor is quiet, one is emptied so the Listener always has a room (GEN_VERSION 15).
-- **Immortal and kind:** a Presence is a creature (hp 1, never hit by a hit that is not positive) with `responds: 'positive'`: negative intentions pass through it, positive ones make only a gold burst.
+- **Immortal and kind:** a Presence is a creature (hp 1, never hit by a hit that is not positive) with `responds: 'positive'`: negative intentions pass through it, positive ones make only a healing burst.
 - **Talk by contact** (BESTIARY §8): walking within 2.2 blocks, on the same level, opens a card with its name and two lines (`Game.updatePresences`, `Hud.presenceCard`). Each Presence talks once. The Listener also heals a quarter heart once. There is no talk key: contact is the talk.
 - **The Boundary** (`content/presences/boundary.ts`, owner, 2026-10-29): a neutral projection in every vault, `responds: 'negative'`, `armor: 1`, never hurt. Its sanctuary ring is pedestal blocks placed by the carve; `Game.updateBoundaries` makes it hostile (`faction: 'projection'`, so it throws cubes through `volley`) only while a ring block is missing and you are in its room.
 - **Not built:** the other Presences, dialogue choices, the codex (§9), requests (§8.5), agreements and gifts (§8.6–8.7), and the light turning away.
@@ -103,7 +103,7 @@ Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floo
 
 - **Sealing**: when a room seals, its creatures hide in the blocks (`Enemies.hideRoom`, neither drawn nor hittable), and they come back whole when it clears.
 - **Polarity** (§1.1): a positive intention heals them, and a creature healed to full gives a heart once (`gifted`). A negative intention that would kill one sends it into the blocks instead (`Enemies.hurt`): it never dies.
-- **One polarity only** (`responds`, BESTIARY §7.1): a creature with `responds: 'positive'` (the Mossling and the Huddler) is met by positive intentions always, healthy or not (a gold burst), and never by negative ones: the shot passes through it (`meetsIntention`, `Game.meets`).
+- **One polarity only** (`responds`, BESTIARY §7.1): a creature with `responds: 'positive'` (the Mossling and the Huddler) is met by positive intentions always, healthy or not (a healing burst), and never by negative ones: the shot passes through it (`meetsIntention`, `Game.meets`).
 - **Blasts** only push creatures; fire and lava still hurt them, so they must avoid it.
 - **Chirpers** sing every few seconds only while their room is quiet (no projection alive): their silence is the warning.
 - **Mosslings** heal a quarter heart the first time you sit still beside one for three seconds (`Game.updateRest`).
