@@ -69,14 +69,45 @@ export class Tablets {
     g.textBaseline = 'top';
     g.font = 'bold 32px system-ui, "Segoe UI", sans-serif';
     g.fillText(t(`lesson.${tab.lesson}.title` as MessageKey), 64, 22);
+    // on a phone the polarity is a half turn: draw it, so the words are not the only way to learn it
+    if (tab.lesson === 'polarity' && activeDevice() === 'touch') halfTurn(g, PX - 58, 46);
     g.fillStyle = palCss('ink.bevel');
     g.fillRect(36, 72, PX - 72, 2);
     g.fillStyle = palCss('ink.line');
     g.font = '24px system-ui, "Segoe UI", sans-serif';
     let y = 92;
-    for (const line of wrap(g, sentenceCase(t(`lesson.${tab.lesson}.text` as MessageKey, controlParams(activeDevice()))), PX - 72)) { g.fillText(line, 36, y); y += 32; }
+    const onPhone = tab.lesson === 'polarity' && activeDevice() === 'touch';
+    const key = onPhone ? 'lesson.polarity.touch.text' : `lesson.${tab.lesson}.text`;
+    for (const line of wrap(g, sentenceCase(t(key as MessageKey, controlParams(activeDevice()))), PX - 72)) { g.fillText(line, 36, y); y += 32; }
     tab.texture.needsUpdate = true;
   }
+}
+
+/**
+ * A half turn of the phone, the touch control for the polarity: a landscape phone under a gold arrow
+ * that sweeps over it, clockwise, from one side to the other (90° to 270°), with the angle beside it.
+ */
+export function halfTurn(g: CanvasRenderingContext2D, cx: number, cy: number) {
+  const r = 22, start = Math.PI * 1.15, end = Math.PI * 1.85;
+  g.save();
+  g.strokeStyle = palCss('light.gold'); g.fillStyle = palCss('light.gold');
+  g.lineWidth = 4; g.lineCap = 'round';
+  g.beginPath(); g.arc(cx, cy, r, start, end); g.stroke();
+  // the arrowhead at the end of the sweep, pointing along the curve
+  const tx = -Math.sin(end), ty = Math.cos(end), nx = Math.cos(end), ny = Math.sin(end);
+  const hx = cx + r * nx, hy = cy + r * ny;
+  g.beginPath();
+  g.moveTo(hx + tx * 8, hy + ty * 8);
+  g.lineTo(hx - tx * 4 + nx * 7, hy - ty * 4 + ny * 7);
+  g.lineTo(hx - tx * 4 - nx * 7, hy - ty * 4 - ny * 7);
+  g.closePath(); g.fill();
+  // the phone, in landscape, the way it is held to play
+  g.lineWidth = 2.5;
+  g.strokeRect(cx - 9, cy - 6, 18, 12);
+  g.font = 'bold 16px system-ui, "Segoe UI", sans-serif';
+  g.textAlign = 'right'; g.textBaseline = 'middle';
+  g.fillText('180°', cx - r - 8, cy);
+  g.restore();
 }
 
 function wrap(g: CanvasRenderingContext2D, text: string, width: number): string[] {

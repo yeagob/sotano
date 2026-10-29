@@ -81,6 +81,7 @@ Items are named after **techniques, practices and concepts** that people use to 
 
 - **In-game names are generic technique or concept names** ("Exposure", "Kaizen", "Box Breathing", "Deep Focus"), or titles of **public-domain works** (Marcus Aurelius' *Meditations*, Seneca, Epictetus, Lao Tzu, Emerson, James Allen's *As a Man Thinketh*).
 - **Modern books, courses and branded methods** are credited only as the inspiration, in the item's `inspiredBy` field and in this document, never as the item's name. Some of them are registered trademarks (for example the Pomodoro Technique®, Getting Things Done®, the Wim Hof Method®, *The 7 Habits*®), so using them as names in a public game would be asking for trouble.
+- **The two intentions are good and bad, and only that.** Everywhere the player can read them (menus, tooltips, toasts, the tutorial, these docs): *good intentions heal and turn enemies into allies; bad intentions break and destroy.* No abstract names for them (no "gold" or "ember", no "positive" or "negative" in player text). The code keeps `positive` and `negative` as identifiers.
 - Tone: respectful. Practices aren't magic cures, and therapies aren't jokes. Descriptions say what the practice *is about*, in one line, alongside what it *does* in the game.
 
 ### Current catalogue

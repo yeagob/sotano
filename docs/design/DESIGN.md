@@ -61,7 +61,7 @@ The player doesn't shoot tears: they cast **intentions** — small orbs of will 
 | Luck | Chance of special effects | 0 |
 | **Mining** | Damage multiplier against blocks | 1.0 |
 
-Intentions fly straight for their range, then **fall under gravity** and break on contact. Each intention also has a **polarity**, positive or negative, switched by a control: positive intentions mend projections and damaged blocks, and can turn projections to your side; only negative ones break blocks; negative ones wound everything that is yours too, creatures included ([BESTIARY §1.1](BESTIARY.md)). Casting upwards digs ceilings; arcing them reaches enemies behind cover.
+Intentions fly straight for their range, then **fall under gravity** and break on contact. Each intention also has a **polarity**, good or bad, switched by a control: good intentions heal projections and damaged blocks, and can turn projections to your side; only bad ones break blocks, and they wound everything that is yours too, creatures included ([BESTIARY §1.1](BESTIARY.md)). Casting upwards digs ceilings; arcing them reaches enemies behind cover.
 
 **Mining** is deliberately separate from damage: it allows items that make you a good fighter but a poor miner, and vice versa. It's a very useful design lever.
 

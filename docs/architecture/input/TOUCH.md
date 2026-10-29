@@ -9,7 +9,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | move | left thumb: a floating stick that appears where you put it down (left 42 % of the screen) |
 | look | drag anywhere on the right; dragging the cast button also aims |
 | cast (hold) | the bead of light, the largest button, bottom right |
-| polarity | **a half turn of the phone**, like a steering wheel: each turn flips the intention (its ring shows the polarity) |
+| polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which) |
 | jump (hold to swim up) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
