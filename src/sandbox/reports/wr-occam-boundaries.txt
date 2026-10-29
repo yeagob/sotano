@@ -13,17 +13,21 @@ t 0 (0.0 s)
 t 90 (1.5 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices occamsrazor boundaries · synergies —
+  doubt#2 hp 12.0/12 · projection · at 3.8 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 3.0 0.0 4.9
   blocks —
   elements —
-  cubes — · pickups 1
-  events actorDamage:doubt<cut 4 · actorDeath:doubt 2 · blockBreak:brick 1 · blockDamage:brick 4 · blockLoot:brick 1 · fire 4 · intentHit 4 · polarityChange 1 · roomEnter 1 · strike 4
+  cubes — · pickups 0
+  events blockBreak:brick 1 · blockDamage:brick 1 · blockLoot:brick 1 · fire 4 · intentHit 4 · polarityChange 1 · roomEnter 1 · strike 4
 
 t 180 (3.0 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices occamsrazor boundaries · synergies —
+  doubt#2 hp 12.0/12 · projection · at 2.3 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 1.4 0.0 3.4
   blocks —
   elements —
-  cubes — · pickups 1
+  cubes — · pickups 0
 
 map t 180 · h 0
   .............
