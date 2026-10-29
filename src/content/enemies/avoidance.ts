@@ -8,14 +8,14 @@ const shut: Behaviour = {
     e.timer -= ctx.dt;
     if (e.state === 'peek') {
       e.pulse = 0.5;
-      if (e.timer <= 0) { e.state = 'shut'; e.timer = 3; e.tags.add('shut'); }
+      if (e.timer <= 0) { e.state = 'shut'; e.timer = 3; e.tags.add('shut'); ctx.hide(e, true); }
       return;
     }
     e.pulse = 0;
     if (e.timer <= 0) {
       const t = ctx.target(e);
       if (t && ctx.dist(e, t) < 7) {
-        e.state = 'peek'; e.timer = 1.2; e.tags.delete('shut');
+        e.state = 'peek'; e.timer = 1.2; e.tags.delete('shut'); ctx.hide(e, false);
         ctx.shootAt(e, t.x, t.y + 1, t.z);
       } else {
         e.timer = 0.5;

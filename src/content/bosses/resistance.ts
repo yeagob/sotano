@@ -1,6 +1,6 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
-import { charge, combo, moveset, rocks, shockwave, slam } from '../../enemies/moves';
+import { barrage, charge, combo, moveset, rocks, shockwave, slam } from '../../enemies/moves';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A door that walks (BESTIARY §6.3). 1 Blocks: it comes at you and rams, and what it rams breaks.
@@ -27,6 +27,8 @@ export default defineEnemy({
           combo('ram-and-stamp', [charge({ windup: 0.6, recover: 0, speed: 11, impact: 5 }), shockwave({ windup: 0.45, recover: 0, rings: 1, gap: 0, reach: 5 })], { recover: 1, min: 3 }),
           charge({ windup: 0.65, recover: 0.9, speed: 11, impact: 5, min: 3 }),
           shockwave({ windup: 0.5, recover: 0.6, rings: 1, gap: 0, reach: 4.5, max: 5 }),
+          // it throws cubes of itself at you (owner, b86b17c): each one's landing is marked
+          barrage({ windup: 0.45, recover: 0.3, count: 2, seconds: 0.5, spread: 1, walk: true }),
         ],
       }),
       moveset({
@@ -35,6 +37,8 @@ export default defineEnemy({
           combo('stones-then-ram', [rocks({ windup: 0.45, recover: 0, count: 5, lead: 1, spread: 3 }), charge({ windup: 0.5, recover: 0, speed: 12, impact: 6 })], { recover: 0.8 }),
           charge({ windup: 0.55, recover: 0.75, speed: 12, bounces: 1, impact: 6 }),
           shockwave({ windup: 0.5, recover: 0.6, rings: 2, gap: 0.45, reach: 7 }),
+          // it throws cubes of itself at you (owner, b86b17c): each one's landing is marked
+          barrage({ windup: 0.45, recover: 0.3, count: 2, seconds: 0.5, spread: 1, walk: true }),
           rocks({ windup: 0.5, recover: 0.4, count: 4, lead: 1, spread: 3, walk: true }),
         ],
       }),

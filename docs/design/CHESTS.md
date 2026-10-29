@@ -33,6 +33,8 @@ What a chest kept is **spat out**: as the lid opens, each thing leaps out of its
 | **Pedestal chest** (stands where a pedestal would, in treasure and vault rooms) | The practice reserved for that room at run start. **60 %** of treasure and vault practices are shut in a chest (never the boss's: it is earned, not locked away). It leaps out and floats where it lands |
 | **Room chest** (free-standing, normal rooms: **40 %** of them, every floor including the roots) | One to three rolls of the `chest` table (key, bomb, heart, or, rarely, a **practice** from the treasure pool drawn at runtime: at most one per chest, about one room chest in seven) |
 
+Owner, 2026-10-29: every chest block holds a small chance of one extra random practice (`CHEST_RARE`, 6 %), on top of its contents. A vault's two chests stand in the Boundary's sanctuary ([BESTIARY §7](BESTIARY.md)).
+
 ## 4. Locks
 
 Rolled at carve time from `CHEST_LOCK` (a structure table, so a seed always gives the same locks):

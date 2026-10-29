@@ -8,6 +8,8 @@ import delver from './delver';
 import drifter from './drifter';
 import ferryback from './ferryback';
 import huddler from './huddler';
+import leafling from './leafling';
+import starMite from './star-mite';
 import inkmite from './inkmite';
 import mossling from './mossling';
 import rootling from './rootling';
@@ -15,7 +17,7 @@ import bubbler from './bubbler';
 import wonder from './wonder';
 
 export const CREATURES: readonly EnemyDef[] = [
-  wonder, rootling, mossling, chirper, delver, bubbler, ferryback, drifter, inkmite, cinderwalker, huddler,
+  wonder, rootling, mossling, chirper, delver, bubbler, ferryback, drifter, inkmite, cinderwalker, huddler, leafling, starMite,
 ];
 export const CREATURE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(CREATURES.map(c => [c.id, c]));
 
@@ -31,6 +33,8 @@ export const CREATURE_LIFE: readonly { def: string; floors: readonly [number, nu
   { def: 'inkmite', floors: [5, 6], count: [2, 3] },
   { def: 'cinderwalker', floors: [7, 8], count: [1, 2] },
   { def: 'huddler', floors: [9, 9], count: [2, 3] },
+  { def: 'leafling', floors: [1, 5], count: [1, 2] },
+  { def: 'star-mite', floors: [1, 5], count: [1, 2] },
 ];
 
 export function ambientCreatures(f: FloorResult, rng: Rng): { def: string; room: number; x: number; y: number; z: number }[] {

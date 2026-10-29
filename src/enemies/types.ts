@@ -7,6 +7,7 @@ import type { PickupKind } from '../game/events';
 import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
+import type { Polarity } from '../combat/polarity';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -41,6 +42,7 @@ export type BeingKind = 'projection' | 'creature' | 'boss';
 export interface EnemyDef {
   id: string;
   kind?: BeingKind;
+  responds?: Polarity;
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
@@ -63,6 +65,9 @@ export interface EnemyDef {
   asleep?: boolean;
   armor?: number;
   split?: string[];
+  splitOnHit?: boolean;
+  /** A shell of plates in front of the core: hits break plates first, and the core takes none until they are gone. */
+  shell?: { plates: number; plateHp: number };
   breaks?: { tier: number; power: number };
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
@@ -107,6 +112,7 @@ export interface Enemy extends Actor {
   /** The boss move in progress (index into its moveset, -1 none) and seconds since it acted (enemies/moves.ts). */
   move: number;
   act: number;
+  volley: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
@@ -116,6 +122,12 @@ export interface TargetView { id: number; x: number; y: number; z: number; vx?: 
  *  target, the nearest actor hostile to them (docs/architecture/ACTORS.md §4). */
 export interface EnemyCtx {
   dt: number;
+  /** The nearest loose key, bomb or heart in its room (within 14 blocks), as a point to walk to. */
+  prize(e: Enemy): TargetView | null;
+  /** Takes the nearest loose prize within reach of the enemy; it carries it. True if one was taken. */
+  steal(e: Enemy): boolean;
+  /** How many prizes the enemy carries. */
+  carried(e: Enemy): number;
   strike(e: Enemy, s: Strike): void;
   bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number): void;
   safe(e: Enemy, x: number, y: number, z: number): boolean;

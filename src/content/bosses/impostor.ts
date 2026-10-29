@@ -17,6 +17,7 @@ export default defineEnemy({
   speed: 1.6,
   size: [1.0, 2.6],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 7,
   maxFloor: 8,
@@ -24,8 +25,8 @@ export default defineEnemy({
     arena: ['brass', 'frame'],
     phases: [
       charge({ aim: 0.7, speed: 4, run: 1.6, stun: 1.2, range: 10, cooldown: 1.4 }),
-      emitter({ every: 6, shot: pretend }),
-      emitter({ every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
+      emitter({ follow: { speed: 1.2, keep: 4 }, every: 6, shot: pretend }),
+      emitter({ follow: { speed: 1.2, keep: 4 }, every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
   }),
   model: [

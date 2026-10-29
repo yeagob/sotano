@@ -300,9 +300,9 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     id: 'pit', types: ['boss'], rows: [
       '.?.........?.',
       '..R...T...R..',
-      '....r...r....',
+      '..r.......r..',
       '......H......',
-      '....r...r....',
+      '..r.......r..',
       '..R.......R..',
       '.?.........?.',
     ],
@@ -1209,6 +1209,8 @@ export const DOOR_APPROACH: Record<'N' | 'S' | 'E' | 'W', [number, number][]> = 
   E: [[12, 2], [12, 3], [12, 4]],
 };
 
+const BOSS_CLEAR = new Set(['.', 'H', 'T', 'K']);
+
 const REQUIRED: Partial<Record<RoomType, string[]>> = { start: ['P'], treasure: ['T'], vault: ['T'], boss: ['H', 'T'] };
 
 export function validateTemplate(t: RoomTemplate): string[] {
@@ -1230,6 +1232,15 @@ export function validateTemplate(t: RoomTemplate): string[] {
       const ch = t.rows[r]?.[c];
       if (ch !== undefined && !MARKERS.has(ch)) errs.push(`${t.id}: tile ${c},${r} in front of the ${side} door is blocked ("${ch}")`);
     }
+  }
+  if (t.types.includes('boss')) {
+    t.rows.forEach((row, r) => [...row].forEach((ch, c) => {
+      if (ch !== 'H') return;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+        const near = t.rows[r + dr]?.[c + dc];
+        if (near !== undefined && !BOSS_CLEAR.has(near)) errs.push(`${t.id}: the boss's floor is blocked ("${near}") within two blocks of its hole`);
+      }
+    }));
   }
   const all = t.rows.join('');
   for (const type of t.types) {

@@ -385,6 +385,19 @@ export class Hud {
   // ───────────────────────── feedback ─────────────────────────
 
   /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
+  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[]) {
+    this.lastBanner = null;
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b>${th(nameKey)}</b>` +
+      lineKeys.map(k => `<span>${th(k)}</span>`).join('') +
+      `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
     this.lastBanner = [def, changes, synergies];
     this.renderBanner(def, changes, synergies);

@@ -125,4 +125,12 @@ describe('what an intention meets', () => {
     expect(meetsIntention('neutral', 1, 12, 'negative')).toBe(true);
     expect(meetsIntention('neutral', 3, 3, 'positive')).toBe(false);
   });
+
+  it('a creature that answers only one polarity meets that one always, and the other never', () => {
+    expect(meetsIntention('neutral', 3, 3, 'positive', 'positive')).toBe(true);
+    expect(meetsIntention('neutral', 1, 3, 'positive', 'positive')).toBe(true);
+    expect(meetsIntention('neutral', 1, 3, 'negative', 'positive')).toBe(false);
+    expect(meetsIntention('neutral', 1, 3, 'negative', 'negative')).toBe(true);
+    expect(meetsIntention('neutral', 3, 3, 'positive', 'negative')).toBe(false);
+  });
 });

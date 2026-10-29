@@ -32,6 +32,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('reserve')` | Structure | Every pedestal's item, in (floor, room) order, at run start |
 | `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template (among those whose space fits its allotment) → flips (one draw among the flips that fit) → mood → decor slots, row by row, in that order |
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
+| `fork('floor', k, 'presence')` | Structure | Which normal room of a Tree floor holds the Listener (GEN_VERSION 15); the Gardener is the start room of floor 0 |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
 | `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
 | `fork('floor', k, 'chestkeys')` | Structure | Where the extra keys for floor k's chests lie |
@@ -46,6 +47,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |
 | `fork('elements')` | Runtime | One seed for the element simulation: each fire-spread roll is `hash3(seed, cell, tick, side)`, stateless, so one fire never changes another's luck. Template elements (pools, flames) are fixed by the template and draw nothing |
 | `fork('floor', k, 'room', i, 'clear')` | Runtime | Room i's clear reward: one uniform `u`, then luck reweights the table against it |
+| `fork('floor', k, 'room', i, 'rooted', seq)` | Runtime | Whether a projection spawns rooted (`rootedChance`, BESTIARY §4.3): `seq` as for parts; a rooted one rolls its parts once more on `fork(…, 'part', seq, 'rooted')` |
 | `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
 | `stream('drops')` | Runtime | Enemy drops |
