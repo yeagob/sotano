@@ -1,5 +1,5 @@
 // Weapons that replace the intention, Isaac-style (docs/architecture/WEAPONS.md): the blade of
-// Occam's Razor, the charged beam of Kiai, and the great cut of both together. They only act
+// Walk Away from Toxic People, the charged beam of Remember Breathing, and the great cut of both together. They only act
 // through the host (the game), so every block and actor they touch goes through the shared
 // damage pipeline and its events. No randomness: particles go through the host (core/fx).
 
@@ -68,7 +68,7 @@ function glowMaterial(color: number, opacity: number) {
   });
 }
 
-// ───────────────────────── Occam's Razor: the blade ─────────────────────────
+// ───────────────────────── Walk Away from Toxic People: the blade ─────────────────────────
 
 /** Half-angle of the blade's cone. */
 const BLADE_HALF_ANGLE = (55 * Math.PI) / 180;
@@ -174,7 +174,7 @@ class Charge {
   }
 }
 
-// ───────────────────────── Kiai: the beam ─────────────────────────
+// ───────────────────────── Remember Breathing: the beam ─────────────────────────
 
 const BEAM_TIME = 1;
 const BEAM_TICK = 0.1;

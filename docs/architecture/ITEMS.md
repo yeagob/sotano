@@ -187,7 +187,7 @@ on gain / lose / restore / new floor:
 
 - **Definitions** are code (TypeScript modules), versioned with the game.
 - **A player's items** are ids in acquisition order: `inventory.serialize() → ['kaizen', 'deepfocus']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
-- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Occam's Razor → blade, Kiai → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
+- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Walk Away from Toxic People → blade, Remember Breathing → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
 - **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault`, the boss room's pedestal from `boss` (both falling back to `treasure`). Every pedestal, boss rooms included, is reserved at run start (`pedestalSlots` in `world/floor.ts`).
 
 ## 8. Debugging an interaction

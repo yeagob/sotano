@@ -468,16 +468,16 @@ export const ES: Catalog = {
         inspiredBy: 'Los cuatro acuerdos (don Miguel Ruiz): «no te tomes nada personalmente»',
       },
       occamsrazor: {
-        name: 'Navaja de Ockham',
-        description: 'De todas las explicaciones, quédate con la más sencilla; corta todo lo que sobra. Un filo de luz acompaña a tu intención.',
+        name: 'Aléjate de las personas tóxicas',
+        description: 'Hay personas que te quitan más de lo que te dan. Aléjate de ellas y guarda tu energía para lo que te devuelve algo. Un filo de luz acompaña a tu intención.',
         effect: 'Añade una hoja de luz junto a tus intenciones, que siguen volando: mantén pulsado para tajar (80% de tu cadencia). Cada tajo corta todos los bloques rompibles a 2,5 bloques delante de ti (más con tamaño, hasta 6) y parte en dos los escombros, golpea a las proyecciones con 3× daño y destruye sus proyectiles.',
-        inspiredBy: 'La navaja de Ockham (Guillermo de Ockham, siglo XIV); un guiño a las espadas de luz de las óperas espaciales',
+        inspiredBy: 'Santiago (Game Glover), sobre las relaciones tóxicas',
       },
       kiai: {
-        name: 'Kiai',
-        description: 'El grito que reúne todo lo que eres en un solo instante. Contenlo, reúnelo y suéltalo de golpe: nada en su camino sigue en pie.',
+        name: 'Recuerda respirar',
+        description: 'Respirar con conciencia es lo más importante que puedes hacer. Reúne el aire, sostenlo y suéltalo de golpe: nada en su camino sigue en pie.',
         effect: 'Sustituye tus intenciones por un rayo cargado: mantén pulsado para cargar (2,7 ÷ cadencia segundos, entre 0,35 y 2) y suelta para un rayo de 1 segundo con 10 tics. Cada tic hace 2× minado al bloque en su camino (lo atraviesa a medida que los rompe) y 1× daño a cada proyección que toca, y destruye sus proyectiles.',
-        inspiredBy: 'Kiai, el grito concentrado de las artes marciales japonesas; un guiño a los rayos cargados de los dungeon crawlers que amamos',
+        inspiredBy: 'Santiago (Game Glover), sobre respirar con conciencia',
       },
       lionsmane: {
         name: 'Melena de león',
@@ -550,9 +550,9 @@ export const ES: Catalog = {
     },
 
     synergies: {
-      one_clear_cut: { name: 'Un corte claro', description: 'La claridad y el grito se vuelven un solo gesto: carga, suelta, y una hoja de luz gigante barre todo lo que sobra.' },
-      chorus: { name: 'Coro', description: 'El grito encuentra una segunda voz: el rayo golpea y excava 1.6 veces más fuerte. Proceso dual no llega al rayo, así que la voz se añade aquí.' },
-      choir: { name: 'Coral', description: 'Tres voces en un solo grito: el rayo golpea y excava 2.2 veces más fuerte. Triangulación no llega al rayo, así que las voces se añaden aquí.' },
+      one_clear_cut: { name: 'Un corte claro', description: 'La claridad y la respiración se vuelven un solo gesto: carga, suelta, y una hoja de luz gigante barre todo lo que te drena.' },
+      chorus: { name: 'Coro', description: 'La respiración encuentra una segunda voz: el rayo golpea y excava 1.6 veces más fuerte. Proceso dual no llega al rayo, así que la voz se añade aquí.' },
+      choir: { name: 'Coral', description: 'Tres voces en una sola respiración: el rayo golpea y excava 2.2 veces más fuerte. Triangulación no llega al rayo, así que las voces se añaden aquí.' },
       somatic_release: { name: 'Liberación somática', description: 'Los bloques pateados también estallan.' },
       compound_effect: { name: 'Efecto compuesto', description: 'Los pasos pequeños con concentración profunda también atraviesan piedra y ladrillo.' },
       flooding: { name: 'Inundación', description: 'Los miedos que atraviesas se llevan a sus vecinos con ellos.' },

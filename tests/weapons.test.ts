@@ -92,7 +92,7 @@ describe('active weapon', () => {
   });
 });
 
-describe("Occam's Razor (blade)", () => {
+describe('Walk Away from Toxic People (blade)', () => {
   it('cuts every breakable block in front, none behind, hits projections, and leaves the unbreakable', () => {
     const { host, state } = fakeHost({ unbreakable: new Set([key(0, 1, -1)]) });
     const b = new Blade(new THREE.Scene(), host);
@@ -117,7 +117,7 @@ describe("Occam's Razor (blade)", () => {
   });
 });
 
-describe('Kiai (beam)', () => {
+describe('Remember Breathing (beam)', () => {
   it('charges for 2.7 ÷ fire rate seconds (0.35–2), and only a full charge releases', () => {
     expect(chargeTime({ ...BASE_STATS, fireRate: 2.7 })).toBe(1);
     expect(chargeTime({ ...BASE_STATS, fireRate: 30 })).toBe(0.35);

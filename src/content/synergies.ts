@@ -12,7 +12,7 @@ export const SYNERGIES: readonly SynergyDef[] = [
   defineSynergy({
     id: 'one_clear_cut',
     name: 'One Clear Cut',
-    description: 'Clarity and the shout become one gesture: charge, release, and a giant blade of light sweeps everything unnecessary away.',
+    description: 'Clarity and breath become one gesture: charge, release, and a giant blade of light sweeps away everything that drains you.',
     requires: ['occamsrazor', 'kiai'],
     // the combination outranks both items' weapons (docs/architecture/WEAPONS.md §1)
     weapon: { id: 'greatcut', priority: 100 },
@@ -20,14 +20,14 @@ export const SYNERGIES: readonly SynergyDef[] = [
   defineSynergy({
     id: 'chorus',
     name: 'Chorus',
-    description: 'The shout finds a second voice: the beam hits and digs 1.6 times harder. Dual Process cannot reach a beam, so the voice is added here.',
+    description: 'Breath finds a second voice: the beam hits and digs 1.6 times harder. Dual Process cannot reach a beam, so the voice is added here.',
     requires: ['kiai', 'dualprocess'],
     hooks: [hook('strike', e => { e.damage *= 1.6; e.mining *= 1.6; }, { id: 'second-voice', priority: 20 })],
   }),
   defineSynergy({
     id: 'choir',
     name: 'Choir',
-    description: 'Three voices in one shout: the beam hits and digs 2.2 times harder. Triangulation cannot reach a beam, so the voices are added here.',
+    description: 'Three voices in one breath: the beam hits and digs 2.2 times harder. Triangulation cannot reach a beam, so the voices are added here.',
     requires: ['kiai', 'triangulation'],
     hooks: [hook('strike', e => { e.damage *= 2.2; e.mining *= 2.2; }, { id: 'three-voices', priority: 20 })],
   }),
