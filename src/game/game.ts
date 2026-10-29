@@ -1306,7 +1306,9 @@ export class Game {
     if (this.breakFx++ < BREAK_FX_PER_FRAME) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 10, 3.5, 0.09);
     if (ev.spawnDebris) {
       // launch direction is cosmetic (variable dt means debris never replays anyway)
-      this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(1.6), fx.range(1, 2.8), fx.spread(1.6));
+      const i = this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(1.6), fx.range(1, 2.8), fx.spread(1.6));
+      // rubble a projection breaks loose does not hurt it (a charging boss must not beat itself)
+      if (source.startsWith('enemy:')) this.shed(i);
     }
     if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.break(Math.min(3, mat(id).tier));
     // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
@@ -1483,6 +1485,8 @@ export class Game {
   private onDebrisImpact(i: number, x: number, y: number, z: number, speed: number) {
     const tags = this.debris.tags[i];
     if (!tags) return;
+    // a boss's shed rubble just lands: its mark goes, and nothing (no item) hears about it
+    if (tags.size === 1 && tags.has('shed')) { this.debris.tags[i] = null; return; }
     const ev = this.bus.emit('debrisImpact', { cube: i, x, y, z, material: this.debris.material[i], speed, tags, keepTags: false });
     if (!ev.keepTags) this.debris.tags[i] = null;
   }

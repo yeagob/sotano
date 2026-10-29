@@ -1,6 +1,6 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
-import { barrage, fan, inhale, moveset, nova, rocks, shockwave } from '../../enemies/moves';
+import { barrage, combo, fan, inhale, moveset, nova, rocks, shockwave } from '../../enemies/moves';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A giant open cup of stone, a maw at floor level (BESTIARY §6.3). It never walks: the room comes to
@@ -24,6 +24,7 @@ export default defineEnemy({
     phases: [
       moveset({
         gait: { kind: 'still' }, pace: [0.4, 0.9], moves: [
+          combo('inhale-and-spit', [inhale({ windup: 0.7, recover: 0, r: 12, force: 9, live: 2, bite: 8 }), fan({ windup: 0.4, recover: 0, count: 7, spread: 1.3, volleys: 3, gap: 0.3, speed: 9 })], { recover: 0.7 }),
           inhale({ windup: 0.8, recover: 0.6, r: 12, force: 9, live: 2.5, bite: 8 }),
           fan({ windup: 0.5, recover: 0.5, count: 5, spread: 1, volleys: 2, gap: 0.35, speed: 9 }),
           barrage({ windup: 0.5, recover: 0.5, count: 5, seconds: 1.2, spread: 2 }),
@@ -31,6 +32,7 @@ export default defineEnemy({
       }),
       moveset({
         gait: { kind: 'still' }, pace: [0.3, 0.7], moves: [
+          combo('spiral-and-rain', [nova({ windup: 0.5, recover: 0, count: 10, volleys: 3, gap: 0.35, speed: 7, spin: 0.25 }), barrage({ windup: 0.4, recover: 0, count: 8, seconds: 1.4, spread: 2.5 })], { recover: 0.6 }),
           barrage({ windup: 0.5, recover: 0.5, count: 9, seconds: 1.8, spread: 2.5 }),
           nova({ windup: 0.55, recover: 0.6, count: 10, volleys: 3, gap: 0.4, speed: 7, spin: 0.2 }),
           inhale({ windup: 0.6, recover: 0.4, r: 12, force: 10, live: 1.8, bite: 8 }),
@@ -38,6 +40,7 @@ export default defineEnemy({
       }),
       moveset({
         gait: { kind: 'still' }, pace: [0.25, 0.6], moves: [
+          combo('ring-spiral-stones', [shockwave({ windup: 0.5, recover: 0, rings: 2, gap: 0.45, reach: 12 }), nova({ windup: 0.45, recover: 0, count: 14, volleys: 3, gap: 0.3, speed: 7.5, spin: 0.2 }), rocks({ windup: 0.4, recover: 0, count: 4, lead: 1, spread: 3 })], { recover: 0.7 }),
           nova({ windup: 0.5, recover: 0.5, count: 14, volleys: 4, gap: 0.35, speed: 7.5, spin: 0.18 }),
           shockwave({ windup: 0.55, recover: 0.5, rings: 3, gap: 0.5, reach: 12 }),
           rocks({ windup: 0.45, recover: 0.3, count: 5, lead: 1, spread: 3 }),

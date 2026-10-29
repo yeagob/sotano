@@ -148,6 +148,8 @@ function toEdge(ctx: EnemyCtx, e: Enemy, x: number, z: number, ux: number, uz: n
 
 /** Per-boss state a move keeps while it acts (bounces left, volleys fired). */
 const left = new WeakMap<Enemy, number>();
+/** When the current run of a charge began (a bounce starts a new one). */
+const runFrom = new WeakMap<Enemy, number>();
 
 /** A shockwave ring from a point: low enough to jump (0.8), it grows out to `reach` blocks. */
 function wave(e: Enemy, ctx: EnemyCtx, x: number, y: number, z: number, reach: number, lead: number, damage: number, speed = 9) {
@@ -170,15 +172,16 @@ export function charge(o: { windup: number; recover: number; speed: number; run?
   return {
     name: 'charge', windup: o.windup, recover: o.recover, min: o.min, max: o.max,
     aim: aimAt,
-    act(e, ctx) { left.set(e, o.bounces ?? 0); ctx.cue(e, 'sweep'); },
+    act(e, ctx) { left.set(e, o.bounces ?? 0); runFrom.set(e, 0); ctx.cue(e, 'sweep'); },
     hold(e, ctx, t, time) {
       const b = e.body;
       e.wishX = e.aimX * o.speed / e.speed; e.wishZ = e.aimZ * o.speed / e.speed;
       e.pulse = 0.6;
+      const ran = time - (runFrom.get(e) ?? 0);
       if (Math.floor(time * 30) !== Math.floor((time - ctx.dt) * 30)) ctx.fx(b.x - e.aimX * b.hw, b.y + 0.1, b.z - e.aimZ * b.hw, COLD_DIM, 2, 1.5, 0.08);
       const run = o.run ?? 2.5;
-      const stopped = time > 0.15 && Math.hypot(b.vx, b.vz) < o.speed * 0.25;
-      if (!stopped && time < run) return false;
+      const stopped = ran > 0.15 && Math.hypot(b.vx, b.vz) < o.speed * 0.25;
+      if (!stopped && ran < run) return false;
       if (stopped) {
         ctx.quake(e, b.x + e.aimX * b.hw, b.y, b.z + e.aimZ * b.hw, 0.45);
         ctx.crash(e, e.aimX, e.aimZ);
@@ -190,7 +193,7 @@ export function charge(o: { windup: number; recover: number; speed: number; run?
         left.set(e, n - 1);
         const dx = t.x - b.x, dz = t.z - b.z, l = Math.hypot(dx, dz) || 1;
         e.aimX = dx / l; e.aimZ = dz / l;
-        e.act = 0;
+        runFrom.set(e, time);
         ctx.cue(e, 'sweep');
         return false;
       }
@@ -424,5 +427,51 @@ export function puddles(o: { windup: number; recover: number; count: number; r: 
       }
     },
     act() {},
+  };
+}
+
+/**
+ * A sequence, like Isaac's bosses chain theirs (three hops and a great leap, a ram that ends in
+ * rings): moves one after another, each with its own windup and telegraph, a short `gap` between
+ * them, and the recovery only after the last. It counts as one move in the rotation.
+ */
+export function combo(name: string, moves: Move[], o: { recover: number; gap?: number; min?: number; max?: number }): Move {
+  const first = moves[0];
+  const at = new WeakMap<Enemy, { i: number; phase: 'wind' | 'act' | 'gap'; t: number; start: number }>();
+  return {
+    name, windup: first.windup, recover: o.recover, min: o.min ?? first.min, max: o.max ?? first.max, walk: first.walk,
+    aim: (e, ctx, t) => first.aim?.(e, ctx, t),
+    act(e, ctx, t) { first.act(e, ctx, t); at.set(e, { i: 0, phase: 'act', t: 0, start: 0 }); },
+    hold(e, ctx, t, time) {
+      const s = at.get(e);
+      if (!s) return true;
+      const m = moves[s.i];
+      if (s.phase === 'act') {
+        if (m.hold && !m.hold(e, ctx, t, time - s.start)) return false;
+        if (s.i + 1 >= moves.length) return true;
+        s.phase = 'gap'; s.t = o.gap ?? 0.15;
+        e.wishX = 0; e.wishZ = 0;
+        return false;
+      }
+      if (s.phase === 'gap') {
+        e.wishX = 0; e.wishZ = 0;
+        s.t -= ctx.dt;
+        if (s.t > 0) return false;
+        if (!t) return true;
+        s.i++; s.phase = 'wind'; s.t = moves[s.i].windup;
+        ctx.cue(e, 'windup');
+        moves[s.i].aim?.(e, ctx, t);
+        return false;
+      }
+      // the next move's windup: it stops (unless that move walks) and its tells brighten again
+      if (!m.walk) { e.wishX = 0; e.wishZ = 0; }
+      s.t -= ctx.dt;
+      e.pulse = Math.min(1, 1 - s.t / m.windup);
+      if (s.t > 0) return false;
+      if (!t) return true;
+      m.act(e, ctx, t);
+      s.phase = 'act'; s.start = time; e.pulse = 0;
+      return false;
+    },
   };
 }

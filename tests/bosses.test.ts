@@ -127,3 +127,19 @@ describe('bosses: the first five floors always fight (enemies/moves.ts)', () => 
     });
   }
 });
+
+describe('bosses: sequences (combo)', () => {
+  it('runs its moves in order, each after its own windup, and recovers only after the last', async () => {
+    const { combo, moveset } = await import('../src/enemies/moves');
+    const order: string[] = [];
+    const step = (name: string) => ({ name, windup: 0.4, recover: 0, aim: () => order.push(`aim ${name}`), act: () => order.push(`act ${name}`) });
+    const b = moveset({ gait: { kind: 'still' }, pace: [0, 0], moves: [combo('abc', [step('a'), step('b'), step('c')], { recover: 0.5, gap: 0.1 })] });
+    const e = { id: 1, state: 'move', timer: 0, seq: 0, move: -1, act: 0, pulse: 0, wishX: 0, wishZ: 0, flyY: -1, speed: 1, body: { x: 0, y: 0, z: 0, vx: 0, vz: 0 } } as unknown as Enemy;
+    const t = { id: 2, x: 5, y: 0, z: 0 };
+    const ctx = { dt: 1 / 60, target: () => t, dist: () => 5, toward: () => [1, 0], cue: () => {} } as unknown as EnemyCtx;
+    const states: string[] = [];
+    for (let k = 0; k < 180; k++) { b.update(e, ctx); if (states[states.length - 1] !== e.state) states.push(e.state); }
+    expect(order.slice(0, 6)).toEqual(['aim a', 'act a', 'aim b', 'act b', 'aim c', 'act c']);
+    expect(states.slice(0, 4)).toEqual(['windup', 'act', 'recover', 'move']);
+  });
+});

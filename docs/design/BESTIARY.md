@@ -517,6 +517,7 @@ The owner's verdict on the first bosses (translated): *"Resistance hardly moves:
 - **Reach across the room.** Charges at any angle, aimed where you are going; shockwaves to 10–12 blocks; volleys and rain that cover the arena; stones from the ceiling.
 - **Every blow is fair and readable.** Rings and tides are low enough to jump; rain and stones mark where they land for their whole flight; a live attack's marks are doubled and shed sparks; heavy impacts shake the screen by distance and spit chips of the floor's own material (DECISIONS §7.3–7.4 caps).
 - **Each phase is a new set of moves**, each set a few moves picked by the seed and never the same twice in a row.
+- **Sequences** (owner, 2026-10-29: "variations, with varied attack sequences, like Isaac"): every phase also holds one or two **combos**, moves chained one after another, each with its own windup and telegraph and a short gap, and the recovery (the opening) only after the last. A combo is one pick in the rotation, so a phase mixes single moves and chains in a different order each fight. Rubble a boss breaks loose, sheds or drops never hurts it until you kick or throw it.
 
 | Boss | Phase 1 | Phase 2 (arena) | Phase 3 (arena) |
 |---|---|---|---|
@@ -527,6 +528,16 @@ The owner's verdict on the first bosses (translated): *"Resistance hardly moves:
 | The Hoard | Pushes weights: rolling weights both ways, rams, bars | Clutches (`rockfall`): pulls with a bite, rain, crossed bars | Spills (`spill`): bouncing rams, spirals, stones |
 | The Downpour | Rains (3.5 high, drifting over you): marked rain, stinging puddles | Lowers to 2.4 (`puddle`): more rain, lightning bars | Thins to 1.6, in reach (`drain`): rain, crossed bars, volleys |
 | The Threshold Guardian (shadow route) | Bars: grids of bars where you stand, aimed fans | Tests: keeps its distance; fans of seven, rings of sixteen, crossed bars | Steps aside (`rockfall`): bouncing charges, leaps with stones, bars |
+
+| Boss | Sequences: phase 1 · phase 2 · phase 3 |
+|---|---|
+| Resistance | ram and stamp · double ram; stones then ram · three drops (two hops and a great leap with stones) |
+| Inertia | roll and clods · hop, hop, roll · breathe in, roll out |
+| The Insatiable | inhale and spit · spiral and rain · rings, spiral, stones |
+| Overwhelm | surge and break · crossing tides; splash and surge · the flood (tides, volley, bouncing surge) |
+| The Hoard | weights then ram · clutch and throw · burst open (two spirals, then a bouncing ram) |
+| The Downpour | storm front (puddles, rain) · lightning storm (bars, crossed bars, rain) · cloudburst |
+| The Threshold Guardian | closing gate (three sets of bars) · volley chain · charge and crush |
 
 The bosses of floors 6–9 still fight the old way; they are the next pass.
 

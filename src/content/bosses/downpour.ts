@@ -1,6 +1,6 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
-import { altitude, bars, barrage, moveset, nova, puddles } from '../../enemies/moves';
+import { altitude, barrage, bars, combo, moveset, nova, puddles } from '../../enemies/moves';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A low ceiling of cloud (BESTIARY §6.3). It drifts over you, never as fast as you run. 1 Rains: cold
@@ -24,12 +24,14 @@ export default defineEnemy({
     phases: [
       altitude(3.5, moveset({
         gait: { kind: 'hover', height: 3.5 }, pace: [0.3, 0.7], moves: [
+          combo('storm-front', [puddles({ windup: 0.7, recover: 0, count: 3, r: 1.3, live: 3, spread: 2.5, walk: true }), barrage({ windup: 0.4, recover: 0, count: 10, seconds: 1.6, spread: 3, walk: true })], { recover: 0.4 }),
           barrage({ windup: 0.45, recover: 0.3, count: 8, seconds: 1.6, spread: 3, walk: true }),
           puddles({ windup: 0.8, recover: 0.3, count: 3, r: 1.3, live: 3, spread: 2.5, walk: true }),
         ],
       })),
       altitude(2.4, moveset({
         gait: { kind: 'hover', height: 2.4 }, pace: [0.3, 0.6], moves: [
+          combo('lightning-storm', [bars({ windup: 0.75, recover: 0, parallels: 1, spacing: 4 }), bars({ windup: 0.6, recover: 0, parallels: 1, spacing: 4, cross: true }), barrage({ windup: 0.4, recover: 0, count: 8, seconds: 1.2, spread: 3, walk: true })], { recover: 0.4 }),
           barrage({ windup: 0.4, recover: 0.3, count: 10, seconds: 1.6, spread: 3, walk: true }),
           bars({ windup: 0.8, recover: 0.4, parallels: 1, spacing: 4, walk: true }),
           puddles({ windup: 0.7, recover: 0.3, count: 4, r: 1.3, live: 3, spread: 3, walk: true }),
@@ -37,6 +39,7 @@ export default defineEnemy({
       })),
       altitude(1.6, moveset({
         gait: { kind: 'hover', height: 1.6 }, pace: [0.25, 0.5], moves: [
+          combo('cloudburst', [nova({ windup: 0.45, recover: 0, count: 10, volleys: 2, gap: 0.35, speed: 7 }), barrage({ windup: 0.4, recover: 0, count: 14, seconds: 1.6, spread: 3.5, walk: true }), bars({ windup: 0.6, recover: 0, parallels: 1, spacing: 4, cross: true })], { recover: 0.5 }),
           barrage({ windup: 0.4, recover: 0.3, count: 12, seconds: 1.5, spread: 3.5, walk: true }),
           bars({ windup: 0.75, recover: 0.4, parallels: 1, spacing: 4, cross: true }),
           nova({ windup: 0.5, recover: 0.4, count: 10, volleys: 2, gap: 0.4, speed: 7 }),
