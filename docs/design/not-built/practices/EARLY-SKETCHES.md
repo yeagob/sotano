@@ -21,4 +21,4 @@ These sketches were the first brainstorm of passive items on pedestals, written 
 
 ## Weapons
 
-The first design also described the weapons that replace the intention, like a continuous beam or a thrown pickaxe that returns. Two are built: Remember Breathing and Cut Ties with Toxic People ([built practices](../../built/practices/README.md#weapons-that-replace-the-intention)). A thrown pickaxe and a melee drill are not built.
+The first design also described the weapons that replace the intention, like a continuous beam or a thrown pickaxe that returns. Two are built: Remember Breathing and Cut Ties with Toxic Relationships ([built practices](../../built/practices/README.md#weapons-that-replace-the-intention)). A thrown pickaxe and a melee drill are not built.

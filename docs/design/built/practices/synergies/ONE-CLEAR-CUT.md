@@ -4,7 +4,7 @@ Up: [synergies](README.md) · [practices](../README.md) · [built design](../../
 
 | | |
 |---|---|
-| Requires | [Cut Ties with Toxic People](../mind/CUT-TIES-WITH-TOXIC-PEOPLE.md) + [Remember Breathing](../will/REMEMBER-BREATHING.md) |
+| Requires | [Cut Ties with Toxic Relationships](../mind/CUT-TIES-WITH-TOXIC-RELATIONSHIPS.md) + [Remember Breathing](../will/REMEMBER-BREATHING.md) |
 | Code | `src/content/synergies.ts` (its weapon has the highest priority among items and synergies); the sweep arc is in `src/combat/weapons.ts` |
 
 ## Effect as built

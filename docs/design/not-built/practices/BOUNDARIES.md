@@ -1,14 +1,16 @@
 # Boundaries
 
-Up: [Emotion folder](README.md) · [all practices](../README.md) · [built design](../../README.md)
+Up: [not-built practices](README.md) · [not-built design](../README.md)
+
+Status: shelved (owner, 2026-10-29). Left out of the catalogue until it is redesigned, because it could lock a room. The code file is kept but nothing imports it.
 
 | | |
 |---|---|
-| Path | Emotion; also none |
+| Path | Emotion |
 | Quality | 2 of 4 |
-| Found in | treasure rooms |
+| Found in | none (shelved) |
 | Inspired by | Boundaries (Henry Cloud and John Townsend, 1992) |
-| Code | `src/content/items/boundaries.ts` |
+| Code | `src/content/items/boundaries.ts` (kept, not in the catalogue) |
 
 ## What it means
 
@@ -26,7 +28,7 @@ Intentions and weapon strokes deal no damage to projections. Each one an intenti
 
 ## Synergies and states of being
 
-- [Open-hearted](../states-of-being/OPEN-HEARTED.md) (counts the emotion tag)
+- [Open-hearted](../../built/practices/states-of-being/OPEN-HEARTED.md) (would count the emotion tag; shelved, so it does not count now)
 
 ## Open questions
 

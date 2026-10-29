@@ -7,7 +7,7 @@ Up: [states of being](README.md) · [practices](../README.md) · [built design](
 | Path | Emotion |
 | Requires | three practices carrying the emotion tag |
 | Code | `src/content/synergies.ts` |
-| Practices that count (16) | [Exposure](../emotion/EXPOSURE.md), [Symbolic Act](../emotion/SYMBOLIC-ACT.md), [Tao Te Ching](../mind/TAO-TE-CHING.md), [Satori](../body/SATORI.md), [Gratitude Journal](../emotion/GRATITUDE-JOURNAL.md), [Box Breathing](../body/BOX-BREATHING.md), [Radical Acceptance](../emotion/RADICAL-ACCEPTANCE.md), [Forgiveness](../emotion/FORGIVENESS.md), [Nothing Personal](../emotion/NOTHING-PERSONAL.md), [Systemic Constellation](../emotion/SYSTEMIC-CONSTELLATION.md), [Art Therapy](../emotion/ART-THERAPY.md), [Follow the Omens](../mind/FOLLOW-THE-OMENS.md), [Affirmation](../emotion/AFFIRMATION.md), [Boundaries](../emotion/BOUNDARIES.md), [Rapport](../emotion/RAPPORT.md), [Self-Compassion](../emotion/SELF-COMPASSION.md) |
+| Practices that count (15) | [Exposure](../emotion/EXPOSURE.md), [Symbolic Act](../emotion/SYMBOLIC-ACT.md), [Tao Te Ching](../mind/TAO-TE-CHING.md), [Satori](../body/SATORI.md), [Gratitude Journal](../emotion/GRATITUDE-JOURNAL.md), [Box Breathing](../body/BOX-BREATHING.md), [Radical Acceptance](../emotion/RADICAL-ACCEPTANCE.md), [Forgiveness](../emotion/FORGIVENESS.md), [Nothing Personal](../emotion/NOTHING-PERSONAL.md), [Systemic Constellation](../emotion/SYSTEMIC-CONSTELLATION.md), [Art Therapy](../emotion/ART-THERAPY.md), [Follow the Omens](../mind/FOLLOW-THE-OMENS.md), [Affirmation](../emotion/AFFIRMATION.md), [Rapport](../emotion/RAPPORT.md), [Self-Compassion](../emotion/SELF-COMPASSION.md) |
 
 ## Effect as built
 

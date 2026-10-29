@@ -15,7 +15,7 @@ They follow the event they mark, and each family has its own voice:
 
 - **Intentions and blocks.** A shot, a hit, a break, a pickup, a kick, a placement, a denied action, a mend, and a head-break knock.
 - **Doors and keys.** A door, an unlock, a key, and a descent, which is a low tone and a rumble.
-- **Practices.** A pickup fanfare, a charge that is full (a clear bell), the cut of Cut Ties with Toxic People (a quick airy swish), the beam of Remember Breathing (a warm, held roar), and the great cut of One Clear Cut (a deep, long sweep).
+- **Practices.** A pickup fanfare, a charge that is full (a clear bell), the cut of Cut Ties with Toxic Relationships (a quick airy swish), the beam of Remember Breathing (a warm, held roar), and the great cut of One Clear Cut (a deep, long sweep).
 - **Feedback.** Hurt, heal, a bomb pickup, a fuse, a spawn, a dissolve, a seal, the clearing of a room, a rumble, the polarity tick, a projection turning to your side (warm and rising), an ally turning back (cold and falling), a judgement, a death, the reveal of a boss's practice, steam, catching fire, a splash, a gulp for breath, creaking, a spit, and the soft breath of a restart.
 
 ## The spatial sounds

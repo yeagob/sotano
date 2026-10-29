@@ -6,7 +6,7 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
-This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 45 files); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 44 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
@@ -31,7 +31,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 | [Aha Moment](mind/AHA-MOMENT.md) | Mind | 2 | treasure rooms |
 | [As a Man Thinketh](mind/AS-A-MAN-THINKETH.md) | Mind | 4 | treasure rooms, vault rooms |
 | [Chunking](mind/CHUNKING.md) | Mind | 3 | treasure rooms |
-| [Cut Ties with Toxic People](mind/CUT-TIES-WITH-TOXIC-PEOPLE.md) | Mind | 4 | boss rewards |
+| [Cut Ties with Toxic Relationships](mind/CUT-TIES-WITH-TOXIC-RELATIONSHIPS.md) | Mind | 4 | boss rewards |
 | [Deep Focus](mind/DEEP-FOCUS.md) | Mind | 2 | treasure rooms, boss rewards |
 | [Dual Process](mind/DUAL-PROCESS.md) | Mind | 2 | treasure rooms |
 | [Follow the Omens](mind/FOLLOW-THE-OMENS.md) | Mind | 2 | treasure rooms |
@@ -46,7 +46,6 @@ This folder has one document per practice, in a folder for its path. The catalog
 | [Visualization](mind/VISUALIZATION.md) | Mind | 1 | treasure rooms, boss rewards |
 | [Affirmation](emotion/AFFIRMATION.md) | Emotion | 3 | treasure rooms |
 | [Art Therapy](emotion/ART-THERAPY.md) | Emotion | 2 | treasure rooms |
-| [Boundaries](emotion/BOUNDARIES.md) | Emotion | 2 | treasure rooms |
 | [Exposure](emotion/EXPOSURE.md) | Emotion | 2 | treasure rooms |
 | [Forgiveness](emotion/FORGIVENESS.md) | Emotion | 3 | treasure rooms |
 | [Gratitude Journal](emotion/GRATITUDE-JOURNAL.md) | Emotion | 1 | treasure rooms |
@@ -76,7 +75,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 
 ## Weapons that replace the intention
 
-Like in Isaac, two practices replace the intention. Remember Breathing turns it into a charged beam that burns through blocks tick by tick. Cut Ties with Toxic People adds a blade of light beside the intentions, which keep flying: the blade cuts every breakable block in reach, slices the rubble in two, and hits projections and their projectiles. Both are quality 4 and come only from boss rewards. Together they make One Clear Cut, a charged, giant blade of light that sweeps the room ([One Clear Cut](synergies/ONE-CLEAR-CUT.md)). The weapons are built in `src/combat/weapons.ts`; a practice's weapon outranks the others by a priority number.
+Like in Isaac, two practices replace the intention. Remember Breathing turns it into a charged beam that burns through blocks tick by tick. Cut Ties with Toxic Relationships adds a blade of light beside the intentions, which keep flying: the blade cuts every breakable block in reach, slices the rubble in two, and hits projections and their projectiles. Both are quality 4 and come only from boss rewards. Together they make One Clear Cut, a charged, giant blade of light that sweeps the room ([One Clear Cut](synergies/ONE-CLEAR-CUT.md)). The weapons are built in `src/combat/weapons.ts`; a practice's weapon outranks the others by a priority number.
 
 ## Synergies and states of being
 
@@ -91,7 +90,6 @@ Naming questions (the lore rule: practices are generic techniques or public-doma
 
 | Code | Practice | Where | Question |
 |---|---|---|---|
-| N1 | Boundaries | [emotion/BOUNDARIES.md](emotion/BOUNDARIES.md) | The name is the title of a 1992 book; the lore rule allows the title only as credit. |
 | N2 | Second Brain | [mind/SECOND-BRAIN.md](mind/SECOND-BRAIN.md) | The name is the title of a 2022 book; the lore rule allows the title only as credit. |
 | N3 | Letters from a Stoic | [will/LETTERS-FROM-A-STOIC.md](will/LETTERS-FROM-A-STOIC.md) | May be the English title of a modern translation of Seneca (verify). |
 | N4 | Growth Mindset | [mind/GROWTH-MINDSET.md](mind/GROWTH-MINDSET.md) | A term coined by the credited author (lore rule: Caution). |
@@ -99,14 +97,14 @@ Naming questions (the lore rule: practices are generic techniques or public-doma
 | N6 | Radical Acceptance | [emotion/RADICAL-ACCEPTANCE.md](emotion/RADICAL-ACCEPTANCE.md) | Also the title of a 2003 book (verify); the term comes from the credited therapy. |
 | N7 | Flow | [body/FLOW.md](body/FLOW.md) | The central term of the credited book; verify whether the author coined it (lore rule: Caution). |
 | N8 | Habit Stacking | [will/HABIT-STACKING.md](will/HABIT-STACKING.md) | A term of the two credited books; verify whether it is coined by their authors (lore rule: Caution). |
-| N9 | Cut Ties with Toxic People | [mind/CUT-TIES-WITH-TOXIC-PEOPLE.md](mind/CUT-TIES-WITH-TOXIC-PEOPLE.md) | A common self-help phrase; verify whether it is a modern book or course title. |
+| N9 | Cut Ties with Toxic Relationships | [mind/CUT-TIES-WITH-TOXIC-RELATIONSHIPS.md](mind/CUT-TIES-WITH-TOXIC-RELATIONSHIPS.md) | A common self-help phrase; verify whether it is a modern book or course title. |
 | N10 | Thinking, Waiting, Fasting | [mind/THINKING-WAITING-FASTING.md](mind/THINKING-WAITING-FASTING.md) | Paraphrases a line of the credited novel (not its title); the owner confirms it. |
 
 Credit questions:
 
 | Code | Practices | Where | Question |
 |---|---|---|---|
-| C1 | Cut Ties with Toxic People and Remember Breathing | mind/CUT-TIES-WITH-TOXIC-PEOPLE.md and will/REMEMBER-BREATHING.md | STORY section 5 credits William of Ockham and the Japanese martial arts; the code and SOURCES credit the owner's words (Santiago, Game Glover). The code follows SOURCES. |
+| C1 | Cut Ties with Toxic Relationships and Remember Breathing | mind/CUT-TIES-WITH-TOXIC-RELATIONSHIPS.md and will/REMEMBER-BREATHING.md | STORY section 5 credits William of Ockham and the Japanese martial arts; the code and SOURCES credit the owner's words (Santiago, Game Glover). The code follows SOURCES. |
 | C2 | Systemic Constellation | emotion/SYSTEMIC-CONSTELLATION.md | The credit names Bert Hellinger, whose work is contested; SOURCES asks to avoid founder-branded terms. |
 
 Scope and mechanic questions:
@@ -117,4 +115,4 @@ Scope and mechanic questions:
 | F1 | Flooding (synergy) | synergies/FLOODING.md | Shatter on contact (story text) or on every block break (built). |
 | S1-S4 | The four states of being | states-of-being/ | Effects in the design text and in the code differ for all four states. |
 
-The STORY catalogue (section 5) agrees with the code for all 45 practices except the credits and the scope above.
+The STORY catalogue (section 5) agrees with the code for all 44 practices except the credits and the scope above.

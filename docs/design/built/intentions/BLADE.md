@@ -1,6 +1,6 @@
 # The blade
 
-The blade is a cut of light in front of the player, from the practice Cut Ties with Toxic People. It sweeps through a cone and cuts what is in it, beside the intentions.
+The blade is a cut of light in front of the player, from the practice Cut Ties with Toxic Relationships. It sweeps through a cone and cuts what is in it, beside the intentions.
 
 Part of [intentions](README.md) · see also [WEAPONS.md](WEAPONS.md).
 

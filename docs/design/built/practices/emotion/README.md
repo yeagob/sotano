@@ -19,7 +19,6 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 | [Systemic Constellation](SYSTEMIC-CONSTELLATION.md) | 3 | Mind | treasure rooms |
 | [Art Therapy](ART-THERAPY.md) | 2 | Body | treasure rooms |
 | [Affirmation](AFFIRMATION.md) | 3 | none | treasure rooms |
-| [Boundaries](BOUNDARIES.md) | 2 | none | treasure rooms |
 | [Rapport](RAPPORT.md) | 2 | none | treasure rooms |
 | [Self-Compassion](SELF-COMPASSION.md) | 2 | none | treasure rooms |
 
@@ -39,5 +38,4 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 - [Radical Acceptance](RADICAL-ACCEPTANCE.md): Naming N6: "radical acceptance" is also the title of a 2003 book (verify). The term comes from the credited therapy. The owner decides whether the name stays.
 - [Nothing Personal](NOTHING-PERSONAL.md): The credited book's title is a registered trademark (SOURCES: Caution). It is used only as credit, so no name question is raised. The name is an idiom from one of its agreements; the owner may confirm it.
 - [Systemic Constellation](SYSTEMIC-CONSTELLATION.md): Credit C2: the credit names Bert Hellinger, whose work is contested. SOURCES asks to avoid founder-branded terms. The owner decides the wording of the credit.
-- [Boundaries](BOUNDARIES.md): Naming N1: the name is the title of a 1992 book, credited in inspiredBy. The lore rule allows the title only as credit. The owner decides whether the name stays.
 - [Self-Compassion](SELF-COMPASSION.md): Naming N5: "Self-Compassion" is the title of the credited 2011 book, and the term is the author's. The lore rule allows the title only as credit. The owner decides whether the name stays.

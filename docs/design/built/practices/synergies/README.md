@@ -6,7 +6,7 @@ A synergy is a rule that switches on while a set of practices is held together. 
 
 | Synergy | Requires | Effect as built |
 |---|---|---|
-| [One Clear Cut](ONE-CLEAR-CUT.md) | Cut Ties with Toxic People + Remember Breathing | Charge and release a giant blade of light that sweeps 140 degrees and cuts everything in it. The combination outranks the weapon of either practice. |
+| [One Clear Cut](ONE-CLEAR-CUT.md) | Cut Ties with Toxic Relationships + Remember Breathing | Charge and release a giant blade of light that sweeps 140 degrees and cuts everything in it. The combination outranks the weapon of either practice. |
 | [Chorus](CHORUS.md) | Remember Breathing + Dual Process | The beam's strike damage and mining are multiplied by 1.6. Dual Process cannot reach a beam, so the second voice is added here. |
 | [Choir](CHOIR.md) | Remember Breathing + Triangulation | The beam's strike damage and mining are multiplied by 2.2. Triangulation cannot reach a beam, so the voices are added here. |
 | [Somatic Release](SOMATIC-RELEASE.md) | Symbolic Act + Grounding | Blocks you kick become volatile: they burst on impact, like thrown blocks under Symbolic Act. |

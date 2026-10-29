@@ -1,4 +1,4 @@
-# Cut Ties with Toxic People
+# Cut Ties with Toxic Relationships
 
 Up: [Mind folder](README.md) · [all practices](../README.md) · [built design](../../README.md)
 

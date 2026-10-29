@@ -1,6 +1,6 @@
 # The great cut
 
-The great cut is a charged, giant blade of light that sweeps in front of the player. It is the weapon of the two practices together: One Clear Cut is the synergy of Cut Ties with Toxic People and Remember Breathing.
+The great cut is a charged, giant blade of light that sweeps in front of the player. It is the weapon of the two practices together: One Clear Cut is the synergy of Cut Ties with Toxic Relationships and Remember Breathing.
 
 Part of [intentions](README.md) · see also [WEAPONS.md](WEAPONS.md).
 
