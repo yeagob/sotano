@@ -2,7 +2,7 @@
 
 Up: [Design](../../README.md)
 
-The sky is the realm that begins above the surface of the world. Everything above the earth is sky: the giant tree rises through it, its leaves and branches hang in it, and the deities live in it. Nothing here is in the code yet. The only built part of the upper world is the giant tree with its seven stories ([LEVELS](../../built/levels/README.md)); the rest of this folder is owner direction and proposal.
+The ground above the surface is the sky. The sky is the reality where everything is perfect, unmovable and indestructible, and above it there are further levels of sky, each one higher and more abstract, where the player can rise further and further. The giant tree rises through the sky, its leaves and branches hang in it, and the deities live in it. Nothing here is in the code yet. The only built part of the upper world is the giant tree with its seven stories ([LEVELS](../../built/levels/README.md)); the rest of this folder is owner direction and proposal.
 
 The sky is the other end of the same journey as the depths: the way down goes into the unconscious, the way up goes into the sky ([COSMOLOGY](../../../lore/COSMOLOGY.md)).
 
@@ -12,11 +12,12 @@ Status: mixed. Each section carries its own status line. Decided sections hold t
 
 Status: decided.
 
-- Above the surface begins the realm of the sky. Everything above the earth is sky.
-- The deities of the world live in the sky. Each deity is a small, soft body under a giant animal head, cute like a plush toy.
+- The ground above the surface is the sky. The sky is the reality where everything is perfect, unmovable and indestructible.
+- Above the first sky there are further levels of sky. Each one is higher and more abstract than the one below it, and the player can rise further and further through them.
+- The deities of the world live in the sky. Each deity is a small, soft body under a giant animal head, cute like a plush toy. Every deity levitates except the horse, which walks on the ground ([guardians](guardians/README.md)).
 - The sky holds a sky tree. Its first five floors are guarded by five guardians, one per floor, in the order below.
 
-The owner's phrase is "el reino del cielo". The English name used here is "the realm of the sky". Whether this realm and the built word "heaven" are one place is open (see section 5).
+The owner's phrase is "el reino del cielo". The English name used here is "the realm of the sky". The built game says the silence leads to heaven ([LEVELS](../../built/levels/README.md)); that built fact stays as the link between the built levels and the sky, and it does not redefine the sky. How the built word "heaven" relates to the levels of the sky is open (section 5).
 
 ## 2. The five guardians
 
@@ -46,7 +47,7 @@ Blocks that belong to the original world can be broken by the player. A broken b
 
 Status: decided.
 
-Blocks the player creates with abilities are not original. They can be destroyed for good, and only with a positive intention. A route the player builds stays until a positive intention takes it away. Whether a built block can be lost in any other way is open (section 5).
+Blocks the player creates with abilities are not original. They can be destroyed for good, and only with a positive intention. A route the player builds stays until a positive intention takes it away, except a tower knocked down under law 3.9. Whether a built block can be lost in any other way is open (section 5).
 
 ### 3.3 Negative intentions do not work on sky creatures
 
@@ -64,7 +65,7 @@ Every sky floor can be cleared by a player with no practices. The practices carr
 
 Status: decided that the player can go straight up if they decide to. Status for "from any point of the floor": open (section 5).
 
-Going straight up is a choice the player can always make. The floor's platforming must leave a vertical route the player can build or climb.
+Going straight up is a choice the player can always make. The floor's platforming must leave a vertical route the player can build or climb. The route is inside the tree (law 3.8), and a tower of the player's own blocks that reaches a deity is knocked down (law 3.9), so every floor carries a vertical route of its own that the tower rule never touches.
 
 ### 3.6 Every hindrance warns first
 
@@ -72,22 +73,42 @@ Status: decided for platforms that disappear, which always show clear feedback t
 
 Nothing in the sky takes effect without a warning the player can see or hear.
 
+### 3.7 Nothing dies in the sky
+
+Status: decided.
+
+No deity and no minion ever dies. At most a sky creature transforms, changes its attitude and behaviour, or leaves. A deity the player defeats is stitched, not killed: the player hits it with many positive intentions ("coser a tiros", stitching it with many shots), and then it transforms, changes its attitude, or leaves ([guardians](guardians/README.md)).
+
+### 3.8 The only way up is inside the tree
+
+Status: decided.
+
+Outside the tree the player cannot climb to the sky. If the player builds or climbs a way up outside the tree, a god comes and knocks the climb down. The only way up is inside the tree. Which god comes, and the warning it gives, are open (section 5).
+
+### 3.9 A tower that reaches a deity is knocked down
+
+Status: decided.
+
+When the player builds a tower that brings them to a deity's height, the deity leaves its place, knocks the tower down and pushes the player off it. The deity warns first (law 3.6), and the player can always answer by stepping off onto the floor's own route. The first guardian's rule is written in full in [PANDA](guardians/PANDA.md#b2-the-deity).
+
 ## 4. Where the rest is written
 
 | Part | Contents | Status |
 |---|---|---|
-| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order; proposal contract |
-| [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule decided |
+| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, stitch and tower rule; proposal for the rest of the contract |
+| [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule and the rule that minions never die decided |
 | [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal |
 
 ## 5. Open questions
 
 1. **Sky floors and built stories.** Which of the built tree's seven stories are the five sky floors, and whether the sky tree is the built giant tree, are open.
-2. **Sky and heaven.** The owner's phrase "el reino del cielo" also reads as "the kingdom of heaven", and the built game says "heaven" for the top of the sky. Is the realm of the sky one place with heaven, or two?
-3. **Whether all deities levitate.** Open for each deity. See [guardians/README.md](guardians/README.md).
-4. **Whether a fallen deity returns.** Nothing in the sky is destroyed for good (section 3.1), so it is open whether a defeated deity comes back.
-5. **Negative shots at player blocks.** The rule in section 3.2 says only a positive intention destroys a built block for good. What a negative shot does to a built block is open.
-6. **Going up from any point.** Open whether the player can go straight up from any point of a floor, or only from some.
-7. **Time limit.** Open whether the sky has a time limit.
-8. **What ends a run.** Still open, as in [LEVELS](../../built/levels/README.md).
-9. **Silence and the sky.** How silence connects with heaven is open in [LEVELS](../../built/levels/README.md) and [COSMOLOGY](../../../lore/COSMOLOGY.md).
+2. **Sky and heaven.** The owner's phrase "el reino del cielo" also reads as "the kingdom of heaven", and the built game says "heaven" for where the silence leads. How the built heaven relates to the levels of the sky is open.
+3. **What a stitched deity does.** Nothing dies (law 3.7): a stitched deity transforms, changes its attitude, or leaves. Which of the three each deity does, and whether it comes back, is open.
+4. **Negative shots at player blocks.** The rule in section 3.2 says only a positive intention destroys a built block for good. What a negative shot does to a built block is open.
+5. **Going up from any point.** Open whether the player can go straight up from any point of a floor, or only from some.
+6. **Time limit.** Open whether the sky has a time limit.
+7. **What ends a run.** Still open, as in [LEVELS](../../built/levels/README.md).
+8. **Silence and the sky.** How silence connects with heaven is open in [LEVELS](../../built/levels/README.md) and [COSMOLOGY](../../../lore/COSMOLOGY.md).
+9. **The god outside the tree.** Which god knocks down a climb outside the tree (law 3.8), how it warns, and where the player lands, are open.
+10. **A knocked-down tower.** Whether the blocks of a tower knocked down under law 3.9 fall as loose cubes the player can gather again, or are lost, is open. What height counts as reaching a deity is a target in each guardian document.
+11. **The levels of sky above.** How the player rises from one level of sky to the next, higher and more abstract one, is open.

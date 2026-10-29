@@ -4,11 +4,11 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The giant panda is the first deity the player meets above the surface: a giant panda head on a small, soft plush body, over sky floor 1. It is the gentlest guardian and the one that teaches the sky's platforming.
 
-Status: proposal, specified. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the panda levitates, that it is defeated by stitching it with many positive shots and never dies, and the tower rule (B2). The character, the mirror, the minions and the puzzle are proposals.
 
 ## 1. Who it is
 
-A small, soft, black-and-white plush body under a giant panda head, heavy-lidded, placed at the height of the floor's tallest column. The panda is unhurried. In the wild it spends most of its day eating and resting, moving only when it has to. As a guardian it does not chase the player. It waits, and it asks the player to slow down.
+A small, soft, black-and-white plush body under a giant panda head, heavy-lidded, levitating at the height of the floor's tallest column. The panda is unhurried. In the wild it spends most of its day eating and resting, moving only when it has to. As a guardian it does not chase the player. It waits, and it asks the player to slow down.
 
 **Mirror (proposal).** The panda mirrors rushing: the habit of never stopping long enough to rest, eat well or notice where you are. Its floor answers that pattern with pauses. The player who climbs slowly, one block at a time, is the player who passes. The practice the panda points to is patience: taking the time a climb needs.
 
@@ -50,11 +50,11 @@ A positive shot at a panda minion turns it into an ally (decided, see [minions](
 
 ## 6. The stitch
 
-The panda falls when the player hits it with enough positive intentions. The meaning of the stitch is open ([guardians](README.md#1-the-shared-contract)). The panda's fall is proposal: it sinks slowly from the air to the floor, and it does not leave the floor.
+The player defeats the panda by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves; which one is open. Proposal: it changes its attitude: it sinks slowly from the air onto its seat, wide awake and friendly, and it stays on the floor.
 
 ## Behaviour specification
 
-Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, block nests, telegraphs, seams, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
+Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, the stitch, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
 
 ### B1. The player's read
 
@@ -62,7 +62,15 @@ A big, sleepy head that chews. The panda never hurries: every attack is slow, lo
 
 ### B2. The deity
 
-**Position.** The panda's seat is the top of the Bamboo Seat, the tallest column, in the centre of the floor, at target 24 blocks above the ground. Option A (levitates): the panda floats target 1.5 blocks over the seat and drifts slowly round it. Option B (sits): the panda sits on the seat, its back to a bamboo clump. Both options are open.
+**Position.** The panda's seat is the top of the Bamboo Seat, the tallest column, in the centre of the floor, at target 24 blocks above the ground. The panda levitates (decided): it floats target 1.5 blocks over the seat and drifts slowly round it.
+
+**Teleport (which deity: open).** If the panda is one of the deities that teleport, a teleport would fit after the tower rule: instead of floating back to its seat, it vanishes and reappears over the seat, always far from the player.
+
+**The tower rule (decided).** If the panda detects that the player is building a tower that reaches its height, it leaves its floor, knocks the tower down and pushes the player off it.
+- *Trigger:* the player stands on a tower, a stack of target 3 or more player blocks, whose top puts them within target 2 blocks of the panda's height (target 22 blocks or higher). The floor's own columns, the ledge strip and single placed steps never trigger it.
+- *Telegraph (target 2 s, longer than its attacks):* the panda stops chewing, turns its whole body to the tower and stares; the tower's blocks shake and a warm outline runs down the stack from top to bottom, with a rising grumble.
+- *Act:* the panda leaves its seat and floats to the tower, nudges it with its shoulder so the stack topples from the top down, and gives the player a soft push of target 2 blocks off it. The player falls to the ground or a lower column, unhurt. Then the panda floats back to its seat and is Recovering there. What becomes of the toppled blocks is open ([sky, open questions](../README.md#5-open-questions)).
+- *Answer:* step off the tower onto an original column or the seat's ledge strip before the telegraph ends, or do not stack a tower to its height: climb the grove, the gentle path or the ledge strip, which the panda never knocks down. While it floats to the tower and back, its seat is empty and the panda is close to the player: a positive intention stitches it as usual.
 
 **States and timings (targets).**
 
@@ -73,21 +81,22 @@ A big, sleepy head that chews. The panda never hurries: every attack is slow, lo
 | Attacking | One attack (B3), telegraph 1.4 s | per attack |
 | Recovering | Leans back, belly up, a contented sigh | 2.5 s |
 | Hurt | A slow blink and a soft "mm" when a stitch lands | 0.3 s |
-| Rallying | Yawns and stretches when a seam is complete; the minions sit up and look at it | 2 s |
-| Napping | After the second seam: falls asleep on the seat. No attacks; the minions slow down | 5 s, once |
+| Rallying | Yawns and stretches when the stitches reach a third and two thirds of the target; the minions sit up and look at it | 2 s |
+| Napping | At two thirds of the stitches: falls asleep over the seat. No attacks; the minions slow down | 5 s, once |
+| Tower watch | Stares at a tower that reaches its height (tower rule, above) | 2 s, then it leaves its seat |
 
-**The cycle.** Idle, Watching, Attacking, Recovering, Watching. The rest between the end of one recovery and the next telegraph is target 3.5 s in seam 1, 3 s in seam 2 and 2.5 s in seam 3. For comparison, built bosses rest only a short walk between moves, shorter in each phase ([fight flow](../../../built/bosses/FIGHT-FLOW.md)).
+**The cycle.** Idle, Watching, Attacking, Recovering, Watching. The rest between the end of one recovery and the next telegraph is target 3.5 s in the first stage, 3 s in the second and 2.5 s in the third (stages: [guardians, section 6.5](README.md#65-the-stitch)). For comparison, built bosses rest only a short walk between moves, shorter in each phase ([fight flow](../../../built/bosses/FIGHT-FLOW.md)).
 
 **The rest beat (the panda's own rule).** When the player stands still on any column top for target 2 s while the panda is Watching, the panda's next attack waits target 2 s more. The mirror is rushing; the floor answers it with pauses that are rewarded.
 
 ### B3. Attacks
 
-The panda has four attacks. Seam 1 uses Bamboo toss and Heavy press. Seam 2 adds Sit-down. Seam 3 adds Yawn. An attack is never repeated back to back when another is available (as in the built fight flow).
+The panda has four attacks. The first stage uses Bamboo toss and Heavy press. The second adds Sit-down. The third adds Yawn. An attack is never repeated back to back when another is available (as in the built fight flow).
 
 **1. Bamboo toss (a lob).**
 - *Telegraph (1.4 s):* the panda lifts a stalk over its head; a warm mark appears where it will land, aimed at where the player is going.
 - *Act:* the stalk lands and stands upright as a one-block bamboo stump for target 6 s, then dissolves. A stump that lands on the player gives a soft knockback of target 1 block and may take target 2 points (harm is open).
-- *Answer:* move off the mark. A block in the arc stops it: lobs die on solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets the stalk in flight turns it into a falling leaf (proposal). A stump that lands is also a step: the player may use the panda's own bamboo to climb.
+- *Answer:* move off the mark. A block in the arc stops it: lobs stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets the stalk in flight turns it into a falling leaf (proposal). A stump that lands is also a step: the player may use the panda's own bamboo to climb.
 
 **2. Heavy press ([dense ground](../abilities/DENSE-GROUND.md)).**
 - *Telegraph (1.4 s):* the panda presses both paws down; the chosen cells ripple, darken and turn glassy, with a low rising sound. The cells are a band of target 3 by 3 on the column top the player stands on or is jumping to, or the ground ring within target 5 blocks of the seat.
@@ -106,11 +115,11 @@ The panda has four attacks. Seam 1 uses Bamboo toss and Heavy press. Seam 2 adds
 
 ### B4. The stitch
 
-- **Count:** target 24 stitches, 8 per seam. For comparison, a built floor 1 boss has 140 health, about 40 bad hits; a good intention's warmth converts any built boss in about 5 hits, which is an open question of the built fight flow.
+- **Count:** target 24 stitches. For comparison, a built floor 1 boss has 140 health, about 40 bad hits; a good intention's warmth converts any built boss in about 5 hits, which is an open question of the built fight flow.
 - **What counts:** a positive intention that touches the panda's body or head in any state. The panda has no guard; it is the gentlest floor.
-- **Progress:** a seam of light runs down the plush body from the shoulder; each stitch is one short gold stitch across it. A complete seam glows and the panda rallies. Over the three seams the heavy lids open a little more each time, as if it were waking.
+- **Progress (target):** each stitch leaves one short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the heavy lids open a little more, as if it were waking. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the seat and sits against the panda adds one stitch every target 4 s while it sits. At most target 2 allies sit at once.
-- **The fall:** as proposed in section 6 of this document (it sinks slowly to the floor and does not leave it). The meaning of the stitch stays open.
+- **When stitched:** as proposed in section 6 of this document (it settles onto its seat, wide awake and friendly, and stays on the floor). Which of the three outcomes it takes is open.
 
 ### B5. Minions
 
@@ -162,7 +171,7 @@ The panda has four attacks. Seam 1 uses Bamboo toss and Heavy press. Seam 2 adds
 ### B8. Routes
 
 - **With nothing:** the gentle path and the ledge strip reach the seat with jumps alone. A player with no practices can win by stitching from the high columns, or by turning two minions into allies and sitting them against the panda.
-- **With practices:** a higher jump turns the building path into a jump path; carrying more blocks lets the player stack a stair straight up; a longer range or a faster shot stitches the panda from lower columns; more fire rate fills a seam in one recovery.
+- **With practices:** a higher jump turns the building path into a jump path; carrying more blocks lets the player stack a stair up to just below the panda's height (a tower at its height is knocked down); a longer range or a faster shot stitches the panda from lower columns; more fire rate lands more stitches in one recovery.
 
 ### B9. Targets at a glance
 
@@ -172,12 +181,13 @@ Every value in the middle column is a target. The right column is the built game
 |---|---|---|
 | Telegraph | 1.4 s | windup 0.4 to 0.9 s |
 | Recovery | 2.5 s | up to about 1 s |
-| Rest between attacks | 3.5, 3, 2.5 s by seam | a short walk, shorter each phase |
-| Stitches | 24 (8 a seam) | 140 health: about 40 bad hits, or 5 good hits that convert it (an open question) |
+| Rest between attacks | 3.5, 3, 2.5 s by stage | a short walk, shorter each phase |
+| Stitches | 24 | 140 health: about 40 bad hits, or 5 good hits that convert it (an open question) |
 | Hits to turn a minion | 3 | 5 good hits for a projection |
 | Minions at once | 4 (3 hostile) | no built equivalent |
 | Floor size | radius 20, 28 high | trunk story 22 high, radius 23 to 34 |
 | Harm of a lob | 2 points, if harm is kept | boss touch 8 |
+| Tower rule | triggers within 2 blocks of the panda's height, on a stack of 3 or more player blocks; telegraph 2 s; push 2 blocks | no built equivalent |
 
 ## Open questions
 
@@ -185,10 +195,11 @@ Every value in the middle column is a target. The right column is the built game
 2. Does the panda sit down on the floor (and open holes) or only make it dense? Both hindrances are proposal.
 3. Is this the floor where the player learns nothing new, or does it introduce building as its only puzzle?
 4. Is this floor one of the platforming-only floors, with no minions at all? (See [guardians](README.md).)
-5. What does the panda's fall look like, and does the floor stay after it falls?
+5. When the panda is stitched, does it transform, change its attitude, or leave? And does the floor stay after it is stitched?
 6. Bamboo stumps. A stalk from Bamboo toss stands as a step for 6 s. Is a step the deity gives a good fit for the gentlest floor, or should its lobs leave nothing?
 7. The rest beat. Standing still for 2 s delays the panda's next attack. Does the owner want stillness rewarded on this floor, given that silence already rewards it in the built game?
-8. The nap. After the second seam the panda naps for 5 s with no attacks. Keep it, or is a pause in the fight too gentle?
+8. The nap. At two thirds of the stitches the panda naps for 5 s with no attacks. Keep it, or is a pause in the fight too gentle?
 9. Ally stitches. Allies sitting against the panda add stitches with no cap. Can the floor be won by allies alone? (Shared question in [guardians](README.md#5-open-questions).)
 10. Heights. The floor's target height of 28 blocks is taller than a built trunk story (22). Whether it must fit a built story depends on the open mapping of sky floors onto the built tree.
-11. Levitation stays open: the specification writes the deity's position as option A (levitates) and option B (stands or sits). The behaviour is the same in both.
+11. Teleport (which deity: open). Is the panda one of the deities that teleport? A teleport would always land it far from the player.
+12. The tower's measures. The trigger (a stack of 3 or more player blocks, within 2 blocks of the panda's height) and the 2 s telegraph are targets. Can a positive intention during the telegraph delay the panda, or is stepping off the only answer?

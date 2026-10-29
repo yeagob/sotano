@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The lion is the fourth deity: a lion with a giant head on a small, soft plush body, over sky floor 4, a wide floor of ledges and gaps where a roar can freeze the player in place.
 
-Status: proposal, specified. The animal and the floor order are decided. The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by stitching it with many positive shots and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
 
 ## 1. Who it is
 
@@ -50,39 +50,43 @@ A positive shot at a lion minion turns it into an ally (decided, see [minions](.
 
 ## 6. The stitch
 
-The lion falls when the player hits it with enough positive intentions. The meaning of the stitch is open ([guardians](README.md#1-the-shared-contract)). The lion's fall is proposal: the pride lies down, and the ledges settle to the floor's level so the player can walk to the deity.
+The player defeats the lion by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves; which one is open. Proposal: it changes its attitude: the pride lies down, and the ledges settle to the floor's level so the player can walk to the deity.
 
 ## Behaviour specification
 
-Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, block nests, telegraphs, seams, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
+Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, the stitch, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
 
 ### B1. The player's read
 
-A golden head with a mane like a sunburst, lying on the highest ledge of a wide plain. The lion's roar is big, but the plain shows it coming. The pride creeps forward when the player looks away and stops when the player looks at it. The floor rewards a player who faces what roars at them: looking at the lion makes its roar smaller.
+A golden head with a mane like a sunburst, floating over the highest ledge of a wide plain. The lion's roar is big, but the plain shows it coming. The pride creeps forward when the player looks away and stops when the player looks at it. The floor rewards a player who faces what roars at them: looking at the lion makes its roar smaller.
 
 ### B2. The deity
 
-**Position.** The lion's Sunning Ledge is the highest ledge of the plain, target 34 blocks up, flat and target 6 by 6. The lion paces along it, target 3 blocks each way at 1 block a second. Option A (levitates): the lion floats target 1 block over the ledge and drifts along the same pace. Option B (stands): it lies, sits and walks on the ledge. Both options are open.
+**Position.** The lion's Sunning Ledge is the highest ledge of the plain, target 34 blocks up, flat and target 6 by 6. The lion levitates (decided): it floats target 1 block over the ledge and paces along it in the air, target 3 blocks each way at 1 block a second.
+
+**Teleport (which deity: open).** If the lion is one of the deities that teleport, a teleport would fit after a pounce: instead of gliding back along its line, it vanishes from the player's ledge and reappears over the Sunning Ledge, always far from the player.
+
+**The tower rule.** A tower of player blocks that brings the player to the lion's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the lion glides to it, strikes the stack with a paw until it topples, and pushes the player off, after the full warning. The 2-high walls of the example route are not towers; the thorn tree is the floor's own way up.
 
 **States and timings (targets).**
 
 | State | What the player sees | Length |
 |---|---|---|
-| Basking | Lies in the sun, tail flicking | 4 s |
+| Basking | Floats curled in the sun, tail flicking | 4 s |
 | Watching | The head lifts; the stare follows the player; starts when the player is within 14 blocks | until an attack, after a rest |
-| Pacing | Walks the edge of its ledge between attacks | during rests |
+| Pacing | Paces in the air along the edge of its ledge between attacks | during rests |
 | Attacking | One attack (B3), telegraph 1.0 s | per attack |
-| Recovering | Sits and licks a paw | 2 s (2.5 s after a pounce) |
+| Recovering | Hangs still in the air and licks a paw | 2 s (2.5 s after a pounce) |
 | Hurt | The mane puffs out and settles | 0.3 s |
-| Rallying | Calls the pride when a seam is complete; two minions come out of the dens | 2 s |
+| Rallying | Calls the pride when the stitches reach a third and two thirds of the target; two minions come out of the dens | 2 s |
 
-**The cycle.** Basking, Watching, then Pacing and Attacking in turn, Recovering, Watching. The rest before the next telegraph is target 3 s in seam 1, 2.5 s in seam 2 and 2 s in seam 3.
+**The cycle.** Basking, Watching, then Pacing and Attacking in turn, Recovering, Watching. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-the-stitch)).
 
 **Facing the roar (the lion's own rule).** When the player's aim is on the lion during a roar's telegraph, the roar's ring is halved. The mirror is fear dressed as dominance; the practice is courage, and the verb of courage is the player's own aim.
 
 ### B3. Attacks
 
-The lion has four attacks. Seam 1 uses Roar and Crosswind. Seam 2 adds Pounce. Seam 3 adds Mane flare.
+The lion has four attacks. The first stage uses Roar and Crosswind. The second adds Pounce. The third adds Mane flare.
 
 **1. Roar ([paralysis](../abilities/PARALYSIS.md)).**
 - *Telegraph (1.0 s):* the mane lifts, the head turns to the player, and a ring of light with a clear edge forms round the lion.
@@ -96,21 +100,21 @@ The lion has four attacks. Seam 1 uses Roar and Crosswind. Seam 2 adds Pounce. S
 
 **3. Pounce (a line, with [knockback](../abilities/KNOCKBACK.md)).**
 - *Telegraph (1.0 s):* the lion crouches, haunches up; a dashed line is drawn from its ledge to the ledge the player is on.
-- *Act:* the lion leaps along the line and lands on the player's ledge (in option A it glides). The landing sends a ring target 0.8 blocks high that pushes target 2 blocks. Then it recovers there for 2.5 s, beside the player, and walks back to its ledge along the same line.
+- *Act:* the lion glides along the line and lands over the player's ledge. The landing sends a ring target 0.8 blocks high that pushes target 2 blocks. Then it recovers there for 2.5 s, beside the player, and glides back to its ledge along the same line.
 - *Answer:* jump the ring, or stand behind a block. A wall of player blocks in its line stops the pounce at the wall, as the built charge stops at a block ([attacks](../../../built/encounters/ATTACKS.md)); the lion then recovers at the wall. A positive intention on the crouching body makes it land softly: no ring. The pounce is also a gift: it brings the lion close.
 
 **4. Mane flare (bolts).**
 - *Telegraph (1.0 s):* the mane fluffs out and three warm points brighten in it.
 - *Act:* three sun bolts in a fan of target 30 degrees, at target 10 blocks a second. Each may take target 2 points (harm is open).
-- *Answer:* step aside, or put a block between: bolts die on solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets a bolt dissolves it (proposal).
+- *Answer:* step aside, or put a block between: bolts stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets a bolt dissolves it (proposal).
 
 ### B4. The stitch
 
-- **Count:** target 42 stitches, 14 per seam.
+- **Count:** target 42 stitches.
 - **What counts:** a positive intention that touches the lion's body or head in any state. The lion has no guard; it is a moving target instead, pacing and pouncing.
-- **Progress:** a seam of light runs round the plush chest under the mane; each stitch is one short gold stitch. A complete seam glows. Over the three seams the mane, wide and bristling at the start, lies softer and softer.
+- **Progress (target):** each stitch leaves one short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the mane, wide and bristling at the start, lies softer and softer. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the Sunning Ledge rubs its head against the deity: the deity's next roar is skipped, and the ally adds one stitch every target 5 s while it stays. At most target 2 at once.
-- **The fall:** as proposed in section 6 of this document (the pride lies down, and the ledges settle).
+- **When stitched:** as proposed in section 6 of this document (the pride lies down, and the ledges settle). Which of the three outcomes it takes is open.
 
 ### B5. Minions
 
@@ -170,8 +174,8 @@ Every value in the middle column is a target. The right column is the built game
 | Telegraph | 1.0 s | windup 0.4 to 0.9 s |
 | Recovery | 2 s (2.5 s after a pounce) | up to about 1 s |
 | Freeze | 1.5 s (minion 1 s) | no built freeze; the built Paralysis projection slows |
-| Rest between attacks | 3, 2.5, 2 s by seam | a short walk, shorter each phase |
-| Stitches | 42 (14 a seam) | 293 health: about 84 bad hits |
+| Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
+| Stitches | 42 | 293 health: about 84 bad hits |
 | Hits to turn a minion | 4 | 5 good hits for a projection |
 | Minions at once | 6 (4 hostile) | no built equivalent |
 | Widest gap | 5 blocks, bridged | flat jump about 2.7 blocks |
@@ -181,10 +185,11 @@ Every value in the middle column is a target. The right column is the built game
 
 1. Does the roar freeze the player for a fixed time, or until they answer it with a positive intention? (Paralysis rules: [paralysis](../abilities/PARALYSIS.md).)
 2. Is the wind the lion's, or the floor's? Both are proposal.
-3. Does the pride's minion count as a deity's minion when the lion falls, or does the pride stay? (See [minions](../minions/README.md).)
+3. Does the pride's minion count as a deity's minion when the lion is stitched, or does the pride stay? (See [minions](../minions/README.md).)
 4. Is the lion's floor the one with the widest gaps, and is the bridge the player builds the intended answer?
 5. Facing the roar. The player's aim on the lion during the telegraph halves the roar. The [paralysis](../abilities/PARALYSIS.md) document proposes a steady aim during the freeze instead, but a frozen player cannot shoot. Which answer stands?
 6. Walls and sound. A 2-high wall of player blocks stops the roar's ring. Is a roar stopped by blocks like a gust, or does it pass through?
 7. Stalkers out of view. Minions move at 3.5 blocks a second when the player is not looking at them. Is that fair on a floor with no walls, or should a sound mark them?
 8. Names. "Sunning Ledge" and "thorn tree" are working names for the deity's ledge and the vertical route; they need the owner's check under the naming rules.
-9. Levitation stays open: the specification writes the deity's position as option A (levitates) and option B (stands or sits). The behaviour is the same in both.
+9. Teleport (which deity: open). Is the lion one of the deities that teleport? A teleport would always land it far from the player.
+10. When the lion is stitched, does it transform, change its attitude, or leave?
