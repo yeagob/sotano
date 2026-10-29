@@ -100,3 +100,11 @@ export function pickSpawnCell(cells: readonly Cell[], doors: readonly Cell[], pl
 }
 
 export const spawnBlocked = (o: Cell, player: Cell) => dist(o, player) < PLAYER_CLEARANCE;
+
+/** How long a wave may stand before the next one opens anyway: stalling never empties a room. */
+export const WAVE_PATIENCE = 25;
+
+/** Whether the room opens its next wave: the first at once, then once one projection is left or the wave has stood for too long. */
+export function waveDue(wave: number, remaining: number, waveT: number): boolean {
+  return wave < 0 || remaining <= 1 || waveT >= WAVE_PATIENCE;
+}

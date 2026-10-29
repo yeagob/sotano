@@ -27,7 +27,7 @@ describe('creatures: life by floor', () => {
     const b = ambientCreatures(floor, new RunRandom(11).fork('floor', 1, 'creatures'));
     expect(a).toEqual(b);
     expect(a.length).toBeGreaterThan(0);
-    for (const c of a) expect(['chirper', 'delver']).toContain(c.def);
+    for (const c of a) expect(['chirper', 'delver', 'leafling', 'star-mite']).toContain(c.def);
   });
 });
 
@@ -35,6 +35,7 @@ describe('creatures: never killed by a hit', () => {
   const host = (): EnemyHost => ({
     solid: () => false, worldVersion: () => 1, actors: () => [] as Actor[], actor: () => undefined,
     room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: 13, d: 7, hx: 0, hz: 0 }), elemVersion: () => 0,
+    pickupsIn: () => [],
     hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {},

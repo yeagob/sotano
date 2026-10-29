@@ -19,14 +19,15 @@ export default defineEnemy({
   speed: 0.8,
   size: [0.9, 3],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 5,
   maxFloor: 5,
   behaviour: phased({
     arena: ['gate', 'gap'],
     phases: [
-      emitter({ every: 3, shot: bars }),
-      emitter({
+      emitter({ follow: { speed: 0.8, keep: 4 }, every: 3, shot: bars }),
+      emitter({ follow: { speed: 0.8, keep: 4 },
         every: 1.8,
         shot: (e, ctx) => {
           const t = ctx.target(e);

@@ -27,14 +27,15 @@ export default defineEnemy({
   speed: 0.9,
   size: [1.6, 2.6],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 6,
   maxFloor: 6,
   behaviour: phased({
     arena: ['marks', 'turn'],
     phases: [
-      emitter({ every: 2, shot: accuse }),
-      emitter({ every: 2.2, shot: sentence }),
+      emitter({ follow: { speed: 0.9, keep: 4 }, every: 2, shot: accuse }),
+      emitter({ follow: { speed: 0.9, keep: 4 }, every: 2.2, shot: sentence }),
       charge({ aim: 0.5, speed: 5, run: 2, stun: 1.8, range: 12, cooldown: 1 }),
     ],
   }),

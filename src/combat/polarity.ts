@@ -52,8 +52,8 @@ export const relapseHp = (maxHp: number) => Math.max(1, maxHp * TURN_HP);
 /** Whether an intention of this polarity meets an actor: hostile projections always; allies when
  *  it is negative (it harms them) or when they are hurt (a positive one heals them). A healthy ally
  *  lets positive intentions pass (docs/reviews/polarity.md, ruling 6). */
-export const meetsIntention = (faction: Faction, hp: number, maxHp: number, polarity: Polarity) =>
-  faction === 'projection' || polarity === 'negative' || hp < maxHp;
+export const meetsIntention = (faction: Faction, hp: number, maxHp: number, polarity: Polarity, responds?: Polarity) =>
+  responds ? responds === polarity : faction === 'projection' || polarity === 'negative' || hp < maxHp;
 
 /** An enemy as an intention sees it, before the hit. */
 export interface HitState { polarity: Polarity; warm: boolean; faction: Faction; hp: number; maxHp: number; warmth: number }

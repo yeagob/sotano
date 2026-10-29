@@ -18,6 +18,8 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
+import { placePresences, type RoomPresence } from '../content/presences';
+import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
 import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
@@ -88,6 +90,8 @@ export interface RoomInfo {
   doors: Partial<Record<Side, number>>;
   /** Enemy ids that will spawn on the first visit (normal rooms). */
   enemies: string[];
+  /** A Presence that lives here (the Gardener on floor 0, a Listener on the Tree floors). */
+  presence?: RoomPresence;
 }
 
 export interface DoorSpec {
@@ -343,6 +347,18 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (ch === 'K') keySpots.push({ room: gid(pr.id), x, y: y0, z });
       if (ch === 'H') holeAt = [x, y0, z];
     }
+    if (pr.type === 'vault' && !lv.tutorial) {
+      let spots = freeSpots(t, flipX, flipZ);
+      const ring = (c: number, r: number) => Math.max(Math.abs(c - (ROOM_W - 1) / 2), Math.abs(r - (ROOM_D - 1) / 2)) === SANCTUARY_RADIUS;
+      for (const [c, r] of spots) if (ring(c, r)) w.data[w.idx(x0 + c, y0, z0 + r)] = MAT.pedestal;
+      spots = spots.filter(([c, r]) => !ring(c, r));
+      for (let i = 0; i < 2 && spots.length; i++) {
+        const [col, row] = chestRng.pick(spots);
+        w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.chest;
+        chests.push({ room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item: null });
+        spots = spots.filter(([c, r]) => c !== col || r !== row);
+      }
+    }
     if (pr.type === 'normal') {
       // a free-standing chest in many rooms; the rest of the open tiles stay free for keys
       let spots = freeSpots(t, flipX, flipZ);
@@ -359,8 +375,11 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       // the tutorial floor is peaceful: no roster at all
       // a bigger room holds more of them (the roster budget grows with its open floor, a cell at a time)
       enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D)))) : [],
+      presence: pr.type === 'vault' && !lv.tutorial ? 'boundary' : undefined,
     });
   }
+
+  placePresences(rooms, k, rr.fork('floor', k, 'presence'));
 
   // 2. doorways between linked rooms (each pair once: only east and south links)
   for (const pr of plan.rooms) {

@@ -18,18 +18,19 @@ export default defineEnemy({
   name: 'The Furnace',
   pattern: 'To be enough',
   hp: 140,
-  speed: 0,
+  speed: 0.8,
   size: [1.4, 2.6],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 7,
   maxFloor: 8,
   behaviour: phased({
     arena: ['fire', 'cool'],
     phases: [
-      emitter({ every: 5, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 6, force: 5 } }) }),
-      emitter({ every: 1.8, shot: blaze }),
-      emitter({ every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
+      emitter({ follow: { speed: 0.8, keep: 4 }, every: 5, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 6, force: 5 } }) }),
+      emitter({ follow: { speed: 0.8, keep: 4 }, every: 1.8, shot: blaze }),
+      emitter({ follow: { speed: 0.8, keep: 4 }, every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
   }),
   model: [

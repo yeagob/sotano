@@ -11,6 +11,7 @@ export default defineEnemy({
   speed: 1.2,
   size: [0.9, 2.8],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 3,
   maxFloor: 4,
@@ -18,8 +19,8 @@ export default defineEnemy({
     arena: ['flood', 'drain'],
     phases: [
       chase({ lunge: 1 }),
-      emitter({ every: 3.2, shot: (e, ctx) => wave(e, ctx, 2.4) }),
-      emitter({ every: 6, shot: (e, ctx) => wave(e, ctx, 3) }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 3.2, shot: (e, ctx) => wave(e, ctx, 2.4) }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 6, shot: (e, ctx) => wave(e, ctx, 3) }),
     ],
   }),
   model: [

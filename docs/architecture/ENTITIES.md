@@ -88,17 +88,29 @@ Every attack is one **shape** with one telegraph (BESTIARY §3.2): a **line** (a
 
 Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers), `ranged`, `burst`, `flee`, `leap` (crouch, aim where you stand, land with a ring and crack the soft floor), `charge` (a line, then a run that smashes soft blocks, and a stun when it meets a hard one), `patrol` (a fixed loop), `emitter` (stationary, fires on a rhythm), `phase` (through blocks), `sleep` (asleep until moved), `phased` (a boss's phases) and `chirp` (sings while its room is quiet). A flyer keeps a height (`flyY`), a phaser or burrower moves through blocks (`ghost`). `ctx.quiet`, `ctx.safe`, `ctx.centre` and `ctx.bounds` read the room; `wobble(id, seq, k)` is the seeded choice a being makes (never cosmetic `fx`).
 
+### Presences (`content/presences/`)
+
+- **Two so far:** the Gardener in the start room of floor 0 and one Listener in a normal room of each Tree floor (1–5), placed by `placePresences` from the floor's own fork (`floor<k>:presence`). When no normal room of a Tree floor is quiet, one is emptied so the Listener always has a room (GEN_VERSION 15).
+- **Immortal and kind:** a Presence is a creature (hp 1, never hit by a hit that is not positive) with `responds: 'positive'`: negative intentions pass through it, positive ones make only a gold burst.
+- **Talk by contact** (BESTIARY §8): walking within 2.2 blocks, on the same level, opens a card with its name and two lines (`Game.updatePresences`, `Hud.presenceCard`). Each Presence talks once. The Listener also heals a quarter heart once. There is no talk key: contact is the talk.
+- **The Boundary** (`content/presences/boundary.ts`, owner, 2026-10-29): a neutral projection in every vault, `responds: 'negative'`, `armor: 1`, never hurt. Its sanctuary ring is pedestal blocks placed by the carve; `Game.updateBoundaries` makes it hostile (`faction: 'projection'`, so it throws cubes through `volley`) only while a ring block is missing and you are in its room.
+- **Not built:** the other Presences, dialogue choices, the codex, requests (§8.5), agreements and gifts (§8.6–8.7), the sanctuary ring and the silence rule beyond "answers only positive".
+
 ### Creatures (`content/creatures/`)
 
 Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floor's own fork (`ambientCreatures`): Wonders, Rootlings and Mosslings on floor 0, Chirpers and Delvers on floors 1–3, Bubblers and Ferrybacks on 3–4, Drifters and Inkmites on 5–6, Cinderwalkers on 7–8, Huddlers on 9. They are spawned when their floor loads, outside every roster, so they never seal a room or count for clearing it.
 
 - **Sealing**: when a room seals, its creatures hide in the blocks (`Enemies.hideRoom`, neither drawn nor hittable), and they come back whole when it clears.
 - **Polarity** (§1.1): a positive intention heals them, and a creature healed to full gives a heart once (`gifted`). A negative intention that would kill one sends it into the blocks instead (`Enemies.hurt`): it never dies.
+- **One polarity only** (`responds`, BESTIARY §7.1): a creature with `responds: 'positive'` (the Mossling and the Huddler) is met by positive intentions always, healthy or not (a gold burst), and never by negative ones: the shot passes through it (`meetsIntention`, `Game.meets`).
 - **Blasts** only push creatures; fire and lava still hurt them, so they must avoid it.
 - **Chirpers** sing every few seconds only while their room is quiet (no projection alive): their silence is the warning.
 - **Mosslings** heal a quarter heart the first time you sit still beside one for three seconds (`Game.updateRest`).
 
 ### Bosses (`content/bosses/`, `Game.updateBossRoom`)
+
+- **Movement:** every firing phase (`emitter`) carries `follow` (speed and keep distance), so the boss walks towards the player while it fires. The Shadow is the exception: it mirrors the player (`mirrors`, `reveals`).
+- **Breaking:** every walking boss has `breaks`, and while it stands on the floor `Enemies.smashSides` breaks the blocks at its sides (inside its room, never the floor under it), so it pushes through a room instead of sticking in it. The Insatiable's hollow ring (phase 3) reaches eight blocks, from five.
 
 - **One per floor**, drawn from its zone's pool with the run's fork `floor<k>:boss` and never met twice in one run (`bossFor`). Floors 5 and 9 are keystones: the Threshold Guardian and the Shadow. Zones: I (1–2) Resistance, Inertia, The Insatiable; II (3–4) Overwhelm, The Hoard, The Downpour; III (6) The Verdict, The Grudge, The Old Rule; IV (7–8) The Furnace, The Impostor, The Many Faces.
 - **The room**: entering seals the doors (`doors.seal`), a rumble, then the boss rises at a spawn point of the room (`summonBoss`). Its health shows in the bar at the top while you are in the room (`Hud.bossBar`).

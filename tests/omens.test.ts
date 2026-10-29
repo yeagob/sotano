@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/core/rng';
 import {
-  DOOR_CLEARANCE, OMEN_BREACH, OMEN_GATHER, PLAYER_CLEARANCE, pickSpawnCell, splitWaves, WAVE_SIZE,
+  DOOR_CLEARANCE, OMEN_BREACH, OMEN_GATHER, PLAYER_CLEARANCE, pickSpawnCell, splitWaves, WAVE_PATIENCE, waveDue, WAVE_SIZE,
 } from '../src/game/omens';
 
 /** Every cell of a 13 × 7 room interior, centred on the cell (as the game does). */
@@ -73,5 +73,15 @@ describe('omen timing', () => {
     expect(OMEN_GATHER).toBeGreaterThanOrEqual(0.8);
     expect(OMEN_BREACH).toBeGreaterThan(0);
     expect(OMEN_BREACH).toBeLessThan(OMEN_GATHER);
+  });
+});
+
+describe('waves: the patience timer (BESTIARY §2.4)', () => {
+  it('a wave opens at one projection left, or once it has stood for the patience, whichever comes first', () => {
+    expect(waveDue(-1, 5, 0)).toBe(true);
+    expect(waveDue(0, 2, 0)).toBe(false);
+    expect(waveDue(0, 1, 0)).toBe(true);
+    expect(waveDue(0, 3, WAVE_PATIENCE - 0.1)).toBe(false);
+    expect(waveDue(0, 3, WAVE_PATIENCE)).toBe(true);
   });
 });

@@ -7,6 +7,8 @@ import { ROOM_D, ROOM_W } from '../content/rooms';
 import { FlowField, type RoomArea } from '../enemies/flowfield';
 import { Hazards, shapePoint, type FieldEffect, type HazardHost, type Shape, type Strike } from '../enemies/attacks';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
+import type { PickupKind } from '../game/events';
+import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
@@ -29,6 +31,7 @@ export interface EnemyHost {
   actors(): Iterable<Actor>;
   actor(id: number): Actor | undefined;
   room(id: number): RoomArea;
+  pickupsIn(room: number): { kind: PickupKind; x: number; y: number; z: number; take(): void }[];
   /** Elements version (flow fields rebuild when a hazard appears or goes). */
   elemVersion(): number;
   /** How `e` treats the element standing at this cell (feet), or null if there is none. */
@@ -99,6 +102,8 @@ export class Enemies {
   private euler = new THREE.Euler();
   private time = 0;
 
+  private carrying = new Map<number, PickupKind[]>();
+  private shells = new Map<number, ShellState>();
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
@@ -129,7 +134,7 @@ export class Enemies {
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0,
+      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0, volley: 2,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -159,6 +164,12 @@ export class Enemies {
   }
 
   hurt(e: Enemy, amount: number, kx: number, kz: number) {
+    const shell = e.spec.shell;
+    if (shell) {
+      const next = shellHit(this.shells.get(e.id) ?? shellStart(shell), amount, shell);
+      this.shells.set(e.id, next.state);
+      if (next.shielded) { e.clock = 0; e.flash = 0.15; e.body.vx += kx; e.body.vz += kz; return false; }
+    }
     e.hp -= amount * (1 - (e.spec.armor ?? 0));
     e.clock = 0;
     e.flash = 0.15;
@@ -167,6 +178,12 @@ export class Enemies {
     if (e.spec.kind === 'creature') { e.hp = 1; this.hide(e, true); return false; }
     this.kill(e);
     return true;
+  }
+
+  takeCarried(id: number): PickupKind[] {
+    const kinds = this.carrying.get(id) ?? [];
+    this.carrying.delete(id);
+    return kinds;
   }
 
   hideRoom(room: number, hidden: boolean) {
@@ -184,6 +201,12 @@ export class Enemies {
     // release (docs/art/DECISIONS.md §8.6): host chips fall, light rises; no gore, no flash
     for (const p of e.spec.model.slice(0, 8)) if (!p.glow) this.host.particles(b.x + p.pos[0], b.y + p.pos[1], b.z + p.pos[2], p.color, 3, 3, 0.12);
     this.host.particles(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 12, 1.6, 0.05);
+    this.dissolve(e);
+    this.host.died(e);
+  }
+
+  dissolve(e: Enemy) {
+    e.alive = false;
     this.hazards.clear(e.id);
     const v = this.views.get(e.id);
     if (v) {
@@ -192,7 +215,6 @@ export class Enemies {
       v.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
       this.views.delete(e.id);
     }
-    this.host.died(e);
   }
 
   hide(e: Enemy, hidden: boolean) {
@@ -230,6 +252,19 @@ export class Enemies {
         && Math.hypot(o.body.x - e.body.x, o.body.z - e.body.z) < radius),
       bounds: e => { const rm = host.room(e.room); return [rm.x0, rm.z0, rm.x0 + (rm.w ?? ROOM_W) - 1, rm.z0 + (rm.d ?? ROOM_D) - 1]; },
       cue: (e, kind) => host.cue(kind, e.body.x, e.body.y, e.body.z),
+      prize: e => {
+        let best: { x: number; y: number; z: number } | null = null, bd = 14;
+        for (const p of host.pickupsIn(e.room)) { const d = Math.hypot(p.x - e.body.x, p.z - e.body.z); if (d < bd) { bd = d; best = p; } }
+        return best ? { id: -1, x: best.x, y: best.y, z: best.z } : null;
+      },
+      steal: e => {
+        const near = host.pickupsIn(e.room).find(p => Math.hypot(p.x - e.body.x, p.z - e.body.z) < 1.2);
+        if (!near) return false;
+        near.take();
+        this.carrying.set(e.id, [...(this.carrying.get(e.id) ?? []), near.kind]);
+        return true;
+      },
+      carried: e => this.carrying.get(e.id)?.length ?? 0,
       hide: (e, hidden) => this.hide(e, hidden),
       arena: (e, what) => host.arena(e, what),
       summon: (e, ids) => host.summon(e, ids),
@@ -281,6 +316,7 @@ export class Enemies {
         if (boxHits(host.solid, fx, b.y, fz, b.hw, b.h) && !boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = 7.6;
       }
       if (e.spec.breaks && (blockedX || blockedZ)) this.smashAhead(e, Math.sign(wantX) * +blockedX, Math.sign(wantZ) * +blockedZ, dt);
+      if (e.spec.kind === 'boss' && e.spec.breaks && rm && b.onGround) this.smashSides(e, rm, dt);
       if (b.y < -10) { this.kill(e); continue; }
       // touching actors it is hostile to (the game rate-limits each pair)
       for (const a of actors) {
@@ -344,6 +380,18 @@ export class Enemies {
     }
   }
 
+  private smashSides(e: Enemy, rm: RoomArea, dt: number) {
+    const b = e.body, tier = e.spec.breaks!.tier, damage = e.spec.breaks!.power * dt;
+    const w = rm.w ?? ROOM_W, d = rm.d ?? ROOM_D;
+    const x0 = Math.max(Math.floor(b.x - b.hw - 1), rm.x0), x1 = Math.min(Math.floor(b.x + b.hw + 1), rm.x0 + w - 1);
+    const z0 = Math.max(Math.floor(b.z - b.hw - 1), rm.z0), z1 = Math.min(Math.floor(b.z + b.hw + 1), rm.z0 + d - 1);
+    const y0 = Math.floor(b.y + 1), y1 = Math.floor(b.y + b.h - 0.1);
+    for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) {
+      if (x >= b.x - b.hw && x + 1 <= b.x + b.hw && z >= b.z - b.hw && z + 1 <= b.z + b.hw) continue;
+      for (let y = y0; y <= y1; y++) if (this.host.solid(x, y, z)) this.host.smash(e, x, y, z, tier, damage);
+    }
+  }
+
   private smashAhead(e: Enemy, sx: number, sz: number, dt: number) {
     const b = e.body, tier = e.spec.breaks!.tier, damage = e.spec.breaks!.power * dt;
     const x = Math.floor(b.x + sx * (b.hw + 0.1)), z = Math.floor(b.z + sz * (b.hw + 0.1));
@@ -399,6 +447,14 @@ export class Enemies {
     this.push({
       x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * LOB_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id, faction: e.faction, gravity: LOB_GRAVITY,
     });
+  }
+
+  mirror(x: number, z: number, radius: number, dx: number, dy: number, dz: number) {
+    for (const e of this.list) {
+      if (!e.alive || e.hidden || e.spawning > 0 || e.def !== 'comparison') continue;
+      if (Math.hypot(e.body.x - x, e.body.z - z) > radius) continue;
+      this.bolt(e, -dx, -dy, -dz, 9, 4);
+    }
   }
 
   private bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number) {

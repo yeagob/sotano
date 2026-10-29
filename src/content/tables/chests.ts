@@ -13,6 +13,8 @@ export const CHEST_LOCK = table<number>('chest-lock', 'structure', [
 ]);
 
 /** What a free-standing chest holds: one to three rolls of this table. */
+export const CHEST_RARE = 0.06;
+
 export const CHEST_CONTENTS = table<PickupKind | 'item'>('chest', 'runtime', [
   { value: 'key', weight: 3, luck: 0.2 },
   { value: 'bomb', weight: 3, luck: 0.2 },

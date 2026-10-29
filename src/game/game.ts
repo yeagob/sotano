@@ -11,10 +11,8 @@ import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
 import { enemyText } from '../i18n/content';
-import {
-  gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
-  type Cell, type Omen,
-} from './omens';
+import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
+  type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
@@ -59,11 +57,14 @@ import {
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
-import { CHEST_CONTENTS } from '../content/tables/chests';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
+import { ROOTED_HP, rootedChance } from '../content/rooted';
+import { PRESENCE_BY_ID, PRESENCE_TALK, TALK_REACH, type PresenceId } from '../content/presences';
+import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
+import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
@@ -152,7 +153,7 @@ interface RoomState {
   cleared: boolean; started: boolean; sealed: boolean;
   waves: string[][]; wave: number;
   /** The current wave's projections still to announce, the gap to the next, and the breath before the next wave. */
-  queue: string[]; next: number; breath: number; armed: boolean;
+  queue: string[]; next: number; breath: number; armed: boolean; waveT: number;
 }
 
 /** A challenge room: every time you walk in, three waves (harder each wave and each visit). */
@@ -216,6 +217,8 @@ export class Game {
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
   private chestViews!: Chests;
+  private boundaryRing = new Map<number, [number, number, number][]>();
+  private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
   private bossUsed = new Set<string>();
@@ -308,6 +311,7 @@ export class Game {
         this.hitCube(i, v.x * k, v.y * k + 1, v.z * k);
       },
       enemyAt: (x, y, z, r, polarity) => this.enemies.at(x, y, z, r, e => this.meets(e, polarity)),
+      mirrorAxis: id => (this.enemies.get(id)?.def === 'hall-of-mirrors' ? 'z' : null),
       hitEnemy: (uid, v, t) => {
         const l = Math.hypot(v.x, v.z) || 1;
         this.intentTouch(uid, t.damage, v.x / l, v.z / l, 'intent', 'intent', t.polarity, true);
@@ -527,7 +531,7 @@ export class Game {
       this.rooms.set(r.id, r);
       this.roomState.set(r.id, {
         cleared: !r.enemies.length, started: false, sealed: false,
-        waves: splitWaves(r.enemies), wave: -1, queue: [], next: 0, breath: 0, armed: false,
+        waves: splitWaves(r.enemies), wave: -1, queue: [], next: 0, breath: 0, armed: false, waveT: 0,
       });
     }
   }
@@ -550,6 +554,27 @@ export class Game {
     for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
       const def = CREATURE_BY_ID.get(c.def)!;
       const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, def.hp, def.speed, 0, new Set(['creature']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+    }
+    for (const r of this.sandbox ? [] : f.rooms) {
+      if (!r.presence) continue;
+      if (r.presence === 'boundary') {
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        e.faction = 'neutral';
+        e.spawning = 0;
+        this.actors.add(e);
+        const ring: [number, number, number][] = [];
+        for (let dz = -SANCTUARY_RADIUS; dz <= SANCTUARY_RADIUS; dz++) for (let dx = -SANCTUARY_RADIUS; dx <= SANCTUARY_RADIUS; dx++) {
+          const x = r.x0 + 6 + dx, z = r.z0 + 3 + dz;
+          if (Math.max(Math.abs(dx), Math.abs(dz)) === SANCTUARY_RADIUS && this.solid(x, r.y0, z)) ring.push([x, r.y0, z]);
+        }
+        this.boundaryRing.set(e.id, ring);
+        continue;
+      }
+      const def = PRESENCE_BY_ID.get(r.presence)!;
+      const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, def.hp, def.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -858,6 +883,8 @@ export class Game {
       },
       burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE),
       died: (e: Enemy) => this.onEnemyDeath(e),
+      pickupsIn: (room: number) => this.pickups.list.filter(p => !p.taken && p.room === room && (p.type === 'key' || p.type === 'bomb' || p.type === 'heart'))
+        .map(p => ({ kind: p.type as PickupKind, x: p.x, y: p.y, z: p.z, take: () => this.pickups.take(p) })),
       particles: (x: number, y: number, z: number, c: number, n: number, s: number, size: number) => this.particles.burst(x, y, z, c, n, s, size),
       hurtActor: (t: Actor, amount: number, cause: string, owner: number) => { this.damageActor(t, amount, 'projectile', cause, owner); },
       affectActor: (t: Actor, effect: FieldEffect, seconds: number) => this.affectActor(t, effect, seconds),
@@ -879,6 +906,7 @@ export class Game {
   private bossArena(e: Enemy, what: string) {
     const r = this.rooms.get(e.room);
     if (!r) return;
+    if (what === 'ice') { this.raiseIce(e, r); return; }
     this.hud.toast(`boss.${e.def}.phase.${e.stage}` as MessageKey);
     switch (what) {
       case 'walls': this.raiseWalls(r); break;
@@ -914,6 +942,18 @@ export class Game {
   private dropOnPlayer(r: RoomInfo) {
     const p = this.player.body;
     this.debris.spawn(MAT[level(r.floor).palette.wall], p.x, r.y0 + r.height - 1, p.z, 0, -2, 0);
+  }
+
+  private raiseIce(e: Enemy, r: RoomInfo) {
+    const x = r.x0 + Math.floor(r.w / 2), p = this.player.body;
+    const cells: [number, number, number][] = [];
+    for (let z = r.z0; z < r.z0 + r.d; z++) for (let y = r.y0; y < r.y0 + 2; y++) {
+      if (!inRoomSpace(r, x + 0.5, z + 0.5) || this.world.get(x, y, z) !== AIR || (Math.floor(p.x) === x && Math.floor(p.z) === z)) continue;
+      this.world.set(x, y, z, MAT.ice);
+      cells.push([x, y, z]);
+    }
+    this.iceWalls.set(e.id, cells);
+    this.particles.burst(x + 0.5, r.y0 + 1, r.z0 + r.d / 2, pal('cold.white'), 14, 2, 0.05);
   }
 
   private raiseWalls(r: RoomInfo) {
@@ -962,7 +1002,7 @@ export class Game {
    *  hostile projections always; allies when it is negative (it harms them) or when they are hurt
    *  (a positive one heals them). A healthy ally lets positive intentions pass. */
   private meets(e: Enemy, polarity: Polarity) {
-    return meetsIntention(e.faction, e.hp, e.maxHp, polarity);
+    return meetsIntention(e.faction, e.hp, e.maxHp, polarity, e.spec.responds);
   }
 
   /**
@@ -975,14 +1015,12 @@ export class Game {
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
       const heal = allyHeal(damage, e.hp, e.maxHp);
-      if (heal > 0) {
-        e.hp += heal;
-        const b = e.body;
-        this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
-        if (e.spec.kind === 'creature' && e.hp >= e.maxHp && !e.tags.has('gifted')) {
-          e.tags.add('gifted');
-          this.pickups.add('heart', b.x, b.y + 0.6, b.z, e.room, null, 0.3);
-        }
+      const b = e.body;
+      e.hp += heal;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
+      if (heal > 0 && e.spec.kind === 'creature' && e.hp >= e.maxHp && !e.tags.has('gifted')) {
+        e.tags.add('gifted');
+        this.pickups.add('heart', b.x, b.y + 0.6, b.z, e.room, null, 0.3);
       }
       return;
     }
@@ -998,6 +1036,7 @@ export class Game {
     if (!intent) {
       if (amount <= 0) return false;
       this.enemies.hurt(e, amount, kx, kz);
+      if (e.alive) this.splitOnHit(e);
       return true;
     }
     const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth }, amount);
@@ -1005,7 +1044,25 @@ export class Game {
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
     if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
     if (r.convert && e.alive) this.convert(e);
+    else if (e.alive && r.dealt > 0) this.splitOnHit(e);
     return true;
+  }
+
+  private splitOnHit(e: Enemy) {
+    const r = this.rooms.get(e.room);
+    if (!r || !e.spec.splitOnHit || !e.spec.split || e.hp <= 0) return;
+    const b = e.body, seq = this.projectionSeq.get(e.id) ?? 0;
+    const share = Math.max(1, Math.round(e.hp / e.spec.split.length));
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 6, 1.2, 0.05);
+    this.enemies.dissolve(e);
+    this.bus.off(null, `actor:${e.id}`);
+    this.actors.remove(e.id);
+    this.contacts.forget(e.id);
+    this.projectionSeq.delete(e.id);
+    e.spec.split.forEach((id, i) => {
+      const child = this.spawnEnemy(id, r, seq, b.x + (i ? 0.7 : -0.7), b.y, b.z);
+      if (child) { child.hp = share; child.maxHp = share; }
+    });
   }
 
   /** A projection's warmth is full: it turns to your side (not destroyed). */
@@ -1048,6 +1105,11 @@ export class Game {
   }
 
   private onEnemyDeath(e: Enemy) {
+    const ice = this.iceWalls.get(e.id);
+    if (ice) {
+      for (const [x, y, z] of ice) if (this.world.get(x, y, z) === MAT.ice) this.world.set(x, y, z, AIR);
+      this.iceWalls.delete(e.id);
+    }
     this.bus.off(null, `actor:${e.id}`); // reserved for actor-owned hooks
     this.actors.remove(e.id);
     this.contacts.forget(e.id);
@@ -1056,13 +1118,16 @@ export class Game {
     const b = e.body;
     const ev = this.bus.emit('actorDeath', { target: e.id, targetKind: 'projection', def: e.def, x: b.x, y: b.y, z: b.z, drops });
     for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    const stolen = this.enemies.takeCarried(e.id);
+    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
     const floor = this.rooms.get(e.room)?.floor;
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor);
-    if (e.spec.split) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
+    if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
+      if (e.tags.has('rooted')) parts.push(...rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq, 'rooted'), e.def));
       for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
     }
     sfx3.dissolve();
@@ -1088,10 +1153,11 @@ export class Game {
       const remaining = this.enemies.blockingIn(id);
       const lastWave = st.wave + 1 >= st.waves.length;
       // the next wave opens once the last one is nearly down, after a breath (a swell says more are coming)
-      if (!lastWave && st.queue.length === 0 && this.omensIn(id) === 0 && (st.wave < 0 || remaining <= 1)) {
+      if (st.wave >= 0) st.waveT += dt;
+      if (!lastWave && st.queue.length === 0 && this.omensIn(id) === 0 && waveDue(st.wave, remaining, st.waveT)) {
         if (!st.armed) { st.armed = true; st.breath = BREATH; spatial.swell(); }
         st.breath -= dt;
-        if (st.breath <= 0) { st.armed = false; st.wave++; st.queue = [...st.waves[st.wave]]; st.next = 0; }
+        if (st.breath <= 0) { st.armed = false; st.wave++; st.waveT = 0; st.queue = [...st.waves[st.wave]]; st.next = 0; }
       }
       if (st.queue.length) {
         st.next -= dt;
@@ -1257,8 +1323,11 @@ export class Game {
     const def = ENEMY_BY_ID.get(defId);
     if (!def) return null;
     const id = this.actors.newId();
-    const hp = def.kind === 'boss' ? bossHp(r.floor) : def.hp;
-    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags: new Set(def.asleep ? ['asleep'] : []), x, y, z });
+    const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
+    const hp = def.kind === 'boss' ? bossHp(r.floor) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
+    const tags = new Set(def.asleep ? ['asleep'] : []);
+    if (rooted) tags.add('rooted');
+    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags, x, y, z });
     if (ev.cancelled) return null;
     this.projectionSeq.set(id, seq);
     const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
@@ -1779,6 +1848,7 @@ export class Game {
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
     const from = p.eye.addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
+    this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
     this.hands.fire();
     sfx.shoot();
   }
@@ -2012,6 +2082,10 @@ export class Game {
         if (def) { practice = true; out.push({ type: 'item', def }); }
         else out.push({ type: what === 'item' ? 'key' : what, def: null });
       }
+      if (!practice && rng.chance(CHEST_RARE)) {
+        const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng)) ?? null;
+        if (def) out.push({ type: 'item', def });
+      }
     }
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
@@ -2061,8 +2135,36 @@ export class Game {
     }
   }
 
+  private updateBoundaries() {
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || !e.tags.has('boundary')) continue;
+      const rm = this.rooms.get(e.room);
+      const inside = !!rm && b.x > rm.x0 && b.x < rm.x0 + rm.w && b.z > rm.z0 && b.z < rm.z0 + rm.d;
+      const broken = (this.boundaryRing.get(e.id) ?? []).some(([x, y, z]) => !this.solid(x, y, z));
+      const faction = broken && inside ? 'projection' : 'neutral';
+      if (e.faction !== faction) e.faction = faction;
+    }
+  }
+
+  private updatePresences() {
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met')) continue;
+      if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
+      const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      e.tags.add('met');
+      if (talk.heals) this.heal(QUARTER_HEART, id);
+      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      this.hud.presenceCard(talk.name, talk.lines);
+      return;
+    }
+  }
+
   private updateLoop(dt: number) {
     this.updateRest(dt);
+    this.updatePresences();
+    this.updateBoundaries();
     const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
     const inSilence = !!last && b.x >= last.x0 && b.x <= last.x1 + 1 && b.z >= last.z0 && b.z <= last.z1 + 1 && b.y >= last.y0 - 0.5 && b.y <= last.y1 + 1;
     setMasterTarget(inSilence ? 0 : 0.35);

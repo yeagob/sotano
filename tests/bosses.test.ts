@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BOSSES, BOSS_ZONES, bossFor, bossHp } from '../src/content/bosses';
 import { ENEMY_BY_ID } from '../src/content/enemies';
 import { RunRandom } from '../src/core/rng';
-import { phased, PHASE_HOLD } from '../src/enemies/behaviours';
+import { emitter, phased, PHASE_HOLD, volley } from '../src/enemies/behaviours';
 import type { Enemy, EnemyCtx } from '../src/enemies/types';
 
 describe('bosses: floors and pools', () => {
@@ -79,5 +79,53 @@ describe('bosses: phases', () => {
     expect(e.stage).toBe(2);
     expect(arena).toEqual(['walls', 'rolls']);
     expect(cues.filter(c => c === 'phase')).toHaveLength(2);
+  });
+});
+
+describe('bosses: they move towards you', () => {
+  it('every boss can walk, so its phases can follow the player (shadow mirrors instead)', () => {
+    for (const b of BOSSES) if (b.id !== 'shadow') expect(b.speed, b.id).toBeGreaterThan(0);
+  });
+
+  it('every boss that walks breaks the blocks at its sides, so no block holds it', () => {
+    for (const b of BOSSES) if (b.id !== 'shadow' && b.id !== 'downpour') expect(b.breaks, b.id).toBeDefined();
+  });
+
+  it('an emitter with follow walks towards its target until it is within keep, and fires', () => {
+    const shots: number[] = [];
+    const behaviour = emitter({ every: 1, follow: { speed: 2, keep: 4 }, shot: () => { shots.push(1); } });
+    const ctx = (dist: number) => ({
+      dt: 1 / 60,
+      target: () => ({ x: dist, z: 0, y: 0 }),
+      dist: () => dist,
+      toward: () => [1, 0],
+    }) as unknown as EnemyCtx;
+    const e = { wishX: 0, wishZ: 0, timer: 0, pulse: 0, speed: 1 } as unknown as Enemy;
+    behaviour.update(e, ctx(10));
+    expect(e.wishX).toBeCloseTo(2);
+    expect(e.wishZ).toBe(0);
+    behaviour.update(e, ctx(3));
+    expect(e.wishX).toBe(0);
+    expect(shots.length).toBeGreaterThan(0);
+  });
+});
+
+describe('bosses: volleys', () => {
+  it('a volley waits its own time, shows its aim in the last half second, then fires once per period', () => {
+    const shots: number[] = [];
+    const idle = { name: 'idle', update: () => {} };
+    const behaviour = volley({ every: 1, shot: () => { shots.push(1); }, then: idle });
+    const ctx = { dt: 0.25 } as unknown as EnemyCtx;
+    const e = { volley: 1, pulse: 0, state: 'move' } as unknown as Enemy;
+    behaviour.update(e, ctx);
+    behaviour.update(e, ctx);
+    behaviour.update(e, ctx);
+    expect(e.pulse).toBeGreaterThan(0);
+    expect(shots).toEqual([]);
+    behaviour.update(e, ctx);
+    expect(shots).toEqual([1]);
+    e.state = 'stun';
+    for (let i = 0; i < 4; i++) behaviour.update(e, ctx);
+    expect(shots).toEqual([1]);
   });
 });

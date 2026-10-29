@@ -3,10 +3,9 @@ import { emitter } from '../../enemies/behaviours';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const wall = (e: Enemy, ctx: EnemyCtx) => {
-  const [x0, z0, x1, z1] = ctx.bounds(e);
-  const k = e.seq++ % 3;
-  const x = x0 + ((k + 1) / 4) * (x1 - x0), z = (z0 + z1) / 2;
-  ctx.strike(e, { lead: 0.6, live: 6, damage: 0, shape: { kind: 'field', x, y: e.body.y, z, r: 1.8, effect: 'slow' } });
+  if (e.tags.has('walled')) return;
+  e.tags.add('walled');
+  ctx.arena(e, 'ice');
 };
 
 export default defineEnemy({

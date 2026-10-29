@@ -8,18 +8,19 @@ export default defineEnemy({
   name: 'The Insatiable',
   pattern: 'To be full',
   hp: 140,
-  speed: 0,
+  speed: 1.0,
   size: [1.4, 2.4],
   contactDamage: 8,
+  breaks: { tier: 1, power: 6 },
   cost: 0,
   minFloor: 1,
   maxFloor: 2,
   behaviour: phased({
     arena: ['debris', 'hollow'],
     phases: [
-      emitter({ every: 5, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 3, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 9, force: 9 } }) }),
-      emitter({ every: 1.4, shot: (e, ctx) => { ctx.shootAt(e, e.body.x + 3 * Math.sin(e.seq), e.body.y, e.body.z + 3 * Math.cos(e.seq)); e.seq++; } }),
-      emitter({ every: 2.2, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 5, width: 0.6, height: 1.5 } }) }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 5, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 3, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 9, force: 9 } }) }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 1.4, shot: (e, ctx) => { ctx.shootAt(e, e.body.x + 3 * Math.sin(e.seq), e.body.y, e.body.z + 3 * Math.cos(e.seq)); e.seq++; } }),
+      emitter({ follow: { speed: 1.0, keep: 4 }, every: 2.2, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 8, width: 1.2, height: 1.5 } }) }),
     ],
   }),
   model: [
