@@ -26,6 +26,11 @@ export function applyDom(root: ParentNode = document) {
   document.documentElement.lang = locale();
   for (const el of root.querySelectorAll<HTMLElement>('[data-i18n]')) el.textContent = t(el.dataset.i18n as MessageKey);
   for (const el of root.querySelectorAll<HTMLElement>('[data-i18n-label]')) el.dataset.label = t(el.dataset.i18nLabel as MessageKey);
+  // the tab title and the search snippet follow the language too (the static head stays English)
+  if (root === document) {
+    document.title = t('seo.title');
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('seo.description'));
+  }
 }
 
 /** Starts localization for the page: picks the language, fills the HTML and keeps it filled. */

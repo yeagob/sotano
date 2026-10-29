@@ -1,0 +1,33 @@
+# THE ROOTS
+
+> THE ROOTS is a free, open-source, first-person voxel roguelite that runs in any desktop browser (keyboard and mouse, or gamepad), and on a phone in landscape. No install. It mixes Minecraft's world of breakable, carryable cubes with The Binding of Isaac's roguelite runs, where every item (a "practice") changes how you play, and the cavern depths echo Noita's hidden, physical underground. You go down through the layers of your own mind: break the structures that hold you (blocks), shoot intentions with a polarity, meet projections (enemies: patterns that block you), and grow. Languages: English and Spanish.
+
+Keywords: voxel roguelite, roguelike, Minecraft-like, The Binding of Isaac-like, Noita-like, first-person voxel sandbox, browser game, free to play, open source, indie game.
+
+## Play
+
+- [Play in your browser](https://sotano-yeagobs-projects.vercel.app/): the game itself, free, no install. Add `?lang=es` for Spanish.
+
+## About the project
+
+- [README](https://github.com/yeagob/sotano/blob/main/README.md): what the game is, the core ideas, controls, quickstart, roadmap and how to contribute.
+- [Source code](https://github.com/yeagob/sotano): open source; contributions are welcome.
+- [Documentation index](https://github.com/yeagob/sotano/blob/main/docs/README.md): design, architecture, research, art direction, lore and reviews.
+
+## Design and story
+
+- [Design document](https://github.com/yeagob/sotano/blob/main/docs/design/DESIGN.md): pillars, the loop, intentions and their stats, blocks and tiers, dungeon structure, enemies, items and synergies.
+- [Story and metaphor](https://github.com/yeagob/sotano/blob/main/docs/design/STORY.md): the premise, what each mechanic stands for, states of being, projections, practices and naming rules.
+- [Bestiary](https://github.com/yeagob/sotano/blob/main/docs/design/BESTIARY.md): projections, creatures, presences and bosses by zone.
+
+## Architecture
+
+- [Overview](https://github.com/yeagob/sotano/blob/main/docs/architecture/OVERVIEW.md): module map, runs and floors, frame order, core systems, tests.
+- [Items and synergies](https://github.com/yeagob/sotano/blob/main/docs/architecture/ITEMS.md)
+- [Rooms and floors](https://github.com/yeagob/sotano/blob/main/docs/architecture/ROOMS.md)
+- [Localization](https://github.com/yeagob/sotano/blob/main/docs/architecture/LOCALIZATION.md)
+- [Discoverability: SEO, social previews and crawlers](https://github.com/yeagob/sotano/blob/main/docs/architecture/DISCOVERABILITY.md)
+
+## Optional
+
+- [Support the developer](https://buymeacoffee.com/yeagob)

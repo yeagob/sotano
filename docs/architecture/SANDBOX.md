@@ -119,6 +119,12 @@ npm run sandbox -- --check                    # every scenario against its saved
 
 Every edit is written into the scenario, so **R**, `reload()` and `export()` keep it.
 
+### 5.1 Boss duels (`S.sb.duel`)
+
+`S.sb.duel('resistance', 'kite', { floor: 1, seconds: 45, hp: 140 })` puts a boss in an empty 28 × 7 arena, 8 high (a double boss room), against a scripted player, and runs it headless: a third of the time in each phase (its health is set to 60 % and 30 % to cross them). `still` stands at the west end; `kite` runs laps of the arena at running pace (it never jumps, so every ring and wave it meets counts). The player takes no damage: each hit is counted, then cancelled, with the normal second of invulnerability after it. One line per duel, per phase: blocks moved, mean distance, moves started, hits and damage points (8 = a heart), and the most attacks and projectiles on the field at once; then the damage the boss did to itself and the blocks it broke. `S.sb.duels()` runs every boss on its first floor in both modes. Code: `src/sandbox/duel.ts`.
+
+What a boss of floors 1–5 must show (2026-10-29): it moves or attacks in every phase (no phase of standing still), at least five moves in fifteen seconds, it never dies of its own rubble, a still player loses well over three hearts in a phase, and a running player who never jumps about two to six hearts a phase (jumping the rings and waves, and dodging charges, is how you take less).
+
 ## 6. Limits
 
 - One room, sealed: no doors, no floor plan around it, no boss holes. Digging out of it reaches the floor's real rock (and nothing else is carved).

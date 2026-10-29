@@ -82,6 +82,68 @@ describe('bosses: phases', () => {
   });
 });
 
+describe('bosses: the first five floors always fight (enemies/moves.ts)', () => {
+  const EARLY = BOSSES.filter(b => b.minFloor <= 5);
+  // a boss alone with a target six blocks away that keeps running: it is fed a fake world that
+  // records every attack it makes, a phase at a time
+  const run = (id: string, stage: number, seconds: number) => {
+    const def = BOSSES.find(b => b.id === id)!;
+    const e = {
+      id: 7, hp: stage === 0 ? 100 : stage === 1 ? 60 : 30, maxHp: 100, stage, hold: 0, state: 'move', timer: 0, seq: 0, armed: true,
+      wishX: 0, wishZ: 0, pulse: 0, flyY: -1, move: -1, act: 0, speed: def.speed || 1, clock: 0, aimX: 0, aimZ: 0,
+      body: { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: true },
+      tags: new Set<string>(), room: 0, faction: 'projection', spec: def, def: def.id,
+    } as unknown as Enemy;
+    const made: string[] = [];
+    let t = 0;
+    const target = () => ({ id: 1, x: 6 * Math.cos(t * 0.5), y: 0, z: 6 * Math.sin(t * 0.5), vx: -3 * Math.sin(t * 0.5), vz: 3 * Math.cos(t * 0.5) });
+    const ctx = {
+      dt: 1 / 60, target, near: target,
+      dist: (_e: Enemy, p: { x: number; z: number }) => Math.hypot(p.x - e.body.x, p.z - e.body.z),
+      toward: (_e: Enemy, p: { x: number; z: number }) => { const dx = p.x - e.body.x, dz = p.z - e.body.z, l = Math.hypot(dx, dz) || 1; return [dx / l, dz / l]; },
+      bounds: () => [-13, -3, 14, 3], centre: () => [0, 0],
+      strike: (_e: Enemy, s: { damage: number; shape: { kind: string } }) => { if (s.damage > 0) made.push(s.shape.kind); },
+      bolt: () => made.push('bolt'), shootAt: () => made.push('lob'), rain: () => made.push('rain'),
+      rockfall: () => made.push('rock'), quake: () => {}, crash: () => {}, fx: () => {}, cue: () => {}, arena: () => {},
+      safe: () => true, burst: () => {}, kill: () => {}, summon: () => {}, hide: () => {}, quiet: () => false, others: () => [],
+    } as unknown as EnemyCtx;
+    const moves = new Set<number>();
+    for (; t < seconds; t += 1 / 60) {
+      def.behaviour.update(e, ctx);
+      if (e.state === 'windup') moves.add(e.move);
+      // the body follows its wish, so a charge stops (as on a wall) only when it is told to
+      e.body.x += e.wishX * e.speed / 60; e.body.z += e.wishZ * e.speed / 60;
+    }
+    return { made, moves };
+  };
+
+  for (const b of EARLY) {
+    it(`${b.id} attacks in every phase within six seconds, with more than one move`, () => {
+      for (const stage of [0, 1, 2]) {
+        const { made, moves } = run(b.id, stage, 6);
+        expect(made.length, `${b.id} phase ${stage + 1}`).toBeGreaterThan(0);
+        expect(moves.size, `${b.id} phase ${stage + 1} moves`).toBeGreaterThan(1);
+      }
+    });
+  }
+});
+
+describe('bosses: sequences (combo)', () => {
+  it('runs its moves in order, each after its own windup, and recovers only after the last', async () => {
+    const { combo, moveset } = await import('../src/enemies/moves');
+    const order: string[] = [];
+    const step = (name: string) => ({ name, windup: 0.4, recover: 0, aim: () => order.push(`aim ${name}`), act: () => order.push(`act ${name}`) });
+    const b = moveset({ gait: { kind: 'still' }, pace: [0, 0], moves: [combo('abc', [step('a'), step('b'), step('c')], { recover: 0.5, gap: 0.1 })] });
+    const e = { id: 1, state: 'move', timer: 0, seq: 0, move: -1, act: 0, pulse: 0, wishX: 0, wishZ: 0, flyY: -1, speed: 1, body: { x: 0, y: 0, z: 0, vx: 0, vz: 0 } } as unknown as Enemy;
+    const t = { id: 2, x: 5, y: 0, z: 0 };
+    const ctx = { dt: 1 / 60, target: () => t, dist: () => 5, toward: () => [1, 0], cue: () => {} } as unknown as EnemyCtx;
+    const states: string[] = [];
+    for (let k = 0; k < 180; k++) { b.update(e, ctx); if (states[states.length - 1] !== e.state) states.push(e.state); }
+    expect(order.slice(0, 6)).toEqual(['aim a', 'act a', 'aim b', 'act b', 'aim c', 'act c']);
+    expect(states.slice(0, 4)).toEqual(['windup', 'act', 'recover', 'move']);
+  });
+});
+
 describe('bosses: they move towards you', () => {
   it('every boss can walk, so its phases can follow the player (shadow mirrors instead)', () => {
     for (const b of BOSSES) if (b.id !== 'shadow') expect(b.speed, b.id).toBeGreaterThan(0);

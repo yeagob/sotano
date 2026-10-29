@@ -25,7 +25,7 @@ import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
 import { blockDamage, cubeDamage, type DamageKind } from '../core/damage';
 import { fx, seedFx } from '../core/fx';
-import { RunRandom } from '../core/rng';
+import { hash3, RunRandom } from '../core/rng';
 import { decodeSeed, encodeSeed, formatSeed, GEN_VERSION, randomRoot } from '../core/seed';
 import { ROOM_CLEAR } from '../content/tables/rewards';
 import { StatSheet } from '../core/stats';
@@ -877,7 +877,33 @@ export class Game {
       arena: (e: Enemy, what: string) => this.bossArena(e, what),
       summon: (e: Enemy, ids: string[]) => this.summonFor(e, ids),
       cue: (kind: string, x: number, y: number, z: number) => spatial.cue(kind, x, y, z),
+      quake: (x: number, y: number, z: number, power: number) => this.quake(x, y, z, power),
+      drop: (e: Enemy, x: number, y: number, z: number) => {
+        const r = this.rooms.get(e.room);
+        if (r) this.shed(this.debris.spawn(MAT[level(r.floor).palette.wall], x, y, z, 0, -2, 0));
+      },
     };
+  }
+
+  /**
+   * A heavy impact (a boss lands, hits a wall): the screen shakes by how close you are and the floor
+   * at the point spits chips of its own material (DECISIONS §7.3: never more than 60 per event).
+   */
+  private quake(x: number, y: number, z: number, power: number) {
+    const p = this.player.body, d = Math.hypot(p.x - x, p.z - z);
+    this.hud.shake(power * Math.max(0.2, Math.min(1, 1 - d / 16)));
+    const under = this.world.get(Math.floor(x), Math.floor(y) - 1, Math.floor(z));
+    if (under !== AIR) this.particles.burstRamp(x, y + 0.1, z, mat(under).colors, Math.min(40, Math.round(10 + power * 40)), 3.5, 0.1);
+    spatial.cue('quake', x, y, z);
+  }
+
+  /** Stones come loose all over the arena (a boss phase): every shadow marked, a beat apart. */
+  private rockfallRoom(e: Enemy, r: RoomInfo) {
+    for (let k = 0; k < 12; k++) {
+      const x = r.x0 + 1 + hash3(e.id, k, 1, 0x51) * (r.w - 2), z = r.z0 + 1 + hash3(e.id, k, 2, 0x51) * (r.d - 2);
+      if (!inRoomSpace(r, x, z) || this.solid(Math.floor(x), r.y0, Math.floor(z))) continue;
+      this.enemies.rockfall(e, x, r.y0, z, 1.3 + k * 0.12, 8);
+    }
   }
 
   private affectActor(t: Actor, effect: FieldEffect, seconds: number) {
@@ -901,6 +927,8 @@ export class Game {
       case 'fire': this.roomElement(r, EL_FIRE, 8); break;
       case 'spill': this.spillCubes(e, r); break;
       case 'drop': this.dropOnPlayer(r); break;
+      case 'rockfall': this.rockfallRoom(e, r); break;
+      case 'puddle': this.roomElement(r, EL_WATER, 1); break;
     }
   }
 
@@ -921,7 +949,7 @@ export class Game {
     const id = MAT[level(r.floor).palette.floor];
     for (let k = 0; k < 12; k++) {
       const a = (k / 12) * Math.PI * 2 + e.id, s = 2 + (k % 3);
-      this.debris.spawn(id, e.body.x, e.body.y + 1.5, e.body.z, Math.cos(a) * s, 3 + (k % 4), Math.sin(a) * s);
+      this.shed(this.debris.spawn(id, e.body.x, e.body.y + 1.5, e.body.z, Math.cos(a) * s, 3 + (k % 4), Math.sin(a) * s));
     }
   }
 
@@ -1348,7 +1376,9 @@ export class Game {
     if (this.breakFx++ < BREAK_FX_PER_FRAME) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 10, 3.5, 0.09);
     if (ev.spawnDebris) {
       // launch direction is cosmetic (variable dt means debris never replays anyway)
-      this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(1.6), fx.range(1, 2.8), fx.spread(1.6));
+      const i = this.debris.spawn(id, x + 0.5, y + 0.5, z + 0.5, fx.spread(1.6), fx.range(1, 2.8), fx.spread(1.6));
+      // rubble a projection breaks loose does not hurt it (a charging boss must not beat itself)
+      if (source.startsWith('enemy:')) this.shed(i);
     }
     if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.break(Math.min(3, mat(id).tier));
     // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
@@ -1472,18 +1502,28 @@ export class Game {
    * obsidian hits like two intentions; dirt barely bruises) and the faster it flies. The cube
    * bounces back, so it never hits twice in one pass. Bombs don't: they have their own blast.
    */
+  /** A cube a boss sheds (its spill, its stones) flies harmless to projections until it first lands
+   *  or you send it on: otherwise a boss would be beaten by its own rubble. */
+  private shed(i: number) {
+    this.debris.tags[i] = new Set(['shed']);
+  }
+
   private cubeStrikes() {
     const d = this.debris;
     for (const e of this.enemies.list) {
       if (!e.alive || e.spawning > 0 || !hostile(this.player.faction, e.faction)) continue;
       const b = e.body;
       for (let i = 0; i < d.max; i++) {
-        if (!d.isAlive(i) || d.isResting(i) || d.isBomb(i)) continue;
+        if (!d.isAlive(i) || d.isResting(i) || d.isBomb(i) || d.tags[i]?.has('shed')) continue;
         const i3 = i * 3, vx = d.vel[i3], vy = d.vel[i3 + 1], vz = d.vel[i3 + 2];
         const speed = Math.hypot(vx, vy, vz);
         if (speed < CUBE_HIT_SPEED) continue;
         const cx = d.pos[i3], cy = d.pos[i3 + 1], cz = d.pos[i3 + 2], r = DEBRIS_SIZE / 2;
         if (Math.abs(cx - b.x) > b.hw + r || Math.abs(cz - b.z) > b.hw + r || cy + r < b.y || cy - r > b.y + b.h) continue;
+        // only a cube coming at the body hits it: one the projection itself shoves or runs through
+        // flies away from it, however fast (a charging boss must not be beaten by its own rubble)
+        const nx = b.x - cx, ny = b.y + b.h / 2 - cy, nz = b.z - cz, nl = Math.hypot(nx, ny, nz) || 1;
+        if ((vx * nx + vy * ny + vz * nz) / nl < CUBE_HIT_SPEED) continue;
         const dmg = cubeDamage(d.material[i], speed);
         const l = Math.hypot(vx, vz) || 1;
         this.damageActor(e, dmg, 'kick', 'cube', this.player.id, vx / l, vz / l);
@@ -1515,6 +1555,8 @@ export class Game {
   private onDebrisImpact(i: number, x: number, y: number, z: number, speed: number) {
     const tags = this.debris.tags[i];
     if (!tags) return;
+    // a boss's shed rubble just lands: its mark goes, and nothing (no item) hears about it
+    if (tags.size === 1 && tags.has('shed')) { this.debris.tags[i] = null; return; }
     const ev = this.bus.emit('debrisImpact', { cube: i, x, y, z, material: this.debris.material[i], speed, tags, keepTags: false });
     if (!ev.keepTags) this.debris.tags[i] = null;
   }

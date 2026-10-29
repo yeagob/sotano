@@ -508,6 +508,43 @@ At the great pit of floor 5, the Guardian is the gate that asks. It lets you pas
 
 ---
 
+### 6.6 How bosses fight: danger, tempo, telegraphs (owner, 2026-10-29; as built for floors 1–5)
+
+The owner's verdict on the first bosses (translated): *"Resistance hardly moves: it stays still breaking blocks and does nothing to me. The bosses of the first five floors feel weak, with low reach, few and poor attacks and few particles. They must be hard and carry a real risk."* Measured in the boss duel ([SANDBOX §5.1](../architecture/SANDBOX.md)) before the change: in fifteen seconds of a phase most bosses landed none or one hit on a running player and several stood still for whole phases. Why: `charge` only fired when you stood within a block of its row or column, and otherwise crept toward you at half speed and ground against the walls it had raised; most phases were a single `emitter` on one rhythm; half the arena changes named in the boss files did not exist; and rubble a boss shed or pushed counted as a blow on the boss itself.
+
+**The rules now** (`enemies/moves.ts`, [ENTITIES §5](../architecture/ENTITIES.md)):
+
+- **Never idle.** Between moves a boss walks its gait (it stalks you, keeps a distance or hovers over you); a move starts every 0.3–1.2 s of walking, faster each phase.
+- **Three beats per move**, like Isaac's bosses: a **windup** (0.4–0.9 s: it stops, its tells brighten, a growl, and the attack's whole reach is drawn on the floor in dashed cold marks), the **act**, and a **recovery** (0.3–1 s, the opening to hit it).
+- **Reach across the room.** Charges at any angle, aimed where you are going; shockwaves to 10–12 blocks; volleys and rain that cover the arena; stones from the ceiling.
+- **Every blow is fair and readable.** Rings and tides are low enough to jump; rain and stones mark where they land for their whole flight; a live attack's marks are doubled and shed sparks; heavy impacts shake the screen by distance and spit chips of the floor's own material (DECISIONS §7.3–7.4 caps).
+- **Each phase is a new set of moves**, each set a few moves picked by the seed and never the same twice in a row.
+- **Sequences** (owner, 2026-10-29: "variations, with varied attack sequences, like Isaac"): every phase also holds one or two **combos**, moves chained one after another, each with its own windup and telegraph and a short gap, and the recovery (the opening) only after the last. A combo is one pick in the rotation, so a phase mixes single moves and chains in a different order each fight. Rubble a boss breaks loose, sheds or drops never hurts it until you kick or throw it.
+
+| Boss | Phase 1 | Phase 2 (arena) | Phase 3 (arena) |
+|---|---|---|---|
+| Resistance | Blocks: rams (wall hits break and ring), stamps close up | Walls in (`walls`): rams twice through its own walls, double shockwaves, stones | Sits (`rockfall`): will not walk; leaps onto you with stones, triple shockwaves |
+| Inertia | Sleeps until moved; then rolls and bounces back at you twice, clods | Rolls (`rockfall`): three bounces, lands on you, rings | Gathers (`spill`): pulls the room in, then rolls through it; clod rain |
+| The Insatiable | Inhales (12 blocks, a biting mouth), spits fans, rain | Spits (`spill`): rain, spiral volleys | Hollow (`rockfall`): spirals of 14, triple rings, stones |
+| Overwhelm | Rises: a wave across the room, surges, spray | Breaks (`flood`): three waves from alternating sides, rings | Recedes (`drain`): four waves, volleys, bouncing surges |
+| The Hoard | Pushes weights: rolling weights both ways, rams, bars | Clutches (`rockfall`): pulls with a bite, rain, crossed bars | Spills (`spill`): bouncing rams, spirals, stones |
+| The Downpour | Rains (3.5 high, drifting over you): marked rain, stinging puddles | Lowers to 2.4 (`puddle`): more rain, lightning bars | Thins to 1.6, in reach (`drain`): rain, crossed bars, volleys |
+| The Threshold Guardian (shadow route) | Bars: grids of bars where you stand, aimed fans | Tests: keeps its distance; fans of seven, rings of sixteen, crossed bars | Steps aside (`rockfall`): bouncing charges, leaps with stones, bars |
+
+| Boss | Sequences: phase 1 · phase 2 · phase 3 |
+|---|---|
+| Resistance | ram and stamp · double ram; stones then ram · three drops (two hops and a great leap with stones) |
+| Inertia | roll and clods · hop, hop, roll · breathe in, roll out |
+| The Insatiable | inhale and spit · spiral and rain · rings, spiral, stones |
+| Overwhelm | surge and break · crossing tides; splash and surge · the flood (tides, volley, bouncing surge) |
+| The Hoard | weights then ram · clutch and throw · burst open (two spirals, then a bouncing ram) |
+| The Downpour | storm front (puddles, rain) · lightning storm (bars, crossed bars, rain) · cloudburst |
+| The Threshold Guardian | closing gate (three sets of bars) · volley chain · charge and crush |
+
+The bosses of floors 6–9 still fight the old way; they are the next pass.
+
+---
+
 ## 7. Creatures: the living things of the depths *(proposal)*
 
 ### 7.1 Rules

@@ -3,7 +3,73 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>THE ROOTS</title>
+  <title>THE ROOTS: a voxel roguelite, free in your browser</title>
+  <meta name="description" content="Free browser voxel roguelite: break cubes like Minecraft, shoot intentions like The Binding of Isaac, and go down through a cavern world like Noita. No install." />
+  <meta name="keywords" content="THE ROOTS, voxel roguelite, roguelite, roguelike, Minecraft-like, Binding of Isaac-like, Noita-like, voxel game, sandbox, first-person, browser game, free browser game, no install, open source, indie game" />
+  <meta name="author" content="yeagob" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://sotano-yeagobs-projects.vercel.app/" />
+  <link rel="alternate" hreflang="en" href="https://sotano-yeagobs-projects.vercel.app/" />
+  <link rel="alternate" hreflang="es" href="https://sotano-yeagobs-projects.vercel.app/?lang=es" />
+  <link rel="alternate" hreflang="x-default" href="https://sotano-yeagobs-projects.vercel.app/" />
+
+  <!-- Social previews (Open Graph and X/Twitter cards). The image is 1200x630: docs/architecture/DISCOVERABILITY.md -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="THE ROOTS" />
+  <meta property="og:title" content="THE ROOTS: a voxel roguelite, free in your browser" />
+  <meta property="og:description" content="Free browser voxel roguelite: break cubes like Minecraft, shoot intentions like The Binding of Isaac, and go down through a cavern world like Noita. No install." />
+  <meta property="og:url" content="https://sotano-yeagobs-projects.vercel.app/" />
+  <meta property="og:image" content="https://sotano-yeagobs-projects.vercel.app/social-card.jpg" />
+  <meta property="og:image:secure_url" content="https://sotano-yeagobs-projects.vercel.app/social-card.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="THE ROOTS: a voxel cavern, and a figure looking down into the light" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="es_ES" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="THE ROOTS: a voxel roguelite, free in your browser" />
+  <meta name="twitter:description" content="Free browser voxel roguelite: break cubes like Minecraft, shoot intentions like The Binding of Isaac, and go down through a cavern world like Noita. No install." />
+  <meta name="twitter:image" content="https://sotano-yeagobs-projects.vercel.app/social-card.jpg" />
+  <meta name="twitter:image:alt" content="THE ROOTS: a voxel cavern, and a figure looking down into the light" />
+
+  <!-- Structured data for search engines and AI assistants: what the game is, where it runs, that it is free -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "VideoGame",
+        "@id": "https://sotano-yeagobs-projects.vercel.app/#game",
+        "name": "THE ROOTS",
+        "alternateName": "Sotano",
+        "url": "https://sotano-yeagobs-projects.vercel.app/",
+        "image": "https://sotano-yeagobs-projects.vercel.app/social-card.jpg",
+        "description": "A first-person voxel roguelite about going deeper. Break the structures that hold you, meet the patterns and creatures below, and grow. Minecraft's cubes you can break and build with, and Binding of Isaac-style runs where every item changes how you play.",
+        "genre": ["Roguelite", "Roguelike", "Voxel", "Sandbox", "Action", "Adventure"],
+        "keywords": "voxel roguelite, roguelike, Minecraft-like, The Binding of Isaac-like, Noita-like, first-person, sandbox, browser game, open source",
+        "gamePlatform": ["Web Browser", "Desktop browser", "Mobile browser"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "playMode": "SinglePlayer",
+        "inLanguage": ["en", "es"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
+        "author": { "@type": "Person", "name": "yeagob", "url": "https://github.com/yeagob" },
+        "codeRepository": "https://github.com/yeagob/sotano",
+        "sameAs": ["https://github.com/yeagob/sotano"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://sotano-yeagobs-projects.vercel.app/#website",
+        "url": "https://sotano-yeagobs-projects.vercel.app/",
+        "name": "THE ROOTS",
+        "inLanguage": ["en", "es"],
+        "about": { "@id": "https://sotano-yeagobs-projects.vercel.app/#game" }
+      }
+    ]
+  }
+  </script>
   <style>
     /* Vessel Light UI (docs/art/DECISIONS.md §10.2). Every colour is a palette token written by
        applyPaletteCss() (src/render/icons.ts) as a CSS variable: no hex in this file. */
@@ -273,6 +339,14 @@
   </style>
 </head>
 <body>
+  <!-- Crawlers that do not run scripts read this. Players with scripts off see it too. The game itself is a canvas. -->
+  <noscript>
+    <main>
+      <h1>THE ROOTS</h1>
+      <p>A first-person voxel roguelite about going deeper, free to play in your browser with no install. Break the blocks that hold you, shoot intentions with a polarity, meet the projections of your patterns in the depths, and collect practices that change how you play, every run.</p>
+      <p>Think of it as Minecraft and The Binding of Isaac had a child, with a cavern world as deep and dark as Noita. Open source: <a href="https://github.com/yeagob/sotano">github.com/yeagob/sotano</a>. Enable JavaScript to play.</p>
+    </main>
+  </noscript>
   <canvas id="game"></canvas>
   <div id="crosshair"></div>
   <div id="flash"></div>

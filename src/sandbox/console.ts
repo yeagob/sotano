@@ -13,6 +13,8 @@ import { BLANK, SCENARIO_BY_ID, SCENARIOS } from './catalogue';
 import { runLab } from './lab';
 import { applyPlacement, type Placement, type Scenario, type Vec3 } from './scenario';
 import { legend, mapAt } from './report';
+import { duel, duelLine, type DuelMode } from './duel';
+import { BOSSES } from '../content/bosses';
 
 const HELP = `S.sb — the sandbox (room-local [col, h, row]; h 0 = first air layer)
   list()                       scenarios · templates() · blocks() · items() · projections()
@@ -23,7 +25,9 @@ const HELP = `S.sb — the sandbox (room-local [col, h, row]; h 0 = first air la
   spawn('doubt', x, h, z, 'self'?)  give('stoic') · lose('stoic') · hand('crate', 'stone')
   pause(true) · step(60)        freeze the world and move it a fixed tick at a time
   here()                       where you stand · map(h = 0) · export() the scenario as JSON
-  lab('id' | {…})              run a scenario's script and print its report`;
+  lab('id' | {…})              run a scenario's script and print its report
+  duel('resistance', 'kite'|'still', {floor, seconds, hp})   a boss against a scripted player, a phase at a time
+  duels(floor?)                every boss, both modes`;
 
 export function sandboxConsole(game: Game, initial: string, lab: boolean) {
   const resolve = (s: string | Scenario): Scenario => {
@@ -97,5 +101,7 @@ export function sandboxConsole(game: Game, initial: string, lab: boolean) {
     map: (h = 0) => { const m = mapAt(game.world, room(), h); console.info(m.join('\n') + '\n' + legend([m])); },
     export: () => JSON.stringify(current(), null, 2),
     lab: (s: string | Scenario) => { const { report } = runLab(game, resolve(s)); console.info(report); return report; },
+    duel: (boss: string, mode: DuelMode = 'kite', opt: { floor?: number; seconds?: number; hp?: number } = {}) => duelLine(duel(game, boss, mode, opt)),
+    duels: (floor?: number) => BOSSES.flatMap(b => (['still', 'kite'] as const).map(m => duelLine(duel(game, b.id, m, { floor: floor ?? b.minFloor })))).join('\n'),
   };
 }

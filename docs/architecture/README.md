@@ -14,6 +14,7 @@ How the code that exists today works.
 | [input/](input/README.md) | Input, a folder: the action table and contexts (README), then one document per scheme: [keyboard and mouse](input/KEYBOARD.md), [gamepad](input/GAMEPAD.md), [touch](input/TOUCH.md) |
 | [LOCALIZATION.md](LOCALIZATION.md) | Localization: English source and Spanish, `t()` and catalogs, content texts by id, item messages, numbers, choosing the language, live switching, death causes, tests, how to add text or a language |
 | [ELEMENTS.md](ELEMENTS.md) | Elements: the element layer, flow, reactions, rendering and projections in fire, water and lava (built); electricity and block entities (chests, furnaces, barrels) still plan |
+| [DISCOVERABILITY.md](DISCOVERABILITY.md) | Discoverability: the canonical address, search and social metadata, JSON-LD, robots.txt, sitemap, llms.txt for AI assistants, the social card and how to keep them in step |
 | [SANDBOX.md](SANDBOX.md) | The sandbox and the lab: one room built from a scenario (any layout, blocks, elements, projections, practices), the creative room (`?sandbox`, `S.sb`) and the deterministic lab (`npm run sandbox`) with its text reports |
 | [LEVELS.md](LEVELS.md) | Levels: the ten floors and the tutorial roots (L1, built), and the milestones to the Tree-of-Life maps, multi-cell rooms, the circles, silence and heaven, and the giant tree (L2–L6) |
 
