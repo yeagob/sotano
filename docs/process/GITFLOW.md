@@ -43,7 +43,7 @@ Players and testers report through the [issue templates](../../.github/ISSUE_TEM
 3. **Work.** Keep the branch small. Update the docs in the same branch, as the [documentation rules](../README.md) require, and keep every player-facing text in every shipped language.
 4. **Pull request.** Open a PR into **`develop`**, fill in the template, and link the issue with `Closes #<issue>`.
 5. **Checks.** The [CI workflow](../../.github/workflows/ci.yml) must be green: typecheck and tests.
-6. **Review and merge.** The owner reviews and merges with a merge commit (not squash, not rebase), so the branch shows in the history.
+6. **Review and merge.** The owner merges with a merge commit (not squash, not rebase), so the branch shows in the history, once CI is green. The owner is the only maintainer, so no second person has to approve; an agent review on the PR is optional and does not block the merge.
 
 ## Releases
 
