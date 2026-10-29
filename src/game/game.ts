@@ -66,6 +66,7 @@ import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, type PresenceId } from '../content/presences';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
+import { rollCrate } from '../content/tables/crates';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
@@ -1411,11 +1412,17 @@ export class Game {
 
   /**
    * Broken blocks give nothing but the block itself (owner decision: keys, items and other
-   * rewards live in chests, Minecraft-style). The `blockLoot` event still fires with no drops,
-   * so an item can add some.
+   * rewards live in chests, Minecraft-style), with one exception: a crate sometimes gives a key,
+   * a heart or a small bomb (issue #6, `rollCrate`). The `blockLoot` event fires with those drops,
+   * so an item can add more.
    */
   private rollLoot(x: number, y: number, z: number, material: number, source: string) {
-    const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops: [] });
+    const drops: PickupKind[] = [];
+    if (material === MAT.crate) {
+      const drop = rollCrate(this.rng.stream('drops'), { floor: depthOf(y), luck: this.stats.get('luck') });
+      if (drop) drops.push(drop);
+    }
+    const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
     for (const k of ev.drops) {
       this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
       this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
