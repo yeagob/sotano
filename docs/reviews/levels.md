@@ -1,6 +1,6 @@
 # Review: levels L1 (the ten floors and the tutorial roots)
 
-Subject: [LEVELS.md](../architecture/LEVELS.md) milestone L1, the frame for the owner's thirteen-level world ([design](../design/LEVELS.md)). Three parties: engineer (proposal and build), architect (critique), mediator (ruling for the owner). Date: 2026-10-27.
+Subject: [LEVELS.md](../architecture/LEVELS.md) milestone L1, the frame for the owner's thirteen-level world ([design](../design/built/levels/README.md)). Three parties: engineer (proposal and build), architect (critique), mediator (ruling for the owner). Date: 2026-10-27.
 
 | # | Architect's point | Severity | Ruling | Resolution |
 |---|---|---|---|---|

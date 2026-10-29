@@ -31,7 +31,7 @@ During combat a room's doors are **sealed** (they stay shut) until every project
 
 **Challenge rooms** (`RoomType 'challenge'`, Isaac's): on a hostile floor, one room may be a challenge room (`CHALLENGE_ROOM` table, `fork('plan', k, 'challenge')`, a dead end when there is one, never next to the start; obsidian frame for now). Every time you walk in, its doors seal and **three waves** materialise at its centre, each harder than the last (`waveBudget(floor, wave, visit)`), every visit harder than the one before; each wave cleared drops a reward rolled on the room's own fork. Leave and come back as often as you like: it is for farming. Templates: `gauntlet`, `colosseum`.
 
-If a floor has a locked door, it also has one **key**, placed on a `K` spot of a normal room (or the middle of one if no template has a `K`). **The room behind a locked door is wrapped in obsidian** (walls, floor, ceiling): very hard, still breakable. More keys lie on open tiles for the floor's **chests**, which are unbreakable blocks that hold shut practices and loot ([design/CHESTS.md](../design/CHESTS.md)); `freeSpots` picks the tiles and `carveFloor` returns `FloorResult.chests`. Chest decisions use the forks `floor/k/room/i/chest` and `floor/k/chestkeys`.
+If a floor has a locked door, it also has one **key**, placed on a `K` spot of a normal room (or the middle of one if no template has a `K`). **The room behind a locked door is wrapped in obsidian** (walls, floor, ceiling): very hard, still breakable. More keys lie on open tiles for the floor's **chests**, which are unbreakable blocks that hold shut practices and loot ([design/CHESTS.md](../design/built/chests/CHESTS.md)); `freeSpots` picks the tiles and `carveFloor` returns `FloorResult.chests`. Chest decisions use the forks `floor/k/room/i/chest` and `floor/k/chestkeys`.
 
 ## 3. Templates
 
@@ -71,7 +71,7 @@ A wall that seals the whole room (a full row or column of `#` or `X`) carries a 
 
 ### Height and layers
 
-Optional fields (design and authoring rules: [LEVELS.md](../design/LEVELS.md), the [`sotano-levels`](../../.claude/skills/sotano-levels/SKILL.md) skill):
+Optional fields (design and authoring rules: [LEVELS.md](../design/built/levels/README.md), the [`sotano-levels`](../../.claude/skills/sotano-levels/SKILL.md) skill):
 
 - `height` (5–8, default 5): the interior height. `#` columns reach the ceiling, whatever its height. `RoomInfo.height` carries it to the game (combat bounds, flow fields).
 - `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`, `pointed-x`, `pointed-z`, `cross`, `stepped`, `cave`): how the height above 5 is shaped (`ceilingAt` in `rooms.ts`). Two blocks of headroom stay over every stack under it (checked).
@@ -119,7 +119,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 
 - ~~Double and L-shaped rooms (2×1, 1×2, 2×2 grid cells).~~ Built: rooms bigger than their cell, any outline inside 2 × 2 cells ([LEVELS.md](LEVELS.md) §11).
 - ~~Room interiors that use height: pits, platforms, multi-level rooms.~~ Built (height, vaults, layers, terraces, pools, dips).
-- The thirteen-floor world and Tree-of-Life plans ([LEVELS.md](../design/LEVELS.md) §1–§2).
+- The thirteen-floor world and Tree-of-Life plans ([LEVELS.md](../design/built/levels/README.md) §1–§2).
 - Bosses in boss rooms (the hole opens when the boss falls).
 - Chests, furnaces and barrels as template markers ([ELEMENTS.md](ELEMENTS.md)); water, lava and fire are built.
 - Secret rooms with no door, and hidden pockets in the rock.

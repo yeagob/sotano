@@ -349,7 +349,7 @@ Breaking reveals light from the first hit. Strokes follow the material's logic (
 **Ruling.** The textured chest cube (`atlas.ts` `chest`/`chestopen`) is retired: the owner could not tell a chest, an open chest or a locked chest apart. A chest is now a box model (`src/render/chest-model.ts`, `buildChest({ keys, practice })`) drawn on top of an invisible solid voxel, with a lid that really opens. Silhouette first: a long low box with a stepped, domed lid, never a crate cube.
 
 - **Side:** world / vessel. It holds the light; it never glows while shut.
-- **Meaning:** closed is *what you keep shut until you are ready*; open is *what was kept, given*. A lock is a belief that asks for as many insights (keys, STORY.md) as it holds, so it shows one keyhole per key. The intention cannot break it; only keys or walking up open it ([CHESTS.md](../design/CHESTS.md)).
+- **Meaning:** closed is *what you keep shut until you are ready*; open is *what was kept, given*. A lock is a belief that asks for as many insights (keys, STORY.md) as it holds, so it shows one keyhole per key. The intention cannot break it; only keys or walking up open it ([CHESTS.md](../design/built/chests/CHESTS.md)).
 - **What the intention does:** nothing (unbreakable by rule). What opens it is a choice: spending insights.
 
 **Dimensions (texels, 16 per block; origin bottom centre, lock side +Z):**
@@ -971,7 +971,7 @@ On 2026-10-26 the owner accepted **every recommendation in §13** without change
 
 ### 14.1 Intention polarity (art ruling, 2026-10-27; OWNER to confirm the colour)
 
-Set by the dedicated art agent (Opus 5.5) for [BESTIARY §1.1](../design/BESTIARY.md#11-intention-polarity-owner-2026-10-27), built in [reviews/polarity.md](../reviews/polarity.md). The owner confirms or changes the colours.
+Set by the dedicated art agent (Opus 5.5) for [BESTIARY §1.1](../design/built/intentions/POLARITY.md), built in [reviews/polarity.md](../reviews/polarity.md). The owner confirms or changes the colours.
 
 - **Both polarities are round and warm.** No `cold.*` on any player intention, mark or trail: cold is the projections' (§3.12.3).
 - **Positive:** unchanged (`light.gold` shell, `light.core` core).

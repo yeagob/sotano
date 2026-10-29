@@ -4,7 +4,7 @@ Everything about the game, organised in five sections. Each section has its own 
 
 | Section | What's in it |
 |---|---|
-| [design/](design/README.md) | The game: design pillars, mechanics, story, metaphor, identity, enemies and practices (items) from the player's side |
+| [design/](design/README.md) | The game design document, a folder tree in two branches: [built/](design/built/README.md) (what exists) and [not-built/](design/not-built/README.md) (decided or proposed). Pillars, mechanics, story, metaphor, enemies, bosses, levels and practices (items) from the player's side |
 | [architecture/](architecture/README.md) | How the code works today: overview, items and synergies, rooms and floors, entities |
 | [research/](research/README.md) | Research into how Isaac and Noita are built, the target technical architecture, budgets, IP notes and the roadmap |
 | [art/](art/README.md) | Art direction "Vessel Light": the art guide (every visual element, its colours, proportions and rules), the binding decision ledger from the debate, and the presentation |

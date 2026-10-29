@@ -164,7 +164,7 @@ prefixes, maps enemy ids to their localized name, item ids **and the labels an i
 - **New language**: copy `es.ts`, translate, list it in `locales/index.ts`. Fonts: the HUD uses
   the system monospace stack, which covers Latin scripts; other scripts need a font check.
 
-Naming rules from [STORY.md](../design/STORY.md) apply in every language: practices use the
+Naming rules from [STORY.md](../design/built/story/README.md) apply in every language: practices use the
 established name of the technique or public-domain work in that language (*Meditaciones*,
 *Cartas a Lucilio*, *Tao Te King*); never a brand or a modern book title as the name.
 

@@ -1,6 +1,6 @@
 # Architecture overview (as of M1.5)
 
-How the code that exists today is organised. For the target architecture and the reasoning behind it, see [../research/TECHNICAL.md](../research/TECHNICAL.md); for the game itself, [../design/DESIGN.md](../design/DESIGN.md). Topics with their own page: [ITEMS.md](ITEMS.md) (items, synergies, safety layers), [ROOMS.md](ROOMS.md) (floor plans, templates, doors), [ENTITIES.md](ENTITIES.md) (health, bombs, enemies, pickups, stacked floors), [ELEMENTS.md](ELEMENTS.md) (planned: fire, water, lava, chests, furnaces).
+How the code that exists today is organised. For the target architecture and the reasoning behind it, see [../research/TECHNICAL.md](../research/TECHNICAL.md); for the game itself, [../design/DESIGN.md](../design/built/story/PILLARS.md). Topics with their own page: [ITEMS.md](ITEMS.md) (items, synergies, safety layers), [ROOMS.md](ROOMS.md) (floor plans, templates, doors), [ENTITIES.md](ENTITIES.md) (health, bombs, enemies, pickups, stacked floors), [ELEMENTS.md](ELEMENTS.md) (planned: fire, water, lava, chests, furnaces).
 
 ## Module map
 

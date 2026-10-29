@@ -17,13 +17,13 @@ The owner wants **everything documented thoroughly, always in English**, in a pr
 ```
 README.md                      Project front page + documentation index by blocks
 docs/README.md                 Index of sections + doc rules
-docs/design/                   The game from the player's side
-  README.md                    Index of this section
-  DESIGN.md                    Mechanics, loop, structure, scope, open questions
-  STORY.md                     Story, metaphor, identity, paths/states of being,
-                               enemies as projections, item naming rules, vocabulary
-  ELEMENTS.md                  Fire, water, lava, mud, electricity, furnaces, chests (design)
-  LEVELS.md                    The thirteen floors, rooms with height, element rooms (sotano-levels skill)
+docs/design/                   The design document: the game from the player's side,
+                               a folder tree (sotano-design skill)
+  README.md                    The design document's index: the two branches
+  built/                       What exists today (every claim verifiable in code)
+    README.md                  Index of the built branch and its sections
+  not-built/                   What is decided or proposed and not in code yet
+    README.md                  Index of the not-built branch and its sections
 docs/architecture/             How the code works today
   README.md                    Index of this section
   OVERVIEW.md                  Module map, frame order, core systems, debug console, tests
@@ -49,14 +49,14 @@ docs/reviews/                  Three-party architecture reviews
 
 | You changed… | Update |
 |---|---|
-| A mechanic the player can feel | `docs/design/DESIGN.md` (+ README "What you can do" and controls if relevant) |
-| Story, metaphor, names, identity, an item's or enemy's meaning | `docs/design/STORY.md` (it wins on names and tone) |
-| An item, synergy, stat or event | `docs/architecture/ITEMS.md` (tables in §3, §5) and `docs/design/STORY.md` §5 catalogue |
-| An enemy, health, bombs, loot, floors stacking | `docs/architecture/ENTITIES.md`, plus STORY.md §4 for enemies |
-| Room templates, floor generation, doors | `docs/architecture/ROOMS.md` (+ `docs/design/LEVELS.md` and the `sotano-levels` skill) |
+| A mechanic the player can feel, or a feature built or planned | The design document, via the `sotano-design` skill: the document for that part in `docs/design/built/` (if built) or `docs/design/not-built/` (if not); the text moves when a feature ships |
+| Story, metaphor, names, identity, an item's or enemy's meaning | The naming rules in `docs/design/built/story/` (and `not-built/story/` for what is open); they win on names and tone |
+| An item, synergy, stat or event | `docs/architecture/ITEMS.md` (tables in §3, §5) and the practice's document in `docs/design/built/practices/` |
+| An enemy, health, bombs, loot, floors stacking | `docs/architecture/ENTITIES.md`, plus the projection's document in `docs/design/built/projections/` |
+| Room templates, floor generation, doors | `docs/architecture/ROOMS.md` (+ `docs/design/built/levels/` and the `sotano-levels` skill) |
 | Module layout, frame order, debug console, tests | `docs/architecture/OVERVIEW.md` |
 | Roadmap / milestone status, a technical decision change | `docs/research/TECHNICAL.md` (§15 roadmap, and note decision changes where the old decision was described) and the README roadmap |
-| A new reference (book, technique, therapy, game) or lore | `docs/lore/` via the sotano-lore skill |
+| A new reference (book, technique, therapy, game) or lore | `docs/lore/` via the sotano-lore skill, and the design document's story section |
 | Player-facing text, a new language, or the localization mechanism | The catalogs in `src/i18n/locales/` (`sotano-i18n` skill); `docs/architecture/LOCALIZATION.md` if the mechanism changed |
 | Anything random (a new table, a new random decision, a new seed path) | `docs/architecture/RNG.md` (path table, tables list) |
 | Controls: an action, a binding, a device | `docs/architecture/input/README.md` (the table) and the device's own document (`KEYBOARD.md`, `GAMEPAD.md`, `TOUCH.md`), via the `sotano-controls` skill |
@@ -72,6 +72,7 @@ Documentation is a tree, never a pile. Every level answers one question: a secti
 - **Every document says where it belongs** in its first lines (a link up to its folder's README) and links sideways only when it must.
 - **Each level is indexed by the level above**: a new document in its folder's README, a new folder in its section's README, a new section in `docs/README.md` and the root README.
 - **Move, don't copy.** When a document grows a second variant, turn it into a folder and move the text; fix every link in the same commit (the link check below).
+- **The design document is a tree you can pass as context.** Its rules (two branches `built/` and `not-built/`, one folder per part, one document per variant, a README per folder) are in the `sotano-design` skill. Any folder, read alone, must give the full picture of its part.
 
 A **new document** must be added to its section `README.md` index. A **new section (folder)** must have its own `README.md` with an index, and be listed in `docs/README.md` and in the root `README.md` documentation index.
 

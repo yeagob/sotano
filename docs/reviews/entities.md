@@ -2,7 +2,7 @@
 
 Three-party review of the proposal in [../architecture/ENTITIES.md](../architecture/ENTITIES.md).
 
-The owner's goals (translated): keys and bombs drop from broken blocks by probability, with Isaac-style counters; bombs; basic enemies that are metaphorical projections of mental blocks ([../design/STORY.md](../design/STORY.md) §4); enemies always spawn visibly from the room centre, never beside doors; Isaac-like health; floors are stacked and you go down by gravity, with the next floor loaded when you enter the boss room; everything modifiable by items; reasonable complexity for a prototype.
+The owner's goals (translated): keys and bombs drop from broken blocks by probability, with Isaac-style counters; bombs; basic enemies that are metaphorical projections of mental blocks ([../design/STORY.md](../design/built/projections/README.md) §4); enemies always spawn visibly from the room centre, never beside doors; Isaac-like health; floors are stacked and you go down by gravity, with the next floor loaded when you enter the boss room; everything modifiable by items; reasonable complexity for a prototype.
 
 ---
 

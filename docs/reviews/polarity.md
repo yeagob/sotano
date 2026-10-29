@@ -1,6 +1,6 @@
 # Review: intention polarity
 
-Subject: positive and negative intentions, the polarity toggle, warmth on projections, allies that can be harmed or healed and turn back ([../design/BESTIARY.md §1.1](../design/BESTIARY.md#11-intention-polarity-owner-2026-10-27)). Written before the code, as [`sotano-docs` §4](../../.claude/skills/sotano-docs/SKILL.md) asks. This change touches damage, factions and the room clear, so it is a key decision.
+Subject: positive and negative intentions, the polarity toggle, warmth on projections, allies that can be harmed or healed and turn back ([../design/BESTIARY.md §1.1](../design/built/intentions/POLARITY.md)). Written before the code, as [`sotano-docs` §4](../../.claude/skills/sotano-docs/SKILL.md) asks. This change touches damage, factions and the room clear, so it is a key decision.
 
 The three parties are: **engineer** (part 1, the proposal), **architect** (part 2, the critique, a read-only review of the proposal against the code), **mediator** (part 3, the ruling: now, later or reject, after fact-checking the critique against the code and representing the owner's interests). Part 4 records what the engineer built from the ruling.
 
@@ -10,7 +10,7 @@ The three parties are: **engineer** (part 1, the proposal), **architect** (part 
 
 ### 1.1 What the owner asked for
 
-From [BESTIARY §1.1](../design/BESTIARY.md#11-intention-polarity-owner-2026-10-27):
+From [BESTIARY §1.1](../design/built/intentions/POLARITY.md):
 
 1. One toggle switches the loaded intention between positive and negative. The default is positive. The HUD shows the polarity with a round mark that never flickers.
 2. **Positive** intentions deal half damage to hostile projections and add warmth. At full warmth the projection turns to the self (`setFaction(a, 'self', source)`), not destroyed.

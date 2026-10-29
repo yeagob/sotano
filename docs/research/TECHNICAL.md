@@ -1,6 +1,6 @@
 # The Roots — Research and Technical Proposal (v0.2, draft)
 
-Companion to [DESIGN.md](../design/DESIGN.md). Two parts: **what we know about how Isaac and Noita are built**, and **how we build The Roots** for the browser (WebGL), open source, deployed on Vercel. For how the code that exists *today* is organised, see [ARCHITECTURE.md](../architecture/OVERVIEW.md); the item system as built (after its review) is in [ITEMS.md](../architecture/ITEMS.md), floors and templates in [ROOMS.md](../architecture/ROOMS.md).
+Companion to [DESIGN.md](../design/built/story/PILLARS.md). Two parts: **what we know about how Isaac and Noita are built**, and **how we build The Roots** for the browser (WebGL), open source, deployed on Vercel. For how the code that exists *today* is organised, see [ARCHITECTURE.md](../architecture/OVERVIEW.md); the item system as built (after its review) is in [ITEMS.md](../architecture/ITEMS.md), floors and templates in [ROOMS.md](../architecture/ROOMS.md).
 
 > **About sources.** The Isaac material comes mainly from its public modding API (documented by the community in IsaacDocs) and from the analysis of its floor generation (Boris the Brave, with input from Florian Himsl). The Noita material comes from the GDC 2019 talk *Exploring the Tech and Design of Noita* and articles by Nolla Games. Details marked *(verify)* are from memory or secondary sources.
 
