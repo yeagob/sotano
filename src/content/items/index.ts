@@ -37,7 +37,6 @@ import visualization from './visualization';
 import affirmation from './affirmation';
 import ahamoment from './ahamoment';
 import bounceback from './bounceback';
-import boundaries from './boundaries';
 import chunking from './chunking';
 import discharge from './discharge';
 import dualprocess from './dualprocess';
@@ -57,7 +56,7 @@ export const ITEMS: readonly ItemDef[] = [
   gratitude, boxbreathing, acceptance, socratic,
   forgiveness, nothingpersonal, constellation, arttherapy, thinkwaitfast, omens,
   lionsmane, occamsrazor, kiai,
-  ahamoment, affirmation, boundaries, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
+  ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

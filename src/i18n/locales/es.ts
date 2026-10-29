@@ -349,12 +349,6 @@ export const ES: Catalog = {
         effect: 'Las intenciones se curvan hacia el bloque más cercano a menos de 6 bloques. Una positiva que impacta un bloque deja junto a él una copia suelta del mismo.',
         inspiredBy: 'la autosugestión y el diálogo interior (Émile Coué, principios del siglo XX)',
       },
-      boundaries: {
-        name: 'Límites',
-        description: 'Una línea que dice qué cercanía es suficiente.',
-        effect: 'Las intenciones y los trazos de tus armas no hacen daño a las proyecciones. A cada una que golpea una intención o un rayo la empujan 7 bloques/s hacia atrás, en la dirección del disparo.',
-        inspiredBy: 'Los límites (Henry Cloud y John Townsend, Límites, 1992)',
-      },
       thoughtstopping: {
         name: 'Detención del pensamiento',
         description: 'Corta el bucle, y el pensamiento ya no tiene adónde ir.',
