@@ -1,19 +1,18 @@
 import { pal } from '../palette';
-import { charge, emitter, phased, volley } from '../../enemies/behaviours';
-import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
+import { phased } from '../../enemies/behaviours';
+import { barrage, charge, combo, moveset, rocks, shockwave, slam } from '../../enemies/moves';
+import { defineEnemy, TX } from '../../enemies/types';
 
-const throwCube = (e: Enemy, ctx: EnemyCtx) => {
-  const t = ctx.target(e);
-  if (t) ctx.shootAt(e, t.x, t.y + 1, t.z);
-};
-
+// A door that walks (BESTIARY §6.3). 1 Blocks: it comes at you and rams, and what it rams breaks.
+// 2 Walls in: it cuts the room with walls and rams twice, through them. 3 Sits: it will not walk any
+// more; it grows heavy and drops on you, and the ceiling comes down with it.
 export default defineEnemy({
   id: 'resistance',
   kind: 'boss',
   name: 'Resistance',
   pattern: 'The force that stops creative work',
   hp: 140,
-  speed: 2.6,
+  speed: 3,
   size: [0.9, 2.6],
   contactDamage: 8,
   cost: 0,
@@ -21,11 +20,36 @@ export default defineEnemy({
   maxFloor: 2,
   breaks: { tier: 1, power: 6 },
   behaviour: phased({
-    arena: ['walls', 'walls'],
+    arena: ['walls', 'rockfall'],
     phases: [
-      volley({ every: 3, shot: throwCube, then: charge({ aim: 0.8, speed: 4.2, run: 1.8, stun: 1.6, range: 10, cooldown: 1.4 }) }),
-      volley({ every: 2.2, shot: throwCube, then: charge({ aim: 0.6, speed: 4.6, run: 1.8, stun: 1.2, range: 10, cooldown: 1.0 }) }),
-      emitter({ follow: { speed: 1.6, keep: 3 }, every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
+      moveset({
+        gait: { kind: 'stalk' }, pace: [0.5, 1.1], moves: [
+          combo('ram-and-stamp', [charge({ windup: 0.6, recover: 0, speed: 11, impact: 5 }), shockwave({ windup: 0.45, recover: 0, rings: 1, gap: 0, reach: 5 })], { recover: 1, min: 3 }),
+          charge({ windup: 0.65, recover: 0.9, speed: 11, impact: 5, min: 3 }),
+          shockwave({ windup: 0.5, recover: 0.6, rings: 1, gap: 0, reach: 4.5, max: 5 }),
+          // it throws cubes of itself at you (owner, b86b17c): each one's landing is marked
+          barrage({ windup: 0.45, recover: 0.3, count: 2, seconds: 0.5, spread: 1, walk: true }),
+        ],
+      }),
+      moveset({
+        gait: { kind: 'stalk' }, pace: [0.35, 0.8], moves: [
+          combo('double-ram', [charge({ windup: 0.55, recover: 0, speed: 12, impact: 5 }), charge({ windup: 0.45, recover: 0, speed: 12, impact: 6 })], { recover: 0.9 }),
+          combo('stones-then-ram', [rocks({ windup: 0.45, recover: 0, count: 5, lead: 1, spread: 3 }), charge({ windup: 0.5, recover: 0, speed: 12, impact: 6 })], { recover: 0.8 }),
+          charge({ windup: 0.55, recover: 0.75, speed: 12, bounces: 1, impact: 6 }),
+          shockwave({ windup: 0.5, recover: 0.6, rings: 2, gap: 0.45, reach: 7 }),
+          // it throws cubes of itself at you (owner, b86b17c): each one's landing is marked
+          barrage({ windup: 0.45, recover: 0.3, count: 2, seconds: 0.5, spread: 1, walk: true }),
+          rocks({ windup: 0.5, recover: 0.4, count: 4, lead: 1, spread: 3, walk: true }),
+        ],
+      }),
+      moveset({
+        gait: { kind: 'still' }, pace: [0.3, 0.7], moves: [
+          combo('three-drops', [slam({ windup: 0.5, recover: 0, air: 0.6, reach: 6 }), slam({ windup: 0.45, recover: 0, air: 0.6, reach: 6 }), slam({ windup: 0.7, recover: 0, air: 0.9, reach: 11, stones: 4 })], { recover: 1.1, gap: 0.1 }),
+          slam({ windup: 0.7, recover: 0.8, air: 0.8, reach: 8, stones: 3 }),
+          shockwave({ windup: 0.6, recover: 0.7, rings: 3, gap: 0.5, reach: 10, quake: 0.5 }),
+          rocks({ windup: 0.5, recover: 0.4, count: 6, lead: 1, spread: 3.5 }),
+        ],
+      }),
     ],
   }),
   model: [

@@ -143,6 +143,10 @@ export const spatial = {
       case 'hide': noise(0.2, 0.25, 220, 1, out); break;
       case 'chirp': tone(jitter(2100), 0.07, 'sine', 0.05, 1.3, out); tone(jitter(2100), 0.07, 'sine', 0.04, 1.2, out); break;
       case 'phase': tone(jitter(440), 1.2, 'sine', 0.1, 1.3, out); tone(jitter(660), 1.2, 'sine', 0.06, 1.2, out); break;
+      // a boss winds up: a short rising growl, so the stop before an attack is heard as well as seen
+      case 'windup': tone(jitter(110), 0.45, 'sawtooth', 0.07, 2.2, out); noise(0.3, 0.12, 400, 1.6, out); break;
+      // a heavy impact: a deep thud under a crack of stone
+      case 'quake': noise(0.35, 0.5, 140, 0.7, out); tone(jitter(55), 0.5, 'sine', 0.35, 0.5, out); break;
       default: noise(0.05, 0.3, 800, 1, out);
     }
   },

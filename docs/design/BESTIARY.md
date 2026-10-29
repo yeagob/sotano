@@ -508,6 +508,43 @@ At the great pit of floor 5, the Guardian is the gate that asks. It lets you pas
 
 ---
 
+### 6.6 How bosses fight: danger, tempo, telegraphs (owner, 2026-10-29; as built for floors 1–5)
+
+The owner's verdict on the first bosses (translated): *"Resistance hardly moves: it stays still breaking blocks and does nothing to me. The bosses of the first five floors feel weak, with low reach, few and poor attacks and few particles. They must be hard and carry a real risk."* Measured in the boss duel ([SANDBOX §5.1](../architecture/SANDBOX.md)) before the change: in fifteen seconds of a phase most bosses landed none or one hit on a running player and several stood still for whole phases. Why: `charge` only fired when you stood within a block of its row or column, and otherwise crept toward you at half speed and ground against the walls it had raised; most phases were a single `emitter` on one rhythm; half the arena changes named in the boss files did not exist; and rubble a boss shed or pushed counted as a blow on the boss itself.
+
+**The rules now** (`enemies/moves.ts`, [ENTITIES §5](../architecture/ENTITIES.md)):
+
+- **Never idle.** Between moves a boss walks its gait (it stalks you, keeps a distance or hovers over you); a move starts every 0.3–1.2 s of walking, faster each phase.
+- **Three beats per move**, like Isaac's bosses: a **windup** (0.4–0.9 s: it stops, its tells brighten, a growl, and the attack's whole reach is drawn on the floor in dashed cold marks), the **act**, and a **recovery** (0.3–1 s, the opening to hit it).
+- **Reach across the room.** Charges at any angle, aimed where you are going; shockwaves to 10–12 blocks; volleys and rain that cover the arena; stones from the ceiling.
+- **Every blow is fair and readable.** Rings and tides are low enough to jump; rain and stones mark where they land for their whole flight; a live attack's marks are doubled and shed sparks; heavy impacts shake the screen by distance and spit chips of the floor's own material (DECISIONS §7.3–7.4 caps).
+- **Each phase is a new set of moves**, each set a few moves picked by the seed and never the same twice in a row.
+- **Sequences** (owner, 2026-10-29: "variations, with varied attack sequences, like Isaac"): every phase also holds one or two **combos**, moves chained one after another, each with its own windup and telegraph and a short gap, and the recovery (the opening) only after the last. A combo is one pick in the rotation, so a phase mixes single moves and chains in a different order each fight. Rubble a boss breaks loose, sheds or drops never hurts it until you kick or throw it.
+
+| Boss | Phase 1 | Phase 2 (arena) | Phase 3 (arena) |
+|---|---|---|---|
+| Resistance | Blocks: rams (wall hits break and ring), stamps close up | Walls in (`walls`): rams twice through its own walls, double shockwaves, stones | Sits (`rockfall`): will not walk; leaps onto you with stones, triple shockwaves |
+| Inertia | Sleeps until moved; then rolls and bounces back at you twice, clods | Rolls (`rockfall`): three bounces, lands on you, rings | Gathers (`spill`): pulls the room in, then rolls through it; clod rain |
+| The Insatiable | Inhales (12 blocks, a biting mouth), spits fans, rain | Spits (`spill`): rain, spiral volleys | Hollow (`rockfall`): spirals of 14, triple rings, stones |
+| Overwhelm | Rises: a wave across the room, surges, spray | Breaks (`flood`): three waves from alternating sides, rings | Recedes (`drain`): four waves, volleys, bouncing surges |
+| The Hoard | Pushes weights: rolling weights both ways, rams, bars | Clutches (`rockfall`): pulls with a bite, rain, crossed bars | Spills (`spill`): bouncing rams, spirals, stones |
+| The Downpour | Rains (3.5 high, drifting over you): marked rain, stinging puddles | Lowers to 2.4 (`puddle`): more rain, lightning bars | Thins to 1.6, in reach (`drain`): rain, crossed bars, volleys |
+| The Threshold Guardian (shadow route) | Bars: grids of bars where you stand, aimed fans | Tests: keeps its distance; fans of seven, rings of sixteen, crossed bars | Steps aside (`rockfall`): bouncing charges, leaps with stones, bars |
+
+| Boss | Sequences: phase 1 · phase 2 · phase 3 |
+|---|---|
+| Resistance | ram and stamp · double ram; stones then ram · three drops (two hops and a great leap with stones) |
+| Inertia | roll and clods · hop, hop, roll · breathe in, roll out |
+| The Insatiable | inhale and spit · spiral and rain · rings, spiral, stones |
+| Overwhelm | surge and break · crossing tides; splash and surge · the flood (tides, volley, bouncing surge) |
+| The Hoard | weights then ram · clutch and throw · burst open (two spirals, then a bouncing ram) |
+| The Downpour | storm front (puddles, rain) · lightning storm (bars, crossed bars, rain) · cloudburst |
+| The Threshold Guardian | closing gate (three sets of bars) · volley chain · charge and crush |
+
+The bosses of floors 6–9 still fight the old way; they are the next pass.
+
+---
+
 ## 7. Creatures: the living things of the depths *(proposal)*
 
 ### 7.1 Rules
@@ -820,7 +857,7 @@ What the game holds against this plan. "Simpler" is what was built with less tha
 | Creatures (§7) | Thirteen: Wonder, Rootling and Mossling (floor 0), Chirper and Delver (1–3), Bubbler and Ferryback (3–4), Drifter and Inkmite (5–6), Cinderwalker (7–8), Huddler (9), Leafling and Star-mite (Tree floors 1–5). The Mossling, Huddler, Leafling and Star-mite answer only positive intentions | None recorded | The Boundary (proposal, §7: the owner has not decided it yet) |
 | Bosses (§6) | Fourteen, one per floor from its zone's pool: phases at 2/3 and 1/3, arena changes, the way down | The Threshold Guardian's two routes open the same hole (§6.5) | The separate hole of the route of light |
 | Polarity (§1.1) | Projections, allies and creatures. Positive intentions heal creatures; negative ones send them into the blocks | None recorded | Presences; ally gifts at full health (§8.6); warmth decay |
-| Presences and messengers (§8) | The Gardener (start room of floor 0) and one Listener on each Tree floor (1–5). They are immortal, answer only positive intentions, and talk by contact: a card with two lines (the Listener heals a quarter heart once) | Nothing | All the rest of §8.3: the Cartographer, the Boatman, the Mender, the Witness, the Star-reader, the Wanderer, the Trickster, the Echo and the Elder and the Child; the dialogue choices; the codex (§9); the Compost (§8.8); requests (§8.5); agreements (§8.6) and gifts (§8.7); the sanctuary ring |
+| Presences and messengers (§8) | The Gardener (start room of floor 0) and one Listener on each Tree floor (1–5). They are immortal, answer only positive intentions, and talk by contact: a card with two lines (the Listener heals a quarter heart once). A negative intention within two blocks silences them (one patient line, then nothing until a positive one passes within eight blocks) | Nothing | All the rest of §8.3: the Cartographer, the Boatman, the Mender, the Witness, the Star-reader, the Wanderer, the Trickster, the Echo and the Elder and the Child; the dialogue choices; the codex (§9); the Compost (§8.8); requests (§8.5); agreements (§8.6) and gifts (§8.7); the sanctuary ring |
 | Art and sound (§10) | Spatial sound for omens, slams and telegraphs. The new beings (Boundary, Gardener, Listener, Leafling, Star-mite, Perfectionism's shell) were rebuilt on whole texels and checked by a dedicated art agent (2026-10-29), but their gallery captures in colour, greyscale and colour-blindness, and the owner's review, are still pending: the art gate is not passed yet | The art gate for the new beings: no separate reviewer and no gallery captures yet. The living palette (`living.*` in `content/palette.ts`) is still a proposal |
 | Review | Three-party review for polarity ([reviews/polarity.md](../reviews/polarity.md)) | None recorded | Three-party review for bosses and creatures |
 | Tests and sandbox | 257 tests pass. The `bestiary-smoke` scenario runs every projection in one room, and its report is saved ([SANDBOX.md](../architecture/SANDBOX.md)) | None recorded | None recorded |

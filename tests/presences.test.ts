@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_TALK, placePresences, type PresenceId } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, placePresences, presenceReaction, type PresenceId } from '../src/content/presences';
 
 const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
@@ -49,5 +49,19 @@ describe('presences: what they are', () => {
       expect(def.hp).toBe(1);
       expect(PRESENCE_TALK[id].lines.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('presences: silence (BESTIARY §8.1)', () => {
+  it('a negative intention within two blocks silences them; a positive one lifts silence within eight', () => {
+    expect(presenceReaction('negative', 1.5)).toBe('silence');
+    expect(presenceReaction('negative', 2.5)).toBe(null);
+    expect(presenceReaction('positive', 7)).toBe('lift');
+    expect(presenceReaction('positive', 9)).toBe(null);
+  });
+
+  it('every silence line exists in both languages', () => {
+    expect(PRESENCE_TALK.gardener.silent).toBe('presence.gardener.silent');
+    expect(PRESENCE_TALK.listener.silent).toBe('presence.listener.silent');
   });
 });

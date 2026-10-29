@@ -111,6 +111,9 @@ export interface Enemy extends Actor {
   ghost: boolean;
   seq: number;
   clock: number;
+  /** The boss move in progress (index into its moveset, -1 none) and seconds since it acted (enemies/moves.ts). */
+  move: number;
+  act: number;
   volley: number;
 }
 
@@ -151,6 +154,16 @@ export interface EnemyCtx {
   shootAt(e: Enemy, x: number, y: number, z: number): void;
   /** Explode at the enemy (Panic). */
   burst(e: Enemy, radius: number): void;
+  /** A heavy impact at a point: the screen shakes by distance and the floor there spits chips. */
+  quake(e: Enemy, x: number, y: number, z: number, power: number): void;
+  /** Smashes the breakable blocks (up to its `breaks` tier) in a slab in front of it, along (dx, dz). */
+  crash(e: Enemy, dx: number, dz: number): void;
+  /** A lob that lands on the point: its landing is marked on the floor while it flies, and it splashes there. */
+  rain(e: Enemy, x: number, y: number, z: number, damage: number): void;
+  /** A stone falls from the ceiling on (x, z): its shadow is marked for `lead` seconds, then it lands. */
+  rockfall(e: Enemy, x: number, y: number, z: number, lead: number, damage: number): void;
+  /** Cosmetic cube particles (telegraphs, trails). */
+  fx(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
   kill(e: Enemy): void;
 }
 

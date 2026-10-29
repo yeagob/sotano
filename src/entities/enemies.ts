@@ -21,6 +21,10 @@ const RETARGET_MARGIN = 1.5;
 const FLY_GAIN = 3;
 const FLY_MAX = 4;
 const NO_SOLID = () => false;
+/** Hostile projectiles alive at once (a boss volley is up to a few dozen). */
+const MAX_PROJECTILES = 128;
+/** A stone dropped from the ceiling falls under the debris gravity (physics/debris.ts). */
+const DROP_GRAVITY = 26;
 
 type Solid = (x: number, y: number, z: number) => boolean;
 
@@ -51,6 +55,10 @@ export interface EnemyHost {
   arena(e: Enemy, what: string): void;
   summon(e: Enemy, defIds: string[]): void;
   cue(kind: string, x: number, y: number, z: number): void;
+  /** A heavy impact: the screen shakes by distance to the player, the floor at the point spits chips. */
+  quake(x: number, y: number, z: number, power: number): void;
+  /** A stone of the room falls loose from (x, y, z) (a boss's rockfall): a loose cube. */
+  drop(e: Enemy, x: number, y: number, z: number): void;
 }
 
 interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction']; gravity: number }
@@ -101,13 +109,16 @@ export class Enemies {
   private m = new THREE.Matrix4();
   private euler = new THREE.Euler();
   private time = 0;
+  /** Stones on their way down from the ceiling: each becomes a loose cube `t` seconds before it lands. */
+  private drops: { owner: number; x: number; y: number; z: number; t: number }[] = [];
+  private boltCued = -1;
 
   private carrying = new Map<number, PickupKind[]>();
   private shells = new Map<number, ShellState>();
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
-      new THREE.MeshBasicMaterial({ color: pal('cold.body') }), 64);
+      new THREE.MeshBasicMaterial({ color: pal('cold.body') }), MAX_PROJECTILES);
     this.projMesh.frustumCulled = false;
     this.projMesh.count = 0;
     scene.add(this.projMesh);
@@ -117,6 +128,7 @@ export class Enemies {
       affect: (t, effect, seconds) => host.affectActor(t, effect, seconds),
       push: (t, vx, vz) => { t.body.vx += vx; t.body.vz += vz; },
       live: (shape: Shape) => { const [x, y, z] = shapePoint(shape); host.cue(shape.kind, x, y, z); },
+      particles: (x, y, z, c, n, s, size) => host.particles(x, y, z, c, n, s, size),
     };
     this.hazards = new Hazards(scene, hazardHost);
   }
@@ -134,7 +146,7 @@ export class Enemies {
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0, volley: 2,
+      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -142,6 +154,9 @@ export class Enemies {
   }
 
   get(id: number) { return this.list.find(e => e.id === id && e.alive); }
+
+  /** Attacks on the field and hostile projectiles in the air (the sandbox duel measures them). */
+  pressure() { return { hazards: this.hazards.size, projectiles: this.projectiles.length }; }
 
   /** Projections of a room that keep its doors shut: alive and still hostile (allies don't count). */
   blockingIn(room: number) { return this.list.filter(e => e.alive && e.room === room && e.faction === 'projection').length; }
@@ -208,6 +223,7 @@ export class Enemies {
   dissolve(e: Enemy) {
     e.alive = false;
     this.hazards.clear(e.id);
+    this.drops = this.drops.filter(d => d.owner !== e.id);
     const v = this.views.get(e.id);
     if (v) {
       this.group.remove(v.group);
@@ -268,7 +284,13 @@ export class Enemies {
       hide: (e, hidden) => this.hide(e, hidden),
       arena: (e, what) => host.arena(e, what),
       summon: (e, ids) => host.summon(e, ids),
+      quake: (_e, x, y, z, power) => host.quake(x, y, z, power),
+      crash: (e, dx, dz) => this.crash(e, dx, dz),
+      rain: (e, x, y, z, damage) => this.rain(e, x, y, z, damage),
+      rockfall: (e, x, y, z, lead, damage) => this.rockfall(e, x, y, z, lead, damage),
+      fx: (x, y, z, c, n, s, size) => host.particles(x, y, z, c, n, s, size),
     };
+    this.updateDrops(dt);
     for (const e of this.list) {
       if (!e.alive) continue;
       const b = e.body;
@@ -354,7 +376,7 @@ export class Enemies {
       }
       if (best && (!cur || bestCost < cost(cur) - RETARGET_MARGIN)) { cur = best; e.targetId = best.id; }
     }
-    return cur ? { id: cur.id, x: cur.body.x, y: cur.body.y, z: cur.body.z } : null;
+    return cur ? { id: cur.id, x: cur.body.x, y: cur.body.y, z: cur.body.z, vx: cur.body.vx, vz: cur.body.vz } : null;
   }
 
   /**
@@ -439,14 +461,64 @@ export class Enemies {
   }
 
   /** A lobbed projectile that lands on the target point. */
-  private shoot(e: Enemy, tx: number, ty: number, tz: number) {
+  private shoot(e: Enemy, tx: number, ty: number, tz: number, damage = 4): number {
     const b = e.body;
     const sx = b.x, sy = b.y + b.h * 0.75, sz = b.z;
     const dx = tx - sx, dz = tz - sz, d = Math.hypot(dx, dz);
     const t = Math.max(0.5, d / 9);
     this.push({
-      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * LOB_GRAVITY * t * t) / t, age: 0, damage: 4, thrower: e.id, faction: e.faction, gravity: LOB_GRAVITY,
+      x: sx, y: sy, z: sz, vx: dx / t, vz: dz / t, vy: (ty - sy + 0.5 * LOB_GRAVITY * t * t) / t, age: 0, damage, thrower: e.id, faction: e.faction, gravity: LOB_GRAVITY,
     });
+    return t;
+  }
+
+  /** A lob onto a point, with its landing marked on the floor for the whole flight and a splash there. */
+  private rain(e: Enemy, x: number, y: number, z: number, damage: number) {
+    // the drop itself is harmless: only the splash on its mark hurts, so the warning is the whole rule
+    const flight = this.shoot(e, x, y + 0.3, z, 0);
+    this.hazards.add(e.id, e.faction, `enemy:${e.def}`, {
+      lead: flight, live: 0.2, damage, shape: { kind: 'ring', x, y, z, r: 0.3, grow: 3, width: 0.4, height: 1.2 },
+    });
+  }
+
+  /** A stone from the ceiling onto (x, z): its shadow is marked for `lead` s; it comes loose when it has just time to fall. */
+  rockfall(e: Enemy, x: number, y: number, z: number, lead: number, damage: number) {
+    const rm = this.host.room(e.room);
+    const top = rm.y0 + (rm.height ?? 6) - 0.6;
+    const fall = Math.sqrt(2 * Math.max(0, top - y) / DROP_GRAVITY);
+    this.hazards.add(e.id, e.faction, `enemy:${e.def}`, {
+      lead, live: 0.15, damage, shape: { kind: 'ring', x, y, z, r: 0.7, grow: 0, width: 0.7, height: 2.6 },
+    });
+    this.drops.push({ owner: e.id, x, y: top, z, t: Math.max(0, lead - fall) });
+  }
+
+  private updateDrops(dt: number) {
+    for (let i = this.drops.length - 1; i >= 0; i--) {
+      const d = this.drops[i];
+      d.t -= dt;
+      if (d.t > 0) continue;
+      this.drops.splice(i, 1);
+      const e = this.list.find(o => o.id === d.owner && o.alive);
+      if (!e) continue;
+      this.host.particles(d.x, d.y, d.z, pal('cold.dim'), 6, 1.2, 0.07);
+      this.host.drop(e, d.x, d.y, d.z);
+    }
+  }
+
+  /** A charge meets a wall: what it can break in a slab three wide and as tall as it is, in front,
+   *  goes. Only inside the room: the room's own shell (and its doors) always hold. */
+  private crash(e: Enemy, dx: number, dz: number) {
+    const brk = e.spec.breaks;
+    if (!brk) return;
+    const rm = this.host.room(e.room), x0 = rm.x0, z0 = rm.z0, x1 = rm.x0 + (rm.w ?? ROOM_W) - 1, z1 = rm.z0 + (rm.d ?? ROOM_D) - 1;
+    const b = e.body, l = Math.hypot(dx, dz) || 1, ux = dx / l, uz = dz / l;
+    for (let depth = 0.6; depth <= 1.6; depth += 1) for (let side = -1; side <= 1; side++) {
+      const x = Math.floor(b.x + ux * (b.hw + depth) - uz * side), z = Math.floor(b.z + uz * (b.hw + depth) + ux * side);
+      if (x < x0 || x > x1 || z < z0 || z > z1) continue;
+      for (let y = Math.floor(b.y + 0.1); y <= Math.floor(b.y + b.h - 0.1); y++) {
+        if (this.host.solid(x, y, z)) this.host.smash(e, x, y, z, brk.tier, 999);
+      }
+    }
   }
 
   mirror(x: number, z: number, radius: number, dx: number, dy: number, dz: number) {
@@ -462,12 +534,13 @@ export class Enemies {
     this.push({
       x: b.x, y: b.y + b.h * 0.6, z: b.z, vx: dx / l * speed, vy: dy / l * speed, vz: dz / l * speed, age: 0, damage, thrower: e.id, faction: e.faction, gravity: 0,
     });
-    this.host.cue('bolt', b.x, b.y, b.z);
+    // a volley of bolts is one sound, not one per bolt
+    if (this.time !== this.boltCued) { this.boltCued = this.time; this.host.cue('bolt', b.x, b.y, b.z); }
   }
 
   private push(p: Projectile) {
     this.projectiles.push({ ...p, damage: p.damage });
-    if (this.projectiles.length > 64) this.projectiles.shift();
+    if (this.projectiles.length > MAX_PROJECTILES) this.projectiles.shift();
   }
 
   private updateProjectiles(dt: number, actors: Actor[]) {
