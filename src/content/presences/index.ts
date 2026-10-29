@@ -7,6 +7,8 @@ import listener from './listener';
 
 export type PresenceId = 'gardener' | 'listener';
 
+export type RoomPresence = PresenceId | 'boundary';
+
 export const PRESENCES: readonly EnemyDef[] = [gardener, listener];
 export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.map(p => [p.id, p]));
 
@@ -17,7 +19,7 @@ export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readon
 
 export const TALK_REACH = 2.2;
 
-interface PlacedRoom { type: string; enemies: string[]; presence?: PresenceId }
+interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 
 export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): void {
   if (floor === 0) {

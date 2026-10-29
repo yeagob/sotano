@@ -535,7 +535,9 @@ At the great pit of floor 5, the Guardian is the gate that asks. It lets you pas
 | **Huddlers** | V | Warmth shared | Small round creatures that gather in groups on the ice | Stand among them to thaw (lifts the frost slow); befriended, they follow you and thaw Numbness's ice |
 | **Leaflings, Star-mites** | Tree (floors 1–5) | Wonder; joining what is apart | Built: little lights that wander the leaves, and mites that wander the branches. They answer only positive intentions (§1.1) | Not yet: they would point out the teleport doors on the star map, which are not built |
 
-**Provokable: the Boundary** *(proposal; Noita's sanctuary guardians)*. A tall, calm creature that keeps watch in vaults and practice rooms. It never moves while the room's blocks are whole. **Break the sanctuary** (its pedestal ring, its walls) and it wakes, hostile, until you leave the room or put back what you broke (place blocks in the gaps: then it sits down again). Meaning: boundaries. Not a projection: it doesn't release, it settles; it can't be hurt, only calmed.
+**Provokable: the Boundary** *(approved by the owner, 2026-10-29; Noita's sanctuary guardians)*. A tall, calm creature that keeps watch in vaults and practice rooms. It never moves while the room's blocks are whole. **Break the sanctuary** (its pedestal ring, its walls) and it wakes, hostile, until you leave the room or put back what you broke (place blocks in the gaps: then it sits down again). Meaning: boundaries. Not a projection: it doesn't release, it settles; it can't be hurt, only calmed.
+
+**Built (2026-10-29).** Every vault of a dungeon floor has one. Its sanctuary is a ring of pedestal blocks two blocks around its centre, and two chests stand in the vault beside it (chests may hold a rare extra practice, `CHEST_RARE`). It is neutral and never moves. Breaking any block of the ring wakes it, but only while you are inside its room: it then throws cubes at you (a Lob). It calms again when you put the ring back, or when you leave the room. It cannot be hurt, only calmed; positive intentions pass through it. Its look is a first draft for the art gate.
 
 ---
 

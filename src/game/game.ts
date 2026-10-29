@@ -59,13 +59,14 @@ import {
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
-import { CHEST_CONTENTS } from '../content/tables/chests';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, TALK_REACH, type PresenceId } from '../content/presences';
+import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
+import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
@@ -218,6 +219,7 @@ export class Game {
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
   private chestViews!: Chests;
+  private boundaryRing = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
   private bossUsed = new Set<string>();
@@ -557,6 +559,19 @@ export class Game {
     }
     for (const r of this.sandbox ? [] : f.rooms) {
       if (!r.presence) continue;
+      if (r.presence === 'boundary') {
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        e.faction = 'neutral';
+        e.spawning = 0;
+        this.actors.add(e);
+        const ring: [number, number, number][] = [];
+        for (let dz = -SANCTUARY_RADIUS; dz <= SANCTUARY_RADIUS; dz++) for (let dx = -SANCTUARY_RADIUS; dx <= SANCTUARY_RADIUS; dx++) {
+          const x = r.x0 + 6 + dx, z = r.z0 + 3 + dz;
+          if (Math.max(Math.abs(dx), Math.abs(dz)) === SANCTUARY_RADIUS && this.solid(x, r.y0, z)) ring.push([x, r.y0, z]);
+        }
+        this.boundaryRing.set(e.id, ring);
+        continue;
+      }
       const def = PRESENCE_BY_ID.get(r.presence)!;
       const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, def.hp, def.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
@@ -1936,6 +1951,10 @@ export class Game {
         if (def) { practice = true; out.push({ type: 'item', def }); }
         else out.push({ type: what === 'item' ? 'key' : what, def: null });
       }
+      if (!practice && rng.chance(CHEST_RARE)) {
+        const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng)) ?? null;
+        if (def) out.push({ type: 'item', def });
+      }
     }
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
@@ -1985,6 +2004,18 @@ export class Game {
     }
   }
 
+  private updateBoundaries() {
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || !e.tags.has('boundary')) continue;
+      const rm = this.rooms.get(e.room);
+      const inside = !!rm && b.x > rm.x0 && b.x < rm.x0 + rm.w && b.z > rm.z0 && b.z < rm.z0 + rm.d;
+      const broken = (this.boundaryRing.get(e.id) ?? []).some(([x, y, z]) => !this.solid(x, y, z));
+      const faction = broken && inside ? 'projection' : 'neutral';
+      if (e.faction !== faction) e.faction = faction;
+    }
+  }
+
   private updatePresences() {
     const b = this.player.body;
     for (const e of this.enemies.list) {
@@ -2002,6 +2033,7 @@ export class Game {
   private updateLoop(dt: number) {
     this.updateRest(dt);
     this.updatePresences();
+    this.updateBoundaries();
     const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
     const inSilence = !!last && b.x >= last.x0 && b.x <= last.x1 + 1 && b.z >= last.z0 && b.z <= last.z1 + 1 && b.y >= last.y0 - 0.5 && b.y <= last.y1 + 1;
     setMasterTarget(inSilence ? 0 : 0.35);
