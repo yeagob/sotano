@@ -72,17 +72,20 @@ The rules for enemies in [STORY section 4](../../../built/projections/README.md)
 
 The minions of each guardian are described in that guardian's document. The shared rules are in this README.
 
-| Animal | Guardian | Minions (character, movement) | Status |
+Each guardian document's "Behaviour specification" holds the minions' count, spawn, movement, rules, ally help and targets (section B5 of each).
+
+| Animal | Guardian | Movement, in one line (proposal, specified) | Status |
 |---|---|---|---|
-| Giant panda | [PANDA](../guardians/PANDA.md) | Slow, rolling, sitting in the way | Proposal |
-| Koala | [KOALA](../guardians/KOALA.md) | Climbing, hanging, grabbing and holding | Proposal |
-| Elephant | [ELEPHANT](../guardians/ELEPHANT.md) | Heavy, herd-walking, pushing and spraying water | Proposal |
-| Lion | [LION](../guardians/LION.md) | Stalking, circling, pouncing from ledges | Proposal |
-| Horse | [HORSE](../guardians/HORSE.md) | Galloping in loops, rearing, bolting | Proposal |
+| Giant panda | [PANDA](../guardians/PANDA.md#behaviour-specification) | Walks slowly, climbs columns one block at a time, sits in the way, tucks and rolls down slopes, chews original blocks | Proposal, specified |
+| Koala | [KOALA](../guardians/KOALA.md#behaviour-specification) | Sleeps in clusters, climbs any face and hangs under branches, swings and drops, hugs and holds until shaken off | Proposal, specified |
+| Elephant | [ELEPHANT](../guardians/ELEPHANT.md#behaviour-specification) | Walks heavily in file at one steady pace, wades without slowing, trumpets to close the herd, flaps its ears and shoulders the player aside, sprays up channels, climbs no more than one block | Proposal, specified |
+| Lion | [LION](../guardians/LION.md#behaviour-specification) | Stalks low, faster when unseen and still when watched, circles, holds ledges, pounces from above, roars a small freeze | Proposal, specified |
+| Horse | [HORSE](../guardians/HORSE.md#behaviour-specification) | Gallops wide loops, passes close and turns away, grazes once a loop, kicks from behind, bolts when startled | Proposal, specified |
 
 ## 7. Open questions
 
 1. Can a minion die for good? (Section 4.)
 2. Are minions projections? (Section 5.)
 3. What happens to the minions after the floor is cleared? (Section 3.)
-4. How many minions does a floor have? Each guardian document may set a count as a target.
+4. How many minions does a floor have? Each guardian document now sets a count as a target (4, 6, 5, 6 and 5); the owner has to confirm them.
+5. Allies and negative intentions. In the built game a bad intention harms an ally and can turn it back. In the sky a negative intention does nothing to any sky creature, allies included, so an ally never turns back. Confirm.
