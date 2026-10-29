@@ -1,16 +1,22 @@
-# Design
+# The design document
 
-The game as the player experiences it, and what it means.
+The game as it is designed: what the player experiences, what it means, and what is still to come. This is a folder tree, not one file. Nobody reads it top to bottom. You open one folder and get everything about one part of the game.
 
-| Document | Contents |
-|---|---|
-| [DESIGN.md](DESIGN.md) | Game design document: pillars, loop, the player, intentions and their stats, blocks and tiers, the block slot, dungeon structure, enemies, the Noita-style hidden world, items and synergies, prototype scope, open questions |
-| [ELEMENTS.md](ELEMENTS.md) | Elements, materials and containers: fire, water (wading and swimming) and lava are built; mud, sand, glass, electricity, burning barrels, furnaces, chests are design; what each stands for in the story; open questions |
-| [LEVELS.md](LEVELS.md) | Levels: the world's thirteen floors (Tree-of-Life floors, random floors, the giant tree above; owner direction), rooms with height (vaults, domes, layers, terraces, pits) and the element rooms (built), the bar for a good room |
-| [CHESTS.md](CHESTS.md) | Chests, keys and hard walls *(built)*: unbreakable chest blocks, opening and spending keys, what a chest holds (shut practices, loot), the key-cost table by floor, where keys come from, obsidian walls around locked doors, where chests may stand |
-| [STATIONS.md](STATIONS.md) | Ideas (brainstorm, not built): props, special blocks, stations (furnace, kitchen, laboratory, instruments of self-punishment reframed, garden), loading and unloading zones, husks as carryables, how each serves verticality, themed rooms, open questions |
-| [POTIONS.md](POTIONS.md) | Potions *(proposal, owner-approved brewing rules)*: the Alembic in a laboratory brews captive parts into potions (positive intentions only, three brews per alembic), a `drink` verb, eleven recipes and how they stay scarce |
-| [BESTIARY.md](BESTIARY.md) | Bestiary *(design proposal)*: the three kinds of beings (projections, creatures, presences), how a fight begins (door slam, omens, spawn points, spatial sound, waves), the grammar of attacks, evolution with depth (zones, lineages, rooted variants, scaling), every projection by zone, bosses by zone pool, the living creatures, the presences you can talk to, the codex, build order and open questions |
-| [STORY.md](STORY.md) | Story and metaphor: the premise (unlocking inner potential through intention), what every mechanic stands for, the player's evolving state of being (paths and states), enemies as projections of mental blocks, practices (items) named after real techniques and works, naming rules, in-game vocabulary, open questions |
+The tree has two branches:
 
-When the two disagree on names or meaning, **STORY.md wins** for names, tone and metaphor; DESIGN.md wins for mechanics.
+| Branch | What it holds | Index |
+|---|---|---|
+| `built/` | What exists in The Roots today. Every claim can be checked in the code or in play. | [built/README.md](built/README.md) |
+| `not-built/` | What is decided, proposed or only an idea, and is not in the code yet. Every document starts with a status line. | [not-built/README.md](not-built/README.md) |
+
+## How to navigate
+
+- Each level answers one question. A branch says *is it real*. A section (a folder) says *which part of the game*. A subsystem folder says *which system*. A document says *which variant*.
+- Every folder has a README with an index table. Start there.
+- To give someone a small context about one part, pass them that folder's README and its documents. Nothing else is needed.
+- Architecture (how the code works) is not here: it lives in [docs/architecture/](../architecture/README.md). This document describes what the player experiences and what it means.
+- The story and naming rules that apply everywhere are in [built/story](built/story/README.md). Names and tone follow them.
+
+## The rules
+
+These rules are written down in the project skill [`sotano-design`](../../.claude/skills/sotano-design/SKILL.md). In short: a feature moves from `not-built/` to `built/` in the same commit that ships it; a document holds one variant; every claim that is built cites code or play; every open question is written down, never decided silently.

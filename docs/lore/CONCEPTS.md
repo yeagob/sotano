@@ -9,7 +9,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Many views, one truth** | `dual-process`, `chunking` | Several intentions at once (Dual Process, Triangulation); a whole broken into pieces (Chunking) |
 | **As above, so below** | `emerald-tablet`, `kybalion` (correspondence) | The depth and the surface mirror each other and connect in the endgame ([COSMOLOGY.md](COSMOLOGY.md)) |
 | **The obstacle is the way** | `meditations` | Broken blocks become material you carry and build with |
-| **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, rising from the room's own matter (announced by omens), never through the doors ([BESTIARY §2](../design/BESTIARY.md)) |
+| **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, rising from the room's own matter (announced by omens), never through the doors ([BESTIARY §2](../design/built/encounters/SEAL-AND-OMENS.md)) |
 | **A miracle is a shift in perception** | `course-in-miracles` | Practices that change how a hit is perceived (Forgiveness, Nothing Personal); future: rooms that change when seen differently |
 | **Forgiveness as release** | `course-in-miracles` | **Forgiveness**: what touches you is hurt instead of you |
 | **Don't take anything personally** | `four-agreements` | **Nothing Personal**: contact hits often slide off |
@@ -18,21 +18,21 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **The symbolic act** | `psychomagic`, `psychodrama` | **Symbolic Act** (thrown blocks burst); burning barrels where you let things go |
 | **The system and its orders** (belonging, order, balance) | `constellations` | **Systemic Constellation**: seeing the whole system weakens its projections; future: rooms as family systems, ancestors in the deepest floor |
 | **Art transforms the maker** | `art-therapy` | **Art Therapy**: placing blocks (building, creating) can heal you |
-| **Listening to the river** | `siddhartha`, `tao-te-ching` | Water as emotion ([ELEMENTS](../design/ELEMENTS.md)); a future river place in the depths |
+| **Listening to the river** | `siddhartha`, `tao-te-ching` | Water as emotion ([ELEMENTS](../design/built/elements/WATER.md)); a future river place in the depths |
 | **Think, wait, fast** | `siddhartha` | **Thinking, Waiting, Fasting**: reach further, recover longer, luck |
 | **Personal legend and omens** | `the-alchemist` | **Follow the Omens**: luck; the treasure that was where you started (endgame) |
 | **Inner alchemy** (transmutation) | `emerald-tablet`, `the-alchemist` | Furnaces turning raw blocks into refined ones; states of being |
 | **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
-| **Parts of a projection** (flesh, heart, mind, essence) | — | What a released projection leaves behind, named after its pattern (the Doubt's pause, the Lectern's margin note); collected, never practices ([BESTIARY §5.7](../design/BESTIARY.md)) |
+| **Parts of a projection** (flesh, heart, mind, essence) | — | What a released projection leaves behind, named after its pattern (the Doubt's pause, the Lectern's margin note); collected, never practices ([BESTIARY §5.7](../design/built/projections/PARTS.md)) |
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
-| **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/BESTIARY.md)) |
-| **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/BESTIARY.md)) |
-| **Keeping your word** (agreements, promises) | `four-agreements` | Presences make agreements; the gifts are *promised* and cannot be lost ([BESTIARY §8.6–§8.7](../design/BESTIARY.md)) |
-| **Patterns deepen when left alone** | `jung`, `dante` | Lineages: Doubt → Second-Guessing → Paralysis; rooted variants ([BESTIARY §4](../design/BESTIARY.md)) |
+| **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/built/bosses/README.md)) |
+| **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/built/intentions/POLARITY.md)) |
+| **Keeping your word** (agreements, promises) | `four-agreements` | Presences make agreements; the gifts are *promised* and cannot be lost ([BESTIARY §8.6–§8.7](../design/not-built/presences/AGREEMENTS.md)) |
+| **Patterns deepen when left alone** | `jung`, `dante` | Lineages: Doubt → Second-Guessing → Paralysis; rooted variants ([BESTIARY §4](../design/not-built/projections/ZONES.md)) |
 | **The threshold guardian** (the fear at the edge of change) | `monomyth` | The keystone boss at floor 5's great pit, which steps aside instead of falling |
-| **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/BESTIARY.md)) |
+| **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/built/presences/README.md)) |
 | **The witness** (seeing without judging) | `jung` (concept generic) | The Witness in silence reads your run back to you |
-| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Creatures: the living beings of the depths, never hostile ([BESTIARY §7](../design/BESTIARY.md)) |
+| **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Creatures: the living beings of the depths, never hostile ([BESTIARY §7](../design/built/creatures/README.md)) |
 | **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it |
 | **Resistance** | `war-of-art` | A future boss |
 | **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |

@@ -64,7 +64,7 @@ Rooms work like *The Binding of Isaac*: the doors stand open while a room holds 
 
 ### Creatures and presences
 
-Not everything down here is hostile. **Creatures** are the living things of the depths: curious, playful, resting, caring. Some are harmed by bad intentions and healed by good ones, and they vanish into the blocks when a room seals. **Presences** are the wise beings who speak with you: short, kind lines, sometimes a question, never a cure. The bestiary of both is in the [design documents](docs/design/BESTIARY.md).
+Not everything down here is hostile. **Creatures** are the living things of the depths: curious, playful, resting, caring. Some are harmed by bad intentions and healed by good ones, and they vanish into the blocks when a room seals. **Presences** are the wise beings who speak with you: short, kind lines, sometimes a question, never a cure. The bestiary of both is in the [design documents](docs/design/README.md) (creatures in [built/creatures](docs/design/built/creatures/README.md), presences in [built/presences](docs/design/built/presences/README.md)).
 
 ### Practices and states of being
 
@@ -165,7 +165,7 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 - **Practices and synergies.** Forty-five practices from quality 1 to 4, among them electric ones, area effects, shapes of intention and heart containers, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
 - **Unique runs.** Layouts, room moods, rewards and projections all come from the seed.
 
-The full catalogue is in [STORY.md §5](docs/design/STORY.md#5-items-practices-with-real-names). The thirteen floors, as built and as designed, are in [LEVELS.md](docs/design/LEVELS.md).
+The full catalogue is in [the practices](docs/design/built/practices/README.md). The thirteen floors, as built and as designed, are in [the levels](docs/design/built/levels/README.md).
 
 ---
 
@@ -198,12 +198,12 @@ THE ROOTS is an **open-source project** and it is **open to collaboration**. Any
 The full index is [docs/README.md](docs/README.md). By block:
 
 **Design: the game and what it means**
-- [Game design document](docs/design/DESIGN.md): pillars, loop, blocks and tiers, dungeon structure, scope, open questions.
-- [Story and metaphor](docs/design/STORY.md): premise, mechanics as metaphor, states of being, enemies as projections, naming rules.
-- [Bestiary](docs/design/BESTIARY.md): projections, creatures and presences, bosses by zone, seals, omens and waves *(design)*.
-- [Levels](docs/design/LEVELS.md): the thirteen floors *(direction)*, rooms with height and element rooms *(built)*.
-- [Elements](docs/design/ELEMENTS.md): fire, water and lava *(built)*; mud, electricity, furnaces, chests *(planned)*.
-- [Stations, props and zones](docs/design/STATIONS.md): kitchen, forge, laboratory, garden and how they help you climb *(ideas)*.
+- [Design document](docs/design/README.md): the design as a folder tree in two branches: [built](docs/design/built/README.md) (what exists and can be checked in the code) and [not-built](docs/design/not-built/README.md) (decided or proposed). Each part of the game is a folder with its own README.
+- [Story and metaphor](docs/design/built/story/README.md): premise, mechanics as metaphor, states of being, enemies as projections, naming rules.
+- [Projections](docs/design/built/projections/README.md): the patterns that block intention, built; their design cards are in [not-built/projections](docs/design/not-built/projections/README.md). Bosses, creatures and presences are in their own folders of both branches.
+- [Levels](docs/design/built/levels/README.md): the thirteen floors, rooms with height and element rooms *(built)*; the rest is in [not-built/levels](docs/design/not-built/levels/README.md).
+- [Elements](docs/design/built/elements/README.md): fire, water and lava *(built)*; mud, electricity, furnaces, chests *(planned, in [not-built/elements](docs/design/not-built/elements/README.md))*.
+- [Stations, props and zones](docs/design/not-built/stations/README.md): kitchen, forge, laboratory, garden and how they help you climb *(ideas)*.
 
 **Architecture: how the code works**
 - [Overview](docs/architecture/OVERVIEW.md): module map, frame order, core systems, debug console, tests.

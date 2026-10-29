@@ -1,6 +1,6 @@
 # Entities: health, bombs, enemies, pickups and stacked floors
 
-Status: **built (M1.5)**, after the three-party review in [../reviews/entities.md](../reviews/entities.md). Builds on the item architecture in [ITEMS.md](ITEMS.md) and the story in [../design/STORY.md](../design/STORY.md).
+Status: **built (M1.5)**, after the three-party review in [../reviews/entities.md](../reviews/entities.md). Builds on the item architecture in [ITEMS.md](ITEMS.md) and the story in [../design/STORY.md](../design/built/story/README.md).
 
 ## 1. Stacked floors (`world/floor.ts`)
 
@@ -64,11 +64,11 @@ defineEnemy({
 | **Inner Critic** | The judging voice | `ranged`: keeps ~6 blocks away, strafes, winds up and lobs a "judgement" that arcs onto you (breaks soft blocks) |
 | **Panic** | Anxiety spiralling into panic | `burst`: rushes you, swells for 0.9 s and explodes, breaking blocks (and hurting other projections) |
 
-The roster holds 40 projection entries in `content/enemies/` (38 files; Procrastination's two lineage forms live in its own file), weighted by floor in `content/tables/enemies.ts`. The table above shows the first three; the rest use the same definition and factories, and each one's pattern and zone is in [BESTIARY §5](../design/BESTIARY.md).
+The roster holds 40 projection entries in `content/enemies/` (38 files; Procrastination's two lineage forms live in its own file), weighted by floor in `content/tables/enemies.ts`. The table above shows the first three; the rest use the same definition and factories, and each one's pattern and zone is in [BESTIARY §5](../design/built/projections/README.md).
 
 ### Spawning and rooms
 
-> As built today. The owner's direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is in [../design/BESTIARY.md §2](../design/BESTIARY.md) and is built. What is not built is listed in [BESTIARY §12.1](../design/BESTIARY.md).
+> As built today. The owner's direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is in [../design/BESTIARY.md §2](../design/built/encounters/SEAL-AND-OMENS.md) and is built. What is not built is listed in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md).
 
 - At carve time each normal room gets a roster from `ENEMY_BUDGET` (budget 2 + floor, 1 room in 5 is quiet).
 - **Sealing and slam**: when the player's box is **fully inside** a room interior, its doors close and stay sealed, and each door slams with its own spatial sound and dust (`slamDoors`, `spatial.slam`). The first wave starts after a 0.5 s breath.
@@ -80,7 +80,7 @@ The roster holds 40 projection entries in `content/enemies/` (38 files; Procrast
 
 ### Kinds of beings (BESTIARY §1)
 
-Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9, a geometric curve of about ×1.28 a floor; the open question is in [BESTIARY §12.1](../design/BESTIARY.md)).
+Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9, a geometric curve of about ×1.28 a floor; the open question is in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)).
 
 ### Attacks (`enemies/attacks.ts`)
 
@@ -170,7 +170,7 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 | M2 | Enemy-owned hooks (Comparison mirrors your intentions), installed as `actor:<id>` |
 | M2 | Procrastination (splits on death), Perfectionism (armour shell), bosses made of breakable voxels |
 
-Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/BESTIARY.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
+Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
 
 Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |

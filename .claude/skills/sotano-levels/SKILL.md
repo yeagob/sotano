@@ -5,7 +5,7 @@ description: How to add or change The Roots floors, levels and room layouts - ro
 
 # The Roots levels skill
 
-A level is a **place with a meaning and a verb**. Read [docs/design/LEVELS.md](../../../docs/design/LEVELS.md) (the world's shape, floor types, the room bar) and [docs/architecture/ROOMS.md](../../../docs/architecture/ROOMS.md) (the template format and the generator) before you start. Elements: [docs/architecture/ELEMENTS.md](../../../docs/architecture/ELEMENTS.md) §9–§10.
+A level is a **place with a meaning and a verb**. Read [docs/design/LEVELS.md](../../../docs/design/built/levels/README.md) (the world's shape, floor types, the room bar) and [docs/architecture/ROOMS.md](../../../docs/architecture/ROOMS.md) (the template format and the generator) before you start. Elements: [docs/architecture/ELEMENTS.md](../../../docs/architecture/ELEMENTS.md) §9–§10.
 
 ## 1. Know where you are in the world
 
