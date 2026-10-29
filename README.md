@@ -251,7 +251,7 @@ THE ROOTS is built in the open, in spare time, for players. If it gives you a fe
 
 ## License
 
-Not chosen yet. The proposal is MIT for code and CC BY 4.0 (or BY-SA) for original art and sound. See [docs/research/TECHNICAL.md §14](docs/research/TECHNICAL.md#14-open-source-and-intellectual-property-important).
+THE ROOTS is licensed under the **GNU General Public License v3.0**. You may use, copy, modify and commercially exploit it, provided you credit the authorship and keep the source code open under the same license. See [LICENSE](LICENSE) for the full text and [docs/LICENSE.md](docs/LICENSE.md) for a plain-language explanation.
 
 ## Credits
 
