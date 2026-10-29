@@ -32,19 +32,21 @@ Rules that hold for all three:
 
 Everything in the depths is made by the mind, and so are its patterns. Every intention has a **polarity**:
 
-- **Positive:** attention with care and purpose. It mends what it touches.
-- **Negative:** the same force turned to wound: contempt, avoidance, anger. It harms what it touches, including the living things that are already yours.
+- **Good** (`positive` in the code): attention with care and purpose. It heals what it touches, and turns projections into allies.
+- **Bad** (`negative` in the code): the same force turned to wound: contempt, avoidance, anger. It breaks and destroys what it touches, including the living things that are already yours.
+
+The player only ever sees good and bad, never the code's words, and never abstract names for them. The rule is in [STORY.md](STORY.md#naming-rules-important-for-an-open-source-game).
 
 Polarity decides what an intention does to each kind of being. The numbers are proposals, to be tuned in play.
 
 | | Projection (hostile) | Ally (a converted projection) | Creature | Presence |
 |---|---|---|---|---|
-| **Positive** | Half damage, and it **mends**: every hit adds warmth; at full warmth it **turns to your side** (`factionChange`, integrated, not destroyed) | Healed, and its gold seams grow (a visual). At full health it gives a small gift, once per floor | Healed and nourished. Its gift: a heart, once per visit | Nothing to heal. It glows and speaks more openly, and its Lessons grow clearer |
-| **Negative** | Full damage. A projection killed this way **releases** (a shard), as today | Harmed. At zero health it **turns hostile again** (`factionChange` back) | Harmed: it flees and vanishes into the blocks until the room clears. It never dies (§13) | Silent: it turns its light away and says nothing until you cast positively again. Never harmed |
+| **Good** | Half damage, and it **heals**: every hit adds warmth; at full warmth it **turns to your side** (`factionChange`, integrated, not destroyed) | Healed, and its gold seams grow (a visual). At full health it gives a small gift, once per floor | Healed and nourished. Its gift: a heart, once per visit | Nothing to heal. It glows and speaks more openly, and its Lessons grow clearer |
+| **Bad** | Full damage. A projection killed this way **releases** (a shard), as today | Harmed. At zero health it **turns hostile again** (`factionChange` back) | Harmed: it flees and vanishes into the blocks until the room clears. It never dies (§13) | Silent: it turns its light away and says nothing until you cast positively again. Never harmed |
 
-**Blocks.** A positive intention never breaks a block: it mends one that is damaged (its cracks close). A negative intention breaks blocks as always. The same holds for the strokes of weapons (a positive blade or beam only mends). The first time a positive intention meets an undamaged block, a hint says that gold only mends and F breaks (owner, 2026-10-27).
+**Blocks.** A good intention never breaks a block: it heals one that is damaged (its cracks close). A bad intention breaks blocks as always. The same holds for the strokes of weapons (a good blade or beam only heals). After three good intentions in a row hit the same undamaged block, a hint says that good intentions only heal, and to break you switch to bad ones (owner, 2026-10-27; three hits, 2026-10-29).
 
-**The control.** One toggle (its key is chosen with the controls) flips the loaded intention between positive and negative. The HUD shows which one is loaded with a round mark. It never flickers: the HUD never expresses a mood (art §11). The change applies from the next intention. The default is positive. Both polarities are round, because the shot is still yours (art §2); the negative one is darker (look: §10, ruling 6).
+**The control.** One toggle (its key is chosen with the controls, and on a phone a half turn of 180 degrees) flips the loaded intention between good and bad. The HUD shows which one is loaded with a round mark. It never flickers: the HUD never expresses a mood (art §11). The change applies from the next intention. The default is positive. Both polarities are round, because the shot is still yours (art §2); the negative one is darker (look: §10, ruling 6).
 
 **Two ways through every fight.** A converted projection is not destroyed: it becomes part of the self ([ACTORS §4](../architecture/ACTORS.md#4-factions)). A room clears when no hostile projection is left, and allies don't keep doors shut. So a room can be won with light as well as with force.
 

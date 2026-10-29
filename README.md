@@ -50,7 +50,7 @@ Your shot is an **intention**. While you hold your focus it flies straight; let 
 
 What you break becomes material. You can carry one block at a time, kick it, throw it or place it again, so every wall you dismantle is a wall you can build something new with.
 
-Intentions have a **polarity** (**F** to switch). A positive intention mends: it turns projections into allies and heals creatures. A negative one wounds everything it touches, your allies and the creatures included, and it is the only one that breaks the hardest blocks.
+Intentions are **good** or **bad** (**F** to switch, or a half turn of the phone, 180 degrees). **Good intentions heal** and turn projections into allies, and they heal creatures. **Bad intentions break and destroy**: they wound everything they touch, your allies and the creatures included, and they are the only ones that break the hardest blocks.
 
 ### Projections, not monsters
 
@@ -64,7 +64,7 @@ Rooms work like *The Binding of Isaac*: the doors stand open while a room holds 
 
 ### Creatures and presences
 
-Not everything down here is hostile. **Creatures** are the living things of the depths: curious, playful, resting, caring. Some are harmed by negative intentions and healed by positive ones, and they vanish into the blocks when a room seals. **Presences** are the wise beings who speak with you: short, kind lines, sometimes a question, never a cure. The bestiary of both is in the [design documents](docs/design/BESTIARY.md).
+Not everything down here is hostile. **Creatures** are the living things of the depths: curious, playful, resting, caring. Some are harmed by bad intentions and healed by good ones, and they vanish into the blocks when a room seals. **Presences** are the wise beings who speak with you: short, kind lines, sometimes a question, never a cure. The bestiary of both is in the [design documents](docs/design/BESTIARY.md).
 
 ### Practices and states of being
 
@@ -92,7 +92,7 @@ Three complete schemes; the game follows whichever device you used last (details
 | Move | **WASD** | Left stick | Left thumb (floating stick) |
 | Jump (hold to swim up) | **Space** | **A** | The arrow |
 | Cast intentions | **Left click** (hold) | **RT** (hold) | The bead of light (hold; drag to aim) |
-| Switch the intention's polarity: positive mends projections into allies, negative harms them and your allies and is the only one that breaks blocks | **F** | **LB** | A half turn of the phone, like a wheel |
+| Switch between good and bad intentions: good ones heal and turn projections into allies; bad ones break and destroy, and harm your allies too | **F** | **LB** | A half turn of the phone (180 degrees), like a steering wheel |
 | Pick up a block or a part | Walk over it with room in your hand | same | same |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
 | Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
@@ -159,7 +159,7 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 - **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a fixed plan: three doors from the start, a treasure room that teaches the practices, a way down, and a ring of lessons that comes back to the treasure room. You can skip it. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Rooms can spread into the empty space around them (long galleries, stepped wells, caverns) while the map keeps one cell per room, under vaults of many shapes, and every floor is built from its own materials. Beating a boss reveals its practice and cracks a hole in the floor. The way down asks a toll (a heart, a key, a bomb, a block from your hand; from the sixth floor practices, more on every floor), and you choose what to give in a window: then you fall into the next one. A minimap fills in as you go.
 - **Forty projections** that seal the room and fight you, from Doubt and the Inner Critic to Panic and What-if, each with its own attack and its own reaction to the elements.
 - **The giant tree above.** Built in stories, each a hall of its own joined by spiral stairs, loaded only as you come near.
-- **Creatures** of the depths that never seal a room and never die: a positive intention heals them, a negative one sends them into the blocks.
+- **Creatures** of the depths that never seal a room and never die: a good intention heals them, a bad one sends them into the blocks.
 - **Survival** with Isaac-style hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
 - **Elements.** Water to wade or drown in, lava to keep away from, fire that eats crates. Water on lava makes obsidian. Each projection reacts to elements in its own way: Panic calms in water and goes off in fire.
 - **Practices and synergies.** Forty-five practices from quality 1 to 4, among them electric ones, area effects, shapes of intention and heart containers, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
