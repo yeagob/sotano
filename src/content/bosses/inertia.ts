@@ -1,14 +1,18 @@
 import { pal } from '../palette';
-import { charge, emitter, phased, sleep } from '../../enemies/behaviours';
+import { phased, sleep } from '../../enemies/behaviours';
+import { barrage, charge, inhale, moveset, shockwave, slam } from '../../enemies/moves';
 import { defineEnemy, TX } from '../../enemies/types';
 
+// A mass of packed earth, asleep (BESTIARY §6.3). 1 Sleeps: you must move it (a kick, a bomb, a hard
+// shot); awake, it rolls at you and bounces off the walls back at you. 2 Rolls: faster, more bounces,
+// and it lands on you. 3 Gathers: it pulls the room in, then rolls through what it gathered.
 export default defineEnemy({
   id: 'inertia',
   kind: 'boss',
   name: 'Inertia',
   pattern: 'Staying as you are',
   hp: 140,
-  speed: 2.2,
+  speed: 2.4,
   asleep: true,
   size: [1.1, 2.6],
   contactDamage: 8,
@@ -17,11 +21,30 @@ export default defineEnemy({
   maxFloor: 2,
   breaks: { tier: 1, power: 8 },
   behaviour: phased({
-    arena: ['rolls', 'gathers'],
+    arena: ['rockfall', 'spill'],
     phases: [
-      sleep({ wakeSpeed: 1.5, then: charge({ aim: 0.8, speed: 4.8, run: 3, stun: 1.2, range: 14, cooldown: 0.8 }) }),
-      charge({ aim: 0.6, speed: 5.4, run: 3, stun: 0.8, range: 14, cooldown: 0.6 }),
-      emitter({ every: 6, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 5, force: 5 } }) }),
+      sleep({
+        wakeSpeed: 1.5, then: moveset({
+          gait: { kind: 'stalk' }, pace: [0.5, 1], moves: [
+            charge({ windup: 0.7, recover: 1, speed: 10, run: 3, bounces: 2, impact: 4 }),
+            barrage({ windup: 0.5, recover: 0.5, count: 3, seconds: 0.6, spread: 1.5 }),
+          ],
+        }),
+      }),
+      moveset({
+        gait: { kind: 'stalk' }, pace: [0.35, 0.8], moves: [
+          charge({ windup: 0.55, recover: 0.8, speed: 12, run: 3, bounces: 3, impact: 6 }),
+          slam({ windup: 0.6, recover: 0.8, air: 0.75, reach: 7, stones: 2 }),
+          shockwave({ windup: 0.5, recover: 0.5, rings: 2, gap: 0.4, reach: 8 }),
+        ],
+      }),
+      moveset({
+        gait: { kind: 'stalk' }, pace: [0.3, 0.6], moves: [
+          inhale({ windup: 0.6, recover: 0.1, r: 10, force: 8, live: 1.6, bite: 8 }),
+          charge({ windup: 0.45, recover: 0.7, speed: 13, run: 3, bounces: 3, impact: 7 }),
+          barrage({ windup: 0.5, recover: 0.5, count: 6, seconds: 1, spread: 2.5 }),
+        ],
+      }),
     ],
   }),
   model: [

@@ -37,7 +37,7 @@ describe('creatures: never killed by a hit', () => {
     room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: 13, d: 7, hx: 0, hz: 0 }), elemVersion: () => 0,
     hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
-    affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {},
+    affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost);
 
   it('at zero health a creature hides in the blocks instead of dissolving, and comes back whole when its room clears', () => {

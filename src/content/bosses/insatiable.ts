@@ -1,7 +1,12 @@
 import { pal } from '../palette';
-import { emitter, phased } from '../../enemies/behaviours';
+import { phased } from '../../enemies/behaviours';
+import { barrage, fan, inhale, moveset, nova, rocks, shockwave } from '../../enemies/moves';
 import { defineEnemy, TX } from '../../enemies/types';
 
+// A giant open cup of stone, a maw at floor level (BESTIARY §6.3). It never walks: the room comes to
+// it. 1 Inhales: it pulls the whole room toward its biting mouth, and spits between breaths. 2 Spits:
+// it throws back everything it swallowed, rain and spirals. 3 Hollow: it can't pull any more; it
+// cracks, rings, and the ceiling falls with it.
 export default defineEnemy({
   id: 'insatiable',
   kind: 'boss',
@@ -15,11 +20,29 @@ export default defineEnemy({
   minFloor: 1,
   maxFloor: 2,
   behaviour: phased({
-    arena: ['debris', 'hollow'],
+    arena: ['spill', 'rockfall'],
     phases: [
-      emitter({ every: 5, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 3, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 9, force: 9 } }) }),
-      emitter({ every: 1.4, shot: (e, ctx) => { ctx.shootAt(e, e.body.x + 3 * Math.sin(e.seq), e.body.y, e.body.z + 3 * Math.cos(e.seq)); e.seq++; } }),
-      emitter({ every: 2.2, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 5, width: 0.6, height: 1.5 } }) }),
+      moveset({
+        gait: { kind: 'still' }, pace: [0.4, 0.9], moves: [
+          inhale({ windup: 0.8, recover: 0.6, r: 12, force: 9, live: 2.5, bite: 8 }),
+          fan({ windup: 0.5, recover: 0.5, count: 5, spread: 1, volleys: 2, gap: 0.35, speed: 9 }),
+          barrage({ windup: 0.5, recover: 0.5, count: 5, seconds: 1.2, spread: 2 }),
+        ],
+      }),
+      moveset({
+        gait: { kind: 'still' }, pace: [0.3, 0.7], moves: [
+          barrage({ windup: 0.5, recover: 0.5, count: 9, seconds: 1.8, spread: 2.5 }),
+          nova({ windup: 0.55, recover: 0.6, count: 10, volleys: 3, gap: 0.4, speed: 7, spin: 0.2 }),
+          inhale({ windup: 0.6, recover: 0.4, r: 12, force: 10, live: 1.8, bite: 8 }),
+        ],
+      }),
+      moveset({
+        gait: { kind: 'still' }, pace: [0.25, 0.6], moves: [
+          nova({ windup: 0.5, recover: 0.5, count: 14, volleys: 4, gap: 0.35, speed: 7.5, spin: 0.18 }),
+          shockwave({ windup: 0.55, recover: 0.5, rings: 3, gap: 0.5, reach: 12 }),
+          rocks({ windup: 0.45, recover: 0.3, count: 5, lead: 1, spread: 3 }),
+        ],
+      }),
     ],
   }),
   model: [

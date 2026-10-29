@@ -460,6 +460,10 @@ Shake is positional only (**no camera roll**: Mat's 1° roll lost), offset = amp
 | Room cleared | 0 | 0 | the clear wave (§5.2) |
 | Health ≤ 1 heart | 0 | 0 | the last HUD heart beats (§10.2). No vignette by default (Mat's heartbeat vignette is opt-in) |
 
+### 7.5 Attack marks (as built, 2026-10-29)
+
+Every attack shape (`enemies/attacks.ts`) is drawn in cold texel cubes only: a **telegraph** is dashed `cold.dim` marks at 0.09 m, and a growing ring also draws its **full reach** while it is a warning, so you see how far it will go; telegraphs shed a rising mote now and then, turning `cold.white` in their last 30 %. A **live** attack's marks are `cold.white` at 1.8× size, a live ring stands as a second row at about 70 % of its height (the low wall you jump), and it sheds three sparks a frame along its front (`cold.white`, `cold.body`, `cold.dim`). Heavy boss impacts (`quake`) shake the screen by distance and throw chips of the floor's own ramp, at most 40 per event. Nothing in an attack is warm.
+
 ---
 
 ## 8. Creatures (projections)

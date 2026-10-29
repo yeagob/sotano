@@ -1,52 +1,47 @@
 import { pal } from '../palette';
-import { emitter, phased, wobble } from '../../enemies/behaviours';
+import { phased } from '../../enemies/behaviours';
+import { altitude, bars, barrage, moveset, nova, puddles } from '../../enemies/moves';
 import { defineEnemy, TX } from '../../enemies/types';
 
+// A low ceiling of cloud (BESTIARY §6.3). It drifts over you, never as fast as you run. 1 Rains: cold
+// rain falls on where you are going, every drop marked, and stinging puddles. 2 Lowers: it comes
+// down, the floor fills with rain, and lightning bars the room. 3 Thins: low enough to reach; it
+// throws the rest of its rain at once.
 export default defineEnemy({
   id: 'downpour',
   kind: 'boss',
   name: 'The Downpour',
   pattern: 'To be left alone',
   hp: 140,
-  speed: 0,
+  speed: 2.2,
   size: [1.4, 1.2],
   contactDamage: 8,
   cost: 0,
   minFloor: 3,
   maxFloor: 4,
   behaviour: phased({
-    arena: ['lower', 'thin'],
+    arena: ['puddle', 'drain'],
     phases: [
-      emitter({
-        every: 1.5,
-        shot: (e, ctx) => {
-          const t = ctx.target(e);
-          if (!t) return;
-          if (e.flyY < 0) e.flyY = e.body.y + 3.5;
-          for (let k = 0; k < 3; k++) {
-            const a = wobble(e.id, e.seq, k) * Math.PI * 2, r = 1 + wobble(e.id, e.seq, k + 3) * 2.5;
-            ctx.shootAt(e, t.x + Math.cos(a) * r, t.y + 1, t.z + Math.sin(a) * r);
-          }
-          e.seq++;
-        },
-      }),
-      emitter({
-        every: 1.5,
-        shot: (e, ctx) => {
-          const t = ctx.target(e);
-          if (!t) return;
-          if (e.flyY > e.body.y + 1.3) e.flyY -= 0.7;
-          ctx.shootAt(e, t.x, t.y + 1, t.z);
-        },
-      }),
-      emitter({
-        every: 3,
-        shot: (e, ctx) => {
-          const a = wobble(e.id, e.seq, 2) * Math.PI * 2, r = 2 + wobble(e.id, e.seq, 4) * 3;
-          ctx.strike(e, { lead: 1, live: 2.5, damage: 2, shape: { kind: 'field', x: e.body.x + Math.cos(a) * r, y: e.body.y, z: e.body.z + Math.sin(a) * r, r: 1.6, effect: 'sting' } });
-          e.seq++;
-        },
-      }),
+      altitude(3.5, moveset({
+        gait: { kind: 'hover', height: 3.5 }, pace: [0.3, 0.7], moves: [
+          barrage({ windup: 0.45, recover: 0.3, count: 8, seconds: 1.6, spread: 3, walk: true }),
+          puddles({ windup: 0.8, recover: 0.3, count: 3, r: 1.3, live: 3, spread: 2.5, walk: true }),
+        ],
+      })),
+      altitude(2.4, moveset({
+        gait: { kind: 'hover', height: 2.4 }, pace: [0.3, 0.6], moves: [
+          barrage({ windup: 0.4, recover: 0.3, count: 10, seconds: 1.6, spread: 3, walk: true }),
+          bars({ windup: 0.8, recover: 0.4, parallels: 1, spacing: 4, walk: true }),
+          puddles({ windup: 0.7, recover: 0.3, count: 4, r: 1.3, live: 3, spread: 3, walk: true }),
+        ],
+      })),
+      altitude(1.6, moveset({
+        gait: { kind: 'hover', height: 1.6 }, pace: [0.25, 0.5], moves: [
+          barrage({ windup: 0.4, recover: 0.3, count: 12, seconds: 1.5, spread: 3.5, walk: true }),
+          bars({ windup: 0.75, recover: 0.4, parallels: 1, spacing: 4, cross: true }),
+          nova({ windup: 0.5, recover: 0.4, count: 10, volleys: 2, gap: 0.4, speed: 7 }),
+        ],
+      })),
     ],
   }),
   model: [

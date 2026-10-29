@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { hostile, type Actor, type Faction } from '../entities/actors';
+import { fx } from '../core/fx';
 
 export type FieldEffect = 'slow' | 'mute' | 'sting';
 
@@ -35,17 +36,26 @@ export interface HazardHost {
   affect(target: Actor, effect: FieldEffect, seconds: number): void;
   push(target: Actor, vx: number, vz: number): void;
   live(shape: Shape): void;
+  /** Cosmetic cube particles (the dust and sparks along a live attack). */
+  particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
 }
 
 const MARK = 0.09;
-const CAPACITY = 1400;
+const CAPACITY = 2400;
 const DASH = 0.5;
 const RING_SEGMENTS = 24;
+const RING_SEGMENTS_MAX = 120;
+/** Size of a live attack's marks against a telegraph's. */
+const LIVE_SCALE = 1.8;
 const FIELD_DOTS = 16;
 const PULL_MOTES = 10;
 
 const COLD_DIM = new THREE.Color(pal('cold.dim'));
 const COLD_WHITE = new THREE.Color(pal('cold.white'));
+const DIM = pal('cold.dim'), WHITE = pal('cold.white'), BODY = pal('cold.body');
+/** Particles a live attack sheds per frame, and the chance per frame that a telegraph sheds a mote. */
+const LIVE_SPARKS = 3;
+const TELL_MOTE = 0.35;
 
 export class Hazards {
   private list: Hazard[] = [];
@@ -72,6 +82,9 @@ export class Hazards {
     this.list.push({ ...s, owner, faction, cause, t: 0, started: false, hit: new Set(), tick: 0 });
   }
 
+  /** Attacks on the field (telegraphed or live). */
+  get size() { return this.list.length; }
+
   countOf(owner: number) {
     let n = 0;
     for (const h of this.list) if (h.owner === owner) n++;
@@ -89,7 +102,7 @@ export class Hazards {
       const h = this.list[i];
       h.t += dt;
       const live = h.t - h.lead;
-      if (live < 0) continue;
+      if (live < 0) { if (fx.random() < TELL_MOTE) this.mote(h.shape, h.lead > 0 ? h.t / h.lead : 1); continue; }
       if (h.shape.kind === 'field' || h.shape.kind === 'pull') {
         if (!h.started) { h.started = true; this.host.live(h.shape); }
         if (live > h.live) { this.list.splice(i, 1); continue; }
@@ -98,9 +111,41 @@ export class Hazards {
       }
       if (!h.started) { h.started = true; this.host.live(h.shape); }
       if (live > h.live) { this.list.splice(i, 1); continue; }
+      if (h.damage > 0) this.sparks(h.shape, live);
       this.strike(h, live, actors);
     }
     this.draw();
+  }
+
+  /** A telegraph sheds a rising cold mote somewhere on its shape, brighter as it comes due (`k` 0 → 1). */
+  private mote(s: Shape, k: number) {
+    const [x, y, z] = this.pointOn(s, 0, true);
+    this.host.particles(x, y + 0.1, z, k > 0.7 ? WHITE : DIM, 1, 0.6, 0.05);
+  }
+
+  /** A live attack throws dust and sparks along its front, so it reads as force, not as dots. */
+  private sparks(s: Shape, live: number) {
+    for (let k = 0; k < LIVE_SPARKS; k++) {
+      const [x, y, z] = this.pointOn(s, live, false);
+      this.host.particles(x, y + 0.15, z, k === 0 ? WHITE : k === 1 ? BODY : DIM, 1, 2.2, 0.07);
+    }
+  }
+
+  /** A random point on a shape: on its front once live, anywhere on its reach while it is a telegraph. */
+  private pointOn(s: Shape, live: number, tell: boolean): [number, number, number] {
+    const u = fx.random();
+    switch (s.kind) {
+      case 'line': return [s.x0 + (s.x1 - s.x0) * u, s.y, s.z0 + (s.z1 - s.z0) * u];
+      case 'ring': {
+        const r = tell ? s.r + (s.grow > 0 ? fx.random() * s.grow * 0.5 : 0) : s.r + s.grow * live, a = u * Math.PI * 2;
+        return [s.x + Math.cos(a) * r, s.y, s.z + Math.sin(a) * r];
+      }
+      case 'sweep': {
+        const at = tell ? s.from : sweepAt(s, live), across = s.across[0] + (s.across[1] - s.across[0]) * u, h = fx.random() * s.height;
+        return s.axis === 'x' ? [at, s.y + h, across] : [across, s.y + h, at];
+      }
+      default: { const a = u * Math.PI * 2, r = fx.random() * s.r; return [s.x + Math.cos(a) * r, s.y, s.z + Math.sin(a) * r]; }
+    }
   }
 
   private foes(h: Hazard, actors: Actor[]) {
@@ -151,7 +196,9 @@ export class Hazards {
     let n = 0;
     const put = (x: number, y: number, z: number, live: boolean) => {
       if (n >= CAPACITY) return;
-      this.m.makeTranslation(x, y, z);
+      // a live attack's marks are twice as big: the warning is a dashed line, the blow a solid one
+      const k = live ? LIVE_SCALE : 1;
+      this.m.makeScale(k, k, k).setPosition(x, y, z);
       this.mesh.setMatrixAt(n, this.m);
       this.mesh.setColorAt(n, live ? COLD_WHITE : COLD_DIM);
       n++;
@@ -163,10 +210,18 @@ export class Hazards {
         for (let d = 0; d <= len; d += DASH) put(s.x0 + dx * d / len, s.y + 0.1, s.z0 + dz * d / len, live);
       } else if (s.kind === 'ring') {
         const r = live ? s.r + s.grow * (h.t - h.lead) : s.r;
-        for (let k = 0; k < RING_SEGMENTS; k++) {
-          const a = k / RING_SEGMENTS * Math.PI * 2;
-          put(s.x + Math.cos(a) * r, s.y + 0.1, s.z + Math.sin(a) * r, live);
-        }
+        const ring = (r: number, on: boolean) => {
+          const n = Math.min(RING_SEGMENTS_MAX, Math.max(RING_SEGMENTS, Math.round(r * 2 * Math.PI / DASH)));
+          for (let k = 0; k < n; k++) {
+            const a = k / n * Math.PI * 2, x = s.x + Math.cos(a) * r, z = s.z + Math.sin(a) * r;
+            put(x, s.y + 0.1, z, on);
+            // a live ring stands as a low wall up to its height: what you must clear to jump it
+            if (on && k % 2 === 0) put(x, s.y + Math.min(s.height, 1.2) * 0.7, z, on);
+          }
+        };
+        ring(r, live);
+        // a growing ring shows how far it will reach while it is still a warning
+        if (!live && s.grow > 0) ring(s.r + s.grow * h.live, false);
       } else if (s.kind === 'field') {
         for (let k = 0; k < FIELD_DOTS; k++) {
           const a = k / FIELD_DOTS * Math.PI * 2 + this.time * 0.6;
