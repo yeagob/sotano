@@ -229,7 +229,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 
 ## Contributing
 
-Early days, and open to everyone. Before opening a pull request:
+Early days, and open to everyone. The project uses GitFlow: `main` is the stable version, `develop` is where the next one is built. Open pull requests into **`develop`**. The short guide is in [CONTRIBUTING.md](CONTRIBUTING.md), the full workflow in [docs/process/GITFLOW.md](docs/process/GITFLOW.md). Before opening a pull request:
 
 ```bash
 npm run typecheck && npm test

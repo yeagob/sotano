@@ -10,6 +10,7 @@ Everything about the game, organised in five sections. Each section has its own 
 | [art/](art/README.md) | Art direction "Vessel Light": the art guide (every visual element, its colours, proportions and rules), the binding decision ledger from the debate, and the presentation |
 | [lore/](lore/README.md) | References and lore: the source library (books, traditions, techniques, therapies, games) with naming status, the concept glossary, and the cosmology (as above, so below) |
 | [reviews/](reviews/README.md) | Architecture reviews (engineer, architect, mediator): critiques, rulings and what changed |
+| [process/](process/README.md) | How the project is built and released: GitFlow branches, versions, issues, releases and hotfixes |
 
 ## Rules for these docs
 
