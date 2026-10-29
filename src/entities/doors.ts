@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { doorTexture, type DoorLook } from '../render/atlas';
 import type { DoorSpec } from '../world/floor';
 
-const OPEN_DIST = 3.2;   // start opening within this distance of the doorway centre
+const TOUCH = 0.05;      // a locked door asks only when your body touches its frame (blocks)
 const CLOSE_DIST = 5.5;  // a locked door may ask again once you are this far away
 const SPEED = 2.8;       // fraction of the travel per second
 const TRAVEL = 3.05;     // how far it slides up
@@ -71,6 +71,12 @@ export class Doors {
     return false;
   }
 
+  /** Is your body touching the doorway (inside it, or within TOUCH of its frame)? */
+  private touching(d: Door, px: number, py: number, pz: number, hw: number, h: number) {
+    const m = TOUCH;
+    return px + hw + m > d.x0 && px - hw - m < d.x1 + 1 && pz + hw + m > d.z0 && pz - hw - m < d.z1 + 1 && py < d.y1 + 1 + m && py + h > d.y0 - m;
+  }
+
   /** Is any part of the box inside a doorway? (doors never close on you) */
   private occupied(d: Door, px: number, py: number, pz: number, hw: number, h: number) {
     return px + hw > d.x0 && px - hw < d.x1 + 1 && pz + hw > d.z0 && pz - hw < d.z1 + 1 && py < d.y1 + 1 && py + h > d.y0;
@@ -84,7 +90,7 @@ export class Doors {
     for (const d of this.list) {
       if (d.broken) continue;
       const dist = Math.hypot(px - d.cx, pz - d.cz);
-      const near = dist < OPEN_DIST && Math.abs(py - d.y0) < 2.5;
+      const near = this.touching(d, px, py, pz, hw, h);
       if (d.sealed) {
         // never shuts on you: it waits until you are out of the doorway
         if (!this.occupied(d, px, py, pz, hw, h)) d.wantOpen = false;
