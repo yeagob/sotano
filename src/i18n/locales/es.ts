@@ -54,7 +54,7 @@ export const ES: Catalog = {
     'controls.look.pad': 'Stick derecho',
     'controls.jump': 'saltar (mantén para nadar hacia arriba)',
     'controls.jump.key': 'Espacio',
-    'intro.tagline': 'Baja dentro de ti. Rompe lo que te retiene. Encuentra el camino de vuelta.',
+    'intro.tagline': 'Baja dentro de ti. Rompe lo que te retiene. Encuentra lo que vive abajo.',
     'intro.play': 'Haz clic para jugar',
     'intro.language': 'Idioma',
     'intro.controls': 'Controles',

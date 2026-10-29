@@ -16,7 +16,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | bomb | the seed (shows the count) |
 | inventory | the grid, top bar beside the minimap (shows how many practices) |
 | pause | the two bars, top bar |
-| restart | "New run" on the pause card, "Begin again" on the death screen |
+| restart | "New run" on the landing and the pause card, "Begin again" on the death screen |
 | confirm | tap anywhere (dismisses banners); tap the pause card to play |
 
 References: Minecraft's pocket edition (left joystick, look by dragging on the right, jump at the lower right), Noita (fire held while you aim), Isaac (one button per consumable, a glance tells you what you have).
