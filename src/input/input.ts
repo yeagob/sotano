@@ -27,6 +27,8 @@ export class Input {
   readonly touchHeld = new Set<Action>();
   readonly touchPressed = new Set<Action>();
   readonly touchMove = { x: 0, y: 0 };
+  /** Where the last tap on the world landed (screen pixels); `place` aims at it. */
+  readonly touchTap = { x: 0, y: 0 };
   private padHeld = new Set<number>();
   private padPrev = new Set<number>();
   private padMove = { x: 0, y: 0 };

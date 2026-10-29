@@ -208,9 +208,14 @@
       #overlay td:first-child { white-space: normal; width: 40%; }
     }
 
-    #inventory { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
-    #inventory.show { display: flex; }
-    #inventory .card { width: min(960px, 94vw); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
+    #overlay .tabs { display: flex; gap: 6px; margin: 0 calc(6 * var(--u)) 12px; }
+    #overlay .tabs button { font: inherit; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: var(--ui-text-2); background: var(--ui-line); border: 0; padding: 8px 16px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #overlay .tabs button[aria-selected="true"] { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #overlay .tabs button:hover, #overlay .tabs button:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #inventory { display: none; }
+    #overlay[data-tab="items"] #inventory { display: block; }
+    #overlay[data-tab="items"] .panel-menu { display: none; }
+    #overlay #inventory .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
     #inventory header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--ui-line); margin-bottom: 10px; }
     #inventory h2 { margin: 0 0 6px; letter-spacing: 3px; }
     #inventory h3 { margin: 14px 0 6px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
@@ -278,13 +283,10 @@
     .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; box-shadow: inset 0 0 0 3px var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
     .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--ui-line) 85%, transparent); }
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
-    .tb-place { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: calc(6vh + 17vmin); }
-    .tb-place::after { content: ""; position: absolute; left: 6%; top: 6%; width: 32%; height: 32%; background: var(--block, none) center / contain; image-rendering: pixelated; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
-    .tb-pause { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
-    .tb-inventory { right: calc(12px + 130px + 16px + 11vmin + env(safe-area-inset-right)); }
+    .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
     #death .go { font: inherit; font-weight: bold; color: var(--ui-gold); background: var(--ui-line); border: 0; padding: 8px 18px; margin-top: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory header .close { margin-left: 10px; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
@@ -365,12 +367,16 @@
   <div id="banner"></div>
   <div id="toast" class="slate"></div>
   <div id="boss" hidden><span id="bossname"></span><div><i id="bossfill"></i></div></div>
-  <div id="inventory"></div>
   <div id="toll"></div>
   <div id="death"></div>
   <div id="fade"><i></i></div>
   <div id="overlay">
     <div class="card slate">
+      <nav class="tabs">
+        <button type="button" data-act="tab-menu" data-tab="menu" aria-selected="true"></button>
+        <button type="button" data-act="tab-items" data-tab="items" aria-selected="false"></button>
+      </nav>
+      <div class="panel-menu">
       <h1 class="cover"><img src="/the-roots-cover.jpg" alt="THE ROOTS" width="1663" height="640" /></h1>
       <p class="tagline" data-i18n="intro.tagline">Go down into yourself. Break what holds you. Find the way back up.</p>
       <div class="menu">
@@ -390,6 +396,8 @@
         <span id="version"></span>
         <a class="coffee" href="https://buymeacoffee.com/yeagob" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"></a>
       </footer>
+      </div>
+      <div id="inventory"></div>
     </div>
   </div>
   <div id="rotate" data-i18n="touch.rotate">Turn your device sideways to play</div>

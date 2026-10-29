@@ -7,7 +7,7 @@ translation. Reviewed in [../reviews/localization.md](../reviews/localization.md
 ## 1. Goals and rules
 
 - **Every player-facing string goes through the localization layer.** HUD, banners, toasts, the
-  landing and pause card, the inventory window, the death screen, stat labels and values, item, synergy,
+  landing and pause card, the screen (menu and practices), the death screen, stat labels and values, item, synergy,
   enemy and material texts, and messages raised by items. No English literal reaches the DOM.
 - **Developer-facing text stays English and is not localized**: the debug readout (top right),
   console warnings, the `S` debug console, `docs/`, code comments.

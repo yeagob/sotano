@@ -1901,14 +1901,16 @@ export class Game {
     const p = this.player;
     if (!this.input.hit('place')) return;
     if (!p.hand.length) { sfx.denied(); return; }
-    const e = p.eye, d = p.forward;
+    // a touch tap places on the block under the finger; a tap that finds nothing is refused, never thrown
+    const tap = this.input.hitBy('place') === 'touch' ? this.input.touchTap : null;
+    const e = this.camera.position, d = tap ? this.tapDirection(tap) : p.forward;
     const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, this.stats.get('reach'));
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
       && !this.doors.inDoorway(x, y, z)
       && !boxHits((xx, yy, zz) => xx === x && yy === y && zz === z, b.x, b.y, b.z, b.hw, b.h);
-    if (!ok) { this.throwTop(); return; }
+    if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
       this.pickups.add('part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
@@ -1925,6 +1927,12 @@ export class Game {
     this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
+  }
+
+  /** The ray through a tapped pixel, as the camera sees it. */
+  private tapDirection(tap: { x: number; y: number }) {
+    const ndc = new THREE.Vector3(tap.x / innerWidth * 2 - 1, 1 - tap.y / innerHeight * 2, 0.5).unproject(this.camera);
+    return ndc.sub(this.camera.position).normalize();
   }
 
   /** Throws the top block of your hand (Q, or right click with nowhere to place). */
@@ -2465,7 +2473,7 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.inventoryOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
+    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
     const live = ctx === 'play' || ctx === 'prompt';
     if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
@@ -2485,9 +2493,12 @@ export class Game {
       this.hud.dismissBanner();
       inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }
-    if ((live || ctx === 'inventory') && inp.hit('inventory')) this.hud.toggleInventory(this);
-    else if (ctx === 'inventory') {
-      if (inp.hit('back')) this.hud.toggleInventory(this);
+    if (live || ctx === 'paused' || ctx === 'inventory') {
+      const by = inp.hitBy('inventory');
+      if (by) this.hud.screenKey(this, by);
+    }
+    if (ctx === 'inventory') {
+      if (inp.hit('back')) this.hud.closeScreen(this);
       else { const n = inp.navigate(); if (n.x || n.y) this.hud.moveSelection(n.x, n.y); }
     }
     if (ctx === 'toll') {
@@ -2499,7 +2510,7 @@ export class Game {
       }
     }
     this.touch.update(this, ctx);
-    const running = playing && !this.player.dead && !this.hud.inventoryOpen && !this.hud.tollOpen && !this.transitioning;
+    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     this.stream();
@@ -2612,9 +2623,14 @@ export class Game {
   }
 
   act(act: string) {
-    if (act === 'restart' && (this.player.dead || !this.input.playing)) this.requestRestart();
-    else if (act === 'resume' && !this.player.dead && !this.hud.inventoryOpen) this.input.resume();
-    else if (act === 'inventory' && this.hud.inventoryOpen) this.hud.toggleInventory(this);
+    if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
+    else if (act === 'resume' && !this.player.dead) {
+      if (this.hud.screenOpen) this.hud.closeScreen(this);
+      else this.input.resume();
+    }
+    else if (act === 'inventory' && this.hud.screenOpen) this.hud.closeScreen(this);
+    else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
+    else if (act === 'tab-items') this.hud.openScreen(this, 'items');
   }
 
   /** Rooms whose projections are all released (the minimap lights them). */

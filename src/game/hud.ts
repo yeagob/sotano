@@ -1,6 +1,7 @@
 // DOM HUD. Isaac-style corner: hearts, bombs and keys (capped at 99); item icons; minimap and
 // floor; hand slots; the pickup banner (icon, quality, what it changed, new synergies) with a
-// screen flash; damage vignette and screen shake; the inventory window (Tab); the death screen;
+// screen flash; damage vignette and screen shake; the screen (menu and practices, one window with
+// two tabs: Esc and Tab open it, the touch tab button too); the death screen;
 // toasts; the language selector on the pause card; and the debug readout (English on purpose:
 // it is for developers). Every player-facing word goes through i18n (docs/architecture/
 // LOCALIZATION.md); `relocalize()` redraws whatever is on screen when the language changes.
@@ -51,6 +52,9 @@ export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
 }
 
+/** The two tabs of the screen: the menu (pause, controls, language) and the practices. */
+export type ScreenTab = 'menu' | 'items';
+
 export class Hud {
   private hand = $('hand');
   private itemsBar = $('items');
@@ -92,7 +96,10 @@ export class Hud {
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
-  inventoryOpen = false;
+  /** The screen (menu and practices) is open; it pauses the world on every device. */
+  screenOpen = false;
+  private screenTab: ScreenTab = 'menu';
+  private shownTab: ScreenTab | null = null;
   bannerOpen = false;
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
@@ -117,7 +124,7 @@ export class Hud {
     addEventListener('click', e => {
       const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-act]');
       if (el) { e.stopPropagation(); this.onAct?.(el.dataset.act!); return; }
-      if (activeDevice() !== 'touch' || !this.overlay.contains(e.target as Node)) return;
+      if (activeDevice() !== 'touch' || this.screenOpen || !this.overlay.contains(e.target as Node)) return;
       if ((e.target as HTMLElement).closest('[data-lang], .seed')) return;
       this.onAct?.('resume');
     });
@@ -141,7 +148,7 @@ export class Hud {
     this.renderControls();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
-    if (this.inventoryOpen && this.game) this.renderInventory(this.game);
+    if (this.screenOpen && this.game) this.renderScreen(this.game);
     if (this.tollOpen && this.game) this.renderToll(this.game);
     this.toastEl.classList.remove('show');
   }
@@ -159,6 +166,9 @@ export class Hud {
     if (go) go.textContent = t(forDevice('intro.play', d));
     const nr = document.getElementById('newrun');
     if (nr) nr.textContent = t('pause.newRun');
+    for (const b of document.querySelectorAll<HTMLElement>('#overlay .tabs button')) {
+      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : 'tab.menu');
+    }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
   }
@@ -195,7 +205,9 @@ export class Hud {
 
   update(g: Game, running: boolean, dt: number) {
     this.shakeT = Math.max(0, this.shakeT - dt);
-    this.overlay.style.display = running || this.inventoryOpen || this.tollOpen || g.player.dead ? 'none' : 'flex';
+    // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
+    this.showTab(this.screenOpen ? this.screenTab : 'menu');
+    this.overlay.style.display = running || this.tollOpen || g.player.dead ? 'none' : 'flex';
 
     this.mapYaw = g.player.yaw;
     const yawKey = Math.round(this.mapYaw * 64);
@@ -527,17 +539,47 @@ export class Hud {
 
   // ───────────────────────── inventory window ─────────────────────────
 
-  toggleInventory(g: Game) {
-    this.inventoryOpen = !this.inventoryOpen;
-    this.invEl.classList.toggle('show', this.inventoryOpen);
-    const kb = g.input.device === 'keyboard';
-    if (this.inventoryOpen) {
-      this.game = g;
-      g.input.unlockFor();
+  /** Opens the screen on a tab (or switches tabs when it is open). Opening pauses the world. */
+  openScreen(g: Game, tab: ScreenTab) {
+    this.game = g;
+    if (!this.screenOpen) {
+      this.screenOpen = true;
+      if (g.input.device === 'keyboard') g.input.unlockFor(); else g.input.release();
       this.selected = g.inventory.items.at(-1)?.def.id ?? null;
-      this.renderInventory(g);
-    } else if (kb) { g.input.release(); g.input.lock(); }
+    }
+    this.screenTab = tab;
+    this.renderScreen(g);
+  }
+
+  /** Closes the screen and returns to play; on the keyboard the mouse is captured again. */
+  closeScreen(g: Game) {
+    if (!this.screenOpen) return;
+    this.screenOpen = false;
+    this.showTab('menu');
+    if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
     else g.input.resume();
+  }
+
+  /** Tab, Y and the touch tab button: the same screen, two tabs (docs/architecture/input/README.md). */
+  screenKey(g: Game, by: Device) {
+    const touchTab = by === 'touch';
+    if (this.screenOpen && (touchTab || this.screenTab === 'items')) this.closeScreen(g);
+    else this.openScreen(g, touchTab ? 'menu' : 'items');
+  }
+
+  private renderScreen(g: Game) {
+    this.showTab(this.screenTab);
+    if (this.screenTab === 'items') this.renderInventory(g);
+  }
+
+  private showTab(tab: ScreenTab) {
+    if (tab === this.shownTab) return;
+    this.shownTab = tab;
+    this.overlay.dataset.tab = tab;
+    this.overlay.scrollTop = 0;
+    for (const b of this.overlay.querySelectorAll<HTMLElement>('.tabs button')) {
+      b.setAttribute('aria-selected', String(b.dataset.tab === tab));
+    }
   }
 
   moveSelection(dx: number, dy: number) {

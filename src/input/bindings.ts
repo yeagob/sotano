@@ -13,7 +13,12 @@ export const PAD = {
 } as const;
 export type PadButton = typeof PAD[keyof typeof PAD];
 
-export type TouchControl = 'stick' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'doubleTap';
+/**
+ * How a touch reaches the action. `worldTap` is a short touch on the world (no drag): it aims at the
+ * tapped block. `turn` is a half turn of the phone (the steering-wheel gesture). `none` means the
+ * action has no touch button of its own: it is reached through another (the tab button opens the menu).
+ */
+export type TouchControl = 'stick' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'none';
 
 export interface Binding {
   action: Action;
@@ -21,7 +26,7 @@ export interface Binding {
   when: readonly Context[];
   keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; when?: readonly Context[] };
   gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; when?: readonly Context[] };
-  touch: { control: TouchControl; icon?: string; on?: Action; when?: readonly Context[] };
+  touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
   refs: { minecraft: string; noita: string; isaac: string };
 }
 
@@ -62,7 +67,7 @@ export const BINDINGS: readonly Binding[] = [
     action: 'place', kind: 'press', when: ['play'],
     keyboard: { mouse: [2] },
     gamepad: { buttons: [PAD.LT] },
-    touch: { control: 'button', icon: 'touchPlace' },
+    touch: { control: 'worldTap' },
     refs: { minecraft: 'right click / left trigger places the held block', noita: 'right click uses or throws what you hold', isaac: 'the active item on its own button (Space / right trigger)' },
   },
   {
@@ -83,11 +88,11 @@ export const BINDINGS: readonly Binding[] = [
     action: 'polarity', kind: 'press', when: ['play'],
     keyboard: { keys: ['KeyF'] },
     gamepad: { buttons: [PAD.LB] },
-    touch: { control: 'doubleTap', on: 'cast' },
+    touch: { control: 'turn' },
     refs: { minecraft: 'the bumpers cycle the hotbar (what the next use does)', noita: 'the shoulders and the wheel switch the active wand', isaac: 'one button swaps the pocket slot' },
   },
   {
-    action: 'inventory', kind: 'press', when: ['play', 'inventory'],
+    action: 'inventory', kind: 'press', when: ['play', 'paused', 'inventory'],
     keyboard: { keys: ['Tab', 'KeyI'] },
     gamepad: { buttons: [PAD.Y] },
     touch: { control: 'systemButton', icon: 'touchInventory' },
@@ -97,7 +102,7 @@ export const BINDINGS: readonly Binding[] = [
     action: 'pause', kind: 'press', when: ['play', 'paused'],
     keyboard: { keys: ['Escape'] },
     gamepad: { buttons: [PAD.MENU] },
-    touch: { control: 'systemButton', icon: 'touchPause' },
+    touch: { control: 'none' },
     refs: { minecraft: 'Esc / Start pauses', noita: 'Esc / Start pauses', isaac: 'Esc / Start pauses' },
   },
   {
@@ -143,11 +148,13 @@ export function contextsFor(b: Binding, device: Device): readonly Context[] {
   return d.when ?? b.when;
 }
 
-export const DOUBLE_TAP_MS = 300;
 
 export const PAD_DEADZONE = 0.18;
 export const PAD_WAKE = 0.5;
-export const TAP_MS = 180;
+/** A touch shorter than this, that does not drag, is a tap. */
+export const TAP_MS = 250;
+/** How far a tap may wander, in pixels, before it counts as a drag. */
+export const TAP_SLOP = 12;
 export const PAD_TRIGGER = 0.35;
 export const PAD_LOOK_SPEED = 3.4;
 export const TOUCH_LOOK_SPEED = 0.0055;
