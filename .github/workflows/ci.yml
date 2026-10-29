@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  gitflow:
+    name: gitflow
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Only release and hotfix branches may target main
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          if [ "$BASE" = "main" ]; then
+            case "$HEAD" in
+              release/*|hotfix/*) echo "OK: $HEAD -> main" ;;
+              *) echo "::error::Pull requests into main must come from release/* or hotfix/*, not $HEAD. Target develop instead."; exit 1 ;;
+            esac
+          else
+            echo "OK: $HEAD -> $BASE"
+          fi
