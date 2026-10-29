@@ -109,6 +109,17 @@ A room template can be taller than the standard 5 blocks (up to **8**), shape it
 | `crown-hall` | boss, 2×1, floors 1–4 | The crown as a long dome, the way down at its heart, the practice on a dais | — |
 | `chasm` | normal/path, 1×2, floors 6–9 | A plateau of holes five deep, a bridge of pillars, the key in the deepest hole | Jump the bridge; drop and build out |
 | `dis-hall` | normal/path, 2×1, floors 6–7 | The walls of Dis: a ditch of lava and graves of flame beyond | Bridge the lava |
+| `sluice` | normal, floors 1–4 | A dry channel two deep cuts the hall from north to south; crates wait on the west bank, a ? decor slot in the corner | Kick or carry the crates into the channel and build across |
+| `balcony` | normal, floors 2–5, vault-z | Brick galleries three high along the north and south walls, on brick pillars at the corners | Build up to the galleries and fight from above |
+| `lava-bridge` | normal, floors 3–5, cave roof | A lava river from wall to wall, one brick span across it, crates on the east bank | Cross the span, or build your own over the lava |
+| `sunken-court` | normal, floors 1–4 | A plus of ground in a court of two-deep pits; a three-wide pit cuts the east door off | Build across the east pit from the crates on the west |
+| `warren` | normal, floors 2–5, cave roof | Obsidian pillars in rows under an uneven roof, ore at the heart of the room | Fight between the pillars; break the ore for blocks |
+| `cave-lake` | normal, floors 3–5, cave roof | Two deep pools with a causeway between them and a stone in the middle row | Swim the pools or walk the causeway |
+| `crate-stacks` | normal, floors 1–3, stepped roof | Two-high crate stacks in the corners, crates in pairs between them | Carry the crates into walls and stairs |
+| `roofed-garden` | normal, floors 2–5, vault-z | Dirt beds under a dirt canopy three high, held by brick pillars at the corners; the middle column stays open | Dig the beds; build up under the canopy |
+| `dig-field` | normal, floors 1–4 | A field of dips and dirt mounds, dips along the north and south rows | Dig down and up between the mounds |
+| `ore-vein` | normal, floors 1–5 | Diagonal veins of iron ore across the room, meeting at the centre | Break the veins for blocks |
+| `obsidian-maze` | normal, floors 4–5, pointed roof | Obsidian walls with a gap at the centre; the south wall sealed by a dirt plug | Dig the plug to reach the south door; walk the gaps |
 
 ## 5. What makes a good room (the bar)
 
