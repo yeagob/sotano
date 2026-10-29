@@ -1,0 +1,40 @@
+# wr-both-stoic — Weapon review: both weapon with stoic; two Doubts in front of the player (mid), negative polarity, 90 ticks of casting
+floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor kiai stoic · synergies one_clear_cut
+  doubt#2 hp 12.0/12 · projection · at 5.5 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 6.5 0.0 5.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 90 (1.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor kiai stoic · synergies one_clear_cut
+  doubt#2 hp 12.0/12 · projection · at 2.9 0.0 3.5
+  doubt#3 hp 12.0/12 · projection · at 4.8 0.0 5.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events polarityChange 1 · roomEnter 1
+
+t 180 (3.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices occamsrazor kiai stoic · synergies one_clear_cut
+  blocks —
+  elements —
+  cubes brick 2 · dirt 1 · stone 4 · pickups 1
+  events actorDamage:doubt<cut 2 · actorDeath:doubt 2 · blockBreak:brick 202 · blockBreak:deepstone 19 · blockBreak:dirt 49 · blockBreak:ore 23 · blockBreak:stone 122 · blockDamage:brick 202 · blockDamage:deepstone 19 · blockDamage:dirt 49 · blockDamage:ore 23 · blockDamage:stone 122 · blockLoot:brick 202 · blockLoot:deepstone 19 · blockLoot:dirt 49 · blockLoot:ore 23 · blockLoot:stone 122 · strike 1
+
+map t 180 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend 
