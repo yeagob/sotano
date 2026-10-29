@@ -30,12 +30,7 @@ export function presenceReaction(polarity: 'positive' | 'negative', distance: nu
 interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 
 export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): void {
-  if (floor === 0) {
-    const start = rooms.find(r => r.type === 'start');
-    if (start) start.presence = 'gardener';
-    return;
-  }
-  if (level(floor).kind !== 'tree') return;
+  if (floor === 0 || level(floor).kind !== 'tree') return;
   const normal = rooms.filter(r => r.type === 'normal');
   if (!normal.length) return;
   const quiet = normal.filter(r => r.enemies.length === 0);

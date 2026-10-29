@@ -6,10 +6,15 @@ const rooms = (types: string[], enemies: string[][] = []): { type: string; enemi
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
 
 describe('presences: where they live', () => {
-  it('the Gardener is in the start room of floor 0, and nothing else is there', () => {
+  it('the tutorial floor has no presences, and no presence ever lives in a start room', () => {
     const rs = rooms(['normal', 'start', 'normal']);
     placePresences(rs, 0, new RunRandom(1).fork('floor', 0, 'presence'));
-    expect(rs.map(r => r.presence)).toEqual([undefined, 'gardener', undefined]);
+    expect(rs.some(r => r.presence)).toBe(false);
+    for (let seed = 1; seed <= 10; seed++) {
+      const ts = rooms(['normal', 'start', 'normal']);
+      placePresences(ts, 2, new RunRandom(seed).fork('floor', 2, 'presence'));
+      expect(ts[1].presence).toBeUndefined();
+    }
   });
 
   it('every Tree floor has exactly one Listener, in a normal room with no projections', () => {
