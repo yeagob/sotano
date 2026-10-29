@@ -62,7 +62,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, TALK_REACH, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, type PresenceId } from '../content/presences';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -312,6 +312,7 @@ export class Game {
       },
       enemyAt: (x, y, z, r, polarity) => this.enemies.at(x, y, z, r, e => this.meets(e, polarity)),
       mirrorAxis: id => (this.enemies.get(id)?.def === 'hall-of-mirrors' ? 'z' : null),
+      touched: (x, _y, z, polarity) => this.hearPresences(x, z, polarity),
       hitEnemy: (uid, v, t) => {
         const l = Math.hypot(v.x, v.z) || 1;
         this.intentTouch(uid, t.damage, v.x / l, v.z / l, 'intent', 'intent', t.polarity, true);
@@ -2034,10 +2035,24 @@ export class Game {
     }
   }
 
+  private hearPresences(x: number, z: number, polarity: Polarity) {
+    for (const e of this.enemies.list) {
+      if (!e.alive || !e.tags.has('presence')) continue;
+      const reaction = presenceReaction(polarity, Math.hypot(e.body.x - x, e.body.z - z));
+      if (reaction === 'lift') e.tags.delete('silent');
+      if (reaction !== 'silence' || e.tags.has('silent')) continue;
+      e.tags.add('silent');
+      if (!e.tags.has('spoke')) {
+        e.tags.add('spoke');
+        this.hud.presenceCard(PRESENCE_TALK[e.def as PresenceId].name, [PRESENCE_TALK[e.def as PresenceId].silent]);
+      }
+    }
+  }
+
   private updatePresences() {
     const b = this.player.body;
     for (const e of this.enemies.list) {
-      if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met')) continue;
+      if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
       e.tags.add('met');

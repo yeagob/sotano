@@ -12,12 +12,20 @@ export type RoomPresence = PresenceId | 'boundary';
 export const PRESENCES: readonly EnemyDef[] = [gardener, listener];
 export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.map(p => [p.id, p]));
 
-export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; heals: boolean }> = {
-  gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], heals: false },
-  listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], heals: true },
+export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; heals: boolean }> = {
+  gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', heals: false },
+  listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', heals: true },
 };
 
 export const TALK_REACH = 2.2;
+
+export const SILENCE_REACH = 2;
+export const LIFT_REACH = 8;
+
+export function presenceReaction(polarity: 'positive' | 'negative', distance: number): 'silence' | 'lift' | null {
+  if (polarity === 'negative') return distance < SILENCE_REACH ? 'silence' : null;
+  return distance < LIFT_REACH ? 'lift' : null;
+}
 
 interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 

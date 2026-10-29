@@ -171,6 +171,8 @@ const messages = {
   'presence.listener.name': 'The Listener',
   'presence.listener.1': 'Tell me what weighs on you. You do not have to say it well.',
   'presence.listener.2': 'I heard it. That is all I came to do.',
+  'presence.gardener.silent': 'Not that. Not now. I will be here when you are gentle again.',
+  'presence.listener.silent': 'I will not hear that. Say something kinder and I will listen.',
   'toast.heaven': 'You are carried up.',
   'toast.challengeWave': 'Wave {n} of 3',
   'toast.challengeDone': 'Challenge overcome: come back for more',

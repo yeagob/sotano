@@ -132,6 +132,8 @@ export const ES: Catalog = {
     'presence.listener.name': 'La Escucha',
     'presence.listener.1': 'Dime qué te pesa. No tienes que decirlo bien.',
     'presence.listener.2': 'Lo he oído. Eso es todo lo que vine a hacer.',
+    'presence.gardener.silent': 'Eso no. Ahora no. Estaré aquí cuando vuelvas a ser amable.',
+    'presence.listener.silent': 'Eso no lo escucho. Di algo más amable y te escucharé.',
     'toast.heaven': 'Algo te eleva.',
     'toast.challengeWave': 'Oleada {n} de 3',
     'toast.challengeDone': 'Desafío superado: vuelve cuando quieras',

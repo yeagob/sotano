@@ -56,6 +56,8 @@ export interface IntentHooks {
   hitEnemy(id: number, vel: THREE.Vector3, intent: IntentSpec): void;
   /** The axis a mirror reflects along, or null for anything that is not a mirror. */
   mirrorAxis?(id: number): 'x' | 'z' | null;
+  /** An intention is at this point: presences hear it (silence on negative, lift on positive). */
+  touched?(x: number, y: number, z: number, polarity: Polarity): void;
   splash(p: THREE.Vector3, color: number, big: boolean): void;
   /** The element at a point ('water' slows an intention, 'lava' puts it out), or null. */
   elementAt?(x: number, y: number, z: number): 'water' | 'lava' | 'fire' | null;
@@ -115,6 +117,7 @@ export class Intents {
 
       // against loose cubes: push them
       // against projections: damage and knock them back
+      h.touched?.(t.pos.x, t.pos.y, t.pos.z, t.spec.polarity);
       const seen = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius, t.spec.polarity);
       const foe = seen >= 0 && t.calm && t.calm[0] === seen && t.age < t.calm[1] ? -1 : seen;
       if (foe >= 0) {
