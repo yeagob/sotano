@@ -11,10 +11,8 @@ import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
 import { enemyText } from '../i18n/content';
-import {
-  gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
-  type Cell, type Omen,
-} from './omens';
+import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
+  type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
@@ -155,7 +153,7 @@ interface RoomState {
   cleared: boolean; started: boolean; sealed: boolean;
   waves: string[][]; wave: number;
   /** The current wave's projections still to announce, the gap to the next, and the breath before the next wave. */
-  queue: string[]; next: number; breath: number; armed: boolean;
+  queue: string[]; next: number; breath: number; armed: boolean; waveT: number;
 }
 
 /** A challenge room: every time you walk in, three waves (harder each wave and each visit). */
@@ -531,7 +529,7 @@ export class Game {
       this.rooms.set(r.id, r);
       this.roomState.set(r.id, {
         cleared: !r.enemies.length, started: false, sealed: false,
-        waves: splitWaves(r.enemies), wave: -1, queue: [], next: 0, breath: 0, armed: false,
+        waves: splitWaves(r.enemies), wave: -1, queue: [], next: 0, breath: 0, armed: false, waveT: 0,
       });
     }
   }
@@ -1140,10 +1138,11 @@ export class Game {
       const remaining = this.enemies.blockingIn(id);
       const lastWave = st.wave + 1 >= st.waves.length;
       // the next wave opens once the last one is nearly down, after a breath (a swell says more are coming)
-      if (!lastWave && st.queue.length === 0 && this.omensIn(id) === 0 && (st.wave < 0 || remaining <= 1)) {
+      if (st.wave >= 0) st.waveT += dt;
+      if (!lastWave && st.queue.length === 0 && this.omensIn(id) === 0 && waveDue(st.wave, remaining, st.waveT)) {
         if (!st.armed) { st.armed = true; st.breath = BREATH; spatial.swell(); }
         st.breath -= dt;
-        if (st.breath <= 0) { st.armed = false; st.wave++; st.queue = [...st.waves[st.wave]]; st.next = 0; }
+        if (st.breath <= 0) { st.armed = false; st.wave++; st.waveT = 0; st.queue = [...st.waves[st.wave]]; st.next = 0; }
       }
       if (st.queue.length) {
         st.next -= dt;

@@ -134,6 +134,7 @@ A room's roster is split into **waves**. A small **director** per sealed room de
 |---|---|---|
 | `onSeal` | The first wave, 0.5 s after the slam | Every combat room |
 | `remaining ≤ n` | When n or fewer of the wave's projections remain | The default for wave 2+ (n = 1) |
+| `afterSeconds 25` | **Patience** (built, 2026-10-29): the wave stood for 25 s, so the next one opens even while several projections remain. Stalling never empties a room | Every wave 2+ also has it: `waveDue` in `game/omens.ts` |
 | `hpShare ≤ x` | When the wave's remaining health drops below x | Big single projections that call help |
 | `afterSeconds t` | A timer, so stalling doesn't help | Trial rooms, bosses |
 | `event` | A room event: a pedestal touched, a flame put out, water drained, a boss phase | Ambushes, set pieces |
