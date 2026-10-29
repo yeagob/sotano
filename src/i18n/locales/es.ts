@@ -475,8 +475,8 @@ export const ES: Catalog = {
         inspiredBy: 'Los cuatro acuerdos (don Miguel Ruiz): «no te tomes nada personalmente»',
       },
       occamsrazor: {
-        name: 'Corta con las personas tóxicas',
-        description: 'Hay personas que te quitan más de lo que te dan. Córtalas y guarda tu energía para lo que te devuelve algo. Un filo de luz acompaña a tu intención.',
+        name: 'Corta con las relaciones tóxicas',
+        description: 'Hay relaciones que te quitan más de lo que te dan: con personas, sustancias, comida o tecnología. Córtalas y guarda tu energía para lo que te devuelve algo. Un filo de luz acompaña a tu intención.',
         effect: 'Añade una hoja de luz junto a tus intenciones, que siguen volando: mantén pulsado para tajar (80% de tu cadencia). Cada tajo corta todos los bloques rompibles a 2,5 bloques delante de ti (más con tamaño, hasta 6) y parte en dos los escombros, golpea a las proyecciones con 3× daño y destruye sus proyectiles.',
         inspiredBy: 'Santiago (Game Glover), sobre las relaciones tóxicas',
       },

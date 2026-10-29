@@ -10,3 +10,6 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ### Fixed
 - Open chest lids no longer clip through the chest body or its padlock (#4).
 - Locked doors open when you touch them, not from across the room (#5).
+
+### Changed
+- The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).
