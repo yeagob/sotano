@@ -21,23 +21,24 @@ const COFFEE: HudIcon = {
   palette: { p: 'bone.paper', d: 'bone.dim', c: 'mat.crate.base', s: 'bone.dim' },
 };
 
-// a beetle in the room's own colours: the body is the heart, the legs and antennae are bone
+// a ladybird in the room's own colours: a red shell split down the middle with black spots,
+// a black head with two eyes and bone antennae, and bone legs at the sides of the shell
 const BUG: HudIcon = {
   rows: [
-    '.b........b.',
     '..b......b..',
-    '...kkkkkk...',
-    '..kkkkkkkk..',
-    '.kkpkkkkpkk.',
-    'bkkkkkkkkkkb',
-    'kkhhhhhhhhkk',
-    'khhhhhhhhhhk',
-    'khhdhhhhdhhk',
-    'bkhhhhhhhhkb',
-    '.khhhhhhhhk.',
+    '...b....b...',
+    '....kkkk....',
+    '...kpkkpk...',
+    '.kkkkkkkkkk.',
+    'bkhhhkkhhhkb',
+    'khhkhhhhkhhk',
+    'bkhhhkkhhhkb',
+    'khhkhhhhkhhk',
+    'bkhhhkkhhhkb',
+    '.kkkkkkkkkk.',
     '..kkkkkkkk..',
   ],
-  palette: { k: 'ink.void', h: 'life.heart', d: 'life.dark', b: 'bone.dim', p: 'bone.paper' },
+  palette: { k: 'ink.void', h: 'life.heart', b: 'bone.dim', p: 'bone.paper' },
 };
 
 const KEEP_MOUSE = '#overlay a, #newrun';
