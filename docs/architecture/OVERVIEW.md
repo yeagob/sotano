@@ -121,6 +121,8 @@ Isaac corner (hearts, bombs, keys, item icons), hand slots, minimap (with an arr
 
 **Build version.** `vite.config.ts` defines `APP_VERSION` as `v<package.json version> · <YYMMDDHHmm>` (UTC build time), so every build and deploy shows a new number at the foot of the landing and the pause card. Declared in `src/version.d.ts`, shown in `main.ts`, checked by `tests/version.test.ts`.
 
+**Landing footer.** Beside the build version sit two small pixel icons, both opening in a new tab: a **bug** (`#overlay .bug`), which opens a new issue from the bug report template on GitHub, so players can report what they find; and the **coffee** (`#overlay .coffee`), the support link. Their pixel art is drawn at start from `HudIcon` rows (`src/game/landing.ts`), and their labels come from `intro.bug` and `intro.coffee`.
+
 Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md)): `hud.toast(key, params)` takes a message key, item texts come from `itemText(def)` and friends, numbers from `fmtNum`. Changing language calls `Hud.relocalize()`, which redraws every surface on screen from its last inputs. The debug readout stays English on purpose.
 
 ## Debug console

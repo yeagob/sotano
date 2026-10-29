@@ -18,6 +18,7 @@ const messages = {
   'intro.openSource': 'This game is open source and open to collaboration: if you love video games and want to help, you are welcome here.',
   'intro.repo': 'Repository',
   'intro.coffee': 'Buy me a coffee',
+  'intro.bug': 'Report a bug',
   'touch.rotate': 'Turn your device sideways to play',
   'toast.padDisconnected': 'Controller disconnected: paused',
   'toast.padConnected': 'Controller connected',
