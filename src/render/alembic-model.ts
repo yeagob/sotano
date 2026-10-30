@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { pal, type PalToken } from '../content/palette';
 
 // The laboratory's alembic (docs/design/built/laboratory): a voxel model at 16 texels per block,
-// drawn over its two solid tiles. Side: world / vessel. Concept: inner alchemy (transmutation),
+// drawn over two tiles and built as two one-tile models split exactly at the seam x = 1: the
+// -X tile is the kitchen (buildKitchenTile, re-exported by kitchen-model.ts), the +X tile the alembic. Side: world / vessel. Concept: inner alchemy (transmutation),
 // the vessel where what a pattern left is brewed. It never glows at rest: the hearth is banked
 // and only the player's positive intention lights it (`hearth-glow`).
 //
@@ -286,12 +287,17 @@ function glowPaint(x: number, y: number, z: number, d: number): PalToken {
   return h < 0.25 ? 'light.hot' : h < 0.7 ? 'light.ember' : 'light.dusk';
 }
 
-function geometry(grids: Grid | Grid[], layer: Layer, painter: (k: Kind, x: number, y: number, z: number, d: number) => PalToken): THREE.BufferGeometry {
+/** Faces of `layer`, keeping only voxels whose texel x lies in [x0, x1) (the tile the model is
+ *  built for); faces are shifted by -x0 so the tile's lower corner is the origin. A face on the
+ *  seam whose neighbour lies on the other tile is still hidden, so the cut stays closed only
+ *  where the part really ends; a part that crosses the seam is cut there exactly. */
+function geometry(grids: Grid | Grid[], layer: Layer, painter: (k: Kind, x: number, y: number, z: number, d: number) => PalToken, x0 = 0, x1 = 32): THREE.BufferGeometry {
   const p: number[] = [], c: number[] = [];
   const col = new THREE.Color();
   for (const g of Array.isArray(grids) ? grids : [grids]) for (const v of g.cells.values()) {
     const u = T / g.s;
     if (LAYER[v.k] !== layer) continue;
+    if (v.x / g.s < x0 || v.x / g.s >= x1) continue;
     for (let d = 0; d < 6; d++) {
       const [dx, dy, dz] = DIRS[d];
       const n = g.get(v.x + dx, v.y + dy, v.z + dz);
@@ -303,7 +309,7 @@ function geometry(grids: Grid | Grid[], layer: Layer, painter: (k: Kind, x: numb
       col.setHex(pal(painter(v.k, v.x, v.y, v.z, d)));
       const q = QUADS[d];
       for (const i of [0, 1, 2, 0, 2, 3]) {
-        p.push((v.x + q[i][0]) * u, (v.y + q[i][1]) * u, (v.z + q[i][2]) * u);
+        p.push((v.x + q[i][0]) * u - x0 * T, (v.y + q[i][1]) * u, (v.z + q[i][2]) * u);
         c.push(col.r, col.g, col.b);
       }
     }
@@ -327,32 +333,46 @@ function mesh(parent: THREE.Object3D, name: string, geo: THREE.BufferGeometry, m
   return m;
 }
 
-/** The laboratory's alembic over its two tiles (+X), origin at the -X tile's lower corner. */
+const SEAM = 16;
+
+/** The kitchen: the -X tile of the original station, exactly as it was (the hearth with its
+ *  mouth, coals, flue and seat; the bulb, its hoops and helm, whose centre lies on this tile; the
+ *  beak's half up to the seam). Origin at the tile's lower corner. */
+export function buildKitchenTile(): THREE.Group {
+  const g = carve();
+  const root = new THREE.Group();
+  root.name = 'kitchen';
+  mesh(root, 'kitchen-body', geometry([g, carvePipes()], 'solid', paint, 0, SEAM), lambert());
+  mesh(root, 'hearth-coals', geometry(g, 'coal', paint, 0, SEAM), lambert());
+  const glow = mesh(root, 'hearth-glow', geometry(g, 'coal', (_k, x, y, z, d) => glowPaint(x, y, z, d), 0, SEAM), new THREE.MeshBasicMaterial({ vertexColors: true }));
+  glow.visible = false;
+  for (const i of [0, 1, 2]) mesh(root, `ring-${i}`, geometry(g, `ring${i}` as Layer, paint, 0, SEAM), lambert());
+  const bulb = mesh(root, 'bulb', geometry(g, 'glass', paint, 0, SEAM), glassMat());
+  bulb.renderOrder = 1;
+  return root;
+}
+
+/** The laboratory's alembic: the +X tile of the original station, exactly as it was (the plinth,
+ *  the coil on its post, the flask stand and the beak's half from the seam). Origin at the tile's
+ *  lower corner. */
 export function buildAlembicModel(): THREE.Group {
   const g = carve();
   const root = new THREE.Group();
   root.name = 'alembic';
-
-  mesh(root, 'alembic-body', geometry([g, carvePipes()], 'solid', paint), lambert());
-  mesh(root, 'hearth-coals', geometry(g, 'coal', paint), lambert());
-  const glow = mesh(root, 'hearth-glow', geometry(g, 'coal', (_k, x, y, z, d) => glowPaint(x, y, z, d)), new THREE.MeshBasicMaterial({ vertexColors: true }));
-  glow.visible = false;
-  for (const i of [0, 1, 2]) mesh(root, `ring-${i}`, geometry(g, `ring${i}` as Layer, paint), lambert());
-  const bulb = mesh(root, 'bulb', geometry(g, 'glass', paint), glassMat());
-  bulb.renderOrder = 1;
+  mesh(root, 'alembic-body', geometry([g, carvePipes()], 'solid', paint, SEAM, 32), lambert());
 
   const f = carveFlask();
   const flask = new THREE.Group();
   flask.name = 'flask';
   flask.visible = false;
   root.add(flask);
-  mesh(flask, 'flask-liquid', geometry(f, 'liquid', paint), new THREE.MeshLambertMaterial({ vertexColors: true, color: pal('path.body.base'), emissive: pal('ink.void') }));
-  const fg = mesh(flask, 'flask-glass', geometry(f, 'fglass', paint), glassMat());
+  mesh(flask, 'flask-liquid', geometry(f, 'liquid', paint, SEAM, 32), new THREE.MeshLambertMaterial({ vertexColors: true, color: pal('path.body.base'), emissive: pal('ink.void') }));
+  const fg = mesh(flask, 'flask-glass', geometry(f, 'fglass', paint, SEAM, 32), glassMat());
   fg.renderOrder = 1;
 
   const slot = new THREE.Object3D();
   slot.name = 'flask-slot';
-  slot.position.set((FX + 0.5) * T, 5 * T, (FZ + 1) * T);
+  slot.position.set((FX + 0.5 - SEAM) * T, 5 * T, (FZ + 1) * T);
   root.add(slot);
   return root;
 }
