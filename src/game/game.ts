@@ -2324,15 +2324,16 @@ export class Game {
       const top = this.player.hand.at(-1);
       if (!unlocksPresence(id, top)) {
         if (e.tags.has('answering')) continue;
-        e.tags.add('answering');
         const now = performance.now();
         if (!e.tags.has('hinted')) {
           e.tags.add('hinted');
+          e.tags.add('answering');
           this.presenceReplies.set(e.id, now);
           this.hud.presenceCard(talk.name, [talk.hint]);
           return;
         }
         if (!answerDue(this.presenceReplies.get(e.id), now)) continue;
+        e.tags.add('answering');
         this.presenceReplies.set(e.id, now);
         if (top === undefined) this.hud.presenceCard(talk.name, ['presence.empty']);
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
