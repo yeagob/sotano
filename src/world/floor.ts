@@ -134,7 +134,7 @@ export interface FloorResult {
   hole: { room: number; x: number; z: number; size: number; yTop: number; yBottom: number } | null;
   /** Under the last floor: the chamber of silence (L4), or null. */
   silence: { x0: number; z0: number; x1: number; z1: number; y0: number; y1: number } | null;
-  /** The laboratory's alembic (a block on its room's floor), on the laboratory floors only, or null. */
+  /** The laboratory's alembic: two blocks side by side, from this anchor tile to the one at x + 1. Laboratory floors only, or null. */
   laboratory: { room: number; x: number; y: number; z: number } | null;
   /** The room (plan index) whose space holds each grid cell, -1 for rock: rooms may spread into
    *  empty cells around their own, which the map never shows (docs/architecture/LEVELS.md §10). */
@@ -374,11 +374,13 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       // a free-standing chest in many rooms; the rest of the open tiles stay free for keys
       let spots = freeSpots(t, flipX, flipZ);
       for (const [c, r] of spots) labTiles.push({ x: x0 + c, y: y0, z: z0 + r, room: gid(pr.id) });
-      if (pr.id === labRoom && spots.length) {
-        const [col, row] = labRng.pick(spots);
+      const labPairs = spots.filter(([c, r]) => spots.some(([c2, r2]) => c2 === c + 1 && r2 === r));
+      if (pr.id === labRoom && labPairs.length) {
+        const [col, row] = labRng.pick(labPairs);
         w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.alembic;
+        w.data[w.idx(x0 + col + 1, y0, z0 + row)] = MAT.alembic;
         laboratory = { room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row };
-        spots = spots.filter(([c, r]) => c !== col || r !== row);
+        spots = spots.filter(([c, r]) => r !== row || (c !== col && c !== col + 1));
       }
       if (spots.length && !lv.tutorial && chestRng.chance(ROOM_CHEST)) {
         const [col, row] = chestRng.pick(spots);
@@ -495,9 +497,11 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     const onOther = (t: { x: number; z: number }) =>
       keys.some(k => k.x === t.x && k.z === t.z) || bombs.some(b => b.x === t.x && b.z === t.z) || (spawn[0] === t.x + 0.5 && spawn[2] === t.z + 0.5);
     const free = labTiles.filter(t => w.get(t.x, t.y, t.z) === AIR && !onOther(t));
-    if (free.length) {
-      const t = labRng.pick(free);
+    const pairs = free.filter(t => free.some(u => u.x === t.x + 1 && u.z === t.z && u.y === t.y && u.room === t.room));
+    if (pairs.length) {
+      const t = labRng.pick(pairs);
       w.data[w.idx(t.x, t.y, t.z)] = MAT.alembic;
+      w.data[w.idx(t.x + 1, t.y, t.z)] = MAT.alembic;
       laboratory = { room: t.room, x: t.x, y: t.y, z: t.z };
     }
   }

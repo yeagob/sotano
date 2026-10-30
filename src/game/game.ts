@@ -37,6 +37,7 @@ import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
 import { Pickups, type Pickup } from '../entities/pickups';
 import { Chests, type ChestView } from '../entities/chests';
+import { Alembics } from '../entities/alembics';
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { controlParams } from '../input/labels';
@@ -47,7 +48,7 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
-import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tick as labTick, type Alembic } from './alembic';
+import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
@@ -229,6 +230,7 @@ export class Game {
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
   private chestViews!: Chests;
+  private alembicViews!: Alembics;
   private boundaryRing = new Map<number, [number, number, number][]>();
   private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
@@ -397,6 +399,7 @@ export class Game {
     this.doors?.dispose();
     this.pickups?.dispose();
     this.chestViews?.dispose();
+    this.alembicViews?.dispose();
     this.enemies?.dispose();
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
@@ -432,6 +435,7 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
+    this.alembicViews = new Alembics(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
     this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
@@ -542,7 +546,12 @@ export class Game {
   /** Registers a carved floor: its rooms and their combat state. */
   private addFloor(f: FloorResult) {
     this.floors.set(f.floor, f);
-    if (f.laboratory) this.labs.set(this.world.idx(f.laboratory.x, f.laboratory.y, f.laboratory.z), newAlembic());
+    if (f.laboratory) {
+      const { x, y, z } = f.laboratory, lab = newAlembic();
+      this.labs.set(this.world.idx(x, y, z), lab);
+      this.labs.set(this.world.idx(x + 1, y, z), lab);
+      this.alembicViews.add(x, y, z);
+    }
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
     for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
     for (const r of f.rooms) {
@@ -2365,7 +2374,7 @@ export class Game {
   }
 
   private updateLoop(dt: number) {
-    for (const a of this.labs.values()) labTick(a, dt);
+    tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
     this.pushPresences();

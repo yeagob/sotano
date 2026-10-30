@@ -13,7 +13,7 @@ export const SEED_LENGTH = 8;
  * Bumped by hand at releases when generation changes enough that old codes produce different
  * runs. It is shown next to the code ("ABCD EFGH · v1"); it is not mixed into the root.
  */
-export const GEN_VERSION = 20;
+export const GEN_VERSION = 21;
 
 /** A fresh random 32-bit root (crypto when available). */
 export function randomRoot(): number {
