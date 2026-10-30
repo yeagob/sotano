@@ -32,4 +32,4 @@ The owner's text said that from the sixth level practices start, and gave a numb
 - A practice paid as the toll is lost: the player gives it up.
 - A paid heart goes through the damage rules, so a toll can kill.
 
-Code: `src/content/levels.ts` (the toll by floor: the count and whether it asks for practices), `src/game/game.ts` (the payment window's rules, the hole opening, the damage of a paid heart).
+Code: `src/content/levels.ts` (the toll by floor: the count and whether it asks for practices), `src/game/game.ts` (the payment window's rules, the hole opening, the damage of a paid heart), `src/game/toll.ts` (the hand's slots as things the window offers).

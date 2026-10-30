@@ -20,6 +20,7 @@ import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
+import { handTollIds } from './toll';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -624,7 +625,7 @@ export class Hud {
     const ids: string[] = [];
     if (toll?.practices) g.inventory.items.forEach((_, i) => ids.push(`item:${i}`));
     else if (toll) {
-      p.hand.forEach((_, i) => ids.push(`hand:${i}`));
+      ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
       for (let i = 0; i < p.bombs; i++) ids.push(`bomb:${i}`);
       for (let i = 0; i < Math.ceil(p.hp / HEART); i++) ids.push(`heart:${i}`);
