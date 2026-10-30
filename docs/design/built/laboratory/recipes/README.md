@@ -15,7 +15,7 @@ What the bulb makes when a positive intention brews it, and how long the flask's
 | Clear Infusion | mind | two minds of two mind patterns | range ×1.3, shot speed ×1.2 | 3 sealed rooms | [CLEAR-INFUSION](CLEAR-INFUSION.md) |
 | Questioning Tincture | mind | a mind of the Doubt lineage and iron ore | the next lock asks one key less | one lock, or the floor | [QUESTIONING-TINCTURE](QUESTIONING-TINCTURE.md) |
 | Ember Tonic | will | a will heart | fire rate ×1.3 | 3 sealed rooms | [EMBER-TONIC](EMBER-TONIC.md) |
-| Patient Draught | will | a flesh and a mind of one will pattern | mining ×1.6 | the floor | [PATIENT-DRAUGHT](PATIENT-DRAUGHT.md) |
+| Patient Draught | will | a heart and a mind of one will pattern | mining ×1.6 | the floor | [PATIENT-DRAUGHT](PATIENT-DRAUGHT.md) |
 
 ## How the bulb is read
 

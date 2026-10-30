@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { HEART } from '../src/entities/actors';
 import { PARTS } from '../src/content/parts';
 import { POTIONS, flaskDef, flaskIcon, isFlask, type PotionId } from '../src/content/potions';
-import { brewOf } from '../src/content/recipes';
+import { RECIPES, brewOf } from '../src/content/recipes';
 
 const part = (kind: 'flesh' | 'heart' | 'mind' | 'essence', source?: string) =>
   PARTS.find(p => p.kind === kind && (source === undefined || p.source === source))!;
@@ -20,6 +20,21 @@ describe('potions: what the bulb brews', () => {
     expect(brewOf([part('heart'), part('mind')])).toBe('plain-tonic');
     expect(brewOf([3, 3])).toBe('plain-tonic');
     expect(brewOf([3, part('flesh')])).toBe('plain-tonic');
+  });
+});
+
+describe('potions: flesh buys only instant healing, and the Footing Tincture is the one exception', () => {
+  it('no timed recipe takes flesh except the Footing Tincture', () => {
+    for (const r of RECIPES) {
+      const takesFlesh = r.slots.some(s => 'part' in s && s.part === 'flesh');
+      const timed = POTIONS[r.potion].duration.kind !== 'instant';
+      expect(takesFlesh && timed, r.potion).toBe(r.potion === 'footing-tincture');
+    }
+  });
+
+  it('the Patient Draught takes a heart, the rare kind, from its will pattern', () => {
+    const patient = RECIPES.find(r => r.potion === 'patient-draught')!;
+    expect(patient.slots.map(s => 'part' in s && s.part)).toEqual(['heart', 'mind']);
   });
 });
 

@@ -12,7 +12,7 @@ Read with: [BESTIARY](../README.md) (parts, agreements, the Compost, the codex),
 |---|---|---|
 | Only a positive intention brews | **Approved** 2026-10-28 | POTIONS §7, question 3 |
 | Three brews per alembic per run | **Approved** 2026-10-28 | POTIONS §7, question 2 |
-| One laboratory and one alembic per zone (five per run) | **Approved** 2026-10-28 | POTIONS §7, question 1 |
+| One laboratory and one alembic per zone (five per run) | **Approved** 2026-10-28 as one per zone; changed by the owner on 2026-10-30 to four laboratories, on floors 2, 4, 6 and 8 | POTIONS §7, question 1 |
 | No shop: the alembic closes the "parts need a purpose" task; trades stay with the Trickster | **Approved** 2026-10-28 for "no shop"; the Trickster is the default | POTIONS §7, question 9 |
 | A negative intention boils the bulb off without spending a brew | Part of question 3's default; to confirm | [BREWING-RULES](BREWING-RULES.md) §2 |
 | The drink verb, its timing, flask in the hand | Proposal | [BREWING-RULES](BREWING-RULES.md) §3 |

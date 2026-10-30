@@ -8,7 +8,7 @@ The rules that decide when a potion is made. §1 is what the owner approved. §2
 
 1. **Only a positive intention brews.** A positive intention hit on a loaded bulb starts a brew. Good intentions make; the rule matches what players already know (good intentions mend and make, bad ones break). Source: POTIONS §7, question 3.
 2. **Three brews per alembic per run.** After the third brew the alembic goes cold. Source: question 2.
-3. **One laboratory per zone.** Each great zone has one alembic, so five per run. The zones are I to V in [BESTIARY](../../projections/ZONES.md) §4.1. Source: question 1.
+3. **One laboratory per zone.** Each great zone has one alembic, so five per run. The zones are I to V in [BESTIARY](../../projections/ZONES.md) §4.1. Source: question 1. **Owner decision, 2026-10-30: four laboratories, on floors 2, 4, 6 and 8, not five.** The build keeps those floors; twelve potions per run at most.
 4. **No shop.** The alembic closes the "parts need a purpose" task, and "no coins, no shop" holds ([DESIGN](README.md) §4). Source: question 9. The Trickster's trades are the only exchange, as the proposal's default says; the owner approved "no shop", not the Trickster.
 
 ## 2. Follows from §1 (to confirm)

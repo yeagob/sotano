@@ -31,7 +31,7 @@ Questions 1 to 3 of the proposal are approved (one alembic per zone, three brews
 |---|---|---|
 | The alembic brews parts, or makes an essence from water and a husk | This folder against [STATIONS §4.4](../../stations/ALEMBIC.md) | The owner names the alembic's one purpose |
 | "Eat with F" | [POTIONS §0 and §5](README.md) say STATIONS uses F to eat. The STATIONS text says the use key | None here; the controls skill chooses the key. F is polarity ([KEYBOARD](../../../../architecture/input/KEYBOARD.md)) |
-| One laboratory per zone | [BREWING-RULES](BREWING-RULES.md) §1 (approved: one per zone, five per run) against the build (floors 2, 4, 6 and 8, four per run) | The owner chooses; the build keeps 2, 4, 6 and 8 until then |
+| One laboratory per zone | [BREWING-RULES](BREWING-RULES.md) §1 (approved: one per zone, five per run) against the build (floors 2, 4, 6 and 8, four per run) | Decided by the owner on 2026-10-30: four laboratories, on floors 2, 4, 6 and 8 |
 | Laboratory floors | [STATIONS themed rooms](../../stations/THEMED-ROOMS.md) put the laboratory on floors 3 and 8; this folder puts it on 2, 4, 6 and 8 | Which floors |
 | The name Compost | [BESTIARY §8.8](../../encounters/COMPOST.md) (a farming room) and [the station](../../stations/COMPOST.md) | One name |
 | Parts held in the hand, or in the inventory | This folder and src/content/parts.ts header disagree | The owner decides which is true; see [PARTS-AND-SUPPLY](PARTS-AND-SUPPLY.md) §2 |

@@ -20,10 +20,10 @@ Recipes are content, not seed, and that is built. The brainstorm's "recipes that
 
 The approved cap is three brews per alembic per run (BREWING-RULES §1). The rest is the proposal's logic, borrowed from the Compost.
 
-1. **Three brews per alembic per run, five alembics:** at most fifteen potions in a run, whatever the supply of parts, challenge rooms included. The game has four alembics today (floors 2, 4, 6 and 8), so twelve.
+1. **Three brews per alembic per run, four alembics:** at most twelve potions in a run, whatever the supply of parts, challenge rooms included. The owner decided on 2026-10-30 to keep four alembics (floors 2, 4, 6 and 8), not one per zone.
 2. **One flask per brew.** A flask takes a hand slot, competing with blocks, parts and the toll. Built.
 3. **No stacking.** Drinking a potion that is already active refreshes its duration to the full value. Built.
-4. **Rarity by kind.** Strong and long effects need hearts (about 5 %) and essences (about 2 %). Flesh only buys instant healing. The built Footing Tincture and Patient Draught use flesh for a timed effect, as their recipe documents say; the owner may want the rule or the recipes changed.
+4. **Rarity by kind.** Strong and long effects need hearts (about 5 %) and essences (about 2 %). Flesh only buys instant healing, with one exception: the Footing Tincture, by the owner's decision of 2026-10-30. The Patient Draught takes a heart instead, and a test keeps the rule.
 5. **Room-counted durations** tick on sealed rooms only. Built.
 6. **The parts supply keeps the Compost's falloff** (100, 75 and 50 %) and its rest after three harvests. Potions add no new source of parts ([PARTS-AND-SUPPLY](PARTS-AND-SUPPLY.md)).
 

@@ -10,7 +10,7 @@ Up: [Built](../README.md) · the alembic as the game has it today. The brewing r
 
 ## Where it is
 
-One laboratory on floors 2, 4, 6 and 8 (`LABORATORY_FLOORS` in `src/world/floor.ts`). It is one alembic block on the floor of one normal room, drawn from the floor's own fork of the seed, and it sits on a free tile of that room. The laboratory is not on floor 9, which holds the last zone's Compost; the zone's laboratory there is still open ([open questions](../../not-built/practices/potions/OPEN-QUESTIONS.md)). Floor 0, the tutorial, has none.
+Four laboratories, on floors 2, 4, 6 and 8 (`LABORATORY_FLOORS` in `src/world/floor.ts`). The owner chose four on 2026-10-30, instead of the one per zone (five) that the brewing rules first approved. It is one alembic block on the floor of one normal room, drawn from the floor's own fork of the seed, and it sits on a free tile of that room. The laboratory is not on floor 9, which holds the last zone's Compost; the zone's laboratory there is still open ([open questions](../../not-built/practices/potions/OPEN-QUESTIONS.md)). Floor 0, the tutorial, has none.
 
 ## What it does
 

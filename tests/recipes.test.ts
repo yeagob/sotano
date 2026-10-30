@@ -28,7 +28,7 @@ const SAMPLES: [string, Carried[]][] = [
   ['questioning-tincture', [part('doubt', 'mind'), MAT.ore]],
   ['questioning-tincture', [MAT.ore, part('paralysis', 'mind')]],
   ['ember-tonic', [part('panic', 'heart')]],
-  ['patient-draught', [part('autopilot', 'flesh'), part('autopilot', 'mind')]],
+  ['patient-draught', [part('autopilot', 'heart'), part('autopilot', 'mind')]],
 ];
 
 describe('the paths and lineages of the patterns', () => {

@@ -25,7 +25,7 @@ export const RECIPES: readonly Recipe[] = [
   { potion: 'clear-infusion', slots: [{ part: 'mind', path: 'mind' }, { part: 'mind', path: 'mind' }], patterns: 'distinct' },
   { potion: 'questioning-tincture', slots: [{ part: 'mind', lineage: 'doubt' }, { materials: [MAT.ore] }] },
   { potion: 'ember-tonic', slots: [{ part: 'heart', path: 'will' }] },
-  { potion: 'patient-draught', slots: [{ part: 'flesh', path: 'will' }, { part: 'mind', path: 'will' }], patterns: 'same' },
+  { potion: 'patient-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'mind', path: 'will' }], patterns: 'same' },
 ];
 
 export const SLOT_LEVEL = { exact: 3, lineage: 2, path: 1, any: 0 } as const;
