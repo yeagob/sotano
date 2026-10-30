@@ -17,6 +17,11 @@ export function controlParams(device: Device): Params {
   return Object.fromEntries(LESSON_CONTROLS.map(a => [a, inline(t(controlKey(a, device)))]));
 }
 
+/** The label of one control on a device, for the middle of a sentence. */
+export function keyLabel(row: string, device: Device): string {
+  return inline(t(controlKey(row, device)));
+}
+
 function inline(label: string) {
   return label.length > 1 && label[1] === label[1].toLowerCase() ? label[0].toLowerCase() + label.slice(1) : label;
 }

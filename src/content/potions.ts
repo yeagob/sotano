@@ -7,6 +7,7 @@ import type { PartDef } from './parts';
 export const POTION_IDS = [
   'plain-tonic', 'restoring-draught', 'footing-tincture', 'spring-tonic',
   'clear-infusion', 'questioning-tincture', 'ember-tonic', 'patient-draught',
+  'meal-small', 'meal-hearty',
 ] as const;
 export type PotionId = (typeof POTION_IDS)[number];
 
@@ -27,13 +28,15 @@ export interface PotionDef {
   heal?: number;
   stats?: readonly StatModSpec[];
   locks?: number;
+  /** Cooked in a kitchen, never brewed: it has no recipe. */
+  meal?: true;
 }
 
 const INSTANT: Duration = { kind: 'instant' };
 const FLOOR: Duration = { kind: 'floor' };
 const ROOMS = (rooms: number): Duration => ({ kind: 'rooms', rooms });
 
-type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks'>;
+type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal'>;
 
 const potion = (id: PotionId, path: PathName, liquid: PalToken, duration: Duration, extra: Extra = {}): PotionDef =>
   ({ id, path, liquid, duration, name: `potion.${id}.name` as MessageKey, effect: `potion.${id}.effect` as MessageKey, ...extra });
@@ -48,6 +51,9 @@ export const POTIONS: Record<PotionId, PotionDef> = {
   }),
   'questioning-tincture': potion('questioning-tincture', 'mind', 'iron.hi', FLOOR, { locks: 1 }),
   'ember-tonic': potion('ember-tonic', 'will', 'el.ember.hot', ROOMS(3), { stats: [{ stat: 'fireRate', layer: 'mul', value: 1.3 }] }),
+  // meals: cooked in a kitchen (game/kitchen.ts), eaten with the drink key like any flask
+  'meal-small': potion('meal-small', 'body', 'bone.faded', INSTANT, { heal: 4, meal: true }),
+  'meal-hearty': potion('meal-hearty', 'body', 'copper.base', INSTANT, { heal: 8, meal: true }),
   'patient-draught': potion('patient-draught', 'will', 'copper.base', FLOOR, { stats: [{ stat: 'mining', layer: 'mul', value: 1.6 }] }),
 };
 
