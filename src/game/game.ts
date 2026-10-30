@@ -20,6 +20,7 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
+import { tollIndex } from './toll';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -2425,7 +2426,8 @@ export class Game {
     const hands: number[] = [], items: string[] = [];
     let keys = 0, bombs = 0, paid = 0;
     for (const id of ids) {
-      const [kind, at] = id.split(':'), i = Number(at);
+      const [kind, at] = id.split(':'), i = tollIndex(at);
+      if (i === null) return false;
       if (kind === 'item' ? !toll.practices : toll.practices) return false;
       if (kind === 'hand') { if (!(i < p.hand.length)) return false; hands.push(i); }
       else if (kind === 'key') { if (!(i < p.keys)) return false; keys++; }

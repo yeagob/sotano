@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { LAST_FLOOR, tollOf } from '../src/content/levels';
 import { PART_KINDS, PARTS } from '../src/content/parts';
-import { handTollIds } from '../src/game/toll';
+import { handTollIds, tollIndex } from '../src/game/toll';
 
 describe('the way down asks a toll', () => {
+  it('reads only a plain, non-negative whole index: no sign, no fraction, no spare zeros', () => {
+    expect(tollIndex('0')).toBe(0);
+    expect(tollIndex('7')).toBe(7);
+    for (const bad of ['-1', '1.5', '0.0', '01', '', 'x', undefined]) expect(tollIndex(bad), String(bad)).toBeNull();
+  });
+
   it('lets a block or a part in the hand be given, one hand slot each', () => {
     for (const kind of PART_KINDS) {
       const part = PARTS.find(p => p.kind === kind)!;

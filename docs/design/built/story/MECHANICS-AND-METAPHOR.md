@@ -23,7 +23,7 @@ The mechanics live in the world code under `src/`, and the floors and rooms are 
 | **Treasure rooms** | Moments of learning | A practice waits on a pedestal. Its door is a treasure door, and the vault room holds the richer pedestals |
 | **Bosses** | Core blocks: the big, old patterns behind the small ones | Each boss is built from the same blocks as everything else, so it can be dismantled piece by piece. Their arenas are in [built bosses](../bosses/README.md) |
 | **The roots** | The earth, where you begin | Floor 0 has every door open, and the first lessons are carved into the stone walls as tablets, never as an overlay |
-| **The way down asks a price** | Leaving something behind is how the path opens | To go down you give something: a heart of damage, a key, a bomb, a block from your hand, or, from the sixth level on, a practice. The toll window lists what you carry and you choose exactly what is asked. The price grows with the floor, and it never traps a player who has played fair, because a heart can always be given |
+| **The way down asks a price** | Leaving something behind is how the path opens | To go down you give something: a heart of damage, a key, a bomb, a block or a monster part from your hand, or, from the sixth level on, a practice. The toll window lists what you carry and you choose exactly what is asked. The price grows with the floor, and it never traps a player who has played fair, because a heart can always be given |
 
 ## Notes
 
