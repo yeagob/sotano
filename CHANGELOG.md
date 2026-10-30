@@ -6,6 +6,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Added
 - Breaking a crate has a 30% chance to drop a key, a heart or a small bomb (#6).
+- A monster part in your hand can be given as the toll to go down on floors 0 to 4 (#8).
 
 ### Fixed
 - Open chest lids no longer clip through the chest body or its padlock (#4).

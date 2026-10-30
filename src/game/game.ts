@@ -2427,7 +2427,7 @@ export class Game {
     for (const id of ids) {
       const [kind, at] = id.split(':'), i = Number(at);
       if (kind === 'item' ? !toll.practices : toll.practices) return false;
-      if (kind === 'hand') { if (!(i < p.hand.length) || typeof p.hand[i] !== 'number') return false; hands.push(i); }
+      if (kind === 'hand') { if (!(i < p.hand.length)) return false; hands.push(i); }
       else if (kind === 'key') { if (!(i < p.keys)) return false; keys++; }
       else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
       else if (kind === 'heart') { if (!(i < hearts)) return false; paid++; }

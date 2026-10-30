@@ -14,7 +14,7 @@ The 152 parts of the built projection files are in `src/content/parts.ts`. They 
 
 ## In the hand
 
-Collecting a part lifts it into the hand, with the hold-up and no burst. Parts have no use yet: no agreement, gift or shop asks for them ([AGREEMENTS](../../not-built/presences/AGREEMENTS.md)).
+Collecting a part lifts it into the hand, with the hold-up and no burst. A part in the hand can be given as the way down's toll on floors 0 to 4, like a block ([TOLL](../levels/floors/TOLL.md)). It is given away and does not return. No agreement, gift or shop asks for parts yet ([AGREEMENTS](../../not-built/presences/AGREEMENTS.md)).
 
 ## Icons
 
