@@ -403,12 +403,12 @@ export class Hud {
   // ───────────────────────── feedback ─────────────────────────
 
   /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
-  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[]) {
+  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: Params) {
     this.lastBanner = null;
     this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b>${th(nameKey)}</b>` +
-      lineKeys.map(k => `<span>${th(k)}</span>`).join('') +
+      lineKeys.map(k => `<span>${th(k, params)}</span>`).join('') +
       `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth;

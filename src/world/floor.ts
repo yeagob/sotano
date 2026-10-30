@@ -263,6 +263,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   const normalRooms = plan.rooms.filter(p => p.type === 'normal');
   const labRoom = LABORATORY_FLOORS.includes(k) && !lv.tutorial && normalRooms.length ? labRng.pick(normalRooms).id : -1;
   let laboratory: FloorResult['laboratory'] = null;
+  const labTiles: { x: number; y: number; z: number; room: number }[] = [];
 
   // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
   //    from the plan and the floor's own fork, so a room's choice never depends on another room's
@@ -372,6 +373,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     if (pr.type === 'normal') {
       // a free-standing chest in many rooms; the rest of the open tiles stay free for keys
       let spots = freeSpots(t, flipX, flipZ);
+      for (const [c, r] of spots) labTiles.push({ x: x0 + c, y: y0, z: z0 + r, room: gid(pr.id) });
       if (pr.id === labRoom && spots.length) {
         const [col, row] = labRng.pick(spots);
         w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.alembic;
@@ -489,6 +491,14 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   for (const rm of rooms) markRoomDirty(w, rm);
+  if (labRoom >= 0 && !laboratory) {
+    const free = labTiles.filter(t => w.get(t.x, t.y, t.z) === AIR);
+    if (free.length) {
+      const t = labRng.pick(free);
+      w.data[w.idx(t.x, t.y, t.z)] = MAT.alembic;
+      laboratory = { room: t.room, x: t.x, y: t.y, z: t.z };
+    }
+  }
   return { floor: k, boss: null, plan, rooms, doors, spawn, pedestals, chests, keys, bombs, hole, silence, laboratory, space };
 }
 

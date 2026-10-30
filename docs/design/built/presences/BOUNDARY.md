@@ -22,3 +22,5 @@ The Boundary is a tall, calm column of limestone that keeps the vault it stands 
 - **Holding a door.** A woken Boundary in a vault is hostile. Check in play whether it can hold a door or a room shut; the room is cleared from the start, so the seal does not run.
 - **The ring.** Two blocks around the centre is a small sanctuary. The design asks for the ring to be the only thing the player must break, and to be put back. Check the feel of rebuilding it.
 - **Look.** The design calls its look a first draft for the art gate. It has not passed the gallery review.
+
+- **Body.** The Boundary has a body the player cannot walk through, like the presences. It does not answer words: it is a guardian, not a presence that speaks.

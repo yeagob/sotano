@@ -10,6 +10,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - A monster part in your hand can be given as the toll to go down on floors 0 to 4 (#8).
 
 ### Fixed
+- Presences have a body you cannot walk through, and they answer what you bring: they name it and say whether it is what they wait for. A laboratory is placed on every laboratory floor, even when the first room chosen has no room for it.
 - Open chest lids no longer clip through the chest body or its padlock (#4).
 - Locked doors open when you touch them, not from across the room (#5).
 
