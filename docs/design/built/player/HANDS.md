@@ -9,7 +9,7 @@ Part of [the player](README.md).
 - By default you carry one block. What you carry is shown in your hands, at the bottom of the view; the hand shows the top of the stack.
 - Walking into a loose block picks it up if your hand has room. If your hand is full, you kick it instead ([KICK-AND-THROW.md](../blocks/KICK-AND-THROW.md)).
 - Bombs cannot be picked up. Walking into one kicks it.
-- Parts, the things a released projection leaves behind, also take a slot in your hand, like a block. Walking into one lifts it if there is room. They have no effect when carried, and no window lists them. You place or throw a part exactly as you would a block. A placed part lies on the floor and can be picked up again after a short delay.
+- Parts, the things a released projection leaves behind, also take a slot in your hand, like a block. Walking into one lifts it if there is room. They have no effect when carried. On floors 0 to 4 the toll window lists the parts you carry, and a part given there is gone. You place or throw a part exactly as you would a block. A placed part lies on the floor and can be picked up again after a short delay.
 - Keys and bombs are counters. They are not held in the hand and cost no slot.
 - Picking up a practice, or a part, raises your hands for about a second and a half. While they are raised you cannot cast.
 

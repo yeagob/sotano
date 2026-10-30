@@ -20,6 +20,7 @@ import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
+import { handTollIds } from './toll';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -624,7 +625,7 @@ export class Hud {
     const ids: string[] = [];
     if (toll?.practices) g.inventory.items.forEach((_, i) => ids.push(`item:${i}`));
     else if (toll) {
-      p.hand.forEach((m, i) => { if (typeof m === 'number') ids.push(`hand:${i}`); });
+      ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
       for (let i = 0; i < p.bombs; i++) ids.push(`bomb:${i}`);
       for (let i = 0; i < Math.ceil(p.hp / HEART); i++) ids.push(`heart:${i}`);
@@ -659,7 +660,9 @@ export class Hud {
     const hearts = Array.from({ length: Math.ceil(p.hp / HEART) }, (_, i) => tile(`heart:${i}`, hudIconUrl(HUD_ICONS.heart), t('toll.heart'))).join('');
     const keys = Array.from({ length: p.keys }, (_, i) => tile(`key:${i}`, hudIconUrl(HUD_ICONS.key), t('toll.key'))).join('');
     const bombs = Array.from({ length: p.bombs }, (_, i) => tile(`bomb:${i}`, hudIconUrl(HUD_ICONS.seed), t('toll.bomb'))).join('');
-    const hands = p.hand.flatMap((m, i) => (typeof m === 'number' ? [tile(`hand:${i}`, this.slotUrl(m), materialName(m))] : [])).join('');
+    const hands = p.hand.map((m, i) => (typeof m === 'number'
+      ? tile(`hand:${i}`, this.slotUrl(m), materialName(m))
+      : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
     const items = g.inventory.items.map((it, i) => tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
       ? section('toll.sec.item', items)
