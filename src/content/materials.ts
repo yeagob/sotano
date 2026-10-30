@@ -79,7 +79,6 @@ const DEFS: Def[] = [
   { id: 25, key: 'ashlar', name: 'Ashlar', tier: 1, hp: 12, armor: 0.5, ramp: 'ashlar', pattern: 'ashlar', concept: 'a burden cut into blocks' },
   { id: 26, key: 'slate', name: 'Slate', tier: 1, hp: 12, armor: 0.5, ramp: 'slate', pattern: 'slate', concept: 'layers of what was never said' },
   { id: 27, key: 'darkbrick', name: 'Dark brick', tier: 1, hp: 12, armor: 0.5, ramp: 'darkbrick', pattern: 'brick', concept: 'a habit gone dark' },
-  // the laboratory's alembic (docs/design/not-built/practices/potions): unbreakable, placeholder look until sotano-art
   { id: 28, key: 'alembic', name: 'Alembic', tier: Infinity, hp: Infinity, armor: 0, ramp: 'brass', accent: 'light.gold', pattern: 'pedestal', concept: 'the vessel where what a pattern left is brewed' },
 ];
 

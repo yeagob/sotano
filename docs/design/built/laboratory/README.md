@@ -25,6 +25,6 @@ One laboratory on floors 2, 4, 6 and 8 (`LABORATORY_FLOORS` in `src/world/floor.
 
 ## Placeholders
 
-The alembic is a brass block with the pedestal's pattern, and every flask is one shared bottle icon with a liquid colour per potion. Neither has passed the art gate (sotano-art): they stay placeholders until an art pass draws the alembic (bulb, coil and flask stand) and the potion icons.
+The alembic is a brass block with the pedestal's pattern, and every flask is one shared bottle icon with a liquid colour per potion. Neither has passed the art gate (sotano-art): they stay placeholders until an art pass draws the alembic (bulb, coil and flask stand) and the potion icons. The drink button's touch glyph (`touchDrink` in `src/content/hud-icons.ts`) is a placeholder too. The six-second fill of a brew (BREWING-RULES §2.5 and §4.5) is not built: a brew leaves its flask at once.
 
 The rules are in `src/game/alembic.ts` and tested in `tests/alembic.test.ts`, with the brew event. The placement is tested in `tests/laboratory.test.ts`. Brewing and drinking emit the `brew` and `drink` events for practices to react to ([ITEMS](../../../architecture/ITEMS.md)).

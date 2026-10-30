@@ -1,6 +1,3 @@
-// The laboratory's alembic (docs/design/not-built/practices/potions/BREWING-RULES.md §1, approved
-// 2026-10-28): three things in the bulb, a positive intention brews and spends one of three brews,
-// a negative one boils the bulb off for nothing, and the third brew leaves it cold.
 
 import { describe, expect, it } from 'vitest';
 import { brew, BREWS, BULB, feed, hit, HIT_GAP, newAlembic, tick } from '../src/game/alembic';
