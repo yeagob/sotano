@@ -197,6 +197,7 @@ export class Game {
   maxDepth = FIRST_FLOOR;
   world!: VoxelWorld;
   floors = new Map<number, FloorResult>();
+  /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
   private labs = new Map<number, Alembic>();
   rooms = new Map<number, RoomInfo>();
   debris!: DebrisSystem;
@@ -1927,6 +1928,7 @@ export class Game {
     sfx.shoot();
   }
 
+  /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */
   private feedLab(x: number, y: number, z: number) {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
@@ -1944,6 +1946,7 @@ export class Game {
     this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
   }
 
+  /** An intention on the alembic: a brew, a boil, or nothing (game/alembic.ts). */
   private hitLab(x: number, y: number, z: number, polarity: Polarity) {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
@@ -1960,6 +1963,7 @@ export class Game {
     } else if (r === 'cold') this.hud.toast('lab.cold');
   }
 
+  /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
   private drink() {
     const p = this.player, top = p.hand.at(-1);
     if (!top || !isFlask(top)) { sfx.denied(); return; }

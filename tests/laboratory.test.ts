@@ -1,3 +1,6 @@
+// The laboratory's place in the world: one alembic in one normal room of each laboratory floor
+// (docs/design/not-built/practices/potions/BREWING-RULES.md §1), always on the room's floor, and
+// never in a room the rest of the floor needs.
 
 import { describe, expect, it } from 'vitest';
 import { MAT } from '../src/content/materials';

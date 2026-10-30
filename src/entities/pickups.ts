@@ -22,6 +22,7 @@ export interface Pickup {
   room: number;
   /** Pedestal item (null = empty pedestal). */
   item: ItemDef | null;
+  /** The part a projection left (type 'part') or the flask a laboratory brewed (type 'flask'). */
   carried: PartDef | Flask | null;
   taken: boolean;
   /** Can't be collected yet (just dropped). */
