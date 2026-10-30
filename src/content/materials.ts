@@ -81,6 +81,8 @@ const DEFS: Def[] = [
   { id: 27, key: 'darkbrick', name: 'Dark brick', tier: 1, hp: 12, armor: 0.5, ramp: 'darkbrick', pattern: 'brick', concept: 'a habit gone dark' },
   // the laboratory's alembic (docs/design/not-built/practices/potions): unbreakable, placeholder look until sotano-art
   { id: 28, key: 'alembic', name: 'Alembic', tier: Infinity, hp: Infinity, armor: 0, ramp: 'brass', accent: 'light.gold', pattern: 'pedestal', model: true, concept: 'the vessel where what a pattern left is brewed' },
+  // the kitchen (docs/design/built/laboratory): unbreakable, drawn by a model, placeholder until the art branch
+  { id: 29, key: 'kitchen', name: 'Kitchen', tier: Infinity, hp: Infinity, armor: 0, ramp: 'brass', accent: 'light.gold', pattern: 'pedestal', model: true, concept: 'the fire where what a pattern left is cooked into a meal' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

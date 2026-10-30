@@ -57,7 +57,7 @@ describe('the resolver', () => {
   });
 
   it('every potion but the fallback has a recipe, and every recipe brews', () => {
-    expect(new Set(RECIPES.map(r => r.potion))).toEqual(new Set(POTION_IDS.filter(id => id !== FALLBACK)));
+    expect(new Set(RECIPES.map(r => r.potion))).toEqual(new Set(POTION_IDS.filter(id => id !== FALLBACK && !POTIONS[id].meal)));
     for (const r of RECIPES) expect(SAMPLES.some(([p]) => p === r.potion), r.potion).toBe(true);
   });
 

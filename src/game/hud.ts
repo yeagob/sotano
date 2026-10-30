@@ -25,7 +25,7 @@ import { handTollIds } from './toll';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
-import { controlKey, controlParams, forDevice } from '../input/labels';
+import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -486,6 +486,11 @@ export class Hud {
 
   /** A short notice that fades: a message key, in the player's language. */
   toast(key: MessageKey, params?: Params) { this.showToast(t(key, params)); }
+
+  /** A notice followed by the drink hint: which key or button drinks the flask or meal ('potion.drinkHint'). */
+  toastDrinkHint(key: MessageKey, params?: Params) {
+    this.showToast(`${key ? t(key, params) : ''} · ${t('potion.drinkHint', { key: keyLabel('drink', activeDevice()) })}`);
+  }
 
   /** A notice raised by an item or synergy (`api.toast(id)`): one of its own `messages`. */
   effectToast(owner: ItemDef | SynergyDef, id: string, params?: Params) {

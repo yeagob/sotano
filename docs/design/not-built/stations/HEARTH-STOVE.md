@@ -18,3 +18,8 @@ The hearth stove turns an ingredient and a fire into a meal. Cooking is self-car
 1. Does the husk recipe belong here or in [HUSK](HUSK.md) alone? The owner decides how husks are used.
 2. Is "a small trait for the room" a stat change, and which stats does it touch?
 3. The meal is eaten with the use key; see [CARRYABLES](CARRYABLES.md) for the open choice between instant and animated eating.
+
+
+## Built: the kitchen (one tile)
+
+A first kitchen is built as one tile on floors 1, 3, 5 and 7 (see [laboratory](../../built/laboratory/README.md#the-kitchen)). Right-click with a part on top of the hand: flesh makes a half-heart meal, heart, mind or essence a one-heart meal. Three cooks per run, no polarity, no effect on projections. Meals reuse the flask system and the drink key. The brew/cook/pickup drink hint also applies. The kitchen will later give other heart kinds; the owner will decide them (not designed here). The hearth, cauldron and the rest of this note stay ideas.

@@ -38,6 +38,8 @@ import { Enemies } from '../entities/enemies';
 import { Pickups, type Pickup } from '../entities/pickups';
 import { Chests, type ChestView } from '../entities/chests';
 import { Alembics } from '../entities/alembics';
+import { Kitchens } from '../entities/kitchens';
+import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { controlParams } from '../input/labels';
@@ -200,6 +202,8 @@ export class Game {
   floors = new Map<number, FloorResult>();
   /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
   private labs = new Map<number, Alembic>();
+  /** The kitchens, by the world index of their block (game/kitchen.ts). */
+  private kitchens = new Map<number, Kitchen>();
   rooms = new Map<number, RoomInfo>();
   debris!: DebrisSystem;
   doors!: Doors;
@@ -231,6 +235,7 @@ export class Game {
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
   private chestViews!: Chests;
   private alembicViews!: Alembics;
+  private kitchenViews!: Kitchens;
   private boundaryRing = new Map<number, [number, number, number][]>();
   private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
@@ -400,6 +405,7 @@ export class Game {
     this.pickups?.dispose();
     this.chestViews?.dispose();
     this.alembicViews?.dispose();
+    this.kitchenViews?.dispose();
     this.enemies?.dispose();
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
@@ -436,9 +442,10 @@ export class Game {
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
     this.alembicViews = new Alembics(this.scene);
+    this.kitchenViews = new Kitchens(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
     this.potions.clear();
-    this.floors.clear(); this.labs.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -549,8 +556,12 @@ export class Game {
     if (f.laboratory) {
       const { x, y, z } = f.laboratory, lab = newAlembic();
       this.labs.set(this.world.idx(x, y, z), lab);
-      this.labs.set(this.world.idx(x + 1, y, z), lab);
       this.alembicViews.add(x, y, z);
+    }
+    if (f.kitchen) {
+      const { x, y, z } = f.kitchen;
+      this.kitchens.set(this.world.idx(x, y, z), newKitchen());
+      this.kitchenViews.add(x, y, z);
     }
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
     for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
@@ -1501,6 +1512,7 @@ export class Game {
     const id = this.world.get(hit.x, hit.y, hit.z);
     if (id === AIR) return false; // a door
     if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
+    if (id === MAT.kitchen) return false;   // unbreakable, and an intention does nothing to it
     if (polarity === 'positive') {
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
@@ -1956,6 +1968,21 @@ export class Game {
     this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
   }
 
+  /** Right click on the kitchen: the part on top of the hand is cooked into a meal (game/kitchen.ts). */
+  private cookAt(x: number, y: number, z: number) {
+    const k = this.kitchens.get(this.world.idx(x, y, z));
+    const p = this.player, top = p.hand.at(-1);
+    if (!k || top === undefined) { sfx.denied(); return; }
+    if (typeof top === 'number' || isFlask(top)) { sfx.denied(); this.hud.toast('kitchen.refused'); return; }
+    if (!kitchenCook(k)) { sfx.denied(); this.hud.toast('kitchen.out'); return; }
+    p.hand.pop();   // the part leaves the hand first, so the meal always has its place
+    p.hand.push({ potion: mealOf(top.kind) });
+    this.hands.placed();
+    this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 16, 2, 0.06);
+    sfx.place();
+    this.hud.toastDrinkHint('kitchen.cooked', { left: COOKS - k.cooks, total: COOKS });
+  }
+
   /** An intention on the alembic: a brew, a boil, or nothing (game/alembic.ts). */
   private hitLab(x: number, y: number, z: number, polarity: Polarity) {
     const a = this.labs.get(this.world.idx(x, y, z));
@@ -1965,7 +1992,7 @@ export class Game {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
-      this.hud.toast('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+      this.hud.toastDrinkHint('lab.brewed', { left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);
@@ -2003,6 +2030,7 @@ export class Game {
     const e = this.camera.position, d = tap ? this.tapDirection(tap) : p.forward;
     const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, this.stats.get('reach'));
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.alembic) { this.feedLab(hit.x, hit.y, hit.z); return; }
+    if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.kitchen) { this.cookAt(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
@@ -2175,7 +2203,10 @@ export class Game {
           this.pickups.take(p);
           this.player.hand.push(carried);
           this.hands.holdUp(carriedDef(carried));
-          if (typeof carried === 'object') this.hud.toast('hand.took', { item: this.carriedName(carried) });
+          if (typeof carried === 'object') {
+            if (isFlask(carried)) this.hud.toastDrinkHint('hand.took', { item: this.carriedName(carried) });
+            else this.hud.toast('hand.took', { item: this.carriedName(carried) });
+          }
           sfx.pickup();
         }
         continue;
