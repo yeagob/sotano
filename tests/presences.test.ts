@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_TALK, placePresences, presenceReaction, type PresenceId } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, placePresences, presenceReaction, unlocksPresence, type PresenceId } from '../src/content/presences';
+import { PART_KINDS, PARTS } from '../src/content/parts';
 
 const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
@@ -53,6 +54,20 @@ describe('presences: what they are', () => {
       expect(def.minFloor).toBe(99);
       expect(def.hp).toBe(1);
       expect(PRESENCE_TALK[id].lines.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('presences: the part each one takes', () => {
+  it('each Presence takes one kind of monster part, and no other thing', () => {
+    expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart' });
+    for (const id of ['gardener', 'listener'] as const) {
+      for (const kind of PART_KINDS) {
+        const part = PARTS.find(p => p.kind === kind)!;
+        expect(unlocksPresence(id, part), `${id} and ${kind}`).toBe(kind === PRESENCE_KEY[id]);
+      }
+      expect(unlocksPresence(id, 3)).toBe(false);
+      expect(unlocksPresence(id, undefined)).toBe(false);
     }
   });
 });

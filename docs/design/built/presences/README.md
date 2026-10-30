@@ -6,7 +6,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 
 | Document | Presence | Where it is | What it does |
 |---|---|---|---|
-| [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Talks once on contact, heals a quarter of a heart; silenced by negative intentions |
+| [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Takes a heart of a released pattern, then talks once on contact and heals a quarter of a heart; silenced by negative intentions |
 | [BOUNDARY.md](BOUNDARY.md) | The Boundary | One per vault of a dungeon floor | Stays still while its sanctuary holds; wakes and throws cubes when the sanctuary is broken |
 
 ## What they share (built)
@@ -14,6 +14,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 - **Immortal.** No health. The Boundary has armour that absorbs every hit; the Listener has one point of health that nothing removes.
 - **Polarity.** Positive intentions pass through with a chime or a healing where it applies. Negative intentions silence a presence within two blocks: its card shows one line of refusal, and it says nothing more until a positive intention passes within eight blocks. See [Polarity](../encounters/POLARITY.md).
 - **Talk by contact.** A presence speaks when the player comes within about two blocks of it, in a card with its lines, read in the player's language. The card stays until it is dismissed.
+- **The key part.** A presence speaks only to the player who brings it its part. The Listener takes a heart; the Gardener, which is not placed, takes a flesh. The part is taken from the top of the hand and is gone. Until then the presence says nothing, not even its silence line. See [Parts](../projections/PARTS.md).
 - **Their rooms never seal.** A presence's room is placed with no projections in it, so it is cleared from the start and its doors stay open.
 - **Look.** The Listener is built from bone tones. The Boundary is limestone, like its vault. Neither uses the cold or the living tones.
 

@@ -14,3 +14,4 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Changed
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).
+- The Listener stays silent until you bring it a heart of a released pattern; the Gardener's key is a flesh. The part is taken when you touch the presence with it on top of your hand.
