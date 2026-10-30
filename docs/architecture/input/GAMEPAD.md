@@ -12,6 +12,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | cast (hold) | RT |
 | place | LT |
 | throw | B |
+| drink | X |
 | bomb | RB |
 | polarity | LB |
 | inventory | Y; the d-pad moves the selection, B or Y closes |

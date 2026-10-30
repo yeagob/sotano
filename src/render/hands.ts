@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { pal, palCss } from '../content/palette';
 import type { ItemDef } from '../items/types';
 import type { PartDef } from '../content/parts';
+import { carriedDef } from '../content/potions';
 import type { Carried } from '../entities/player';
 import { materialTexture } from './atlas';
 import { glowTexture, iconTexture } from './icons';
@@ -109,7 +110,7 @@ export class Hands {
   charge(k: number) { this.chargeK = k; }
 
   /** Raise `def` above both hands for HOLD_TIME seconds. */
-  holdUp(def: ItemDef | PartDef) {
+  holdUp(def: Pick<ItemDef | PartDef, 'id' | 'icon' | 'color'>) {
     this.holdT = Hands.HOLD_TIME;
     (this.holdItem.material as THREE.SpriteMaterial).map = iconTexture(def);
     (this.holdItem.material as THREE.SpriteMaterial).needsUpdate = true;
@@ -182,7 +183,7 @@ export class Hands {
 
   private setCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0) {
     if (typeof c === 'number' && c) cube.material = this.blockMaterial(c);
-    if (typeof c === 'object') card.material = this.cardMaterial(c);
+    if (typeof c === 'object') card.material = this.cardMaterial(carriedDef(c));
   }
 
   private showCarried(cube: THREE.Mesh, card: THREE.Mesh, c: Carried | 0, shown: boolean) {
@@ -196,7 +197,7 @@ export class Hands {
     return mat;
   }
 
-  private cardMaterial(def: PartDef) {
+  private cardMaterial(def: Pick<PartDef, 'id' | 'icon'>) {
     let mat = this.cardMats.get(def.id);
     if (!mat) { mat = new THREE.MeshBasicMaterial({ map: iconTexture(def), transparent: true, depthWrite: false }); this.cardMats.set(def.id, mat); }
     return mat;

@@ -12,6 +12,7 @@ Each section below is a folder with its own README. Read one section's folder to
 | [elements](elements/README.md) | Water, lava, fire, ice and wood, and what happens when they meet |
 | [levels](levels/README.md) | The thirteen places from the roots to heaven, the rooms inside them, and the giant tree |
 | [chests](chests/README.md) | Chests, keys and the key economy |
+| [laboratory](laboratory/README.md) | The alembic on floors 2, 4, 6 and 8: feeding it, brewing with intention, three brews per run, eight recipes and their durations |
 | [projections](projections/README.md) | The patterns that block intention: forty projection entries, sixteen fully built and twenty-four partly built |
 | [creatures](creatures/README.md) | The living things of the depths: they wander, hide and heal, and do not fight |
 | [presences](presences/README.md) | The archetypes you can talk to: the Listener and the Boundary |

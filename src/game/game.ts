@@ -20,6 +20,7 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { tollIndex } from './toll';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
@@ -46,6 +47,8 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tick as labTick, type Alembic } from './alembic';
+import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
@@ -53,7 +56,7 @@ import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
-import { onLocaleChange, type MessageKey } from '../i18n';
+import { onLocaleChange, t, type MessageKey } from '../i18n';
 import {
   BAND, bandOf, carveFloor, cellOf, createDungeonWorld, inRoomSpace, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
@@ -64,7 +67,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, unlocksPresence, type PresenceId } from '../content/presences';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { rollCrate } from '../content/tables/crates';
@@ -179,6 +182,7 @@ export class Game {
   readonly hands: Hands;
   readonly player = new Player();
   readonly stats = new StatSheet();
+  readonly potions = new PotionEffects(this.stats);
   readonly inventory: Inventory;
   bus: GameBus = createBus();
   /** All of the run's randomness, derived from its root (docs/architecture/RNG.md). */
@@ -193,6 +197,8 @@ export class Game {
   maxDepth = FIRST_FLOOR;
   world!: VoxelWorld;
   floors = new Map<number, FloorResult>();
+  /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
+  private labs = new Map<number, Alembic>();
   rooms = new Map<number, RoomInfo>();
   debris!: DebrisSystem;
   doors!: Doors;
@@ -426,7 +432,8 @@ export class Game {
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.potions.clear();
+    this.floors.clear(); this.labs.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -534,6 +541,7 @@ export class Game {
   /** Registers a carved floor: its rooms and their combat state. */
   private addFloor(f: FloorResult) {
     this.floors.set(f.floor, f);
+    if (f.laboratory) this.labs.set(this.world.idx(f.laboratory.x, f.laboratory.y, f.laboratory.z), newAlembic());
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
     for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
     for (const r of f.rooms) {
@@ -1215,6 +1223,7 @@ export class Game {
         const ev = this.bus.emit('roomClear', { room: id, drops });
         for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
         this.hud.toast('toast.roomClear');
+        this.potionsEnded(this.potions.roomCleared());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
       } else if (!inside && st.sealed) {
@@ -1481,6 +1490,7 @@ export class Game {
   private intentHitsBlock(hit: VoxelHit, mining: number, polarity: Polarity) {
     const id = this.world.get(hit.x, hit.y, hit.z);
     if (id === AIR) return false; // a door
+    if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
     if (polarity === 'positive') {
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
@@ -1918,6 +1928,61 @@ export class Game {
     sfx.shoot();
   }
 
+  /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */
+  private feedLab(x: number, y: number, z: number) {
+    const a = this.labs.get(this.world.idx(x, y, z));
+    const p = this.player;
+    if (!a) { sfx.denied(); return; }
+    if (isFlask(p.hand.at(-1)!)) { sfx.denied(); this.hud.toast('lab.refused'); return; }
+    const r = labFeed(a, p.hand.at(-1)!);
+    if (r !== 'fed') {
+      sfx.denied();
+      this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
+      return;
+    }
+    p.hand.pop();
+    this.hands.placed();
+    sfx.place();
+    this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
+  }
+
+  /** An intention on the alembic: a brew, a boil, or nothing (game/alembic.ts). */
+  private hitLab(x: number, y: number, z: number, polarity: Polarity) {
+    const a = this.labs.get(this.world.idx(x, y, z));
+    if (!a) return;
+    const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
+    if (r === 'brew' && flask) {
+      this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
+      sfx3.reveal();
+      this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
+      this.hud.toast('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+    } else if (r === 'boil') {
+      this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
+      sfx.hit(3);
+      this.hud.toast('lab.boiled');
+    } else if (r === 'cold') this.hud.toast('lab.cold');
+  }
+
+  /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
+  private drink() {
+    const p = this.player, top = p.hand.at(-1);
+    if (!top || !isFlask(top)) { sfx.denied(); return; }
+    const def = POTIONS[top.potion];
+    const rooms = flaskRooms(top);
+    p.hand.pop();
+    this.hands.placed();
+    if (def.heal) this.heal(def.heal, `potion.${top.potion}`);
+    this.potions.drink(top);
+    this.bus.emit('drink', { potion: top.potion, rooms });
+    this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(def.liquid), 16, 1.2, 0.05);
+    sfx.pickup();
+    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect, { rooms }) });
+  }
+
+  private potionsEnded(ended: readonly PotionId[]) {
+    for (const id of ended) this.hud.toast('potion.ended', { name: t(POTIONS[id].name) });
+  }
+
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
   private tryPlace() {
     const p = this.player;
@@ -1927,6 +1992,7 @@ export class Game {
     const tap = this.input.hitBy('place') === 'touch' ? this.input.touchTap : null;
     const e = this.camera.position, d = tap ? this.tapDirection(tap) : p.forward;
     const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, this.stats.get('reach'));
+    if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.alembic) { this.feedLab(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
@@ -1935,7 +2001,7 @@ export class Game {
     if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
-      this.pickups.add('part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
+      this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
       p.hand.pop();
       this.hands.placed();
       sfx.place();
@@ -1965,7 +2031,7 @@ export class Game {
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
-      const part = this.pickups.add('part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
+      const part = this.pickups.add(isFlask(top) ? 'flask' : 'part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
       const speed = 9 * this.stats.get('throw');
       this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
       p.hand.pop();
@@ -2046,7 +2112,9 @@ export class Game {
   private requestDoor(d: Door): boolean {
     const ev = this.bus.emit('doorOpen', { door: d.id, locked: d.locked, needsKey: d.locked });
     if (ev.cancelled) return false;
-    if (ev.needsKey) {
+    if (ev.needsKey && this.potions.lockDiscount() > 0) {
+      this.questioned();
+    } else if (ev.needsKey) {
       if (this.player.keys <= 0) { this.hud.toast('toast.locked'); sfx.denied(); return false; }
       this.player.keys--;
       this.hud.toast('toast.unlocked');
@@ -2091,12 +2159,12 @@ export class Game {
         continue;
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
-      if (p.type === 'part') {
-        const part = p.part;
-        if (part && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
+      if (p.type === 'part' || p.type === 'flask') {
+        const carried = p.carried;
+        if (carried && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
           this.pickups.take(p);
-          this.player.hand.push(part);
-          this.hands.holdUp(part);
+          this.player.hand.push(carried);
+          this.hands.holdUp(carriedDef(carried));
           sfx.pickup();
         }
         continue;
@@ -2119,7 +2187,9 @@ export class Game {
       if (dist > 3) c.refused = false;
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
       const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
-      const cost = Math.max(0, Math.floor(ev.cost));
+      const asked = Math.max(0, Math.floor(ev.cost));
+      const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
+      const cost = question ? asked - 1 : asked;
       if (ev.cancelled || this.player.keys < cost) {
         c.refused = true;
         this.hud.toast('toast.chestLocked', { n: cost });
@@ -2127,8 +2197,16 @@ export class Game {
         continue;
       }
       this.player.keys -= cost;
+      if (question) this.questioned();
       this.openChest(c, cost);
     }
+  }
+
+  private questioned() {
+    const id = this.potions.spendLock();
+    if (!id) return;
+    this.hud.toast('potion.questioned', { name: t(POTIONS[id].name) });
+    sfx2.unlock();
   }
 
   private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number) {
@@ -2222,7 +2300,7 @@ export class Game {
 
   private hearPresences(x: number, z: number, polarity: Polarity) {
     for (const e of this.enemies.list) {
-      if (!e.alive || !e.tags.has('presence')) continue;
+      if (!e.alive || !e.tags.has('presence') || !e.tags.has('met')) continue;
       const reaction = presenceReaction(polarity, Math.hypot(e.body.x - x, e.body.z - z));
       if (reaction === 'lift') e.tags.delete('silent');
       if (reaction !== 'silence' || e.tags.has('silent')) continue;
@@ -2240,6 +2318,13 @@ export class Game {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      if (!unlocksPresence(id, this.player.hand.at(-1))) {
+        if (e.tags.has('hinted')) continue;
+        e.tags.add('hinted');
+        this.hud.presenceCard(talk.name, [talk.hint]);
+        return;
+      }
+      this.player.hand.pop();
       e.tags.add('met');
       if (talk.heals) this.heal(QUARTER_HEART, id);
       this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
@@ -2249,6 +2334,7 @@ export class Game {
   }
 
   private updateLoop(dt: number) {
+    for (const a of this.labs.values()) labTick(a, dt);
     this.updateRest(dt);
     this.updatePresences();
     this.updateBoundaries();
@@ -2330,6 +2416,7 @@ export class Game {
       this.activate(band);
       this.carve(band + 1);
       this.bus.clearDeferred();
+      this.potionsEnded(this.potions.floorEntered());
         this.bus.emit('floorEnter', { depth: band });
       this.hud.setFloor(this.floors.get(band)!, band);
       this.hud.toast('toast.floor', { n: band });
@@ -2605,6 +2692,7 @@ export class Game {
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
     if (inp.hit('throw')) this.throwTop();
+    if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
@@ -2678,7 +2766,7 @@ export class Game {
       damaged: this.world.damaged.size,
       elements: `${this.elements.pending} active · ${this.elements.lastWork}/tick`,
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
-      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : c.name).join(', ') : '—',
+      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : isFlask(c) ? c.potion : c.name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
     };
   }

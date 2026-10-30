@@ -8,6 +8,7 @@ import { moveBody, type Body } from '../physics/voxel-collide';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
+import type { Flask } from '../content/potions';
 import type { Actor, ActorId, Faction } from './actors';
 
 export const EYE = 1.62;
@@ -17,8 +18,8 @@ const SLOW_FACTOR = 0.5;
 const ICE_GRIP = 0.12;
 const SWIM_G = 0.2, SINK = 1.5, SWIM_UP = 3.4, SWIM_OUT = 5.2, WADE_JUMP = 0.7, SWIM_CONTROL = 0.5;
 
-/** What the hand holds: a block (its material) or a part a projection left (DESIGN §6). */
-export type Carried = number | PartDef;
+/** What the hand holds: a block (its material), a part a projection left (DESIGN §6), or a flask brewed in a laboratory. */
+export type Carried = number | PartDef | Flask;
 
 /** What the player's body is in this frame (docs/design/ELEMENTS.md §2: wade with your feet in, swim with your head under). */
 export interface PlayerMedium { feet: ElementDef | null; head: ElementDef | null; slippery?: boolean }

@@ -20,6 +20,7 @@ import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
+import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
 import { handTollIds } from './toll';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
@@ -252,7 +253,7 @@ export class Hud {
 
     // hand slots: one per carry point, top block highlighted
     const carry = Math.floor(g.stats.get('carry'));
-    const key = carry + ':' + g.player.hand.map(c => typeof c === 'number' ? c : c.id).join(',');
+    const key = carry + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
     if (key !== this.handKey) {
       this.handKey = key;
       this.hand.innerHTML = '';
@@ -265,6 +266,10 @@ export class Hud {
           if (typeof c === 'number') {
             img.src = this.slotUrl(c);
             img.title = materialName(c);
+          } else if (isFlask(c)) {
+            const pd = POTIONS[c.potion];
+            img.src = iconDataUrl(carriedDef(c), 3);
+            img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
           } else {
             const tx = partText(c);
             img.src = iconDataUrl(c, 3);
@@ -662,7 +667,9 @@ export class Hud {
     const bombs = Array.from({ length: p.bombs }, (_, i) => tile(`bomb:${i}`, hudIconUrl(HUD_ICONS.seed), t('toll.bomb'))).join('');
     const hands = p.hand.map((m, i) => (typeof m === 'number'
       ? tile(`hand:${i}`, this.slotUrl(m), materialName(m))
-      : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
+      : isFlask(m)
+        ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), t(POTIONS[m.potion].name))
+        : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
     const items = g.inventory.items.map((it, i) => tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
       ? section('toll.sec.item', items)

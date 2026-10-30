@@ -12,6 +12,7 @@ The desktop scheme. Part of [Input](README.md).
 | cast (hold) | left click |
 | place | right click (throws the block if there is nowhere to place it) |
 | throw | Q |
+| drink | G |
 | bomb | E |
 | polarity | F |
 | inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |

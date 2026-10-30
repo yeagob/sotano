@@ -8,22 +8,22 @@ The rules that decide when a potion is made. §1 is what the owner approved. §2
 
 1. **Only a positive intention brews.** A positive intention hit on a loaded bulb starts a brew. Good intentions make; the rule matches what players already know (good intentions mend and make, bad ones break). Source: POTIONS §7, question 3.
 2. **Three brews per alembic per run.** After the third brew the alembic goes cold. Source: question 2.
-3. **One laboratory per zone.** Each great zone has one alembic, so five per run. The zones are I to V in [BESTIARY](../../projections/ZONES.md) §4.1. Source: question 1.
+3. **One laboratory per zone.** Each great zone has one alembic, so five per run. The zones are I to V in [BESTIARY](../../projections/ZONES.md) §4.1. Source: question 1. **Owner decision, 2026-10-30: four laboratories, on floors 2, 4, 6 and 8, not five.** The build keeps those floors; twelve potions per run at most.
 4. **No shop.** The alembic closes the "parts need a purpose" task, and "no coins, no shop" holds ([DESIGN](README.md) §4). Source: question 9. The Trickster's trades are the only exchange, as the proposal's default says; the owner approved "no shop", not the Trickster.
 
 ## 2. Follows from §1 (to confirm)
 
 These are the proposal's defaults. They follow from the approved rules but the owner did not name them.
 
-1. **A negative intention boils the bulb off.** The contents are lost, grey steam rises, and no brew is spent. The alembic cannot be broken: it is the zone's only one. Source: POTIONS §2 step 6 and question 3's default.
+1. **A negative intention boils the bulb off.** The contents are lost, grey steam rises, and no brew is spent. The alembic cannot be broken: it is its laboratory's only one. Source: POTIONS §2 step 6 and question 3's default.
 2. **The bulb holds three cubes.** A fourth bounces off with the denied sound. Source: POTIONS §2 step 2.
 3. **Nothing fed can be taken back.** What goes into the work stays in the work. Source: POTIONS §2 step 3.
 4. **Grey never says no recipe.** An unmatched bulb stays grey, so discovery stays open. Source: POTIONS §2 step 4.
 5. **Only the positive path makes drops.** A positive brew fills the flask over six seconds, one drop per second. Source: POTIONS §2 step 5.
 
-## 3. The drink verb (proposal, not approved)
+## 3. The drink verb (built without its lift)
 
-The drink verb is how a flask is used. It is designed here and not approved; it passes [sotano-controls](../../../../../.claude/skills/sotano-controls/SKILL.md) before any key is chosen.
+The drink verb is how a flask is used. It is built: G on a keyboard, X on a pad, and the flask button on a touch screen, shown only while a flask is in the hand (see [controls](../../../../architecture/input/README.md)). The lift is not built yet: the flask is drunk at once, and the player is not held still for 0.4 seconds.
 
 - **The verb:** Drink. A new action, a press, live only in play.
 - **What it acts on:** the top of the hand, when that is a flask. Otherwise it does nothing and plays the denied sound.

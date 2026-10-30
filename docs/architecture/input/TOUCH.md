@@ -13,6 +13,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | jump (hold to swim up) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
+| drink | the flask (shown only while a flask is in the hand) |
 | bomb | the seed (shows the count) |
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | pause | none of its own: the menu is the screen the tab button opens |
