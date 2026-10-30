@@ -46,6 +46,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | cast | hold | play | left click | RT | the bead of light |
 | place | press | play | right click | LT | a tap on the block (aims at the tap) |
 | throw | press | play | Q | B | the flying block |
+| drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
 | bomb | press | play | E | RB | the seed |
 | polarity | press | play | F | LB | a half turn of the phone |
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |

@@ -21,9 +21,9 @@ These are the proposal's defaults. They follow from the approved rules but the o
 4. **Grey never says no recipe.** An unmatched bulb stays grey, so discovery stays open. Source: POTIONS §2 step 4.
 5. **Only the positive path makes drops.** A positive brew fills the flask over six seconds, one drop per second. Source: POTIONS §2 step 5.
 
-## 3. The drink verb (proposal, not approved)
+## 3. The drink verb (built without its lift)
 
-The drink verb is how a flask is used. It is designed here and not approved; it passes [sotano-controls](../../../../../.claude/skills/sotano-controls/SKILL.md) before any key is chosen.
+The drink verb is how a flask is used. It is built: G on a keyboard, X on a pad, and the flask button on a touch screen, shown only while a flask is in the hand (see [controls](../../../../architecture/input/README.md)). The lift is not built yet: the flask is drunk at once, and the player is not held still for 0.4 seconds.
 
 - **The verb:** Drink. A new action, a press, live only in play.
 - **What it acts on:** the top of the hand, when that is a flask. Otherwise it does nothing and plays the denied sound.

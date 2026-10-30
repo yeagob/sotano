@@ -4,7 +4,7 @@ export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll';
 
 export type Action =
-  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'bomb' | 'polarity'
+  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
   | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back';
 
 export const PAD = {
@@ -78,6 +78,13 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'Q / B drops the held item', noita: 'throwing a held item or flask', isaac: 'dropping a trinket or pocket item' },
   },
   {
+    action: 'drink', kind: 'press', when: ['play'],
+    keyboard: { keys: ['KeyG'] },
+    gamepad: { buttons: [PAD.X] },
+    touch: { control: 'button', icon: 'touchDrink' },
+    refs: { minecraft: 'right click eats or drinks the food or potion you hold', noita: 'a flask you hold is drunk with its own key, never thrown by accident', isaac: 'the active item on its own button (Space / right trigger)' },
+  },
+  {
     action: 'bomb', kind: 'press', when: ['play'],
     keyboard: { keys: ['KeyE'] },
     gamepad: { buttons: [PAD.RB] },
@@ -140,7 +147,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'bomb', 'doors', 'inventory', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'inventory', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {

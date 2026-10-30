@@ -118,6 +118,23 @@ export const HUD_ICONS = {
     ],
     palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', f: 'bone.faded' },
   },
+  touchDrink: {
+    rows: [
+      '............',
+      '....oooo....',
+      '.....oo.....',
+      '.....oo.....',
+      '....oggo....',
+      '...ogllgo...',
+      '..ogllllgo..',
+      '..ogllllgo..',
+      '..ogllllgo..',
+      '...oggggo...',
+      '....oooo....',
+      '............',
+    ],
+    palette: { o: 'ink.void', g: 'bone.paper', l: 'living.glow' },
+  },
   touchThrow: {
     rows: [
       '............',

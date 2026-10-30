@@ -4,6 +4,7 @@ import type { MessageKey } from '../../i18n';
 import type { Carried } from '../../entities/player';
 import { level } from '../levels';
 import type { PartKind } from '../parts';
+import { isFlask } from '../potions';
 import gardener from './gardener';
 import listener from './listener';
 
@@ -17,7 +18,7 @@ export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.m
 export const PRESENCE_KEY: Record<PresenceId, PartKind> = { gardener: 'flesh', listener: 'heart' };
 
 export function unlocksPresence(id: PresenceId, carried: Carried | undefined): boolean {
-  return typeof carried === 'object' && carried.kind === PRESENCE_KEY[id];
+  return typeof carried === 'object' && !isFlask(carried) && carried.kind === PRESENCE_KEY[id];
 }
 
 export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; heals: boolean }> = {

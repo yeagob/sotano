@@ -20,6 +20,7 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
+import { brewOf, carriedDef, isFlask, POTIONS } from '../content/potions';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -53,7 +54,7 @@ import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
-import { onLocaleChange, type MessageKey } from '../i18n';
+import { onLocaleChange, t, type MessageKey } from '../i18n';
 import {
   BAND, bandOf, carveFloor, cellOf, createDungeonWorld, inRoomSpace, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
@@ -1927,6 +1928,7 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
     if (!a) { sfx.denied(); return; }
+    if (isFlask(p.hand.at(-1)!)) { sfx.denied(); this.hud.toast('lab.refused'); return; }
     const r = labFeed(a, p.hand.at(-1)!);
     if (r !== 'fed') {
       sfx.denied();
@@ -1943,16 +1945,31 @@ export class Game {
   private hitLab(x: number, y: number, z: number, polarity: Polarity) {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
+    const potion = brewOf(a.bulb);
     const r = labHit(a, polarity);
     if (r === 'brew') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
+      this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, { potion });
       this.hud.toast('lab.brewed', { left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);
       this.hud.toast('lab.boiled');
     } else if (r === 'cold') this.hud.toast('lab.cold');
+  }
+
+  /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
+  private drink() {
+    const p = this.player, top = p.hand.at(-1);
+    if (!top || !isFlask(top)) { sfx.denied(); return; }
+    const def = POTIONS[top.potion];
+    p.hand.pop();
+    this.hands.placed();
+    this.heal(def.heal, `potion.${top.potion}`);
+    this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(def.liquid), 16, 1.2, 0.05);
+    sfx.pickup();
+    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect) });
   }
 
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
@@ -1973,7 +1990,7 @@ export class Game {
     if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
-      this.pickups.add('part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
+      this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
       p.hand.pop();
       this.hands.placed();
       sfx.place();
@@ -2003,7 +2020,7 @@ export class Game {
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
-      const part = this.pickups.add('part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
+      const part = this.pickups.add(isFlask(top) ? 'flask' : 'part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
       const speed = 9 * this.stats.get('throw');
       this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
       p.hand.pop();
@@ -2129,12 +2146,12 @@ export class Game {
         continue;
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
-      if (p.type === 'part') {
-        const part = p.part;
-        if (part && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
+      if (p.type === 'part' || p.type === 'flask') {
+        const carried = p.carried;
+        if (carried && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
           this.pickups.take(p);
-          this.player.hand.push(part);
-          this.hands.holdUp(part);
+          this.player.hand.push(carried);
+          this.hands.holdUp(carriedDef(carried));
           sfx.pickup();
         }
         continue;
@@ -2645,6 +2662,7 @@ export class Game {
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
     if (inp.hit('throw')) this.throwTop();
+    if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
@@ -2718,7 +2736,7 @@ export class Game {
       damaged: this.world.damaged.size,
       elements: `${this.elements.pending} active · ${this.elements.lastWork}/tick`,
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
-      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : c.name).join(', ') : '—',
+      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : isFlask(c) ? c.potion : c.name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
     };
   }
