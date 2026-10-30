@@ -2295,7 +2295,12 @@ export class Game {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
-      if (!unlocksPresence(id, this.player.hand.at(-1))) continue;
+      if (!unlocksPresence(id, this.player.hand.at(-1))) {
+        if (e.tags.has('hinted')) continue;
+        e.tags.add('hinted');
+        this.hud.presenceCard(talk.name, [talk.hint]);
+        return;
+      }
       this.player.hand.pop();
       e.tags.add('met');
       if (talk.heals) this.heal(QUARTER_HEART, id);

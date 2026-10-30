@@ -21,9 +21,9 @@ export function unlocksPresence(id: PresenceId, carried: Carried | undefined): b
   return typeof carried === 'object' && !isFlask(carried) && carried.kind === PRESENCE_KEY[id];
 }
 
-export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; heals: boolean }> = {
-  gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', heals: false },
-  listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', heals: true },
+export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; hint: MessageKey; heals: boolean }> = {
+  gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', hint: 'presence.gardener.hint', heals: false },
+  listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', heals: true },
 };
 
 export const TALK_REACH = 2.2;

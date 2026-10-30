@@ -16,7 +16,7 @@ On each floor from 1 to 5, one room is chosen from the normal rooms that hold no
 
 ## What the player meets
 
-- **The key.** The Listener stays silent until a heart is brought to it. Within about two blocks, a heart of a released pattern on top of the hand is taken, and then the Listener talks. Any other thing, and any other kind of part, does nothing.
+- **The key.** The Listener stays silent until a heart is brought to it. Within about two blocks, a heart of a released pattern on top of the hand is taken, and then the Listener talks. Any other thing, and any other kind of part, does nothing. The first time the player comes near without the right part, the Listener says one line that points at what it wants without naming it.
 - **Talk.** Once the heart is taken, a card shows two lines. The first asks what weighs on the player; the second says it heard them. The Listener heals a quarter of a heart the first time. It talks once per run.
 - **Silence.** Once it has been heard, a negative intention within two blocks makes it turn its light away. A card shows its refusal: a line that asks the player to say something kinder. It says nothing more until a positive intention passes within eight blocks, which lifts the silence.
 - **Light.** The design has it show its face only while the player listens, as light from the player's lantern. The build draws it as bone tones, with no such effect.

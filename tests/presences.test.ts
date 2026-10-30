@@ -59,6 +59,11 @@ describe('presences: what they are', () => {
 });
 
 describe('presences: the part each one takes', () => {
+  it('each Presence has a hint line for a player who brings the wrong thing', () => {
+    expect(PRESENCE_TALK.gardener.hint).toBe('presence.gardener.hint');
+    expect(PRESENCE_TALK.listener.hint).toBe('presence.listener.hint');
+  });
+
   it('each Presence takes one kind of monster part, and no other thing', () => {
     expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart' });
     for (const id of ['gardener', 'listener'] as const) {

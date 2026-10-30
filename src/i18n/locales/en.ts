@@ -183,6 +183,8 @@ const messages = {
   'presence.listener.2': 'I heard it. That is all I came to do.',
   'presence.gardener.silent': 'Not that. Not now. I will be here when you are gentle again.',
   'presence.listener.silent': 'I will not hear that. Say something kinder and I will listen.',
+  'presence.gardener.hint': 'Something here was once a body, and it still keeps its shape. Bring me what it held on to.',
+  'presence.listener.hint': 'There is a feeling you have not put down yet. Bring me what it left behind.',
   'toast.heaven': 'You are carried up.',
   'toast.challengeWave': 'Wave {n} of 3',
   'toast.challengeDone': 'Challenge overcome: come back for more',

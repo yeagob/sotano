@@ -142,6 +142,8 @@ export const ES: Catalog = {
     'presence.listener.2': 'Lo he oído. Eso es todo lo que vine a hacer.',
     'presence.gardener.silent': 'Eso no. Ahora no. Estaré aquí cuando vuelvas a ser amable.',
     'presence.listener.silent': 'Eso no lo escucho. Di algo más amable y te escucharé.',
+    'presence.gardener.hint': 'Algo que fue un cuerpo sigue guardando su forma aquí. Tráeme lo que se aferraba a ella.',
+    'presence.listener.hint': 'Hay un sentimiento que aún no has soltado. Tráeme lo que dejó atrás.',
     'toast.heaven': 'Algo te eleva.',
     'toast.challengeWave': 'Oleada {n} de 3',
     'toast.challengeDone': 'Desafío superado: vuelve cuando quieras',
