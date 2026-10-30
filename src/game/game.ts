@@ -67,7 +67,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_REPLY_MS, PRESENCE_TALK, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { rollCrate } from '../content/tables/crates';
@@ -2318,10 +2318,13 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
-      if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
+      const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
+      if (!near) { e.tags.delete('answering'); continue; }
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
       const top = this.player.hand.at(-1);
       if (!unlocksPresence(id, top)) {
+        if (e.tags.has('answering')) continue;
+        e.tags.add('answering');
         const now = performance.now();
         if (!e.tags.has('hinted')) {
           e.tags.add('hinted');
@@ -2329,7 +2332,7 @@ export class Game {
           this.hud.presenceCard(talk.name, [talk.hint]);
           return;
         }
-        if (now - (this.presenceReplies.get(e.id) ?? -Infinity) < PRESENCE_REPLY_MS) continue;
+        if (!answerDue(this.presenceReplies.get(e.id), now)) continue;
         this.presenceReplies.set(e.id, now);
         if (top === undefined) this.hud.presenceCard(talk.name, ['presence.empty']);
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });

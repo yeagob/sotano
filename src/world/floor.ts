@@ -492,7 +492,9 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
 
   for (const rm of rooms) markRoomDirty(w, rm);
   if (labRoom >= 0 && !laboratory) {
-    const free = labTiles.filter(t => w.get(t.x, t.y, t.z) === AIR);
+    const onOther = (t: { x: number; z: number }) =>
+      keys.some(k => k.x === t.x && k.z === t.z) || bombs.some(b => b.x === t.x && b.z === t.z) || (spawn[0] === t.x + 0.5 && spawn[2] === t.z + 0.5);
+    const free = labTiles.filter(t => w.get(t.x, t.y, t.z) === AIR && !onOther(t));
     if (free.length) {
       const t = labRng.pick(free);
       w.data[w.idx(t.x, t.y, t.z)] = MAT.alembic;

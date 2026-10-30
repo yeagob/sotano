@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, placePresences, presenceReaction, pushedOut, unlocksPresence, type PresenceId } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, placePresences, presenceReaction, pushedOut, unlocksPresence, type PresenceId } from '../src/content/presences';
 import { PART_KINDS, PARTS } from '../src/content/parts';
 
 const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
@@ -85,6 +85,12 @@ describe('presences: they have a body the player cannot walk through', () => {
     const diag = pushedOut(0.1, 0.1, 0, 0, 1)!;
     expect(Math.hypot(diag.x, diag.z)).toBeCloseTo(1);
     expect(diag.x).toBeCloseTo(diag.z);
+  });
+
+  it('an answer is due at first, and again only after the cooldown', () => {
+    expect(answerDue(undefined, 100)).toBe(true);
+    expect(answerDue(1000, 1000 + 3999)).toBe(false);
+    expect(answerDue(1000, 1000 + 4000)).toBe(true);
   });
 
   it('a player outside the reach is left alone, and one standing on the centre is not guessed at', () => {

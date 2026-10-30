@@ -30,6 +30,10 @@ export const TALK_REACH = 2.2;
 
 export const PRESENCE_REPLY_MS = 4000;
 
+export function answerDue(last: number | undefined, now: number): boolean {
+  return last === undefined || now - last >= PRESENCE_REPLY_MS;
+}
+
 export function pushedOut(px: number, pz: number, cx: number, cz: number, reach: number): { x: number; z: number } | null {
   const dx = px - cx, dz = pz - cz, d = Math.hypot(dx, dz);
   if (d >= reach || d === 0) return null;
