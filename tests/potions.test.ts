@@ -32,7 +32,7 @@ describe('potions: flesh buys only instant healing, and the Footing Tincture is 
     }
   });
 
-  it('the Patient Draught takes a heart, the rare kind, from its will pattern', () => {
+  it('the Patient Draught takes a heart and a mind', () => {
     const patient = RECIPES.find(r => r.potion === 'patient-draught')!;
     expect(patient.slots.map(s => 'part' in s && s.part)).toEqual(['heart', 'mind']);
   });

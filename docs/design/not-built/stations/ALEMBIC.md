@@ -11,7 +11,7 @@ The alembic separates what matters from what clouds it. In the station catalogue
 | Essence | [STATIONS §4.4](README.md) (idea) | Water and a husk become an essence in a jar. Throw it to soothe a projection for a few seconds, or drink it for a short state. |
 | Brewing | [POTIONS](../practices/potions/README.md) (proposal, owner-approved rules) | A bulb holds up to three parts or material cubes. A positive intention brews a potion into a flask. A negative one boils the bulb off. Three brews per alembic per run. |
 
-The brewing version is the one the owner approved in part: positive intentions only, three brews per alembic, one laboratory per zone. The essence version is not withdrawn, and it conflicts with brewing on the input, the output and the verb. [OPEN-QUESTIONS](OPEN-QUESTIONS.md) records this for the owner.
+The brewing version is the one the owner approved in part: positive intentions only, three brews per alembic, four laboratories on floors 2, 4, 6 and 8 (the owner's decision of 2026-10-30; one per zone was the first approval). The essence version is not withdrawn, and it conflicts with brewing on the input, the output and the verb. [OPEN-QUESTIONS](OPEN-QUESTIONS.md) records this for the owner.
 
 ## Design shared by both versions
 
@@ -22,7 +22,7 @@ The brewing version is the one the owner approved in part: positive intentions o
 
 ## Where it stands
 
-The potion proposal places one laboratory per zone, on a zone floor that does not hold that zone's Compost, so the player harvests on one floor and brews on another ([POTIONS §2](../practices/potions/README.md)):
+The potion proposal placed one laboratory per zone (the owner has since chosen four, on floors 2, 4, 6 and 8), on a zone floor that does not hold that zone's Compost, so the player harvests on one floor and brews on another ([POTIONS §2](../practices/potions/README.md)):
 
 | Zone (BESTIARY §4.1) | Compost floor | Laboratory floor |
 |---|---|---|
@@ -32,4 +32,4 @@ The potion proposal places one laboratory per zone, on a zone floor that does no
 | IV · Furnace | 7 | 8 |
 | V · Frozen Bottom | 9 | 9 |
 
-Zone V puts its laboratory on the same floor as its Compost, which the rule above forbids. Floor 0 has no laboratory. Tree floors (2, 4) place it as an emanation side room; random floors (6, 8, 9) as a dead-end special room, like a treasure room. The room must pass [sotano-levels](../../../../.claude/skills/sotano-levels/SKILL.md). Five alembics per run.
+Zone V puts its laboratory on the same floor as its Compost, which the rule above forbids. Floor 0 has no laboratory. Tree floors (2, 4) place it as an emanation side room; random floors (6, 8, 9) as a dead-end special room, like a treasure room. The room must pass [sotano-levels](../../../../.claude/skills/sotano-levels/SKILL.md). Four alembics per run (2026-10-30).

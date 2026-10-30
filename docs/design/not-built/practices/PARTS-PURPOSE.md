@@ -18,7 +18,7 @@ The design has several candidate uses, none decided:
 
 - **Agreements.** Some presences ask for parts by name. A part in the pack is then a clue about the floor it came from. The gifts they give come in three tiers and a closed set, the Covenant, and every gift is promised: it bears a gold seam and cannot be lost ([BESTIARY, sections 8.5 to 8.7](README.md)).
 - **The compost.** A farming room that turns parts into something else ([BESTIARY, section 8.8](README.md)).
-- **The alembic.** A laboratory station that brews parts into potions. Only a positive intention brews, three brews per alembic, and one laboratory per zone. This is the potions proposal ([potions](potions/README.md)).
+- **The alembic.** A laboratory station that brews parts into potions. Only a positive intention brews, three brews per alembic, and four laboratories, on floors 2, 4, 6 and 8 (the owner's decision of 2026-10-30). This is the potions proposal ([potions](potions/README.md)).
 - **A shop.** Parts traded for other things ([SHOP](SHOP.md)).
 
 ## Open questions

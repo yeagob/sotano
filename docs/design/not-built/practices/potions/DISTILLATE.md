@@ -12,7 +12,7 @@ The long game of the potion system. One recipe with one name template: "Distilla
 
 ## Open questions
 
-1. The bulb contents do not include flesh. The text says "the whole bulb", which may hold flesh too. The owner decides whether flesh belongs.
+1. The bulb contents do not include flesh. The text says "the whole bulb", which may hold flesh too. The flesh rule answers it, unless the owner says otherwise: flesh buys only instant healing (RECIPE-MODEL §6.4), so a run-long effect takes no flesh.
 2. "Materialise with half warmth" is a new mechanic: the pattern and its lineage return as projections. Does a materialised projection count as the player's own work, and does it drop parts?
 3. Does a distillate of a pattern the player has not met need the codex first?
 4. The Distillate survives floor entries; see [RISKS-AND-TESTS](RISKS-AND-TESTS.md), risk 3.

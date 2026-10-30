@@ -23,7 +23,7 @@ These are the questions 4 to 12 of the proposal's §7 (the original POTIONS docu
 11. **Drinking leaves the player exposed** for 0.4 seconds, with no casting? Default: yes.
 12. **Agreements may ask for potions** from Zone III on? Default: yes.
 
-Questions 1 to 3 of the proposal are approved (one alembic per zone, three brews, positive intentions only); see [BREWING-RULES](BREWING-RULES.md) §1.
+Questions 1 to 3 of the proposal are approved (one alembic per zone, later changed to four by the owner on 2026-10-30; three brews; positive intentions only); see [BREWING-RULES](BREWING-RULES.md) §1.
 
 ## Conflicts between documents
 

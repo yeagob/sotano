@@ -15,7 +15,7 @@ The rules that decide when a potion is made. §1 is what the owner approved. §2
 
 These are the proposal's defaults. They follow from the approved rules but the owner did not name them.
 
-1. **A negative intention boils the bulb off.** The contents are lost, grey steam rises, and no brew is spent. The alembic cannot be broken: it is the zone's only one. Source: POTIONS §2 step 6 and question 3's default.
+1. **A negative intention boils the bulb off.** The contents are lost, grey steam rises, and no brew is spent. The alembic cannot be broken: it is its laboratory's only one. Source: POTIONS §2 step 6 and question 3's default.
 2. **The bulb holds three cubes.** A fourth bounces off with the denied sound. Source: POTIONS §2 step 2.
 3. **Nothing fed can be taken back.** What goes into the work stays in the work. Source: POTIONS §2 step 3.
 4. **Grey never says no recipe.** An unmatched bulb stays grey, so discovery stays open. Source: POTIONS §2 step 4.

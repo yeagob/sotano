@@ -15,6 +15,6 @@ Ten risks of the potion system, each with the test that would catch it. Built an
 | 7 | **A positive splash kills.** The thrown flask lowers a projection to zero | Combat test: a splash on a projection at one hit point leaves it at one, with warmth up by 0.2; on a creature it heals |
 | 8 | **Controls clash or a device is missing** | Controls test: the drink verb exists on all three devices, no shared input in play, and the touch arc stays at seven buttons or fewer with a flask in hand |
 | 9 | **Missing words, or claims of cure** | Localisation test: every potion's name, description and effect exist in English and Spanish with the same numbers. A content test rejects "cure", "treatment", "therapy", "medicine" and "medication" in potion text |
-| 10 | **The structure change breaks old seeds silently** | The golden hash test fails on purpose. The laboratory lands on the right floor of every zone for 200 seeds, and never blocks a door, the centre or the shaft |
+| 10 | **The structure change breaks old seeds silently** | The golden hash test fails on purpose. The laboratory lands on the right floor of every laboratory for 200 seeds, and never blocks a door, the centre or the shaft |
 
 The gates these tests belong to: [sotano-items](../../../../../.claude/skills/sotano-items/SKILL.md), [sotano-controls](../../../../../.claude/skills/sotano-controls/SKILL.md), [sotano-i18n](../../../../../.claude/skills/sotano-i18n/SKILL.md) and [sotano-levels](../../../../../.claude/skills/sotano-levels/SKILL.md).
