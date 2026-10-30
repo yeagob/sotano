@@ -20,6 +20,7 @@ describe('the laboratory', () => {
         }
         expect(lab, `seed ${seed} floor ${f.floor}`).not.toBeNull();
         expect(w.get(lab!.x, lab!.y, lab!.z)).toBe(MAT.alembic);
+        expect(w.get(lab!.x + 1, lab!.y, lab!.z)).toBe(MAT.alembic);
         const room = f.rooms.find(r => r.id === lab!.room)!;
         expect(room.type).toBe('normal');
         expect(lab!.x >= room.x0 && lab!.x < room.x0 + room.w).toBe(true);
@@ -42,14 +43,14 @@ describe('the laboratory', () => {
     }
   }, 120000);
 
-  it('holds exactly one alembic per laboratory floor', () => {
+  it('holds two alembic tiles side by side per laboratory floor', () => {
     const { floors, w } = buildRun(0xBEEF, 10);
     for (const f of floors) {
       let count = 0;
       for (const r of f.rooms) for (let x = r.x0; x < r.x0 + r.w; x++) for (let z = r.z0; z < r.z0 + r.d; z++) {
         if (w.get(x, r.y0, z) === MAT.alembic) count++;
       }
-      expect(count, `floor ${f.floor}`).toBe(LABORATORY_FLOORS.includes(f.floor) ? 1 : 0);
+      expect(count, `floor ${f.floor}`).toBe(LABORATORY_FLOORS.includes(f.floor) ? 2 : 0);
     }
   });
 });
