@@ -8,7 +8,7 @@ Every floor's boss room holds the way down: a hole in its floor that leads to th
 
 | Floor | Asks for | Count |
 |---|---|---|
-| 0 | things: a block from your hand, a key, a bomb or a heart | 1 |
+| 0 | things: a block or a monster part from your hand, a key, a bomb or a heart | 1 |
 | 1 | things | 2 |
 | 2 | things | 3 |
 | 3 | things | 4 |
@@ -19,7 +19,7 @@ Every floor's boss room holds the way down: a hole in its floor that leads to th
 | 8 | practices | 4 |
 | 9 | none: the hole drops into silence | 0 |
 
-On floors 0 to 4 the things you may give are a block in your hand, a key, a bomb, or a heart. A heart is a heart of damage: you lose it, and if you have no life left you die. On floors 5 to 8 only practices you carry are accepted.
+On floors 0 to 4 the things you may give are a block or a monster part in your hand, a key, a bomb, or a heart. A monster part is one of the four kinds a projection leaves (flesh, heart, mind or essence, see [PARTS](../../projections/PARTS.md)); it is given away like a block. A heart is a heart of damage: you lose it, and if you have no life left you die. On floors 5 to 8 only practices you carry are accepted.
 
 The window lists what you carry. You choose exactly the number the floor asks, and each thing once. Paying opens the hole at once, and a particle burst marks the place.
 
@@ -32,4 +32,4 @@ The owner's text said that from the sixth level practices start, and gave a numb
 - A practice paid as the toll is lost: the player gives it up.
 - A paid heart goes through the damage rules, so a toll can kill.
 
-Code: `src/content/levels.ts` (the toll by floor: the count and whether it asks for practices), `src/game/game.ts` (the payment window's rules, the hole opening, the damage of a paid heart).
+Code: `src/content/levels.ts` (the toll by floor: the count and whether it asks for practices), `src/game/game.ts` (the payment window's rules, the hole opening, the damage of a paid heart), `src/game/toll.ts` (the hand's slots as things the window offers).
