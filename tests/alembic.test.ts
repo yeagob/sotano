@@ -3,7 +3,7 @@
 // a negative one boils the bulb off for nothing, and the third brew leaves it cold.
 
 import { describe, expect, it } from 'vitest';
-import { brew, BREWS, BULB, feed, hit, HIT_GAP, newAlembic, tick } from '../src/game/alembic';
+import { brew, BREWS, BULB, feed, hit, HIT_GAP, newAlembic, tick, tickLabs } from '../src/game/alembic';
 import { createBus, type GameEvents } from '../src/game/events';
 import { MAT } from '../src/content/materials';
 import { PARTS } from '../src/content/parts';
@@ -126,5 +126,14 @@ describe('the brew event', () => {
     }
     expect(seen).toHaveLength(BREWS);
     expect(a.brews).toBe(0);
+  });
+});
+
+describe('the alembic ticks once, however many tiles hold it', () => {
+  it('a laboratory registered under two tiles cools at the normal rate', () => {
+    const lab = newAlembic();
+    hit(lab, 'positive');
+    tickLabs([lab, lab], 0.2);
+    expect(lab.cool).toBeCloseTo(HIT_GAP - 0.2);
   });
 });

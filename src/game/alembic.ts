@@ -68,3 +68,8 @@ export function brew(a: Alembic, polarity: Polarity, bus: GameBus, x: number, y:
   bus.emit('brew', { potion: flask.potion, iced: !!flask.iced, contents, x, y, z });
   return { result, flask };
 }
+
+/** Ticks each laboratory once, however many of its tiles the labs map holds. */
+export function tickLabs(labs: Iterable<Alembic>, dt: number) {
+  for (const a of new Set(labs)) tick(a, dt);
+}

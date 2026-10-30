@@ -25,6 +25,7 @@ describe('the laboratory', () => {
         expect(room.type).toBe('normal');
         expect(lab!.x >= room.x0 && lab!.x < room.x0 + room.w).toBe(true);
         expect(lab!.z >= room.z0 && lab!.z < room.z0 + room.d).toBe(true);
+        expect(lab!.x + 1 >= room.x0 && lab!.x + 1 < room.x0 + room.w).toBe(true);
         expect(lab!.y).toBe(room.y0);
       }
     }

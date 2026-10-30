@@ -48,7 +48,7 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
-import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tick as labTick, type Alembic } from './alembic';
+import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
@@ -2374,7 +2374,7 @@ export class Game {
   }
 
   private updateLoop(dt: number) {
-    for (const a of this.labs.values()) labTick(a, dt);
+    tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
     this.pushPresences();
