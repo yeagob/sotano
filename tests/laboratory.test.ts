@@ -29,6 +29,19 @@ describe('the laboratory', () => {
     }
   });
 
+  it('every laboratory floor has its alembic, whatever the seed', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const { floors } = buildRun(seed * 7919, 10);
+      for (const f of floors) {
+        if (!LABORATORY_FLOORS.includes(f.floor)) continue;
+        expect(f.laboratory, `seed ${seed} floor ${f.floor}`).not.toBeNull();
+        const lab = f.laboratory!;
+        expect(f.keys.some(k => k.x === lab.x && k.z === lab.z), `seed ${seed} floor ${f.floor}: a key under the alembic`).toBe(false);
+        expect(f.bombs.some(b => b.x === lab.x && b.z === lab.z), `seed ${seed} floor ${f.floor}: a bomb under the alembic`).toBe(false);
+      }
+    }
+  }, 120000);
+
   it('holds exactly one alembic per laboratory floor', () => {
     const { floors, w } = buildRun(0xBEEF, 10);
     for (const f of floors) {

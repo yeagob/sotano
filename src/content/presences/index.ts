@@ -28,6 +28,19 @@ export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readon
 
 export const TALK_REACH = 2.2;
 
+export const PRESENCE_REPLY_MS = 4000;
+
+export function answerDue(last: number | undefined, now: number): boolean {
+  return last === undefined || now - last >= PRESENCE_REPLY_MS;
+}
+
+export function pushedOut(px: number, pz: number, cx: number, cz: number, reach: number): { x: number; z: number } | null {
+  const dx = px - cx, dz = pz - cz, d = Math.hypot(dx, dz);
+  if (d >= reach || d === 0) return null;
+  const k = reach / d;
+  return { x: cx + dx * k, z: cz + dz * k };
+}
+
 export const SILENCE_REACH = 2;
 export const LIFT_REACH = 8;
 

@@ -10,7 +10,7 @@ import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
-import { enemyText } from '../i18n/content';
+import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
@@ -37,7 +37,7 @@ import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
 import { Pickups, type Pickup } from '../entities/pickups';
 import { Chests, type ChestView } from '../entities/chests';
-import { EYE, Player, type PlayerMedium } from '../entities/player';
+import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
@@ -67,7 +67,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, unlocksPresence, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { rollCrate } from '../content/tables/crates';
@@ -214,6 +214,7 @@ export class Game {
   sandbox: Scenario | null = null;
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
+  private presenceReplies = new Map<number, number>();
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -403,7 +404,7 @@ export class Game {
     const box = sandbox ? carveSandbox(this.world, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.world, SURFACE_Y, i => this.rng.fork('tree', i));
-    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = '';
+    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     setMasterTarget(0.35);
     this.elements = new ElementSim(this.world, {
       seed: this.rng.fork('elements').u32(),
@@ -2165,6 +2166,7 @@ export class Game {
           this.pickups.take(p);
           this.player.hand.push(carried);
           this.hands.holdUp(carriedDef(carried));
+          if (typeof carried === 'object') this.hud.toast('hand.took', { item: this.carriedName(carried) });
           sfx.pickup();
         }
         continue;
@@ -2316,12 +2318,25 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
-      if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
+      const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
+      if (!near) { e.tags.delete('answering'); continue; }
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
-      if (!unlocksPresence(id, this.player.hand.at(-1))) {
-        if (e.tags.has('hinted')) continue;
-        e.tags.add('hinted');
-        this.hud.presenceCard(talk.name, [talk.hint]);
+      const top = this.player.hand.at(-1);
+      if (!unlocksPresence(id, top)) {
+        if (e.tags.has('answering')) continue;
+        const now = performance.now();
+        if (!e.tags.has('hinted')) {
+          e.tags.add('hinted');
+          e.tags.add('answering');
+          this.presenceReplies.set(e.id, now);
+          this.hud.presenceCard(talk.name, [talk.hint]);
+          return;
+        }
+        if (!answerDue(this.presenceReplies.get(e.id), now)) continue;
+        e.tags.add('answering');
+        this.presenceReplies.set(e.id, now);
+        if (top === undefined) this.hud.presenceCard(talk.name, ['presence.empty']);
+        else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
         return;
       }
       this.player.hand.pop();
@@ -2333,10 +2348,27 @@ export class Game {
     }
   }
 
+  private pushPresences() {
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.hidden || !(e.tags.has('presence') || e.tags.has('boundary'))) continue;
+      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.spec.size[1]) continue;
+      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.spec.size[0] / 2 + b.hw);
+      if (at && !boxHits((x, y, z) => this.solid(x, y, z), at.x, b.y, at.z, b.hw, b.h)) { b.x = at.x; b.z = at.z; }
+    }
+  }
+
+  private carriedName(c: Carried): string {
+    if (typeof c === 'number') return materialName(c);
+    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    return partText(c).name;
+  }
+
   private updateLoop(dt: number) {
     for (const a of this.labs.values()) labTick(a, dt);
     this.updateRest(dt);
     this.updatePresences();
+    this.pushPresences();
     this.updateBoundaries();
     const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
     const inSilence = !!last && b.x >= last.x0 && b.x <= last.x1 + 1 && b.z >= last.z0 && b.z <= last.z1 + 1 && b.y >= last.y0 - 0.5 && b.y <= last.y1 + 1;
