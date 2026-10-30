@@ -2,10 +2,12 @@
 // 2026-10-28). Its bulb takes three things from the hand. A positive intention brews: one of the
 // three brews is spent and what was fed is gone for good. A negative intention boils the bulb off
 // with no brew spent. After the third brew the alembic goes cold and takes nothing more.
-// This is the rule core only: the flask, the drink and the recipes come with the potions build.
 
 import type { Polarity } from '../combat/polarity';
 import type { Carried } from '../entities/player';
+import type { Flask } from '../content/potions';
+import { resolve } from '../content/recipes';
+import type { GameBus } from './events';
 
 /** Things the bulb holds at once. A fourth bounces off (BREWING-RULES §2). */
 export const BULB = 3;
@@ -54,4 +56,15 @@ export function hit(a: Alembic, polarity: Polarity): HitResult {
 
 export function tick(a: Alembic, dt: number) {
   a.cool = Math.max(0, a.cool - dt);
+}
+
+export interface BrewOutcome { result: HitResult; flask: Flask | null }
+
+export function brew(a: Alembic, polarity: Polarity, bus: GameBus, x: number, y: number, z: number): BrewOutcome {
+  const contents = a.bulb.length;
+  const flask = resolve(a.bulb);
+  const result = hit(a, polarity);
+  if (result !== 'brew') return { result, flask: null };
+  bus.emit('brew', { potion: flask.potion, iced: !!flask.iced, contents, x, y, z });
+  return { result, flask };
 }

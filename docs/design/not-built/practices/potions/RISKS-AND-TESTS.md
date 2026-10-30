@@ -2,7 +2,7 @@
 
 Status: proposal. Index: [potions](README.md).
 
-Ten risks of the potion system, each with the test that would catch it. None of these tests exists yet.
+Ten risks of the potion system, each with the test that would catch it. Built and green: risk 1 (`tests/alembic.test.ts`: a fourth brew is refused), risk 4 for the order of the bulb (`tests/recipes.test.ts`; brewing reads no randomness), risk 5 (the validator in `tests/recipes.test.ts`), risk 9 (`tests/potion-effects.test.ts`: names and effect lines in English and Spanish with the same numbers, and none of the banned words). Partly built: risk 2 (every potion at once with every practice keeps finite stats in their limits; drinking twice leaves one source) and risk 3 (practices gained and lost keep a potion; sealed rooms and floor entries end it). Not built: the synergy matrix over potions, the sandbox scenario with 500 parts, the hash tests of risk 4, and risks 6, 7, 8 and 10 as written.
 
 | # | Risk | Test |
 |---|---|---|

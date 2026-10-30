@@ -117,6 +117,8 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `roomClear` | `drops` | a room cleared |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
+| `brew` | — (react) | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
+| `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |
 
 **Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).
 
@@ -179,6 +181,7 @@ on gain / lose / restore / new floor:
 
 - Every held copy is an `ItemInstance { uid, def }`; the uid is stable for the life of the copy.
 - Only sources the inventory installed are removed. Effects from other sources (a room aura, a curse, a timed buff) on the same stat sheet and bus survive pickups.
+- **Potions** are such a source. A drunk potion's stat modifiers sit on the same stat sheet under `potion:<id>`, one source per potion, installed and removed by `PotionEffects` (`src/game/potion-effects.ts`), never by the inventory. Drinking an active potion again replaces its source and refreshes its count. A potion counted in rooms loses one room per sealed room cleared (never per challenge wave); every potion ends on the next floor entry; a new run clears them all. Potions have no hooks yet: the Questioning Tincture's lock is read by the core at the door and the chest.
 - `onGain` runs once, from `gain()`. Rebuilds and restores never run it again.
 - `gain()` returns the stat diff and the synergies that just switched on; the HUD shows both in the pickup banner.
 - Picking up a duplicate is allowed (two instances, stats stack).

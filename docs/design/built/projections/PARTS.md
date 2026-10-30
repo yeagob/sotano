@@ -14,7 +14,7 @@ The 152 parts of the built projection files are in `src/content/parts.ts`. They 
 
 ## In the hand
 
-Collecting a part lifts it into the hand, with the hold-up and no burst. Parts have no use yet: no agreement, gift or shop asks for them ([AGREEMENTS](../../not-built/presences/AGREEMENTS.md)).
+Collecting a part lifts it into the hand, with the hold-up and no burst. Parts have two uses: the laboratory's alembic brews them into potions, matched by kind and by the pattern's path or lineage ([recipes](../laboratory/recipes/README.md)), and some presences take one before they speak ([presences](../presences/README.md)). No agreement, gift or shop asks for them ([AGREEMENTS](../../not-built/presences/AGREEMENTS.md)).
 
 ## Icons
 

@@ -1,38 +1,67 @@
 import type { MessageKey } from '../i18n';
 import type { Carried } from '../entities/player';
-import type { ItemIcon } from '../items/types';
-import { pal, type PalToken } from './palette';
+import type { ItemIcon, StatModSpec } from '../items/types';
+import { pal, type PalToken, type PathName } from './palette';
 import type { PartDef } from './parts';
 
-export const POTION_IDS = ['plain-tonic', 'restoring-draught'] as const;
+export const POTION_IDS = [
+  'plain-tonic', 'restoring-draught', 'footing-tincture', 'spring-tonic',
+  'clear-infusion', 'questioning-tincture', 'ember-tonic', 'patient-draught',
+] as const;
 export type PotionId = (typeof POTION_IDS)[number];
 
-export interface Flask { potion: PotionId }
+export interface Flask { potion: PotionId; iced?: true }
+
+export type Duration =
+  | { kind: 'instant' }
+  | { kind: 'rooms'; rooms: number }
+  | { kind: 'floor' };
 
 export interface PotionDef {
   id: PotionId;
-  heal: number;
+  path: PathName;
   liquid: PalToken;
   name: MessageKey;
   effect: MessageKey;
+  duration: Duration;
+  heal?: number;
+  stats?: readonly StatModSpec[];
+  locks?: number;
 }
 
+const INSTANT: Duration = { kind: 'instant' };
+const FLOOR: Duration = { kind: 'floor' };
+const ROOMS = (rooms: number): Duration => ({ kind: 'rooms', rooms });
+
+type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks'>;
+
+const potion = (id: PotionId, path: PathName, liquid: PalToken, duration: Duration, extra: Extra = {}): PotionDef =>
+  ({ id, path, liquid, duration, name: `potion.${id}.name` as MessageKey, effect: `potion.${id}.effect` as MessageKey, ...extra });
+
 export const POTIONS: Record<PotionId, PotionDef> = {
-  'plain-tonic': { id: 'plain-tonic', heal: 4, liquid: 'bone.faded', name: 'potion.plain-tonic.name', effect: 'potion.plain-tonic.effect' },
-  'restoring-draught': { id: 'restoring-draught', heal: 8, liquid: 'living.glow', name: 'potion.restoring-draught.name', effect: 'potion.restoring-draught.effect' },
+  'plain-tonic': potion('plain-tonic', 'body', 'bone.faded', INSTANT, { heal: 4 }),
+  'restoring-draught': potion('restoring-draught', 'body', 'living.glow', INSTANT, { heal: 8 }),
+  'footing-tincture': potion('footing-tincture', 'body', 'mat.deepstone.hi', ROOMS(3), { stats: [{ stat: 'kick', layer: 'mul', value: 1.5 }] }),
+  'spring-tonic': potion('spring-tonic', 'body', 'mat.grass.hi', FLOOR, { stats: [{ stat: 'jump', layer: 'mul', value: 1.4 }] }),
+  'clear-infusion': potion('clear-infusion', 'mind', 'el.water.surface', ROOMS(3), {
+    stats: [{ stat: 'range', layer: 'mul', value: 1.3 }, { stat: 'shotSpeed', layer: 'mul', value: 1.2 }],
+  }),
+  'questioning-tincture': potion('questioning-tincture', 'mind', 'iron.hi', FLOOR, { locks: 1 }),
+  'ember-tonic': potion('ember-tonic', 'will', 'el.ember.hot', ROOMS(3), { stats: [{ stat: 'fireRate', layer: 'mul', value: 1.3 }] }),
+  'patient-draught': potion('patient-draught', 'will', 'copper.base', FLOOR, { stats: [{ stat: 'mining', layer: 'mul', value: 1.6 }] }),
 };
 
 export function isFlask(c: Carried): c is Flask {
   return typeof c === 'object' && 'potion' in c;
 }
 
-export function brewOf(bulb: readonly Carried[]): PotionId {
-  const flesh = bulb.filter(c => typeof c === 'object' && !isFlask(c) && c.kind === 'flesh').length;
-  return bulb.length === 2 && flesh === 2 ? 'restoring-draught' : 'plain-tonic';
+export function flaskRooms(f: Flask): number {
+  const d = POTIONS[f.potion].duration;
+  return d.kind === 'rooms' ? d.rooms + (f.iced ? 1 : 0) : 0;
 }
 
 export function flaskDef(f: Flask): Pick<PartDef, 'id' | 'icon' | 'color'> {
-  return { id: `flask.${f.potion}`, icon: flaskIcon(f.potion), color: pal(POTIONS[f.potion].liquid) };
+  return { id: `flask.${f.potion}${f.iced ? '.iced' : ''}`, icon: flaskIcon(f.potion), color: pal(POTIONS[f.potion].liquid) };
 }
 
 export function carriedDef(c: PartDef | Flask): Pick<PartDef, 'id' | 'icon' | 'color'> {

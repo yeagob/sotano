@@ -31,6 +31,7 @@ Questions 1 to 3 of the proposal are approved (one alembic per zone, three brews
 |---|---|---|
 | The alembic brews parts, or makes an essence from water and a husk | This folder against [STATIONS §4.4](../../stations/ALEMBIC.md) | The owner names the alembic's one purpose |
 | "Eat with F" | [POTIONS §0 and §5](README.md) say STATIONS uses F to eat. The STATIONS text says the use key | None here; the controls skill chooses the key. F is polarity ([KEYBOARD](../../../../architecture/input/KEYBOARD.md)) |
+| One laboratory per zone | [BREWING-RULES](BREWING-RULES.md) §1 (approved: one per zone, five per run) against the build (floors 2, 4, 6 and 8, four per run) | The owner chooses; the build keeps 2, 4, 6 and 8 until then |
 | Laboratory floors | [STATIONS themed rooms](../../stations/THEMED-ROOMS.md) put the laboratory on floors 3 and 8; this folder puts it on 2, 4, 6 and 8 | Which floors |
 | The name Compost | [BESTIARY §8.8](../../encounters/COMPOST.md) (a farming room) and [the station](../../stations/COMPOST.md) | One name |
 | Parts held in the hand, or in the inventory | This folder and src/content/parts.ts header disagree | The owner decides which is true; see [PARTS-AND-SUPPLY](PARTS-AND-SUPPLY.md) §2 |
@@ -40,14 +41,29 @@ Questions 1 to 3 of the proposal are approved (one alembic per zone, three brews
 
 - "152 parts from 38 projection files" and the 12 hand-drawn icons: not counted here.
 - The bestiary's "twelve parts" and its staleness.
-- EnemyDef has no path field (POTIONS §0): not searched for here.
+- EnemyDef has no path field (POTIONS §0): true; the path lives in a content table instead (see the technical questions).
 - No warmth event: consistent with [ITEMS](../../../../architecture/ITEMS.md) §3.
+
+## Built recipes
+
+The questions each built recipe's document asked, still open. The recipes are in [built/laboratory/recipes](../../../built/laboratory/recipes/README.md).
+
+| Recipe | Question | What the build does |
+|---|---|---|
+| Plain Tonic | Does an empty bulb brew? Is half a heart fixed or a share of the maximum? | An empty bulb does not brew (the alembic rule). Half a heart is fixed |
+| Restoring Draught | Do two flesh of one pattern match? Is the heal eight points? | Yes to both |
+| Footing Tincture | Is "knock back" the damage event's knockback? Does obsidian's use here change its role in the chests? | No projection hit knocks the player back today, so only the kick changes. Obsidian keeps its role |
+| Spring Tonic | Does climbing back up give it again? Is Impulse a body pattern? | No. Yes (the bestiary's card) |
+| Clear Infusion | Two minds of one pattern do not match: intended? | They do not match |
+| Questioning Tincture | Is the toll a lock? Does Socratic Questioning cover two locks? Does it agree with the chest costs? | The toll is never covered. No synergy yet. A chest costs one key less, and only when the keys in hand pay the rest |
+| Ember Tonic | Is Panic's captive ember a heart? | Yes, in the parts table |
+| Patient Draught | Does it change damage? Is a floor too long for a mining boost? | Mining only. A floor, as proposed |
 
 ## Technical questions (for the architecture, not decided here)
 
 - A warmth field on the damage and spawn events, needed by Warm Cordial, Open-Hand Elixir and the Distillate.
-- A path field on enemies, needed by the lineage and path matching.
-- The three-party review before the laboratory room is added.
+- A path field on enemies, needed by the lineage and path matching. Built as a table in the content (`src/content/patterns.ts`), read from the bestiary's cards, not as a field on each enemy. The owner or the architecture may prefer the field.
+- The three-party review before the laboratory room is added. Not run: the laboratory, the recipes and the potion effect source were built without it.
 
 ## Found while splitting the proposal
 

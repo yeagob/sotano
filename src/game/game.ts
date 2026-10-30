@@ -20,7 +20,7 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
-import { brewOf, carriedDef, isFlask, POTIONS } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -46,7 +46,8 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
-import { BREWS, BULB, feed as labFeed, hit as labHit, newAlembic, tick as labTick, type Alembic } from './alembic';
+import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tick as labTick, type Alembic } from './alembic';
+import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
@@ -180,6 +181,7 @@ export class Game {
   readonly hands: Hands;
   readonly player = new Player();
   readonly stats = new StatSheet();
+  readonly potions = new PotionEffects(this.stats);
   readonly inventory: Inventory;
   bus: GameBus = createBus();
   /** All of the run's randomness, derived from its root (docs/architecture/RNG.md). */
@@ -429,6 +431,7 @@ export class Game {
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
+    this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
@@ -1219,6 +1222,7 @@ export class Game {
         const ev = this.bus.emit('roomClear', { room: id, drops });
         for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
         this.hud.toast('toast.roomClear');
+        this.potionsEnded(this.potions.roomCleared());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
       } else if (!inside && st.sealed) {
@@ -1945,12 +1949,11 @@ export class Game {
   private hitLab(x: number, y: number, z: number, polarity: Polarity) {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
-    const potion = brewOf(a.bulb);
-    const r = labHit(a, polarity);
-    if (r === 'brew') {
+    const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
+    if (r === 'brew' && flask) {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
-      this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, { potion });
+      this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
       this.hud.toast('lab.brewed', { left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
@@ -1964,12 +1967,19 @@ export class Game {
     const p = this.player, top = p.hand.at(-1);
     if (!top || !isFlask(top)) { sfx.denied(); return; }
     const def = POTIONS[top.potion];
+    const rooms = flaskRooms(top);
     p.hand.pop();
     this.hands.placed();
-    this.heal(def.heal, `potion.${top.potion}`);
+    if (def.heal) this.heal(def.heal, `potion.${top.potion}`);
+    this.potions.drink(top);
+    this.bus.emit('drink', { potion: top.potion, rooms });
     this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(def.liquid), 16, 1.2, 0.05);
     sfx.pickup();
-    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect) });
+    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect, { rooms }) });
+  }
+
+  private potionsEnded(ended: readonly PotionId[]) {
+    for (const id of ended) this.hud.toast('potion.ended', { name: t(POTIONS[id].name) });
   }
 
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
@@ -2101,7 +2111,9 @@ export class Game {
   private requestDoor(d: Door): boolean {
     const ev = this.bus.emit('doorOpen', { door: d.id, locked: d.locked, needsKey: d.locked });
     if (ev.cancelled) return false;
-    if (ev.needsKey) {
+    if (ev.needsKey && this.potions.lockDiscount() > 0) {
+      this.questioned();
+    } else if (ev.needsKey) {
       if (this.player.keys <= 0) { this.hud.toast('toast.locked'); sfx.denied(); return false; }
       this.player.keys--;
       this.hud.toast('toast.unlocked');
@@ -2174,7 +2186,9 @@ export class Game {
       if (dist > 3) c.refused = false;
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
       const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
-      const cost = Math.max(0, Math.floor(ev.cost));
+      const asked = Math.max(0, Math.floor(ev.cost));
+      const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
+      const cost = question ? asked - 1 : asked;
       if (ev.cancelled || this.player.keys < cost) {
         c.refused = true;
         this.hud.toast('toast.chestLocked', { n: cost });
@@ -2182,8 +2196,16 @@ export class Game {
         continue;
       }
       this.player.keys -= cost;
+      if (question) this.questioned();
       this.openChest(c, cost);
     }
+  }
+
+  private questioned() {
+    const id = this.potions.spendLock();
+    if (!id) return;
+    this.hud.toast('potion.questioned', { name: t(POTIONS[id].name) });
+    sfx2.unlock();
   }
 
   private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number) {
@@ -2393,6 +2415,7 @@ export class Game {
       this.activate(band);
       this.carve(band + 1);
       this.bus.clearDeferred();
+      this.potionsEnded(this.potions.floorEntered());
         this.bus.emit('floorEnter', { depth: band });
       this.hud.setFloor(this.floors.get(band)!, band);
       this.hud.toast('toast.floor', { n: band });

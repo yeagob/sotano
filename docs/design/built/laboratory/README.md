@@ -1,6 +1,12 @@
 # Laboratory
 
-Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask and the drink are built, with two of the eleven recipes; the other nine recipes, the Distillate and the codex are not built yet ([potions](../../not-built/practices/potions/README.md)).
+Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink and eight of the eleven recipes are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
+
+## Documents
+
+| Document | Contents |
+|---|---|
+| [recipes](recipes/README.md) | The eight built recipes, how the bulb is read, ice and durations, one document per recipe |
 
 ## Where it is
 
@@ -10,11 +16,15 @@ One laboratory on floors 2, 4, 6 and 8 (`LABORATORY_FLOORS` in `src/world/floor.
 
 - **Feed it.** Aim at the alembic and right-click: the top of your hand goes into the bulb. The bulb holds three things, parts or blocks. A fourth is refused.
 - **A positive intention brews.** One of the alembic's three brews is spent, and what was fed is gone for good. The brew leaves a flask on top of the alembic. Walk onto it to take it into your hand, if the hand has room.
-- **What the bulb makes.** Two flesh of any patterns make a Restoring Draught; anything else makes a Plain Tonic. The flask is not an ingredient: the bulb refuses it.
-- **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once: a Plain Tonic restores half a heart, a Restoring Draught one heart. A flask can also be placed (right click) or thrown (Q) like a part.
+- **What the bulb makes.** The whole bulb is read against eight recipes; the most specific one wins, and a bulb no recipe matches makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
+- **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
 - **A negative intention boils the bulb off.** What was fed is lost and no brew is spent.
 - **One hit counts once.** Only the first intention hit in each 0.6 seconds counts, so a swing or a beam tick cannot brew twice.
 - **Three brews per run.** After the third brew the alembic is cold: it takes nothing and says so.
-- **Unbreakable.** The alembic cannot be dug, burned or blasted. It is a placeholder block until sotano-art gives it its own look.
+- **Unbreakable.** The alembic cannot be dug, burned or blasted.
 
-The rules are in `src/game/alembic.ts` and tested in `tests/alembic.test.ts`. The placement is tested in `tests/laboratory.test.ts`.
+## Placeholders
+
+The alembic is a brass block with the pedestal's pattern, and every flask is one shared bottle icon with a liquid colour per potion. Neither has passed the art gate (sotano-art): they stay placeholders until an art pass draws the alembic (bulb, coil and flask stand) and the potion icons.
+
+The rules are in `src/game/alembic.ts` and tested in `tests/alembic.test.ts`, with the brew event. The placement is tested in `tests/laboratory.test.ts`. Brewing and drinking emit the `brew` and `drink` events for practices to react to ([ITEMS](../../../architecture/ITEMS.md)).

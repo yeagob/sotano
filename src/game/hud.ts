@@ -20,7 +20,7 @@ import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
-import { carriedDef, isFlask, POTIONS } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -268,7 +268,7 @@ export class Hud {
           } else if (isFlask(c)) {
             const pd = POTIONS[c.potion];
             img.src = iconDataUrl(carriedDef(c), 3);
-            img.title = `${t(pd.name)}\n${t(pd.effect)}`;
+            img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
           } else {
             const tx = partText(c);
             img.src = iconDataUrl(c, 3);

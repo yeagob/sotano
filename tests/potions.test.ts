@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { HEART } from '../src/entities/actors';
 import { PARTS } from '../src/content/parts';
-import { POTIONS, brewOf, flaskDef, flaskIcon, isFlask, type PotionId } from '../src/content/potions';
+import { POTIONS, flaskDef, flaskIcon, isFlask, type PotionId } from '../src/content/potions';
+import { brewOf } from '../src/content/recipes';
 
 const part = (kind: 'flesh' | 'heart' | 'mind' | 'essence', source?: string) =>
   PARTS.find(p => p.kind === kind && (source === undefined || p.source === source))!;
