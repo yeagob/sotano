@@ -2,16 +2,23 @@
 // 2026-10-28): three things in the bulb, a positive intention brews and spends one of three brews,
 // a negative one boils the bulb off for nothing, and the third brew leaves it cold.
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { brew, BREWS, BULB, feed, hit, HIT_GAP, newAlembic, tick, tickLabs, type BrewOutcome } from '../src/game/alembic';
+import { brew, BREWS, BULB, feed, hit, HIT_GAP, newAlembic, tick, tickLabs, type Alembic } from '../src/game/alembic';
 import { createBus, type GameEvents } from '../src/game/events';
-import { MAT } from '../src/content/materials';
+import { AIR, MAT } from '../src/content/materials';
 import { PARTS } from '../src/content/parts';
 import { Intents, intentFromStats } from '../src/combat/intents';
 import { Beam, GreatCut, type WeaponHost } from '../src/combat/weapons';
 import type { Polarity } from '../src/combat/polarity';
 import { BASE_STATS } from '../src/core/stats';
+
+// game.ts makes no canvas or audio at load, but it reads matchMedia at module load; the sound
+// module is silenced so that the real Game methods below can run in node.
+vi.mock('../src/audio/sfx', () => {
+  const silent = new Proxy({}, { get: () => () => {} });
+  return { sfx: silent, sfx2: silent, sfx3: silent, easeMaster: () => {}, setMasterTarget: () => {}, spatial: () => {}, unlockAudio: () => {} };
+});
 
 describe('the alembic bulb', () => {
   it('takes three things from the hand and refuses a fourth', () => {
@@ -144,29 +151,72 @@ describe('the alembic ticks once, however many tiles hold it', () => {
 });
 
 describe('the alembic under the love-shot and under Remember Breathing (three items)', () => {
-  // The alembic is the only solid thing in this world: one tile two blocks in front of the player,
-  // who stands at (0.5, 0, 0.5) and looks down -Z. The hooks mirror game.ts: an intention or a beam
-  // that reaches the alembic calls the same brew, with the stroke's polarity.
+  // The real wiring, not a copy of it. Game is loaded from game.ts and its methods run on a
+  // stand-in object (Object.create(Game.prototype)) that holds only what they read: the real
+  // makeWeaponHost builds the weapons' host (its `answer` line included), the real hitLab brews,
+  // and the real intentHitsBlock answers the love-shot. Only the world, the alembic's tile and the
+  // player's eye are faked. The alembic is the only solid thing here: one tile two blocks in front
+  // of the player, who stands at (0.5, 0, 0.5) and looks down -Z.
   const LAB = '0,1,-2';
   const at = (x: number, y: number, z: number) => `${x},${y},${z}`;
   const heart = PARTS.find(p => p.kind === 'heart')!;
   const flesh = PARTS.find(p => p.kind === 'flesh')!;
   const mind = PARTS.find(p => p.kind === 'mind')!;
 
-  function rig() {
+  type GameInternals = {
+    makeWeaponHost(): WeaponHost;
+    intentHitsBlock(hit: { x: number; y: number; z: number }, mining: number, polarity: Polarity): boolean;
+  };
+  let Game: typeof import('../src/game/game').Game;
+  beforeAll(async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    try {
+      ({ Game } = await import('../src/game/game'));
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  function rig(polarity: Polarity) {
     const bus = createBus();
     const seen: GameEvents['brew'][] = [];
     bus.on('brew', { priority: 200, source: 'test', fn: e => { seen.push({ ...e }); } });
     const lab = newAlembic();
     for (const item of [heart, flesh, mind]) expect(feed(lab, item)).toBe('fed');
-    const outcomes: BrewOutcome[] = [];
-    const state = { casting: false, polarity: 'positive' as Polarity };
-    const hitLab = (polarity: Polarity) => { outcomes.push(brew(lab, polarity, bus, 0, 1, -2)); };
 
-    // the love-shot: the game's own intention, which reaches the block through hitBlock
+    const world = {
+      get: (x: number, y: number, z: number) => (at(x, y, z) === LAB ? MAT.alembic : AIR),
+      idx: (x: number, y: number, z: number) => at(x, y, z),
+      damaged: new Set<string>(),
+    };
+    const hud = { toast: vi.fn(), toastDrinkHint: vi.fn(), shake: () => {} };
+    const pickups = { add: vi.fn() };
+
+    const g = Object.assign(Object.create(Game.prototype), {
+      world,
+      labs: new Map<string, Alembic>([[world.idx(0, 1, -2), lab]]),
+      bus,
+      polarity,
+      stroke: undefined,
+      strikeDebris: 0,
+      player: { eye: new THREE.Vector3(0.5, 1.6, 0.5), forward: new THREE.Vector3(0, 0, -1) },
+      stats: { all: BASE_STATS },
+      input: { held: () => state.casting },
+      hands: { holding: false, fire: () => {}, charge: () => {} },
+      enemies: { list: [], clearProjectiles: () => {} },
+      particles: { burst: () => {} },
+      pickups,
+      hud,
+      room: 0,
+      solid: (x: number, y: number, z: number) => world.get(x, y, z) !== AIR,
+      clearCubesIn: () => {},
+    });
+    const state = { casting: false };
+
+    const host = (g as unknown as GameInternals).makeWeaponHost();
     const intents = new Intents(new THREE.Scene(), {
       solid: (x, y, z) => at(x, y, z) === LAB,
-      hitBlock: (hit, spec) => { if (at(hit.x, hit.y, hit.z) === LAB) hitLab(spec.polarity); return false; },
+      hitBlock: (h, spec) => (g as unknown as GameInternals).intentHitsBlock(h, spec.mining, spec.polarity),
       tier: () => 0,
       debrisAt: () => -1,
       hitDebris: () => {},
@@ -176,37 +226,12 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       hit: () => {},
       nearestBlock: () => null,
     });
-
-    // Remember Breathing: the beam, through the weapon host, as game.ts wires it. The alembic cannot
-    // be broken (its HP is infinite), so the beam can only reach it through the answer hook.
-    const host: WeaponHost = {
-      stats: () => BASE_STATS,
-      eye: () => new THREE.Vector3(0.5, 1.6, 0.5),
-      forward: () => new THREE.Vector3(0, 0, -1),
-      casting: () => state.casting,
-      strike: (_weapon, damage, mining, reach) => ({ damage, mining, reach, tags: new Set() }),
-      solid: (x, y, z) => at(x, y, z) === LAB,
-      breakable: () => false,
-      cut: () => {},
-      burn: () => false,
-      answer: (x, y, z) => { if (at(x, y, z) === LAB) hitLab(state.polarity); },
-      targets: () => [],
-      hit: () => {},
-      clearProjectiles: () => {},
-      clearCubes: () => {},
-      sliceCubes: () => {},
-      particles: () => {},
-      shake: () => {},
-      swingHands: () => {},
-      chargeHands: () => {},
-      sound: () => {},
-    };
     const beam = new Beam(new THREE.Scene(), host);
     // One Clear Cut: Remember Breathing with Occam's Razor, the great cut that also replaces the shot
     const cut = new GreatCut(new THREE.Scene(), host);
 
     const shoot = () => {
-      intents.fire(intentFromStats(BASE_STATS, state.polarity), new THREE.Vector3(0.5, 1.4, 0.5), new THREE.Vector3(0, 0, -1), new THREE.Vector3());
+      intents.fire(intentFromStats(BASE_STATS, g.polarity), new THREE.Vector3(0.5, 1.4, 0.5), new THREE.Vector3(0, 0, -1), new THREE.Vector3());
       for (let t = 0; t < 1; t += 1 / 60) intents.update(1 / 60);
     };
     const fireBeam = () => {
@@ -221,52 +246,52 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       state.casting = false;
       for (let t = 0; t < 1.5; t += 1 / 60) cut.update(1 / 60);
     };
-    return { lab, outcomes, seen, state, shoot, fireBeam, fireGreatCut };
+    return { g, lab, seen, hud, pickups, shoot, fireBeam, fireGreatCut };
   }
 
   it('the love-shot brews three fed items once, and the bulb is empty after it', () => {
-    const r = rig();
+    const r = rig('positive');
     r.shoot();
-    expect(r.outcomes.map(o => o.result)).toEqual(['brew']);
-    expect(r.outcomes[0].flask).toEqual({ potion: 'plain-tonic' });
     expect(r.seen).toHaveLength(1);
+    expect(r.pickups.add).toHaveBeenCalledTimes(1);
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'plain-tonic' });
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });
 
   it('Remember Breathing brews the same three fed items once, however many beam ticks land', () => {
-    const r = rig();
+    const r = rig('positive');
     r.fireBeam();
-    // the beam's other ticks land inside the hit gap: they are 'cool' and count for nothing
-    expect(r.outcomes.length).toBeGreaterThan(1);
-    expect(r.outcomes.filter(o => o.result !== 'cool').map(o => o.result)).toEqual(['brew']);
-    expect(r.outcomes[0].flask).toEqual({ potion: 'plain-tonic' });
+    // the beam's other ticks land inside the hit gap: they count for nothing
     expect(r.seen).toHaveLength(1);
+    expect(r.pickups.add).toHaveBeenCalledTimes(1);
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'plain-tonic' });
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });
 
   it('One Clear Cut (Remember Breathing with Occam\'s Razor) brews the same three items once', () => {
-    const r = rig();
+    const r = rig('positive');
     r.fireGreatCut();
-    expect(r.outcomes.map(o => o.result)).toEqual(['brew']);
     expect(r.seen).toHaveLength(1);
+    expect(r.pickups.add).toHaveBeenCalledTimes(1);
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });
 
   it('a negative love-shot boils the three items off, and a negative beam does the same', () => {
-    const shot = rig();
-    shot.state.polarity = 'negative';
+    const shot = rig('negative');
     shot.shoot();
-    expect(shot.outcomes.map(o => o.result)).toEqual(['boil']);
+    expect(shot.hud.toast).toHaveBeenCalledWith('lab.boiled');
+    expect(shot.seen).toEqual([]);
+    expect(shot.pickups.add).not.toHaveBeenCalled();
     expect(shot.lab.brews).toBe(BREWS);
     expect(shot.lab.bulb).toEqual([]);
 
-    const beam = rig();
-    beam.state.polarity = 'negative';
+    const beam = rig('negative');
     beam.fireBeam();
-    expect(beam.outcomes.filter(o => o.result !== 'cool').map(o => o.result)).toEqual(['boil']);
+    expect(beam.hud.toast.mock.calls.filter(c => c[0] === 'lab.boiled')).toHaveLength(1);
+    expect(beam.seen).toEqual([]);
     expect(beam.lab.brews).toBe(BREWS);
     expect(beam.lab.bulb).toEqual([]);
   });
