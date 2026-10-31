@@ -103,9 +103,18 @@ function panner(x: number, y: number, z: number): AudioNode | null {
   p.refDistance = 2;
   p.rolloffFactor = 1;
   p.maxDistance = 24;
-  p.positionX.value = x; p.positionY.value = y; p.positionZ.value = z;
+  place(p, x, y, z);
   p.connect(master);
   return p;
+}
+
+/**
+ * Firefox has no positionX/forwardX AudioParams on panners and listeners (it still has setPosition and
+ * setOrientation). Reading a missing one threw inside the frame loop and froze the game, so both paths are kept.
+ */
+export function place(node: PannerNode | AudioListener, x: number, y: number, z: number) {
+  if (node.positionX) { node.positionX.value = x; node.positionY.value = y; node.positionZ.value = z; }
+  else node.setPosition(x, y, z);
 }
 
 export const spatial = {
@@ -113,9 +122,11 @@ export const spatial = {
   listener(x: number, y: number, z: number, dx: number, dz: number) {
     if (!ctx) return;
     const l = ctx.listener;
-    l.positionX.value = x; l.positionY.value = y; l.positionZ.value = z;
-    l.forwardX.value = dx; l.forwardY.value = 0; l.forwardZ.value = dz;
-    l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
+    place(l, x, y, z);
+    if (l.forwardX) {
+      l.forwardX.value = dx; l.forwardY.value = 0; l.forwardZ.value = dz;
+      l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
+    } else l.setOrientation(dx, 0, dz, 0, 1, 0);
   },
   /** An omen opens: a short click, then a hum that rises from the floor and falls from a ceiling. */
   omenHum(x: number, y: number, z: number, kind: 'floor' | 'wall' | 'ceiling') {
