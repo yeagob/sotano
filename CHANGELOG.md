@@ -4,6 +4,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+## 0.1.1 · 2026-10-31
+
 ### Added
 - A kitchen on floors 1, 3, 5 and 7 cooks a part into a meal (three cooks per run; flesh gives half a heart, other parts a heart), eaten with the drink key. A hint names the drink key when a potion or meal is made or picked up. The alembic is now one tile on the even floors; seeds changed (v22).
 - Breaking a crate has a 30% chance to drop a key, a heart or a small bomb (#6).
