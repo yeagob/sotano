@@ -1,10 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { seedFx } from '../src/core/fx';
 import { DebrisSystem, DEBRIS_LIFETIME } from '../src/physics/debris';
 
 const floor = (_x: number, y: number, _z: number) => y < 0;
 const step = (d: DebrisSystem, seconds: number) => { for (let t = 0; t < seconds; t += 1 / 60) d.update(1 / 60); };
 
 describe('loose cubes', () => {
+  // hops and spins draw from fx: seed it, or the physics thresholds below are flaky under Math.random
+  beforeEach(() => seedFx(7));
   it('fall, land on the floor and come to rest', () => {
     const d = new DebrisSystem(16, floor, () => {});
     const i = d.spawn(1, 0.5, 3, 0.5);
@@ -54,13 +57,18 @@ describe('loose cubes', () => {
       const d = new DebrisSystem(64, well, () => {});
       for (let k = 0; k < count; k++) d.spawn(1, 2, 1 + k * 0.05, 2);
       step(d, 6);
+      // a jam may lose the cubes that spin in place (#42), but not the pile: most of it stays
+      const living = Array.from({ length: count }, (_, i) => i).filter(i => d.isAlive(i)).length;
+      expect(living).toBeGreaterThanOrEqual(Math.floor(count * 0.8));
       const S = 0.72 * 0.98;
       let worst = 0;
+      // cubes that spun in place in the jam are removed on purpose (#42), so only the living are checked
       for (let i = 0; i < count; i++) {
-        expect(d.isAlive(i)).toBe(true);
+        if (!d.isAlive(i)) continue;
         for (const k of [0, 2]) { expect(d.pos[i * 3 + k]).toBeGreaterThanOrEqual(0.359); expect(d.pos[i * 3 + k]).toBeLessThanOrEqual(3.641); }
         expect(d.pos[i * 3 + 1]).toBeGreaterThanOrEqual(0.359);
         for (let j = i + 1; j < count; j++) {
+          if (!d.isAlive(j)) continue;
           worst = Math.max(worst, Math.min(...[0, 1, 2].map(k => S - Math.abs(d.pos[i * 3 + k] - d.pos[j * 3 + k]))));
         }
       }
@@ -110,5 +118,30 @@ describe('loose cubes', () => {
     // hops carry a random nudge (identical hops loop forever): give it a few tries
     step(d, 4);
     expect(d.pos[c * 3]).toBeGreaterThan(1.2);
+  });
+
+  it('a cube spinning fast in place gets three upward pushes, one per second, then is removed (#42)', () => {
+    // a cube that never settles: it skids in place at low speed while spinning fast
+    const d = new DebrisSystem(4, floor, () => {});
+    const c = d.spawn(1, 0.5, 0.4, 0.5);
+    const keepStuck = () => {
+      d.state[c] = 1;
+      d.vel[c * 3] = 1.2;
+      d.vel[c * 3 + 2] = 0;
+      d.spin[c * 4 + 3] = 6;
+    };
+    let pushes = 0, prevVy = 0;
+    const tick = () => {
+      keepStuck();
+      d.update(1 / 60);
+      if (prevVy <= 3 && d.vel[c * 3 + 1] > 3) pushes++; // a rising edge is a push
+      prevVy = d.vel[c * 3 + 1];
+    };
+    for (let t = 0; t < 3.5; t += 1 / 60) tick();
+    expect(pushes).toBe(3);
+    expect(d.isAlive(c)).toBe(true); // three pushes given, the fourth check has not come yet
+    for (let t = 0; t < 1.5; t += 1 / 60) { if (!d.isAlive(c)) break; tick(); }
+    expect(pushes).toBe(3);
+    expect(d.isAlive(c)).toBe(false);
   });
 });

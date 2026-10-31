@@ -25,7 +25,7 @@ Every projection is announced by an omen at its spawn point (see [Spawns and wav
 | Held | while the player is near | If the player stands within 3.5 blocks of the point when the breach ends, the omen does not finish. It waits, flared, until the player moves away |
 | Materialise | after the breach | The projection stands up at the point. It is not targetable while it is still forming |
 
-The motes are colour-coded: the first half of the gather is the dim cold tone; the last part is the body tone. Omens never use warm colours. Motes are capped at 24 per omen in the design; the build spends 72 per omen over the gather, with the light budget respected.
+The motes are colour-coded: the first half of the gather is the body tone of the pale cold ramp; the last part is the white tone. Decoration is never red (issue #47). Omens never use warm colours. An omen warns of a projection's arrival, not of an attack, so its motes stay pale: the yellow warning belongs to attacks that hurt (ATTACKS.md, owner ruling 2026-10-31). Motes are capped at 24 per omen in the design; the build spends 72 per omen over the gather, with the light budget respected.
 
 ## Sound
 

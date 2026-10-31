@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, placePresences, presenceReaction, pushedOut, unlocksPresence, type PresenceId } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, placePresences, presenceReaction, pushedOut, rewardFor, unlocksPresence, type PresenceId } from '../src/content/presences';
 import { PART_KINDS, PARTS } from '../src/content/parts';
+import { POTION_IDS } from '../src/content/potions';
 
 const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
@@ -74,6 +75,37 @@ describe('presences: the part each one takes', () => {
       expect(unlocksPresence(id, 3)).toBe(false);
       expect(unlocksPresence(id, undefined)).toBe(false);
     }
+  });
+});
+
+describe('presences: every offer the Listener has', () => {
+  // The Listener's offer paths (Game.updatePresences): a heart on top of the hand is accepted once; anything
+  // else on top, or an empty hand, is refused with a line; a heart left under another item is not on top.
+  const heart = PARTS.find(p => p.kind === 'heart')!;
+  const flask = { potion: POTION_IDS[0] };
+  const paths: [string, Parameters<typeof unlocksPresence>[1], boolean][] = [
+    ['an empty hand', undefined, false],
+    ['a block', 3, false],
+    ['a flask', flask, false],
+    ['a flesh part', PARTS.find(p => p.kind === 'flesh')!, false],
+    ['a mind part', PARTS.find(p => p.kind === 'mind')!, false],
+    ['an essence part', PARTS.find(p => p.kind === 'essence')!, false],
+    ['a heart of a released pattern', heart, true],
+  ];
+  it.each(paths)('%s on top of the hand: accepted only when it is the heart', (_name, carried, accepted) => {
+    expect(unlocksPresence('listener', carried)).toBe(accepted);
+  });
+
+  it('the reward lands when hurt (a quarter heart) and waits as a heart on the floor when whole', () => {
+    expect(rewardFor(10, 24)).toBe('heal');
+    expect(rewardFor(23, 24)).toBe('heal');
+    expect(rewardFor(24, 24)).toBe('heart');
+    expect(rewardFor(26, 24)).toBe('heart');
+  });
+
+  it('a part of any pattern works, but only its kind opens the Listener', () => {
+    for (const p of PARTS.filter(q => q.kind === 'heart')) expect(unlocksPresence('listener', p)).toBe(true);
+    for (const p of PARTS.filter(q => q.kind !== 'heart')) expect(unlocksPresence('listener', p)).toBe(false);
   });
 });
 

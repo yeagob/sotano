@@ -10,7 +10,7 @@ export default defineEnemy({
   id: 'panic',
   name: 'Panic',
   pattern: 'Anxiety spiralling into panic',
-  hp: 7,
+  hp: 14,
   speed: 2.4,
   size: [0.38, 0.9],
   contactDamage: 0,

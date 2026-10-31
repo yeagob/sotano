@@ -106,6 +106,26 @@ Dir r1's `intent #f0a33c`, `ember #c7562a`, `shard #ffd77a`, `dawn #fff4d6` and 
 | `life.empty` | `#4A2226` | Empty heart fill (Ply: the current `#3a1416` vanishes) |
 | `life.rim` | `#7A3A3E` | Empty heart 1-px rim |
 
+**Attack red (amendment, issue #47, 2026-10-29; owner's rule: "every enemy attack that deals damage uses a reddish colour; particles and decoration that do not damage are very light pale blue-white").** Red is no longer reserved for hearts alone: the **attack red** marks what hurts, and nothing else.
+
+| Token | Hex | Use |
+|---|---|---|
+| `attack.red.base` | `#F23D33` | A damaging attack live (its marks, bright), and every hostile shot (§7.2) |
+| `attack.red.dim` | `#9C2620` | Not used by the game since the warning turned yellow (below); kept in the palette, unused |
+
+The attack red is a different red from the heart: `attack.red.base` is ΔE 23 from `life.heart`, `attack.red.dim` ΔE 20 (normal vision), and both stay ΔE ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`). It is never a particle, never a heart, never a path hue. The old rule that red is life (§3.12 rule 2) keeps its heart meaning; the attack red is the only other red.
+
+**Attack warning yellow (amendment, owner ruling 2026-10-31: "attacks that deal damage stay red when they are live; warnings must be yellow, not red").** The warning of an attack that hurts is yellow until its blow lands, then the blow is red. Warnings are not life and not the player's light, so they get their own tokens, outside the `light.*` namespace (the light scan of §3.12 rule 1 still holds).
+
+| Token | Hex | Use |
+|---|---|---|
+| `attack.warn.base` | `#EEE33C` | The warning of a hurting attack: its dashed marks, its telegraph, the aim line, the landing mark, the inhale ring (§7.6) |
+| `attack.warn.dim` | `#A8A02E` | The reach ring of a growing ring while it warns: dimmer than the ring itself |
+
+`attack.warn.base` is a lemon yellow, not the gold `light.gold`: ΔE 26 from it under normal vision and ΔE ≥ 20 from every `light.*` token; `attack.warn.dim` is ΔE 23 from `light.gold`. Both are ΔE ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`). **Measured limits:** under deuteranopia the warning yellow sits ΔE 14 from `light.gold` and ΔE 36 from `attack.red.base`, and `attack.warn.dim` sits ΔE 6 from `attack.red.base`; the warning is told apart from the blow by its brightness and its size (a live mark is 1.8× larger), not by hue alone. Contrast of `attack.warn.dim` on the grey floors (`rock.f2`, `mat.stone`) is about 2.2–2.8 : 1, so it reads only as a faint reach ring, never as the warning itself.
+
+**Tension, for the owner:** §3.12 rule 1 and pillar 2 of §1.1 reserve warm light (`light.*`) for the player and call projections cold. The owner's ruling gives a hostile attack a yellow warning, which is not the player's light and is not a `light.*` token. It is accepted as a warning colour only: it must never be used for a projection's body, eye, particle or pickup, and it is the one enemy colour in yellow. Owner to confirm.
+
 ### 3.5 The four paths (final, CVD-verified)
 
 | Path | Element | Glyph | `base` | `glow` | `dark` | `shadow` (projections) |
@@ -140,10 +160,10 @@ Final set, measured: minimum pairwise ΔE 24.4 (tritan, Body/Emotion); distance 
 | Token | Hex | Use |
 |---|---|---|
 | `cold.deep` | `#2A2F45` | Hostile shadows, danger-ring dark dash |
-| `cold.dim` | `#6F7891` | Doubt's wisps, obsidian sheen on Comparison, Distraction's wing shimmer; omen motes, first half of the gather (BESTIARY §2) |
+| `cold.dim` | `#6F7891` | Doubt's wisps, obsidian sheen on Comparison, Distraction's wing shimmer; the boss's hurt flash (no longer omen motes or attack marks, issue #47) |
 | `cold.rim` | `#8E98B4` | The 1-texel rim on dark husks (§8.2) |
-| `cold.body` | `#B9C6E6` | Hostile projectile body and halo, danger ring, stat-down, boss marker; omen motes, second half of the gather |
-| `cold.white` | `#EEF2FA` | **The family eye of every projection** (idle 0.6, telegraph 1.0), hostile projectile core, telegraph flare, Panic's final swell, electricity core; the omen's breach flare (calm motes, no gravity) |
+| `cold.body` | `#B9C6E6` | Particles and decoration (the pale ramp, §7.6): omen motes, first half of the gather (BESTIARY §2), attack sparks and telegraph motes, impact chips; danger ring, stat-down, boss marker. Hostile projectiles are the attack red now (§7.2) |
+| `cold.white` | `#EEF2FA` | **The family eye of every projection** (idle 0.6, telegraph 1.0), telegraph flare, Panic's final swell, electricity core; the omen's breach flare (calm motes, no gravity); the bright mark of a pale (non-hurting) attack |
 | `captive.smoulder` | `#4A1E12` | Captive light, dim (Panic idle core, Procrastination's banked ember) |
 | `captive.ember` | `#8F3A1C` | Captive light, swelling; boss-frame crack (ΔE 30 from `life.heart`) |
 | `mood.held` | `#2A3550` | Cold tint of an uncleared room (6 %) |
@@ -199,7 +219,7 @@ Skin tones (player setting): `skin.t1 #F3D2B3`, `skin.t2 #E2B48F`, `skin.t3 #B98
 ### 3.12 Reserved-colour rules (enforced)
 
 1. **The light (`light.*`) is the light and repair.** Never on a living projection (Perfectionism's seams and the Impostor's gilt are not gold while they are patterns; brass is "false gold"). Never a path colour. Allow-listed modules: intents, debris/shards, mesher (seams, cracks), items/practices, HUD, room-clear, hexagram, sky, lantern.
-2. **Red (`life.*`) is life.** Hearts and heart-related UI only. No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
+2. **Red (`life.*`) is life.** Hearts and heart-related UI only. The one other red is the attack red (`attack.red.*`, §3.4 amendment, issue #47): the live marks and shots of attacks that deal damage, never a heart, never a particle. A hurting attack's warning is `attack.warn.*` yellow until it lands (§3.4 amendment 2026-10-31). No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
 3. **Cold (`cold.*`) is the projections'.** Never on a player shot, shard, seam or practice.
 4. **Path true hues** belong to the player (practices, rims, trails, states of being, halos). Projections may use only `path.*.shadow` (body tint); the true hue appears on a projection only on its release shard (drawn by the creature view, not referenced in content).
 5. **Skin band banned on projections** (Ply): hue 15–45°, chroma 0.04–0.12, OKL 0.55–0.85. Test scans every creature palette.
@@ -430,13 +450,13 @@ Capture (tiles at ×2, 3 × 3, flat light; the strata each floor sits in on the 
 | Property | Value |
 |---|---|
 | Shape | **tumbling cube** (edge ≥ 0.22, 1.5 rev/s on two axes), or the Critic's **✗** (two crossed bars 0.3125 × 0.0625 × 0.0625) |
-| Colour | 4×4-texel skin: `ink.line` 1-texel rim, `cold.body` body, `cold.white` 2×2 core (emissive); halo `cold.body` 1.6× at 25 % |
+| Colour | **Attack red** (§7.6, issue #47; was cold): the cube is `attack.red.base`. Designed: 4×4-texel skin with an `ink.line` 1-texel rim and a `cold.white` 2×2 core, halo at 1.6× (as built: the plain red cube, no core or halo yet) |
 | Trail | jagged: 4 ghosts offset ±0.03 m alternately, stepped at 12 fps |
 | Speed | visible ≥ 0.35 s from max range at 60 fps (Ply) |
-| Impact | 6 `cold.dim` chips + dull puff; **never gold particles** |
-| Critic decal | where a ✗ lands on a block: an `ink.line` ✗ with a `cold.dim` rim, 3 s, then fades |
+| Impact | 6 `cold.body` chips + dull puff (pale, §7.6); **never gold particles** |
+| Critic decal | where a ✗ lands on a block: an `ink.line` ✗ with a `cold.body` rim, 3 s, then fades (decoration: pale, §7.6) |
 
-Hard rules: no hostile projectile is warm; no player shot is a cube. The Comparison's copied intentions come back as cold cubes: *the copy is never the light*.
+Hard rules: no hostile projectile is warm; no player shot is a cube. Every hostile projectile hurts, so it is the attack red. The Comparison's copied intentions come back as red cubes: *the copy is never the light*.
 
 ### 7.3 Particles
 
@@ -462,7 +482,26 @@ Shake is positional only (**no camera roll**: Mat's 1° roll lost), offset = amp
 
 ### 7.5 Attack marks (as built, 2026-10-29)
 
-Every attack shape (`enemies/attacks.ts`) is drawn in cold texel cubes only: a **telegraph** is dashed `cold.dim` marks at 0.09 m, and a growing ring also draws its **full reach** while it is a warning, so you see how far it will go; telegraphs shed a rising mote now and then, turning `cold.white` in their last 30 %. A **live** attack's marks are `cold.white` at 1.8× size, a live ring stands as a second row at about 70 % of its height (the low wall you jump), and it sheds three sparks a frame along its front (`cold.white`, `cold.body`, `cold.dim`). Heavy boss impacts (`quake`) shake the screen by distance and throw chips of the floor's own ramp, at most 40 per event. Nothing in an attack is warm.
+Every attack shape (`enemies/attacks.ts`) is drawn in texel cube marks, in one of three groups (§7.6): **warning yellow** while a hurting attack is coming, **attack red** when it is live, and the **pale cold ramp** when it does not hurt. A **telegraph** is dashed marks at 0.09 m (`attack.warn.base` when it hurts, `cold.body` when not), and a growing ring also draws its **full reach** while it is a warning (`attack.warn.dim`), so you see how far it will go; telegraphs shed a rising mote now and then (pale, `cold.white` in their last 30 %). A **live** attack's marks are `attack.red.base` (or `cold.white` when it does not hurt) at 1.8× size, a live ring stands as a second row at about 70 % of its height (the low wall you jump), and it sheds three sparks a frame along its front (`cold.white` and `cold.body`: particles are never red). Heavy boss impacts (`quake`) shake the screen by distance and throw chips of the floor's own ramp, at most 40 per event. Nothing in an attack is warm.
+
+### 7.6 Attack colour: what hurts is red (ruling, issue #47, 2026-10-29)
+
+**Ruling.** Owner: "Enemy attacks look like particles: damage must read red, particles pale blue-white." The pale cold ramp had made the attacks of tall projections read as dust. An attack that deals damage is red once it lands, and yellow while it warns; particles, decoration and anything that does not hurt are very light pale blue-white. The classification is by what the strike can do, not by the move's name (`harms` in `enemies/attacks.ts`):
+
+**Ruling amendment (owner, 2026-10-31): "attacks that deal damage stay RED when they are live. Warnings (avisos: anything that telegraphs an attack before it lands) must be YELLOW, not red. Particles and decoration stay pale blue-white. Non-damaging things stay as they are."** The warning of a hurting attack is `attack.warn.base` (the reach ring of a growing one `attack.warn.dim`); the live blow is `attack.red.base`. Omens are not attack warnings: an omen warns of a projection's arrival, not of a blow, so its motes stay pale (`OMEN_COLORS`, SEAL-AND-OMENS).
+
+| Strike | Hurts? | Marks | Particles |
+|---|---|---|---|
+| A blow with damage (ring, line, sweep, a landing, a bolt or cube shot) | yes | yellow `attack.warn.base` while it warns, red `attack.red.base` live | pale |
+| A telegraph with no damage that warns of a blow (a charge's aim line, a slam's landing mark, an inhale's mouth ring) | yes (`warns: true`) | yellow `attack.warn.base` | pale |
+| A field that stings (`sting`) | yes | red | pale |
+| A field that slows or mutes | no | pale: `cold.body`, live `cold.white` | pale |
+| A pull (a drag toward a point) | no | pale | pale |
+| Omen motes, impact and dust chips, telegraph motes, the sparks along an attack | no | pale | pale |
+
+- **Tokens:** `attack.red.base` `#F23D33` (live, §3.4); the warning is `attack.warn.base` `#EEE33C` and `attack.warn.dim` `#A8A02E` (§3.4 amendment 2026-10-31). `attack.red.base` is the only red besides `life.*`; `attack.red.dim` is no longer drawn. Measured: `attack.red.base` ΔE 23 and `attack.red.dim` ΔE 20 from `life.heart` (normal vision), both ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`).
+- **Particles** use `cold.white` and `cold.body` only (`PARTICLE_TINTS`). Omen motes moved from `cold.dim` to `cold.body` then `cold.white` (`OMEN_COLORS`).
+- **Not changed, by design:** the enemy's own eye and tell lights (`cold.white`, the family eye, §8.3), the boss hurt flash, the gold light that rises when a projection is released (§8.6: the player's light returning, not an attack), and the matter chips of a spawn or a break (§7.3). These are not attacks and are not decoration of an attack; the owner may rule otherwise.
 
 ---
 
@@ -590,7 +629,7 @@ Bosses are real breakable voxels from the floor's material set (Cre, Tech: own v
   - `hurt`: the mask tilts down 20° and the slits close (lights off, 0.15 s): it covers its own face.
   - `release`: soft 2 × 2 lights at 0.6, socket corners rounded, a 2 × 1 `ink.line` neutral mouth.
 - **Motion:** breath 0.25 Hz (the stack compresses 1 texel: holding it in); turns in stiff 15° steps at 12 fps; glide strafe. Tic: the nib taps forward 1 texel, a dry *tick*.
-- **Telegraph 0.6 s** (matches today's wind-up): the quill rises 15°, the nib goes 0.6 → 1.0, slits open to 3 × 2, a dry "tsk-tsk" falling a tritone. Shot: the cold ✗ judgement in an arc (§7.2), leaving an ink ✗ decal for 3 s.
+- **Telegraph 0.6 s** (matches today's wind-up): the quill rises 15°, the nib goes 0.6 → 1.0, slits open to 3 × 2, a dry "tsk-tsk" falling a tritone. Shot: the ✗ judgement in an arc, in the attack red (§7.2, §7.6), leaving an ink ✗ decal for 3 s.
 - **Release:** the quill lowers and lies flat across the top of the stack; the slabs **fan open** (each rotates 8–20° around its back edge, stepped) and their undersides are **blank** (paper hi, no ticks); the ticks fade to paper over 0.4 s; the stack bows forward 15°, the first time it bends. Shard with a Mind rim. Motif: tritone → fifth.
 - **The touching moment:** when it turns, you see the ✗ on its own back: it judges first because it is the most afraid of being judged. Released, its pages are blank: room to begin.
 

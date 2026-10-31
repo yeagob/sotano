@@ -18,7 +18,7 @@ export default defineEnemy({
   id: 'backlog',
   name: 'Backlog',
   pattern: 'I will get to all of it. Later.',
-  hp: 60,
+  hp: 120,
   speed: 0.5,
   size: [0.5, 1.6],
   contactDamage: 4,

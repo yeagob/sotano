@@ -34,7 +34,9 @@ function tone(freq: number, dur: number, type: OscillatorType, vol: number, slid
   o.start(t); o.stop(t + dur);
 }
 
-function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = master) {
+/** Band-passed noise. `attack` > 0 fades the onset in: without it the buffer starts at full level and
+ *  the speaker clicks on the first sample, which is wrong for a sound that repeats (a gust, not a tick). */
+function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = master, attack = 0) {
   if (!ctx) return;
   const t = ctx.currentTime;
   const len = Math.ceil(ctx.sampleRate * dur);
@@ -46,7 +48,12 @@ function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = m
   const f = ctx.createBiquadFilter();
   f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(vol, t);
+  if (attack > 0) {
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + attack);
+  } else {
+    g.gain.setValueAtTime(vol, t);
+  }
   g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   src.connect(f).connect(g).connect(out);
   src.start(t);
@@ -96,9 +103,18 @@ function panner(x: number, y: number, z: number): AudioNode | null {
   p.refDistance = 2;
   p.rolloffFactor = 1;
   p.maxDistance = 24;
-  p.positionX.value = x; p.positionY.value = y; p.positionZ.value = z;
+  place(p, x, y, z);
   p.connect(master);
   return p;
+}
+
+/**
+ * Firefox has no positionX/forwardX AudioParams on panners and listeners (it still has setPosition and
+ * setOrientation). Reading a missing one threw inside the frame loop and froze the game, so both paths are kept.
+ */
+export function place(node: PannerNode | AudioListener, x: number, y: number, z: number) {
+  if (node.positionX) { node.positionX.value = x; node.positionY.value = y; node.positionZ.value = z; }
+  else node.setPosition(x, y, z);
 }
 
 export const spatial = {
@@ -106,9 +122,11 @@ export const spatial = {
   listener(x: number, y: number, z: number, dx: number, dz: number) {
     if (!ctx) return;
     const l = ctx.listener;
-    l.positionX.value = x; l.positionY.value = y; l.positionZ.value = z;
-    l.forwardX.value = dx; l.forwardY.value = 0; l.forwardZ.value = dz;
-    l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
+    place(l, x, y, z);
+    if (l.forwardX) {
+      l.forwardX.value = dx; l.forwardY.value = 0; l.forwardZ.value = dz;
+      l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
+    } else l.setOrientation(dx, 0, dz, 0, 1, 0);
   },
   /** An omen opens: a short click, then a hum that rises from the floor and falls from a ceiling. */
   omenHum(x: number, y: number, z: number, kind: 'floor' | 'wall' | 'ceiling') {
@@ -136,7 +154,8 @@ export const spatial = {
       case 'line': noise(0.04, 0.35, 3200, 3, out); tone(jitter(300), 0.5, 'sawtooth', 0.06, 0.6, out); break;
       case 'ring': noise(0.1, 0.4, 260, 1.2, out); tone(jitter(90), 0.8, 'sine', 0.2, 1.3, out); break;
       case 'field': tone(jitter(330), 0.9, 'sine', 0.08, 1.1, out); tone(jitter(495), 0.9, 'sine', 0.05, 1.1, out); break;
-      case 'pull': noise(0.9, 0.12, 700, 0.6, out); break;
+      // a pull is a gust that draws in: it swells over 0.3 s, so the release is never a click
+      case 'pull': noise(0.9, 0.12, 700, 0.6, out, 0.3); break;
       case 'sweep': noise(0.6, 0.3, 180, 0.8, out); tone(jitter(120), 0.7, 'triangle', 0.1, 1.2, out); break;
       case 'bolt': noise(0.02, 0.4, 4500, 4, out); break;
       case 'leap': noise(0.06, 0.4, 500, 1.5, out); tone(jitter(200), 0.15, 'square', 0.08, 0.6, out); break;

@@ -4,6 +4,22 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+## 0.1.2 · 2026-10-31
+
+### Fixed
+- The Listener gives its reward when you bring it a heart: a quarter heart when you are hurt, and at full health a heart that waits on the floor beside it. The part leaves your hand with a visible handover (#43).
+- Enemy attacks that deal damage warn in yellow and hit red: the warning is yellow until the blow lands, then the live marks and shots are red. Particles, decoration and attacks that cannot hurt stay pale blue-white, so a blow no longer looks like dust (#47).
+- Craving (Ansia) no longer flickers where its socket meets its top, its breathing no longer jumps every few seconds, and its wind no longer clicks as it starts (#46).
+- Remember Breathing's beam and One Clear Cut now reach the laboratory's alembic, so three fed items brew as they do with a shot (#44).
+- Mouse look ignores the first move after the pointer locks, and caps a single very large move, so a jump there no longer turns the view (#19).
+- The game no longer freezes on the main menu in Firefox when you press Start: its sound positioning uses the calls Firefox supports.
+- Placing a block into a doorway or at the world's edge is refused with a sound, instead of throwing the block back at you.
+- Placing a block next to a wall, ledge or corner no longer throws it: if you stand a little in its cell you are nudged out and it goes down; if you stand deeper in, it waits in your hand until you step clear.
+- A loose cube that spins fast in place for a second gets an upward push; if it still spins in place after the third push, it vanishes (#42).
+
+### Changed
+- Every hostile projection (the voices you fight) has twice its health, so a fight with the same intentions takes about twice as long. Bosses and creatures are unchanged (#45).
+
 ## 0.1.1 · 2026-10-31
 
 ### Added

@@ -14,7 +14,7 @@ Floor 9. Code: [isolation.ts](../../../../src/content/enemies/isolation.ts).
 
 ## How it moves and attacks
 
-- It stands still. Its touch does 4 damage. It has 36 health.
+- It stands still. Its touch does 4 damage. It has 72 health.
 - Its first shot, after about three seconds, raises one wall of ice across the middle of the room, two blocks high. It does this once per fight.
 - The ice is ordinary breakable ice.
 

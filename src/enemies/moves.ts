@@ -37,8 +37,9 @@ export type Gait =
 
 /** Gravity a leaping boss falls under (entities/enemies.ts). */
 const GRAVITY = 26;
+// Particles and decoration are pale blue-white; a hurting attack warns in yellow and hits red (issue #47, see attacks.ts markTint).
 const COLD_WHITE = pal('cold.white');
-const COLD_DIM = pal('cold.dim');
+const COLD_BODY = pal('cold.body');
 
 /** Where the target will be in `s` seconds, if it keeps running (bosses read your movement). */
 export function ahead(t: TargetView, s: number): [number, number] {
@@ -167,7 +168,7 @@ export function charge(o: { windup: number; recover: number; speed: number; run?
     const dx = tx - e.body.x, dz = tz - e.body.z, l = Math.hypot(dx, dz) || 1;
     e.aimX = dx / l; e.aimZ = dz / l;
     const [ex, ez] = toEdge(ctx, e, e.body.x, e.body.z, e.aimX, e.aimZ);
-    ctx.strike(e, { lead: o.windup, live: 0, damage: 0, shape: { kind: 'line', x0: e.body.x, z0: e.body.z, x1: ex, z1: ez, y: e.body.y, width: e.body.hw } });
+    ctx.strike(e, { lead: o.windup, live: 0, damage: 0, warns: true, shape: { kind: 'line', x0: e.body.x, z0: e.body.z, x1: ex, z1: ez, y: e.body.y, width: e.body.hw } });
   };
   return {
     name: 'charge', windup: o.windup, recover: o.recover, min: o.min, max: o.max,
@@ -178,7 +179,7 @@ export function charge(o: { windup: number; recover: number; speed: number; run?
       e.wishX = e.aimX * o.speed / e.speed; e.wishZ = e.aimZ * o.speed / e.speed;
       e.pulse = 0.6;
       const ran = time - (runFrom.get(e) ?? 0);
-      if (Math.floor(time * 30) !== Math.floor((time - ctx.dt) * 30)) ctx.fx(b.x - e.aimX * b.hw, b.y + 0.1, b.z - e.aimZ * b.hw, COLD_DIM, 2, 1.5, 0.08);
+      if (Math.floor(time * 30) !== Math.floor((time - ctx.dt) * 30)) ctx.fx(b.x - e.aimX * b.hw, b.y + 0.1, b.z - e.aimZ * b.hw, COLD_BODY, 2, 1.5, 0.08);
       const run = o.run ?? 2.5;
       const stopped = ran > 0.15 && Math.hypot(b.vx, b.vz) < o.speed * 0.25;
       if (!stopped && ran < run) return false;
@@ -213,14 +214,14 @@ export function slam(o: { windup: number; recover: number; air: number; reach: n
     aim(e, ctx, t) {
       const [tx, tz] = ahead(t, o.windup * 0.5);
       e.aimX = tx; e.aimZ = tz;
-      ctx.strike(e, { lead: o.windup + o.air, live: 0, damage: 0, shape: { kind: 'ring', x: tx, y: t.y, z: tz, r: e.body.hw + 0.4, grow: 0, width: 0.3, height: 1 } });
+      ctx.strike(e, { lead: o.windup + o.air, live: 0, damage: 0, warns: true, shape: { kind: 'ring', x: tx, y: t.y, z: tz, r: e.body.hw + 0.4, grow: 0, width: 0.3, height: 1 } });
     },
     act(e, ctx) {
       const b = e.body;
       b.vx = (e.aimX - b.x) / o.air; b.vz = (e.aimZ - b.z) / o.air; b.vy = GRAVITY * o.air / 2;
       e.wishX = b.vx / e.speed; e.wishZ = b.vz / e.speed;
       ctx.cue(e, 'leap');
-      ctx.fx(b.x, b.y + 0.1, b.z, COLD_DIM, 10, 3, 0.09);
+      ctx.fx(b.x, b.y + 0.1, b.z, COLD_BODY, 10, 3, 0.09);
     },
     hold(e, ctx, _t, time) {
       const b = e.body;
@@ -349,7 +350,7 @@ export function rocks(o: { windup: number; recover: number; count: number; lead:
 export function inhale(o: { windup: number; recover: number; r: number; force: number; live: number; bite?: number; min?: number; max?: number }): Move {
   return {
     name: 'inhale', windup: o.windup, recover: o.recover, min: o.min, max: o.max,
-    aim(e, ctx) { ctx.strike(e, { lead: o.windup, live: 0, damage: 0, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: o.r, grow: 0, width: 0.3, height: 1 } }); },
+    aim(e, ctx) { ctx.strike(e, { lead: o.windup, live: 0, damage: 0, warns: (o.bite ?? 4) > 0, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: o.r, grow: 0, width: 0.3, height: 1 } }); },
     act(e, ctx) {
       const b = e.body;
       ctx.strike(e, { lead: 0, live: o.live, damage: 0, shape: { kind: 'pull', x: b.x, y: b.y, z: b.z, r: o.r, force: o.force } });
@@ -359,7 +360,7 @@ export function inhale(o: { windup: number; recover: number; r: number; force: n
       const b = e.body;
       if (Math.floor(time * 20) !== Math.floor((time - ctx.dt) * 20)) {
         const a = time * 7, r = o.r * (0.6 + 0.4 * Math.sin(time * 3));
-        ctx.fx(b.x + Math.cos(a) * r, b.y + 0.4, b.z + Math.sin(a) * r, COLD_DIM, 2, 0.4, 0.06);
+        ctx.fx(b.x + Math.cos(a) * r, b.y + 0.4, b.z + Math.sin(a) * r, COLD_BODY, 2, 0.4, 0.06);
       }
       e.pulse = 0.5 + 0.3 * Math.sin(time * 6);
       return time >= o.live;

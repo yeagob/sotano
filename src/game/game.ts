@@ -22,6 +22,7 @@ import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { tollIndex } from './toll';
+import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -70,7 +71,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, rewardFor, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
@@ -760,6 +761,8 @@ export class Game {
         if (this.stroke.polarity === 'positive') { this.repairBlock(x, y, z, amount); return false; }
         return this.damageBlock(x, y, z, amount, 'beam', source);
       },
+      // a stroke that reaches the alembic brews at it, exactly as a shot does (intentHitsBlock)
+      answer: (x, y, z) => { if (this.world.get(x, y, z) === MAT.alembic) this.hitLab(x, y, z, this.stroke.polarity); },
       targets: () => this.enemies.list
         .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
         .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
@@ -1611,7 +1614,7 @@ export class Game {
     if (!e || e.faction !== 'projection') return;
     e[field] = Math.max(e[field], seconds);
     const b = e.body;
-    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, field === 'frozen' ? pal('cold.body') : pal('cold.dim'), 10, 1.4, 0.06);
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
   }
 
@@ -2033,14 +2036,21 @@ export class Game {
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.alembic) { this.feedLab(hit.x, hit.y, hit.z); return; }
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.kitchen) { this.cookAt(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
-    const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
-      && !this.doors.inDoorway(x, y, z)
-      && !boxHits((xx, yy, zz) => xx === x && yy === y && zz === z, b.x, b.y, b.z, b.hw, b.h);
-    if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
+      && !this.doors.inDoorway(x, y, z);
+    // a face in reach whose cell cannot take a block (a doorway, the world's edge) is refused like a
+    // blocked placement, never thrown: only aiming at nothing throws the block
+    if (!ok) { if (tap || hit) sfx.denied(); else this.throwTop(); return; }
+    // the body reaching into the cell: a quarter of a block or less is nudged out and the block goes
+    // down; deeper, the block waits in hand until the player steps clear (never thrown, never a jump)
+    // the push is worked out now but applied only once the placement goes through (an item may cancel it)
+    const over = cellOverlap(p.body, x, y, z);
+    const push: [number, number] | null = over ? this.nudgeTarget(over) : [0, 0];
+    if (over && (over.depth > PLACE_NUDGE_MAX || !push)) { sfx.denied(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
       this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
+      this.nudge(push!);
       p.hand.pop();
       this.hands.placed();
       sfx.place();
@@ -2050,10 +2060,26 @@ export class Game {
     if (ev.cancelled) return;
     this.world.set(x, y, z, ev.material);
     this.debris.clearCell(x, y, z);
+    this.nudge(push!);
     p.hand.pop();
     this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
+  }
+
+  /** The shift that takes the player out of the cell it is placing into; null when a wall is in the way. */
+  private nudgeTarget(over: CellOverlap): [number, number] | null {
+    const b = this.player.body;
+    const push = over.depth + PLACE_NUDGE_CLEAR;
+    const dx = over.axis === 0 ? over.dir * push : 0, dz = over.axis === 2 ? over.dir * push : 0;
+    if (boxHits((xx, yy, zz) => this.solid(xx, yy, zz), b.x + dx, b.y, b.z + dz, b.hw, b.h)) return null;
+    return [dx, dz];
+  }
+
+  /** Applies a shift from nudgeTarget once the placement is certain. */
+  private nudge([dx, dz]: [number, number]) {
+    const b = this.player.body;
+    b.x += dx; b.z += dz;
   }
 
   /** The ray through a tapped pixel, as the camera sees it. */
@@ -2425,13 +2451,28 @@ export class Game {
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
         return;
       }
-      this.player.hand.pop();
+      // the offer is accepted: the part leaves the hand (the hand dips, the part's colour leaves with it)
+      const part = this.player.hand.pop();
+      this.hands.placed();
+      const color = typeof part === 'object' && !isFlask(part) ? part.color : pal('bone.dim');
+      const eye = this.player.eye, fwd = this.player.forward;
+      this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
       e.tags.add('met');
-      if (talk.heals) this.heal(QUARTER_HEART, id);
+      if (talk.heals) this.listenerReward(e, id);
       this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
       this.hud.presenceCard(talk.name, talk.lines);
       return;
     }
+  }
+
+  /** The Listener's reward for its part (rewardFor): a quarter heart when hurt; at full health a heart
+   *  leaves the Listener in an arc and waits on the floor until the player is hurt. */
+  private listenerReward(e: Enemy, source: string) {
+    if (rewardFor(this.player.hp, this.maxHp) === 'heal') { this.heal(QUARTER_HEART, source); return; }
+    const b = this.player.body;
+    const dx = b.x - e.body.x, dz = b.z - e.body.z, d = Math.hypot(dx, dz) || 1;
+    const heart = this.pickups.add('heart', e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
+    this.pickups.launch(heart, dx / d * 2.5, 3, dz / d * 2.5);
   }
 
   private pushPresences() {

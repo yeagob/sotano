@@ -34,7 +34,7 @@ Everything on screen belongs to exactly one side. The side decides its colour, v
 |---|---|---|---|
 | **World / vessels** | Blocks, rooms, doors, pedestals, the house | The floor's rock ramp. Low chroma, cooler and darker with depth | Never, unless cracked by the player (gold crack cores) or holding an element (lava, fire) |
 | **The light / the player** | Intentions, shards, seams, practices, keys, breakthroughs, hands, cleared-room light, the lantern | Gold-white `light.*` ramp, with the path hues as rims and trails | The only side that emits freely |
-| **Projections / husks** | Enemies, bosses, hostile shots | The host room's pattern, pushed to a cold shadow. Cold `cold.*` eyes and shots | Eyes and telegraphs only. Captive light shows only through cracks |
+| **Projections / husks** | Enemies, bosses, hostile shots | The host room's pattern, pushed to a cold shadow. Cold `cold.*` eyes; a shot or live mark that hurts is the attack red, and its warning is yellow (`attack.red.*` and `attack.warn.*`, §3.4) | Eyes, and the bright marks of a live attack. Captive light shows only through cracks |
 
 **Ownership axis: warm is yours, cold is theirs. Shape decides first, colour confirms.** Player shots are round with a smooth trail. Hostile shots are tumbling cubes (or the Critic's ✗) with a jagged trail and a dark rim. Warm light seen inside a projection is *your light held captive*: it never flies at you.
 
@@ -88,6 +88,8 @@ No pure `#000` or `#FFF`, except 1–4 px cores of `light.core`.
 | `life.empty` | `#4A2226` | Empty heart fill |
 | `life.rim` | `#7A3A3E` | Empty heart rim |
 
+**Attack red and warning yellow** (issue #47; owner ruling 2026-10-31): the warning of an attack that deals damage is `attack.warn.base` `#EEE33C` (a lemon yellow, not the player's gold; `attack.warn.dim` `#A8A02E` for a growing ring's reach), and its live blow is `attack.red.base` `#F23D33`, as is every hostile shot. Red is the only red besides hearts, and neither the warning nor the blow is ever a particle. Particles and decoration are the pale ramp, `cold.body` and `cold.white`.
+
 ### 3.5 The four paths (colour-blind verified)
 
 | Path | Element | Glyph | `base` | `glow` | `dark` | `shadow` (projection tint) |
@@ -103,8 +105,8 @@ Glyphs are always shown next to the colour: colour never carries a path alone. T
 
 | Token | Hex | Use |
 |---|---|---|
-| `cold.white` | `#EEF2FA` | The eye of every projection, hostile shot core, telegraph flare |
-| `cold.body` | `#B9C6E6` | Hostile shot body, danger ring |
+| `cold.white` | `#EEF2FA` | The eye of every projection, telegraph flare, the bright mark of a pale attack |
+| `cold.body` | `#B9C6E6` | Particles and decoration (pale blue-white), danger ring |
 | `cold.rim` | `#8E98B4` | 1-texel rim on dark husks |
 | `cold.dim` | `#6F7891` | Wisps, sheen, chips |
 | `cold.deep` | `#2A2F45` | Hostile shadows |
@@ -120,7 +122,7 @@ Glyphs are always shown next to the colour: colour never carries a path alone. T
 ### 3.8 Reserved colours
 
 1. **Gold (`light.*`) is the light and repair.** Never on a living projection, never a path colour.
-2. **Red (`life.*`) is life.** Hearts and heart-related UI only.
+2. **Red (`life.*`) is life.** Hearts and heart-related UI only. The attack red (`attack.red.*`) is the one other red: the marks and shots of attacks that deal damage.
 3. **Cold (`cold.*`) is the projections'.** Never on a player shot, shard, seam or practice.
 4. **Path true hues belong to the player.** Projections use only the `shadow` tint; the true hue appears only on their release shard.
 5. **The skin band is banned on projections** (hue 15–45°, low chroma, mid-to-high lightness).
@@ -226,7 +228,9 @@ Numbers and tokens: DECISIONS §6.5. Captures: `?gallery=chests`.
 
 **The intention (player shot)** is a bead of light: an icosahedron with a `light.core` centre, a `light.gold` shell, a `light.ember` halo at 35 %, six ghost copies as a trail, and a rim in the dominant path's colour (≤ 40 % of the sprite). Items may change only its size, rim and trail colour, halo radius, ghost count and one special effect (ember, arc, ripple or spiral). Core and shell never change. When an intention runs out of range it loses its light and lands dim.
 
-**Hostile shots** are tumbling cubes of `cold.body` with a `cold.white` core and an `ink.line` rim, or the Critic's ✗. They have a jagged trail and never carry warmth. Impacts are cold chips. Never gold particles.
+**Hostile shots** are tumbling cubes of `attack.red.base` (they hurt, so they are red), or the Critic's ✗ in the same red. They have a jagged trail and never carry warmth. Impacts are pale chips (`cold.body`). Never gold particles.
+
+**Attacks** warn in yellow (`attack.warn.base`) while a blow that hurts is coming, turn red (`attack.red.base`) when it lands, and stay in the pale ramp when they do not hurt. Their particles are always pale, never red or yellow (DECISIONS §7.6).
 
 **Particles** are two pools. *Matter* chips use the material's ramp (50 % base, 30 % dark, 20 % hi). *Light* is additive, with fog reduced. Each event has a cap, and above 80 % pool fill the events spawn half as many particles.
 
@@ -311,7 +315,7 @@ Bosses are made of real breakable blocks from their floor. Their eyes are lumino
 - **Path:** Mind. **Class:** tall, pale husk. **Glyph:** `Γ`.
 - **Silhouette:** a stack of seven ruled pages on a post, a mask, and a quill as its pointing arm. It has no legs, no torso and no hands. It glides and never walks. It is 1.9 blocks tall, looking down.
 - **Palette:** cold chalk `#C9CFD8`, ink ticks `ink.line`, and a 5 × 5 ✗ on the back of the stack. **Not red:** the old red pen is life's colour, so it is ruled out.
-- **Telegraph:** the quill rises, the nib brightens to full, and a dry "tsk-tsk" falls a tritone. Its judgement is a cold ✗ in an arc, and it leaves an ink ✗ mark on the floor for 3 s.
+- **Telegraph:** the quill rises, the nib brightens to full, and a dry "tsk-tsk" falls a tritone. Its judgement is a red ✗ in an arc (a shot that hurts), and it leaves an ink ✗ mark on the floor for 3 s.
 - **Release:** the pages fan open, blank, and the stack bows forward for the first time.
 - **Touching moment:** you see the ✗ on its own back. It judges first because it is the most afraid of being judged. Released, its pages are blank: room to begin.
 
@@ -490,7 +494,8 @@ The owner asked to review every element of the game against this guide, fix what
 | **Frames and doors** | "Bone frame" is now the **Obsidian frame** (with one long crack of captive light) and "Gilded frame" the **Brass frame**. Door leaves are built wood with vertical boards and iron bands at 16 texels per block; the boss door has a captive-light crack instead of a skull; the locked door a gold keyhole | §6.2, OWNER Q3 |
 | **Projections** | Doubt, the Lectern (Inner Critic) and Panic rebuilt to their final specs in whole texels: dark husks with a cold rim, the pale paper Lectern, one family eye (2 × 2 cold lights in dark sockets). No skin, no warm light, no true path hues. The hit flash is a short cold lift, never white; the telegraph brightens the tell toward cold white instead of tinting the body red. Panic swells in three steps; Doubt pauses to reconsider and reaches for you for 0.5 s before it can hurt (OWNER Q4). Their GPU memory is freed on release | §8, OWNER Q4 |
 | **Release** | Host chips fall and gold motes rise; no gore | §8.6 |
-| **Intentions** | A bead of light: white-hot core, gold shell, ember halo. Hostile projectiles are cold cubes tumbling on two axes, with cold chips on impact | §7.1, §7.2 |
+| **Craving (Ansia), as built** | Its dark socket on the top is an inlay: the socket's top had sat on the slab's top face and flickered (issue #46); it is now depth-offset, geometry unchanged. Its breath runs on a steady clock, so a hit or a wind does not make it jump. Its wind swells in over 0.3 s, so the release is a gust, never a click | §8, issue #46 |
+| **Intentions** | A bead of light: white-hot core, gold shell, ember halo. Hostile projectiles are red cubes (the attack red) tumbling on two axes, with pale chips on impact (issue #47) | §7.1, §7.2 |
 | **Pickups** | A gold key with an eye (an insight), the breakthrough as a seed (never a cartoon bomb), life's red heart | §10.2 |
 | **Hands** | Whole texels: skin tone `t3`, the knitted jumper from the house above (rib-knit, cuff band) and a thumb | §9 |
 | **Practices** | Every practice's colour is its primary path's glow; icon palettes use tokens and never life or cold (light only where the concept is light: Satori, Cut Ties with Toxic Relationships, Remember Breathing). Satori is an open ensō; Tao Te Ching is a stream parting around a stone (no yin-yang); Box Breathing is one bold square; Stoic is tinted. Clashing silhouettes redrawn (Exposure, Gratitude, Symbolic Act, Letters from a Stoic, Deep Focus, Second Brain, Nothing Personal, Art Therapy) | §10.1, OWNER Q6 |

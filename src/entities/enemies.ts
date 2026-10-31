@@ -84,6 +84,8 @@ export function buildModel(def: EnemyDef): View {
   const tells: THREE.MeshBasicMaterial[] = [];
   for (const p of def.model) {
     const mat = p.glow ? new THREE.MeshBasicMaterial({ color: p.color }) : new THREE.MeshLambertMaterial({ color: p.color });
+    // an inlay shares a face with its host: pull its depth toward the camera so the two never fight
+    if (p.inlay) { mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -4; }
     if (!p.glow) mats.push(mat as THREE.MeshLambertMaterial);
     else if (p.name === 'tell' || p.name === 'core') tells.push(mat as THREE.MeshBasicMaterial);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...p.size), mat);
@@ -118,7 +120,7 @@ export class Enemies {
   constructor(private scene: THREE.Scene, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
-      new THREE.MeshBasicMaterial({ color: pal('cold.body') }), MAX_PROJECTILES);
+      new THREE.MeshBasicMaterial({ color: pal('attack.red.base') }), MAX_PROJECTILES);
     this.projMesh.frustumCulled = false;
     this.projMesh.count = 0;
     scene.add(this.projMesh);
@@ -500,7 +502,7 @@ export class Enemies {
       this.drops.splice(i, 1);
       const e = this.list.find(o => o.id === d.owner && o.alive);
       if (!e) continue;
-      this.host.particles(d.x, d.y, d.z, pal('cold.dim'), 6, 1.2, 0.07);
+      this.host.particles(d.x, d.y, d.z, pal('cold.body'), 6, 1.2, 0.07);
       this.host.drop(e, d.x, d.y, d.z);
     }
   }
@@ -559,13 +561,13 @@ export class Enemies {
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
         this.host.projectileBlock(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));
-        this.host.particles(p.x, p.y, p.z, pal('cold.dim'), 6, 2, 0.06);
+        this.host.particles(p.x, p.y, p.z, pal('cold.body'), 6, 2, 0.06);
         dead = true;
       }
       if (dead) { this.projectiles.splice(i, 1); continue; }
     }
     for (const p of this.projectiles) {
-      // a cold cube tumbling on two axes (docs/art/DECISIONS.md §7.2): never round, never warm
+      // a red cube tumbling on two axes: every shot here hurts, so it is the attack red (issue #47, DECISIONS §7.2)
       this.m.makeRotationFromEuler(this.euler.set(p.age * 9.4, p.age * 6.3, 0)).setPosition(p.x, p.y, p.z);
       this.projMesh.setMatrixAt(n++, this.m);
     }

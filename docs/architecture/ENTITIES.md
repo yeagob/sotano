@@ -46,11 +46,11 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 ```ts
 defineEnemy({
   id: 'doubt', name: 'Doubt', pattern: 'Self-doubt',
-  hp: 12, speed: 1.7, size: [0.32, 1.6], contactDamage: 4,   // damage points (4 = half a heart)
+  hp: 24, speed: 1.7, size: [0.32, 1.6], contactDamage: 4,   // damage points (4 = half a heart)
   cost: 1, minFloor: 1,
   drops: { heart: 0.12, key: 0.04, bomb: 0.05 },
   behaviour: chase({ lunge: 1.5 }),
-  model: [ { size, pos, color, glow?, tilt?, name? }, ... ],   // a body of cubes
+  model: [ { size, pos, color, glow?, inlay?, tilt?, name? }, ... ],   // a body of cubes
   onDeath?(e, ctx) { ... },
 });
 ```
@@ -84,7 +84,7 @@ Every enemy definition has a `kind`: `projection` (hostile, released when beaten
 
 ### Attacks (`enemies/attacks.ts`)
 
-Every attack is one **shape** with one telegraph (BESTIARY §3.2): a **line** (a charge or a beam), a **ring** (a leap landing, a shockwave), a **field** (`slow`, `mute` or `sting`, while you stand in it), a **pull** (a tether or wind toward its source) or a **sweep** (a wall that crosses the room). A shape is drawn as cold motes for its `lead` seconds (the announcement, dim), then it is live for `live` seconds (white) and hurts each target once. Fields and pulls act while you stand in them. Hazards are drawn by one instanced mesh and hit through the damage pipeline (`hurtActor`) and the player's statuses (`affectActor`: a slowed walk, a silence that stops casting, toast `toast.muted`). Bolts are straight cold cubes (`ctx.bolt`); lobs keep their arc (`ctx.shootAt`).
+Every attack is one **shape** with one telegraph (BESTIARY §3.2): a **line** (a charge or a beam), a **ring** (a leap landing, a shockwave), a **field** (`slow`, `mute` or `sting`, while you stand in it), a **pull** (a tether or wind toward its source) or a **sweep** (a wall that crosses the room). A shape is drawn as marks for its `lead` seconds (the announcement, dim), then it is live for `live` seconds (bright) and hurts each target once. The marks are red when the attack hurts and pale blue-white when it does not (`markTint`; a `Strike` with `damage: 0` and `warns: true` is a warning of a blow that hurts, and is red too; a pull never hurts). Particles are always pale. Fields and pulls act while you stand in them. Hazards are drawn by one instanced mesh and hit through the damage pipeline (`hurtActor`) and the player's statuses (`affectActor`: a slowed walk, a silence that stops casting, toast `toast.muted`). Bolts are straight red cubes (`ctx.bolt`); lobs keep their arc (`ctx.shootAt`). Rule and tokens: DECISIONS §7.6, issue #47.
 
 Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers), `ranged`, `burst`, `flee`, `leap` (crouch, aim where you stand, land with a ring and crack the soft floor), `charge` (a line, then a run that smashes soft blocks, and a stun when it meets a hard one), `patrol` (a fixed loop), `emitter` (stationary, fires on a rhythm), `phase` (through blocks), `sleep` (asleep until moved), `phased` (a boss's phases) and `chirp` (sings while its room is quiet). A flyer keeps a height (`flyY`), a phaser or burrower moves through blocks (`ghost`). `ctx.quiet`, `ctx.safe`, `ctx.centre` and `ctx.bounds` read the room; `wobble(id, seq, k)` is the seeded choice a being makes (never cosmetic `fx`).
 
@@ -92,7 +92,7 @@ Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers)
 
 - **Where they live:** none on the tutorial floor, and never in a start room (owner, 2026-10-29: the Gardener was removed from floor 0's spawn room; a presence there would be a gift with nothing to give). The Gardener is defined but not placed until an agreement needs it. One Listener sits in a normal room of each Tree floor (1–5), placed by `placePresences` from the floor's own fork (`floor<k>:presence`). When no normal room of a Tree floor is quiet, one is emptied so the Listener always has a room (GEN_VERSION 15).
 - **Immortal and kind:** a Presence is a creature (hp 1, never hit by a hit that is not positive) with `responds: 'positive'`: negative intentions pass through it, positive ones make only a healing burst.
-- **Talk by contact** (BESTIARY §8): walking within 2.2 blocks, on the same level, opens a card with its name and two lines (`Game.updatePresences`, `Hud.presenceCard`). Each Presence talks once. The Listener also heals a quarter heart once. There is no talk key: contact is the talk.
+- **Talk by contact** (BESTIARY §8): walking within 2.2 blocks, on the same level, opens a card with its name and two lines (`Game.updatePresences`, `Hud.presenceCard`). Each Presence talks once. The Listener also gives its reward once: a quarter heart healed when hurt, or at full health a heart that waits on the floor beside it (`Game.listenerReward`, `rewardFor`). There is no talk key: contact is the talk.
 - **Bodies and replies** (`pushPresences`, `pushedOut`, `Game.updatePresences`): a presence or the Boundary pushes the player out to the edge of its reach, so it cannot be walked through. Without its key a presence answers each approach, at most once every `PRESENCE_REPLY_MS` (4 s), with the name of the thing held (`presence.wrong`) or with `presence.empty`.
 - **The key part** (`PRESENCE_KEY`, `unlocksPresence`): a presence talks only when the top of the hand holds its part (the Listener a heart, the Gardener a flesh). Contact then takes the part (`hand.pop`) and marks the presence `met`. Until `met`, `Game.hearPresences` ignores it, so it says nothing, not even its silence line.
 - **The Boundary** (`content/presences/boundary.ts`, owner, 2026-10-29): a neutral projection in every vault, `responds: 'negative'`, `armor: 1`, never hurt. Its sanctuary ring is pedestal blocks placed by the carve; `Game.updateBoundaries` makes it hostile (`faction: 'projection'`, so it throws cubes through `volley`) only while a ring block is missing and you are in its room.
@@ -174,5 +174,5 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 
 Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
 
-Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
+Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. A part marked `inlay` lies flush on a face of another part (Craving's dark socket on its top): it is drawn with a depth offset so it never flickers against that face, and its geometry is unchanged. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |
