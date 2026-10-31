@@ -11,6 +11,7 @@ Think of it as *Minecraft* and *The Binding of Isaac* had a child: a world made 
 <p align="center">
   <a href="https://sotano-yeagobs-projects.vercel.app"><b>▶ PLAY IN YOUR BROWSER</b></a><br>
   <a href="https://sotano-yeagobs-projects.vercel.app">https://sotano-yeagobs-projects.vercel.app</a><br>
+  <a href="CHANGELOG.md">What changed in each version</a><br>
   <sub>No install. Desktop browser with a keyboard and mouse, a gamepad, or a phone in landscape.</sub>
 </p>
 
