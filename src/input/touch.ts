@@ -1,5 +1,6 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss } from '../content/palette';
+import { isFlask } from '../content/potions';
 import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
@@ -165,11 +166,13 @@ export class TouchControls {
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
-    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}`;
+    const top = p.hand.at(-1), flask = !!top && isFlask(top);
+    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${flask}`;
     if (key === this.key) return;
     this.key = key;
     const thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
     thr.classList.toggle('off', !p.hand.length);
+    this.buttons.get('drink')!.classList.toggle('off', !flask);
     bomb.classList.toggle('off', p.bombs <= 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     this.buttons.get('inventory')!.querySelector('span')!.textContent = g.inventory.items.length ? String(g.inventory.items.length) : '';

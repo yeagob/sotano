@@ -4,7 +4,7 @@ Every work, tradition, technique, therapy and game The Roots draws on. Add new r
 
 ## Naming status
 
-How a source may appear in the game (the rule from [STORY.md §5](../design/STORY.md#5-items-practices-with-real-names)):
+How a source may appear in the game (the rule from [STORY.md §5](../design/built/story/NAMING.md)):
 
 | Status | Meaning | In-game name? |
 |---|---|---|
@@ -36,7 +36,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 
 | Id | Source | Kind | Status | Key ideas | In the game |
 |---|---|---|---|---|---|
-| `meditations` | *Meditations* (Marcus Aurelius) | Philosophy | PD | What's in your control; the obstacle is the way | **Meditations**, **Stoic Resolve**; the carry-and-build mechanic ([STORY.md §2](../design/STORY.md#2-the-core-metaphor-mechanic-by-mechanic)) |
+| `meditations` | *Meditations* (Marcus Aurelius) | Philosophy | PD | What's in your control; the obstacle is the way | **Meditations**, **Stoic Resolve**; the carry-and-build mechanic ([STORY.md §2](../design/built/story/MECHANICS-AND-METAPHOR.md)) |
 | `enchiridion` | *Enchiridion* (Epictetus) | Philosophy | PD | Dichotomy of control | **Stoic Resolve** |
 | `seneca-letters` | *Moral Letters to Lucilius* (Seneca) | Philosophy | PD | Letting go; preparing for hardship | **Letters from a Stoic** |
 | `self-reliance` | *Self-Reliance* (Ralph Waldo Emerson, 1841) | Essay | PD | Trust yourself | **Self-Reliance** |
@@ -48,7 +48,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 |---|---|---|---|---|---|
 | `course-in-miracles` | *A Course in Miracles* (Helen Schucman, 1976) | Spiritual text | Caution (title has been a registered trademark; copyright history disputed) *(verify)* | A miracle is a shift in perception; forgiveness as release; the ego vs. the true self; projection ("perception is a mirror, not a fact") | **Forgiveness** (projections that touch you are hurt instead of you); the idea that enemies are *projections*; future: perception-shift mechanics |
 | `four-agreements` | *The Four Agreements* (don Miguel Ruiz, 1997) | Toltec-inspired guide | Caution (title is a registered trademark) *(verify)* | Be impeccable with your word; don't take anything personally; don't make assumptions; always do your best | **Nothing Personal** (contact hits often slide off you); future: one practice per agreement |
-| `psychomagic` | *Psychomagic* (*Psicomagia*, Alejandro Jodorowsky, 1995) | Therapeutic art practice | Credit (the coined term is his) | The unconscious understands symbolic acts; a theatrical, poetic act can heal what talking can't | **Symbolic Act** (formerly Catharsis; thrown blocks burst); burning barrels (letting go rituals) in [ELEMENTS](../design/ELEMENTS.md) |
+| `psychomagic` | *Psychomagic* (*Psicomagia*, Alejandro Jodorowsky, 1995) | Therapeutic art practice | Credit (the coined term is his) | The unconscious understands symbolic acts; a theatrical, poetic act can heal what talking can't | **Symbolic Act** (formerly Catharsis; thrown blocks burst); burning barrels (letting go rituals) in [ELEMENTS](../design/not-built/elements/BARREL.md) |
 | `the-alchemist` | *The Alchemist* (Paulo Coelho, 1988) | Novel | Credit | Personal legend; omens; the treasure was where you started; alchemy as inner transformation | **Follow the Omens**; furnaces (alchemy) in ELEMENTS; the endgame idea that the treasure is at the start ([COSMOLOGY.md §3](COSMOLOGY.md#3-the-endgame-connection)) |
 
 ### Therapies and techniques
@@ -63,7 +63,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `positive-psychology` | Gratitude journaling | Practice | Concept | Noticing what goes well | **Gratitude Journal** |
 | `breathwork` | Box breathing (paced breathing) | Practice | Concept | Regulating the nervous system | **Box Breathing** |
 | `somatic` | Somatic grounding | Practice | Concept | Coming back to the body | **Grounding** |
-| `toxic-relationships` | Santiago (Game Glover), the owner's own words on toxic relationships | Owner's words | Owner's own (credited, usable as a name) | Some people drain you more than they give; cutting them off keeps your energy | **Cut Ties with Toxic People**: the blade of light |
+| `toxic-relationships` | Santiago (Game Glover), the owner's own words on toxic relationships | Owner's words | Owner's own (credited, usable as a name) | Some people drain you more than they give; cutting them off keeps your energy | **Cut Ties with Toxic Relationships**: the blade of light |
 | `conscious-breathing` | Santiago (Game Glover), the owner's own words on conscious breathing | Owner's words | Owner's own (credited, usable as a name) | Breath gathered, held and let out at once | **Remember Breathing**: hold to gather, release a beam that burns through blocks |
 | `lions-mane` | Lion's mane mushroom (*Hericium erinaceus*) | Natural history, folk tradition | Concept (a common name) | A shaggy mushroom that grows on old wood, in the dark; traditionally linked to the mind and nerves (no medical claim) | **Lion's Mane**: growing past the ceiling you were told was the limit (with the `platformers` wink) |
 | `kaizen` | Kaizen | Practice | Concept | Small continuous improvement | **Kaizen** |
@@ -98,8 +98,8 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | Id | Source | Status | In the game |
 |---|---|---|---|
 | `jung` | C. G. Jung: the shadow, the descent into the unconscious, *The Red Book* | Credit (concepts generic) | The descent into the basement; the boss **The Shadow** (planned) |
-| `monomyth` | Joseph Campbell, *The Hero with a Thousand Faces* (1949) | Credit (concept generic) | Descent and return as the shape of a run; the threshold guardian (boss of floor 5, [BESTIARY](../design/BESTIARY.md)) |
-| `dante` | Dante Alighieri, *Inferno* (*Divine Comedy*, c. 1308–1321) | PD (structure and images only; never his figures, never punishment of people) | The nine circles as floors 1–9 ([LEVELS](../design/LEVELS.md)); each zone's image (winds, rain, weights, marsh, tombs, burning sand, ditches, ice) shapes its projections and bosses ([BESTIARY §4](../design/BESTIARY.md)) |
+| `monomyth` | Joseph Campbell, *The Hero with a Thousand Faces* (1949) | Credit (concept generic) | Descent and return as the shape of a run; the threshold guardian (boss of floor 5, [BESTIARY](../design/built/projections/README.md)) |
+| `dante` | Dante Alighieri, *Inferno* (*Divine Comedy*, c. 1308–1321) | PD (structure and images only; never his figures, never punishment of people) | The nine circles as floors 1–9 ([LEVELS](../design/built/levels/floors/CIRCLES.md)); each zone's image (winds, rain, weights, marsh, tombs, burning sand, ditches, ice) shapes its projections and bosses ([BESTIARY §4](../design/not-built/projections/ZONES.md)) |
 
 ### Fiction
 
@@ -111,12 +111,12 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 
 | Id | Game | What we take | What we never take |
 |---|---|---|---|
-| `isaac` | *The Binding of Isaac* | Rooms, floors, items and synergies, pools, quality, transformations; bestiary mechanics (chargers, leapers, splitters, hiding hosts, wall shooters, mimics, thieves, champions as rooted variants, challenge rooms, deals with a cost) ([BESTIARY](../design/BESTIARY.md)) | Names, characters, art, sounds, silhouettes |
+| `isaac` | *The Binding of Isaac* | Rooms, floors, items and synergies, pools, quality, transformations; bestiary mechanics (chargers, leapers, splitters, hiding hosts, wall shooters, mimics, thieves, champions as rooted variants, challenge rooms, deals with a cost) ([BESTIARY](../design/built/projections/README.md)) | Names, characters, art, sounds, silhouettes |
 | `minecraft` | *Minecraft* | Blocks, breaking and placing, materials, furnaces, chests, fluids | Textures, mob names, sounds |
-| `noita` | *Noita* | Material interactions, secrets by knowledge, parallel worlds; creatures that live in the matter (burrowing worms, slime trails, electric creatures, resurrecting casters, sanctuary guardians that wake when you break their place) ([BESTIARY](../design/BESTIARY.md)) | Assets, names, silhouettes |
+| `noita` | *Noita* | Material interactions, secrets by knowledge, parallel worlds; creatures that live in the matter (burrowing worms, slime trails, electric creatures, resurrecting casters, sanctuary guardians that wake when you break their place) ([BESTIARY](../design/built/projections/README.md)) | Assets, names, silhouettes |
 | `doom` | *Doom* | Doors that slide up as you approach | Assets |
 | `space-opera` | The swords of light of space opera (*Star Wars*, Lucasfilm, 1977, and its heirs) | A blade made of light that cuts through anything | Names, sounds, designs, the word for it |
 | `charged-beams` | The charged beams of dungeon crawlers (*The Binding of Isaac*'s blood beam) | Hold to charge, release a beam that passes through everything | Names, blood imagery, art |
 | `platformers` | The classic 2D platformers (*Super Mario Bros.*, Nintendo, 1985, and its heirs) | The mushroom that makes you bigger, breaking bricks with your head, the princess who is "in another castle" (as a paraphrased wink) | Names, characters, sprites, music, exact quotes |
 
-The project is meant to be full of these winks, out of love for games (see [STORY.md, A love letter to games](../design/STORY.md#a-love-letter-to-games)): every game we wink at gets a row here, with what we take and what we never take.
+The project is meant to be full of these winks, out of love for games (see [STORY.md, A love letter to games](../design/built/story/NAMING.md)): every game we wink at gets a row here, with what we take and what we never take.

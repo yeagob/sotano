@@ -1,6 +1,6 @@
 # Elements: architecture and implementation plan
 
-Status: **E-core (fire, water, lava) built** (§9, §10); chests, furnaces, sand, mud and electricity are still plan. §9–§10 win where they differ from §2–§3. Review: [../reviews/elements.md](../reviews/elements.md). What the player experiences is in [../design/ELEMENTS.md](../design/ELEMENTS.md). Before step E0 is built, this design goes through the three-party review ([../reviews/](../reviews/README.md)), as for items and entities.
+Status: **E-core (fire, water, lava) built** (§9, §10); chests, furnaces, sand, mud and electricity are still plan. §9–§10 win where they differ from §2–§3. Review: [../reviews/elements.md](../reviews/elements.md). What the player experiences is in [../design/ELEMENTS.md](../design/not-built/elements/ELECTRICITY.md). Before step E0 is built, this design goes through the three-party review ([../reviews/](../reviews/README.md)), as for items and entities.
 
 ## 1. Principles
 
@@ -85,7 +85,7 @@ All of them push their changes through the existing pipelines (`world.set` → r
 
 ## 7. Chests and keys (replaces loot from blocks)
 
-- Breaking blocks drops nothing but the block (done: `blockLoot` now starts empty).
+- Breaking blocks drops nothing but the block (done: `blockLoot` now starts empty), except crates, which sometimes drop a key, heart or small bomb (issue #6).
 - Room templates get chest markers (`h` chest, `H` is taken: use `$` for a locked gold chest). Floor generation rolls chest contents from a `chest` table on the per-floor RNG at carve time (keys, bombs, hearts; rarely a practice from a `chest` pool).
 - The vault key moves from the floor into a chest.
 - Chest storage: `{ items: (PickupKind | { material }) [] }`, capacity 9, persisted for the run.
@@ -257,7 +257,7 @@ between bands is intact for every template).
 | Inner Critic | crosses at × 0.45 | avoids; hurts × 2 | A stack of paper: soaked pages shuffle, paper burns |
 | Panic | crosses at × 0.5; entering **calms** it for 2.5 s, even mid-swell | avoids; entering sets it off at once | An alarm that rings when nothing is on fire: feeling it calms it; real fire is what it was waiting for |
 
-No projection dwells in an element yet: the first dwellers (Overwhelm in deep water, Burnout in fire) come with their art ([../design/ELEMENTS.md](../design/ELEMENTS.md) §3).
+No projection dwells in an element yet: the first dwellers (Overwhelm in deep water, Burnout in fire) come with their art ([../design/ELEMENTS.md](../design/not-built/elements/ELECTRICITY.md) §3).
 
 ### Later
 

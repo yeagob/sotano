@@ -43,7 +43,7 @@ Players and testers report through the [issue templates](../../.github/ISSUE_TEM
 3. **Work.** Keep the branch small. Update the docs in the same branch, as the [documentation rules](../README.md) require, and keep every player-facing text in every shipped language.
 4. **Pull request.** Open a PR into **`develop`**, fill in the template, and link the issue with `Closes #<issue>`.
 5. **Checks.** The [CI workflow](../../.github/workflows/ci.yml) must be green: typecheck and tests.
-6. **Review and merge.** The owner reviews and merges with a merge commit (not squash, not rebase), so the branch shows in the history.
+6. **Review and merge.** The owner merges with a merge commit (not squash, not rebase), so the branch shows in the history, once CI is green. The owner is the only maintainer, so no second person has to approve; an agent review on the PR is optional and does not block the merge.
 
 ## Releases
 
@@ -51,10 +51,21 @@ A release is cut when `develop` has enough for a version, or on a steady rhythm,
 
 1. Create `release/<version>` from `develop`. Set `package.json` to the release version without the suffix (`npm version 0.2.0 --no-git-tag-version`). Fix only what the release needs.
 2. Open a PR from `release/<version>` into **`main`**. CI must be green. Merge with a merge commit.
-3. Tag the merge commit on `main`: `git tag -a v0.2.0 -m "THE ROOTS 0.2.0"`, then push the tag.
+3. Tag the merge commit on `main`: `git tag -a v0.2.0 -m "THE ROOTS 0.2.0"`, then push the tag. Publish the changelog section of the version as the GitHub release notes.
 4. Merge `main` back into `develop` (a PR `main` → `develop`, or a merge commit), and set `develop` back to `0.3.0-dev` (the next minor, with the suffix).
 5. Delete the release branch.
 6. Vercel deploys `main` to production and `develop` to a preview. The release is live when the production deployment for the tag is ready.
+
+## Changelog
+
+[CHANGELOG.md](../../CHANGELOG.md) is the record of what each version changed, written for players and testers. It is kept in the repository, so the release notes travel with the code.
+
+- **Every pull request that merges into `develop` adds its entry to the changelog of the current version**, in the same branch. The entry is one line under the right heading (`Added`, `Changed`, `Fixed`, `Removed`), with the issue number: `- Locked doors open on contact, not from across the room (#5).`
+- **The current version is the `## Unreleased` section at the top**, which is the version in `package.json` on `develop` (`0.1.1-dev` today). Entries go there, never into a finished version.
+- **A PR with no changelog line is not ready to merge**, unless the change is invisible to players (a refactor, a test, a docs fix). Say so in the PR body.
+- **Cutting a release** (step 1 of Releases): the `release/<version>` branch renames `## Unreleased` to `## <version> · <date>` and opens an empty `## Unreleased` above it.
+- **Publishing a release**: the tag's changelog section is the release notes. Copy it into the GitHub release for the tag, and publish it with the tag on `main`.
+- **Hotfixes** get their own `### Fixed` line under the new patch version.
 
 ## Hotfixes
 

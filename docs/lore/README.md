@@ -10,5 +10,5 @@ The world's cosmology and the library of works, traditions, techniques and games
 
 How this section relates to the rest:
 
-- [../design/STORY.md](../design/STORY.md) is the **player-facing story and the naming rules**; it wins on names and tone.
+- [../design/STORY.md](../design/built/story/README.md) is the **player-facing story and the naming rules**; it wins on names and tone.
 - This section is the **source of truth for references and concepts**: every `inspiredBy` in an item must point at an entry in SOURCES.md, and every new mechanic with a meaning should have a concept in CONCEPTS.md.

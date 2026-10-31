@@ -10,7 +10,7 @@ import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
-import { enemyText } from '../i18n/content';
+import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
@@ -20,6 +20,8 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
+import { tollIndex } from './toll';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -35,7 +37,10 @@ import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
 import { Pickups, type Pickup } from '../entities/pickups';
 import { Chests, type ChestView } from '../entities/chests';
-import { EYE, Player, type PlayerMedium } from '../entities/player';
+import { Alembics } from '../entities/alembics';
+import { Kitchens } from '../entities/kitchens';
+import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
+import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
@@ -45,6 +50,8 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
+import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
@@ -52,7 +59,7 @@ import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
-import { onLocaleChange, type MessageKey } from '../i18n';
+import { onLocaleChange, t, type MessageKey } from '../i18n';
 import {
   BAND, bandOf, carveFloor, cellOf, createDungeonWorld, inRoomSpace, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
@@ -63,9 +70,11 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, TALK_REACH, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
+import { rollCrate } from '../content/tables/crates';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { Hud } from './hud';
@@ -177,6 +186,7 @@ export class Game {
   readonly hands: Hands;
   readonly player = new Player();
   readonly stats = new StatSheet();
+  readonly potions = new PotionEffects(this.stats);
   readonly inventory: Inventory;
   bus: GameBus = createBus();
   /** All of the run's randomness, derived from its root (docs/architecture/RNG.md). */
@@ -191,6 +201,10 @@ export class Game {
   maxDepth = FIRST_FLOOR;
   world!: VoxelWorld;
   floors = new Map<number, FloorResult>();
+  /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
+  private labs = new Map<number, Alembic>();
+  /** The kitchens, by the world index of their block (game/kitchen.ts). */
+  private kitchens = new Map<number, Kitchen>();
   rooms = new Map<number, RoomInfo>();
   debris!: DebrisSystem;
   doors!: Doors;
@@ -206,6 +220,7 @@ export class Game {
   sandbox: Scenario | null = null;
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
+  private presenceReplies = new Map<number, number>();
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -220,6 +235,8 @@ export class Game {
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
   private chestViews!: Chests;
+  private alembicViews!: Alembics;
+  private kitchenViews!: Kitchens;
   private boundaryRing = new Map<number, [number, number, number][]>();
   private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
@@ -388,6 +405,8 @@ export class Game {
     this.doors?.dispose();
     this.pickups?.dispose();
     this.chestViews?.dispose();
+    this.alembicViews?.dispose();
+    this.kitchenViews?.dispose();
     this.enemies?.dispose();
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
@@ -395,7 +414,7 @@ export class Game {
     const box = sandbox ? carveSandbox(this.world, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.world, SURFACE_Y, i => this.rng.fork('tree', i));
-    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = '';
+    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     setMasterTarget(0.35);
     this.elements = new ElementSim(this.world, {
       seed: this.rng.fork('elements').u32(),
@@ -423,8 +442,11 @@ export class Game {
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
+    this.alembicViews = new Alembics(this.scene);
+    this.kitchenViews = new Kitchens(this.scene);
     this.enemies = new Enemies(this.scene, this.enemyHost());
-    this.floors.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.potions.clear();
+    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     this.inventory.restore([]);
     this.syncWeapon();
@@ -532,6 +554,16 @@ export class Game {
   /** Registers a carved floor: its rooms and their combat state. */
   private addFloor(f: FloorResult) {
     this.floors.set(f.floor, f);
+    if (f.laboratory) {
+      const { x, y, z } = f.laboratory, lab = newAlembic();
+      this.labs.set(this.world.idx(x, y, z), lab);
+      this.alembicViews.add(x, y, z);
+    }
+    if (f.kitchen) {
+      const { x, y, z } = f.kitchen;
+      this.kitchens.set(this.world.idx(x, y, z), newKitchen());
+      this.kitchenViews.add(x, y, z);
+    }
     // template elements (pools, braziers) are stable sources, but a decor crate may sit next to a flame
     for (const r of f.rooms) this.elements.wakeBox(r.x0 - 1, r.y0 - 3, r.z0 - 1, r.x0 + r.w, r.y0 + r.height, r.z0 + r.d);
     for (const r of f.rooms) {
@@ -1213,6 +1245,7 @@ export class Game {
         const ev = this.bus.emit('roomClear', { room: id, drops });
         for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
         this.hud.toast('toast.roomClear');
+        this.potionsEnded(this.potions.roomCleared());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
       } else if (!inside && st.sealed) {
@@ -1411,11 +1444,17 @@ export class Game {
 
   /**
    * Broken blocks give nothing but the block itself (owner decision: keys, items and other
-   * rewards live in chests, Minecraft-style). The `blockLoot` event still fires with no drops,
-   * so an item can add some.
+   * rewards live in chests, Minecraft-style), with one exception: a crate sometimes gives a key,
+   * a heart or a small bomb (issue #6, `rollCrate`). The `blockLoot` event fires with those drops,
+   * so an item can add more.
    */
   private rollLoot(x: number, y: number, z: number, material: number, source: string) {
-    const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops: [] });
+    const drops: PickupKind[] = [];
+    if (material === MAT.crate) {
+      const drop = rollCrate(this.rng.stream('drops'), { floor: depthOf(y), luck: this.stats.get('luck') });
+      if (drop) drops.push(drop);
+    }
+    const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
     for (const k of ev.drops) {
       this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
       this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
@@ -1473,6 +1512,8 @@ export class Game {
   private intentHitsBlock(hit: VoxelHit, mining: number, polarity: Polarity) {
     const id = this.world.get(hit.x, hit.y, hit.z);
     if (id === AIR) return false; // a door
+    if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
+    if (id === MAT.kitchen) return false;   // unbreakable, and an intention does nothing to it
     if (polarity === 'positive') {
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
@@ -1910,6 +1951,76 @@ export class Game {
     sfx.shoot();
   }
 
+  /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */
+  private feedLab(x: number, y: number, z: number) {
+    const a = this.labs.get(this.world.idx(x, y, z));
+    const p = this.player;
+    if (!a) { sfx.denied(); return; }
+    if (isFlask(p.hand.at(-1)!)) { sfx.denied(); this.hud.toast('lab.refused'); return; }
+    const r = labFeed(a, p.hand.at(-1)!);
+    if (r !== 'fed') {
+      sfx.denied();
+      this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
+      return;
+    }
+    p.hand.pop();
+    this.hands.placed();
+    sfx.place();
+    this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
+  }
+
+  /** Right click on the kitchen: the part on top of the hand is cooked into a meal (game/kitchen.ts). */
+  private cookAt(x: number, y: number, z: number) {
+    const k = this.kitchens.get(this.world.idx(x, y, z));
+    const p = this.player, top = p.hand.at(-1);
+    if (!k || top === undefined) { sfx.denied(); return; }
+    if (typeof top === 'number' || isFlask(top)) { sfx.denied(); this.hud.toast('kitchen.refused'); return; }
+    if (!kitchenCook(k)) { sfx.denied(); this.hud.toast('kitchen.out'); return; }
+    p.hand.pop();   // the part leaves the hand first, so the meal always has its place
+    p.hand.push({ potion: mealOf(top.kind) });
+    this.hands.placed();
+    this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 16, 2, 0.06);
+    sfx.place();
+    this.hud.toastDrinkHint('kitchen.cooked', { left: COOKS - k.cooks, total: COOKS });
+  }
+
+  /** An intention on the alembic: a brew, a boil, or nothing (game/alembic.ts). */
+  private hitLab(x: number, y: number, z: number, polarity: Polarity) {
+    const a = this.labs.get(this.world.idx(x, y, z));
+    if (!a) return;
+    const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
+    if (r === 'brew' && flask) {
+      this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
+      sfx3.reveal();
+      this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
+      this.hud.toastDrinkHint('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+    } else if (r === 'boil') {
+      this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
+      sfx.hit(3);
+      this.hud.toast('lab.boiled');
+    } else if (r === 'cold') this.hud.toast('lab.cold');
+  }
+
+  /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
+  private drink() {
+    const p = this.player, top = p.hand.at(-1);
+    if (!top || !isFlask(top)) { sfx.denied(); return; }
+    const def = POTIONS[top.potion];
+    const rooms = flaskRooms(top);
+    p.hand.pop();
+    this.hands.placed();
+    if (def.heal) this.heal(def.heal, `potion.${top.potion}`);
+    this.potions.drink(top);
+    this.bus.emit('drink', { potion: top.potion, rooms });
+    this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(def.liquid), 16, 1.2, 0.05);
+    sfx.pickup();
+    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect, { rooms }) });
+  }
+
+  private potionsEnded(ended: readonly PotionId[]) {
+    for (const id of ended) this.hud.toast('potion.ended', { name: t(POTIONS[id].name) });
+  }
+
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
   private tryPlace() {
     const p = this.player;
@@ -1919,6 +2030,8 @@ export class Game {
     const tap = this.input.hitBy('place') === 'touch' ? this.input.touchTap : null;
     const e = this.camera.position, d = tap ? this.tapDirection(tap) : p.forward;
     const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, this.stats.get('reach'));
+    if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.alembic) { this.feedLab(hit.x, hit.y, hit.z); return; }
+    if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.kitchen) { this.cookAt(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
@@ -1927,7 +2040,7 @@ export class Game {
     if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
-      this.pickups.add('part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
+      this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
       p.hand.pop();
       this.hands.placed();
       sfx.place();
@@ -1957,7 +2070,7 @@ export class Game {
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
-      const part = this.pickups.add('part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
+      const part = this.pickups.add(isFlask(top) ? 'flask' : 'part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
       const speed = 9 * this.stats.get('throw');
       this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
       p.hand.pop();
@@ -2038,7 +2151,9 @@ export class Game {
   private requestDoor(d: Door): boolean {
     const ev = this.bus.emit('doorOpen', { door: d.id, locked: d.locked, needsKey: d.locked });
     if (ev.cancelled) return false;
-    if (ev.needsKey) {
+    if (ev.needsKey && this.potions.lockDiscount() > 0) {
+      this.questioned();
+    } else if (ev.needsKey) {
       if (this.player.keys <= 0) { this.hud.toast('toast.locked'); sfx.denied(); return false; }
       this.player.keys--;
       this.hud.toast('toast.unlocked');
@@ -2083,12 +2198,16 @@ export class Game {
         continue;
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
-      if (p.type === 'part') {
-        const part = p.part;
-        if (part && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
+      if (p.type === 'part' || p.type === 'flask') {
+        const carried = p.carried;
+        if (carried && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
           this.pickups.take(p);
-          this.player.hand.push(part);
-          this.hands.holdUp(part);
+          this.player.hand.push(carried);
+          this.hands.holdUp(carriedDef(carried));
+          if (typeof carried === 'object') {
+            if (isFlask(carried)) this.hud.toastDrinkHint('hand.took', { item: this.carriedName(carried) });
+            else this.hud.toast('hand.took', { item: this.carriedName(carried) });
+          }
           sfx.pickup();
         }
         continue;
@@ -2102,16 +2221,19 @@ export class Game {
     }
   }
 
-  /** Walking up to a closed chest opens it, spending its keys (some cost none). */
+  /** Walking up to a closed chest opens it, spending its keys (some cost none). A guarded chest is not
+   *  opened here: its Boundary asks for a mission first (see askGuard). */
   private touchChests() {
     const b = this.player.body;
     for (const c of this.chests) {
-      if (c.opened) continue;
+      if (c.opened || c.spec.guard) continue;
       const s = c.spec, dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
       if (dist > 3) c.refused = false;
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
       const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
-      const cost = Math.max(0, Math.floor(ev.cost));
+      const asked = Math.max(0, Math.floor(ev.cost));
+      const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
+      const cost = question ? asked - 1 : asked;
       if (ev.cancelled || this.player.keys < cost) {
         c.refused = true;
         this.hud.toast('toast.chestLocked', { n: cost });
@@ -2119,11 +2241,62 @@ export class Game {
         continue;
       }
       this.player.keys -= cost;
+      if (question) this.questioned();
       this.openChest(c, cost);
     }
   }
 
-  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number) {
+  /** Walking up to the Boundary of a vault asks one real-world mission for the chest it keeps. Not yet
+   *  waits until the player steps three blocks away from the Boundary. */
+  private touchGuards() {
+    if (this.hud.tollOpen || this.hud.guardOpen || this.hud.bannerOpen) return;
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || !e.tags.has('boundary')) continue;
+      const dist = Math.hypot(e.body.x - b.x, e.body.z - b.z);
+      const near = dist <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
+      const c = this.chests.find(q => q.spec.guard && !q.opened && q.spec.room === e.room);
+      if (!c) continue;
+      if (dist > 3) c.refused = false;
+      if (c.refused || !near) continue;
+      const mission = pickMission(this.rng.stream('guard'));
+      const asked = performance.now();
+      this.hud.openGuard(this, mission, yes => this.answerGuard(c, asked, yes));
+      return;
+    }
+  }
+
+  /** "Have you done it?": yes or no, the reward spawns from the chest and the Boundary leaves. A yes draws
+   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. */
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, yes: boolean) {
+    if (c.opened) return;
+    const [lo, hi] = rewardBand(yes, performance.now() - asked);
+    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
+    this.openChest(c, 0, def ?? undefined);
+    this.releaseBoundary(c.spec.room);
+  }
+
+  /** The Boundary of a vault leaves once its mission is answered yes. */
+  private releaseBoundary(room: number) {
+    for (const e of [...this.enemies.list]) {
+      if (!e.alive || !e.tags.has('boundary') || e.room !== room) continue;
+      this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('light.gold'), 16, 2, 0.06);
+      this.enemies.dissolve(e);
+      this.bus.off(null, `actor:${e.id}`);
+      this.actors.remove(e.id);
+      this.contacts.forget(e.id);
+      this.boundaryRing.delete(e.id);
+    }
+  }
+
+  private questioned() {
+    const id = this.potions.spendLock();
+    if (!id) return;
+    this.hud.toast('potion.questioned', { name: t(POTIONS[id].name) });
+    sfx2.unlock();
+  }
+
+  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number, reward?: ItemDef) {
     c.opened = true;
     const s = c.spec;
     this.world.set(s.x, s.y, s.z, MAT.chestopen);
@@ -2137,6 +2310,7 @@ export class Game {
     const len = Math.hypot(b.x - cx, b.z - cz) || 1, ax = (b.x - cx) / len, az = (b.z - cz) / len;
     const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
+    else if (reward) out.push({ type: 'item', def: reward });
     else {
       const rng = this.rng.stream('loot'), floor = depthOf(s.y), luck = this.stats.get('luck');
       const n = 1 + (rng.chance(0.4) ? 1 : 0) + (rng.chance(0.15) ? 1 : 0);
@@ -2214,7 +2388,7 @@ export class Game {
 
   private hearPresences(x: number, z: number, polarity: Polarity) {
     for (const e of this.enemies.list) {
-      if (!e.alive || !e.tags.has('presence')) continue;
+      if (!e.alive || !e.tags.has('presence') || !e.tags.has('met')) continue;
       const reaction = presenceReaction(polarity, Math.hypot(e.body.x - x, e.body.z - z));
       if (reaction === 'lift') e.tags.delete('silent');
       if (reaction !== 'silence' || e.tags.has('silent')) continue;
@@ -2230,8 +2404,28 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
-      if (Math.hypot(e.body.x - b.x, e.body.z - b.z) > TALK_REACH || Math.abs(e.body.y - b.y) > 2) continue;
+      const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
+      if (!near) { e.tags.delete('answering'); continue; }
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      const top = this.player.hand.at(-1);
+      if (!unlocksPresence(id, top)) {
+        if (e.tags.has('answering')) continue;
+        const now = performance.now();
+        if (!e.tags.has('hinted')) {
+          e.tags.add('hinted');
+          e.tags.add('answering');
+          this.presenceReplies.set(e.id, now);
+          this.hud.presenceCard(talk.name, [talk.hint]);
+          return;
+        }
+        if (!answerDue(this.presenceReplies.get(e.id), now)) continue;
+        e.tags.add('answering');
+        this.presenceReplies.set(e.id, now);
+        if (top === undefined) this.hud.presenceCard(talk.name, ['presence.empty']);
+        else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
+        return;
+      }
+      this.player.hand.pop();
       e.tags.add('met');
       if (talk.heals) this.heal(QUARTER_HEART, id);
       this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
@@ -2240,9 +2434,28 @@ export class Game {
     }
   }
 
+  private pushPresences() {
+    const b = this.player.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.hidden || !(e.tags.has('presence') || e.tags.has('boundary'))) continue;
+      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.spec.size[1]) continue;
+      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.spec.size[0] / 2 + b.hw);
+      if (at && !boxHits((x, y, z) => this.solid(x, y, z), at.x, b.y, at.z, b.hw, b.h)) { b.x = at.x; b.z = at.z; }
+    }
+  }
+
+  private carriedName(c: Carried): string {
+    if (typeof c === 'number') return materialName(c);
+    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    return partText(c).name;
+  }
+
   private updateLoop(dt: number) {
+    tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
+    this.touchGuards();
+    this.pushPresences();
     this.updateBoundaries();
     const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
     const inSilence = !!last && b.x >= last.x0 && b.x <= last.x1 + 1 && b.z >= last.z0 && b.z <= last.z1 + 1 && b.y >= last.y0 - 0.5 && b.y <= last.y1 + 1;
@@ -2322,6 +2535,7 @@ export class Game {
       this.activate(band);
       this.carve(band + 1);
       this.bus.clearDeferred();
+      this.potionsEnded(this.potions.floorEntered());
         this.bus.emit('floorEnter', { depth: band });
       this.hud.setFloor(this.floors.get(band)!, band);
       this.hud.toast('toast.floor', { n: band });
@@ -2418,9 +2632,10 @@ export class Game {
     const hands: number[] = [], items: string[] = [];
     let keys = 0, bombs = 0, paid = 0;
     for (const id of ids) {
-      const [kind, at] = id.split(':'), i = Number(at);
+      const [kind, at] = id.split(':'), i = tollIndex(at);
+      if (i === null) return false;
       if (kind === 'item' ? !toll.practices : toll.practices) return false;
-      if (kind === 'hand') { if (!(i < p.hand.length) || typeof p.hand[i] !== 'number') return false; hands.push(i); }
+      if (kind === 'hand') { if (!(i < p.hand.length)) return false; hands.push(i); }
       else if (kind === 'key') { if (!(i < p.keys)) return false; keys++; }
       else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
       else if (kind === 'heart') { if (!(i < hearts)) return false; paid++; }
@@ -2487,7 +2702,7 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
+    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen || this.hud.guardOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
     const live = ctx === 'play' || ctx === 'prompt';
     if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
@@ -2524,7 +2739,7 @@ export class Game {
       }
     }
     this.touch.update(this, ctx);
-    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.transitioning;
+    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.guardOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     this.stream();
@@ -2596,6 +2811,7 @@ export class Game {
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
     if (inp.hit('throw')) this.throwTop();
+    if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
     this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
@@ -2669,7 +2885,7 @@ export class Game {
       damaged: this.world.damaged.size,
       elements: `${this.elements.pending} active · ${this.elements.lastWork}/tick`,
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
-      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : c.name).join(', ') : '—',
+      held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : isFlask(c) ? c.potion : c.name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
     };
   }

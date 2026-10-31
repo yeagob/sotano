@@ -127,6 +127,9 @@ export interface GameEvents {
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
   floorEnter: { depth: number };
+
+  brew: { potion: string; iced: boolean; contents: number; x: number; y: number; z: number };
+  drink: { potion: string; rooms: number };
 }
 
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */

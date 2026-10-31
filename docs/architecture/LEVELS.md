@@ -1,6 +1,6 @@
 # Levels: architecture of the thirteen floors
 
-Status: **L1–L6 built (2026-10-27)**, first versions; see §9 for what is still open. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/LEVELS.md).
+Status: **L1–L6 built (2026-10-27)**, first versions; see §9 for what is still open. Review: [../reviews/levels.md](../reviews/levels.md). Design and owner decisions: [../design/LEVELS.md](../design/built/levels/README.md).
 
 ## 1. Goal
 
@@ -57,6 +57,7 @@ Everything that today reads "floor k of 4" reads the table instead: plans, rock 
 - The roots always have the **same plan**: `TUTORIAL_LAYOUT` in `world/floorplan.ts` (a 7 × 7 grid), built by `tutorialPlan()`, which draws nothing. Three open doors leave the start `S`: the treasure room `T` (its pedestal offers a practice of tier 1–3), the way down `B` (a dead end, its pedestal offers a practice of tier 1–4, drawn at random from the treasure pool), and the first lesson. The eight lessons `a`–`h` form a ring that goes round and comes back to `T`, so you can walk the whole level or skip it straight to `B`.
 - Each letter is a fixed template in `TUTORIAL_CELLS` (`content/rooms.ts`), with a flip only where the lesson needs one: the dig room's wall stands between you and its north door (`flipZ`). Doors are open everywhere and the floor has no chests.
 - Lessons in ring order from the start: move (`S`), step (`a`), intent (`b`), polarity (`c`, `roots-mend`), pit (`d`), bridge (`e`), breakthrough (`f`), kick (`g`), water (`h`), practices (`T`), the way down (`B`). Each lesson is a tablet on its room's walls (`lesson` per template).
+- **The laboratory** (`LABORATORY_FLOORS` in `world/floor.ts`, floors 2, 4, 6 and 8): one alembic block (`MAT.alembic`) on a free tile of one normal room, its room is drawn from the floor's own `laboratory` fork before carving. If that room has no free tile, the alembic goes after carving to a free tile of any normal room, away from keys, bombs and the spawn. Its state lives in `Game.labs`, keyed by the block's world index (`game/alembic.ts`). It was added in GEN_VERSION 19, which changed the world of those four floors.
 - **Loose loot**: every run lays one key and one bomb as random rewards, each on a random free tile of a random lesson room (`fork('floor', 0, 'loot')`, `FloorResult.keys` and `FloorResult.bombs`, pickups added when the floor activates). Never in the start, the treasure room or the way down.
 - `pedestalSlots` reads the cell's `maxQuality`: 3 for `T`, 4 for `B`. Tutorial pedestals never sit in chests.
 
@@ -258,7 +259,7 @@ Template choice already draws from `floor/k/room/i/layout`; flips are now drawn 
 - **Deep holes and platforming** stay inside the band: plateaus of trim three high (`3`) with `=` pits make holes five deep; single pillars one tile apart are jumped. The validator now checks two blocks of headroom over every stack under the vault or dome at that tile. There is no fall damage today, so a five-block drop is safe.
 - **The flow field** uses a bucket queue (Dial's Dijkstra): a 28 × 16 room is 448 tiles.
 - **A building palette per floor** (`LevelDef.palette`: wall, floor, trim): the shell's walls and ceiling, the floor under the interior, `#` and a plug's upper wall from `wall`, `b` and `1`–`4` from `trim`; the lining of deep pools is the floor; a vault's shell turns from wall and floor into obsidian. Seven materials (ids 21–27), as tough as brick. Colours and the table per floor: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md)). In game, floors 1–4: [../art/img/built/l7-rooms-floors-1-4.png](../art/img/built/l7-rooms-floors-1-4.png).
-- **Rooms** (templates): `long-gallery`, `cloister`, `bastions`, `wind-hall`, `stepped-well`, `drowned-nave`, `strongroom`, `styx-cavern`, `crown-hall`, `chasm`, `dis-hall` ([../design/LEVELS.md](../design/LEVELS.md) §4).
+- **Rooms** (templates): `long-gallery`, `cloister`, `bastions`, `wind-hall`, `stepped-well`, `drowned-nave`, `strongroom`, `styx-cavern`, `crown-hall`, `chasm`, `dis-hall` ([../design/LEVELS.md](../design/built/levels/README.md) §4).
 - Tests: rooms spread only into empty cells and never into each other, the map keeps one cell per room, every open tile has air, big rooms appear on every hostile floor (Tree floors included), the new ceilings rise in the middle; deep pools are lined with their level's floor. `GEN_VERSION` 11.
 
 Later (from the review): the chamber of silence still takes the boss room's box (no big boss on floor 9 today); `ceilingRise` over the bounding box of an irregular room; templates three cells long (the flow field is ready for them); `hardenShell` on irregular vaults.

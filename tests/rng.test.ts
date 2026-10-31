@@ -137,7 +137,7 @@ describe('variety', () => {
         templates.set(r.template, (templates.get(r.template) ?? 0) + 1);
         moods.set(r.mood, (moods.get(r.mood) ?? 0) + 1);
       }
-      for (const p of run.floors.flatMap(f => f.pedestals)) items.set(p.item!, (items.get(p.item!) ?? 0) + 1);
+      for (const p of run.floors.flatMap(f => f.pedestals)) if (p.item) items.set(p.item, (items.get(p.item) ?? 0) + 1);
     }
     expect(sigs.size).toBe(200);
     // every template allowed on the first two floors shows up (deeper ones: tests/levels.test.ts)
@@ -219,7 +219,7 @@ describe('golden seed', () => {
     });
     let h = 0x811c9dc5;
     for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
-    expect([GEN_VERSION, h.toString(16)]).toEqual([18, GOLDEN]);
+    expect([GEN_VERSION, h.toString(16)]).toEqual([22, GOLDEN]);
   });
 });
 // adding a practice to the catalogue changes reservations too: that also changes every seed

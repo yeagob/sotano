@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_TALK, placePresences, presenceReaction, type PresenceId } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, placePresences, presenceReaction, pushedOut, unlocksPresence, type PresenceId } from '../src/content/presences';
+import { PART_KINDS, PARTS } from '../src/content/parts';
 
 const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
@@ -54,6 +55,47 @@ describe('presences: what they are', () => {
       expect(def.hp).toBe(1);
       expect(PRESENCE_TALK[id].lines.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('presences: the part each one takes', () => {
+  it('each Presence has a hint line for a player who brings the wrong thing', () => {
+    expect(PRESENCE_TALK.gardener.hint).toBe('presence.gardener.hint');
+    expect(PRESENCE_TALK.listener.hint).toBe('presence.listener.hint');
+  });
+
+  it('each Presence takes one kind of monster part, and no other thing', () => {
+    expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart' });
+    for (const id of ['gardener', 'listener'] as const) {
+      for (const kind of PART_KINDS) {
+        const part = PARTS.find(p => p.kind === kind)!;
+        expect(unlocksPresence(id, part), `${id} and ${kind}`).toBe(kind === PRESENCE_KEY[id]);
+      }
+      expect(unlocksPresence(id, 3)).toBe(false);
+      expect(unlocksPresence(id, undefined)).toBe(false);
+    }
+  });
+});
+
+describe('presences: they have a body the player cannot walk through', () => {
+  it('a player inside the reach is moved out to the edge, along the line from the presence', () => {
+    const at = pushedOut(0.2, 0, 0, 0, 0.5)!;
+    expect(at.x).toBeCloseTo(0.5);
+    expect(at.z).toBeCloseTo(0);
+    const diag = pushedOut(0.1, 0.1, 0, 0, 1)!;
+    expect(Math.hypot(diag.x, diag.z)).toBeCloseTo(1);
+    expect(diag.x).toBeCloseTo(diag.z);
+  });
+
+  it('an answer is due at first, and again only after the cooldown', () => {
+    expect(answerDue(undefined, 100)).toBe(true);
+    expect(answerDue(1000, 1000 + 3999)).toBe(false);
+    expect(answerDue(1000, 1000 + 4000)).toBe(true);
+  });
+
+  it('a player outside the reach is left alone, and one standing on the centre is not guessed at', () => {
+    expect(pushedOut(2, 0, 0, 0, 0.5)).toBeNull();
+    expect(pushedOut(0, 0, 0, 0, 0.5)).toBeNull();
   });
 });
 

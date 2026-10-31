@@ -1,6 +1,6 @@
 # Entities: health, bombs, enemies, pickups and stacked floors
 
-Status: **built (M1.5)**, after the three-party review in [../reviews/entities.md](../reviews/entities.md). Builds on the item architecture in [ITEMS.md](ITEMS.md) and the story in [../design/STORY.md](../design/STORY.md).
+Status: **built (M1.5)**, after the three-party review in [../reviews/entities.md](../reviews/entities.md). Builds on the item architecture in [ITEMS.md](ITEMS.md) and the story in [../design/STORY.md](../design/built/story/README.md).
 
 ## 1. Stacked floors (`world/floor.ts`)
 
@@ -29,7 +29,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 - Kinds: `key`, `bomb` (the roots always lay one of each, as rewards), `heart`, `item` (pedestals), and `part` (a projection's part, `content/parts.ts`, BESTIARY §5.7). Floor pickups fall until they rest on something solid (re-checked each frame, so they drop if the floor breaks) and bob and spin.
 - A **part** is not an item: it has no effect and never enters `Inventory`. It is carried in the hand beside blocks (`Player.hand` holds `Carried`: a material or a `PartDef`, DESIGN §6). Walking onto one with a free slot lifts it into the hand with the hold-up and no burst; with no free slot it stays on the floor. Placing (right click) drops it on the floor after `PART_DROP_DELAY` seconds, and Q throws it. Each projection rolls its parts when it dies, on its own RNG path (RNG.md §4), with chances 30 / 12 / 5 / 2 % for flesh, mind, heart and essence. `held()` for items lists block materials only.
 - Collecting goes through **`pickupCollect { kind, amount }`** (mutable amount; cancel to leave it). Counters cap at 99. Keys and bombs show top-left with hearts, Isaac-style.
-- **Breaking blocks drops nothing but the block** (owner decision): `blockLoot` fires with an empty `drops` list so an item can add some. Keys and treasures are moving into **chests** ([ELEMENTS.md §7](ELEMENTS.md)). Today the floor's key for the vault sits on a key spot, and cleared rooms may drop a heart, bomb or key (40%, raised by `luck`).
+- **Breaking blocks drops nothing but the block** (owner decision), with one exception: a **crate** gives one key, heart or small bomb 30% of the time (`rollCrate` in `content/tables/crates.ts`, on `stream('drops')`, luck-scaled). `blockLoot` fires with those drops so an item can add more. Keys and treasures are moving into **chests** ([ELEMENTS.md §7](ELEMENTS.md)). Today the floor's key for the vault sits on a key spot, and cleared rooms may drop a heart, bomb or key (40%, raised by `luck`).
 
 ## 4. Bombs ("breakthroughs")
 
@@ -64,11 +64,11 @@ defineEnemy({
 | **Inner Critic** | The judging voice | `ranged`: keeps ~6 blocks away, strafes, winds up and lobs a "judgement" that arcs onto you (breaks soft blocks) |
 | **Panic** | Anxiety spiralling into panic | `burst`: rushes you, swells for 0.9 s and explodes, breaking blocks (and hurting other projections) |
 
-The roster holds 40 projection entries in `content/enemies/` (38 files; Procrastination's two lineage forms live in its own file), weighted by floor in `content/tables/enemies.ts`. The table above shows the first three; the rest use the same definition and factories, and each one's pattern and zone is in [BESTIARY §5](../design/BESTIARY.md).
+The roster holds 40 projection entries in `content/enemies/` (38 files; Procrastination's two lineage forms live in its own file), weighted by floor in `content/tables/enemies.ts`. The table above shows the first three; the rest use the same definition and factories, and each one's pattern and zone is in [BESTIARY §5](../design/built/projections/README.md).
 
 ### Spawning and rooms
 
-> As built today. The owner's direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is in [../design/BESTIARY.md §2](../design/BESTIARY.md) and is built. What is not built is listed in [BESTIARY §12.1](../design/BESTIARY.md).
+> As built today. The owner's direction (doors slam, spawn points around the room announced by omens and spatial sound, waves) is in [../design/BESTIARY.md §2](../design/built/encounters/SEAL-AND-OMENS.md) and is built. What is not built is listed in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md).
 
 - At carve time each normal room gets a roster from `ENEMY_BUDGET` (budget 2 + floor, 1 room in 5 is quiet).
 - **Sealing and slam**: when the player's box is **fully inside** a room interior, its doors close and stay sealed, and each door slams with its own spatial sound and dust (`slamDoors`, `spatial.slam`). The first wave starts after a 0.5 s breath.
@@ -80,7 +80,7 @@ The roster holds 40 projection entries in `content/enemies/` (38 files; Procrast
 
 ### Kinds of beings (BESTIARY §1)
 
-Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9, a geometric curve of about ×1.28 a floor; the open question is in [BESTIARY §12.1](../design/BESTIARY.md)).
+Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9, a geometric curve of about ×1.28 a floor; the open question is in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)).
 
 ### Attacks (`enemies/attacks.ts`)
 
@@ -93,6 +93,8 @@ Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers)
 - **Where they live:** none on the tutorial floor, and never in a start room (owner, 2026-10-29: the Gardener was removed from floor 0's spawn room; a presence there would be a gift with nothing to give). The Gardener is defined but not placed until an agreement needs it. One Listener sits in a normal room of each Tree floor (1–5), placed by `placePresences` from the floor's own fork (`floor<k>:presence`). When no normal room of a Tree floor is quiet, one is emptied so the Listener always has a room (GEN_VERSION 15).
 - **Immortal and kind:** a Presence is a creature (hp 1, never hit by a hit that is not positive) with `responds: 'positive'`: negative intentions pass through it, positive ones make only a healing burst.
 - **Talk by contact** (BESTIARY §8): walking within 2.2 blocks, on the same level, opens a card with its name and two lines (`Game.updatePresences`, `Hud.presenceCard`). Each Presence talks once. The Listener also heals a quarter heart once. There is no talk key: contact is the talk.
+- **Bodies and replies** (`pushPresences`, `pushedOut`, `Game.updatePresences`): a presence or the Boundary pushes the player out to the edge of its reach, so it cannot be walked through. Without its key a presence answers each approach, at most once every `PRESENCE_REPLY_MS` (4 s), with the name of the thing held (`presence.wrong`) or with `presence.empty`.
+- **The key part** (`PRESENCE_KEY`, `unlocksPresence`): a presence talks only when the top of the hand holds its part (the Listener a heart, the Gardener a flesh). Contact then takes the part (`hand.pop`) and marks the presence `met`. Until `met`, `Game.hearPresences` ignores it, so it says nothing, not even its silence line.
 - **The Boundary** (`content/presences/boundary.ts`, owner, 2026-10-29): a neutral projection in every vault, `responds: 'negative'`, `armor: 1`, never hurt. Its sanctuary ring is pedestal blocks placed by the carve; `Game.updateBoundaries` makes it hostile (`faction: 'projection'`, so it throws cubes through `volley`) only while a ring block is missing and you are in its room.
 - **Not built:** the other Presences, dialogue choices, the codex (§9), requests (§8.5), agreements and gifts (§8.6–8.7), and the light turning away.
 - **Silence** (`presenceReaction`, `Game.hearPresences`): a negative intention within 2 blocks silences a Presence; it says one patient line the first time, then no card and no talk until a positive intention passes within 8 blocks.
@@ -170,7 +172,7 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 | M2 | Enemy-owned hooks (Comparison mirrors your intentions), installed as `actor:<id>` |
 | M2 | Procrastination (splits on death), Perfectionism (armour shell), bosses made of breakable voxels |
 
-Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/BESTIARY.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
+Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
 
 Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |

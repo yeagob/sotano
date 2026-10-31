@@ -53,6 +53,11 @@ export const levelIndex = (floor: number) => floor + 4;
 /** The band above floor 0: the dirt, the grass and the open sky (the tree, later). */
 export const SURFACE = -1;
 
+/** The floors that hold a laboratory: one alembic in one normal room each (potions BREWING-RULES §1). */
+export const LABORATORY_FLOORS = [2, 4, 6, 8];
+/** The floors that hold a kitchen: one tile in one normal room each, on the odd floors the laboratory skips (never 0 or 9). */
+export const KITCHEN_FLOORS = [1, 3, 5, 7];
+
 /** First air layer inside the rooms of floor k (0 = the roots, at the top). */
 export function floorY(k: number) { return 8 + (LAST_FLOOR - k) * BAND; }
 
@@ -111,6 +116,8 @@ export interface ChestSpec {
   keys: number;
   /** The practice reserved for it when it stands where a pedestal would (null: it holds loot rolled when opened). */
   item: string | null;
+  /** Kept by the Boundary of its vault: it opens for a real-world mission, not for keys (docs/design/built/presences/BOUNDARY.md). */
+  guard?: boolean;
 }
 
 export interface FloorResult {
@@ -131,6 +138,10 @@ export interface FloorResult {
   hole: { room: number; x: number; z: number; size: number; yTop: number; yBottom: number } | null;
   /** Under the last floor: the chamber of silence (L4), or null. */
   silence: { x0: number; z0: number; x1: number; z1: number; y0: number; y1: number } | null;
+  /** The laboratory's alembic: one tile. Laboratory floors only, or null. */
+  laboratory: { room: number; x: number; y: number; z: number } | null;
+  /** The kitchen: one tile. Kitchen floors only, or null. */
+  kitchen: { room: number; x: number; y: number; z: number } | null;
   /** The room (plan index) whose space holds each grid cell, -1 for rock: rooms may spread into
    *  empty cells around their own, which the map never shows (docs/architecture/LEVELS.md §10). */
   space: Int16Array;
@@ -253,6 +264,17 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   const freeByRoom = new Map<number, [number, number][]>();   // world (x, z) of tiles where a chest or a key may lie
   let spawn: [number, number, number] = [0, y0, 0];
   let holeAt: [number, number, number] | null = null;
+  // the laboratory's room is drawn from the floor's own fork, before any room is carved
+  // a floor holds the alembic (even laboratory floors) or the kitchen (odd kitchen floors), never both
+  const stationKind: 'laboratory' | 'kitchen' | null = LABORATORY_FLOORS.includes(k) ? 'laboratory' : KITCHEN_FLOORS.includes(k) ? 'kitchen' : null;
+  const labRng = rr.fork('floor', k, stationKind ?? 'laboratory');
+  const normalRooms = plan.rooms.filter(p => p.type === 'normal');
+  const labRoom = stationKind && !lv.tutorial && normalRooms.length ? labRng.pick(normalRooms).id : -1;
+  const stationMat = stationKind === 'kitchen' ? MAT.kitchen : MAT.alembic;
+  let laboratory: FloorResult['laboratory'] = null;
+  let kitchen: FloorResult['kitchen'] = null;
+  const placed = () => laboratory ?? kitchen;
+  const labTiles: { x: number; y: number; z: number; room: number }[] = [];
 
   // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
   //    from the plan and the floor's own fork, so a room's choice never depends on another room's
@@ -338,11 +360,14 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (ch === 'T') {
         const boss = pr.type === 'boss' && !lv.tutorial;
         const item = opt.pedestalItem(gid(pr.id));
+        // the vault's centre practice is kept by the Boundary: a chest that opens for a real-world mission
+        const guarded = pr.type === 'vault' && !lv.tutorial;
         // the boss's practice is earned, never locked away; most others wait in a chest
-        const inChest = !boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST);
+        const inChest = guarded || (!boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST));
         w.data[w.idx(x, y0, z)] = inChest ? MAT.chest : MAT.pedestal;
-        if (inChest) chests.push({ room: gid(pr.id), x, y: y0, z, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item });
-        pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item, boss, chest: inChest });
+        if (inChest && guarded) chests.push({ room: gid(pr.id), x, y: y0, z, keys: 0, item: null, guard: true });
+        else if (inChest) chests.push({ room: gid(pr.id), x, y: y0, z, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item });
+        pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item: guarded ? null : item, boss, chest: inChest });
       }
       if (ch === 'K') keySpots.push({ room: gid(pr.id), x, y: y0, z });
       if (ch === 'H') holeAt = [x, y0, z];
@@ -351,17 +376,18 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       let spots = freeSpots(t, flipX, flipZ);
       const ring = (c: number, r: number) => Math.max(Math.abs(c - (ROOM_W - 1) / 2), Math.abs(r - (ROOM_D - 1) / 2)) === SANCTUARY_RADIUS;
       for (const [c, r] of spots) if (ring(c, r)) w.data[w.idx(x0 + c, y0, z0 + r)] = MAT.pedestal;
-      spots = spots.filter(([c, r]) => !ring(c, r));
-      for (let i = 0; i < 2 && spots.length; i++) {
-        const [col, row] = chestRng.pick(spots);
-        w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.chest;
-        chests.push({ room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item: null });
-        spots = spots.filter(([c, r]) => c !== col || r !== row);
-      }
     }
     if (pr.type === 'normal') {
       // a free-standing chest in many rooms; the rest of the open tiles stay free for keys
       let spots = freeSpots(t, flipX, flipZ);
+      for (const [c, r] of spots) labTiles.push({ x: x0 + c, y: y0, z: z0 + r, room: gid(pr.id) });
+      if (pr.id === labRoom && spots.length) {
+        const [col, row] = labRng.pick(spots);
+        w.data[w.idx(x0 + col, y0, z0 + row)] = stationMat;
+        const at = { room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row };
+        if (stationKind === 'kitchen') kitchen = at; else laboratory = at;
+        spots = spots.filter(([c, r]) => r !== row || c !== col);
+      }
       if (spots.length && !lv.tutorial && chestRng.chance(ROOM_CHEST)) {
         const [col, row] = chestRng.pick(spots);
         w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.chest;
@@ -473,7 +499,18 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   for (const rm of rooms) markRoomDirty(w, rm);
-  return { floor: k, boss: null, plan, rooms, doors, spawn, pedestals, chests, keys, bombs, hole, silence, space };
+  if (labRoom >= 0 && !placed()) {
+    const onOther = (t: { x: number; z: number }) =>
+      keys.some(k => k.x === t.x && k.z === t.z) || bombs.some(b => b.x === t.x && b.z === t.z) || (spawn[0] === t.x + 0.5 && spawn[2] === t.z + 0.5);
+    const free = labTiles.filter(t => w.get(t.x, t.y, t.z) === AIR && !onOther(t));
+    if (free.length) {
+      const t = labRng.pick(free);
+      w.data[w.idx(t.x, t.y, t.z)] = stationMat;
+      const at = { room: t.room, x: t.x, y: t.y, z: t.z };
+      if (stationKind === 'kitchen') kitchen = at; else laboratory = at;
+    }
+  }
+  return { floor: k, boss: null, plan, rooms, doors, spawn, pedestals, chests, keys, bombs, hole, silence, laboratory, kitchen, space };
 }
 
 /**

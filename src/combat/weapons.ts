@@ -1,5 +1,5 @@
 // Weapons that replace the intention, Isaac-style (docs/architecture/WEAPONS.md): the blade of
-// Cut Ties with Toxic People, the charged beam of Remember Breathing, and the great cut of both together. They only act
+// Cut Ties with Toxic Relationships, the charged beam of Remember Breathing, and the great cut of both together. They only act
 // through the host (the game), so every block and actor they touch goes through the shared
 // damage pipeline and its events. No randomness: particles go through the host (core/fx).
 
@@ -68,7 +68,7 @@ function glowMaterial(color: number, opacity: number) {
   });
 }
 
-// ───────────────────────── Cut Ties with Toxic People: the blade ─────────────────────────
+// ───────────────────────── Cut Ties with Toxic Relationships: the blade ─────────────────────────
 
 /** Half-angle of the blade's cone. */
 const BLADE_HALF_ANGLE = (55 * Math.PI) / 180;

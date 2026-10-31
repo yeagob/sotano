@@ -4,7 +4,7 @@ Status: **lore and direction**, not built. The owner's brief (translated): *the 
 
 ## 1. The shape of the world
 
-The dungeon goes **down** into the basement of the mind: ten floors from the roots to the frozen bottom, then silence. Above the surface there is no house (owner, 2026-10-27): a giant tree rises into the sky (§4b, [LEVELS.md](../design/LEVELS.md)). *§1's table below predates that decision; the mirror now runs between the depth and the tree.*
+The dungeon goes **down** into the basement of the mind: ten floors from the roots to the frozen bottom, then silence. Above the surface there is no house (owner, 2026-10-27): a giant tree rises into the sky (§4b, [LEVELS.md](../design/not-built/levels/ENDING-AND-RETURN.md)). *§1's table below predates that decision; the mirror now runs between the depth and the tree.*
 
 The Hermetic principle of correspondence ("that which is below is like that which is above", *The Emerald Tablet*) says these are not two places but one, seen from two sides. So the world is built as a **mirror**:
 
@@ -26,7 +26,7 @@ The seven Hermetic principles (as summarised in *The Kybalion*, 1908) map onto s
 |---|---|---|
 | **Mentalism** | "The all is mind" | Intentions shape the world: everything is breakable by will |
 | **Correspondence** | As above, so below | Depth and surface mirror each other; the endgame connects them |
-| **Vibration** | Everything moves | Electricity, sound, the pulse of projections ([ELEMENTS](../design/ELEMENTS.md)) |
+| **Vibration** | Everything moves | Electricity, sound, the pulse of projections ([ELEMENTS](../design/not-built/elements/ELECTRICITY.md)) |
 | **Polarity** | Opposites are degrees of one thing | Fire and water; lava and water making obsidian; harm and healing in the same item |
 | **Rhythm** | Everything flows out and in | Descent and return; runs that begin again, carrying knowledge |
 | **Cause and effect** | Every cause has its effect | Events, synergies, chain reactions |
@@ -60,7 +60,7 @@ Respect rule (from the [`sotano-lore`](../../.claude/skills/sotano-lore/SKILL.md
 The I Ching reads any moment as one of 64 hexagrams of six lines, built from eight trigrams. Lines that change turn one hexagram into another: nothing stays still.
 
 - **The run as a moment.** **Owner's decision:** the run seed is shown and read as a hexagram: same seed, same reading. Changing lines could hint at how the run turns.
-- **The eight forces as elements** ([ELEMENTS](../design/ELEMENTS.md)):
+- **The eight forces as elements** ([ELEMENTS](../design/not-built/elements/ELECTRICITY.md)):
 
 | Trigram | Force | Element |
 |---|---|---|
@@ -79,11 +79,11 @@ Beyond the seven principles (§2), two practical teachings suggest mechanics: **
 
 ## 4b. The thirteen floors (owner, 2026-10-27)
 
-The owner set the world's shape: ten floors down and a giant tree of three floors up. Floors 0–5 are laid out as the Tree of Life's ten emanations (bigger, more themed and more complex as you descend); 5–9 are random maps; the tree above holds the trunk (a vertical map), the branches (a 3D map) and the leaves (a star map of constellations with teleport doors and views of the cosmos). Down is a descent through the layers of the unconscious to the bottom of Dante's inferno, and then silence; up is heaven. Owner decisions the same day: floor 0 is the earth and the roots (peaceful creatures, no house above: you climb from the roots); floors 1–9 are Dante's nine circles in order, the ninth frozen; floor 5 ends in a great pit to the next layer; silence connects back to heaven, cyclically (this replaces §3's "the bottom opens onto the sky above the house": there is no house, and the loop is silence ↔ heaven). Design: [LEVELS.md](../design/LEVELS.md). Respect rule for Dante: his structure and images, never his figures as projections, no punishment of people.
+The owner set the world's shape: ten floors down and a giant tree of three floors up. Floors 0–5 are laid out as the Tree of Life's ten emanations (bigger, more themed and more complex as you descend); 5–9 are random maps; the tree above holds the trunk (a vertical map), the branches (a 3D map) and the leaves (a star map of constellations with teleport doors and views of the cosmos). Down is a descent through the layers of the unconscious to the bottom of Dante's inferno, and then silence; up is heaven. Owner decisions the same day: floor 0 is the earth and the roots (peaceful creatures, no house above: you climb from the roots); floors 1–9 are Dante's nine circles in order, the ninth frozen; floor 5 ends in a great pit to the next layer; silence connects back to heaven, cyclically (this replaces §3's "the bottom opens onto the sky above the house": there is no house, and the loop is silence ↔ heaven). Design: [LEVELS.md](../design/not-built/levels/ENDING-AND-RETURN.md). Respect rule for Dante: his structure and images, never his figures as projections, no punishment of people.
 
 ## 5. Open questions for the owner
 
-0. The thirteen floors: see the open questions in [LEVELS.md](../design/LEVELS.md) §1.
+0. The thirteen floors: see the open questions in [LEVELS.md](../design/not-built/levels/ENDING-AND-RETURN.md) §1.
 1. Is the endgame connection a **place** (the bottom opening onto the sky), an **event** (the house changes when you reach the bottom), or both?
 2. Should the surface be explorable during a run, or only reached at the end?
 3. Should each floor's mirror counterpart be literal (same layout above and below) or symbolic (themes that echo)?

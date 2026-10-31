@@ -49,6 +49,8 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, type: 'normal', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
+  brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
+  drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
   ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
   materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),

@@ -103,7 +103,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `land` | — (react) | touching ground after a fall (`fallSpeed` in blocks/s; the feet's position `x, y, z`) |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
-| `blockLoot` | `drops` (empty by default: blocks drop nothing but themselves) | after a block breaks |
+| `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's 30% roll of a key, heart or bomb) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
@@ -117,6 +117,8 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `roomClear` | `drops` | a room cleared |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
+| `brew` | — (react) | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
+| `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |
 
 **Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).
 
@@ -179,6 +181,7 @@ on gain / lose / restore / new floor:
 
 - Every held copy is an `ItemInstance { uid, def }`; the uid is stable for the life of the copy.
 - Only sources the inventory installed are removed. Effects from other sources (a room aura, a curse, a timed buff) on the same stat sheet and bus survive pickups.
+- **Potions** are such a source. A drunk potion's stat modifiers sit on the same stat sheet under `potion:<id>`, one source per potion, installed and removed by `PotionEffects` (`src/game/potion-effects.ts`), never by the inventory. Drinking an active potion again replaces its source and refreshes its count. A potion counted in rooms loses one room per sealed room cleared (never per challenge wave); every potion ends on the next floor entry; a new run clears them all. Potions have no hooks yet: the Questioning Tincture's lock is read by the core at the door and the chest.
 - `onGain` runs once, from `gain()`. Rebuilds and restores never run it again.
 - `gain()` returns the stat diff and the synergies that just switched on; the HUD shows both in the pickup banner.
 - Picking up a duplicate is allowed (two instances, stats stack).
@@ -187,7 +190,7 @@ on gain / lose / restore / new floor:
 
 - **Definitions** are code (TypeScript modules), versioned with the game.
 - **A player's items** are ids in acquisition order: `inventory.serialize() → ['kaizen', 'deepfocus']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
-- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Cut Ties with Toxic People → blade, Remember Breathing → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
+- **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Cut Ties with Toxic Relationships → blade, Remember Breathing → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
 - **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault`, the boss room's pedestal from `boss` (both falling back to `treasure`). Every pedestal, boss rooms included, is reserved at run start (`pedestalSlots` in `world/floor.ts`).
 
 ## 8. Debugging an interaction

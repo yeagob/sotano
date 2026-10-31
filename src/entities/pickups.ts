@@ -7,11 +7,12 @@ import * as THREE from 'three';
 import type { PickupKind } from '../game/events';
 import type { ItemDef } from '../items/types';
 import type { PartDef } from '../content/parts';
+import { carriedDef, type Flask } from '../content/potions';
 import { pal } from '../content/palette';
 import { glowTexture, iconTexture } from '../render/icons';
 import { breatheSeed, buildSeed, disposeSeed, type SeedModel } from '../render/seed-model';
 
-export type PickupType = PickupKind | 'item' | 'part';
+export type PickupType = PickupKind | 'item' | 'part' | 'flask';
 
 export interface Pickup {
   type: PickupType;
@@ -21,8 +22,8 @@ export interface Pickup {
   room: number;
   /** Pedestal item (null = empty pedestal). */
   item: ItemDef | null;
-  /** The part a projection left (type 'part'). */
-  part: PartDef | null;
+  /** The part a projection left (type 'part') or the flask a laboratory brewed (type 'flask'). */
+  carried: PartDef | Flask | null;
   taken: boolean;
   /** Can't be collected yet (just dropped). */
   delay: number;
@@ -70,7 +71,7 @@ function heartMesh(): THREE.Object3D {
   return g;
 }
 
-function partMesh(def: PartDef): THREE.Object3D {
+function partMesh(def: Pick<PartDef, 'id' | 'icon'>): THREE.Object3D {
   const g = new THREE.Group();
   const icon = new THREE.Sprite(new THREE.SpriteMaterial({ map: iconTexture(def), transparent: true }));
   icon.scale.set(0.5, 0.5, 1);
@@ -106,11 +107,11 @@ export class Pickups {
 
   dispose() { this.scene.remove(this.group); }
 
-  add(type: PickupType, x: number, y: number, z: number, room: number, item: ItemDef | null = null, delay = 0, part: PartDef | null = null): Pickup {
-    const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : type === 'part' && part ? partMesh(part) : pedestalItem(item);
+  add(type: PickupType, x: number, y: number, z: number, room: number, item: ItemDef | null = null, delay = 0, carried: PartDef | Flask | null = null): Pickup {
+    const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : (type === 'part' || type === 'flask') && carried ? partMesh(carriedDef(carried)) : pedestalItem(item);
     obj.position.set(x, y, z);
     this.group.add(obj);
-    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, part, taken: false, delay, age: 0, obj };
+    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, carried, taken: false, delay, age: 0, obj };
     obj.scale.setScalar(0.001);
     this.list.push(p);
     return p;
@@ -159,7 +160,7 @@ export class Pickups {
       if (seed) breatheSeed(seed, this.time + p.x);
       p.obj.rotation.y = this.time * 1.6 + p.x;
       const bob = Math.sin(this.time * 2.2 + p.x) * (p.type === 'item' ? 0.08 : 0.04);
-      p.obj.position.set(p.x, p.y + (p.type === 'item' ? 0.55 : p.type === 'part' ? 0.3 : 0.12) + bob, p.z);
+      p.obj.position.set(p.x, p.y + (p.type === 'item' ? 0.55 : p.type === 'part' || p.type === 'flask' ? 0.3 : 0.12) + bob, p.z);
       if (p.type === 'item') {
         p.obj.rotation.y = 0;
         const glow = p.obj.getObjectByName('glow') as THREE.Sprite | undefined;
