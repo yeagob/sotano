@@ -20,7 +20,7 @@ export default defineEnemy({
   id: 'numbness',
   name: 'Numbness',
   pattern: 'I do not feel anything.',
-  hp: 30,
+  hp: 60,
   speed: 0.5,
   size: [0.4, 1.8],
   contactDamage: 4,

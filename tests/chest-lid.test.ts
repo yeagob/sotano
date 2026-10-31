@@ -13,6 +13,7 @@ import * as THREE from 'three';
   }),
 };
 const { buildChest } = await import('../src/render/chest-model');
+const { Chests } = await import('../src/entities/chests');
 
 const T = 1 / 16;
 const EPS = 1e-3;
@@ -60,4 +61,16 @@ describe('chest lids', () => {
       expect(hits.slice(0, 3)).toEqual([]);
     });
   }
+
+  it('the shudder only lifts the lid: it never dips below closed (#4)', () => {
+    const chests = new Chests(new THREE.Scene());
+    const v = chests.add({ x: 0, y: 0, z: 0, keys: 0, guard: false, item: null } as unknown as Parameters<typeof chests.add>[0], 0);
+    chests.open(v);
+    let highest = -Infinity;
+    for (let f = 0; f < 60; f++) {
+      chests.update(1 / 240, 0);
+      highest = Math.max(highest, v.model.lid.rotation.x);
+    }
+    expect(highest).toBeLessThanOrEqual(0);
+  });
 });

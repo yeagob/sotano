@@ -16,7 +16,7 @@ Floors 7 and 8. Code: [shortcut.ts](../../../../src/content/enemies/shortcut.ts)
 
 - It flees when you come within about five blocks, and otherwise drifts.
 - When you come within four blocks, every four seconds it swings a short ring: 6 damage, announced for 0.6 seconds, growing to about two blocks across.
-- It does not touch. It has nine health.
+- It does not touch. It has 18 health.
 
 ## How the player answers it
 

@@ -28,7 +28,7 @@ export default defineEnemy({
   id: 'resentment',
   name: 'Resentment',
   pattern: 'I will not forget',
-  hp: 14,
+  hp: 28,
   speed: 0.8,
   size: [0.38, 0.9],
   contactDamage: 4,

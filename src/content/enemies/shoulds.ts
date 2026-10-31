@@ -14,7 +14,7 @@ export default defineEnemy({
   id: 'shoulds',
   name: 'The Shoulds',
   pattern: 'I should… I should…',
-  hp: 16,
+  hp: 32,
   speed: 0,
   size: [0.3, 0.4],
   contactDamage: 0,

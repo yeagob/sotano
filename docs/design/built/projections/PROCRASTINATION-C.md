@@ -6,7 +6,7 @@ Status: built.
 
 ## What it is
 
-The smallest split of [Procrastination](PROCRASTINATION.md): a fast Later with four health.
+The smallest split of [Procrastination](PROCRASTINATION.md): a fast Later with eight health.
 
 ## Where it appears
 

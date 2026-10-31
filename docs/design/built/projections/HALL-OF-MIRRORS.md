@@ -16,7 +16,7 @@ Floors 7 to 9. Code: [hall-of-mirrors.ts](../../../../src/content/enemies/hall-o
 
 - It stands still and does not touch.
 - Every 2.6 seconds it fires three bolts toward you, from three points beside its body (4 damage each). A bolt stops at the first solid block.
-- It has 22 health. Its budget cost is five, the highest on the roster.
+- It has 44 health. Its budget cost is five, the highest on the roster.
 
 ## How the player answers it
 

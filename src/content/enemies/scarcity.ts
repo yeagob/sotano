@@ -20,7 +20,7 @@ export default defineEnemy({
   id: 'scarcity',
   name: 'Scarcity',
   pattern: 'There will not be enough',
-  hp: 10,
+  hp: 20,
   speed: 1.6,
   size: [0.24, 0.3],
   contactDamage: 0,
