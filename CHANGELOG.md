@@ -19,6 +19,9 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Open chest lids no longer clip through the chest body or its padlock (#4).
 - Locked doors open when you touch them, not from across the room (#5).
 - Enemy attacks that deal damage warn in yellow and hit red: the warning is yellow until the blow lands, then the live marks and shots are red. Particles, decoration and attacks that cannot hurt stay pale blue-white, so a blow no longer looks like dust (#47).
+- The game no longer freezes on the main menu in Firefox when you press Start: its sound positioning uses the calls Firefox supports.
+- Placing a block into a doorway or at the world's edge is refused with a sound, instead of throwing the block back at you.
+- Placing a block next to a wall, ledge or corner no longer throws it: if you stand a little in its cell you are nudged out and it goes down; if you stand deeper in, it waits in your hand until you step clear.
 - A loose cube that spins fast in place for a second gets an upward push; if it still spins in place after the third push, it vanishes (#42).
 
 ### Changed
