@@ -22,6 +22,7 @@ import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { tollIndex } from './toll';
+import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -2033,14 +2034,21 @@ export class Game {
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.alembic) { this.feedLab(hit.x, hit.y, hit.z); return; }
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.kitchen) { this.cookAt(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
-    const b = p.body;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
-      && !this.doors.inDoorway(x, y, z)
-      && !boxHits((xx, yy, zz) => xx === x && yy === y && zz === z, b.x, b.y, b.z, b.hw, b.h);
-    if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
+      && !this.doors.inDoorway(x, y, z);
+    // a face in reach whose cell cannot take a block (a doorway, the world's edge) is refused like a
+    // blocked placement, never thrown: only aiming at nothing throws the block
+    if (!ok) { if (tap || hit) sfx.denied(); else this.throwTop(); return; }
+    // the body reaching into the cell: a quarter of a block or less is nudged out and the block goes
+    // down; deeper, the block waits in hand until the player steps clear (never thrown, never a jump)
+    // the push is worked out now but applied only once the placement goes through (an item may cancel it)
+    const over = cellOverlap(p.body, x, y, z);
+    const push: [number, number] | null = over ? this.nudgeTarget(over) : [0, 0];
+    if (over && (over.depth > PLACE_NUDGE_MAX || !push)) { sfx.denied(); return; }
     const top = p.hand.at(-1)!;
     if (typeof top !== 'number') {
       this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
+      this.nudge(push!);
       p.hand.pop();
       this.hands.placed();
       sfx.place();
@@ -2050,10 +2058,26 @@ export class Game {
     if (ev.cancelled) return;
     this.world.set(x, y, z, ev.material);
     this.debris.clearCell(x, y, z);
+    this.nudge(push!);
     p.hand.pop();
     this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
+  }
+
+  /** The shift that takes the player out of the cell it is placing into; null when a wall is in the way. */
+  private nudgeTarget(over: CellOverlap): [number, number] | null {
+    const b = this.player.body;
+    const push = over.depth + PLACE_NUDGE_CLEAR;
+    const dx = over.axis === 0 ? over.dir * push : 0, dz = over.axis === 2 ? over.dir * push : 0;
+    if (boxHits((xx, yy, zz) => this.solid(xx, yy, zz), b.x + dx, b.y, b.z + dz, b.hw, b.h)) return null;
+    return [dx, dz];
+  }
+
+  /** Applies a shift from nudgeTarget once the placement is certain. */
+  private nudge([dx, dz]: [number, number]) {
+    const b = this.player.body;
+    b.x += dx; b.z += dz;
   }
 
   /** The ray through a tapped pixel, as the camera sees it. */
