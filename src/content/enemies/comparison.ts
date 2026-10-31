@@ -24,7 +24,7 @@ export default defineEnemy({
   id: 'comparison',
   name: 'Comparison',
   pattern: 'They are ahead of you.',
-  hp: 30,
+  hp: 60,
   speed: 1,
   size: [0.3, 2],
   contactDamage: 0,

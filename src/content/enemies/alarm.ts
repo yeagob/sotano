@@ -29,7 +29,7 @@ export default defineEnemy({
   id: 'alarm',
   name: 'Alarm',
   pattern: 'Everyone, something is wrong!',
-  hp: 14,
+  hp: 28,
   speed: 2.4,
   size: [0.38, 0.9],
   contactDamage: 0,

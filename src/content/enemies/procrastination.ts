@@ -27,7 +27,7 @@ const laters = (id: string, name: string, hp: number, speed: number, scale: numb
   ],
 });
 
-export const procrastinationC = laters('procrastination-c', 'Later', 4, 1.9, 0.5, undefined, 99, 99, 1);
-export const procrastinationB = laters('procrastination-b', 'Later', 9, 1.4, 0.75, ['procrastination-c', 'procrastination-c'], 99, 99, 1);
+export const procrastinationC = laters('procrastination-c', 'Later', 8, 1.9, 0.5, undefined, 99, 99, 1);
+export const procrastinationB = laters('procrastination-b', 'Later', 18, 1.4, 0.75, ['procrastination-c', 'procrastination-c'], 99, 99, 1);
 
-export default laters('procrastination', 'Procrastination', 18, 0.9, 1, ['procrastination-b', 'procrastination-b'], 2, 5, 2);
+export default laters('procrastination', 'Procrastination', 36, 0.9, 1, ['procrastination-b', 'procrastination-b'], 2, 5, 2);

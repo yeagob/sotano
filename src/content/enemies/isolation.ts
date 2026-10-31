@@ -12,7 +12,7 @@ export default defineEnemy({
   id: 'isolation',
   name: 'Isolation',
   pattern: 'Leave me alone.',
-  hp: 36,
+  hp: 72,
   speed: 0,
   size: [0.5, 1.2],
   contactDamage: 4,

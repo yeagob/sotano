@@ -6,7 +6,7 @@ export default defineEnemy({
   id: 'reactivity',
   name: 'Reactivity',
   pattern: 'How dare you!',
-  hp: 24,
+  hp: 48,
   speed: 1,
   size: [0.42, 0.9],
   contactDamage: 4,

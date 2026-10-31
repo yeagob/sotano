@@ -10,7 +10,7 @@ export default defineEnemy({
   id: 'doubt',
   name: 'Doubt',
   pattern: 'Self-doubt',
-  hp: 12,
+  hp: 24,
   speed: 1.7,
   size: [0.32, 1.6],
   contactDamage: 4,
