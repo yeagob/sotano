@@ -16,7 +16,7 @@ Floors 3 to 6. Code: [comparison.ts](../../../../src/content/enemies/comparison.
 
 - It keeps between four and six blocks from you, strafing in between.
 - Every two seconds it fires a bolt at you (4 damage). A bolt stops at the first solid block.
-- It does not touch. It has 30 health.
+- It does not touch. It has 60 health.
 
 ## How the player answers it
 

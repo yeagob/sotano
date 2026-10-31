@@ -23,7 +23,7 @@ export default defineEnemy({
   id: 'rumination',
   name: 'Rumination',
   pattern: 'Again. Again. Again.',
-  hp: 16,
+  hp: 32,
   speed: 0.9,
   size: [0.3, 0.5],
   contactDamage: 4,

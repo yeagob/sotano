@@ -19,5 +19,6 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Locked doors open when you touch them, not from across the room (#5).
 
 ### Changed
+- Every hostile projection (the voices you fight) has twice its health, so a fight with the same intentions takes about twice as long. Bosses and creatures are unchanged (#45).
 - The laboratory's alembic is two tiles side by side, drawn as a laboratory apparatus; laboratory seeds changed (#20).
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).

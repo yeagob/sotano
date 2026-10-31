@@ -16,7 +16,7 @@ Floor 9. Code: [cynicism.ts](../../../../src/content/enemies/cynicism.ts).
 
 - It stands still. When you come within five blocks, it backs away from you.
 - Every four seconds it opens a ring of three blocks around itself for four seconds. While you stand in the ring you cannot cast. The mute lasts 0.4 seconds after you leave it.
-- It does not touch. It has 26 health.
+- It does not touch. It has 52 health.
 
 ## How the player answers it
 

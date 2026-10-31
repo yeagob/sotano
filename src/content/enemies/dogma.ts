@@ -12,7 +12,7 @@ export default defineEnemy({
   id: 'dogma',
   name: 'Dogma',
   pattern: 'It has always been this way.',
-  hp: 60,
+  hp: 120,
   speed: 0,
   size: [0.8, 2.6],
   contactDamage: 0,

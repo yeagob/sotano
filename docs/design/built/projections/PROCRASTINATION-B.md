@@ -6,7 +6,7 @@ Status: built.
 
 ## What it is
 
-The middle split of [Procrastination](PROCRASTINATION.md): a smaller Later with nine health. It is the work you put off in two pieces.
+The middle split of [Procrastination](PROCRASTINATION.md): a smaller Later with eighteen health. It is the work you put off in two pieces.
 
 ## Where it appears
 
