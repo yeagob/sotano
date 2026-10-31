@@ -63,7 +63,8 @@ export class Chests {
       if (t < SHUDDER) {
         const k = t / SHUDDER;
         m.root.scale.set(1 + 0.06 * k, 1 - 0.08 * k, 1 + 0.06 * k);
-        m.lid.rotation.x = Math.sin(t * 90) * 0.04;
+        // the rattle only lifts the lid: a dip below closed pushes its front edge into the body
+        m.lid.rotation.x = -Math.abs(Math.sin(t * 90)) * 0.04;
         continue;
       }
       const s = Math.min(1, (t - SHUDDER) / SWING);
