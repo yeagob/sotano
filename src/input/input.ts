@@ -17,7 +17,12 @@ export function isTouchDevice() {
   return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches && 'ontouchstart' in window;
 }
 
-const BUTTON_ACTIONS = BINDINGS.filter(b => b.kind !== 'axis').map(b => b.action);
+/** Largest mouse-look delta taken from one mousemove event, in pixels. */
+const LOOK_EVENT_MAX = 300;
+
+const clampLook = (v: number) => Number.isFinite(v) ? Math.max(-LOOK_EVENT_MAX, Math.min(LOOK_EVENT_MAX, v)) : 0;
+
+const BUTTON_ACTIONS =BINDINGS.filter(b => b.kind !== 'axis').map(b => b.action);
 
 export class Input {
   readonly keys = new Set<string>();
@@ -36,6 +41,7 @@ export class Input {
   private suppressed = new Set<Action>();
   private lastTouch = -1e9;
   private expectUnlock = false;
+  private skipLookEvent = false;
   private stickWake = 0;
   onBlur: (() => void) | null = null;
   lookDX = 0; lookDY = 0;
@@ -65,6 +71,7 @@ export class Input {
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === this.el;
+      this.skipLookEvent = this.locked;
       if (!this.locked) {
         this.mouse.clear(); this.keys.clear();
         if (!this.expectUnlock) this.engaged = false;
@@ -73,7 +80,10 @@ export class Input {
     });
     addEventListener('mousemove', e => {
       if (!this.locked) return;
-      this.lookDX += e.movementX; this.lookDY += e.movementY;
+      // Firefox can report a jump for the first move after the lock is taken (measured from the
+      // cursor's old spot), so that event is dropped and no single event may exceed LOOK_EVENT_MAX
+      if (this.skipLookEvent) { this.skipLookEvent = false; return; }
+      this.lookDX += clampLook(e.movementX); this.lookDY += clampLook(e.movementY);
     });
     addEventListener('touchstart', () => { this.lastTouch = performance.now(); this.use('touch'); }, { capture: true, passive: true });
     addEventListener('gamepadconnected', () => this.onPadChange?.(true));
