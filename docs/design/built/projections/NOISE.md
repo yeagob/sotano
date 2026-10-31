@@ -16,7 +16,7 @@ Floors 4 to 9. Code: [noise.ts](../../../../src/content/enemies/noise.ts).
 
 - It flits around its target at about three blocks, changing direction now and then, at a fast pace.
 - Its touch does 2 damage.
-- It has four health.
+- It has eight health.
 
 ## How the player answers it
 
