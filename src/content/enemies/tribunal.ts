@@ -15,7 +15,7 @@ export default defineEnemy({
   id: 'tribunal',
   name: 'The Tribunal',
   pattern: 'We have all agreed.',
-  hp: 72,
+  hp: 144,
   speed: 0,
   size: [1.2, 2.2],
   contactDamage: 0,

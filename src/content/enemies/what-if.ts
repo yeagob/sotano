@@ -19,7 +19,7 @@ export default defineEnemy({
   id: 'what-if',
   name: 'What If',
   pattern: 'What if I had…',
-  hp: 34,
+  hp: 68,
   speed: 0.9,
   size: [0.32, 1.4],
   contactDamage: 4,

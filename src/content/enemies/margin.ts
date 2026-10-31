@@ -13,7 +13,7 @@ export default defineEnemy({
   id: 'margin',
   name: 'The Margin',
   pattern: 'And another thing…',
-  hp: 28,
+  hp: 56,
   speed: 0,
   size: [0.3, 1.9],
   contactDamage: 0,

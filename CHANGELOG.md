@@ -13,13 +13,16 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
 
 ### Fixed
+- The Listener gives its reward when you bring it a heart: a quarter heart when you are hurt, and at full health a heart that waits on the floor beside it. The part leaves your hand with a visible handover (#43).
 - The Boundary asks its mission when you walk up to it, not only at the chest (#40).
 - Presences have a body you cannot walk through, and they answer what you bring: they name it and say whether it is what they wait for. A laboratory is placed on every laboratory floor, even when the first room chosen has no room for it.
 - Open chest lids no longer clip through the chest body or its padlock (#4).
 - Locked doors open when you touch them, not from across the room (#5).
 - Placing a block into a doorway or at the world's edge is refused with a sound, instead of throwing the block back at you.
 - Placing a block next to a wall, ledge or corner no longer throws it: if you stand a little in its cell you are nudged out and it goes down; if you stand deeper in, it waits in your hand until you step clear.
+- A loose cube that spins fast in place for a second gets an upward push; if it still spins in place after the third push, it vanishes (#42).
 
 ### Changed
+- Every hostile projection (the voices you fight) has twice its health, so a fight with the same intentions takes about twice as long. Bosses and creatures are unchanged (#45).
 - The laboratory's alembic is two tiles side by side, drawn as a laboratory apparatus; laboratory seeds changed (#20).
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).

@@ -125,7 +125,8 @@ export function buildChest(opts: { keys: number; practice: boolean }): ChestMode
   box(top, m.wood, -7, 7, 10, 12, -4, 5);
   box(top, m.wood, -7, 7, 12, 13, -2, 3);
   for (const x of bx) {
-    box(top, band, x, x + bw, opts.practice ? 9 : 8, 11, -5, 7);
+    // the band's underside sits a hair above the lid's inside face: flush, the two flicker (z-fighting)
+    box(top, band, x, x + bw, opts.practice ? 9 : 8.05, 11, -5, 7);
     box(top, band, x, x + bw, 10, 13, -4, 6);
     box(top, band, x, x + bw, 12, 14, -2, 4);
   }

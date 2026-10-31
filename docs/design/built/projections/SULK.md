@@ -16,7 +16,7 @@ Floors 5 and 6. Code: [sulk.ts](../../../../src/content/enemies/sulk.ts).
 
 - It stays where it is, in water, and does not move.
 - Every four seconds, when you are within three blocks of it, it sends a slowing field of about 2.5 blocks that lasts three seconds. Standing in the field slows you.
-- It does not touch. It has 18 health.
+- It does not touch. It has 36 health.
 
 ## How the player answers it
 

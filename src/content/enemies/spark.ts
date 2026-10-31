@@ -21,7 +21,7 @@ export default defineEnemy({
   id: 'spark',
   name: 'Spark',
   pattern: 'Is that? What was that?',
-  hp: 12,
+  hp: 24,
   speed: 1.5,
   size: [0.2, 0.5],
   contactDamage: 2,

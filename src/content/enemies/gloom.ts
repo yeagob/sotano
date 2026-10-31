@@ -25,7 +25,7 @@ export default defineEnemy({
   id: 'gloom',
   name: 'Gloom',
   pattern: 'Everything is grey',
-  hp: 14,
+  hp: 28,
   speed: 0.6,
   size: [0.6, 0.4],
   contactDamage: 0,

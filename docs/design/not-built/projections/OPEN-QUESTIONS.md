@@ -6,11 +6,11 @@ Status: proposal. These questions are open. None is decided here: the owner rule
 
 Each value is shown twice, the card first. Numbers are targets until a build confirms them; the code value is what plays today.
 
-- **Inner Critic.** Card: 14 health, floors 1 to 4. Code: 9 health ([critic.ts](../../../../src/content/enemies/critic.ts)), all floors. Which health and which floors does the owner want?
-- **Not Yet.** Card: a core of 24 health and eight plates of six health each, floors 6 to 9. Code: 40 health, armour 0.7, no plates ([not-yet.ts](../../../../src/content/enemies/not-yet.ts)), floors 6 to 9. Which structure does the owner want?
-- **Panic.** Card: 8 health, cost 1, floors 1 to 4. Code: 7 health, cost 2, all floors, and more often from floor 3 ([panic.ts](../../../../src/content/enemies/panic.ts)).
-- **The Hall of Mirrors.** Card: three mirrors of 22 health each. Code: one body of 22 health, which fires three bolts ([hall-of-mirrors.ts](../../../../src/content/enemies/hall-of-mirrors.ts)). Total health is different, and the structure is different.
-- **The Tribunal.** Card: three lecterns of 24 health each (72 in all). Code: one body of 72 health with three posts ([tribunal.ts](../../../../src/content/enemies/tribunal.ts)). The total matches; the structure is the question.
+- **Inner Critic.** Card: 14 health, floors 1 to 4. Code: 18 health ([critic.ts](../../../../src/content/enemies/critic.ts)), all floors. Which health and which floors does the owner want?
+- **Not Yet.** Card: a core of 24 health and eight plates of six health each, floors 6 to 9. Code: 80 health, armour 0.7, no plates ([not-yet.ts](../../../../src/content/enemies/not-yet.ts)), floors 6 to 9. Which structure does the owner want?
+- **Panic.** Card: 8 health, cost 1, floors 1 to 4. Code: 14 health, cost 2, all floors, and more often from floor 3 ([panic.ts](../../../../src/content/enemies/panic.ts)).
+- **The Hall of Mirrors.** Card: three mirrors of 22 health each. Code: one body of 44 health, which fires three bolts ([hall-of-mirrors.ts](../../../../src/content/enemies/hall-of-mirrors.ts)). Total health is different, and the structure is different.
+- **The Tribunal.** Card: three lecterns of 24 health each (72 in all). Code: one body of 144 health with three posts ([tribunal.ts](../../../../src/content/enemies/tribunal.ts)). The total matches; the structure is the question.
 
 Recommended: keep the code's values until a play test, and rule on the structure of the Hall of Mirrors and the Tribunal, which the cards describe as several bodies.
 

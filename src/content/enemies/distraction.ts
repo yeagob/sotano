@@ -22,7 +22,7 @@ export default defineEnemy({
   id: 'distraction',
   name: 'Distraction',
   pattern: 'Ooh, what is that?',
-  hp: 6,
+  hp: 12,
   speed: 1.8,
   size: [0.22, 0.2],
   contactDamage: 2,
