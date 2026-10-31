@@ -16,6 +16,8 @@ The Boundary is a tall, calm column of limestone that keeps the vault it stands 
 - **Wake.** Breaking any block of its ring, while the player is inside its room, turns it hostile. About every 2.4 seconds it throws a cube at the player.
 - **Calm again.** Putting the ring back, or leaving its room, makes it neutral again. A room is never sealed by it, since a vault holds no roster.
 
+- **Guard.** It keeps the vault chest: that chest opens for a real-world mission, not for keys. See [GUARD-MISSIONS.md](GUARD-MISSIONS.md).
+
 ## Open questions
 
 - **Kind.** The design (approved 2026-10-29) calls the Boundary a creature that is provoked and not a projection: it does not release, it settles. The code makes it a projection with the armour that prevents any hurt, and the design's creature list does not include it. Which one? The design's wording is in [not-built/presences](../../not-built/presences/README.md) only as a note; the owner decides.

@@ -47,9 +47,10 @@ export class ItemPools {
   /** The item reserved for a slot (falls back if the player already holds it). */
   reservedFor(key: string): string | undefined { return this.reserved.get(key); }
 
-  /** A runtime draw: never a reserved or taken item; marks it taken. */
-  drawRuntime(pool: PoolName, rng: Rng): string {
-    const id = this.pick(pool, rng, id => !this.reservedIds.has(id) && !this.taken.has(id));
+  /** A runtime draw: never a reserved or taken item; marks it taken. `band` keeps it to those qualities. */
+  drawRuntime(pool: PoolName, rng: Rng, band?: readonly [number, number]): string {
+    const inBand = (id: string) => !band || ((this.quality.get(id) ?? 0) >= band[0] && (this.quality.get(id) ?? 0) <= band[1]);
+    const id = this.pick(pool, rng, id => !this.reservedIds.has(id) && !this.taken.has(id) && inBand(id));
     this.taken.add(id);
     return id;
   }

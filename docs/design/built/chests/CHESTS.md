@@ -39,7 +39,7 @@ Two kinds of chest hold different things.
 
 Room chests are not placed on the roots (see [ROOTS](../levels/floors/ROOTS.md)). The owner's text said every floor including the roots; the build leaves the roots without room chests. That is open: see [not-built/chests/ROOT-CHESTS.md](../../not-built/chests/ROOT-CHESTS.md).
 
-The vault's sanctuary holds two chests on the open tiles of the room, with its pedestals on the ring around the centre. The presence that watches the sanctuary is in the bestiary, not here.
+The vault's sanctuary holds one chest on the open tiles of the room, with its pedestals on the ring around the centre. That chest is kept by the Boundary: it opens for a real-world mission, not for keys (see [GUARD-MISSIONS.md](../presences/GUARD-MISSIONS.md)).
 
 ## Where chests may stand
 

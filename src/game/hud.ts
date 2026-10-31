@@ -22,6 +22,7 @@ import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
 import { handTollIds } from './toll';
+import { MISSIONS, type MissionId } from '../content/presences/missions';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -80,6 +81,9 @@ export class Hud {
   tollOpen = false;
   private tollFloor = 0;
   private tollPicked = new Set<string>();
+  /** The Boundary's question for a guarded chest; it shares the toll's card and its controls. */
+  guard: { mission: MissionId; answer: (yes: boolean) => void } | null = null;
+  get guardOpen() { return this.guard !== null; }
   private flashEl = $('flash');
   private hurtEl = $('hurt');
   private deathEl = $('death');
@@ -152,6 +156,7 @@ export class Hud {
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
     if (this.tollOpen && this.game) this.renderToll(this.game);
+    if (this.guard && this.game) this.renderGuard(this.game);
     this.toastEl.classList.remove('show');
   }
 
@@ -209,7 +214,7 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
-    this.overlay.style.display = running || this.tollOpen || g.player.dead ? 'none' : 'flex';
+    this.overlay.style.display = running || this.tollOpen || this.guardOpen || g.player.dead ? 'none' : 'flex';
 
     this.mapYaw = g.player.yaw;
     const yawKey = Math.round(this.mapYaw * 64);
@@ -596,14 +601,14 @@ export class Hud {
   moveSelection(dx: number, dy: number) {
     const g = this.game;
     if (!g) return;
-    const root = this.tollOpen ? this.tollEl : this.invEl;
+    const root = this.tollOpen || this.guardOpen ? this.tollEl : this.invEl;
     const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
     if (!tiles.length) return;
     const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
     const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
     const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
     this.selected = tiles[next].dataset.id!;
-    if (this.tollOpen) this.renderToll(g); else this.renderInventory(g);
+    if (this.tollOpen) this.renderToll(g); else if (this.guard) this.renderGuard(g); else this.renderInventory(g);
     root.querySelector<HTMLElement>('.tile.sel, .tile.cur')?.scrollIntoView({ block: 'nearest' });
   }
 
@@ -618,7 +623,50 @@ export class Hud {
     this.renderToll(g);
   }
 
+  /** The Boundary asks for a mission: a card with "I did it" and "Not yet". Back means not yet. */
+  openGuard(g: Game, mission: MissionId, answer: (yes: boolean) => void) {
+    this.game = g;
+    this.guard = { mission, answer };
+    this.tollEl.classList.add('show');
+    g.input.unlockFor();
+    this.selected = 'later';
+    this.renderGuard(g);
+  }
+
+  private closeGuard(g: Game, yes: boolean) {
+    const guard = this.guard;
+    if (!guard) return;
+    this.guard = null;
+    this.tollEl.classList.remove('show');
+    if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
+    else g.input.resume();
+    guard.answer(yes);
+  }
+
+  private guardAct(g: Game, id: string) {
+    this.closeGuard(g, id === 'yes');
+  }
+
+  private renderGuard(g: Game) {
+    const guard = this.guard;
+    if (!guard) return;
+    const m = MISSIONS[guard.mission];
+    const cur = this.selected ?? 'later';
+    const device = activeDevice();
+    this.tollEl.innerHTML =
+      `<div class="card slate"><header><h2>${th('presence.boundary.name')}</h2><small>${th('mission.lead')}</small></header>` +
+      `<h3>${th(m.title)}</h3><p>${th(m.body)}</p><p class="hint">${th(m.alt)}</p>` +
+      `<p class="hint">${th('mission.hint', controlParams(device))}</p>` +
+      `<div class="go-row"><button type="button" class="tile go${cur === 'yes' ? ' cur' : ''}" data-id="yes"><span class="lbl">${th('mission.yes')}</span></button>` +
+      `<button type="button" class="tile go${cur === 'later' ? ' cur' : ''}" data-id="later"><span class="lbl">${th('mission.later')}</span></button></div></div>`;
+    for (const b of this.tollEl.querySelectorAll<HTMLButtonElement>('.tile')) {
+      b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
+      b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.guardAct(g, b.dataset.id!); });
+    }
+  }
+
   closeToll(g: Game) {
+    if (this.guard) { this.closeGuard(g, false); return; }
     this.tollOpen = false;
     this.tollEl.classList.remove('show');
     if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
@@ -626,7 +674,8 @@ export class Hud {
   }
 
   confirmToll(g: Game) {
-    if (this.selected) this.tollAct(g, this.selected);
+    if (this.guard) this.guardAct(g, this.selected ?? 'later');
+    else if (this.selected) this.tollAct(g, this.selected);
   }
 
   private tollIds(g: Game): string[] {

@@ -71,6 +71,7 @@ import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { rollCrate } from '../content/tables/crates';
@@ -2220,11 +2221,12 @@ export class Game {
     }
   }
 
-  /** Walking up to a closed chest opens it, spending its keys (some cost none). */
+  /** Walking up to a closed chest opens it, spending its keys (some cost none). A guarded chest is not
+   *  opened here: its Boundary asks for a mission first (see askGuard). */
   private touchChests() {
     const b = this.player.body;
     for (const c of this.chests) {
-      if (c.opened) continue;
+      if (c.opened || c.spec.guard) continue;
       const s = c.spec, dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
       if (dist > 3) c.refused = false;
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
@@ -2244,6 +2246,33 @@ export class Game {
     }
   }
 
+  /** Near a guarded chest, its Boundary asks one real-world mission. Not yet waits until the player steps away. */
+  private touchGuards() {
+    if (this.hud.tollOpen || this.hud.guardOpen || this.hud.bannerOpen) return;
+    const b = this.player.body;
+    for (const c of this.chests) {
+      const s = c.spec;
+      if (!s.guard || c.opened) continue;
+      const dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
+      if (dist > 3) c.refused = false;
+      if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
+      const mission = pickMission(this.rng.stream('guard'));
+      const asked = performance.now();
+      this.hud.openGuard(this, mission, yes => this.answerGuard(c, asked, yes));
+      return;
+    }
+  }
+
+  /** "Have you done it?": a yes inside the window is taken as not really done (tier 1 or 2), a yes after
+   *  it as done (tier 3 or 4). Not yet gives nothing and never punishes. */
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, yes: boolean) {
+    if (!yes || c.opened) { c.refused = true; return; }
+    const [lo, hi] = rewardBand(performance.now() - asked);
+    const rng = this.rng.stream('loot');
+    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng, [lo, hi])) ?? null;
+    this.openChest(c, 0, def ?? undefined);
+  }
+
   private questioned() {
     const id = this.potions.spendLock();
     if (!id) return;
@@ -2251,7 +2280,7 @@ export class Game {
     sfx2.unlock();
   }
 
-  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number) {
+  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number, reward?: ItemDef) {
     c.opened = true;
     const s = c.spec;
     this.world.set(s.x, s.y, s.z, MAT.chestopen);
@@ -2265,6 +2294,7 @@ export class Game {
     const len = Math.hypot(b.x - cx, b.z - cz) || 1, ax = (b.x - cx) / len, az = (b.z - cz) / len;
     const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
+    else if (reward) out.push({ type: 'item', def: reward });
     else {
       const rng = this.rng.stream('loot'), floor = depthOf(s.y), luck = this.stats.get('luck');
       const n = 1 + (rng.chance(0.4) ? 1 : 0) + (rng.chance(0.15) ? 1 : 0);
@@ -2408,6 +2438,7 @@ export class Game {
     tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
+    this.touchGuards();
     this.pushPresences();
     this.updateBoundaries();
     const p = this.player, b = p.body, last = this.floors.get(LAST_FLOOR)?.silence;
@@ -2655,7 +2686,7 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
+    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen || this.hud.guardOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
     const live = ctx === 'play' || ctx === 'prompt';
     if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
@@ -2692,7 +2723,7 @@ export class Game {
       }
     }
     this.touch.update(this, ctx);
-    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.transitioning;
+    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.guardOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     this.stream();
