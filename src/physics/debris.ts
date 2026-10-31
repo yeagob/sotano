@@ -16,6 +16,8 @@ export const HOP_COOLDOWN = 0.7;     // seconds between hops, so a cube pinned a
 /** Hops a cube gets before it gives up pushing into the same wall (reset when it is launched again):
  *  a cube pinned in a corner never bounces forever. */
 export const HOPS = 4;
+export const STUCK_SPIN_HOP_TIME = 0.6;      // seconds stuck spinning before attempting an upward dislodge hop
+export const STUCK_SPIN_DESPAWN_TIME = 2.0; // seconds stuck spinning before being removed
 
 /** A hop's launch speed, a little different every time (identical hops fall into identical loops). */
 const hopSpeed = () => HOP * (0.95 + fx.random() * 0.2);
@@ -51,6 +53,8 @@ export class DebrisSystem {
   /** Seconds until this cube may hop again, and hops it has left before it gives up. */
   private readonly hopT: Float32Array;
   private readonly hopsLeft: Uint8Array;
+  /** Seconds spent stuck spinning in place with low linear velocity. */
+  private readonly stuckSpinT: Float32Array;
   private cursor = 0;
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
@@ -76,6 +80,7 @@ export class DebrisSystem {
     this.fuse = new Float32Array(max);
     this.hopT = new Float32Array(max);
     this.hopsLeft = new Uint8Array(max);
+    this.stuckSpinT = new Float32Array(max);
     this.stepped = new Uint8Array(max);
     this.unsettled = new Uint8Array(max);
   }
@@ -112,6 +117,7 @@ export class DebrisSystem {
     this.fuse[i] = 0;
     this.hopT[i] = 0;
     this.hopsLeft[i] = HOPS;
+    this.stuckSpinT[i] = 0;
     this.unsettled[i] = 1;
     return i;
   }
@@ -119,6 +125,7 @@ export class DebrisSystem {
   remove(i: number) {
     if (!this.state[i]) return;
     this.state[i] = 0;
+    this.stuckSpinT[i] = 0;
     this.tags[i] = null;
     this.fuse[i] = 0;
     this.alive--;
@@ -131,6 +138,7 @@ export class DebrisSystem {
     this.spin[i * 4 + 3] = spin;
     this.state[i] = MOVING;
     this.hopsLeft[i] = HOPS;
+    this.stuckSpinT[i] = 0;
   }
 
   /**
@@ -201,13 +209,39 @@ export class DebrisSystem {
       // closing, a throw that started too close to a wall), push it out to the nearest free spot
       if (this.boxSolid(this.pos[i3], this.pos[i3 + 1], this.pos[i3 + 2])) { this.depenetrate(i); continue; }
       if (st === RESTING) {
+        this.stuckSpinT[i] = 0;
         // lost its support (block broken, cube below picked up)? fall again
         if (this.supportTop(i, this.pos[i3], this.pos[i3 + 1] - HS - 0.04, this.pos[i3 + 2]) === null) this.state[i] = MOVING;
         continue;
       }
       this.step(i, dt);
       this.stepped[i] = 1;
-      if (this.pos[i3 + 1] < -20) this.remove(i);
+      if (this.pos[i3 + 1] < -20) { this.remove(i); continue; }
+      if (this.state[i] === MOVING) {
+        // stuck = spinning fast without getting anywhere. Once a dislodge hop has started, the
+        // clock keeps running through its airtime (ground contact bleeds the spin off, so a cube
+        // that really settles stops counting)
+        const vx = this.vel[i3], vy = this.vel[i3 + 1], vz = this.vel[i3 + 2];
+        const linSpeedSq = vx * vx + vy * vy + vz * vz;
+        const spinSpeed = this.spin[i * 4 + 3];
+        if (spinSpeed <= 1.0) {
+          this.stuckSpinT[i] = 0;
+        } else if (linSpeedSq < 1.5 || this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME) {
+          this.stuckSpinT[i] += dt;
+          if (this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME && this.hopT[i] <= 0) {
+            this.hopT[i] = HOP_COOLDOWN;
+            this.vel[i3 + 1] = Math.max(this.vel[i3 + 1], hopSpeed());
+            this.vel[i3] += fx.spread(1.5);
+            this.vel[i3 + 2] += fx.spread(1.5);
+          }
+          if (this.stuckSpinT[i] >= STUCK_SPIN_DESPAWN_TIME && this.fuse[i] === 0) {
+            this.remove(i);
+            continue;
+          }
+        }
+      } else {
+        this.stuckSpinT[i] = 0;
+      }
     }
     this.separate();
   }

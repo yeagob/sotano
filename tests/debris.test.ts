@@ -56,11 +56,13 @@ describe('loose cubes', () => {
       step(d, 6);
       const S = 0.72 * 0.98;
       let worst = 0;
+      // cubes that spun in place in the jam are removed on purpose (#42), so only the living are checked
       for (let i = 0; i < count; i++) {
-        expect(d.isAlive(i)).toBe(true);
+        if (!d.isAlive(i)) continue;
         for (const k of [0, 2]) { expect(d.pos[i * 3 + k]).toBeGreaterThanOrEqual(0.359); expect(d.pos[i * 3 + k]).toBeLessThanOrEqual(3.641); }
         expect(d.pos[i * 3 + 1]).toBeGreaterThanOrEqual(0.359);
         for (let j = i + 1; j < count; j++) {
+          if (!d.isAlive(j)) continue;
           worst = Math.max(worst, Math.min(...[0, 1, 2].map(k => S - Math.abs(d.pos[i * 3 + k] - d.pos[j * 3 + k]))));
         }
       }
@@ -110,5 +112,32 @@ describe('loose cubes', () => {
     // hops carry a random nudge (identical hops loop forever): give it a few tries
     step(d, 4);
     expect(d.pos[c * 3]).toBeGreaterThan(1.2);
+  });
+
+  it('hops to dislodge when stuck spinning in place, and despawns after 2 seconds if still stuck (#42)', () => {
+    // A cube that never settles: it skids along the floor at low speed while spinning fast.
+    // It hops once after 0.6 s, and is removed if it is still stuck after 2 s
+    const d = new DebrisSystem(4, floor, () => {});
+    const c = d.spawn(1, 0.5, 0.4, 0.5);
+    const keepStuck = () => {
+      d.state[c] = 1;
+      d.vel[c * 3] = 1.2;
+      d.vel[c * 3 + 2] = 0;
+      d.spin[c * 4 + 3] = 6;
+    };
+    let hopped = false;
+    for (let t = 0; t < 0.9; t += 1 / 60) {
+      keepStuck();
+      d.update(1 / 60);
+      if (d.vel[c * 3 + 1] > 3) hopped = true;
+    }
+    expect(hopped).toBe(true);
+
+    for (let t = 0; t < 2.5; t += 1 / 60) {
+      if (!d.isAlive(c)) break;
+      keepStuck();
+      d.update(1 / 60);
+    }
+    expect(d.isAlive(c)).toBe(false);
   });
 });
