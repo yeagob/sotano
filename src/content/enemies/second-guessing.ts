@@ -6,7 +6,7 @@ export default defineEnemy({
   id: 'second-guessing',
   name: 'Second-Guessing',
   pattern: 'Wait, are you really sure?',
-  hp: 26,
+  hp: 52,
   speed: 1.7,
   size: [0.34, 1.6],
   contactDamage: 4,

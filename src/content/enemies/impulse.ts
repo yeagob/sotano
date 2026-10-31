@@ -6,7 +6,7 @@ export default defineEnemy({
   id: 'impulse',
   name: 'Impulse',
   pattern: 'Acting before thinking',
-  hp: 8,
+  hp: 16,
   speed: 1.4,
   size: [0.22, 0.6],
   contactDamage: 3,

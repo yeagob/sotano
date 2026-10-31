@@ -11,7 +11,7 @@ export default defineEnemy({
   id: 'paralysis',
   name: 'Paralysis',
   pattern: 'Do not move.',
-  hp: 50,
+  hp: 100,
   speed: 0,
   size: [0.4, 2.4],
   contactDamage: 0,
