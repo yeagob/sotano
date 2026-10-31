@@ -360,11 +360,14 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (ch === 'T') {
         const boss = pr.type === 'boss' && !lv.tutorial;
         const item = opt.pedestalItem(gid(pr.id));
+        // the vault's centre practice is kept by the Boundary: a chest that opens for a real-world mission
+        const guarded = pr.type === 'vault' && !lv.tutorial;
         // the boss's practice is earned, never locked away; most others wait in a chest
-        const inChest = !boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST);
+        const inChest = guarded || (!boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST));
         w.data[w.idx(x, y0, z)] = inChest ? MAT.chest : MAT.pedestal;
-        if (inChest) chests.push({ room: gid(pr.id), x, y: y0, z, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item });
-        pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item, boss, chest: inChest });
+        if (inChest && guarded) chests.push({ room: gid(pr.id), x, y: y0, z, keys: 0, item: null, guard: true });
+        else if (inChest) chests.push({ room: gid(pr.id), x, y: y0, z, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item });
+        pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item: guarded ? null : item, boss, chest: inChest });
       }
       if (ch === 'K') keySpots.push({ room: gid(pr.id), x, y: y0, z });
       if (ch === 'H') holeAt = [x, y0, z];
@@ -373,13 +376,6 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       let spots = freeSpots(t, flipX, flipZ);
       const ring = (c: number, r: number) => Math.max(Math.abs(c - (ROOM_W - 1) / 2), Math.abs(r - (ROOM_D - 1) / 2)) === SANCTUARY_RADIUS;
       for (const [c, r] of spots) if (ring(c, r)) w.data[w.idx(x0 + c, y0, z0 + r)] = MAT.pedestal;
-      spots = spots.filter(([c, r]) => !ring(c, r));
-      // the Boundary keeps one chest: it opens for a real-world mission, never for keys
-      if (spots.length) {
-        const [col, row] = chestRng.pick(spots);
-        w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.chest;
-        chests.push({ room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row, keys: 0, item: null, guard: true });
-      }
     }
     if (pr.type === 'normal') {
       // a free-standing chest in many rooms; the rest of the open tiles stay free for keys

@@ -2246,16 +2246,19 @@ export class Game {
     }
   }
 
-  /** Near a guarded chest, its Boundary asks one real-world mission. Not yet waits until the player steps away. */
+  /** Walking up to the Boundary of a vault asks one real-world mission for the chest it keeps. Not yet
+   *  waits until the player steps three blocks away from the Boundary. */
   private touchGuards() {
     if (this.hud.tollOpen || this.hud.guardOpen || this.hud.bannerOpen) return;
     const b = this.player.body;
-    for (const c of this.chests) {
-      const s = c.spec;
-      if (!s.guard || c.opened) continue;
-      const dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
+    for (const e of this.enemies.list) {
+      if (!e.alive || !e.tags.has('boundary')) continue;
+      const dist = Math.hypot(e.body.x - b.x, e.body.z - b.z);
+      const near = dist <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
+      const c = this.chests.find(q => q.spec.guard && !q.opened && q.spec.room === e.room);
+      if (!c) continue;
       if (dist > 3) c.refused = false;
-      if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
+      if (c.refused || !near) continue;
       const mission = pickMission(this.rng.stream('guard'));
       const asked = performance.now();
       this.hud.openGuard(this, mission, yes => this.answerGuard(c, asked, yes));
@@ -2263,14 +2266,27 @@ export class Game {
     }
   }
 
-  /** "Have you done it?": a yes inside the window is taken as not really done (tier 1 or 2), a yes after
-   *  it as done (tier 3 or 4). Not yet gives nothing and never punishes. */
+  /** "Have you done it?": yes or no, the reward spawns from the chest and the Boundary leaves. A yes draws
+   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. */
   private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, yes: boolean) {
-    if (!yes || c.opened) { c.refused = true; return; }
-    const [lo, hi] = rewardBand(performance.now() - asked);
-    const rng = this.rng.stream('loot');
-    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng, [lo, hi])) ?? null;
+    if (c.opened) return;
+    const [lo, hi] = rewardBand(yes, performance.now() - asked);
+    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
     this.openChest(c, 0, def ?? undefined);
+    this.releaseBoundary(c.spec.room);
+  }
+
+  /** The Boundary of a vault leaves once its mission is answered yes. */
+  private releaseBoundary(room: number) {
+    for (const e of [...this.enemies.list]) {
+      if (!e.alive || !e.tags.has('boundary') || e.room !== room) continue;
+      this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('light.gold'), 16, 2, 0.06);
+      this.enemies.dissolve(e);
+      this.bus.off(null, `actor:${e.id}`);
+      this.actors.remove(e.id);
+      this.contacts.forget(e.id);
+      this.boundaryRing.delete(e.id);
+    }
   }
 
   private questioned() {

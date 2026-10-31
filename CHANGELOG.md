@@ -10,9 +10,10 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - A laboratory alembic on floors 2, 4, 6 and 8 brews from up to three things in your hand (a positive intention, three brews per run). The brew leaves a flask to drink with G, X or the flask button: eight potions, from instant tonics to timed draughts. The Listener speaks only once it is given a heart of a released pattern, and the Gardener once it is given a flesh (#20).
 - A monster part in your hand can be given as the toll to go down on floors 0 to 4 (#8).
 
-- The Boundary keeps the vault chest: walk up to it and it asks for one real-world mission (write a sentence, a message or a letter to someone you worry about, draw, or breathe for 30 seconds). Answer Yes after 30 seconds or more for a tier 3 or 4 practice; a quicker Yes gives tier 1 or 2; Not yet gives nothing (#35).
+- The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
 
 ### Fixed
+- The Boundary asks its mission when you walk up to it, not only at the chest (#40).
 - Presences have a body you cannot walk through, and they answer what you bring: they name it and say whether it is what they wait for. A laboratory is placed on every laboratory floor, even when the first room chosen has no room for it.
 - Open chest lids no longer clip through the chest body or its padlock (#4).
 - Locked doors open when you touch them, not from across the room (#5).
