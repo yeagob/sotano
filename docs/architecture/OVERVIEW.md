@@ -96,7 +96,7 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 - `raycast.ts` — Amanatides–Woo DDA (intentions, placement).
 - `voxel-collide.ts` — axis-by-axis box movement in substeps (player, enemies).
-- `debris.ts` — loose cubes without a physics engine (Joel-gift approach): typed arrays in a 2000-slot ring (1000 on touch devices), per-column hash so piles stack, **depenetration** (a cube overlapping anything solid is pushed to the nearest free spot), a **separation pass** (cubes that moved are pushed apart from overlapping neighbours along the axis of least overlap, stacked when the overlap is vertical, never into walls, and re-checked until clear), visual-only tumbling, **bomb fuses** (pinned slots), tagged impacts. ≈4 ms per frame for 2000 moving cubes.
+- `debris.ts` — loose cubes without a physics engine (Joel-gift approach): typed arrays in a 2000-slot ring (1000 on touch devices), per-column hash so piles stack, **depenetration** (a cube overlapping anything solid is pushed to the nearest free spot), a **separation pass** (cubes that moved are pushed apart from overlapping neighbours along the axis of least overlap, stacked when the overlap is vertical, never into walls, and re-checked until clear), visual-only tumbling, **bomb fuses** (pinned slots), tagged impacts, and **stuck cubes** (#42): a cube spinning fast in place for a full second gets an upward push; after the third push, a cube still spinning fast in place is removed. ≈4 ms per frame for 2000 moving cubes.
 
 ## Entities (`entities/`)
 
@@ -155,7 +155,7 @@ Vitest, Node, no rendering (102 tests):
 
 - `core.test.ts` — event bus, RNG, stats, block damage.
 - `world.test.ts` — templates, mesher, DDA, collision, plans (one start/treasure/boss; from all 49 start cells), stacked dungeon (doorways, global room ids, bands), the hole landing in the next start room.
-- `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, cubes spawned at one spot repelling each other (and never into walls), 2000 cubes.
+- `debris.test.ts` — falling, resting, stacking, ring reuse, despawn, tagged impacts, cubes spawned at one spot repelling each other (and never into walls), a stuck cube that gets three pushes and is then removed (#42), 2000 cubes.
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
 - `rng.test.ts` — seed codes, fork purity, determinism (same seed, same ten floors), a golden seed hash per `GEN_VERSION`, practices lasting ten floors, isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
 - `sandbox.test.ts` — every sandbox scenario validates and carves the same room twice; a scenario's rows land where it says, sealed by its shell. The scripted runs themselves are `npm run sandbox -- --check` (headless Chromium, [SANDBOX.md](SANDBOX.md) §4).

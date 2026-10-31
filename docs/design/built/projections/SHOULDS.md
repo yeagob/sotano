@@ -14,7 +14,7 @@ Floors 5 and 6. Code: [shoulds.ts](../../../../src/content/enemies/shoulds.ts).
 
 ## How it moves and attacks
 
-- It stands still and does not touch. It has 16 health.
+- It stands still and does not touch. It has 32 health.
 - Every 2.2 seconds it fires a bolt (4 damage) along the axis on which you are farther from it, so its shots run straight across the room.
 - A bolt stops at the first solid block.
 

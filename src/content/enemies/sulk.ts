@@ -21,7 +21,7 @@ export default defineEnemy({
   id: 'sulk',
   name: 'Sulk',
   pattern: 'Fine.',
-  hp: 18,
+  hp: 36,
   speed: 0,
   size: [0.6, 0.5],
   contactDamage: 0,

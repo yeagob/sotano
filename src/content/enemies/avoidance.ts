@@ -28,7 +28,7 @@ export default defineEnemy({
   id: 'avoidance',
   name: 'Avoidance',
   pattern: 'Looking away from what hurts',
-  hp: 10,
+  hp: 20,
   speed: 0,
   size: [0.42, 0.42],
   contactDamage: 0,

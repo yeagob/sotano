@@ -26,6 +26,13 @@ export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readon
   listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', heals: true },
 };
 
+/** What a Presence's part earns (the Listener heals a quarter of a heart the first time). Hurt, the heal lands.
+ *  At full health a heal is lost, so the reward is left beside the Presence as a heart, which waits for the
+ *  player the way hearts do (see Game.touchPickups). */
+export function rewardFor(hp: number, maxHp: number): 'heal' | 'heart' {
+  return hp < maxHp ? 'heal' : 'heart';
+}
+
 export const TALK_REACH = 2.2;
 
 export const PRESENCE_REPLY_MS = 4000;

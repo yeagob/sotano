@@ -11,7 +11,7 @@ export default defineEnemy({
   id: 'critic',
   name: 'Inner Critic',
   pattern: 'The judging voice',
-  hp: 9,
+  hp: 18,
   speed: 1.5,
   size: [0.28, 1.9],
   contactDamage: 4,

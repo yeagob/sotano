@@ -16,7 +16,7 @@ Floor 9. Code: [numbness.ts](../../../../src/content/enemies/numbness.ts).
 
 - It walks slowly at you. Its touch does 4 damage.
 - Every three seconds it leaves a slowing field of about 2.5 blocks, where it stands, for three seconds.
-- In water it crosses at 70 per cent speed. It has 30 health.
+- In water it crosses at 70 per cent speed. It has 60 health.
 
 ## How the player answers it
 

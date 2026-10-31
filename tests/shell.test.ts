@@ -26,10 +26,10 @@ describe('a shell of plates (BESTIARY §5.1, Perfectionism)', () => {
     expect(r.shielded).toBe(true);
   });
 
-  it('Perfectionism is a shell now: six plates over a fourteen-health core', () => {
+  it('Perfectionism is a shell now: six plates over a twenty-eight-health core', () => {
     const def = ENEMY_BY_ID.get('perfectionism')!;
     expect(def.shell).toEqual({ plates: 6, plateHp: 4 });
-    expect(def.hp).toBe(14);
+    expect(def.hp).toBe(28);
     expect(def.armor ?? 0).toBe(0);
   });
 });
