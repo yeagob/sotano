@@ -760,6 +760,8 @@ export class Game {
         if (this.stroke.polarity === 'positive') { this.repairBlock(x, y, z, amount); return false; }
         return this.damageBlock(x, y, z, amount, 'beam', source);
       },
+      // a stroke that reaches the alembic brews at it, exactly as a shot does (intentHitsBlock)
+      answer: (x, y, z) => { if (this.world.get(x, y, z) === MAT.alembic) this.hitLab(x, y, z, this.stroke.polarity); },
       targets: () => this.enemies.list
         .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
         .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
