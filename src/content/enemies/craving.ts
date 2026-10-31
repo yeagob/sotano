@@ -25,7 +25,7 @@ export default defineEnemy({
   id: 'craving',
   name: 'Craving',
   pattern: 'Wanting that never fills',
-  hp: 9,
+  hp: 18,
   speed: 1.2,
   size: [0.3, 1.1],
   contactDamage: 3,

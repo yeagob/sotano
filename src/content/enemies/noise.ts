@@ -6,7 +6,7 @@ export default defineEnemy({
   id: 'noise',
   name: 'Noise',
   pattern: 'Ooh! And that! And that!',
-  hp: 4,
+  hp: 8,
   speed: 2.4,
   size: [0.2, 0.2],
   contactDamage: 2,

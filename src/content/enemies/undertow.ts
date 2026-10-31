@@ -17,7 +17,7 @@ export default defineEnemy({
   id: 'undertow',
   name: 'Undertow',
   pattern: 'It is too much',
-  hp: 14,
+  hp: 28,
   speed: 0.7,
   size: [0.5, 0.6],
   contactDamage: 4,

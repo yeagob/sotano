@@ -16,7 +16,7 @@ Floors 6 to 9. Code: [paralysis.ts](../../../../src/content/enemies/paralysis.ts
 
 - It does not walk and does not touch.
 - Every three seconds, after a 0.6-second lead, it tethers: a pull of seven blocks drags you toward it for 2.5 seconds, and a slowing field of about 2.2 blocks on the same spot slows you.
-- It has 50 health.
+- It has 100 health.
 
 ## How the player answers it
 

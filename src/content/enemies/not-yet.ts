@@ -20,7 +20,7 @@ export default defineEnemy({
   id: 'not-yet',
   name: 'Not Yet',
   pattern: 'Not yet. Not yet. Not yet.',
-  hp: 40,
+  hp: 80,
   speed: 0.7,
   size: [0.5, 1.6],
   contactDamage: 4,

@@ -15,7 +15,7 @@ Floors 3 to 6. Code: [perfectionism.ts](../../../../src/content/enemies/perfecti
 ## How it moves and attacks
 
 - It walks at you, slowly, and its touch does 4 damage.
-- Its shell has six plates. While a plate stands, damage breaks the plate and does not reach its body; the next plate takes the rest. Only when all six are broken does the body take damage. Its body has 14 health.
+- Its shell has six plates. While a plate stands, damage breaks the plate and does not reach its body; the next plate takes the rest. Only when all six are broken does the body take damage. Its body has 28 health.
 
 ## How the player answers it
 

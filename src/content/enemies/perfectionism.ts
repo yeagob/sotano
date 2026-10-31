@@ -6,7 +6,7 @@ export default defineEnemy({
   id: 'perfectionism',
   name: 'Perfectionism',
   pattern: 'It has to be perfect.',
-  hp: 14,
+  hp: 28,
   speed: 0.8,
   size: [0.4, 1.4],
   contactDamage: 4,
