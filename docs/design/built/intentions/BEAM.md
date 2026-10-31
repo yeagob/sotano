@@ -10,6 +10,7 @@ Part of [intentions](README.md) · see also [WEAPONS.md](WEAPONS.md).
 - Release when it is full, and a beam runs along your aim for one second. It ticks ten times a second, so you see it burn in steps.
 - On each tick the first solid block on its path takes twice the mining, armour counting, and the beam goes on through the block once it breaks. It reaches about twenty-four blocks.
 - Every hostile projection on the beam takes an intention's damage on each tick, and every projectile on it is destroyed.
+- The beam is an intention to the alembic: a positive beam that reaches a laboratory's alembic brews it, and a negative one boils its bulb, as a shot does. The alembic cannot be broken, so the beam answers it instead of burning it. Only the first tick in the 0.6-second hit gap counts ([laboratory](../laboratory/README.md)).
 - A positive beam mends the damaged blocks it touches and warms projections. An undamaged block does nothing.
 - Releasing before the charge is full does nothing.
 
