@@ -26,6 +26,9 @@ export interface ModelPart {
   color: number;
   /** Unlit and bright (eyes, glows). */
   glow?: boolean;
+  /** Lies flush on a face of another part (a dark socket on a top). Drawn with a depth offset so it
+   *  wins that shared face instead of flickering against it; the geometry is unchanged. */
+  inlay?: boolean;
   /** Tilt around X in radians (a hunched head, a pointing arm). */
   tilt?: number;
   /** Full rotation [x, y, z] in radians (overrides `tilt`). */

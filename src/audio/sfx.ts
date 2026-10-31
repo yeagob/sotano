@@ -34,7 +34,9 @@ function tone(freq: number, dur: number, type: OscillatorType, vol: number, slid
   o.start(t); o.stop(t + dur);
 }
 
-function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = master) {
+/** Band-passed noise. `attack` > 0 fades the onset in: without it the buffer starts at full level and
+ *  the speaker clicks on the first sample, which is wrong for a sound that repeats (a gust, not a tick). */
+function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = master, attack = 0) {
   if (!ctx) return;
   const t = ctx.currentTime;
   const len = Math.ceil(ctx.sampleRate * dur);
@@ -46,7 +48,12 @@ function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = m
   const f = ctx.createBiquadFilter();
   f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(vol, t);
+  if (attack > 0) {
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + attack);
+  } else {
+    g.gain.setValueAtTime(vol, t);
+  }
   g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   src.connect(f).connect(g).connect(out);
   src.start(t);
@@ -136,7 +143,8 @@ export const spatial = {
       case 'line': noise(0.04, 0.35, 3200, 3, out); tone(jitter(300), 0.5, 'sawtooth', 0.06, 0.6, out); break;
       case 'ring': noise(0.1, 0.4, 260, 1.2, out); tone(jitter(90), 0.8, 'sine', 0.2, 1.3, out); break;
       case 'field': tone(jitter(330), 0.9, 'sine', 0.08, 1.1, out); tone(jitter(495), 0.9, 'sine', 0.05, 1.1, out); break;
-      case 'pull': noise(0.9, 0.12, 700, 0.6, out); break;
+      // a pull is a gust that draws in: it swells over 0.3 s, so the release is never a click
+      case 'pull': noise(0.9, 0.12, 700, 0.6, out, 0.3); break;
       case 'sweep': noise(0.6, 0.3, 180, 0.8, out); tone(jitter(120), 0.7, 'triangle', 0.1, 1.2, out); break;
       case 'bolt': noise(0.02, 0.4, 4500, 4, out); break;
       case 'leap': noise(0.06, 0.4, 500, 1.5, out); tone(jitter(200), 0.15, 'square', 0.08, 0.6, out); break;
