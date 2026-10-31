@@ -54,10 +54,10 @@ describe('omen gather schedule', () => {
 });
 
 describe('omen colours stay in the cold ramp', () => {
-  it('gather motes are cold.dim, then cold.body in the second half', () => {
-    expect(gatherMoteColor(0)).toBe('cold.dim');
-    expect(gatherMoteColor(OMEN_GATHER * 0.49)).toBe('cold.dim');
-    expect(gatherMoteColor(OMEN_GATHER * 0.5)).toBe('cold.body');
+  it('gather motes are cold.body, then cold.white in the second half', () => {
+    expect(gatherMoteColor(0)).toBe('cold.body');
+    expect(gatherMoteColor(OMEN_GATHER * 0.49)).toBe('cold.body');
+    expect(gatherMoteColor(OMEN_GATHER * 0.5)).toBe('cold.white');
     for (let t = 0; t < OMEN_GATHER; t += 0.01) expect(COLD.has(pal(gatherMoteColor(t)))).toBe(true);
   });
 

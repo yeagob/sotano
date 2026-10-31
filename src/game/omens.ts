@@ -42,8 +42,8 @@ const MAX_FRAME = 0.05;
 export const MOTE_WINDOW = OMEN_GATHER - MOTE_MIN_LIFE - MAX_FRAME;
 /** Share of the motes born at the steady start rate (the rest accelerate toward the crack). */
 export const MOTE_EARLY = 0.5;
-/** The cold ramp an omen is drawn from (projections' side only; never warm, never gold). */
-export const OMEN_COLORS: readonly PalToken[] = ['cold.dim', 'cold.body', 'cold.white'];
+/** The pale ramp an omen is drawn from: decoration is pale blue-white, never warm, gold or red (issue #47). */
+export const OMEN_COLORS: readonly PalToken[] = ['cold.body', 'cold.white'];
 /** The breach flare: the family eye's colour. */
 export const OMEN_BREACH_COLOR: PalToken = 'cold.white';
 
@@ -61,9 +61,9 @@ export function gatherMotesDue(o: Omen): number {
   return due;
 }
 
-/** A gather mote's colour: `cold.dim` in the first half of the gather, `cold.body` as the crack nears. */
+/** A gather mote's colour: `cold.body` in the first half of the gather, `cold.white` as the crack nears. */
 export function gatherMoteColor(t: number): PalToken {
-  return t < OMEN_GATHER / 2 ? 'cold.dim' : 'cold.body';
+  return t < OMEN_GATHER / 2 ? 'cold.body' : 'cold.white';
 }
 
 // ── The seal: doors slam when a room's fight starts (DECISIONS §7.3, §7.4) ──
