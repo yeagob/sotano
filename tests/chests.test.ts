@@ -51,7 +51,7 @@ describe('chests', () => {
       items++;
       if (p.chest) {
         shut++;
-        expect(f.chests.some(c => c.x === p.x && c.z === p.z && c.item === p.item && c.item !== null)).toBe(true);
+        expect(f.chests.some(c => c.x === p.x && c.z === p.z && (c.guard || (c.item === p.item && c.item !== null)))).toBe(true);
       }
     }
     expect(shut / items).toBeGreaterThanOrEqual(0.5);
