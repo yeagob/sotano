@@ -1,10 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { seedFx } from '../src/core/fx';
 import { DebrisSystem, DEBRIS_LIFETIME } from '../src/physics/debris';
 
 const floor = (_x: number, y: number, _z: number) => y < 0;
 const step = (d: DebrisSystem, seconds: number) => { for (let t = 0; t < seconds; t += 1 / 60) d.update(1 / 60); };
 
 describe('loose cubes', () => {
+  // hops and spins draw from fx: seed it, or the physics thresholds below are flaky under Math.random
+  beforeEach(() => seedFx(7));
   it('fall, land on the floor and come to rest', () => {
     const d = new DebrisSystem(16, floor, () => {});
     const i = d.spawn(1, 0.5, 3, 0.5);
