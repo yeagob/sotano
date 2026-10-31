@@ -31,6 +31,7 @@ One tile in one normal room on the odd floors 1, 3, 5 and 7 (`KITCHEN_FLOORS`), 
 - **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
 - **A negative intention boils the bulb off.** What was fed is lost and no brew is spent.
 - **One hit counts once.** Only the first intention hit in each 0.6 seconds counts, so a swing or a beam tick cannot brew twice.
+- **The beam and the great cut brew too.** Remember Breathing's beam and One Clear Cut reach the alembic and answer it as a shot does: the first tick brews (or boils), and the rest of the beam falls in the hit gap. A held blade does not brew.
 - **Three brews per run.** After the third brew the alembic is cold: it takes nothing and says so.
 - **Unbreakable.** The alembic cannot be dug, burned or blasted.
 

@@ -30,6 +30,7 @@ function fakeHost(opts: { stats?: Partial<Stats>; unbreakable?: Set<string>; fil
     breakable: (x, y, z) => blocks.has(key(x, y, z)) && !opts.unbreakable?.has(key(x, y, z)),
     cut: (x, y, z) => { blocks.delete(key(x, y, z)); state.cuts.push(key(x, y, z)); },
     burn: (x, y, z) => { state.burns++; blocks.delete(key(x, y, z)); return true; },
+    answer: () => {},
     targets: () => [{ id: 7, x: 0.5, y: 0.6, z: -1.5, hw: 0.4, h: 1.6 }],
     hit: id => { state.hits.push(id); },
     clearProjectiles: () => {},
