@@ -54,6 +54,9 @@ describe('loose cubes', () => {
       const d = new DebrisSystem(64, well, () => {});
       for (let k = 0; k < count; k++) d.spawn(1, 2, 1 + k * 0.05, 2);
       step(d, 6);
+      // a jam may lose the cubes that spin in place (#42), but not the pile: most of it stays
+      const living = Array.from({ length: count }, (_, i) => i).filter(i => d.isAlive(i)).length;
+      expect(living).toBeGreaterThanOrEqual(Math.floor(count * 0.8));
       const S = 0.72 * 0.98;
       let worst = 0;
       // cubes that spun in place in the jam are removed on purpose (#42), so only the living are checked
@@ -125,19 +128,23 @@ describe('loose cubes', () => {
       d.vel[c * 3 + 2] = 0;
       d.spin[c * 4 + 3] = 6;
     };
-    let hopped = false;
+    let hops = 0, prevVy = 0;
     for (let t = 0; t < 0.9; t += 1 / 60) {
       keepStuck();
       d.update(1 / 60);
-      if (d.vel[c * 3 + 1] > 3) hopped = true;
+      if (prevVy <= 3 && d.vel[c * 3 + 1] > 3) hops++; // a rising edge is a hop
+      prevVy = d.vel[c * 3 + 1];
     }
-    expect(hopped).toBe(true);
+    expect(hops).toBe(1);
 
     for (let t = 0; t < 2.5; t += 1 / 60) {
       if (!d.isAlive(c)) break;
       keepStuck();
       d.update(1 / 60);
+      if (prevVy <= 3 && d.vel[c * 3 + 1] > 3) hops++;
+      prevVy = d.vel[c * 3 + 1];
     }
+    expect(hops).toBe(1); // it hopped once, and was not allowed a second hop before it vanished
     expect(d.isAlive(c)).toBe(false);
   });
 });

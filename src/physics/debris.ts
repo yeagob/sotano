@@ -55,6 +55,8 @@ export class DebrisSystem {
   private readonly hopsLeft: Uint8Array;
   /** Seconds spent stuck spinning in place with low linear velocity. */
   private readonly stuckSpinT: Float32Array;
+  /** Whether a stuck cube has already taken its dislodge hop (one per launch, so it hops once). */
+  private readonly stuckHopped: Uint8Array;
   private cursor = 0;
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
@@ -81,6 +83,7 @@ export class DebrisSystem {
     this.hopT = new Float32Array(max);
     this.hopsLeft = new Uint8Array(max);
     this.stuckSpinT = new Float32Array(max);
+    this.stuckHopped = new Uint8Array(max);
     this.stepped = new Uint8Array(max);
     this.unsettled = new Uint8Array(max);
   }
@@ -118,6 +121,7 @@ export class DebrisSystem {
     this.hopT[i] = 0;
     this.hopsLeft[i] = HOPS;
     this.stuckSpinT[i] = 0;
+    this.stuckHopped[i] = 0;
     this.unsettled[i] = 1;
     return i;
   }
@@ -126,6 +130,7 @@ export class DebrisSystem {
     if (!this.state[i]) return;
     this.state[i] = 0;
     this.stuckSpinT[i] = 0;
+    this.stuckHopped[i] = 0;
     this.tags[i] = null;
     this.fuse[i] = 0;
     this.alive--;
@@ -139,6 +144,7 @@ export class DebrisSystem {
     this.state[i] = MOVING;
     this.hopsLeft[i] = HOPS;
     this.stuckSpinT[i] = 0;
+    this.stuckHopped[i] = 0;
   }
 
   /**
@@ -228,7 +234,8 @@ export class DebrisSystem {
           this.stuckSpinT[i] = 0;
         } else if (linSpeedSq < 1.5 || this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME) {
           this.stuckSpinT[i] += dt;
-          if (this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME && this.hopT[i] <= 0) {
+          if (this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME && this.hopT[i] <= 0 && !this.stuckHopped[i]) {
+            this.stuckHopped[i] = 1;
             this.hopT[i] = HOP_COOLDOWN;
             this.vel[i3 + 1] = Math.max(this.vel[i3 + 1], hopSpeed());
             this.vel[i3] += fx.spread(1.5);
