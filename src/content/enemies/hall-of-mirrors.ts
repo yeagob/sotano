@@ -16,7 +16,7 @@ export default defineEnemy({
   id: 'hall-of-mirrors',
   name: 'The Hall of Mirrors',
   pattern: 'Everyone is ahead of you.',
-  hp: 22,
+  hp: 44,
   speed: 0,
   size: [1, 2],
   contactDamage: 0,

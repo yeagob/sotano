@@ -21,7 +21,7 @@ export default defineEnemy({
   id: 'pretence',
   name: 'Pretence',
   pattern: 'I am fine.',
-  hp: 16,
+  hp: 32,
   speed: 1.7,
   size: [0.32, 0.9],
   contactDamage: 6,

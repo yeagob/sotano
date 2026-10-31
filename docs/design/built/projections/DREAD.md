@@ -16,7 +16,7 @@ Floors 6 to 9. Code: [dread.ts](../../../../src/content/enemies/dread.ts). It is
 
 - It stands still and does not touch.
 - Every three seconds, after a 0.8-second lead, it sends a ring out from its body. The ring does 8 damage, is 1.4 blocks high, and grows across the room, to about 4.6 blocks, in 0.8 seconds.
-- It has 40 health.
+- It has 80 health.
 
 ## How the player answers it
 

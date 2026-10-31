@@ -46,7 +46,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 ```ts
 defineEnemy({
   id: 'doubt', name: 'Doubt', pattern: 'Self-doubt',
-  hp: 12, speed: 1.7, size: [0.32, 1.6], contactDamage: 4,   // damage points (4 = half a heart)
+  hp: 24, speed: 1.7, size: [0.32, 1.6], contactDamage: 4,   // damage points (4 = half a heart)
   cost: 1, minFloor: 1,
   drops: { heart: 0.12, key: 0.04, bomb: 0.05 },
   behaviour: chase({ lunge: 1.5 }),

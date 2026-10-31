@@ -24,7 +24,7 @@ export default defineEnemy({
   id: 'cynicism',
   name: 'Cynicism',
   pattern: 'What is the point?',
-  hp: 26,
+  hp: 52,
   speed: 0.9,
   size: [0.3, 1.2],
   contactDamage: 0,

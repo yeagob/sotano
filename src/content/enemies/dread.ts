@@ -10,7 +10,7 @@ export default defineEnemy({
   id: 'dread',
   name: 'Dread',
   pattern: 'Something will go wrong.',
-  hp: 40,
+  hp: 80,
   speed: 0,
   size: [0.5, 0.5],
   contactDamage: 0,

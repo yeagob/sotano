@@ -16,7 +16,7 @@ Floors 6 to 9. Code: [tribunal.ts](../../../../src/content/enemies/tribunal.ts).
 
 - It stands still and does not touch.
 - Every 1.2 seconds it fires a bolt (4 damage) from one of three posts, two and a half blocks apart, in turn: left, centre, right. A bolt stops at the first solid block.
-- It has 72 health.
+- It has 144 health.
 
 ## How the player answers it
 

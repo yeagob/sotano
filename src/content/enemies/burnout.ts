@@ -30,7 +30,7 @@ export default defineEnemy({
   id: 'burnout',
   name: 'Burnout',
   pattern: 'I cannot stop.',
-  hp: 26,
+  hp: 52,
   speed: 1.2,
   size: [0.3, 0.9],
   contactDamage: 4,
