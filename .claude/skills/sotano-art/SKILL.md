@@ -67,3 +67,10 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 *Owner feedback, round 3 (2026-10-27):*
 
 - **"Several wood textures are very bad, dirt is so-so, the bombs are very ugly; brick and obsidian are very good."** Lessons: (1) wood reads from structure, not colour: frames, slats, butt joints, knots, bark crevices and end grain; flat bands in a wood ramp read as nothing; (2) vertical stripes on any tile read as boards whatever the ramp, so a stone door frame needs blocks, not grain; (3) a four-way cross of light on a cube face reads as the Critic's ✗; (4) a timer can break the 3 Hz rule unseen (the fused bomb blinked at 8 and 16 Hz): check every `Math.floor(time * k)` that toggles visibility; (5) a thing the player picks up and drops should be the same model in both states (the seed), not a model in the hand and a textured cube on the floor.
+
+*Owner issue #47 (2026-10-29): "Enemy attacks look like particles: damage must read red, particles pale blue-white."*
+
+- **What hurts is red, and it is decided by what the strike can do**, not by its shape or the move's name (`harms` in `src/enemies/attacks.ts`). A warning that deals no damage itself but announces a blow that does (a charge's aim line, a slam's landing mark) is red too, so the warning and the blow match. A pull, and a field that only slows or mutes, stay pale.
+- **Particles are never red**, even when a red attack throws them: sparks, rising motes, dust and impact chips are the pale ramp (`cold.white`, `cold.body`).
+- **When an owner rule collides with a ledger ruling** (here: red is life), amend the ledger in the same change, measure the new colour against the reserved ones (ΔE ≥ 20 from `life.heart`, ruling §3.12 rule 2) and say so in the report. Never invent a hue quietly.
+- **The cold ramp is the decoration ramp.** Omen motes moved from `cold.dim` to `cold.body` and `cold.white`, so a spawn warning never reads as a hit.

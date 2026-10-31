@@ -17,6 +17,9 @@ export interface Strike {
   lead: number;
   live: number;
   damage: number;
+  /** A telegraph that deals no damage itself but warns of a blow that hurts when it lands (a charge's
+   *  aim line, a slam's landing mark). Its marks take the damage red, not the decoration blue-white. */
+  warns?: boolean;
   shape: Shape;
 }
 
@@ -28,7 +31,28 @@ interface Hazard extends Strike {
   started: boolean;
   hit: Set<number>;
   tick: number;
+  /** Whether this attack can hurt an actor (see `harms`): its marks are then red. */
+  hurts: boolean;
 }
+
+/** Whether a strike can hurt an actor: a blow with damage, a sting field, or a warning of one. A pull only drags. */
+export function harms(s: Strike): boolean {
+  if (s.shape.kind === 'pull') return false;
+  if (s.shape.kind === 'field') return s.shape.effect === 'sting' && s.damage > 0;
+  return s.damage > 0 || s.warns === true;
+}
+
+/** The colour of an attack's marks: the attack red when it hurts, the cold ramp when it does not. */
+export type MarkTint = 'attack.red.dim' | 'attack.red.base' | 'cold.body' | 'cold.white';
+
+/** A mark is dim while it is a warning and bright once it is live (issue #47). */
+export function markTint(hurts: boolean, live: boolean): MarkTint {
+  if (hurts) return live ? 'attack.red.base' : 'attack.red.dim';
+  return live ? 'cold.white' : 'cold.body';
+}
+
+/** Particles an attack or its warning throws: always pale blue-white, never the attack red. */
+export const PARTICLE_TINTS = ['cold.white', 'cold.body'] as const;
 
 export interface HazardHost {
   actors(): Iterable<Actor>;
@@ -50,9 +74,13 @@ const LIVE_SCALE = 1.8;
 const FIELD_DOTS = 16;
 const PULL_MOTES = 10;
 
-const COLD_DIM = new THREE.Color(pal('cold.dim'));
-const COLD_WHITE = new THREE.Color(pal('cold.white'));
-const DIM = pal('cold.dim'), WHITE = pal('cold.white'), BODY = pal('cold.body');
+const MARK_COLOR: Record<MarkTint, THREE.Color> = {
+  'attack.red.dim': new THREE.Color(pal('attack.red.dim')),
+  'attack.red.base': new THREE.Color(pal('attack.red.base')),
+  'cold.body': new THREE.Color(pal('cold.body')),
+  'cold.white': new THREE.Color(pal('cold.white')),
+};
+const WHITE = pal('cold.white'), BODY = pal('cold.body');
 /** Particles a live attack sheds per frame, and the chance per frame that a telegraph sheds a mote. */
 const LIVE_SPARKS = 3;
 const TELL_MOTE = 0.35;
@@ -79,7 +107,7 @@ export class Hazards {
   }
 
   add(owner: number, faction: Faction, cause: string, s: Strike) {
-    this.list.push({ ...s, owner, faction, cause, t: 0, started: false, hit: new Set(), tick: 0 });
+    this.list.push({ ...s, owner, faction, cause, t: 0, started: false, hit: new Set(), tick: 0, hurts: harms(s) });
   }
 
   /** Attacks on the field (telegraphed or live). */
@@ -120,14 +148,14 @@ export class Hazards {
   /** A telegraph sheds a rising cold mote somewhere on its shape, brighter as it comes due (`k` 0 → 1). */
   private mote(s: Shape, k: number) {
     const [x, y, z] = this.pointOn(s, 0, true);
-    this.host.particles(x, y + 0.1, z, k > 0.7 ? WHITE : DIM, 1, 0.6, 0.05);
+    this.host.particles(x, y + 0.1, z, k > 0.7 ? WHITE : BODY, 1, 0.6, 0.05);
   }
 
   /** A live attack throws dust and sparks along its front, so it reads as force, not as dots. */
   private sparks(s: Shape, live: number) {
     for (let k = 0; k < LIVE_SPARKS; k++) {
       const [x, y, z] = this.pointOn(s, live, false);
-      this.host.particles(x, y + 0.15, z, k === 0 ? WHITE : k === 1 ? BODY : DIM, 1, 2.2, 0.07);
+      this.host.particles(x, y + 0.15, z, k === 0 ? WHITE : BODY, 1, 2.2, 0.07);
     }
   }
 
@@ -194,17 +222,20 @@ export class Hazards {
 
   private draw() {
     let n = 0;
+    // the tint of the hazard being drawn (set in the loop below): red if it hurts, cold if not
+    let tint: MarkTint = 'cold.body';
     const put = (x: number, y: number, z: number, live: boolean) => {
       if (n >= CAPACITY) return;
       // a live attack's marks are twice as big: the warning is a dashed line, the blow a solid one
       const k = live ? LIVE_SCALE : 1;
       this.m.makeScale(k, k, k).setPosition(x, y, z);
       this.mesh.setMatrixAt(n, this.m);
-      this.mesh.setColorAt(n, live ? COLD_WHITE : COLD_DIM);
+      this.mesh.setColorAt(n, MARK_COLOR[tint]);
       n++;
     };
     for (const h of this.list) {
       const s = h.shape, live = h.t >= h.lead;
+      tint = markTint(h.hurts, live);
       if (s.kind === 'line') {
         const dx = s.x1 - s.x0, dz = s.z1 - s.z0, len = Math.hypot(dx, dz);
         for (let d = 0; d <= len; d += DASH) put(s.x0 + dx * d / len, s.y + 0.1, s.z0 + dz * d / len, live);

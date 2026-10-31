@@ -239,7 +239,7 @@ export function charge(opt: { aim: number; speed: number; run: number; stun: num
         e.aimX = alongX ? Math.sign(dx) : 0;
         e.aimZ = alongX ? 0 : Math.sign(dz);
         const len = alongX ? Math.abs(dx) : Math.abs(dz);
-        ctx.strike(e, { lead: opt.aim, live: 0, damage: 0, shape: { kind: 'line', x0: e.body.x, z0: e.body.z, x1: e.body.x + e.aimX * len, z1: e.body.z + e.aimZ * len, y: e.body.y, width: 0.3 } });
+        ctx.strike(e, { lead: opt.aim, live: 0, damage: 0, warns: true, shape: { kind: 'line', x0: e.body.x, z0: e.body.z, x1: e.body.x + e.aimX * len, z1: e.body.z + e.aimZ * len, y: e.body.y, width: 0.3 } });
         e.state = 'aim'; e.timer = opt.aim;
         return;
       }

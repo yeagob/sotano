@@ -1611,7 +1611,7 @@ export class Game {
     if (!e || e.faction !== 'projection') return;
     e[field] = Math.max(e[field], seconds);
     const b = e.body;
-    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, field === 'frozen' ? pal('cold.body') : pal('cold.dim'), 10, 1.4, 0.06);
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
   }
 
