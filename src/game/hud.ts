@@ -650,12 +650,12 @@ export class Hud {
   private renderGuard(g: Game) {
     const guard = this.guard;
     if (!guard) return;
-    const m = MISSIONS[guard.mission];
+    const m: { title: MessageKey; body: MessageKey; alt?: MessageKey } = MISSIONS[guard.mission];
     const cur = this.selected ?? 'later';
     const device = activeDevice();
     this.tollEl.innerHTML =
       `<div class="card slate"><header><h2>${th('presence.boundary.name')}</h2><small>${th('mission.lead')}</small></header>` +
-      `<h3>${th(m.title)}</h3><p>${th(m.body)}</p><p class="hint">${th(m.alt)}</p>` +
+      `<h3>${th(m.title)}</h3><p>${th(m.body)}</p>${m.alt ? `<p class="hint">${th(m.alt)}</p>` : ''}` +
       `<p class="hint">${th('mission.hint', controlParams(device))}</p>` +
       `<div class="go-row"><button type="button" class="tile go${cur === 'yes' ? ' cur' : ''}" data-id="yes"><span class="lbl">${th('mission.yes')}</span></button>` +
       `<button type="button" class="tile go${cur === 'later' ? ' cur' : ''}" data-id="later"><span class="lbl">${th('mission.later')}</span></button></div></div>`;

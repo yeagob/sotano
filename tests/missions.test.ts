@@ -5,9 +5,9 @@ import { ItemPools } from '../src/items/pool';
 import { ITEMS } from '../src/content/items';
 
 describe('the Boundary missions', () => {
-  it('offers the five approved missions, each with a title, a body and an alternative', () => {
+  it('offers the five approved missions, each with a title and a body', () => {
     expect(MISSION_IDS.sort()).toEqual(['breathe', 'draw', 'letter', 'message', 'phrase']);
-    for (const m of Object.values(MISSIONS)) expect(m.title && m.body && m.alt).toBeTruthy();
+    for (const m of Object.values(MISSIONS)) expect(m.title && m.body).toBeTruthy();
   });
 
   it('picks a mission from the list', () => {

@@ -2266,14 +2266,28 @@ export class Game {
     }
   }
 
-  /** "Have you done it?": a yes inside the window is taken as not really done (tier 1 or 2), a yes after
-   *  it as done (tier 3 or 4). Not yet gives nothing and never punishes. */
+  /** "Have you done it?": a yes spawns the reward from the chest and the Boundary leaves, for better or worse:
+   *  a yes inside the window draws tier 1 or 2, a yes after it tier 3 or 4. Not yet changes nothing: the
+   *  Boundary stays, and the card waits until the player steps away. */
   private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, yes: boolean) {
     if (!yes || c.opened) { c.refused = true; return; }
     const [lo, hi] = rewardBand(performance.now() - asked);
-    const rng = this.rng.stream('loot');
-    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng, [lo, hi])) ?? null;
+    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
     this.openChest(c, 0, def ?? undefined);
+    this.releaseBoundary(c.spec.room);
+  }
+
+  /** The Boundary of a vault leaves once its mission is answered yes. */
+  private releaseBoundary(room: number) {
+    for (const e of [...this.enemies.list]) {
+      if (!e.alive || !e.tags.has('boundary') || e.room !== room) continue;
+      this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('light.gold'), 16, 2, 0.06);
+      this.enemies.dissolve(e);
+      this.bus.off(null, `actor:${e.id}`);
+      this.actors.remove(e.id);
+      this.contacts.forget(e.id);
+      this.boundaryRing.delete(e.id);
+    }
   }
 
   private questioned() {

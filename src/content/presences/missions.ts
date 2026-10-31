@@ -10,11 +10,11 @@ export const MISSION_WINDOW_MS = 30000;
 
 export const MISSIONS = {
   phrase: { title: 'mission.phrase.title', body: 'mission.phrase.body', alt: 'mission.phrase.alt' },
-  message: { title: 'mission.message.title', body: 'mission.message.body', alt: 'mission.message.alt' },
+  message: { title: 'mission.message.title', body: 'mission.message.body' },
   letter: { title: 'mission.letter.title', body: 'mission.letter.body', alt: 'mission.letter.alt' },
   draw: { title: 'mission.draw.title', body: 'mission.draw.body', alt: 'mission.draw.alt' },
   breathe: { title: 'mission.breathe.title', body: 'mission.breathe.body', alt: 'mission.breathe.alt' },
-} satisfies Record<string, { title: MessageKey; body: MessageKey; alt: MessageKey }>;
+} satisfies Record<string, { title: MessageKey; body: MessageKey; alt?: MessageKey }>;
 
 export type MissionId = keyof typeof MISSIONS;
 
