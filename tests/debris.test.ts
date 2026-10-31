@@ -117,9 +117,8 @@ describe('loose cubes', () => {
     expect(d.pos[c * 3]).toBeGreaterThan(1.2);
   });
 
-  it('hops to dislodge when stuck spinning in place, and despawns after 2 seconds if still stuck (#42)', () => {
-    // A cube that never settles: it skids along the floor at low speed while spinning fast.
-    // It hops once after 0.6 s, and is removed if it is still stuck after 2 s
+  it('a cube spinning fast in place gets three upward pushes, one per second, then is removed (#42)', () => {
+    // a cube that never settles: it skids in place at low speed while spinning fast
     const d = new DebrisSystem(4, floor, () => {});
     const c = d.spawn(1, 0.5, 0.4, 0.5);
     const keepStuck = () => {
@@ -128,23 +127,18 @@ describe('loose cubes', () => {
       d.vel[c * 3 + 2] = 0;
       d.spin[c * 4 + 3] = 6;
     };
-    let hops = 0, prevVy = 0;
-    for (let t = 0; t < 0.9; t += 1 / 60) {
+    let pushes = 0, prevVy = 0;
+    const tick = () => {
       keepStuck();
       d.update(1 / 60);
-      if (prevVy <= 3 && d.vel[c * 3 + 1] > 3) hops++; // a rising edge is a hop
+      if (prevVy <= 3 && d.vel[c * 3 + 1] > 3) pushes++; // a rising edge is a push
       prevVy = d.vel[c * 3 + 1];
-    }
-    expect(hops).toBe(1);
-
-    for (let t = 0; t < 2.5; t += 1 / 60) {
-      if (!d.isAlive(c)) break;
-      keepStuck();
-      d.update(1 / 60);
-      if (prevVy <= 3 && d.vel[c * 3 + 1] > 3) hops++;
-      prevVy = d.vel[c * 3 + 1];
-    }
-    expect(hops).toBe(1); // it hopped once, and was not allowed a second hop before it vanished
+    };
+    for (let t = 0; t < 3.5; t += 1 / 60) tick();
+    expect(pushes).toBe(3);
+    expect(d.isAlive(c)).toBe(true); // three pushes given, the fourth check has not come yet
+    for (let t = 0; t < 1.5; t += 1 / 60) { if (!d.isAlive(c)) break; tick(); }
+    expect(pushes).toBe(3);
     expect(d.isAlive(c)).toBe(false);
   });
 });

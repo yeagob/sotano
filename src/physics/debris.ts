@@ -16,8 +16,12 @@ export const HOP_COOLDOWN = 0.7;     // seconds between hops, so a cube pinned a
 /** Hops a cube gets before it gives up pushing into the same wall (reset when it is launched again):
  *  a cube pinned in a corner never bounces forever. */
 export const HOPS = 4;
-export const STUCK_SPIN_HOP_TIME = 0.6;      // seconds stuck spinning before attempting an upward dislodge hop
-export const STUCK_SPIN_DESPAWN_TIME = 2.0; // seconds stuck spinning before being removed
+/** A cube spinning faster than this (rad/s) in place is stuck spinning (#42). */
+export const STUCK_SPIN_FAST = 1.0;
+/** A stuck cube gets an upward push every this many seconds of fast spin in place. */
+export const STUCK_SPIN_TIME = 1.0;
+/** Pushes a stuck cube gets; if it still spins fast in place after the last one, it is removed. */
+export const STUCK_PUSHES = 3;
 
 /** A hop's launch speed, a little different every time (identical hops fall into identical loops). */
 const hopSpeed = () => HOP * (0.95 + fx.random() * 0.2);
@@ -55,8 +59,8 @@ export class DebrisSystem {
   private readonly hopsLeft: Uint8Array;
   /** Seconds spent stuck spinning in place with low linear velocity. */
   private readonly stuckSpinT: Float32Array;
-  /** Whether a stuck cube has already taken its dislodge hop (one per launch, so it hops once). */
-  private readonly stuckHopped: Uint8Array;
+  /** Upward pushes a stuck cube has had (#42). */
+  private readonly stuckPushes: Uint8Array;
   private cursor = 0;
   private alive = 0;
   /** Column hash of resting cubes: key → indices. Rebuilt every frame. */
@@ -83,7 +87,7 @@ export class DebrisSystem {
     this.hopT = new Float32Array(max);
     this.hopsLeft = new Uint8Array(max);
     this.stuckSpinT = new Float32Array(max);
-    this.stuckHopped = new Uint8Array(max);
+    this.stuckPushes = new Uint8Array(max);
     this.stepped = new Uint8Array(max);
     this.unsettled = new Uint8Array(max);
   }
@@ -121,7 +125,7 @@ export class DebrisSystem {
     this.hopT[i] = 0;
     this.hopsLeft[i] = HOPS;
     this.stuckSpinT[i] = 0;
-    this.stuckHopped[i] = 0;
+    this.stuckPushes[i] = 0;
     this.unsettled[i] = 1;
     return i;
   }
@@ -130,7 +134,7 @@ export class DebrisSystem {
     if (!this.state[i]) return;
     this.state[i] = 0;
     this.stuckSpinT[i] = 0;
-    this.stuckHopped[i] = 0;
+    this.stuckPushes[i] = 0;
     this.tags[i] = null;
     this.fuse[i] = 0;
     this.alive--;
@@ -144,7 +148,7 @@ export class DebrisSystem {
     this.state[i] = MOVING;
     this.hopsLeft[i] = HOPS;
     this.stuckSpinT[i] = 0;
-    this.stuckHopped[i] = 0;
+    this.stuckPushes[i] = 0;
   }
 
   /**
@@ -224,31 +228,26 @@ export class DebrisSystem {
       this.stepped[i] = 1;
       if (this.pos[i3 + 1] < -20) { this.remove(i); continue; }
       if (this.state[i] === MOVING) {
-        // stuck = spinning fast without getting anywhere. Once a dislodge hop has started, the
-        // clock keeps running through its airtime (ground contact bleeds the spin off, so a cube
-        // that really settles stops counting)
-        const vx = this.vel[i3], vy = this.vel[i3 + 1], vz = this.vel[i3 + 2];
-        const linSpeedSq = vx * vx + vy * vy + vz * vz;
-        const spinSpeed = this.spin[i * 4 + 3];
-        if (spinSpeed <= 1.0) {
-          this.stuckSpinT[i] = 0;
-        } else if (linSpeedSq < 1.5 || this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME) {
+        // stuck = spinning fast in place (sliding slowly at most). Each full second of that gives the
+        // cube an upward push; after the last push, a cube still spinning fast in place is removed
+        const vx = this.vel[i3], vz = this.vel[i3 + 2];
+        const inPlace = vx * vx + vz * vz < 1.5;
+        if (this.spin[i * 4 + 3] > STUCK_SPIN_FAST && inPlace) {
           this.stuckSpinT[i] += dt;
-          if (this.stuckSpinT[i] >= STUCK_SPIN_HOP_TIME && this.hopT[i] <= 0 && !this.stuckHopped[i]) {
-            this.stuckHopped[i] = 1;
-            this.hopT[i] = HOP_COOLDOWN;
-            this.vel[i3 + 1] = Math.max(this.vel[i3 + 1], hopSpeed());
-            this.vel[i3] += fx.spread(1.5);
-            this.vel[i3 + 2] += fx.spread(1.5);
+          if (this.stuckSpinT[i] >= STUCK_SPIN_TIME) {
+            this.stuckSpinT[i] = 0;
+            if (this.stuckPushes[i] >= STUCK_PUSHES) {
+              if (this.fuse[i] === 0) { this.remove(i); continue; }
+            } else if (this.hopT[i] <= 0) {
+              this.stuckPushes[i]++;
+              this.hopT[i] = HOP_COOLDOWN;
+              this.vel[i3 + 1] = Math.max(this.vel[i3 + 1], hopSpeed());
+              this.vel[i3] += fx.spread(1.5);
+              this.vel[i3 + 2] += fx.spread(1.5);
+            }
           }
-          if (this.stuckSpinT[i] >= STUCK_SPIN_DESPAWN_TIME && this.fuse[i] === 0) {
-            this.remove(i);
-            continue;
-          }
-        }
-      } else {
-        this.stuckSpinT[i] = 0;
-      }
+        } else this.stuckSpinT[i] = 0;
+      } else this.stuckSpinT[i] = 0;
     }
     this.separate();
   }
