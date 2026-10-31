@@ -50,7 +50,7 @@ defineEnemy({
   cost: 1, minFloor: 1,
   drops: { heart: 0.12, key: 0.04, bomb: 0.05 },
   behaviour: chase({ lunge: 1.5 }),
-  model: [ { size, pos, color, glow?, tilt?, name? }, ... ],   // a body of cubes
+  model: [ { size, pos, color, glow?, inlay?, tilt?, name? }, ... ],   // a body of cubes
   onDeath?(e, ctx) { ... },
 });
 ```
@@ -174,5 +174,5 @@ These were merged into the actor events in P0 ([ACTORS.md](ACTORS.md)):
 
 Status (2026-10-28): Scarcity, Isolation, Comparison, Hall of Mirrors, Shortcut, Avoidance, Perfectionism and Procrastination are in the game in simpler form than designed (per-entry notes in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)). Rooted variants, the swimmer and mounted movement classes, and presences are not built.
 
-Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
+Projection looks follow the art guide's final specs (Doubt, the Lectern, Panic: [../art/ART-GUIDE.md](../art/ART-GUIDE.md) §8, §15). Models are whole-texel boxes (`TX` in `enemies/types.ts`) and may be parented (`parent: 'head'`) so faces follow a tilted head; parts named `tell` or `core` are the telegraph and brighten toward cold white with `pulse`. A part marked `inlay` lies flush on a face of another part (Craving's dark socket on its top): it is drawn with a depth offset so it never flickers against that face, and its geometry is unchanged. `Enemy.armed` is false while a projection can't hurt by touch (Doubt before its 0.5 s reach).
 | E1 | Chests: keys and treasures move into them ([ELEMENTS.md](ELEMENTS.md)) |

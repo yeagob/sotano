@@ -15,7 +15,7 @@ Floors 1 and 2. Code: [craving.ts](../../../../src/content/enemies/craving.ts).
 ## How it moves and attacks
 
 - It keeps between about 2.2 and 4.5 blocks from you, circling.
-- Every four seconds it opens a wind of radius five blocks for 2.5 seconds. The wind drags players and other actors toward it. Loose cubes, bombs and pickups are not pulled.
+- Every four seconds it opens a wind of radius five blocks for 2.5 seconds. The wind drags players and other actors toward it, and it swells in rather than clicking on. Loose cubes, bombs and pickups are not pulled.
 - Its touch does 3 damage.
 
 ## How the player answers it
