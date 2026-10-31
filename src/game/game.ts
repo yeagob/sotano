@@ -2246,16 +2246,19 @@ export class Game {
     }
   }
 
-  /** Near a guarded chest, its Boundary asks one real-world mission. Not yet waits until the player steps away. */
+  /** Walking up to the Boundary of a vault asks one real-world mission for the chest it keeps. Not yet
+   *  waits until the player steps three blocks away from the Boundary. */
   private touchGuards() {
     if (this.hud.tollOpen || this.hud.guardOpen || this.hud.bannerOpen) return;
     const b = this.player.body;
-    for (const c of this.chests) {
-      const s = c.spec;
-      if (!s.guard || c.opened) continue;
-      const dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
+    for (const e of this.enemies.list) {
+      if (!e.alive || !e.tags.has('boundary')) continue;
+      const dist = Math.hypot(e.body.x - b.x, e.body.z - b.z);
+      const near = dist <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
+      const c = this.chests.find(q => q.spec.guard && !q.opened && q.spec.room === e.room);
+      if (!c) continue;
       if (dist > 3) c.refused = false;
-      if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
+      if (c.refused || !near) continue;
       const mission = pickMission(this.rng.stream('guard'));
       const asked = performance.now();
       this.hud.openGuard(this, mission, yes => this.answerGuard(c, asked, yes));

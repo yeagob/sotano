@@ -13,6 +13,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - The Boundary keeps the vault chest: walk up to it and it asks for one real-world mission (write a sentence, a message or a letter to someone you worry about, draw, or breathe for 30 seconds). Answer Yes after 30 seconds or more for a tier 3 or 4 practice; a quicker Yes gives tier 1 or 2; Not yet gives nothing (#35).
 
 ### Fixed
+- The Boundary asks its mission when you walk up to it, not only at the chest (#40).
 - Presences have a body you cannot walk through, and they answer what you bring: they name it and say whether it is what they wait for. A laboratory is placed on every laboratory floor, even when the first room chosen has no room for it.
 - Open chest lids no longer clip through the chest body or its padlock (#4).
 - Locked doors open when you touch them, not from across the room (#5).
