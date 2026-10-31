@@ -27,6 +27,9 @@ export interface WeaponHost {
   cut(x: number, y: number, z: number, source: string): void;
   /** Damage a block (kind 'beam'); true if it broke. */
   burn(x: number, y: number, z: number, amount: number, source: string): boolean;
+  /** A solid block the stroke cannot break still answers it: the beam and the great cut call this
+   *  where they reach one (the alembic brews at it, as it does for a shot). Most blocks ignore it. */
+  answer(x: number, y: number, z: number): void;
   /** Projections hostile to the player, alive and materialised. */
   targets(): WeaponTarget[];
   hit(id: number, damage: number, kx: number, kz: number, source: string): void;
@@ -231,6 +234,7 @@ export class Beam implements Weapon {
     const len = hit ? hit.t : this.spec.reach;
     this.end.copy(eye).addScaledVector(f, len);
     if (hit && this.host.breakable(hit.x, hit.y, hit.z)) this.host.burn(hit.x, hit.y, hit.z, this.spec.mining, 'beam');
+    else if (hit) this.host.answer(hit.x, hit.y, hit.z);
     for (const t of this.host.targets()) {
       if (segDist(new THREE.Vector3(t.x, t.y + t.h / 2, t.z), eye, this.end) > t.hw + 0.35) continue;
       this.host.hit(t.id, this.spec.damage, f.x, f.z, 'beam');
@@ -339,9 +343,9 @@ export class GreatCut implements Weapon {
     for (let r = 0.8; r <= this.spec.reach; r += 0.5) for (const v of [-0.6, 0, 0.6]) {
       const p = eye.clone().addScaledVector(d, r).addScaledVector(up, v);
       const x = Math.floor(p.x), y = Math.floor(p.y), z = Math.floor(p.z), key = `${x},${y},${z}`;
-      if (this.queued.has(key) || !this.host.breakable(x, y, z)) continue;
-      this.queued.add(key);
-      this.queue.push([x, y, z]);
+      if (this.queued.has(key)) continue;
+      if (this.host.breakable(x, y, z)) { this.queued.add(key); this.queue.push([x, y, z]); }
+      else if (this.host.solid(x, y, z)) { this.queued.add(key); this.host.answer(x, y, z); }
     }
     const tip = eye.clone().addScaledVector(d, this.spec.reach);
     for (const t of this.host.targets()) {
