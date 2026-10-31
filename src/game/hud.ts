@@ -629,7 +629,7 @@ export class Hud {
     this.guard = { mission, answer };
     this.tollEl.classList.add('show');
     g.input.unlockFor();
-    this.selected = 'later';
+    this.selected = 'no';
     this.renderGuard(g);
   }
 
@@ -651,14 +651,14 @@ export class Hud {
     const guard = this.guard;
     if (!guard) return;
     const m: { title: MessageKey; body: MessageKey; alt?: MessageKey } = MISSIONS[guard.mission];
-    const cur = this.selected ?? 'later';
+    const cur = this.selected ?? 'no';
     const device = activeDevice();
     this.tollEl.innerHTML =
       `<div class="card slate"><header><h2>${th('presence.boundary.name')}</h2><small>${th('mission.lead')}</small></header>` +
       `<h3>${th(m.title)}</h3><p>${th(m.body)}</p>${m.alt ? `<p class="hint">${th(m.alt)}</p>` : ''}` +
       `<p class="hint">${th('mission.hint', controlParams(device))}</p>` +
       `<div class="go-row"><button type="button" class="tile go${cur === 'yes' ? ' cur' : ''}" data-id="yes"><span class="lbl">${th('mission.yes')}</span></button>` +
-      `<button type="button" class="tile go${cur === 'later' ? ' cur' : ''}" data-id="later"><span class="lbl">${th('mission.later')}</span></button></div></div>`;
+      `<button type="button" class="tile go${cur === 'no' ? ' cur' : ''}" data-id="no"><span class="lbl">${th('mission.no')}</span></button></div></div>`;
     for (const b of this.tollEl.querySelectorAll<HTMLButtonElement>('.tile')) {
       b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
       b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.guardAct(g, b.dataset.id!); });
@@ -674,7 +674,7 @@ export class Hud {
   }
 
   confirmToll(g: Game) {
-    if (this.guard) this.guardAct(g, this.selected ?? 'later');
+    if (this.guard) this.guardAct(g, this.selected ?? 'no');
     else if (this.selected) this.tollAct(g, this.selected);
   }
 

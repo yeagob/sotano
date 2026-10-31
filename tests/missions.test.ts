@@ -16,10 +16,11 @@ describe('the Boundary missions', () => {
   });
 
   it('a yes inside the window is tier 1 or 2; a yes after it is tier 3 or 4', () => {
-    expect(rewardBand(0)).toEqual([1, 2]);
-    expect(rewardBand(MISSION_WINDOW_MS - 1)).toEqual([1, 2]);
-    expect(rewardBand(MISSION_WINDOW_MS)).toEqual([3, 4]);
-    expect(rewardBand(120000)).toEqual([3, 4]);
+    expect(rewardBand(true, 0)).toEqual([1, 2]);
+    expect(rewardBand(true, MISSION_WINDOW_MS - 1)).toEqual([1, 2]);
+    expect(rewardBand(true, MISSION_WINDOW_MS)).toEqual([3, 4]);
+    expect(rewardBand(true, 120000)).toEqual([3, 4]);
+    expect(rewardBand(false, 120000)).toEqual([1, 2]);
   });
 });
 

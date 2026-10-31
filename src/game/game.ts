@@ -2266,12 +2266,11 @@ export class Game {
     }
   }
 
-  /** "Have you done it?": a yes spawns the reward from the chest and the Boundary leaves, for better or worse:
-   *  a yes inside the window draws tier 1 or 2, a yes after it tier 3 or 4. Not yet changes nothing: the
-   *  Boundary stays, and the card waits until the player steps away. */
+  /** "Have you done it?": yes or no, the reward spawns from the chest and the Boundary leaves. A yes draws
+   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. */
   private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, yes: boolean) {
-    if (!yes || c.opened) { c.refused = true; return; }
-    const [lo, hi] = rewardBand(performance.now() - asked);
+    if (c.opened) return;
+    const [lo, hi] = rewardBand(yes, performance.now() - asked);
     const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
     this.openChest(c, 0, def ?? undefined);
     this.releaseBoundary(c.spec.room);

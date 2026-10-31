@@ -194,7 +194,7 @@ const messages = {
   'presence.boundary.name': 'The Boundary',
   'mission.lead': 'This is a mission for outside the game. It is optional: you can do it or not.',
   'mission.yes': 'I did it',
-  'mission.later': 'Not yet',
+  'mission.no': "I won't do it",
   'mission.hint': 'Choose with {navigate} and confirm with {confirm}.',
   'mission.phrase.title': "One line for now",
   'mission.phrase.body': "If you choose to, write one sentence about how you are right now, on paper. Nobody reads it and the game does not keep it.",

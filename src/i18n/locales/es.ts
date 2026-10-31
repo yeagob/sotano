@@ -153,7 +153,7 @@ export const ES: Catalog = {
     'presence.boundary.name': 'El Límite',
     'mission.lead': 'Esta es una misión para fuera del juego. Es opcional: puedes hacerla o no.',
     'mission.yes': 'Ya lo hice',
-    'mission.later': 'Todavía no',
+    'mission.no': 'No lo voy a hacer',
     'mission.hint': 'Elige con {navigate} y confirma con {confirm}.',
     'mission.phrase.title': "Una frase para ahora",
     'mission.phrase.body': "Si lo eliges, escribe en papel una frase sobre cómo estás ahora. Nadie la lee y el juego no la guarda.",

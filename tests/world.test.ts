@@ -176,8 +176,8 @@ describe('boss rooms and the sky', () => {
           expect(onHole).toBe(false);
         }
       }
-      // every pedestal of the run holds a different practice
-      const items = run.floors.flatMap(f => f.pedestals.map(p => p.item));
+      // every pedestal of the run holds a different practice (a guarded centre holds none until its mission)
+      const items = run.floors.flatMap(f => f.pedestals.map(p => p.item)).filter(i => i !== null);
       expect(new Set(items).size).toBe(items.length);
     }
   });
