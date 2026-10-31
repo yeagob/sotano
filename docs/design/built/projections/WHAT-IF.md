@@ -16,7 +16,7 @@ Floor 9. Code: [what-if.ts](../../../../src/content/enemies/what-if.ts).
 
 - It hovers a little above the floor and drifts toward you slowly, passing through solid blocks.
 - Every four seconds it fires a bolt at you. A bolt stops at the first solid block.
-- Its touch does 4 damage. It has 34 health.
+- Its touch does 4 damage. It has 68 health.
 
 ## How the player answers it
 

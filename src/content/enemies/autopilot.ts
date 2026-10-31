@@ -50,7 +50,7 @@ export default defineEnemy({
   id: 'autopilot',
   name: 'Autopilot',
   pattern: 'Living by routine',
-  hp: 10,
+  hp: 20,
   speed: 0.8,
   size: [0.34, 1.2],
   contactDamage: 4,

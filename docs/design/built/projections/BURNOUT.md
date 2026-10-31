@@ -17,7 +17,7 @@ Floors 7 and 8. Code: [burnout.ts](../../../../src/content/enemies/burnout.ts).
 - It walks at you. Its speed rises with time, to about 2.2 times its base speed after eight seconds of running.
 - After those eight seconds it is spent for three seconds. While spent it stands still and leaves a slowing field of about 0.9 blocks where it stands.
 - It then walks again, at 80 per cent of its base speed.
-- Its touch does 4 damage. It has 26 health.
+- Its touch does 4 damage. It has 52 health.
 
 ## How the player answers it
 

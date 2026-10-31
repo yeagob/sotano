@@ -16,7 +16,7 @@ Floors 7 and 8. Code: [spark.ts](../../../../src/content/enemies/spark.ts).
 
 - It walks at you, quickly, and pauses for 0.6 seconds every two seconds.
 - Every three seconds, while it has a target, it fires an arc: a line from its body to you, announced for 0.7 seconds, live for 1.5 seconds, doing 4 damage.
-- Its touch does 2 damage. It has 12 health.
+- Its touch does 2 damage. It has 24 health.
 
 ## How the player answers it
 

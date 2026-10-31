@@ -14,7 +14,7 @@ Floors 5 and 6, rare (weight one). Code: [dogma.ts](../../../../src/content/enem
 
 ## How it moves and attacks
 
-- It stands still and does not touch. It has 60 health and armour 0.2: it takes 80 per cent of the damage of a hit.
+- It stands still and does not touch. It has 120 health and armour 0.2: it takes 80 per cent of the damage of a hit.
 - Every five seconds it sets a field of three blocks around itself for four seconds. The field's effect depends on its health: above half, it mutes your casting; between a quarter and a half, it slows you; below a quarter, it stings you for 2 damage each second.
 
 ## How the player answers it

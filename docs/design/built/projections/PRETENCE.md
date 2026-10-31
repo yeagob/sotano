@@ -15,7 +15,7 @@ Floors 7 and 8. Code: [pretence.ts](../../../../src/content/enemies/pretence.ts)
 ## How it moves and attacks
 
 - It walks at you, quickly, and lunges when you come close.
-- Its touch does 6 damage, the highest contact damage of the built and partial projections. It has 16 health.
+- Its touch does 6 damage, the highest contact damage of the built and partial projections. It has 32 health.
 - It is always visible: its disguise is in the code, but nothing starts it, so it never hides.
 
 ## How the player answers it

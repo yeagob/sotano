@@ -21,7 +21,7 @@ export default defineEnemy({
   id: 'shortcut',
   name: 'Shortcut',
   pattern: 'There is an easier way.',
-  hp: 9,
+  hp: 18,
   speed: 1.8,
   size: [0.24, 0.4],
   contactDamage: 0,
