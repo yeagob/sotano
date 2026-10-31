@@ -99,4 +99,4 @@ export class RunRandom {
 }
 
 /** Runtime streams: outcomes during play (no replay promise; isolated from structure). */
-export type RuntimeStream = 'drops' | 'loot' | 'ai';
+export type RuntimeStream = 'drops' | 'loot' | 'ai' | 'guard';

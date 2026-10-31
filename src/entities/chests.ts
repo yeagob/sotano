@@ -26,7 +26,8 @@ export class Chests {
   constructor(private scene: THREE.Scene) { scene.add(this.group); }
 
   add(spec: ChestSpec, facing: number, tight = false): ChestView {
-    const model = buildChest({ keys: spec.keys, practice: spec.item !== null });
+    // a guarded chest keeps its padlock (one keyhole) but no key ever fits it
+    const model = buildChest({ keys: spec.guard ? 1 : spec.keys, practice: spec.item !== null });
     model.root.position.set(spec.x + 0.5, spec.y, spec.z + 0.5);
     model.root.rotation.y = facing;
     model.inner.visible = false;

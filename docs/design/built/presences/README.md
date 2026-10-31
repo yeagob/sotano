@@ -8,6 +8,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 |---|---|---|---|
 | [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Takes a heart of a released pattern, then talks once on contact and heals a quarter of a heart; silenced by negative intentions |
 | [BOUNDARY.md](BOUNDARY.md) | The Boundary | One per vault of a dungeon floor | Stays still while its sanctuary holds; wakes and throws cubes when the sanctuary is broken |
+| [GUARD-MISSIONS.md](GUARD-MISSIONS.md) | The Boundary, as guardian of its chest | The vault chest, from floor 1 | Asks one real-world mission; the chest opens on I did it, with a tier 1–2 or 3–4 practice |
 
 ## What they share (built)
 

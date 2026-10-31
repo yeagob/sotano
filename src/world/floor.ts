@@ -116,6 +116,8 @@ export interface ChestSpec {
   keys: number;
   /** The practice reserved for it when it stands where a pedestal would (null: it holds loot rolled when opened). */
   item: string | null;
+  /** Kept by the Boundary of its vault: it opens for a real-world mission, not for keys (docs/design/built/presences/BOUNDARY.md). */
+  guard?: boolean;
 }
 
 export interface FloorResult {
@@ -372,11 +374,11 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       const ring = (c: number, r: number) => Math.max(Math.abs(c - (ROOM_W - 1) / 2), Math.abs(r - (ROOM_D - 1) / 2)) === SANCTUARY_RADIUS;
       for (const [c, r] of spots) if (ring(c, r)) w.data[w.idx(x0 + c, y0, z0 + r)] = MAT.pedestal;
       spots = spots.filter(([c, r]) => !ring(c, r));
-      for (let i = 0; i < 2 && spots.length; i++) {
+      // the Boundary keeps one chest: it opens for a real-world mission, never for keys
+      if (spots.length) {
         const [col, row] = chestRng.pick(spots);
         w.data[w.idx(x0 + col, y0, z0 + row)] = MAT.chest;
-        chests.push({ room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item: null });
-        spots = spots.filter(([c, r]) => c !== col || r !== row);
+        chests.push({ room: gid(pr.id), x: x0 + col, y: y0, z: z0 + row, keys: 0, item: null, guard: true });
       }
     }
     if (pr.type === 'normal') {

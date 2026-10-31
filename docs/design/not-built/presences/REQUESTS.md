@@ -2,7 +2,7 @@
 
 # Requests from the depths
 
-Status: **decided** (the owner approved requests, not orders, and the five allowed requests, on 2026-10-27). The readings of the idle window and the reward table are still to be confirmed.
+Status: **decided** (the mission card and its reward are built, see [built/presences/GUARD-MISSIONS.md](../../built/presences/GUARD-MISSIONS.md); the idle window, the trust meter and the other presences are not) (the owner approved requests, not orders, and the five allowed requests, on 2026-10-27). The readings of the idle window and the reward table are still to be confirmed.
 
 Some presences ask for something in the real world, in a line of story, and then let the player go on. The game is a game: nothing here is a therapy, a cure or a test of the player.
 
