@@ -33,8 +33,8 @@ describe('placing a block where the body stands', () => {
   it('a quarter of a block or less is nudgeable, deeper is not', () => {
     // body x spans 0.1..0.7 (0.2 into the cell at x=0.5): nudgeable
     expect(cellOverlap(body(0.4, 0.5), 0.5, 0, 0.5)!.depth).toBeLessThanOrEqual(PLACE_NUDGE_MAX);
-    // body x spans 0.4..1.0 (0.5 into the cell): refused
-    expect(cellOverlap(body(0.7, 0.5), 0.5, 0, 0.5)!.depth).toBeGreaterThan(PLACE_NUDGE_MAX);
+    // body x spans 0.5..1.1 and z 0.4..1.0: both overlaps are 0.5 deep, so the body is refused
+    expect(cellOverlap(body(0.8, 0.7), 0.5, 0, 0.5)!.depth).toBeGreaterThan(PLACE_NUDGE_MAX);
   });
 
   it('ignores a cell above the body\'s head', () => {
