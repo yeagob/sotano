@@ -84,6 +84,8 @@ export function buildModel(def: EnemyDef): View {
   const tells: THREE.MeshBasicMaterial[] = [];
   for (const p of def.model) {
     const mat = p.glow ? new THREE.MeshBasicMaterial({ color: p.color }) : new THREE.MeshLambertMaterial({ color: p.color });
+    // an inlay shares a face with its host: pull its depth toward the camera so the two never fight
+    if (p.inlay) { mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -4; }
     if (!p.glow) mats.push(mat as THREE.MeshLambertMaterial);
     else if (p.name === 'tell' || p.name === 'core') tells.push(mat as THREE.MeshBasicMaterial);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...p.size), mat);
