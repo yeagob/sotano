@@ -2036,7 +2036,9 @@ export class Game {
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
       && !this.doors.inDoorway(x, y, z);
-    if (!ok) { if (tap) sfx.denied(); else this.throwTop(); return; }
+    // a face in reach whose cell cannot take a block (a doorway, the world's edge) is refused like a
+    // blocked placement, never thrown: only aiming at nothing throws the block
+    if (!ok) { if (tap || hit) sfx.denied(); else this.throwTop(); return; }
     // the body reaching into the cell: a quarter of a block or less is nudged out and the block goes
     // down; deeper, the block waits in hand until the player steps clear (never thrown, never a jump)
     // the push is worked out now but applied only once the placement goes through (an item may cancel it)
