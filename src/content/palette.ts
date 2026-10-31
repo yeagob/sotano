@@ -35,6 +35,16 @@ export const PALETTE = {
   'life.empty': '#4A2226',
   'life.rim': '#7A3A3E',
 
+  // Attacks that deal damage: a second red, never life (issue #47, DECISIONS §3.4). Their live marks and
+  // shots read red; their particles and decoration stay pale blue-white (the cold ramp).
+  'attack.red.dim': '#9C2620',
+  'attack.red.base': '#F23D33',
+  // The warning of an attack that deals damage (owner ruling 2026-10-31, DECISIONS §3.4 amendment 2):
+  // yellow until the blow lands, then red. A lemon yellow, not the player's gold (ΔE ≥ 20 from every
+  // light.* token under normal vision), and never a light.* name, so the light scan still holds.
+  'attack.warn.base': '#EEE33C',
+  'attack.warn.dim': '#A8A02E',
+
   // The four paths: base, glow, dark and the shadow a projection takes.
   'path.body.base': '#3FCF7F', 'path.body.glow': '#81E9AF', 'path.body.dark': '#276E46', 'path.body.shadow': '#36634A',
   'path.emotion.base': '#7AA3D4', 'path.emotion.glow': '#8EC1FF', 'path.emotion.dark': '#365981', 'path.emotion.shadow': '#364A63',

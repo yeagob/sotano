@@ -22,7 +22,7 @@ Three projections are rebuilt to their final specs: Doubt (a dark husk with a co
 
 ## The intentions and the practices
 
-- **Intentions** are a bead of light: a white-hot core, a gold shell and an ember halo. Hostile projectiles are cold cubes that tumble, with cold chips on impact.
+- **Intentions** are a bead of light: a white-hot core, a gold shell and an ember halo. Hostile projectiles are red cubes that tumble (the attack red: they hurt), with pale chips on impact. An attack that hurts warns in yellow before it lands and is red when it lands; particles and decoration are pale blue-white, never red or yellow.
 - **Practices** are coloured by their first path's glow. Their icon palettes use tokens and never life or cold; light appears only where the concept is light: Satori, Cut Ties with Toxic Relationships, and Remember Breathing.
 - **Pickups.** A gold key with an eye (an insight), a bomb drawn as a glowing seed (never a cartoon bomb), and a red heart.
 
