@@ -1,6 +1,7 @@
-// Attack colour (issue #47, DECISIONS §3.4 and §7.2): an enemy attack that deals damage reads red;
-// particles and decoration never do, they are pale blue-white. Colour-blindness simulation is the
-// same Machado 2009 matrices as tests/art.test.ts.
+// Attack colour (issue #47, DECISIONS §3.4 and §7.6; owner ruling 2026-10-31): an enemy attack that
+// deals damage warns in yellow until its blow lands, then the blow is red. Particles and decoration
+// never take either: they are pale blue-white. Colour-blindness simulation is the same Machado 2009
+// matrices as tests/art.test.ts.
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { harms, Hazards, markTint, PARTICLE_TINTS, type Strike } from '../src/enemies/attacks';
@@ -82,8 +83,8 @@ describe('which attacks hurt (harms)', () => {
 });
 
 describe('mark colour (markTint)', () => {
-  it('damaging attacks are red: dim while they warn, bright when they land', () => {
-    expect(markTint(true, false)).toBe('attack.red.dim');
+  it('damaging attacks warn in yellow and are red once they land', () => {
+    expect(markTint(true, false)).toBe('attack.warn.base');
     expect(markTint(true, true)).toBe('attack.red.base');
   });
 
@@ -115,10 +116,25 @@ describe('what the hazard mesh draws', () => {
     return Math.abs(c.r - want.r) < 1e-6 && Math.abs(c.g - want.g) < 1e-6 && Math.abs(c.b - want.b) < 1e-6;
   };
 
-  it('a warning of a damaging ring is drawn in the dim attack red', () => {
+  it('a warning of a damaging ring is drawn in the attack warning yellow', () => {
     const marks = drawn([shot({ lead: 0.5, live: 0.2, damage: 4 }, ring)]);
     expect(marks.length).toBeGreaterThan(0);
-    for (const c of marks) expect(same(c, 'attack.red.dim')).toBe(true);
+    for (const c of marks) expect(same(c, 'attack.warn.base')).toBe(true);
+  });
+
+  it('a growing ring shows its reach in the dimmer yellow while it warns', () => {
+    const marks = drawn([shot({ lead: 0.5, live: 0.2, damage: 4 }, { ...ring, grow: 2 })]);
+    const bright = marks.filter(c => same(c, 'attack.warn.base')).length;
+    const dim = marks.filter(c => same(c, 'attack.warn.dim')).length;
+    expect(bright).toBeGreaterThan(0);
+    expect(dim).toBeGreaterThan(0);
+    expect(bright + dim).toBe(marks.length);
+  });
+
+  it('a warning that does not hurt is drawn in the pale ramp, never yellow', () => {
+    const marks = drawn([shot({ lead: 0.5, live: 0.2, damage: 0 }, ring)]);
+    expect(marks.length).toBeGreaterThan(0);
+    for (const c of marks) expect(same(c, 'cold.body')).toBe(true);
   });
 
   it('a pull is drawn in the pale ramp, never red', () => {
@@ -131,6 +147,43 @@ describe('what the hazard mesh draws', () => {
     const marks = drawn([shot({ lead: 0, live: 0.5, damage: 4 }, ring)]);
     expect(marks.length).toBeGreaterThan(0);
     for (const c of marks) expect(same(c, 'attack.red.base')).toBe(true);
+  });
+});
+
+describe('the warning is yellow, not the player\'s light', () => {
+  const WARN: PalToken[] = ['attack.warn.base', 'attack.warn.dim'];
+  const RED: PalToken[] = ['attack.red.base'];
+  const LIGHT = (Object.keys(PALETTE) as PalToken[]).filter(t => t.startsWith('light.'));
+
+  it('both warning tokens are yellow: CIE Lab hue 80–110°, chroma > 40', () => {
+    for (const t of WARN) {
+      const { h, c } = lightAndHue(hexOf(t));
+      expect(c, t).toBeGreaterThan(40);
+      expect(h, `${t} hue ${h.toFixed(0)}°`).toBeGreaterThanOrEqual(80);
+      expect(h, `${t} hue ${h.toFixed(0)}°`).toBeLessThanOrEqual(110);
+    }
+  });
+
+  it('the bright warning reads on a dark floor (L* ≥ 75)', () => {
+    expect(lightAndHue(hexOf('attack.warn.base')).L).toBeGreaterThanOrEqual(75);
+  });
+
+  it('stay ΔE ≥ 20 from every light.* token under normal vision, so a warning never reads as the player\'s light', () => {
+    for (const t of WARN) for (const l of LIGHT) expect(deltaE(hexOf(t), hexOf(l), 'normal'), `${t} vs ${l}`).toBeGreaterThanOrEqual(20);
+  });
+
+  it('stay ΔE ≥ 20 from the live attack red under normal vision', () => {
+    for (const t of WARN) for (const r of RED) expect(deltaE(hexOf(t), hexOf(r), 'normal'), `${t} vs ${r}`).toBeGreaterThanOrEqual(20);
+  });
+
+  it('stay separable from the cold and the particle ramp under every colour-blindness simulation', () => {
+    for (const v of VISIONS) {
+      for (const warn of WARN) {
+        for (const pale of ['cold.white', 'cold.body'] as PalToken[]) {
+          expect(deltaE(hexOf(warn), hexOf(pale), v), `${warn} vs ${pale} (${v})`).toBeGreaterThanOrEqual(20);
+        }
+      }
+    }
   });
 });
 
@@ -179,7 +232,7 @@ describe('particles and decoration are pale blue-white', () => {
     for (const t of OMEN_COLORS) expect(lightAndHue(hexOf(t)).L, t).toBeGreaterThanOrEqual(75);
   });
 
-  it('no particle or decoration tint is an attack red', () => {
+  it('no particle or decoration tint is an attack red or an attack warning', () => {
     const particle: readonly string[] = [...PARTICLE_TINTS, ...OMEN_COLORS];
     for (const t of particle) expect(t.startsWith('attack.'), t).toBe(false);
   });

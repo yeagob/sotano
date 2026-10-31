@@ -37,7 +37,7 @@ export type Gait =
 
 /** Gravity a leaping boss falls under (entities/enemies.ts). */
 const GRAVITY = 26;
-// Particles and decoration are pale blue-white; damage is red (issue #47, see attacks.ts markTint).
+// Particles and decoration are pale blue-white; a hurting attack warns in yellow and hits red (issue #47, see attacks.ts markTint).
 const COLD_WHITE = pal('cold.white');
 const COLD_BODY = pal('cold.body');
 

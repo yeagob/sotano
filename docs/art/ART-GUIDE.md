@@ -34,7 +34,7 @@ Everything on screen belongs to exactly one side. The side decides its colour, v
 |---|---|---|---|
 | **World / vessels** | Blocks, rooms, doors, pedestals, the house | The floor's rock ramp. Low chroma, cooler and darker with depth | Never, unless cracked by the player (gold crack cores) or holding an element (lava, fire) |
 | **The light / the player** | Intentions, shards, seams, practices, keys, breakthroughs, hands, cleared-room light, the lantern | Gold-white `light.*` ramp, with the path hues as rims and trails | The only side that emits freely |
-| **Projections / husks** | Enemies, bosses, hostile shots | The host room's pattern, pushed to a cold shadow. Cold `cold.*` eyes; a shot or mark that hurts is the attack red (`attack.red.*`, §3.4) | Eyes, and the bright marks of a live attack. Captive light shows only through cracks |
+| **Projections / husks** | Enemies, bosses, hostile shots | The host room's pattern, pushed to a cold shadow. Cold `cold.*` eyes; a shot or live mark that hurts is the attack red, and its warning is yellow (`attack.red.*` and `attack.warn.*`, §3.4) | Eyes, and the bright marks of a live attack. Captive light shows only through cracks |
 
 **Ownership axis: warm is yours, cold is theirs. Shape decides first, colour confirms.** Player shots are round with a smooth trail. Hostile shots are tumbling cubes (or the Critic's ✗) with a jagged trail and a dark rim. Warm light seen inside a projection is *your light held captive*: it never flies at you.
 
@@ -88,7 +88,7 @@ No pure `#000` or `#FFF`, except 1–4 px cores of `light.core`.
 | `life.empty` | `#4A2226` | Empty heart fill |
 | `life.rim` | `#7A3A3E` | Empty heart rim |
 
-**Attack red** (issue #47): `attack.red.dim` `#9C2620` (a warning) and `attack.red.base` `#F23D33` (a live blow, and every hostile shot) mark every attack that deals damage. They are the only red besides hearts, and never a particle. Particles and decoration are the pale ramp, `cold.body` and `cold.white`.
+**Attack red and warning yellow** (issue #47; owner ruling 2026-10-31): the warning of an attack that deals damage is `attack.warn.base` `#EEE33C` (a lemon yellow, not the player's gold; `attack.warn.dim` `#A8A02E` for a growing ring's reach), and its live blow is `attack.red.base` `#F23D33`, as is every hostile shot. Red is the only red besides hearts, and neither the warning nor the blow is ever a particle. Particles and decoration are the pale ramp, `cold.body` and `cold.white`.
 
 ### 3.5 The four paths (colour-blind verified)
 
@@ -230,7 +230,7 @@ Numbers and tokens: DECISIONS §6.5. Captures: `?gallery=chests`.
 
 **Hostile shots** are tumbling cubes of `attack.red.base` (they hurt, so they are red), or the Critic's ✗ in the same red. They have a jagged trail and never carry warmth. Impacts are pale chips (`cold.body`). Never gold particles.
 
-**Attacks** are marked in the attack red when they hurt and in the pale ramp when they do not. Their warnings follow the same rule, and their particles are always pale, never red (DECISIONS §7.6).
+**Attacks** warn in yellow (`attack.warn.base`) while a blow that hurts is coming, turn red (`attack.red.base`) when it lands, and stay in the pale ramp when they do not hurt. Their particles are always pale, never red or yellow (DECISIONS §7.6).
 
 **Particles** are two pools. *Matter* chips use the material's ramp (50 % base, 30 % dark, 20 % hi). *Light* is additive, with fog reduced. Each event has a cap, and above 80 % pool fill the events spawn half as many particles.
 

@@ -70,7 +70,13 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 
 *Owner issue #47 (2026-10-29): "Enemy attacks look like particles: damage must read red, particles pale blue-white."*
 
-- **What hurts is red, and it is decided by what the strike can do**, not by its shape or the move's name (`harms` in `src/enemies/attacks.ts`). A warning that deals no damage itself but announces a blow that does (a charge's aim line, a slam's landing mark) is red too, so the warning and the blow match. A pull, and a field that only slows or mutes, stay pale.
+- **What hurts is red once it lands and yellow while it warns, and it is decided by what the strike can do**, not by its shape or the move's name (`harms` in `src/enemies/attacks.ts`). A warning that deals no damage itself but announces a blow that does (a charge's aim line, a slam's landing mark) is yellow (`attack.warn.*`), and the blow it announces turns red when it lands. A pull, and a field that only slows or mutes, stay pale.
 - **Particles are never red**, even when a red attack throws them: sparks, rising motes, dust and impact chips are the pale ramp (`cold.white`, `cold.body`).
 - **When an owner rule collides with a ledger ruling** (here: red is life), amend the ledger in the same change, measure the new colour against the reserved ones (ΔE ≥ 20 from `life.heart`, ruling §3.12 rule 2) and say so in the report. Never invent a hue quietly.
 - **The cold ramp is the decoration ramp.** Omen motes moved from `cold.dim` to `cold.body` and `cold.white`, so a spawn warning never reads as a hit.
+
+*Owner ruling (2026-10-31, issue #47 follow-up): "attacks that deal damage stay RED when they are live. Warnings (avisos: anything that telegraphs an attack before it lands) must be YELLOW, not red. Particles and decoration stay pale blue-white. Non-damaging things stay as they are."*
+
+- **A warning is yellow, a blow is red.** The warning of a hurting attack (its telegraph, aim line, landing mark, inhale ring, reach ring) is `attack.warn.base` (`#EEE33C`, the reach ring `attack.warn.dim`). Only the live blow and hostile shots are `attack.red.base`. Yellow was chosen as lemon, not the player's gold, so it stays ΔE ≥ 20 from every `light.*` token; the warning tokens sit outside the `light.*` namespace.
+- **Measure the warning colour against the gold and the cold.** Under deuteranopia the warning yellow is ΔE 14 from `light.gold`: the warning is told apart by brightness and size, not hue alone. Say so in the report, and never drop a warning below the contrast floor on the grey floors.
+- **Omens are not attack warnings.** A spawn omen warns of a projection's arrival, not of a blow, so its motes stay pale. Owner to confirm if a spawn warning should turn yellow too.

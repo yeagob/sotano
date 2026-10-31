@@ -110,10 +110,21 @@ Dir r1's `intent #f0a33c`, `ember #c7562a`, `shard #ffd77a`, `dawn #fff4d6` and 
 
 | Token | Hex | Use |
 |---|---|---|
-| `attack.red.dim` | `#9C2620` | The warning of a damaging attack: its dashed marks, its reach ring, and the aim line or landing mark of a blow that hurts (§7.5) |
 | `attack.red.base` | `#F23D33` | A damaging attack live (its marks, bright), and every hostile shot (§7.2) |
+| `attack.red.dim` | `#9C2620` | Not used by the game since the warning turned yellow (below); kept in the palette, unused |
 
 The attack red is a different red from the heart: `attack.red.base` is ΔE 23 from `life.heart`, `attack.red.dim` ΔE 20 (normal vision), and both stay ΔE ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`). It is never a particle, never a heart, never a path hue. The old rule that red is life (§3.12 rule 2) keeps its heart meaning; the attack red is the only other red.
+
+**Attack warning yellow (amendment, owner ruling 2026-10-31: "attacks that deal damage stay red when they are live; warnings must be yellow, not red").** The warning of an attack that hurts is yellow until its blow lands, then the blow is red. Warnings are not life and not the player's light, so they get their own tokens, outside the `light.*` namespace (the light scan of §3.12 rule 1 still holds).
+
+| Token | Hex | Use |
+|---|---|---|
+| `attack.warn.base` | `#EEE33C` | The warning of a hurting attack: its dashed marks, its telegraph, the aim line, the landing mark, the inhale ring (§7.6) |
+| `attack.warn.dim` | `#A8A02E` | The reach ring of a growing ring while it warns: dimmer than the ring itself |
+
+`attack.warn.base` is a lemon yellow, not the gold `light.gold`: ΔE 26 from it under normal vision and ΔE ≥ 20 from every `light.*` token; `attack.warn.dim` is ΔE 23 from `light.gold`. Both are ΔE ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`). **Measured limits:** under deuteranopia the warning yellow sits ΔE 14 from `light.gold` and ΔE 36 from `attack.red.base`, and `attack.warn.dim` sits ΔE 6 from `attack.red.base`; the warning is told apart from the blow by its brightness and its size (a live mark is 1.8× larger), not by hue alone. Contrast of `attack.warn.dim` on the grey floors (`rock.f2`, `mat.stone`) is about 2.2–2.8 : 1, so it reads only as a faint reach ring, never as the warning itself.
+
+**Tension, for the owner:** §3.12 rule 1 and pillar 2 of §1.1 reserve warm light (`light.*`) for the player and call projections cold. The owner's ruling gives a hostile attack a yellow warning, which is not the player's light and is not a `light.*` token. It is accepted as a warning colour only: it must never be used for a projection's body, eye, particle or pickup, and it is the one enemy colour in yellow. Owner to confirm.
 
 ### 3.5 The four paths (final, CVD-verified)
 
@@ -208,7 +219,7 @@ Skin tones (player setting): `skin.t1 #F3D2B3`, `skin.t2 #E2B48F`, `skin.t3 #B98
 ### 3.12 Reserved-colour rules (enforced)
 
 1. **The light (`light.*`) is the light and repair.** Never on a living projection (Perfectionism's seams and the Impostor's gilt are not gold while they are patterns; brass is "false gold"). Never a path colour. Allow-listed modules: intents, debris/shards, mesher (seams, cracks), items/practices, HUD, room-clear, hexagram, sky, lantern.
-2. **Red (`life.*`) is life.** Hearts and heart-related UI only. The one other red is the attack red (`attack.red.*`, §3.4 amendment, issue #47): the marks and shots of attacks that deal damage, never a heart, never a particle. No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
+2. **Red (`life.*`) is life.** Hearts and heart-related UI only. The one other red is the attack red (`attack.red.*`, §3.4 amendment, issue #47): the live marks and shots of attacks that deal damage, never a heart, never a particle. A hurting attack's warning is `attack.warn.*` yellow until it lands (§3.4 amendment 2026-10-31). No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
 3. **Cold (`cold.*`) is the projections'.** Never on a player shot, shard, seam or practice.
 4. **Path true hues** belong to the player (practices, rims, trails, states of being, halos). Projections may use only `path.*.shadow` (body tint); the true hue appears on a projection only on its release shard (drawn by the creature view, not referenced in content).
 5. **Skin band banned on projections** (Ply): hue 15–45°, chroma 0.04–0.12, OKL 0.55–0.85. Test scans every creature palette.
@@ -471,22 +482,24 @@ Shake is positional only (**no camera roll**: Mat's 1° roll lost), offset = amp
 
 ### 7.5 Attack marks (as built, 2026-10-29)
 
-Every attack shape (`enemies/attacks.ts`) is drawn in texel cube marks, in one of two groups (§7.6): **attack red** when the attack hurts, the **pale cold ramp** when it does not. A **telegraph** is dashed marks at 0.09 m (`attack.red.dim` when it hurts, `cold.body` when not), and a growing ring also draws its **full reach** while it is a warning, so you see how far it will go; telegraphs shed a rising mote now and then (pale, `cold.white` in their last 30 %). A **live** attack's marks are `attack.red.base` (or `cold.white` when it does not hurt) at 1.8× size, a live ring stands as a second row at about 70 % of its height (the low wall you jump), and it sheds three sparks a frame along its front (`cold.white` and `cold.body`: particles are never red). Heavy boss impacts (`quake`) shake the screen by distance and throw chips of the floor's own ramp, at most 40 per event. Nothing in an attack is warm.
+Every attack shape (`enemies/attacks.ts`) is drawn in texel cube marks, in one of three groups (§7.6): **warning yellow** while a hurting attack is coming, **attack red** when it is live, and the **pale cold ramp** when it does not hurt. A **telegraph** is dashed marks at 0.09 m (`attack.warn.base` when it hurts, `cold.body` when not), and a growing ring also draws its **full reach** while it is a warning (`attack.warn.dim`), so you see how far it will go; telegraphs shed a rising mote now and then (pale, `cold.white` in their last 30 %). A **live** attack's marks are `attack.red.base` (or `cold.white` when it does not hurt) at 1.8× size, a live ring stands as a second row at about 70 % of its height (the low wall you jump), and it sheds three sparks a frame along its front (`cold.white` and `cold.body`: particles are never red). Heavy boss impacts (`quake`) shake the screen by distance and throw chips of the floor's own ramp, at most 40 per event. Nothing in an attack is warm.
 
 ### 7.6 Attack colour: what hurts is red (ruling, issue #47, 2026-10-29)
 
-**Ruling.** Owner: "Enemy attacks look like particles: damage must read red, particles pale blue-white." The pale cold ramp had made the attacks of tall projections read as dust. An attack that deals damage is red; particles, decoration and anything that does not hurt are very light pale blue-white. The classification is by what the strike can do, not by the move's name (`harms` in `enemies/attacks.ts`):
+**Ruling.** Owner: "Enemy attacks look like particles: damage must read red, particles pale blue-white." The pale cold ramp had made the attacks of tall projections read as dust. An attack that deals damage is red once it lands, and yellow while it warns; particles, decoration and anything that does not hurt are very light pale blue-white. The classification is by what the strike can do, not by the move's name (`harms` in `enemies/attacks.ts`):
+
+**Ruling amendment (owner, 2026-10-31): "attacks that deal damage stay RED when they are live. Warnings (avisos: anything that telegraphs an attack before it lands) must be YELLOW, not red. Particles and decoration stay pale blue-white. Non-damaging things stay as they are."** The warning of a hurting attack is `attack.warn.base` (the reach ring of a growing one `attack.warn.dim`); the live blow is `attack.red.base`. Omens are not attack warnings: an omen warns of a projection's arrival, not of a blow, so its motes stay pale (`OMEN_COLORS`, SEAL-AND-OMENS).
 
 | Strike | Hurts? | Marks | Particles |
 |---|---|---|---|
-| A blow with damage (ring, line, sweep, a landing, a bolt or cube shot) | yes | red: `attack.red.dim` while it warns, `attack.red.base` live | pale |
-| A telegraph with no damage that warns of a blow (a charge's aim line, a slam's landing mark, an inhale's mouth ring) | yes (`warns: true`) | red dim | pale |
+| A blow with damage (ring, line, sweep, a landing, a bolt or cube shot) | yes | yellow `attack.warn.base` while it warns, red `attack.red.base` live | pale |
+| A telegraph with no damage that warns of a blow (a charge's aim line, a slam's landing mark, an inhale's mouth ring) | yes (`warns: true`) | yellow `attack.warn.base` | pale |
 | A field that stings (`sting`) | yes | red | pale |
 | A field that slows or mutes | no | pale: `cold.body`, live `cold.white` | pale |
 | A pull (a drag toward a point) | no | pale | pale |
 | Omen motes, impact and dust chips, telegraph motes, the sparks along an attack | no | pale | pale |
 
-- **Tokens:** `attack.red.dim` `#9C2620`, `attack.red.base` `#F23D33` (§3.4). They are the only reds besides `life.*`. Measured: `attack.red.base` ΔE 23 and `attack.red.dim` ΔE 20 from `life.heart` (normal vision), both ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`).
+- **Tokens:** `attack.red.base` `#F23D33` (live, §3.4); the warning is `attack.warn.base` `#EEE33C` and `attack.warn.dim` `#A8A02E` (§3.4 amendment 2026-10-31). `attack.red.base` is the only red besides `life.*`; `attack.red.dim` is no longer drawn. Measured: `attack.red.base` ΔE 23 and `attack.red.dim` ΔE 20 from `life.heart` (normal vision), both ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`).
 - **Particles** use `cold.white` and `cold.body` only (`PARTICLE_TINTS`). Omen motes moved from `cold.dim` to `cold.body` then `cold.white` (`OMEN_COLORS`).
 - **Not changed, by design:** the enemy's own eye and tell lights (`cold.white`, the family eye, §8.3), the boss hurt flash, the gold light that rises when a projection is released (§8.6: the player's light returning, not an attack), and the matter chips of a spawn or a break (§7.3). These are not attacks and are not decoration of an attack; the owner may rule otherwise.
 

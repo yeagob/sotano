@@ -18,7 +18,8 @@ export interface Strike {
   live: number;
   damage: number;
   /** A telegraph that deals no damage itself but warns of a blow that hurts when it lands (a charge's
-   *  aim line, a slam's landing mark). Its marks take the damage red, not the decoration blue-white. */
+   *  aim line, a slam's landing mark, an inhale's mouth ring). Its marks take the warning yellow, not the
+   *  decoration blue-white. */
   warns?: boolean;
   shape: Shape;
 }
@@ -31,7 +32,7 @@ interface Hazard extends Strike {
   started: boolean;
   hit: Set<number>;
   tick: number;
-  /** Whether this attack can hurt an actor (see `harms`): its marks are then red. */
+  /** Whether this attack can hurt an actor (see `harms`): its marks are then yellow while they warn, red once live. */
   hurts: boolean;
 }
 
@@ -42,12 +43,12 @@ export function harms(s: Strike): boolean {
   return s.damage > 0 || s.warns === true;
 }
 
-/** The colour of an attack's marks: the attack red when it hurts, the cold ramp when it does not. */
-export type MarkTint = 'attack.red.dim' | 'attack.red.base' | 'cold.body' | 'cold.white';
+/** The colour of an attack's marks: yellow while a hurting attack warns, red once it is live, the cold ramp when it does not hurt. */
+export type MarkTint = 'attack.warn.base' | 'attack.warn.dim' | 'attack.red.base' | 'cold.body' | 'cold.white';
 
-/** A mark is dim while it is a warning and bright once it is live (issue #47). */
+/** A hurting attack is yellow while it warns and red once it is live (owner ruling 2026-10-31, issue #47). */
 export function markTint(hurts: boolean, live: boolean): MarkTint {
-  if (hurts) return live ? 'attack.red.base' : 'attack.red.dim';
+  if (hurts) return live ? 'attack.red.base' : 'attack.warn.base';
   return live ? 'cold.white' : 'cold.body';
 }
 
@@ -75,7 +76,8 @@ const FIELD_DOTS = 16;
 const PULL_MOTES = 10;
 
 const MARK_COLOR: Record<MarkTint, THREE.Color> = {
-  'attack.red.dim': new THREE.Color(pal('attack.red.dim')),
+  'attack.warn.base': new THREE.Color(pal('attack.warn.base')),
+  'attack.warn.dim': new THREE.Color(pal('attack.warn.dim')),
   'attack.red.base': new THREE.Color(pal('attack.red.base')),
   'cold.body': new THREE.Color(pal('cold.body')),
   'cold.white': new THREE.Color(pal('cold.white')),
@@ -222,7 +224,7 @@ export class Hazards {
 
   private draw() {
     let n = 0;
-    // the tint of the hazard being drawn (set in the loop below): red if it hurts, cold if not
+    // the tint of the hazard being drawn (set in the loop below): yellow while a hurting one warns, red live, cold if not
     let tint: MarkTint = 'cold.body';
     const put = (x: number, y: number, z: number, live: boolean) => {
       if (n >= CAPACITY) return;
@@ -251,8 +253,11 @@ export class Hazards {
           }
         };
         ring(r, live);
-        // a growing ring shows how far it will reach while it is still a warning
-        if (!live && s.grow > 0) ring(s.r + s.grow * h.live, false);
+        // a growing ring shows how far it will reach while it is still a warning: a dimmer yellow than the ring itself
+        if (!live && s.grow > 0) {
+          if (h.hurts) tint = 'attack.warn.dim';
+          ring(s.r + s.grow * h.live, false);
+        }
       } else if (s.kind === 'field') {
         for (let k = 0; k < FIELD_DOTS; k++) {
           const a = k / FIELD_DOTS * Math.PI * 2 + this.time * 0.6;

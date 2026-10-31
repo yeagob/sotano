@@ -10,21 +10,21 @@ Every strike has a lead time. During it the strike's shape is drawn on the floor
 
 When the strike is live, its marks are doubled and shed sparks along the front, so the attack reads as force, not as dots. Then it is gone.
 
-### Colour: what hurts is red
+### Colour: a warning is yellow, a blow is red
 
-An attack that deals damage is **red**: its marks, its warning and its live marks, and every hostile shot. Particles and decoration are **pale blue-white** and never red: the sparks, the rising motes, the dust, and an attack that does not hurt (a pull, a slowing field). A telegraph that deals no damage itself but warns of a blow that does (a charge's aim line, a slam's landing mark) is red too, so the warning and the blow match. The dim red marks a warning; the bright red marks a blow that is landing now. The rule and its tokens are in [DECISIONS §7.6](../../../art/DECISIONS.md) (issue #47).
+An attack that deals damage **warns in yellow** while it is coming: its marks, its reach ring and its telegraph, including a telegraph that deals no damage itself but warns of a blow that does (a charge's aim line, a slam's landing mark, an inhale's mouth ring). When the blow lands, its marks turn **red**, and every hostile shot is red. Particles and decoration are **pale blue-white** and never yellow or red: the sparks, the rising motes, the dust, and an attack that does not hurt (a pull, a slowing field). The yellow is a warning only: it is never the player's gold. The dimmer yellow marks a growing ring's reach; the bright yellow marks the warning itself. The rule and its tokens are in [DECISIONS §7.6](../../../art/DECISIONS.md) (issue #47, owner ruling 2026-10-31).
 
 ## The shapes (built)
 
 | Shape | What it is | Telegraph | Answer |
 |---|---|---|---|
-| Line | A straight run along a path (a charge) | A dashed line on the floor along the path, red when the charge hurts | Get off the line; a block in the path stops the charge |
+| Line | A straight run along a path (a charge) | A dashed line on the floor along the path, yellow when the charge hurts | Get off the line; a block in the path stops the charge |
 | Ring | A circle growing out from a point (shockwave, landing) | A ring on the floor, shrinking or growing | Jump it (about 0.8 blocks high) |
 | Sweep | A wall of water or stone that crosses the room (a tide) | A ridge of motes forms along the wall | Jump it (about 1 block high), or get above it |
-| Field | An area that changes a rule (slow, mute; a sting hurts) | A ring of dots turns around the area, red when it stings | Leave the area |
+| Field | An area that changes a rule (slow, mute; a sting hurts) | A ring of dots turns around the area, yellow when it stings | Leave the area |
 | Pull | A drag toward a point | Motes stream toward the source | Break line of sight, or stand behind a block |
 | Bolt | A straight shot from a body | The body brightens through the windup, with a windup cue | Step aside, or put a block between |
-| Lob | An arc that lands | A dot marks the landing, red (it hurts) | Move off the mark |
+| Lob | An arc that lands | A dot marks the landing, yellow while it is in the air and red when it lands (it hurts) | Move off the mark |
 | Stones | Rubble falling from the ceiling | A mark for each stone's landing | Move off the mark |
 | Bars | Lines across the room, in parallels or crossed | Dashed lines across the floor | Stand between the bars |
 | Puddles | Stinging pools that stay for a few seconds | A mark at each pool | Leave the pool |
