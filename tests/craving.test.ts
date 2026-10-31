@@ -90,12 +90,15 @@ describe('craving wind sound (issue #46): the onset fades in', () => {
 
   it('a pull starts from silence and swells to its level, so it never clicks', () => {
     vi.stubGlobal('AudioContext', FakeAudioContext);
-    unlockAudio();
-    spatial.cue('pull', 0, 0, 0);
-    const wind = gains[gains.length - 1].gain.calls;
-    expect(wind[0][0]).toBe('set');
-    expect(wind[0][1]).toBeLessThan(0.001);
-    expect(wind[1]).toEqual(['lin', 0.12, expect.any(Number)]);
-    vi.unstubAllGlobals();
+    try {
+      unlockAudio();
+      spatial.cue('pull', 0, 0, 0);
+      const wind = gains[gains.length - 1].gain.calls;
+      expect(wind[0][0]).toBe('set');
+      expect(wind[0][1]).toBeLessThan(0.001);
+      expect(wind[1]).toEqual(['lin', 0.12, expect.any(Number)]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
