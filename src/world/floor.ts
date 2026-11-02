@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { placePresences, type RoomPresence } from '../content/presences';
+import { placePresences, type ListenerDrop, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -97,6 +97,8 @@ export interface RoomInfo {
   enemies: string[];
   /** A Presence that lives here (the Gardener on floor 0, a Listener on the Tree floors). */
   presence?: RoomPresence;
+  /** What the Listener of this room drops once its part is accepted (docs/design/built/presences/LISTENER.md). */
+  presenceDrop?: ListenerDrop;
 }
 
 export interface DoorSpec {

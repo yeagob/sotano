@@ -8,7 +8,7 @@ Part of [the player (not built)](README.md).
 
 ## The problem
 
-The player carries one block by default ([HANDS.md](../../built/player/HANDS.md)). Climbing by placing a block below you, again and again, is repetition, not a puzzle. The design keeps the one-block rule and makes climbing a matter of resources and knowledge instead ([DESIGN.md, section 6](README.md)).
+The player carries two blocks by default, one per hand ([HANDS.md](../../built/player/HANDS.md), since issue #50; this document was written for one). Climbing by placing a block below you, again and again, is repetition, not a puzzle. The design makes climbing a matter of resources and knowledge instead ([DESIGN.md, section 6](README.md)), and the hands are still the limit that makes it a plan.
 
 ## The options the design names
 
@@ -21,6 +21,6 @@ The owner's intent, as the design puts it: "how do I get back up" becomes someth
 
 ## Open questions
 
-1. **One block, or stacking.** Should the player keep one block only, or may they stack blocks of the same type? The design recommends one block, plus items and special blocks that relax it ([DESIGN.md, section 13, question 1](../README.md)).
+1. **One block, or stacking.** Should the player keep one block only, or may they stack blocks of the same type? The design recommended one block, plus items and special blocks that relax it ([DESIGN.md, section 13, question 1](../README.md)). The base is now two hands (#50); whether that changes the climbing answer is for the owner.
 2. **Which growing solution.** The design names both the vine seed and the self-extending ladder. Does the game need one, both, or neither? A growing block would be a block with a placed effect, the kind listed in [ACTIVE-BLOCKS.md](../blocks/ACTIVE-BLOCKS.md).
 3. **The trapdoor ladder.** Whether the trapdoor leaves a ladder back up is a level question as much as a player one. It is recorded here because it is one of the climbing options.

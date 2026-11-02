@@ -19,6 +19,9 @@ const PIT = 2;
 const TERRACE = 4;
 const KEEP_AWAY = 2;
 
+/** Cells a box of this half-width reaches past its centre cell on each side (a box up to half a cell wide reaches none). */
+export const reachOf = (halfWidth: number) => Math.max(0, Math.ceil(halfWidth - 0.5 - 1e-9));
+
 export class FlowField {
   /** The room's interior in tiles (13 × 7, up to 43 × 25 for a big room). */
   private readonly W: number;
@@ -30,7 +33,9 @@ export class FlowField {
   private avoided: Uint8Array;
   private key = '';
 
-  constructor(readonly room: RoomArea) {
+  /** `reach`: cells a body needs around its centre cell on each side (see reachOf). A cell is open only when
+   *  every cell within `reach` of it is open at the same height, so a wide body never routes through a gap it cannot pass. */
+  constructor(readonly room: RoomArea, private readonly reach = 0) {
     this.W = room.w ?? ROOM_W; this.D = room.d ?? ROOM_D;
     const n = this.W * this.D;
     this.dist = new Int16Array(n); this.height = new Int16Array(n); this.cost = new Uint8Array(n); this.done = new Uint8Array(n);
@@ -58,6 +63,7 @@ export class FlowField {
       if (h === 'dwell') dwells = true;
     }
     for (let i = 0; i < this.W * this.D; i++) if (this.height[i] >= 0 && this.touchesAvoided(i)) this.height[i] = -1;
+    if (this.reach > 0) this.narrow();
     // without a dwelling element every step costs the same (a plain breadth-first search)
     if (!dwells) this.cost.fill(1);
     this.dist.fill(-1);
@@ -96,6 +102,26 @@ export class FlowField {
     if (c < 0 || r < 0 || c >= this.W || r >= this.D) return false;
     const i = c + r * this.W;
     return !!this.avoided[i] || this.touchesAvoided(i);
+  }
+
+  /** Closes every cell a wide body cannot stand in whole: a neighbour within `reach` is a wall, a gap
+   *  or a step. Reads the heights as they were before, so one closed cell never closes the next. */
+  private narrow() {
+    const base = this.height.slice();
+    for (let i = 0; i < base.length; i++) {
+      if (base[i] < 0) continue;
+      const c = i % this.W, r = (i / this.W) | 0;
+      if (!this.fits(base, c, r)) this.height[i] = -1;
+    }
+  }
+
+  private fits(base: Int16Array, c: number, r: number): boolean {
+    const h = base[c + r * this.W];
+    for (let dr = -this.reach; dr <= this.reach; dr++) for (let dc = -this.reach; dc <= this.reach; dc++) {
+      const nc = c + dc, nr = r + dr;
+      if (nc < 0 || nr < 0 || nc >= this.W || nr >= this.D || base[nc + nr * this.W] !== h) return false;
+    }
+    return true;
   }
 
   private touchesAvoided(i: number): boolean {

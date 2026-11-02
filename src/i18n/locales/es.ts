@@ -442,8 +442,8 @@ export const ES: Catalog = {
       },
       arttherapy: {
         name: 'Arteterapia',
-        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte un corazón.',
-        effect: 'Colocar 4 bloques conectados en la misma sala cura un corazón. Una vez por sala.',
+        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte.',
+        effect: 'Colocar 4 bloques conectados en la misma sala cura un cuarto de corazón. Una vez por sala, y en cuatro salas como máximo por piso.',
         inspiredBy: 'la arteterapia; la idea de que crear arte transforma a las personas',
       },
       boxbreathing: {
@@ -569,7 +569,7 @@ export const ES: Catalog = {
       secondbrain: {
         name: 'Segundo cerebro',
         description: 'Deja que otra cosa sostenga lo que cargas: llevas un bloque más.',
-        effect: 'Llevas 2 bloques en vez de 1 (el segundo se ve en tu otra mano).',
+        effect: 'Llevas 1 bloque más.',
         inspiredBy: 'Construye tu segundo cerebro (Tiago Forte); la memoria externa',
       },
       selfreliance: {
@@ -581,7 +581,7 @@ export const ES: Catalog = {
       senecaletters: {
         name: 'Cartas a Lucilio',
         description: 'Carga más y suelta con más fuerza: tres bloques más, patada y lanzamiento dobles.',
-        effect: 'Llevas 4 bloques. Patadas y lanzamientos ×2. Alcance +2 bloques.',
+        effect: 'Llevas 3 bloques más. Patadas y lanzamientos ×2. Alcance +2 bloques.',
         inspiredBy: 'Séneca, Cartas morales a Lucilio (dominio público)',
       },
       socratic: {

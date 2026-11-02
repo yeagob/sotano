@@ -123,7 +123,7 @@ export interface GameEvents {
   /** Collecting a key, bomb or heart. `amount` can be changed (or cancel to leave it there). */
   pickupCollect: { kind: PickupKind; amount: number };
   itemGained: { id: string; uid: number };
-  roomEnter: { room: number; type: string; firstVisit: boolean };
+  roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
   floorEnter: { depth: number };

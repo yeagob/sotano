@@ -38,7 +38,7 @@ The physical sequence as the proposal describes it. Its rules are §1 and §2.
 
 1. **Find it.** The laboratory glows warm through its open door; the hearth burns. Three small brass rings on the base show the brews left.
 2. **Feed the bulb.** Place or throw a part or a block cube into it. One mark on the glass lights in the cube's path colour (parts), or stays plain (materials). Three cubes at most; a fourth bounces off with the denied sound.
-3. **It keeps what is fed** for the whole run. With one hand slot, parts can be ferried one by one. Nothing fed can be taken back.
+3. **It keeps what is fed** for the whole run. With two hand slots, parts can be ferried two at a time. Nothing fed can be taken back.
 4. **Read it.** If the contents match a recipe brewed in any run, the liquid takes that potion's colour. Otherwise it stays grey, which never says there is no recipe.
 5. **Brew.** A positive intention on the bulb raises its light, and drops fall into the flask, one per second, for six seconds: a visible fill, no bar and no number. One brew ring goes dark.
 6. **Spoil.** A negative intention on a loaded bulb boils it off: grey steam, the contents lost, and no brew spent.

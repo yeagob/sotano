@@ -72,7 +72,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `damage` (to actors), `mining` (to blocks, absolute: separate from damage), `fireRate`, `shotSpeed`, `range`, `gravity`, `size` | Intentions |
 | `moveSpeed`, `jump` | Movement |
 | `reach` | How far you can place blocks |
-| `carry` | How many blocks you can hold (1 by default) |
+| `carry` | How many blocks you can hold (2 by default: one per hand; items add to it) |
 | `kick`, `throw` | Strength of kicks and throws |
 | `crush` | Block damage per second dealt to every block you press against while walking (feet, waist and head height, never below; armor counts; 0 = none) |
 | `headbutt` | Highest block tier your head breaks when you jump into it (-1 = none); breaking keeps 45 % of the jump |
@@ -103,7 +103,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `land` | — (react) | touching ground after a fall (`fallSpeed` in blocks/s; the feet's position `x, y, z`) |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
-| `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's 30% roll of a key, heart or bomb) | after a block breaks |
+| `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's roll of a key, heart or bomb, at its floor's chance of 10% to 30%) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |

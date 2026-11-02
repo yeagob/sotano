@@ -65,6 +65,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `somatic` | Somatic grounding | Practice | Concept | Coming back to the body | **Grounding** |
 | `toxic-relationships` | Santiago (Game Glover), the owner's own words on toxic relationships | Owner's words | Owner's own (credited, usable as a name) | Some people drain you more than they give; cutting them off keeps your energy | **Cut Ties with Toxic Relationships**: the blade of light |
 | `conscious-breathing` | Santiago (Game Glover), the owner's own words on conscious breathing | Owner's words | Owner's own (credited, usable as a name) | Breath gathered, held and let out at once | **Remember Breathing**: hold to gather, release a beam that burns through blocks |
+| `no-impossible` | Santiago Dopazo, the owner's own line: "No hay nada imposible..." (shortened) | Owner's words | Owner's own (credited, quotable with the credit) | Nothing is impossible: a limit is a belief, and a love explosion has no limit of its own | **Love explosion** (proposed, see [ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)) |
 | `lions-mane` | Lion's mane mushroom (*Hericium erinaceus*) | Natural history, folk tradition | Concept (a common name) | A shaggy mushroom that grows on old wood, in the dark; traditionally linked to the mind and nerves (no medical claim) | **Lion's Mane**: growing past the ceiling you were told was the limit (with the `platformers` wink) |
 | `kaizen` | Kaizen | Practice | Concept | Small continuous improvement | **Kaizen** |
 | `sports-psych` | Mental rehearsal (sports psychology) | Technique | Concept | Visualising before doing | **Visualization** |
@@ -106,6 +107,12 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | Id | Source | Status | Key ideas | In the game |
 |---|---|---|---|---|
 | `cosmere` | The Cosmere novels (Brandon Sanderson, 2005–) | Credit; "Cosmere" and its coined terms are the author's (Caution for names) *(verify)* | A whole broken into shards, each carrying a single intent; power that is held, carried and changes the holder | **Shards**: the owner's name for the light held in broken blocks, the material you carry and build with ([COSMOLOGY.md §4](COSMOLOGY.md#4-other-maps-of-the-same-world)); "shard" is a common word, we never use the author's coined terms |
+
+### Anime (credit only)
+
+| Id | Source | Status | In the game |
+|---|---|---|---|
+| `dr-stone` | *Dr. Stone* (Riichi, illustrated by Boichi, anime and manga, 2017–) *(verify)* | Credit (copyrighted; cited in the lore notes only) | Nothing in the game. The Rocket Launcher's lore credit is the citation "Let's go to the moon" ([ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)); its names, characters, art and quotes are never used in the game |
 
 ### Games
 
