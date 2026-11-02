@@ -12,7 +12,7 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 | [PARTS-PURPOSE.md](PARTS-PURPOSE.md) | Status: idea | What parts are for. Built as collectibles with no effect; the open question is whether they get a purpose, and the potions proposal may answer it |
 | [MENTAL-TRANSMUTATION.md](MENTAL-TRANSMUTATION.md) | Status: idea | Practices that move a state along its own pole (fear toward courage) instead of removing it |
 | [RIDING-THE-PENDULUM.md](RIDING-THE-PENDULUM.md) | Status: idea | Rhythms in rooms or projections that reward timing over reaction |
-| [ROCKET-LAUNCHER.md](ROCKET-LAUNCHER.md) | Status: proposal | A practice that turns the bombs you carry into missiles on a double tap of the fire control. The tier, the path, the name and the lore link (including the *Dr. Stone* reference) are open for the owner |
+| [ROCKET-LAUNCHER.md](ROCKET-LAUNCHER.md) | Status: decided (not built) | A practice that turns the bombs you carry into missiles on a quick double tap of the fire control. The tier (3), the controls and the lore concept are decided; the path, the name, the arming refusal, the love explosion numbers and negative polarity are open for the owner |
 | [EARLY-SKETCHES.md](EARLY-SKETCHES.md) | Status: idea (superseded) | The first ten item sketches of the design, with provisional names; most are not built |
 
 ## Decided design rule
