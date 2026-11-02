@@ -49,9 +49,17 @@ A positive shot at a horse minion turns it into an ally (decided, see [minions](
 - runs under a fading platform and holds it up for a moment, so the player can cross;
 - carries the player across a gap on its back, for a short run.
 
-## 6. The stitch
+## 6. The stitch and reward
 
-The player defeats the horse by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves; which one is open. Proposal: it changes its attitude: it stops leaping away, walks up to the player, and the floor's wind stops with it.
+The player defeats the horse by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves.
+
+**Reward (Status: decided):**
+Defeating the horse (the fifth and final god of the tree) grants an item that bestows the **Triple Jump** ability:
+- Jump 1: Normal jump height (1x).
+- Jump 2: Double height (2x).
+- Jump 3: Eight times the normal jump height (8x).
+
+This item is required to traverse the sixth level going up, [Totality](../../levels/TOTALITY.md), which features high-altitude long-distance platforming into space towards the Sun.
 
 ## Behaviour specification
 

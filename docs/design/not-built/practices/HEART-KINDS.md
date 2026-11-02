@@ -2,7 +2,7 @@
 
 # Heart kinds (pending)
 
-Status: **idea**, pending the owner's decision. Tracked in issue #31.
+Status: **idea**, pending the owner's decision. Tracked in issue #31. The kinds the owner has decided, starting with the Berserker heart, are in [player/hearts](../player/hearts/README.md).
 
 Today a heart is one kind: the heart a released pattern leaves, and the heart of damage in the toll. The owner wants more kinds of heart, and has not defined them yet. Nothing here is decided, and nothing in the build depends on a name below.
 
