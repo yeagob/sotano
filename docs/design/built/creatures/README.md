@@ -23,6 +23,7 @@ Creatures are the living things of the depths: instinct, curiosity, play, rest a
 ## What they share (built)
 
 - **Kind and side.** Each is a creature in the code, in the neutral faction. Their look uses the living tones (`living.*`), not a projection's cold eye.
+- **Growth.** Each warm love shot that reaches a creature makes it a quarter of its birth size bigger, up to three times its birth size (eight shots). Its look, its hitbox and what it can walk through grow together. A beam's repeat ticks do not count as shots. Allies that were projections do not grow.
 - **Never killed.** A creature at zero health is not removed. It is hidden: it drops out of sight and out of play until its room clears.
 - **Polarity.** A negative intention harms a creature. At zero it flees into the blocks, and it stays hidden until the room clears. A positive intention heals it. The four positive-only creatures ignore negative intentions entirely: they pass through, with no harm and no flight.
 - **Gift.** A creature healed to full by a positive intention drops a heart, once for that creature.

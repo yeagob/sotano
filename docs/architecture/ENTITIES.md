@@ -104,6 +104,7 @@ Movement classes live in `enemies/behaviours.ts`: `chase` and `wander` (walkers)
 Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floor's own fork (`ambientCreatures`): Wonders, Rootlings and Mosslings on floor 0, Chirpers and Delvers on floors 1–3, Bubblers and Ferrybacks on 3–4, Drifters and Inkmites on 5–6, Cinderwalkers on 7–8, Huddlers on 9. They are spawned when their floor loads, outside every roster, so they never seal a room or count for clearing it.
 
 - **Sealing**: when a room seals, its creatures hide in the blocks (`Enemies.hideRoom`, neither drawn nor hittable), and they come back whole when it clears.
+- **Growth** (issue #51): a warm positive intention that reaches a creature (tag `creature`) calls `Enemies.grow`, which adds `GROWTH_STEP` (0.25) to `Enemy.scale` up to `GROWTH_MAX` (3). `setScale` (`entities/growth.ts`) is the only writer of the box: `body.hw` and `body.h` are the definition's `size` times `scale`, and the visual group is drawn at `scale` each frame. Size, hitbox and navigation therefore come from one value.
 - **Polarity** (§1.1): a positive intention heals them, and a creature healed to full gives a heart once (`gifted`). A negative intention that would kill one sends it into the blocks instead (`Enemies.hurt`): it never dies.
 - **One polarity only** (`responds`, BESTIARY §7.1): a creature with `responds: 'positive'` (the Mossling and the Huddler) is met by positive intentions always, healthy or not (a healing burst), and never by negative ones: the shot passes through it (`meetsIntention`, `Game.meets`).
 - **Blasts** only push creatures; fire and lava still hurt them, so they must avoid it.
@@ -127,6 +128,8 @@ Eleven kinds (BESTIARY §7.2), placed per floor by `CREATURE_LIFE` from the floo
 ### Navigation (`enemies/flowfield.ts`)
 
 A **flow field per room and target**: BFS over the 13×7 interior from the target's cell, with each cell's standing height (first free 2-block gap) and steps of at most one block; diagonals don't cut corners. It's rebuilt only when the target changes cell or the world or its elements change (`VoxelWorld.version`, `elemVersion`). Outside the room, steering is a straight line.
+
+**Footprint.** A body wider than one cell gets a `reach` (`reachOf(hw)`: the cells it reaches past its centre on each side). A cell is open only when every cell within `reach` of it is open at the same height, so a grown creature never routes through a gap it cannot pass. Only growth adds reach: `toward` uses the reach of the body beyond its birth box, so every other projection's route is unchanged. Fields are cached per room, target, kind and reach.
 
 **Terrain it avoids** (lava and fire for everyone, water for those that avoid it, `ElementSense.path: 'avoid'`) is never walked into:
 
