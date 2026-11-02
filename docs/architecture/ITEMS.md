@@ -72,7 +72,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `damage` (to actors), `mining` (to blocks, absolute: separate from damage), `fireRate`, `shotSpeed`, `range`, `gravity`, `size` | Intentions |
 | `moveSpeed`, `jump` | Movement |
 | `reach` | How far you can place blocks |
-| `carry` | How many blocks you can hold (2 by default: one per hand) |
+| `carry` | How many blocks you can hold (2 by default: one per hand; items add to it) |
 | `kick`, `throw` | Strength of kicks and throws |
 | `crush` | Block damage per second dealt to every block you press against while walking (feet, waist and head height, never below; armor counts; 0 = none) |
 | `headbutt` | Highest block tier your head breaks when you jump into it (-1 = none); breaking keeps 45 % of the jump |

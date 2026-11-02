@@ -5,7 +5,7 @@ export default defineItem({
   id: 'secondbrain',
   name: 'Second Brain',
   description: 'Let something else hold what you carry: carry one more block.',
-  effect: 'Carry 3 blocks instead of 2.',
+  effect: 'Carry 1 more block.',
   inspiredBy: 'Building a Second Brain (Tiago Forte); external memory',
   pools: { treasure: 1 },
   tags: ['mind', 'blocks'],
