@@ -2,7 +2,7 @@ import { pal } from '../palette';
 import { wobble } from '../../enemies/behaviours';
 import { defineEnemy, TX, type Behaviour, type Enemy, type EnemyCtx } from '../../enemies/types';
 
-/** Seconds between darts, the wings-flat telegraph before one, the dart's reach in speed, and the rest after it. */
+/** Seconds between darts, the swell-and-flare telegraph before one, the dart's reach in speed, and the rest after it. */
 const DART_EVERY = 3;
 const WINDUP = 0.5;
 const DART_SPEED = 3;
@@ -12,7 +12,7 @@ const FLIT_HEIGHT = 1;
 
 /**
  * Scattered attention (Distraction, Noise): it flits about three blocks around its target and changes
- * its angle every 1.2 s, then every few seconds it stops, snaps its wings flat (0.5 s), darts through the
+ * its angle every 1.2 s, then every few seconds it stops, swells and flares its eyes (0.5 s), darts through the
  * place where you stood, and rests, open to a hit. Only the dart touches: 'armed' is true only then.
  * An ally with no foe keeps you company the same way, without darting.
  */
