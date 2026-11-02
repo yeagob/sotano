@@ -36,7 +36,7 @@ export const BASE_STATS: Stats = {
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
   reach: 5,        // reach for placing blocks
-  carry: 1,        // how many blocks you can hold (floored)
+  carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier
   crush: 0,        // block damage per second of contact with the blocks around you (0 = none)
