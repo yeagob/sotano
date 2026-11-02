@@ -10,7 +10,7 @@ The owner answered the proposal in issue #89. The answers are recorded in Englis
 
 1. **Tier:** 3.
 2. **Kind:** a practice, not another kind of item.
-3. **Lore concept:** transcending limits. The owner's line is a sentence from *A Course in Miracles*. This document records only a paraphrase, attributed to that book: in its view, a miracle has no degrees of difficulty. The sentence is not quoted here or in the game until the owner decides whether it may be (open question 4).
+3. **Lore concept:** transcending limits. The owner's own line, credited to Santiago Dopazo: "No hay nada imposible..." (the owner's words, shortened in this document). It is the owner's text, not a third-party quote, so it may be quoted with that credit.
 4. **Dr. Stone:** a credit line in the lore notes only, as a citation: "Let's go to the moon" (*Dr. Stone*). Not in-game text.
 5. **First tap:** confirmed. A single tap of the fire control fires its intention as usual. A quick double tap fires the missile instead of an intention, and costs one bomb. The owner's words: "only the quick double tap fires the missile". See [The double tap](#the-double-tap-on-the-fire-control).
 6. **Touch:** the double tap returns for this practice only. It is not a return of the old cast-by-double-tap for intentions, which [TOUCH.md, section 7](../../../architecture/input/TOUCH.md) removed.
@@ -108,7 +108,7 @@ The owner decided that the touch double tap returns for this practice only (deci
 
 ## Lore (decided concept)
 
-- **The concept (decision 3): transcending limits.** Paraphrase, attributed to *A Course in Miracles* ([SOURCES.md](../../../lore/SOURCES.md), `course-in-miracles`): in that book's view, a miracle has no degrees of difficulty. The book's sentence is not quoted here or in the game.
+- **The concept (decision 3): transcending limits.** The owner's line, credited to Santiago Dopazo ([SOURCES.md](../../../lore/SOURCES.md), owner entry): "No hay nada imposible..." No third-party text is quoted.
 - **The mechanic that mirrors it.** A thrown bomb falls under its own weight. The missile keeps its line and does not fall: the limit of the throw does not bind it. It keeps the bomb's blast.
 - **The series reference (decision 4).** *Dr. Stone* is credited in the lore notes only, as a citation: "Let's go to the moon". It is not in-game text. The series' names, characters, art and quotes are never used in the game. Its rights status must be checked before any in-game use (verify).
 - **Not chosen.** The earlier reaction-physics idea and its Tsiolkovsky credit are replaced by decision 3 and are not used.
@@ -148,8 +148,6 @@ From issue #59:
 
 ## Open questions (owner decides)
 
-1. **The naming exception.** Confirm that "Dr. Launcher" is an exception to the rule that a credit source is never an in-game name (see the name note). Rights check still needed before in-game use.
-2. **Negative polarity.** Does a negative-polarity missile exist? The owner's answers do not say what its blast is.
-3. **The book's sentence.** May the literal sentence from *A Course in Miracles* be quoted, with attribution, in the lore notes? The source is marked Caution (disputed copyright, to verify). Default: paraphrase, no quote (decision 3).
-4. **Found in and gamepad double press.** Not answered in issue #89: where the launcher is found, and whether the gamepad double press of RT is the double tap.
-5. **The path's new name.** Milagros is a new path. Creating it in the design (its own folder, its own practices index, its place in the path order) is a separate change. The name is a word central to *A Course in Miracles* (see SOURCES.md, Caution), so confirm it is acceptable.
+1. **Negative polarity.** Does a negative-polarity missile exist? The owner's answers do not say what its blast is.
+2. **Found in and gamepad double press.** Not answered in issue #89: where the launcher is found, and whether the gamepad double press of RT is the double tap.
+3. **The path's new name.** Milagros is a new path, as the owner decided. Creating it in the design (its own folder, its own practices index, its place in the path order) is a separate change. The name is a word central to *A Course in Miracles* (see SOURCES.md, Caution); the owner has not yet confirmed that this is acceptable.
