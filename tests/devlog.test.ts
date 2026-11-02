@@ -48,8 +48,8 @@ describe('development log lines', () => {
 
   it('names the room template a player enters, and whether it is the first visit', () => {
     const { bus, lines } = capture();
-    bus.emit('roomEnter', { room: 102, type: 'normal', template: 'pit-bridge', firstVisit: true });
-    bus.emit('roomEnter', { room: 102, type: 'normal', template: 'pit-bridge', firstVisit: false });
+    bus.emit('roomEnter', { room: 102, floor: 1, type: 'normal', template: 'pit-bridge', firstVisit: true });
+    bus.emit('roomEnter', { room: 102, floor: 1, type: 'normal', template: 'pit-bridge', firstVisit: false });
     expect(lines).toEqual([
       '[devlog] room entered: pit-bridge (room 102, normal, first visit)',
       '[devlog] room entered: pit-bridge (room 102, normal, revisit)',

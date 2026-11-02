@@ -2625,7 +2625,7 @@ export class Game {
       this.player.room = r.id;
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
-      this.bus.emit('roomEnter', { room: r.id, type: r.type, template: r.template, firstVisit: first });
+      this.bus.emit('roomEnter', { room: r.id, floor: r.floor, type: r.type, template: r.template, firstVisit: first });
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       if (r.type === 'boss' && !this.bossRooms.has(r.floor)) {
         this.activate(r.floor + 1);
