@@ -8,14 +8,17 @@ import { Inventory } from '../src/items/inventory';
 import type { HostApi } from '../src/items/types';
 
 // Art Therapy: four connected blocks placed in a room heal a quarter heart. Once per room, and in
-// four rooms per floor at most. The heal API takes half-hearts, so a quarter heart is 0.5.
+// four rooms per floor at most. The heal API takes half-hearts, so a quarter heart is 0.5. A
+// structure built at full health heals nothing and spends neither the room nor the floor.
 
 const STONE = 4;
+const MAX_HP = 8;
 
 function setup() {
   const bus: GameBus = createBus();
   const stats = new StatSheet();
   const heals: number[] = [];
+  let hp = MAX_HP / 2; // hurt by default; full() and hurt() set it, the heal mock only records
   const api = {
     get bus() { return bus; },
     stats: () => stats.all,
@@ -27,6 +30,7 @@ function setup() {
     message: () => {},
     defer: (fn: () => void) => bus.defer(fn),
     heal: (n: number) => { heals.push(n); },
+    counts: () => ({ keys: 0, bombs: 0, hp, maxHp: MAX_HP }),
     damagePlayer: () => {},
     collect: () => true,
     player: () => 1,
@@ -40,7 +44,9 @@ function setup() {
   const place = (x: number, y: number, z: number) => bus.emit('blockPlace', { x, y, z, material: STONE });
   /** Four blocks in a row: the fourth one completes a structure of four. */
   const row = (x0: number) => { for (let i = 0; i < 4; i++) place(x0 + i, 0, 0); };
-  return { heals, enter, enterFloor, place, row, inv };
+  const full = () => { hp = MAX_HP; };
+  const hurt = () => { hp = MAX_HP / 2; };
+  return { heals, enter, enterFloor, place, row, inv, full, hurt };
 }
 
 describe('art therapy heals a quarter heart', () => {
@@ -105,6 +111,47 @@ describe('art therapy heals once per room', () => {
     enter(1, 0);
     row(0);
     expect(heals).toEqual([0.5]);
+  });
+});
+
+describe('art therapy at full health', () => {
+  it('four blocks at full health heal nothing, and the room is not spent', () => {
+    const { heals, enter, row, full, hurt } = setup();
+    full();
+    enter(1, 0);
+    row(0);
+    expect(heals).toEqual([]);
+    hurt();
+    row(10);
+    expect(heals).toEqual([0.5]);
+  });
+
+  it('a structure at full health does not spend the room: a hurt player still gets the one heal', () => {
+    const { heals, enter, row, full, hurt } = setup();
+    full();
+    enter(1, 0);
+    row(0);
+    row(10);
+    expect(heals).toEqual([]);
+    hurt();
+    row(20);
+    expect(heals).toEqual([0.5]);
+    row(30);
+    expect(heals).toEqual([0.5]);
+  });
+
+  it('a full-health structure does not spend the floor count: only real heals count', () => {
+    const { heals, enter, enterFloor, row, full, hurt } = setup();
+    enterFloor(2);
+    full();
+    for (const room of [20, 21, 22, 23]) { enter(room, 2); row(0); }
+    expect(heals).toEqual([]);
+    for (const room of [24, 25, 26, 27]) { hurt(); enter(room, 2); row(0); }
+    expect(heals).toHaveLength(4);
+    hurt();
+    enter(28, 2);
+    row(0);
+    expect(heals).toHaveLength(4);
   });
 });
 

@@ -49,7 +49,7 @@ The game is about intention. What you aim your will at changes the world around 
 
 Your shot is an **intention**. While you hold your focus it flies straight; let it go without follow-through and it drops. Intentions break blocks, and blocks are structures: a belief, a habit, an avoidance. Some break with one look, some take sustained effort, and the deepest ones are the oldest.
 
-What you break becomes material. You can carry one block at a time, kick it, throw it or place it again, so every wall you dismantle is a wall you can build something new with.
+What you break becomes material. You can carry two blocks at a time, one in each hand, and kick, throw or place them again, so every wall you dismantle is a wall you can build something new with.
 
 Intentions are **good** or **bad** (**F** to switch, or a half turn of the phone, 180 degrees). **Good intentions heal** and turn projections into allies, and they heal creatures. **Bad intentions break and destroy**: they wound everything they touch, your allies and the creatures included, and they are the only ones that break the hardest blocks.
 

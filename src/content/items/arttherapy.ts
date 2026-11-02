@@ -92,6 +92,9 @@ export default defineItem({
       const used = m.healedOnFloor.get(m.floor) ?? 0;
       if (used >= ROOMS_PER_FLOOR) return;
       if (structure(e.x, e.y, e.z, api, m.placed) < STRUCTURE) return;
+      // Checked before the room and the floor are spent: a heal at full health does nothing, so it must not use them up.
+      const { hp, maxHp } = api.counts();
+      if (hp >= maxHp) return;
       m.healed.add(room);
       m.healedOnFloor.set(m.floor, used + 1);
       api.heal(HEAL, 'arttherapy');

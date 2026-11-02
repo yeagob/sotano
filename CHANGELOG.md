@@ -12,10 +12,6 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 - The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
 
-### Changed
-- A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)
-- The Listener stays after it drops its reward and leaves once every pickup is taken. What it drops is weighted: a heart 40%, a bomb 35% or a key 25%; one, two or three pickups at 50%, 35% or 15% (#77)
-
 ### Fixed
 - Distraction and Noise now fly at eye height and attack: they stop, swell and flare their eyes, dart through where you stood and rest, so their touch can finally land; allied ones keep you company and dart at your foes (#21).
 - Flying creatures (Wonder, Chirper and the other hoverers) stay up instead of sinking to the floor, climb steps, stay under the ceiling and turn off walls instead of pressing on them (#21).
@@ -33,11 +29,13 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Placing a block next to a wall, ledge or corner no longer throws it: if you stand a little in its cell you are nudged out and it goes down; if you stand deeper in, it waits in your hand until you step clear.
 - A loose cube that spins fast in place for a second gets an upward push; if it still spins in place after the third push, it vanishes (#42).
 - Art Therapy heals a quarter heart instead of a full one, once per room and in four rooms per floor at most (#57).
+- Art Therapy spends its room and its floor count only when it actually heals: a structure built at full health does not use them up, and the Spanish description no longer says it heals a whole heart (#78).
 
 ### Changed
-- The Listener never heals. Once it is given a heart, it drops one to three hearts, bombs or keys (the kind is fixed by the seed) and leaves; a run can meet a Listener on each of the five Tree floors (#65). Seeds changed (v23).
+- The Listener never heals. Once it is given a heart, it drops one to three pickups (hearts, bombs or keys, weighted: a heart 40%, a bomb 35%, a key 25%; one, two or three at 50%, 35% or 15%) and stays until every pickup is taken; a run can meet a Listener on each of the five Tree floors (#65, #77). Seeds changed (v23).
 - Every hostile projection (the voices you fight) has twice its health, so a fight with the same intentions takes about twice as long. Bosses and creatures are unchanged (#45).
 - The laboratory's alembic is two tiles side by side, drawn as a laboratory apparatus; laboratory seeds changed (#20).
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).
 - Friendly creatures grow when a warm love shot reaches them: each shot adds a quarter of their size, up to three times their size, and the hitbox and the way they can pass grow with them (#51).
 - You start with two hands: you carry two blocks instead of one. Second Brain now carries three and Letters from a Stoic five (#50).
+- A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)
