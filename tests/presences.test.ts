@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { LISTENER_COUNT_WEIGHTS, LISTENER_DROPS, LISTENER_KIND_WEIGHTS, PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, leavesAfterOffer, listenerDrops, placePresences, presenceReaction, pushedOut, rewardPicked, unlocksPresence, type ListenerDrop, type PresenceId } from '../src/content/presences';
+import { LISTENER_COUNT_WEIGHTS, LISTENER_DROPS, LISTENER_KIND_WEIGHTS, PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, leavesAfterOffer, listenerDrops, placePresences, presenceReaction, pushedOut, unlocksPresence, type ListenerDrop, type PresenceId } from '../src/content/presences';
 import { PART_KINDS, PARTS } from '../src/content/parts';
 import { POTION_IDS } from '../src/content/potions';
 
@@ -183,19 +183,17 @@ describe('presences: the Listener drops its reward (#65)', () => {
     }
   });
 
-  it('a Listener is a leaver (once its reward is picked up); a Gardener stays', () => {
+  it('a Listener is a leaver, removed in the frame its drop appears; a Gardener stays', () => {
     expect(leavesAfterOffer('listener')).toBe(true);
     expect(leavesAfterOffer('gardener')).toBe(false);
   });
 
-  it('the Listener stays while any pickup of its reward lies on the floor, and leaves once every one is taken (#77)', () => {
-    const reward = [{ taken: false }, { taken: false }, { taken: false }];
-    expect(rewardPicked(reward)).toBe(false);
-    reward[0].taken = true;
-    reward[2].taken = true;
-    expect(rewardPicked(reward)).toBe(false);
-    reward[1].taken = true;
-    expect(rewardPicked(reward)).toBe(true);
+  it('every drop has at least one pickup, so a leaving Listener always leaves a reward behind (#84)', () => {
+    for (const kind of LISTENER_DROPS) {
+      for (let seed = 1; seed <= 200; seed++) {
+        expect(listenerDrops(kind, new RunRandom(seed).stream('drops')).length).toBeGreaterThanOrEqual(1);
+      }
+    }
   });
 });
 

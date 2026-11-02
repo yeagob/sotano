@@ -32,7 +32,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Art Therapy spends its room and its floor count only when it actually heals: a structure built at full health does not use them up, and the Spanish description no longer says it heals a whole heart (#78).
 
 ### Changed
-- The Listener never heals. Once it is given a heart, it drops one to three pickups (hearts, bombs or keys, weighted: a heart 40%, a bomb 35%, a key 25%; one, two or three at 50%, 35% or 15%) and stays until every pickup is taken; a run can meet a Listener on each of the five Tree floors (#65, #77). Seeds changed (v23).
+- The Listener never heals. Once it is given a heart, it drops one to three pickups (hearts, bombs or keys, weighted: a heart 40%, a bomb 35%, a key 25%; one, two or three at 50%, 35% or 15%) and leaves at once; a run can meet a Listener on each of the five Tree floors (#65, #77). Seeds changed (v23).
 - Every hostile projection (the voices you fight) has twice its health, so a fight with the same intentions takes about twice as long. Bosses and creatures are unchanged (#45).
 - The laboratory's alembic is two tiles side by side, drawn as a laboratory apparatus; laboratory seeds changed (#20).
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).

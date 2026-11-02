@@ -71,7 +71,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, rewardPicked, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
@@ -223,8 +223,6 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
-  /** Listeners that have dropped their reward and stay until every pickup of it is taken (#77). */
-  private listenerOwed: { enemy: Enemy; reward: Pickup[] }[] = [];
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -418,7 +416,7 @@ export class Game {
     const box = sandbox ? carveSandbox(this.world, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.world, SURFACE_Y, i => this.rng.fork('tree', i));
-    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear(); this.listenerOwed = [];
+    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     setMasterTarget(0.35);
     this.elements = new ElementSim(this.world, {
       seed: this.rng.fork('elements').u32(),
@@ -2482,10 +2480,10 @@ export class Game {
       const eye = this.player.eye, fwd = this.player.forward;
       this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
       e.tags.add('met');
-      const reward = talk.drops ? this.dropListenerReward(e) : [];
+      if (talk.drops) this.dropListenerReward(e);
       this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-      if (reward.length) this.listenerOwed.push({ enemy: e, reward });
-      else if (leavesAfterOffer(id)) this.releaseListener(e);
+      // a Listener leaves in the frame its drop appears: the release is in the same call, never deferred (#84)
+      if (leavesAfterOffer(id)) this.releaseListener(e);
       this.hud.presenceCard(talk.name, talk.lines);
       return;
     }
@@ -2493,32 +2491,21 @@ export class Game {
 
   /** The Listener's reward is always a drop, never a heal: its seeded kind, a runtime count (listenerDrops). Each
    *  pickup leaves the Listener in its own arc toward the player; hearts wait on the floor until the player is hurt. */
-  private dropListenerReward(e: Enemy): Pickup[] {
+  private dropListenerReward(e: Enemy) {
     const kind = this.rooms.get(e.room)?.presenceDrop;
-    if (!kind) return [];
+    if (!kind) return;
     const b = this.player.body;
     const dx = b.x - e.body.x, dz = b.z - e.body.z, base = Math.atan2(dz, dx);
     const drops = listenerDrops(kind, this.rng.stream('drops'));
-    return drops.map((k, i) => {
+    drops.forEach((k, i) => {
       const a = base + (i - (drops.length - 1) / 2) * 0.6;
       const p = this.pickups.add(k, e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
       this.pickups.launch(p, Math.cos(a) * 2.5, 3, Math.sin(a) * 2.5);
-      return p;
     });
   }
 
-  /** A Listener stays after its drop until every pickup of its reward is taken (a pickup that falls out of the world
-   *  is taken too). Then it is removed: its silence leaves with it, and its room returns to normal (#65, and #77 for
-   *  the wait). */
-  private releaseRewardedListeners() {
-    this.listenerOwed = this.listenerOwed.filter(o => {
-      if (!rewardPicked(o.reward)) return true;
-      if (o.enemy.alive) this.releaseListener(o.enemy);
-      return false;
-    });
-  }
-
-  /** The Listener is removed from the world (its body, hooks and contacts with it). */
+  /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it
+   *  (owner decision on #65: the room returns to normal). */
   private releaseListener(e: Enemy) {
     this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('bone.paper'), 14, 1.6, 0.06);
     this.enemies.dissolve(e);
@@ -2548,7 +2535,6 @@ export class Game {
     tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
-    this.releaseRewardedListeners();
     this.touchGuards();
     this.pushPresences();
     this.updateBoundaries();

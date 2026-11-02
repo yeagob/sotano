@@ -26,8 +26,8 @@ export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readon
   listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', drops: true },
 };
 
-/** A Presence that drops its reward leaves once the reward is picked up: its room is ordinary again, and its silence
- *  goes with it (docs/design/built/presences/LISTENER.md). Until then it stays, and is silenced as any staying presence. */
+/** A Presence that drops its reward leaves at once, in the frame the drop appears: its room is ordinary again, and its
+ *  silence goes with it (docs/design/built/presences/LISTENER.md). */
 export function leavesAfterOffer(id: PresenceId): boolean {
   return PRESENCE_TALK[id].drops;
 }
@@ -45,12 +45,6 @@ export const LISTENER_COUNT_WEIGHTS: readonly (readonly [number, number])[] = [[
  *  the drops stream when the part is accepted, never healed. */
 export function listenerDrops(kind: ListenerDrop, rng: Rng): ListenerDrop[] {
   return Array.from({ length: rng.weighted(LISTENER_COUNT_WEIGHTS) }, () => kind);
-}
-
-/** A Listener leaves once every pickup of its reward has been taken (a pickup that falls out of the world is taken
- *  too). A Listener with an empty reward has nothing to wait for. */
-export function rewardPicked(reward: readonly { taken: boolean }[]): boolean {
-  return reward.every(p => p.taken);
 }
 
 export const TALK_REACH = 2.2;
