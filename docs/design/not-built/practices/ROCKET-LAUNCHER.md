@@ -22,8 +22,8 @@ The owner answered the proposal in issue #89. The answers are recorded in Englis
 12. **Synergies:** only with bombs.
 13. **Arming refusal:** kept. The refusal stays in the design and will be tested in play (see [A rocket, not a thrown bomb](#a-rocket-not-a-thrown-bomb)).
 14. **Love explosion, radius and effect:** the same radius as the bomb's blast. Each element in the area is healed and grown exactly as a positive intention would do it, with the damage the bomb would deal to that element used as the amount (see [The love explosion](#the-love-explosion-proposed-concept)).
-15. **Path:** Will fits. The owner proposes a new path, Milagros, placed first. Which path this practice takes, and whether Milagros becomes a new path in the design, is open (open question 1).
-16. **Name:** the owner's name is "Dr. Launcher". It is the working name, subject to the name note and the rights check in [Working name, path and tier](#working-name-path-and-tier) (open question 2).
+15. **Path:** the practice belongs to **Milagros**, a new path in the design, placed first. Will fits too, but the owner chose Milagros.
+16. **Name:** "Dr. Launcher". The owner judges the reference too loose to be a third-party name ("a pun far from the brand, with no direct reference"). The name note below records the rule it touches; the owner has accepted that.
 
 The points still open are listed at the end, as open questions 1 to 5.
 
@@ -37,13 +37,13 @@ The launcher does not replace your intentions. They keep flying on every normal 
 
 | Field | Proposal | Status |
 |---|---|---|
-| Working name | Dr. Launcher (the owner's name) | Working name only. Open: the name and its rights check (open question 2) |
-| Path | Will fits (decision 15). The owner proposes Milagros, placed first | Open: which path this practice takes, and whether Milagros becomes a new path (open question 1) |
+| Working name | Dr. Launcher | Decided by the owner (decision 16). Its rights check against the naming rules stays open (open question 2) |
+| Path | Milagros, a new path placed first (decision 15) | Decided by the owner. Creating the new path in the design is a separate change |
 | Quality (the tier) | 3 | Decided by the owner (decision 1). The built tiers run from 0 to 4 stars ([built practices](../../built/practices/README.md)) |
 | Found in | Not chosen | Not answered in issue #89, so still open (open question 5). Built rule: quality 1 to 3 comes from treasure rooms; quality 4 comes from boss rewards and vault rooms |
 | Inspired by | Transcending limits (the lore concept, decided) | Decision 3. The *Dr. Stone* credit is in the lore notes only (decision 4) |
 
-**Name note.** [CONTRIBUTING.md](../../../../CONTRIBUTING.md) forbids third-party game names in practices, and "Dr." points to *Dr. Stone*. "Dr. Launcher" therefore needs the owner's decision and a rights check before any in-game use. Until then it is the working name only. "Rocket Launcher" remains the title of this document.
+**Name note.** [CONTRIBUTING.md](../../../../CONTRIBUTING.md) forbids third-party game names in practices, and [NAMING.md](../../built/story/NAMING.md) says a credit source is never an in-game name. "Dr." points to *Dr. Stone*, a credit source. The owner judges the reference too loose to count, and has chosen "Dr. Launcher" anyway. That is a deliberate exception to the naming rule, to be confirmed by the owner in the rights check before any in-game use. "Rocket Launcher" remains the title of this document.
 
 ## What the player sees and feels
 
@@ -148,8 +148,8 @@ From issue #59:
 
 ## Open questions (owner decides)
 
-1. **The path.** Which path does this practice take: Will, Milagros, or both? And does Milagros become a new path in the design? Will fits (decision 15). Milagros is the owner's proposal, placed first. Not decided here.
-2. **The name.** "Dr. Launcher" is the owner's working name. The owner decides the name, and a rights check is needed because "Dr." points to *Dr. Stone* (see the name note). "Rocket Launcher" is this document's title only.
-3. **Negative polarity.** Does a negative-polarity missile exist? The owner's answers do not say what its blast is.
-4. **The book's sentence.** May the literal sentence from *A Course in Miracles* be quoted? Default: paraphrase, no quote (decision 3).
-5. **Found in and gamepad double press.** Not answered in issue #89: where the launcher is found, and whether the gamepad double press of RT is the double tap.
+1. **The naming exception.** Confirm that "Dr. Launcher" is an exception to the rule that a credit source is never an in-game name (see the name note). Rights check still needed before in-game use.
+2. **Negative polarity.** Does a negative-polarity missile exist? The owner's answers do not say what its blast is.
+3. **The book's sentence.** May the literal sentence from *A Course in Miracles* be quoted, with attribution, in the lore notes? The source is marked Caution (disputed copyright, to verify). Default: paraphrase, no quote (decision 3).
+4. **Found in and gamepad double press.** Not answered in issue #89: where the launcher is found, and whether the gamepad double press of RT is the double tap.
+5. **The path's new name.** Milagros is a new path. Creating it in the design (its own folder, its own practices index, its place in the path order) is a separate change. The name is a word central to *A Course in Miracles* (see SOURCES.md, Caution), so confirm it is acceptable.
