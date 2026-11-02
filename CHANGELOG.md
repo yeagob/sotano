@@ -37,5 +37,5 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - The laboratory's alembic is two tiles side by side, drawn as a laboratory apparatus; laboratory seeds changed (#20).
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).
 - Friendly creatures grow when a warm love shot reaches them: each shot adds a quarter of their size, up to three times their size, and the hitbox and the way they can pass grow with them (#51).
-- You start with two hands: you carry two blocks instead of one. Second Brain now carries three and Letters from a Stoic five (#50).
+- You start with two hands: you carry two blocks instead of one. Second Brain adds one more block to what you carry, and Letters from a Stoic adds three more (#50).
 - A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)

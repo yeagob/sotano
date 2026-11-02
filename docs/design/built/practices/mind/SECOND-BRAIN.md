@@ -16,7 +16,7 @@ Let something else hold what you carry: carry one more block.
 
 ## What it does
 
-Carry 3 blocks instead of 2.
+Carry 1 more block. It adds to whatever you carry, so with the two hands you carry 3.
 
 ## Stats and events
 

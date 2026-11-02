@@ -16,7 +16,7 @@ Carry more and let go harder: three more blocks, double kick and throw.
 
 ## What it does
 
-Carry 5 blocks. Kicks and throws x2. Reach +2 blocks.
+Carry 3 more blocks. Kicks and throws x2. Reach +2 blocks. The carry adds to whatever you carry, so with the two hands you carry 5.
 
 ## Stats and events
 

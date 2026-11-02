@@ -21,7 +21,7 @@ Code: `src/entities/player.ts` (the hand and the stack), `src/game/game.ts` (wal
 
 ## The carry stat
 
-The number of blocks you can hold is the carry stat, floored. Its base is 2 (`src/core/stats.ts`). Items raise it: Second Brain adds one (three blocks), and Letters from a Stoic adds three (five blocks).
+The number of blocks you can hold is the carry stat, floored. Its base is 2 (`src/core/stats.ts`). Items add to it: Second Brain adds one, and Letters from a Stoic adds three. Alone, with the two hands, Second Brain gives three blocks and Letters from a Stoic gives five.
 
 ## Open questions
 
