@@ -30,9 +30,10 @@ Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`,
 
 Which part of the version changes:
 
-- **PATCH** (`0.1.1`): fixes only, no new behaviour a player would notice.
-- **MINOR** (`0.2.0`): new practices, floors, enemies, systems or languages.
+- **PATCH** (`0.1.1`): every release while the game is in development: fixes, new practices, floors, enemies and systems alike. The owner does not bump MINOR for features until a version is declared a stable testing version.
+- **MINOR** (`0.2.0`): only when the owner declares a new stable testing version, the one that goes to testers. Not a feature count.
 - **MAJOR** (`1.0.0`): the release we call finished.
+- **Hotfix suffix** (`0.1.2.F1`, `0.1.2.F2`…): a hotfix on a released PATCH adds `.F1`, `.F2` and so on to that version. It never changes the number before it.
 
 ## Issues
 
@@ -72,8 +73,8 @@ A release is cut when `develop` has enough for a version, or on a steady rhythm,
 For a bug in the stable version that cannot wait for the next release:
 
 1. Create `hotfix/<issue>-<slug>` from `main`.
-2. Fix, bump the PATCH version (`0.1.0` → `0.1.1`), and open a PR into **`main`**.
-3. Tag `v0.1.1` on `main` after the merge.
+2. Fix, and add the next hotfix suffix to the current PATCH version (`0.1.2` → `0.1.2.F1`, then `0.1.2.F2`), and open a PR into **`main`**.
+3. Tag `v0.1.2.F1` on `main` after the merge.
 4. Merge `main` into `develop` so the fix is not lost in the next release.
 
 ## Rules
