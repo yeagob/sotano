@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { LISTENER_DROPS, LISTENER_DROP_MAX, LISTENER_DROP_MIN, PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, leavesAfterOffer, listenerDrops, placePresences, presenceReaction, pushedOut, unlocksPresence, type ListenerDrop, type PresenceId } from '../src/content/presences';
+import { LISTENER_COUNT_WEIGHTS, LISTENER_DROPS, LISTENER_KIND_WEIGHTS, PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, leavesAfterOffer, listenerDrops, placePresences, presenceReaction, pushedOut, rewardPicked, unlocksPresence, type ListenerDrop, type PresenceId } from '../src/content/presences';
 import { PART_KINDS, PARTS } from '../src/content/parts';
 import { POTION_IDS } from '../src/content/potions';
 
@@ -137,16 +137,43 @@ describe('presences: the Listener drops its reward (#65)', () => {
     expect([...kinds].sort()).toEqual([...LISTENER_DROPS].sort());
   });
 
-  it('the drop count is drawn from the runtime drops stream: one to three, the same for the same run', () => {
-    const counts = new Set<number>();
-    for (let seed = 1; seed <= 200; seed++) {
-      const drop = listenerDrops('heart', new RunRandom(seed).stream('drops'));
-      expect(drop.length).toBeGreaterThanOrEqual(LISTENER_DROP_MIN);
-      expect(drop.length).toBeLessThanOrEqual(LISTENER_DROP_MAX);
-      expect(listenerDrops('heart', new RunRandom(seed).stream('drops'))).toHaveLength(drop.length);
-      counts.add(drop.length);
+  it('the drop count is weighted one 50%, two 35%, three 15%, and drawn from the runtime drops stream', () => {
+    const N = 50000;
+    const seen = new Map<number, number>();
+    const rng = new RunRandom(7).stream('drops');
+    for (let i = 0; i < N; i++) {
+      const n = listenerDrops('heart', rng).length;
+      seen.set(n, (seen.get(n) ?? 0) + 1);
     }
-    expect([...counts].sort()).toEqual([1, 2, 3]);
+    expect([...seen.keys()].sort()).toEqual([1, 2, 3]);
+    for (const [count, weight] of [[1, 0.5], [2, 0.35], [3, 0.15]] as const) {
+      expect(Math.abs((seen.get(count) ?? 0) / N - weight)).toBeLessThan(0.01);
+    }
+    for (let seed = 1; seed <= 200; seed++) {
+      expect(listenerDrops('heart', new RunRandom(seed).stream('drops'))).toEqual(listenerDrops('heart', new RunRandom(seed).stream('drops')));
+    }
+  });
+
+  it('the drop kind is weighted heart 40%, bomb 35%, key 25%, and each kind still comes up', () => {
+    const N = 50000;
+    const seen = new Map<ListenerDrop, number>();
+    for (let seed = 1; seed <= N; seed++) {
+      const rs = rooms(['normal', 'normal', 'normal'], [[], [], []]);
+      placePresences(rs, 1, new RunRandom(seed).fork('floor', 1, 'presence'));
+      const kind = rs.find(r => r.presence === 'listener')!.presenceDrop!;
+      seen.set(kind, (seen.get(kind) ?? 0) + 1);
+    }
+    expect([...seen.keys()].sort()).toEqual([...LISTENER_DROPS].sort());
+    for (const [kind, weight] of [['heart', 0.4], ['bomb', 0.35], ['key', 0.25]] as const) {
+      expect(Math.abs((seen.get(kind) ?? 0) / N - weight)).toBeLessThan(0.01);
+    }
+  });
+
+  it('the suggested weights are data, one entry per kind and count, each set summing to 100', () => {
+    expect(LISTENER_KIND_WEIGHTS.map(([k]) => k).sort()).toEqual([...LISTENER_DROPS].sort());
+    expect(LISTENER_COUNT_WEIGHTS.map(([n]) => n)).toEqual([1, 2, 3]);
+    expect(LISTENER_KIND_WEIGHTS.reduce((s, [, w]) => s + w, 0)).toBe(100);
+    expect(LISTENER_COUNT_WEIGHTS.reduce((s, [, w]) => s + w, 0)).toBe(100);
   });
 
   it('every drop is of the kind the seed chose', () => {
@@ -156,9 +183,19 @@ describe('presences: the Listener drops its reward (#65)', () => {
     }
   });
 
-  it('a Listener leaves once it has dropped its reward; a Gardener stays', () => {
+  it('a Listener is a leaver (once its reward is picked up); a Gardener stays', () => {
     expect(leavesAfterOffer('listener')).toBe(true);
     expect(leavesAfterOffer('gardener')).toBe(false);
+  });
+
+  it('the Listener stays while any pickup of its reward lies on the floor, and leaves once every one is taken (#77)', () => {
+    const reward = [{ taken: false }, { taken: false }, { taken: false }];
+    expect(rewardPicked(reward)).toBe(false);
+    reward[0].taken = true;
+    reward[2].taken = true;
+    expect(rewardPicked(reward)).toBe(false);
+    reward[1].taken = true;
+    expect(rewardPicked(reward)).toBe(true);
   });
 });
 

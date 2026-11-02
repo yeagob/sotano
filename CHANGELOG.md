@@ -14,6 +14,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Changed
 - A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)
+- The Listener stays after it drops its reward and leaves once every pickup is taken. What it drops is weighted: a heart 40%, a bomb 35% or a key 25%; one, two or three pickups at 50%, 35% or 15% (#77)
 
 ### Fixed
 - Distraction and Noise now fly at eye height and attack: they stop, swell and flare their eyes, dart through where you stood and rest, so their touch can finally land; allied ones keep you company and dart at your foes (#21).
