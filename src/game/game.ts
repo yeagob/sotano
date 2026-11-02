@@ -78,6 +78,7 @@ import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { rollCrate } from '../content/tables/crates';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
+import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud } from './hud';
 import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 
@@ -449,6 +450,7 @@ export class Game {
     this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
+    attachDevlog(this.bus);
     this.inventory.restore([]);
     this.syncWeapon();
     const p = this.player;
@@ -1959,8 +1961,14 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
     if (!a) { sfx.denied(); return; }
-    if (isFlask(p.hand.at(-1)!)) { sfx.denied(); this.hud.toast('lab.refused'); return; }
-    const r = labFeed(a, p.hand.at(-1)!);
+    const top = p.hand.at(-1)!;
+    if (isFlask(top)) {
+      sfx.denied(); this.hud.toast('lab.refused');
+      devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> refused`);
+      return;
+    }
+    const r = labFeed(a, top);
+    devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> ${r}`);
     if (r !== 'fed') {
       sfx.denied();
       this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
@@ -1977,8 +1985,17 @@ export class Game {
     const k = this.kitchens.get(this.world.idx(x, y, z));
     const p = this.player, top = p.hand.at(-1);
     if (!k || top === undefined) { sfx.denied(); return; }
-    if (typeof top === 'number' || isFlask(top)) { sfx.denied(); this.hud.toast('kitchen.refused'); return; }
-    if (!kitchenCook(k)) { sfx.denied(); this.hud.toast('kitchen.out'); return; }
+    if (typeof top === 'number' || isFlask(top)) {
+      sfx.denied(); this.hud.toast('kitchen.refused');
+      devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> refused`);
+      return;
+    }
+    if (!kitchenCook(k)) {
+      sfx.denied(); this.hud.toast('kitchen.out');
+      devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> out`);
+      return;
+    }
+    devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> cooked (${COOKS - k.cooks}/${COOKS} used)`);
     p.hand.pop();   // the part leaves the hand first, so the meal always has its place
     p.hand.push({ potion: mealOf(top.kind) });
     this.hands.placed();
@@ -1992,6 +2009,7 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
     const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
+    devlog.line(`alembic ${cell(x, y, z)}: intention ${polarity} -> ${r}${flask ? ` (${flask.potion})` : ''}`);
     if (r === 'brew' && flask) {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
@@ -2352,6 +2370,7 @@ export class Game {
         if (def) out.push({ type: 'item', def });
       }
     }
+    devlog.line(`chest ${cell(s.x, s.y, s.z)}: opened for ${cost} key(s), contents ${out.map(o => o.type === 'item' ? (o.def?.id ?? 'none') : o.type).join(', ') || 'nothing'}`);
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
       const dx = ax * Math.cos(spread) - az * Math.sin(spread), dz = az * Math.cos(spread) + ax * Math.sin(spread);
@@ -2588,7 +2607,7 @@ export class Game {
       this.player.room = r.id;
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
-      this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
+      this.bus.emit('roomEnter', { room: r.id, type: r.type, template: r.template, firstVisit: first });
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       if (r.type === 'boss' && !this.bossRooms.has(r.floor)) {
         this.activate(r.floor + 1);
