@@ -442,7 +442,7 @@ export const ES: Catalog = {
       },
       arttherapy: {
         name: 'Arteterapia',
-        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte un corazón.',
+        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte.',
         effect: 'Colocar 4 bloques conectados en la misma sala cura un cuarto de corazón. Una vez por sala, y en cuatro salas como máximo por piso.',
         inspiredBy: 'la arteterapia; la idea de que crear arte transforma a las personas',
       },

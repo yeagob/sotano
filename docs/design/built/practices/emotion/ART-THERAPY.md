@@ -18,10 +18,12 @@ Making something changes the maker: four connected blocks you place in a room ca
 
 Placing 4 connected blocks in the same room heals a quarter heart (2 damage points). Once per room, and in four rooms per floor at most.
 
+A structure built while the player is at full health does not heal, and does not spend the room or the floor's count: the room and the floor are spent only by a heal that actually happens.
+
 ## Stats and events
 
 - heals: a quarter heart (`api.heal(0.5)`, half-hearts)
-- when a block is placed: counts the connected placed blocks in the room
+- when a block is placed: counts the connected placed blocks in the room; a complete structure heals only if the player is hurt (`api.counts()`: hp below maxHp), and the room and floor are marked only then
 - when a room is entered: the placed-block count starts over; the record of healed rooms is kept, so a room heals once per run even after leaving and re-entering it
 - when a room is entered on a floor: the floor's count of healed rooms is kept per floor, so a floor starts at zero the first time it is entered and going back up does not refill it
 - the memory belongs to the run (its event bus): a new run starts clean
