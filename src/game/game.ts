@@ -71,7 +71,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, rewardFor, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
@@ -2477,21 +2477,38 @@ export class Game {
       const eye = this.player.eye, fwd = this.player.forward;
       this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
       e.tags.add('met');
-      if (talk.heals) this.listenerReward(e, id);
+      if (talk.drops) this.dropListenerReward(e);
       this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      if (leavesAfterOffer(id)) this.releaseListener(e);
       this.hud.presenceCard(talk.name, talk.lines);
       return;
     }
   }
 
-  /** The Listener's reward for its part (rewardFor): a quarter heart when hurt; at full health a heart
-   *  leaves the Listener in an arc and waits on the floor until the player is hurt. */
-  private listenerReward(e: Enemy, source: string) {
-    if (rewardFor(this.player.hp, this.maxHp) === 'heal') { this.heal(QUARTER_HEART, source); return; }
+  /** The Listener's reward is always a drop, never a heal: its seeded kind, a runtime count (listenerDrops). Each
+   *  pickup leaves the Listener in its own arc toward the player; hearts wait on the floor until the player is hurt. */
+  private dropListenerReward(e: Enemy) {
+    const kind = this.rooms.get(e.room)?.presenceDrop;
+    if (!kind) return;
     const b = this.player.body;
-    const dx = b.x - e.body.x, dz = b.z - e.body.z, d = Math.hypot(dx, dz) || 1;
-    const heart = this.pickups.add('heart', e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
-    this.pickups.launch(heart, dx / d * 2.5, 3, dz / d * 2.5);
+    const dx = b.x - e.body.x, dz = b.z - e.body.z, base = Math.atan2(dz, dx);
+    const drops = listenerDrops(kind, this.rng.stream('drops'));
+    drops.forEach((k, i) => {
+      const a = base + (i - (drops.length - 1) / 2) * 0.6;
+      const p = this.pickups.add(k, e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
+      this.pickups.launch(p, Math.cos(a) * 2.5, 3, Math.sin(a) * 2.5);
+    });
+  }
+
+  /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it
+   *  (owner decision on #65: the room returns to normal). */
+  private releaseListener(e: Enemy) {
+    this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('bone.paper'), 14, 1.6, 0.06);
+    this.enemies.dissolve(e);
+    this.bus.off(null, `actor:${e.id}`);
+    this.actors.remove(e.id);
+    this.contacts.forget(e.id);
+    this.presenceReplies.delete(e.id);
   }
 
   private pushPresences() {

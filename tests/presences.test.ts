@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, placePresences, presenceReaction, pushedOut, rewardFor, unlocksPresence, type PresenceId } from '../src/content/presences';
+import { LISTENER_DROPS, LISTENER_DROP_MAX, LISTENER_DROP_MIN, PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, leavesAfterOffer, listenerDrops, placePresences, presenceReaction, pushedOut, unlocksPresence, type ListenerDrop, type PresenceId } from '../src/content/presences';
 import { PART_KINDS, PARTS } from '../src/content/parts';
 import { POTION_IDS } from '../src/content/potions';
 
-const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId }[] =>
+const rooms = (types: string[], enemies: string[][] = []): { type: string; enemies: string[]; presence?: PresenceId; presenceDrop?: ListenerDrop }[] =>
   types.map((type, i) => ({ type, enemies: enemies[i] ?? [] }));
 
 describe('presences: where they live', () => {
@@ -43,6 +43,19 @@ describe('presences: where they live', () => {
     const rs = rooms(['normal', 'start'], [[], []]);
     placePresences(rs, 7, new RunRandom(2).fork('floor', 7, 'presence'));
     expect(rs.some(r => r.presence)).toBe(false);
+  });
+
+  it('a run has a Listener on each Tree floor (floors 1 to 5), one per floor, each with its own drop', () => {
+    const run = new RunRandom(7);
+    const listeners = [1, 2, 3, 4, 5].map(k => {
+      const rs = rooms(['normal', 'normal', 'start'], [[], [], []]);
+      placePresences(rs, k, run.fork('floor', k, 'presence'));
+      const placed = rs.filter(r => r.presence === 'listener');
+      expect(placed).toHaveLength(1);
+      return placed[0];
+    });
+    expect(listeners).toHaveLength(5);
+    for (const l of listeners) expect(LISTENER_DROPS).toContain(l.presenceDrop);
   });
 });
 
@@ -96,16 +109,56 @@ describe('presences: every offer the Listener has', () => {
     expect(unlocksPresence('listener', carried)).toBe(accepted);
   });
 
-  it('the reward lands when hurt (a quarter heart) and waits as a heart on the floor when whole', () => {
-    expect(rewardFor(10, 24)).toBe('heal');
-    expect(rewardFor(23, 24)).toBe('heal');
-    expect(rewardFor(24, 24)).toBe('heart');
-    expect(rewardFor(26, 24)).toBe('heart');
-  });
-
   it('a part of any pattern works, but only its kind opens the Listener', () => {
     for (const p of PARTS.filter(q => q.kind === 'heart')) expect(unlocksPresence('listener', p)).toBe(true);
     for (const p of PARTS.filter(q => q.kind !== 'heart')) expect(unlocksPresence('listener', p)).toBe(false);
+  });
+});
+
+describe('presences: the Listener drops its reward (#65)', () => {
+  it('the reward is always a drop, never a heal', () => {
+    expect(PRESENCE_TALK.listener.drops).toBe(true);
+    expect(PRESENCE_TALK.gardener.drops).toBe(false);
+  });
+
+  it('the drop kind is taken from the floor seed: the same seed gives the same kind, and each candidate comes up', () => {
+    const kinds = new Set<ListenerDrop>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const drawn = () => {
+        const rs = rooms(['normal', 'normal', 'normal'], [[], [], []]);
+        placePresences(rs, 1, new RunRandom(seed).fork('floor', 1, 'presence'));
+        return rs.find(r => r.presence === 'listener')!.presenceDrop!;
+      };
+      const kind = drawn();
+      expect(LISTENER_DROPS).toContain(kind);
+      expect(drawn()).toBe(kind);
+      kinds.add(kind);
+    }
+    expect([...kinds].sort()).toEqual([...LISTENER_DROPS].sort());
+  });
+
+  it('the drop count is drawn from the runtime drops stream: one to three, the same for the same run', () => {
+    const counts = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const drop = listenerDrops('heart', new RunRandom(seed).stream('drops'));
+      expect(drop.length).toBeGreaterThanOrEqual(LISTENER_DROP_MIN);
+      expect(drop.length).toBeLessThanOrEqual(LISTENER_DROP_MAX);
+      expect(listenerDrops('heart', new RunRandom(seed).stream('drops'))).toHaveLength(drop.length);
+      counts.add(drop.length);
+    }
+    expect([...counts].sort()).toEqual([1, 2, 3]);
+  });
+
+  it('every drop is of the kind the seed chose', () => {
+    for (const kind of LISTENER_DROPS) {
+      const drop = listenerDrops(kind, new RunRandom(11).stream('drops'));
+      expect(drop.every(k => k === kind)).toBe(true);
+    }
+  });
+
+  it('a Listener leaves once it has dropped its reward; a Gardener stays', () => {
+    expect(leavesAfterOffer('listener')).toBe(true);
+    expect(leavesAfterOffer('gardener')).toBe(false);
   });
 });
 
