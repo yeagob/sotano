@@ -21,16 +21,28 @@ export function unlocksPresence(id: PresenceId, carried: Carried | undefined): b
   return typeof carried === 'object' && !isFlask(carried) && carried.kind === PRESENCE_KEY[id];
 }
 
-export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; hint: MessageKey; heals: boolean }> = {
-  gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', hint: 'presence.gardener.hint', heals: false },
-  listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', heals: true },
+export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; hint: MessageKey; drops: boolean }> = {
+  gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', hint: 'presence.gardener.hint', drops: false },
+  listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', drops: true },
 };
 
-/** What a Presence's part earns (the Listener heals a quarter of a heart the first time). Hurt, the heal lands.
- *  At full health a heal is lost, so the reward is left beside the Presence as a heart, which waits for the
- *  player the way hearts do (see Game.touchPickups). */
-export function rewardFor(hp: number, maxHp: number): 'heal' | 'heart' {
-  return hp < maxHp ? 'heal' : 'heart';
+/** A Presence that drops its reward leaves once it has dropped it: its room is ordinary again, and its silence goes
+ *  with it (docs/design/built/presences/LISTENER.md). */
+export function leavesAfterOffer(id: PresenceId): boolean {
+  return PRESENCE_TALK[id].drops;
+}
+
+/** What a Listener drops. Its kind is part of the floor's structure (drawn from the seed when the floor is built). */
+export const LISTENER_DROPS = ['heart', 'bomb', 'key'] as const;
+export type ListenerDrop = (typeof LISTENER_DROPS)[number];
+
+export const LISTENER_DROP_MIN = 1;
+export const LISTENER_DROP_MAX = 3;
+
+/** How many of its kind a Listener drops for one accepted part. The count is a runtime outcome: it is drawn from
+ *  the drops stream when the part is accepted, never healed. */
+export function listenerDrops(kind: ListenerDrop, rng: Rng): ListenerDrop[] {
+  return Array.from({ length: rng.int(LISTENER_DROP_MIN, LISTENER_DROP_MAX) }, () => kind);
 }
 
 export const TALK_REACH = 2.2;
@@ -56,8 +68,9 @@ export function presenceReaction(polarity: 'positive' | 'negative', distance: nu
   return distance < LIFT_REACH ? 'lift' : null;
 }
 
-interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
+interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence; presenceDrop?: ListenerDrop }
 
+/** One Listener per Tree floor, in a quiet normal room. Its drop kind is drawn from the same floor fork, after the room. */
 export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): void {
   if (floor === 0 || level(floor).kind !== 'tree') return;
   const normal = rooms.filter(r => r.type === 'normal');
@@ -66,4 +79,5 @@ export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): vo
   const room = rng.pick(quiet.length ? quiet : normal);
   room.enemies = [];
   room.presence = 'listener';
+  room.presenceDrop = rng.pick(LISTENER_DROPS);
 }
