@@ -140,6 +140,34 @@ describe('inventory', () => {
   });
 });
 
+describe('hands', () => {
+  it('a new run starts with two hands: two blocks carried', () => {
+    expect(BASE_STATS.carry).toBe(2);
+    expect(new StatSheet().get('carry')).toBe(2);
+  });
+
+  it('carry items add to the two hands, and losing one returns the count', () => {
+    const { stats, inv } = setup();
+    inv.gain('secondbrain');
+    expect(Math.floor(stats.get('carry'))).toBe(3);
+    inv.gain('senecaletters');
+    expect(Math.floor(stats.get('carry'))).toBe(6);
+    inv.lose('senecaletters');
+    expect(Math.floor(stats.get('carry'))).toBe(3);
+    inv.lose('secondbrain');
+    expect(Math.floor(stats.get('carry'))).toBe(2);
+  });
+
+  it('two items are held in acquisition order, and losing one leaves the other', () => {
+    const { inv } = setup();
+    inv.gain('secondbrain');
+    inv.gain('stoic');
+    expect(inv.items.map(i => i.def.id)).toEqual(['secondbrain', 'stoic']);
+    inv.lose('secondbrain');
+    expect(inv.items.map(i => i.def.id)).toEqual(['stoic']);
+  });
+});
+
 describe('split damage', () => {
   it('damage items do not dig faster, and mining items do not hurt more', () => {
     const { stats, inv } = setup();

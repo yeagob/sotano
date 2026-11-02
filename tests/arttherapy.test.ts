@@ -35,7 +35,7 @@ function setup() {
   const inv = new Inventory(new Map([['arttherapy', ITEM_BY_ID.get('arttherapy')!]]), [], stats, () => bus, () => api);
   inv.gain('arttherapy');
 
-  const enter = (room: number, floor: number) => bus.emit('roomEnter', { room, floor, type: 'normal', firstVisit: true });
+  const enter = (room: number, floor: number) => bus.emit('roomEnter', { room, floor, type: 'normal', template: 'test', firstVisit: true });
   const enterFloor = (depth: number) => bus.emit('floorEnter', { depth });
   const place = (x: number, y: number, z: number) => bus.emit('blockPlace', { x, y, z, material: STONE });
   /** Four blocks in a row: the fourth one completes a structure of four. */

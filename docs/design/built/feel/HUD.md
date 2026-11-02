@@ -9,7 +9,7 @@ What the player reads on screen, in the corners and on the screens that open ove
 - **Hearts.** Each heart container is drawn in quarters, filled from the left. The container's full value is eight damage points, and each quarter is two. An invulnerable heart is steady and outlined, and never blinks. When one heart or less is left, the last heart beats (see [FEEDBACK](FEEDBACK.md)).
 - **Breath.** Eight bubbles, shown only while the breath is not full: under water, or while the breath comes back. The last bubble beats when two or fewer are left.
 - **Bombs and keys.** Two counters, capped at 99. Keys and bombs cost no hand slot.
-- **Hand slots.** The things you carry: a block, a part, or two blocks with Second Brain, four with Letters from a Stoic.
+- **Hand slots.** The things you carry: two blocks (one per hand) by default, three with Second Brain, five with Letters from a Stoic. A part takes a slot like a block.
 - **Polarity mark.** A static mark for the loaded intention: a filled circle for good, a ring for bad. The F key switches it, and a short tick sounds.
 - **Boss bar.** The boss's name and its health ratio, shown while a boss is present.
 - **Path chips.** A practice's path is shown as a chip: the path's colour, always with its glyph and its word.

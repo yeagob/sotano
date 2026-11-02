@@ -569,7 +569,7 @@ export const ES: Catalog = {
       secondbrain: {
         name: 'Segundo cerebro',
         description: 'Deja que otra cosa sostenga lo que cargas: llevas un bloque más.',
-        effect: 'Llevas 2 bloques en vez de 1 (el segundo se ve en tu otra mano).',
+        effect: 'Llevas 3 bloques en vez de 2.',
         inspiredBy: 'Construye tu segundo cerebro (Tiago Forte); la memoria externa',
       },
       selfreliance: {
@@ -581,7 +581,7 @@ export const ES: Catalog = {
       senecaletters: {
         name: 'Cartas a Lucilio',
         description: 'Carga más y suelta con más fuerza: tres bloques más, patada y lanzamiento dobles.',
-        effect: 'Llevas 4 bloques. Patadas y lanzamientos ×2. Alcance +2 bloques.',
+        effect: 'Llevas 5 bloques. Patadas y lanzamientos ×2. Alcance +2 bloques.',
         inspiredBy: 'Séneca, Cartas morales a Lucilio (dominio público)',
       },
       socratic: {

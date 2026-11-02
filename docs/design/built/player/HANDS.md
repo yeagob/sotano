@@ -6,7 +6,7 @@ Part of [the player](README.md).
 
 ## What the player sees and feels
 
-- By default you carry one block. What you carry is shown in your hands, at the bottom of the view; the hand shows the top of the stack.
+- By default you carry two blocks, one in each hand. What you carry is shown in your hands, at the bottom of the view; the hand shows the top of the stack.
 - Walking into a loose block picks it up if your hand has room. If your hand is full, you kick it instead ([KICK-AND-THROW.md](../blocks/KICK-AND-THROW.md)).
 - Bombs cannot be picked up. Walking into one kicks it.
 - Parts, the things a released projection leaves behind, also take a slot in your hand, like a block. Walking into one lifts it if there is room. They have no effect when carried. On floors 0 to 4 the toll window lists the parts you carry, and a part given there is gone. You place or throw a part exactly as you would a block. A placed part lies on the floor and can be picked up again after a short delay.
@@ -15,13 +15,13 @@ Part of [the player](README.md).
 
 ## The rule behind it
 
-Carrying is the one way the player moves matter. The design keeps it to one block by default, so that climbing back up is a problem to plan, not a repetition to endure ([DESIGN.md, sections 4 and 6](README.md)). Parts are collectible but not items: they take a slot and have no effect of their own. Keys and bombs are the only counters that cost no slot.
+Carrying is the one way the player moves matter. The hands are the limit: a limit is what makes climbing back up a problem to plan, not a repetition to endure ([DESIGN.md, sections 4 and 6](README.md)). The base is two hands, one block each (the owner's decision, issue #50); before that it was one. Parts are collectible but not items: they take a slot and have no effect of their own. Keys and bombs are the only counters that cost no slot.
 
 Code: `src/entities/player.ts` (the hand and the stack), `src/game/game.ts` (walking into a loose block, lines 1691-1728; the parts pickup, lines 2088-2092; placing and throwing, lines 1913-1980), `src/content/parts.ts` (the header: parts have no effect), `src/render/hands.ts` (the hands in view and the raised hand, lines 111-122).
 
 ## The carry stat
 
-The number of blocks you can hold is the carry stat, floored. Its base is 1. Items raise it: one practice adds one, and another adds three.
+The number of blocks you can hold is the carry stat, floored. Its base is 2 (`src/core/stats.ts`). Items raise it: Second Brain adds one (three blocks), and Letters from a Stoic adds three (five blocks).
 
 ## Open questions
 
