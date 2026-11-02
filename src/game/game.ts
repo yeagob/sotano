@@ -1086,6 +1086,8 @@ export class Game {
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
+      // a warm love shot grows a friendly creature (issue #51); a beam's repeat ticks do not
+      if (warm && e.tags.has('creature')) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
       const b = e.body;
       e.hp += heal;

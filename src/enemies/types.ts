@@ -82,6 +82,8 @@ export interface Enemy extends Actor {
   /** The definition (`Actor.def` holds its id). */
   spec: EnemyDef;
   maxHp: number;
+  /** Size multiplier: 1 at birth, up to GROWTH_MAX for a creature that love shots have grown (entities/growth.ts). */
+  scale: number;
   speed: number;
   contactDamage: number;
   /** The actor it is after (−1: none) and seconds until it looks again (retargets at 4 Hz). */

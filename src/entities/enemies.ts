@@ -4,12 +4,13 @@ import { fx } from '../core/fx';
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
-import { FlowField, type RoomArea } from '../enemies/flowfield';
+import { FlowField, reachOf, type RoomArea } from '../enemies/flowfield';
 import { Hazards, shapePoint, type FieldEffect, type HazardHost, type Shape, type Strike } from '../enemies/attacks';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
 import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
+import { grownScale, setScale } from './growth';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
@@ -144,7 +145,7 @@ export class Enemies {
 
   spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
     const e: Enemy = {
-      id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
+      id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, scale: 1, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
@@ -156,6 +157,12 @@ export class Enemies {
   }
 
   get(id: number) { return this.list.find(e => e.id === id && e.alive); }
+
+  /** The visual of an actor, while it lives (its group's scale is the creature's size). */
+  viewOf(id: number): View | undefined { return this.views.get(id); }
+
+  /** A love shot reached a friendly creature: it grows one step, up to GROWTH_MAX (entities/growth.ts). */
+  grow(e: Enemy) { setScale(e, grownScale(e.scale)); }
 
   /** Attacks on the field and hostile projectiles in the air (the sandbox duel measures them). */
   pressure() { return { hazards: this.hazards.size, projectiles: this.projectiles.length }; }
@@ -429,12 +436,14 @@ export class Enemies {
     const b = e.body, tx = t.x, tz = t.z;
     const dx = tx - b.x, dz = tz - b.z, l = Math.hypot(dx, dz) || 1;
     if (e.flyY >= 0 || e.ghost) return [dx / l, dz / l];
-    // one field per room, target and kind of projection (each treats the elements its own way)
-    const key = `${e.room}:${t.id}:${e.def}`;
+    // one field per room, target, kind of projection and footprint (each treats the elements its own way).
+    // A grown body needs the cells beyond its birth footprint; the birth footprint is always the same.
+    const reach = reachOf(e.body.hw) - reachOf(e.spec.size[0]);
+    const key = `${e.room}:${t.id}:${e.def}:${reach}`;
     let f = this.flows.get(key);
     if (!f) {
       if (this.flows.size > 128) this.flows.clear(); // fields are tiny; just drop stale ones now and then
-      f = new FlowField(this.host.room(e.room));
+      f = new FlowField(this.host.room(e.room), reach);
       this.flows.set(key, f);
     }
     f.update(this.host.solid, tx, tz, `${this.host.worldVersion()}:${this.host.elemVersion()}`, (x, y, z) => this.host.hazard(e, x, y, z));
@@ -592,9 +601,10 @@ export class Enemies {
     const t = e.targetId >= 0 ? this.host.actor(e.targetId) : undefined;
     if (t) v.group.rotation.y = Math.atan2(t.body.x - b.x, t.body.z - b.z);
     // materialise: grow from nothing with a wobble
-    const grow = e.spawning > 0 ? Math.max(0.05, 1 - e.spawning / SPAWN_TIME) : 1;
+    const birth = e.spawning > 0 ? Math.max(0.05, 1 - e.spawning / SPAWN_TIME) : 1;
     const pulse = 1 + e.pulse * 0.35;
-    v.group.scale.set(grow * pulse, grow * (1 + e.pulse * 0.2), grow * pulse);
+    const s = e.scale * birth;
+    v.group.scale.set(s * pulse, s * (1 + e.pulse * 0.2), s * pulse);
     // walk cycle on named limbs
     const walk = Math.sin(this.time * 9 + e.id) * Math.min(1, Math.hypot(b.vx, b.vz) / 2) * 0.5;
     for (const l of v.parts.get('legL') ?? []) l.rotation.x = walk;
