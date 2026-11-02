@@ -8,6 +8,7 @@ Part of [blocks](README.md).
 
 - Blocks differ by how long they take to break. Tier 0 blocks break in one or two hits from a starting intention. Tier 1 blocks take about four. Tier 2 blocks take eight to fifteen. Tier 3 blocks take eighty hits or more, and they are a real time wall.
 - Tier 3 blocks are where the time wall is real: at the starting fire rate, an obsidian block takes about thirty seconds of steady fire, and a pedestal or star stone about forty-five.
+- A crate sometimes gives back a key, a heart or a small bomb when it breaks. The chance is set per floor, between one in ten and three in ten, so each floor of a seed drops crates a little differently and the same seed always does the same.
 - Bedrock is the floor of the world and never breaks. Chests never break either: only a key opens them, or walking up to one.
 
 ## The rule behind it

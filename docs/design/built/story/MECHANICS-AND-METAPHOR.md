@@ -12,7 +12,7 @@ The mechanics live in the world code under `src/`, and the floors and rooms are 
 | **Breaking blocks** | Dismantling a limiting structure: a belief, a habit, an avoidance | Some blocks break with one hit; some take sustained effort. With enough intention, everything breaks |
 | **Block tiers** | How deep a limitation runs | Dirt is a passing excuse; obsidian is a core belief from childhood |
 | **Loose cubes** you can carry and place | What you dismantle becomes material to build with | Broken blocks become cubes you can pick up, place and throw. "The impediment to action advances action. What stands in the way becomes the way." (Marcus Aurelius, public domain) |
-| **Carry limit** | Working memory, emotional bandwidth | You carry one block in your hand. Second Brain and Letters from a Stoic carry more |
+| **Carry limit** | Working memory, emotional bandwidth | You carry one block in each hand, two in all. Second Brain and Letters from a Stoic carry more |
 | **Kicking and throwing** | Letting go; using momentum | Not everything needs to be carried. A kicked block hurts projections, and a heavy one hurts more |
 | **Going down** | Going inward: introspection, shadow work | The floors get deeper and harder. The circles' names show on the HUD |
 | **The silence and the tree** | Integration: what the depths taught reaches up into daily life | Standing still in the silence under the ninth circle carries you up to heaven; the top of the sky brings you back down. The giant tree rises above the roots |
