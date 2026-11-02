@@ -26,6 +26,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Placing a block into a doorway or at the world's edge is refused with a sound, instead of throwing the block back at you.
 - Placing a block next to a wall, ledge or corner no longer throws it: if you stand a little in its cell you are nudged out and it goes down; if you stand deeper in, it waits in your hand until you step clear.
 - A loose cube that spins fast in place for a second gets an upward push; if it still spins in place after the third push, it vanishes (#42).
+- Art Therapy heals a quarter heart instead of a full one, once per room and in four rooms per floor at most (#57).
 
 ### Changed
 - Every hostile projection (the voices you fight) has twice its health, so a fight with the same intentions takes about twice as long. Bosses and creatures are unchanged (#45).
