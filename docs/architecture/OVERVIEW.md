@@ -149,6 +149,14 @@ The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the
 
 URL parameter `?seed=123` picks the seed; `?lang=es` picks the language.
 
+### Development logs (`src/debug/devlog.ts`)
+
+Development builds and the `develop` branch print one console line per event a developer edits layouts and content by, prefixed `[devlog]` and always in English (not in `i18n/`, which is for players): `item picked up: <id>`, `room entered: <template> (room, type, first visit or revisit)`, `monster spawned: <monster>`, `monster died: <monster> at (x, y, z), caused by <damage kind> from <source>`, `item dropped: <heart, key or bomb> from <monster, block or room reward>`, `alembic (x, y, z): feed <hand item> -> <result>` and `intention <polarity> -> <result>`, `kitchen (x, y, z): cook <hand item> -> <result>`, `chest (x, y, z): opened for N key(s), contents <items>`.
+
+**The gate** is `devlogEnabled(dev, branch)`: on when `import.meta.env.DEV` is true or the branch is `develop`; off in release builds and on `main`. The branch is the build-time constant `DEVLOG_BRANCH`, set in `vite.config.ts` from Vercel's `VERCEL_GIT_COMMIT_REF` (then GitHub's `GITHUB_REF_NAME`), and empty, so off, when neither is set. Vercel's `develop` preview prints the lines; the production build of `main` does not. With the gate off, `attachDevlog` installs no hooks at all.
+
+The bus hooks (priority 250, after every payload change, so a line shows the final drops) cover `itemGained`, `roomEnter`, `enemySpawn`, `actorDamage` (it remembers what last hurt a monster), `actorDeath`, `blockLoot` and `roomClear`. The alembic, kitchen and chest lines are written where the game acts, since the bus has no event for their results. Each run makes a new bus, and the hooks attach to it again.
+
 ## Tests (`tests/`)
 
 Vitest, Node, no rendering (102 tests):
@@ -159,6 +167,7 @@ Vitest, Node, no rendering (102 tests):
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
 - `rng.test.ts` — seed codes, fork purity, determinism (same seed, same ten floors), a golden seed hash per `GEN_VERSION`, practices lasting ten floors, isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
 - `sandbox.test.ts` — every sandbox scenario validates and carves the same room twice; a scenario's rows land where it says, sealed by its shell. The scripted runs themselves are `npm run sandbox -- --check` (headless Chromium, [SANDBOX.md](SANDBOX.md) §4).
+- `devlog.test.ts` — the gate (on in development and on `develop`, off in release and on `main`), no hooks when off, one line per logged event.
 - `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
 - `i18n.test.ts` — every locale has every message with the same placeholders; every item, synergy, enemy and material translated, no stale ids; translated effect lines keep English's numbers; no empty strings or markup; fallback, plurals, number formats, language detection; every damage source names a cause; the language never changes a run.
 - `controls.test.ts` — every action mapped on keyboard and mouse, gamepad and touch with its Minecraft, Noita and Isaac references; no shared input in one context; a world tap and a half turn are live in play; a `none` touch control is reached through another; touch glyphs exist; every control row and prompt has its words per device.

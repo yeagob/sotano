@@ -47,7 +47,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   chestOpen: () => ({ x: 1, y: 1, z: 1, cost: 2 }),
   pickupCollect: () => ({ kind: 'key', amount: 1 }),
   itemGained: () => ({ id: 'x', uid: 1 }),
-  roomEnter: () => ({ room: 1, type: 'normal', firstVisit: true }),
+  roomEnter: () => ({ room: 1, type: 'normal', template: 'test', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
