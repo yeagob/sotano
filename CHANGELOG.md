@@ -16,6 +16,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)
 
 ### Fixed
+- Distraction and Noise now fly at eye height and attack: they stop, swell and flare their eyes, dart through where you stood and rest, so their touch can finally land; allied ones keep you company and dart at your foes (#21).
+- Flying creatures (Wonder, Chirper and the other hoverers) stay up instead of sinking to the floor, climb steps, stay under the ceiling and turn off walls instead of pressing on them (#21).
 - The part leaves your hand with a visible handover when you give it to the Listener (#43).
 - The Boundary asks its mission when you walk up to it, not only at the chest (#40).
 - Presences have a body you cannot walk through, and they answer what you bring: they name it and say whether it is what they wait for. A laboratory is placed on every laboratory floor, even when the first room chosen has no room for it.

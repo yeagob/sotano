@@ -21,6 +21,11 @@ const RETARGET = 0.25;
 const RETARGET_MARGIN = 1.5;
 const FLY_GAIN = 3;
 const FLY_MAX = 4;
+/** Cells a hovering flyer scans up or down to find the surface under it, and the turns (radians, signed by its id) it tries when a wall is ahead. */
+const FLY_SCAN = 10;
+/** The tallest rise ahead, in blocks, a flyer climbs over rather than turns away from. */
+const FLY_STEP = 2;
+const FLY_TURNS = [0, 0.6, 1.2, 1.9, 2.6, Math.PI];
 const NO_SOLID = () => false;
 /** Hostile projectiles alive at once (a boss volley is up to a few dozen). */
 const MAX_PROJECTILES = 128;
@@ -149,7 +154,7 @@ export class Enemies {
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
+      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -260,7 +265,7 @@ export class Enemies {
       target: e => this.target(e, actors),
       near: e => {
         let best: Actor | null = null, bd = Infinity;
-        for (const a of actors) if (a.alive && a.faction === 'self') { const d = Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z); if (d < bd) { bd = d; best = a; } }
+        for (const a of actors) if (a !== e && a.alive && a.faction === 'self') { const d = Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z); if (d < bd) { bd = d; best = a; } }
         return best ? { id: best.id, x: best.body.x, y: best.body.y, z: best.body.z, vx: best.body.vx, vz: best.body.vz } : null;
       },
       dist: (e, t) => Math.hypot(t.x - e.body.x, t.z - e.body.z),
@@ -332,6 +337,7 @@ export class Enemies {
         const dx = (rm.hx ?? rm.x0) + ROOM_W / 2 - b.x, dz = (rm.hz ?? rm.z0) + ROOM_D / 2 - b.z, l = Math.hypot(dx, dz) || 1;
         e.wishX = dx / l; e.wishZ = dz / l;
       }
+      if (e.hover >= 0 && !e.ghost) this.steerFlier(e);
       const blend = 1 - Math.exp(-(b.onGround || e.flyY >= 0 ? 10 : 2) * dt);
       b.vx += (e.wishX * e.speed * e.elemSpeed - b.vx) * blend;
       b.vz += (e.wishZ * e.speed * e.elemSpeed - b.vz) * blend;
@@ -429,6 +435,53 @@ export class Enemies {
     for (let y = Math.floor(b.y + 0.1); y <= Math.floor(b.y + b.h - 0.1); y++) {
       if (this.host.solid(x, y, z) && this.host.smash(e, x, y, z, tier, damage)) return;
     }
+  }
+
+  /** The height of the surface under (x, z), looking from `y0` (a column that is solid there is climbed, an open one is descended). */
+  private surfaceAt(x: number, y0: number, z: number): number {
+    const cx = Math.floor(x), cz = Math.floor(z), solid = this.host.solid;
+    let y = Math.floor(y0), n = 0;
+    if (solid(cx, y, cz)) {
+      while (solid(cx, y, cz) && n++ < FLY_SCAN) y++;
+      return y;
+    }
+    while (!solid(cx, y - 1, cz) && n++ < FLY_SCAN) y--;
+    return y;
+  }
+
+  /**
+   * A flyer that hovers (`e.hover`). It keeps `hover` blocks over the surface under it and under the
+   * way ahead (so it climbs a step before the step, never into it), stays under the ceiling, and
+   * turns its heading away from a wall it would hit, so it slides along walls instead of pressing
+   * on them (issue #21). It sets `flyY` every frame; the walkers' rules do not apply to it.
+   */
+  private steerFlier(e: Enemy) {
+    const b = e.body, solid = this.host.solid;
+    const speed = Math.hypot(e.wishX, e.wishZ);
+    const ux = speed > 0.01 ? e.wishX / speed : 0, uz = speed > 0.01 ? e.wishZ / speed : 0;
+    const look = b.hw + 0.7, head = b.y + b.h;
+    const here = this.surfaceAt(b.x, head, b.z);
+    const ahead = speed > 0.01 ? this.surfaceAt(b.x + ux * look, head, b.z + uz * look) : here;
+    // a step ahead is climbed early; anything taller is a wall, and the heading turns off it instead
+    let y = (ahead - here <= FLY_STEP ? Math.max(here, ahead) : here) + e.hover;
+    // under the ceiling, but never under the surface it floats over
+    const cx = Math.floor(b.x), cz = Math.floor(b.z);
+    for (let c = Math.floor(y); c <= Math.floor(y + b.h) + 1; c++) {
+      if (solid(cx, c, cz)) { y = Math.min(y, c - b.h - 0.05); break; }
+    }
+    e.flyY = Math.max(here, y);
+    if (speed <= 0.01) return;
+    // heading: the first direction, nearest to the wished one, that is open
+    const lo = Math.min(b.y, e.flyY), span = Math.max(b.y, e.flyY) + b.h - lo;
+    const side = e.id % 2 ? 1 : -1;
+    for (const turn of FLY_TURNS) for (const sign of turn === 0 || turn === Math.PI ? [1] : [side, -side]) {
+      const c = Math.cos(turn * sign), s = Math.sin(turn * sign);
+      const dx = ux * c - uz * s, dz = ux * s + uz * c;
+      if (boxHits(solid, b.x + dx * look, lo, b.z + dz * look, b.hw, span)) continue;
+      e.wishX = dx * speed; e.wishZ = dz * speed;
+      return;
+    }
+    e.wishX = 0; e.wishZ = 0;
   }
 
   /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
