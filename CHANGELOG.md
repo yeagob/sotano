@@ -6,11 +6,14 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Added
 - A kitchen on floors 1, 3, 5 and 7 cooks a part into a meal (three cooks per run; flesh gives half a heart, other parts a heart), eaten with the drink key. A hint names the drink key when a potion or meal is made or picked up. The alembic is now one tile on the even floors; seeds changed (v22).
-- Breaking a crate has a 30% chance to drop a key, a heart or a small bomb (#6).
+- Breaking a crate can drop a key, a heart or a small bomb (#6).
 - A laboratory alembic on floors 2, 4, 6 and 8 brews from up to three things in your hand (a positive intention, three brews per run). The brew leaves a flask to drink with G, X or the flask button: eight potions, from instant tonics to timed draughts. The Listener speaks only once it is given a heart of a released pattern, and the Gardener once it is given a flesh (#20).
 - A monster part in your hand can be given as the toll to go down on floors 0 to 4 (#8).
 
 - The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
+
+### Changed
+- A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)
 
 ### Fixed
 - The part leaves your hand with a visible handover when you give it to the Listener (#43).
