@@ -34,6 +34,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
 | `fork('floor', k, 'presence')` | Structure | Which normal room of a Tree floor holds the Listener (GEN_VERSION 15); the Gardener is the start room of floor 0 |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
+| `fork('floor', k, 'crate')` | Structure | Floor k's crate drop chance, uniform in [10%, 30%] (`floorCrateChance`, issue #48): read by each crate roll on that floor, never drawn on a stream, so it moves nothing else |
 | `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
 | `fork('floor', k, 'chestkeys')` | Structure | Where the extra keys for floor k's chests lie |
 | `fork('floor', 0, 'loot')` | Structure | Where the roots' key and bomb lie, in its lesson rooms (`GEN_VERSION` 14) |
