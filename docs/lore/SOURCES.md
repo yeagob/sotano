@@ -107,6 +107,12 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 |---|---|---|---|---|
 | `cosmere` | The Cosmere novels (Brandon Sanderson, 2005–) | Credit; "Cosmere" and its coined terms are the author's (Caution for names) *(verify)* | A whole broken into shards, each carrying a single intent; power that is held, carried and changes the holder | **Shards**: the owner's name for the light held in broken blocks, the material you carry and build with ([COSMOLOGY.md §4](COSMOLOGY.md#4-other-maps-of-the-same-world)); "shard" is a common word, we never use the author's coined terms |
 
+### Anime (credit only)
+
+| Id | Source | Status | In the game |
+|---|---|---|---|
+| `dr-stone` | *Dr. Stone* (Riichi, illustrated by Boichi, anime and manga, 2017–) *(verify)* | Credit (copyrighted; cited in the lore notes only) | Nothing in the game. The Rocket Launcher's lore credit is the citation "Let's go to the moon" ([ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)); its names, characters, art and quotes are never used in the game |
+
 ### Games
 
 | Id | Game | What we take | What we never take |
