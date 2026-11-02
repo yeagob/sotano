@@ -12,9 +12,6 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 - The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
 
-### Changed
-- A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)
-
 ### Fixed
 - Distraction and Noise now fly at eye height and attack: they stop, swell and flare their eyes, dart through where you stood and rest, so their touch can finally land; allied ones keep you company and dart at your foes (#21).
 - Flying creatures (Wonder, Chirper and the other hoverers) stay up instead of sinking to the floor, climb steps, stay under the ceiling and turn off walls instead of pressing on them (#21).
@@ -40,3 +37,4 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - The blade practice is named **Cut Ties with Toxic Relationships**; its description covers substances, food and technology too (#7).
 - Friendly creatures grow when a warm love shot reaches them: each shot adds a quarter of their size, up to three times their size, and the hitbox and the way they can pass grow with them (#51).
 - You start with two hands: you carry two blocks instead of one. Second Brain now carries three and Letters from a Stoic five (#50).
+- A crate's chance to drop a key, heart or small bomb is set per floor, between 10% and 30% (it was 30% on every floor), drawn once from the seed: the same seed gives each floor the same chance (#48)

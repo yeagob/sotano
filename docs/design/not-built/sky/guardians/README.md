@@ -113,7 +113,7 @@ Built values, from the built design ([player movement](../../../built/player/MOV
 
 - walk about 4.6 blocks a second; jump about 1.26 blocks high; a flat running jump crosses about 2.7 blocks (derived from the walk and the jump); coyote time 0.1 s;
 - an intention flies straight for about 8 blocks (half a second at 16 blocks a second) before it falls; 2.7 intentions a second;
-- the player places a block within about 5 blocks and carries one block by default;
+- the player places a block within about 5 blocks and carries two blocks by default, one in each hand;
 - a good intention never breaks a block, and a bad one breaks original blocks as it always did. Falling does not hurt.
 
 So, on every sky floor: a one-block step is a jump, a two-block step needs one placed block, a gap of two blocks is a jump, a gap of three is a jump only with a drop of one block or more, and a gap of four or more needs a bridge.
