@@ -13,6 +13,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
 
 ### Fixed
+- Distraction and Noise now fly at eye height and attack: they stop, snap their wings flat, dart through where you stood and rest, so their touch can finally land; allied ones keep you company and dart at your foes (#21).
+- Flying creatures (Wonder, Chirper and the other hoverers) stay up instead of sinking to the floor, climb steps, stay under the ceiling and turn off walls instead of pressing on them (#21).
 - The Listener gives its reward when you bring it a heart: a quarter heart when you are hurt, and at full health a heart that waits on the floor beside it. The part leaves your hand with a visible handover (#43).
 - The Boundary asks its mission when you walk up to it, not only at the chest (#40).
 - Presences have a body you cannot walk through, and they answer what you bring: they name it and say whether it is what they wait for. A laboratory is placed on every laboratory floor, even when the first room chosen has no room for it.

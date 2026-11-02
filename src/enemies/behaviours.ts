@@ -109,6 +109,17 @@ export function burst(opt: { trigger: number; fuse: number; radius: number; rush
 }
 
 /**
+ * The hover of the roots' flyers. With a height they fly: Enemies.steerFlier keeps them that high over the
+ * surface under them (a slow bob on top), under the ceiling, and turns them off walls. Without one they
+ * walk, with a small spring in the step.
+ */
+function lift(e: Enemy, ctx: EnemyCtx, hover: number): void {
+  const bob = Math.sin(e.timer * 2.4) * 0.25;
+  if (hover > 0) { e.hover = hover + bob; return; }
+  if (e.body.vy < 2 && e.body.onGround || e.body.vy < 0) e.body.vy += (bob * 4 - e.body.vy) * Math.min(1, ctx.dt * 6);
+}
+
+/**
  * Keeps away from you (the roots' Wonders): it runs from you inside `scared` blocks and otherwise
  * drifts, hovering, never toward you.
  */
@@ -128,8 +139,7 @@ export function flee(opt: { hover: number; scared: number }): Behaviour {
         if (d < opt.scared) { e.wishX = -dx / d; e.wishZ = -dz / d; }
       }
       e.pulse = 0.5 + 0.5 * Math.sin(e.timer * 3);
-      const lift = opt.hover + Math.sin(e.timer * 2.4) * 0.25;
-      if (e.body.vy < 2 && e.body.onGround || e.body.vy < 0) e.body.vy += (lift * 4 - e.body.vy) * Math.min(1, ctx.dt * 6);
+      lift(e, ctx, opt.hover);
     },
   };
 }
@@ -156,8 +166,7 @@ export function wander(opt: { hover: number; near: number; far: number }): Behav
       }
       // hover: lift toward the hovering height, a slow bob
       e.pulse = 0.5 + 0.5 * Math.sin(e.timer * 3);
-      const lift = opt.hover + Math.sin(e.timer * 2.4) * 0.25;
-      if (e.body.vy < 2 && e.body.onGround || e.body.vy < 0) e.body.vy += (lift * 4 - e.body.vy) * Math.min(1, ctx.dt * 6);
+      lift(e, ctx, opt.hover);
     },
   };
 }

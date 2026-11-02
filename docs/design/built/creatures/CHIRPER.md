@@ -12,7 +12,7 @@ A Chirper is a cellar cricket, dark and small, with two antennae and two glowing
 
 ## Movement and character
 
-- Drifts about 0.6 blocks above the floor, keeping between two and a half and six blocks from the player.
+- Drifts about 0.6 blocks above the surface under it, turning off walls, keeping between two and a half and six blocks from the player.
 - About every 2.6 seconds it chirps, if its room holds no projection that blocks the way.
 - A chirp is a short pair of tones.
 - Two to three appear on floors 1 and 2.
