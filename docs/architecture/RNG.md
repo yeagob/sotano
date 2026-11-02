@@ -32,7 +32,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('reserve')` | Structure | Every pedestal's item, in (floor, room) order, at run start |
 | `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template (among those whose space fits its allotment) → flips (one draw among the flips that fit) → mood → decor slots, row by row, in that order |
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
-| `fork('floor', k, 'presence')` | Structure | Which normal room of a Tree floor holds the Listener (GEN_VERSION 15), then which of heart, bomb or key it drops (GEN_VERSION 23); the Gardener is the start room of floor 0 |
+| `fork('floor', k, 'presence')` | Structure | Which normal room of a Tree floor holds the Listener (GEN_VERSION 15), then which of heart, bomb or key it drops, weighted 40/35/25 (GEN_VERSION 23; the weights changed in #77 without a bump, so a seed's Listener kind may differ from before); the Gardener is the start room of floor 0 |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |
 | `fork('floor', k, 'crate')` | Structure | Floor k's crate drop chance, uniform in [10%, 30%] (`floorCrateChance`, issue #48): read by each crate roll on that floor, never drawn on a stream, so it moves nothing else |
 | `fork('floor', k, 'room', i, 'chest')` | Structure | Whether room i's practice is shut in a chest, its key cost, a free chest's tile and cost (GEN_VERSION 5) |
@@ -51,7 +51,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'room', i, 'rooted', seq)` | Runtime | Whether a projection spawns rooted (`rootedChance`, BESTIARY §4.3): `seq` as for parts; a rooted one rolls its parts once more on `fork(…, 'part', seq, 'rooted')` |
 | `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
-| `stream('drops')` | Runtime | Enemy drops, crate drops (`rollCrate`), how many pickups a Listener drops (`listenerDrops`) |
+| `stream('drops')` | Runtime | Enemy drops, crate drops (`rollCrate`), how many pickups a Listener drops (`listenerDrops`, weighted 50/35/15) |
 | `stream('loot')` | Runtime | Runtime item draws (never reserved items) |
 | `stream('ai')` | Runtime | Reserved for enemy decisions |
 

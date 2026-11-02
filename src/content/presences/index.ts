@@ -26,8 +26,8 @@ export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readon
   listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', drops: true },
 };
 
-/** A Presence that drops its reward leaves once it has dropped it: its room is ordinary again, and its silence goes
- *  with it (docs/design/built/presences/LISTENER.md). */
+/** A Presence that drops its reward leaves once the reward is picked up: its room is ordinary again, and its silence
+ *  goes with it (docs/design/built/presences/LISTENER.md). Until then it stays, and is silenced as any staying presence. */
 export function leavesAfterOffer(id: PresenceId): boolean {
   return PRESENCE_TALK[id].drops;
 }
@@ -36,13 +36,21 @@ export function leavesAfterOffer(id: PresenceId): boolean {
 export const LISTENER_DROPS = ['heart', 'bomb', 'key'] as const;
 export type ListenerDrop = (typeof LISTENER_DROPS)[number];
 
-export const LISTENER_DROP_MIN = 1;
-export const LISTENER_DROP_MAX = 3;
+/** The weights of a Listener's drop, as data so the owner can tune them (#77). Kind: heart 40%, bomb 35%, key 25%.
+ *  Count: one 50%, two 35%, three 15%. */
+export const LISTENER_KIND_WEIGHTS: readonly (readonly [ListenerDrop, number])[] = [['heart', 40], ['bomb', 35], ['key', 25]];
+export const LISTENER_COUNT_WEIGHTS: readonly (readonly [number, number])[] = [[1, 50], [2, 35], [3, 15]];
 
 /** How many of its kind a Listener drops for one accepted part. The count is a runtime outcome: it is drawn from
  *  the drops stream when the part is accepted, never healed. */
 export function listenerDrops(kind: ListenerDrop, rng: Rng): ListenerDrop[] {
-  return Array.from({ length: rng.int(LISTENER_DROP_MIN, LISTENER_DROP_MAX) }, () => kind);
+  return Array.from({ length: rng.weighted(LISTENER_COUNT_WEIGHTS) }, () => kind);
+}
+
+/** A Listener leaves once every pickup of its reward has been taken (a pickup that falls out of the world is taken
+ *  too). A Listener with an empty reward has nothing to wait for. */
+export function rewardPicked(reward: readonly { taken: boolean }[]): boolean {
+  return reward.every(p => p.taken);
 }
 
 export const TALK_REACH = 2.2;
@@ -79,5 +87,5 @@ export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): vo
   const room = rng.pick(quiet.length ? quiet : normal);
   room.enemies = [];
   room.presence = 'listener';
-  room.presenceDrop = rng.pick(LISTENER_DROPS);
+  room.presenceDrop = rng.weighted(LISTENER_KIND_WEIGHTS);
 }
