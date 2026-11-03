@@ -7,6 +7,7 @@ Back to [built](../README.md) · [the design document](../../README.md)
 | Document | Contents |
 |---|---|
 | [MOVEMENT.md](MOVEMENT.md) | Walking, jumping, the forgiving jump (coyote time and input buffer), ice, air control and the jump height |
+| [TRIPLE-JUMP.md](TRIPLE-JUMP.md) | The Triple Jump: two more jumps in the air, their heights, and the item (its gift is not built) |
 | [SWIMMING.md](SWIMMING.md) | Wading, swimming, breath and drowning |
 | [HEALTH.md](HEALTH.md) | Hearts, damage points and quarter hearts, invulnerability after a hit, falls, hot elements |
 | [hearts/](hearts/README.md) | The six kinds of heart: red, blue, stone, blood, star and berserker |

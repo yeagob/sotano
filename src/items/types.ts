@@ -102,7 +102,8 @@ export interface Effect {
   weapon?: { id: WeaponId; priority: number };
 }
 
-export type PoolName = 'treasure' | 'boss' | 'vault';
+/** 'sky' is the sky realm's gift pool: no pool draws from it at random (ItemPools leaves its items out). */
+export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky';
 
 export interface ItemDef extends Effect {
   id: string;

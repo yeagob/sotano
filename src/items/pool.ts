@@ -10,6 +10,9 @@
 import type { Rng } from '../core/rng';
 import type { ItemDef, PoolName } from './types';
 
+/** A sky gift (its only pool is 'sky', SKY.md §9): handed out by id, never drawn. */
+export const isSkyGift = (item: ItemDef) => (item.pools.sky ?? 0) > 0;
+
 export class ItemPools {
   private weights = new Map<PoolName, Map<string, number>>();
   private reserved = new Map<string, string>();   // key (e.g. room id) → item id
@@ -19,9 +22,11 @@ export class ItemPools {
   private quality = new Map<string, number>();
 
   constructor(items: readonly ItemDef[]) {
-    this.all = items.map(i => i.id);
-    for (const item of items) this.quality.set(item.id, item.quality);
-    for (const item of items) {
+    // Sky gifts are left out of everything built here, so the fallback to `all` can never hand one out.
+    const drawable = items.filter(i => !isSkyGift(i));
+    this.all = drawable.map(i => i.id);
+    for (const item of drawable) this.quality.set(item.id, item.quality);
+    for (const item of drawable) {
       for (const [pool, weight] of Object.entries(item.pools) as [PoolName, number][]) {
         if (!weight) continue;
         if (!this.weights.has(pool)) this.weights.set(pool, new Map());

@@ -63,7 +63,7 @@ const messages = {
   'controls.jump.pad': 'A',
   'controls.move.pad': 'Left stick',
   'controls.look.pad': 'Right stick',
-  'controls.jump': 'jump (hold to swim up)',
+  'controls.jump': 'jump (hold to swim up; with air jumps, jump again in the air)',
   'controls.jump.key': 'Space',
   'controls.look.key': 'Mouse',
   'controls.look': 'look',

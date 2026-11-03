@@ -56,7 +56,7 @@ export const ES: Catalog = {
     'controls.jump.pad': 'A',
     'controls.move.pad': 'Stick izquierdo',
     'controls.look.pad': 'Stick derecho',
-    'controls.jump': 'saltar (mantén para nadar hacia arriba)',
+    'controls.jump': 'saltar (mantén para nadar hacia arriba; con saltos en el aire, salta de nuevo en el aire)',
     'controls.jump.key': 'Espacio',
     'intro.tagline': 'Baja dentro de ti. Rompe lo que te retiene. Encuentra lo que vive abajo.',
     'seo.title': 'THE ROOTS: un roguelike voxel gratis en tu navegador',
@@ -571,6 +571,12 @@ export const ES: Catalog = {
         description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. El avance que llevas ya no cae bajo su propio peso; mantiene su línea y vuela hacia donde miras.',
         effect: 'Un doble toque rápido del control de disparo (en 0,3 s) lanza una bomba como misil en lugar de una intención: vuela recto, acelera hasta 24 bloques/s y explota contra lo primero que encuentra, o a los 40 bloques, con la explosión de tu bomba. Negativo: una explosión de bomba, que también puede herirte. Positivo: una explosión de amor que repara bloques, cura a los aliados, acerca a las proyecciones a tu lado y hace crecer a las criaturas. Se rechaza, sin gastar bomba, si hay un bloque a menos de 2 bloques.',
         inspiredBy: 'Trascender los límites (Santiago Dopazo)',
+      },
+      'triple-jump': {
+        name: 'Triple salto',
+        description: 'Subir no se hace de un solo salto. Cada salto llega más alto que el anterior, y el último te lleva adonde ningún paso solo alcanzaba.',
+        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Ningún salto sube más de 16 bloques.',
+        inspiredBy: 'Atletismo: el triple salto (un deporte, su nombre genérico)',
       },
       occamsrazor: {
         name: 'Corta con las relaciones tóxicas',

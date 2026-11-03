@@ -11,7 +11,7 @@ Part of [the player](README.md).
 - In the air you steer, but with much less control than on the ground. You cannot change direction in mid-air the way you do on foot.
 - On ice you keep sliding: starting, turning and stopping take far longer than on stone.
 - Water slows you while you wade through it. Swimming is described in [SWIMMING.md](SWIMMING.md).
-- There is no sprint, no second jump and no flight action. Those are planned, not built: see [not-built/player/MOVEMENT-ABILITIES.md](../../not-built/player/MOVEMENT-ABILITIES.md).
+- Air jumps exist only as the Triple Jump's two extra jumps ([TRIPLE-JUMP.md](TRIPLE-JUMP.md)). There is no sprint, no lone second jump and no flight action. Those are planned, not built: see [not-built/player/MOVEMENT-ABILITIES.md](../../not-built/player/MOVEMENT-ABILITIES.md).
 
 ## The rule behind it
 
