@@ -1,0 +1,15 @@
+{
+  "note": "Dr. Launcher, negative: a double tap launches a bomb as a missile into a crate wall nine blocks away; one bomb spent, a bomb blast",
+  "rows": [".............", "..........c..", "..........c..", "..........c..", "..........c..", "..........c..", "............."],
+  "items": ["drlauncher"],
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 120,
+  "report": [0, 12, 120],
+  "actions": [
+    { "t": 0, "do": "look", "at": [10, 1, 3] },
+    { "t": 0, "do": "key", "code": "KeyF" },
+    { "t": 2, "do": "fire", "ticks": 1 },
+    { "t": 8, "do": "fire", "ticks": 1 }
+  ]
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ITEM_BY_ID, ITEMS } from '../src/content/items';
+import resonance from '../src/content/items/resonance';
 import { SYNERGIES } from '../src/content/synergies';
 import { Rng } from '../src/core/rng';
 import { BASE_STATS, StatSheet, type StatName } from '../src/core/stats';
@@ -181,6 +182,18 @@ describe('split damage', () => {
   });
 });
 
+describe('resonance', () => {
+  it('each other intention in the room adds 1% damage to the one fired', () => {
+    const fire = resonance.hooks!.find(h => h.event === 'fire')!;
+    const busy = { damage: 10 };
+    fire.fn({ intent: busy } as never, { intentsHere: () => 5 } as never);
+    expect(busy.damage).toBeCloseTo(10.5);
+    const alone = { damage: 10 };
+    fire.fn({ intent: alone } as never, { intentsHere: () => 0 } as never);
+    expect(alone.damage).toBe(10);
+  });
+});
+
 describe('pools', () => {
   it('reserve deterministically, without repeats, and runtime draws skip reserved items', () => {
     const slots = Array.from({ length: 6 }, (_, i) => ({ key: String(i), pool: 'treasure' as const }));
@@ -206,9 +219,9 @@ describe('contract', () => {
   const eventNames = Object.keys({
     fire: 0, strike: 0, blockDamage: 0, blockBreak: 0, blockPlace: 0, touchBlock: 0, headBump: 0, explosion: 0, touchCube: 0, kick: 0, throw: 0,
     drop: 0, debrisImpact: 0, jump: 0, land: 0, doorOpen: 0, chestOpen: 0, pickupCollect: 0, itemGained: 0, roomEnter: 0, floorEnter: 0,
-    blockLoot: 0, bombPlace: 0, actorDamage: 0, contact: 0, actorDeath: 0, factionChange: 0, heal: 0, death: 0, enemySpawn: 0, roomClear: 0,
+    blockLoot: 0, bombPlace: 0, missileLaunch: 0, actorDamage: 0, contact: 0, actorDeath: 0, factionChange: 0, heal: 0, death: 0, enemySpawn: 0, roomClear: 0,
     ignite: 0, materialReact: 0, elementEnter: 0, elementLeave: 0, doorBreak: 0, polarityChange: 0, intentHit: 0,
-    brew: 0, drink: 0,
+    brew: 0, drink: 0, heartLost: 0, berserkChange: 0,
   } satisfies Record<keyof GameEvents, 0>);
 
   it('no content sets keepTags (cube chains would outlive their cause; see ACTORS.md §1)', () => {

@@ -129,8 +129,10 @@ export class Intents {
     this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null });
   }
 
-  flying(p: THREE.Vector3, r: number, except?: IntentSpec): IntentSpec[] {
-    return this.list.filter(t => t.spec !== except && t.pos.distanceTo(p) <= r).map(t => t.spec);
+  within(test: (p: THREE.Vector3) => boolean): number {
+    let n = 0;
+    for (const t of this.list) if (test(t.pos)) n++;
+    return n;
   }
 
   private steer(t: Intent, dt: number) {

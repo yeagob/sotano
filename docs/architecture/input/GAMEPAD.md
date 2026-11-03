@@ -10,6 +10,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | look | right stick |
 | jump (hold to swim up) | A |
 | cast (hold) | RT |
+| launch a missile (with Dr. Launcher) | a quick double press of RT (within 0.3 s) |
 | place | LT |
 | throw | B |
 | drink | X |

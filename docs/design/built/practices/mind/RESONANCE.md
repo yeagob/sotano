@@ -16,11 +16,11 @@ When one thought rings true, the ones near it start to hum.
 
 ## What it does
 
-Each intention that hits charges the other intentions in flight within 3 blocks. A charged intention discharges on its next hit: 3 points to projections within 2 blocks.
+When you fire an intention, every other intention in flight in your room adds 1% damage to it. Four others make it 4% stronger; none, nothing. The count is taken at the moment of the shot, and the bonus applies to every intention of a volley.
 
 ## Stats and events
 
-- when an intention hits: a charged intention discharges (2 blocks, 3 damage); the hit charges the intentions in flight within 3 blocks
+- when you fire (`fire`, priority 90, after the other shot changes): damage × (1 + 0.01 × the other intentions in flight in your room, `intentsHere`). Intentions in flight in other rooms do not count.
 
 ## Synergies and states of being
 

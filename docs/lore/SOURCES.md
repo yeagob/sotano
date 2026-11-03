@@ -65,7 +65,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `somatic` | Somatic grounding | Practice | Concept | Coming back to the body | **Grounding** |
 | `toxic-relationships` | Santiago (Game Glover), the owner's own words on toxic relationships | Owner's words | Owner's own (credited, usable as a name) | Some people drain you more than they give; cutting them off keeps your energy | **Cut Ties with Toxic Relationships**: the blade of light |
 | `conscious-breathing` | Santiago (Game Glover), the owner's own words on conscious breathing | Owner's words | Owner's own (credited, usable as a name) | Breath gathered, held and let out at once | **Remember Breathing**: hold to gather, release a beam that burns through blocks |
-| `no-impossible` | Santiago Dopazo, the owner's own line: "No hay nada imposible..." (shortened) | Owner's words | Owner's own (credited, quotable with the credit) | Nothing is impossible: a limit is a belief, and a love explosion has no limit of its own | **Love explosion** (proposed, see [ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)) |
+| `no-impossible` | Santiago Dopazo, the owner's own line: "No hay nada imposible..." (shortened) | Owner's words | Owner's own (credited, quotable with the credit) | Nothing is impossible: a limit is a belief, and a love explosion has no limit of its own | **Dr. Launcher** and its love explosion ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
 | `lions-mane` | Lion's mane mushroom (*Hericium erinaceus*) | Natural history, folk tradition | Concept (a common name) | A shaggy mushroom that grows on old wood, in the dark; traditionally linked to the mind and nerves (no medical claim) | **Lion's Mane**: growing past the ceiling you were told was the limit (with the `platformers` wink) |
 | `kaizen` | Kaizen | Practice | Concept | Small continuous improvement | **Kaizen** |
 | `sports-psych` | Mental rehearsal (sports psychology) | Technique | Concept | Visualising before doing | **Visualization** |
@@ -76,7 +76,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `insight` | Insight learning (Wolfgang Köhler, 1925) | Psychology concept | Credit (the book); Concept (the idea) | The sudden solution that jumps from one thought to the next | **Aha Moment**: arcs between projections |
 | `somatic-discharge` | Somatic discharge (Peter Levine, *Waking the Tiger*, 1997) | Therapy | Credit (the book); Concept (discharge) | Energy held in the body released through movement | **Discharge**: landing sends a shockwave |
 | `kindling` | Kindling, a growing warmth (a nod to the neuroscience kindling model) | Concept | Concept | Small sparks that grow into a fire | **Kindling**: pain lights a ring of fire |
-| `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance** |
+| `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance**: the intentions in the room hum into the one you fire |
 
 ### Modern non-fiction (credit only)
 
@@ -112,7 +112,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 
 | Id | Source | Status | In the game |
 |---|---|---|---|
-| `dr-stone` | *Dr. Stone* (Riichi, illustrated by Boichi, anime and manga, 2017–) *(verify)* | Credit (copyrighted; cited in the lore notes only) | Nothing in the game. The Rocket Launcher's lore credit is the citation "Let's go to the moon" ([ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)); its names, characters, art and quotes are never used in the game |
+| `dr-stone` | *Dr. Stone* (Riichi, illustrated by Boichi, anime and manga, 2017–) *(verify)* | Credit (copyrighted; cited in the lore notes only) | Nothing in the game. Dr. Launcher's lore credit is the citation "Let's go to the moon" ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)); its names, characters, art and quotes are never used in the game |
 
 ### Games
 

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { ENEMIES } from '../src/content/enemies';
 import { ITEMS } from '../src/content/items';
 import { MATERIALS } from '../src/content/materials';
-import { PALETTE, pal } from '../src/content/palette';
+import { PALETTE, PATHS, pal } from '../src/content/palette';
 import { TX } from '../src/enemies/types';
 
 const lin = (c: number) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
@@ -50,7 +50,7 @@ describe('item icons (§10.1)', () => {
 
   it("the item's colour is its primary path's glow", () => {
     for (const d of ITEMS) {
-      const path = d.tags?.find(t => ['body', 'mind', 'emotion', 'will'].includes(t));
+      const path = d.tags?.find(t => (PATHS as readonly string[]).includes(t));
       expect(tokenOf.get(d.color), d.id).toBe(path ? `path.${path}.glow` : 'bone.paper');
     }
   });
