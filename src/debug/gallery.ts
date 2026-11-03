@@ -4,6 +4,8 @@
 //
 //   ?gallery                 every section
 //   ?gallery=materials|items|parts|enemies|pickups|chests|hud|palette
+//   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
+//                            totality, entity, hindrances-core|ground|hold|flow
 //   &filter=grey|deutan|protan|tritan|silhouette
 //   &angle=35                turntable angle for enemies and pickups (degrees)
 //   &id=critic               one enemy or item only
@@ -21,6 +23,46 @@ import { pickupMesh } from '../entities/pickups';
 import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
 import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
+import { skyBlocksGallery } from './gallery/sky-blocks';
+import { skyElephantGallery } from './gallery/sky-elephant';
+import { skyEntityGallery } from './gallery/sky-entity';
+import { skyHindrancesCoreGallery } from './gallery/sky-hindrances-core';
+import { skyHindrancesFlowGallery } from './gallery/sky-hindrances-flow';
+import { skyHindrancesGroundGallery } from './gallery/sky-hindrances-ground';
+import { skyHindrancesHoldGallery } from './gallery/sky-hindrances-hold';
+import { skyHorseGallery } from './gallery/sky-horse';
+import { skyKoalaGallery } from './gallery/sky-koala';
+import { skyLionGallery } from './gallery/sky-lion';
+import { skyPandaGallery } from './gallery/sky-panda';
+import { skyTotalityGallery } from './gallery/sky-totality';
+
+/** What a gallery part gets to draw its section with. */
+export interface GalleryKit {
+  root: HTMLElement;
+  head(title: string): void;
+  row(): HTMLElement;
+  fig(r: HTMLElement, el: HTMLElement, label: string, cls?: string): void;
+  scaled(src: HTMLCanvasElement, k: number): HTMLCanvasElement;
+  /** Turntable angle, radians. */
+  angle: number;
+  only: string | null;
+}
+
+/** The sky's sections, one part file each, written once (K0). */
+const SKY_SECTIONS: readonly [string, (g: GalleryKit) => void][] = [
+  ['sky-blocks', skyBlocksGallery],
+  ['sky-panda', skyPandaGallery],
+  ['sky-koala', skyKoalaGallery],
+  ['sky-elephant', skyElephantGallery],
+  ['sky-lion', skyLionGallery],
+  ['sky-horse', skyHorseGallery],
+  ['sky-totality', skyTotalityGallery],
+  ['sky-entity', skyEntityGallery],
+  ['sky-hindrances-core', skyHindrancesCoreGallery],
+  ['sky-hindrances-ground', skyHindrancesGroundGallery],
+  ['sky-hindrances-hold', skyHindrancesHoldGallery],
+  ['sky-hindrances-flow', skyHindrancesFlowGallery],
+];
 
 // Machado et al. 2009 at full severity (the same matrices as tests/art.test.ts), applied in sRGB here
 const CVD: Record<string, number[]> = {
@@ -261,6 +303,9 @@ export function runGallery(params: URLSearchParams) {
     }
     fig(r, hearts, 'hearts 4/4 → 0/4');
   }
+
+  const kit: GalleryKit = { root, head, row, fig, scaled, angle, only };
+  for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
 }
 
 function filterCss(f: string): string {

@@ -6,6 +6,8 @@
 
 **Diagnosis we start from** (all six agree, screenshots `before-room.jpg`, `before-critic.jpg`): one value band everywhere (35–60 % luminance), no darkness so nothing glows, generic grey brick and X-braced crates, three lighting models and three texel densities, ~140 stray hex literals, and an Inner Critic that reads as a naked salmon man because the warm hemisphere light repaints its bone colour. The current look is a Minecraft texture pack. The fix is not prettier textures; it is **one system with one meaning**.
 
+**The sky realm** has its own ledger pages, one per part: [sky/README.md](sky/README.md).
+
 ---
 
 ## 1. The style: "Vessel Light"

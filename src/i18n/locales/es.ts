@@ -5,6 +5,7 @@
 // Spanish name of the technique or public-domain work (docs/architecture/LOCALIZATION.md §5).
 
 import type { Catalog } from '.';
+import { SKY_PARTS_ES } from './sky';
 
 export const ES: Catalog = {
   code: 'es',
@@ -346,6 +347,14 @@ export const ES: Catalog = {
     'unit.crushNone': 'ninguno',
     'unit.crushTier': 'nivel ≤ {n}',
     'unit.crushRate': '{n} por segundo',
+    ...SKY_PARTS_ES.core,
+    ...SKY_PARTS_ES.panda,
+    ...SKY_PARTS_ES.koala,
+    ...SKY_PARTS_ES.elephant,
+    ...SKY_PARTS_ES.lion,
+    ...SKY_PARTS_ES.horse,
+    ...SKY_PARTS_ES.totality,
+    ...SKY_PARTS_ES.endgame,
   },
 
   content: {

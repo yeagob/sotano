@@ -3,6 +3,7 @@
 // synergies, enemies, materials) are not repeated here: their English lives in their definitions.
 
 import type { Catalog } from '.';
+import { SKY_PARTS_EN } from './sky';
 
 const messages = {
   // ── start / pause card (index.html) ──
@@ -349,6 +350,15 @@ const messages = {
   'unit.crushNone': 'none',
   'unit.crushTier': 'tier ≤ {n}',
   'unit.crushRate': '{n} per second',
+  // ── the sky realm (docs/architecture/SKY.md §12): one part per package, never edited here ──
+  ...SKY_PARTS_EN.core,
+  ...SKY_PARTS_EN.panda,
+  ...SKY_PARTS_EN.koala,
+  ...SKY_PARTS_EN.elephant,
+  ...SKY_PARTS_EN.lion,
+  ...SKY_PARTS_EN.horse,
+  ...SKY_PARTS_EN.totality,
+  ...SKY_PARTS_EN.endgame,
 } as const;
 
 export type MessageKey = keyof typeof messages;
