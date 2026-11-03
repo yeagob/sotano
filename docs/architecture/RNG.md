@@ -52,6 +52,8 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 | `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
 | `stream('drops')` | Runtime | Enemy drops, crate drops (`rollCrate`), how many pickups a Listener drops (`listenerDrops`, weighted 50/35/15) |
+| `fork('floor', k, 'hearts')` | Structure | Floor k's chance of each rare kind of heart, uniform in its range (`floorHeartChances`, issue #31): blue, stone, blood, star, berserker, in that order. Read by each heart roll, never drawn on a stream. The surface uses floor 0 |
+| `stream('hearts')` | Runtime | The kind of each heart pickup as it is added (`rollHeart` on the `heart` table built from the floor's chances), so the kind never moves `stream('drops')` |
 | `stream('loot')` | Runtime | Runtime item draws (never reserved items) |
 | `stream('ai')` | Runtime | Reserved for enemy decisions |
 

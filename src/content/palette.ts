@@ -35,6 +35,14 @@ export const PALETTE = {
   'life.empty': '#4A2226',
   'life.rim': '#7A3A3E',
 
+  // Heart kinds (DECISIONS §10.6): every heart is life. Blue is an ultramarine kept ΔE ≥ 20 from the
+  // cold and from Emotion; stone is a warm grey for gold cracks; blood is a crimson under life.heart;
+  // the berserker's ember burns inside an obsidian shell. The star heart is the light's own ramp.
+  'heart.blue.base': '#4E4CFF', 'heart.blue.dark': '#1D1A80',
+  'heart.stone.dark': '#48433D', 'heart.stone.base': '#6E6860', 'heart.stone.hi': '#968E83',
+  'heart.blood.base': '#9B1236',
+  'heart.berserker.ember': '#FF8C1A',
+
   // Attacks that deal damage: a second red, never life (issue #47, DECISIONS §3.4). Their live marks and
   // shots read red; their particles and decoration stay pale blue-white (the cold ramp).
   'attack.red.dim': '#9C2620',

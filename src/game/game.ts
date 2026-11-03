@@ -79,6 +79,10 @@ import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { floorCrateChance, rollCrate } from '../content/tables/crates';
+import { floorHeartChances, rollHeart } from '../content/tables/hearts';
+import { HEART_FX, type HeartKind } from '../content/heart-art';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
@@ -455,6 +459,7 @@ export class Game {
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
+    this.pickups.heartKind = y => rollHeart(this.rng.stream('hearts'), floorHeartChances(this.rng, depthOf(y)), Math.max(0, depthOf(y)));
     this.chestViews = new Chests(this.scene);
     this.alembicViews = new Alembics(this.scene);
     this.kitchenViews = new Kitchens(this.scene);
@@ -466,7 +471,7 @@ export class Game {
     this.inventory.restore([]);
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -868,6 +873,7 @@ export class Game {
     const p = this.player;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     if (t === p && p.invulnT > 0) return false;
+    if (t === p && p.starT > 0 && kind !== 'toll') return false;
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -876,7 +882,11 @@ export class Game {
     if (ev.cancelled) return false;
     if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
     if (ev.amount <= 0) return false;
-    p.hp = Math.max(0, p.hp - ev.amount);
+    if (p.blood) { p.blood = null; sfxHeart.bloodEnd(); this.hud.toast('heart.bloodBroken'); }
+    const hit = landHit(p.layers, ev.amount, kind !== 'toll');
+    if (hit.halved) { sfxHeart.stoneHit(); this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(HEART_FX.stone), 10, 2.5, 0.07); }
+    for (const k of hit.lost) this.heartLost(k);
+    p.hp = Math.max(0, p.hp - hit.rest);
     p.invulnT = this.stats.get('invuln');
     this.hud.hurt();
     sfx3.hurt();
@@ -898,6 +908,103 @@ export class Game {
     if (ev.cancelled || ev.amount <= 0) return;
     this.player.hp = Math.min(this.maxHp, this.player.hp + ev.amount);
     sfx3.heal();
+  }
+
+  collectHeart(kind: HeartKind): boolean {
+    const p = this.player;
+    if ((kind === 'red' || kind === 'blood') && p.hp >= this.maxHp) return false;
+    if (isLayer(kind) && heartSlots(Math.floor(this.stats.get('maxHearts')), p.layers) >= MAX_TOTAL_HEARTS) return false;
+    if (kind === 'red') return this.collect('heart', 2);
+    const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
+    if (ev.cancelled) return false;
+    const pts = Math.max(0, ev.amount) * HALF_HEART;
+    if (isLayer(kind)) {
+      p.layers.push({ kind, hp: Math.min(HEART, pts) });
+      if (kind === 'blue') sfxHeart.blue();
+      else if (kind === 'stone') sfxHeart.stone();
+    } else if (kind === 'blood') {
+      p.blood = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
+      sfxHeart.blood();
+    } else {
+      this.heal(pts, 'pickup');
+      p.starT = STAR_SECONDS;
+      sfxHeart.star();
+    }
+    this.hud.toast(`heart.${kind}`);
+    const b = p.body;
+    this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
+    return true;
+  }
+
+  private heartLost(kind: LayerKind) {
+    const b = this.player.body;
+    this.bus.emit('heartLost', { heart: kind });
+    this.particles.burst(b.x, b.y + 1.3, b.z, pal(HEART_FX[kind]), 30, 4, 0.08);
+    sfxHeart.layerLost();
+    this.hud.toast(`heart.${kind}Lost`);
+  }
+
+  private berserkOn = false;
+
+  private setBerserk(on: boolean) {
+    if (on === this.berserkOn) return;
+    this.berserkOn = on;
+    this.stats.removeSource('berserk');
+    if (on) for (const [stat, value] of [['damage', BERSERK_DAMAGE], ['moveSpeed', BERSERK_SPEED], ['jump', BERSERK_JUMP], ['range', BERSERK_RANGE]] as const)
+      this.stats.add({ stat, layer: 'mul', value, source: 'berserk' });
+    setEcho(on);
+    this.hud.setBerserk(on);
+    this.bus.emit('berserkChange', { on });
+    const b = this.player.body;
+    if (on) {
+      sfxHeart.berserk();
+      this.hud.shake(0.35);
+      this.particles.burst(b.x, b.y + 1, b.z, pal(HEART_FX.berserker), 60, 6, 0.1);
+    } else if (!this.player.dead) {
+      sfxHeart.berserkEnd();
+      this.hud.toast('berserk.off');
+    }
+  }
+
+  get berserk() { return this.berserkOn; }
+
+  private updateHearts(dt: number) {
+    const p = this.player;
+    if (p.starT > 0) {
+      p.starT = Math.max(0, p.starT - dt);
+      if (p.starT === 0) { sfxHeart.starEnd(); this.hud.toast('heart.starEnd'); }
+    }
+    starTheme(p.starT > 0 && !p.dead);
+    if (p.blood) {
+      const r = tickBlood(p.blood, dt, p.hp, this.maxHp);
+      if (r.heal > 0) p.hp = Math.min(this.maxHp, p.hp + r.heal);
+      if (r.done) { p.blood = null; sfxHeart.bloodEnd(); }
+    }
+    const on = (berserk(p.layers) || this.potions.active.some(a => POTIONS[a.potion].berserk)) && !p.dead;
+    if (on !== this.berserkOn) this.setBerserk(on);
+    if (on) this.berserkTread();
+  }
+
+  private berserkTread() {
+    const p = this.player, b = p.body, cells: [number, number, number][] = [];
+    if (b.onGround) for (const dx of [-b.hw, b.hw]) for (const dz of [-b.hw, b.hw]) cells.push([Math.floor(b.x + dx), Math.floor(b.y - 0.05), Math.floor(b.z + dz)]);
+    const l = Math.hypot(p.wishX, p.wishZ);
+    if (l > 0.1) {
+      const fx = Math.floor(b.x + p.wishX / l * (b.hw + 0.25)), fz = Math.floor(b.z + p.wishZ / l * (b.hw + 0.25));
+      cells.push([fx, Math.floor(b.y + 0.1), fz], [fx, Math.floor(b.y + 1.1), fz]);
+    }
+    for (const [x, y, z] of cells) if (this.looseBlock(x, y, z)) {
+      this.damageBlock(x, y, z, 999, 'crush', 'berserker');
+      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, pal(HEART_FX.berserker), 8, 3, 0.07);
+    }
+  }
+
+  looseBlock(x: number, y: number, z: number): boolean {
+    const id = this.world.get(x, y, z);
+    if (id === AIR || !Number.isFinite(mat(id).hp)) return false;
+    let n = 0;
+    for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) if (this.world.get(x + dx, y + dy, z + dz) !== AIR) n++;
+    return n === 1;
   }
 
   /** Adds keys, bombs or hearts through `pickupCollect`. Returns false if refused. */
@@ -927,6 +1034,12 @@ export class Game {
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
       projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
+      reflects: (t: Actor, x: number, y: number, z: number) => {
+        if (t !== this.player || !this.berserkOn) return false;
+        sfxHeart.reflect();
+        this.particles.burst(x, y, z, pal(HEART_FX.berserker), 10, 3, 0.06);
+        return true;
+      },
       projectileBlock: (x: number, y: number, z: number) => {
         const id = this.world.get(x, y, z);
         return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
@@ -2361,11 +2474,9 @@ export class Game {
         }
         continue;
       }
-      // hearts stay on the floor while you're at full health, like in Isaac
-      if (p.type === 'heart' && this.player.hp >= this.maxHp) continue;
-      if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {
+      if (p.type === 'heart' ? this.collectHeart(p.heart) : this.collect(p.type, 1)) {
         this.pickups.take(p);
-        this.particles.burst(p.x, p.y + 0.3, p.z, PICKUP_FX[p.type], 10, 2, 0.06);
+        this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'heart' ? pal(HEART_FX[p.heart]) : PICKUP_FX[p.type], 10, 2, 0.06);
       }
     }
   }
@@ -2811,7 +2922,7 @@ export class Game {
     const toll = tollOf(k), f = this.floors.get(k), st = this.bossRooms.get(k);
     const p = this.player;
     if (!toll || !f?.hole || !st || p.dead || new Set(ids).size !== ids.length || ids.length !== toll.count) return false;
-    const hearts = Math.ceil(p.hp / HEART);
+    const hearts = heartCount(p.hp, p.layers);
     const hands: number[] = [], items: string[] = [];
     let keys = 0, bombs = 0, paid = 0;
     for (const id of ids) {
@@ -2988,6 +3099,7 @@ export class Game {
     }, this.playerMedium);
     if (b.onGround) this.groundBand = bandOf(b.y);
     this.clampHealth();
+    this.updateHearts(dt);
     this.touchBlocks(dt);
     this.syncWeapon();
     this.tapMissile();

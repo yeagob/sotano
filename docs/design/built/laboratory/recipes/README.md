@@ -1,6 +1,6 @@
 # Recipes
 
-Up: [laboratory](../README.md) · built: eight of the eleven recipes, the matching of the bulb, ice and the durations. Not built: the Warm Cordial and the Open-Hand Elixir (they need a warmth field on the damage and spawn events, step P3), the Distillate (P3) and the run-long duration ([potions](../../../not-built/practices/potions/README.md)).
+Up: [laboratory](../README.md) · built: nine of the twelve recipes, the matching of the bulb, ice and the durations. Not built: the Warm Cordial and the Open-Hand Elixir (they need a warmth field on the damage and spawn events, step P3), the Distillate (P3) and the run-long duration ([potions](../../../not-built/practices/potions/README.md)).
 
 What the bulb makes when a positive intention brews it, and how long the flask's effect lasts once it is drunk.
 
@@ -16,6 +16,7 @@ What the bulb makes when a positive intention brews it, and how long the flask's
 | Questioning Tincture | mind | a mind of the Doubt lineage and iron ore | the next lock asks one key less | one lock, or the floor | [QUESTIONING-TINCTURE](QUESTIONING-TINCTURE.md) |
 | Ember Tonic | will | a will heart | fire rate ×1.3 | 3 sealed rooms | [EMBER-TONIC](EMBER-TONIC.md) |
 | Patient Draught | will | a heart and a mind of one will pattern | mining ×1.6 | the floor | [PATIENT-DRAUGHT](PATIENT-DRAUGHT.md) |
+| Berserker Draught | will | two will hearts and obsidian | the berserker state | 2 sealed rooms | [BERSERKER-DRAUGHT](BERSERKER-DRAUGHT.md) |
 
 ## How the bulb is read
 

@@ -6,6 +6,8 @@ import { EventBus } from '../core/events';
 import type { DamageKind } from '../core/damage';
 import type { ActorId, ActorKind, Faction, Owner } from '../entities/actors';
 import type { Polarity } from '../combat/polarity';
+import type { HeartKind } from '../content/heart-art';
+import type { LayerKind } from '../entities/hearts';
 
 export type { Owner } from '../entities/actors';
 
@@ -125,7 +127,9 @@ export interface GameEvents {
   /** The player walks up to a closed chest. `cost` (keys, 0 = free) can be changed; cancel to keep it shut. */
   chestOpen: { x: number; y: number; z: number; cost: number };
   /** Collecting a key, bomb or heart. `amount` can be changed (or cancel to leave it there). */
-  pickupCollect: { kind: PickupKind; amount: number };
+  pickupCollect: { kind: PickupKind; amount: number; readonly heart?: HeartKind };
+  heartLost: { readonly heart: LayerKind };
+  berserkChange: { readonly on: boolean };
   itemGained: { id: string; uid: number };
   roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
