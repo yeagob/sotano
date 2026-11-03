@@ -107,6 +107,12 @@ export class Intents {
 
   get count() { return this.list.length; }
 
+  /** Drops every intention in flight and hides its meshes (a passage between worlds). */
+  clear() {
+    this.list = [];
+    this.draw();
+  }
+
   fire(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     const n = Math.max(1, Math.round(spec.volley));
     for (let k = 0; k < n; k++) {
