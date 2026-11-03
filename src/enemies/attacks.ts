@@ -93,7 +93,7 @@ export class Hazards {
   private m = new THREE.Matrix4();
   private time = 0;
 
-  constructor(private scene: THREE.Scene, private host: HazardHost) {
+  constructor(private scene: THREE.Object3D, private host: HazardHost) {
     this.mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(MARK, MARK, MARK), new THREE.MeshBasicMaterial(), CAPACITY);
     this.mesh.frustumCulled = false;
     this.mesh.count = 0;

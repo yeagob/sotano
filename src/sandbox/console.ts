@@ -42,7 +42,7 @@ export function sandboxConsole(game: Game, initial: string, lab: boolean) {
   const room = () => game.floors.get(game.depth)!.rooms[0];
   const origin = (): Vec3 => { const r = room(); return [r.x0, r.y0, r.z0]; };
   const place = (p: Placement) => {
-    applyPlacement(game.world, origin(), p);
+    applyPlacement(game.dw, origin(), p);
     (current().place ??= []).push(p);
   };
   const load = (s: string | Scenario) => {
@@ -98,7 +98,7 @@ export function sandboxConsole(game: Game, initial: string, lab: boolean) {
       const b = game.player.body, [ox, oy, oz] = origin();
       return [Math.floor(b.x - ox), Math.floor(b.y - oy), Math.floor(b.z - oz)];
     },
-    map: (h = 0) => { const m = mapAt(game.world, room(), h); console.info(m.join('\n') + '\n' + legend([m])); },
+    map: (h = 0) => { const m = mapAt(game.dw, room(), h); console.info(m.join('\n') + '\n' + legend([m])); },
     export: () => JSON.stringify(current(), null, 2),
     lab: (s: string | Scenario) => { const { report } = runLab(game, resolve(s)); console.info(report); return report; },
     duel: (boss: string, mode: DuelMode = 'kite', opt: { floor?: number; seconds?: number; hp?: number } = {}) => duelLine(duel(game, boss, mode, opt)),

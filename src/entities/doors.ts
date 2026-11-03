@@ -31,7 +31,7 @@ export class Doors {
   private group = new THREE.Group();
   private mats = new Map<DoorLook, THREE.Material>();
 
-  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+  constructor(private scene: THREE.Object3D) { scene.add(this.group); }
 
   /** Adds a floor's doors (floors are activated one at a time). */
   add(specs: DoorSpec[]) {
