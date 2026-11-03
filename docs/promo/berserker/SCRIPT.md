@@ -23,3 +23,13 @@ Part of [promotional videos](../README.md).
 ## Outputs
 
 `berserker-youtube-en.mp4`, `berserker-youtube-es.mp4` (1920 × 1080), `berserker-shorts-en.mp4`, `berserker-shorts-es.mp4` (1080 × 1920), `berserker-x-en.mp4`, `berserker-x-es.mp4` (1920 × 1080), each with an `.srt`.
+
+## Making it again
+
+The tools are in `scripts/promo/berserker/`. Run them from a working folder outside the repository (the outputs are large and never committed), with a Python virtual environment that has `chatterbox-tts` and `openai-whisper` (the `sotano-promo` skill, §4):
+
+1. `node <repo>/scripts/promo/berserker/capture.mjs cap-en en` and `… cap-es es`: 690 frames each (23 s at 30 fps), the sandbox paused and stepped at a fixed tick.
+2. `<venv>/bin/python <repo>/scripts/promo/berserker/tts.py en` and `… es`: one narration file per line. Each line is generated with a few seeds and checked with Whisper; the audio is cut after the line's last word, because the multilingual model sometimes adds sounds after the line.
+3. `python3 <repo>/scripts/promo/berserker/edit.py en` and `… es`: the YouTube (1920 × 1080), Shorts (1080 × 1920) and X (1920 × 1080) files and the `.srt`, in `out/`.
+
+The Spanish voice reads the title as "Di Ruts", so it sounds like the English name; the captions keep THE ROOTS.
