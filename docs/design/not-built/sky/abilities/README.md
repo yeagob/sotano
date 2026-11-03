@@ -6,11 +6,11 @@ The abilities are the hindrances the sky's animals use against the player: a kic
 
 The animals hinder the player (owner direction). Each hindrance is a puzzle to answer, and the player always keeps a route up (rule 5 below).
 
-Status: proposal. The rule that platforms which disappear always warn first is decided, and it is the model for every hindrance.
+Status: proposal. The rule that platforms which disappear always warn first is decided, and it is the model for every hindrance. No hindrance damages the player (decided, owner, 2026-11-03).
 
 ## 1. The shared rules
 
-Status: proposal, except rule 4 (decided for platforms).
+Status: proposal, except rules 4 and 8 (decided).
 
 1. **Telegraph first.** Every hindrance shows itself before it takes effect: a sign the player can see or hear, lasting long enough to read. The length of the warning is a target in each document.
 2. **Always with feedback.** A hindrance is never silent in its effect. The player sees what it does (the floor slowing, the water filling, the cage closing) and feels it (a push, a slowdown, a freeze).
@@ -19,6 +19,7 @@ Status: proposal, except rule 4 (decided for platforms).
 5. **A route up is always there.** No hindrance takes away the player's way up. The floor always leaves a route the player can build or climb. Whether the player can go up from any point is open (realm, section 5).
 6. **A hindrance is answered with the player's verbs.** The answers use the verbs the player already has: moving, jumping, building, and shooting. No hindrance asks for a new verb. If one ever does, the controls skill applies.
 7. **Positive intentions answer every hindrance.** A positive shot always helps the player against a hindrance. A negative shot has no effect on the animal that makes it (realm law 3.3); whether a negative shot does anything to the hindrance itself is open.
+8. **No damage.** Status: decided (owner, 2026-11-03). No hindrance damages the player. A hindrance only moves, slows or holds the player, and the cost of a mistake is lost height (realm [law 3.10](../README.md#310-nothing-in-the-sky-damages-the-player)).
 
 ## 2. What a positive intention does to each hindrance
 
@@ -53,6 +54,6 @@ Each document holds one hindrance: what it is, what the player sees and feels, t
 ## 4. Open questions
 
 1. **Which animal uses which hindrance.** The owner named the hindrances, not the animals that use them. The proposals above are open.
-2. **Damage.** Whether a hindrance does damage, or only moves and holds the player.
+2. **Damage.** Decided (owner, 2026-11-03): a hindrance only moves, slows or holds the player; it never does damage (rule 8).
 3. **The warning length.** The targets for each warning are set by the design agent (see [guardians](../guardians/README.md)).
 4. **Negative shots at hindrances.** Whether a negative shot does anything to a hindrance itself.

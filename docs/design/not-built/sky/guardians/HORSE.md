@@ -75,7 +75,7 @@ A wide-eyed giant head with a streaming mane on a small plush body, standing on 
 
 **The great leap (decided that it jumps a great deal; the numbers are targets).** The horse jumps from platform to platform and from place to place. A leap crosses up to target 20 blocks and rises up to target 8 blocks, far beyond the player's jump of about 1.26 blocks high and about 2.7 blocks across. It always lands on a Paddock or on open ground, never on the player.
 
-**Teleport (which deity: open).** The horse already moves far by its great leap. If the horse is also one of the deities that teleport, a teleport would fit when it is startled: it vanishes from its Paddock and reappears on the Paddock farthest from the player, always far from them.
+**Teleport (provisional: yes).** The horse teleports, on top of its great leap (owner, 2026-11-03, provisional). A teleport fits when it is startled: it vanishes from its Paddock and reappears on the Paddock farthest from the player, always far from them.
 
 **The tower rule.** A tower of player blocks that brings the player to the horse's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the horse leaps to it, kicks the stack with its hind legs until it topples, and pushes the player off, after the full warning. The horse's Paddocks are low, so the rule triggers only on a tower raised beside a Paddock.
 
@@ -132,7 +132,7 @@ The horse has four attacks besides sending the herd. The first stage uses Rear a
 - **What counts:** a positive intention that touches the horse's body or head in any state. While Gentled, each positive hit counts as two.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the horse's wide eyes soften and its ears turn forward. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the horse's Paddock grazes beside the deity, which makes it Gentled for 3 s every target 10 s. Allies do not land positive hits by themselves on this floor; they bring calm.
-- **When defeated:** as proposed in section 6 of this document (it stops leaping away, and the wind stops). Which of the three outcomes it takes is open.
+- **When defeated:** as proposed in section 6 of this document (it stops leaping away, and the wind stops). It changes its attitude (provisional, owner, 2026-11-03).
 
 ### B5. Minions
 
@@ -199,7 +199,7 @@ Every value in the middle column is a target. The right column is the built game
 | Hits to turn a minion | 4 | 5 good hits for a projection |
 | Minions at once | 5 (3 hostile) | no built equivalent |
 | Floor size | radius 30, Paddocks up to 12 high | trunk story 22 high |
-| Harm | 2 points, if harm is kept | boss touch 8 |
+| Harm | none (decided: it pushes or holds) | boss touch 8 |
 
 ## Open questions
 
@@ -211,6 +211,6 @@ Every value in the middle column is a target. The right column is the built game
 6. The floor's rhythm. From the second stage the floor fades a segment of each run every 12 s on its own. Is that the floor's, or should every fade come from the horse? (See open question 2.)
 7. Gentled positive hits count twice. Is that the right reward for calm, or should Gentled only make the horse easy to hit?
 8. Fight length. 48 positive hits is the highest count of the five. Check that the fight with a deity that leaps away stays under the length the owner wants.
-9. Teleport (which deity: open). Is the horse one of the deities that teleport, on top of its great leap? A teleport would always land it far from the player.
-10. When the horse is defeated, does it transform, change its attitude, or leave?
+9. Teleport (answered, provisional: yes). The horse teleports, on top of its great leap; a teleport always lands it far from the player.
+10. When the horse is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
 11. The floor's height. A ground-based floor with Paddocks up to 12 blocks is lower than the other four sky floors. How high the mast must rise to the floor's way up depends on the open mapping of sky floors onto the built tree.

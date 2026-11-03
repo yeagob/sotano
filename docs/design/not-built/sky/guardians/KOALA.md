@@ -64,7 +64,7 @@ A sleepy ball of grey fur that holds on. The koala floor is about letting go: br
 
 **Position.** The koala's Fork is a 3 by 3 crown of living wood over the central gap, at target 30 blocks, held by four thick limbs that come from the four trunks. The koala levitates (decided): it floats target 1 block over the Fork, its arms round an upright branch.
 
-**Teleport (which deity: open).** If the koala is one of the deities that teleport, a teleport would fit when the player reaches the Fork: it vanishes from its branch and reappears over a thick branch on the far side of the floor, always far from the player, and holds that branch until it floats back.
+**Teleport (provisional: yes).** The koala teleports (owner, 2026-11-03, provisional). A teleport fits when the player reaches the Fork: it vanishes from its branch and reappears over a thick branch on the far side of the floor, always far from the player, and holds that branch until it floats back.
 
 **The tower rule.** A tower of player blocks that brings the player to the koala's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the koala floats to it, hugs the top of the stack until it topples, and pushes the player off, after the full warning. The trunks' knots and the limbs are the koala's floor's own way up.
 
@@ -96,7 +96,7 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 
 **2. Leaf drop (lobs).**
 - *Telegraph (1.2 s):* the koala shakes the Fork; three warm marks appear on the branches round the player.
-- *Act:* three bundles of leaves drop onto the marks. A bundle that lands on the player pushes them down target 1 block and may take target 2 points (harm is open).
+- *Act:* three bundles of leaves drop onto the marks. A bundle that lands on the player pushes them down target 1 block and does no damage (decided, owner, 2026-11-03).
 - *Answer:* move off the marks. A block overhead stops a bundle: lobs stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)), so a one-block roof is a shelter. A positive intention that meets a bundle scatters it into drifting leaves (proposal).
 
 **3. Hug ([cube cage](../abilities/CUBE-CAGE.md)).**
@@ -115,7 +115,7 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 - **What counts:** a positive intention that touches the koala's body or head in any state but Clinging.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the koala's grip on its branch loosens: one arm, then the other, then only its claws. The sign is a target until the owner confirms it.
 - **Allies:** an ally hugging the deity in the Fork adds one positive hit every target 4 s and keeps the guard off. At most target 2 allies hug it at once.
-- **When defeated:** as proposed in section 6 of this document (it lets go of its branch, and the branches give way in order from the top). Which of the three outcomes it takes, and whether the branches are released or held, are still open.
+- **When defeated:** as proposed in section 6 of this document (it lets go of its branch, and the branches give way in order from the top). It changes its attitude (provisional, owner, 2026-11-03). Whether the branches are released or held is still open.
 
 ### B5. Minions
 
@@ -183,16 +183,16 @@ Every value in the middle column is a target. The right column is the built game
 | Hits to turn a minion | 3 | 5 good hits for a projection |
 | Minions at once | 6 | no built equivalent |
 | Floor size | radius 22, 32 high | trunk story 22 high |
-| Harm of a lob | 2 points, if harm is kept | boss touch 8 |
+| Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 
 ## Open questions
 
 1. Does the koala's cage stop the player, or only slow them? Breaking out is allowed (the realm's law 3.1), but is the cage a timed hold or a break-out?
 2. Which hindrance the koala uses is proposal. Is the fading branch the koala's, or the floor's?
 3. Are the koala's branches the built world's blocks or player-made blocks? (The realm's law 3.1 and 3.2 decide the answer for each case.)
-4. When the koala is defeated, does it transform, change its attitude, or leave? Does that release the branches, or hold them until the player is done?
+4. When the koala is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude. Does that release the branches, or hold them until the player is done?
 5. The clinging guard. From the second stage the koala cannot take a positive hit for 2.5 s after each attack unless an ally hugs it. Is a guard that only allies lift right for the second floor?
 6. The minion's hug. A koala minion's hug slows the player and is shaken off by three jumps or one positive shot. Is it the same hindrance as the cube cage, or a hold of its own?
 7. Sleepy sigh uses [wind](../abilities/WIND.md), which the abilities folder proposes for the lion and the horse, not the koala. Keep it, or replace it?
 8. The Fork and its limbs are original wood. Can the player break a limb (it regrows in 5 s), and should a broken limb drop the koala's allies?
-9. Teleport (which deity: open). Is the koala one of the deities that teleport? A teleport would always land it far from the player.
+9. Teleport (answered, provisional: yes). The koala teleports; a teleport always lands it far from the player.

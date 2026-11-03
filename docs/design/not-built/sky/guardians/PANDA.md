@@ -64,12 +64,12 @@ A big, sleepy head that chews. The panda never hurries: every attack is slow, lo
 
 **Position.** The panda's seat is the top of the Bamboo Seat, the tallest column, in the centre of the floor, at target 24 blocks above the ground. The panda levitates (decided): it floats target 1.5 blocks over the seat and drifts slowly round it.
 
-**Teleport (which deity: open).** If the panda is one of the deities that teleport, a teleport would fit after the tower rule: instead of floating back to its seat, it vanishes and reappears over the seat, always far from the player.
+**Teleport (provisional: no).** The panda does not teleport; the koala and the horse do (owner, 2026-11-03, provisional).
 
 **The tower rule (decided).** If the panda detects that the player is building a tower that reaches its height, it leaves its floor, knocks the tower down and pushes the player off it.
 - *Trigger:* the player stands on a tower, a stack of target 3 or more player blocks, whose top puts them within target 2 blocks of the panda's height (target 22 blocks or higher). The floor's own columns, the ledge strip and single placed steps never trigger it.
 - *Telegraph (target 2 s, longer than its attacks):* the panda stops chewing, turns its whole body to the tower and stares; the tower's blocks shake and a warm outline runs down the stack from top to bottom, with a rising grumble.
-- *Act:* the panda leaves its seat and floats to the tower, nudges it with its shoulder so the stack topples from the top down, and gives the player a soft push of target 2 blocks off it. The player falls to the ground or a lower column, unhurt. Then the panda floats back to its seat and is Recovering there. What becomes of the toppled blocks is open ([sky, open questions](../README.md#5-open-questions)).
+- *Act:* the panda leaves its seat and floats to the tower, nudges it with its shoulder so the stack topples from the top down, and gives the player a soft push of target 2 blocks off it. The player falls to the ground or a lower column, unhurt. Then the panda floats back to its seat and is Recovering there. The toppled blocks fall as loose cubes the player can gather again (provisional, owner, 2026-11-03).
 - *Answer:* step off the tower onto an original column or the seat's ledge strip before the telegraph ends, or do not stack a tower to its height: climb the grove, the gentle path or the ledge strip, which the panda never knocks down. While it floats to the tower and back, its seat is empty and the panda is close to the player: a positive hit lands on it as usual.
 
 **States and timings (targets).**
@@ -95,7 +95,7 @@ The panda has four attacks. The first stage uses Bamboo toss and Heavy press. Th
 
 **1. Bamboo toss (a lob).**
 - *Telegraph (1.4 s):* the panda lifts a stalk over its head; a warm mark appears where it will land, aimed at where the player is going.
-- *Act:* the stalk lands and stands upright as a one-block bamboo stump for target 6 s, then dissolves. A stump that lands on the player gives a soft knockback of target 1 block and may take target 2 points (harm is open).
+- *Act:* the stalk lands and stands upright as a one-block bamboo stump for target 6 s, then dissolves. A stump that lands on the player gives a soft knockback of target 1 block and does no damage (decided, owner, 2026-11-03).
 - *Answer:* move off the mark. A block in the arc stops it: lobs stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets the stalk in flight turns it into a falling leaf (proposal). A stump that lands is also a step: the player may use the panda's own bamboo to climb.
 
 **2. Heavy press ([dense ground](../abilities/DENSE-GROUND.md)).**
@@ -119,7 +119,7 @@ The panda has four attacks. The first stage uses Bamboo toss and Heavy press. Th
 - **What counts:** a positive intention that touches the panda's body or head in any state. The panda has no guard; it is the gentlest floor.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the heavy lids open a little more, as if it were waking. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the seat and sits against the panda adds one positive hit every target 4 s while it sits. At most target 2 allies sit at once.
-- **When defeated:** as proposed in section 6 of this document (it settles onto its seat, wide awake and friendly, and stays on the floor). Which of the three outcomes it takes is open.
+- **When defeated:** as proposed in section 6 of this document (it settles onto its seat, wide awake and friendly, and stays on the floor). Provisional: it changes its attitude (owner, 2026-11-03).
 
 ### B5. Minions
 
@@ -186,7 +186,7 @@ Every value in the middle column is a target. The right column is the built game
 | Hits to turn a minion | 3 | 5 good hits for a projection |
 | Minions at once | 4 (3 hostile) | no built equivalent |
 | Floor size | radius 20, 28 high | trunk story 22 high, radius 23 to 34 |
-| Harm of a lob | 2 points, if harm is kept | boss touch 8 |
+| Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 | Tower rule | triggers within 2 blocks of the panda's height, on a stack of 3 or more player blocks; telegraph 2 s; push 2 blocks | no built equivalent |
 
 ## Open questions
@@ -195,11 +195,11 @@ Every value in the middle column is a target. The right column is the built game
 2. Does the panda sit down on the floor (and open holes) or only make it dense? Both hindrances are proposal.
 3. Is this the floor where the player learns nothing new, or does it introduce building as its only puzzle?
 4. Is this floor one of the platforming-only floors, with no minions at all? (See [guardians](README.md).)
-5. When the panda is defeated, does it transform, change its attitude, or leave? And does the floor stay after it is defeated?
+5. When the panda is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude and stays on the floor.
 6. Bamboo stumps. A stalk from Bamboo toss stands as a step for 6 s. Is a step the deity gives a good fit for the gentlest floor, or should its lobs leave nothing?
 7. The rest beat. Standing still for 2 s delays the panda's next attack. Does the owner want stillness rewarded on this floor, given that silence already rewards it in the built game?
 8. The nap. At two thirds of the positive hits the panda naps for 5 s with no attacks. Keep it, or is a pause in the fight too gentle?
 9. Ally positive hits. Allies sitting against the panda add positive hits with no cap. Can the floor be won by allies alone? (Shared question in [guardians](README.md#5-open-questions).)
 10. Heights. The floor's target height of 28 blocks is taller than a built trunk story (22). Whether it must fit a built story depends on the open mapping of sky floors onto the built tree.
-11. Teleport (which deity: open). Is the panda one of the deities that teleport? A teleport would always land it far from the player.
+11. Teleport (answered, provisional: no). The panda does not teleport; the koala and the horse do.
 12. The tower's measures. The trigger (a stack of 3 or more player blocks, within 2 blocks of the panda's height) and the 2 s telegraph are targets. Can a positive intention during the telegraph delay the panda, or is stepping off the only answer?

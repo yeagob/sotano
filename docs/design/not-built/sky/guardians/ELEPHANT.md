@@ -64,7 +64,7 @@ A great grey head with ears like sails, floating over a high basin of water. Eve
 
 **Position.** The elephant's Basin is a round pool on a mesa at the top of the floor, target 30 blocks up, with a rim 2 blocks high round it. The elephant levitates (decided): it floats target 1 block over the water, its trunk reaching down into it.
 
-**Teleport (which deity: open).** If the elephant is one of the deities that teleport, a teleport would fit after Drinking: it vanishes from the Basin and reappears over the channel head farthest from the player, always far from them, and floats back to the Basin after its next attack.
+**Teleport (provisional: no).** The elephant does not teleport; the koala and the horse do (owner, 2026-11-03, provisional).
 
 **The tower rule.** A tower of player blocks that brings the player to the elephant's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the elephant floats to it, sweeps the stack with its trunk, and pushes the player off, after the full warning. Raising one block against the rim's line, as in the example route, is not a tower.
 
@@ -101,7 +101,7 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 
 **3. Memory stone (a lob).**
 - *Telegraph (1.1 s):* the trunk lifts a wet round stone out of the Basin; a warm mark appears on the remembered place.
-- *Act:* the stone lands and stays as a one-block sky stone for target 8 s, then dissolves. It may take target 2 points if it lands on the player (harm is open). A stone that lands in a channel dams it while it lasts.
+- *Act:* the stone lands and stays as a one-block sky stone for target 8 s, then dissolves. If it lands on the player, it pushes them and does no damage (decided, owner, 2026-11-03). A stone that lands in a channel dams it while it lasts.
 - *Answer:* do not be where you rested. A block overhead stops it (lobs stop at solid blocks). A positive intention that meets it in the air bursts it into a splash (proposal). A stone the elephant drops into a channel can be used as the player's dam.
 
 **4. Trumpet (a ring).**
@@ -115,7 +115,7 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 - **What counts:** a positive intention that touches the small body (in line over the rim) or the head while the trunk is raised.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the elephant's ears hang a little looser, as if a weight were set down. The sign is a target until the owner confirms it.
 - **Allies:** an ally standing in the waterhole on the ground answers the deity's trumpet with its own, adding one positive hit every target 6 s. Allies cannot climb, so their help comes from below. At most target 3 count at once.
-- **When defeated:** as proposed in section 6 of this document (it sets its weight down, and the water drains from the channels). Which of the three outcomes it takes is open.
+- **When defeated:** as proposed in section 6 of this document (it sets its weight down, and the water drains from the channels). It changes its attitude (provisional, owner, 2026-11-03).
 
 ### B5. Minions
 
@@ -181,7 +181,7 @@ Every value in the middle column is a target. The right column is the built game
 | Hits to turn a minion | 5 | 5 good hits for a projection |
 | Minions at once | 5 (3 hostile) | no built equivalent |
 | Floor size | radius 24, 34 high | trunk story 22 high |
-| Harm of a lob | 2 points, if harm is kept | boss touch 8 |
+| Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 
 ## Open questions
 
@@ -194,5 +194,5 @@ Every value in the middle column is a target. The right column is the built game
 7. The trunk lift. An ally lifts the player one terrace. Is a carry by an ally allowed here? (The same question is asked for the horse.)
 8. Allies far away. Allies in the waterhole add positive hits from the ground, 30 blocks below the deity. Is help at a distance acceptable?
 9. Currents and minions. The herd wades without slowing and is not carried by the currents. The abilities folder leaves this open ([water currents](../abilities/WATER-CURRENTS.md)).
-10. Teleport (which deity: open). Is the elephant one of the deities that teleport? A teleport would always land it far from the player.
-11. When the elephant is defeated, does it transform, change its attitude, or leave?
+10. Teleport (answered, provisional: no). The elephant does not teleport.
+11. When the elephant is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
