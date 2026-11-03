@@ -6,7 +6,8 @@ import type { Body } from '../physics/voxel-collide';
 import type { RealmKind } from '../sky/types';
 
 export type ActorId = number;
-export type ActorKind = 'player' | 'projection';
+/** 'sky': a sky creature (deity or minion, SKY.md §5.2). It has no health that can reach zero. */
+export type ActorKind = 'player' | 'projection' | 'sky';
 /** Sides (ACTORS.md §4). A projection that changes side becomes part of the self. */
 export type Faction = 'self' | 'projection' | 'neutral';
 /** Who caused something: an actor, or the world itself. */

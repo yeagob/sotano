@@ -150,6 +150,20 @@ describe('synergy matrix', () => {
     expect(ally.toAttacker).toBe(0);
   });
 
+  // A sky deity turned to your side (SKY.md §5.2, m11): every item survives it, and it grants nothing until
+  // the balance milestone reviews a reward for it, so no stat moves.
+  it('with every item held, a sky conversion changes no stat and settles', () => {
+    const { bus, stats, inv } = sandbox();
+    for (const id of ids) inv.gain(id);
+    const before = { ...stats.all };
+    const turned = bus.emit('factionChange', { target: 4, targetKind: 'sky', def: 'panda', from: 'neutral', to: 'self', source: 'sky' });
+    expect(turned.target).toBe(4);
+    for (let f = 0; f < 200 && bus.pending; f++) bus.flush(64);
+    expect(bus.pending).toBe(0);
+    expect(errors).not.toHaveBeenCalled();
+    expect(stats.all).toEqual(before);
+  });
+
   it('everything at once still works', () => {
     const { stats } = exercise(ids);
     expect(errors).not.toHaveBeenCalled();
