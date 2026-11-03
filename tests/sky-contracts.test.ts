@@ -223,7 +223,7 @@ describe('sky stubs', () => {
     expect(STRATA.map(s => [s.y0, s.y1])).toEqual([[221, 420], [420, 700], [700, 980]]);
     expect([stratumAt(300), reach(5), reach2(1)]).toEqual([null, undefined, undefined]);
     const plans = buildSkyLayout(() => new Rng(3));
-    expect(plans.layout.shapes).toEqual([]);
+    expect(plans.layout.shapes.length).toBeGreaterThan(0);
     new Threshold(host, buildTotality(() => new Rng(2), at)).update(1);
     expect(atmosphereAt('deck', 40).stars).toBe(0);
     const stash = {} as RealmSet;
