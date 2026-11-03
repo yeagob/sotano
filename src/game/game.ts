@@ -8,6 +8,7 @@ import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
+import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
@@ -43,6 +44,7 @@ import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
+import { DOUBLE_TAP_MS } from '../input/bindings';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { Inventory } from '../items/inventory';
@@ -57,6 +59,7 @@ import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
 import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
+import { LOVE_BLAST, MISSILE_TRAIL, MissileView } from '../render/missile-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
@@ -77,6 +80,10 @@ import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { floorCrateChance, rollCrate } from '../content/tables/crates';
+import { floorHeartChances, rollHeart } from '../content/tables/hearts';
+import { HEART_FX, type HeartKind } from '../content/heart-art';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
@@ -274,6 +281,13 @@ export class Game {
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
+  private missiles = new Missiles();
+  private missileView: MissileView;
+  /** Game time of the last press of the fire control, for the double tap. */
+  private lastCastTap = -Infinity;
+  /** The double-tap hint has been shown this run. */
+  private missileHinted = false;
   private fpsAcc = 0; private fpsN = 0; fps = 0;
   /** The weapon replacing the intention, if any (docs/architecture/WEAPONS.md). */
   private weapon: Weapon | null = null;
@@ -327,6 +341,7 @@ export class Game {
     this.stars = makeStars();
     this.scene.add(this.stars);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
+    this.missileView = new MissileView(this.scene);
     this.cutHalves = new CutHalves(this.scene, this.atlas);
     this.cracks = new CrackView(this.scene);
     this.intents = new Intents(this.scene, {
@@ -446,8 +461,10 @@ export class Game {
       this.blasts.current = null;
     };
     this.blasts.clear(); this.bombCause.clear();
+    this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
+    this.pickups.heartKind = y => rollHeart(this.rng.stream('hearts'), floorHeartChances(this.rng, depthOf(y)), Math.max(0, depthOf(y)));
     this.chestViews = new Chests(this.scene);
     this.alembicViews = new Alembics(this.scene);
     this.kitchenViews = new Kitchens(this.scene);
@@ -459,7 +476,7 @@ export class Game {
     this.inventory.restore([]);
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -731,7 +748,7 @@ export class Game {
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
-      tagFlying: (x, y, z, r, tag, except) => { for (const s of this.intents.flying(new THREE.Vector3(x, y, z), r, except)) s.tags.add(tag); },
+      intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
     };
   }
@@ -861,6 +878,7 @@ export class Game {
     const p = this.player;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     if (t === p && p.invulnT > 0) return false;
+    if (t === p && p.starT > 0 && kind !== 'toll') return false;
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -869,7 +887,11 @@ export class Game {
     if (ev.cancelled) return false;
     if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
     if (ev.amount <= 0) return false;
-    p.hp = Math.max(0, p.hp - ev.amount);
+    if (p.blood) { p.blood = null; sfxHeart.bloodEnd(); this.hud.toast('heart.bloodBroken'); }
+    const hit = landHit(p.layers, ev.amount, kind !== 'toll');
+    if (hit.halved) { sfxHeart.stoneHit(); this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(HEART_FX.stone), 10, 2.5, 0.07); }
+    for (const k of hit.lost) this.heartLost(k);
+    p.hp = Math.max(0, p.hp - hit.rest);
     p.invulnT = this.stats.get('invuln');
     this.hud.hurt();
     sfx3.hurt();
@@ -891,6 +913,103 @@ export class Game {
     if (ev.cancelled || ev.amount <= 0) return;
     this.player.hp = Math.min(this.maxHp, this.player.hp + ev.amount);
     sfx3.heal();
+  }
+
+  collectHeart(kind: HeartKind): boolean {
+    const p = this.player;
+    if ((kind === 'red' || kind === 'blood') && p.hp >= this.maxHp) return false;
+    if (isLayer(kind) && heartSlots(Math.floor(this.stats.get('maxHearts')), p.layers) >= MAX_TOTAL_HEARTS) return false;
+    if (kind === 'red') return this.collect('heart', 2);
+    const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
+    if (ev.cancelled) return false;
+    const pts = Math.max(0, ev.amount) * HALF_HEART;
+    if (isLayer(kind)) {
+      p.layers.push({ kind, hp: Math.min(HEART, pts) });
+      if (kind === 'blue') sfxHeart.blue();
+      else if (kind === 'stone') sfxHeart.stone();
+    } else if (kind === 'blood') {
+      p.blood = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
+      sfxHeart.blood();
+    } else {
+      this.heal(pts, 'pickup');
+      p.starT = STAR_SECONDS;
+      sfxHeart.star();
+    }
+    this.hud.toast(`heart.${kind}`);
+    const b = p.body;
+    this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
+    return true;
+  }
+
+  private heartLost(kind: LayerKind) {
+    const b = this.player.body;
+    this.bus.emit('heartLost', { heart: kind });
+    this.particles.burst(b.x, b.y + 1.3, b.z, pal(HEART_FX[kind]), 30, 4, 0.08);
+    sfxHeart.layerLost();
+    this.hud.toast(`heart.${kind}Lost`);
+  }
+
+  private berserkOn = false;
+
+  private setBerserk(on: boolean) {
+    if (on === this.berserkOn) return;
+    this.berserkOn = on;
+    this.stats.removeSource('berserk');
+    if (on) for (const [stat, value] of [['damage', BERSERK_DAMAGE], ['moveSpeed', BERSERK_SPEED], ['jump', BERSERK_JUMP], ['range', BERSERK_RANGE]] as const)
+      this.stats.add({ stat, layer: 'mul', value, source: 'berserk' });
+    setEcho(on);
+    this.hud.setBerserk(on);
+    this.bus.emit('berserkChange', { on });
+    const b = this.player.body;
+    if (on) {
+      sfxHeart.berserk();
+      this.hud.shake(0.35);
+      this.particles.burst(b.x, b.y + 1, b.z, pal(HEART_FX.berserker), 60, 6, 0.1);
+    } else if (!this.player.dead) {
+      sfxHeart.berserkEnd();
+      this.hud.toast('berserk.off');
+    }
+  }
+
+  get berserk() { return this.berserkOn; }
+
+  private updateHearts(dt: number) {
+    const p = this.player;
+    if (p.starT > 0) {
+      p.starT = Math.max(0, p.starT - dt);
+      if (p.starT === 0) { sfxHeart.starEnd(); this.hud.toast('heart.starEnd'); }
+    }
+    starTheme(p.starT > 0 && !p.dead);
+    if (p.blood) {
+      const r = tickBlood(p.blood, dt, p.hp, this.maxHp);
+      if (r.heal > 0) p.hp = Math.min(this.maxHp, p.hp + r.heal);
+      if (r.done) { p.blood = null; sfxHeart.bloodEnd(); }
+    }
+    const on = (berserk(p.layers) || this.potions.active.some(a => POTIONS[a.potion].berserk)) && !p.dead;
+    if (on !== this.berserkOn) this.setBerserk(on);
+    if (on) this.berserkTread();
+  }
+
+  private berserkTread() {
+    const p = this.player, b = p.body, cells: [number, number, number][] = [];
+    if (b.onGround) for (const dx of [-b.hw, b.hw]) for (const dz of [-b.hw, b.hw]) cells.push([Math.floor(b.x + dx), Math.floor(b.y - 0.05), Math.floor(b.z + dz)]);
+    const l = Math.hypot(p.wishX, p.wishZ);
+    if (l > 0.1) {
+      const fx = Math.floor(b.x + p.wishX / l * (b.hw + 0.25)), fz = Math.floor(b.z + p.wishZ / l * (b.hw + 0.25));
+      cells.push([fx, Math.floor(b.y + 0.1), fz], [fx, Math.floor(b.y + 1.1), fz]);
+    }
+    for (const [x, y, z] of cells) if (this.looseBlock(x, y, z)) {
+      this.damageBlock(x, y, z, 999, 'crush', 'berserker');
+      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, pal(HEART_FX.berserker), 8, 3, 0.07);
+    }
+  }
+
+  looseBlock(x: number, y: number, z: number): boolean {
+    const id = this.world.get(x, y, z);
+    if (id === AIR || !Number.isFinite(mat(id).hp)) return false;
+    let n = 0;
+    for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) if (this.world.get(x + dx, y + dy, z + dz) !== AIR) n++;
+    return n === 1;
   }
 
   /** Adds keys, bombs or hearts through `pickupCollect`. Returns false if refused. */
@@ -920,6 +1039,12 @@ export class Game {
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
       projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
+      reflects: (t: Actor, x: number, y: number, z: number) => {
+        if (t !== this.player || !this.berserkOn) return false;
+        sfxHeart.reflect();
+        this.particles.burst(x, y, z, pal(HEART_FX.berserker), 10, 3, 0.06);
+        return true;
+      },
       projectileBlock: (x: number, y: number, z: number) => {
         const id = this.world.get(x, y, z);
         return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
@@ -1798,6 +1923,96 @@ export class Game {
     sfx3.fuse();
   }
 
+  /**
+   * The double tap of the fire control (every device: a double click, a double RT, a double tap on
+   * the bead). The first press fires its intention as usual; with the `missile` stat a second press
+   * within DOUBLE_TAP_MS launches a bomb instead (docs/design/built/practices/milagros/DR-LAUNCHER.md).
+   */
+  private tapMissile() {
+    const on = this.stats.get('missile') >= 1;
+    if (on && !this.missileHinted) {
+      this.missileHinted = true;
+      this.hud.toast('toast.missileHint', controlParams(activeDevice()));
+    }
+    if (!this.input.hit('cast') || this.hands.holding || this.player.muteT > 0) return;
+    const double = this.time - this.lastCastTap <= DOUBLE_TAP_MS / 1000;
+    this.lastCastTap = this.time;
+    if (!double || !on) return;
+    this.lastCastTap = -Infinity; // a third press starts a new pair
+    this.launchMissile();
+  }
+
+  /** One bomb leaves the counter as a missile, unless there is none or a block stands at the muzzle. */
+  private launchMissile() {
+    const p = this.player;
+    if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
+    const eye = p.eye, dir = p.forward;
+    // the arming rule: a missile needs room to arm, so a shot into a wall at the muzzle is refused
+    if (muzzleBlocked((x, y, z) => this.solid(x, y, z), eye.x, eye.y, eye.z, dir.x, dir.y, dir.z)) { sfx.denied(); return; }
+    const ev = this.bus.emit('missileLaunch', { speed: MISSILE_SPEED, range: MISSILE_RANGE, polarity: this.polarity });
+    if (ev.cancelled) { sfx.denied(); return; }
+    p.bombs--;
+    // the press that launched does not also cast while it is held
+    this.input.suppress('cast');
+    const from = eye.addScaledVector(dir, 0.4).add(new THREE.Vector3(0, -0.15, 0));
+    this.missiles.launch(from.x, from.y, from.z, dir.x, dir.y, dir.z, ev.polarity, ev.speed, ev.range);
+    this.hands.fire();
+    this.hud.shake(0.08);
+    sfx3.launch(ev.polarity === 'negative');
+  }
+
+  /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
+  private updateMissiles(dt: number) {
+    if (!this.missiles.list.length) return;
+    const ends = this.missiles.update(dt, {
+      solid: (x, y, z) => this.solid(x, y, z),
+      meets: (x, y, z) => this.missileMeets(x, y, z),
+    });
+    for (const m of this.missiles.list) {
+      const trail = MISSILE_TRAIL[m.polarity];
+      this.particles.burst(m.x - m.dx * 0.3, m.y - m.dy * 0.3, m.z - m.dz * 0.3, pal(trail[Math.floor(m.age * 20) % trail.length]), 2, 0.6, 0.06);
+    }
+    for (const e of ends) {
+      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z);
+      else this.explode(e.x, e.y, e.z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'missile', this.player.id);
+    }
+  }
+
+  /** What a missile meets besides blocks: any actor but you (allies too), and loose bombs. */
+  private missileMeets(x: number, y: number, z: number) {
+    for (const a of this.actors.all()) {
+      if (a.kind === 'player' || !a.alive || a.spawning > 0) continue;
+      const b = a.body;
+      if (Math.abs(x - b.x) < b.hw + 0.2 && Math.abs(z - b.z) < b.hw + 0.2 && y > b.y - 0.2 && y < b.y + b.h + 0.2) return true;
+    }
+    const i = this.debrisAt(x, y, z, 0.2);
+    return i >= 0 && this.debris.isBomb(i);
+  }
+
+  /**
+   * The love explosion (a positive missile): the bomb's sphere, but every block and actor in it is
+   * touched as a positive intention touches it, with the blast's own damage as the amount. It mends
+   * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
+   * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
+   */
+  private loveBlast(x: number, y: number, z: number) {
+    const r = this.stats.get('bombRadius'), damage = this.stats.get('bombDamage'), ri = Math.ceil(r);
+    for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
+      const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
+      const d = Math.hypot(bx + 0.5 - x, by + 0.5 - y, bz + 0.5 - z);
+      if (d <= r) this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r));
+    }
+    for (const a of [...this.actors.all()]) {
+      if (a.kind === 'player' || !a.alive || a.spawning > 0) continue;
+      const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
+      if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
+    }
+    this.hearPresences(x, z, 'positive');
+    LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
+    this.hud.shake(0.15);
+    sfx3.loveBoom();
+  }
+
   // ───────────────────────── elements ─────────────────────────
 
   /** Fire or lava sets a flammable block alight (`ignite`): it burns away, leaving a flame. */
@@ -2264,11 +2479,9 @@ export class Game {
         }
         continue;
       }
-      // hearts stay on the floor while you're at full health, like in Isaac
-      if (p.type === 'heart' && this.player.hp >= this.maxHp) continue;
-      if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {
+      if (p.type === 'heart' ? this.collectHeart(p.heart) : this.collect(p.type, 1)) {
         this.pickups.take(p);
-        this.particles.burst(p.x, p.y + 0.3, p.z, PICKUP_FX[p.type], 10, 2, 0.06);
+        this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'heart' ? pal(HEART_FX[p.heart]) : PICKUP_FX[p.type], 10, 2, 0.06);
       }
     }
   }
@@ -2714,7 +2927,7 @@ export class Game {
     const toll = tollOf(k), f = this.floors.get(k), st = this.bossRooms.get(k);
     const p = this.player;
     if (!toll || !f?.hole || !st || p.dead || new Set(ids).size !== ids.length || ids.length !== toll.count) return false;
-    const hearts = Math.ceil(p.hp / HEART);
+    const hearts = heartCount(p.hp, p.layers);
     const hands: number[] = [], items: string[] = [];
     let keys = 0, bombs = 0, paid = 0;
     for (const id of ids) {
@@ -2891,8 +3104,10 @@ export class Game {
     }, this.playerMedium);
     if (b.onGround) this.groundBand = bandOf(b.y);
     this.clampHealth();
+    this.updateHearts(dt);
     this.touchBlocks(dt);
     this.syncWeapon();
+    this.tapMissile();
     if (this.weapon) this.weapon.update(dt);
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
@@ -2911,6 +3126,7 @@ export class Game {
     this.touchPickups();
     this.touchChests();
     this.intents.update(dt);
+    this.updateMissiles(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
     this.blasts.run(b => this.blast(b));
@@ -2925,6 +3141,7 @@ export class Game {
     this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);
+    this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
     const hand = this.player.hand;

@@ -138,6 +138,7 @@ The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the
 | `S.stats()`, `S.synergies()`, `S.hooks()`, `S.trace()` | Inspect stats, active synergies, every hook per event, which hooks touched an event |
 | `S.hold('crate', 'obsidian')` | Set the blocks in your hand |
 | `S.keys(n)`, `S.bombs(n)`, `S.heal(n)`, `S.hurt(n)` | Counters and health (through the normal events) |
+| `S.heart(kind)` | Drops a heart of that kind (`red`, `blue`, `stone`, `blood`, `star`, `berserker`) in front of the player |
 | `S.god()` / `S.god(false)` | Invulnerable |
 | `S.floor()` | Open this floor's hole and drop into the next |
 | `S.enemies()`, `S.room()` | Live projections; the current room |

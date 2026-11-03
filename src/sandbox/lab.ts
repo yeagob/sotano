@@ -87,6 +87,8 @@ export function runLab(game: Game, s: Scenario): LabResult {
       if (mapTicks.has(t)) drawMaps(t);
       while (next < actions.length && actions[next].t === t) act(game, actions[next++], o, n => { fireFor = n; }, errors);
       if (t === ticks) break;
+      // a hold starts with a press, as a real one does (the double tap reads presses)
+      if (fireFor > 0 && !game.input.touchHeld.has('cast')) game.input.touchPressed.add('cast');
       if (fireFor > 0) game.input.touchHeld.add('cast'); else game.input.touchHeld.delete('cast');
       if (fireFor > 0) fireFor--;
       game.step();

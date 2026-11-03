@@ -158,6 +158,9 @@ export function contextsFor(b: Binding, device: Device): readonly Context[] {
 
 export const PAD_DEADZONE = 0.18;
 export const PAD_WAKE = 0.5;
+/** Two presses of the fire control closer than this are a double tap: with the `missile` stat,
+ *  the second press launches a bomb instead of an intention (Dr. Launcher). Every device. */
+export const DOUBLE_TAP_MS = 300;
 /** A touch shorter than this, that does not drag, is a tap. */
 export const TAP_MS = 250;
 /** How far a tap may wander, in pixels, before it counts as a drag. */

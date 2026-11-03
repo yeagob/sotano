@@ -1,4 +1,4 @@
-# resonance-flight — Resonance: intentions in flight charge each other; a charged one discharges on its next hit
+# resonance-flight — Resonance: each other intention in flight in the room adds 1% damage to the one you fire
 floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
 
 t 0 (0.0 s)

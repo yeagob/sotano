@@ -39,6 +39,7 @@ import ahamoment from './ahamoment';
 import bounceback from './bounceback';
 import chunking from './chunking';
 import discharge from './discharge';
+import drlauncher from './drlauncher';
 import dualprocess from './dualprocess';
 import kindling from './kindling';
 import rapport from './rapport';
@@ -57,6 +58,7 @@ export const ITEMS: readonly ItemDef[] = [
   forgiveness, nothingpersonal, constellation, arttherapy, thinkwaitfast, omens,
   lionsmane, occamsrazor, kiai,
   ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
+  drlauncher,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

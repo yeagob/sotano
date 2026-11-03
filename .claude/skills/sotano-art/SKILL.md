@@ -27,7 +27,7 @@ Source of truth, in order: [DECISIONS.md](../../../docs/art/DECISIONS.md) (the l
 - **16 texels per block** for everything. Creature boxes are whole texels; joints are pivots.
 - **Projections:** the host room's pattern, never its value. Dark husk (body L* ≤ 14, cold rim) or pale husk (≥ host + 20 L*, ≥ 55). One family eye: a 2 × 2 `cold.white` light in a socket. A 0.4 s telegraph on three channels. A release, not a kill, with a shard. A sound that resolves.
 - **Gentle:** nothing flashes faster than 3 Hz; full-screen effects obey the flash budget; the HUD never distorts to express a mood; no gore; no panic simulation on the player.
-- **Paths:** always with their glyph (■ ● ◆ ▲). Pairs keep ΔE ≥ 20 under colour-blindness simulation.
+- **Paths:** always with their glyph (⬟ ■ ● ◆ ▲). Pairs keep ΔE ≥ 20 under colour-blindness simulation.
 - **Shape before colour.** Player shots are round; hostile shots are cubes or ✗.
 
 ## 3. The gate (before you say it is done)

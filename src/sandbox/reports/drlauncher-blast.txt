@@ -1,0 +1,36 @@
+# drlauncher-blast — Dr. Launcher, negative: a double tap launches a bomb as a missile into a crate wall nine blocks away; one bomb spent, a bomb blast
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices drlauncher · synergies —
+  blocks crate 5
+  elements —
+  cubes — · pickups 0
+
+t 12 (0.2 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 98 · keys 99
+  practices drlauncher · synergies —
+  blocks crate 5
+  elements —
+  cubes — · pickups 0
+  events fire 1 · missileLaunch 1 · polarityChange 1 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 98 · keys 99
+  practices drlauncher · synergies —
+  blocks crate 4
+  elements —
+  cubes brick 36 · crate 1 · pickups 1
+  events blockBreak:brick 37 · blockBreak:crate 1 · blockDamage:brick 37 · blockDamage:crate 1 · blockLoot:brick 37 · blockLoot:crate 1 · explosion 1 · intentHit 1
+
+map t 120 · h 0
+  .............
+  ..........c..
+  ..........c..
+  .............
+  ..........c..
+  ..........c..
+  .............
+
+legend c crate

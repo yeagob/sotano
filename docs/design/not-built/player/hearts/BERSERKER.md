@@ -1,29 +1,22 @@
-# Berserker heart
+# Berserker heart: what is still open
 
-A heart whose loss starts a timed fighting state: the player hits harder, moves faster, jumps higher, breaks loose blocks by walking over them, and sends back projectiles that are about to hit.
+The berserker heart is built ([built/player/hearts/BERSERKER.md](../../../built/player/hearts/BERSERKER.md)). These parts are decided or asked for and not in the game yet.
 
-Status: decided (owner). Not built.
+Status: decided
 
-Part of [the hearts (not built)](README.md).
+Part of [kinds of heart (not built)](README.md).
 
 ## The design
 
-When the Berserker heart is lost, the player enters Berserker mode for 30 seconds. During the mode:
+- **Things that interact with the state.** The owner wants the berserker state to be something other objects answer at some point (2026-11-03): practices that strengthen or lengthen it, projections that fear or provoke it, stations that need it. The state and its change event are built; no object answers it yet. The potion that starts it is built (the Berserker Draught).
+- **The promotional video.** The owner chose the berserker heart as the first feature to present in a short promotional video for social networks (YouTube and X), narrated with a local text-to-speech model (Chatterbox is the owner's preferred one). How such a video is made is in the `sotano-promo` skill.
 
-- **Damage** is multiplied by 1.5.
-- **Speed** is multiplied by 1.5.
-- **Jump height** is multiplied by 1.5.
-- **Loose blocks break underfoot.** A block that touches the rest of the world by a single face (a block sitting alone on a surface, joined by one side) breaks when the player passes over it.
-- **Projectiles come back.** If the player fires at the moment a projectile would hit them, the shot returns the projectile.
+## The owner's words, paraphrased
 
-The mode can also be started by a potion. Items may name the mode and react to it. Any item or synergy that reads or starts the mode uses the same 30-second state; it does not define its own.
+The first proposal in issue #31 had the mode start when the heart was lost, for 30 seconds. The owner then decided (2026-11-03) that the heart is one more heart of 100 health, very rare, and gives all its effects for as long as it is held, until it is lost; that it shortens the intentions drastically; and that it has strong visual feedback, an echo on the sound, and a different frame on the screen. That is what is built.
 
 ## Open questions
 
-1. **Pickup effect.** The owner did not say what the Berserker heart gives on pickup. Health amount, if any, is open.
-2. **Look.** The owner did not describe the art of the Berserker heart. Art follows [the art guide](../../../../art/ART-GUIDE.md) and needs the owner's word first.
-3. **Reading of the block and projectile rules.** The owner's sentences put these two abilities in the same paragraph as the mode, and this document reads them as part of the mode (they end when the mode ends). Confirm: are they part of the mode, or permanent once the heart has been lost?
-4. **Restarting the mode.** If the player loses a second Berserker heart, or a potion starts the mode, while the mode is active, does the 30-second timer reset, or does nothing happen?
-5. **Rounding.** Damage multiplied by 1.5 gives fractions. Round down, as with the stone heart, or round up?
-6. **Projectile reflection.** Which way does a returned projectile go, and does it damage what it hits?
-7. **Potion.** Which potion starts the mode, and which of its parts supplies it? See [the potions](../../practices/potions/README.md).
+1. The Berserker Draught's name, bulb and two-room duration are proposals: does the owner confirm them?
+2. Which objects answer the state first, and how (longer, stronger, a weakness)?
+3. Should the frame or the echo change over the heart's health (stronger as it empties)?
