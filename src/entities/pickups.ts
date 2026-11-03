@@ -71,7 +71,10 @@ function heartMesh(kind: HeartKind = 'red'): THREE.Object3D {
   const mats = new Map<string, THREE.Material>();
   const matOf = (k: string) => {
     let m = mats.get(k);
-    if (!m) { m = new THREE.MeshLambertMaterial({ color: pal(art.palette[k]), emissive: pal(art.emissive) }); mats.set(k, m); }
+    if (!m) {
+      m = art.lit.includes(k) ? new THREE.MeshBasicMaterial({ color: pal(art.palette[k]) }) : new THREE.MeshLambertMaterial({ color: pal(art.palette[k]), emissive: pal(art.emissive) });
+      mats.set(k, m);
+    }
     return m;
   };
   art.rows.forEach((r, j) => [...r].forEach((ch, i) => {
