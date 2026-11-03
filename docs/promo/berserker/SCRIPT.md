@@ -17,7 +17,7 @@ Part of [promotional videos](../README.md).
 | 4–9 s | The player walks into it: the roar, the burst, the frame | The berserker heart. One more heart, and a fire you carry. | El corazón berserker. Un corazón más, y un fuego que llevas dentro. |
 | 9–15 s | Running and jumping higher, single blocks shattering underfoot | Stronger. Faster. Higher. Loose stone breaks under your feet. | Más fuerte. Más rápido. Más alto. La piedra suelta se rompe bajo tus pies. |
 | 15–21 s | Short intentions up close, a projection's shot sent back | Your intentions reach less, so you fight up close. And what they throw at you, comes back. | Tus intenciones llegan menos lejos: luchas de cerca. Y lo que te lanzan, vuelve. |
-| 21–26 s | The heart is spent: the frame and the echo fade | Hold it as long as you can. When it breaks, the fire goes out. | Aguántalo cuanto puedas. Cuando se rompe, el fuego se apaga. |
+| 21–26 s | The heart is spent: the frame and the echo fade | Hold it as long as you can. When it breaks, the fire goes out. | Aguántalo todo lo que puedas. Cuando se rompe, el fuego se apaga. |
 | 26–30 s | Title card: THE ROOTS | THE ROOTS. Go deeper. | THE ROOTS. Ve más hondo. |
 
 ## Outputs
