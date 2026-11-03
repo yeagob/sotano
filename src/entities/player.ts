@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import type { Input } from '../input/input';
 import { moveBody, type Body } from '../physics/voxel-collide';
+import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER } from '../physics/jump';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
@@ -12,7 +13,6 @@ import type { Flask } from '../content/potions';
 import type { Actor, ActorId, Faction } from './actors';
 
 export const EYE = 1.62;
-const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
 const SLOW_FACTOR = 0.5;
 /** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
 const ICE_GRIP = 0.12;
@@ -111,9 +111,9 @@ export class Player implements Actor {
     b.vz += (wz * speed - b.vz) * blend;
 
     // jump with a little leeway (coyote time and input buffer)
-    if (input.hit('jump')) this.jumpBuffer = 0.12;
+    if (input.hit('jump')) this.jumpBuffer = JUMP_BUFFER;
     this.jumpBuffer -= dt;
-    this.coyote = b.onGround ? 0.1 : this.coyote - dt;
+    this.coyote = b.onGround ? COYOTE : this.coyote - dt;
     if (swim) {
       // you lose your footing: you sink slowly, and holding Space swims up (and out at the edge)
       this.jumpBuffer = 0;
