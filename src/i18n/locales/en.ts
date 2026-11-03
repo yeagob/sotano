@@ -351,6 +351,7 @@ const messages = {
   'stat.luck': 'Luck',
   'stat.moveSpeed': 'Speed',
   'stat.jump': 'Jump',
+  'stat.airJumps': 'Air jumps',
   'stat.reach': 'Reach',
   'stat.carry': 'Carry',
   'stat.kick': 'Kick',

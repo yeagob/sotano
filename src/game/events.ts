@@ -90,8 +90,9 @@ export interface GameEvents {
   debrisImpact: { cube: number; x: number; y: number; z: number; material: number; speed: number; tags: Set<string>; keepTags: boolean };
 
   // ── movement ──
-  /** About to jump. Change `velocity` for higher jumps, or cancel. */
-  jump: { velocity: number };
+  /** About to jump. Change `velocity` for higher jumps, or cancel. `air` is the jump's step on the
+   *  ladder when it is made in the air (1 = the first air jump, 2 = the second; absent on the ground). */
+  jump: { velocity: number; air?: number };
   /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor. */
   land: { fallSpeed: number; cause: 'fall' | 'descent'; x: number; y: number; z: number };
 

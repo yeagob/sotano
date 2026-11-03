@@ -34,7 +34,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   throw: () => ({ cube: 0, material: 1, speed: 9, lift: 2, tags: new Set() }),
   drop: () => ({ material: 1, how: 'throw' }),
   debrisImpact: () => ({ cube: 0, x: 1, y: 1, z: 1, material: 1, speed: 8, tags: new Set(['volatile']), keepTags: false }),
-  jump: () => ({ velocity: 8.4 }),
+  jump: () => ({ velocity: 11.9, air: 1 }),
   land: () => ({ fallSpeed: 10, cause: 'fall', x: 1, y: 1, z: 1 }),
   actorDamage: () => ({ target: 1, targetKind: 'player', def: 'player', amount: 8, kind: 'explosion', source: 'bomb', owner: 1, knockback: 0, polarity: null }),
   contact: () => ({ attacker: 2, attackerDef: 'doubt', target: 1, targetKind: 'player', toTarget: 4, toAttacker: 0 }),
