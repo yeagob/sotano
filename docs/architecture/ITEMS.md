@@ -71,6 +71,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 |---|---|
 | `damage` (to actors), `mining` (to blocks, absolute: separate from damage), `fireRate`, `shotSpeed`, `range`, `gravity`, `size` | Intentions |
 | `moveSpeed`, `jump` | Movement |
+| `airJumps` | Jumps you may make in the air before landing (0 by default, at most 4, floored); each climbs the ladder `[1, 2, 8]` of `physics/jump.ts` (SKY.md §9) |
 | `reach` | How far you can place blocks |
 | `carry` | How many blocks you can hold (2 by default: one per hand; items add to it) |
 | `kick`, `throw` | Strength of kicks and throws |

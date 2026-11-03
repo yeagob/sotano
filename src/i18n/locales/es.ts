@@ -329,6 +329,7 @@ export const ES: Catalog = {
     'stat.luck': 'Suerte',
     'stat.moveSpeed': 'Velocidad',
     'stat.jump': 'Salto',
+    'stat.airJumps': 'Saltos en el aire',
     'stat.reach': 'Alcance',
     'stat.carry': 'Carga',
     'stat.kick': 'Patada',

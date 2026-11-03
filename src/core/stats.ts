@@ -9,7 +9,7 @@ import { fmtNum, t } from '../i18n';
 
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
-  | 'moveSpeed' | 'jump' | 'reach'
+  | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath';
 
@@ -35,6 +35,7 @@ export const BASE_STATS: Stats = {
   mining: 3.5,     // damage per intention to blocks (separate from `damage`, which hurts actors)
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
+  airJumps: 0,     // jumps you may make in the air before landing (floored; SKY.md §9)
   reach: 5,        // reach for placing blocks
   carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
@@ -58,6 +59,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   mining: [0.35, 350],
   moveSpeed: [0.3, 3],
   jump: [0.3, 5],
+  airJumps: [0, 4],
   carry: [1, 9],
   kick: [0.2, 6],
   throw: [0.2, 6],
@@ -85,6 +87,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   luck: v => fmtNum(v, 1),
   moveSpeed: times,
   jump: times,
+  airJumps: v => fmtNum(Math.floor(v), 0),
   reach: v => blocks(v, 1),
   carry: v => blocks(Math.floor(v), 0),
   kick: times,
