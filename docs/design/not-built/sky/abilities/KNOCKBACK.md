@@ -31,7 +31,7 @@ Open. The owner named the hindrance but not the animal. Proposal: the elephant (
 
 ## Open questions
 
-1. Does a kick do damage, or only move the player? Answered (owner, 2026-11-03): nothing in the sky damages the player; a kick only moves them ([sky law 3.10](../README.md)).
+1. Does a kick do damage, or only move the player? Answered (owner, 2026-11-03): nothing in the sky takes the player's health; a kick only moves them (provisional, to confirm: it never drains spirit) ([sky law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)).
 2. Is the kick's strength the same on every floor, or does it grow with the sky floor?
 3. Does a kick over a ledge always land on a block, or can it send the player off a floor with no route back? (The realm's law 3.5 says a route up is always there.)
 4. Which animal uses it: the guardian, the minion, or both?

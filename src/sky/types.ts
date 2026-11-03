@@ -277,6 +277,10 @@ export type Stage = 0 | 1 | 2;
 /** Telegraph seconds by floor (index n − 1); no telegraph is ever shorter than MIN_TELEGRAPH. */
 export const TELEGRAPH = [1.4, 1.2, 1.1, 1.0, 0.9] as const;
 export const MIN_TELEGRAPH = 0.8;
+/** Spirit, the outline of the hearts: special attacks drain it; at zero the player goes underground. Provisional. */
+export const SPIRIT_MAX = 100;
+/** Seconds a deity's capture holds the player. Provisional. */
+export const CAPTURE_TIME = 3;
 export type CoreState = 'Idle' | 'Watching' | 'Attacking' | 'Recovering' | 'Hurt' | 'Rallying';
 
 /** Three channels at once (docs/art/DECISIONS.md §8.5): a named part to its extreme pose, a sound. */
@@ -746,7 +750,10 @@ export interface SkyPlayer {
   carry(to: Vec3, s: number): void;
 }
 
-/** The only door from src/sky/ into the game. There is no damage verb (owner decision 8). */
+/** A practice's id (ItemDef.id). */
+export type ItemId = string;
+
+/** The only door from src/sky/ into the game. Health is never taken in the sky (owner, 2026-11-03). */
 export interface SkyHost {
   time(): number;
   player(): SkyPlayer;
@@ -766,6 +773,13 @@ export interface SkyHost {
   /** A pickup in the sky's Pickups. */
   gift(itemId: string, x: number, y: number, z: number): void;
   travel(t: Travel): void;
+  /** Special attacks drain spirit, never health. */
+  drainSpirit(amount: number): void;
+  spirit(): number;
+  /** A capture takes one practice the player holds, at random, for the rest of the run. */
+  takeRandomPractice(): ItemId | null;
+  /** Spirit at zero: the game picks one floor of `floors` with `rng`, sends the player there and refills spirit to SPIRIT_MAX. */
+  sendUnderground(floors: readonly number[], rng: Rng): void;
 }
 
 // ───────────────────────── touch routing (§5.7) ─────────────────────────

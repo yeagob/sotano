@@ -92,11 +92,26 @@ Status: decided.
 
 When the player builds a tower that brings them to a deity's height, the deity leaves its place, knocks the tower down and pushes the player off it. The deity warns first (law 3.6), and the player can always answer by stepping off onto the floor's own route. The first guardian's rule is written in full in [PANDA](guardians/PANDA.md#b2-the-deity). The blocks of a tower knocked down fall as loose cubes the player can gather again (provisional, owner, 2026-11-03).
 
-### 3.10 Nothing in the sky damages the player
+### 3.10 The player cannot die in the sky
 
-Status: decided (owner, 2026-11-03).
+Status: decided (owner, 2026-11-03) for the rule and its consequences. Provisional for every default under it, listed at the end of this section.
 
-Attacks, hindrances and minions never damage the player. They only push, slow or hold the player, and hindrances warn first (law 3.6). The cost of a mistake in the sky is lost height: a fall does not hurt, and the player cannot die in the sky.
+The player cannot die in the sky, and no sky creature takes the player's health. The owner's rule (decided, owner, 2026-11-03): if a deity captures the player, it takes one of the player's practices; if the player's spirit reaches zero, the player is teleported to a random floor of the underground. The three parts:
+
+- **Capture.** A deity can capture the player. A captured player is held in place and released by themself. While held, the player cannot move or jump; they can still look and shoot. Provisional: the hold lasts 3 s.
+- **A practice is taken.** Capture takes one practice the player holds, chosen at random, for the rest of the run. It is not returned on release. Provisional.
+- **Spirit.** Spirit is the outline of the hearts, not life. Certain special attacks drain spirit, and health is never touched in the sky. When spirit reaches zero, the player is teleported to a random underground floor. Decided (owner, 2026-11-03), with its defaults below.
+
+Hindrances and minions only push, slow or hold the player. Provisional: the owner did not say whether they drain spirit, so they do not (to confirm).
+
+Provisional defaults (to confirm with the owner):
+
+- Capture holds the player for 3 s, released by themself; no move or jump while held; looking and shooting kept.
+- One practice held, chosen at random, is taken for the rest of the run; it is not returned on release.
+- Spirit is at most 100 (`SPIRIT_MAX`).
+- Which attacks are special, and how much spirit each one drains, are not set yet.
+- After the teleport, spirit is refilled to full.
+- The teleport lands on a random underground floor from floor 0 to floor 9. The silence chamber is excluded.
 
 ### 3.11 Sky blocks and item events
 
@@ -108,9 +123,9 @@ No sky material is flammable. A sky floor is neither a room nor a floor for item
 
 | Part | Contents | Status |
 |---|---|---|
-| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, defeat by positive hits, tower rule and no damage; the koala and the horse teleport (provisional); proposal for the rest of the contract |
+| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, defeat by positive hits, tower rule, no health damage, capture and spirit (decided, owner, 2026-11-03); the koala and the horse teleport and the capture and spirit defaults (provisional); proposal for the rest of the contract |
 | [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule and the rule that minions never die decided |
-| [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal; no hindrance damages (decided) |
+| [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal; no hindrance takes health (decided, owner, 2026-11-03); hindrances only push, slow or hold (provisional) |
 | [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics and ascent); the climb ends at the closed threshold of the Sun |
 | [Unity](../levels/UNITY.md) | Sky floor 7: the final destination occurring in the Sun | Decided (setting: The Sun); not built, issue #95 |
 
