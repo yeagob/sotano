@@ -4,6 +4,8 @@ Up: [not-built levels](README.md) · [Totality](TOTALITY.md) · [The realm of th
 
 Status: decided for the setting (occurs in the Sun), its role as the final destination of the upward climb, and granting the solar relic needed to confront the Spiked Entity at the bottom of the world. Proposal for the space layout, visual manifestation, and final interaction.
 
+Not built, and pending by design (owner, 2026-11-03): Unity is a different game, where every mechanic changes. Its definition is issue #95. The sky realm build stops at the closed Sun threshold at the top of [Totality](TOTALITY.md); the solar relic and the rematch with the Spiked Entity wait for Unity.
+
 ## 1. What Unity is
 
 Unity is the seventh and ultimate level of the upward journey, reached at the apex of [Totality](TOTALITY.md). It takes place entirely within and upon **the Sun**.
