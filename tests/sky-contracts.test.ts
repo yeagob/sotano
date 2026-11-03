@@ -66,7 +66,7 @@ import {
   type SkyActor, type SkyViewCtor, type SkyWorldApi, type SpikedEntityCtor, type SwapRealm, type ThresholdCtor, type TowerKnockCtor,
   type TowerUnder, type UpdraftCtor,
 } from '../src/sky/types';
-import type { GameBus } from '../src/game/events';
+import { createBus, type GameBus } from '../src/game/events';
 import type { Body } from '../src/physics/voxel-collide';
 import type { VoxelSpace } from '../src/world/space';
 import { VoxelWorld } from '../src/world/world';
@@ -178,7 +178,7 @@ describe('sky stubs', () => {
   const world = {} as SkyWorldApi;
   const root = new THREE.Group();
   const body: Body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
-  const bus = {} as GameBus;
+  const bus: GameBus = createBus();
   const at = { x: 1, y: 2, z: 3 };
 
   it('every stub constructs and does nothing', () => {
