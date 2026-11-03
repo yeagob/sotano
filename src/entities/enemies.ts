@@ -621,7 +621,7 @@ export class Enemies {
         && Math.abs(p.x - a.body.x) < a.body.hw + 0.12 && Math.abs(p.z - a.body.z) < a.body.hw + 0.12 && p.y > a.body.y && p.y < a.body.y + a.body.h);
       if (hit && this.host.reflects?.(hit, p.x, p.y, p.z)) {
         p.vx = -p.vx; p.vy = -p.vy; p.vz = -p.vz;
-        p.faction = hit.faction; p.thrower = hit.id; p.age = 0;
+        p.faction = hit.faction; p.thrower = hit.id;
       } else if (hit) {
         this.host.projectileHit(hit, p.damage, p.thrower);
         dead = true;

@@ -64,28 +64,46 @@ function bombMesh(): THREE.Object3D {
   return m.root;
 }
 
+interface HeartAssets { geo: THREE.BoxGeometry; mats: Map<string, THREE.Material>; glow: THREE.SpriteMaterial | null }
+const heartAssets = new Map<HeartKind, HeartAssets>();
+
+/** One geometry and one material per colour of each heart kind, shared by every pickup of that kind. */
+function heartAssetsOf(kind: HeartKind): HeartAssets {
+  let a = heartAssets.get(kind);
+  if (a) return a;
+  const art = HEART_PICKUP[kind];
+  const w = Math.max(...art.rows.map(r => r.length)), c = 0.4 / w;
+  const mats = new Map<string, THREE.Material>();
+  for (const k of new Set(art.rows.join('').replace(/\./g, ''))) {
+    if (!art.palette[k]) continue;
+    mats.set(k, art.lit.includes(k)
+      ? new THREE.MeshBasicMaterial({ color: pal(art.palette[k]) })
+      : new THREE.MeshLambertMaterial({ color: pal(art.palette[k]), emissive: pal(art.emissive) }));
+  }
+  const glow = kind === 'red' ? null : new THREE.SpriteMaterial({ map: glowTexture(), color: pal(HEART_FX[kind]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.55 });
+  a = { geo: new THREE.BoxGeometry(c, c, 0.1), mats, glow };
+  heartAssets.set(kind, a);
+  return a;
+}
+
 function heartMesh(kind: HeartKind = 'red'): THREE.Object3D {
   const g = new THREE.Group();
   const art = HEART_PICKUP[kind];
+  const { geo, mats, glow } = heartAssetsOf(kind);
   const w = Math.max(...art.rows.map(r => r.length)), c = 0.4 / w, top = 0.36;
-  const mats = new Map<string, THREE.Material>();
-  const matOf = (k: string) => {
-    let m = mats.get(k);
-    if (!m) {
-      m = art.lit.includes(k) ? new THREE.MeshBasicMaterial({ color: pal(art.palette[k]) }) : new THREE.MeshLambertMaterial({ color: pal(art.palette[k]), emissive: pal(art.emissive) });
-      mats.set(k, m);
-    }
-    return m;
-  };
   art.rows.forEach((r, j) => [...r].forEach((ch, i) => {
-    if (ch !== '.' && art.palette[ch]) box(g, matOf(ch), c, c, 0.1, (i - (w - 1) / 2) * c, top - j * c);
+    const m = mats.get(ch);
+    if (!m) return;
+    const cube = new THREE.Mesh(geo, m);
+    cube.position.set((i - (w - 1) / 2) * c, top - j * c, 0);
+    g.add(cube);
   }));
-  if (kind !== 'red') {
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: pal(HEART_FX[kind]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.55 }));
-    glow.scale.set(0.9, 0.9, 1);
-    glow.position.y = top - (art.rows.length - 1) * c / 2;
-    glow.name = 'glow';
-    g.add(glow);
+  if (glow) {
+    const s = new THREE.Sprite(glow);
+    s.scale.set(0.9, 0.9, 1);
+    s.position.y = top - (art.rows.length - 1) * c / 2;
+    s.name = 'glow';
+    g.add(s);
   }
   return g;
 }
