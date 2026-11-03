@@ -34,5 +34,5 @@ The true progression of the game forms a complete cosmic polarity:
 ## 5. Open questions
 
 1. **Entity Name**: What is the canonical name of the Spiked Entity in the bestiary/story (e.g., The Thorns of Memory, The Spiked Root, The Obstinate)?
-2. **Rematch Mechanics**: How does the solar relic interact with the Spiked Entity's thorns (shattering spikes with light, stitching with solar intention, or converting spikes to leaves)?
+2. **Rematch Mechanics**: How does the solar relic interact with the Spiked Entity's thorns (shattering spikes with light, hitting with solar intention, or converting spikes to leaves)?
 3. **Ending State**: What is the ultimate resolution when the Spiked Entity is overcome with the light of the Sun: does it trigger the final narrative ending, or transform the underground into a realm of life?

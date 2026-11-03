@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The horse is the fifth and last deity of the sky tree's first five floors: a small, soft plush body with a giant horse head, over sky floor 5, a ground-based floor of paddocks, gusts of wind and fading platforms. It is the only deity that does not levitate: it walks on the ground and jumps a great deal.
 
-Status: proposal, specified. Decided: the animal and the floor order, its look (a small body with a giant horse head, plush-like and cute), that it walks on the ground and does not levitate, that it jumps a great deal from platform to platform and from place to place, that it sends its minions to kick the player from its place, that it is defeated by stitching it with many positive shots and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the other minion habits and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, its look (a small body with a giant horse head, plush-like and cute), that it walks on the ground and does not levitate, that it jumps a great deal from platform to platform and from place to place, that it sends its minions to kick the player from its place, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the other minion habits and the puzzle are proposals.
 
 ## 1. Who it is
 
@@ -49,9 +49,9 @@ A positive shot at a horse minion turns it into an ally (decided, see [minions](
 - runs under a fading platform and holds it up for a moment, so the player can cross;
 - carries the player across a gap on its back, for a short run.
 
-## 6. The stitch and reward
+## 6. Defeat by many positive hits, and reward
 
-The player defeats the horse by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves.
+The player defeats the horse by landing many positive hits on it ([guardians](README.md#1-the-shared-contract)). It does not die. When the hit count is reached, it transforms, changes its attitude, or leaves. It can also be turned to the player's side.
 
 **Reward (Status: decided):**
 Defeating the horse (the fifth and final god of the tree) grants an item that bestows the **Triple Jump** ability:
@@ -63,7 +63,7 @@ This item is required to traverse the sixth level going up, [Totality](../../lev
 
 ## Behaviour specification
 
-Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, the stitch, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
+Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, defeat by positive hits, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
 
 ### B1. The player's read
 
@@ -91,9 +91,9 @@ A wide-eyed giant head with a streaming mane on a small plush body, standing on 
 | Recovering | Blows through its nose and shakes its mane | 2 s |
 | Gentled | Walks up to a still player and lowers its head | 3 s |
 | Hurt | A flinch and a soft snort; it does not leap away | 0.3 s |
-| Rallying | Rears and whinnies when the stitches reach a third and two thirds of the target; the herd circles, and the wind turns | 2 s |
+| Rallying | Rears and whinnies when the positive hits reach a third and two thirds of the target; the herd circles, and the wind turns | 2 s |
 
-**The cycle.** Grazing, Alert, Sending or Attacking in turn, Recovering, Alert. The rest before the next telegraph is target 2.5 s in the first stage, 2 s in the second and 1.5 s in the third (stages: [guardians, section 6.5](README.md#65-the-stitch)).
+**The cycle.** Grazing, Alert, Sending or Attacking in turn, Recovering, Alert. The rest before the next telegraph is target 2.5 s in the first stage, 2 s in the second and 1.5 s in the third (stages: [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits)).
 
 **Startle and calm (the horse's own rules).**
 - *Startle:* when the player comes within target 6 blocks of the horse while moving, or lands a jump within 6 blocks, it leaps away to a Paddock far from the player. The leap's telegraph is its crouch and a landing mark drawn on the far Paddock, target 0.9 s.
@@ -126,13 +126,13 @@ The horse has four attacks besides sending the herd. The first stage uses Rear a
 - *Act:* the segments fade in the same order, target 5 of them, and each reforms target 3 s after it went.
 - *Answer:* stand still on a fixed segment, on the ground or on a player block, build ahead, or let an ally hold a segment. A positive intention holds one flickering segment for target 2 s. The wave never fades the segment the player is on and the one behind it at the same time.
 
-### B4. The stitch
+### B4. Defeat by positive hits
 
-- **Count:** target 48 stitches.
-- **What counts:** a positive intention that touches the horse's body or head in any state. While Gentled, each stitch counts as two.
-- **Progress (target):** each stitch leaves one short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the horse's wide eyes soften and its ears turn forward. The sign is a target until the owner confirms it.
-- **Allies:** an ally that reaches the horse's Paddock grazes beside the deity, which makes it Gentled for 3 s every target 10 s. Allies do not stitch by themselves on this floor; they bring calm.
-- **When stitched:** as proposed in section 6 of this document (it stops leaping away, and the wind stops). Which of the three outcomes it takes is open.
+- **Hit count:** target 48 positive hits.
+- **What counts:** a positive intention that touches the horse's body or head in any state. While Gentled, each positive hit counts as two.
+- **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the horse's wide eyes soften and its ears turn forward. The sign is a target until the owner confirms it.
+- **Allies:** an ally that reaches the horse's Paddock grazes beside the deity, which makes it Gentled for 3 s every target 10 s. Allies do not land positive hits by themselves on this floor; they bring calm.
+- **When defeated:** as proposed in section 6 of this document (it stops leaping away, and the wind stops). Which of the three outcomes it takes is open.
 
 ### B5. Minions
 
@@ -169,7 +169,7 @@ The horse has four attacks besides sending the herd. The first stage uses Rear a
 - **Straight up:** a central mast with one-block rungs, staggered every 1 block of height from the meadow to the floor's way up, joined to the nearest Paddock by a fixed spoke. Gusts cross the mast; the rungs never fade. A tower of player blocks is not needed to go up, and a tower raised to the horse's height beside a Paddock is knocked down (B2).
 - **Nests:** target 4, on fixed segments, each with 3 cubes.
 
-**Example route.** Walk across the meadow, never running at the herd, and turn a grazing horse into an ally. Ride it across the long open run to the nearest Paddock. When the whinny starts, stop on a hitching-post segment and let the wave pass. When the horse sends a minion, stand with a placed block behind you so its kick stops, and turn the minion with positive shots while its legs are gathered. Near the horse's Paddock, stand still until it comes, and stitch it while it is Gentled. When it leaps to land near you, move off the mark, jump the ring and stitch it during its recovery.
+**Example route.** Walk across the meadow, never running at the herd, and turn a grazing horse into an ally. Ride it across the long open run to the nearest Paddock. When the whinny starts, stop on a hitching-post segment and let the wave pass. When the horse sends a minion, stand with a placed block behind you so its kick stops, and turn the minion with positive shots while its legs are gathered. Near the horse's Paddock, stand still until it comes, and land positive hits on it while it is Gentled. When it leaps to land near you, move off the mark, jump the ring and land positive hits on it during its recovery.
 
 ### B7. Hindrances used
 
@@ -181,7 +181,7 @@ The horse has four attacks besides sending the herd. The first stage uses Rear a
 
 ### B8. Routes
 
-- **With nothing:** the runs are all jumps and the mast is all rungs, so a player with no practices reaches every Paddock with no placed block. They win by standing still and stitching a Gentled horse, or by stitching it each time it lands near them.
+- **With nothing:** the runs are all jumps and the mast is all rungs, so a player with no practices reaches every Paddock with no placed block. They win by standing still and landing positive hits on a Gentled horse, or by landing positive hits on it each time it comes down near them.
 - **With practices:** speed and a longer jump make the fast line across the gaps of the runs; carrying more builds walls that stop every kick; a faster shot hits a horse in mid-leap; anything that steadies the player against a push makes the wind and the kicks lose their hold.
 
 ### B9. Targets at a glance
@@ -194,7 +194,7 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2 s (2.5 s after a landing) | up to about 1 s |
 | Great leap | up to 20 blocks across, 8 high | player jump about 1.26 high, about 2.7 across |
 | Rest between attacks | 2.5, 2, 1.5 s by stage | a short walk, shorter each phase |
-| Stitches | 48, two each while Gentled | 374 health: about 107 bad hits |
+| Positive hits | 48, two each while Gentled | 374 health: about 107 bad hits |
 | Minions sent to kick | 1, then up to 2 from the second stage | no built equivalent |
 | Hits to turn a minion | 4 | 5 good hits for a projection |
 | Minions at once | 5 (3 hostile) | no built equivalent |
@@ -209,8 +209,8 @@ Every value in the middle column is a target. The right column is the built game
 4. Does the sky tree end here, at the fifth floor, or does the sky continue above it? This is open with the mapping of the built stories ([guardians](README.md#5-open-questions)).
 5. Calm as the verb. The horse comes closer to a player who stands still for 1.5 s. Standing still is also the verb of the built silence. Is the echo wanted?
 6. The floor's rhythm. From the second stage the floor fades a segment of each run every 12 s on its own. Is that the floor's, or should every fade come from the horse? (See open question 2.)
-7. Gentled stitches count twice. Is that the right reward for calm, or should Gentled only make the horse easy to hit?
-8. Fight length. 48 stitches is the highest count of the five. Check that the fight with a deity that leaps away stays under the length the owner wants.
+7. Gentled positive hits count twice. Is that the right reward for calm, or should Gentled only make the horse easy to hit?
+8. Fight length. 48 positive hits is the highest count of the five. Check that the fight with a deity that leaps away stays under the length the owner wants.
 9. Teleport (which deity: open). Is the horse one of the deities that teleport, on top of its great leap? A teleport would always land it far from the player.
-10. When the horse is stitched, does it transform, change its attitude, or leave?
+10. When the horse is defeated, does it transform, change its attitude, or leave?
 11. The floor's height. A ground-based floor with Paddocks up to 12 blocks is lower than the other four sky floors. How high the mast must rise to the floor's way up depends on the open mapping of sky floors onto the built tree.

@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The lion is the fourth deity: a lion with a giant head on a small, soft plush body, over sky floor 4, a wide floor of ledges and gaps where a roar can freeze the player in place.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by stitching it with many positive shots and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
 
 ## 1. Who it is
 
@@ -48,13 +48,13 @@ A positive shot at a lion minion turns it into an ally (decided, see [minions](.
 - holds a ledge the player needs to reach, so the player can climb it;
 - roars at the pride, so the minions stop closing in on the player for a moment.
 
-## 6. The stitch
+## 6. Defeat by many positive hits
 
-The player defeats the lion by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves; which one is open. Proposal: it changes its attitude: the pride lies down, and the ledges settle to the floor's level so the player can walk to the deity.
+The player defeats the lion by landing many positive hits on it ([guardians](README.md#1-the-shared-contract)). It does not die. When the hit count is reached, it transforms, changes its attitude, or leaves; which one is open. It can also be turned to the player's side. Proposal: it changes its attitude: the pride lies down, and the ledges settle to the floor's level so the player can walk to the deity.
 
 ## Behaviour specification
 
-Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, the stitch, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
+Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, defeat by positive hits, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
 
 ### B1. The player's read
 
@@ -78,9 +78,9 @@ A golden head with a mane like a sunburst, floating over the highest ledge of a 
 | Attacking | One attack (B3), telegraph 1.0 s | per attack |
 | Recovering | Hangs still in the air and licks a paw | 2 s (2.5 s after a pounce) |
 | Hurt | The mane puffs out and settles | 0.3 s |
-| Rallying | Calls the pride when the stitches reach a third and two thirds of the target; two minions come out of the dens | 2 s |
+| Rallying | Calls the pride when the positive hits reach a third and two thirds of the target; two minions come out of the dens | 2 s |
 
-**The cycle.** Basking, Watching, then Pacing and Attacking in turn, Recovering, Watching. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-the-stitch)).
+**The cycle.** Basking, Watching, then Pacing and Attacking in turn, Recovering, Watching. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits)).
 
 **Facing the roar (the lion's own rule).** When the player's aim is on the lion during a roar's telegraph, the roar's ring is halved. The mirror is fear dressed as dominance; the practice is courage, and the verb of courage is the player's own aim.
 
@@ -108,13 +108,13 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 - *Act:* three sun bolts in a fan of target 30 degrees, at target 10 blocks a second. Each may take target 2 points (harm is open).
 - *Answer:* step aside, or put a block between: bolts stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets a bolt dissolves it (proposal).
 
-### B4. The stitch
+### B4. Defeat by positive hits
 
-- **Count:** target 42 stitches.
+- **Hit count:** target 42 positive hits.
 - **What counts:** a positive intention that touches the lion's body or head in any state. The lion has no guard; it is a moving target instead, pacing and pouncing.
-- **Progress (target):** each stitch leaves one short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the mane, wide and bristling at the start, lies softer and softer. The sign is a target until the owner confirms it.
-- **Allies:** an ally that reaches the Sunning Ledge rubs its head against the deity: the deity's next roar is skipped, and the ally adds one stitch every target 5 s while it stays. At most target 2 at once.
-- **When stitched:** as proposed in section 6 of this document (the pride lies down, and the ledges settle). Which of the three outcomes it takes is open.
+- **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the mane, wide and bristling at the start, lies softer and softer. The sign is a target until the owner confirms it.
+- **Allies:** an ally that reaches the Sunning Ledge rubs its head against the deity: the deity's next roar is skipped, and the ally adds one positive hit every target 5 s while it stays. At most target 2 at once.
+- **When defeated:** as proposed in section 6 of this document (the pride lies down, and the ledges settle). Which of the three outcomes it takes is open.
 
 ### B5. Minions
 
@@ -136,7 +136,7 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 - **What an ally does:**
   - *Hold:* it lies at the edge of a ledge the player needs; its back is a one-block step the player can stand on to climb a 2-block ledge.
   - *Clear:* it roars at the pride; hostile minions within 6 blocks lie down for target 4 s.
-  - *Help:* it climbs to the Sunning Ledge and adds stitches (B4).
+  - *Help:* it climbs to the Sunning Ledge and adds positive hits (B4).
 - **Without minions:** if the owner makes this a platforming-only floor, the dens are removed and the roar and the gaps carry the floor alone.
 
 ### B6. Platforming layout (rules)
@@ -150,7 +150,7 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 - **Straight up:** a lone thorn tree stands beside the Sunning Ledge; its branches are one-block steps in a spiral, 1 block apart in height, from the ground to the ledge. It is inside the roar's full ring all the way up.
 - **Nests:** target 6, one on the near side of each 4 to 5 block gap on the nerve line, each with 3 cubes.
 
-**Example route.** From the plain, climb a 3-block ledge with one cube from the first nest. Face the lion when its mane lifts, so the ring stops short. Bridge the first 4-block gap with two cubes from the nest beside it, in two trips. Turn a holder into an ally and use its back to climb the next 2-block step. Build a 2-high wall between yourself and the Sunning Ledge, then let the lion pounce into it: it recovers against your wall, and you stitch it there.
+**Example route.** From the plain, climb a 3-block ledge with one cube from the first nest. Face the lion when its mane lifts, so the ring stops short. Bridge the first 4-block gap with two cubes from the nest beside it, in two trips. Turn a holder into an ally and use its back to climb the next 2-block step. Build a 2-high wall between yourself and the Sunning Ledge, then let the lion pounce into it: it recovers against your wall, and you land positive hits on it there.
 
 ### B7. Hindrances used
 
@@ -162,7 +162,7 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 
 ### B8. Routes
 
-- **With nothing:** the thorn tree reaches the Sunning Ledge with jumps alone, under the roar, and every gap on the long route is a jump or a falling jump. A player with no practices wins by facing the roars and stitching the lion when it pounces near them.
+- **With nothing:** the thorn tree reaches the Sunning Ledge with jumps alone, under the roar, and every gap on the long route is a jump or a falling jump. A player with no practices wins by facing the roars and landing positive hits on the lion when it pounces near them.
 - **With practices:** a longer jump crosses 4-block gaps; carrying more builds bridges in one trip; a faster shot hits a pacing lion more often; anything that shortens a freeze or a push makes the nerve line quick.
 
 ### B9. Targets at a glance
@@ -175,7 +175,7 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2 s (2.5 s after a pounce) | up to about 1 s |
 | Freeze | 1.5 s (minion 1 s) | no built freeze; the built Paralysis projection slows |
 | Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
-| Stitches | 42 | 293 health: about 84 bad hits |
+| Positive hits | 42 | 293 health: about 84 bad hits |
 | Hits to turn a minion | 4 | 5 good hits for a projection |
 | Minions at once | 6 (4 hostile) | no built equivalent |
 | Widest gap | 5 blocks, bridged | flat jump about 2.7 blocks |
@@ -185,11 +185,11 @@ Every value in the middle column is a target. The right column is the built game
 
 1. Does the roar freeze the player for a fixed time, or until they answer it with a positive intention? (Paralysis rules: [paralysis](../abilities/PARALYSIS.md).)
 2. Is the wind the lion's, or the floor's? Both are proposal.
-3. Does the pride's minion count as a deity's minion when the lion is stitched, or does the pride stay? (See [minions](../minions/README.md).)
+3. Does the pride's minion count as a deity's minion when the lion is defeated, or does the pride stay? (See [minions](../minions/README.md).)
 4. Is the lion's floor the one with the widest gaps, and is the bridge the player builds the intended answer?
 5. Facing the roar. The player's aim on the lion during the telegraph halves the roar. The [paralysis](../abilities/PARALYSIS.md) document proposes a steady aim during the freeze instead, but a frozen player cannot shoot. Which answer stands?
 6. Walls and sound. A 2-high wall of player blocks stops the roar's ring. Is a roar stopped by blocks like a gust, or does it pass through?
 7. Stalkers out of view. Minions move at 3.5 blocks a second when the player is not looking at them. Is that fair on a floor with no walls, or should a sound mark them?
 8. Names. "Sunning Ledge" and "thorn tree" are working names for the deity's ledge and the vertical route; they need the owner's check under the naming rules.
 9. Teleport (which deity: open). Is the lion one of the deities that teleport? A teleport would always land it far from the player.
-10. When the lion is stitched, does it transform, change its attitude, or leave?
+10. When the lion is defeated, does it transform, change its attitude, or leave?

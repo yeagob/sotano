@@ -77,7 +77,7 @@ Nothing in the sky takes effect without a warning the player can see or hear.
 
 Status: decided.
 
-No deity and no minion ever dies. At most a sky creature transforms, changes its attitude and behaviour, or leaves. A deity the player defeats is stitched, not killed: the player hits it with many positive intentions ("coser a tiros", stitching it with many shots), and then it transforms, changes its attitude, or leaves ([guardians](guardians/README.md)).
+No deity and no minion ever dies. At most a sky creature transforms, changes its attitude and behaviour, or leaves. A deity is defeated by many positive intentions: the player lands a count of positive hits on it, and when the hit count is reached it transforms, changes its attitude, or leaves ([guardians](guardians/README.md)). A deity can also be turned to the player's side.
 
 ### 3.8 The only way up is inside the tree
 
@@ -95,7 +95,7 @@ When the player builds a tower that brings them to a deity's height, the deity l
 
 | Part | Contents | Status |
 |---|---|---|
-| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, stitch and tower rule; proposal for the rest of the contract |
+| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, defeat by positive hits and tower rule; proposal for the rest of the contract |
 | [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule and the rule that minions never die decided |
 | [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal |
 | [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics & ascent) |
@@ -105,7 +105,7 @@ When the player builds a tower that brings them to a deity's height, the deity l
 
 1. **Sky floors and built stories.** Which of the built tree's seven stories are the five sky floors, and whether the sky tree is the built giant tree, are open.
 2. **Sky and heaven.** The owner's phrase "el reino del cielo" also reads as "the kingdom of heaven", and the built game says "heaven" for where the silence leads. How the built heaven relates to the levels of the sky is open.
-3. **What a stitched deity does.** Nothing dies (law 3.7): a stitched deity transforms, changes its attitude, or leaves. Which of the three each deity does, and whether it comes back, is open.
+3. **What a defeated deity does.** Nothing dies (law 3.7): a defeated deity transforms, changes its attitude, or leaves. Which of the three each deity does, and whether it comes back, is open. How a deity is turned to the player's side is open.
 4. **Negative shots at player blocks.** The rule in section 3.2 says only a positive intention destroys a built block for good. What a negative shot does to a built block is open.
 5. **Going up from any point.** Open whether the player can go straight up from any point of a floor, or only from some.
 6. **Time limit.** Open whether the sky has a time limit.

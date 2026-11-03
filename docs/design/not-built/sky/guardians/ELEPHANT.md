@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The elephant is the third deity: an elephant with a giant head on a small, soft plush body, over sky floor 3, a floor of channels and rivers that carry the player.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the elephant levitates, that it is defeated by stitching it with many positive shots and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the elephant levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
 
 ## 1. Who it is
 
@@ -48,13 +48,13 @@ A positive shot at an elephant minion turns it into an ally (decided, see [minio
 - stands in a channel and holds the water back, so a dam does not have to be built there;
 - pushes a minion that is about to push the player, so the knockback goes to a minion instead.
 
-## 6. The stitch
+## 6. Defeat by many positive hits
 
-The player defeats the elephant by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves; which one is open. Proposal: it changes its attitude: it sets its weight down, the water drains from the channels, and the herd of minions stays on the floor until the player is done.
+The player defeats the elephant by landing many positive hits on it ([guardians](README.md#1-the-shared-contract)). It does not die. When the hit count is reached, it transforms, changes its attitude, or leaves; which one is open. It can also be turned to the player's side. Proposal: it changes its attitude: it sets its weight down, the water drains from the channels, and the herd of minions stays on the floor until the player is done.
 
 ## Behaviour specification
 
-Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, the stitch, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
+Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, defeat by positive hits, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
 
 ### B1. The player's read
 
@@ -68,7 +68,7 @@ A great grey head with ears like sails, floating over a high basin of water. Eve
 
 **The tower rule.** A tower of player blocks that brings the player to the elephant's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the elephant floats to it, sweeps the stack with its trunk, and pushes the player off, after the full warning. Raising one block against the rim's line, as in the example route, is not a tower.
 
-**The rim (the elephant's guard).** A positive intention fired from below the rim's top strikes the rim, which is a solid block, and stops on it ([attacks](../../../built/encounters/ATTACKS.md)). The small body is in line only from the top terrace, from a player block raised high enough, or from the air. The head, which rises above the rim, can be stitched from lower, but only while the trunk is raised (in Trunk spray and Trumpet).
+**The rim (the elephant's guard).** A positive intention fired from below the rim's top strikes the rim, which is a solid block, and stops on it ([attacks](../../../built/encounters/ATTACKS.md)). The small body is in line only from the top terrace, from a player block raised high enough, or from the air. The head, which rises above the rim, takes positive hits from lower, but only while the trunk is raised (in Trunk spray and Trumpet).
 
 **States and timings (targets).**
 
@@ -79,9 +79,9 @@ A great grey head with ears like sails, floating over a high basin of water. Eve
 | Attacking | One attack (B3), telegraph 1.1 s | per attack |
 | Drinking | Trunk down in the Basin, a long drink | 2.5 s |
 | Hurt | Ears flap once, a low rumble | 0.3 s |
-| Rallying | Trumpets when the stitches reach a third and two thirds of the target; the herd turns toward the waterhole | 2 s |
+| Rallying | Trumpets when the positive hits reach a third and two thirds of the target; the herd turns toward the waterhole | 2 s |
 
-**The cycle.** Idle, Listening, Attacking, Drinking, Listening (or Idle when the player is out of sight). Drinking is its recovery. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-the-stitch)).
+**The cycle.** Idle, Listening, Attacking, Drinking, Listening (or Idle when the player is out of sight). Drinking is its recovery. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits)).
 
 **Memory (the elephant's own rule).** The elephant keeps the place where the player stood longest in the last target 10 s. Memory stone and Trunk spray aim there, not at the player. The mirror is carrying an old weight: the attack lands where the player was, and a player who keeps moving is never where it lands.
 
@@ -107,15 +107,15 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 **4. Trumpet (a ring).**
 - *Telegraph (1.1 s):* the ears fan, the trunk rises straight up, and a deep note gathers.
 - *Act:* a ring of sound runs along the terrace the player is on, at target 7 blocks a second, target 0.8 blocks high, and pushes target 1.5 blocks outward.
-- *Answer:* jump it, or stand on a block 1 high (a block stops the push). A positive intention on the raised trunk during the telegraph muffles it: the ring still runs but does not push. The raised trunk is also the head's open moment for stitches.
+- *Answer:* jump it, or stand on a block 1 high (a block stops the push). A positive intention on the raised trunk during the telegraph muffles it: the ring still runs but does not push. The raised trunk is also the head's open moment for positive hits.
 
-### B4. The stitch
+### B4. Defeat by positive hits
 
-- **Count:** target 36 stitches.
+- **Hit count:** target 36 positive hits.
 - **What counts:** a positive intention that touches the small body (in line over the rim) or the head while the trunk is raised.
-- **Progress (target):** each stitch leaves one short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the elephant's ears hang a little looser, as if a weight were set down. The sign is a target until the owner confirms it.
-- **Allies:** an ally standing in the waterhole on the ground answers the deity's trumpet with its own, adding one stitch every target 6 s. Allies cannot climb, so their help comes from below. At most target 3 count at once.
-- **When stitched:** as proposed in section 6 of this document (it sets its weight down, and the water drains from the channels). Which of the three outcomes it takes is open.
+- **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the elephant's ears hang a little looser, as if a weight were set down. The sign is a target until the owner confirms it.
+- **Allies:** an ally standing in the waterhole on the ground answers the deity's trumpet with its own, adding one positive hit every target 6 s. Allies cannot climb, so their help comes from below. At most target 3 count at once.
+- **When defeated:** as proposed in section 6 of this document (it sets its weight down, and the water drains from the channels). Which of the three outcomes it takes is open.
 
 ### B5. Minions
 
@@ -139,7 +139,7 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
   - *Hold:* it stands across a channel's bed on the lower terraces and holds the water back like a dam, while it stays.
   - *Clear:* it steps in front of a hostile minion about to push the player and takes the push itself.
   - *Carry:* a player who stands in front of an ally is lifted by its trunk one terrace up (target 3 blocks), once every target 6 s.
-  - *Help:* it stands in the waterhole and adds stitches (B4).
+  - *Help:* it stands in the waterhole and adds positive hits (B4).
 - **Without minions:** if the owner makes this a platforming-only floor, the herd is removed and the rim stays; the floor is then won by climbing alone.
 
 ### B6. Platforming layout (rules)
@@ -153,7 +153,7 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 - **Straight up:** one radial line, the tusk line, has one-block ledges staggered up every terrace wall and the Basin's mesa. It is dry and never carries water. Trunk swat and Trumpet reach its top.
 - **Nests:** target 5, one on each terrace by a channel's head, each with 3 cubes.
 
-**Example route.** Leave the ground by a dry channel bed. When the arrows ripple in it, step onto the bank through the nearest cut. Take a cube from the nest at 6 and dam the bed just above you, then climb the dry stretch. Turn a minion into an ally on the way and let it lift you a terrace. Keep moving so Memory stone falls behind you. On the top terrace, raise one block against the rim's line and stitch the small body over the rim during its drink.
+**Example route.** Leave the ground by a dry channel bed. When the arrows ripple in it, step onto the bank through the nearest cut. Take a cube from the nest at 6 and dam the bed just above you, then climb the dry stretch. Turn a minion into an ally on the way and let it lift you a terrace. Keep moving so Memory stone falls behind you. On the top terrace, raise one block against the rim's line and land positive hits on the small body over the rim during its drink.
 
 ### B7. Hindrances used
 
@@ -177,7 +177,7 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery (Drinking) | 2.5 s | up to about 1 s |
 | Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
 | Current speed | 3 blocks a second | wading pace about 2.8 blocks a second |
-| Stitches | 36 | 229 health: about 65 bad hits |
+| Positive hits | 36 | 229 health: about 65 bad hits |
 | Hits to turn a minion | 5 | 5 good hits for a projection |
 | Minions at once | 5 (3 hostile) | no built equivalent |
 | Floor size | radius 24, 34 high | trunk story 22 high |
@@ -192,7 +192,7 @@ Every value in the middle column is a target. The right column is the built game
 5. Memory. The elephant aims its spray and its stone at the place the player stood longest in the last 10 s. Does that read as the mirror of carrying an old weight, or as a punishment for resting, which the panda's floor rewards?
 6. The rim. Shots from below the rim stop on it. Is a guard made of a solid block right, or should the body always be in line?
 7. The trunk lift. An ally lifts the player one terrace. Is a carry by an ally allowed here? (The same question is asked for the horse.)
-8. Allies far away. Allies in the waterhole add stitches from the ground, 30 blocks below the deity. Is help at a distance acceptable?
+8. Allies far away. Allies in the waterhole add positive hits from the ground, 30 blocks below the deity. Is help at a distance acceptable?
 9. Currents and minions. The herd wades without slowing and is not carried by the currents. The abilities folder leaves this open ([water currents](../abilities/WATER-CURRENTS.md)).
 10. Teleport (which deity: open). Is the elephant one of the deities that teleport? A teleport would always land it far from the player.
-11. When the elephant is stitched, does it transform, change its attitude, or leave?
+11. When the elephant is defeated, does it transform, change its attitude, or leave?

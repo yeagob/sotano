@@ -4,7 +4,7 @@ Up: [The realm of the sky](../README.md)
 
 The guardians are the five deities of the first five floors of the sky tree. Each one is a small, soft body under a giant animal head, placed over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
 
-Status: decided for the animals and their order, for levitation, for the stitch, for the rule that nothing dies, for the tower rule and for the rule that a teleport lands far from the player. Proposal for the rest of the shared contract. Open for the points listed under open questions.
+Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule and for the rule that a teleport lands far from the player. Proposal for the rest of the shared contract. Open for the points listed under open questions.
 
 ## 1. The shared contract
 
@@ -15,7 +15,7 @@ Status: decided for rules 1, 2, 3, 6, 10, 11 and 12. Proposal for the rest.
 3. **The arena is the floor.** The fight takes place on the whole sky floor. There is no separate arena room. *(Decided: one giant boss fight per floor.)*
 4. **Each fight is a puzzle.** Each floor has a different puzzle, built from its platforming and from the hindrances in [abilities](../abilities/README.md). The puzzle is solved with the built world's verbs: jumping, building blocks, water, lava, cubes, and going straight up.
 5. **Platforming first.** Each floor is strong platforming before it is a fight. The player must be able to reach the deity by climbing, with or without practices. Each floor's platforming is different from the others (see the table in section 2).
-6. **The stitch.** The player defeats a deity by stitching it with many shots (the owner's "coser a tiros"): hitting it with many positive intentions. The stitch is many positive shots and nothing else. The number of shots is a target in each guardian document, and the visible sign of progress is a target or an open question. When it is stitched, the deity transforms, changes its attitude, or leaves; it does not die. *(Decided.)*
+6. **Defeat by positive hits.** The player defeats a deity by landing many positive hits on it: each positive intention that touches it is one hit. Defeat is many positive hits and nothing else. The hit count is a target in each guardian document, and the visible sign of progress is a target or an open question. When the hit count is reached, the deity transforms, changes its attitude, or leaves; it does not die. It can also be turned to the player's side. *(Decided.)*
 7. **The minions help.** Minions turned into allies can help the player on the floor. What allies do is proposal in [minions](../minions/README.md).
 8. **Not every floor is a minion army.** One floor may be only challenging platforming with the player hitting the deity, with no minions. Which floor, if any, is open.
 9. **Negative intentions do nothing.** Sky creatures are won only with positive intentions ([sky laws](../README.md#33-negative-intentions-do-not-work-on-sky-creatures)).
@@ -62,7 +62,7 @@ The exact behaviour of every guardian and every minion is not decided here. It i
   - the timing of each attack, as a telegraph window and a target length, marked as target;
   - the pattern of each minion's movement, from the animal;
   - the platforming layout rules of the floor: which cells, which heights, which routes;
-  - the stitch mechanic: how many positive shots it takes, what shows progress, and what the stitched deity does (it transforms, changes its attitude, or leaves).
+  - the defeat by positive hits: how many positive hits it takes, what shows progress, and what the defeated deity does (it transforms, changes its attitude, or leaves).
 - Where the document is open, leave the question open and list it. Do not decide an open question silently.
 
 **Constraints:**
@@ -91,15 +91,15 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 ## 5. Open questions
 
 1. **Which built stories are the sky floors.** Open: the mapping of the five sky floors onto the built tree's seven stories ([LEVELS](../../../built/levels/README.md)).
-2. **What a stitched deity does.** Open: which of the three outcomes (it transforms, changes its attitude, or leaves) each deity takes when it is stitched. Each guardian document proposes one.
+2. **What a defeated deity does.** Open: which of the three outcomes (it transforms, changes its attitude, or leaves) each deity takes when it is defeated. Each guardian document proposes one.
 3. **Which deity teleports.** Open: which deities can teleport. The rule that a teleport always lands far from the player is decided.
 4. **Which floor is platforming only.** Open: whether one floor has no minions, and which one.
 5. **The minions' part.** Open: whether a minion's help changes the fight's stages (see [minions](../minions/README.md)).
-6. **Stages of the fight.** The specifications pace each fight in three stages, at a third and at two thirds of the stitch target, like the built three phases. The stitch itself is only many positive shots. Does the owner want the fight to change as the stitches add up, or to keep one pace?
-7. **The stitch count and its sign.** The number of shots per deity and the visible sign of progress are targets (section 6.5). The owner has to confirm them.
+6. **Stages of the fight.** The specifications pace each fight in three stages, at a third and at two thirds of the hit count, like the built three phases. The defeat itself is only many positive hits. Does the owner want the fight to change as the positive hits add up, or to keep one pace?
+7. **The hit count and its sign.** The number of positive hits per deity and the visible sign of progress are targets (section 6.5). The owner has to confirm them.
 8. **Block nests.** The specifications give every floor nests of loose cubes that refill (section 6.3), so building never needs a negative intention. Does the owner want nests, or should blocks come only from breaking the original world?
 9. **Broken cubes as player blocks.** A cube from a broken original block, once placed, counts as a player block in the specifications. Is that the owner's reading of the realm's law 3.2?
-10. **Winning by allies alone.** Allies add stitches with no cap on four floors. Can a floor be won with no stitch from the player's own hand?
+10. **Winning by allies alone.** Allies add positive hits with no cap on four floors. Can a floor be won with no positive hit from the player's own hand?
 11. **Harm.** The specifications propose 2 points for a deity's lobs, bolts and rings, and no harm from hindrances or minions (section 6.6). The question stays open in [abilities](../abilities/README.md#4-open-questions).
 12. **The telegraph ladder.** The warnings shorten from 1.4 s on the first floor to 0.9 s on the fifth (section 6.4). Confirm that the shortening is the sky's rising difficulty.
 
@@ -125,9 +125,9 @@ Each deity has the same core cycle, with its own timings and its own animal stat
 - **Idle**: the animal's own rest. No attack.
 - **Watching**: the head turns to the player. Starts when the player comes within the deity's sight (its document gives the distance).
 - **Attacking**: one attack, with its telegraph first (section 6.4).
-- **Recovering**: the deity is open after an attack. The best moment for a stitch.
-- **Hurt**: a short flinch when a stitch lands. It never cancels a telegraph already shown.
-- **Rallying**: when the stitches reach a third and two thirds of the deity's target (section 6.5), the deity holds for target 2 s, like the built phase hold of 2 s ([fight flow](../../../built/bosses/FIGHT-FLOW.md)), and its next stage begins with one more attack.
+- **Recovering**: the deity is open after an attack. The best moment for a positive hit.
+- **Hurt**: a short flinch when a positive hit lands. It never cancels a telegraph already shown.
+- **Rallying**: when the positive hits reach a third and two thirds of the deity's target (section 6.5), the deity holds for target 2 s, like the built phase hold of 2 s ([fight flow](../../../built/bosses/FIGHT-FLOW.md)), and its next stage begins with one more attack.
 
 The cycle is Idle, Watching, Attacking, Recovering, then Watching again while the player is in sight, or Idle when they are not. Rallying interrupts the cycle once at each stage change.
 
@@ -158,20 +158,20 @@ Every attack and every hindrance shows its telegraph first ([abilities](../abili
 
 No sky telegraph is shorter than target 0.8 s.
 
-### 6.5 The stitch
+### 6.5 Defeat by many positive hits
 
-The player defeats a deity by stitching it with many shots (decided). The specifications use only what the player sees:
+The player defeats a deity by landing many positive hits on it (decided). The specifications use only what the player sees:
 
-- **A stitch** is one positive intention that touches the deity's body or head while the deity is not in a guarded state (each document names its guards, if any).
-- **Many shots.** Each deity takes a target number of stitches. When the count is reached, the deity is stitched: it transforms, changes its attitude, or leaves (which one is open, section 5). It never dies.
-- **Progress (target).** Each landed stitch leaves a short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. Each document adds the animal's own sign. The sign is a target until the owner confirms it.
-- **Stages.** The fight's pace changes at a third and at two thirds of the target, like the built three phases ([fight flow](../../../built/bosses/FIGHT-FLOW.md)). Stages only pace the attacks; they are not part of the stitch (section 5).
-- **Allies help.** An ally that reaches the deity, or the place its document names, adds stitches by itself on a timer. The player can win by hitting the deity, by making the minions help, or both.
-- **For comparison**: a built floor 1 boss has 140 health, about 40 bad intentions at 3.5 each. In the built game a good intention's warmth converts any boss in about five hits, which the built fight flow lists as an open question ([fight flow](../../../built/bosses/FIGHT-FLOW.md#open-questions)). The sky's counts sit between the two, because every stitch must be climbed for.
+- **A positive hit** is one positive intention that touches the deity's body or head while the deity is not in a guarded state (each document names its guards, if any).
+- **Many hits.** Each deity takes a target number of positive hits, its hit count. When the count is reached, the deity is defeated: it transforms, changes its attitude, or leaves (which one is open, section 5). It never dies. It can also be turned to the player's side.
+- **Progress (target).** Each landed positive hit leaves a short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. Each document adds the animal's own sign. The sign is a target until the owner confirms it.
+- **Stages.** The fight's pace changes at a third and at two thirds of the target, like the built three phases ([fight flow](../../../built/bosses/FIGHT-FLOW.md)). Stages only pace the attacks; they are not part of the defeat (section 5).
+- **Allies help.** An ally that reaches the deity, or the place its document names, adds positive hits by itself on a timer. The player can win by hitting the deity, by making the minions help, or both.
+- **For comparison**: a built floor 1 boss has 140 health, about 40 bad intentions at 3.5 each. In the built game a good intention's warmth converts any boss in about five hits, which the built fight flow lists as an open question ([fight flow](../../../built/bosses/FIGHT-FLOW.md#open-questions)). The sky's counts sit between the two, because every positive hit must be climbed for.
 
 ### 6.6 What works, and harm
 
-- **What works is a positive intention.** It stitches a deity, turns a minion toward an ally, and answers every attack and hindrance.
-- **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no stitch, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
+- **What works is a positive intention.** It lands positive hits on a deity, turns a minion toward an ally, and answers every attack and hindrance.
+- **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no positive hit, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
 - **Harm is open** ([abilities, open question 2](../abilities/README.md#4-open-questions)). The specifications propose: a deity's bolts, lobs and rings may take target 2 points (a quarter of a heart, against the built boss touch of 8); hindrances and minions only move, slow or hold the player. The real cost of a mistake in the sky is lost height.
 
