@@ -5,6 +5,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+- Dr. Launcher, a quality 3 practice of the new Milagros path, found in treasure rooms: a quick double tap of the fire control (double click, double RT, or a double tap on the bead of light) launches a bomb as a missile that flies straight and explodes on the first thing it meets. Negative intentions make it a bomb blast; positive ones a love explosion that mends blocks, heals allies, warms projections and grows creatures. Seeds changed: a new practice in the pools (v24, #59).
 - A kitchen on floors 1, 3, 5 and 7 cooks a part into a meal (three cooks per run; flesh gives half a heart, other parts a heart), eaten with the drink key. A hint names the drink key when a potion or meal is made or picked up. The alembic is now one tile on the even floors; seeds changed (v22).
 - Breaking a crate can drop a key, a heart or a small bomb (#6).
 - A laboratory alembic on floors 2, 4, 6 and 8 brews from up to three things in your hand (a positive intention, three brews per run). The brew leaves a flask to drink with G, X or the flask button: eight potions, from instant tonics to timed draughts. The Listener speaks only once it is given a heart of a released pattern, and the Gardener once it is given a flesh (#20).

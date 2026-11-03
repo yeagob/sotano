@@ -29,6 +29,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   blockLoot: () => ({ x: 1, y: 1, z: 1, material: 4, source: 'intent', drops: ['key'] }),
   touchCube: () => ({ cube: 0, material: 1, held: 0, carry: 1, bomb: false, action: 'pickup' }),
   bombPlace: () => ({ fuse: 1.8 }),
+  missileLaunch: () => ({ speed: 24, range: 40, polarity: 'positive' }),
   kick: () => ({ cube: 0, material: 1, speed: 5, lift: 3, tags: new Set() }),
   throw: () => ({ cube: 0, material: 1, speed: 9, lift: 2, tags: new Set() }),
   drop: () => ({ material: 1, how: 'throw' }),

@@ -77,7 +77,8 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `crush` | Block damage per second dealt to every block you press against while walking (feet, waist and head height, never below; armor counts; 0 = none) |
 | `headbutt` | Highest block tier your head breaks when you jump into it (-1 = none); breaking keeps 45 % of the jump |
 | `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
-| `bombRadius`, `bombDamage` | Your bombs |
+| `bombRadius`, `bombDamage` | Your bombs (and the blast of a missile, love or not) |
+| `missile` | 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does nothing); `game.ts` `tapMissile`, rules in `combat/missiles.ts` |
 | `luck` | Chance of a reward when a room is cleared (more uses to come: chests) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
@@ -105,6 +106,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
 | `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's roll of a key, heart or bomb, at its floor's chance of 10% to 30%) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
+| `missileLaunch` | `speed` (steady, blocks/s), `range` (blocks), `polarity` (negative: a bomb blast; positive: a love explosion), or cancel (no bomb is spent) | a quick double tap of the fire control with the `missile` stat, a bomb in the counter and room to arm |
 | `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |

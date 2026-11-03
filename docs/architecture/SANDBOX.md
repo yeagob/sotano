@@ -55,7 +55,7 @@ Each action has a tick `t` and runs right after that tick's report, before the t
 | `spawn` | `def`, `at`, `faction`? | A projection or creature, out at once |
 | `give`, `lose` | `item` | Gain (quietly) or lose a practice |
 | `tp`, `look` | `at` | Stand on a tile; aim at a cell's centre |
-| `fire` | `ticks`? (1) | Hold the fire button that many ticks (the intention, or the active weapon) |
+| `fire` | `ticks`? (1) | Hold the fire button that many ticks (the intention, or the active weapon); each hold starts with a press, so two short `fire`s within 18 ticks are a double tap (Dr. Launcher) |
 | `key` | `code` | Press a key for one tick: `KeyE` bomb, `KeyQ` throw, `KeyF` polarity |
 | `use` | | Right click: place the top block where you look |
 | `hand` | `blocks` | Set the hand |

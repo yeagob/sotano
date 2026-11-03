@@ -73,6 +73,10 @@ export interface GameEvents {
   touchCube: { cube: number; material: number; held: number; carry: number; bomb: boolean; action: CubeAction };
   /** About to place a bomb at your feet. Change the fuse, or cancel. */
   bombPlace: { fuse: number };
+  /** About to launch a bomb as a missile (a quick double tap with the `missile` stat). `speed` is the
+   *  steady speed (blocks/s) and `range` how far it flies (blocks); `polarity` decides the blast
+   *  (negative: a bomb blast; positive: a love explosion). Change them, or cancel: no bomb is spent. */
+  missileLaunch: { speed: number; range: number; polarity: Polarity };
   /** Kicking a loose cube. `tags` end up on the cube (see `debrisImpact`). */
   kick: { cube: number; material: number; speed: number; lift: number; tags: Set<string> };
   /** Throwing the top block of your hand (Q, or right click with nowhere to place it). */

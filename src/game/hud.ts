@@ -36,7 +36,7 @@ const th = (key: MessageKey, params?: Params) => esc(t(key, params));
 
 const STAT_ORDER: StatName[] = [
   'damage', 'fireRate', 'shotSpeed', 'range', 'gravity', 'size', 'mining',
-  'moveSpeed', 'jump', 'maxHearts', 'invuln', 'carry', 'kick', 'throw', 'crush', 'headbutt', 'reach',
+  'moveSpeed', 'jump', 'maxHearts', 'invuln', 'carry', 'kick', 'throw', 'crush', 'headbutt', 'missile', 'reach',
   'bombRadius', 'bombDamage', 'luck',
 ];
 
