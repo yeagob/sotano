@@ -373,7 +373,7 @@ export const ES: Catalog = {
       resonance: {
         name: 'Resonancia',
         description: 'Cuando un pensamiento suena verdadero, los que están cerca empiezan a vibrar.',
-        effect: 'Cada intención que impacta carga a las otras intenciones en vuelo a menos de 3 bloques. Una intención cargada se descarga en su siguiente golpe: 3 de daño a las proyecciones a menos de 2 bloques.',
+        effect: 'Cada otra intención en vuelo en la sala suma 1% de daño a la intención que disparas.',
         inspiredBy: 'la resonancia simpática (física); un guiño a la sintonía terapéutica',
       },
       discharge: {

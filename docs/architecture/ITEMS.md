@@ -51,7 +51,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `has(id)`, `hasTag(tag)` | Ask about other held items |
 | `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
 | `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
-| `launch`, `tagFlying`, `tagCube` | Fire a new intention, tag the intentions in flight around a point, tag a loose cube |
+| `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |

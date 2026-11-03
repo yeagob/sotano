@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ITEM_BY_ID, ITEMS } from '../src/content/items';
+import resonance from '../src/content/items/resonance';
 import { SYNERGIES } from '../src/content/synergies';
 import { Rng } from '../src/core/rng';
 import { BASE_STATS, StatSheet, type StatName } from '../src/core/stats';
@@ -178,6 +179,18 @@ describe('split damage', () => {
     b.inv.gain('deepfocus');
     expect(b.stats.get('mining')).toBeCloseTo(BASE_STATS.mining * 2);
     expect(b.stats.get('damage')).toBeLessThan(BASE_STATS.damage);
+  });
+});
+
+describe('resonance', () => {
+  it('each other intention in the room adds 1% damage to the one fired', () => {
+    const fire = resonance.hooks!.find(h => h.event === 'fire')!;
+    const busy = { damage: 10 };
+    fire.fn({ intent: busy } as never, { intentsHere: () => 5 } as never);
+    expect(busy.damage).toBeCloseTo(10.5);
+    const alone = { damage: 10 };
+    fire.fn({ intent: alone } as never, { intentsHere: () => 0 } as never);
+    expect(alone.damage).toBe(10);
   });
 });
 

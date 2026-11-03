@@ -738,7 +738,7 @@ export class Game {
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
-      tagFlying: (x, y, z, r, tag, except) => { for (const s of this.intents.flying(new THREE.Vector3(x, y, z), r, except)) s.tags.add(tag); },
+      intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
     };
   }
