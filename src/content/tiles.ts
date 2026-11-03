@@ -4,18 +4,24 @@ import { MAT } from './materials';
 
 export const TILE_PX = 16;
 export const ATLAS_COLS = 8;
-export const ATLAS_ROWS = 6;
+export const ATLAS_ROWS = 8;
 
-// tiles 0..39 are materials (tile = material id)
-export const TILE_GRASS_TOP = 40;
-export const TILE_LOG_TOP = 41;
-export const TILE_CRACK0 = 44; // 4 crack stages: 44..47
+/** Tiles 0..47 are materials (tile = material id); the special tiles follow the material range. */
+export const MATERIAL_TILES = 48;
+export const TILE_GRASS_TOP = 48;
+export const TILE_LOG_TOP = 49;
+/** End grain of sky wood and the open culms of bamboo (docs/art/sky/blocks.md). */
+export const TILE_SKYWOOD_TOP = 50;
+export const TILE_BAMBOO_TOP = 51;
+export const TILE_CRACK0 = 52; // 4 crack stages: 52..55
 export const CRACK_STAGES = 4;
 
 /** Faces in the mesher's FACES order: +X, -X, +Y, -Y, +Z, -Z. */
 export function tileFor(matId: number, face: number): number {
   if (matId === MAT.grass) return face === 2 ? TILE_GRASS_TOP : face === 3 ? MAT.dirt : MAT.grass;
   if (matId === MAT.log) return face === 2 || face === 3 ? TILE_LOG_TOP : MAT.log;
+  if (matId === MAT.skywood) return face === 2 || face === 3 ? TILE_SKYWOOD_TOP : MAT.skywood;
+  if (matId === MAT.bamboo) return face === 2 || face === 3 ? TILE_BAMBOO_TOP : MAT.bamboo;
   return matId;
 }
 
