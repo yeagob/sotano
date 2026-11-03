@@ -23,7 +23,7 @@ export class Tablets {
   private list: Tablet[] = [];
   private group = new THREE.Group();
 
-  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+  constructor(private scene: THREE.Object3D) { scene.add(this.group); }
 
   /** Mounts a lesson in a room: interior corner (x0, y0, z0), 13 × 7. */
   add(lesson: LessonKey, x0: number, y0: number, z0: number, second: LessonKey = lesson) {

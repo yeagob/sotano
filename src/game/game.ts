@@ -66,6 +66,7 @@ import {
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
+import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
@@ -201,7 +202,10 @@ export class Game {
   /** Floor the player is on now (by height), and the deepest one reached. */
   depth = 1;
   maxDepth = FIRST_FLOOR;
-  world!: VoxelWorld;
+  /** The active world (docs/architecture/SKY.md §2.1): the dungeon's for now, the sky's once realms swap. */
+  world!: VoxelSpace;
+  /** Always the dungeon's world [M10]: every dungeon-only caller takes it, so none can be handed the sky. */
+  dw!: VoxelWorld;
   floors = new Map<number, FloorResult>();
   /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
   private labs = new Map<number, Alembic>();
@@ -412,10 +416,11 @@ export class Game {
     this.enemies?.dispose();
     this.tablets?.dispose();
     this.tablets = new Tablets(this.scene);
-    this.world = createDungeonWorld(this.rng, this.dungeon);
-    const box = sandbox ? carveSandbox(this.world, this.rng, sandbox) : null;
+    this.dw = createDungeonWorld(this.rng, this.dungeon);
+    this.world = this.dw;
+    const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
-    this.tree = new GiantTree(this.world, SURFACE_Y, i => this.rng.fork('tree', i));
+    this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     setMasterTarget(0.35);
     this.elements = new ElementSim(this.world, {
@@ -544,7 +549,7 @@ export class Game {
   private carve(k: number) {
     if (k > LAST_FLOOR || this.floors.has(k)) return;
     if (this.sandbox) return;
-    const f = carveFloor(this.world, this.rng, k, this.dungeon.plans[k], {
+    const f = carveFloor(this.dw, this.rng, k, this.dungeon.plans[k], {
       templates: ROOM_TEMPLATES,
       pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
@@ -674,7 +679,7 @@ export class Game {
     this.activate(this.depth + 1);
     const st = this.bossRooms.get(this.depth);
     if (st) { st.defeated = true; st.open = true; }
-    openHole(this.world, f.hole);
+    openHole(this.dw, f.hole);
     this.player.spawnAt(f.hole.x + f.hole.size / 2, f.hole.yTop + 1, f.hole.z + f.hole.size / 2);
   }
 
@@ -2698,7 +2703,7 @@ export class Game {
       return;
     }
     st.open = true;
-    openHole(this.world, hole);
+    openHole(this.dw, hole);
     this.particles.burst(hole.x + hole.size / 2, hole.yTop + 1, hole.z + hole.size / 2, pal('limestone.dark'), 40, 4, 0.15);
     this.hud.shake(0.5);
     this.hud.toast('toast.wayDown');
@@ -2731,7 +2736,7 @@ export class Game {
     if (paid) { p.invulnT = 0; this.damageActor(p, paid * HEART, 'toll', 'toll', p.id); }
     if (p.dead) return true;
     st.open = true;
-    openHole(this.world, f.hole);
+    openHole(this.dw, f.hole);
     const h = f.hole;
     this.particles.burst(h.x + h.size / 2, h.yTop + 1, h.z + h.size / 2, pal('limestone.dark'), 40, 4, 0.15);
     this.hud.shake(0.5);

@@ -123,7 +123,7 @@ export class Enemies {
 
   private carrying = new Map<number, PickupKind[]>();
   private shells = new Map<number, ShellState>();
-  constructor(private scene: THREE.Scene, private host: EnemyHost) {
+  constructor(private scene: THREE.Object3D, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
       new THREE.MeshBasicMaterial({ color: pal('attack.red.base') }), MAX_PROJECTILES);

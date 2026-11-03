@@ -4,10 +4,12 @@
 
 import { elemByte } from '../content/elements';
 import { AIR, mat } from '../content/materials';
+import type { VoxelSpace } from './space';
 
 export const CHUNK = 16;
 
-export class VoxelWorld {
+/** The dungeon's world (docs/architecture/SKY.md §3.1): the flat-array `VoxelSpace`. */
+export class VoxelWorld implements VoxelSpace {
   readonly data: Uint8Array;
   /** Elements (docs/architecture/ELEMENTS.md §9.1): one byte per voxel (content/elements.ts), 0 = none.
    *  A cell holding an element is air in `data`, so nothing that asks `solid()` sees it. */
@@ -35,6 +37,14 @@ export class VoxelWorld {
     return x >= 0 && y >= 0 && z >= 0 && x < this.sx && y < this.sy && z < this.sz;
   }
   idx(x: number, y: number, z: number) { return x + this.sx * (y + this.sy * z); }
+  /** The cell of a voxel index (the inverse of `idx`). */
+  coords(i: number): [number, number, number] {
+    return [i % this.sx, Math.floor(i / this.sx) % this.sy, Math.floor(i / (this.sx * this.sy))];
+  }
+  /** The material at a voxel index (no bounds check: the index came from `idx`). */
+  getAt(i: number): number { return this.data[i]; }
+  /** The element byte at a voxel index (no bounds check). */
+  elemAtIndex(i: number): number { return this.elem[i]; }
 
   get(x: number, y: number, z: number): number {
     return this.inside(x, y, z) ? this.data[this.idx(x, y, z)] : AIR;

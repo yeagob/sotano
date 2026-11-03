@@ -4,7 +4,7 @@ import { buildKitchenModel } from '../render/kitchen-model';
 export class Kitchens {
   private group = new THREE.Group();
 
-  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+  constructor(private scene: THREE.Object3D) { scene.add(this.group); }
 
   add(x: number, y: number, z: number): THREE.Group {
     const model = buildKitchenModel();
