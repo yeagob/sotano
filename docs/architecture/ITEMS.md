@@ -101,7 +101,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `throw` | `speed`, `lift`, `tags`, or cancel | Q, or right click with nowhere to place |
 | `drop` | — (react) | a block leaves your hand (`how`: place or throw) |
 | `debrisImpact` | `keepTags` | a tagged cube hits something hard |
-| `jump` | `velocity`, or cancel | jumping |
+| `jump` | `velocity`, or cancel (`air`: the step of an air jump, 1 then 2; absent on the ground) | jumping |
 | `land` | — (react) | touching ground after a fall (`fallSpeed` in blocks/s; the feet's position `x, y, z`) |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
