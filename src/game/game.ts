@@ -1832,7 +1832,7 @@ export class Game {
     // the arming rule: a missile needs room to arm, so a shot into a wall at the muzzle is refused
     if (muzzleBlocked((x, y, z) => this.solid(x, y, z), eye.x, eye.y, eye.z, dir.x, dir.y, dir.z)) { sfx.denied(); return; }
     const ev = this.bus.emit('missileLaunch', { speed: MISSILE_SPEED, range: MISSILE_RANGE, polarity: this.polarity });
-    if (ev.cancelled) return;
+    if (ev.cancelled) { sfx.denied(); return; }
     p.bombs--;
     // the press that launched does not also cast while it is held
     this.input.suppress('cast');

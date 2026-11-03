@@ -67,6 +67,8 @@ export class Missiles {
   /** Moves every missile; returns the ones that ended this frame (already removed). */
   update(dt: number, w: MissileWorld): MissileEnd[] {
     const ends: MissileEnd[] = [];
+    // a non-finite or empty step would leave every missile hanging forever
+    if (!(dt > 0) || !Number.isFinite(dt)) return ends;
     for (let i = this.list.length - 1; i >= 0; i--) {
       const m = this.list[i];
       m.age += dt;
