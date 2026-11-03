@@ -9,6 +9,7 @@ import type { ItemDef } from '../items/types';
 import type { PartDef } from '../content/parts';
 import { carriedDef, type Flask } from '../content/potions';
 import { pal } from '../content/palette';
+import { HEART_FX, HEART_PICKUP, type HeartKind } from '../content/heart-art';
 import { glowTexture, iconTexture } from '../render/icons';
 import { breatheSeed, buildSeed, disposeSeed, type SeedModel } from '../render/seed-model';
 
@@ -24,6 +25,7 @@ export interface Pickup {
   item: ItemDef | null;
   /** The part a projection left (type 'part') or the flask a laboratory brewed (type 'flask'). */
   carried: PartDef | Flask | null;
+  heart: HeartKind;
   taken: boolean;
   /** Can't be collected yet (just dropped). */
   delay: number;
@@ -62,12 +64,26 @@ function bombMesh(): THREE.Object3D {
   return m.root;
 }
 
-function heartMesh(): THREE.Object3D {
+function heartMesh(kind: HeartKind = 'red'): THREE.Object3D {
   const g = new THREE.Group();
-  const m = new THREE.MeshLambertMaterial({ color: pal('life.heart'), emissive: pal('life.dark') });
-  // a pixel heart, 5 columns × 4 rows of small cubes
-  const rows = ['.X.X.', 'XXXXX', '.XXX.', '..X..'];
-  rows.forEach((r, j) => [...r].forEach((c, i) => { if (c === 'X') box(g, m, 0.08, 0.08, 0.1, (i - 2) * 0.08, 0.36 - j * 0.08); }));
+  const art = HEART_PICKUP[kind];
+  const w = Math.max(...art.rows.map(r => r.length)), c = 0.4 / w, top = 0.36;
+  const mats = new Map<string, THREE.Material>();
+  const matOf = (k: string) => {
+    let m = mats.get(k);
+    if (!m) { m = new THREE.MeshLambertMaterial({ color: pal(art.palette[k]), emissive: pal(art.emissive) }); mats.set(k, m); }
+    return m;
+  };
+  art.rows.forEach((r, j) => [...r].forEach((ch, i) => {
+    if (ch !== '.' && art.palette[ch]) box(g, matOf(ch), c, c, 0.1, (i - (w - 1) / 2) * c, top - j * c);
+  }));
+  if (kind !== 'red') {
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: pal(HEART_FX[kind]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.55 }));
+    glow.scale.set(0.9, 0.9, 1);
+    glow.position.y = top - (art.rows.length - 1) * c / 2;
+    glow.name = 'glow';
+    g.add(glow);
+  }
   return g;
 }
 
@@ -94,24 +110,26 @@ function pedestalItem(def: ItemDef | null): THREE.Object3D {
 }
 
 /** The mesh of a key, bomb (seed) or heart, as the game draws it (the gallery uses it too). */
-export function pickupMesh(type: PickupKind): THREE.Object3D {
-  return type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : heartMesh();
+export function pickupMesh(type: PickupKind, heart: HeartKind = 'red'): THREE.Object3D {
+  return type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : heartMesh(heart);
 }
 
 export class Pickups {
   readonly list: Pickup[] = [];
   private group = new THREE.Group();
   private time = 0;
+  heartKind: ((y: number) => HeartKind) | null = null;
 
   constructor(private scene: THREE.Scene) { scene.add(this.group); }
 
   dispose() { this.scene.remove(this.group); }
 
-  add(type: PickupType, x: number, y: number, z: number, room: number, item: ItemDef | null = null, delay = 0, carried: PartDef | Flask | null = null): Pickup {
-    const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh() : (type === 'part' || type === 'flask') && carried ? partMesh(carriedDef(carried)) : pedestalItem(item);
+  add(type: PickupType, x: number, y: number, z: number, room: number, item: ItemDef | null = null, delay = 0, carried: PartDef | Flask | null = null, heart?: HeartKind): Pickup {
+    const kind: HeartKind = type === 'heart' ? heart ?? this.heartKind?.(y) ?? 'red' : 'red';
+    const obj = type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : type === 'heart' ? heartMesh(kind) : (type === 'part' || type === 'flask') && carried ? partMesh(carriedDef(carried)) : pedestalItem(item);
     obj.position.set(x, y, z);
     this.group.add(obj);
-    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, carried, taken: false, delay, age: 0, obj };
+    const p: Pickup = { type, x, y, z, vx: 0, vy: type === 'item' ? 0 : 3, vz: 0, flying: false, room, item, carried, heart: kind, taken: false, delay, age: 0, obj };
     obj.scale.setScalar(0.001);
     this.list.push(p);
     return p;
@@ -158,7 +176,12 @@ export class Pickups {
       }
       const seed = p.obj.userData.seed as SeedModel | undefined;
       if (seed) breatheSeed(seed, this.time + p.x);
-      p.obj.rotation.y = this.time * 1.6 + p.x;
+      p.obj.rotation.y = this.time * (p.type === 'heart' && p.heart === 'star' ? 3.2 : 1.6) + p.x;
+      if (p.type === 'heart' && p.age >= POP_IN && (p.heart === 'blood' || p.heart === 'berserker')) {
+        const hz = p.heart === 'blood' ? 0.7 : 1.4;
+        const beat = Math.max(0, Math.sin(this.time * Math.PI * 2 * hz + p.x)) ** 6;
+        p.obj.scale.setScalar(1 + beat * (p.heart === 'blood' ? 0.14 : 0.22));
+      }
       const bob = Math.sin(this.time * 2.2 + p.x) * (p.type === 'item' ? 0.08 : 0.04);
       p.obj.position.set(p.x, p.y + (p.type === 'item' ? 0.55 : p.type === 'part' || p.type === 'flask' ? 0.3 : 0.12) + bob, p.z);
       if (p.type === 'item') {

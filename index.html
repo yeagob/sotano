@@ -102,6 +102,13 @@
     #hearts.safe > .heart { opacity: .55; outline: 1px solid var(--ui-text); }
     /* low health: the last heart beats at 1.1 Hz */
     #hearts.low > .heart:last-child { animation: beat .9s ease-in-out infinite; }
+    .heart.layer { background-image: none; }
+    .heart.full.k-blue { background-image: var(--ico-heartBlue); }
+    .heart.full.k-stone { background-image: var(--ico-heartStone); }
+    .heart.full.k-berserker { background-image: var(--ico-heartBerserker); }
+    #hearts.star > .heart { outline: 1px solid var(--star-glow); filter: drop-shadow(0 0 3px var(--star-glow)); }
+    #hearts.blood > .heart:not(.layer) { animation: beat 1.6s ease-in-out infinite; }
+    body.berserk #hearts > .heart.layer:has(.k-berserker) { filter: drop-shadow(0 0 4px var(--berserk-glow)); }
     @keyframes beat { 50% { transform: scale(1.12); } }
     /* breath under water: bubbles that pop one by one; the last one pulses when it is almost gone */
     #breath { display: none; gap: calc(var(--u) / 2); margin-bottom: 6px; }
@@ -159,6 +166,12 @@
     @keyframes flash { 0% { opacity: .45; } 100% { opacity: 0; } }
     #hurt { position: fixed; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 160px 40px var(--pal-life-dark); }
     #hurt.on { animation: hurt .4s ease-out; }
+    #star { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; box-shadow: inset 0 0 120px 18px var(--star-glow); }
+    #star.on { opacity: .45; }
+    #berserk { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .5s;
+      border: calc(2 * var(--u)) solid var(--berserk-edge); box-shadow: inset 0 0 120px 20px var(--berserk-glow); }
+    #berserk.on { opacity: .85; animation: berserk 1.6s ease-in-out infinite; }
+    @keyframes berserk { 0%, 100% { opacity: .6; } 50% { opacity: .9; } }
     @keyframes hurt { 0% { opacity: .35; } 100% { opacity: 0; } }
 
     /* toasts: slate, 16 px, top-centre at 22 % (away from the hand slots) */
@@ -356,6 +369,8 @@
   <div id="crosshair"></div>
   <div id="flash"></div>
   <div id="hurt"></div>
+  <div id="star"></div>
+  <div id="berserk"></div>
   <div id="status">
     <div id="hearts"></div>
     <div id="breath"></div>
