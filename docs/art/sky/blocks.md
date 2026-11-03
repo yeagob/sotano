@@ -74,4 +74,16 @@ The atlas grew from 8 × 6 to **8 × 8 = 64 tiles**. Tiles 0–47 are materials 
 
 Checked by the art agent in `?gallery=sky-blocks` in colour, greyscale and tritanopia (each tile at ×6, its 3 × 3, at 0 and 20 blocks in its own air, with a gold mark, and the air's two height strips and its stops); deuteranopia and protanopia were measured, not captured. Not verified: the blocks in a real 3D scene of the sky (they exist in no generated floor until TR and F1–F5 build them) and in motion; TR appends the trunk and the deck captures here.
 
+## The trunk and the deck (TR, geometry)
+
+Built by `src/sky/floors/tree.ts`, tested in `tests/sky-tree.test.ts`. The shapes, not yet captured:
+
+- **Deck:** a disc of cloud, radius 48, layers 29–31, walking surface 32. The arrival place is 40 out from the axis.
+- **Trunk:** heartwood walls and slabs, three thick. Its outer radius widens by storey: 26 (hall 1), 28, 30, 32, and 36 (hall 5 and the roof). Halls are air; each has four knot windows at eye height (ground + 1 and + 2), one each way through the wall.
+- **Way up of the deck:** a three-high door through the foot wall at 32–34, and a well of radius 4 up through the first slab, with a spiral of heartwood (rise 8, four treads) to hall 1's ground at 36.
+- **Way up of each floor:** a hole through the slab above its hall, closed on its bottom layer by a heartwood membrane (the disc of the floor's gate). `openGate(n)` writes the membrane to air.
+- **Roof:** heartwood at 218–220; the crown (Totality's first platform) stands at 221.
+
+Not captured yet: `?gallery=sky-blocks` shows the tiles, not the trunk. The trunk and the deck need a gallery section and their captures before the sky's gate passes; the look is the owner's to confirm.
+
 **Open for the owner:** the looks above; the pale-matter exception to pillar 1 (README §6); the Sun's warmth (README §7, provisional by the owner); the Spanish names (`Nube`, `Madera celeste`, `Duramen`, `Hoja celeste`, `Bambú`, `Musgo`, `Piedra pálida`, `Madera de cerca`, `Bruma`, `Resina estelar`, `Vidrio de meteorito`, `Vidrio solar`, `Sello del Sol`).
