@@ -90,7 +90,7 @@ No pure `#000` or `#FFF`, except 1–4 px cores of `light.core`.
 
 **Attack red and warning yellow** (issue #47; owner ruling 2026-10-31): the warning of an attack that deals damage is `attack.warn.base` `#EEE33C` (a lemon yellow, not the player's gold; `attack.warn.dim` `#A8A02E` for a growing ring's reach), and its live blow is `attack.red.base` `#F23D33`, as is every hostile shot. Red is the only red besides hearts, and neither the warning nor the blow is ever a particle. Particles and decoration are the pale ramp, `cold.body` and `cold.white`.
 
-### 3.5 The four paths (colour-blind verified)
+### 3.5 The five paths (colour-blind verified)
 
 | Path | Element | Glyph | `base` | `glow` | `dark` | `shadow` (projection tint) |
 |---|---|---|---|---|---|---|
@@ -98,8 +98,9 @@ No pure `#000` or `#FFF`, except 1–4 px cores of `light.core`.
 | **Emotion** | Water | ● | `#7AA3D4` | `#8EC1FF` | `#365981` | `#364A63` |
 | **Mind** | Air | ◆ | `#B074FA` | `#D5B3FF` | `#5D1AB0` | `#4A3663` |
 | **Will** | Fire | ▲ | `#CA7622` | `#E8803F` | `#66411C` | `#634D36` |
+| **Milagros** | Quintessence | ⬟ | `#DE42A2` | `#FF7AC8` | `#7C1A5A` | `#5E3652` |
 
-Glyphs are always shown next to the colour: colour never carries a path alone. The glyphs are the Platonic solids of the old elements (cube, octahedron, icosahedron, tetrahedron). The set keeps every pair at ΔE ≥ 24 under normal, deutan, protan and tritan vision. Gold and red are never path colours.
+Glyphs are always shown next to the colour: colour never carries a path alone. The glyphs are the Platonic solids of the old elements (cube, octahedron, icosahedron, tetrahedron), and Milagros, the fifth path (miracles, transcending limits), takes the pentagon, the face of the dodecahedron, the fifth solid and the old quintessence. Milagros is magenta, the one hue the rainbow lacks, made where its two ends meet. The set keeps every pair at ΔE ≥ 20 under normal, deutan, protan and tritan vision (the tightest pair is Milagros and Emotion, 20.8 for protans; the four element paths alone keep ≥ 24). Gold and red are never path colours (DECISIONS §3.5).
 
 ### 3.6 The cold (projections' side)
 

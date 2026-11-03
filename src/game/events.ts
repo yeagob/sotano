@@ -6,6 +6,8 @@ import { EventBus } from '../core/events';
 import type { DamageKind } from '../core/damage';
 import type { ActorId, ActorKind, Faction, Owner } from '../entities/actors';
 import type { Polarity } from '../combat/polarity';
+import type { HeartKind } from '../content/heart-art';
+import type { LayerKind } from '../entities/hearts';
 
 export type { Owner } from '../entities/actors';
 
@@ -73,6 +75,10 @@ export interface GameEvents {
   touchCube: { cube: number; material: number; held: number; carry: number; bomb: boolean; action: CubeAction };
   /** About to place a bomb at your feet. Change the fuse, or cancel. */
   bombPlace: { fuse: number };
+  /** About to launch a bomb as a missile (a quick double tap with the `missile` stat). `speed` is the
+   *  steady speed (blocks/s) and `range` how far it flies (blocks); `polarity` decides the blast
+   *  (negative: a bomb blast; positive: a love explosion). Change them, or cancel: no bomb is spent. */
+  missileLaunch: { speed: number; range: number; polarity: Polarity };
   /** Kicking a loose cube. `tags` end up on the cube (see `debrisImpact`). */
   kick: { cube: number; material: number; speed: number; lift: number; tags: Set<string> };
   /** Throwing the top block of your hand (Q, or right click with nowhere to place it). */
@@ -122,7 +128,9 @@ export interface GameEvents {
   /** The player walks up to a closed chest. `cost` (keys, 0 = free) can be changed; cancel to keep it shut. */
   chestOpen: { x: number; y: number; z: number; cost: number };
   /** Collecting a key, bomb or heart. `amount` can be changed (or cancel to leave it there). */
-  pickupCollect: { kind: PickupKind; amount: number };
+  pickupCollect: { kind: PickupKind; amount: number; readonly heart?: HeartKind };
+  heartLost: { readonly heart: LayerKind };
+  berserkChange: { readonly on: boolean };
   itemGained: { id: string; uid: number };
   roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */

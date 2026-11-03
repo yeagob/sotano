@@ -1,6 +1,6 @@
 # The player (not built)
 
-What the player could do or have that the game does not do yet: movement beyond walking and jumping, climbing, more kinds of hearts, falls that hurt, a shop, and a second life after death. Each document starts with its status line. Nothing here is true in the code; what is built is in [built/player](../../built/player/README.md).
+What the player could do or have that the game does not do yet: movement beyond walking and jumping, climbing, what is still open about the kinds of heart, falls that hurt, a shop, and a second life after death. Each document starts with its status line. Nothing here is true in the code; what is built is in [built/player](../../built/player/README.md).
 
 Back to [not-built](../README.md) · [the design document](../../README.md)
 
@@ -8,8 +8,7 @@ Back to [not-built](../README.md) · [the design document](../../README.md)
 |---|---|---|
 | [MOVEMENT-ABILITIES.md](MOVEMENT-ABILITIES.md) | Double jump, flight, and sprint, which the design names and does not commit to | idea |
 | [CLIMBING.md](CLIMBING.md) | The climbing problem: how to get back up after going down, one block at a time | proposal |
-| [HEART-TYPES.md](HEART-TYPES.md) | Soul hearts and a third kind of heart with an effect when it is lost | proposal |
-| [hearts/](hearts/README.md) | The kinds of heart the owner decided: each heart is 100 health, and the Berserker heart starts a 30-second fighting state when lost | decided |
+| [hearts/](hearts/README.md) | What is still open about the kinds of heart: the berserker potion, a heart that explodes, hearts from stations | decided, proposal, idea |
 | [FALLS.md](FALLS.md) | Damage from falling far | idea |
 | [SHOP.md](SHOP.md) | A shop where what the player carries can be traded | idea |
 | [SECOND-CHANCE.md](SECOND-CHANCE.md) | A practice that keeps the player alive once | idea |

@@ -44,6 +44,7 @@ Everything that today reads "floor k of 4" reads the table instead: plans, rock 
 - World height ≈ 8 + 10 × 16 + 100 ≈ 270 (≈ 2.5 M voxels × 2 bytes ≈ 5 MB). The rock column is filled once per run, as today.
 - Room ids `(floor + 1) × ROOM_ID_STRIDE + index` so they stay positive when tree floors (−1…−3) arrive.
 - `MAX_ROOM_H` / `MAX_PIT` and the rock-between-bands test hold for every pair of the ten bands.
+- Lava in the rock between floors 5 to 9 (`LevelDef.lava`, `carveLavaBelow`): one row of patches five blocks under each floor and two rows of pockets, every cell sealed by rock or lava and two blocks clear of the hole. Its own fork `fork('floor', k, 'lava')` (GEN_VERSION 25); the design is in [LAVA-BELOW](../design/built/levels/floors/LAVA-BELOW.md).
 
 ### 2.3 Runs
 

@@ -29,6 +29,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   blockLoot: () => ({ x: 1, y: 1, z: 1, material: 4, source: 'intent', drops: ['key'] }),
   touchCube: () => ({ cube: 0, material: 1, held: 0, carry: 1, bomb: false, action: 'pickup' }),
   bombPlace: () => ({ fuse: 1.8 }),
+  missileLaunch: () => ({ speed: 24, range: 40, polarity: 'positive' }),
   kick: () => ({ cube: 0, material: 1, speed: 5, lift: 3, tags: new Set() }),
   throw: () => ({ cube: 0, material: 1, speed: 9, lift: 2, tags: new Set() }),
   drop: () => ({ material: 1, how: 'throw' }),
@@ -51,6 +52,8 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   floorEnter: () => ({ depth: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
+  heartLost: () => ({ heart: 'blue' }) as const,
+  berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
   ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
   materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),
@@ -91,7 +94,7 @@ function sandbox() {
     frighten: () => {},
     igniteArea: () => {},
     launch: () => {},
-    tagFlying: () => {},
+    intentsHere: () => 0,
     tagCube: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);

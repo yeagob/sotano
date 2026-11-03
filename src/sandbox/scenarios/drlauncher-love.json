@@ -1,0 +1,17 @@
+{
+  "note": "Dr. Launcher, positive: a missile meets a Doubt beside damaged crates; the love explosion warms it and mends the crates, breaking nothing",
+  "rows": [".............", ".............", "...........c.", "...........c.", "...........c.", ".............", "............."],
+  "items": ["drlauncher"],
+  "player": [1, 0, 3],
+  "god": true,
+  "enemies": [{ "def": "doubt", "at": [9, 0, 3] }],
+  "ticks": 120,
+  "report": [0, 12, 120],
+  "actions": [
+    { "t": 0, "do": "damage", "at": [11, 0, 2], "amount": 2 },
+    { "t": 0, "do": "damage", "at": [11, 0, 3], "amount": 2 },
+    { "t": 0, "do": "look", "at": [9, 1, 3] },
+    { "t": 2, "do": "fire", "ticks": 1 },
+    { "t": 8, "do": "fire", "ticks": 1 }
+  ]
+}

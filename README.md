@@ -71,7 +71,7 @@ Not everything down here is hostile. **Creatures** are the living things of the 
 
 Practices are named after **techniques and concepts** people use to grow: Kaizen, Exposure, Box Breathing, Deep Focus, Habit Stacking, and public-domain works such as Marcus Aurelius' *Meditations*, Seneca's *Letters* and Lao Tzu's *Tao Te Ching*. Modern books and courses are credited as inspiration in each item's description, never used as a name. Practices aren't magic cures, and therapies aren't jokes.
 
-Practices sit on four paths: **Body**, **Mind**, **Emotion** and **Will**. Hold three of the same path and you reach a **state of being** (Embodied, Lucid, Open-hearted or Resolute): a bigger change you can see and feel.
+Practices sit on five paths: **Milagros**, **Body**, **Mind**, **Emotion** and **Will**. Hold three of the same path and you reach a **state of being** (Embodied, Lucid, Open-hearted or Resolute; Milagros has none yet): a bigger change you can see and feel.
 
 ### Elements
 
@@ -99,6 +99,7 @@ Three complete schemes; the game follows whichever device you used last (details
 | Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
 | Throw the top block or part | **Q** | **B** | The flying block |
 | Drop a bomb | **E** | **RB** | The seed |
+| Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, new run) | **Menu** | The tab button (top), the Menu tab |
@@ -161,9 +162,9 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 - **Forty projections** that seal the room and fight you, from Doubt and the Inner Critic to Panic and What-if, each with its own attack and its own reaction to the elements.
 - **The giant tree above.** Built in stories, each a hall of its own joined by spiral stairs, loaded only as you come near.
 - **Creatures** of the depths that never seal a room and never die: a good intention heals them, a bad one sends them into the blocks.
-- **Survival** with Isaac-style hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
+- **Survival** with Isaac-style hearts drawn in quarters, six kinds of heart (red, blue, stone, blood, star and the rare berserker), invulnerability frames after each hit and a death screen when the intention fades.
 - **Elements.** Water to wade or drown in, lava to keep away from, fire that eats crates. Water on lava makes obsidian. Each projection reacts to elements in its own way: Panic calms in water and goes off in fire.
-- **Practices and synergies.** Forty-five practices from quality 1 to 4, among them electric ones, area effects, shapes of intention and heart containers, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
+- **Practices and synergies.** Forty-six practices from quality 1 to 4, among them electric ones, area effects, shapes of intention and heart containers, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
 - **Unique runs.** Layouts, room moods, rewards and projections all come from the seed.
 
 The full catalogue is in [the practices](docs/design/built/practices/README.md). The thirteen floors, as built and as designed, are in [the levels](docs/design/built/levels/README.md).
@@ -225,6 +226,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 **Research and reviews**
 - [Technical research and proposal](docs/research/TECHNICAL.md): how Isaac and Noita are built, the target architecture, roadmap.
 - [Architecture reviews](docs/reviews/README.md): engineer, architect and mediator reviews of key decisions.
+- [Promotional videos](docs/promo/README.md): scripts of the short videos that present a feature on social networks.
 
 ---
 

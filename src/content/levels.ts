@@ -37,6 +37,7 @@ export interface LevelDef {
   frozen?: boolean;
   /** Rock in its band: share of deepstone (`deep`) and obsidian, dirt pockets, ore veins. */
   strata: { deep: number; obsidian: number; pockets: number; ore: number };
+  lava?: { layer: number; pockets: number; reach: number };
 }
 
 const L = (floor: number, key: string, kind: LevelKind, rock: LevelDef['rock'], strata: LevelDef['strata'], extra: Partial<LevelDef> = {}): LevelDef => ({
@@ -51,10 +52,10 @@ export const LEVELS: readonly LevelDef[] = [
   L(2, 'circle2', 'tree', 'f1', { deep: 0.15, obsidian: 0, pockets: 0.1, ore: 0.08 }, { circle: 2, bigRooms: 2, palette: { wall: 'rubble', floor: 'rubble', trim: 'brick' } }),
   L(3, 'circle3', 'tree', 'f2', { deep: 0.3, obsidian: 0.02, pockets: 0.06, ore: 0.08 }, { circle: 3, bigRooms: 2.5, palette: { wall: 'wetbrick', floor: 'ashlar', trim: 'wetbrick' } }),
   L(4, 'circle4', 'tree', 'f2', { deep: 0.45, obsidian: 0.04, pockets: 0.04, ore: 0.09 }, { circle: 4, bigRooms: 3, palette: { wall: 'ashlar', floor: 'wetbrick', trim: 'ashlar' } }),
-  L(5, 'circle5', 'tree', 'f3', { deep: 0.6, obsidian: 0.06, pockets: 0.02, ore: 0.1 }, { circle: 5, bigRooms: 3, palette: { wall: 'slate', floor: 'darkbrick', trim: 'slate' } }),
-  L(6, 'circle6', 'random', 'f3', { deep: 0.75, obsidian: 0.1, pockets: 0, ore: 0.1 }, { circle: 6, bigRooms: 3, palette: { wall: 'darkbrick', floor: 'slate', trim: 'darkbrick' } }),
-  L(7, 'circle7', 'random', 'f4', { deep: 0.85, obsidian: 0.15, pockets: 0, ore: 0.11 }, { circle: 7, bigRooms: 3.5, palette: { wall: 'darkbrick', floor: 'darkbrick', trim: 'slate' } }),
-  L(8, 'circle8', 'random', 'f4', { deep: 0.9, obsidian: 0.22, pockets: 0, ore: 0.12 }, { circle: 8, bigRooms: 4, palette: { wall: 'darkbrick', floor: 'slate', trim: 'slate' } }),
+  L(5, 'circle5', 'tree', 'f3', { deep: 0.6, obsidian: 0.06, pockets: 0.02, ore: 0.1 }, { circle: 5, bigRooms: 3, lava: { layer: 0, pockets: 1, reach: 1 }, palette: { wall: 'slate', floor: 'darkbrick', trim: 'slate' } }),
+  L(6, 'circle6', 'random', 'f3', { deep: 0.75, obsidian: 0.1, pockets: 0, ore: 0.1 }, { circle: 6, bigRooms: 3, lava: { layer: 0.25, pockets: 2, reach: 2 }, palette: { wall: 'darkbrick', floor: 'slate', trim: 'darkbrick' } }),
+  L(7, 'circle7', 'random', 'f4', { deep: 0.85, obsidian: 0.15, pockets: 0, ore: 0.11 }, { circle: 7, bigRooms: 3.5, lava: { layer: 0.5, pockets: 3, reach: 2 }, palette: { wall: 'darkbrick', floor: 'darkbrick', trim: 'slate' } }),
+  L(8, 'circle8', 'random', 'f4', { deep: 0.9, obsidian: 0.22, pockets: 0, ore: 0.12 }, { circle: 8, bigRooms: 4, lava: { layer: 1, pockets: 4, reach: 3 }, palette: { wall: 'darkbrick', floor: 'slate', trim: 'slate' } }),
   L(9, 'circle9', 'random', 'f4', { deep: 0.9, obsidian: 0.3, pockets: 0, ore: 0.12 }, { circle: 9, bigRooms: 4, frozen: true, palette: { wall: 'darkbrick', floor: 'ashlar', trim: 'ashlar' } }),
 ];
 

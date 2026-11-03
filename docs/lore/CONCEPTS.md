@@ -12,8 +12,8 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, rising from the room's own matter (announced by omens), never through the doors ([BESTIARY §2](../design/built/encounters/SEAL-AND-OMENS.md)) |
 | **A miracle is a shift in perception** | `course-in-miracles` | Practices that change how a hit is perceived (Forgiveness, Nothing Personal); future: rooms that change when seen differently |
 | **Forgiveness as release** | `course-in-miracles` | **Forgiveness**: what touches you is hurt instead of you |
-| **Transcending limits** ("No hay nada imposible...", the owner's line) | `no-impossible` | Proposed, not built: the Rocket Launcher's missile keeps its line where a thrown bomb would fall ([ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)) |
-| **The love explosion** (our own, reusable) | — (our own) | Proposed, not built: an area explosion of positive polarity that heals and grows creatures instead of breaking; its numbers are open ([ROCKET-LAUNCHER.md](../design/not-built/practices/ROCKET-LAUNCHER.md)) |
+| **Transcending limits** ("No hay nada imposible...", the owner's line) | `no-impossible` | **Dr. Launcher** (the Milagros path): its missile keeps its line where a thrown bomb would fall ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
+| **The love explosion** (our own, reusable) | — (our own) | Built: a positive missile of **Dr. Launcher** ends in an area explosion that mends blocks, heals allies, warms projections and grows creatures instead of breaking, in the bomb's radius ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
 | **Don't take anything personally** | `four-agreements` | **Nothing Personal**: contact hits often slide off |
 | **Be impeccable with your word** | `four-agreements` | Future: intentions that never miss what they're aimed at |
 | **Don't make assumptions / always do your best** | `four-agreements` | Future practices |

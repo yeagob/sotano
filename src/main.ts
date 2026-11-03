@@ -5,6 +5,7 @@ import { GEN_VERSION } from './core/seed';
 import { setLocale, t } from './i18n';
 import { initDom } from './i18n/dom';
 import { initLanding } from './game/landing';
+import type { HeartKind } from './content/heart-art';
 
 async function boot() {
   initDom(); // language first: everything below may show text
@@ -45,6 +46,10 @@ async function boot() {
     bombs: (n = 1) => { game.collect('bomb', n); },
     heal: (n = 6) => { game.heal(n * 4, 'console'); },   // half-hearts
     hurt: (n = 1) => { game.damagePlayer(n, 'item', 'console', 'world'); },
+    heart: (kind: HeartKind = 'red') => {
+      const b = game.player.body, f = game.player.forward;
+      game.pickups.add('heart', b.x + f.x * 1.5, b.y + 0.5, b.z + f.z * 1.5, game.room, null, 0.3, null, kind);
+    },
     god: (on = true) => { game.player.invulnT = on ? 1e9 : 0; },
     lose: (id: string) => { game.inventory.lose(id); game.hud.setItems(game.inventory.items.map(i => i.def)); },
     floor: () => game.nextFloor(),
