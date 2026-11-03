@@ -17,7 +17,7 @@ This is the rule for code, docs, art, levels, the bestiary and the process itsel
 
 - `<issue>` is the GitHub issue number. Work without an issue is rare; open one first.
 - `<slug>` is two to five words in lowercase, joined with dashes: `feature/42-cave-water-flow`.
-- Delete a branch after it is merged. The history stays in the merge commit.
+- **Branches are deleted when their pull request is merged**, both on the remote and locally (`git push origin --delete <branch>`, then `git branch -d <branch>`). The history stays in the merge commit.
 
 ## Versions
 
