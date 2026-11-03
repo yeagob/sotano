@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The horse is the fifth and last deity of the sky tree's first five floors: a small, soft plush body with a giant horse head, over sky floor 5, a ground-based floor of paddocks, gusts of wind and fading platforms. It is the only deity that does not levitate: it walks on the ground and jumps a great deal.
 
-Status: proposal, specified. Decided: the animal and the floor order, its look (a small body with a giant horse head, plush-like and cute), that it walks on the ground and does not levitate, that it jumps a great deal from platform to platform and from place to place, that it sends its minions to kick the player from its place, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the other minion habits and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, its look (a small body with a giant horse head, plush-like and cute), that it walks on the ground and does not levitate, that it jumps a great deal from platform to platform and from place to place, that it sends its minions to kick the player from its place, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the other minion habits and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
 
 ## 1. Who it is
 
@@ -126,6 +126,71 @@ The horse has four attacks besides sending the herd. The first stage uses Rear a
 - *Act:* the segments fade in the same order, target 5 of them, and each reforms target 3 s after it went.
 - *Answer:* stand still on a fixed segment, on the ground or on a player block, build ahead, or let an ally hold a segment. A positive intention holds one flickering segment for target 2 s. The wave never fades the segment the player is on and the one behind it at the same time.
 
+### B3b. Special attacks
+
+Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
+
+**Phases (provisional).** The horse's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Skittish*, up to a third of the hit count; phase 2, *Running*, up to two thirds; phase 3, *Bolting*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3 and to sending the herd; the floor's platforming layout (B6) does not change. While the horse is Gentled it makes none of them, as with every attack (B2). While it gallops a Gallop line or circles in Snaking, it comes close on purpose and is not startled (B2, startle).
+
+| # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
+|---|---|---|---|---|---|
+| 5 | Dust roll | 1 | Slows | 0.9 s | none |
+| 6 | Snort | 1 | Drains spirit | 1.1 s | 14 |
+| 7 | Mane shake | 2 | Moves | 0.9 s | none |
+| 8 | Gallop line | 2 | Drains spirit | 1.1 s | 16 |
+| 9 | Herd panic | 3 | Drains spirit | 1.1 s | 18 |
+| 10 | Snaking | 3 | Captures | 1.4 s | none |
+
+**5. Dust roll ([dense ground](../abilities/DENSE-GROUND.md)). Slows.**
+- *Habit:* a horse rolls on its back in dust or mud, legs in the air, and gets up shaking.
+- *Phase:* 1.
+- *Telegraph (target 0.9 s):* the horse kneels and rolls on its Paddock; a patch of target radius 2 round the player's cell, on the meadow or on a fixed segment, darkens to churned earth with a soft thud of hooves.
+- *Act:* the patch is dense for target 5 s: walking on it is slowed to target 50%. Jumps keep their height. A fading segment is never churned.
+- *Answer:* jump out of the patch onto a run, walk off it slowly, or build over it (a player block is never churned).
+- *Positive intention:* a positive intention at a churned cell smooths it back to ordinary ground at once.
+
+**6. Snort (a cone). Drains spirit.**
+- *Habit:* a startled horse blows hard through its nose, a loud snort that warns the whole herd.
+- *Phase:* 1.
+- *Telegraph (target 1.1 s):* the head goes up, the nostrils flare, and a pale cone of target 30 degrees, out to target 12 blocks, is drawn from the horse's nose toward the player, with a sharp breath in.
+- *Act:* a white puff of breath runs along the cone. A player inside it drains target 14 spirit.
+- *Answer:* step out of the cone sideways, or put a block between (a breath stops at the first block, like a gust).
+- *Positive intention:* a positive intention on the nose during the telegraph turns the snort into a soft nicker: no drain.
+
+**7. Mane shake (a ring). Moves.**
+- *Habit:* a horse shakes its whole body, from the head down, to shed water, dust and flies.
+- *Phase:* 2.
+- *Telegraph (target 0.9 s):* the horse plants its legs; its mane starts to quiver from the ears down; a ring with a clear edge is drawn round its Paddock.
+- *Act:* a ring of shaken petals and dust spreads at target 8 blocks a second out to target 8 blocks, target 0.8 blocks high, and pushes target 1.5 blocks outward. A player pushed off a segment falls to the meadow or a lower segment, unhurt.
+- *Answer:* jump the edge as it passes, or stand behind a block (a block stops a ring).
+- *Positive intention:* a positive intention that lands on the horse during the telegraph turns it into a toss of the head: no ring.
+
+**8. Gallop line (a charge on the ground). Drains spirit.**
+- *Habit:* a horse at full gallop leaves a cloud of dust behind it, and it does not stop for what is in its way.
+- *Phase:* 2.
+- *Telegraph (target 1.1 s):* the horse paws the ground twice; a dashed line target 1 block wide is drawn from its Paddock across the meadow and the runs, passing within target 3 blocks of the player and never through their cell, with a drum of hooves that rises.
+- *Act:* the horse gallops along the line at target 12 blocks a second and stops at its end, on a Paddock or on open ground. It leaves a dust trail on the line that lasts target 1 s. A player who touches the horse or the trail drains target 16 spirit. It does not push.
+- *Answer:* stay off the line, or jump over the trail once the horse has passed. A player block on the line stops the gallop at the block, as a charge stops ([attacks](../../../built/encounters/ATTACKS.md)): the horse recovers there for target 2.5 s, close to the player, and the trail ends at the block.
+- *Positive intention:* a positive intention on the horse during the telegraph makes it trot the line instead: no dust, no drain.
+
+**9. Herd panic (a wave). Drains spirit.**
+- *Habit:* when one horse of a herd bolts, the whole herd bolts with it, without seeing what scared the first one. This is the horse's mirror: running from a feeling the moment it appears, and its answer is the floor's verb of calm: standing still.
+- *Phase:* 3.
+- *Telegraph (target 1.1 s):* the horse's eyes show their whites and it trembles; the meadow's grass lies flat in a wave that rolls out from it across the whole floor, and hoofbeats rise from nowhere.
+- *Act:* when the telegraph ends, a player who walked, ran or jumped in the last target 0.3 s drains target 18 spirit. A player standing still is not touched. Being pushed by a gust, a kick or a ring does not count as moving. Herd panic is not chosen while a gust or a fade is under the player, nor while a sent minion is running at them.
+- *Answer:* stop and stand still, wherever you are; land a jump and stay. A player in mid-jump at the start of the telegraph has time to land and stop.
+- *Positive intention:* a positive intention that lands on the horse during the telegraph calms it: the grass rises, no drain. Standing still to aim it is the same verb.
+
+**10. Snaking. Captures.**
+- *Habit:* a stallion herds his mares by snaking: head low, ears pinned, he swings his neck from side to side and drives them where he wants them, round and round.
+- *Phase:* 3.
+- *Telegraph (target 1.4 s):* the horse lowers its head, swings it from side to side and gallops a tight circle round the player, target radius 3; the circle is drawn on the ground as it runs, and it closes over the telegraph from the first hoofprint to the last. The open arc is the way out while it is still open.
+- *Act:* if the player is inside the circle when it closes, the horse herds them: the player is held where they stand, captured for `CAPTURE_TIME` (target 3 s), and one practice they hold is taken ([guardians, section 6.6](README.md#66-what-works-and-harm)). Then the horse trots back to its Paddock.
+- *Answer:* leave through the open arc before it closes, by a run or a jump. A player block on the circle's line stops the horse at the block, as a charge stops, and the circle stays open; it recovers there for target 2.5 s.
+- *Positive intention:* a positive intention on the lowered head during the telegraph makes it lift its head and trot away: no capture. While it circles and while it holds the player, positive hits land on it as usual.
+
+**Without minions.** None of the six needs a minion. Snaking and Herd panic are the deity's own acts, not the herd's.
+
 ### B4. Defeat by positive hits
 
 - **Hit count:** target 48 positive hits.
@@ -200,6 +265,8 @@ Every value in the middle column is a target. The right column is the built game
 | Minions at once | 5 (3 hostile) | no built equivalent |
 | Floor size | radius 30, Paddocks up to 12 high | trunk story 22 high |
 | Harm | none (decided: it pushes or holds) | boss touch 8 |
+| Special attacks (provisional) | 6: 3 drain spirit (14, 16, 18 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
+| Special telegraphs | 0.9 s to slow or move, 1.1 s to drain, 1.4 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
 
@@ -214,3 +281,7 @@ Every value in the middle column is a target. The right column is the built game
 9. Teleport (answered, provisional: yes). The horse teleports, on top of its great leap; a teleport always lands it far from the player.
 10. When the horse is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
 11. The floor's height. A ground-based floor with Paddocks up to 12 blocks is lower than the other four sky floors. How high the mast must rise to the floor's way up depends on the open mapping of sky floors onto the built tree.
+12. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (14, 16, 18) are proposals for the owner to confirm.
+13. Herd panic drains a player who moves and spares one who stands still. It makes calm the answer, the same verb as Gentled. Is the echo wanted, or is it too close to the built silence?
+14. Snaking captures by circling the player. The horse is the only deity that captures by running round the player instead of reaching them. Keep it?
+15. Dust roll uses [dense ground](../abilities/DENSE-GROUND.md), which the abilities folder proposes for the panda. Keep it, or replace it?

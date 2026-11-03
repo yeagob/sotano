@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The lion is the fourth deity: a lion with a giant head on a small, soft plush body, over sky floor 4, a wide floor of ledges and gaps where a roar can freeze the player in place.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
 
 ## 1. Who it is
 
@@ -108,6 +108,71 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 - *Act:* three sun bolts in a fan of target 30 degrees, at target 10 blocks a second. Each one that reaches the player only pushes them, with no damage (decided, owner, 2026-11-03).
 - *Answer:* step aside, or put a block between: bolts stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets a bolt dissolves it (proposal).
 
+### B3b. Special attacks
+
+Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
+
+**Phases (provisional).** The lion's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Display*, up to a third of the hit count; phase 2, *Hunt*, up to two thirds; phase 3, *Pride*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+
+| # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
+|---|---|---|---|---|---|
+| 5 | Long grass | 1 | Slows | 1.0 s | none |
+| 6 | Stare-down | 1 | Drains spirit | 1.2 s | 12 |
+| 7 | Scrape | 2 | Moves (takes footing) | 1.0 s | none |
+| 8 | Dusk call | 2 | Drains spirit | 1.2 s | 14 |
+| 9 | Noon sun | 3 | Drains spirit | 1.2 s | 16 |
+| 10 | Scruff hold | 3 | Captures | 1.5 s | none |
+
+**5. Long grass ([dense ground](../abilities/DENSE-GROUND.md)). Slows.**
+- *Habit:* a lion stalks low through tall grass, unseen, before the rush.
+- *Phase:* 1.
+- *Telegraph (target 1.0 s):* the lion sinks low in the air and its tail tip twitches; the grass round the player's cell, target radius 3, grows tall and thick and sways against the wind, with a dry rustle.
+- *Act:* the cells under the tall grass are dense for target 5 s: walking on them is slowed to target 50%. Jumps keep their height. On a ledge top the grass grows only on the ledge, never past its edge.
+- *Answer:* jump out of it, step up onto a higher ledge, or build over it (a player block grows no grass).
+- *Positive intention:* a positive intention at a grassy cell lays the grass flat: ordinary ground at once.
+
+**6. Stare-down (a gaze). Drains spirit.**
+- *Habit:* two lions hold each other's stare before a fight, and the one that looks away first gives way. This is the lion's mirror, fear dressed as dominance, and its answer is the floor's verb of courage: the player's own aim.
+- *Phase:* 1.
+- *Telegraph (target 1.2 s):* the lion stops pacing; its eyes lock on the player and two thin gold lines run from them to the player, tightening, with a low growl that rises.
+- *Act:* when the telegraph ends, a player in the lion's line of sight whose aim is not on the lion drains target 12 spirit. A player who faces the lion (aim on it, as in the facing rule of B2; target within 15 degrees) is not touched.
+- *Answer:* face the lion; or break the line of sight with a block, a ledge or the thorn tree's trunk (place a block between, or drop behind a ledge).
+- *Positive intention:* a positive intention that lands on the lion during the telegraph makes it blink and look away: no drain. Facing the lion is also the moment to land it.
+
+**7. Scrape ([fading platforms](../abilities/FADING-PLATFORMS.md)). Moves (takes footing).**
+- *Habit:* a lion scrapes the ground with its hind feet and marks the scrape, to say where its land begins.
+- *Phase:* 2.
+- *Telegraph (target 1.0 s):* the lion rakes the air with its hind paws; claw lines are drawn across the player's ledge, and the strip of it on the lion's side, target 2 cells deep, turns grey at the edges and flickers, with a speeding tick.
+- *Act:* the strip turns to mist for target 3 s, then reforms with a chime. The far side of the ledge always stays solid, at least target 2 by 2 cells. On a ledge too small to leave that much, Scrape is not chosen.
+- *Answer:* step to the far side, jump to another ledge, or build ahead (a player block never fades).
+- *Positive intention:* a positive intention at a flickering cell holds it for target 2 s more (proposal, as for every fading platform).
+
+**8. Dusk call (three rings). Drains spirit.**
+- *Habit:* lions roar at dusk and at dawn to call the pride together and to tell other prides whose land this is; the pride answers in chorus, and the roar carries for kilometres.
+- *Phase:* 2.
+- *Telegraph (target 1.2 s):* the lion fills its chest and its mane glows; three rings with clear edges form, one round the Sunning Ledge and one round each shade rock, with a deep breath that grows.
+- *Act:* the three rings spread at target 8 blocks a second out to target 12 blocks (6 when the player faced the lion, the facing rule of B2), each target 0.8 blocks high. A player that any ring touches drains target 14 spirit, once per call, however many rings touch them. The rings do not freeze and do not push.
+- *Answer:* jump each edge as it passes, stand behind a player block (a block stops a ring), or face the lion to shrink the rings.
+- *Positive intention:* a positive intention that lands on the lion during the telegraph keeps the call to the Sunning Ledge's ring only.
+
+**9. Noon sun. Drains spirit.**
+- *Habit:* lions rest in the shade for most of the hot hours of the day, up to twenty hours of rest in a day.
+- *Phase:* 3.
+- *Telegraph (target 1.2 s):* the lion yawns and lies down in the air; the light on the player's ledge turns white-gold and shimmers, and every cell in shade, under a block or a higher ledge, is drawn dark and cool. A rising hum of heat.
+- *Act:* a player still in the sun on that ledge when the telegraph ends drains target 16 spirit. Shade is any cell with a solid block anywhere above it within target 3 blocks.
+- *Answer:* stand in shade: under a block placed overhead (one cube is enough), under a higher ledge, or drop off the ledge to the plain or a lower ledge (falls do not hurt). Noon sun is chosen only when a drop, a shaded cell or a neighbouring ledge within a jump is open to the player.
+- *Positive intention:* a positive intention that lands on the lion during the telegraph makes it close its eyes: the glare fades, no drain.
+
+**10. Scruff hold. Captures.**
+- *Habit:* a lioness carries her cubs gently by the scruff of the neck; a cub held so goes still.
+- *Phase:* 3.
+- *Telegraph (target 1.5 s):* the lion crouches in the air, haunches up, and its mouth opens softly; a dashed line is drawn from it to the player, and a ring of target radius 2 is drawn round the player's cell and shrinks to the cell over the telegraph, with a low purr.
+- *Act:* the lion glides along the line. If the player is inside the ring when it closes, the lion takes them by the scruff and holds them where they stand: the player is captured for `CAPTURE_TIME` (target 3 s) and one practice they hold is taken ([guardians, section 6.6](README.md#66-what-works-and-harm)). Then it recovers there for target 2.5 s, as after a pounce, and glides back.
+- *Answer:* leave the ring before it closes; any run or jump of 2 blocks is enough. A wall of player blocks in its line stops the glide at the wall, as the pounce stops ([attacks](../../../built/encounters/ATTACKS.md)), and the lion recovers against the wall.
+- *Positive intention:* a positive intention on the crouching body during the telegraph makes it sit and lick a paw: no capture. The lion has no guard, so while it glides in and holds the player, positive hits land on it as usual.
+
+**Without minions.** None of the six needs a minion.
+
 ### B4. Defeat by positive hits
 
 - **Hit count:** target 42 positive hits.
@@ -180,6 +245,8 @@ Every value in the middle column is a target. The right column is the built game
 | Minions at once | 6 (4 hostile) | no built equivalent |
 | Widest gap | 5 blocks, bridged | flat jump about 2.7 blocks |
 | Floor size | radius 26, 36 high | trunk story 22 high |
+| Special attacks (provisional) | 6: 3 drain spirit (12, 14, 16 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
+| Special telegraphs | 1.0 s to slow or move, 1.2 s to drain, 1.5 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
 
@@ -193,3 +260,7 @@ Every value in the middle column is a target. The right column is the built game
 8. Names. "Sunning Ledge" and "thorn tree" are working names for the deity's ledge and the vertical route; they need the owner's check under the naming rules.
 9. Teleport (answered, provisional: no). The lion does not teleport.
 10. When the lion is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
+11. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (12, 14, 16) are proposals for the owner to confirm.
+12. Stare-down drains a player who does not aim at the lion. It makes the aim the answer, like facing the roar. Is a drain for looking away the right mirror of fear dressed as dominance, or too punishing on a floor where stalkers creep up out of view?
+13. Noon sun asks the player to find or build shade. Is building a roof a verb the owner wants on the lion's floor, which has no walls?
+14. Scrape uses [fading platforms](../abilities/FADING-PLATFORMS.md), and Long grass uses [dense ground](../abilities/DENSE-GROUND.md); the abilities folder proposes them for other animals. Keep them, or replace them?

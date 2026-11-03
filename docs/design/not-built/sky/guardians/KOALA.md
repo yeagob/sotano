@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The koala is the second deity: a koala with a giant head on a small, soft plush body, over sky floor 2, which is built like a crown of branches. It holds the floor by holding on to its branch.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
 
 ## 1. Who it is
 
@@ -109,6 +109,71 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 - *Act:* a gust for target 2 s pushes the player toward the gap at target 2 blocks a second, less than half the player's walk, so walking against it holds them in place.
 - *Answer:* walk against it, or stand behind a block (a gust stops at the first block). A positive intention that lands on the koala during the telegraph turns the sigh into a yawn: no gust.
 
+### B3b. Special attacks
+
+Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
+
+**Phases (provisional).** The koala's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Drowsy*, up to a third of the hit count; phase 2, *Clinging*, up to two thirds; phase 3, *Holding on*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+
+| # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
+|---|---|---|---|---|---|
+| 5 | Scent mark | 1 | Slows | 1.2 s | none |
+| 6 | Eucalyptus haze | 1 | Drains spirit | 1.4 s | 8 |
+| 7 | Joey ride | 2 | Holds (slows the jump) | 1.2 s | none |
+| 8 | Bellow | 2 | Drains spirit | 1.4 s | 10 |
+| 9 | Lullaby | 3 | Drains spirit | 1.4 s | 12 |
+| 10 | Hold fast | 3 | Captures | 1.7 s | none |
+
+**5. Scent mark ([dense ground](../abilities/DENSE-GROUND.md)). Slows.**
+- *Habit:* a male koala rubs the scent gland on its chest against a trunk to mark it as its own.
+- *Phase:* 1.
+- *Telegraph (target 1.2 s):* the koala rubs its chest against its upright branch; a dark streak spreads along the thick branch or the trunk knots ahead of the player, with a ripple and a glassy sheen and a low rising sound.
+- *Act:* the streak's cells are dense for target 5 s: walking on them is slowed to target 50%. Jumps keep their height.
+- *Answer:* jump over the streak, build over it (a player block is never marked), or take another branch.
+- *Positive intention:* a positive intention at a marked cell returns it to ordinary wood at once.
+
+**6. Eucalyptus haze. Drains spirit.**
+- *Habit:* the koala lives on eucalyptus leaves, a food so poor in energy that it sleeps most of the day.
+- *Phase:* 1.
+- *Telegraph (target 1.4 s):* the koala chews a sprig with a soft crunch; a pale circle of target radius 2 is drawn round the player's cell, and a faint haze starts to rise inside it with a growing hiss.
+- *Act:* the haze bursts in the circle. A player inside it drains target 8 spirit. The haze drifts off and does nothing more.
+- *Answer:* step out of the circle; any move of 2 blocks is enough. A block does not stop it: it is air, not a lob.
+- *Positive intention:* a positive intention into the circle during the telegraph scatters the haze into drifting leaves: no drain.
+
+**7. Joey ride (a lob). Holds.**
+- *Habit:* a koala joey rides on its mother's back for months.
+- *Phase:* 2.
+- *Telegraph (target 1.2 s):* a small joey climbs onto the koala's head and looks at the player; a warm mark appears on the player's cell.
+- *Act:* the joey drops onto the player's back and holds on for target 4 s. While it rides, the player's jumps are half their height; walking is not slowed. Three jumps shake it off sooner, as with a minion's hug. The joey is part of the attack, not a minion: it climbs back to its mother when it lets go. It never adds to a minion's hug: while a minion hugs the player, Joey ride is not chosen.
+- *Answer:* move off the mark. A block overhead stops it (lobs stop at solid blocks).
+- *Positive intention:* a positive intention that meets the falling joey sends it floating back up to its mother.
+
+**8. Bellow (a ring). Drains spirit.**
+- *Habit:* the male koala's bellow, a deep call far louder than its small body.
+- *Phase:* 2.
+- *Telegraph (target 1.4 s):* the koala's chest swells and its nose points up; a low rumble grows, and a ring with a clear edge forms round the Fork.
+- *Act:* the ring spreads along the branches at target 7 blocks a second, out to target 14 blocks, target 0.8 blocks high. A player it touches drains target 10 spirit. It does not push.
+- *Answer:* jump it as it passes, or stand behind a player block (a block stops a ring).
+- *Positive intention:* a positive intention into the swelling chest during the telegraph turns the bellow into a small grunt: no ring.
+
+**9. Lullaby. Drains spirit.**
+- *Habit:* a koala sleeps for most of the day in the fork of one tree, and it does not move from it. This is the koala's mirror: clinging to a place that feels safe.
+- *Phase:* 3.
+- *Telegraph (target 1.4 s):* the koala hums and sways; the whole branch the player stands on glows soft and sleepy, from its far end toward the player.
+- *Act:* a player still standing on that branch's original wood when the telegraph ends drains target 12 spirit.
+- *Answer:* leave the branch: jump to the next one, step onto a trunk knot, or onto a player block (the glow covers only the branch's original wood). Lullaby never chooses a branch with no other branch, knot or nest within a jump.
+- *Positive intention:* a positive intention on the glowing branch breaks the hum: the glow fades, no drain.
+
+**10. Hold fast. Captures.**
+- *Habit:* a koala hugs a cool trunk with its whole body and its double thumbs, and does not let go.
+- *Phase:* 3.
+- *Telegraph (target 1.7 s):* the koala lets go of its upright branch, opens its arms wide and floats toward the player with a soft rising "mmm"; a ring of claw marks of target radius 2 is drawn round the player's cell and shrinks to the cell over the telegraph.
+- *Act:* if the player is inside the ring when it closes, the koala wraps its arms round them: the player is captured for `CAPTURE_TIME` (target 3 s) and one practice they hold is taken ([guardians, section 6.6](README.md#66-what-works-and-harm)). Then it floats back to the Fork and is Recovering there.
+- *Answer:* leave the ring before it closes, by a jump to another branch or a knot. A player block between the koala and the player stops its float at the block, as a charge stops at a block ([attacks](../../../built/encounters/ATTACKS.md)), and it recovers there.
+- *Positive intention:* a positive intention that lands on the koala while it floats in makes it hug its own arms, blink, and float back: no capture. While it floats in and while it holds the player, it is not Clinging, so positive hits land on it as usual.
+
+**Without minions.** None of the six needs a minion.
+
 ### B4. Defeat by positive hits
 
 - **Hit count:** target 30 positive hits.
@@ -184,6 +249,8 @@ Every value in the middle column is a target. The right column is the built game
 | Minions at once | 6 | no built equivalent |
 | Floor size | radius 22, 32 high | trunk story 22 high |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
+| Special attacks (provisional) | 6: 3 drain spirit (8, 10, 12 of 100), 1 captures (3 s, one practice), 2 slow or hold | no built equivalent |
+| Special telegraphs | 1.2 s to slow or hold, 1.4 s to drain, 1.7 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
 
@@ -196,3 +263,6 @@ Every value in the middle column is a target. The right column is the built game
 7. Sleepy sigh uses [wind](../abilities/WIND.md), which the abilities folder proposes for the lion and the horse, not the koala. Keep it, or replace it?
 8. The Fork and its limbs are original wood. Can the player break a limb (it regrows in 5 s), and should a broken limb drop the koala's allies?
 9. Teleport (answered, provisional: yes). The koala teleports; a teleport always lands it far from the player.
+10. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (8, 10, 12) are proposals for the owner to confirm.
+11. The joey. Joey ride puts a small koala on the player's back as part of an attack, not as a minion. Keep it, or is it too close to the minion's hug?
+12. Lullaby drains a player who stays on one branch. Is that the right mirror of clinging on a floor with rest landings, or too harsh?
