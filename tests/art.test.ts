@@ -98,6 +98,8 @@ describe('colour sources (ratchet)', () => {
   const ROOT = join(__dirname, '..');
   const HEX = /0x[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{6}\b/g;
   const SKIP = new Set(['src/content/palette.ts']);
+  // the palette's part files (docs/architecture/SKY.md §11) are the palette too, spread into PALETTE
+  const PALETTE_PARTS = 'src/content/palette/';
 
   function files(dir: string, out: string[] = []): string[] {
     for (const name of readdirSync(dir)) {
@@ -113,7 +115,7 @@ describe('colour sources (ratchet)', () => {
     const targets = [...files(join(ROOT, 'src')), join(ROOT, 'index.html')];
     for (const p of targets) {
       const rel = relative(ROOT, p).split('\\').join('/');
-      if (SKIP.has(rel)) continue;
+      if (SKIP.has(rel) || rel.startsWith(PALETTE_PARTS)) continue;
       const n = (readFileSync(p, 'utf8').match(HEX) ?? []).length;
       if (n > 0) out[rel] = n;
     }

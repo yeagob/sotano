@@ -767,6 +767,20 @@ export const ES: Catalog = {
       ashlar: 'Sillar',
       slate: 'Pizarra',
       darkbrick: 'Ladrillo oscuro',
+      // the sky realm (docs/art/sky/blocks.md)
+      cloud: 'Nube',
+      skywood: 'Madera celeste',
+      heartwood: 'Duramen',
+      skyleaf: 'Hoja celeste',
+      bamboo: 'Bambú',
+      moss: 'Musgo',
+      palestone: 'Piedra pálida',
+      fencewood: 'Madera de cerca',
+      mist: 'Bruma',
+      starresin: 'Resina estelar',
+      meteorglass: 'Vidrio de meteorito',
+      solarglass: 'Vidrio solar',
+      sunseal: 'Sello del Sol',
     },
     parts: {
       'doubt.flesh': {
