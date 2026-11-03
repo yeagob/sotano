@@ -83,6 +83,10 @@ export const ES: Catalog = {
     'controls.drink': 'beber el frasco de la mano',
     'controls.bomb.key': 'E',
     'controls.bomb': 'soltar una bomba',
+    'controls.launch.key': 'Doble clic rápido',
+    'controls.launch.pad': 'Doble RT rápido',
+    'controls.launch.touch': 'Doble toque rápido en la cuenta de luz',
+    'controls.launch': 'lanzar una bomba como misil (con Dr. Launcher)',
     'controls.doors.key': 'Puertas',
     'controls.doors': 'se abren al acercarte; las cerradas necesitan una llave',
     'controls.inventory.key': 'Tab',
@@ -148,6 +152,7 @@ export const ES: Catalog = {
     'toast.challengeWave': 'Oleada {n} de 3',
     'toast.challengeDone': 'Desafío superado: vuelve cuando quieras',
     'toast.noBombs': 'No te quedan bombas',
+    'toast.missileHint': 'Con un {launch}, una bomba sale como misil.',
     'toast.locked': 'Cerrada: necesitas una llave',
     'toast.unlocked': 'Abierta',
     'presence.boundary.name': 'El Límite',
@@ -317,6 +322,7 @@ export const ES: Catalog = {
     'path.mind': 'mente',
     'path.emotion': 'emoción',
     'path.will': 'voluntad',
+    'path.milagros': 'milagros',
 
     'stat.damage': 'Daño',
     'stat.fireRate': 'Cadencia',
@@ -337,6 +343,7 @@ export const ES: Catalog = {
     'stat.maxHearts': 'Corazones',
     'stat.invuln': 'Recuperación',
     'stat.breath': 'Aliento',
+    'stat.missile': 'Misiles',
     'stat.bombRadius': 'Radio de bomba',
     'stat.bombDamage': 'Potencia de bomba',
     'unit.times': '×{n}',
@@ -346,6 +353,7 @@ export const ES: Catalog = {
     'unit.crushNone': 'ninguno',
     'unit.crushTier': 'nivel ≤ {n}',
     'unit.crushRate': '{n} por segundo',
+    'unit.missileOn': 'doble toque',
   },
 
   content: {
@@ -534,6 +542,12 @@ export const ES: Catalog = {
         description: 'Lo que hacen los demás habla de ellos: dos de cada tres golpes de contacto resbalan sobre ti.',
         effect: 'Dos de cada tres golpes de contacto de las proyecciones no te hacen nada.',
         inspiredBy: 'Los cuatro acuerdos (don Miguel Ruiz): «no te tomes nada personalmente»',
+      },
+      drlauncher: {
+        name: 'Dr. Launcher',
+        description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. El avance que llevas ya no cae bajo su propio peso; mantiene su línea y vuela hacia donde miras.',
+        effect: 'Un doble toque rápido del control de disparo (en 0,3 s) lanza una bomba como misil en lugar de una intención: vuela recto, acelera hasta 24 bloques/s y explota contra lo primero que encuentra, o a los 40 bloques, con la explosión de tu bomba. Negativo: una explosión de bomba, que también puede herirte. Positivo: una explosión de amor que repara bloques, cura a los aliados, acerca a las proyecciones a tu lado y hace crecer a las criaturas. Se rechaza, sin gastar bomba, si hay un bloque a menos de 2 bloques.',
+        inspiredBy: 'Trascender los límites (Santiago Dopazo)',
       },
       occamsrazor: {
         name: 'Corta con las relaciones tóxicas',

@@ -80,6 +80,10 @@ const messages = {
   'controls.drink': 'drink the flask in your hand',
   'controls.bomb.key': 'E',
   'controls.bomb': 'drop a bomb',
+  'controls.launch.key': 'Quick double click',
+  'controls.launch.pad': 'Quick double RT',
+  'controls.launch.touch': 'Quick double tap on the bead of light',
+  'controls.launch': 'launch a bomb as a missile (with Dr. Launcher)',
   'controls.doors.key': 'Doors',
   'controls.doors': 'open as you approach; locked ones need a key',
   'controls.inventory.key': 'Tab',
@@ -189,6 +193,7 @@ const messages = {
   'toast.challengeWave': 'Wave {n} of 3',
   'toast.challengeDone': 'Challenge overcome: come back for more',
   'toast.noBombs': 'No bombs',
+  'toast.missileHint': 'With a {launch}, one bomb flies as a missile.',
   'toast.locked': 'Locked: you need a key',
   'toast.unlocked': 'Unlocked',
   'presence.boundary.name': 'The Boundary',
@@ -319,6 +324,7 @@ const messages = {
   'path.mind': 'mind',
   'path.emotion': 'emotion',
   'path.will': 'will',
+  'path.milagros': 'milagros',
 
   // ── stats: labels (`stat.<name>`) and units ──
   'stat.damage': 'Damage',
@@ -340,6 +346,7 @@ const messages = {
   'stat.maxHearts': 'Hearts',
   'stat.invuln': 'Recovery',
   'stat.breath': 'Breath',
+  'stat.missile': 'Missiles',
   'stat.bombRadius': 'Bomb radius',
   'stat.bombDamage': 'Bomb power',
   'unit.times': '×{n}',
@@ -349,6 +356,7 @@ const messages = {
   'unit.crushNone': 'none',
   'unit.crushTier': 'tier ≤ {n}',
   'unit.crushRate': '{n} per second',
+  'unit.missileOn': 'double tap',
 } as const;
 
 export type MessageKey = keyof typeof messages;

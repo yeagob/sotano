@@ -155,6 +155,18 @@ Final set, measured: minimum pairwise ΔE 24.4 (tritan, Body/Emotion); distance 
 
 **Test:** `art.test.ts` asserts pairwise ΔE ≥ 20 under normal/deutan/protan/tritan and ≥ 15 against `life.heart`, `light.gold`, `light.core`, `cold.body`, and ≥ 4.5:1 on `ink.panel`.
 
+**The fifth path: Milagros (amendment, art agent, 2026-11-02; OWNER to confirm the colour and the glyph).** The owner created a fifth path, **Milagros** (miracles; concept `no-impossible`, transcending limits), placed first ([ROCKET-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md), decision 15). Its first practice is Dr. Launcher (§7.7).
+
+| Path | Element | Glyph | `base` | `glow` | `dark` | `shadow` (projections) |
+|---|---|---|---|---|---|---|
+| **Milagros** | Quintessence (beyond the four) | ⬟ | `#DE42A2` | `#FF7AC8` | `#7C1A5A` | `#5E3652` |
+
+- **Why magenta.** Magenta is the one hue the rainbow lacks: no single wavelength makes it; the eye makes it where the spectrum's two ends, red and violet, meet. A colour past the limit of the spectrum is the colour of transcending limits. It is also the only free hue: a search of the whole sRGB cube (step 6) for a colour ≥ 20 from the four paths under all four simulations, ≥ 15 from the reserved colours and ≥ 4.5 : 1 on the panel left three families: chartreuse (ΔE 9 from the warning yellow under protan and deutan: a practice that reads as an enemy warning), a mint white (ΔE 3 from `cold.white` under deutan: the projections' eye) and this magenta. Magenta is the only one that keeps clear of every reserved and warning colour.
+- **Why ⬟.** The four glyphs are the silhouettes of the four elemental Platonic solids; the fifth solid, the dodecahedron, was the old philosophers' quintessence, the element beyond the four. Its face, the pentagon, is the glyph: a filled pentagon (U+2B1F), distinct in outline from ■ ● ◆ ▲. A pentagon, never a pentagram (§10.5 red lines). Font note: U+2B1F is in Segoe UI Symbol, Noto Sans Symbols 2 and DejaVu Sans; the HUD fonts fall back to them for it, as they do for ◆ and ▲ (to verify on macOS and iOS).
+- **Measured** (CIE76 after Machado 2009, the test's maths): `path.milagros.base` to the other paths, worst over the four visions: Emotion 20.8 (protan; 21.0 deutan), Will 22.1 (tritan), Mind 33.8 (protan), Body 38.8 (deutan). This lowers the set's minimum pairwise ΔE from 24.4 to **20.8** (Milagros/Emotion, protan), still ≥ 20. Reserved colours, worst over the four visions: `life.heart` 18.4 (tritan; 46.2 in normal vision, so rule §3.12.2 holds), `cold.body` 22.4, `light.gold` 48.1, `light.core` 50.3; and `attack.red.base` 30.2, `attack.warn.base` 65.1, `light.ember` 34.8, `cold.white` 37.9. L* 54.1; contrast on `ink.panel` 4.79 : 1 (≥ 4.5, the tightest of the five).
+- **The ramp.** `glow` (item colour, banner glow) is ΔE 47 from `life.heart` and 58 from `cold.body` in normal vision; under deutan it drifts to 10 from `cold.body`, so like every path it is never shown without its glyph. `dark` is ΔE 31 from `life.dark`. `shadow` (a projection's 40 % tint) is ΔE 14 from Mind's shadow in normal vision, as the shadows are kept low in chroma by design (§2), and 21 from `life.rim`.
+- **Test:** the four-path test above now runs over all five paths (`PATHS` in `palette.ts`), and the item colour test reads the paths from `PATHS`.
+
 ### 3.6 The cold (projections' side) and captive light
 
 | Token | Hex | Use |
@@ -210,7 +222,7 @@ Rejected: per-projection signature eye hues (Cre r1), the green-white `#cfe8d6` 
 
 ### 3.10 UI tokens (CSS variables written by `applyPaletteCss()`)
 
-`--ui-text: bone.paper`, `--ui-text-2: bone.dim`, `--ui-faded: bone.faded`, `--ui-panel: ink.panel` (α .95), `--ui-line: ink.void`, `--ui-bevel-hi: ink.bevel`, `--ui-heart: life.heart`, `--ui-gold: light.gold`, `--ui-up: light.gold`, `--ui-down: cold.body`, `--ui-threat: cold.body`, `--ui-night: ui.night`, `--path-body/-emotion/-mind/-will: path.*.base`. Stat lines keep the arrows ▲/▼ (colour is the second channel).
+`--ui-text: bone.paper`, `--ui-text-2: bone.dim`, `--ui-faded: bone.faded`, `--ui-panel: ink.panel` (α .95), `--ui-line: ink.void`, `--ui-bevel-hi: ink.bevel`, `--ui-heart: life.heart`, `--ui-gold: light.gold`, `--ui-up: light.gold`, `--ui-down: cold.body`, `--ui-threat: cold.body`, `--ui-night: ui.night`, `--path-milagros/-body/-emotion/-mind/-will: path.*.base`. Stat lines keep the arrows ▲/▼ (colour is the second channel).
 
 ### 3.11 Skin and cloth (hands only; §9)
 
@@ -502,6 +514,26 @@ Every attack shape (`enemies/attacks.ts`) is drawn in texel cube marks, in one o
 - **Tokens:** `attack.red.base` `#F23D33` (live, §3.4); the warning is `attack.warn.base` `#EEE33C` and `attack.warn.dim` `#A8A02E` (§3.4 amendment 2026-10-31). `attack.red.base` is the only red besides `life.*`; `attack.red.dim` is no longer drawn. Measured: `attack.red.base` ΔE 23 and `attack.red.dim` ΔE 20 from `life.heart` (normal vision), both ≥ 20 from `cold.white` and `cold.body` under all four simulations (`tests/attack-colour.test.ts`).
 - **Particles** use `cold.white` and `cold.body` only (`PARTICLE_TINTS`). Omen motes moved from `cold.dim` to `cold.body` then `cold.white` (`OMEN_COLORS`).
 - **Not changed, by design:** the enemy's own eye and tell lights (`cold.white`, the family eye, §8.3), the boss hurt flash, the gold light that rises when a projection is released (§8.6: the player's light returning, not an attack), and the matter chips of a spawn or a break (§7.3). These are not attacks and are not decoration of an attack; the owner may rule otherwise.
+
+### 7.7 Dr. Launcher's missile and the love explosion (art agent, 2026-11-02; OWNER to confirm)
+
+The practice Dr. Launcher (path Milagros, quality 3; [ROCKET-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) launches a carried bomb as a missile with a quick double tap of the fire control. Drawn by `src/render/missile-view.ts` (`MissileView`, `MISSILE_TRAIL`, `LOVE_BLAST`).
+
+| Part | Positive (the love explosion) | Negative (the breakthrough) |
+|---|---|---|
+| Body | The seed (`buildSeed()`, §10.2), the same model as the pickup and the placed bomb, at the placed size (0.72), turned so its tip leads along the flight, rolling 0.4 turns/s | The same seed |
+| Seams | As built: `light.core` heart, `light.hot`, `light.ember` lips, breathing ±10 % on 2 Hz and 1.3 Hz clocks | Banked: the seam colours multiplied by `light.ember` (orange, no white) |
+| Halo | `light.gold` at 0.45, at the seed's centre | `light.ember` at 0.3 |
+| Plume (5 additive, fog-exempt puffs behind the tail, a comet tail about a block long) | `light.core` core, three `light.gold` puffs, a small `path.milagros.base` puff at the tail end | `light.ember` core, three `light.dusk` puffs, the `path.milagros.base` puff; all at 0.75 of the positive strength (0.6 hid the plume on the light floor-1 rock in greyscale) |
+| Run-up | The plume grows from 40 % to full length over the first 0.35 s of flight (the acceleration), then holds | Same |
+| Trail particles (`MISSILE_TRAIL`) | `light.gold`, `light.core`, `path.milagros.base` | `light.ember`, `light.dusk`, `ink.ash`, `path.milagros.base` |
+| Blast | **The love explosion** (`LOVE_BLAST`): bursts of `light.gold` (the largest: repair), `light.core`, `path.milagros.glow` (the love). No matter chips, no shake, nothing thrown: nothing breaks | The bomb's blast, unchanged (§7.4) |
+
+- **Rules it keeps.** The missile is the player's: warm, no `cold.*`, no `life.*`, no attack red. The path hue is only the small tail puff and one trail token in three or four (≤ 40 %, §7.1). Polarity is told by brightness and white versus ember, as the intention's polarity is (§14.1), so it holds under every vision simulation: the positive plume has a `light.core` centre, the negative one never does. Nothing alternates faster than 3 Hz (the fastest clock is 2 Hz, ±6 %; the roll passes a seam under 2 Hz). It is not a cube and not a tumbling shape: the hostile shot's grammar is not touched (§7.2).
+- **Why the seed, not a rocket.** A missile is a bomb from the counter, and a thing the player carries and lets go is the same model in both states (feedback round 3). A tube with fins would be a weapon; a seed that flies is a breakthrough sent where you look.
+- **The icon** (12 × 12, four colours, fill 45, alpha-mask IoU ≤ 0.48 against every other icon, no border touched): a round seed flying to the upper right, its lit side in `path.milagros.base`, its shade in `path.milagros.dark`, a stepped seam in `path.milagros.glow`, and, past a one-pixel gap, a teardrop of exhaust with a `bone.paper` core in `path.milagros.glow` at the lower left. Rejected drafts: a long diagonal egg with a straight light seam read as a quill (pointing is the Critic's, §11 motif 6); a flame joined to the body read as a drumstick; an upright egg was 0.87 IoU from Forgiveness. No `light.*` (the item's concept is not light itself, §10.1). Item colour `path.milagros.glow`.
+- **Meaning test.** (a) It stands for transcending limits (`no-impossible`): the breakthrough you carry no longer falls under its own weight; the love explosion (our own concept, no id yet) is the breakthrough that mends instead of breaking. (b) The player's light side: `light.*`, the Milagros hue and the seed's own husk. (c) The intention launches it; on contact the positive one mends, heals, warms and grows, and the negative one breaks through as a bomb does. (d) Without text: a glowing seed flying tip first with a plume reads as a launched breakthrough; white-gold versus ember reads as mend versus break. (e) A seed and light, no weapon shapes, no sacred symbol, no mental-health imagery.
+- **Not verified by capture** in this change: the gallery section `?gallery=missiles` (both polarities at launch and in flight, on floor 1 and floor 4, at 8 and 20 blocks in fog, the five path ramps with glyphs, the particle tokens and the Milagros icons) was built but not captured by the art agent; the owner or the main session captures it in colour, greyscale and the three CVD filters before the practice ships.
 
 ---
 

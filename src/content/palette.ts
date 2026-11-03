@@ -45,7 +45,10 @@ export const PALETTE = {
   'attack.warn.base': '#EEE33C',
   'attack.warn.dim': '#A8A02E',
 
-  // The four paths: base, glow, dark and the shadow a projection takes.
+  // The five paths: base, glow, dark and the shadow a projection takes. Milagros (miracles, the fifth,
+  // placed first by the owner) is magenta: the one hue the rainbow lacks, made where its two ends meet
+  // (DECISIONS §3.5 amendment, 2026-11-02).
+  'path.milagros.base': '#DE42A2', 'path.milagros.glow': '#FF7AC8', 'path.milagros.dark': '#7C1A5A', 'path.milagros.shadow': '#5E3652',
   'path.body.base': '#3FCF7F', 'path.body.glow': '#81E9AF', 'path.body.dark': '#276E46', 'path.body.shadow': '#36634A',
   'path.emotion.base': '#7AA3D4', 'path.emotion.glow': '#8EC1FF', 'path.emotion.dark': '#365981', 'path.emotion.shadow': '#364A63',
   'path.mind.base': '#B074FA', 'path.mind.glow': '#D5B3FF', 'path.mind.dark': '#5D1AB0', 'path.mind.shadow': '#4A3663',
@@ -119,10 +122,14 @@ export const PALETTE = {
 
 export type PalToken = keyof typeof PALETTE;
 
-/** The four paths, by name. Their glyphs are shown next to the colour, never instead of it. */
-export const PATHS = ['body', 'emotion', 'mind', 'will'] as const;
+/**
+ * The five paths, by name. Their glyphs are shown next to the colour, never instead of it. The four
+ * element paths are the Platonic solids' silhouettes (cube, sphere, octahedron, tetrahedron); Milagros
+ * is the pentagon, the face of the dodecahedron: the fifth solid, the quintessence beyond the four.
+ */
+export const PATHS = ['milagros', 'body', 'emotion', 'mind', 'will'] as const;
 export type PathName = typeof PATHS[number];
-export const PATH_GLYPH: Record<PathName, string> = { body: '■', emotion: '●', mind: '◆', will: '▲' };
+export const PATH_GLYPH: Record<PathName, string> = { milagros: '⬟', body: '■', emotion: '●', mind: '◆', will: '▲' };
 
 /** The palette hex as a number, for three.js and canvas painters. Throws on an unknown token. */
 export function pal(t: PalToken): number {

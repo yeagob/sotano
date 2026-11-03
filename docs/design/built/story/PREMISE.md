@@ -6,7 +6,7 @@ A person goes down into the basement of their own mind. Down there, reality bend
 
 ## The person
 
-Every item is a practice: something people have used to grow, such as a book, a course, a technique or a therapy. Picking one up changes not only what you can do but who you are. The protagonist is not a fixed character who collects gear. The person moves along four paths as they collect practices, and at three of one path they reach a state of being ([PATHS](PATHS.md), [states of being](../practices/states-of-being/README.md)). The protagonist is faceless and gender-neutral by default; the open question of showing them is in [PROTAGONIST](../../not-built/story/PROTAGONIST.md).
+Every item is a practice: something people have used to grow, such as a book, a course, a technique or a therapy. Picking one up changes not only what you can do but who you are. The protagonist is not a fixed character who collects gear. The person moves along five paths as they collect practices, and at three of one path they reach a state of being ([PATHS](PATHS.md), [states of being](../practices/states-of-being/README.md)). The protagonist is faceless and gender-neutral by default; the open question of showing them is in [PROTAGONIST](../../not-built/story/PROTAGONIST.md).
 
 ## Every wall, every creature
 

@@ -8,6 +8,7 @@ import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
+import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
@@ -43,6 +44,7 @@ import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
+import { DOUBLE_TAP_MS } from '../input/bindings';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { Inventory } from '../items/inventory';
@@ -57,6 +59,7 @@ import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
 import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
+import { LOVE_BLAST, MISSILE_TRAIL, MissileView } from '../render/missile-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
@@ -270,6 +273,13 @@ export class Game {
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
+  private missiles = new Missiles();
+  private missileView: MissileView;
+  /** Game time of the last press of the fire control, for the double tap. */
+  private lastCastTap = -Infinity;
+  /** The double-tap hint has been shown this run. */
+  private missileHinted = false;
   private fpsAcc = 0; private fpsN = 0; fps = 0;
   /** The weapon replacing the intention, if any (docs/architecture/WEAPONS.md). */
   private weapon: Weapon | null = null;
@@ -323,6 +333,7 @@ export class Game {
     this.stars = makeStars();
     this.scene.add(this.stars);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
+    this.missileView = new MissileView(this.scene);
     this.cutHalves = new CutHalves(this.scene, this.atlas);
     this.cracks = new CrackView(this.scene);
     this.intents = new Intents(this.scene, {
@@ -441,6 +452,7 @@ export class Game {
       this.blasts.current = null;
     };
     this.blasts.clear(); this.bombCause.clear();
+    this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.scene);
     this.pickups = new Pickups(this.scene);
     this.chestViews = new Chests(this.scene);
@@ -1793,6 +1805,96 @@ export class Game {
     sfx3.fuse();
   }
 
+  /**
+   * The double tap of the fire control (every device: a double click, a double RT, a double tap on
+   * the bead). The first press fires its intention as usual; with the `missile` stat a second press
+   * within DOUBLE_TAP_MS launches a bomb instead (docs/design/built/practices/milagros/DR-LAUNCHER.md).
+   */
+  private tapMissile() {
+    const on = this.stats.get('missile') >= 1;
+    if (on && !this.missileHinted) {
+      this.missileHinted = true;
+      this.hud.toast('toast.missileHint', controlParams(activeDevice()));
+    }
+    if (!this.input.hit('cast') || this.hands.holding || this.player.muteT > 0) return;
+    const double = this.time - this.lastCastTap <= DOUBLE_TAP_MS / 1000;
+    this.lastCastTap = this.time;
+    if (!double || !on) return;
+    this.lastCastTap = -Infinity; // a third press starts a new pair
+    this.launchMissile();
+  }
+
+  /** One bomb leaves the counter as a missile, unless there is none or a block stands at the muzzle. */
+  private launchMissile() {
+    const p = this.player;
+    if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
+    const eye = p.eye, dir = p.forward;
+    // the arming rule: a missile needs room to arm, so a shot into a wall at the muzzle is refused
+    if (muzzleBlocked((x, y, z) => this.solid(x, y, z), eye.x, eye.y, eye.z, dir.x, dir.y, dir.z)) { sfx.denied(); return; }
+    const ev = this.bus.emit('missileLaunch', { speed: MISSILE_SPEED, range: MISSILE_RANGE, polarity: this.polarity });
+    if (ev.cancelled) { sfx.denied(); return; }
+    p.bombs--;
+    // the press that launched does not also cast while it is held
+    this.input.suppress('cast');
+    const from = eye.addScaledVector(dir, 0.4).add(new THREE.Vector3(0, -0.15, 0));
+    this.missiles.launch(from.x, from.y, from.z, dir.x, dir.y, dir.z, ev.polarity, ev.speed, ev.range);
+    this.hands.fire();
+    this.hud.shake(0.08);
+    sfx3.launch(ev.polarity === 'negative');
+  }
+
+  /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
+  private updateMissiles(dt: number) {
+    if (!this.missiles.list.length) return;
+    const ends = this.missiles.update(dt, {
+      solid: (x, y, z) => this.solid(x, y, z),
+      meets: (x, y, z) => this.missileMeets(x, y, z),
+    });
+    for (const m of this.missiles.list) {
+      const trail = MISSILE_TRAIL[m.polarity];
+      this.particles.burst(m.x - m.dx * 0.3, m.y - m.dy * 0.3, m.z - m.dz * 0.3, pal(trail[Math.floor(m.age * 20) % trail.length]), 2, 0.6, 0.06);
+    }
+    for (const e of ends) {
+      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z);
+      else this.explode(e.x, e.y, e.z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'missile', this.player.id);
+    }
+  }
+
+  /** What a missile meets besides blocks: any actor but you (allies too), and loose bombs. */
+  private missileMeets(x: number, y: number, z: number) {
+    for (const a of this.actors.all()) {
+      if (a.kind === 'player' || !a.alive || a.spawning > 0) continue;
+      const b = a.body;
+      if (Math.abs(x - b.x) < b.hw + 0.2 && Math.abs(z - b.z) < b.hw + 0.2 && y > b.y - 0.2 && y < b.y + b.h + 0.2) return true;
+    }
+    const i = this.debrisAt(x, y, z, 0.2);
+    return i >= 0 && this.debris.isBomb(i);
+  }
+
+  /**
+   * The love explosion (a positive missile): the bomb's sphere, but every block and actor in it is
+   * touched as a positive intention touches it, with the blast's own damage as the amount. It mends
+   * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
+   * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
+   */
+  private loveBlast(x: number, y: number, z: number) {
+    const r = this.stats.get('bombRadius'), damage = this.stats.get('bombDamage'), ri = Math.ceil(r);
+    for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
+      const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
+      const d = Math.hypot(bx + 0.5 - x, by + 0.5 - y, bz + 0.5 - z);
+      if (d <= r) this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r));
+    }
+    for (const a of [...this.actors.all()]) {
+      if (a.kind === 'player' || !a.alive || a.spawning > 0) continue;
+      const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
+      if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
+    }
+    this.hearPresences(x, z, 'positive');
+    LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
+    this.hud.shake(0.15);
+    sfx3.loveBoom();
+  }
+
   // ───────────────────────── elements ─────────────────────────
 
   /** Fire or lava sets a flammable block alight (`ignite`): it burns away, leaving a flame. */
@@ -2888,6 +2990,7 @@ export class Game {
     this.clampHealth();
     this.touchBlocks(dt);
     this.syncWeapon();
+    this.tapMissile();
     if (this.weapon) this.weapon.update(dt);
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
@@ -2906,6 +3009,7 @@ export class Game {
     this.touchPickups();
     this.touchChests();
     this.intents.update(dt);
+    this.updateMissiles(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
     this.blasts.run(b => this.blast(b));
@@ -2920,6 +3024,7 @@ export class Game {
     this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);
+    this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
     const hand = this.player.hand;

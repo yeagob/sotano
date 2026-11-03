@@ -188,6 +188,10 @@ export const sfx3 = {
   rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
   /** The loaded intention switches (F): a short tick, rising to positive, falling to negative. */
   polarity: (negative: boolean) => tone(negative ? 360 : 620, 0.09, 'triangle', 0.14, negative ? 0.7 : 1.5),
+  /** A missile leaves (Dr. Launcher): a rushing hiss that climbs, warmer when it carries love. */
+  launch: (negative: boolean) => { noise(0.35, 0.3, jitter(negative ? 1400 : 2200), 1.1, master, 0.02); tone(jitter(negative ? 140 : 260), 0.3, 'sawtooth', 0.06, 2.2); },
+  /** The love explosion: a soft swell and a rising chord instead of a boom. */
+  loveBoom: () => { noise(0.45, 0.2, 500, 0.7, master, 0.05); [392, 523, 784].forEach((f, i) => setTimeout(() => tone(f, 0.35, 'sine', 0.12, 1.2), i * 60)); },
   /** A projection turns to your side: a warm, rising pair. */
   converted: () => { tone(523, 0.14, 'sine', 0.14); setTimeout(() => tone(784, 0.2, 'sine', 0.14), 110); },
   /** An ally turns hostile again: a cold, falling pair. */
