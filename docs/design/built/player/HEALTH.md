@@ -10,14 +10,14 @@ Part of [the player](README.md).
 - A heart that is partly full shows its filled quarters from the left. A partly filled quarter shows as full, so a small amount of health is never hidden.
 - When you are hit, the points come off, and for one second after that you cannot be hit again. During that second the hearts stay steady with an outline instead of blinking.
 - When one heart or less is left, the last heart beats, so the player always knows they are close to death.
-- A heart pickup heals one whole heart. At full health you do not take it: it stays on the floor until you are hurt.
+- A heart pickup is one of six kinds ([hearts/](hearts/README.md)). A red heart heals one whole heart; at full health you do not take it: it stays on the floor until you are hurt. Blue, stone and berserker hearts add an extra heart after the containers, spent first and lost for good; blood and star hearts heal over time or make you untouchable.
 - A heart container, from an item, adds a heart to the maximum and fills it at once. If a practice takes a container away, the health is brought down to the new maximum.
 - Standing in fire or lava hurts by the element's harm value at each invulnerability window. The elements themselves are described outside this document.
 - Falling does not hurt you. Landing from a fall makes a sound and an event, and nothing more.
 
 ## The rule behind it
 
-The owner's design text puts health in hearts that can be recovered, with a second kind of heart that is lost first ([DESIGN.md, section 4](README.md)); the planned kinds are in [not-built/player/HEART-TYPES.md](../../not-built/player/HEART-TYPES.md). Health is counted in points so that a small reduction from an item still shows on the hearts.
+The owner's design text puts health in hearts that can be recovered, with a second kind of heart that is lost first ([DESIGN.md, section 4](README.md)); the kinds of heart are in [hearts/](hearts/README.md), and what is still open about them in [not-built/player/hearts](../../not-built/player/hearts/README.md). Health is counted in points so that a small reduction from an item still shows on the hearts.
 
 Code: `src/entities/actors.ts` (the heart and the quarter, lines 16-24), `src/game/hud.ts` (the drawn hearts, lines 219-235), `src/game/game.ts` (the maximum, line 805; the damage pipeline for every actor, lines 812-846; heals, lines 846-862; the pickup rule for hearts, line 2097), `src/core/stats.ts` (the maximum hearts and invulnerability stats, lines 44-45).
 
@@ -25,7 +25,7 @@ Code: `src/entities/actors.ts` (the heart and the quarter, lines 16-24), `src/ga
 
 - Starting hearts: 3 (24 points).
 - Heart: 8 points, four quarters of 2 points.
-- Heart pickup: one heart (8 points).
+- Heart pickup: one heart (8 points); the design counts it as 100 health.
 - Invulnerability after a hit: 1 second, which items can lengthen.
 - Drowning: 4 points every 1.5 seconds (see [SWIMMING.md](SWIMMING.md)).
 

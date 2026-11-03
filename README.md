@@ -162,7 +162,7 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 - **Forty projections** that seal the room and fight you, from Doubt and the Inner Critic to Panic and What-if, each with its own attack and its own reaction to the elements.
 - **The giant tree above.** Built in stories, each a hall of its own joined by spiral stairs, loaded only as you come near.
 - **Creatures** of the depths that never seal a room and never die: a good intention heals them, a bad one sends them into the blocks.
-- **Survival** with Isaac-style hearts drawn in quarters, invulnerability frames after each hit and a death screen when the intention fades.
+- **Survival** with Isaac-style hearts drawn in quarters, six kinds of heart (red, blue, stone, blood, star and the rare berserker), invulnerability frames after each hit and a death screen when the intention fades.
 - **Elements.** Water to wade or drown in, lava to keep away from, fire that eats crates. Water on lava makes obsidian. Each projection reacts to elements in its own way: Panic calms in water and goes off in fire.
 - **Practices and synergies.** Forty-six practices from quality 1 to 4, among them electric ones, area effects, shapes of intention and heart containers, with a clear effect line on every pickup. Synergies such as **Somatic Release**, **Compound Effect** and **Flooding**, plus the four states of being.
 - **Unique runs.** Layouts, room moods, rewards and projections all come from the seed.
@@ -226,6 +226,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 **Research and reviews**
 - [Technical research and proposal](docs/research/TECHNICAL.md): how Isaac and Noita are built, the target architecture, roadmap.
 - [Architecture reviews](docs/reviews/README.md): engineer, architect and mediator reviews of key decisions.
+- [Promotional videos](docs/promo/README.md): scripts of the short videos that present a feature on social networks.
 
 ---
 

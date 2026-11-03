@@ -10,6 +10,7 @@ import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
 import type { Flask } from '../content/potions';
 import type { Actor, ActorId, Faction } from './actors';
+import type { BloodRegen, HeartLayer } from './hearts';
 
 export const EYE = 1.62;
 const WALK = 4.6, GRAVITY = 28, JUMP_V = 8.4, AIR_CONTROL = 0.35;
@@ -53,6 +54,9 @@ export class Player implements Actor {
   bombs = 1;
   /** Health in damage points (max = HEART × the maxHearts stat; the HUD draws quarter hearts). */
   hp = 24;
+  layers: HeartLayer[] = [];
+  starT = 0;
+  blood: BloodRegen | null = null;
   /** Seconds of invulnerability left after a hit. */
   invulnT = 0;
   slowT = 0;

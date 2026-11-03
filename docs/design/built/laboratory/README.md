@@ -1,12 +1,12 @@
 # Laboratory
 
-Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink and eight of the eleven recipes are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
+Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink and nine of the twelve recipes are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
 
 ## Documents
 
 | Document | Contents |
 |---|---|
-| [recipes](recipes/README.md) | The eight built recipes, how the bulb is read, ice and durations, one document per recipe |
+| [recipes](recipes/README.md) | The nine built recipes, how the bulb is read, ice and durations, one document per recipe |
 
 ## Where it is
 
@@ -26,7 +26,7 @@ One tile in one normal room on the odd floors 1, 3, 5 and 7 (`KITCHEN_FLOORS`), 
 
 - **Feed it.** Aim at the alembic and right-click: the top of your hand goes into the bulb. The bulb holds three things, parts or blocks. A fourth is refused.
 - **A positive intention brews.** One of the alembic's three brews is spent, and what was fed is gone for good. The brew leaves a flask on top of the alembic. Walk onto it to take it into your hand, if the hand has room.
-- **What the bulb makes.** The whole bulb is read against eight recipes; the most specific one wins, and a bulb no recipe matches makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
+- **What the bulb makes.** The whole bulb is read against nine recipes; the most specific one wins, and a bulb no recipe matches makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
 - **Drink hint.** A brew, and picking up a flask, show the drink key for the active device in the toast.
 - **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
 - **A negative intention boils the bulb off.** What was fed is lost and no brew is spent.

@@ -107,7 +107,9 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's roll of a key, heart or bomb, at its floor's chance of 10% to 30%) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `missileLaunch` | `speed` (steady, blocks/s), `range` (blocks), `polarity` (negative: a bomb blast; positive: a love explosion), or cancel (no bomb is spent) | a quick double tap of the fire control with the `missile` stat, a bomb in the counter and room to arm |
-| `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
+| `pickupCollect` | `amount`, or cancel (`heart` names the kind of a heart other than red; a red heart has none) | collecting a key, bomb or heart |
+| `berserkChange` *(react only)* | nothing: `on` says whether the berserker state just started or ended (a berserker heart held or a Berserker Draught drunk) | the berserker state changes |
+| `heartLost` *(react only)* | nothing: `heart` is the blue, stone or berserker heart just spent | an extra heart is spent by a hit |
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |
