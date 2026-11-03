@@ -930,7 +930,7 @@ export class Game {
       p.starT = STAR_SECONDS;
       sfxHeart.star();
     }
-    if (kind !== 'berserker') this.hud.toast(`heart.${kind}`);
+    this.hud.toast(`heart.${kind}`);
     const b = p.body;
     this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
     return true;
@@ -941,7 +941,7 @@ export class Game {
     this.bus.emit('heartLost', { heart: kind });
     this.particles.burst(b.x, b.y + 1.3, b.z, pal(HEART_FX[kind]), 30, 4, 0.08);
     sfxHeart.layerLost();
-    if (kind !== 'berserker') this.hud.toast(`heart.${kind}Lost`);
+    this.hud.toast(`heart.${kind}Lost`);
   }
 
   private berserkOn = false;
@@ -949,20 +949,20 @@ export class Game {
   private setBerserk(on: boolean) {
     if (on === this.berserkOn) return;
     this.berserkOn = on;
-    this.stats.removeSource('heart:berserker');
+    this.stats.removeSource('berserk');
     if (on) for (const [stat, value] of [['damage', BERSERK_DAMAGE], ['moveSpeed', BERSERK_SPEED], ['jump', BERSERK_JUMP], ['range', BERSERK_RANGE]] as const)
-      this.stats.add({ stat, layer: 'mul', value, source: 'heart:berserker' });
+      this.stats.add({ stat, layer: 'mul', value, source: 'berserk' });
     setEcho(on);
     this.hud.setBerserk(on);
+    this.bus.emit('berserkChange', { on });
     const b = this.player.body;
     if (on) {
       sfxHeart.berserk();
       this.hud.shake(0.35);
       this.particles.burst(b.x, b.y + 1, b.z, pal(HEART_FX.berserker), 60, 6, 0.1);
-      this.hud.toast('heart.berserker');
     } else if (!this.player.dead) {
       sfxHeart.berserkEnd();
-      this.hud.toast('heart.berserkerLost');
+      this.hud.toast('berserk.off');
     }
   }
 
@@ -980,7 +980,7 @@ export class Game {
       if (r.heal > 0) p.hp = Math.min(this.maxHp, p.hp + r.heal);
       if (r.done) { p.blood = null; sfxHeart.bloodEnd(); }
     }
-    const on = berserk(p.layers) && !p.dead;
+    const on = (berserk(p.layers) || this.potions.active.some(a => POTIONS[a.potion].berserk)) && !p.dead;
     if (on !== this.berserkOn) this.setBerserk(on);
     if (on) this.berserkTread();
   }

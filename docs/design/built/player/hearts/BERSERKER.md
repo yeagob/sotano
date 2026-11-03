@@ -15,10 +15,14 @@ Part of [kinds of heart](README.md). What is still open for it is in [not-built/
   - Any projectile that reaches you is sent back the way it came, now on your side, with a sharp ring.
   - The screen wears a different frame: a coloured border with a slow glow (under 3 Hz), and the berserker heart in the HUD glows.
   - Every sound has an echo.
-- It is spent like any extra heart (the most recently picked up first). When the last berserker heart is spent the mode ends: the stats, the frame and the echo go, with a falling roar and a toast.
+- It is spent like any extra heart (the most recently picked up first). When the last berserker heart is spent the mode ends, unless a Berserker Draught still holds it: the stats, the frame and the echo go, with a falling roar and a toast.
+
+## The berserker state
+
+The mode is a state of its own, not a property of the heart: it is on while any source holds it. Today there are two, a berserker heart held and a [Berserker Draught](../../laboratory/recipes/BERSERKER-DRAUGHT.md) drunk (two sealed rooms). The state announces every change (on and off) so other things in the game can answer it later: practices, projections or stations that react to a berserker (owner, 2026-11-03).
 
 ## Numbers
 
 - Health: 100. Damage × 1.5, move speed × 1.5, jump × 1.5, intention range × 0.3. Several berserker hearts do not stack the mode.
 
-Code: `src/entities/hearts.ts` (the numbers), `src/game/game.ts` (`setBerserk`, `berserkTread`, `looseBlock`, the projectile `reflects` host), `src/entities/enemies.ts` (projectiles sent back), `src/game/hud.ts` (`setBerserk`), `src/audio/sfx.ts` (`setEcho`).
+Code: `src/entities/hearts.ts` (the numbers), `src/game/game.ts` (`setBerserk`, `updateHearts` for the sources, the `berserkChange` event, `berserkTread`, `looseBlock`, the projectile `reflects` host), `src/entities/enemies.ts` (projectiles sent back), `src/game/hud.ts` (`setBerserk`), `src/audio/sfx.ts` (`setEcho`).

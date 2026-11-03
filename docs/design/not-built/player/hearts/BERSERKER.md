@@ -8,7 +8,7 @@ Part of [kinds of heart (not built)](README.md).
 
 ## The design
 
-- **A potion that starts the mode.** The owner wants the berserker mode to be startable by a potion too, and practices may mention it. Which potion, its recipe and how long the mode lasts from it are not decided.
+- **Things that interact with the state.** The owner wants the berserker state to be something other objects answer at some point (2026-11-03): practices that strengthen or lengthen it, projections that fear or provoke it, stations that need it. The state and its change event are built; no object answers it yet. The potion that starts it is built (the Berserker Draught).
 - **The promotional video.** The owner chose the berserker heart as the first feature to present in a short promotional video for social networks (YouTube and X), narrated with a local text-to-speech model (Chatterbox is the owner's preferred one). How such a video is made is in the `sotano-promo` skill.
 
 ## The owner's words, paraphrased
@@ -17,6 +17,6 @@ The first proposal in issue #31 had the mode start when the heart was lost, for 
 
 ## Open questions
 
-1. Which potion starts the mode, and for how long?
-2. Do practices that mention the mode change it (longer, stronger), or only refer to it?
+1. The Berserker Draught's name, bulb and two-room duration are proposals: does the owner confirm them?
+2. Which objects answer the state first, and how (longer, stronger, a weakness)?
 3. Should the frame or the echo change over the heart's health (stronger as it empties)?

@@ -129,6 +129,7 @@ export interface GameEvents {
   /** Collecting a key, bomb or heart. `amount` can be changed (or cancel to leave it there). */
   pickupCollect: { kind: PickupKind; amount: number; readonly heart?: HeartKind };
   heartLost: { readonly heart: LayerKind };
+  berserkChange: { readonly on: boolean };
   itemGained: { id: string; uid: number };
   roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */

@@ -6,6 +6,6 @@ Back to [the player (not built)](../README.md)
 
 | Document | Contents | Status |
 |---|---|---|
-| [BERSERKER.md](BERSERKER.md) | What is still open for the berserker heart: the potion that starts the mode, the promotional video | decided |
+| [BERSERKER.md](BERSERKER.md) | What is still open for the berserker heart: objects that answer the state, the promotional video | decided |
 | [EXPLODING.md](EXPLODING.md) | A heart with an effect when it is lost, such as an explosion | proposal |
 | [SOURCES.md](SOURCES.md) | Stations that give hearts of each kind (the kitchen, the alembic) | idea |
