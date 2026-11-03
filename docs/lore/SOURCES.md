@@ -76,7 +76,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `insight` | Insight learning (Wolfgang Köhler, 1925) | Psychology concept | Credit (the book); Concept (the idea) | The sudden solution that jumps from one thought to the next | **Aha Moment**: arcs between projections |
 | `somatic-discharge` | Somatic discharge (Peter Levine, *Waking the Tiger*, 1997) | Therapy | Credit (the book); Concept (discharge) | Energy held in the body released through movement | **Discharge**: landing sends a shockwave |
 | `kindling` | Kindling, a growing warmth (a nod to the neuroscience kindling model) | Concept | Concept | Small sparks that grow into a fire | **Kindling**: pain lights a ring of fire |
-| `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance** |
+| `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance**: the intentions in the room hum into the one you fire |
 
 ### Modern non-fiction (credit only)
 

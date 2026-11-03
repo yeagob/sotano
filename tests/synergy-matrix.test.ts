@@ -94,7 +94,7 @@ function sandbox() {
     frighten: () => {},
     igniteArea: () => {},
     launch: () => {},
-    tagFlying: () => {},
+    intentsHere: () => 0,
     tagCube: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);

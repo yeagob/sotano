@@ -44,8 +44,32 @@ describe('levels: rooms with height and elements', () => {
         const top = floorY(k) + MAX_ROOM_H + 1, bottom = floorY(k - 1) - MAX_PIT - 1;
         expect(bottom - top - 1, 'rock layers left').toBeGreaterThanOrEqual(1);
         let holes = 0;
-        for (let z = 0; z < w.sz; z++) for (let x = 0; x < w.sx; x++) for (let y = top + 1; y < bottom; y++) if (w.get(x, y, z) === AIR) holes++;
+        for (let z = 0; z < w.sz; z++) for (let x = 0; x < w.sx; x++) for (let y = top + 1; y < bottom; y++) if (w.get(x, y, z) === AIR && elemKind(w.elemAt(x, y, z)) !== EL_LAVA) holes++;
         expect(holes, `air between floors ${k - 1} and ${k} (seed ${root})`).toBe(0);
+      }
+    }
+  });
+
+  it('lava between floors sits in rock, never next to air, keeps the way down clear, and starts on floor 5', { timeout: 60000 }, () => {
+    for (const root of [1, 0xBEEF]) {
+      const { w, floors } = carveAll(root, templates);
+      for (const f of floors) {
+        const y0 = floorY(f.floor);
+        let lava = 0;
+        for (let y = y0 - 7; y <= y0 - 3; y++) for (let z = 0; z < w.sz; z++) for (let x = 0; x < w.sx; x++) {
+          if (elemKind(w.elemAt(x, y, z)) !== EL_LAVA) continue;
+          lava++;
+          expect([y0 - 5, y0 - 4], `lava row on floor ${f.floor}`).toContain(y);
+          expect(level(f.floor).lava, `lava under floor ${f.floor}`).toBeDefined();
+          for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) {
+            const n = [x + dx, y + dy, z + dz] as const;
+            expect(w.get(...n) !== AIR || elemKind(w.elemAt(...n)) === EL_LAVA, `lava at ${x},${y},${z} touches air`).toBe(true);
+          }
+          const h = f.hole;
+          if (h) expect(x >= h.x - 2 && x < h.x + h.size + 2 && z >= h.z - 2 && z < h.z + h.size + 2, 'lava on the way down').toBe(false);
+        }
+        if (f.floor === 8) expect(lava, 'the bottom lava sheet').toBeGreaterThan(100);
+        if (f.floor < 5 || f.floor === LAST_FLOOR) expect(lava, `no lava under floor ${f.floor}`).toBe(0);
       }
     }
   });

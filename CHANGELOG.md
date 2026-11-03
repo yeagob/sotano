@@ -11,10 +11,12 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Breaking a crate can drop a key, a heart or a small bomb (#6).
 - A laboratory alembic on floors 2, 4, 6 and 8 brews from up to three things in your hand (a positive intention, three brews per run). The brew leaves a flask to drink with G, X or the flask button: eight potions, from instant tonics to timed draughts. The Listener speaks only once it is given a heart of a released pattern, and the Gardener once it is given a flesh (#20).
 - A monster part in your hand can be given as the toll to go down on floors 0 to 4 (#8).
+- Lava in the rock between floors 5 to 9: a few pockets from floor 5, more from 6, a sheet on floor 8 that covers the whole floor. It sits off the way down, and digging into it sets it flowing; the toll stays the safe way. Seeds changed (v25).
 
 - The Boundary keeps the vault's centre practice: walk up to it and it asks one real-world mission (write a sentence, a message or a letter, draw, or breathe for 30 seconds). Yes after 30 seconds or more gives a tier 3 or 4 practice; a quicker Yes, or No, gives tier 1 or 2. Either answer releases the Boundary (#35).
 
 ### Fixed
+- Resonance had no visible effect. Now each other intention in flight in the room adds 1% damage to the intention you fire.
 - Distraction and Noise now fly at eye height and attack: they stop, swell and flare their eyes, dart through where you stood and rest, so their touch can finally land; allied ones keep you company and dart at your foes (#21).
 - Flying creatures (Wonder, Chirper and the other hoverers) stay up instead of sinking to the floor, climb steps, stay under the ceiling and turn off walls instead of pressing on them (#21).
 - The part leaves your hand with a visible handover when you give it to the Listener (#43).
