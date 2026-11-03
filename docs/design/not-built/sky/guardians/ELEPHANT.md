@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The elephant is the third deity: an elephant with a giant head on a small, soft plush body, over sky floor 3, a floor of channels and rivers that carry the player.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the elephant levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the elephant levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
 
 ## 1. Who it is
 
@@ -109,6 +109,71 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 - *Act:* a ring of sound runs along the terrace the player is on, at target 7 blocks a second, target 0.8 blocks high, and pushes target 1.5 blocks outward.
 - *Answer:* jump it, or stand on a block 1 high (a block stops the push). A positive intention on the raised trunk during the telegraph muffles it: the ring still runs but does not push. The raised trunk is also the head's open moment for positive hits.
 
+### B3b. Special attacks
+
+Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
+
+**Phases (provisional).** The elephant's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Wading*, up to a third of the hit count; phase 2, *Remembering*, up to two thirds; phase 3, *Carrying*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+
+| # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
+|---|---|---|---|---|---|
+| 5 | Mud wallow | 1 | Slows | 1.1 s | none |
+| 6 | Dust bath | 1 | Drains spirit | 1.3 s | 10 |
+| 7 | Ear fan | 2 | Moves | 1.1 s | none |
+| 8 | Low rumble | 2 | Drains spirit | 1.3 s | 12 |
+| 9 | Heavy water | 3 | Drains spirit | 1.3 s | 14 |
+| 10 | Trunk lift | 3 | Captures | 1.6 s | none |
+
+**5. Mud wallow ([dense ground](../abilities/DENSE-GROUND.md)). Slows.**
+- *Habit:* elephants wallow in mud and roll in it to cool down and to protect their skin.
+- *Phase:* 1.
+- *Telegraph (target 1.1 s):* the elephant sinks its trunk into the Basin and blows a wet bubble; a patch of target radius 2 on the player's terrace darkens and turns glossy, with a slow squelch.
+- *Act:* the patch is dense for target 5 s: walking on it is slowed to target 50%. Jumps keep their height. A dry channel bed inside the patch is dense too; a wet one is not changed.
+- *Answer:* jump out of the patch, walk off it slowly, or build over it (a player block is never dense).
+- *Positive intention:* a positive intention at a muddy cell dries it back to ordinary ground at once.
+
+**6. Dust bath (a falling cloud). Drains spirit.**
+- *Habit:* an elephant sucks up dust with its trunk and throws it over its back, again and again, to keep the sun and the flies off.
+- *Phase:* 1.
+- *Telegraph (target 1.3 s):* the trunk sweeps the rim and draws up a plume of pale dust; a pale circle of target radius 2 is drawn on the remembered place (B2, memory), and dust motes start to settle in it with a dry hiss.
+- *Act:* the dust falls in the circle. A player inside it drains target 10 spirit. The dust settles and does nothing more.
+- *Answer:* do not be where you rested; any move of 2 blocks leaves the circle. A block overhead shelters the player: the dust falls like a lob and stops at a solid block ([attacks](../../../built/encounters/ATTACKS.md)).
+- *Positive intention:* a positive intention into the circle during the telegraph turns the dust into a fine harmless mist: no drain.
+
+**7. Ear fan ([wind](../abilities/WIND.md)). Moves.**
+- *Habit:* an elephant fans its huge ears to cool its blood; on a hot day it never stops.
+- *Phase:* 2.
+- *Telegraph (target 1.1 s):* both ears open wide and start to beat slowly; dust lifts on a line across the player's terrace toward the nearest channel, with a soft whoosh at each beat.
+- *Act:* a gust for target 2.5 s pushes the player along the line at target 2.5 blocks a second, about half the player's walk. A player pushed into a channel is carried by its water if it is wet (B3, Trunk spray), and is not hurt.
+- *Answer:* walk against it, or put a block in its line (a gust stops at the first block, and the block stays).
+- *Positive intention:* a positive intention on an ear during the telegraph makes both ears fold back: no gust.
+
+**8. Low rumble (a ground ring). Drains spirit.**
+- *Habit:* elephants call each other with rumbles too low for a human to hear; the herd feels them through the ground, in the soles of their feet, kilometres away.
+- *Phase:* 2.
+- *Telegraph (target 1.3 s):* the elephant presses the tip of its trunk to the Basin's floor; pebbles hop on the player's terrace, the ground trembles under their feet, and a ring with a clear edge is drawn along the terrace, starting at the tusk line.
+- *Act:* the ring travels along that terrace's original ground at target 7 blocks a second, once round. A player standing on the terrace's original ground or in its dry beds when the edge passes drains target 12 spirit. A player in the air, in water, or on a player block is not touched: the rumble travels only through the original ground.
+- *Answer:* jump as the edge passes, or stand on a player block (one placed block is enough), or step into a wet channel.
+- *Positive intention:* a positive intention on the trunk during the telegraph lifts it from the floor: no ring.
+
+**9. Heavy water (a grey flow). Drains spirit.**
+- *Habit:* elephants mourn: they come back to the bones of their dead, touch them with their trunks, and stand over them for a long time, still. This is the elephant's mirror: an old weight carried and never put down.
+- *Phase:* 3.
+- *Telegraph (target 1.3 s):* the elephant lowers its head and goes still; a slow toll sounds; the water at the head of the channel the player is in (wet or dry) turns grey and heavy, and the grey is drawn down the bed to the player's cell and beyond.
+- *Act:* the grey flow runs down that channel's bed. A player still in the bed when it reaches their cell drains target 14 spirit. The grey drains into the waterhole and does nothing more; the channel's water, if any, flows on as before.
+- *Answer:* climb out of the bed onto a bank through a cut, or dam the bed above you (a player block stops the grey there). Heavy water never chooses a stretch with no cut, no dam and no nest within target 4 blocks of the player.
+- *Positive intention:* a positive intention into the grey at the channel's head during the telegraph clears it to clear water: no drain.
+
+**10. Trunk lift. Captures.**
+- *Habit:* an elephant wraps its trunk round what it wants to keep, and a mother lifts her calf out of the mud with her trunk.
+- *Phase:* 3.
+- *Telegraph (target 1.6 s):* the trunk uncurls from the Basin and reaches down toward the player, its tip glowing warm, with a long rising note; a ring of target radius 2 is drawn round the player's cell and shrinks to the cell over the telegraph. Trunk lift reaches only the top two terraces (within target 7 blocks of the Basin), as Trunk swat does.
+- *Act:* if the player is inside the ring when it closes, the trunk curls round them and lifts them target 1 block off the ground, in place: the player is captured for `CAPTURE_TIME` (target 3 s) and one practice they hold is taken ([guardians, section 6.6](README.md#66-what-works-and-harm)). Then it sets them down on the same cell and draws the trunk back to Drinking.
+- *Answer:* leave the ring before it closes; a jump or a run of 2 blocks is enough. A block overhead stops the trunk (it reaches down from above, like a lob), and the trunk then rests on the block for its recovery.
+- *Positive intention:* a positive intention on the glowing tip while it reaches makes it curl back: no capture. While the trunk reaches and while it holds the player, the head leans out over the rim, so it takes positive hits from the top terraces as it does while the trunk is raised (B2, the rim).
+
+**Without minions.** None of the six needs a minion.
+
 ### B4. Defeat by positive hits
 
 - **Hit count:** target 36 positive hits.
@@ -182,6 +247,8 @@ Every value in the middle column is a target. The right column is the built game
 | Minions at once | 5 (3 hostile) | no built equivalent |
 | Floor size | radius 24, 34 high | trunk story 22 high |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
+| Special attacks (provisional) | 6: 3 drain spirit (10, 12, 14 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
+| Special telegraphs | 1.1 s to slow or move, 1.3 s to drain, 1.6 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
 
@@ -196,3 +263,7 @@ Every value in the middle column is a target. The right column is the built game
 9. Currents and minions. The herd wades without slowing and is not carried by the currents. The abilities folder leaves this open ([water currents](../abilities/WATER-CURRENTS.md)).
 10. Teleport (answered, provisional: no). The elephant does not teleport.
 11. When the elephant is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
+12. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (10, 12, 14) are proposals for the owner to confirm.
+13. Memory and spirit. Dust bath aims at the remembered place, like Memory stone and Trunk spray. Is a drain that punishes resting right on the floor after the panda's, which rewards it?
+14. Heavy water carries the mirror (mourning, an old weight) as a drain on a player who stays in a channel bed. Is mourning a habit the owner wants a deity to attack with, or should it stay in the defeat (the weight set down)?
+15. Ear fan and Mud wallow use [wind](../abilities/WIND.md) and [dense ground](../abilities/DENSE-GROUND.md), which the abilities folder proposes for other animals. Keep them, or replace them?
