@@ -7,7 +7,7 @@ import type { PartDef } from './parts';
 export const POTION_IDS = [
   'plain-tonic', 'restoring-draught', 'footing-tincture', 'spring-tonic',
   'clear-infusion', 'questioning-tincture', 'ember-tonic', 'patient-draught',
-  'meal-small', 'meal-hearty',
+  'meal-small', 'meal-hearty', 'berserker-draught',
 ] as const;
 export type PotionId = (typeof POTION_IDS)[number];
 
@@ -28,6 +28,7 @@ export interface PotionDef {
   heal?: number;
   stats?: readonly StatModSpec[];
   locks?: number;
+  berserk?: true;
   /** Cooked in a kitchen, never brewed: it has no recipe. */
   meal?: true;
 }
@@ -36,7 +37,7 @@ const INSTANT: Duration = { kind: 'instant' };
 const FLOOR: Duration = { kind: 'floor' };
 const ROOMS = (rooms: number): Duration => ({ kind: 'rooms', rooms });
 
-type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal'>;
+type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal' | 'berserk'>;
 
 const potion = (id: PotionId, path: PathName, liquid: PalToken, duration: Duration, extra: Extra = {}): PotionDef =>
   ({ id, path, liquid, duration, name: `potion.${id}.name` as MessageKey, effect: `potion.${id}.effect` as MessageKey, ...extra });
@@ -55,6 +56,7 @@ export const POTIONS: Record<PotionId, PotionDef> = {
   'meal-small': potion('meal-small', 'body', 'bone.faded', INSTANT, { heal: 4, meal: true }),
   'meal-hearty': potion('meal-hearty', 'body', 'copper.base', INSTANT, { heal: 8, meal: true }),
   'patient-draught': potion('patient-draught', 'will', 'copper.base', FLOOR, { stats: [{ stat: 'mining', layer: 'mul', value: 1.6 }] }),
+  'berserker-draught': potion('berserker-draught', 'will', 'heart.berserker.ember', ROOMS(2), { berserk: true }),
 };
 
 export function isFlask(c: Carried): c is Flask {

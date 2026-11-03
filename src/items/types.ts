@@ -56,7 +56,7 @@ export interface ItemApi {
   frighten(id: ActorId, seconds: number): void;
   igniteArea(x: number, y: number, z: number, radius: number): void;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
-  tagFlying(x: number, y: number, z: number, radius: number, tag: string, except: IntentSpec): void;
+  intentsHere(): number;
   tagCube(cube: number, tag: string): void;
 }
 

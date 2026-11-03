@@ -10,6 +10,7 @@ The desktop scheme. Part of [Input](README.md).
 | look | mouse (pointer lock) |
 | jump (hold to swim up) | Space |
 | cast (hold) | left click |
+| launch a missile (with Dr. Launcher) | a quick double click of the left button (within 0.3 s; counts only while the pointer is locked) |
 | place | right click (throws the block if there is nowhere to place it) |
 | throw | Q |
 | drink | G |

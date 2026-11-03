@@ -1,13 +1,13 @@
 import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
-export const RESONANT = 'resonant';
+const HUM_PER_INTENTION = 0.01;
 
 export default defineItem({
   id: 'resonance',
   name: 'Resonance',
   description: 'When one thought rings true, the ones near it start to hum.',
-  effect: 'Each intention that hits charges the other intentions in flight within 3 blocks. A charged intention discharges on its next hit: 3 points to projections within 2 blocks.',
+  effect: 'Each other intention in flight in the room adds 1% damage to the intention you fire.',
   inspiredBy: 'Sympathetic resonance (physics); a nod to attunement in therapy',
   pools: { treasure: 1 },
   tags: ['mind', 'electric', 'intent'],
@@ -31,11 +31,8 @@ export default defineItem({
     palette: { a: pal('path.mind.dark'), b: pal('path.mind.base'), c: pal('path.mind.glow') },
   },
   hooks: [
-    hook('intentHit', (e, api) => {
-      if (e.intent.tags.has(RESONANT)) api.pulse(e.x, e.y, e.z, 2, 3, 0, pal('light.core'), 'resonance');
-    }, { id: 'discharge', priority: 200 }),
-    hook('intentHit', (e, api) => {
-      api.tagFlying(e.x, e.y, e.z, 3, RESONANT, e.intent);
-    }, { id: 'charge', priority: 201 }),
+    hook('fire', (e, api) => {
+      e.intent.damage *= 1 + HUM_PER_INTENTION * api.intentsHere();
+    }, { id: 'hum', priority: 90 }),
   ],
 });

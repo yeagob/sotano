@@ -50,6 +50,7 @@ export interface EnemyHost {
   contact(e: Enemy, target: Actor): void;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
   projectileHit(target: Actor, damage: number, thrower: number): void;
+  reflects?(target: Actor, x: number, y: number, z: number): boolean;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
   smash(e: Enemy, x: number, y: number, z: number, tier: number, damage: number): boolean;
@@ -618,7 +619,10 @@ export class Enemies {
       // the first actor hostile to the thrower's side that it touches
       const hit = actors.find(a => a.alive && a.spawning <= 0 && a.id !== p.thrower && hostile(p.faction, a.faction)
         && Math.abs(p.x - a.body.x) < a.body.hw + 0.12 && Math.abs(p.z - a.body.z) < a.body.hw + 0.12 && p.y > a.body.y && p.y < a.body.y + a.body.h);
-      if (hit) {
+      if (hit && this.host.reflects?.(hit, p.x, p.y, p.z)) {
+        p.vx = -p.vx; p.vy = -p.vy; p.vz = -p.vz;
+        p.faction = hit.faction; p.thrower = hit.id;
+      } else if (hit) {
         this.host.projectileHit(hit, p.damage, p.thrower);
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {

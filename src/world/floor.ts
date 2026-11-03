@@ -22,7 +22,7 @@ import { placePresences, type ListenerDrop, type RoomPresence } from '../content
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
-import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS } from '../content/levels';
+import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS, type LevelDef } from '../content/levels';
 import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_CELLS, cellAt, ceilingAt, DECOR_CHARS, homeAt, ROCK, ROOM_D, ROOM_H, ROOM_W, templateDims, type RoomTemplate } from '../content/rooms';
 import { CHEST_LOCK, ITEM_IN_CHEST, ROOM_CHEST } from '../content/tables/chests';
 import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
@@ -499,6 +499,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       ? { room: boss.id, x: hx - 1, z: hz - 1, size: 4, yTop: y0 - 1, yBottom: floorY(k + 1) + ROOM_H }
       : { room: boss.id, x: hx, z: hz, size: 2, yTop: y0 - 1, yBottom: floorY(k + 1) + ROOM_H };
   }
+  if (lv.lava && hole) carveLavaBelow(w, rr.fork('floor', k, 'lava'), y0, lv.lava, hole);
 
   for (const rm of rooms) markRoomDirty(w, rm);
   if (labRoom >= 0 && !placed()) {
@@ -689,6 +690,33 @@ function carveElement(w: VoxelWorld, x: number, y0: number, z: number, el: { el:
   }
   if (el.depth >= 2) w.data[w.idx(x, y0 - el.depth - 1, z)] = lining;
   if (el.el === 'fire') w.elem[w.idx(x, y0, z)] = elemByteOf(EL_FIRE);
+}
+
+const LAVA_ROWS = [-5, -4];
+const LAVA_SHEET_ROW = -5;
+const LAVA_PATCH = 4;
+const LAVA_CLEAR = 2;
+
+function carveLavaBelow(w: VoxelWorld, rng: Rng, y0: number, lava: NonNullable<LevelDef['lava']>, hole: NonNullable<FloorResult['hole']>) {
+  const nearShaft = (x: number, z: number) =>
+    x >= hole.x - LAVA_CLEAR && x < hole.x + hole.size + LAVA_CLEAR && z >= hole.z - LAVA_CLEAR && z < hole.z + hole.size + LAVA_CLEAR;
+  const put = (x: number, y: number, z: number) => {
+    if (x < 1 || z < 1 || x > w.sx - 2 || z > w.sz - 2 || w.get(x, y, z) === AIR || w.get(x, y, z) === MAT.bedrock || nearShaft(x, z)) return;
+    const i = w.idx(x, y, z);
+    w.data[i] = AIR;
+    w.elem[i] = elemByteOf(EL_LAVA);
+    w.markDirty(x, y, z);
+  };
+  for (let z0 = 1; z0 < w.sz - 1; z0 += LAVA_PATCH) for (let x0 = 1; x0 < w.sx - 1; x0 += LAVA_PATCH) {
+    if (rng.next() >= lava.layer) continue;
+    for (let z = z0; z < Math.min(z0 + LAVA_PATCH, w.sz - 1); z++) for (let x = x0; x < Math.min(x0 + LAVA_PATCH, w.sx - 1); x++) put(x, y0 + LAVA_SHEET_ROW, z);
+  }
+  for (let n = 0; n < lava.pockets; n++) {
+    const cx = rng.int(1, w.sx - 2), cz = rng.int(1, w.sz - 2), r = lava.reach;
+    for (const dy of LAVA_ROWS) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dz * dz <= r * r) put(cx + dx, y0 + dy, cz + dz);
+    }
+  }
 }
 
 /** `own`: only the templates made for this floor (the tutorial uses its own rooms throughout).

@@ -6,7 +6,7 @@ import { BASE_STATS, type StatName } from '../core/stats';
 import { WEAPON_IDS } from '../game/events';
 import { ACTOR_EVENTS, type Effect, type ItemDef, type SynergyDef } from './types';
 
-export const PATHS = ['body', 'mind', 'emotion', 'will'] as const;
+export const PATHS = ['milagros', 'body', 'mind', 'emotion', 'will'] as const;
 const STATS = new Set(Object.keys(BASE_STATS) as StatName[]);
 const ID = /^[a-z][a-z0-9_]*$/;
 

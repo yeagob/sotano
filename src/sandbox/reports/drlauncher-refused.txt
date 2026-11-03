@@ -1,0 +1,28 @@
+# drlauncher-refused — Dr. Launcher: a double tap with a crate one block in front is refused (no room to arm); no bomb is spent
+floor 1 · seed 1 · room 13×7×5 · 30 ticks (0.5 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices drlauncher · synergies —
+  blocks crate 1
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices drlauncher · synergies —
+  blocks crate 1
+  elements —
+  cubes — · pickups 0
+  events fire 1 · intentHit 1 · roomEnter 1
+
+map t 30 · h 0
+  .............
+  .............
+  .............
+  ...c.........
+  .............
+  .............
+  .............
+
+legend c crate

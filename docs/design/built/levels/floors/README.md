@@ -81,5 +81,6 @@ Their own behaviour is in the bestiary; the roots' creatures are in [ROOTS](ROOT
 | [CIRCLES.md](CIRCLES.md) | Floors 6 to 9: the random plans, the walls of Dis and the ice, the rules for using Dante |
 | [SILENCE.md](SILENCE.md) | The chamber under the ninth floor, standing still to be carried up, and the loop back |
 | [TOLL.md](TOLL.md) | The way down from each floor, and what the toll asks for |
+| [LAVA-BELOW.md](LAVA-BELOW.md) | Lava in the rock between floors 5 and 9: pockets and sheets that grow with depth, never on the way down |
 
 Code: `src/content/levels.ts` (every number in these tables), `src/world/floor.ts` (how a floor is built), `src/world/floorplan.ts` (the Tree and tutorial plans and the random generator).

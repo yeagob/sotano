@@ -108,6 +108,8 @@ Dir r1's `intent #f0a33c`, `ember #c7562a`, `shard #ffd77a`, `dawn #fff4d6` and 
 | `life.empty` | `#4A2226` | Empty heart fill (Ply: the current `#3a1416` vanishes) |
 | `life.rim` | `#7A3A3E` | Empty heart 1-px rim |
 
+The heart kinds (blue, stone, blood, star, berserker) have their own `heart.*` tokens, ruled in §10.6.
+
 **Attack red (amendment, issue #47, 2026-10-29; owner's rule: "every enemy attack that deals damage uses a reddish colour; particles and decoration that do not damage are very light pale blue-white").** Red is no longer reserved for hearts alone: the **attack red** marks what hurts, and nothing else.
 
 | Token | Hex | Use |
@@ -156,6 +158,18 @@ Tokens: `path.body.base`, `path.body.glow`, … The glyphs are always shown with
 Final set, measured: minimum pairwise ΔE 24.4 (tritan, Body/Emotion); distance to reserved colours ≥ 17 in every simulation (heart ≥ 19, gold ≥ 22, light core ≥ 20, hostile `cold.body` ≥ 17); contrast on `ink.panel` 9.2 / 7.1 / 6.0 / 5.4 : 1 (all ≥ 4.5). It ties Tech's optimum within 1 ΔE while keeping Mind violet (air, dusk) and Emotion a soft water blue, and it is lighter on dark backgrounds. Emotion and Mind are separated by value as much as by hue (Mat's argument). The glows were checked against the reserved ramps too (`path.emotion.glow` vs `cold.body` ΔE 18.9; `path.will.glow` vs `light.ember` ΔE 22.9). Dir r1's "equal value" rule lost (equal value fails a greyscale screenshot; Ply).
 
 **Test:** `art.test.ts` asserts pairwise ΔE ≥ 20 under normal/deutan/protan/tritan and ≥ 15 against `life.heart`, `light.gold`, `light.core`, `cold.body`, and ≥ 4.5:1 on `ink.panel`.
+
+**The fifth path: Milagros (amendment, art agent, 2026-11-02; OWNER to confirm the colour and the glyph).** The owner created a fifth path, **Milagros** (miracles; concept `no-impossible`, transcending limits), placed first ([ROCKET-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md), decision 15). Its first practice is Dr. Launcher (§7.7).
+
+| Path | Element | Glyph | `base` | `glow` | `dark` | `shadow` (projections) |
+|---|---|---|---|---|---|---|
+| **Milagros** | Quintessence (beyond the four) | ⬟ | `#DE42A2` | `#FF7AC8` | `#7C1A5A` | `#5E3652` |
+
+- **Why magenta.** Magenta is the one hue the rainbow lacks: no single wavelength makes it; the eye makes it where the spectrum's two ends, red and violet, meet. A colour past the limit of the spectrum is the colour of transcending limits. It is also the only free hue: a search of the whole sRGB cube (step 6) for a colour ≥ 20 from the four paths under all four simulations, ≥ 15 from the reserved colours and ≥ 4.5 : 1 on the panel left three families: chartreuse (ΔE 9 from the warning yellow under protan and deutan: a practice that reads as an enemy warning), a mint white (ΔE 3 from `cold.white` under deutan: the projections' eye) and this magenta. Magenta is the only one that keeps clear of every reserved and warning colour.
+- **Why ⬟.** The four glyphs are the silhouettes of the four elemental Platonic solids; the fifth solid, the dodecahedron, was the old philosophers' quintessence, the element beyond the four. Its face, the pentagon, is the glyph: a filled pentagon (U+2B1F), distinct in outline from ■ ● ◆ ▲. A pentagon, never a pentagram (§10.5 red lines). Font note: U+2B1F is in Segoe UI Symbol, Noto Sans Symbols 2 and DejaVu Sans; the HUD fonts fall back to them for it, as they do for ◆ and ▲ (to verify on macOS and iOS).
+- **Measured** (CIE76 after Machado 2009, the test's maths): `path.milagros.base` to the other paths, worst over the four visions: Emotion 20.8 (protan; 21.0 deutan), Will 22.1 (tritan), Mind 33.8 (protan), Body 38.8 (deutan). This lowers the set's minimum pairwise ΔE from 24.4 to **20.8** (Milagros/Emotion, protan), still ≥ 20. Reserved colours, worst over the four visions: `life.heart` 18.4 (tritan; 46.2 in normal vision, so rule §3.12.2 holds), `cold.body` 22.4, `light.gold` 48.1, `light.core` 50.3; and `attack.red.base` 30.2, `attack.warn.base` 65.1, `light.ember` 34.8, `cold.white` 37.9. L* 54.1; contrast on `ink.panel` 4.79 : 1 (≥ 4.5, the tightest of the five).
+- **The ramp.** `glow` (item colour, banner glow) is ΔE 47 from `life.heart` and 58 from `cold.body` in normal vision; under deutan it drifts to 10 from `cold.body`, so like every path it is never shown without its glyph. `dark` is ΔE 31 from `life.dark`. `shadow` (a projection's 40 % tint) is ΔE 14 from Mind's shadow in normal vision, as the shadows are kept low in chroma by design (§2), and 21 from `life.rim`.
+- **Test:** the four-path test above now runs over all five paths (`PATHS` in `palette.ts`), and the item colour test reads the paths from `PATHS`.
 
 ### 3.6 The cold (projections' side) and captive light
 
@@ -212,7 +226,7 @@ Rejected: per-projection signature eye hues (Cre r1), the green-white `#cfe8d6` 
 
 ### 3.10 UI tokens (CSS variables written by `applyPaletteCss()`)
 
-`--ui-text: bone.paper`, `--ui-text-2: bone.dim`, `--ui-faded: bone.faded`, `--ui-panel: ink.panel` (α .95), `--ui-line: ink.void`, `--ui-bevel-hi: ink.bevel`, `--ui-heart: life.heart`, `--ui-gold: light.gold`, `--ui-up: light.gold`, `--ui-down: cold.body`, `--ui-threat: cold.body`, `--ui-night: ui.night`, `--path-body/-emotion/-mind/-will: path.*.base`. Stat lines keep the arrows ▲/▼ (colour is the second channel).
+`--ui-text: bone.paper`, `--ui-text-2: bone.dim`, `--ui-faded: bone.faded`, `--ui-panel: ink.panel` (α .95), `--ui-line: ink.void`, `--ui-bevel-hi: ink.bevel`, `--ui-heart: life.heart`, `--ui-gold: light.gold`, `--ui-up: light.gold`, `--ui-down: cold.body`, `--ui-threat: cold.body`, `--ui-night: ui.night`, `--path-milagros/-body/-emotion/-mind/-will: path.*.base`. Stat lines keep the arrows ▲/▼ (colour is the second channel).
 
 ### 3.11 Skin and cloth (hands only; §9)
 
@@ -220,9 +234,9 @@ Skin tones (player setting): `skin.t1 #F3D2B3`, `skin.t2 #E2B48F`, `skin.t3 #B98
 
 ### 3.12 Reserved-colour rules (enforced)
 
-1. **The light (`light.*`) is the light and repair.** Never on a living projection (Perfectionism's seams and the Impostor's gilt are not gold while they are patterns; brass is "false gold"). Never a path colour. Allow-listed modules: intents, debris/shards, mesher (seams, cracks), items/practices, HUD, room-clear, hexagram, sky, lantern.
-2. **Red (`life.*`) is life.** Hearts and heart-related UI only. The one other red is the attack red (`attack.red.*`, §3.4 amendment, issue #47): the live marks and shots of attacks that deal damage, never a heart, never a particle. A hurting attack's warning is `attack.warn.*` yellow until it lands (§3.4 amendment 2026-10-31). No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
-3. **Cold (`cold.*`) is the projections'.** Never on a player shot, shard, seam or practice.
+1. **The light (`light.*`) is the light and repair.** Never on a living projection (Perfectionism's seams and the Impostor's gilt are not gold while they are patterns; brass is "false gold"). Never a path colour. Allow-listed modules: intents, debris/shards, mesher (seams, cracks), items/practices, HUD, room-clear, hexagram, sky, lantern, heart art (`heart-art.ts`: the star heart is the light itself, the stone heart's crack is a kintsugi seam, the berserker's core is the light inside the fire; §10.6).
+2. **Red (`life.*`) is life.** Hearts and heart-related UI only. The heart kinds (§10.6) are life too: `heart.blood.base` is a red of life, ΔE 20.8 from `life.heart` (normal vision), and every `heart.*` token appears only on hearts, their pickups, their particles and their frames. The one other red is the attack red (`attack.red.*`, §3.4 amendment, issue #47): the live marks and shots of attacks that deal damage, never a heart, never a particle. A hurting attack's warning is `attack.warn.*` yellow until it lands (§3.4 amendment 2026-10-31). No other token within ΔE 20 of `life.heart` (normal vision). The Critic's red pen and red ✗ (Cre r1) lost: its ink is `ink.line` on chalk.
+3. **Cold (`cold.*`) is the projections'.** Never on a player shot, shard, seam, practice or heart. The blue heart is ultramarine, ≥ 20 from every `cold.*` and `path.emotion.*` token under all four simulations (§10.6).
 4. **Path true hues** belong to the player (practices, rims, trails, states of being, halos). Projections may use only `path.*.shadow` (body tint); the true hue appears on a projection only on its release shard (drawn by the creature view, not referenced in content).
 5. **Skin band banned on projections** (Ply): hue 15–45°, chroma 0.04–0.12, OKL 0.55–0.85. Test scans every creature palette.
 6. **Ink and the six lines** are the reading: hexagram line patterns appear only where the run's reading lives (§10.3).
@@ -505,6 +519,26 @@ Every attack shape (`enemies/attacks.ts`) is drawn in texel cube marks, in one o
 - **Particles** use `cold.white` and `cold.body` only (`PARTICLE_TINTS`). Omen motes moved from `cold.dim` to `cold.body` then `cold.white` (`OMEN_COLORS`).
 - **Not changed, by design:** the enemy's own eye and tell lights (`cold.white`, the family eye, §8.3), the boss hurt flash, the gold light that rises when a projection is released (§8.6: the player's light returning, not an attack), and the matter chips of a spawn or a break (§7.3). These are not attacks and are not decoration of an attack; the owner may rule otherwise.
 
+### 7.7 Dr. Launcher's missile and the love explosion (art agent, 2026-11-02; OWNER to confirm)
+
+The practice Dr. Launcher (path Milagros, quality 3; [ROCKET-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) launches a carried bomb as a missile with a quick double tap of the fire control. Drawn by `src/render/missile-view.ts` (`MissileView`, `MISSILE_TRAIL`, `LOVE_BLAST`).
+
+| Part | Positive (the love explosion) | Negative (the breakthrough) |
+|---|---|---|
+| Body | The seed (`buildSeed()`, §10.2), the same model as the pickup and the placed bomb, at the placed size (0.72), turned so its tip leads along the flight, rolling 0.4 turns/s | The same seed |
+| Seams | As built: `light.core` heart, `light.hot`, `light.ember` lips, breathing ±10 % on 2 Hz and 1.3 Hz clocks | Banked: the seam colours multiplied by `light.ember` (orange, no white) |
+| Halo | `light.gold` at 0.45, at the seed's centre | `light.ember` at 0.3 |
+| Plume (5 additive, fog-exempt puffs behind the tail, a comet tail about a block long) | `light.core` core, three `light.gold` puffs, a small `path.milagros.base` puff at the tail end | `light.ember` core, three `light.dusk` puffs, the `path.milagros.base` puff; all at 0.75 of the positive strength (0.6 hid the plume on the light floor-1 rock in greyscale) |
+| Run-up | The plume grows from 40 % to full length over the first 0.35 s of flight (the acceleration), then holds | Same |
+| Trail particles (`MISSILE_TRAIL`) | `light.gold`, `light.core`, `path.milagros.base` | `light.ember`, `light.dusk`, `ink.ash`, `path.milagros.base` |
+| Blast | **The love explosion** (`LOVE_BLAST`): bursts of `light.gold` (the largest: repair), `light.core`, `path.milagros.glow` (the love). No matter chips, no shake, nothing thrown: nothing breaks | The bomb's blast, unchanged (§7.4) |
+
+- **Rules it keeps.** The missile is the player's: warm, no `cold.*`, no `life.*`, no attack red. The path hue is only the small tail puff and one trail token in three or four (≤ 40 %, §7.1). Polarity is told by brightness and white versus ember, as the intention's polarity is (§14.1), so it holds under every vision simulation: the positive plume has a `light.core` centre, the negative one never does. Nothing alternates faster than 3 Hz (the fastest clock is 2 Hz, ±6 %; the roll passes a seam under 2 Hz). It is not a cube and not a tumbling shape: the hostile shot's grammar is not touched (§7.2).
+- **Why the seed, not a rocket.** A missile is a bomb from the counter, and a thing the player carries and lets go is the same model in both states (feedback round 3). A tube with fins would be a weapon; a seed that flies is a breakthrough sent where you look.
+- **The icon** (12 × 12, four colours, fill 45, alpha-mask IoU ≤ 0.48 against every other icon, no border touched): a round seed flying to the upper right, its lit side in `path.milagros.base`, its shade in `path.milagros.dark`, a stepped seam in `path.milagros.glow`, and, past a one-pixel gap, a teardrop of exhaust with a `bone.paper` core in `path.milagros.glow` at the lower left. Rejected drafts: a long diagonal egg with a straight light seam read as a quill (pointing is the Critic's, §11 motif 6); a flame joined to the body read as a drumstick; an upright egg was 0.87 IoU from Forgiveness. No `light.*` (the item's concept is not light itself, §10.1). Item colour `path.milagros.glow`.
+- **Meaning test.** (a) It stands for transcending limits (`no-impossible`): the breakthrough you carry no longer falls under its own weight; the love explosion (our own concept, no id yet) is the breakthrough that mends instead of breaking. (b) The player's light side: `light.*`, the Milagros hue and the seed's own husk. (c) The intention launches it; on contact the positive one mends, heals, warms and grows, and the negative one breaks through as a bomb does. (d) Without text: a glowing seed flying tip first with a plume reads as a launched breakthrough; white-gold versus ember reads as mend versus break. (e) A seed and light, no weapon shapes, no sacred symbol, no mental-health imagery.
+- **Not verified by capture** in this change: the gallery section `?gallery=missiles` (both polarities at launch and in flight, on floor 1 and floor 4, at 8 and 20 blocks in fog, the five path ramps with glyphs, the particle tokens and the Milagros icons) was built but not captured by the art agent; the owner or the main session captures it in colour, greyscale and the three CVD filters before the practice ships.
+
 ---
 
 ## 8. Creatures (projections)
@@ -766,6 +800,40 @@ The lantern grows +0.5 m per state; the HUD shows states with glyphs (§10.2).
 - **Mental health:** no self-harm imagery of any kind (cuts, wrists, ropes, pills, falls as death), no asylums, straitjackets, spiral "crazy" eyes, diagnosis labels; no features coding body type, ethnicity, age, gender or disability (Procrastination must not read as "lazy", Panic not as a person in crisis).
 - **Violence and family:** no blood, gore or viscera; parents, family, ancestors and the house are never enemies.
 - **Copying:** no palettes, sprites, names, silhouettes or texture layouts lifted from Minecraft, Isaac or Noita; no crying child, no tear projectiles.
+
+### 10.6 Heart kinds (art agent, 2026-11-03, issue #31; OWNER to confirm the looks and the berserker heart)
+
+Six kinds of heart ([issue #31](https://github.com/yeagob/sotano/issues/31)). Drawn in `src/content/heart-art.ts` (`HeartKind`, `HEART_KINDS`, `HEART_HUD`, `HEART_PICKUP`, `HEART_FX`, `BERSERKER_FRAME`, `STAR_GLOW`) and `src/content/hud-icons.ts` (`heartBlue`, `heartStone`, `heartBlood`, `heartStar`, `heartBerserker`). Every HUD glyph is the red heart's 11 × 10 grid with the same outline silhouette, so the HUD's quarter clipping works on all of them; every pickup is a 9 × 8 pixel heart of cubes. The owner's direction is gold on brown with volumetric light: the new hearts sit on the warm side (stone is a warm grey, the star is the light's own ramp, the berserker burns ember on obsidian); the blue heart is blue because the owner named it so.
+
+**Side.** Every heart is the player's: life and the light. None is a projection, so none may use `cold.*`, and no projection may use a `heart.*` token.
+
+| Kind | Look (HUD and pickup) | Meaning (story voice; concept) | Tokens |
+|---|---|---|---|
+| Red | As built (§10.2) | Life | `life.heart`, `life.dark`, `bone.paper` glint |
+| Blue | The red heart's shape in ultramarine, the same paper glint | "Strength you lend yourself: it holds once, then it is gone" (our own concept, no id yet; OWNER to name) | `heart.blue.base` `#4E4CFF`, `heart.blue.dark` `#1D1A80` |
+| Stone | Warm grey stone, lit top-left, split by a jagged gold crack from the notch to the tip with a white spark where it forks | The heart that hardened takes the blow at half, and every crack lets the light through: kintsugi (Q7), "the obstacle is the way" (`meditations`), repair | `heart.stone.dark` `#48433D`, `heart.stone.base` `#6E6860`, `heart.stone.hi` `#968E83`; crack `light.gold`, spark `light.core` |
+| Blood (working name) | A crimson heart with a smaller red heart inside it, which beats | What keeps living anyway (our own concept): it mends while nothing strikes it | `heart.blood.base` `#9B1236`; inner heart `life.heart`; shade `life.dark` |
+| Star | A deep-gold heart (`light.ember`, top-left `light.gold`, shade `light.dusk`) with a filled five-pointed star of `light.core` at its centre | For a moment nothing touches you: transcending limits (`no-impossible`) | `light.ember`, `light.gold`, `light.core`, `light.dusk` (no new token: it is the light) |
+| Berserker | An obsidian heart whose outline and veins already burn ember, with a white-hot core (`light.hot`, `light.core`) and one obsidian glint. The only heart whose outline is not `ink.void`: it is the one that glows on the HUD | Anger held in a hard shell; when it breaks, its fire is yours to use for a while: mental transmutation (`kybalion` polarity, `emerald-tablet`). Obsidian is fire that cooled; the berserker heart is that fire still burning inside | `mat.obsidian.dark`, `mat.obsidian.hi`, `mat.obsidian.base` (pickup emissive), `heart.berserker.ember` `#FF8C1A`, `light.hot`, `light.core` |
+
+**Particles and halo (`HEART_FX`):** red and blood `life.heart`, blue `heart.blue.base`, stone `light.gold` (the light freed from the stone: also the burst of every halved hit), star `light.gold`, berserker `heart.berserker.ember`. They are life and light motes, never an attack's (§7.6). **Pickup (`HEART_PICKUP`):** `emissive` is the whole mesh's emissive (as `life.dark` is for the red heart); `lit` lists the keys that are light and are best drawn unlit at full colour (the stone's crack, the star, the berserker's veins and core).
+
+**Frames.**
+- **Star (`STAR_GLOW` = `light.hot`):** while invulnerable, the hearts keep a steady 1 `--u` outline and a soft drop shadow in `light.hot`, replacing the `bone.paper` outline of §10.2 for this one cause. Steady: no blink, no shimmer.
+- **Berserker (`BERSERKER_FRAME`: edge `mat.obsidian.dark`, glow `heart.berserker.ember`):** a thin obsidian line at the screen edge with an ember glow fading inward. It is a rim, not a vignette that closes in: it covers at most 8 % of the screen's width on each side, the centre stays untouched, and its peak opacity is 0.35, so it never reads as tunnel vision (§10.5 rule 3) or as the hurt vignette (`life.dark`). Saturated colour stays under 25 % of the screen (§10.4).
+
+**The 3 Hz rule.** The blood heart's beat and the berserker frame's pulse stay ≤ 3 Hz; the recommended rates are lower: the blood heart beats at 0.625 Hz (a 1.6 s cycle, scale 1 → 1.12 → 1), slower than the low-health beat (1.1 Hz) so the two never read alike; the berserker frame breathes at ≤ 1 Hz, glow opacity 0.2 → 0.35, a smooth sine that never jumps. With Flashes Reduced the frame is steady at 0.25; with Flashes Off it is a steady obsidian line with no glow. No heart effect flashes the full screen; a star or berserker pickup uses the practice-pickup flash budget (§7.4).
+
+**Measured** (CIE76 after Machado 2009, the maths of `tests/art.test.ts`; "n" normal vision, "worst" the lowest of the four visions):
+- **Blue against the cold and Emotion (§3.12 rule 3):** `heart.blue.base` (L* 44.2) is ≥ 34 from every `cold.*` and `path.emotion.*` token in normal vision, and ≥ 20 in every simulation: `cold.dim` 90.6 n / 24.0 worst (tritan), `cold.rim` 27.5, `cold.deep` 37.9, `cold.body` 38.4, `cold.white` 54.8; `path.emotion.base` 84.3 n / 24.7 worst, `.glow` 33.9, `.dark` 21.1, `.shadow` 27.2 (all worst in tritan); `path.mind.base` 34.1 n / 24.4 worst (protan). A lighter blue collides with Mind or the cold (a search of L* 47–58 found nothing ≥ 21), and a darker one vanished on the floor-1 rock in greyscale; L* 44 is the trade. `heart.blue.dark` is a two-pixel shade: 53 n from `cold.deep` but 12.7 under tritan.
+- **Blood against the reds (§3.12 rule 2):** `heart.blood.base` (L* 33.3) is ΔE 20.8 from `life.heart` n (≥ 20.0 in every vision), 39.5 n / 29.6 worst from `attack.red.base`. **Limit:** under protanopia it sits 9.1 from `life.empty`; a blood heart is told from an empty container by its inner `life.heart` heart and its beat, not by its fill alone.
+- **Berserker ember:** `heart.berserker.ember` (L* 69.5) is 40.9 n / 22.6 worst from `attack.red.base` (it never reads as an attack), 52.5 / 26.8 from `life.heart`, 69.3 / 38.3 from `life.dark` (never the hurt vignette), 67.1 / 31.9 from `heart.blood.base`. It is in the lava family on purpose (10.0 n from `el.lava.hot`: obsidian's own fire) and close to other warm tokens under colour-blindness: `light.gold` 34.3 n / 13.5, `light.ember` 24.0 n / 8.8, `path.will.glow` 20.5 n / 3.2 (tritan), `attack.warn.base` 54.8 n / 16.5. The orange band is full under CVD (a search found no saturated orange ≥ 8 from all of them), so the berserker heart is told apart by value and shape: the only near-black heart (`mat.obsidian.dark` L* 5.4) with a burning outline.
+- **Stone:** `heart.stone.base` (L* 44.3) is 31.4 n / 24.3 worst from `life.empty` (a stone heart never reads as an empty container) and 21.0 n from `cold.dim` (14.4 tritan; it is warm, the cold is blue); the gold crack is 67.7 n / 44.4 worst from the stone.
+- **Star:** no new token. Its `light.ember` fill is 58.4 n / 33.7 worst from `life.heart`, and 24.0 n (8.8 protan) from the berserker ember: the star heart is pale with a white star, the berserker black, so value carries them.
+
+**Meaning test.** (a) Above. (b) The player's side: life and the light; no `cold.*`, no attack red, no warning yellow. (c) Hits spend them: the blue is gone for good, the stone halves each hit and its gold crack is the light showing through, the blood heart's beat stops on a hit, the star is spent on pickup, the berserker's shell breaks and lets its fire out. (d) Without text: blue reads as another heart, stone as a cracked stone heart, blood as a heart within a heart that beats, star as a star, berserker as a heart on fire. (e) No blood, drops or wounds in the blood heart's look, whatever its working name (§10.5 red lines; the name is the owner's to change); the star is a filled star, never a pentagram and never a copied sprite (the nod to a classic platformer star is in spirit only); no Isaac heart sprites or palettes were looked at or copied.
+
+**Not verified by capture:** the in-game `?gallery=hud` section (which lists every `HUD_ICONS` glyph) and the pickups at 8 and 20 blocks in fog were not captured by the art agent; a scratchpad preview of every glyph and pickup in colour, greyscale and the three CVD simulations was. The owner or the main session captures the gallery before the hearts ship.
 
 ---
 

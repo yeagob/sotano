@@ -1,0 +1,14 @@
+{
+  "note": "Dr. Launcher: a double tap with a crate one block in front is refused (no room to arm); no bomb is spent",
+  "rows": [".............", ".............", ".............", "...c.........", ".............", ".............", "............."],
+  "items": ["drlauncher"],
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 30,
+  "report": [0, 30],
+  "actions": [
+    { "t": 0, "do": "look", "at": [3, 0, 3] },
+    { "t": 2, "do": "fire", "ticks": 1 },
+    { "t": 8, "do": "fire", "ticks": 1 }
+  ]
+}

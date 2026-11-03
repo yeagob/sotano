@@ -1,0 +1,39 @@
+# drlauncher-love — Dr. Launcher, positive: a missile meets a Doubt beside damaged crates; the love explosion warms it and mends the crates, breaking nothing
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices drlauncher · synergies —
+  doubt#2 hp 24.0/24 · projection · at 9.5 0.0 3.5
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+
+t 12 (0.2 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 98 · keys 99
+  practices drlauncher · synergies —
+  doubt#2 hp 24.0/24 · projection · at 9.3 0.0 3.5
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+  events blockDamage:crate 2 · fire 1 · missileLaunch 1 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 98 · keys 99
+  practices drlauncher · synergies —
+  doubt#2 hp 18.3/24 · projection · at 6.9 0.0 3.5
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 1 · actorDamage:doubt<item 1 · intentHit 1
+
+map t 120 · h 0
+  .............
+  .............
+  ...........c.
+  ...........c.
+  ...........c.
+  .............
+  .............
+
+legend c crate

@@ -1,17 +1,11 @@
-# Hearts (not built)
+# Kinds of heart (not built)
 
-The kinds of heart the owner has decided beyond the red heart the game has today. A heart is a unit of health: each heart holds 100 health, and damage depletes the most recently picked-up heart first. Each kind has its own document.
+What is still open about the kinds of heart. The six kinds the owner decided in issue #31 are built ([built/player/hearts](../../../built/player/hearts/README.md)); this folder keeps what is proposed or undecided around them.
 
-Status: decided (owner), for the kinds listed below. Not built. The name and the list stay open: more kinds may be added.
-
-Part of [the player (not built)](../README.md).
+Back to [the player (not built)](../README.md)
 
 | Document | Contents | Status |
 |---|---|---|
-| [BERSERKER.md](BERSERKER.md) | A heart whose loss starts a 30-second fighting state | decided |
-
-The other kinds the owner has named (red, blue, stone, blood and star) are tracked in [issue #31](https://github.com/yeagob/sotano/issues/31) until each one gets a document here.
-
-## Open questions shared by the folder
-
-1. **Which kinds stay.** More kinds may be added. Each new kind needs the owner's word on its name, look, pickup effect and loss effect.
+| [BERSERKER.md](BERSERKER.md) | What is still open for the berserker heart: objects that answer the state, the promotional video | decided |
+| [EXPLODING.md](EXPLODING.md) | A heart with an effect when it is lost, such as an explosion | proposal |
+| [SOURCES.md](SOURCES.md) | Stations that give hearts of each kind (the kitchen, the alembic) | idea |
