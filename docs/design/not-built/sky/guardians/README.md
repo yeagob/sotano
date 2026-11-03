@@ -4,7 +4,7 @@ Up: [The realm of the sky](../README.md)
 
 The guardians are the five deities of the first five floors of the sky tree. Each one is a small, soft body under a giant animal head, placed over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
 
-Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule and for the rule that a teleport lands far from the player. Proposal for the rest of the shared contract. Open for the points listed under open questions.
+Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule, for the rule that a teleport lands far from the player and for no damage in the sky. Provisional: the koala and the horse teleport, and each deity changes its attitude when it is defeated. Proposal for the rest of the shared contract. Open for the points listed under open questions.
 
 ## 1. The shared contract
 
@@ -21,7 +21,7 @@ Status: decided for rules 1, 2, 3, 6, 10, 11 and 12. Proposal for the rest.
 9. **Negative intentions do nothing.** Sky creatures are won only with positive intentions ([sky laws](../README.md#33-negative-intentions-do-not-work-on-sky-creatures)).
 10. **Nothing dies.** No deity and no minion dies. At most it transforms, changes its attitude and behaviour, or leaves ([sky laws](../README.md#37-nothing-dies-in-the-sky)). *(Decided.)*
 11. **The tower rule.** When the player builds a tower that brings them to a deity's height, the deity leaves its place, knocks the tower down and pushes the player off it, after a warning ([sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down)). The first guardian's version is in [PANDA](PANDA.md). *(Decided.)*
-12. **Teleport lands far.** Some deities can teleport. A teleport always puts the deity far away from the player, never next to them. Which deity teleports is open (section 5); each guardian document marks where a teleport would fit as "teleport (which deity: open)". *(Decided for the rule; open for which deity.)*
+12. **Teleport lands far.** Some deities can teleport. A teleport always puts the deity far away from the player, never next to them. The koala and the horse teleport (provisional, section 5). Their documents mark where a teleport fits; the other three documents say that those deities do not teleport. *(Decided for the rule; provisional for which deity.)*
 
 ## 2. The order of appearance
 
@@ -90,17 +90,17 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 
 ## 5. Open questions
 
-1. **Which built stories are the sky floors.** Open: the mapping of the five sky floors onto the built tree's seven stories ([LEVELS](../../../built/levels/README.md)).
-2. **What a defeated deity does.** Open: which of the three outcomes (it transforms, changes its attitude, or leaves) each deity takes when it is defeated. Each guardian document proposes one.
-3. **Which deity teleports.** Open: which deities can teleport. The rule that a teleport always lands far from the player is decided.
+1. **Which built stories are the sky floors.** Decided (owner, 2026-11-03): the sky is a separate realm above the crown, and the seven built stories stay as the climb ([LEVELS](../../../built/levels/README.md)). The sky floors are not built stories.
+2. **What a defeated deity does.** Provisional (owner, 2026-11-03): each deity changes its attitude, as its guardian document proposes. Whether any deity transforms or leaves is open.
+3. **Which deity teleports.** Provisional (owner, 2026-11-03): the koala and the horse teleport. The rule that a teleport always lands far from the player is decided.
 4. **Which floor is platforming only.** Open: whether one floor has no minions, and which one.
 5. **The minions' part.** Open: whether a minion's help changes the fight's stages (see [minions](../minions/README.md)).
 6. **Stages of the fight.** The specifications pace each fight in three stages, at a third and at two thirds of the hit count, like the built three phases. The defeat itself is only many positive hits. Does the owner want the fight to change as the positive hits add up, or to keep one pace?
 7. **The hit count and its sign.** The number of positive hits per deity and the visible sign of progress are targets (section 6.5). The owner has to confirm them.
 8. **Block nests.** The specifications give every floor nests of loose cubes that refill (section 6.3), so building never needs a negative intention. Does the owner want nests, or should blocks come only from breaking the original world?
-9. **Broken cubes as player blocks.** A cube from a broken original block, once placed, counts as a player block in the specifications. Is that the owner's reading of the realm's law 3.2?
+9. **Broken cubes as player blocks.** A cube from a broken original block, once placed, counts as a player block in the specifications. Is that the owner's reading of the realm's law 3.2? Provisional (law 3.1, owner to confirm): a broken original sky block drops no cube, so this does not arise until the owner confirms otherwise.
 10. **Winning by allies alone.** Allies add positive hits with no cap on four floors. Can a floor be won with no positive hit from the player's own hand?
-11. **Harm.** The specifications propose 2 points for a deity's lobs, bolts and rings, and no harm from hindrances or minions (section 6.6). The question stays open in [abilities](../abilities/README.md#4-open-questions).
+11. **Harm.** Decided (owner, 2026-11-03): no damage in the sky. Deity attacks, hindrances and minions only push, slow or hold the player (section 6.6). See [abilities](../abilities/README.md#4-open-questions).
 12. **The telegraph ladder.** The warnings shorten from 1.4 s on the first floor to 0.9 s on the fifth (section 6.4). Confirm that the shortening is the sky's rising difficulty.
 
 ## 6. Shared terms of the behaviour specifications
@@ -133,7 +133,7 @@ The cycle is Idle, Watching, Attacking, Recovering, then Watching again while th
 
 **Levitation is decided.** Every deity levitates over its place, except the horse, which stands, walks and jumps on the ground. Each document gives the deity's height over its place as a target.
 
-**Teleport.** A deity that teleports (which deity: open) vanishes from its place with a warning of target one telegraph length, and reappears far from the player, never within target 12 blocks of them. Each document marks where a teleport would fit.
+**Teleport.** The koala and the horse teleport (provisional). A teleporting deity vanishes from its place with a warning of target one telegraph length, and reappears far from the player, never within target 12 blocks of them. Their documents mark where a teleport fits.
 
 **The tower rule.** A tower is a stack of target 3 or more player blocks that the player stands on. When a tower brings the player to within target 2 blocks of a deity's height, the deity warns, leaves its place, knocks the tower down and pushes the player off it, then returns. The floor's own vertical route never triggers it.
 
@@ -141,8 +141,8 @@ The cycle is Idle, Watching, Attacking, Recovering, then Watching again while th
 
 - **Regrowth.** An original block of a sky floor that breaks comes back after target 5 s. Target 1 s before it returns, its cell shimmers. A block never returns into a cell that holds the player, a minion or a player block; it waits until the cell is free.
 - **Block nests.** Each floor has nests: hollows that hold target 3 loose cubes of the floor's material. A cube taken from a nest is replaced after target 6 s. Nests let a player with no practices build without ever using a negative intention.
-- **Broken cubes.** A cube that falls out of a broken original block is a loose cube like any other: it can be carried and placed.
-- **Placed is the player's.** A cube the player places becomes a player block (the realm's [law 3.2](../README.md#32-blocks-the-player-makes-are-the-exception)). Hindrances never change a player block, and only a positive intention destroys one. A tower knocked down by a deity follows the tower rule (section 6.2); what becomes of its blocks is open in the [sky's open questions](../README.md#5-open-questions).
+- **Broken cubes.** Provisional (owner, 2026-11-03, to confirm): a broken original sky block drops no cube. The nests are where loose cubes come from.
+- **Placed is the player's.** A cube the player places becomes a player block (the realm's [law 3.2](../README.md#32-blocks-the-player-makes-are-the-exception)). Hindrances never change a player block, and only a positive intention destroys one. A tower knocked down by a deity follows the tower rule (section 6.2); its blocks fall as loose cubes the player can gather again (provisional, owner, 2026-11-03).
 
 ### 6.4 Telegraphs
 
@@ -163,7 +163,7 @@ No sky telegraph is shorter than target 0.8 s.
 The player defeats a deity by landing many positive hits on it (decided). The specifications use only what the player sees:
 
 - **A positive hit** is one positive intention that touches the deity's body or head while the deity is not in a guarded state (each document names its guards, if any).
-- **Many hits.** Each deity takes a target number of positive hits, its hit count. When the count is reached, the deity is defeated: it transforms, changes its attitude, or leaves (which one is open, section 5). It never dies. It can also be turned to the player's side.
+- **Many hits.** Each deity takes a target number of positive hits, its hit count. When the count is reached, the deity is defeated: it transforms, changes its attitude, or leaves (provisional: it changes its attitude, section 5). It never dies. It can also be turned to the player's side.
 - **Progress (target).** Each landed positive hit leaves a short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. Each document adds the animal's own sign. The sign is a target until the owner confirms it.
 - **Stages.** The fight's pace changes at a third and at two thirds of the target, like the built three phases ([fight flow](../../../built/bosses/FIGHT-FLOW.md)). Stages only pace the attacks; they are not part of the defeat (section 5).
 - **Allies help.** An ally that reaches the deity, or the place its document names, adds positive hits by itself on a timer. The player can win by hitting the deity, by making the minions help, or both.
@@ -173,5 +173,5 @@ The player defeats a deity by landing many positive hits on it (decided). The sp
 
 - **What works is a positive intention.** It lands positive hits on a deity, turns a minion toward an ally, and answers every attack and hindrance.
 - **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no positive hit, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
-- **Harm is open** ([abilities, open question 2](../abilities/README.md#4-open-questions)). The specifications propose: a deity's bolts, lobs and rings may take target 2 points (a quarter of a heart, against the built boss touch of 8); hindrances and minions only move, slow or hold the player. The real cost of a mistake in the sky is lost height.
+- **No damage (decided, owner, 2026-11-03).** Deity attacks, hindrances and minions never damage the player. A deity's bolts, lobs and rings only push, slow or hold the player. The real cost of a mistake in the sky is lost height. The built boss touch of 8 is for comparison only.
 

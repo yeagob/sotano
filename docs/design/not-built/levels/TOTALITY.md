@@ -2,7 +2,7 @@
 
 Up: [not-built levels](README.md) · [The realm of the sky](../sky/README.md)
 
-Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Proposal for the exact platform layout, pacing, and fall recovery.
+Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-03): the climb ends at a closed threshold of the Sun, because Unity is issue #95 and not built. Proposal for the exact platform layout, pacing, and fall recovery.
 
 ## 1. What Totality is
 
@@ -36,13 +36,14 @@ The ascent through Totality is divided into three distinct strata:
   - The blinding corona of the Sun fills the upper hemisphere. Golden light washes out shadows.
   - The platforms glow like incandescent glass and solar embers.
   - Distances between platforms stretch to their maximum, requiring full commitment to the $8\times$ leap.
-  - The final platform leads directly into the solar threshold: [Unity](UNITY.md).
+  - The final platform leads to the Sun's threshold, which stays closed in this build (decided, owner, 2026-11-03). [Unity](UNITY.md) is issue #95 and not built.
+  - The Sun's warm light is an exception to art pillar 2 (warm light is earned and yours), provisional (owner, 2026-11-03). The [art ledger](../../../art/DECISIONS.md) carries it.
 
 ## 4. Platforming design and player feel
 
 - **Tiny platforms, immense gaps**: Platforms are small (often 2x2 or 3x3 blocks wide, narrowing to single blocks near the summit). Precision landings are mandatory.
 - **Momentum and air control**: The $8\times$ third jump provides substantial airtime, requiring player focus on trajectory, horizontal drift control, and judging landing shadows or glowing markers.
-- **Fall handling (Proposal)**: In keeping with the laws of the sky ([law 3.7: nothing dies in the sky](../sky/README.md#37-nothing-dies-in-the-sky)), missing a jump in Totality does not cause death. Instead, falling deep into the void catches the player in a gentle updraft (solar wind or cosmic currents) that returns them to the last stable checkpoint platform or safely down to the lower stratum.
+- **Fall handling (Proposal)**: In keeping with the laws of the sky ([law 3.7: nothing dies in the sky](../sky/README.md#37-nothing-dies-in-the-sky)), missing a jump in Totality does not cause death or damage ([law 3.10](../sky/README.md#310-nothing-in-the-sky-damages-the-player), decided). Instead, falling deep into the void catches the player in a gentle updraft (solar wind or cosmic currents) that returns them to the last stable checkpoint platform or safely down to the lower stratum.
 
 ## 5. Open questions
 

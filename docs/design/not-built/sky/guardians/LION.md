@@ -64,7 +64,7 @@ A golden head with a mane like a sunburst, floating over the highest ledge of a 
 
 **Position.** The lion's Sunning Ledge is the highest ledge of the plain, target 34 blocks up, flat and target 6 by 6. The lion levitates (decided): it floats target 1 block over the ledge and paces along it in the air, target 3 blocks each way at 1 block a second.
 
-**Teleport (which deity: open).** If the lion is one of the deities that teleport, a teleport would fit after a pounce: instead of gliding back along its line, it vanishes from the player's ledge and reappears over the Sunning Ledge, always far from the player.
+**Teleport (provisional: no).** The lion does not teleport; the koala and the horse do (owner, 2026-11-03, provisional).
 
 **The tower rule.** A tower of player blocks that brings the player to the lion's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the lion glides to it, strikes the stack with a paw until it topples, and pushes the player off, after the full warning. The 2-high walls of the example route are not towers; the thorn tree is the floor's own way up.
 
@@ -105,7 +105,7 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 
 **4. Mane flare (bolts).**
 - *Telegraph (1.0 s):* the mane fluffs out and three warm points brighten in it.
-- *Act:* three sun bolts in a fan of target 30 degrees, at target 10 blocks a second. Each may take target 2 points (harm is open).
+- *Act:* three sun bolts in a fan of target 30 degrees, at target 10 blocks a second. Each one that reaches the player only pushes them, with no damage (decided, owner, 2026-11-03).
 - *Answer:* step aside, or put a block between: bolts stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)). A positive intention that meets a bolt dissolves it (proposal).
 
 ### B4. Defeat by positive hits
@@ -114,7 +114,7 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 - **What counts:** a positive intention that touches the lion's body or head in any state. The lion has no guard; it is a moving target instead, pacing and pouncing.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the mane, wide and bristling at the start, lies softer and softer. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the Sunning Ledge rubs its head against the deity: the deity's next roar is skipped, and the ally adds one positive hit every target 5 s while it stays. At most target 2 at once.
-- **When defeated:** as proposed in section 6 of this document (the pride lies down, and the ledges settle). Which of the three outcomes it takes is open.
+- **When defeated:** as proposed in section 6 of this document (the pride lies down, and the ledges settle). It changes its attitude (provisional, owner, 2026-11-03).
 
 ### B5. Minions
 
@@ -191,5 +191,5 @@ Every value in the middle column is a target. The right column is the built game
 6. Walls and sound. A 2-high wall of player blocks stops the roar's ring. Is a roar stopped by blocks like a gust, or does it pass through?
 7. Stalkers out of view. Minions move at 3.5 blocks a second when the player is not looking at them. Is that fair on a floor with no walls, or should a sound mark them?
 8. Names. "Sunning Ledge" and "thorn tree" are working names for the deity's ledge and the vertical route; they need the owner's check under the naming rules.
-9. Teleport (which deity: open). Is the lion one of the deities that teleport? A teleport would always land it far from the player.
-10. When the lion is defeated, does it transform, change its attitude, or leave?
+9. Teleport (answered, provisional: no). The lion does not teleport.
+10. When the lion is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
