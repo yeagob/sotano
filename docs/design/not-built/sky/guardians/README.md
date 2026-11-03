@@ -4,7 +4,7 @@ Up: [The realm of the sky](../README.md)
 
 The guardians are the five deities of the first five floors of the sky tree. Each one is a small, soft body under a giant animal head, placed over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
 
-Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule, for the rule that a teleport lands far from the player and for no damage in the sky. Provisional: the koala and the horse teleport, and each deity changes its attitude when it is defeated. Proposal for the rest of the shared contract. Open for the points listed under open questions.
+Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule, for the rule that a teleport lands far from the player, and for no health damage in the sky, with capture and spirit (decided, owner, 2026-11-03, realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)). Provisional: the koala and the horse teleport, each deity changes its attitude when it is defeated, and the capture and spirit defaults. Proposal for the rest of the shared contract. Open for the points listed under open questions.
 
 ## 1. The shared contract
 
@@ -100,7 +100,7 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 8. **Block nests.** The specifications give every floor nests of loose cubes that refill (section 6.3), so building never needs a negative intention. Does the owner want nests, or should blocks come only from breaking the original world?
 9. **Broken cubes as player blocks.** A cube from a broken original block, once placed, counts as a player block in the specifications. Is that the owner's reading of the realm's law 3.2? Provisional (law 3.1, owner to confirm): a broken original sky block drops no cube, so this does not arise until the owner confirms otherwise.
 10. **Winning by allies alone.** Allies add positive hits with no cap on four floors. Can a floor be won with no positive hit from the player's own hand?
-11. **Harm.** Decided (owner, 2026-11-03): no damage in the sky. Deity attacks, hindrances and minions only push, slow or hold the player (section 6.6). See [abilities](../abilities/README.md#4-open-questions).
+11. **Harm.** Decided (owner, 2026-11-03): no health damage in the sky. Certain special attacks drain spirit, and a capture takes one practice (section 6.6, realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)). Which attacks are special, and how much spirit each drains, are open. See [abilities](../abilities/README.md#4-open-questions).
 12. **The telegraph ladder.** The warnings shorten from 1.4 s on the first floor to 0.9 s on the fifth (section 6.4). Confirm that the shortening is the sky's rising difficulty.
 
 ## 6. Shared terms of the behaviour specifications
@@ -173,5 +173,5 @@ The player defeats a deity by landing many positive hits on it (decided). The sp
 
 - **What works is a positive intention.** It lands positive hits on a deity, turns a minion toward an ally, and answers every attack and hindrance.
 - **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no positive hit, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
-- **No damage (decided, owner, 2026-11-03).** Deity attacks, hindrances and minions never damage the player. A deity's bolts, lobs and rings only push, slow or hold the player. The real cost of a mistake in the sky is lost height. The built boss touch of 8 is for comparison only.
+- **No health damage (decided, owner, 2026-11-03).** No deity attack, hindrance or minion takes the player's health in the sky. Certain special attacks drain spirit, the outline of the hearts, and at zero spirit the player is teleported to a random underground floor. A deity can capture the player and take one practice (provisional: held for 3 s, released by themself). A deity's bolts, lobs and rings otherwise only push, slow or hold the player. The built boss touch of 8 is for comparison only.
 

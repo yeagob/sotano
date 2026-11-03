@@ -43,7 +43,7 @@ The ascent through Totality is divided into three distinct strata:
 
 - **Tiny platforms, immense gaps**: Platforms are small (often 2x2 or 3x3 blocks wide, narrowing to single blocks near the summit). Precision landings are mandatory.
 - **Momentum and air control**: The $8\times$ third jump provides substantial airtime, requiring player focus on trajectory, horizontal drift control, and judging landing shadows or glowing markers.
-- **Fall handling (Proposal)**: In keeping with the laws of the sky ([law 3.7: nothing dies in the sky](../sky/README.md#37-nothing-dies-in-the-sky)), missing a jump in Totality does not cause death or damage ([law 3.10](../sky/README.md#310-nothing-in-the-sky-damages-the-player), decided). Instead, falling deep into the void catches the player in a gentle updraft (solar wind or cosmic currents) that returns them to the last stable checkpoint platform or safely down to the lower stratum.
+- **Fall handling (Proposal)**: In keeping with the laws of the sky ([law 3.7: nothing dies in the sky](../sky/README.md#37-nothing-dies-in-the-sky)), missing a jump in Totality does not cause death or damage ([law 3.10](../sky/README.md#310-the-player-cannot-die-in-the-sky), decided). Instead, falling deep into the void catches the player in a gentle updraft (solar wind or cosmic currents) that returns them to the last stable checkpoint platform or safely down to the lower stratum.
 
 ## 5. Open questions
 
