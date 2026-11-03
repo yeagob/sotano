@@ -240,7 +240,7 @@ describe('sky stubs', () => {
     expect(entity.body.y).toBe(2);
     new EntityView(root).sync(entity, 1);
     const encounter = new Encounter({} as EncounterHost);
-    encounter.update(1, at, at);
+    encounter.update(1, { x: 100, y: 2, z: 3 }, at); // out of range: built by EN, tests/endgame.test.ts covers the rest
     expect(encounter.holdsStill).toBe(false);
   });
 });
