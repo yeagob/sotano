@@ -22,7 +22,7 @@ The owner answered the proposal in issue #89. The answers are recorded in Englis
 12. **Synergies:** only with bombs.
 13. **Arming refusal:** kept. The refusal stays in the design and will be tested in play (see [A rocket, not a thrown bomb](#a-rocket-not-a-thrown-bomb)).
 14. **Love explosion, radius and effect:** the same radius as the bomb's blast. Each element in the area is healed and grown exactly as a positive intention would do it, with the damage the bomb would deal to that element used as the amount (see [The love explosion](#the-love-explosion-proposed-concept)).
-15. **Path:** the practice belongs to **Milagros**, a new path in the design, placed first. Will fits too, but the owner chose Milagros.
+15. **Path:** the practice belongs to **Miracles**, a new path in the design, placed first. Will fits too, but the owner chose Miracles.
 16. **Name:** "Dr. Launcher". The owner judges the reference too loose to be a third-party name ("a pun far from the brand, with no direct reference"). The name note below records the rule it touches; the owner has accepted that.
 
 The points still open are listed at the end, as open questions 1 to 5.
@@ -38,7 +38,7 @@ The launcher does not replace your intentions. They keep flying on every normal 
 | Field | Proposal | Status |
 |---|---|---|
 | Working name | Dr. Launcher | Decided by the owner (decision 16). Its rights check against the naming rules stays open (open question 2) |
-| Path | Milagros, a new path placed first (decision 15) | Decided by the owner. Creating the new path in the design is a separate change |
+| Path | Miracles, a new path placed first (decision 15) | Decided by the owner. Creating the new path in the design is a separate change |
 | Quality (the tier) | 3 | Decided by the owner (decision 1). The built tiers run from 0 to 4 stars ([built practices](../../built/practices/README.md)) |
 | Found in | Not chosen | Not answered in issue #89, so still open (open question 5). Built rule: quality 1 to 3 comes from treasure rooms; quality 4 comes from boss rewards and vault rooms |
 | Inspired by | Transcending limits (the lore concept, decided) | Decision 3. The *Dr. Stone* credit is in the lore notes only (decision 4) |
@@ -150,4 +150,4 @@ From issue #59:
 
 1. **Negative polarity.** Does a negative-polarity missile exist? The owner's answers do not say what its blast is.
 2. **Found in and gamepad double press.** Not answered in issue #89: where the launcher is found, and whether the gamepad double press of RT is the double tap.
-3. **The path's new name.** Milagros is a new path, as the owner decided. Creating it in the design (its own folder, its own practices index, its place in the path order) is a separate change. The name is a word central to *A Course in Miracles* (see SOURCES.md, Caution); the owner has not yet confirmed that this is acceptable.
+3. **The path's new name.** Miracles is a new path, as the owner decided. Creating it in the design (its own folder, its own practices index, its place in the path order) is a separate change. The name is a word central to *A Course in Miracles* (see SOURCES.md, Caution); the owner has not yet confirmed that this is acceptable.
