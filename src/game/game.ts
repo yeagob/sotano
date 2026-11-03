@@ -477,6 +477,7 @@ export class Game {
     this.syncWeapon();
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.clearStates();
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();

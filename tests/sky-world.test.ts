@@ -5,7 +5,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EL_WATER, SOURCE, elemByte } from '../src/content/elements';
 import { AIR, MAT } from '../src/content/materials';
 import { ExceptionKind, type Shape } from '../src/sky/types';
@@ -426,6 +426,54 @@ describe('SkyWorld: exceptions by who writes', () => {
     w.get(128, 130, 128);
     expect(w.get(21, 101, 21)).toBe(AIR);
   });
+
+  it('the player\'s block in a broken cell stays Placed even when it is the formula\'s own material', () => {
+    const w = rich();
+    const i = w.idx(20, 101, 20);
+    expect(w.base(20, 101, 20)).toBe(stone);
+    w.set(20, 101, 20, AIR);
+    expect(w.kindAt(i)).toBe(ExceptionKind.Broken);
+    w.placing = true; w.set(20, 101, 20, stone); w.placing = false;
+    expect(w.kindAt(i)).toBe(ExceptionKind.Placed);
+    expect(w.get(20, 101, 20)).toBe(stone);
+    // the tower knock takes it, and the cell is Broken again (regrowth brings the formula back)
+    expect(w.knockTower([i])).toEqual([i]);
+    expect(w.kindAt(i)).toBe(ExceptionKind.Broken);
+    // without placing, the formula's value still leaves no exception
+    w.set(20, 101, 20, stone);
+    expect(w.kindAt(i)).toBe(0);
+  });
+
+  it('restore leaves a placed block alone', () => {
+    const w = rich();
+    const air = w.idx(150, 200, 150), broken = w.idx(20, 101, 20);
+    w.set(20, 101, 20, AIR);
+    w.placing = true; w.set(150, 200, 150, dirt); w.set(20, 101, 20, dirt); w.placing = false;
+    const version = w.version;
+    w.restore(air); w.restore(broken);
+    expect(w.kindAt(air)).toBe(ExceptionKind.Placed);
+    expect(w.kindAt(broken)).toBe(ExceptionKind.Placed);
+    expect(w.get(150, 200, 150)).toBe(dirt);
+    expect(w.get(20, 101, 20)).toBe(dirt);
+    expect(w.version).toBe(version);
+  });
+});
+
+describe('SkyWorld: prefetch', () => {
+  it('an empty chunk is never prefetched (it is never stored), a chunk with content once', () => {
+    const w = rich();
+    expect(w.emptyChunk(0, 0, 0)).toBe(true);
+    expect(w.prefetch(0, 0, 0)).toBe(false);
+    expect(w.prefetch(0, 0, 0)).toBe(false);
+    expect(w.prefetch(-1, 0, 0)).toBe(false);
+    expect(w.stats().cached).toBe(0);
+    expect(w.prefetch(0, 6, 0)).toBe(true);    // the slab reaches y 100, chunk row 6
+    expect(w.prefetch(0, 6, 0)).toBe(false);
+    expect(w.stats().cached).toBe(1);
+    // an exception makes an empty chunk worth prefetching
+    w.set(3, 3000, 3, stone);
+    expect(w.prefetch(0, 187, 0)).toBe(true);
+  });
 });
 
 describe('SkyWorld: memory stays flat', () => {
@@ -493,28 +541,34 @@ describe('SkyWorld: memory stays flat', () => {
 });
 
 describe('SkyWorld: speed', () => {
-  it('getAt on a memoised chunk stays within a small multiple of a flat array read', () => {
+  // Deterministic, not a wall-clock ratio (which flakes on a loaded machine): a read of the memoised
+  // chunk must cost one comparison, so it never reaches the LRU map nor reorders it (cache.ts [m4]).
+  it('a read of the memoised chunk never touches the LRU: no map access, no reorder', () => {
     const w = rich();
-    const flat = new Uint8Array(48 * 48 * 48).fill(stone);
-    const flatGet = (i: number) => flat[i];
-    const sky: number[] = [], arr: number[] = [];
+    const cache = (w as unknown as { cache: ChunkCache }).cache;
+    const map = (cache as unknown as { map: Map<number, unknown> }).map;
+    const own = skyChunk(1, 6, 1), other = skyChunk(2, 6, 2);
+    const cells: number[] = [];
+    let expected = 0;
     for (let z = 0; z < CHUNK; z++) for (let y = 0; y < CHUNK; y++) for (let x = 0; x < CHUNK; x++) {
-      sky.push(w.idx(16 + x, 96 + y, 16 + z));
-      arr.push(x + 48 * (y + 48 * z));
+      cells.push(w.idx(16 + x, 96 + y, 16 + z));
+      expected += w.base(16 + x, 96 + y, 16 + z);
     }
-    const time = (read: (i: number) => number, cells: number[]) => {
-      let best = Infinity, sum = 0;
-      for (let rep = 0; rep < 7; rep++) {
-        const t0 = performance.now();
-        for (let n = 0; n < 200; n++) for (let k = 0; k < cells.length; k++) sum += read(cells[k]);
-        best = Math.min(best, performance.now() - t0);
-      }
-      return { best, sum };
-    };
-    const s = time(i => w.getAt(i), sky), f = time(flatGet, arr);
-    expect(s.sum).toBeGreaterThan(0);
-    expect(f.sum).toBeGreaterThan(0);
-    expect(s.best).toBeLessThan(Math.max(f.best, 0.5) * 10);
+    w.get(16, 96, 16); w.get(32, 96, 32); w.get(16, 96, 16);   // both materialised, own memoised and youngest
+    expect([...cache.keys()]).toEqual([other, own]);
+    const calls = [vi.spyOn(cache, 'get'), vi.spyOn(map, 'get'), vi.spyOn(map, 'set'), vi.spyOn(map, 'delete')];
+    let sum = 0;
+    for (let n = 0; n < 50; n++) for (const i of cells) sum += w.getAt(i);
+    for (let z = 0; z < CHUNK; z++) for (let y = 0; y < CHUNK; y++) for (let x = 0; x < CHUNK; x++) sum += w.get(16 + x, 96 + y, 16 + z);
+    expect(sum).toBe(expected * 51);
+    expect(sum).toBeGreaterThan(0);
+    for (const c of calls) expect(c).not.toHaveBeenCalled();
+    expect([...cache.keys()]).toEqual([other, own]);
+    // a memo miss does reach the map, once, and moves that chunk to the young end
+    w.get(32, 96, 32);
+    expect(calls[0]).toHaveBeenCalledTimes(1);
+    expect([...cache.keys()]).toEqual([own, other]);
+    for (const c of calls) c.mockRestore();
   });
 });
 

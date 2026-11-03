@@ -6,6 +6,9 @@ import * as THREE from 'three';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MAT, AIR } from '../src/content/materials';
 import { CHUNK, VoxelWorld, chunkKey } from '../src/world/world';
+import type { VoxelSpace } from '../src/world/space';
+import { buildIndex } from '../src/sky/world/shape-index';
+import { SkyWorld } from '../src/sky/world/sky-world';
 
 // the renderer paints its element textures on a canvas; the node test environment has none
 (globalThis as { document?: unknown }).document ??= {
@@ -47,7 +50,7 @@ class SparseWorld extends VoxelWorld {
   }
 }
 
-function setup(world: VoxelWorld) {
+function setup(world: VoxelSpace) {
   const root = new THREE.Group();
   const r = new ChunkRenderer(world, root, new THREE.Texture(), 99, 99);
   world.dirty.clear(); world.elemDirty.clear();
@@ -107,6 +110,25 @@ describe('chunk sending', () => {
     w.elemDirty.add(K);
     r.update();
     expect(keys(worker.posted)).toEqual([`blocks ${K}`]);
+  });
+
+  it('the sky world itself: a block placed and removed in an empty sky chunk leaves no ghost mesh', () => {
+    const w = new SkyWorld(buildIndex([]));
+    const { root, r, worker } = setup(w);
+    expect(w.emptyChunk(1, 1, 1)).toBe(true);
+    w.placing = true; w.set(20, 20, 20, MAT.stone); w.placing = false;
+    expect(w.emptyChunk(1, 1, 1)).toBe(false);
+    r.update();
+    expect(keys(worker.answer(true))).toEqual([`blocks ${K}`]);
+    expect(root.children.length).toBe(1);
+    w.set(20, 20, 20, AIR);
+    expect(w.emptyChunk(1, 1, 1)).toBe(true);
+    r.update();
+    expect(keys(worker.answer(false))).toEqual([`blocks ${K}`]);
+    expect(root.children.length).toBe(0);
+    w.markDirty(20, 20, 20);
+    r.update();
+    expect(worker.posted).toEqual([]);
   });
 
   it('sends every dirty chunk of a world without emptyChunk (the dungeon, unchanged)', () => {

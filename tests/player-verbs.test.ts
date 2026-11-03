@@ -281,3 +281,68 @@ describe('the airJumps stat', () => {
     expect(computeStats([{ stat: 'airJumps', layer: 'add', value: -3, source: 't' }]).airJumps).toBe(0);
   });
 });
+
+describe('spawnAt: no motion carries over travel or a new run', () => {
+  it('a carry in progress stops: the body stays at the spawn point', () => {
+    const r = rig();
+    r.p.carry({ x: 9.5, y: 6, z: 0.5 }, 2);
+    r.run(0.3);
+    r.p.spawnAt(3.5, 1, 3.5);
+    expect(r.p.carried).toBe(false);
+    r.run(1);
+    expect(r.p.body.x).toBeCloseTo(3.5, 9);
+    expect(r.p.body.y).toBeCloseTo(1, 9);
+    expect(r.p.body.z).toBeCloseTo(3.5, 9);
+  });
+
+  it('a hold ends: the body walks at once', () => {
+    const r = rig();
+    r.p.hold(3);
+    r.p.spawnAt(3.5, 1, 3.5);
+    expect(r.p.heldT).toBe(0);
+    r.move.y = 1;
+    r.run(0.3);
+    expect(r.p.body.z).toBeLessThan(3.5 - 0.5);
+  });
+
+  it('a push fades no further: the body stays at the spawn point', () => {
+    const r = rig();
+    r.p.push(12, 0, 6);
+    r.step(1 / 60);
+    r.p.spawnAt(3.5, 1, 3.5);
+    r.run(1);
+    expect(r.p.body.x).toBeCloseTo(3.5, 9);
+    expect(r.p.body.z).toBeCloseTo(3.5, 9);
+  });
+
+  it('a buffered press and the air jumps spent are forgotten', () => {
+    const r = rig({ airJumps: 2 }, air);
+    r.p.body.onGround = false;
+    r.run(0.2);
+    r.pressed.add('jump'); r.step(1 / 60);
+    expect(r.p.airStep).toBe(1);
+    r.p.spawnAt(0.5, 1, 0.5);
+    expect(r.p.airStep).toBe(0);
+    // a press in the air with no air jump left waits in the buffer; arriving on the ground must not spend it
+    const b = rig();
+    b.p.spawnAt(0.5, 5, 0.5);
+    b.p.body.onGround = false;
+    b.pressed.add('jump'); b.step(1 / 60);
+    expect(b.jumps).toHaveLength(0);
+    b.p.spawnAt(0.5, 1, 0.5);
+    b.p.body.onGround = true;
+    b.step(1 / 60);
+    expect(b.jumps).toHaveLength(0);
+  });
+
+  it('keeps the fall from heaven (set before the travel); clearStates drops the run\'s timed states', () => {
+    const p = new Player();
+    p.float = true; p.slowT = 4; p.muteT = 2;
+    p.spawnAt(0.5, 300, 0.5);
+    expect(p.float).toBe(true);
+    p.clearStates();
+    expect(p.float).toBe(false);
+    expect(p.slowT).toBe(0);
+    expect(p.muteT).toBe(0);
+  });
+});

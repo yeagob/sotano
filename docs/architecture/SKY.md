@@ -260,7 +260,7 @@ export class SkyWorld implements SkyWorldApi {   // SkyWorldApi extends VoxelSpa
   kindAt(i: number): ExceptionKind | 0;
   setTransient(x: number, y: number, z: number, m: number, until: number, owner: number): boolean;
   setStory(x: number, y: number, z: number, m: number): void;   // a permanent change the game makes (a way up opens)
-  restore(i: number): void;                                       // back to the formula
+  restore(i: number): void;                                       // back to the formula (a placed cell is left alone)
   onBroken: ((i: number) => void) | null;                         // an original cell left its formula value: regrowth listens
   knockTower(cells: readonly number[]): number[];                 // placed cells → air, returns them for the loose cubes
   stats(): SkyWorldStats;                                         // shapes, index entries, exceptions by kind, cached chunks, bytes
@@ -313,7 +313,7 @@ The kind is decided by **who writes**, never guessed from the cell:
 | `Transient` | `setTransient`: a hindrance's cage cube, opened hole, fading platform | Its timer (`until`; a min-heap in `SkyWorld`) |
 | `Story` | `setStory`: a way up opened when its deity is won | Never, in this run |
 
-**Setting a cell back to its formula value deletes the exception** (store only what differs). Transient writes refuse placed cells: hindrances never change a player block (shared terms 6.3). The element layer has no kinds: its writes go to `elemEdits`; the water-currents hindrance owns its cells as **timed sources** and removes them itself (§6), because non-source water would be recomputed to nothing by `flowAt` (elements.ts 147–158). Sky materials are not flammable (provisional), so no fire spreads through the sky tree.
+**Setting a cell back to its formula value deletes the exception** (store only what differs), except the player's own block: a block placed with `placing` stays `Placed` even when it is the formula's material (stone back into broken stone), and `restore` never removes a `Placed` cell. Transient writes refuse placed cells: hindrances never change a player block (shared terms 6.3). The element layer has no kinds: its writes go to `elemEdits`; the water-currents hindrance owns its cells as **timed sources** and removes them itself (§6), because non-source water would be recomputed to nothing by `flowAt` (elements.ts 147–158). Sky materials are not flammable (provisional), so no fire spreads through the sky tree.
 
 ### 3.5 Streaming and meshing
 
@@ -336,7 +336,7 @@ Climbing from the deck to the Sun threshold (about 1 000 blocks) must leave the 
 ### 3.7 Tests (`tests/sky-world.test.ts`)
 
 - `get` equals `base` for every cell of a sample of chunks with no exceptions; materialising the same chunks in two different orders gives identical bytes.
-- Setting a cell to its formula value leaves no exception; breaking 500 original blocks and running regrowth past 6 s leaves no `Broken`; placing 100 blocks with `placing` leaves exactly 100 `Placed`; a write without `placing` into air is never `Placed`; an element-layer write leaves no block exception.
+- Setting a cell to its formula value leaves no exception (unless the player places it: then it is `Placed`, and `restore` leaves it); breaking 500 original blocks and running regrowth past 6 s leaves no `Broken`; placing 100 blocks with `placing` leaves exactly 100 `Placed`; a write without `placing` into air is never `Placed`; an element-layer write leaves no block exception.
 - **Memory stays flat:** walking a probe up 20 000 blocks with prefetch keeps `stats().cached ≤ cap` and the exception count unchanged; a layout with three times the Totality height has three times the shapes, not three times the bytes per block.
 - Generators emit runs, not cubes: on every sky floor `shapes < solidCells / 40` (in the floor tests).
 - `emptyChunk` is true for every chunk with no shape and no exception; `paddedChunk` of a chunk next to an evicted one **with exceptions** matches a fully materialised copy [M2].
@@ -567,7 +567,7 @@ Effects touch the world and the player only through `SkyEffects` (`effects.ts`),
 | Water currents | `water-currents.ts` | Timed **source** water cells it owns, down a channel bed from its head to the first solid cell (written to `elemEdits`, removed by the hindrance itself [M5]); feet in it get a push along the bed; a placed block (a dam) stops the stretch below. No drowning damage (no harm) | A positive shot at the channel head stops it for 3 s | elephant | H3 |
 | Paralysis | `paralysis.ts` | A ring that grows at a set speed; a grounded player it passes is **held** 1–1.5 s (`hold`: no walking; aiming and shooting allowed) | Holding the aim on the source during the telegraph halves the ring; a positive shot on it shortens the hold | lion | H3 |
 
-The player's body gets three small additions (`entities/player.ts`, PL): an external push (`push(vx, vy, vz)`, added after the walk blend), `heldT` (move input ignored, look and shoot kept) and the carry (input held while `carry` lerps the body). `slowT` already exists. A test per hindrance checks: no effect before its full telegraph, a placed block is never changed, the effect ends, it deals no damage, and the positive answer works.
+The player's body gets three small additions (`entities/player.ts`, PL): an external push (`push(vx, vy, vz)`, added after the walk blend), `heldT` (move input ignored, look and shoot kept) and the carry (input held while `carry` lerps the body). `slowT` already exists. `spawnAt` (any travel or a new run) drops every motion in progress: the carry, the push, the hold, the jump buffer, the coyote time and the air jumps spent; `float` stays (heaven sets it before the travel), and a new run also clears `slowT`, `muteT` and `float` (`clearStates`). A test per hindrance checks: no effect before its full telegraph, a placed block is never changed, the effect ends, it deals no damage, and the positive answer works.
 
 ## 7. The sky tree and the five floors
 

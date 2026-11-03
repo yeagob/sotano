@@ -106,8 +106,29 @@ export class Player implements Actor {
   /** The material of the top block: 0 when the hand is empty or its top is a part. */
   get top() { const c = this.hand.at(-1); return typeof c === 'number' ? c : 0; }
 
+  /**
+   * Puts the body at a point, still, and drops every motion in progress: a carry, a push, a hold, the
+   * jump buffer, the coyote time and the air jumps spent. The Player lives across travel and runs, so
+   * whatever moved it before must not move it after (a carry would drag it, a hold would keep it).
+   * `float` stays: travel to heaven sets it just before. Timed states (slow, mute) belong to the run:
+   * `clearStates` drops them when a run begins.
+   */
   spawnAt(x: number, y: number, z: number) {
     Object.assign(this.body, { x, y, z, vx: 0, vy: 0, vz: 0 });
+    this.carrying = null;
+    this.pushX = this.pushZ = 0;
+    this.heldT = 0;
+    this.airStep = 0;
+    this.jumpBuffer = 0;
+    this.coyote = 0;
+    this.wishX = this.wishZ = 0;
+  }
+
+  /** A new run: no slow, no mute, no fall from heaven carried over from the last one. */
+  clearStates() {
+    this.slowT = 0;
+    this.muteT = 0;
+    this.float = false;
   }
 
   /**

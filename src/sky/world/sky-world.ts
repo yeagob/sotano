@@ -13,7 +13,8 @@
 //   Transient  setTransient: ends at its time (`expire`, a min-heap). Refuses placed cells.
 //   Story      setStory: a permanent change the game makes. It becomes the cell's baseline: the
 //              other kinds are measured against it, and `restore` returns to it.
-// A cell set back to its baseline keeps no exception. `onBroken` fires when a cell becomes Broken
+// A cell set back to its baseline keeps no exception, unless the player placed it (then it stays
+// Placed, and `restore` leaves it). `onBroken` fires when a cell becomes Broken
 // or Replaced from any other state (once per departure, so regrowth's timer is not reset by a
 // second change of an already-changed cell). The element layer has no kinds: its edits live in
 // their own map and never make a block exception.
@@ -169,9 +170,10 @@ export class SkyWorld implements SkyWorldApi {
     return c;
   }
 
-  /** Materialises a chunk ahead of need (SkyRealm.stream's prefetch). True when it was not cached. */
+  /** Materialises a chunk ahead of need (SkyRealm.stream's prefetch). True when it was not cached and
+   *  now is. An empty chunk (or one outside the world) is never stored, so it is never prefetched. */
   prefetch(cx: number, cy: number, cz: number): boolean {
-    if (cx < 0 || cy < 0 || cz < 0 || cx >= SKY_NCX || cy >= SKY_NCY || cz >= SKY_NCZ) return false;
+    if (this.emptyChunk(cx, cy, cz)) return false;
     const k = skyChunk(cx, cy, cz);
     if (this.cache.has(k)) return false;
     this.chunk(k);
@@ -215,8 +217,10 @@ export class SkyWorld implements SkyWorldApi {
     if (this.peek(i, x, y, z) === m) return;
     const b = this.baseline(i, x, y, z), was = this.kindAt(i);
     let kind: ExceptionKind | 0;
-    if (m === b) kind = 0;
-    else if (m !== AIR && (this.placing || was === ExceptionKind.Placed)) kind = ExceptionKind.Placed;
+    // the player's block is the player's even when it matches the baseline (stone back into broken stone)
+    if (m !== AIR && this.placing) kind = ExceptionKind.Placed;
+    else if (m === b) kind = 0;
+    else if (m !== AIR && was === ExceptionKind.Placed) kind = ExceptionKind.Placed;
     else if (m === AIR) kind = ExceptionKind.Broken;
     else kind = ExceptionKind.Replaced;
     this.write(i, x, y, z, m, kind);
@@ -251,9 +255,10 @@ export class SkyWorld implements SkyWorldApi {
     return true;
   }
 
-  /** Back to the baseline (the formula, or the story change): drops the cell's exception. */
+  /** Back to the baseline (the formula, or the story change): drops the cell's exception. A placed
+   *  block is the player's: restore leaves it (only a removal or the tower knock ends it). */
   restore(i: number) {
-    if (!this.edits.has(i)) return;
+    if (!this.edits.has(i) || this.kindAt(i) === ExceptionKind.Placed) return;
     const [x, y, z] = this.coords(i);
     this.write(i, x, y, z, this.baseline(i, x, y, z), 0);
   }
