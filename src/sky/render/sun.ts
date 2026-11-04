@@ -5,9 +5,9 @@
 import * as THREE from 'three';
 import { palCss } from '../../content/palette';
 import type { SkyViewApi, Vec3 } from '../types';
+import { SUN_RADIUS } from '../totality/chain';
 
-/** The disc's and the corona's radius in blocks, and how far above the eye the Sun stands. */
-export const SUN_RADIUS = 30;
+/** The corona's radius in blocks, and how far above the eye the Sun stands. The disc's radius is the Sun's volume's (SUN_RADIUS). */
 export const CORONA_RADIUS = 90;
 export const SUN_HEIGHT = 260;
 /** Shown from this height up (the solar approach). */

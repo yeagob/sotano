@@ -1,19 +1,21 @@
 // Totality (docs/architecture/SKY.md §8): the strata, the reach envelope on J0's flight, the chain of hops
-// (their rises, gaps, checkpoints, headroom and bounds), the sealed threshold, and the Earth and the Sun.
+// (their rises, gaps, checkpoints, headroom and bounds), the Sun's entrance, and the Earth and the Sun.
 
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { MATERIALS, MAT } from '../src/content/materials';
 import { Rng, hashPath } from '../src/core/rng';
 import { AIR_CONTROL, flight, rise } from '../src/physics/jump';
-import { buildTotality, CHAIN_RADIUS, CHECKPOINT_EVERY, footprint, gapBetween, HEADROOM, LAST_TOP, PLATFORMS, SPIRAL_RADIUS } from '../src/sky/totality/chain';
+import { buildTotality, CHAIN_RADIUS, CHECKPOINT_EVERY, footprint, gapBetween, HEADROOM, LAST_TOP, PLATFORMS, SPIRAL_RADIUS, SUN_GAP, SUN_RADIUS } from '../src/sky/totality/chain';
+import type { Footprint } from '../src/sky/totality/chain';
 import { buildSkyTree, CROWN_Y } from '../src/sky/floors/tree';
 import { maxGap, reach, reach2 } from '../src/sky/totality/reach';
 import { STRATA, sizeAt, stratumAt } from '../src/sky/totality/strata';
 import { Threshold } from '../src/sky/totality/threshold';
+import { SkyRealm } from '../src/sky/sky-realm';
 import { EarthView } from '../src/sky/render/earth';
 import { SunView } from '../src/sky/render/sun';
-import type { Place, SkyHost, SkyPlayer, TotalityPlan } from '../src/sky/types';
+import type { Place, SkyHost, SkyPlayer, SkyRealmSet, TotalityPlan } from '../src/sky/types';
 
 const AXIS = { x: 128, y: 221, z: 128 };
 const forkFor = (seed: number) => (...path: (string | number)[]) => new Rng(hashPath(seed, path));
@@ -199,29 +201,122 @@ describe('the chain (SKY.md §8)', () => {
   });
 });
 
-describe('the sealed threshold (SKY.md §8)', () => {
-  it('a sun-seal gate, six high and five wide, stands ahead of the last checkpoint', () => {
-    for (const seed of [1, 5, 8]) {
+describe('the Sun\'s entrance (SKY.md §8; owner, 2026-11-05)', () => {
+  const SEEDS = [1, 5, 8];
+
+  /** The distance in the plane from a point to a footprint (0 inside it). */
+  const planeDistance = (c: { x: number; z: number }, f: Footprint) => Math.hypot(
+    Math.max(f.x0 - c.x, 0, c.x - f.x1), Math.max(f.z0 - c.z, 0, c.z - f.z1),
+  );
+
+  /** A plan with a body the test moves by hand, and the host it stands in. */
+  function rig(seed: number) {
+    const plan = planFor(seed);
+    const body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
+    const push = vi.fn();
+    const host = {
+      player: () => ({ body, push } as unknown as SkyPlayer),
+      enterUnity: vi.fn(),
+      toast: vi.fn(),
+      cue: vi.fn(),
+      fx: vi.fn(),
+    } as unknown as SkyHost;
+    const t = new Threshold(host, plan);
+    /** Puts the feet at (x, y, z), on the ground or in the air with a vertical speed. */
+    const put = (x: number, y: number, z: number, onGround: boolean, vy = 0) => Object.assign(body, { x, y, z, onGround, vy });
+    const last = plan.platforms[plan.platforms.length - 1];
+    return { plan, host, t, push, put, last, sun: plan.sun, enter: host.enterUnity as ReturnType<typeof vi.fn> };
+  }
+
+  it('the Sun lies beyond the last checkpoint: its near surface SUN_GAP blocks past the far edge, at the checkpoint\'s height', () => {
+    for (const seed of SEEDS) {
       const plan = planFor(seed);
-      const last = plan.platforms[plan.platforms.length - 1], before = plan.platforms[plan.platforms.length - 2];
-      const th = plan.threshold;
-      const alongX = Math.abs(last.x - before.x) >= Math.abs(last.z - before.z);
-      const gates = plan.shapes.filter(s => s.k === 'box' && s.m === MAT.sunseal && s.y0 === last.y);
-      expect(gates.length).toBe(1);
-      const wall = plan.shapes.find(s => s.k === 'box' && s.m === MAT.sunseal && s.y1 === last.y + 5)!;
-      expect(wall).toBeDefined();
-      if (wall.k !== 'box') throw new Error('gate');
-      if (alongX) {
-        expect(wall.x0).toBe(wall.x1);
-        expect(Math.sign(wall.x0 - last.x)).toBe(Math.sign(th.x - last.x));
-        expect(wall.z1 - wall.z0 + 1).toBe(5);
-      } else {
-        expect(wall.z0).toBe(wall.z1);
-        expect(wall.x1 - wall.x0 + 1).toBe(5);
-      }
-      expect(wall.y1 - wall.y0 + 1).toBe(6);
-      expect(th.y).toBe(last.y);
+      const last = plan.platforms[plan.platforms.length - 1];
+      expect([plan.sun.r, plan.sun.y]).toEqual([SUN_RADIUS, last.y]);
+      expect(planeDistance(plan.sun, footprint(last)) - plan.sun.r).toBeCloseTo(SUN_GAP, 9);
     }
+  });
+
+  it('the last jump reaches the Sun: its gap is within the reach of a rest at rise 0', () => {
+    expect(SUN_GAP).toBeLessThanOrEqual(maxGap('rest', 0)!);
+  });
+
+  it('no other platform lies inside the Sun, so only a jump from the last checkpoint can enter it', () => {
+    for (const seed of SEEDS) {
+      const plan = planFor(seed);
+      for (const p of plan.platforms.slice(0, -1)) {
+        // a lower bound of the distance to the platform's solid (two layers under its top): its plane gap and its height gap
+        const dy = Math.max(0, Math.abs(p.y - plan.sun.y) - 2);
+        expect(Math.hypot(planeDistance(plan.sun, footprint(p)), dy), `seed ${seed}, platform ${p.id}`).toBeGreaterThan(plan.sun.r);
+      }
+    }
+  });
+
+  it('the last checkpoint\'s jump into the Sun calls enterUnity exactly once, and nothing is refused or pushed', () => {
+    const { t, put, last, sun, enter, host, push } = rig(1);
+    put(last.x, last.y, last.z, true);
+    t.update(0.1);
+    expect(enter).not.toHaveBeenCalled();
+    // the jump: in the air, rising, the body inside the Sun
+    put(sun.x, sun.y - 0.9, sun.z, false, 8);
+    t.update(0.1);
+    expect(enter).toHaveBeenCalledTimes(1);
+    expect(t.entered).toBe(true);
+    // still inside: no second entry
+    t.update(0.1);
+    t.update(0.1);
+    expect(enter).toHaveBeenCalledTimes(1);
+    expect(host.toast).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('the first hop cannot enter the Sun: only a jump begun on the last checkpoint arms the entrance', () => {
+    const { plan, t, put, sun, enter } = rig(2);
+    const first = plan.platforms[0];
+    put(first.x, first.y, first.z, true);
+    t.update(0.1);
+    put(sun.x, sun.y - 0.9, sun.z, false, 8);
+    t.update(0.1);
+    expect(enter).not.toHaveBeenCalled();
+    expect(t.entered).toBe(false);
+  });
+
+  it('walking off the last checkpoint does not enter the Sun: the entrance needs a jump', () => {
+    const { t, put, last, sun, enter } = rig(3);
+    put(last.x, last.y, last.z, true);
+    t.update(0.1);
+    put(sun.x, sun.y - 0.9, sun.z, false, 0);
+    t.update(0.1);
+    expect(enter).not.toHaveBeenCalled();
+  });
+
+  it('the hum comes from the Sun near its surface; the old gate is gone, so touching its place refuses nothing', () => {
+    const { plan, t, put, last, host, push } = rig(4);
+    put(last.x, last.y, last.z, true);
+    t.update(0.1);
+    expect(host.cue).toHaveBeenCalledWith('totality.hum', plan.sun.x, plan.sun.y, plan.sun.z);
+    // where the sealed wall stood, two blocks past the far edge, on the ground
+    const alongX = Math.abs(plan.sun.x - last.x) >= Math.abs(plan.sun.z - last.z);
+    const wallSide = alongX ? Math.sign(plan.sun.x - last.x) : Math.sign(plan.sun.z - last.z);
+    put(alongX ? last.x + wallSide * 3 : last.x, last.y, alongX ? last.z : last.z + wallSide * 3, true);
+    t.update(0.1);
+    expect(host.toast).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+    expect(plan.shapes.some(s => s.k === 'box' && s.m === MAT.sunseal)).toBe(false);
+    expect((host.cue as ReturnType<typeof vi.fn>).mock.calls.every(([kind]) => kind === 'totality.hum')).toBe(true);
+  });
+
+  it('the realm records the entrance as a flag, and nothing else', () => {
+    const set = { world: {} } as unknown as SkyRealmSet;
+    const host = {
+      fork: (...path: (string | number)[]) => new Rng(hashPath(3, path)),
+      actors: () => ({}),
+      debris: () => ({ spawn: () => 0 }),
+    } as unknown as SkyHost;
+    const realm = SkyRealm.create(host, new THREE.Group(), () => set);
+    expect(realm.enteredUnity).toBe(false);
+    realm.enterUnity();
+    expect(realm.enteredUnity).toBe(true);
   });
 
   it('the seal is unbreakable: its material has infinite toughness', () => {
@@ -230,42 +325,8 @@ describe('the sealed threshold (SKY.md §8)', () => {
     expect(seal.hp).toBe(Infinity);
     expect(seal.tier).toBe(Infinity);
   });
-
-  it('touching the gate shows the refusal and pushes the player back, once per approach, and nothing opens', () => {
-    const plan = planFor(1);
-    const th = plan.threshold;
-    const last = plan.platforms[plan.platforms.length - 1], before = plan.platforms[plan.platforms.length - 2];
-    const alongX = Math.abs(last.x - before.x) >= Math.abs(last.z - before.z);
-    const side = alongX ? Math.sign(th.x - last.x) : Math.sign(th.z - last.z);
-    const body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
-    const push = vi.fn();
-    const host = {
-      player: () => ({ body, push } as unknown as SkyPlayer),
-      toast: vi.fn(),
-      cue: vi.fn(),
-      fx: vi.fn(),
-    } as unknown as SkyHost;
-    const sealedBefore = JSON.stringify(plan.shapes);
-    const t = new Threshold(host, plan);
-    // far back on the checkpoint: nothing
-    Object.assign(body, { x: last.x, y: last.y, z: last.z });
-    t.update(0.1);
-    expect([t.touched, (host.toast as ReturnType<typeof vi.fn>).mock.calls.length]).toEqual([false, 0]);
-    // at the wall: the refusal, the push back toward the checkpoint
-    Object.assign(body, { x: th.x - side * 0.9, y: th.y, z: th.z });
-    t.update(0.1);
-    expect(t.touched).toBe(true);
-    expect(host.toast).toHaveBeenCalledWith('toast.sunClosed');
-    expect(push).toHaveBeenCalledTimes(1);
-    const [vx] = push.mock.calls[0];
-    expect(Math.sign(vx)).toBe(-side);
-    // still at the wall: no second refusal while it lasts
-    t.update(0.1);
-    expect(host.toast).toHaveBeenCalledTimes(1);
-    // nothing in the plan changed
-    expect(JSON.stringify(plan.shapes)).toBe(sealedBefore);
-  });
 });
+
 
 describe('the Earth and the Sun (SKY.md §11)', () => {
   it('the Earth hangs below the void and shows only from the middle of Totality', () => {

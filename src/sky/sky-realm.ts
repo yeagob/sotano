@@ -21,6 +21,7 @@ import { Ownership } from './laws/ownership';
 import { Regrowth } from './laws/regrowth';
 import { towerUnder } from './laws/tower';
 import { Updraft } from './laws/updraft';
+import { Threshold } from './totality/threshold';
 import type {
   Cell, CellTest, CreatureDeps, FloorIndex, HindranceCtx, PositiveHit, SkyCreaturesApi, SkyHost, SkyPlace, SkyPlans, SkyRealmApi,
   SkyRealmSet, SkySetFactory, SkyWorldApi, Tower, Vec3,
@@ -55,7 +56,9 @@ export class SkyRealm implements SkyRealmApi {
   private readonly runner: HindranceRunner;
   private readonly effects: SkyEffects;
   private readonly knock: TowerKnock;
+  private readonly threshold: Threshold;
   private tower: Tower | null = null;
+  private unityEntered = false;
 
   private constructor(private readonly host: SkyHost, root: THREE.Group, readonly set: SkyRealmSet, readonly plans: SkyPlans) {
     this.world = set.world;
@@ -71,10 +74,18 @@ export class SkyRealm implements SkyRealmApi {
     const checkpoints = plans.totality.platforms.filter(p => plans.totality.checkpoints.includes(p.id));
     this.updraft = new Updraft(host, checkpoints);
     this.outside = new OutsideWatch(host, plans.tree, (tower, floor) => this.knockByGuardian(tower, floor));
+    this.threshold = new Threshold(host, plans.totality);
   }
 
   /** The placed tower the player stands on this frame, if any (law 3.9): the creatures read it. */
   get standingTower(): Tower | null { return this.tower; }
+
+  /** The player's last jump entered the Sun (Threshold). Unity is pending (issue #95): this records the entrance and nothing else. */
+  enterUnity(): void {
+    this.unityEntered = true;
+  }
+
+  get enteredUnity(): boolean { return this.unityEntered; }
 
   /** The sky's laws and the no-harm rule, on the bus with owner 'sky' (removed by `bus.off(null, 'sky')`). */
   install(bus: GameBus) {
@@ -93,6 +104,7 @@ export class SkyRealm implements SkyRealmApi {
     this.effects.update(dt);
     this.creatures.update(dt, this.floorAt(body.y));
     this.updraft.update(dt);
+    this.threshold.update(dt);
     this.host.place(placeLabel(this.floorAt(body.y)));
   }
 

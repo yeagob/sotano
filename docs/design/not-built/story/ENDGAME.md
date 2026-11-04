@@ -29,7 +29,7 @@ Immediately following this revelation:
 
 The true progression of the game forms a complete cosmic polarity:
 1. **Descent**: Dive into the bottom, meet the Spiked Entity, and receive the revelation.
-2. **Ascent**: Climb the Giant Tree, defeat the five sky deities ([HORSE](../sky/guardians/HORSE.md)), obtain the Triple Jump, conquer the cosmic platforming of [Totality](../levels/TOTALITY.md), and reach the closed threshold of the Sun. [Unity](../levels/UNITY.md) is issue #95 and not built (decided, owner, 2026-11-03).
+2. **Ascent**: Climb the Giant Tree, defeat the five sky deities ([HORSE](../sky/guardians/HORSE.md)), obtain the Triple Jump, conquer the cosmic platforming of [Totality](../levels/TOTALITY.md), and enter the Sun with its last jump. [Unity](../levels/UNITY.md) is issue #95 and not built: entering activates it, and it does nothing yet (decided, owner, 2026-11-05).
 3. **The Solar Relic** (later, with Unity; not in this build): at Unity in the Sun, the player is granted a sacred solar artifact/relic of pure celestial light.
 4. **The Rematch** (not in this build: no rematch, owner, 2026-11-03): armed with this solar relic, the player is finally empowered to confront, pierce the invulnerability of, and overcome the Spiked Entity at the bottom of the world.
 

@@ -1,9 +1,8 @@
 // Totality's chain of platforms (docs/architecture/SKY.md §8): a spiral of hops from the crown up to the
-// Sun's threshold. Every hop is a climb (rise 4–10, the third jump) or a rest (rise 0–3, the first two
+// Sun's volume. Every hop is a climb (rise 4–10, the third jump) or a rest (rise 0–3, the first two
 // jumps); every sixth platform is a checkpoint; every takeoff and arc keeps a clear column of 15 blocks.
 // Pure: integers, the run's fork and the reach envelope. No three.js.
 
-import { MAT } from '../../content/materials';
 import type { Fork, Hop, Place, Shape, TotalityPlan, Vec3 } from '../types';
 import { maxGap } from './reach';
 import { STRATA, sizeAt, stratumAt } from './strata';
@@ -16,17 +15,16 @@ export const HEADROOM = 15;
 export const CHAIN_RADIUS = 100;
 /** Radius of the spiral's centres round the axis: outside the crown's roof (radius 36, tree.ts), so the first platform's layers never sit in the roof's. */
 export const SPIRAL_RADIUS = 42;
-/** The platforms of the chain: 18 checkpoints, the last one before the threshold. */
+/** The platforms of the chain: 18 checkpoints, the last one before the Sun. */
 export const PLATFORMS = 108;
-/** The last checkpoint stands at this height: the strata end at 980 and the gate is six high above it. */
+/** The last checkpoint stands at this height: the strata end at 980. */
 export const LAST_TOP = 964;
 /** A platform's solid: two layers under its walking cell. */
 const LAYERS = 2;
-/** The sealed gate: a two-cell floor, then a wall five wide and six high. */
-const GATE_WIDTH = 5;
-const GATE_HEIGHT = 6;
-/** How near (blocks) the player's body must come to the threshold to touch it. */
-const TOUCH_RADIUS = 2;
+/** The Sun's volume is a sphere of this radius (blocks), the disc of the Sun's view (render/sun.ts). */
+export const SUN_RADIUS = 30;
+/** Blocks of air between the last checkpoint's far edge and the Sun's near surface, at the checkpoint's height: a jump's reach. */
+export const SUN_GAP = 4;
 /** Angle step tried when choosing where the next platform stands (radians). */
 const STEP = Math.PI / 720;
 /** The share of its widest gap a hop is drawn at, by stratum (the higher, the longer), and a rest's share. */
@@ -151,30 +149,21 @@ export function buildTotality(fork: Fork, crown: Vec3): TotalityPlan {
     hops.push({ from: h, to, dy, gap: best.gap, kind });
   }
 
-  // 3. the threshold: the last checkpoint's floor of sealed light, and the sealed gate beyond it, in the climbing direction
+  // 3. the Sun: its volume stands beyond the last checkpoint in the climbing direction, centred at the checkpoint's
+  // height, its near surface SUN_GAP blocks past the checkpoint's far edge, so the last jump reaches it
   const last = platforms[platforms.length - 1], before = platforms[platforms.length - 2];
   const lf = footprint(last);
-  const seal = MAT.sunseal;
   const alongX = Math.abs(last.x - before.x) >= Math.abs(last.z - before.z);
   const forward = alongX ? last.x >= before.x : last.z >= before.z;
   const lo = alongX ? lf.x0 : lf.z0, hi = alongX ? lf.x1 : lf.z1;
   const acrossLo = alongX ? lf.z0 : lf.x0, acrossHi = alongX ? lf.z1 : lf.x1;
-  const laneLo = acrossLo + Math.floor((acrossHi - acrossLo - GATE_WIDTH) / 2), laneHi = laneLo + GATE_WIDTH - 1;
-  const floorLo = forward ? hi : lo - 2, floorHi = forward ? hi + 1 : lo - 1;
-  const wall = forward ? hi + 2 : lo - 3;
-  const floor: Shape = alongX
-    ? { k: 'box', x0: floorLo, y0: last.y - LAYERS, z0: laneLo, x1: floorHi, y1: last.y - 1, z1: laneHi, m: seal }
-    : { k: 'box', x0: laneLo, y0: last.y - LAYERS, z0: floorLo, x1: laneHi, y1: last.y - 1, z1: floorHi, m: seal };
-  const gate: Shape = alongX
-    ? { k: 'box', x0: wall, y0: last.y, z0: laneLo, x1: wall, y1: last.y + GATE_HEIGHT - 1, z1: laneHi, m: seal }
-    : { k: 'box', x0: laneLo, y0: last.y, z0: wall, x1: laneHi, y1: last.y + GATE_HEIGHT - 1, z1: wall, m: seal };
-  shapes.push(floor, gate);
-  const across = (laneLo + laneHi + 1) / 2;
-  const threshold = alongX
-    ? { x: wall + 0.5, y: last.y, z: across, r: TOUCH_RADIUS }
-    : { x: across, y: last.y, z: wall + 0.5, r: TOUCH_RADIUS };
+  const across = (acrossLo + acrossHi) / 2;
+  const along = forward ? hi + SUN_GAP + SUN_RADIUS : lo - SUN_GAP - SUN_RADIUS;
+  const sun = alongX
+    ? { x: along, y: last.y, z: across, r: SUN_RADIUS }
+    : { x: across, y: last.y, z: along, r: SUN_RADIUS };
 
   const checkpoints: number[] = [];
   for (let i = 0; i < platforms.length; i++) if (isCheckpoint(i)) checkpoints.push(i);
-  return { strata: STRATA, shapes, platforms, hops, checkpoints, threshold };
+  return { strata: STRATA, shapes, platforms, hops, checkpoints, sun };
 }

@@ -18,7 +18,7 @@ The run gets a **second world**. The dungeon world (the ten floors and the built
 | The sky laws 3.1–3.9 as systems, and no harm in the sky | The solar relic and any rematch with the Spiked Entity (owner decision 3) |
 | A deity framework, a minion framework, eight hindrances | Solar-wind hindrances in Totality (open question 3 there) |
 | Five guardian floors from their B6 layout rules | Any sky time limit (open in the sky README) |
-| Totality: three strata, the triple-jump route, updraft recovery, the closed Sun threshold | Saving a run in progress |
+| Totality: three strata, the triple-jump route, updraft recovery, the entrance to the Sun | Saving a run in progress |
 | The Triple Jump (the horse's gift) | Other unlocks, recipes, side biomes (META-PROGRESSION ideas) |
 | The Spiked Entity, its revelation, the staircase, the persisted unlock, the staircase on floor 0 | A menu option to forget the unlock (the console only, provisional) |
 
@@ -641,9 +641,9 @@ For 50 seeds and every floor: the layout respects its B6 numbers (sizes, heights
   - Every hop's horizontal gap is at most **0.8 · `reach(dy)`** at base stats.
   - Every takeoff platform and every arc between two platforms has a **clear column of 15 blocks** of formula air above it (no `headBump` under a fragment overhead).
 - **The chain.** `chain.ts` walks a spiral up from the crown; every sixth platform is a **checkpoint** (3 × 3, with a soft beacon) where the updraft returns the player (§4). The spiral stays within radius 100 of the axis. About 60 hops in all (about ten minutes of climbing). It passes over the dungeon footprint in numbers only: the worlds never share a cell (§2.5a).
-- **The Sun threshold** (`threshold.ts`). The last checkpoint stands before a ring of solar glass and a **sealed gate of light** (the unbreakable `sun-seal`). Touching it shows `toast.sunClosed` ("The Sun is not open yet.") and a soft push back; nothing opens (owner decision 2; Unity is issue #95).
+- **The Sun's entrance** (`threshold.ts`, owner, 2026-11-05). The Sun is a sphere of 30 blocks (`SUN_RADIUS`) beyond the last checkpoint, its near surface 4 blocks past the checkpoint's far edge (`SUN_GAP`), at the checkpoint's height. The last jump, begun on the last checkpoint, that carries the body into the sphere calls the host's `enterUnity` once; the realm records it. Unity is issue #95, pending: it does nothing yet. No gate, no refusal, no toast.
 - **Building.** The player may place what the hand carries; there are no nests in Totality, so the gaps are the triple jump's (Totality open question 2, provisional). A tower (§4, law 3.9) is knocked down by a gust of solar wind after the full warning (the tower routine with the Sun as its source).
-- **Tests** (`tests/totality.test.ts`): every hop within its envelope by kind; the share of climb hops; the headroom columns; checkpoints every six; the plan inside the world's bounds; the same plan in any order; the threshold sealed and unbreakable.
+- **Tests** (`tests/totality.test.ts`): every hop within its envelope by kind; the share of climb hops; the headroom columns; checkpoints every six; the plan inside the world's bounds; the same plan in any order; the Sun's entrance (only the last checkpoint's jump enters; entering calls `enterUnity` once; no refusal).
 
 ## 9. The Triple Jump
 
@@ -721,7 +721,7 @@ Every word exists in English and Spanish **in the same change**, in the package 
 |---|---|---|
 | `core` | `level.sky`, `level.skyDeck`, `toast.skyEnter`, `toast.skyLeave`, `toast.skyPuff`, `toast.gateOpens`, `toast.towerDown`, `sky.won` | R1 writes every `core` key up front; L1, C0, C1 and L2 only use them |
 | per animal | `sky.<animal>.name` (deity), `sky.<animal>.minion`, `level.sky<n>` (the floor's name on the HUD), its outcome toast | F n (level name), B n (the rest) |
-| `totality` | `level.totality.lower`, `.mid`, `.upper`, `toast.sunClosed`, `toast.updraft` | TT, L2 |
+| `totality` | `level.totality.lower`, `.mid`, `.upper`, `toast.updraft` | TT, L2 |
 | `endgame` | `endgame.entity.name`, `endgame.entity.line1`, `.line2`, `toast.stairOpens` | EN |
 | item and stat | `content.items.triple-jump` (in the item's definition and `es.ts`), `stat.airJumps` (main catalogs) | TJ, PL |
 
@@ -729,7 +729,7 @@ The entity is not a bestiary entry, so it has no `content.enemies.*` key. **The 
 
 ## 13. Audio
 
-Synthesised like the rest (`src/audio/sfx.ts`), through `host.cue`, in **audio parts** `src/audio/sky/<part>.ts` (K0 creates them and the index that maps a `SkyCue` to its part): `core` (AU: the puff, the shimmer and the regrowth chime, the rising gold tick of a positive hit, the gate opening, the updraft, the sky ambience: wind and far birds on the deck, wood creak in the halls, near-silence in the void), one per animal (B n: the minion's happy call, each telegraph's sound from its document: the grumble, the whump, the squeak, the rumble, the whistle, the speeding tick, the roar), `totality` (TT: the Sun's low hum near the threshold and the sealed gate's refusal), `entity` (EN: the drone, the tink, the rising chord when the staircase opens). Master volume stays as today outside silence.
+Synthesised like the rest (`src/audio/sfx.ts`), through `host.cue`, in **audio parts** `src/audio/sky/<part>.ts` (K0 creates them and the index that maps a `SkyCue` to its part): `core` (AU: the puff, the shimmer and the regrowth chime, the rising gold tick of a positive hit, the gate opening, the updraft, the sky ambience: wind and far birds on the deck, wood creak in the halls, near-silence in the void), one per animal (B n: the minion's happy call, each telegraph's sound from its document: the grumble, the whump, the squeak, the rumble, the whistle, the speeding tick, the roar), `totality` (TT: the Sun's low hum near its volume), `entity` (EN: the drone, the tink, the rising chord when the staircase opens). Master volume stays as today outside silence.
 
 ## 14. Documentation (sotano-docs, sotano-design)
 
@@ -906,7 +906,7 @@ Each brief is self-contained: paste it with the rules of §16.1.
 **Decided by the owner (2026-11-03).**
 
 1. The sky is a separate realm above the crown, a formula world storing only exceptions; the seven built stories stay as the climb.
-2. The build goes up to Totality and ends at a closed Sun threshold. Unity is issue #95, not built.
+2. The build goes up to Totality and its last jump enters the Sun, which activates Unity (issue #95, not built; it does nothing yet).
 3. The endgame is the Spiked Entity encounter, the revelation, the staircase and the permanent unlock. No rematch.
 4. Open design questions take the proposals written in the docs, marked provisional.
 5. The permanent staircase is on floor 0, the roots.

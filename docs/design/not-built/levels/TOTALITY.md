@@ -2,7 +2,7 @@
 
 Up: [not-built levels](README.md) · [The realm of the sky](../sky/README.md)
 
-Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-03): the climb ends at a closed threshold of the Sun, because Unity is issue #95 and not built. Proposal for the exact platform layout, pacing, and fall recovery.
+Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-05, replacing the closed threshold of 2026-11-03): the last jump of the climb enters the Sun; entering activates Unity (issue #95, pending), which does nothing yet. Proposal for the exact platform layout, pacing, and fall recovery.
 
 ## 1. What Totality is
 
@@ -36,7 +36,7 @@ The ascent through Totality is divided into three distinct strata:
   - The blinding corona of the Sun fills the upper hemisphere. Golden light washes out shadows.
   - The platforms glow like incandescent glass and solar embers.
   - Distances between platforms stretch to their maximum, requiring full commitment to the $8\times$ leap.
-  - The final platform leads to the Sun's threshold, which stays closed in this build (decided, owner, 2026-11-03). The threshold is built and moved to [built/levels/totality/THRESHOLD.md](../../built/levels/totality/THRESHOLD.md). [Unity](UNITY.md) is issue #95 and not built.
+  - The last jump of the climb, taken from the final checkpoint, enters the Sun's volume (decided, owner, 2026-11-05). Entering activates [Unity](UNITY.md), which is issue #95, pending, and does nothing yet. The entrance is built and moved to [built/levels/totality/THRESHOLD.md](../../built/levels/totality/THRESHOLD.md). The 107 hops stay as they are for now.
   - The Sun's warm light is an exception to art pillar 2 (warm light is earned and yours), provisional (owner, 2026-11-03). It is to be recorded in the sky art ledger, which is not written yet.
 
 ## 4. Platforming design and player feel
