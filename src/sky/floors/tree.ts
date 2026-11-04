@@ -7,7 +7,8 @@
 // the deck is a disc of cloud at y 29–31 (walking surface 32), outside the trunk.
 //
 // The deck's way up is the trunk's foot door: a three-high opening through the foot wall, and a
-// spiral of heartwood up a well through the first slab, into hall 1. Each guardian floor's way up is
+// spiral of heartwood up a well through the first slab, into hall 1 beside the Bamboo Seat (the well
+// stands off the axis, FOOT_WELL, so the seat keeps its ground at the centre). Each guardian floor's way up is
 // a heartwood membrane across the bottom layer of the slab above its hall (the disc of its plan's
 // gate), closed until `openGate(n)` writes it to air.
 
@@ -38,8 +39,13 @@ const BANDS: readonly { floor: FloorIndex; y0: number; y1: number }[] = [
 /** The roof of the top hall is three layers; the crown (Totality's first platform) stands above it. */
 export const CROWN_Y = 221;
 const ROOF_TOP = CROWN_Y - 1;
-/** The foot well's radius: the deck's way up into hall 1. */
-const WELL_R = 4;
+/**
+ * The foot well: the deck's way up into hall 1. Its axis stands off the trunk's, in the quarter of hall 1
+ * the panda floor leaves empty (x +3, z +8 from the centre), so its mouth opens on the hall's ground
+ * beside the Bamboo Seat, two cells clear of the seat and three of the building path, never under them
+ * (provisional, to confirm: docs/architecture/SKY.md §7.1).
+ */
+export const FOOT_WELL = { x: SKY_AXIS.x + 3, z: SKY_AXIS.z + 8, r: 4 } as const;
 
 /** Hall n's air radius (n = 1–5): the floor's B6 radius + the wall. */
 const hallRadius = (n: number) => SKY_FLOORS[n - 1].radius + WALL;
@@ -78,9 +84,10 @@ export function buildSkyTree(_rng: Rng, floors: readonly SkyFloorPlan[] = []): S
 
   // the deck's way up: a foot well through the first slab, a three-high door through the foot wall, and a spiral up to hall 1
   const first = BANDS[0];
-  shapes.push({ k: 'ring', cx, cz, r0: 0, r1: WELL_R, y0: DECK_Y, y1: first.y0 - 1, m: AIR });
-  shapes.push({ k: 'run', ax: cx + storeyRadius(1) + 2, ay: DECK_Y, az: cz, bx: cx + 2, by: DECK_Y, bz: cz, w: 2, h: 3, m: AIR });
-  shapes.push({ k: 'helix', cx, cz, r: WELL_R, w: 2, y0: DECK_Y, y1: first.y0 - 1, rise: 8, m: MAT.heartwood });
+  const W = FOOT_WELL;
+  shapes.push({ k: 'ring', cx: W.x, cz: W.z, r0: 0, r1: W.r, y0: DECK_Y, y1: first.y0 - 1, m: AIR });
+  shapes.push({ k: 'run', ax: cx + storeyRadius(1) + 2, ay: DECK_Y, az: W.z, bx: W.x + 2, by: DECK_Y, bz: W.z, w: 2, h: 3, m: AIR });
+  shapes.push({ k: 'helix', cx: W.x, cz: W.z, r: W.r, w: 2, y0: DECK_Y, y1: first.y0 - 1, rise: 8, m: MAT.heartwood });
 
   // the roof of the top hall
   shapes.push({ k: 'ring', cx, cz, r0: 0, r1: storeyRadius(BANDS.length), y0: BANDS[BANDS.length - 1].y1 + 1, y1: ROOF_TOP, m: MAT.heartwood });
@@ -97,7 +104,7 @@ export function buildSkyTree(_rng: Rng, floors: readonly SkyFloorPlan[] = []): S
   });
 
   const deck: Place = { id: 0, kind: 'ground', x: cx, y: DECK_Y, z: cz + 40, w: 1, d: 1, tag: 0 };
-  const door: Place = { id: 1, kind: 'gate', x: cx, y: DECK_Y, z: cz, w: 1, d: 1, tag: 0 };
+  const door: Place = { id: 1, kind: 'gate', x: FOOT_WELL.x, y: DECK_Y, z: FOOT_WELL.z, w: 1, d: 1, tag: 0 };
 
   return {
     shapes,

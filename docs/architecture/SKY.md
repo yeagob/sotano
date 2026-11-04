@@ -577,13 +577,15 @@ The sky tree is a trunk that **widens as it rises**, a crown carrying its floors
 
 | Floor | Guardian | B6 radius, height | Hall ground | Hall top | Way up (the floor's vertical route ends under it) |
 |---|---|---|---|---|---|
-| Deck | — | radius 48 of cloud | 32 | — | the trunk's foot door |
+| Deck | — | radius 48 of cloud | 32 | — | the trunk's foot door, into the foot well (radius 4, a heartwood spiral) that opens on hall 1's ground beside the Bamboo Seat, its axis at x +3, z +8 from the trunk's (provisional, to confirm) |
 | 1 | Panda | 20, 28 | 36 | 67 | over the Bamboo Seat's ledge strip |
 | 2 | Koala | 22, 32 | 71 | 106 | over a trunk's knots |
 | 3 | Elephant | 24, 34 | 110 | 147 | over the tusk line |
 | 4 | Lion | 26, 36 | 151 | 190 | over the thorn tree |
 | 5 | Horse | 30, 12 (paddocks), mast to the gate | 194 | 217 | at the top of the mast |
 | Totality | — | open space | 221 (the crown) | ~980 (the Sun threshold) | — |
+
+The foot well stands off the trunk's axis so that the Bamboo Seat, at the centre of hall 1, keeps whole ground under it: the well's mouth lies in the quarter of the panda floor that holds no column, two cells clear of the seat and three of the building path, with a clear column of at least 3 over it (provisional, to confirm; `FOOT_WELL` in `tree.ts`, checked by `tests/sky-tree.test.ts`). The foot door runs from the deck through the foot wall on +x to the well.
 
 `src/sky/floors/tree.ts` (TR) builds the trunk, the deck, the slabs and the membranes as shapes, and calls each floor's generator (through the registry `src/sky/floors/index.ts`) with its origin. Its plan names the trunk's outer radius per height (the outside watch reads it). `src/sky/layout.ts` assembles the tree, the five floor plans and the Totality plan into the layout and the plans `SkyRealm` holds.
 
@@ -609,7 +611,7 @@ export interface SkyFloorPlan {
 
 | Floor | File | Generator follows (B6 of its document) |
 |---|---|---|
-| Panda | `src/sky/floors/panda.ts` | The Bamboo Seat (3 × 3, top at 24) in the centre; 12–16 columns of 2 × 2, tops 3–20; the gentle path (steps of 1, gaps 1–2); the building path (steps of 2) with nests at its foot; soft stairs on half the columns; the ledge strip on one face of the seat; nests at 0, 8, 16; the two bamboo clumps |
+| Panda | `src/sky/floors/panda.ts` | The Bamboo Seat (3 × 3, top at 24) in the centre; 12–16 columns of 2 × 2, tops 3–20; the gentle path (steps of 1, gaps 1–2); the building path (steps of 2) with nests at its foot; soft stairs on half the columns; the ledge strip on one face of the seat; nests at 0, 8, 16; the two bamboo clumps; the quarter at x 0 to +8, z +4 to +12 left empty for the foot well's mouth (provisional, to confirm) |
 | Koala | `koala.ts` | Four 2 × 2 trunks at 14 from the centre; the branch spiral (1 wide, 4–6 long, +2 each); gaps of 2 level or 3 with a drop of 1, never more without a thick branch; every third branch thick and fixed; the central gap (radius 8) over moss; knots on every trunk; the Fork at 30 on four limbs; nests on the lower thick branches; three sleeping clusters |
 | Elephant | `elephant.ts` | (Provisional layout, B6.) A 2-high base; five rings rising to the centre: the ground ring (19–24, at 2) with the waterhole (radius 2, 2 deep, a template element) opposite the tusk line, terraces at 8, 14, 20 (4 wide, walls 6 high), the Basin's mesa (radius 6) at 26 with its pool (radius 3), its 2-high rim and four culvert spouts; four switch-back channels (stairs of 6 one-block steps along the wall feet, troughs of bed 1 wide between banks 2 high, a cut every 6); the dry tusk line (five ledge strips to 33, under the way up); a nest on each ring; floor blocks in rows 110–143 |
 | Lion | `lion.ts` | An open plain; 12–16 flat rocks (3 × 3 to 6 × 6) from 4 to 30, neighbours 1–3 apart; gaps of 2, 3 with a drop, or 4–5 on the nerve line; the long route; the Sunning Ledge (6 × 6 at 34); the thorn tree's spiral steps; six nests before the 4–5 gaps; two shade rocks |

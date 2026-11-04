@@ -157,6 +157,7 @@ The panda has four attacks. The first stage uses Bamboo toss and Heavy press. Th
 - **Straight up:** one face of the Bamboo Seat carries one-block ledges, staggered left and right in a 2-wide strip, every 1 block of height from the ground to the seat. This is the floor's vertical route. The yawn, the toss and the press all reach it.
 - **Nests:** target 3, at heights 0, 8 and 16, each with 3 cubes.
 - **The ground:** grass and earth in a ring. A fall lands on the ground or a lower column and does not hurt.
+- **The way in:** the player arrives from the deck up the tree's foot well, whose mouth (radius 4) opens on the ground beside the Bamboo Seat, not under it: target 2 blocks from the seat, in the part of the floor with no columns. Nothing stands over the mouth, and the seat keeps whole ground (provisional, to confirm).
 
 **Example route.** From the ground, take the gentle path anticlockwise to a column at height 8 (8 jumps). Stand still for 2 s to delay the next attack. Take a cube from the nest at 8 and place it to climb a 2-block step onto the building path. Continue to height 20, two columns from the seat, and land positive hits from there (the seat is within the shot's straight flight of about 8 blocks). Jump the last gap and land positive hits on the panda from beside it during its recovery.
 
