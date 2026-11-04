@@ -89,6 +89,13 @@ import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentS
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud } from './hud';
 import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
+import { playSkyCue } from '../audio/sky';
+import { swapRealm } from '../sky/realm';
+import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
+import { SkyRealm } from '../sky/sky-realm';
+import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmApi, type SkyRealmSet, type SkyFx, type Travel } from '../sky/types';
+import { SkyWorld } from '../sky/world/sky-world';
+import type { Rng } from '../core/rng';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -104,6 +111,8 @@ const LEVEL_FOG = LEVELS.map(l => new THREE.Color(pal(l.fog)));
 const SKY = new THREE.Color(pal('sky.day'));
 /** The cosmos above the tree. */
 const NIGHT = new THREE.Color(pal('ui.night'));
+/** Above this height the dungeon's sky opens into the sky realm (docs/architecture/SKY.md §2.4). */
+const SKY_TOP = SURFACE_Y + SKY_LIMIT - 1.5;
 /** Seconds of stillness in silence before you are carried up to heaven. */
 const SILENCE_STILL = 3;
 const REST_TIME = 3;
@@ -213,6 +222,20 @@ export class Game {
   world!: VoxelSpace;
   /** Always the dungeon's world [M10]: every dungeon-only caller takes it, so none can be handed the sky. */
   dw!: VoxelWorld;
+  /** The world the player is in (docs/architecture/SKY.md §2.1). Below the crown it is the dungeon. */
+  private realm: RealmKind = 'dungeon';
+  /** The inactive world's set: the dungeon's while in the sky, the sky's below. Null until the sky is first reached. */
+  private stash: RealmSet | null = null;
+  private sky: SkyRealmApi | null = null;
+  private readonly dungeonRoot = new THREE.Group();
+  private readonly skyRoot = new THREE.Group();
+  private gate!: RealmGate;
+  /** The sky's spirit (SkyHost.spirit): special attacks drain it; at zero the player goes underground. */
+  private spirit = SPIRIT_MAX;
+  /** Captures so far in this run: the seed path of each practice taken. */
+  private captures = 0;
+  /** The floor the next passage down lands on (SkyHost.sendUnderground), carved when the passage runs. */
+  private underground: number | null = null;
   floors = new Map<number, FloorResult>();
   /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
   private labs = new Map<number, Alembic>();
@@ -333,6 +356,10 @@ export class Game {
     this.touch = new TouchControls(this.input);
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
+    // each world's scene objects hang under its own group; only the active one is visible (SKY.md §2.3)
+    this.scene.add(this.dungeonRoot, this.skyRoot);
+    this.skyRoot.visible = false;
+    this.gate = new RealmGate(this.realmGateHost());
     this.scene.add(new THREE.HemisphereLight(pal('light.core'), pal('rock.f1.outline'), 2.0));
     const sun = new THREE.DirectionalLight(pal('sky.albedo'), 1.0);
     sun.position.set(0.4, 1, 0.3);
@@ -408,6 +435,8 @@ export class Game {
   }
 
   private begin(root: number, sandbox: Scenario | null) {
+    this.leaveSky();
+    this.spirit = SPIRIT_MAX; this.captures = 0; this.underground = null;
     this.sandbox = sandbox;
     seedFx(sandbox ? root : null);
     this.seed = root;
@@ -430,7 +459,7 @@ export class Game {
     this.kitchenViews?.dispose();
     this.enemies?.dispose();
     this.tablets?.dispose();
-    this.tablets = new Tablets(this.scene);
+    this.tablets = new Tablets(this.dungeonRoot);
     this.dw = createDungeonWorld(this.rng, this.dungeon);
     this.world = this.dw;
     const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
@@ -438,37 +467,19 @@ export class Game {
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     setMasterTarget(0.35);
-    this.elements = new ElementSim(this.world, {
-      seed: this.rng.fork('elements').u32(),
-      blocked: (x, y, z) => this.solid(x, y, z),
-      ignite: (x, y, z, material, by) => this.ignite(x, y, z, material, by),
-      react: (x, y, z, r, result) => {
-        const ev = this.bus.emit('materialReact', { x, y, z, reaction: r.id, result });
-        if (ev.cancelled) return null;
-        // a hook may swap the result, but only for a real material (or nothing)
-        return Number.isInteger(ev.result) && ev.result >= 0 && ev.result < MATERIALS.length ? ev.result : result;
-      },
-      fx: (kind, x, y, z) => this.elementFx(kind, x, y, z),
-    });
+    this.elements = this.elementSim(this.world, this.rng.fork('elements').u32());
     this.playerIn.clear(); this.drownT = 0;
-    this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 48);
-    this.debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
-    this.debris.onFuse = (i, x, y, z) => {
-      const chain = this.bombCause.get(i);
-      this.bombCause.delete(i);
-      this.blasts.current = chain ?? null;
-      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
-      this.blasts.current = null;
-    };
+    this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
+    this.debris = this.newDebris();
     this.blasts.clear(); this.bombCause.clear();
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
-    this.doors = new Doors(this.scene);
-    this.pickups = new Pickups(this.scene);
+    this.doors = new Doors(this.dungeonRoot);
+    this.pickups = new Pickups(this.dungeonRoot);
     this.pickups.heartKind = y => rollHeart(this.rng.stream('hearts'), floorHeartChances(this.rng, depthOf(y)), Math.max(0, depthOf(y)));
-    this.chestViews = new Chests(this.scene);
-    this.alembicViews = new Alembics(this.scene);
-    this.kitchenViews = new Kitchens(this.scene);
-    this.enemies = new Enemies(this.scene, this.enemyHost());
+    this.chestViews = new Chests(this.dungeonRoot);
+    this.alembicViews = new Alembics(this.dungeonRoot);
+    this.kitchenViews = new Kitchens(this.dungeonRoot);
+    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost());
     this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
@@ -703,10 +714,11 @@ export class Game {
 
   /** World voxels plus closed doors. */
   solid(x: number, y: number, z: number) {
-    return this.world.solid(x, y, z) || this.doors.solidAt(x, y, z);
+    return this.world.solid(x, y, z) || (this.below && this.doors.solidAt(x, y, z));
   }
 
   roomAt(x: number, y: number, z: number): RoomInfo | null {
+    if (!this.below) return null;
     const f = this.floors.get(bandOf(y));
     if (!f) return null;
     const [gx, gz] = cellOf(x, z);
@@ -714,6 +726,223 @@ export class Game {
     // the room whose space holds the cell (a room may spread into empty cells the map never shows)
     const i = f.space[gx + gz * f.plan.w];
     return i < 0 ? null : f.rooms[i];
+  }
+
+  // ───────────────────────── realms (docs/architecture/SKY.md §2) ─────────────────────────
+
+  /** True in the dungeon's world, below the crown. Every dungeon-only rule is guarded by it (SKY.md §2.5a). */
+  private get below() { return this.realm === 'dungeon'; }
+
+  /** The swap's view of the game's fields (SKY.md §2.1). */
+  private realmHost(): RealmHost {
+    return {
+      install: set => {
+        this.realm = set.kind;
+        this.world = set.world; this.chunks = set.chunks; this.elements = set.elements;
+        this.debris = set.debris; this.pickups = set.pickups; this.enemies = set.enemies;
+        this.actors.setRealm(set.kind);
+      },
+      current: (): RealmSet => ({
+        kind: this.realm, root: this.below ? this.dungeonRoot : this.skyRoot,
+        world: this.world, chunks: this.chunks, elements: this.elements, debris: this.debris, pickups: this.pickups, enemies: this.enemies,
+      }),
+      // runs before install: the fields still hold the world being left
+      clearTransient: () => {
+        this.intents.clear(); this.particles.clear(); this.blasts.clear(); this.enemies.clearHazards();
+      },
+      hooks: kind => { if (kind === 'sky') this.sky?.install(this.bus); else this.bus.off(null, 'sky'); },
+    };
+  }
+
+  private realmGateHost(): RealmGateHost {
+    return {
+      fade: k => this.hud.fadeLevel(k),
+      pass: t => this.passRealm(t),
+      ready: () => !this.chunks.busy,
+    };
+  }
+
+  /** The sky, built the first time the run reaches it (SKY.md §2.1: lazily, from its own forks). */
+  private skyRealm(): SkyRealmApi {
+    if (!this.sky) this.sky = SkyRealm.create(this.makeSkyHost(), this.skyRoot, layout => this.makeSkySet(layout));
+    return this.sky;
+  }
+
+  /** The sky's set on its layout: its own world, chunk renderer, elements, loose cubes, pickups and an empty projection system. */
+  private makeSkySet(layout: SkyLayout): SkyRealmSet {
+    const world = new SkyWorld(layout);
+    return {
+      kind: 'sky', root: this.skyRoot, world,
+      chunks: new ChunkRenderer(world, this.skyRoot, this.atlas, 48),
+      elements: this.elementSim(world, this.rng.fork('sky', 'elements').u32()),
+      debris: this.newDebris(),
+      pickups: new Pickups(this.skyRoot),
+      enemies: new Enemies(this.skyRoot, this.enemyHost()),
+    };
+  }
+
+  /** Loose cubes of a world: a bomb fuse in the sky works as it does below. */
+  private newDebris(): DebrisSystem {
+    const debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
+    debris.onFuse = (i, x, y, z) => {
+      const chain = this.bombCause.get(i);
+      this.bombCause.delete(i);
+      this.blasts.current = chain ?? null;
+      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
+      this.blasts.current = null;
+    };
+    return debris;
+  }
+
+  /** The element simulation of a world, with the game's hooks (the same rules in both worlds). */
+  private elementSim(world: VoxelSpace, seed: number): ElementSim {
+    return new ElementSim(world, {
+      seed,
+      blocked: (x, y, z) => this.solid(x, y, z),
+      ignite: (x, y, z, material, by) => this.ignite(x, y, z, material, by),
+      react: (x, y, z, r, result) => {
+        const ev = this.bus.emit('materialReact', { x, y, z, reaction: r.id, result });
+        if (ev.cancelled) return null;
+        // a hook may swap the result, but only for a real material (or nothing)
+        return Number.isInteger(ev.result) && ev.result >= 0 && ev.result < MATERIALS.length ? ev.result : result;
+      },
+      fx: (kind, x, y, z) => this.elementFx(kind, x, y, z),
+    });
+  }
+
+  /** The one door from the sky into the game (SKY.md §5.2). No verb here takes health. */
+  private makeSkyHost(): SkyHost {
+    const p = this.player;
+    const player: SkyPlayer = {
+      get body() { return p.body; },
+      get eye() { return p.eye; },
+      get aim() { return p.forward; },
+      get hand() { return p.hand; },
+      push: (vx, vy, vz) => p.push(vx, vy, vz),
+      // the player's own slow factor applies; the sky gives the time only (provisional)
+      slow: (_f, s) => { p.slowT = Math.max(p.slowT, s); },
+      hold: s => p.hold(s),
+      carry: (to, s) => p.carry(to, s),
+    };
+    return {
+      time: () => this.time,
+      player: () => player,
+      actors: () => this.actors,
+      world: () => this.sky!.set.world,
+      debris: () => this.debris,
+      hazards: () => this.enemies.hazardField,
+      fork: (...path) => this.rng.fork(...path),
+      fx: (kind, x, y, z, n) => this.skyFx(kind, x, y, z, n),
+      cue: (kind, x, y, z) => playSkyCue(kind, x, y, z),
+      toast: (key, params) => this.hud.toast(key, params),
+      card: (name, lines) => this.hud.presenceCard(name, lines),
+      bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),
+      place: key => this.hud.placeLabel(key),
+      gift: (itemId, x, y, z) => { this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null); },
+      travel: tr => this.gate.start(tr),
+      drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
+      spirit: () => this.spirit,
+      takeRandomPractice: () => this.takePractice(),
+      sendUnderground: (floors, rng) => this.sendUnderground(floors, rng),
+    };
+  }
+
+  /** The sky's effects as the game's particles (placeholders until the sky's art rulings name them). */
+  private skyFx(kind: SkyFx, x: number, y: number, z: number, n = 6) {
+    switch (kind) {
+      case 'puff': this.particles.burst(x, y, z, pal('sky.deck.haze'), n, 1.2, 0.08, true); break;
+      case 'shimmer': this.particles.burst(x, y, z, pal('light.core'), n, 0.8, 0.06, true); break;
+      case 'hit': this.particles.burst(x, y, z, pal('light.gold'), n, 2.5, 0.08); break;
+      case 'gold': this.particles.burst(x, y, z, pal('light.gold'), n, 2, 0.07); break;
+      case 'motes': this.particles.burst(x, y, z, pal('bone.dim'), n, 0.8, 0.05, true); break;
+      case 'updraft': this.particles.burst(x, y, z, pal('sky.day'), n, 3, 0.06, true); break;
+      case 'gate': this.particles.burst(x, y, z, pal('light.gold'), n, 4, 0.1); break;
+      case 'pop': this.particles.burst(x, y, z, pal('bone.paper'), n, 2, 0.08); break;
+      case 'bounce': this.particles.burst(x, y, z, pal('bone.dim'), n, 2.5, 0.05); break;
+    }
+  }
+
+  /** The sky's bounds for the passages (SKY.md §2.4): the top of the dungeon's sky, the deck, the floor, the crown. */
+  private skyBounds(): SkyBounds {
+    const d = this.skyRealm().plans.tree.deck;
+    return {
+      top: SKY_TOP, floorOut: SKY_FLOOR_OUT,
+      deck: [d.x, d.y, d.z],
+      crown: [this.tree.cx, SURFACE_Y + SKY_LIMIT - 3, this.tree.cz],
+    };
+  }
+
+  /** A capture takes one practice the player holds, at random, for the rest of the run (SKY.md §19, provisional). */
+  private takePractice(): string | null {
+    const held = this.inventory.items;
+    if (!held.length) return null;
+    const id = held[this.rng.fork('sky', 'capture', this.captures++).int(0, held.length - 1)].def.id;
+    this.inventory.lose(id);
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    return id;
+  }
+
+  /** Spirit at zero: one of the floors is picked, the player goes there, and spirit is full again (SKY.md §5.2). */
+  private sendUnderground(floors: readonly number[], rng: Rng) {
+    if (!floors.length || this.gate.busy) return;
+    this.underground = floors[rng.int(0, floors.length - 1)];
+    this.spirit = SPIRIT_MAX;
+    this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
+  }
+
+  /** `?sky` (main.ts): the run starts on the sky's deck, as if the built tree had been climbed. */
+  debugSky() {
+    if (this.below) this.gate.start({ to: 'sky', at: this.skyBounds().deck, float: true });
+  }
+
+  /** Falling below the deck's floor goes down to the crown (SKY.md §2.4). The sky's own update runs after this. */
+  private skyGate() {
+    const travel = RealmGate.check('sky', this.player.body, null, this.skyBounds());
+    if (travel) this.gate.start(travel);
+  }
+
+  /** The gate's passage, at full black: the world is swapped, then the player is placed in the new one. */
+  private passRealm(t: Travel) {
+    if (t.to === this.realm) return;
+    const incoming = t.to === 'sky' ? this.skyRealm().set : this.stash!;
+    const landing = t.to === 'dungeon' && this.underground !== null ? this.undergroundSpawn(this.underground) : null;
+    this.underground = null;
+    this.stash = swapRealm(this.realmHost(), incoming, this.dungeonRoot, this.skyRoot);
+    this.player.float = t.float;
+    const at = landing ?? t.at;
+    this.teleport(at[0], at[1], at[2]);
+    this.hud.setMinimap(t.to === 'dungeon');
+    // the HUD names this place again on the next frame (updateLoop writes the zone label when it differs)
+    if (t.to === 'dungeon') this.zone = 'sky';
+    this.hud.toast(t.to === 'sky' ? 'toast.skyEnter' : 'toast.skyLeave');
+    sfx3.rumble();
+  }
+
+  /** Carves and activates the floor a capture sends the player to; its spawn cell, or null when there is none. */
+  private undergroundSpawn(k: number): SkyCell | null {
+    this.carve(k);
+    this.activate(k);
+    const f = this.floors.get(k);
+    if (!f) return null;
+    const [x, y, z] = f.spawn;
+    return [Math.floor(x), Math.floor(y), Math.floor(z)];
+  }
+
+  /** A new run starts in the dungeon: the gate stops, the sky is set aside and its set disposed (SKY.md §2.1). */
+  private leaveSky() {
+    this.gate.cancel();
+    if (!this.sky) return;
+    if (this.realm === 'sky') this.stash = swapRealm(this.realmHost(), this.stash!, this.dungeonRoot, this.skyRoot);
+    this.sky.dispose();
+    this.disposeSet(this.sky.set);
+    this.sky = null;
+    this.stash = null;
+  }
+
+  private disposeSet(set: RealmSet) {
+    set.chunks.dispose();
+    set.pickups.dispose();
+    set.enemies.dispose();
   }
 
   // ───────────────────────── items ─────────────────────────
@@ -1573,10 +1802,13 @@ export class Game {
       if (source.startsWith('enemy:')) this.shed(i);
     }
     if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.break(Math.min(3, mat(id).tier));
-    // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
-    if (kind !== 'fire') this.rollLoot(x, y, z, id, source);
-    // digging into the next floor's band activates it
-    if (depthOf(y) > this.maxDepth) this.activate(depthOf(y));
+    // dungeon only: no loot and no floor activation in the sky (SKY.md §2.5a)
+    if (this.below) {
+      // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
+      if (kind !== 'fire') this.rollLoot(x, y, z, id, source);
+      // digging into the next floor's band activates it
+      if (depthOf(y) > this.maxDepth) this.activate(depthOf(y));
+    }
     return true;
   }
 
@@ -1619,7 +1851,7 @@ export class Game {
       if (d > r) continue;
       this.damageBlock(bx, by, bz, ev.damage * (1 - 0.5 * d / r), 'explosion', `explosion:${source}`);
     }
-    this.blastDoors(x, y, z, r, source);
+    if (this.below) this.blastDoors(x, y, z, r, source);
     for (let i = 0; i < this.debris.max; i++) {
       if (!this.debris.isAlive(i)) continue;
       const i3 = i * 3;
@@ -2279,7 +2511,7 @@ export class Game {
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.kitchen) { this.cookAt(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
-      && !this.doors.inDoorway(x, y, z);
+      && !(this.below && this.doors.inDoorway(x, y, z));
     // a face in reach whose cell cannot take a block (a doorway, the world's edge) is refused like a
     // blocked placement, never thrown: only aiming at nothing throws the block
     if (!ok) { if (tap || hit) sfx.denied(); else this.throwTop(); return; }
@@ -2613,6 +2845,14 @@ export class Game {
    *  let the HUD, the fog and the floor bookkeeping catch up (review L4–L6 points 3 and 5). */
   private teleport(x: number, y: number, z: number) {
     const fx0 = Math.floor(x), fz0 = Math.floor(z);
+    if (!this.below) {
+      // the sky never edits its world to make room: it finds a cell to stand in (SKY.md §2.5a)
+      const [cx, cy, cz] = this.skyRealm().placeAt([fx0, Math.floor(y), fz0]);
+      this.player.spawnAt(cx + 0.5, cy, cz + 0.5);
+      this.room = -1;
+      this.zone = '';
+      return;
+    }
     let fy = Math.floor(y);
     for (let i = 0; i < 24 && (this.solid(fx0, fy, fz0) || this.solid(fx0, fy + 1, fz0)); i++) fy++;
     if (this.solid(fx0, fy, fz0) || this.solid(fx0, fy + 1, fz0)) { this.world.set(fx0, fy, fz0, AIR); this.world.set(fx0, fy + 1, fz0, AIR); }
@@ -2773,14 +3013,15 @@ export class Game {
         sfx3.reveal();
       }
     } else this.stillT = 0;
-    // the top of the sky, once silence is known, opens down into it (it loops)
-    if (last && this.silenceSeen && b.y > SURFACE_Y + SKY_LIMIT - 1.5) {
-      this.teleport((last.x0 + last.x1) / 2 + 2, last.y0, (last.z0 + last.z1) / 2 + 2);
-      sfx3.rumble();
-    }
-    // star pads: step on one and you are on the next star of its constellation
+    // the top of the sky, and the last star, lead up into the sky realm (SKY.md §2.4): the gate runs the fade
     const fx0 = Math.floor(b.x), fy = Math.floor(b.y + 0.05), fz0 = Math.floor(b.z);
     const pad = b.onGround ? this.tree.pads.findIndex(q => q.x === fx0 && q.y === fy && q.z === fz0) : -1;
+    const up = pad >= 0 && this.tree.pads[pad].up === true;
+    if (up || b.y > SKY_TOP) {
+      const travel = RealmGate.check('dungeon', b, up ? { up: true } : null, this.skyBounds());
+      if (travel) { this.gate.start(travel); return; }
+    }
+    // star pads: step on one and you are on the next star of its constellation
     if (pad < 0) this.padLock = -1;
     else if (pad !== this.padLock) {
       const to = this.tree.pads[this.tree.pads[pad].to];
@@ -3017,6 +3258,7 @@ export class Game {
       this.revealT += dt;
       if (!this.chunks.busy || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
+    this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
     if (ctx === 'prompt' && inp.hit('confirm')) {
       this.hud.dismissBanner();
@@ -3042,10 +3284,11 @@ export class Game {
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.guardOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
-    this.stream();
+    if (this.below) this.stream(); else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
-    const sky = e.y > SURFACE_Y - 4;
+    const below = this.below;
+    const sky = !below || e.y > SURFACE_Y - 4;
     this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22));
     this.stars.position.set(e.x, 0, e.z);
 
@@ -3056,22 +3299,24 @@ export class Game {
     this.camera.rotation.set(p.pitch, p.yaw, 0, 'YXZ');
 
     // fog: dark dungeon below, sky above; the element your eyes are in closes it in
-    const k = THREE.MathUtils.smoothstep(e.y, SURFACE_Y - 3, SURFACE_Y + 2);
-    this.fogColor.copy(LEVEL_FOG[Math.min(LAST_FLOOR, depthOf(e.y))] ?? DUNGEON_FOG).lerp(SKY, k);
     const fog = this.scene.fog as THREE.Fog;
-    const under = this.world ? this.elementAt(e.x, e.y, e.z) : null;
-    if (under?.fog) {
-      this.fogColor.setHex(pal(under.fog.color));
-      fog.near = 0; fog.far = under.fog.far;
-    } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
-    // up the tree the sky turns to night and the stars come out (the cosmos); silence is dark
-    const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven);
-    if (night > 0) { this.fogColor.lerp(NIGHT, night); fog.far = 34 + k * 80 + night * 60; }
-    this.stars.visible = night > 0.05;
-    (this.stars.material as THREE.PointsMaterial).opacity = night;
-    const deep = this.floors.get(LAST_FLOOR)?.silence;
-    if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
-    fog.color.copy(this.fogColor);
+    if (below) {
+      const k = THREE.MathUtils.smoothstep(e.y, SURFACE_Y - 3, SURFACE_Y + 2);
+      this.fogColor.copy(LEVEL_FOG[Math.min(LAST_FLOOR, depthOf(e.y))] ?? DUNGEON_FOG).lerp(SKY, k);
+      const under = this.world ? this.elementAt(e.x, e.y, e.z) : null;
+      if (under?.fog) {
+        this.fogColor.setHex(pal(under.fog.color));
+        fog.near = 0; fog.far = under.fog.far;
+      } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
+      // up the tree the sky turns to night and the stars come out (the cosmos); silence is dark
+      const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven);
+      if (night > 0) { this.fogColor.lerp(NIGHT, night); fog.far = 34 + k * 80 + night * 60; }
+      this.stars.visible = night > 0.05;
+      (this.stars.material as THREE.PointsMaterial).opacity = night;
+      const deep = this.floors.get(LAST_FLOOR)?.silence;
+      if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
+      fog.color.copy(this.fogColor);
+    } else this.sky!.atmosphere(e, this.fogColor, fog, this.stars);
     easeMaster(dt);
     this.chunks.animate(this.time);
     this.renderer.setClearColor(this.fogColor);
@@ -3095,15 +3340,17 @@ export class Game {
     const inp = this.input;
     const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
+    const below = this.below;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
-        const cause = bandOf(b.y) !== this.groundBand ? 'descent' : 'fall';
+        // falls never hurt in the sky, and the dungeon's floor bands do not apply there (SKY.md §2.5a)
+        const cause = !below ? 'sky' : bandOf(b.y) !== this.groundBand ? 'descent' : 'fall';
         this.bus.emit('land', { fallSpeed: fall, cause, x, y, z });
       },
       bump: speed => this.headBump(speed),
-    }, this.playerMedium);
-    if (b.onGround) this.groundBand = bandOf(b.y);
+    }, this.playerMedium, below ? {} : { minJump: 1 });
+    if (below && b.onGround) this.groundBand = bandOf(b.y);
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
@@ -3116,7 +3363,7 @@ export class Game {
     if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
-    this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
+    if (below) this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);
     this.debrisElements(dt);
@@ -3125,21 +3372,26 @@ export class Game {
     this.cubeStrikes();
     this.shoveCubes();
     this.touchPickups();
-    this.touchChests();
+    if (below) this.touchChests();
     this.intents.update(dt);
     this.updateMissiles(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
-    this.trackPlace(dt);
-    this.updateLoop(dt);
-    this.updateOmens(dt);
-    this.updateCombat(dt);
-    this.updateChallenges(dt);
-    this.updateSpits(dt);
+    if (below) {
+      this.trackPlace(dt);
+      this.updateLoop(dt);
+      this.updateOmens(dt);
+      this.updateCombat(dt);
+      this.updateChallenges(dt);
+      this.updateSpits(dt);
+    } else {
+      this.skyGate();
+      this.sky!.update(dt);
+    }
     this.pickups.update(dt, solid);
-    this.chestViews.update(dt, this.player.keys);
+    if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);
     this.missileView.update(this.missiles.list);
@@ -3175,7 +3427,7 @@ export class Game {
   }
 
   /** Fading between runs (R): the world is frozen and the screen goes dark. */
-  get transitioning() { return this.restartT > 0 || this.revealT >= 0; }
+  get transitioning() { return this.restartT > 0 || this.revealT >= 0 || this.gate.busy; }
 
   /** What the debug HUD shows. */
   get debug() {
@@ -3191,6 +3443,7 @@ export class Game {
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
       held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : isFlask(c) ? c.potion : c.name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
+      realm: this.below ? 'dungeon' : `sky · ${this.sky!.set.world.stats().exceptions} exceptions · ${this.sky!.set.world.stats().cached} cached chunks`,
     };
   }
 }

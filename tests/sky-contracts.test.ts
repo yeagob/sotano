@@ -219,7 +219,7 @@ describe('sky stubs', () => {
     // The graph helpers are built (C0): the floor stub's one seat is found, with no links (tests/sky-creatures.test.ts covers routes).
     expect(placeById(plan.graph, 0)).toBe(plan.graph.places[0]);
     expect(nearest(plan.graph, 128, 60, 128)).toBe(plan.graph.places[0]);
-    expect(route(plan.graph, 0, 0, ['walk'])[0]).toBe(0);
+    expect(route(plan.graph, 0, 0, ['walk'])![0]).toBe(0);
     expect(Array.isArray(linksOf(plan.graph, 0))).toBe(true);
     openGate(world, tree, 1);
     expect(STRATA.map(s => [s.y0, s.y1])).toEqual([[221, 420], [420, 700], [700, 980]]);
@@ -228,16 +228,17 @@ describe('sky stubs', () => {
     expect(plans.layout.shapes.length).toBeGreaterThan(0);
     new Threshold(host, buildTotality(() => new Rng(2), at)).update(1);
     expect(atmosphereAt('deck', 40).stars).toBe(0);
-    const stash = {} as RealmSet;
-    expect(swapRealm({} as RealmHost, stash, root, root)).toBe(stash);
-    expect(RealmGate.check('sky', at, null, { top: 426, floorOut: 4, deck: [128, 33, 128], crown: [0, 0, 0] })).toBeNull();
+    const stash = { kind: "dungeon" } as RealmSet;
+    const inert = { install() {}, current: () => stash, clearTransient() {}, hooks() {} } as RealmHost;
+    expect(swapRealm(inert, stash, root, root)).toBe(stash); // the real swap is tested in realm-swap.test.ts
+    expect(RealmGate.check('sky', { x: 128, y: 33, z: 128 }, null, { top: 426, floorOut: 4, deck: [128, 33, 128], crown: [0, 0, 0] })).toBeNull(); // the passages: realm-gate.test.ts
     const gate = new RealmGate({ fade: () => {}, pass: () => {}, ready: () => true });
     gate.update(1);
     expect(gate.busy).toBe(false);
-    const set = {} as SkyRealmSet;
-    const realm = SkyRealm.create(host, root, () => set);
+    const set = { world: {} } as unknown as SkyRealmSet; // a world object is enough to build the laws
+    const realm = SkyRealm.create({ ...host, actors: () => ({}), debris: () => ({ spawn: () => 0 }) } as unknown as SkyHost, root, () => set);
     expect(realm.set).toBe(set);
-    realm.update(1);
+    // realm.update needs a player: the passage and the frame are tested in realm-gate and sky-acceptance
     const entity = new SpikedEntity(1, at, { bounce: () => {} });
     expect(entity.body.y).toBe(2);
     new EntityView(root).sync(entity, 1);

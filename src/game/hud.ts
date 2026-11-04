@@ -326,6 +326,23 @@ export class Hud {
     this.depthEl.textContent = t(`level.${zone}` as MessageKey);
   }
 
+  /** The sky's place label, set every frame; the text only changes when the place does. */
+  placeLabel(key: MessageKey) {
+    const text = t(key);
+    if (this.depthEl.textContent !== text) this.depthEl.textContent = text;
+  }
+
+  /** The minimap maps rooms, so it is hidden in the sky. */
+  setMinimap(on: boolean) {
+    this.map.style.display = on ? '' : 'none';
+  }
+
+  /** The realm gate's fade, set each frame (0 clear → 1 black). At 0 the restart's own fade takes over again. */
+  fadeLevel(k: number) {
+    this.fadeEl.style.setProperty('--fade-t', '0s');
+    this.fadeEl.style.opacity = k > 0 ? String(k) : '';
+  }
+
   setFloor(floor: FloorResult, depth: number) {
     this.lastDepth = depth;
     this.depthEl.textContent = floorLabel(depth);

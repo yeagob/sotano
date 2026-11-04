@@ -22,6 +22,8 @@ async function boot() {
   // ?seed=ABCD-EFGH replays a run; without it every run is new
   const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
   initLanding(game);
+  // ?sky: the run starts on the sky's deck (docs/architecture/SKY.md §15; R2 adds the floors)
+  if (params.has('sky')) game.debugSky();
   // ?sandbox[=scenario]: the creative room; &lab runs the scenario's script and prints its report
   // (docs/architecture/SANDBOX.md)
   let sb: Record<string, unknown> | null = null;
