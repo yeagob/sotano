@@ -36,7 +36,7 @@ The ascent through Totality is divided into three distinct strata:
   - The blinding corona of the Sun fills the upper hemisphere. Golden light washes out shadows.
   - The platforms glow like incandescent glass and solar embers.
   - Distances between platforms stretch to their maximum, requiring full commitment to the $8\times$ leap.
-  - The final platform leads to the Sun's threshold, which stays closed in this build (decided, owner, 2026-11-03). [Unity](UNITY.md) is issue #95 and not built.
+  - The final platform leads to the Sun's threshold, which stays closed in this build (decided, owner, 2026-11-03). The threshold is built and moved to [built/levels/totality/THRESHOLD.md](../../built/levels/totality/THRESHOLD.md). [Unity](UNITY.md) is issue #95 and not built.
   - The Sun's warm light is an exception to art pillar 2 (warm light is earned and yours), provisional (owner, 2026-11-03). It is to be recorded in the sky art ledger, which is not written yet.
 
 ## 4. Platforming design and player feel
