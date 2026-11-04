@@ -19,7 +19,7 @@ Status: decided (owner, 2026-11-03) for the bottom revelation (the Spiked Entity
    - Meeting the entity unlocks a staircase carving upward through every floor to the surface.
    - Once unlocked, future runs feature an upward staircase directly from floor 0, the roots, offering an immediate route to the surface and the Giant Tree.
 3. **The Upward Journey to Unity**:
-   - The player ascends the Giant Tree, overcomes the five deities, earns the Triple Jump from the Horse, climbs through the cosmic void in [Totality](TOTALITY.md), and reaches the closed threshold of the Sun. [Unity](UNITY.md) is issue #95 and not built (decided, owner, 2026-11-03).
+   - The player ascends the Giant Tree, overcomes the five deities, earns the Triple Jump from the Horse, climbs through the cosmic void in [Totality](TOTALITY.md), and its last jump enters the Sun. [Unity](UNITY.md) is issue #95 and not built: entering activates it, and it does nothing yet (decided, owner, 2026-11-05).
 4. **The Solar Relic & Final Confrontation** (later, not in this build; no rematch, owner, 2026-11-03):
    - At the Sun, the player receives a solar artifact that grants the power to challenge and overcome the invulnerable Spiked Entity at the bottom of the world.
 

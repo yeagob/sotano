@@ -834,6 +834,7 @@ export class Game {
       fork: (...path) => this.rng.fork(...path),
       fx: (kind, x, y, z, n) => this.skyFx(kind, x, y, z, n),
       cue: (kind, x, y, z) => playSkyCue(kind, x, y, z),
+      enterUnity: () => this.sky?.enterUnity(),
       toast: (key, params) => this.hud.toast(key, params),
       card: (name, lines) => this.hud.presenceCard(name, lines),
       bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),

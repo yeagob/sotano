@@ -2,7 +2,7 @@
 //
 // Totality as the player meets it, with the game's fog and clear colour of the stratum (atmosphere.ts) and
 // the game's views (earth.ts, sun.ts): the Earth below the void, the Sun over the solar approach, and the
-// sealed gate of the threshold seen from its checkpoint, the way the player arrives at it. Unlit, like every
+// Sun's volume beyond the last checkpoint, the way the last jump meets it. Unlit, like every
 // block of the game. No randomness: the chain is the run's fork at a fixed seed.
 
 import * as THREE from 'three';
@@ -60,7 +60,7 @@ function solids(plan: TotalityPlan, root: THREE.Group) {
 }
 
 export function skyTotalityGallery(g: GalleryKit) {
-  g.head('Totality (×3): the Earth below the void, the Sun over the solar approach, the sealed gate');
+  g.head('Totality (×3): the Earth below the void, the Sun over the solar approach, the Sun\'s entrance');
 
   const r = g.row();
   g.fig(r, frame('totality', { x: 0, y: 520, z: 0 }, { x: 0, y: 220, z: -20 }, root => {
@@ -74,11 +74,16 @@ export function skyTotalityGallery(g: GalleryKit) {
   }), 'the Sun over the solar approach at 700: the one warmth that is not the player\'s');
 
   const plan = buildTotality((...path) => new Rng(hashPath(0x7e7, path)), { x: 128, y: 221, z: 128 });
-  const th = plan.threshold, last = plan.platforms[plan.platforms.length - 1];
-  const alongX = Math.abs(th.x - last.x) >= Math.abs(th.z - last.z);
-  const eye = alongX
-    ? { x: th.x - 10 * Math.sign(th.x - last.x), y: th.y + 2, z: th.z }
-    : { x: th.x, y: th.y + 2, z: th.z - 10 * Math.sign(th.z - last.z) };
-  g.fig(r, frame('totality', eye, { x: th.x, y: th.y + 2.5, z: th.z }, root => solids(plan, root)),
-    'the threshold from ten blocks back: the sealed light, six high, unbreakable');
+  const sun = plan.sun, last = plan.platforms[plan.platforms.length - 1];
+  const eye = { x: last.x, y: last.y + 2, z: last.z };
+  g.fig(r, frame('totality', eye, { x: sun.x, y: sun.y + 2.5, z: sun.z }, root => {
+    solids(plan, root);
+    // the Sun's volume, as the sphere the last jump enters (the disc of the view is camera-relative, sun.ts)
+    const volume = new THREE.Mesh(
+      new THREE.SphereGeometry(sun.r, 32, 24),
+      new THREE.MeshBasicMaterial({ color: palCss('sky.strata.corona'), fog: false }),
+    );
+    volume.position.set(sun.x, sun.y, sun.z);
+    root.add(volume);
+  }), 'the last checkpoint: the last jump enters the Sun\'s volume beyond it (Unity pending)');
 }

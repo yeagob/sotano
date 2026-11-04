@@ -244,8 +244,8 @@ export interface TotalityPlan {
   hops: Hop[];
   /** Place ids, every sixth platform. */
   checkpoints: number[];
-  /** The sealed gate of light, before the last checkpoint. */
-  threshold: { x: number; y: number; z: number; r: number };
+  /** The Sun's volume, beyond the last checkpoint: the last jump that enters it activates Unity (pending, issue #95). */
+  sun: { x: number; y: number; z: number; r: number };
 }
 
 /** Everything SkyRealm holds about the realm's shape (§3.3, B3). */
@@ -697,7 +697,7 @@ export interface AtmosphereSample {
   stars: number;
 }
 
-export interface ThresholdApi { update(dt: number): void; readonly touched: boolean }
+export interface ThresholdApi { update(dt: number): void; readonly entered: boolean }
 export type ThresholdCtor = new (host: SkyHost, plan: TotalityPlan) => ThresholdApi;
 
 export interface SkyViewApi { update(eye: Vec3, dt: number): void; dispose(): void }
@@ -722,6 +722,10 @@ export interface SkyRealmApi {
   /** 0 the deck, 1–5 a guardian floor, 6 Totality. */
   floorAt(y: number): number;
   readonly creatures: SkyCreaturesApi | null;
+  /** The player's last jump entered the Sun: the realm records it (Unity is pending, issue #95; nothing else happens yet). */
+  enterUnity(): void;
+  /** True once `enterUnity` has been called. */
+  readonly enteredUnity: boolean;
   dispose(): void;
 }
 export interface SkyRealmCtor { create(host: SkyHost, root: THREE.Group, makeSet: SkySetFactory): SkyRealmApi }
@@ -731,7 +735,7 @@ export interface SkyRealmCtor { create(host: SkyHost, root: THREE.Group, makeSet
 export type SkyFx = 'puff' | 'shimmer' | 'hit' | 'gold' | 'motes' | 'updraft' | 'gate' | 'pop' | 'bounce';
 
 export type CoreCue = 'puff' | 'shimmer' | 'regrow' | 'hit' | 'gate' | 'updraft' | 'pop' | 'gold' | 'grumble';
-export type TotalityCue = 'hum' | 'refuse';
+export type TotalityCue = 'hum';
 export type EntityCue = 'drone' | 'tink' | 'chord';
 /** An animal's part names its own sounds, one per telegraph of its document. */
 export type SkyCue = `core.${CoreCue}` | `${Animal}.${string}` | `totality.${TotalityCue}` | `entity.${EntityCue}`;
@@ -766,6 +770,8 @@ export interface SkyHost {
   /** Puff, shimmer, hit mark, telegraph motes. */
   fx(kind: SkyFx, x: number, y: number, z: number, n?: number): void;
   cue(kind: SkyCue, x: number, y: number, z: number): void;
+  /** The player's last jump entered the Sun's volume (Threshold): Unity is activated. Pending, issue #95; does nothing yet. */
+  enterUnity(): void;
   toast(key: MessageKey, params?: Params): void;
   card(name: MessageKey, lines: readonly MessageKey[]): void;
   /** The boss bar shows a deity's hits in gold. */

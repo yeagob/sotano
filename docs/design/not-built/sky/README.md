@@ -126,7 +126,7 @@ No sky material is flammable. A sky floor is neither a room nor a floor for item
 | [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, defeat by positive hits, tower rule, no health damage, capture and spirit (decided, owner, 2026-11-03); the koala and the horse teleport and the capture and spirit defaults (provisional); proposal for the rest of the contract |
 | [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule and the rule that minions never die decided |
 | [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal; no hindrance takes health (decided, owner, 2026-11-03); hindrances only push, slow or hold (provisional) |
-| [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics and ascent); the climb ends at the closed threshold of the Sun |
+| [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics and ascent); the last jump enters the Sun (owner, 2026-11-05) |
 | [Unity](../levels/UNITY.md) | Sky floor 7: the final destination occurring in the Sun | Decided (setting: The Sun); not built, issue #95 |
 
 ## 5. Open questions
