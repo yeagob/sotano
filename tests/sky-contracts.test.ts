@@ -219,7 +219,7 @@ describe('sky stubs', () => {
     // The graph helpers are built (C0): the floor stub's one seat is found, with no links (tests/sky-creatures.test.ts covers routes).
     expect(placeById(plan.graph, 0)).toBe(plan.graph.places[0]);
     expect(nearest(plan.graph, 128, 60, 128)).toBe(plan.graph.places[0]);
-    expect(route(plan.graph, 0, 0, ['walk'])[0]).toBe(0);
+    expect(route(plan.graph, 0, 0, ['walk'])?.[0]).toBe(0);
     expect(Array.isArray(linksOf(plan.graph, 0))).toBe(true);
     openGate(world, tree, 1);
     expect(STRATA.map(s => [s.y0, s.y1])).toEqual([[221, 420], [420, 700], [700, 980]]);
