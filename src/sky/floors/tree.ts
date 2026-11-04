@@ -88,6 +88,8 @@ export function buildSkyTree(_rng: Rng, floors: readonly SkyFloorPlan[] = []): S
   shapes.push({ k: 'ring', cx: W.x, cz: W.z, r0: 0, r1: W.r, y0: DECK_Y, y1: first.y0 - 1, m: AIR });
   shapes.push({ k: 'run', ax: cx + storeyRadius(1) + 2, ay: DECK_Y, az: W.z, bx: W.x + 2, by: DECK_Y, bz: W.z, w: 2, h: 3, m: AIR });
   shapes.push({ k: 'helix', cx: W.x, cz: W.z, r: W.r, w: 2, y0: DECK_Y, y1: first.y0 - 1, rise: 8, m: MAT.heartwood });
+  // the rim: one block of pale stone round the mouth on the hall's ground, the cells one out from its edge (owner, 2026-11-05; the height is provisional)
+  shapes.push({ k: 'ring', cx: W.x, cz: W.z, r0: W.r + 1, r1: W.r + 1, y0: first.y0, y1: first.y0, m: MAT.palestone });
 
   // the roof of the top hall
   shapes.push({ k: 'ring', cx, cz, r0: 0, r1: storeyRadius(BANDS.length), y0: BANDS[BANDS.length - 1].y1 + 1, y1: ROOF_TOP, m: MAT.heartwood });

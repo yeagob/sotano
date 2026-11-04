@@ -104,6 +104,23 @@ describe('the trunk and the deck', () => {
       expect(at(C + dx, 36, Z + dz), `seat ${dx},${dz}`).not.toBe(AIR);
     }
   });
+
+  it('rims the well mouth with one block of pale stone on the ground, one cell out from its edge, two clear of the seat', () => {
+    const rim: [number, number][] = [];
+    for (let dz = -W.r - 1; dz <= W.r + 1; dz++) for (let dx = -W.r - 1; dx <= W.r + 1; dx++) {
+      const x = W.x + dx, z = W.z + dz;
+      if (inDisc(W.r + 1, dx, dz) && !inDisc(W.r, dx, dz)) {
+        rim.push([x, z]);
+        expect(at(x, 36, z), `rim ${x},${z}`).toBe(MAT.palestone);
+      }
+      if (inDisc(W.r, dx, dz)) for (const y of [36, 37, 38]) expect(at(x, y, z), `mouth ${x},${y},${z}`).toBe(AIR);
+    }
+    expect(rim.length).toBe(28);
+    for (const [x, z] of rim) {
+      const gap = Math.max(Math.max(0, (C - 1) - x, x - (C + 1)), Math.max(0, (Z - 1) - z, z - (Z + 1)));
+      expect(gap, `rim ${x},${z} from the seat`).toBeGreaterThanOrEqual(2);
+    }
+  });
 });
 
 describe('the slabs and the membranes', () => {

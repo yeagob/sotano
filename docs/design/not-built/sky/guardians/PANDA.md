@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The giant panda is the first deity the player meets above the surface: a giant panda head on a small, soft plush body, over sky floor 1. It is the gentlest guardian and the one that teaches the sky's platforming.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the panda levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule (B2). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the panda levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule (B2), and that minions avoid the well's mouth (owner, 2026-11-05). The character, the mirror, the minions and the puzzle are proposals.
 
 ## 1. Who it is
 
@@ -138,6 +138,7 @@ The panda has four attacks. The first stage uses Bamboo toss and Heavy press. Th
   5. Chewing: it chews an original block in front of it over target 3 s, with visible bites, and the block regrows after 5 s. It never chews a player block.
   6. It never leaves the floor and never follows the player above the seat's height.
   7. During the panda's nap it walks at half pace.
+  8. **The well's mouth.** Decided (owner, 2026-11-05): a minion never steps into the foot well's mouth, the opening on the first hall's ground that the player climbs through. The mouth has a rim: one block of pale stone round it, on the same ground, one cell out from the mouth's edge. The rim's height is provisional (one block, to confirm with the owner).
 - **A positive intention:** each hit makes it sit and munch for target 1 s. After target 3 hits it turns into an ally, with a small happy roll. (Built projections convert at 5 good hits.)
 - **A negative intention:** goes out with a puff against its fur. Nothing changes.
 - **What an ally does:**
