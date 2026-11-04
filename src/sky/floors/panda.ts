@@ -13,6 +13,7 @@
 // one ledge per height, to the seat's top); the building path on the east side (eight 2 × 2 columns, each
 // two blocks higher, one placed cube per step, nests on the way); the Bamboo Seat (3 × 3, top at 24); two
 // bamboo clumps (minion spawns) on the ground on opposite sides; three nests at heights 0, 8 and 16.
+// The quarter at x 0..+8, z +4..+12 stays empty: the tree's foot well opens there (FOOT_WELL in tree.ts).
 //
 // Deviations from B6 are reported with the change: the soft stairs are not in this plan, and the floor
 // has twenty-four columns (sixteen gentle, eight building) where B6 says twelve to sixteen, because the

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { AIR, MAT } from '../src/content/materials';
 import { Rng } from '../src/core/rng';
 import { HALLS } from '../src/sky/atmosphere';
-import { buildSkyTree, DECK_Y, floorPlans, openGate, SKY_AXIS } from '../src/sky/floors/tree';
+import { buildSkyTree, DECK_Y, floorPlans, FOOT_WELL as W, openGate, SKY_AXIS } from '../src/sky/floors/tree';
 import { buildSkyLayout } from '../src/sky/layout';
 import { formulaAt } from '../src/sky/world/shape-index';
 import { SkyWorld } from '../src/sky/world/sky-world';
@@ -73,19 +73,35 @@ describe('the trunk and the deck', () => {
   it('has the arrival place on the deck and the foot door at the trunk', () => {
     expect([P.tree.deck.kind, P.tree.deck.y, P.tree.deck.x]).toEqual(['ground', DECK_Y, C]);
     expect(inDisc(48, P.tree.deck.x - C, P.tree.deck.z - Z)).toBe(true);
-    expect([P.tree.door.kind, P.tree.door.x, P.tree.door.z]).toEqual(['gate', C, Z]);
+    // the foot door is at the foot of the well, inside the trunk
+    expect([P.tree.door.kind, P.tree.door.x, P.tree.door.z]).toEqual(['gate', W.x, W.z]);
+    expect(inDisc(P.tree.trunkRadius(DECK_Y), W.x - C, W.z - Z)).toBe(true);
   });
 
   it('opens a three-high door through the foot wall, and a well up to hall 1 with a spiral of heartwood', () => {
-    expect([at(C + 20, DECK_Y, Z), at(C + 20, DECK_Y + 2, Z), at(C + 20, DECK_Y + 3, Z)]).toEqual([AIR, AIR, MAT.heartwood]);
-    for (const y of [DECK_Y, DECK_Y + 1, DECK_Y + 2, DECK_Y + 3, 36]) expect(at(C, y, Z), `well ${y}`).toBe(AIR);
+    expect([at(C + 20, DECK_Y, W.z), at(C + 20, DECK_Y + 2, W.z), at(C + 20, DECK_Y + 3, W.z)]).toEqual([AIR, AIR, MAT.heartwood]);
+    for (const y of [DECK_Y, DECK_Y + 1, DECK_Y + 2, DECK_Y + 3, 36]) expect(at(W.x, y, W.z), `well ${y}`).toBe(AIR);
     for (let y = DECK_Y; y < 36; y++) {
       let treads = 0;
       for (let dz = -4; dz <= 4; dz++) for (let dx = -4; dx <= 4; dx++) {
         const d2 = dx * dx + dz * dz;
-        if (d2 > 6 && d2 <= 20 && at(C + dx, y, Z + dz) === MAT.heartwood) treads++;
+        if (d2 > 6 && d2 <= 20 && at(W.x + dx, y, W.z + dz) === MAT.heartwood) treads++;
       }
       expect(treads, `tread at ${y}`).toBeGreaterThan(0);
+    }
+  });
+
+  it('opens the well into hall 1 beside the panda seat: a clear column of headroom 3 over its mouth, the seat on whole ground', () => {
+    const bad: number[][] = [];
+    for (let dz = -W.r; dz <= W.r; dz++) for (let dx = -W.r; dx <= W.r; dx++) {
+      if (!inDisc(W.r, dx, dz)) continue;
+      for (let y = 36; y < 39; y++) if (at(W.x + dx, y, W.z + dz) !== AIR) bad.push([W.x + dx, y, W.z + dz]);
+    }
+    expect(bad, 'the well mouth is clear').toEqual([]);
+    // the seat (3 × 3 at the centre) stands on the slab, not over the well
+    for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+      expect(at(C + dx, 35, Z + dz), `slab under the seat ${dx},${dz}`).toBe(MAT.heartwood);
+      expect(at(C + dx, 36, Z + dz), `seat ${dx},${dz}`).not.toBe(AIR);
     }
   });
 });
