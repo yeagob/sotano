@@ -81,6 +81,7 @@ Built by `src/sky/floors/tree.ts`, tested in `tests/sky-tree.test.ts`. The shape
 - **Deck:** a disc of cloud, radius 48, layers 29–31, walking surface 32. The arrival place is 40 out from the axis.
 - **Trunk:** heartwood walls and slabs, three thick. Its outer radius widens by storey: 26 (hall 1), 28, 30, 32, and 36 (hall 5 and the roof). Halls are air; each has four knot windows at eye height (ground + 1 and + 2), one each way through the wall.
 - **Way up of the deck:** a three-high door through the foot wall at 32–34, and a well of radius 4 up through the first slab, with a spiral of heartwood (rise 8, four treads) to hall 1's ground at 36.
+- **Rim of the well mouth:** one block of pale stone (`palestone`) on hall 1's ground, round the mouth. A pale stone ring, unruled: no ruling of its own, it uses the sky's existing pale stone (provisional, owner 2026-11-05).
 - **Way up of each floor:** a hole through the slab above its hall, closed on its bottom layer by a heartwood membrane (the disc of the floor's gate). `openGate(n)` writes the membrane to air.
 - **Roof:** heartwood at 218–220; the crown (Totality's first platform) stands at 221.
 
