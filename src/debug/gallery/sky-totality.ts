@@ -1,5 +1,84 @@
 // ?gallery=sky-totality (docs/architecture/SKY.md §11). Owned by: TT. Rulings: docs/art/sky/totality.md.
+//
+// Totality as the player meets it, with the game's fog and clear colour of the stratum (atmosphere.ts) and
+// the game's views (earth.ts, sun.ts): the Earth below the void, the Sun over the solar approach, and the
+// sealed gate of the threshold seen from its checkpoint, the way the player arrives at it. Unlit, like every
+// block of the game. No randomness: the chain is the run's fork at a fixed seed.
 
+import * as THREE from 'three';
+import { MATERIALS } from '../../content/materials';
+import { palCss, type PalToken } from '../../content/palette';
+import { Rng, hashPath } from '../../core/rng';
+import { atmosphereAt } from '../../sky/atmosphere';
+import { EarthView } from '../../sky/render/earth';
+import { SunView } from '../../sky/render/sun';
+import { buildTotality } from '../../sky/totality/chain';
+import type { SkyPlace, TotalityPlan, Vec3 } from '../../sky/types';
 import type { GalleryKit } from '../gallery';
 
-export function skyTotalityGallery(_g: GalleryKit) {}
+const W = 360, H = 240;
+
+/** A frame of Totality from `eye` looking at `look`, in `place`'s air at the eye's height, with `add` building the scene. */
+function frame(place: SkyPlace, eye: Vec3, look: Vec3, add: (root: THREE.Group) => void): HTMLCanvasElement {
+  const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
+  renderer.setSize(W, H, false);
+  const a = atmosphereAt(place, eye.y);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(a.clear);
+  scene.fog = new THREE.Fog(a.fog, a.near, a.far);
+  const root = new THREE.Group();
+  scene.add(root);
+  add(root);
+  const cam = new THREE.PerspectiveCamera(60, W / H, 0.1, 1200);
+  cam.position.set(eye.x, eye.y, eye.z);
+  cam.lookAt(look.x, look.y, look.z);
+  renderer.render(scene, cam);
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  out.getContext('2d')!.drawImage(renderer.domElement, 0, 0);
+  renderer.dispose();
+  return out;
+}
+
+/** The plan's solids near the threshold as unlit boxes in their material's base colour. */
+function solids(plan: TotalityPlan, root: THREE.Group) {
+  const last = plan.platforms[plan.platforms.length - 1];
+  for (const s of plan.shapes) {
+    if (s.k !== 'box') continue;
+    const near = Math.abs(s.x0 - last.x) < 14 && Math.abs(s.z0 - last.z) < 14 && s.y0 > last.y - 40;
+    if (!near) continue;
+    const def = MATERIALS.find(m => m.id === s.m);
+    if (!def) continue;
+    const size = [s.x1 - s.x0 + 1, s.y1 - s.y0 + 1, s.z1 - s.z0 + 1];
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(size[0], size[1], size[2]),
+      new THREE.MeshBasicMaterial({ color: palCss(`mat.${def.key}.base` as PalToken) }),
+    );
+    mesh.position.set(s.x0 + size[0] / 2, s.y0 + size[1] / 2, s.z0 + size[2] / 2);
+    root.add(mesh);
+  }
+}
+
+export function skyTotalityGallery(g: GalleryKit) {
+  g.head('Totality (×3): the Earth below the void, the Sun over the solar approach, the sealed gate');
+
+  const r = g.row();
+  g.fig(r, frame('totality', { x: 0, y: 520, z: 0 }, { x: 0, y: 220, z: -20 }, root => {
+    const earth = new EarthView(root);
+    earth.update({ x: 0, y: 520, z: 0 }, 0);
+  }), 'the Earth from the void at 520: a sphere below, its limb in thin air');
+
+  g.fig(r, frame('totality', { x: 0, y: 700, z: 0 }, { x: 0, y: 960, z: 0 }, root => {
+    const sun = new SunView(root);
+    sun.update({ x: 0, y: 700, z: 0 }, 0);
+  }), 'the Sun over the solar approach at 700: the one warmth that is not the player\'s');
+
+  const plan = buildTotality((...path) => new Rng(hashPath(0x7e7, path)), { x: 128, y: 221, z: 128 });
+  const th = plan.threshold, last = plan.platforms[plan.platforms.length - 1];
+  const alongX = Math.abs(th.x - last.x) >= Math.abs(th.z - last.z);
+  const eye = alongX
+    ? { x: th.x - 10 * Math.sign(th.x - last.x), y: th.y + 2, z: th.z }
+    : { x: th.x, y: th.y + 2, z: th.z - 10 * Math.sign(th.z - last.z) };
+  g.fig(r, frame('totality', eye, { x: th.x, y: th.y + 2.5, z: th.z }, root => solids(plan, root)),
+    'the threshold from ten blocks back: the sealed light, six high, unbreakable');
+}

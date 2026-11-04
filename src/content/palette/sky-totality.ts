@@ -10,4 +10,7 @@ export const SKY_TOTALITY_PALETTE = {
   'sky.strata.plum': '#2A1C2C',
   'sky.strata.dawn': '#7A5A6E',
   'sky.strata.corona': '#DCC497',
+  // the Earth seen from the void: its sea, and the thin air at its limb (src/sky/render/earth.ts)
+  'sky.earth.sea': '#2F6F8F',
+  'sky.earth.rim': '#9FD8F2',
 } as const;
