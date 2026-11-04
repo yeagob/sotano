@@ -206,9 +206,8 @@ describe('sky stubs', () => {
     effects.update(1);
     const creatures = new SkyCreatures(root, host, deps);
     expect([creatures.at(0, 0, 0, 1), creatures.targets().length, creatures.owns(1)]).toEqual([-1, 0, false]);
-    new Deity(actor, DEITIES.panda, plan, deps, host, new Rng(1)).update(1);
+    // Deity and puff are built (C0): tests/sky-creatures.test.ts drives them with a full host and actor.
     new Minion(actor, MINIONS.panda, plan, deps, host, new Rng(1)).update(1, null, []);
-    puff.at(at);
     knock.update(1);
     expect(stageOf(8, 24)).toBe(1);
     expect(stageOf(48, 24)).toBe(2);
@@ -217,8 +216,9 @@ describe('sky stubs', () => {
     new CreatureView(root).update(1, []);
     new EarthView(root).update(at, 1);
     new SunView(root).update(at, 1);
-    expect(placeById(plan.graph, 0)).toBeNull();
-    expect([linksOf(plan.graph, 0), nearest(plan.graph, 0, 0, 0), route(plan.graph, 0, 0, ['walk'])]).toEqual([[], null, null]);
+    // The graph helpers are built (C0): the floor stub's one seat is found, with no links (tests/sky-creatures.test.ts covers routes).
+    expect(placeById(plan.graph, 0)).toBe(plan.graph.places[0]);
+    expect([linksOf(plan.graph, 0), nearest(plan.graph, 0, 0, 0), route(plan.graph, 0, 0, ['walk'])]).toEqual([[], plan.graph.places[0], [0]]);
     openGate(world, tree, 1);
     expect(STRATA.map(s => [s.y0, s.y1])).toEqual([[221, 420], [420, 700], [700, 980]]);
     expect([stratumAt(300), reach(5), reach2(1)]).toEqual([null, undefined, undefined]);
