@@ -18,6 +18,8 @@ The elephant is wise and strong rather than cruel. Its floor is about carrying: 
 
 Sky floor 3, the middle of the five. The player arrives having learned to climb (panda) and to commit to a jump (koala). Here the floor moves: water and its currents make every route a question of direction.
 
+**The floor's name (provisional, to confirm).** *The channels* (Spanish: *Los canales*), the name the HUD shows on this floor. It follows the built level names, a short plain noun with its article (*The trunk*, *The leaves*, *The winds*), and it names what carries the player here.
+
 ## 3. Minions
 
 The minions are the elephant itself, embodied as smaller elephants of the herd. The shared rules are in [minions](../minions/README.md). This animal's minion, its movement and its character are below.
@@ -28,7 +30,7 @@ The minions are the elephant itself, embodied as smaller elephants of the herd. 
 
 ## 4. Arena and puzzle
 
-**The arena.** The floor is a set of channels cut into the blocks, with banks between them and a central pool. Water runs through the channels. Some channels are dry at the start, and water fills them when the elephant calls it.
+**The arena.** The floor is a stepped mountain of five rings rising to the elephant's Basin, a pool at its top and its centre. Channels run down from the Basin, switching back across the terraces, to the ground ring at the mountain's foot, where the herd's waterhole lies. Water runs through the channels. They are dry at the start, and water fills them when the elephant calls it. The layout is in B6 (provisional, to confirm).
 
 **The platforming.** Crossings over water, jumps from one bank to the next, and ledges above the channels. Water carries the player along the channel, so the route is a question of direction and timing.
 
@@ -62,13 +64,13 @@ A great grey head with ears like sails, floating over a high basin of water. Eve
 
 ### B2. The deity
 
-**Position.** The elephant's Basin is a round pool on a mesa at the top of the floor, target 30 blocks up, with a rim 2 blocks high round it. The elephant levitates (decided): it floats target 1 block over the water, its trunk reaching down into it.
+**Position.** The elephant's Basin is a round pool cut into the top of the mesa at the centre of the floor, with a rim 2 blocks high round it (B6). Its water line is target 26 blocks up (provisional, to confirm). The elephant levitates (decided): it floats target 1 block over the water, its trunk reaching down into it, so its small body hangs from 27 up and its head reaches about 30.
 
 **Teleport (provisional: no).** The elephant does not teleport; the koala and the horse do (owner, 2026-11-03, provisional).
 
 **The tower rule.** A tower of player blocks that brings the player to the elephant's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the elephant floats to it, sweeps the stack with its trunk, and pushes the player off, after the full warning. Raising one block against the rim's line, as in the example route, is not a tower.
 
-**The rim (the elephant's guard).** A positive intention fired from below the rim's top strikes the rim, which is a solid block, and stops on it ([attacks](../../../built/encounters/ATTACKS.md)). The small body is in line only from the top terrace, from a player block raised high enough, or from the air. The head, which rises above the rim, takes positive hits from lower, but only while the trunk is raised (in Trunk spray and Trumpet).
+**The rim (the elephant's guard).** A positive intention fired from below the rim's top strikes the rim, which is a solid block, and stops on it ([attacks](../../../built/encounters/ATTACKS.md)). The rim's top is at 28. The small body is in line only from the shore with one block raised under the player, from the tusk line's upper ledges (standing at 27 or higher), or from the air. The head, which rises above the rim, takes positive hits from the shore, but only while the trunk is raised (in Trunk spray and Trumpet). From the terraces below the shore the mesa's own edge hides the deity.
 
 **States and timings (targets).**
 
@@ -96,7 +98,7 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 
 **2. Trunk swat ([knockback](../abilities/KNOCKBACK.md)).**
 - *Telegraph (1.1 s):* the trunk lowers and swings back; dust lifts and the arc of the kick is drawn from the player's feet to where they will land.
-- *Act:* the player is sent target 3 blocks along the arc, away from the Basin. It reaches only the top two terraces (within target 7 blocks of the Basin).
+- *Act:* the player is sent target 3 blocks along the arc, away from the Basin. It reaches only the shore, the third terrace and the tusk line's last strip (within target 7 blocks of the rim).
 - *Answer:* step out of the arc's line, or stand with a block behind you (the kick stops at the first solid block). A positive intention on the lowered trunk during the telegraph turns the kick into a soft push of 1 block (proposal). The arc never ends over a drop that it did not show.
 
 **3. Memory stone (a lob).**
@@ -179,20 +181,20 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 - **Hit count:** target 36 positive hits.
 - **What counts:** a positive intention that touches the small body (in line over the rim) or the head while the trunk is raised.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the elephant's ears hang a little looser, as if a weight were set down. The sign is a target until the owner confirms it.
-- **Allies:** an ally standing in the waterhole on the ground answers the deity's trumpet with its own, adding one positive hit every target 6 s. Allies cannot climb, so their help comes from below. At most target 3 count at once.
+- **Allies:** an ally standing in the waterhole on the ground ring answers the deity's trumpet with its own, adding one positive hit every target 6 s. Allies cannot climb, so their help comes from below. At most target 3 count at once.
 - **When defeated:** as proposed in section 6 of this document (it sets its weight down, and the water drains from the channels). It changes its attitude (provisional, owner, 2026-11-03).
 
 ### B5. Minions
 
 - **How many:** at most target 5 on the floor, a herd, allies included. At most target 3 hostile.
-- **Spawn:** from the waterhole, the central pool at the bottom. Bubbles rise and a low rumble grows for target 2 s, and a young elephant wades out. One every target 15 s while fewer than 3 are hostile.
+- **Spawn:** from the waterhole, the herd's pool on the ground ring at the mountain's foot (B6). Bubbles rise and a low rumble grows for target 2 s, and a young elephant wades out. One every target 15 s while fewer than 3 are hostile.
 - **Movement (the elephant's own):**
   - walks heavily at a steady target 2 blocks a second that never changes, in water or out;
-  - walks in file: the herd follows the oldest minion, nose to tail, along the banks of the two lowest terraces;
+  - walks in file: the herd follows the oldest minion, nose to tail, along the ground ring and the first terrace and their channel banks, and crosses between the two up a dry channel's stair;
   - steps up at most 1 block and never climbs a ledge higher than that;
   - never steps onto a player block.
 - **Behaviour rules:**
-  1. It does not climb above the second terrace, so going up is always an escape.
+  1. It does not climb above the first terrace, so going up is always an escape.
   2. Protective: when the player stands in the herd's path or between two minions, the nearest one flaps its ears (telegraph target 1.1 s) and shoulders the player aside, target 2 blocks, away from the herd.
   3. When the player keeps out of the herd's path, the herd walks by.
   4. Spray: a minion that reaches a channel's foot sprays water up it for target 3 s (the same telegraph as the deity's spray, smaller: the trunk lifts, the arrows ripple).
@@ -201,24 +203,58 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 - **A positive intention:** each hit makes it flap its ears slowly and lower its head. After target 5 hits it turns ally; the elephant is the heaviest minion to turn.
 - **A negative intention:** goes out with a puff against its hide. Nothing changes.
 - **What an ally does:**
-  - *Hold:* it stands across a channel's bed on the lower terraces and holds the water back like a dam, while it stays.
+  - *Hold:* it stands across a channel's bed on the ground ring or the first terrace and holds the water back like a dam, while it stays.
   - *Clear:* it steps in front of a hostile minion about to push the player and takes the push itself.
-  - *Carry:* a player who stands in front of an ally is lifted by its trunk one terrace up (target 3 blocks), once every target 6 s.
+  - *Carry:* a player who stands in front of an ally is lifted by its trunk one terrace up (target 6 blocks, one wall), once every target 6 s. An ally on the ground lifts to the first terrace, one on the first terrace to the second.
   - *Help:* it stands in the waterhole and adds positive hits (B4).
 - **Without minions:** if the owner makes this a platforming-only floor, the herd is removed and the rim stays; the floor is then won by climbing alone.
 
 ### B6. Platforming layout (rules)
 
-- **Size:** target 48 blocks across (radius 24) and 34 blocks high.
-- **Terraces:** five rings rising toward the centre: the ground (with the waterhole, radius 6, 3 blocks deep), then terraces at 6, 12, 18 and 24, each target 4 blocks wide. The Basin's mesa (radius 4) rises to 30. Terrace walls are 6 blocks high, too high to jump.
-- **Channels:** target 4 channels run from the Basin down to the waterhole, switching back across the terraces. Each bed is 1 block wide and is a stair of one-block steps: when dry it is the way up; when wet its current carries the player down.
-- **Banks:** each channel runs between banks 2 blocks above its bed. Every target 6 blocks a bank has a cut, a one-block step, so the player can climb out of the bed onto a bank.
-- **Dams:** one block across a bed stops the water there. A player who climbs a bed builds a staircase of dams as they go: each dam keeps the stretch below it dry.
-- **Water:** channels are 1 block deep, so nobody swims or drowns in them. Only the waterhole is deep enough to swim ([swimming](../../../built/player/SWIMMING.md)).
-- **Straight up:** one radial line, the tusk line, has one-block ledges staggered up every terrace wall and the Basin's mesa. It is dry and never carries water. Trunk swat and Trumpet reach its top.
-- **Nests:** target 5, one on each terrace by a channel's head, each with 3 cubes.
+Status: provisional, to confirm (design pass, 2026-11-04). The first build of this floor found that the earlier rules put both the waterhole and the Basin at the centre, gave the waterhole no ring it fitted in, and counted the hall's height two ways. This layout resolves all three; the resolutions and the owner's words each one keeps are listed after the rules. Every number is a target.
 
-**Example route.** Leave the ground by a dry channel bed. When the arrows ripple in it, step onto the bank through the nearest cut. Take a cube from the nest at 6 and dam the bed just above you, then climb the dry stretch. Turn a minion into an ally on the way and let it lift you a terrace. Keep moving so Memory stone falls behind you. On the top terrace, raise one block against the rim's line and land positive hits on the small body over the rim during its drink.
+**How heights are counted.** Heights are in blocks from the hall's ground: height 0 is the first row above the slab below (realm row 110). A surface "at height h" is one the player stands on at h; its top block is at h − 1.
+
+- **Size:** target 48 blocks across (radius 24) and 34 blocks high: the floor's blocks fill heights 0 to 33 (rows 110 to 143). Above them the hall keeps 4 rows of headroom, heights 34 to 37 (rows 144 to 147), under the slab of the next floor. The hall is 38 rows in all ([sky architecture, section 7.1](../../../../architecture/SKY.md)).
+- **The base:** a disc of pale stone over the whole floor, 2 blocks thick (heights 0 and 1), so the ground is at height 2. The waterhole is cut into the base and never into the slab, which is heartwood and stays whole.
+- **Five rings rising toward the centre.** Each ring is a disc of one height; each wall between two rings is 6 blocks high, too high to jump.
+
+| Ring | Radius (from the axis) | Surface at | What is on it |
+|---|---|---|---|
+| The ground ring | 19 to 24 | 2 | The waterhole, the herd, the channels' feet, the tusk line's first strip |
+| The first terrace | 15 to 18 | 8 | Channel stairs; the highest ring the herd walks |
+| The second terrace | 11 to 14 | 14 | Channel stairs |
+| The third terrace | 7 to 10 | 20 | Channel stairs; Trunk swat reaches it |
+| The Basin's mesa | 0 to 6 | 26 | The shore (radius 5 to 6), the rim (radius 4), the pool (radius 0 to 3) |
+
+- **The Basin:** a pool of radius 3 cut 2 blocks deep into the mesa's top. Its water line is at 26, level with the shore. The rim is a ring one block thick at radius 4, 2 blocks high (its top at 28). Over each channel's head the rim has a spout: a culvert one block high at the water line, under the rim's upper row, so the rim's line stays whole. The Basin's water stays in the Basin; a channel fills only when the elephant or a minion calls the current (B3, B5).
+- **The waterhole:** a pool of radius 2, 2 blocks deep, cut through the base on the ground ring, centred about 21 blocks from the axis on the diagonal opposite the tusk line. Its surface is level with the ground. Its water is part of the floor and always there. It is the only water deep enough to swim ([swimming](../../../built/player/SWIMMING.md)).
+- **Channels:** target 4, one from each spout, the spouts on the four axes. A channel runs down the rings as a chain of straight stretches, each along one axis: across the shore (2 blocks); then, at each wall, a **stair stretch** of 6 one-block steps running along the foot of the wall, from the upper ring's surface down to the lower one's; between two stairs, a **level stretch** across the terrace to its outer edge. Each stair turns back the opposite way from the one above (the switchback), so a channel stays within target 7 blocks of its axis. A channel falls 24 blocks (26 to 2) in four stairs and ends on the ground ring. When dry, a bed is the way up; when wet, its current carries the player down.
+- **Troughs and banks:** every stretch is a trough three blocks wide: a bed 1 block wide between two banks 2 blocks above it. A stair stretch is solid down to the ring below. Along its six blocks it takes three of the terrace's four blocks of width; the rest of each terrace stays open. Every target 6 blocks a bank has a cut, a one-block step, so the player can climb out of the bed onto a bank, or cross the trough from cut to cut.
+- **Dams:** one block across a bed stops the water there. A player who climbs a bed builds a staircase of dams as they go: each dam keeps the stretch below it dry.
+- **Water:** channels are 1 block deep, so nobody swims or drowns in them. Only the waterhole is deep enough to swim.
+- **Straight up: the tusk line.** One dry radial line on the diagonal between two channels, opposite the waterhole. It is five ledge strips (one-block ledges, one per height, turning round a 2 × 2 square): one against the foot of each wall (ledges at heights 2 to 7, 8 to 13, 14 to 19 and 20 to 25), and the last standing on the shore, from 26 to 33, under the way up to floor 4. From its top ledge the player stands at 34 with 4 rows of headroom. It never carries water, and the channels keep target 2 blocks clear of it. Trunk swat and Trumpet reach its last strip. From that strip's upper ledges (standing at 27 or higher) the small body is in line over the rim.
+- **Nests:** target 5, one on each ring, beside a channel and never in a bed, each with 3 cubes. The shore's nest sits by the tusk line's last strip and gives the block that lifts the player over the rim's line.
+- **The arrival (to confirm with the sky tree).** The way up from the koala's floor comes through the slab about 14 blocks from the axis, under the terraces. That column stays clear: a shaft of air as wide as the way up, through the base and the rings above it, with the way up's ledges continued to the surface the shaft reaches.
+
+**How it is built.** Only the sky world's shape kinds ([sky architecture, section 3.3](../../../../architecture/SKY.md)), applied in this order:
+
+| Element | Shapes |
+|---|---|
+| Base, terraces, mesa | One `ring` disc each (inner radius 0), from the base up: radius 24 at heights 0–1, 18 at 2–7, 14 at 8–13, 10 at 14–19, 6 at 20–25 |
+| The Basin | An air `ring` disc of radius 3 at heights 24–25, then a water `elem` box over it; the rim a `ring` of radius 4 to 4 at heights 26–27; each spout an air `box` of one cell at height 26 |
+| The waterhole | An air `ring` disc of radius 2 at heights 0–1 on its centre, then a water `elem` box over it |
+| Each stretch of a channel | Three `run`s along one axis: the bed and its two banks. A stair's runs fall one block per step, and their height reaches down to the ring below, so the stair is solid; a bank's run is 2 blocks taller than the bed's |
+| Bank cuts | An air `box` of one cell on a bank's top row |
+| The tusk line | Five `ledges` strips |
+
+**Example route.** Leave the ground ring by a dry channel's stair. When the arrows ripple in it, step onto the bank through the nearest cut. Take a cube from the first terrace's nest and dam the bed just above you, then climb the dry stretch. Turn a minion into an ally on the way and let it lift you a terrace. Keep moving so Memory stone falls behind you. On the shore, raise one block against the rim's line and land positive hits on the small body over the rim during its drink.
+
+**Resolutions (provisional, to confirm).** The numbers the first rules gave were proposals, not the owner's; these resolutions change only proposals.
+
+1. **One centre: the Basin at the top.** The Basin's mesa stays at the centre of the floor and at its top, and the waterhole leaves the centre for the ground ring at the mountain's foot. The deity, its rim and every attack were written around a central Basin, so this choice changes the least. Keeps the owner's words: the elephant levitates over its place (decided), the tower rule (decided), and the water currents, instantiated water that pushes and carries the player (the owner's hindrance).
+2. **Rings that fit.** The rings rise toward the Basin, which they now meet. To give the waterhole room, the floor has three terraces instead of four, so the ground ring is 6 blocks wide (19 to 24), and the waterhole shrinks to radius 2. The ground stands on a 2-block base, so the waterhole is deep enough to swim without cutting the slab. The channels still run from the Basin to the ground, with their dams; the tusk line still goes straight up. Keeps the owner's words: every floor can be passed with nothing and leaves a route straight up ([laws 3.4 and 3.5](../README.md#34-each-floor-can-be-passed-with-nothing)), and the way up opens over that route only when the deity is won (decided).
+3. **One height: 34 blocks and 4 of headroom.** The sky architecture's hall ground (110) and hall top (147) are both rows of the hall: 38 rows, which is 34 plus 4. The 37 was the difference between the two, not a count, so nothing in the architecture changes. The floor's blocks fill rows 110 to 143. Keeps the owner's words: the only way up is inside the tree ([law 3.8](../README.md#38-the-only-way-up-is-inside-the-tree)), through the way up over the tusk line.
 
 ### B7. Hindrances used
 
@@ -229,8 +265,8 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 
 ### B8. Routes
 
-- **With nothing:** the tusk line reaches the top terrace with jumps alone, and the nests give enough blocks to see over the rim. A player with no practices can also win slowly from below with three allies in the waterhole.
-- **With practices:** carrying more blocks builds a whole dam staircase in one trip; a higher jump clears the bank cuts and the rim's line; swimming or water practices make the currents a ride up instead of a fall; a longer range or a lob-shaped shot reaches the body over the rim from lower terraces.
+- **With nothing:** the tusk line reaches the shore and its own upper ledges with one-block jumps alone, and from there the small body is in line over the rim. The dry channel stairs are a second way up, and the shore's nest gives the one block that lifts the player over the rim's line. A player with no practices can also win slowly from below with three allies in the waterhole.
+- **With practices:** carrying more blocks builds a whole dam staircase in one trip; a higher jump clears the bank cuts and the rim's line; swimming or water practices make the currents a ride up instead of a fall; a longer range or a lob-shaped shot reaches the body over the rim from the third terrace.
 
 ### B9. Targets at a glance
 
@@ -245,7 +281,13 @@ Every value in the middle column is a target. The right column is the built game
 | Positive hits | 36 | 229 health: about 65 bad hits |
 | Hits to turn a minion | 5 | 5 good hits for a projection |
 | Minions at once | 5 (3 hostile) | no built equivalent |
-| Floor size | radius 24, 34 high | trunk story 22 high |
+| Floor size | radius 24, 34 high (rows 110 to 143), 4 rows of headroom (hall 110 to 147) | trunk story 22 high |
+| Rings | ground 2, terraces 8, 14, 20, the Basin's shore 26; walls 6 | no built equivalent |
+| The Basin | pool radius 3, water line 26, rim top 28; the deity floats 1 over the water | no built equivalent |
+| The waterhole | radius 2, 2 deep, on the ground ring | water: wade at 60% of pace |
+| Channels | 4, each four stairs of 6 one-block steps, bed 1 wide, banks 2 above, a cut every 6 | no built equivalent |
+| The tusk line | five ledge strips, top ledge at 33 (the player stands at 34) | no built equivalent |
+| Carry by an ally | one terrace, 6 blocks | no built equivalent |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 | Special attacks (provisional) | 6: 3 drain spirit (10, 12, 14 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
 | Special telegraphs | 1.1 s to slow or move, 1.3 s to drain, 1.6 s to capture | windup 0.4 to 0.9 s |
@@ -259,7 +301,7 @@ Every value in the middle column is a target. The right column is the built game
 5. Memory. The elephant aims its spray and its stone at the place the player stood longest in the last 10 s. Does that read as the mirror of carrying an old weight, or as a punishment for resting, which the panda's floor rewards?
 6. The rim. Shots from below the rim stop on it. Is a guard made of a solid block right, or should the body always be in line?
 7. The trunk lift. An ally lifts the player one terrace. Is a carry by an ally allowed here? (The same question is asked for the horse.)
-8. Allies far away. Allies in the waterhole add positive hits from the ground, 30 blocks below the deity. Is help at a distance acceptable?
+8. Allies far away. Allies in the waterhole add positive hits from the ground, about 25 blocks below the deity. Is help at a distance acceptable?
 9. Currents and minions. The herd wades without slowing and is not carried by the currents. The abilities folder leaves this open ([water currents](../abilities/WATER-CURRENTS.md)).
 10. Teleport (answered, provisional: no). The elephant does not teleport.
 11. When the elephant is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
@@ -267,3 +309,9 @@ Every value in the middle column is a target. The right column is the built game
 13. Memory and spirit. Dust bath aims at the remembered place, like Memory stone and Trunk spray. Is a drain that punishes resting right on the floor after the panda's, which rewards it?
 14. Heavy water carries the mirror (mourning, an old weight) as a drain on a player who stays in a channel bed. Is mourning a habit the owner wants a deity to attack with, or should it stay in the defeat (the weight set down)?
 15. Ear fan and Mud wallow use [wind](../abilities/WIND.md) and [dense ground](../abilities/DENSE-GROUND.md), which the abilities folder proposes for other animals. Keep them, or replace them?
+16. The centre (provisional, to confirm). B6 puts the Basin at the top and the centre, and the waterhole at the mountain's foot. The other choice is a bowl: the waterhole at the centre and the bottom, the rings rising outward to the hall's wall, and the Basin on the top ring at one side. Which does the owner want?
+17. The waterhole's size (provisional, to confirm). To fit on the ground ring it shrinks from radius 6 to radius 2, 2 deep. Is a small pool enough to read as the herd's waterhole?
+18. Three terraces (provisional, to confirm). The floor has three terraces between the ground and the Basin instead of four, so the ground ring has room. Is that the right trade?
+19. The tusk line's top (provisional, to confirm). The tusk line climbs past the shore to 34, under the way up, so from its upper ledges the small body is in line over the rim. That makes the with-nothing route a straight climb. Is that too easy a view of the guarded body?
+20. The arrival (for the sky tree, to confirm). The way up from the koala's floor comes through the slab under the terraces. Does the sky tree carve the arrival shaft, or does this floor?
+21. The floor's name (provisional, to confirm). *The channels* (Spanish: *Los canales*).
