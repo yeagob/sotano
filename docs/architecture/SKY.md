@@ -617,7 +617,7 @@ export interface SkyFloorPlan {
 | Lion | `lion.ts` | An open plain; 12–16 flat rocks (3 × 3 to 6 × 6) from 4 to 30, neighbours 1–3 apart; gaps of 2, 3 with a drop, or 4–5 on the nerve line; the long route; the Sunning Ledge (6 × 6 at 34); the thorn tree's spiral steps; six nests before the 4–5 gaps; two shade rocks |
 | Horse | `horse.ts` | A meadow of radius 30; six fenced paddocks (5 × 5, heights 0–12, 12–20 apart); runs of segments (3 × 2, +1 every two, gaps 1–2); every fourth segment fixed with a hitching post; the central mast with rungs to the gate, its fixed spoke to the nearest paddock; four nests on fixed segments; the paddock gate |
 
-**The way up opens only when the floor's deity is won** (owner decision 7): the membrane is heartwood until `tree.openGate(n)` writes it to air with `setStory`, with a slow opening and a chime (`toast.gateOpens`). The horse's gift must therefore come before Totality, as the design requires. Falling down through an open way up lands on the floor below.
+**The way up opens only when the floor's deity is won** (owner decision 7): the membrane is heartwood until `tree.openGate(n)` writes it to air with `setStory`, with a slow opening and a chime (`toast.gateOpens`). `SkyRealm` sets the creatures' `onWon` to `openGate` for the floor of the won deity (`src/sky/sky-realm.ts`; `tests/sky-realm-gate-open.test.ts`). A new run disposes the sky, so every run starts with its membranes closed. The horse's gift must therefore come before Totality, as the design requires. Falling down through an open way up lands on the floor below.
 
 ### 7.3 What every generator guarantees
 
