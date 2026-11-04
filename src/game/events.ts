@@ -93,8 +93,8 @@ export interface GameEvents {
   /** About to jump. Change `velocity` for higher jumps, or cancel. `air` is the jump's step on the
    *  ladder when it is made in the air (1 = the first air jump, 2 = the second; absent on the ground). */
   jump: { velocity: number; air?: number };
-  /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor. */
-  land: { fallSpeed: number; cause: 'fall' | 'descent'; x: number; y: number; z: number };
+  /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor, 'sky' in the sky. */
+  land: { fallSpeed: number; cause: 'fall' | 'descent' | 'sky'; x: number; y: number; z: number };
 
   // ── actors (the player and projections; docs/architecture/ACTORS.md) ──
   // Hooks on actorDamage, contact and actorDeath must say which actors they are for

@@ -149,6 +149,14 @@ export class Enemies {
     this.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
   }
 
+  /** The hazards of this set's projections (the sky's set has its own; SkyHost.hazards reads it). */
+  get hazardField(): Hazards { return this.hazards; }
+
+  /** Drops the hazards of every actor of the active realm (a passage between worlds). */
+  clearHazards() {
+    for (const a of this.host.actors()) this.hazards.clear(a.id);
+  }
+
   spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
     const e: Enemy = {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, scale: 1, speed, contactDamage, tags,

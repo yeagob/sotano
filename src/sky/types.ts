@@ -757,6 +757,8 @@ export type ItemId = string;
 export interface SkyHost {
   time(): number;
   player(): SkyPlayer;
+  /** The run's one registry (R1 contract addition: CreatureDeps needs it; sky actors register with realm 'sky'). */
+  actors(): ActorRegistry;
   world(): SkyWorldApi;
   debris(): DebrisSystem;
   hazards(): Hazards;
