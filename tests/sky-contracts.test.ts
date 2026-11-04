@@ -202,7 +202,7 @@ describe('sky stubs', () => {
     new Updraft(host, []).update(1);
     new OutsideWatch(host, tree, () => {}).update(1);
     runner.update(1);
-    expect(runner.start(HINDRANCES.wind, { from: at, to: at, radius: 1, strength: 1, seconds: 1 }, 1, 0)).toBe(-1);
+    expect(runner.active()).toEqual([]);
     effects.update(1);
     const creatures = new SkyCreatures(root, host, deps);
     expect([creatures.at(0, 0, 0, 1), creatures.targets().length, creatures.owns(1)]).toEqual([-1, 0, false]);

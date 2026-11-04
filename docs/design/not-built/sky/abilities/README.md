@@ -6,6 +6,8 @@ The abilities are the hindrances the sky's animals use against the player: a kic
 
 The animals hinder the player (owner direction). Each hindrance is a puzzle to answer, and the player always keeps a route up (rule 5 below).
 
+Built so far: the kick and the gust, with the rules they share ([built/sky/abilities](../../../built/sky/abilities/README.md)). Their documents below keep the parts not built yet.
+
 Status: proposal. The rule that platforms which disappear always warn first is decided, and it is the model for every hindrance. No hindrance takes the player's health (decided, owner, 2026-11-03); hindrances only push, slow or hold the player (provisional, to confirm).
 
 ## 1. The shared rules
