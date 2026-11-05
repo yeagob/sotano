@@ -1,11 +1,15 @@
 // Far views (docs/architecture/SKY.md §11): a view that hangs farther than the camera's comfortable reach is drawn
-// on the same line at FAR_DRAW, scaled down by the same factor, so its angular size is kept and the camera's far
-// plane never clips it. Views are backdrops: their materials never write depth, and they draw before the blocks.
+// on the same line at FAR_DRAW, scaled down by the same factor, so its angular size is kept and its centre stays
+// inside the camera's far plane. Views are backdrops: their materials never write depth, and they draw before the blocks.
 
 import type * as THREE from 'three';
 import type { Vec3 } from '../types';
 
-/** Past this distance (blocks) a view is drawn at this distance, scaled to keep its angular size. */
+/**
+ * Past this distance (blocks) a view is drawn at this distance, scaled to keep its angular size. The camera's far plane
+ * (200 in game) bounds the group's centre, which stays at most this far from the eye. A view's radius adds to that: a
+ * sphere whose corona is 90 can reach past 200 at its far edge, but its visible front is inside.
+ */
 export const FAR_DRAW = 150;
 
 /**

@@ -66,7 +66,7 @@ import {
   type OutsideWatchCtor, type OwnershipCtor, type PuffCtor, type RealmGateCtor, type RealmHost, type RealmSet,
   type RegrowthCtor, type SkyCreaturesCtor, type SkyEffectsCtor, type SkyHost, type SkyRealmCtor, type SkyRealmSet,
   type SkyActor, type SkyViewCtor, type SkyWorldApi, type SpikedEntityCtor, type SunViewCtor, type SwapRealm, type ThresholdCtor,
-  type TowerKnockCtor, type TowerUnder, type UpdraftCtor,
+  type TowerKnockCtor, type TowerUnder, type UpdraftCtor, type Vec3,
 } from '../src/sky/types';
 import { createBus, type GameBus } from '../src/game/events';
 import type { Body } from '../src/physics/voxel-collide';
@@ -254,17 +254,26 @@ describe('sky stubs', () => {
   });
 });
 
+/** A sky realm whose root is `root`: its creatures' holders come first, then the Earth and the Sun (added last). */
+function viewRealm(root: THREE.Group): SkyRealm {
+  const actors = new ActorRegistry();
+  actors.setRealm('sky');
+  const host = { fork: () => new Rng(7), actors: () => actors, debris: () => ({ spawn: () => 0 }) } as unknown as SkyHost;
+  return SkyRealm.create(host, root, () => ({ world: {} }) as unknown as SkyRealmSet);
+}
+
 describe('far views: the Earth and the Sun in view (SKY.md §11)', () => {
   const eye = { x: 5, y: 600, z: -3 };
   const dir = { x: 0.6, y: 0.8, z: 0 }; // a unit vector: the line from the eye
 
-  it('placeFar keeps the angular size, keeps the line, and stays inside 200 at any distance', () => {
+  it('placeFar keeps the angular size, keeps the line, and keeps the centre inside 200 at any distance', () => {
     for (const d of [20, FAR_DRAW, FAR_DRAW + 1, 300, 900]) {
       const g = new THREE.Group();
       const centre = { x: eye.x + dir.x * d, y: eye.y + dir.y * d, z: eye.z + dir.z * d };
       const drawn = placeFar(g, eye, centre, 30);
       const p = g.position;
       const along = Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z);
+      // the centre only: a view's radius may reach past 200 (the corona's 90 adds to it), and its visible front is fine
       expect(along, `distance ${d}`).toBeLessThanOrEqual(Math.min(d, FAR_DRAW) + 1e-9);
       expect(along).toBeLessThan(200);
       expect((p.x - eye.x) / along).toBeCloseTo(dir.x);
@@ -311,6 +320,40 @@ describe('far views: the Earth and the Sun in view (SKY.md §11)', () => {
       expect((m.material as THREE.Material).depthWrite).toBe(false);
     });
     earth.dispose();
+  });
+
+  it('the Earth whose centre hangs 300 below the eye is drawn 150 below it, at half scale', () => {
+    const root = new THREE.Group();
+    const earth = new EarthView(root);
+    const group = root.children[0];
+    earth.update({ x: 5, y: 550, z: -3 }, 0);
+    expect(group.position.x).toBeCloseTo(5);
+    expect(group.position.y).toBeCloseTo(400);
+    expect(group.position.z).toBeCloseTo(-3);
+    expect(group.scale.x).toBeCloseTo(0.5);
+    earth.dispose();
+  });
+
+  it('atmosphere() shows the Earth from 380 to 720 and the Sun from 640 up, each placed from the eye', () => {
+    const root = new THREE.Group();
+    const realm = viewRealm(root);
+    const [earth, sun] = root.children.slice(-2);
+    const { x, y, z } = realm.plans.totality.sun;
+    expect(y).toBeGreaterThanOrEqual(640);
+    const color = new THREE.Color();
+    const fog = new THREE.Fog('black', 1, 100);
+    const stars = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial());
+    const air = (e: Vec3) => realm.atmosphere(e, color, fog, stars);
+
+    air({ x: x - 40, y: 300, z });
+    expect([earth.visible, sun.visible]).toEqual([false, false]);
+    air({ x: 5, y: 550, z: -3 });
+    expect([earth.visible, sun.visible]).toEqual([true, false]);
+    air({ x: x - 40, y, z });
+    expect(sun.visible).toBe(true);
+    expect([sun.position.x, sun.position.y, sun.position.z]).toEqual([x, y, z]);
+    expect(sun.scale.x).toBe(1);
+    realm.dispose();
   });
 });
 

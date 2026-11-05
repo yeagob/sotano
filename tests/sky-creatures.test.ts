@@ -388,6 +388,7 @@ describe('parking and the touch provider (SKY.md §5.2, §5.7)', () => {
     const r = rig({ rest: [100, 100, 100] });
     r.creatures.dispose();
     expect(r.actors.get(r.actor.id)).toBeUndefined();
+    expect([...r.actors.all()].filter(a => a.kind === 'sky')).toEqual([]);
     expect(r.creatures.owns(r.actor.id)).toBe(false);
     expect(r.creatures.all()).toEqual([]);
   });
@@ -432,7 +433,7 @@ describe('the floor graph (SKY.md §5.6)', () => {
 });
 
 /** A sky realm headless: a real layout and world, the player well away, and the host calls the realm makes as no-ops. */
-function newRealm(): SkyRealm {
+function newRealm(seed = 1): SkyRealm {
   const actors = new ActorRegistry();
   actors.setRealm('sky');
   const noop = () => {};
@@ -442,7 +443,7 @@ function newRealm(): SkyRealm {
     player: () => ({ body: player, eye: { x: 0, y: 0, z: 0 }, aim: { x: 1, y: 0, z: 0 }, hand: [], push: noop, slow: noop, hold: noop, carry: noop }),
     actors: () => actors,
     debris: () => ({ spawn: () => 0, max: 0 }),
-    fork: (...path: (string | number)[]) => new Rng(path.length * 7 + 1),
+    fork: (...path: (string | number)[]) => new Rng(path.length * 7 + seed),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
     drainSpirit: noop, spirit: () => 100, takeRandomPractice: () => null, sendUnderground: noop,
   } as unknown as SkyHost;
@@ -464,6 +465,11 @@ describe('the five deities of the sky (SKY.md §5.3)', () => {
       expect(a.body.hw).toBeGreaterThan(0);
       expect(a.body.h).toBeGreaterThan(0);
     });
+  });
+
+  it('two sky realms from the same seed hold the same deities, with the same ids and bodies', () => {
+    const summary = (realm: SkyRealm) => realm.creatures.all().map(a => [a.id, a.animal, a.body.x, a.body.y, a.body.z]);
+    expect(summary(newRealm(7))).toEqual(summary(newRealm(7)));
   });
 
   it('every deity starts parked, and only the player’s floor’s deity is unparked', () => {

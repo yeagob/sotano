@@ -8,7 +8,10 @@ import { palCss } from '../../content/palette';
 import type { SkyViewApi, Vec3 } from '../types';
 import { backdrop, placeFar } from './far';
 
-/** The corona's radius in blocks. The disc's radius is the Sun's volume's (plan.sun.r). */
+/**
+ * The corona's radius in blocks. The disc's radius is the Sun's volume's (plan.sun.r). The 200-block far plane bounds the
+ * group's centre only (far.ts): near the Sun, the corona's far edge may pass it, and its visible front is still drawn.
+ */
 export const CORONA_RADIUS = 90;
 /** Shown from this height up (the solar approach). */
 export const SUN_SHOWN_FROM = 640;
