@@ -50,9 +50,13 @@ Status: decided.
 
 Blocks the player creates with abilities are not original. They can be destroyed for good, and only with a positive intention. A route the player builds stays until a positive intention takes it away, except a tower knocked down under law 3.9. A positive shot that destroys a player block removes it with no cube back (provisional, owner, 2026-11-03). Whether a built block can be lost in any other way is open (section 5).
 
+Built in part: a positive shot or a positive weapon stroke (blade, beam, great cut) on a placed block removes it, and the player's blocks are the only ones marked placed ([SKY.md §5.7](../../../architecture/SKY.md)).
+
 ### 3.3 Negative intentions do not work on sky creatures
 
 Status: decided.
+
+Built in part: every intention, weapon stroke and blast reaches a sky creature through the touch router, and a negative one is a puff that changes nothing ([SKY.md §5.7](../../../architecture/SKY.md)). The deities' attacks are not built yet.
 
 The deities and the minions are won with positive intentions only. A negative shot has no effect on them. Every fight and every hindrance in this folder is built around this rule: the player never needs to hurt a sky creature with a negative intention, and no sky creature can be beaten that way.
 
