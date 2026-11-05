@@ -64,7 +64,7 @@ Every sky floor can be cleared by a player with no practices. The practices carr
 
 ### 3.5 The way up opens when the deity is won
 
-Status: decided (owner, 2026-11-03, and 2026-11-05) that the way up between sky floors is closed until that floor's deity is defeated. Status for "from any point of the floor": open (section 5).
+Status: decided (owner, 2026-11-03, and 2026-11-05) that the way up between sky floors is closed until that floor's deity is defeated. Status for "from any point of the floor": open (section 5). Built (W4-C): each floor's deity exists from the sky's start and is won through routed hits, so the way up opens in play; the deities are invisible until B1–B5 build their models.
 
 The way up from a floor stays closed until that floor's deity is won (decided, owner, 2026-11-03): closed until the deity is defeated, and the player cannot change floor until then (decided, owner, 2026-11-05; the gate is in [sky architecture, section 7.1](../../../architecture/SKY.md)). Until then the floor's platforming must leave a vertical route the player can build or climb, up to the way up. The route is inside the tree (law 3.8), and a tower of the player's own blocks that reaches a deity is knocked down (law 3.9), so every floor carries a vertical route of its own that the tower rule never touches.
 

@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { MATERIALS, MAT } from '../src/content/materials';
+import { ActorRegistry } from '../src/entities/actors';
 import { Rng, hashPath } from '../src/core/rng';
 import { AIR_CONTROL, flight, rise } from '../src/physics/jump';
 import { buildTotality, CHAIN_RADIUS, CHECKPOINT_EVERY, footprint, gapBetween, HEADROOM, LAST_TOP, PLATFORMS, SPIRAL_RADIUS, SUN_GAP, SUN_RADIUS } from '../src/sky/totality/chain';
@@ -308,9 +309,11 @@ describe('the Sun\'s entrance (SKY.md §8; owner, 2026-11-05)', () => {
 
   it('the realm records the entrance as a flag, and nothing else', () => {
     const set = { world: {} } as unknown as SkyRealmSet;
+    const actors = new ActorRegistry();
+    actors.setRealm('sky');
     const host = {
       fork: (...path: (string | number)[]) => new Rng(hashPath(3, path)),
-      actors: () => ({}),
+      actors: () => actors,
       debris: () => ({ spawn: () => 0 }),
     } as unknown as SkyHost;
     const realm = SkyRealm.create(host, new THREE.Group(), () => set);
@@ -341,12 +344,13 @@ describe('the Earth and the Sun (SKY.md §11)', () => {
     expect(root.children.length).toBe(0);
   });
 
-  it('the Sun stands above the solar approach and not below it', () => {
+  it('the Sun stands at its volume, and shows only from the solar approach up', () => {
     const root = new THREE.Group();
-    const sun = new SunView(root);
-    sun.update({ x: 0, y: 800, z: 0 }, 0);
+    const volume = buildTotality(() => new Rng(2), { x: 128, y: 221, z: 128 }).sun;
+    const sun = new SunView(root, volume);
+    sun.update({ x: volume.x, y: volume.y, z: volume.z - 40 }, 0);
     expect(root.children[0].visible).toBe(true);
-    expect(root.children[0].position.y).toBeGreaterThan(800);
+    expect([root.children[0].position.x, root.children[0].position.y, root.children[0].position.z]).toEqual([volume.x, volume.y, volume.z]);
     sun.update({ x: 0, y: 300, z: 0 }, 0);
     expect(root.children[0].visible).toBe(false);
     sun.dispose();

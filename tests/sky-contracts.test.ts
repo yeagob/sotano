@@ -17,6 +17,7 @@ import { SKY_LION_PALETTE } from '../src/content/palette/sky-lion';
 import { SKY_PANDA_PALETTE } from '../src/content/palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from '../src/content/palette/sky-totality';
 import { Rng } from '../src/core/rng';
+import { ActorRegistry } from '../src/entities/actors';
 import { Encounter } from '../src/endgame/encounter';
 import { SpikedEntity } from '../src/endgame/entity';
 import { EntityView } from '../src/endgame/entity-view';
@@ -51,6 +52,7 @@ import { swapRealm } from '../src/sky/realm';
 import { CreatureView } from '../src/sky/render/creature-view';
 import { EarthView } from '../src/sky/render/earth';
 import { HitMarks } from '../src/sky/render/hit-marks';
+import { FAR_DRAW, placeFar } from '../src/sky/render/far';
 import { SunView } from '../src/sky/render/sun';
 import { SkyRealm } from '../src/sky/sky-realm';
 import { buildTotality } from '../src/sky/totality/chain';
@@ -63,8 +65,8 @@ import {
   type HindranceCtx, type HindranceRunnerCtor, type HitMarksCtor, type InstallNoHarm, type MinionCtor, type NestsCtor,
   type OutsideWatchCtor, type OwnershipCtor, type PuffCtor, type RealmGateCtor, type RealmHost, type RealmSet,
   type RegrowthCtor, type SkyCreaturesCtor, type SkyEffectsCtor, type SkyHost, type SkyRealmCtor, type SkyRealmSet,
-  type SkyActor, type SkyViewCtor, type SkyWorldApi, type SpikedEntityCtor, type SwapRealm, type ThresholdCtor, type TowerKnockCtor,
-  type TowerUnder, type UpdraftCtor,
+  type SkyActor, type SkyViewCtor, type SkyWorldApi, type SpikedEntityCtor, type SunViewCtor, type SwapRealm, type ThresholdCtor,
+  type TowerKnockCtor, type TowerUnder, type UpdraftCtor,
 } from '../src/sky/types';
 import { createBus, type GameBus } from '../src/game/events';
 import type { Body } from '../src/physics/voxel-collide';
@@ -76,7 +78,7 @@ import { voxelSpaceContract } from './helpers/voxel-space-contract';
 const contracts: [
   RegrowthCtor, OwnershipCtor, InstallNoHarm, NestsCtor, TowerUnder, UpdraftCtor, OutsideWatchCtor,
   HindranceRunnerCtor, SkyEffectsCtor, SkyCreaturesCtor, DeityCtor, MinionCtor, PuffCtor, TowerKnockCtor,
-  HitMarksCtor, CreatureViewCtor, SkyViewCtor, SkyViewCtor, ThresholdCtor, RealmGateCtor, SwapRealm, SkyRealmCtor,
+  HitMarksCtor, CreatureViewCtor, SkyViewCtor, SunViewCtor, ThresholdCtor, RealmGateCtor, SwapRealm, SkyRealmCtor,
   SpikedEntityCtor, EntityViewCtor, EncounterCtor,
 ] = [
   Regrowth, Ownership, installNoHarm, Nests, towerUnder, Updraft, OutsideWatch,
@@ -215,7 +217,7 @@ describe('sky stubs', () => {
     new HitMarks(root, 24).add(at);
     new CreatureView(root).update(1, []);
     new EarthView(root).update(at, 1);
-    new SunView(root).update(at, 1);
+    new SunView(root, buildTotality(() => new Rng(2), at).sun).update(at, 1);
     // The graph helpers are built (C0): the floor stub's one seat is found, with no links (tests/sky-creatures.test.ts covers routes).
     expect(placeById(plan.graph, 0)).toBe(plan.graph.places[0]);
     expect(nearest(plan.graph, 128, 60, 128)).toBe(plan.graph.places[0]);
@@ -237,8 +239,11 @@ describe('sky stubs', () => {
     gate.update(1);
     expect(gate.busy).toBe(false);
     const set = { world: {} } as unknown as SkyRealmSet; // a world object is enough to build the laws
-    const realm = SkyRealm.create({ ...host, actors: () => ({}), debris: () => ({ spawn: () => 0 }) } as unknown as SkyHost, root, () => set);
+    const actors = new ActorRegistry();
+    actors.setRealm('sky');
+    const realm = SkyRealm.create({ ...host, actors: () => actors, debris: () => ({ spawn: () => 0 }) } as unknown as SkyHost, root, () => set);
     expect(realm.set).toBe(set);
+    expect(realm.creatures.all()).toHaveLength(5); // the five deities exist from the start (SKY.md §5.3)
     // realm.update needs a player: the passage and the frame are tested in realm-gate and sky-acceptance
     const entity = new SpikedEntity(1, at, { bounce: () => {} });
     expect(entity.body.y).toBe(2);
@@ -246,6 +251,66 @@ describe('sky stubs', () => {
     const encounter = new Encounter({} as EncounterHost);
     encounter.update(1, { x: 100, y: 2, z: 3 }, at); // out of range: built by EN, tests/endgame.test.ts covers the rest
     expect(encounter.holdsStill).toBe(false);
+  });
+});
+
+describe('far views: the Earth and the Sun in view (SKY.md §11)', () => {
+  const eye = { x: 5, y: 600, z: -3 };
+  const dir = { x: 0.6, y: 0.8, z: 0 }; // a unit vector: the line from the eye
+
+  it('placeFar keeps the angular size, keeps the line, and stays inside 200 at any distance', () => {
+    for (const d of [20, FAR_DRAW, FAR_DRAW + 1, 300, 900]) {
+      const g = new THREE.Group();
+      const centre = { x: eye.x + dir.x * d, y: eye.y + dir.y * d, z: eye.z + dir.z * d };
+      const drawn = placeFar(g, eye, centre, 30);
+      const p = g.position;
+      const along = Math.hypot(p.x - eye.x, p.y - eye.y, p.z - eye.z);
+      expect(along, `distance ${d}`).toBeLessThanOrEqual(Math.min(d, FAR_DRAW) + 1e-9);
+      expect(along).toBeLessThan(200);
+      expect((p.x - eye.x) / along).toBeCloseTo(dir.x);
+      expect((p.y - eye.y) / along).toBeCloseTo(dir.y);
+      expect(drawn / along, `angular size at ${d}`).toBeCloseTo(30 / d);
+      expect(g.scale.x).toBeCloseTo(Math.min(1, FAR_DRAW / d));
+    }
+  });
+
+  it('the Sun stands at its volume when near, and is drawn on its line from far away', () => {
+    const plan = buildTotality(() => new Rng(2), { x: 128, y: 221, z: 128 });
+    const sun = plan.sun;
+    const root = new THREE.Group();
+    const view = new SunView(root, sun);
+    const group = root.children[0];
+    view.update({ x: sun.x - 40, y: sun.y, z: sun.z }, 0);
+    expect(group.visible).toBe(true);
+    expect([group.position.x, group.position.y, group.position.z]).toEqual([sun.x, sun.y, sun.z]);
+    expect(group.scale.x).toBe(1);
+    view.update({ x: sun.x - 400, y: sun.y, z: sun.z }, 0);
+    expect(group.position.x).toBeCloseTo(sun.x - 400 + FAR_DRAW);
+    expect(group.scale.x).toBeCloseTo(FAR_DRAW / 400);
+    view.update({ x: sun.x - 40, y: 300, z: sun.z }, 0);
+    expect(group.visible).toBe(false);
+    view.dispose();
+  });
+
+  it('the Earth is hidden below 380 and above 720, and drawn as a backdrop between', () => {
+    const root = new THREE.Group();
+    const earth = new EarthView(root);
+    const group = root.children[0];
+    for (const y of [379, 721]) {
+      earth.update({ x: 0, y, z: 0 }, 0);
+      expect(group.visible, `eye at ${y}`).toBe(false);
+    }
+    for (const y of [380, 550, 720]) {
+      earth.update({ x: 0, y, z: 0 }, 0);
+      expect(group.visible, `eye at ${y}`).toBe(true);
+    }
+    group.traverse(o => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      expect(m.renderOrder).toBe(-1);
+      expect((m.material as THREE.Material).depthWrite).toBe(false);
+    });
+    earth.dispose();
   });
 });
 

@@ -62,19 +62,22 @@ function solids(plan: TotalityPlan, root: THREE.Group) {
 export function skyTotalityGallery(g: GalleryKit) {
   g.head('Totality (×3): the Earth below the void, the Sun over the solar approach, the Sun\'s entrance');
 
+  const plan = buildTotality((...path) => new Rng(hashPath(0x7e7, path)), { x: 128, y: 221, z: 128 });
+  const sun = plan.sun, last = plan.platforms[plan.platforms.length - 1];
+
   const r = g.row();
   g.fig(r, frame('totality', { x: 0, y: 520, z: 0 }, { x: 0, y: 220, z: -20 }, root => {
     const earth = new EarthView(root);
     earth.update({ x: 0, y: 520, z: 0 }, 0);
   }), 'the Earth from the void at 520: a sphere below, its limb in thin air');
 
-  g.fig(r, frame('totality', { x: 0, y: 700, z: 0 }, { x: 0, y: 960, z: 0 }, root => {
-    const sun = new SunView(root);
-    sun.update({ x: 0, y: 700, z: 0 }, 0);
-  }), 'the Sun over the solar approach at 700: the one warmth that is not the player\'s');
+  // the Sun stands at its volume, 260 below the eye here: past 150 it is drawn on its line at 150 (far.ts)
+  const below = { x: sun.x, y: sun.y - 260, z: sun.z };
+  g.fig(r, frame('totality', below, sun, root => {
+    const view = new SunView(root, sun);
+    view.update(below, 0);
+  }), 'the Sun from the solar approach, 260 below it: drawn at its true angular size, the one warmth that is not the player\'s');
 
-  const plan = buildTotality((...path) => new Rng(hashPath(0x7e7, path)), { x: 128, y: 221, z: 128 });
-  const sun = plan.sun, last = plan.platforms[plan.platforms.length - 1];
   const eye = { x: last.x, y: last.y + 2, z: last.z };
   g.fig(r, frame('totality', eye, { x: sun.x, y: sun.y + 2.5, z: sun.z }, root => {
     solids(plan, root);

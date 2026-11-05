@@ -9,9 +9,12 @@ import { CHUNK } from '../world/world';
 import { atmosphereAt } from './atmosphere';
 import { SKY_AXIS, openGate } from './floors/tree';
 import { buildSkyLayout } from './layout';
+import { DEITIES } from './creatures/deities';
 import { TowerKnock } from './creatures/knock';
 import { Puff } from './creatures/puff';
 import { SkyCreatures } from './creatures/system';
+import { EarthView } from './render/earth';
+import { SunView } from './render/sun';
 import { SkyEffects } from './hindrances/effects';
 import { HindranceRunner } from './hindrances/runner';
 import { Nests } from './laws/nests';
@@ -58,6 +61,8 @@ export class SkyRealm implements SkyRealmApi {
   private readonly effects: SkyEffects;
   private readonly knock: TowerKnock;
   private readonly threshold: Threshold;
+  private readonly earth: EarthView;
+  private readonly sun: SunView;
   private tower: Tower | null = null;
   private unityEntered = false;
 
@@ -71,8 +76,13 @@ export class SkyRealm implements SkyRealmApi {
     this.knock = new TowerKnock(host, this.effects);
     const deps: CreatureDeps = { actors: host.actors(), runner: this.runner, effects: this.effects, puff: new Puff(host), knock: this.knock };
     this.creatures = new SkyCreatures(root, host, deps);
+    // All five deities exist from the sky's birth, once: deterministic ids, never respawned or reset, so a won deity
+    // stays won for the run. Each starts parked, and update() unparks only the player's floor's deity.
+    for (const f of plans.floors) this.creatures.spawnDeity(DEITIES[f.animal], f).parked = true;
     // A won deity opens its floor's way up (owner, 2026-11-05); openGate is idempotent, so a repeat changes nothing.
     this.creatures.onWon = (_d, floor) => openGate(this.world, plans.tree, floor);
+    this.earth = new EarthView(root);
+    this.sun = new SunView(root, plans.totality.sun);
     const checkpoints = plans.totality.platforms.filter(p => plans.totality.checkpoints.includes(p.id));
     this.updraft = new Updraft(host, checkpoints);
     this.outside = new OutsideWatch(host, plans.tree, (tower, floor) => this.knockByGuardian(tower, floor));
@@ -121,7 +131,7 @@ export class SkyRealm implements SkyRealmApi {
     for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) w.prefetch(cx + dx, cy + dy, cz + dz);
   }
 
-  /** Clear colour, fog colour, the fog's reach and the stars, by place and height (docs/art/sky/blocks.md). */
+  /** Clear colour, fog colour, the fog's reach and the stars, by place and height (docs/art/sky/blocks.md); and the Earth and the Sun, placed from the eye. */
   atmosphere(eye: Vec3, fogColor: THREE.Color, fog: THREE.Fog, stars: THREE.Object3D) {
     const s = atmosphereAt(this.placeOf(eye), eye.y);
     fogColor.setHex(s.clear);
@@ -130,6 +140,8 @@ export class SkyRealm implements SkyRealmApi {
     fog.far = s.far;
     stars.visible = s.stars > 0.05;
     ((stars as THREE.Points).material as THREE.PointsMaterial).opacity = s.stars;
+    this.earth.update(eye, 0);
+    this.sun.update(eye, 0);
   }
 
   /** The nearest standable cell to `at`: the highest air over solid ground, searched in rings. */
@@ -167,6 +179,8 @@ export class SkyRealm implements SkyRealmApi {
     this.regrowth.dispose();
     for (const n of this.nests ?? []) n.dispose();
     this.creatures.dispose();
+    this.earth.dispose();
+    this.sun.dispose();
   }
 
   private placeOf(eye: Vec3): SkyPlace {

@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { palCss } from '../../content/palette';
 import type { SkyViewApi, Vec3 } from '../types';
+import { backdrop, placeFar } from './far';
 
 /** The Earth's radius in blocks, and how far under the eye its centre hangs. */
 export const EARTH_RADIUS = 140;
@@ -28,14 +29,14 @@ export class EarthView implements SkyViewApi {
     });
     const body = new THREE.Mesh(this.sphere, this.sea);
     const limb = new THREE.Mesh(this.rimGeo, this.rim);
-    limb.renderOrder = 1;
     this.group.add(body, limb);
+    backdrop(this.group);
     root.add(this.group);
   }
 
   update(eye: Vec3, _dt: number) {
     this.group.visible = eye.y >= EARTH_SHOWN[0] && eye.y <= EARTH_SHOWN[1];
-    this.group.position.set(eye.x, eye.y - EARTH_DROP, eye.z);
+    placeFar(this.group, eye, { x: eye.x, y: eye.y - EARTH_DROP, z: eye.z }, EARTH_RADIUS * 1.04);
   }
 
   dispose() {

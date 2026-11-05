@@ -30,11 +30,13 @@ A checkpoint (every sixth platform) is 3 × 3 whatever its stratum. Each platfor
 - A faint rim of `sky.earth.rim` (`#9FD8F2`) round its limb, at 35 % opacity, the thin air of the world's edge.
 - Never fogged: the Earth is a body in the air, not a block; it is not lit (one shading model).
 - ΔE from `light.gold`, `life.heart`, `attack.red.base` and `attack.warn.base` holds (enforced by `tests/sky-materials.test.ts`).
+- **Far drawing (amendment, W4-C, 2026-11-05; the Opus art sign-off is pending).** Past 150 blocks from the eye the Earth is drawn on its line at 150 blocks, scaled by 150 / d (`placeFar`, `src/sky/render/far.ts`): its angular size is kept and the camera's far plane never clips it. Its depth is never written and blocks draw over it (a backdrop).
 
 ## 5. The Sun
 
-- A disc of `sky.strata.corona` (`#DCC497`), 30 blocks across, and a corona of the same token at 22 % opacity, 90 blocks across.
-- Stands 260 above the eye, shown from the solar approach upward (eye height 640 and above).
+- A disc of `sky.strata.corona` (`#DCC497`), radius 30 blocks (the Sun's volume's radius; the disc is drawn at that radius), and a corona of the same token at 22 % opacity, 90 blocks across.
+- **Amendment (W4-C, 2026-11-05; the Opus art sign-off is pending).** The Sun stands at the Sun's volume, the sphere the last jump enters (`plan.sun`, centred at the last checkpoint's height), not 260 above the eye. Within 150 blocks it is drawn at its true size, so the jump visibly enters it. Past 150 it is drawn on its line at 150, scaled by 150 / d (the far rule of §4). It is a backdrop: its depth is never written and blocks draw over it.
+- Shown from the solar approach upward (eye height 640 and above).
 - Never a `light.*` token (README §7): the Sun's warmth is the stated, provisional exception to pillar 2; it washes the sky only and never lights a block.
 - The corona keeps ΔE 36.9 from `light.gold` (README §4), so a gold mark still reads near it.
 
@@ -44,4 +46,4 @@ A checkpoint (every sixth platform) is 3 × 3 whatever its stratum. Each platfor
 - The strata's decoration (drifting leaf clusters, meteor fragments, embers) is not yet placed: the plan holds the platforms and the Sun's volume only. The art pass adds it with the headroom rule (no fragment within 15 blocks above a takeoff or arc).
 - The checkpoint's soft beacon is not drawn yet.
 - Captures: the three frames of `?gallery=sky-totality` are the gate for this page; they are attached when the browser run is done (see the change's report).
-- Nothing here is ruled by the owner yet. The Spanish of the place names is a translation for the owner to review. The Sun's volume is not drawn in the game (the disc of the view stands above the eye, not at the volume, `sun.ts`): the owner rules whether the entrance shows anything.
+- Nothing here is ruled by the owner yet. The Spanish of the place names is a translation for the owner to review. The Sun's disc is drawn at the Sun's volume in the game (`sun.ts`, W4-C; §5 amendment): the owner rules whether the entrance shows anything more.
