@@ -6,4 +6,7 @@ import type { SKY_KOALA_EN } from './koala.en';
 
 export const SKY_KOALA_ES: { [K in keyof typeof SKY_KOALA_EN]: Message } = {
   'level.sky2': 'Las ramas',
+  'toast.skyKoalaHug': 'Un koala se agarra a ti: salta tres veces para soltarte',
+  'toast.skyKoalaHoldFast': 'El koala te abraza fuerte y se queda con una de tus prácticas',
+  'toast.skyKoalaWon': 'El koala suelta su rama',
 };
