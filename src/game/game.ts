@@ -299,6 +299,9 @@ export class Game {
   /** The loaded intention's polarity (BESTIARY §1.1); F switches it. */
   private polarity: Polarity = 'positive';
   get polarityNow() { return this.polarity; }
+  /** The sky's spirit, and whether the player is in the sky: the HUD's outline shows only there (SKY.md §5.2). */
+  get spiritNow() { return this.spirit; }
+  get inSky() { return this.realm === 'sky'; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
    *  already warmed, so a beam warms a projection once, not on every tick. */
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
@@ -825,6 +828,7 @@ export class Game {
       slow: (_f, s) => { p.slowT = Math.max(p.slowT, s); },
       hold: s => p.hold(s),
       carry: (to, s) => p.carry(to, s),
+      get held() { return p.heldT > 0; },
     };
     return {
       time: () => this.time,
@@ -846,6 +850,7 @@ export class Game {
       travel: tr => this.gate.start(tr),
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
+      refillSpirit: () => { this.spirit = SPIRIT_MAX; },
       takeRandomPractice: () => this.takePractice(),
       sendUnderground: (floors, rng) => this.sendUnderground(floors, rng),
     };
@@ -886,11 +891,10 @@ export class Game {
     return id;
   }
 
-  /** Spirit at zero: one of the floors is picked, the player goes there, and spirit is full again (SKY.md §5.2). */
+  /** Spirit at zero: one of the floors is picked and the player goes there; spirit refills at the teleport, in passRealm (SKY.md §5.2). */
   private sendUnderground(floors: readonly number[], rng: Rng) {
     if (!floors.length || this.gate.busy) return;
     this.underground = floors[rng.int(0, floors.length - 1)];
-    this.spirit = SPIRIT_MAX;
     this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
   }
 
@@ -913,6 +917,8 @@ export class Game {
     this.player.float = t.float;
     // a capture's landing is carved and activated only now, with the dungeon installed (never into the sky's fields)
     const landing = t.to === 'dungeon' && this.underground !== null ? this.undergroundSpawn(this.underground) : null;
+    // spirit refills at the teleport, so the HUD reads 0 through the gate's fade (SKY.md §5.2)
+    if (this.underground !== null) this.spirit = SPIRIT_MAX;
     this.underground = null;
     const at = landing ?? t.at;
     this.teleport(at[0], at[1], at[2]);

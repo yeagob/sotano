@@ -34,7 +34,7 @@ function fakeHost(actors: ActorRegistry, w: ReturnType<typeof worlds>): SkyHost 
     debris: () => (w.active === 'sky' ? w.sky : w.dungeon),
     fork: (...path: (string | number)[]) => new Rng(path.length * 7 + 1),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
-    drainSpirit: noop, spirit: () => 100, takeRandomPractice: () => null, sendUnderground: noop,
+    drainSpirit: noop, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
   } as unknown as SkyHost;
 }
 

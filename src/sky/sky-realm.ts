@@ -22,6 +22,7 @@ import { OutsideWatch } from './laws/outside';
 import { installNoHarm } from './laws/no-harm';
 import { Ownership } from './laws/ownership';
 import { Regrowth } from './laws/regrowth';
+import { SpiritLaw } from './laws/spirit';
 import { towerUnder } from './laws/tower';
 import { Updraft } from './laws/updraft';
 import { Threshold } from './totality/threshold';
@@ -60,6 +61,7 @@ export class SkyRealm implements SkyRealmApi {
   private readonly runner: HindranceRunner;
   private readonly effects: SkyEffects;
   private readonly knock: TowerKnock;
+  private readonly spirit: SpiritLaw;
   private readonly threshold: Threshold;
   private readonly earth: EarthView;
   private readonly sun: SunView;
@@ -74,13 +76,17 @@ export class SkyRealm implements SkyRealmApi {
     this.effects = new SkyEffects(host);
     this.runner = new HindranceRunner(this.hindranceCtx());
     this.knock = new TowerKnock(host, this.effects);
-    const deps: CreatureDeps = { actors: host.actors(), runner: this.runner, effects: this.effects, puff: new Puff(host), knock: this.knock };
+    this.spirit = new SpiritLaw(host);
+    const deps: CreatureDeps = {
+      actors: host.actors(), runner: this.runner, effects: this.effects, puff: new Puff(host), knock: this.knock, spirit: this.spirit,
+    };
     this.creatures = new SkyCreatures(root, host, deps);
     // All five deities exist from the sky's birth, once: deterministic ids, never respawned or reset, so a won deity
     // stays won for the run. Each starts parked, and update() unparks only the player's floor's deity.
     for (const f of plans.floors) this.creatures.spawnDeity(DEITIES[f.animal], f).parked = true;
-    // A won deity opens its floor's way up (owner, 2026-11-05); openGate is idempotent, so a repeat changes nothing.
-    this.creatures.onWon = (_d, floor) => openGate(this.world, plans.tree, floor);
+    // A won deity refills spirit (provisional, SKY.md §19), then opens its floor's way up (owner, 2026-11-05);
+    // openGate is idempotent, so a repeat changes nothing.
+    this.creatures.onWon = (_d, floor) => { host.refillSpirit(); openGate(this.world, plans.tree, floor); };
     this.earth = new EarthView(root);
     this.sun = new SunView(root, plans.totality.sun);
     const checkpoints = plans.totality.platforms.filter(p => plans.totality.checkpoints.includes(p.id));
@@ -116,6 +122,7 @@ export class SkyRealm implements SkyRealmApi {
     this.outside.update(dt);
     this.runner.update(dt);
     this.effects.update(dt);
+    this.spirit.update();
     this.creatures.update(dt, this.floorAt(body.y));
     this.updraft.update(dt);
     this.threshold.update(dt);

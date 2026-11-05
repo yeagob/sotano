@@ -76,6 +76,7 @@ function rig(over: Partial<DeityDef> = {}, places: Place[] = []): Rig {
   } as unknown as HindranceRunnerApi;
   const deps: CreatureDeps = {
     actors, runner, effects: {} as SkyEffectsApi, puff: new Puff(h.host), knock: {} as TowerKnockApi,
+    spirit: { update() {}, canDrain: () => true, drain: () => true },
   };
   const seat: Place = { id: 0, kind: 'seat', x: SEAT.x, y: SEAT.y, z: SEAT.z, w: 3, d: 3, tag: 0 };
   const graph: FloorGraph = { places: [seat, ...places], links: [] };
@@ -444,7 +445,7 @@ function newRealm(): SkyRealm {
     debris: () => ({ spawn: () => 0, max: 0 }),
     fork: (...path: (string | number)[]) => new Rng(path.length * 7 + 1),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
-    drainSpirit: noop, spirit: () => 100, takeRandomPractice: () => null, sendUnderground: noop,
+    drainSpirit: noop, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
   } as unknown as SkyHost;
   return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: new SkyWorld(layout) } as unknown as SkyRealmSet));
 }

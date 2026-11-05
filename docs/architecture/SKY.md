@@ -428,12 +428,15 @@ export interface SkyHost {
   place(key: MessageKey): void;                                           // the HUD's place label
   gift(itemId: string, x: number, y: number, z: number): void;            // a pickup in the sky's Pickups
   travel(t: Travel): void;
-  drainSpirit(amount: number): void;                                      // special attacks drain spirit, never health
+  drainSpirit(amount: number): void;                                      // called by the spirit gate (SpiritLaw) only, never health
   spirit(): number;                                                       // 0 to SPIRIT_MAX
+  refillSpirit(): void;                                                   // a won deity: spirit to SPIRIT_MAX (provisional)
   takeRandomPractice(): ItemId | null;                                    // a capture takes one practice for the run
-  sendUnderground(floors: readonly number[], rng: Rng): void;             // spirit at zero: one floor, spirit refilled
+  sendUnderground(floors: readonly number[], rng: Rng): void;             // spirit at zero: one floor; the refill comes at the teleport
 }
 ```
+
+**Spirit (W4-D, `src/sky/laws/spirit.ts`).** A special attack drains through one gate, `SpiritLaw`, never through the host directly. An `AttackDef` with `spirit: n` (its drain cost, read by `choose()`) calls `ctx.drain(n)` in its `act`, which is when the attack lands, not at its telegraph (law 3.6). `ctx.drain` is `Deity.drain`: at most once per attack run, and it lands only if `SpiritLaw.drain(n)` allows it: never while `player.held` (`SkyPlayer.held`, `heldT > 0` in `game.ts`), never within 1 s after a hold, and at least 6 s after the last drain (`DRAIN_GAP`, `DRAIN_CALM`). `choose()` skips a drain attack while `canDrain()` is false, so its telegraph never starts in a closed window. At zero, `SpiritLaw` calls `host.sendUnderground` with floors 0 to 9 (`UNDERGROUND_FLOORS`, silence excluded). The realm calls `SpiritLaw.update()` once a frame. Built with the gate: no deity attack carries `spirit` yet (B1–B5 write them), so a drain is not seen in play until then.
 
 ### 5.3 The deity framework (`src/sky/creatures/deity.ts`)
 
@@ -461,7 +464,7 @@ export const MIN_TELEGRAPH = 0.8;
 ```
 
 - **The machine.** `Idle → Watching → Attacking → Recovering → Watching` (or `Idle` out of sight), with `Hurt` (0.3 s, never cancels a shown telegraph) and `Rallying` (2 s, once at each stage change). Custom states replace or extend the core ones by name (the koala's `Asleep` replaces `Idle` once; the elephant's `Drinking` is its `Recovering`). A state is a record `{ enter, tick, exit, next }`; the table is data, so a deity file reads like its B2 section.
-- **Attacks never take health** (owner, 2026-11-03). Special attacks drain spirit (`drainSpirit`); the rest move, slow or hold. An `AttackDef` is `{ id, stage, telegraph: TelegraphSpec, act(ctx) }`: the telegraph is shown for the floor's length (never below `MIN_TELEGRAPH`), then `act` runs a hindrance (§6). What the design calls a lob, a bolt or a ring lands as a knockback, a slow or a hold. No attack repeats back to back when another is available.
+- **Attacks never take health** (owner, 2026-11-03). Special attacks drain spirit through the gate (`ctx.drain`, §5.2); the rest move, slow or hold. An `AttackDef` is `{ id, stage, telegraph: TelegraphSpec, spirit?, act(ctx) }`: the telegraph is shown for the floor's length (never below `MIN_TELEGRAPH`), then `act` runs a hindrance (§6) and, for a drain attack, `ctx.drain(spirit)`. What the design calls a lob, a bolt or a ring lands as a knockback, a slow or a hold. No attack repeats back to back when another is available.
 - **Positive hits.** A positive intention or weapon stroke that touches the body or head while `guard` is false adds one hit (the horse's Gentled counts two); a beam counts once per stroke [B2]. Each hit leaves a **gold mark** where it landed (`HitMarks`: an instanced mesh of tiny light quads in the deity's local frame, at most `hits` of them), plays `Hurt` and the animal's own sign of progress (lids opening, grip loosening, ears hanging, mane softening, eyes softening: a per-animal `progress(d, ratio)`). The boss bar shows `hits / target` in gold.
 - **Stages** at a third and two thirds of the target: `stage = min(2, ⌊3·hits / target⌋)`; the change runs `Rallying` and unlocks the stage's attacks.
 - **Levitation.** A levitating deity floats `hover` blocks over its seat with a slow bob (±0.15, 0.5 Hz) and its drift; its box ignores gravity. The horse uses a ground gait and its great leap (a ballistic arc of up to 20 across and 8 up, landing on a paddock or open ground, never on the player).
@@ -933,7 +936,9 @@ Each brief is self-contained: paste it with the rules of §16.1.
 7. The horse keeps Herd panic, Snaking and Dust roll. Standing still must show the player that they are right (a visible calm cue: ears turn, dust settles); the same feedback holds for every calm answer.
 8. The way up of each floor is closed until that floor's deity is defeated; the player cannot change floor until then (§7.1).
 
-**Provisional (2026-11-05).** When a deity is defeated, spirit refills to full (the owner's default, to confirm).
+**Provisional (2026-11-05).** When a deity is defeated, spirit refills to full (the owner's default, to confirm). Built in W4-D: `SkyRealm`'s `onWon` calls `host.refillSpirit()` before `openGate`. The refill at zero (the teleport) is decided and is now made in `game.ts` `passRealm`, so the HUD reads 0 through the gate's fade.
+
+**Built in W4-D, not yet in play.** The spirit gate (§5.2), the spirit outline and its number in the sky (DECISIONS §10.7, `?gallery=spirit`). No deity attack drains yet: the five deities still have `attacks: []` until B1–B5.
 
 **For the owner to confirm.**
 

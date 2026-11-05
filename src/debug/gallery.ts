@@ -3,7 +3,7 @@
 // generation, no physics, no randomness. A developer tool: English only, like the debug readout.
 //
 //   ?gallery                 every section
-//   ?gallery=materials|items|parts|enemies|pickups|missiles|chests|hud|palette
+//   ?gallery=materials|items|parts|enemies|pickups|missiles|chests|hud|palette|spirit
 //   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
 //                            totality, entity, hindrances-core|ground|hold|flow
 //   &filter=grey|deutan|protan|tritan|silhouette
@@ -35,6 +35,7 @@ import { skyKoalaGallery } from './gallery/sky-koala';
 import { skyLionGallery } from './gallery/sky-lion';
 import { skyPandaGallery } from './gallery/sky-panda';
 import { skyTotalityGallery } from './gallery/sky-totality';
+import { spiritGallery } from './gallery/spirit';
 
 /** What a gallery part gets to draw its section with. */
 export interface GalleryKit {
@@ -378,6 +379,7 @@ export function runGallery(params: URLSearchParams) {
 
   const kit: GalleryKit = { root, head, row, fig, scaled, angle, only };
   for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
+  if (show('spirit')) spiritGallery(kit);
 }
 
 function filterCss(f: string): string {
