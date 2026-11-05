@@ -406,6 +406,8 @@ export interface DeityCtx {
   far(min: number): Place | null;
   /** Takes `n` spirit when the attack lands, if the spirit gate allows it (at most once per attack run). */
   drain(n: number): void;
+  /** The attack being telegraphed or acted now, null between attacks (B3 addition: an animal's rules draw its marks and pose its body during the telegraph). */
+  readonly attack?: AttackDef | null;
 }
 
 export interface Gait {

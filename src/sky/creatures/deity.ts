@@ -119,6 +119,7 @@ export class Deity implements DeityApi {
       distance: () => self.distanceToPlayer(),
       far: min => self.farPlace(min),
       drain: n => self.drain(n),
+      get attack() { return self.attack; },
     };
     this.coreRecs = {
       Idle: { next: () => (this.inSight() ? 'Watching' : null) },
