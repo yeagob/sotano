@@ -6,4 +6,8 @@ import type { SKY_LION_EN } from './lion.en';
 
 export const SKY_LION_ES: { [K in keyof typeof SKY_LION_EN]: Message } = {
   'level.sky4': 'La llanura',
+  'sky.lion.name': 'El león',
+  'sky.lion.minion': 'Un león de la manada',
+  'toast.skyLionWon': 'El león se tumba, y su manada se tumba con él.',
+  'toast.skyLionScruff': 'El león te sujeta por la nuca y se queda con una de tus prácticas.',
 };

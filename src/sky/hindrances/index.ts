@@ -5,6 +5,7 @@ import { cubeCage } from './cube-cage';
 import { denseGround } from './dense-ground';
 import { fadingPlatforms } from './fading-platforms';
 import { knockback } from './knockback';
+import { lionRing } from './lion-ring';
 import { openingHoles } from './opening-holes';
 import { paralysis } from './paralysis';
 import { waterCurrents } from './water-currents';
@@ -19,4 +20,5 @@ export const HINDRANCES: { readonly [K in HindranceId]: Hindrance<HindranceParam
   'cube-cage': cubeCage,
   'water-currents': waterCurrents,
   'paralysis': paralysis,
+  'lion-ring': lionRing,
 };
