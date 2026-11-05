@@ -7,7 +7,7 @@ import { ATLAS_COLS, ATLAS_ROWS, CRACK_STAGES, tileFor } from '../content/tiles'
 import { DEBRIS_SIZE, type DebrisSystem } from '../physics/debris';
 import type { VoxelSpace } from '../world/space';
 import { crackTexture } from './atlas';
-import { buildSeed, disposeSeed, fuseSeed, SEED_H, SEED_VOXEL, type SeedModel } from './seed-model';
+import { buildSeed, disposeSeed, fuseSeed, SEED_H, SEED_VOXEL, type SeedKind, type SeedModel } from './seed-model';
 
 const SEED_SCALE = DEBRIS_SIZE / (SEED_H * SEED_VOXEL);
 
@@ -74,9 +74,12 @@ export class DebrisView {
   }
 
   private seed(sys: DebrisSystem, i: number) {
+    // the cache is keyed by slot and kind: a slot reused by a bomb of the other polarity is rebuilt
+    const kind: SeedKind = sys.love[i] ? 'love' : 'breakthrough';
     let m = this.seeds.get(i);
+    if (m && m.kind !== kind) { disposeSeed(m); m = undefined; }
     if (!m) {
-      m = buildSeed();
+      m = buildSeed(kind);
       this.scene.add(m.root);
       this.seeds.set(i, m);
     }

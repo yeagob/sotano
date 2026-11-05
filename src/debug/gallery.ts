@@ -3,7 +3,7 @@
 // generation, no physics, no randomness. A developer tool: English only, like the debug readout.
 //
 //   ?gallery                 every section
-//   ?gallery=materials|items|parts|enemies|pickups|missiles|chests|hud|palette
+//   ?gallery=materials|items|parts|enemies|pickups|missiles|bombs|chests|hud|palette
 //   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
 //                            totality, entity, hindrances-core|ground|hold|flow
 //   &filter=grey|deutan|protan|tritan|silhouette
@@ -23,6 +23,7 @@ import { pickupMesh } from '../entities/pickups';
 import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
 import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
+import { bombsGallery } from './gallery/bombs';
 import { skyBlocksGallery } from './gallery/sky-blocks';
 import { skyElephantGallery } from './gallery/sky-elephant';
 import { skyEntityGallery } from './gallery/sky-entity';
@@ -378,6 +379,7 @@ export function runGallery(params: URLSearchParams) {
 
   const kit: GalleryKit = { root, head, row, fig, scaled, angle, only };
   for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
+  if (show('bombs')) bombsGallery(kit);
 }
 
 function filterCss(f: string): string {

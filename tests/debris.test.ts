@@ -145,3 +145,35 @@ describe('loose cubes', () => {
     expect(d.isAlive(c)).toBe(false);
   });
 });
+
+describe('white bombs: the love flag of a slot', () => {
+  beforeEach(() => seedFx(7));
+
+  it('a bomb keeps its polarity flag until its fuse ends, and the fuse hands it to onFuse', () => {
+    const seen: [number, boolean][] = [];
+    const d = new DebrisSystem(8, floor, () => {});
+    d.onFuse = (i, _x, _y, _z, love) => seen.push([i, love]);
+    const white = d.spawn(1, 0.5, 1, 0.5);
+    d.fuse[white] = 0.2;
+    d.love[white] = 1;
+    const black = d.spawn(1, 2.5, 1, 0.5);
+    d.fuse[black] = 0.2;
+    step(d, 0.5);
+    expect(seen).toContainEqual([white, true]);
+    expect(seen).toContainEqual([black, false]);
+  });
+
+  it('a removed bomb clears its flag, and a slot reused by a new cube starts with none', () => {
+    const d = new DebrisSystem(2, floor, () => {});
+    const a = d.spawn(1, 0.5, 1, 0.5);
+    d.fuse[a] = 5;
+    d.love[a] = 1;
+    d.remove(a);
+    expect(d.love[a]).toBe(0);
+    // a stale flag left on the free slot next in the ring must not survive the next spawn there
+    d.love[1] = 1;
+    const b = d.spawn(1, 2.5, 1, 0.5);
+    expect(b).toBe(1);
+    expect(d.love[b]).toBe(0);
+  });
+});
