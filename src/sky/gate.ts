@@ -53,6 +53,8 @@ export class RealmGate implements RealmGateApi {
       this.phase = 'hold';
       this.t = 0;
       this.host.fade(1);
+      // the hold is checked from the next frame on: a world that is ready at once still gets this frame to mesh
+      return;
     }
     if (this.phase === 'hold') {
       if (!this.host.ready() && this.t < GATE_HOLD_MAX) return;

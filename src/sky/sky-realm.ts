@@ -50,7 +50,8 @@ export class SkyRealm implements SkyRealmApi {
   private readonly world: SkyWorldApi;
   private readonly regrowth: Regrowth;
   private readonly ownership: Ownership;
-  private readonly nests: Nests[];
+  /** Built on the first update, when the sky is the active world: its cubes spawn in the sky's own set (null until then). */
+  private nests: Nests[] | null = null;
   private readonly updraft: Updraft;
   private readonly outside: OutsideWatch;
   private readonly runner: HindranceRunner;
@@ -72,7 +73,6 @@ export class SkyRealm implements SkyRealmApi {
     this.creatures = new SkyCreatures(root, host, deps);
     // A won deity opens its floor's way up (owner, 2026-11-05); openGate is idempotent, so a repeat changes nothing.
     this.creatures.onWon = (_d, floor) => openGate(this.world, plans.tree, floor);
-    this.nests = plans.floors.map(f => new Nests(host, f.nests, NEST_MATERIAL));
     const checkpoints = plans.totality.platforms.filter(p => plans.totality.checkpoints.includes(p.id));
     this.updraft = new Updraft(host, checkpoints);
     this.outside = new OutsideWatch(host, plans.tree, (tower, floor) => this.knockByGuardian(tower, floor));
@@ -98,6 +98,8 @@ export class SkyRealm implements SkyRealmApi {
   /** The order of §2.5. The gate check is the game's: the crown the sky falls to lies in the dungeon. */
   update(dt: number) {
     const body = this.host.player().body;
+    // the nests spawn their cubes now, while the sky is the active world (built earlier they would fill the dungeon's)
+    if (!this.nests) this.nests = this.plans.floors.map(f => new Nests(this.host, f.nests, NEST_MATERIAL));
     this.regrowth.update(dt);
     for (const n of this.nests) n.update(dt);
     this.tower = towerUnder(this.world, body);
@@ -156,9 +158,14 @@ export class SkyRealm implements SkyRealmApi {
     return floor;
   }
 
+  /** The sky's world is set aside: its in-flight hindrances end now, while the sky's hazards are still installed. */
+  leave() {
+    this.runner.clear();
+  }
+
   dispose() {
     this.regrowth.dispose();
-    for (const n of this.nests) n.dispose();
+    for (const n of this.nests ?? []) n.dispose();
     this.creatures.dispose();
   }
 

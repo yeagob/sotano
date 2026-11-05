@@ -1,6 +1,6 @@
 // The passages between the worlds (SKY.md §2.4): which travel a position asks for, and the fade
 // that runs it. The check is pure; the gate is driven by a fake host, so no three.js scene is needed.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { GATE_FADE, GATE_HOLD_MAX, RealmGate, SKY_FLOOR_OUT } from '../src/sky/gate';
 import type { RealmGateHost, SkyBounds, Travel } from '../src/sky/types';
 
@@ -115,5 +115,19 @@ describe('RealmGate (the fade of a passage)', () => {
     expect(fades[fades.length - 1]).toBe(0);
     run(g, GATE_FADE * 3);
     expect(passed).toEqual([]);
+  });
+});
+
+describe('the hold starts on the frame after the pass (SKY.md §2.4)', () => {
+  it('a world ready on the frame it is passed is not checked, and not faded in, on that frame', () => {
+    const up: Travel = { to: 'sky', at: [128, 4, 128], float: true };
+    const ready = vi.fn(() => true);
+    const { host, passed } = fakeHost(ready);
+    const g = new RealmGate(host);
+    g.start(up);
+    while (passed.length === 0) g.update(1 / 60);
+    expect(ready).not.toHaveBeenCalled();
+    g.update(1 / 60);
+    expect(ready).toHaveBeenCalledTimes(1);
   });
 });

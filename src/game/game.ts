@@ -93,7 +93,7 @@ import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
 import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
 import { SkyRealm } from '../sky/sky-realm';
-import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmApi, type SkyRealmSet, type SkyFx, type Travel } from '../sky/types';
+import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type Travel } from '../sky/types';
 import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
 
@@ -226,7 +226,7 @@ export class Game {
   private realm: RealmKind = 'dungeon';
   /** The inactive world's set: the dungeon's while in the sky, the sky's below. Null until the sky is first reached. */
   private stash: RealmSet | null = null;
-  private sky: SkyRealmApi | null = null;
+  private sky: SkyRealm | null = null;
   private readonly dungeonRoot = new THREE.Group();
   private readonly skyRoot = new THREE.Group();
   private gate!: RealmGate;
@@ -748,7 +748,9 @@ export class Game {
       }),
       // runs before install: the fields still hold the world being left
       clearTransient: () => {
-        this.intents.clear(); this.particles.clear(); this.blasts.clear(); this.enemies.clearHazards();
+        this.intents.clear(); this.particles.clear(); this.blasts.clear(); this.enemies.clearHazards(); this.missiles.clear();
+        // the sky's hindrances run only in the sky: they end as it is left
+        if (this.realm === 'sky') this.sky?.leave();
       },
       hooks: kind => { if (kind === 'sky') this.sky?.install(this.bus); else this.bus.off(null, 'sky'); },
     };
@@ -763,7 +765,7 @@ export class Game {
   }
 
   /** The sky, built the first time the run reaches it (SKY.md §2.1: lazily, from its own forks). */
-  private skyRealm(): SkyRealmApi {
+  private skyRealm(): SkyRealm {
     if (!this.sky) this.sky = SkyRealm.create(this.makeSkyHost(), this.skyRoot, layout => this.makeSkySet(layout));
     return this.sky;
   }
@@ -829,7 +831,8 @@ export class Game {
       player: () => player,
       actors: () => this.actors,
       world: () => this.sky!.set.world,
-      debris: () => this.debris,
+      // the sky's own loose cubes, whichever world is active (the sky's nests and blocks are its own)
+      debris: () => this.sky!.set.debris,
       hazards: () => this.enemies.hazardField,
       fork: (...path) => this.rng.fork(...path),
       fx: (kind, x, y, z, n) => this.skyFx(kind, x, y, z, n),
@@ -906,10 +909,11 @@ export class Game {
   private passRealm(t: Travel) {
     if (t.to === this.realm) return;
     const incoming = t.to === 'sky' ? this.skyRealm().set : this.stash!;
-    const landing = t.to === 'dungeon' && this.underground !== null ? this.undergroundSpawn(this.underground) : null;
-    this.underground = null;
     this.stash = swapRealm(this.realmHost(), incoming, this.dungeonRoot, this.skyRoot);
     this.player.float = t.float;
+    // a capture's landing is carved and activated only now, with the dungeon installed (never into the sky's fields)
+    const landing = t.to === 'dungeon' && this.underground !== null ? this.undergroundSpawn(this.underground) : null;
+    this.underground = null;
     const at = landing ?? t.at;
     this.teleport(at[0], at[1], at[2]);
     this.hud.setMinimap(t.to === 'dungeon');
@@ -932,6 +936,8 @@ export class Game {
   /** A new run starts in the dungeon: the gate stops, the sky is set aside and its set disposed (SKY.md §2.1). */
   private leaveSky() {
     this.gate.cancel();
+    // a run from the dungeon shows its minimap (passRealm hides it in the sky); begin() comes here too
+    this.hud.setMinimap(true);
     if (!this.sky) return;
     if (this.realm === 'sky') this.stash = swapRealm(this.realmHost(), this.stash!, this.dungeonRoot, this.skyRoot);
     this.sky.dispose();
@@ -1107,6 +1113,8 @@ export class Game {
    */
   damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch): boolean {
     const p = this.player;
+    // a sky actor has no health the dungeon can take, and no Enemies entry to hurt (SKY.md §5.2)
+    if (t.kind === 'sky') return false;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     if (t === p && p.invulnT > 0) return false;
     if (t === p && p.starT > 0 && kind !== 'toll') return false;
@@ -1869,6 +1877,7 @@ export class Game {
     }
     // every actor in range, whatever its side (friendly fire, like bombs on the player)
     for (const a of [...this.actors.all()]) {
+      if (a.kind === 'sky') continue;
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
@@ -2215,7 +2224,7 @@ export class Game {
   /** What a missile meets besides blocks: any actor but you (allies too), and loose bombs. */
   private missileMeets(x: number, y: number, z: number) {
     for (const a of this.actors.all()) {
-      if (a.kind === 'player' || !a.alive || a.spawning > 0) continue;
+      if (a.kind === 'player' || a.kind === 'sky' || !a.alive || a.spawning > 0) continue;
       const b = a.body;
       if (Math.abs(x - b.x) < b.hw + 0.2 && Math.abs(z - b.z) < b.hw + 0.2 && y > b.y - 0.2 && y < b.y + b.h + 0.2) return true;
     }
@@ -2237,7 +2246,7 @@ export class Game {
       if (d <= r) this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r));
     }
     for (const a of [...this.actors.all()]) {
-      if (a.kind === 'player' || !a.alive || a.spawning > 0) continue;
+      if (a.kind === 'player' || a.kind === 'sky' || !a.alive || a.spawning > 0) continue;
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
     }
