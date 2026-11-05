@@ -6,6 +6,7 @@ import { denseGround } from './dense-ground';
 import { fadingPlatforms } from './fading-platforms';
 import { knockback } from './knockback';
 import { openingHoles } from './opening-holes';
+import { pandaBamboo } from './panda-bamboo';
 import { paralysis } from './paralysis';
 import { waterCurrents } from './water-currents';
 import { wind } from './wind';
@@ -19,4 +20,5 @@ export const HINDRANCES: { readonly [K in HindranceId]: Hindrance<HindranceParam
   'cube-cage': cubeCage,
   'water-currents': waterCurrents,
   'paralysis': paralysis,
+  'panda-bamboo': pandaBamboo,
 };
