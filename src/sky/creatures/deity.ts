@@ -52,6 +52,11 @@ export function reachOf(ctx: DeityCtx, attack: AttackDef): number {
   return f;
 }
 
+/** Every deity machine by its actor, so an animal's file can drive the body while `anchored` is false (SKY.md §5.3). */
+const BY_ACTOR = new WeakMap<SkyActor, Deity>();
+/** The machine of a deity actor, or null (the lion's pacing and glides, B4). */
+export const deityOf = (a: SkyActor): Deity | null => BY_ACTOR.get(a) ?? null;
+
 /** One state's behaviour, the same shape for the core states and the custom ones. */
 interface Rec {
   enter?(): void;
@@ -103,6 +108,7 @@ export class Deity implements DeityApi {
       if (s.replaces) this.replacing.set(s.replaces, s);
     }
     this.home = { x: plan.seat.x + 0.5, y: plan.seat.y, z: plan.seat.z + 0.5 };
+    BY_ACTOR.set(actor, this);
     const self = this;
     this.ctx = {
       host,
@@ -289,6 +295,11 @@ export class Deity implements DeityApi {
   private drain(n: number) {
     if (this.runDrained) return;
     if (this.deps.spirit.drain(n)) this.runDrained = true;
+  }
+
+  /** A drain outside an attack run (the lion's Stare-down, a rule): through the spirit gate; true when it landed. */
+  drainNow(n: number): boolean {
+    return this.deps.spirit.drain(n);
   }
 
   /** The plan's place farthest from the player, when it is at least `min` away; otherwise null. */

@@ -6,6 +6,7 @@ import { denseGround } from './dense-ground';
 import { fadingPlatforms } from './fading-platforms';
 import { knockback } from './knockback';
 import { koalaBellow, koalaHaze, koalaHold, koalaHug, koalaLob, koalaLullaby } from './koala-set';
+import { lionRing } from './lion-ring';
 import { openingHoles } from './opening-holes';
 import { paralysis } from './paralysis';
 import { waterCurrents } from './water-currents';
@@ -21,4 +22,5 @@ export const HINDRANCES: { readonly [K in HindranceId]: Hindrance<HindranceParam
   'water-currents': waterCurrents,
   'paralysis': paralysis,
   'koala-lob': koalaLob, 'koala-hug': koalaHug, 'koala-haze': koalaHaze, 'koala-lullaby': koalaLullaby, 'koala-bellow': koalaBellow, 'koala-hold': koalaHold,
+  'lion-ring': lionRing,
 };
