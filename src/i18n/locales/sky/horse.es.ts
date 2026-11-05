@@ -6,4 +6,8 @@ import type { SKY_HORSE_EN } from './horse.en';
 
 export const SKY_HORSE_ES: { [K in keyof typeof SKY_HORSE_EN]: Message } = {
   'level.sky5': 'El prado',
+  'sky.horse.name': 'El caballo',
+  'sky.horse.minion': 'Un caballo de la manada',
+  'toast.horseWon': 'El caballo deja de saltar, y el viento se calma.',
+  'toast.horseHerds': 'El caballo te arrea y se lleva una práctica.',
 };

@@ -4,6 +4,7 @@ import type { Hindrance, HindranceId, HindranceParams } from '../types';
 import { cubeCage } from './cube-cage';
 import { denseGround } from './dense-ground';
 import { fadingPlatforms } from './fading-platforms';
+import { horseRing } from './horse-ring';
 import { knockback } from './knockback';
 import { openingHoles } from './opening-holes';
 import { paralysis } from './paralysis';
@@ -19,4 +20,5 @@ export const HINDRANCES: { readonly [K in HindranceId]: Hindrance<HindranceParam
   'cube-cage': cubeCage,
   'water-currents': waterCurrents,
   'paralysis': paralysis,
+  'horse-ring': horseRing,
 };

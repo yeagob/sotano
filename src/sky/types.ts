@@ -544,8 +544,10 @@ export type CreatureViewCtor = new (root: THREE.Object3D) => CreatureViewApi;
 
 // ───────────────────────── hindrances (§6) ─────────────────────────
 
-export type HindranceId = 'knockback' | 'wind' | 'opening-holes' | 'fading-platforms' | 'dense-ground' | 'cube-cage' | 'water-currents' | 'paralysis';
-export const HINDRANCE_IDS: readonly HindranceId[] = ['knockback', 'wind', 'opening-holes', 'fading-platforms', 'dense-ground', 'cube-cage', 'water-currents', 'paralysis'];
+export type HindranceId = 'knockback' | 'wind' | 'opening-holes' | 'fading-platforms' | 'dense-ground' | 'cube-cage' | 'water-currents' | 'paralysis'
+  | 'horse-ring';
+export const HINDRANCE_IDS: readonly HindranceId[] = ['knockback', 'wind', 'opening-holes', 'fading-platforms', 'dense-ground', 'cube-cage', 'water-currents', 'paralysis',
+  'horse-ring'];
 
 export interface KnockbackParams { from: Vec3; shape: 'ring' | 'line' | 'cone'; radius: number; dir?: Vec3; strength: number }
 export interface WindParams { from: Vec3; to: Vec3; radius: number; strength: number; seconds: number }
@@ -556,6 +558,8 @@ export interface DenseGroundParams { cells: readonly number[]; seconds: number; 
 export interface CubeCageParams { around: Vec3; seconds: number }
 export interface WaterCurrentsParams { channel: Channel; seconds: number; push: number }
 export interface ParalysisParams { from: Vec3; speed: number; radius: number; hold: number }
+/** The horse's spreading ring (B5, additive): `height` blocks tall, it grows at `speed` to `radius` and pushes once. */
+export interface HorseRingParams { from: Vec3; speed: number; radius: number; height: number; strength: number }
 export interface HindranceParams {
   'knockback': KnockbackParams;
   'wind': WindParams;
@@ -565,6 +569,7 @@ export interface HindranceParams {
   'cube-cage': CubeCageParams;
   'water-currents': WaterCurrentsParams;
   'paralysis': ParalysisParams;
+  'horse-ring': HorseRingParams;
 }
 
 /** What the player sees and hears, for the full length. */
