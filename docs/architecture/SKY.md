@@ -169,11 +169,11 @@ These are the whole budget; review rejects any other edit to `game.ts` [M9]. Eac
 | 7 | `frame()` (2826, 2830, 2833–2853) | streaming, visible range and atmosphere by realm | R1 |
 | 8 | `get transitioning` (2955), `get debug` (2958) | `|| this.gate.busy`; realm, exceptions, cached chunks | R1 |
 | 9 | `makeSkyHost()` (new, beside `enemyHost`, 904) | the whole `SkyHost` (§5.2), written once | R1 |
-| 10 | intention callback `enemyAt` (337) | asks the touch router (§5.7) | R2 |
-| 11 | `damageActor()` (855), `intentTouch()` (1085) | first line: a routed actor goes to its provider | R2 |
-| 12 | weapon host `targets()` and `hit()` (768–775) | targets and hits through the touch router [B2] | R2 |
-| 13 | `intentHitsBlock()` (1520), positive branch | `if (this.sky?.positiveHitsBlock(hit)) return true;` (law 3.2) | R2 |
-| 14 | `tryPlace()` (2082) | `world.placing = true` around the placement [M5] | R2 |
+| 10 | intention callback `enemyAt` (386) | asks the touch router (§5.7) — built (W4-A) | R2 |
+| 11 | `damageActor()` (1128, guard kept), `intentTouch()` (1468) | first line: a routed actor goes to the router — built (W4-A) | R2 |
+| 12 | weapon host `targets()` (1037) and `hit()` (1043) | targets and hits through the touch router [B2] — built (W4-A) | R2 |
+| 13 | `intentHitsBlock()` (1910), positive branch (1915–1917) | `if (this.realm === 'sky' && this.sky?.positiveHitsBlock(hit)) return true;` (law 3.2) — built (W4-A) | R2 |
+| 14 | `tryPlace()` (2534), the `set` (2569–2570) | `world.placing = true` around the placement [M5], sky only — built (W4-A) | R2 |
 | 15 | the `jump` emit (2880) | passes `air` (§9) | R2 |
 | 16 | `newSandbox()`, `begin()`, `sandboxSpawn()` | a scenario may start in the sky (§15); `debugSky(...)` | R2 |
 | 17 | `carve()` (544) and floor 9's carve | the entity is placed in silence; the roots' staircase when the run option is set (§10.2) | E2 |
@@ -517,7 +517,7 @@ Minions choose places (the column top nearest the player and above them, the bra
 
 ### 5.7 The touch router [B2, M3]
 
-One pure module, `src/combat/touch-router.ts` (R2), is the only way an intention, a weapon stroke, a blast or a thrown cube finds an actor that is not a projection:
+Built (W4-A). One pure module, `src/combat/touch-router.ts`, is the way an intention, a weapon stroke or a blast finds an actor that is not a projection. Thrown cubes do not reach sky actors yet (`cubeStrikes`, outside wave 4):
 
 ```ts
 export interface TouchTarget { id: number; x: number; y: number; z: number; hw: number; h: number }
@@ -527,14 +527,24 @@ export interface TouchProvider {
   targets(): readonly TouchTarget[];
   touch(id: number, polarity: Polarity, warm: boolean, p: Vec3, kind: DamageKind): void;
 }
-export class TouchRouter { add(p: TouchProvider): void; remove(p: TouchProvider): void; /* at, targets, touch, owns over all */ }
+export class TouchRouter {
+  add(p: TouchProvider): void; remove(p: TouchProvider): void;
+  owns(id: number): boolean;     // a provider owns it and it is not parked (targets() leaves parked ones out)
+  at(x, y, z, r): number;        // the first provider's id that holds the point; −1 none
+  targets(): TouchTarget[];      // every unparked box, providers in the order added
+  touch(id, polarity, warm, p, kind): void;
+  touchBody(id, polarity, warm, kind): boolean;  // at the body centre; false when the id is not routed
+  blast(c, r, polarity, warm, kind): void;       // each body centre within r + 0.4 gets one touch, at the nearest point of its box
+}
 ```
 
-- The intention callback `enemyAt` (337) asks the router first, then `enemies.at`.
-- The weapon host's `targets()` (768) concatenates the router's targets with the projections; its `hit()` sends a routed id to the router, never to `intentTouch`. A beam's repeat ticks arrive with `warm = false`; providers count a positive hit only on a warm touch, so a beam counts once per stroke.
-- `damageActor` (855) and `intentTouch` (1085) send a routed id to its provider on their first line (blasts and cubes become touches with polarity `negative`).
-- Providers: `SkyCreatures` (registered while the sky is active) and the Spiked Entity (registered while its floor exists, E2).
-- `tests/touch-router.test.ts` drives the router with fake providers for every weapon id (`blade`, `beam`, the great cut) and the plain shot: each lands a positive touch on a sky target; a beam stroke counts one.
+- The intention callback `enemyAt` (386) asks the router first, then `enemies.at`. A routed id reaches `intentTouch` (1468), which sends it to the router on its first line, at the body centre.
+- The weapon host's `targets()` (1037) lists the router's targets before the projections. Its `hit()` (1043) sends a routed id through `intentTouch` and skips the stroke's projection effects (`strokeHit`). A beam's repeat ticks arrive with `warm = false`; providers count a positive hit only on a warm touch, so a beam counts once per stroke.
+- A blast (`blast`, 1894) gives every routed creature in its reach one touch: a negative blast is one puff; the love explosion (`loveBlast`, 2269) is one warm positive touch per creature, whatever the radius. A negative missile that meets a deity (`missileMeets`, 2244: `router.at` with 0.2) explodes as a bomb; a positive one is the love explosion alone, with no direct hit.
+- `damageActor` (1128) keeps its `kind === 'sky'` early return as a guard; no routed actor ever takes health.
+- Law 3.2 (seam 13): a positive hit on a block the player placed goes to `SkyRealm.positiveHitsBlock`, in the sky only. `tryPlace` (2534) sets `placing` around the placement, in the sky only, so only the player's blocks are `Placed` (§3.4). Positive weapon strokes do not reach placed blocks yet: the stroke's `cut` and `breakable` are outside this wave.
+- Providers: `SkyCreatures` is added to the router when the sky is entered and removed when it is left (the `hooks` callback, 761). The Spiked Entity is not registered yet (E2).
+- Tests: `tests/touch-router.test.ts` (fake providers): every kind a weapon stroke or shot makes (`intent`, `cut`, `beam`) lands one positive touch on a sky target at its body centre; a beam stroke counts one; parked creatures are skipped by `owns`, `at`, `targets` and blasts; a love blast touches each creature in reach once and none out of reach; a negative blast is one puff per creature. `tests/missiles.test.ts`: a missile meets a routed box. `tests/sky-laws.test.ts`: a cell is `Placed` only while `placing` is set.
 
 ## 6. The eight hindrances (`src/sky/hindrances/`)
 

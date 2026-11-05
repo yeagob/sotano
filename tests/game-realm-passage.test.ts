@@ -6,6 +6,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { Missiles } from '../src/combat/missiles';
+import { TouchRouter } from '../src/combat/touch-router';
 import { AIR } from '../src/content/materials';
 import { createBus } from '../src/game/events';
 import type { Travel } from '../src/sky/types';
@@ -77,6 +78,7 @@ function skyRig() {
     particles: { clear() {}, burst() {} },
     blasts: { clear() {} },
     missiles: new Missiles(),
+    router: new TouchRouter(),
     doors: { solidAt: () => false },
     bus: createBus(),
     player,
@@ -167,6 +169,25 @@ describe('the dungeon\'s damage and blasts pass a sky actor by (SKY.md §5.2)', 
     const rig = skyRig();
     withDeity(rig, deity());
     expect(rig.g.missileMeets(2.5, 1, 2.5)).toBe(false);
+  });
+
+  it('a routed sky deity is met by a missile, and a bomb next to it gives it one puff and no harm', () => {
+    const rig = skyRig();
+    const d = deity();
+    withDeity(rig, d);
+    const box = { id: 9, x: 2.5, y: 0, z: 2.5, hw: 0.5, h: 1.8 };
+    const touches: unknown[][] = [];
+    rig.g.router.add({
+      owns: (id: number) => id === 9,
+      at: () => 9,
+      targets: () => [box],
+      touch: (...args: unknown[]) => { touches.push(args); },
+    });
+    expect(rig.g.missileMeets(2.5, 1, 2.5)).toBe(true);
+    rig.g.blast({ x: 2.5, y: 1, z: 2.5, radius: 3, damage: 40, actorDamage: 30, source: 'bomb', owner: 'world' });
+    expect(touches).toHaveLength(1);
+    expect(touches[0].slice(0, 3)).toEqual([9, 'negative', true]);
+    expect(d.hp).toBe(100);
   });
 });
 

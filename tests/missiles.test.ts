@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { MISSILE_ARM, MISSILE_RANGE, MISSILE_SPEED, MISSILE_SPEED0, Missiles, muzzleBlocked, type MissileWorld } from '../src/combat/missiles';
+import { TouchRouter } from '../src/combat/touch-router';
 import { ITEM_BY_ID } from '../src/content/items';
 import { computeStats } from '../src/core/stats';
 import { DOUBLE_TAP_MS } from '../src/input/bindings';
@@ -74,6 +75,22 @@ describe('missiles', () => {
     expect(muzzleBlocked(solid, 0.5, 0.5, 0.5, 1, 0, 0)).toBe(true);
     expect(muzzleBlocked((x: number) => x >= 3, 0.5, 0.5, 0.5, 1, 0, 0)).toBe(false);
     expect(muzzleBlocked(solid, 0.5, 0.5, 0.5, -1, 0, 0)).toBe(false);
+  });
+
+  it('meet a sky creature’s box the router holds, and end there', () => {
+    const router = new TouchRouter();
+    router.add({
+      owns: id => id === 9,
+      at: (x, y, z, r) => (Math.abs(x - 6) < 1 + r && Math.abs(z) < 1 + r && y > -r && y < 4 + r ? 9 : -1),
+      targets: () => [{ id: 9, x: 6, y: 0, z: 0, hw: 1, h: 4 }],
+      touch: () => {},
+    });
+    const ms = new Missiles();
+    ms.launch(0.5, 2, 0.5, 1, 0, 0, 'negative');
+    const [end] = run(ms, { solid: () => false, meets: (x, y, z) => router.at(x, y, z, 0.2) >= 0 }, 2);
+    expect(end.why).toBe('meet');
+    expect(end.x).toBeGreaterThan(4.5);
+    expect(end.x).toBeLessThan(6);
   });
 });
 

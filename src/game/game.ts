@@ -9,6 +9,7 @@ import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolve
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
+import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
@@ -93,7 +94,7 @@ import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
 import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
 import { SkyRealm } from '../sky/sky-realm';
-import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type Travel } from '../sky/types';
+import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type SkyWorldApi, type Travel } from '../sky/types';
 import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
 
@@ -227,6 +228,8 @@ export class Game {
   /** The inactive world's set: the dungeon's while in the sky, the sky's below. Null until the sky is first reached. */
   private stash: RealmSet | null = null;
   private sky: SkyRealm | null = null;
+  /** Every non-projection actor an intention, stroke or blast can reach (SKY.md §5.7): the sky's creatures while the sky is active. */
+  private readonly router = new TouchRouter();
   private readonly dungeonRoot = new THREE.Group();
   private readonly skyRoot = new THREE.Group();
   private gate!: RealmGate;
@@ -380,7 +383,10 @@ export class Game {
         const k = t.knock * 6 / Math.max(1, v.length());
         this.hitCube(i, v.x * k, v.y * k + 1, v.z * k);
       },
-      enemyAt: (x, y, z, r, polarity) => this.enemies.at(x, y, z, r, e => this.meets(e, polarity)),
+      enemyAt: (x, y, z, r, polarity) => {
+        const routed = this.router.at(x, y, z, r);
+        return routed >= 0 ? routed : this.enemies.at(x, y, z, r, e => this.meets(e, polarity));
+      },
       mirrorAxis: id => (this.enemies.get(id)?.def === 'hall-of-mirrors' ? 'z' : null),
       touched: (x, _y, z, polarity) => this.hearPresences(x, z, polarity),
       hitEnemy: (uid, v, t) => {
@@ -752,7 +758,11 @@ export class Game {
         // the sky's hindrances run only in the sky: they end as it is left
         if (this.realm === 'sky') this.sky?.leave();
       },
-      hooks: kind => { if (kind === 'sky') this.sky?.install(this.bus); else this.bus.off(null, 'sky'); },
+      hooks: kind => {
+        const creatures = this.sky?.creatures;
+        if (kind === 'sky') { this.sky?.install(this.bus); if (creatures) this.router.add(creatures); }
+        else { this.bus.off(null, 'sky'); if (creatures) this.router.remove(creatures); }
+      },
     };
   }
 
@@ -1024,14 +1034,18 @@ export class Game {
       },
       // a stroke that reaches the alembic brews at it, exactly as a shot does (intentHitsBlock)
       answer: (x, y, z) => { if (this.world.get(x, y, z) === MAT.alembic) this.hitLab(x, y, z, this.stroke.polarity); },
-      targets: () => this.enemies.list
-        .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
-        .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
+      targets: () => [
+        ...this.router.targets(),
+        ...this.enemies.list
+          .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
+          .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
+      ],
       hit: (id, damage, kx, kz, source) => {
         const warm = !this.stroke.warmed.has(id);
         this.stroke.warmed.add(id);
         this.intentTouch(id, damage, kx, kz, source === 'beam' ? 'beam' : 'cut', source, this.stroke.polarity, warm);
-        if (warm && source !== 'blade' && this.stroke.intent) this.strokeHit(id, kx, kz, this.stroke.intent);
+        // a routed actor takes the stroke through the router alone: no projection effects reach it
+        if (warm && source !== 'blade' && this.stroke.intent && !this.router.owns(id)) this.strokeHit(id, kx, kz, this.stroke.intent);
       },
       clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
       clearCubes: inside => this.clearCubesIn(inside),
@@ -1452,6 +1466,7 @@ export class Game {
    * The rules are in combat/polarity.ts. `warm` is false for the repeat ticks of a beam.
    */
   private intentTouch(id: number, damage: number, kx: number, kz: number, kind: DamageKind, source: string, polarity: Polarity, warm: boolean) {
+    if (this.router.owns(id)) { this.router.touchBody(id, polarity, warm, kind); return; }
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
@@ -1875,6 +1890,8 @@ export class Game {
         this.bombCause.set(i, cause);
       }
     }
+    // a routed creature in range takes one puff (law 3.3); projections and the rest are below
+    this.router.blast({ x, y, z }, r, 'negative', true, 'explosion');
     // every actor in range, whatever its side (friendly fire, like bombs on the player)
     for (const a of [...this.actors.all()]) {
       if (a.kind === 'sky') continue;
@@ -1896,6 +1913,8 @@ export class Game {
     if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
     if (id === MAT.kitchen) return false;   // unbreakable, and an intention does nothing to it
     if (polarity === 'positive') {
+      // law 3.2: a positive hit on a block the player placed removes it (the sky's cells only)
+      if (this.realm === 'sky' && this.sky?.positiveHitsBlock({ x: hit.x, y: hit.y, z: hit.z, cell: this.world.idx(hit.x, hit.y, hit.z), actor: -1, weapon: 'intent', warm: true })) return true;
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
       else {
@@ -2223,6 +2242,7 @@ export class Game {
 
   /** What a missile meets besides blocks: any actor but you (allies too), and loose bombs. */
   private missileMeets(x: number, y: number, z: number) {
+    if (this.router.at(x, y, z, 0.2) >= 0) return true;
     for (const a of this.actors.all()) {
       if (a.kind === 'player' || a.kind === 'sky' || !a.alive || a.spawning > 0) continue;
       const b = a.body;
@@ -2245,6 +2265,8 @@ export class Game {
       const d = Math.hypot(bx + 0.5 - x, by + 0.5 - y, bz + 0.5 - z);
       if (d <= r) this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r));
     }
+    // a routed creature gets one warm touch per explosion, whatever the radius (SKY.md §5.7)
+    this.router.blast({ x, y, z }, r, 'positive', true, 'item');
     for (const a of [...this.actors.all()]) {
       if (a.kind === 'player' || a.kind === 'sky' || !a.alive || a.spawning > 0) continue;
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
@@ -2542,7 +2564,10 @@ export class Game {
     }
     const ev = this.bus.emit('blockPlace', { x, y, z, material: p.top });
     if (ev.cancelled) return;
-    this.world.set(x, y, z, ev.material);
+    // the sky marks the player's block Placed only while it is being set (law 3.2, SKY.md §3.4)
+    const sky = this.realm === 'sky' ? this.world as SkyWorldApi : null;
+    if (sky) sky.placing = true;
+    try { this.world.set(x, y, z, ev.material); } finally { if (sky) sky.placing = false; }
     this.debris.clearCell(x, y, z);
     this.nudge(push!);
     p.hand.pop();
