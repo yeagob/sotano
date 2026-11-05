@@ -112,6 +112,7 @@ export const ES: Catalog = {
     'controls.polarity': 'cambiar entre buenas y malas intenciones: las buenas curan y convierten enemigos en aliados; las malas rompen y destruyen',
 
     'hud.floor': 'Piso {n}',
+    'hud.spirit': 'Espíritu',
     'level.roots': 'Las raíces',
     'level.circle1': 'El limbo',
     'level.circle2': 'Los vientos',

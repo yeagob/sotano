@@ -291,7 +291,9 @@ export interface AttackDef {
   /** The first stage it is used in. */
   stage: Stage;
   telegraph: TelegraphSpec;
-  /** Runs a hindrance through `ctx.hinder`, after the telegraph. */
+  /** A special attack's drain: the spirit its act takes with `ctx.drain` when it lands (guardians §6.6). Unset: no drain. */
+  spirit?: number;
+  /** Runs a hindrance through `ctx.hinder`, after the telegraph; a drain attack calls `ctx.drain(spirit)` here too. */
   act(ctx: DeityCtx): void;
 }
 
@@ -402,6 +404,8 @@ export interface DeityCtx {
   distance(): number;
   /** A place of the plan far from the player (teleport far: never within 12). */
   far(min: number): Place | null;
+  /** Takes `n` spirit when the attack lands, if the spirit gate allows it (at most once per attack run). */
+  drain(n: number): void;
 }
 
 export interface Gait {
@@ -473,6 +477,16 @@ export interface CreatureDeps {
   effects: SkyEffectsApi;
   puff: PuffApi;
   knock: TowerKnockApi;
+  spirit: SpiritApi;
+}
+/** The spirit gate (src/sky/laws/spirit.ts): the only way a special attack drains spirit. */
+export interface SpiritApi {
+  /** Once a frame: notes the frames in which the player is held. */
+  update(): void;
+  /** True when a drain could land now: not held, not within 1 s after, 6 s after the last drain. */
+  canDrain(): boolean;
+  /** Takes `n` spirit if it can land (and sends the player underground at zero); true when it did. */
+  drain(n: number): boolean;
 }
 export type SkyCreaturesCtor = new (root: THREE.Group, host: SkyHost, deps: CreatureDeps) => SkyCreaturesApi;
 
@@ -750,6 +764,8 @@ export interface SkySoundPart {
 
 export interface SkyPlayer {
   body: Body; eye: Vec3; aim: Vec3; hand: readonly Carried[];
+  /** Held in place by a capture or a hold: no drain lands (guardians §6.6). */
+  readonly held: boolean;
   push(vx: number, vy: number, vz: number): void;
   slow(f: number, s: number): void;
   hold(s: number): void;
@@ -783,13 +799,15 @@ export interface SkyHost {
   /** A pickup in the sky's Pickups. */
   gift(itemId: string, x: number, y: number, z: number): void;
   travel(t: Travel): void;
-  /** Special attacks drain spirit, never health. */
+  /** Special attacks drain spirit, never health. Called by the spirit gate (SpiritLaw) only. */
   drainSpirit(amount: number): void;
   spirit(): number;
+  /** A won deity refills spirit to SPIRIT_MAX (provisional, SKY.md §19). */
+  refillSpirit(): void;
   /** A capture takes one practice the player holds, at random, for the rest of the run. */
   takeRandomPractice(): ItemId | null;
-  /** Spirit at zero: the game picks one floor of `floors` with `rng`, sends the player there and refills spirit to SPIRIT_MAX. */
-  sendUnderground(floors: readonly number[], rng: Rng): void;
+  /** Spirit at zero: the game picks one floor of `floors` with `rng` and sends the player there; spirit refills to SPIRIT_MAX at the teleport. False when the game refuses now (its gate is busy): the caller asks again. */
+  sendUnderground(floors: readonly number[], rng: Rng): boolean;
 }
 
 // ───────────────────────── touch routing (§5.7) ─────────────────────────

@@ -110,6 +110,7 @@ const messages = {
 
   // ── HUD ──
   'hud.floor': 'Floor {n}',
+  'hud.spirit': 'Spirit',
   'level.roots': 'The roots',
   'level.circle1': 'Limbo',
   'level.circle2': 'The winds',

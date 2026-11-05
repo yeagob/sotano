@@ -98,7 +98,7 @@ When the player builds a tower that brings them to a deity's height, the deity l
 
 ### 3.10 The player cannot die in the sky
 
-Status: decided (owner, 2026-11-03) for the rule and its consequences. Provisional for every default under it, listed at the end of this section.
+Status: decided (owner, 2026-11-03) for the rule and its consequences. Provisional for every default under it, listed at the end of this section. Build (W4-D): the spirit gate, the fall underground at zero and the spirit outline in the sky are in code (`SpiritLaw`, `docs/architecture/SKY.md` §5.2, DECISIONS §10.7); no deity attack drains spirit or captures yet, so the gate is not seen in play until B1–B5.
 
 The player cannot die in the sky, and no sky creature takes the player's health. The owner's rule (decided, owner, 2026-11-03): if a deity captures the player, it takes one of the player's practices; if the player's spirit reaches zero, the player is teleported to a random floor of the underground. The three parts:
 

@@ -87,6 +87,8 @@ export class Deity implements DeityApi {
   private replacing = new Map<string, CustomState>();
   private ctx: DeityCtx;
   private coreRecs: Record<string, Rec>;
+  /** This attack run has drained already: a run drains once (guardians §6.6). Reset when a run begins. */
+  private runDrained = false;
 
   constructor(
     readonly actor: SkyActor,
@@ -116,6 +118,7 @@ export class Deity implements DeityApi {
       still: () => self.stillFor,
       distance: () => self.distanceToPlayer(),
       far: min => self.farPlace(min),
+      drain: n => self.drain(n),
     };
     this.coreRecs = {
       Idle: { next: () => (this.inSight() ? 'Watching' : null) },
@@ -134,6 +137,7 @@ export class Deity implements DeityApi {
           const a = this.attack;
           if (!a) return;
           this.acted = false;
+          this.runDrained = false;
           this.lastAttack = a.id;
           this.telegraphing = a.telegraph;
           const b = actor.body;
@@ -272,11 +276,18 @@ export class Deity implements DeityApi {
 
   /** An attack of the current stage, never the last one again while another is available. */
   private choose(): AttackDef | null {
-    const ok = this.def.attacks.filter(a => a.stage <= this.level);
+    // a drain attack starts its telegraph only where its drain could land (SpiritLaw.canDrain)
+    const ok = this.def.attacks.filter(a => a.stage <= this.level && (a.spirit === undefined || this.deps.spirit.canDrain()));
     if (ok.length === 0) return null;
     const fresh = ok.filter(a => a.id !== this.lastAttack);
     const pool = fresh.length > 0 ? fresh : ok;
     return pool[this.ctx.rng.int(0, pool.length - 1)];
+  }
+
+  /** The attack's drain: through the spirit gate, once per run; a refused drain leaves the run open. */
+  private drain(n: number) {
+    if (this.runDrained) return;
+    if (this.deps.spirit.drain(n)) this.runDrained = true;
   }
 
   /** The plan's place farthest from the player, when it is at least `min` away; otherwise null. */

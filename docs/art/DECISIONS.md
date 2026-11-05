@@ -852,6 +852,22 @@ Six kinds of heart ([issue #31](https://github.com/yeagob/sotano/issues/31)). Dr
 
 **Not verified by capture:** the in-game `?gallery=hud` section (which lists every `HUD_ICONS` glyph) and the pickups at 8 and 20 blocks in fog were not captured by the art agent; a scratchpad preview of every glyph and pickup in colour, greyscale and the three CVD simulations was. The owner or the main session captures the gallery before the hearts ship.
 
+### 10.7 Spirit, the outline of the hearts (art, 2026-11-05, package W4-D; OWNER to confirm the look)
+
+Spirit is the player's reserve in the sky: the light a special attack can dim without touching life (`docs/design/not-built/sky/README.md` §3.10: "Spirit is the outline of the hearts, not life"). At zero the player is sent underground.
+
+**Side.** The player's light. It uses `light.core` and the `ink.void` keyline and the number in `bone.paper`: no `cold.*`, no `life.*`, no attack red, no warning yellow, no path hue. Nothing in it is a projection's.
+
+**The look (as built, `src/render/spirit-ring.ts`, `index.html` `.spirit-ring`).**
+- A **1 `--u` `light.core` line** runs round the hearts row, 3 `--u` outside it, with a **1 `--u` `ink.void` keyline** on each side of it (a 3 `--u` dark band with the light in its centre).
+- Its **length is spirit / 100 of the outline**, drawn clockwise from the top left, so a full outline is a whole ring and an empty one is none. The line slides to its new length over **0.3 s**; nothing flashes, pulses or shakes, and the HUD never distorts.
+- The **number** beside the row's right end, in Pixelify Sans at 20 px (§10.2), `bone.paper`, `tabular-nums`, with the counters' 1 px `ink.void` outline. It is a whole number out of 100 (owner, 2026-11-05). The face is declared; it falls back to the system sans until the owner's binary font is self-hosted (see [ART-NOT-BUILT](../design/not-built/feel/ART-NOT-BUILT.md)).
+- **Shown only in the sky**, as a thin light: the dungeon's HUD has no spirit. At zero there is no outline and the number reads **0** through the gate's fade; the refill comes with the teleport, so the number is full again when the player next comes up.
+
+**Measured.** No new token. The outline is value-separated (a light line between two dark keylines), so it reads without hue under the three CVD simulations; it is not measured in ΔE, since it has no colour contrast to hold against red or cold. It is not red (red is life, §3.12 rule 2) and not cold (the projections' side). **Not captured:** `?gallery=spirit` (100, 46 and 0, on the light deck and the dark void, in colour, greyscale and the CVD filters) is built but its captures are not in this ledger yet; the owner or the main session captures them before the outline ships to players.
+
+**Meaning test.** (a) The reserve the patterns cannot take as life: what is left when they only dim the light. (b) The player's side: light, with its keyline. (c) What the intention does to it: a special attack drains it; at zero the player is sent down, and the refill is the player's own return. (d) Without text: a light ring round the hearts that empties clockwise, and a number. (e) It is not mistaken for health: the hearts keep their own red inside, and the light stands outside them, so a drain never reads as the loss of a heart.
+
 ---
 
 ## 11. Iconographic motifs and the meaning test
