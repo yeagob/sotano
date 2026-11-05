@@ -796,9 +796,11 @@ export class Game {
   /** Loose cubes of a world: a bomb fuse in the sky works as it does below. */
   private newDebris(): DebrisSystem {
     const debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
-    debris.onFuse = (i, x, y, z) => {
+    debris.onFuse = (i, x, y, z, love) => {
       const chain = this.bombCause.get(i);
       this.bombCause.delete(i);
+      // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
+      if (love) { this.loveBlast(x, y, z); return; }
       this.blasts.current = chain ?? null;
       this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
       this.blasts.current = null;
@@ -2180,6 +2182,8 @@ export class Game {
     const b = p.body;
     const cube = this.debris.spawn(MAT.bomb, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, 0, b.vz * 0.5);
     this.debris.fuse[cube] = Math.max(0.1, ev.fuse);
+    // a bomb placed while the polarity is positive is white: its fuse ends in a love explosion (DECISIONS §7.8)
+    this.debris.love[cube] = this.polarity === 'positive' ? 1 : 0;
     this.bombCause.delete(cube); // the slot may have held an old bomb that despawned unlit
     this.debris.cooldown[cube] = 0.8;
     sfx3.fuse();

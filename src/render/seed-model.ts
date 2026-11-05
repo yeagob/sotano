@@ -12,6 +12,33 @@ const C = (SEED_W - 1) / 2;
 const SEAM = [0, 0, 0, 1, 1, 0, 0, -1, -1, 0, 0];
 const BRANCHES = ['6,5,1', '7,4,1', '2,6,1', '1,7,1', '6,6,-1', '7,7,-1', '2,3,-1', '1,2,-1'];
 
+/** `breakthrough`: the black seed of a negative bomb. `love`: the white seed of a bomb placed at positive polarity (DECISIONS §7.8). */
+export type SeedKind = 'breakthrough' | 'love';
+
+/** The palette of one seed: husk ramp, seams, heart, cap and halo. */
+interface Look {
+  dark: PalToken; base: PalToken; hi: PalToken;
+  lip: PalToken; lipEnd: PalToken; inner: PalToken; heart: PalToken; branch: PalToken;
+  top: PalToken;
+  halo: PalToken; haloRest: number; haloBreathe: number;
+}
+
+const LOOKS: Record<SeedKind, Look> = {
+  breakthrough: {
+    dark: 'mat.seed.dark', base: 'mat.seed.base', hi: 'mat.seed.hi',
+    lip: 'light.ember', lipEnd: 'light.dusk', inner: 'light.hot', heart: 'light.core', branch: 'light.dusk',
+    top: 'mat.seed.dark',
+    halo: 'light.ember', haloRest: 0.35, haloBreathe: 0.3,
+  },
+  // the white seed: a pale husk, gold lips and branches, the gold halo of the positive missile (§7.7)
+  love: {
+    dark: 'bone.dim', base: 'bone.paper', hi: 'light.core',
+    lip: 'light.gold', lipEnd: 'light.gold', inner: 'light.hot', heart: 'light.core', branch: 'light.gold',
+    top: 'bone.dim',
+    halo: 'light.gold', haloRest: 0.45, haloBreathe: 0.45,
+  },
+};
+
 type Cell = { t: PalToken; glow: boolean };
 
 function inBounds(x: number, y: number, z: number): boolean {
@@ -45,20 +72,20 @@ function solid(x: number, y: number, z: number): boolean {
   return filled(x, y, z) && !seam(x, y, z);
 }
 
-function cell(x: number, y: number, z: number): Cell {
+function cell(x: number, y: number, z: number, L: Look): Cell {
   const nearSeam = DIRS.some(([dx, dy, dz]) => seam(x + dx, y + dy, z + dz));
-  if (nearSeam && !shell(x, y, z)) return { t: y >= 4 && y <= 6 ? 'light.core' : 'light.hot', glow: true };
-  if (nearSeam) return { t: y >= 3 && y <= 7 ? 'light.ember' : 'light.dusk', glow: true };
+  if (nearSeam && !shell(x, y, z)) return { t: y >= 4 && y <= 6 ? L.heart : L.inner, glow: true };
+  if (nearSeam) return { t: y >= 3 && y <= 7 ? L.lip : L.lipEnd, glow: true };
   const side = z > C ? 1 : -1;
-  if (BRANCHES.includes(`${side > 0 ? x : 2 * C - x},${y},${side}`) && !filled(x, y, z + side)) return { t: 'light.dusk', glow: true };
-  if (y === SEED_H - 1) return { t: 'mat.seed.dark', glow: false };
+  if (BRANCHES.includes(`${side > 0 ? x : 2 * C - x},${y},${side}`) && !filled(x, y, z + side)) return { t: L.branch, glow: true };
+  if (y === SEED_H - 1) return { t: L.top, glow: false };
   const nx = (x - C) / 4.3, ny = (y - 5) / 5.5, nz = (z - C) / 4.3;
   const lit = -0.45 * nx + 0.75 * ny + 0.45 * nz;
   const rib = Math.round(((Math.atan2(z - C, x - C) + Math.PI) / (Math.PI * 2)) * 12) % 3 === 0;
-  if (y <= 1 || lit < -0.4) return { t: 'mat.seed.dark', glow: false };
-  if (rib) return { t: lit > -0.1 ? 'mat.seed.hi' : 'mat.seed.base', glow: false };
-  if (lit > 0.45) return { t: 'mat.seed.hi', glow: false };
-  return { t: 'mat.seed.base', glow: false };
+  if (y <= 1 || lit < -0.4) return { t: L.dark, glow: false };
+  if (rib) return { t: lit > -0.1 ? L.hi : L.base, glow: false };
+  if (lit > 0.45) return { t: L.hi, glow: false };
+  return { t: L.base, glow: false };
 }
 
 const QUADS: number[][][] = [
@@ -75,15 +102,18 @@ function faceQuad(x: number, y: number, z: number, d: number): number[] {
   return [0, 1, 2, 0, 2, 3].flatMap(i => [x + q[i][0], y + q[i][1], z + q[i][2]]);
 }
 
-let geos: { husk: THREE.BufferGeometry; glow: THREE.BufferGeometry } | null = null;
+type Geo = { husk: THREE.BufferGeometry; glow: THREE.BufferGeometry };
+const geos: Partial<Record<SeedKind, Geo>> = {};
 
-function geometries() {
-  if (geos) return geos;
+function geometries(kind: SeedKind): Geo {
+  const cached = geos[kind];
+  if (cached) return cached;
+  const L = LOOKS[kind];
   const out = { husk: { p: [] as number[], c: [] as number[] }, glow: { p: [] as number[], c: [] as number[] } };
   const col = new THREE.Color();
   for (let y = 0; y < SEED_H; y++) for (let z = 0; z < SEED_W; z++) for (let x = 0; x < SEED_W; x++) {
     if (!solid(x, y, z) || DIRS.every(([dx, dy, dz]) => solid(x + dx, y + dy, z + dz))) continue;
-    const k = cell(x, y, z);
+    const k = cell(x, y, z, L);
     const dst = k.glow ? out.glow : out.husk;
     col.setHex(pal(k.t));
     for (let d = 0; d < 6; d++) {
@@ -103,38 +133,40 @@ function geometries() {
     g.computeVertexNormals();
     return g;
   };
-  geos = { husk: build(out.husk), glow: build(out.glow) };
-  return geos;
+  geos[kind] = { husk: build(out.husk), glow: build(out.glow) };
+  return geos[kind]!;
 }
 
 let huskMat: THREE.MeshLambertMaterial | null = null;
 
 export interface SeedModel {
+  kind: SeedKind;
   root: THREE.Group;
   body: THREE.Group;
   cracks: THREE.MeshBasicMaterial;
   halo: THREE.Sprite;
 }
 
-export function buildSeed(): SeedModel {
-  const g = geometries();
+export function buildSeed(kind: SeedKind = 'breakthrough'): SeedModel {
+  const L = LOOKS[kind];
+  const g = geometries(kind);
   huskMat ??= new THREE.MeshLambertMaterial({ vertexColors: true, emissive: pal('ink.void') });
   const cracks = new THREE.MeshBasicMaterial({ vertexColors: true });
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
   body.add(new THREE.Mesh(g.husk, huskMat), new THREE.Mesh(g.glow, cracks));
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: pal('light.ember'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.35 }));
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: pal(L.halo), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: L.haloRest }));
   halo.position.set(0, SEED_H * SEED_VOXEL * 0.48, SEED_W * SEED_VOXEL * 0.25);
   halo.scale.set(0.42, 0.42, 1);
   body.add(halo);
-  return { root, body, cracks, halo };
+  return { kind, root, body, cracks, halo };
 }
 
 export function breatheSeed(m: SeedModel, time: number): void {
   const s = Math.sin(time * Math.PI * 2 * 0.6);
   m.cracks.color.setScalar(0.82 + 0.18 * s);
-  m.halo.material.opacity = 0.3 + 0.1 * s;
+  m.halo.material.opacity = LOOKS[m.kind].haloBreathe + 0.1 * s;
 }
 
 export function fuseSeed(m: SeedModel, fuse: number): number {
@@ -143,7 +175,7 @@ export function fuseSeed(m: SeedModel, fuse: number): number {
   const phase = 0.8 * e + (1.7 * e * e) / (2 * SEED_FUSE_REF);
   const s = Math.sin(phase * Math.PI * 2);
   m.cracks.color.setScalar(Math.min(1, 0.7 + 0.2 * u + 0.1 * s));
-  m.halo.material.opacity = 0.35 + 0.35 * u + 0.12 * s;
+  m.halo.material.opacity = LOOKS[m.kind].haloRest + 0.35 * u + 0.12 * s;
   const k = 1.3 + 0.9 * u + 0.1 * s;
   m.halo.scale.set(0.42 * k, 0.42 * k, 1);
   return 1 + 0.25 * u * u;
