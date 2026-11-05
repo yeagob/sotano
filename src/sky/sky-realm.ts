@@ -7,7 +7,7 @@ import type { MessageKey } from '../i18n/locales/en';
 import type { Body } from '../physics/voxel-collide';
 import { CHUNK } from '../world/world';
 import { atmosphereAt } from './atmosphere';
-import { SKY_AXIS } from './floors/tree';
+import { SKY_AXIS, openGate } from './floors/tree';
 import { buildSkyLayout } from './layout';
 import { TowerKnock } from './creatures/knock';
 import { Puff } from './creatures/puff';
@@ -70,6 +70,8 @@ export class SkyRealm implements SkyRealmApi {
     this.knock = new TowerKnock(host, this.effects);
     const deps: CreatureDeps = { actors: host.actors(), runner: this.runner, effects: this.effects, puff: new Puff(host), knock: this.knock };
     this.creatures = new SkyCreatures(root, host, deps);
+    // A won deity opens its floor's way up (owner, 2026-11-05); openGate is idempotent, so a repeat changes nothing.
+    this.creatures.onWon = (_d, floor) => openGate(this.world, plans.tree, floor);
     this.nests = plans.floors.map(f => new Nests(host, f.nests, NEST_MATERIAL));
     const checkpoints = plans.totality.platforms.filter(p => plans.totality.checkpoints.includes(p.id));
     this.updraft = new Updraft(host, checkpoints);
