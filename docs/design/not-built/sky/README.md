@@ -64,9 +64,9 @@ Every sky floor can be cleared by a player with no practices. The practices carr
 
 ### 3.5 The way up opens when the deity is won
 
-Status: decided (owner, 2026-11-03) that the way up between sky floors opens only when that floor's deity is won. Status for "from any point of the floor": open (section 5).
+Status: decided (owner, 2026-11-03, and 2026-11-05) that the way up between sky floors is closed until that floor's deity is defeated. Status for "from any point of the floor": open (section 5).
 
-The way up from a floor stays closed until that floor's deity is won (decided, owner, 2026-11-03). Until then the floor's platforming must leave a vertical route the player can build or climb, up to the way up. The route is inside the tree (law 3.8), and a tower of the player's own blocks that reaches a deity is knocked down (law 3.9), so every floor carries a vertical route of its own that the tower rule never touches.
+The way up from a floor stays closed until that floor's deity is won (decided, owner, 2026-11-03): closed until the deity is defeated, and the player cannot change floor until then (decided, owner, 2026-11-05; the gate is in [sky architecture, section 7.1](../../../architecture/SKY.md)). Until then the floor's platforming must leave a vertical route the player can build or climb, up to the way up. The route is inside the tree (law 3.8), and a tower of the player's own blocks that reaches a deity is knocked down (law 3.9), so every floor carries a vertical route of its own that the tower rule never touches.
 
 ### 3.6 Every hindrance warns first
 
@@ -84,7 +84,7 @@ No deity and no minion ever dies. At most a sky creature transforms, changes its
 
 Status: decided.
 
-Outside the tree the player cannot climb to the sky. If the player builds or climbs a way up outside the tree, a god comes and knocks the climb down. The only way up is inside the tree. The god that comes is the guardian of that height (provisional, owner, 2026-11-03). Its warning and where the player lands are open (section 5). One exception is provisional too: rising past the top of the dungeon's sky opens the realm from anywhere, including outside the tree (owner, 2026-11-03).
+Outside the tree the player cannot climb to the sky. If the player builds or climbs a way up outside the tree, a god comes and knocks the climb down. The only way up is inside the tree, and each floor's way up inside it is closed until the deity is defeated (owner, 2026-11-05; law 3.5). The god that comes is the guardian of that height (provisional, owner, 2026-11-03). Its warning and where the player lands are open (section 5). One exception is provisional too: rising past the top of the dungeon's sky opens the realm from anywhere, including outside the tree (owner, 2026-11-03).
 
 ### 3.9 A tower that reaches a deity is knocked down
 
@@ -109,8 +109,10 @@ Provisional defaults (to confirm with the owner):
 - Capture holds the player for 3 s, released by themself; no move or jump while held; looking and shooting kept.
 - One practice held, chosen at random, is taken for the rest of the run; it is not returned on release.
 - Spirit is at most 100 (`SPIRIT_MAX`).
-- Which attacks are special, and how much spirit each one drains, are not set yet.
+- Spirit is shown as a number out of 100, and each drain is a number on that scale (decided, owner, 2026-11-05).
+- Every deity, the panda included, has special attacks; each guardian document proposes them and their drains, and the owner accepts the amounts for now, to adjust later (owner, 2026-11-05).
 - After the teleport, spirit is refilled to full.
+- When a deity is defeated, spirit is refilled to full (the owner's default, to confirm, 2026-11-05).
 - The teleport lands on a random underground floor from floor 0 to floor 9. The silence chamber is excluded.
 
 ### 3.11 Sky blocks and item events

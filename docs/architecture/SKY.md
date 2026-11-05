@@ -587,6 +587,8 @@ The sky tree is a trunk that **widens as it rises**, a crown carrying its floors
 
 The foot well stands off the trunk's axis so that the Bamboo Seat, at the centre of hall 1, keeps whole ground under it: the well's mouth lies in the quarter of the panda floor that holds no column, two cells clear of the seat and three of the building path, with a clear column of at least 3 over it (provisional, to confirm; `FOOT_WELL` in `tree.ts`, checked by `tests/sky-tree.test.ts`). The mouth has a rim: one block of pale stone (`palestone`) on hall 1's ground, the ring one cell out from the mouth's edge (provisional, the height to confirm; owner, 2026-11-05, with minions avoiding the mouth, PANDA B5). The foot door runs from the deck through the foot wall on +x to the well.
 
+**The gate rule (decided, owner, 2026-11-03 and 2026-11-05).** Each floor's way up is closed until that floor's deity is defeated, and the player cannot change floor until then. The membrane over the way up is heartwood from the floor's generation and is written to air only by `tree.openGate(n)`, called from the deity's `onWon` (§5.3, §7.2); no other system opens it, and no shot, tower or hindrance passes it. Provisional reading of "cannot change floor" (to confirm with the owner): the way in from the floor below is open by then, so a player may still fall back down it; whether it closes behind them during the fight is open (§19).
+
 `src/sky/floors/tree.ts` (TR) builds the trunk, the deck, the slabs and the membranes as shapes, and calls each floor's generator (through the registry `src/sky/floors/index.ts`) with its origin. Its plan names the trunk's outer radius per height (the outside watch reads it). `src/sky/layout.ts` assembles the tree, the five floor plans and the Totality plan into the layout and the plans `SkyRealm` holds.
 
 ### 7.2 Floor generators
@@ -915,10 +917,26 @@ Each brief is self-contained: paste it with the rules of §16.1.
 8. The player cannot die in the sky (owner, 2026-11-03): no sky creature takes health. A deity can capture the player and take one practice; special attacks drain spirit; spirit at zero teleports the player to a random underground floor (the defaults below are provisional).
 9. The Spanish revelation is a faithful translation (§12), for the owner to confirm.
 
-**Provisional (the engineer's proposal, taken by the owner).** The koala and the horse teleport. The Triple Jump has no forward boost and full air steering. The Sun's warm light is the one stated exception to art pillar 2 (ledger, provisional). A knocked-down tower falls as loose cubes. A positive shot removes a player block with no cube back. The unlock is forgotten by a console command only. Rising past the top of the dungeon's sky from outside the tree also opens the realm. The god that comes outside the tree is the guardian of that height. Sky materials are not flammable. A sky floor is neither a room nor a floor for item events. The capture defaults: held 3 s (`CAPTURE_TIME`), released by the player; no move or jump while held, looking and shooting kept; one practice held at random is taken for the rest of the run, not returned on release. The spirit defaults: at most 100 (`SPIRIT_MAX`); spirit refilled to full after the teleport; the teleport lands on a random underground floor from 0 to 9, the silence chamber excluded. Which attacks are special, and the spirit each drains, are not set yet (the owner did not name them).
+**Provisional (the engineer's proposal, taken by the owner).** The koala and the horse teleport. The Triple Jump has no forward boost and full air steering. The Sun's warm light is the one stated exception to art pillar 2 (ledger, provisional). A knocked-down tower falls as loose cubes. A positive shot removes a player block with no cube back. The unlock is forgotten by a console command only. Rising past the top of the dungeon's sky from outside the tree also opens the realm. The god that comes outside the tree is the guardian of that height. Sky materials are not flammable. A sky floor is neither a room nor a floor for item events. The capture defaults: held 3 s (`CAPTURE_TIME`), released by the player; no move or jump while held, looking and shooting kept; one practice held at random is taken for the rest of the run, not returned on release. The spirit defaults: at most 100 (`SPIRIT_MAX`); spirit refilled to full after the teleport; the teleport lands on a random underground floor from 0 to 9, the silence chamber excluded. Which attacks are special, and the spirit each drains, are proposed in each guardian document's B3b; the owner accepts the amounts for now (2026-11-05).
+
+**Decided by the owner (2026-11-05).**
+
+1. Spirit is shown as a number out of 100, and each drain is a number on that scale. The owner accepts the proposed drain amounts for now, to adjust later.
+2. Every deity has special attacks, the giant panda included (PANDA B3b: six, three of them drains of target 6, 8 and 8, and one capture).
+3. Each deity's fight has two or three phases (provisional split: the panda two, the other four three).
+4. The koala keeps its six special attacks, Joey ride and Lullaby among them; Lullaby's drain rises from target 12 to 18.
+5. The elephant keeps Heavy water as a drain, and Ear fan and Mud wallow (reusing other animals' hindrances is fine); Dust bath's drain rises from target 10 to 16.
+6. The lion's Stare-down is redesigned: a drain only after a while of looking away (target 5 s, range 4 to 6 s), with a stare that visibly builds and nothing for a brief glance (provisional numbers). The player may build roofs and walls on the lion's floor. Scrape and Long grass stay.
+7. The horse keeps Herd panic, Snaking and Dust roll. Standing still must show the player that they are right (a visible calm cue: ears turn, dust settles); the same feedback holds for every calm answer.
+8. The way up of each floor is closed until that floor's deity is defeated; the player cannot change floor until then (§7.1).
+
+**Provisional (2026-11-05).** When a deity is defeated, spirit refills to full (the owner's default, to confirm).
 
 **For the owner to confirm.**
 
 1. **A broken original sky block drops no loose cube** (mediator, provisional): with regrowth every block would otherwise be an endless supply, and the nests exist because cubes are scarce up there.
 2. **The Spanish revelation's wording** (§12).
 3. **Names:** the Triple Jump's (MOVEMENT-ABILITIES open question 1) and the Spiked Entity's (ENDGAME open question 1).
+4. **Spirit refill on a deity's defeat** (provisional default, owner, 2026-11-05).
+5. **Which deities have two phases** (provisional: the panda only).
+6. **The way back down during a fight:** whether "cannot change floor" also closes the way in from the floor below until the deity is defeated (§7.1).

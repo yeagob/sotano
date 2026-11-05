@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The koala is the second deity: a koala with a giant head on a small, soft plush body, over sky floor 2, which is built like a crown of branches. It holds the floor by holding on to its branch.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
+Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. Decided (owner, 2026-11-05): the floor's way up stays closed until the koala is defeated. The special attacks (B3b) are provisional, to confirm; the owner accepts their drain amounts for now, to adjust later (2026-11-05).
 
 ## 1. Who it is
 
@@ -68,6 +68,8 @@ A sleepy ball of grey fur that holds on. The koala floor is about letting go: br
 
 **The tower rule.** A tower of player blocks that brings the player to the koala's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the koala floats to it, hugs the top of the stack until it topples, and pushes the player off, after the full warning. The trunks' knots and the limbs are the koala's floor's own way up.
 
+**The way up (decided, owner, 2026-11-05).** The floor's way up, over a trunk's knots, is closed until the koala is defeated: the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won), [sky architecture, section 7.1](../../../../architecture/SKY.md)).
+
 **States and timings (targets).**
 
 | State | What the player sees | Length |
@@ -113,7 +115,7 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 
 Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
 
-**Phases (provisional).** The koala's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Drowsy*, up to a third of the hit count; phase 2, *Clinging*, up to two thirds; phase 3, *Holding on*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+**Phases (provisional).** The koala's fight has three phases (a deity has two or three, owner, 2026-11-05; three here, provisional), the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Drowsy*, up to a third of the hit count; phase 2, *Clinging*, up to two thirds; phase 3, *Holding on*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
 
 | # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
 |---|---|---|---|---|---|
@@ -121,7 +123,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 | 6 | Eucalyptus haze | 1 | Drains spirit | 1.4 s | 8 |
 | 7 | Joey ride | 2 | Holds (slows the jump) | 1.2 s | none |
 | 8 | Bellow | 2 | Drains spirit | 1.4 s | 10 |
-| 9 | Lullaby | 3 | Drains spirit | 1.4 s | 12 |
+| 9 | Lullaby | 3 | Drains spirit | 1.4 s | 18 |
 | 10 | Hold fast | 3 | Captures | 1.7 s | none |
 
 **5. Scent mark ([dense ground](../abilities/DENSE-GROUND.md)). Slows.**
@@ -160,7 +162,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 - *Habit:* a koala sleeps for most of the day in the fork of one tree, and it does not move from it. This is the koala's mirror: clinging to a place that feels safe.
 - *Phase:* 3.
 - *Telegraph (target 1.4 s):* the koala hums and sways; the whole branch the player stands on glows soft and sleepy, from its far end toward the player.
-- *Act:* a player still standing on that branch's original wood when the telegraph ends drains target 12 spirit.
+- *Act:* a player still standing on that branch's original wood when the telegraph ends drains target 18 spirit (raised from 12: the owner found it too small, 2026-11-05).
 - *Answer:* leave the branch: jump to the next one, step onto a trunk knot, or onto a player block (the glow covers only the branch's original wood). Lullaby never chooses a branch with no other branch, knot or nest within a jump.
 - *Positive intention:* a positive intention on the glowing branch breaks the hum: the glow fades, no drain.
 
@@ -249,7 +251,7 @@ Every value in the middle column is a target. The right column is the built game
 | Minions at once | 6 | no built equivalent |
 | Floor size | radius 22, 32 high | trunk story 22 high |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
-| Special attacks (provisional) | 6: 3 drain spirit (8, 10, 12 of 100), 1 captures (3 s, one practice), 2 slow or hold | no built equivalent |
+| Special attacks (provisional) | 6: 3 drain spirit (8, 10, 18 of 100), 1 captures (3 s, one practice), 2 slow or hold | no built equivalent |
 | Special telegraphs | 1.2 s to slow or hold, 1.4 s to drain, 1.7 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
@@ -263,6 +265,6 @@ Every value in the middle column is a target. The right column is the built game
 7. Sleepy sigh uses [wind](../abilities/WIND.md), which the abilities folder proposes for the lion and the horse, not the koala. Keep it, or replace it?
 8. The Fork and its limbs are original wood. Can the player break a limb (it regrows in 5 s), and should a broken limb drop the koala's allies?
 9. Teleport (answered, provisional: yes). The koala teleports; a teleport always lands it far from the player.
-10. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (8, 10, 12) are proposals for the owner to confirm.
-11. The joey. Joey ride puts a small koala on the player's back as part of an attack, not as a minion. Keep it, or is it too close to the minion's hug?
-12. Lullaby drains a player who stays on one branch. Is that the right mirror of clinging on a floor with rest landings, or too harsh?
+10. Special attacks (provisional, B3b). The owner keeps the six as they are and accepts the drain amounts (8, 10, 18) for now, to adjust later (2026-11-05). Which drain and which capture stay provisional.
+11. The joey. Answered (owner, 2026-11-05): keep Joey ride, the joey on the player's back.
+12. Lullaby. Answered (owner, 2026-11-05): keep it; it drained too little, so its target drain rises from 12 to 18.

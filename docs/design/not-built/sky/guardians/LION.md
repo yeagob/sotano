@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The lion is the fourth deity: a lion with a giant head on a small, soft plush body, over sky floor 4, a wide floor of ledges and gaps where a roar can freeze the player in place.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
+Status: proposal, specified. Decided: the animal and the floor order, that the lion levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. Decided (owner, 2026-11-05): the floor's way up stays closed until the lion is defeated. The special attacks (B3b) are provisional, to confirm; the owner accepts their drain amounts for now, to adjust later (2026-11-05). The player may build roofs and walls on this floor (owner, 2026-11-05).
 
 ## 1. Who it is
 
@@ -68,6 +68,8 @@ A golden head with a mane like a sunburst, floating over the highest ledge of a 
 
 **The tower rule.** A tower of player blocks that brings the player to the lion's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the lion glides to it, strikes the stack with a paw until it topples, and pushes the player off, after the full warning. The 2-high walls of the example route are not towers; the thorn tree is the floor's own way up.
 
+**The way up (decided, owner, 2026-11-05).** The floor's way up, over the thorn tree, is closed until the lion is defeated: the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won), [sky architecture, section 7.1](../../../../architecture/SKY.md)).
+
 **States and timings (targets).**
 
 | State | What the player sees | Length |
@@ -112,12 +114,12 @@ The lion has four attacks. The first stage uses Roar and Crosswind. The second a
 
 Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
 
-**Phases (provisional).** The lion's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Display*, up to a third of the hit count; phase 2, *Hunt*, up to two thirds; phase 3, *Pride*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+**Phases (provisional).** The lion's fight has three phases (a deity has two or three, owner, 2026-11-05; three here, provisional), the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Display*, up to a third of the hit count; phase 2, *Hunt*, up to two thirds; phase 3, *Pride*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
 
 | # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
 |---|---|---|---|---|---|
 | 5 | Long grass | 1 | Slows | 1.0 s | none |
-| 6 | Stare-down | 1 | Drains spirit | 1.2 s | 12 |
+| 6 | Stare-down | 1 | Drains spirit (a timer: 5 s of looking away) | the last 1.2 s of the stare's build | 12 |
 | 7 | Scrape | 2 | Moves (takes footing) | 1.0 s | none |
 | 8 | Dusk call | 2 | Drains spirit | 1.2 s | 14 |
 | 9 | Noon sun | 3 | Drains spirit | 1.2 s | 16 |
@@ -131,13 +133,17 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 - *Answer:* jump out of it, step up onto a higher ledge, or build over it (a player block grows no grass).
 - *Positive intention:* a positive intention at a grassy cell lays the grass flat: ordinary ground at once.
 
-**6. Stare-down (a gaze). Drains spirit.**
+**6. Stare-down (a gaze that builds). Drains spirit.**
 - *Habit:* two lions hold each other's stare before a fight, and the one that looks away first gives way. This is the lion's mirror, fear dressed as dominance, and its answer is the floor's verb of courage: the player's own aim.
 - *Phase:* 1.
-- *Telegraph (target 1.2 s):* the lion stops pacing; its eyes lock on the player and two thin gold lines run from them to the player, tightening, with a low growl that rises.
-- *Act:* when the telegraph ends, a player in the lion's line of sight whose aim is not on the lion drains target 12 spirit. A player who faces the lion (aim on it, as in the facing rule of B2; target within 15 degrees) is not touched.
-- *Answer:* face the lion; or break the line of sight with a block, a ledge or the thorn tree's trunk (place a block between, or drop behind a ledge).
-- *Positive intention:* a positive intention that lands on the lion during the telegraph makes it blink and look away: no drain. Facing the lion is also the moment to land it.
+- *Rule (redesigned by the owner, 2026-11-05; provisional, every number a target):* if the player stays a while looking away from the lion, it punishes them, but not at once. Stare-down is not chosen from the attack list: from phase 1 on it runs on its own while the lion is Watching and the player is in its line of sight.
+  - *Looking at the lion* means the lion is within target 30 degrees of the centre of the player's view. Anything else, in its line of sight, is looking away.
+  - *The stare timer:* while the player looks away, the stare builds over target 5 s (the owner's range: 4 to 6 s). A glance away shorter than that costs nothing: looking back at the lion lets the stare fall back to zero over target 1 s. Breaking the line of sight (behind a block, a ledge or the thorn tree's trunk) holds the stare where it is; it neither builds nor falls.
+  - *The warning (visible from the first moment):* as the stare builds, two thin gold lines run from the lion's eyes toward the player and thicken, its mane brightens and lifts, and a low growl rises. For the last target 1.2 s (the drain telegraph of [guardians, section 6.6](README.md#66-what-works-and-harm)) the eyes flare and the lines tighten, so the drain always has its full telegraph.
+  - *Act:* when the stare is full, the player drains target 12 spirit and the stare falls back to zero. The shared spacing holds: two drains at least 6 s apart, none while the player is held (frozen by a roar, captured) or within 1 s after; the stare does not build while the player is held.
+- *Answer:* look back at the lion before the stare is full; or break the line of sight.
+- *Calm feedback (design requirement):* the moment the player looks back, the gold lines slacken and fade, the mane settles and the growl drops to a purr, so the player sees they are right.
+- *Positive intention:* a positive intention that lands on the lion while the stare builds makes it blink and look away: the stare falls to zero at once. Facing the lion is also the moment to land it.
 
 **7. Scrape ([fading platforms](../abilities/FADING-PLATFORMS.md)). Moves (takes footing).**
 - *Habit:* a lion scrapes the ground with its hind feet and marks the scrape, to say where its land begins.
@@ -207,7 +213,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 ### B6. Platforming layout (rules)
 
 - **Size:** target 52 blocks across (radius 26) and 36 blocks high. The widest gaps of the five floors.
-- **The plain:** open ground with tall grass. No walls anywhere; the player's own blocks are the only cover.
+- **The plain:** open ground with tall grass. No walls of the floor's own; the player's own blocks are the only cover. The player may build roofs and walls here (owner, 2026-11-05): a roof is the answer to Noon sun, and a wall stops a roar, a gust or a pounce.
 - **Ledges:** target 12 to 16 flat-topped rocks, tops from 3 by 3 to 6 by 6, at heights from 4 to 30. Neighbouring ledges differ by 1 to 3 blocks in height.
 - **Gaps:** 2 blocks (a jump), 3 blocks with a drop of at least 1 (a falling jump), or 4 to 5 blocks (a bridge of one or two placed blocks). The nerve line, the shortest route, has the most 4 to 5 block gaps. The long route winds round the plain and has only 2-block gaps and falling jumps, with 1-block steps.
 - **Heights:** a 1-block step is a jump; a 2 or 3-block step needs one or two placed blocks, or an ally's back.
@@ -247,6 +253,7 @@ Every value in the middle column is a target. The right column is the built game
 | Floor size | radius 26, 36 high | trunk story 22 high |
 | Special attacks (provisional) | 6: 3 drain spirit (12, 14, 16 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
 | Special telegraphs | 1.0 s to slow or move, 1.2 s to drain, 1.5 s to capture | windup 0.4 to 0.9 s |
+| Stare-down timer (provisional) | 5 s of looking away (owner's range 4 to 6 s); falls back over 1 s when the player looks back; looking at the lion within 30 degrees of the view's centre | no built equivalent |
 
 ## Open questions
 
@@ -260,7 +267,7 @@ Every value in the middle column is a target. The right column is the built game
 8. Names. "Sunning Ledge" and "thorn tree" are working names for the deity's ledge and the vertical route; they need the owner's check under the naming rules.
 9. Teleport (answered, provisional: no). The lion does not teleport.
 10. When the lion is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
-11. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (12, 14, 16) are proposals for the owner to confirm.
-12. Stare-down drains a player who does not aim at the lion. It makes the aim the answer, like facing the roar. Is a drain for looking away the right mirror of fear dressed as dominance, or too punishing on a floor where stalkers creep up out of view?
-13. Noon sun asks the player to find or build shade. Is building a roof a verb the owner wants on the lion's floor, which has no walls?
-14. Scrape uses [fading platforms](../abilities/FADING-PLATFORMS.md), and Long grass uses [dense ground](../abilities/DENSE-GROUND.md); the abilities folder proposes them for other animals. Keep them, or replace them?
+11. Special attacks (provisional, B3b). The owner accepts the drain amounts (12, 14, 16) for now, to adjust later (2026-11-05). Which drain and which capture stay provisional.
+12. Stare-down. Redesigned by the owner (2026-11-05): a drain only after a while of looking away, with a warning that builds, and nothing for a glance. Still to confirm: the timer (target 5 s, range 4 to 6), the 30 degrees that count as looking at the lion, and whether the stare should also build while the line of sight is broken.
+13. Roofs and walls. Answered (owner, 2026-11-05): the player may build roofs (Noon sun) and walls on the lion's floor.
+14. Scrape and Long grass. Answered (owner, 2026-11-05): reusing [fading platforms](../abilities/FADING-PLATFORMS.md) and [dense ground](../abilities/DENSE-GROUND.md) is fine; keep both.
