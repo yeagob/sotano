@@ -4,6 +4,7 @@ import type { Hindrance, HindranceId, HindranceParams } from '../types';
 import { cubeCage } from './cube-cage';
 import { denseGround } from './dense-ground';
 import { fadingPlatforms } from './fading-platforms';
+import { horseRing } from './horse-ring';
 import { knockback } from './knockback';
 import { koalaBellow, koalaHaze, koalaHold, koalaHug, koalaLob, koalaLullaby } from './koala-set';
 import { lionRing } from './lion-ring';
@@ -23,4 +24,5 @@ export const HINDRANCES: { readonly [K in HindranceId]: Hindrance<HindranceParam
   'paralysis': paralysis,
   'koala-lob': koalaLob, 'koala-hug': koalaHug, 'koala-haze': koalaHaze, 'koala-lullaby': koalaLullaby, 'koala-bellow': koalaBellow, 'koala-hold': koalaHold,
   'lion-ring': lionRing,
+  'horse-ring': horseRing,
 };

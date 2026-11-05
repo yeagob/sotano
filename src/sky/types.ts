@@ -550,11 +550,9 @@ export type CreatureViewCtor = new (root: THREE.Object3D) => CreatureViewApi;
 export const KOALA_HINDRANCE_IDS = ['koala-lob', 'koala-hug', 'koala-haze', 'koala-lullaby', 'koala-bellow', 'koala-hold'] as const;
 export type KoalaHindranceId = typeof KOALA_HINDRANCE_IDS[number];
 export type HindranceId = 'knockback' | 'wind' | 'opening-holes' | 'fading-platforms' | 'dense-ground' | 'cube-cage' | 'water-currents' | 'paralysis'
-  | KoalaHindranceId | 'lion-ring';
+  | KoalaHindranceId | 'lion-ring' | 'horse-ring';
 export const HINDRANCE_IDS: readonly HindranceId[] = ['knockback', 'wind', 'opening-holes', 'fading-platforms', 'dense-ground', 'cube-cage', 'water-currents', 'paralysis',
-  ...KOALA_HINDRANCE_IDS, 'lion-ring'];
-/** B4 (additive): the lion's spreading ring, `height` high; a block stops it; it pushes `push` and/or calls `touch` once. */
-
+  ...KOALA_HINDRANCE_IDS, 'lion-ring', 'horse-ring'];
 
 export interface KnockbackParams { from: Vec3; shape: 'ring' | 'line' | 'cone'; radius: number; dir?: Vec3; strength: number }
 export interface WindParams { from: Vec3; to: Vec3; radius: number; strength: number; seconds: number }
@@ -567,6 +565,7 @@ export interface WaterCurrentsParams { channel: Channel; seconds: number; push: 
 export interface ParalysisParams { from: Vec3; speed: number; radius: number; hold: number }
 /** B4 (additive): the lion's spreading ring, `height` high; a block stops it; it pushes `push` and/or calls `touch` once. */
 export interface LionRingParams { from: Vec3; speed: number; radius: number; height: number; push: number; touch?: () => void }
+export interface HorseRingParams { from: Vec3; speed: number; radius: number; height: number; strength: number }
 export interface HindranceParams {
   'knockback': KnockbackParams;
   'wind': WindParams;
@@ -583,6 +582,7 @@ export interface HindranceParams {
   'koala-bellow': KoalaBellowParams;
   'koala-hold': KoalaHoldParams;
   'lion-ring': LionRingParams;
+  'horse-ring': HorseRingParams;
 }
 
 // The koala's hindrances' params. A drain or a capture is the deity's
