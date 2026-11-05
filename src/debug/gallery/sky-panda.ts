@@ -2,11 +2,19 @@
 //
 // The floor as the generator makes it (the hall's origin of the tree, seed 1): the plan from above with each
 // column's material and its height, the section through the seat and the ledge strip (the vertical route to
-// the way up), and the silhouette of the whole floor from the ground to the south. Shapes only; the beings
-// come with B1. Colours are the blocks' own material tones and the palette's marks, never literals.
+// the way up), and the silhouette of the whole floor from the ground to the south. Then the beings (B1): the
+// panda in each state and at the extreme pose of each telegraph, its lids at no, half and all its hits, and the
+// little panda, in colour and in greyscale, front and three-quarter. Colours are palette tokens, never literals.
 
+import * as THREE from 'three';
 import { AIR, MATERIALS } from '../../content/materials';
-import { palCss } from '../../content/palette';
+import { pal, palCss } from '../../content/palette';
+import type { EnemyDef } from '../../enemies/types';
+import { buildModel } from '../../entities/enemies';
+import { PANDA_KINDS, pandaDeity, posePanda, type Kind, type PandaPose } from '../../sky/creatures/deities/panda';
+import { pandaMinion } from '../../sky/creatures/minions/panda';
+import type { ModelPart } from '../../enemies/types';
+import type { Parts } from '../../sky/types';
 import { Rng } from '../../core/rng';
 import { panda } from '../../sky/floors/panda';
 import type { SkyFloorPlan } from '../../sky/types';
@@ -114,4 +122,77 @@ export function skyPandaGallery(g: GalleryKit) {
     }
     return null;
   }), 'silhouette from the south, the ground to the way up');
+
+  skyPandaBeings(g);
+}
+
+/** One plush model on the day sky, with the game's two lights, posed by `pose` (null: as built). */
+function being(list: readonly ModelPart[], yaw: number, pose: ((parts: Parts) => void) | null, size: number, frame: number): HTMLCanvasElement {
+  const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
+  renderer.setSize(size, size, false);
+  renderer.setClearColor(pal('sky.day'));
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(pal('light.core'), pal('rock.f1.outline'), 2.0));
+  const sun = new THREE.DirectionalLight(pal('sky.albedo'), 1.0);
+  sun.position.set(0.4, 1, 0.3);
+  scene.add(sun);
+  const built = buildModel({ model: [...list] } as unknown as EnemyDef);
+  const holder = new THREE.Group();
+  holder.add(built.group);
+  built.group.rotation.y = yaw;
+  scene.add(holder);
+  const parts = new Map<string, THREE.Object3D>();
+  for (const [n, objs] of built.parts) if (objs[0]) parts.set(n, objs[0]);
+  pose?.(parts);
+  const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  cam.position.set(0, frame * 0.6, frame * 3.4);
+  cam.lookAt(0, frame * 0.5, 0);
+  renderer.render(scene, cam);
+  const out = document.createElement('canvas');
+  out.width = out.height = size;
+  out.getContext('2d')!.drawImage(renderer.domElement, 0, 0);
+  renderer.dispose();
+  return out;
+}
+
+function grey(c: HTMLCanvasElement): HTMLCanvasElement {
+  const out = document.createElement('canvas');
+  out.width = c.width; out.height = c.height;
+  const g = out.getContext('2d')!;
+  g.filter = 'grayscale(1)';
+  g.drawImage(c, 0, 0);
+  return out;
+}
+
+const DEITY = [...pandaDeity.model.body, ...pandaDeity.model.head];
+const pose = (p: Partial<PandaPose>, ratio = 0) => (parts: Parts) =>
+  posePanda(parts, ratio, { core: 'Watching', tell: null, u: 0, still: false, won: false, ...p }, 0.4);
+
+export function skyPandaBeings(g: GalleryKit) {
+  g.head('The giant panda (B1): front and three-quarter, colour and greyscale (about 3 blocks tall, the head 2.25 times the body)');
+  const r1 = g.row();
+  for (const yaw of [0, 0.7]) {
+    const c = being(DEITY, yaw, pose({ core: 'Idle' }), 220, 3);
+    g.fig(r1, c, `idle, chewing · yaw ${yaw}`);
+    g.fig(r1, grey(c), `greyscale · yaw ${yaw}`);
+  }
+
+  g.head('Its sign of progress: the heavy lids open as the gold marks gather (no hits, half, all)');
+  const r2 = g.row();
+  for (const ratio of [0, 0.5, 1]) g.fig(r2, being(DEITY, 0.3, pose({}, ratio), 180, 3), `lids at ${ratio * 100}%`);
+
+  g.head('Each telegraph at its extreme pose (the tell part named in its AttackDef), and the states');
+  const r3 = g.row();
+  for (const k of PANDA_KINDS as readonly Kind[]) g.fig(r3, being(DEITY, 0.5, pose({ core: 'Attacking', tell: k, u: 1 }), 160, 3), k);
+  const r4 = g.row();
+  for (const core of ['Recovering', 'Rallying', 'Napping'] as const) g.fig(r4, being(DEITY, 0.5, pose({ core }), 160, 3), core);
+  g.fig(r4, being(DEITY, 0.5, pose({ core: 'Won', won: true }, 1), 160, 3), 'won: awake and friendly');
+
+  g.head('The little panda (B5): front and three-quarter, colour and greyscale (about 1.25 blocks)');
+  const r5 = g.row();
+  for (const yaw of [0, 0.7]) {
+    const c = being(pandaMinion.model.parts, yaw, null, 160, 1.3);
+    g.fig(r5, c, `little panda · yaw ${yaw}`);
+    g.fig(r5, grey(c), `greyscale · yaw ${yaw}`);
+  }
 }
