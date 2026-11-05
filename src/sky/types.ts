@@ -806,8 +806,8 @@ export interface SkyHost {
   refillSpirit(): void;
   /** A capture takes one practice the player holds, at random, for the rest of the run. */
   takeRandomPractice(): ItemId | null;
-  /** Spirit at zero: the game picks one floor of `floors` with `rng` and sends the player there; spirit refills to SPIRIT_MAX at the teleport. */
-  sendUnderground(floors: readonly number[], rng: Rng): void;
+  /** Spirit at zero: the game picks one floor of `floors` with `rng` and sends the player there; spirit refills to SPIRIT_MAX at the teleport. False when the game refuses now (its gate is busy): the caller asks again. */
+  sendUnderground(floors: readonly number[], rng: Rng): boolean;
 }
 
 // ───────────────────────── touch routing (§5.7) ─────────────────────────

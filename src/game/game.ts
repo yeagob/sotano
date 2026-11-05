@@ -891,11 +891,12 @@ export class Game {
     return id;
   }
 
-  /** Spirit at zero: one of the floors is picked and the player goes there; spirit refills at the teleport, in passRealm (SKY.md §5.2). */
-  private sendUnderground(floors: readonly number[], rng: Rng) {
-    if (!floors.length || this.gate.busy) return;
+  /** Spirit at zero: one of the floors is picked and the player goes there; spirit refills at the teleport, in passRealm (SKY.md §5.2). False while the gate is busy: SpiritLaw asks again. */
+  private sendUnderground(floors: readonly number[], rng: Rng): boolean {
+    if (!floors.length || this.gate.busy) return false;
     this.underground = floors[rng.int(0, floors.length - 1)];
     this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
+    return true;
   }
 
   /** `?sky` (main.ts): the run starts on the sky's deck, as if the built tree had been climbed. */

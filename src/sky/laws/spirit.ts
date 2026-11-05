@@ -5,8 +5,10 @@
 //   - at least 6 s between two drains;
 //   - never while the player is held, nor within 1 s after.
 // At zero spirit the player goes to a random floor of the underground (floors 0 to 9, silence excluded); the refill
-// comes with the teleport (game.ts passRealm), not here.
+// comes with the teleport (game.ts passRealm), not here. The fall is owed once per zero: while the host refuses it
+// (its gate is busy) it is asked again each frame, with the same rng, until it is taken or spirit is back above zero.
 
+import type { Rng } from '../../core/rng';
 import type { SkyHost, SpiritApi } from '../types';
 
 /** Seconds between two drains. */
@@ -22,12 +24,15 @@ export class SpiritLaw implements SpiritApi {
   private drainedAt = -Infinity;
   /** How many times spirit has run out: each fall takes its own rng fork. */
   private falls = 0;
+  /** The fall owed for the current zero, not yet taken by the host. */
+  private owed: Rng | null = null;
 
   constructor(private readonly host: SkyHost) {}
 
   /** Called once a frame by the sky realm. */
   update(): void {
     if (this.host.player().held) this.heldAt = this.host.time();
+    this.settleFall();
   }
 
   canDrain(): boolean {
@@ -41,9 +46,15 @@ export class SpiritLaw implements SpiritApi {
     if (!this.canDrain()) return false;
     this.drainedAt = this.host.time();
     this.host.drainSpirit(n);
-    if (this.host.spirit() <= 0) {
-      this.host.sendUnderground(UNDERGROUND_FLOORS, this.host.fork('sky', 'underground', this.falls++));
-    }
+    if (this.host.spirit() <= 0 && !this.owed) this.owed = this.host.fork('sky', 'underground', this.falls++);
+    this.settleFall();
     return true;
+  }
+
+  /** Sends the owed fall when the host takes it. Spirit above zero again means the zero is over, and nothing is owed. */
+  private settleFall(): void {
+    if (!this.owed) return;
+    if (this.host.spirit() > 0) { this.owed = null; return; }
+    if (this.host.sendUnderground(UNDERGROUND_FLOORS, this.owed)) this.owed = null;
   }
 }

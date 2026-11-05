@@ -20,14 +20,18 @@ import type {
 const DT = 0.1;
 const SEAT = { x: 0, y: 10, z: 0 };
 
-/** A host with a clock the test moves, a player it can hold, and a spirit it can drain. */
+/**
+ * A host with a clock the test moves, a player it can hold, and a spirit it can drain. The gate is busy after a
+ * fall is taken until the test lets the player arrive (the teleport refills spirit, as passRealm does).
+ */
 function fakeHost(spirit = 100) {
   const clock = { t: 0 };
-  const state = { held: false, spirit };
+  const state = { held: false, spirit, busy: false };
   const calls = {
     drainSpirit: [] as number[],
     drainAt: [] as number[],
     sendUnderground: [] as { floors: readonly number[] }[],
+    refused: 0,
     refills: 0,
   };
   const body: Body = { x: 6, y: 10, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
@@ -42,7 +46,12 @@ function fakeHost(spirit = 100) {
     drainSpirit: (n: number) => { calls.drainSpirit.push(n); calls.drainAt.push(clock.t); state.spirit = Math.max(0, state.spirit - n); },
     spirit: () => state.spirit,
     refillSpirit: () => { calls.refills++; state.spirit = 100; },
-    sendUnderground: (floors: readonly number[]) => { calls.sendUnderground.push({ floors }); },
+    sendUnderground: (floors: readonly number[]) => {
+      if (state.busy) { calls.refused++; return false; }
+      state.busy = true;
+      calls.sendUnderground.push({ floors });
+      return true;
+    },
   } as unknown as SkyHost;
   return { host, clock, state, calls };
 }
@@ -54,10 +63,10 @@ const attack = (id: string, act: (ctx: DeityCtx) => void, spirit?: number): Atta
 });
 
 /** A test deity: 24 hits, 1 s telegraph, 1 s recovery, 1 s rest, sight 10, levitating on its seat. */
-function deityDef(attacks: AttackDef[]): DeityDef {
+function deityDef(attacks: AttackDef[], recover = 1): DeityDef {
   const model: DeityModel = { body: [], head: [], hw: 0.5, h: 1, progress: () => {} };
   return {
-    animal: 'panda', floor: 1, hits: 24, telegraph: 1, recover: 1, rest: [1, 1, 1], sight: 10, hover: 0, teleport: false,
+    animal: 'panda', floor: 1, hits: 24, telegraph: 1, recover, rest: [1, 1, 1], sight: 10, hover: 0, teleport: false,
     attacks, ally: { act: 'sit', every: 4, cap: 2 }, knock: 'nudge', won: { toast: null, play: () => {} }, model,
   };
 }
@@ -69,7 +78,7 @@ interface Rig {
   actor: SkyActor;
 }
 
-function rig(attacks: AttackDef[], h = fakeHost()): Rig {
+function rig(attacks: AttackDef[], h = fakeHost(), recover = 1): Rig {
   const actors = new ActorRegistry();
   actors.setRealm('sky');
   const runner = { start: () => 1 } as unknown as HindranceRunnerApi;
@@ -83,7 +92,7 @@ function rig(attacks: AttackDef[], h = fakeHost()): Rig {
     index: 1, animal: 'panda', y0: 0, y1: 30, shapes: [], graph, seat, spawns: [], nests: [], route: [], gate: { x: 0, z: 0, r: 2 }, platforms: [],
   } as unknown as SkyFloorPlan;
   const creatures = new SkyCreatures(new THREE.Group(), h.host, deps);
-  const actor = creatures.spawnDeity(deityDef(attacks), plan);
+  const actor = creatures.spawnDeity(deityDef(attacks, recover), plan);
   return { h, spirit, creatures, actor };
 }
 
@@ -154,16 +163,55 @@ describe('the spirit gate (SpiritLaw)', () => {
     law.drain(6);
     expect(h.calls.sendUnderground).toEqual([]);
   });
+
+  it('at zero while the gate is busy, asks again each frame and falls once, after the gate frees', () => {
+    const h = fakeHost(6);
+    const law = new SpiritLaw(h.host);
+    h.state.busy = true;
+    h.clock.t = 30;
+    expect(law.drain(6)).toBe(true);
+    expect(h.state.spirit).toBe(0);
+    expect(h.calls.refused).toBe(1);
+    for (let i = 0; i < 20; i++) law.update();
+    expect(h.calls.sendUnderground).toEqual([]);
+    expect(h.calls.refused).toBe(21);
+    h.state.busy = false;
+    law.update();
+    expect(h.calls.sendUnderground).toEqual([{ floors: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }]);
+    // the fall is taken: no more asks while the player is on the way, and the zero is not owed twice
+    for (let i = 0; i < 20; i++) law.update();
+    expect(h.calls.refused).toBe(21);
+    expect(h.calls.sendUnderground.length).toBe(1);
+  });
+
+  it('a zero that is refilled before the fall is taken owes nothing', () => {
+    const h = fakeHost(6);
+    const law = new SpiritLaw(h.host);
+    h.state.busy = true;
+    law.drain(6);
+    h.state.spirit = 100;
+    h.state.busy = false;
+    law.update();
+    expect(h.calls.sendUnderground).toEqual([]);
+  });
 });
 
 describe('a deity drains through the gate', () => {
-  it('lands one drain per attack run, however often its act drains', () => {
-    let acts = 0;
-    const r = rig([attack('d', ctx => { acts++; ctx.drain(6); ctx.drain(6); }, 6)]);
-    until(r, () => acts >= 1);
-    tick(r, 3);
+  it('lands one drain per attack run: a later drain of the same run is refused, a new run may drain again', () => {
+    // the act keeps its ctx, so a drain can be asked for on a later tick of the same run (the run lasts 10 s here)
+    let later = null as DeityCtx | null;
+    const r = rig([attack('d', ctx => { ctx.drain(6); later = ctx; }, 6)], fakeHost(), 10);
+    until(r, () => r.actor.state === 'Recovering');
+    tick(r, 70);
+    expect(r.actor.state).toBe('Recovering');
+    expect(r.h.calls.drainSpirit).toEqual([6]);
+    // seven seconds after the landed drain: the gap is over, so only the run's flag refuses it
+    later!.drain(6);
     expect(r.h.calls.drainSpirit).toEqual([6]);
     expect(r.h.state.spirit).toBe(94);
+    // the next run drains once it starts, as its own run
+    until(r, () => r.h.calls.drainSpirit.length >= 2);
+    expect(r.h.calls.drainAt[1] - r.h.calls.drainAt[0]).toBeGreaterThanOrEqual(DRAIN_GAP - 1e-9);
   });
 
   it('two landed drains are at least 6 s apart, and the deity waits for the window', () => {
@@ -213,10 +261,15 @@ describe('a deity drains through the gate', () => {
     expect(r.h.calls.drainSpirit).toEqual([6]);
   });
 
-  it('at zero the deity sends the player underground through the gate', () => {
+  it('at zero the deity sends the player underground once, however often it drains again while the fall is on its way', () => {
     const r = rig([attack('d', ctx => ctx.drain(6), 6)], fakeHost(6));
     until(r, () => r.h.calls.sendUnderground.length > 0);
     expect(r.h.calls.sendUnderground).toEqual([{ floors: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }]);
+    // the gate stays busy until the player arrives: the deity keeps attacking at zero, and each fall is refused
+    tick(r, 300);
+    expect(r.h.calls.refused).toBeGreaterThan(0);
+    expect(r.h.calls.sendUnderground.length).toBe(1);
+    expect(r.h.state.spirit).toBe(0);
   });
 });
 
