@@ -53,7 +53,7 @@ import { CreatureView } from '../src/sky/render/creature-view';
 import { EarthView } from '../src/sky/render/earth';
 import { HitMarks } from '../src/sky/render/hit-marks';
 import { FAR_DRAW, placeFar } from '../src/sky/render/far';
-import { SunView } from '../src/sky/render/sun';
+import { CORONA_FULL_AT, CORONA_SHELLS, SunView, coronaFade } from '../src/sky/render/sun';
 import { SkyRealm } from '../src/sky/sky-realm';
 import { buildTotality } from '../src/sky/totality/chain';
 import { reach, reach2 } from '../src/sky/totality/reach';
@@ -313,13 +313,39 @@ describe('far views: the Earth and the Sun in view (SKY.md §11)', () => {
       earth.update({ x: 0, y, z: 0 }, 0);
       expect(group.visible, `eye at ${y}`).toBe(true);
     }
+    // the body is opaque in colour and drawn after the rim, so it covers the rim's centre
+    const [body, limb] = group.children as THREE.Mesh[];
+    expect(body.renderOrder).toBe(-1);
+    expect(limb.renderOrder).toBe(-2);
     group.traverse(o => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
-      expect(m.renderOrder).toBe(-1);
-      expect((m.material as THREE.Material).depthWrite).toBe(false);
+      const mat = m.material as THREE.MeshBasicMaterial;
+      expect(mat.depthWrite).toBe(false);
+      expect(mat.transparent).toBe(true);
     });
+    expect((body.material as THREE.MeshBasicMaterial).opacity).toBe(1);
     earth.dispose();
+  });
+
+  it('the Sun draws its corona under its disc, and the corona fades in with distance from the Sun', () => {
+    const root = new THREE.Group();
+    const view = new SunView(root, { x: 0, y: 700, z: 0, r: 30 });
+    const group = root.children[0] as THREE.Group;
+    const [disc, ...shells] = group.children as THREE.Mesh[];
+    expect(disc.renderOrder).toBe(-1);
+    expect(shells.map(s => s.renderOrder)).toEqual([-2, -2, -2]);
+    expect((disc.material as THREE.MeshBasicMaterial).opacity).toBe(1);
+    const opacities = () => shells.map(s => (s.material as THREE.MeshBasicMaterial).opacity);
+    view.update({ x: 0, y: 700, z: 60 }, 0); // 60 from the Sun's centre: inside the corona's outer shell, partly faded
+    expect(opacities().every((o, i) => o > 0 && o < CORONA_SHELLS[i].opacity)).toBe(true);
+    view.update({ x: 0, y: 700, z: 25 }, 0); // inside the disc's edge: no corona at all
+    expect(opacities()).toEqual([0, 0, 0]);
+    view.update({ x: 0, y: 700, z: CORONA_FULL_AT }, 0);
+    expect(opacities()).toEqual(CORONA_SHELLS.map(s => s.opacity));
+    expect(coronaFade(30, 30)).toBe(0);
+    expect(coronaFade(CORONA_FULL_AT + 50, 30)).toBe(1);
+    view.dispose();
   });
 
   it('the Earth whose centre hangs 300 below the eye is drawn 150 below it, at half scale', () => {

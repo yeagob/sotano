@@ -1,6 +1,7 @@
 // Far views (docs/architecture/SKY.md §11): a view that hangs farther than the camera's comfortable reach is drawn
 // on the same line at FAR_DRAW, scaled down by the same factor, so its angular size is kept and its centre stays
-// inside the camera's far plane. Views are backdrops: their materials never write depth, and they draw before the blocks.
+// inside the camera's far plane. Views are backdrops: their materials never write depth, and they draw after the opaque
+// blocks, depth-tested against them, so the blocks always cover a view and the view shows only in the air.
 
 import type * as THREE from 'three';
 import type { Vec3 } from '../types';
@@ -30,12 +31,19 @@ export function placeFar(group: THREE.Object3D, eye: Vec3, centre: Vec3, radius:
   return radius * k;
 }
 
-/** A view's meshes as a backdrop, once: no depth writes, drawn before every block (renderOrder -1). */
+/**
+ * A view's meshes as a backdrop, once: transparent (so they draw in the transparent list, after the opaque blocks and
+ * before the water and glass in front of them), no depth writes, renderOrder -1. A view that stacks its own layers sets
+ * the order of each layer after this call: a lower renderOrder draws first.
+ */
 export function backdrop(group: THREE.Object3D): void {
   group.traverse(o => {
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     mesh.renderOrder = -1;
-    for (const m of ([] as THREE.Material[]).concat(mesh.material)) m.depthWrite = false;
+    for (const m of ([] as THREE.Material[]).concat(mesh.material)) {
+      m.depthWrite = false;
+      m.transparent = true;
+    }
   });
 }

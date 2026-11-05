@@ -23,7 +23,7 @@ export class EarthView implements SkyViewApi {
   constructor(private readonly root: THREE.Object3D) {
     this.sphere = new THREE.SphereGeometry(EARTH_RADIUS, 48, 32);
     this.rimGeo = new THREE.SphereGeometry(EARTH_RADIUS * 1.04, 48, 32);
-    this.sea = new THREE.MeshBasicMaterial({ color: palCss('sky.earth.sea'), fog: false });
+    this.sea = new THREE.MeshBasicMaterial({ color: palCss('sky.earth.sea'), fog: false, opacity: 1 });
     this.rim = new THREE.MeshBasicMaterial({
       color: palCss('sky.earth.rim'), side: THREE.BackSide, transparent: true, opacity: 0.35, fog: false, depthWrite: false,
     });
@@ -31,6 +31,8 @@ export class EarthView implements SkyViewApi {
     const limb = new THREE.Mesh(this.rimGeo, this.rim);
     this.group.add(body, limb);
     backdrop(this.group);
+    // the rim's far side is drawn first, so the body (opaque sea, drawn after it) covers the rim's centre: only the limb shows
+    limb.renderOrder = -2;
     root.add(this.group);
   }
 

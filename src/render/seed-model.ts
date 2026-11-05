@@ -30,12 +30,12 @@ const LOOKS: Record<SeedKind, Look> = {
     top: 'mat.seed.dark',
     halo: 'light.ember', haloRest: 0.35, haloBreathe: 0.3,
   },
-  // the white seed: a pale husk, gold lips and branches, the gold halo of the positive missile (§7.7)
+  // the white seed (§7.8): a white husk of bone and light.core, hot seams with gold lip ends and branches, a light.core halo
   love: {
-    dark: 'bone.dim', base: 'bone.paper', hi: 'light.core',
-    lip: 'light.gold', lipEnd: 'light.gold', inner: 'light.hot', heart: 'light.core', branch: 'light.gold',
-    top: 'bone.dim',
-    halo: 'light.gold', haloRest: 0.45, haloBreathe: 0.45,
+    dark: 'bone.paper', base: 'light.core', hi: 'light.core',
+    lip: 'light.hot', lipEnd: 'light.gold', inner: 'light.hot', heart: 'light.core', branch: 'light.gold',
+    top: 'bone.paper',
+    halo: 'light.core', haloRest: 0.45, haloBreathe: 0.45,
   },
 };
 
