@@ -20,6 +20,31 @@ export function near(a: Vec3, b: Vec3, r: number): boolean {
   return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) <= r;
 }
 
+/** Whether a positive hit landed on cell `i`: its voxel, or a point within `r` of the cell's centre. */
+export function hitsCell(host: SkyHost, hit: { x: number; y: number; z: number; cell: number }, i: number, r = 1): boolean {
+  if (hit.cell === i) return true;
+  const [x, y, z] = host.world().coords(i);
+  return Math.hypot(hit.x - (x + 0.5), hit.y - (y + 0.5), hit.z - (z + 0.5)) <= r;
+}
+
+/** The centre of a set of cells (where a hindrance's sound and motes come from). */
+export function centreOf(host: SkyHost, cells: readonly number[]): Vec3 {
+  if (cells.length === 0) return { x: 0, y: 0, z: 0 };
+  const w = host.world();
+  let sx = 0, sy = 0, sz = 0;
+  for (const i of cells) {
+    const [x, y, z] = w.coords(i);
+    sx += x + 0.5; sy += y + 0.5; sz += z + 0.5;
+  }
+  return { x: sx / cells.length, y: sy / cells.length, z: sz / cells.length };
+}
+
+/** The cell the player stands on (just under their feet). */
+export function cellUnderFeet(host: SkyHost): number {
+  const b = host.player().body;
+  return host.world().idx(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z));
+}
+
 export class SkyEffects implements SkyEffectsApi {
   /** Cell → the owners that protect it. */
   private protectedBy = new Map<number, Set<number>>();
