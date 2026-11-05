@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The giant panda is the first deity the player meets above the surface: a giant panda head on a small, soft plush body, over sky floor 1. It is the gentlest guardian and the one that teaches the sky's platforming.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the panda levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule (B2), and that minions avoid the well's mouth (owner, 2026-11-05). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the panda levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule (B2), that minions avoid the well's mouth (owner, 2026-11-05), that the panda has special attacks too, and that the floor's way up stays closed until the panda is defeated (owner, 2026-11-05). The character, the mirror, the minions and the puzzle are proposals. The special attacks and the two phases (B3b) are provisional, to confirm.
 
 ## 1. Who it is
 
@@ -64,6 +64,8 @@ A big, sleepy head that chews. The panda never hurries: every attack is slow, lo
 
 **Position.** The panda's seat is the top of the Bamboo Seat, the tallest column, in the centre of the floor, at target 24 blocks above the ground. The panda levitates (decided): it floats target 1.5 blocks over the seat and drifts slowly round it.
 
+**The way up (decided, owner, 2026-11-05).** The floor's way up, over the ledge strip, is closed until the panda is defeated: the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won), [sky architecture, section 7.1](../../../../architecture/SKY.md)).
+
 **Teleport (provisional: no).** The panda does not teleport; the koala and the horse do (owner, 2026-11-03, provisional).
 
 **The tower rule (decided).** If the panda detects that the player is building a tower that reaches its height, it leaves its floor, knocks the tower down and pushes the player off it.
@@ -81,17 +83,17 @@ A big, sleepy head that chews. The panda never hurries: every attack is slow, lo
 | Attacking | One attack (B3), telegraph 1.4 s | per attack |
 | Recovering | Leans back, belly up, a contented sigh | 2.5 s |
 | Hurt | A slow blink and a soft "mm" when a positive hit lands | 0.3 s |
-| Rallying | Yawns and stretches when the positive hits reach a third and two thirds of the target; the minions sit up and look at it | 2 s |
-| Napping | At two thirds of the positive hits: falls asleep over the seat. No attacks; the minions slow down | 5 s, once |
+| Rallying | Yawns and stretches when the positive hits reach half the target, the one change of phase (B3b); the minions sit up and look at it | 2 s |
+| Napping | Right after the rally at half the positive hits: falls asleep over the seat. No attacks; the minions slow down | 5 s, once |
 | Tower watch | Stares at a tower that reaches its height (tower rule, above) | 2 s, then it leaves its seat |
 
-**The cycle.** Idle, Watching, Attacking, Recovering, Watching. The rest between the end of one recovery and the next telegraph is target 3.5 s in the first stage, 3 s in the second and 2.5 s in the third (stages: [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits)). For comparison, built bosses rest only a short walk between moves, shorter in each phase ([fight flow](../../../built/bosses/FIGHT-FLOW.md)).
+**The cycle.** Idle, Watching, Attacking, Recovering, Watching. The rest between the end of one recovery and the next telegraph is target 3.5 s in the first phase and 2.5 s in the second (the panda has two phases, B3b; phases: [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits)). For comparison, built bosses rest only a short walk between moves, shorter in each phase ([fight flow](../../../built/bosses/FIGHT-FLOW.md)).
 
-**The rest beat (the panda's own rule).** When the player stands still on any column top for target 2 s while the panda is Watching, the panda's next attack waits target 2 s more. The mirror is rushing; the floor answers it with pauses that are rewarded.
+**The rest beat (the panda's own rule).** When the player stands still on any column top for target 2 s while the panda is Watching, the panda's next attack waits target 2 s more. The mirror is rushing; the floor answers it with pauses that are rewarded. **Calm feedback (design requirement, provisional; [guardians, section 6.6](README.md#66-what-works-and-harm)):** from the moment the player stops, the panda's chewing slows and its lids droop, and a ring of bamboo leaves settles round the player's feet one leaf at a time; when the 2 s are reached the panda gives a long, contented sigh. The player sees they are doing it right before the reward comes.
 
 ### B3. Attacks
 
-The panda has four attacks. The first stage uses Bamboo toss and Heavy press. The second adds Sit-down. The third adds Yawn. An attack is never repeated back to back when another is available (as in the built fight flow).
+The panda has four attacks. The first phase uses Bamboo toss, Heavy press and Sit-down. The second adds Yawn (the panda has two phases, B3b). An attack is never repeated back to back when another is available (as in the built fight flow).
 
 **1. Bamboo toss (a lob).**
 - *Telegraph (1.4 s):* the panda lifts a stalk over its head; a warm mark appears where it will land, aimed at where the player is going.
@@ -112,6 +114,72 @@ The panda has four attacks. The first stage uses Bamboo toss and Heavy press. Th
 - *Telegraph (1.4 s):* the mouth opens wide, slowly; a ring of drowsy air forms round the seat at the seat's height and at the height of the player's column top.
 - *Act:* the ring grows outward at target 6 blocks a second, target 0.8 blocks high (the built ring's jump height), out to target 10 blocks. It gives a soft push of target 1.5 blocks away from the seat.
 - *Answer:* jump it, or stand behind a block (a block stops the push, per the knockback rule). A positive intention that lands in the open mouth during the telegraph ends the yawn early: the panda closes its mouth with a small "hm" and no ring is sent.
+
+### B3b. Special attacks
+
+Status: provisional, to confirm. The owner decided that the panda has special attacks too, built from its habits, with a telegraph and a counter, under the same rules as the other four (owner, 2026-11-05). Every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`, the calm feedback) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
+
+**Phases (provisional, to confirm).** A deity has two or three phases (owner, 2026-11-05). The panda, the gentlest floor, has two: phase 1, *Grazing*, up to half the hit count; phase 2, *Hurrying*, to the end, opened by the one rally (B2). An attack that enters in phase 1 stays in the list in phase 2. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change. The panda's drains are the smallest of the five floors.
+
+| # | Special attack | Phase | Kind | What it does | Telegraph (target) | Answer | Counter (positive intention) | Spirit (target) |
+|---|---|---|---|---|---|---|---|---|
+| 5 | Playful shove | 1 | Moves | A soft push toward a column top's edge | 1.4 s | Step off the shown arc, or a block behind you | A shot on the raised paw: it pats the air instead | none |
+| 6 | Thicket | 1 | Holds (blocks the way) | A line of 2-high bamboo stalks stands across the column top toward the seat for 4 s | 1.4 s | Go round its open end, or climb another column | A shot cuts one stalk | none |
+| 7 | Slow chew | 1 | Drains spirit | Drains a player who rushes (two jumps, or more than 3 blocks) during the chew | 1.6 s | Slow down: walk, one jump, or stand | A shot in the mouth: it swallows, no drain | 6 |
+| 8 | Peekaboo | 2 | Drains spirit | Drains a player hidden from the panda's sight when it uncovers its eyes | 1.6 s | Step out into its sight | A shot on the covering paws: it peeks early and smiles, no drain | 8 |
+| 9 | Tumble | 2 | Drains spirit | A ball of air rolls down a shown slope or path; its touch drains | 1.6 s | Step off the line, jump it, or a player block in its way | A shot on the tucked body: it unrolls and sits | 8 |
+| 10 | Cradle | 2 | Captures | Floats down and gathers the player onto its belly | 1.9 s | Leave the shrinking ring, or a player block in its float | A shot on the floating panda: it hugs a stalk instead | none |
+
+**5. Playful shove ([knockback](../abilities/KNOCKBACK.md)). Moves.**
+- *Habit:* panda cubs wrestle, roll over and shove each other in play.
+- *Phase:* 1.
+- *Telegraph (target 1.4 s):* the panda lifts one paw high with a playful huff; a soft arc is drawn on the player's column top from their cell toward the nearest edge, and the cells under it shimmer.
+- *Act:* a puff of air pushes the player target 1.5 blocks along the arc. A player pushed off a column falls to the ground or a lower column, unhurt. The arc never ends over a drop it did not show.
+- *Answer:* step off the arc's line, or stand with a block behind you (a push stops at the first solid block).
+- *Positive intention:* a positive intention on the raised paw makes it pat the air instead: no push.
+
+**6. Thicket. Holds (blocks the way).**
+- *Habit:* pandas keep to dense bamboo thickets, where they feel safe, and rarely leave them.
+- *Phase:* 1.
+- *Telegraph (target 1.4 s):* the panda taps its seat; green shoots break through the column top the player is on, along a line between the player and the seat, with a soft rustle that grows.
+- *Act:* the shoots grow into a line of bamboo stalks target 2 blocks high, for target 4 s, then wither. The line never closes a ring: one end is always open, and it never stands on the player's cell or on a player block. The stalks are not a step: the player cannot stand on them.
+- *Answer:* go round the open end, jump to another column, or wait for it to wither.
+- *Positive intention:* a positive intention cuts one stalk, which falls as a leaf: a one-cell gap the player can walk through.
+
+**7. Slow chew. Drains spirit.**
+- *Habit:* a panda eats for up to fourteen hours a day, sitting upright, one stalk at a time, chewing slowly. This is the panda's mirror: rushing, never slowing down long enough to eat and rest.
+- *Phase:* 1.
+- *Telegraph (target 1.6 s):* the panda sits up and chews a stalk with a slow, steady crunch, one every target 0.5 s; a ring of bamboo leaves, target radius 3, is drawn round the player's cell.
+- *Act:* when the telegraph ends, a player who jumped twice or more, or moved farther than target 3 blocks, during the telegraph drains target 6 spirit. A player who walked a little, jumped once or stood is not touched. Being pushed by an attack or a minion does not count as moving. Slow chew is not chosen while a push, a hole or a dense cell is under the player.
+- *Answer:* slow down to the panda's pace: walk, take one jump, or stand. A player in mid-jump at the start of the telegraph has time to land and walk.
+- *Calm feedback (design requirement):* while the player keeps within the pace, the leaves of the ring turn green one by one in time with the crunch, and the panda's eyes close as it chews. A player who rushes sees the leaves stay pale.
+- *Positive intention:* a positive intention in the chewing mouth makes it swallow with a small "mm": no drain.
+
+**8. Peekaboo. Drains spirit.**
+- *Habit:* a frightened panda cub climbs the nearest tree and clings there, hidden, until its mother calls. Here the panda turns the habit on the player: clinging to a hiding place.
+- *Phase:* 2.
+- *Telegraph (target 1.6 s):* the panda covers its eyes with both paws and hums a slow count; every cell the panda cannot see, behind a column, a block or the seat, is drawn cool and shaded, and the cells in its sight are drawn warm.
+- *Act:* when it uncovers its eyes, a player in a shaded cell, hidden from its sight, drains target 8 spirit. A player in its sight is not touched. Peekaboo is not chosen when no cell in the panda's sight lies within a jump or a walk of target 3 blocks of the player.
+- *Answer:* step out into the panda's sight: onto a column top it can see, or round the side of a column.
+- *Positive intention:* a positive intention on the covering paws makes it peek early and smile: no drain.
+
+**9. Tumble. Drains spirit.**
+- *Habit:* pandas tumble and roll down slopes, on purpose and in play.
+- *Phase:* 2.
+- *Telegraph (target 1.6 s):* the panda tucks into a ball over its seat with a small huff; a dashed line is drawn from the seat's foot along the slope or the stretch of the gentle path the player is on, through the player's cell, with a rumble that rises.
+- *Act:* a ball of drowsy air the size of the panda rolls along the line at target 5 blocks a second, target 1 block high, to its end. A player it touches drains target 8 spirit. It does not push.
+- *Answer:* step off the line, jump it as it passes, or put a player block in its way (a roll stops at a solid block, as a charge stops: [attacks](../../../built/encounters/ATTACKS.md)).
+- *Positive intention:* a positive intention on the tucked body during the telegraph makes it unroll and sit: no ball.
+
+**10. Cradle. Captures.**
+- *Habit:* a panda mother cradles her tiny cub against her chest with one paw for weeks, and does not put it down.
+- *Phase:* 2.
+- *Telegraph (target 1.9 s, the longest of the sky):* the panda leans back, opens its arms and floats down from its seat toward the player with a soft, rising hum; a ring of bamboo leaves of target radius 2 is drawn round the player's cell and shrinks to the cell over the telegraph.
+- *Act:* if the player is inside the ring when it closes, the panda gathers them onto its belly: the player is captured for `CAPTURE_TIME` (target 3 s) and one practice they hold is taken ([guardians, section 6.6](README.md#66-what-works-and-harm)). Then it floats back to its seat and is Recovering there.
+- *Answer:* leave the ring before it closes, by a walk or a jump of 2 blocks. A player block between the panda and the player stops its float at the block, as a charge stops ([attacks](../../../built/encounters/ATTACKS.md)), and it recovers there.
+- *Positive intention:* a positive intention that lands on the floating panda makes it hug a bamboo stalk instead and float back: no capture. While it floats in and while it holds the player, positive hits land on it as usual (the panda has no guard).
+
+**Without minions.** None of the six needs a minion. Tumble is the deity's own roll, not a minion's.
 
 ### B4. Defeat by positive hits
 
@@ -183,12 +251,15 @@ Every value in the middle column is a target. The right column is the built game
 |---|---|---|
 | Telegraph | 1.4 s | windup 0.4 to 0.9 s |
 | Recovery | 2.5 s | up to about 1 s |
-| Rest between attacks | 3.5, 3, 2.5 s by stage | a short walk, shorter each phase |
+| Phases | 2 (provisional; a deity has 2 or 3) | 3 phases |
+| Rest between attacks | 3.5, 2.5 s by phase | a short walk, shorter each phase |
 | Positive hits | 24 | 140 health: about 40 bad hits, or 5 good hits that convert it (an open question) |
 | Hits to turn a minion | 3 | 5 good hits for a projection |
 | Minions at once | 4 (3 hostile) | no built equivalent |
 | Floor size | radius 20, 28 high | trunk story 22 high, radius 23 to 34 |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
+| Special attacks (provisional) | 6: 3 drain spirit (6, 8, 8 of 100), 1 captures (3 s, one practice), 2 move or hold | no built equivalent |
+| Special telegraphs | 1.4 s to move or hold, 1.6 s to drain, 1.9 s to capture | windup 0.4 to 0.9 s |
 | Tower rule | triggers within 2 blocks of the panda's height, on a stack of 3 or more player blocks; telegraph 2 s; push 2 blocks | no built equivalent |
 
 ## Open questions
@@ -200,8 +271,12 @@ Every value in the middle column is a target. The right column is the built game
 5. When the panda is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude and stays on the floor.
 6. Bamboo stumps. A stalk from Bamboo toss stands as a step for 6 s. Is a step the deity gives a good fit for the gentlest floor, or should its lobs leave nothing?
 7. The rest beat. Standing still for 2 s delays the panda's next attack. Does the owner want stillness rewarded on this floor, given that silence already rewards it in the built game?
-8. The nap. At two thirds of the positive hits the panda naps for 5 s with no attacks. Keep it, or is a pause in the fight too gentle?
+8. The nap. After the rally at half the positive hits the panda naps for 5 s with no attacks. Keep it, or is a pause in the fight too gentle?
 9. Ally positive hits. Allies sitting against the panda add positive hits with no cap. Can the floor be won by allies alone? (Shared question in [guardians](README.md#5-open-questions).)
 10. Heights. The floor's target height of 28 blocks is taller than a built trunk story (22). Whether it must fit a built story depends on the open mapping of sky floors onto the built tree.
 11. Teleport (answered, provisional: no). The panda does not teleport; the koala and the horse do.
 12. The tower's measures. The trigger (a stack of 3 or more player blocks, within 2 blocks of the panda's height) and the 2 s telegraph are targets. Can a positive intention during the telegraph delay the panda, or is stepping off the only answer?
+13. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (6, 8, 8) are proposals. The owner accepts drain amounts for now, to adjust later (2026-11-05).
+14. Two phases (provisional). The panda has two phases and the other four have three. Does the owner want the gentlest floor to be the short one, or another deity to have two?
+15. A capture on the first floor. Cradle takes a practice on the gentlest floor, with the sky's longest telegraph (1.9 s). Keep a capture here, or let the panda's floor show what a capture is without taking a practice?
+16. Peekaboo drains a player who hides from the panda, and the lion's Stare-down drains one who looks away from the lion. Is "come out where I can see you" the right mirror of clinging to a safe place?

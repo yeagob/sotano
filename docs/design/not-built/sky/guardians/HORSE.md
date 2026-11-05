@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The horse is the fifth and last deity of the sky tree's first five floors: a small, soft plush body with a giant horse head, over sky floor 5, a ground-based floor of paddocks, gusts of wind and fading platforms. It is the only deity that does not levitate: it walks on the ground and jumps a great deal.
 
-Status: proposal, specified. Decided: the animal and the floor order, its look (a small body with a giant horse head, plush-like and cute), that it walks on the ground and does not levitate, that it jumps a great deal from platform to platform and from place to place, that it sends its minions to kick the player from its place, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the other minion habits and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
+Status: proposal, specified. Decided: the animal and the floor order, its look (a small body with a giant horse head, plush-like and cute), that it walks on the ground and does not levitate, that it jumps a great deal from platform to platform and from place to place, that it sends its minions to kick the player from its place, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the other minion habits and the puzzle are proposals. Decided (owner, 2026-11-05): the floor's way up stays closed until the horse is defeated. The special attacks (B3b) are provisional, to confirm; the owner accepts their drain amounts for now, to adjust later (2026-11-05).
 
 ## 1. Who it is
 
@@ -79,6 +79,8 @@ A wide-eyed giant head with a streaming mane on a small plush body, standing on 
 
 **The tower rule.** A tower of player blocks that brings the player to the horse's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the horse leaps to it, kicks the stack with its hind legs until it topples, and pushes the player off, after the full warning. The horse's Paddocks are low, so the rule triggers only on a tower raised beside a Paddock.
 
+**The way up (decided, owner, 2026-11-05).** The floor's way up, at the top of the mast, is closed until the horse is defeated: the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won), [sky architecture, section 7.1](../../../../architecture/SKY.md)).
+
 **States and timings (targets).**
 
 | State | What the player sees | Length |
@@ -98,6 +100,7 @@ A wide-eyed giant head with a streaming mane on a small plush body, standing on 
 **Startle and calm (the horse's own rules).**
 - *Startle:* when the player comes within target 6 blocks of the horse while moving, or lands a jump within 6 blocks, it leaps away to a Paddock far from the player. The leap's telegraph is its crouch and a landing mark drawn on the far Paddock, target 0.9 s.
 - *Calm:* when the player stands still on the horse's Paddock or within target 8 blocks of it for target 1.5 s, in the horse's sight, and no attack is in its telegraph, the horse walks up to target 3 blocks from them and is Gentled for 3 s. It makes no attack and sends no minion while Gentled.
+- *Calm feedback (design requirement, owner, 2026-11-05; the cues provisional):* standing still must show the player that they are right, from the moment they stop. The dust round their feet settles, the horse's ears turn toward them, and the grass round their cell rises a little; when the 1.5 s are reached the horse lowers its head and blows softly. A player who moves sees the dust lift again.
 - The mirror is bolting; the practice is staying with a feeling. The floor's verb for it is standing still.
 
 **Sending the herd (decided that it sends its minions to kick; the timings are targets).** From its place the horse whinnies toward the player (telegraph target 0.9 s: the head turns to the player, the ears point forward). One minion in the first stage, and up to two from the second stage, break off their loop and gallop to the player to kick (B5, rule 2). The horse itself stays on its Paddock while they go.
@@ -130,7 +133,7 @@ The horse has four attacks besides sending the herd. The first stage uses Rear a
 
 Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
 
-**Phases (provisional).** The horse's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Skittish*, up to a third of the hit count; phase 2, *Running*, up to two thirds; phase 3, *Bolting*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3 and to sending the herd; the floor's platforming layout (B6) does not change. While the horse is Gentled it makes none of them, as with every attack (B2). While it gallops a Gallop line or circles in Snaking, it comes close on purpose and is not startled (B2, startle).
+**Phases (provisional).** The horse's fight has three phases (a deity has two or three, owner, 2026-11-05; three here, provisional), the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Skittish*, up to a third of the hit count; phase 2, *Running*, up to two thirds; phase 3, *Bolting*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3 and to sending the herd; the floor's platforming layout (B6) does not change. While the horse is Gentled it makes none of them, as with every attack (B2). While it gallops a Gallop line or circles in Snaking, it comes close on purpose and is not startled (B2, startle).
 
 | # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
 |---|---|---|---|---|---|
@@ -179,6 +182,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 - *Telegraph (target 1.1 s):* the horse's eyes show their whites and it trembles; the meadow's grass lies flat in a wave that rolls out from it across the whole floor, and hoofbeats rise from nowhere.
 - *Act:* when the telegraph ends, a player who walked, ran or jumped in the last target 0.3 s drains target 18 spirit. A player standing still is not touched. Being pushed by a gust, a kick or a ring does not count as moving. Herd panic is not chosen while a gust or a fade is under the player, nor while a sent minion is running at them.
 - *Answer:* stop and stand still, wherever you are; land a jump and stay. A player in mid-jump at the start of the telegraph has time to land and stop.
+- *Calm feedback (design requirement, owner, 2026-11-05; the cues provisional):* the original mechanic stays (moving drains, standing still is the answer), and stillness must show the player they are right. While the player stands still in the telegraph, the herd's ears turn toward them, the dust round their feet settles, and the flattened grass rises round their cell first, with a soft settling breath; when the telegraph ends with no drain, a calm chime. A player who moves sees the dust lift and the grass stay flat.
 - *Positive intention:* a positive intention that lands on the horse during the telegraph calms it: the grass rises, no drain. Standing still to aim it is the same verb.
 
 **10. Snaking. Captures.**
@@ -281,7 +285,7 @@ Every value in the middle column is a target. The right column is the built game
 9. Teleport (answered, provisional: yes). The horse teleports, on top of its great leap; a teleport always lands it far from the player.
 10. When the horse is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
 11. The floor's height. A ground-based floor with Paddocks up to 12 blocks is lower than the other four sky floors. How high the mast must rise to the floor's way up depends on the open mapping of sky floors onto the built tree.
-12. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (14, 16, 18) are proposals for the owner to confirm.
-13. Herd panic drains a player who moves and spares one who stands still. It makes calm the answer, the same verb as Gentled. Is the echo wanted, or is it too close to the built silence?
-14. Snaking captures by circling the player. The horse is the only deity that captures by running round the player instead of reaching them. Keep it?
-15. Dust roll uses [dense ground](../abilities/DENSE-GROUND.md), which the abilities folder proposes for the panda. Keep it, or replace it?
+12. Special attacks (provisional, B3b). The owner accepts the drain amounts (14, 16, 18) for now, to adjust later (2026-11-05). Which drain and which capture stay provisional.
+13. Herd panic. Answered (owner, 2026-11-05): keep it; moving drains and standing still is the answer, shown with the calm feedback. Still open: the exact cues (ears, settling dust, rising grass) for the art pass.
+14. Snaking. Answered (owner, 2026-11-05): keep it.
+15. Dust roll. Answered (owner, 2026-11-05): keep it; reusing [dense ground](../abilities/DENSE-GROUND.md) is fine.

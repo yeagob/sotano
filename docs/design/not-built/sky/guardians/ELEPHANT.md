@@ -4,7 +4,7 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The elephant is the third deity: an elephant with a giant head on a small, soft plush body, over sky floor 3, a floor of channels and rivers that carry the player.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the elephant levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. The special attacks (B3b) are provisional, to confirm.
+Status: proposal, specified. Decided: the animal and the floor order, that the elephant levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. Decided (owner, 2026-11-05): the floor's way up stays closed until the elephant is defeated. The special attacks (B3b) are provisional, to confirm; the owner accepts their drain amounts for now, to adjust later (2026-11-05).
 
 ## 1. Who it is
 
@@ -70,6 +70,8 @@ A great grey head with ears like sails, floating over a high basin of water. Eve
 
 **The tower rule.** A tower of player blocks that brings the player to the elephant's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the elephant floats to it, sweeps the stack with its trunk, and pushes the player off, after the full warning. Raising one block against the rim's line, as in the example route, is not a tower.
 
+**The way up (decided, owner, 2026-11-05).** The floor's way up, over the tusk line, is closed until the elephant is defeated: the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won), [sky architecture, section 7.1](../../../../architecture/SKY.md)).
+
 **The rim (the elephant's guard).** A positive intention fired from below the rim's top strikes the rim, which is a solid block, and stops on it ([attacks](../../../built/encounters/ATTACKS.md)). The rim's top is at 28. The small body is in line only from the shore with one block raised under the player, from the tusk line's upper ledges (standing at 27 or higher), or from the air. The head, which rises above the rim, takes positive hits from the shore, but only while the trunk is raised (in Trunk spray and Trumpet). From the terraces below the shore the mesa's own edge hides the deity.
 
 **States and timings (targets).**
@@ -115,12 +117,12 @@ The elephant has four attacks. The first stage uses Trunk spray and Trunk swat. 
 
 Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
 
-**Phases (provisional).** The elephant's fight has three phases, the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Wading*, up to a third of the hit count; phase 2, *Remembering*, up to two thirds; phase 3, *Carrying*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+**Phases (provisional).** The elephant's fight has three phases (a deity has two or three, owner, 2026-11-05; three here, provisional), the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Wading*, up to a third of the hit count; phase 2, *Remembering*, up to two thirds; phase 3, *Carrying*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
 
 | # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
 |---|---|---|---|---|---|
 | 5 | Mud wallow | 1 | Slows | 1.1 s | none |
-| 6 | Dust bath | 1 | Drains spirit | 1.3 s | 10 |
+| 6 | Dust bath | 1 | Drains spirit | 1.3 s | 16 |
 | 7 | Ear fan | 2 | Moves | 1.1 s | none |
 | 8 | Low rumble | 2 | Drains spirit | 1.3 s | 12 |
 | 9 | Heavy water | 3 | Drains spirit | 1.3 s | 14 |
@@ -138,7 +140,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 - *Habit:* an elephant sucks up dust with its trunk and throws it over its back, again and again, to keep the sun and the flies off.
 - *Phase:* 1.
 - *Telegraph (target 1.3 s):* the trunk sweeps the rim and draws up a plume of pale dust; a pale circle of target radius 2 is drawn on the remembered place (B2, memory), and dust motes start to settle in it with a dry hiss.
-- *Act:* the dust falls in the circle. A player inside it drains target 10 spirit. The dust settles and does nothing more.
+- *Act:* the dust falls in the circle. A player inside it drains target 16 spirit (raised from 10: the owner found it too small, 2026-11-05). The dust settles and does nothing more.
 - *Answer:* do not be where you rested; any move of 2 blocks leaves the circle. A block overhead shelters the player: the dust falls like a lob and stops at a solid block ([attacks](../../../built/encounters/ATTACKS.md)).
 - *Positive intention:* a positive intention into the circle during the telegraph turns the dust into a fine harmless mist: no drain.
 
@@ -289,7 +291,7 @@ Every value in the middle column is a target. The right column is the built game
 | The tusk line | five ledge strips, top ledge at 33 (the player stands at 34) | no built equivalent |
 | Carry by an ally | one terrace, 6 blocks | no built equivalent |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
-| Special attacks (provisional) | 6: 3 drain spirit (10, 12, 14 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
+| Special attacks (provisional) | 6: 3 drain spirit (16, 12, 14 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
 | Special telegraphs | 1.1 s to slow or move, 1.3 s to drain, 1.6 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
@@ -305,10 +307,10 @@ Every value in the middle column is a target. The right column is the built game
 9. Currents and minions. The herd wades without slowing and is not carried by the currents. The abilities folder leaves this open ([water currents](../abilities/WATER-CURRENTS.md)).
 10. Teleport (answered, provisional: no). The elephant does not teleport.
 11. When the elephant is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude.
-12. Special attacks (provisional, B3b). Which of the six to keep, which drain spirit, which capture, and the drain amounts (10, 12, 14) are proposals for the owner to confirm.
-13. Memory and spirit. Dust bath aims at the remembered place, like Memory stone and Trunk spray. Is a drain that punishes resting right on the floor after the panda's, which rewards it?
-14. Heavy water carries the mirror (mourning, an old weight) as a drain on a player who stays in a channel bed. Is mourning a habit the owner wants a deity to attack with, or should it stay in the defeat (the weight set down)?
-15. Ear fan and Mud wallow use [wind](../abilities/WIND.md) and [dense ground](../abilities/DENSE-GROUND.md), which the abilities folder proposes for other animals. Keep them, or replace them?
+12. Special attacks (provisional, B3b). The owner accepts the drain amounts (Dust bath 16, Low rumble 12, Heavy water 14) for now, to adjust later (2026-11-05). Which drain and which capture stay provisional. Dust bath now drains more than the phase 2 rumble: keep that order, or raise Low rumble and Heavy water too?
+13. Memory and spirit. Dust bath aims at the remembered place, like Memory stone and Trunk spray. The owner keeps it and raised its drain (2026-11-05). Still open: does a drain that punishes resting read well on the floor after the panda's, which rewards it?
+14. Heavy water. Answered (owner, 2026-11-05): it is a special attack that drains; keep it.
+15. Ear fan and Mud wallow. Answered (owner, 2026-11-05): reusing other animals' hindrances ([wind](../abilities/WIND.md), [dense ground](../abilities/DENSE-GROUND.md)) is fine; keep both.
 16. The centre (provisional, to confirm). B6 puts the Basin at the top and the centre, and the waterhole at the mountain's foot. The other choice is a bowl: the waterhole at the centre and the bottom, the rings rising outward to the hall's wall, and the Basin on the top ring at one side. Which does the owner want?
 17. The waterhole's size (provisional, to confirm). To fit on the ground ring it shrinks from radius 6 to radius 2, 2 deep. Is a small pool enough to read as the herd's waterhole?
 18. Three terraces (provisional, to confirm). The floor has three terraces between the ground and the Basin instead of four, so the ground ring has room. Is that the right trade?
