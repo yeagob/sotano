@@ -104,6 +104,8 @@ describe('3.1 nothing stays broken: regrowth', () => {
 });
 
 describe('3.2 player blocks are the exception: ownership', () => {
+  // The world's side of `placing` only. That the game's tryPlace sets it around the placement, and only
+  // there, is tested on the real Game method in tests/game-realm-passage.test.ts.
   it('a cell is Placed only while placing is set: the same stone set by the world is not the player’s', () => {
     const { world } = setup();
     world.set(20, 1, 20, stone);

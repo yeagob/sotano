@@ -50,7 +50,7 @@ Status: decided.
 
 Blocks the player creates with abilities are not original. They can be destroyed for good, and only with a positive intention. A route the player builds stays until a positive intention takes it away, except a tower knocked down under law 3.9. A positive shot that destroys a player block removes it with no cube back (provisional, owner, 2026-11-03). Whether a built block can be lost in any other way is open (section 5).
 
-Built in part: a positive shot on a placed block removes it, and the player's blocks are the only ones marked placed ([SKY.md §5.7](../../../architecture/SKY.md)). A positive weapon stroke does not reach a placed block yet.
+Built in part: a positive shot or a positive weapon stroke (blade, beam, great cut) on a placed block removes it, and the player's blocks are the only ones marked placed ([SKY.md §5.7](../../../architecture/SKY.md)).
 
 ### 3.3 Negative intentions do not work on sky creatures
 

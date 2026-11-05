@@ -304,7 +304,7 @@ export class Game {
   get polarityNow() { return this.polarity; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
    *  already warmed, so a beam warms a projection once, not on every tick. */
-  private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
+  private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
   /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
@@ -1012,7 +1012,7 @@ export class Game {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
         const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
-        this.stroke = { polarity: this.polarity, warmed: new Set(), intent };
+        this.stroke = { polarity: this.polarity, warmed: new Set(), intent, weapon };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
       },
@@ -1021,15 +1021,22 @@ export class Game {
       breakable: (x, y, z) => {
         const id = this.world.get(x, y, z);
         if (id === AIR || !isFinite(mat(id).hp)) return false;
-        return this.stroke.polarity === 'negative' || this.world.damaged.has(this.world.idx(x, y, z));
+        if (this.stroke.polarity === 'negative') return true;
+        // law 3.2: a positive stroke that takes a placed block removes it, as a positive shot does
+        if (this.skyPositiveBlock(x, y, z, this.stroke.weapon)) return true;
+        return this.world.damaged.has(this.world.idx(x, y, z));
       },
       // a clean cut: far more than any block's HP, so armor never saves it (hooks still may)
       cut: (x, y, z, source) => {
-        if (this.stroke.polarity === 'positive') this.repairBlock(x, y, z, 1e6);
+        if (this.stroke.polarity === 'positive') { if (!this.skyPositiveBlock(x, y, z, this.stroke.weapon)) this.repairBlock(x, y, z, 1e6); }
         else this.damageBlock(x, y, z, 1e6, 'cut', source, this.strikeDebris-- > 0);
       },
       burn: (x, y, z, amount, source) => {
-        if (this.stroke.polarity === 'positive') { this.repairBlock(x, y, z, amount); return false; }
+        if (this.stroke.polarity === 'positive') {
+          if (this.skyPositiveBlock(x, y, z, this.stroke.weapon)) return true;
+          this.repairBlock(x, y, z, amount);
+          return false;
+        }
         return this.damageBlock(x, y, z, amount, 'beam', source);
       },
       // a stroke that reaches the alembic brews at it, exactly as a shot does (intentHitsBlock)
@@ -1906,6 +1913,14 @@ export class Game {
     sfx2.boom();
   }
 
+  /**
+   * Law 3.2 (seam 13): a positive hit, from a shot or a weapon stroke, on a block the player placed in
+   * the sky removes it for good. True when it did. The dungeon and an unplaced block take no part.
+   */
+  private skyPositiveBlock(x: number, y: number, z: number, weapon: WeaponId): boolean {
+    return this.realm === 'sky' && !!this.sky?.positiveHitsBlock({ x, y, z, cell: this.world.idx(x, y, z), actor: -1, weapon, warm: true });
+  }
+
   /** A positive intention mends a damaged block and never breaks one; a negative one damages it. */
   private intentHitsBlock(hit: VoxelHit, mining: number, polarity: Polarity) {
     const id = this.world.get(hit.x, hit.y, hit.z);
@@ -1913,8 +1928,7 @@ export class Game {
     if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
     if (id === MAT.kitchen) return false;   // unbreakable, and an intention does nothing to it
     if (polarity === 'positive') {
-      // law 3.2: a positive hit on a block the player placed removes it (the sky's cells only)
-      if (this.realm === 'sky' && this.sky?.positiveHitsBlock({ x: hit.x, y: hit.y, z: hit.z, cell: this.world.idx(hit.x, hit.y, hit.z), actor: -1, weapon: 'intent', warm: true })) return true;
+      if (this.skyPositiveBlock(hit.x, hit.y, hit.z, 'intent')) return true;
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
       else {
@@ -1939,6 +1953,8 @@ export class Game {
   }
 
   private intentHit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, intent: IntentSpec) {
+    // a routed creature (a sky deity) was touched through the router; no listener knows its id (SKY.md §5.7)
+    if (kind === 'actor' && this.router.owns(target)) return;
     this.bus.emit('intentHit', { kind, target, x: p.x, y: p.y, z: p.z, nx: n.x, ny: n.y, nz: n.z, vx: v.x, vy: v.y, vz: v.z, intent });
   }
 
