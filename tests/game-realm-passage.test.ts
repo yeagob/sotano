@@ -42,9 +42,9 @@ function worldSet(kind: 'dungeon' | 'sky') {
   return {
     kind,
     root: new THREE.Group(),
-    world: { name: kind, get: () => AIR, solid: () => false },
+    world: { name: kind, get: () => AIR, solid: () => false, elemAt: () => 0, setElem() {} },
     chunks: { dispose() {} },
-    elements: { name: kind },
+    elements: { name: kind, wakeAround() {} },
     debris: { name: kind, max: 0, isAlive: () => false },
     pickups: { name: kind, add: vi.fn(), dispose() {} },
     enemies: { name: kind, add: vi.fn(), hurt: vi.fn(), clearHazards() {}, dispose() {} },
