@@ -18,7 +18,7 @@ import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GA
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
-  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_WATER, elemDef, elemKind, fluidHeight, isFalling, type ElementDef, type ElementKey,
+  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
@@ -2290,7 +2290,7 @@ export class Game {
     for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
       const d = Math.hypot(bx + 0.5 - x, by + 0.5 - y, bz + 0.5 - z);
-      if (d <= r) this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r));
+      if (d <= r) { this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r)); this.loveLava(bx, by, bz); }
     }
     // a routed creature gets one warm touch per explosion, whatever the radius (SKY.md §5.7)
     this.router.blast({ x, y, z }, r, 'positive', true, 'item');
@@ -2303,6 +2303,15 @@ export class Game {
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
+  }
+
+  /** Love turns lava into water, at the same level: the sphere of a love explosion cools the lava in it. */
+  private loveLava(x: number, y: number, z: number) {
+    const b = this.world.elemAt(x, y, z);
+    if (elemKind(b) !== EL_LAVA) return;
+    this.world.setElem(x, y, z, EL_WATER, elemLevel(b));
+    this.elements.wakeAround(x, y, z);
+    this.elementFx('steam', x, y, z);
   }
 
   // ───────────────────────── elements ─────────────────────────

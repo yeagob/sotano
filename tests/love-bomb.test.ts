@@ -13,6 +13,7 @@ import { seedFx } from '../src/core/fx';
 import { AIR, MAT, mat } from '../src/content/materials';
 import { createBus } from '../src/game/events';
 import type { DebrisSystem } from '../src/physics/debris';
+import { EL_LAVA, EL_WATER, elemByte, elemKind, elemLevel } from '../src/content/elements';
 
 vi.mock('../src/audio/sfx', () => {
   const silent = new Proxy({}, { get: () => () => {} });
@@ -47,6 +48,10 @@ function world() {
     hp: (x: number, y: number, z: number) => damaged.get(idx(x, y, z)) ?? mat(w.get(x, y, z)).hp,
     /** a block that was hit and stands with `hp` left */
     hurt: (x: number, y: number, z: number, hp: number) => { damaged.set(idx(x, y, z), hp); },
+    /** the element cells (water, lava, fire) by position: a byte, as the element grid stores it */
+    elem: new Map<string, number>(),
+    elemAt: (x: number, y: number, z: number) => w.elem.get(`${x},${y},${z}`) ?? 0,
+    setElem: (x: number, y: number, z: number, kind: number, level: number) => { w.elem.set(`${x},${y},${z}`, elemByte(kind, level)); },
   };
   return w;
 }
@@ -68,6 +73,9 @@ function rig(polarity: Polarity, realm: 'dungeon' | 'sky' = 'sky') {
     hud: { shake() {}, toast() {}, presenceCard() {} },
     stats: { get: (k: string) => (k === 'bombRadius' ? 2.6 : k === 'bombDamage' ? 40 : 0) },
     particles: { burst() {} },
+    elements: { wakeAround() {} },
+    elemFx: 0,
+    elemSfx: 0,
     actors: { all: () => [] },
     enemies: { list: [] },
     doors: { solidAt: () => false, list: [] },
@@ -106,6 +114,19 @@ describe('white bombs: the love explosion of a placed bomb (DECISIONS §7.8)', (
     g.polarity = 'negative';
     expect(g.debris.love[white]).toBe(1);
     expect(g.debris.fuse[white]).toBeGreaterThan(0);
+  });
+
+  it('a love explosion turns the lava in its sphere into water at the same level, and leaves lava outside it', () => {
+    const { g, w } = rig('positive');
+    w.setElem(10, 1, 10, EL_LAVA, 6); // the centre of the blast
+    w.setElem(10, 1, 12, EL_LAVA, 3); // 2.0 from the centre, inside the radius 2.6
+    w.setElem(10, 1, 14, EL_LAVA, 3); // 4.0 from the centre, outside it
+    g.loveBlast(10.5, 1.5, 10.5);
+    const at = (x: number, y: number, z: number) => w.elemAt(x, y, z);
+    expect(elemKind(at(10, 1, 10))).toBe(EL_WATER);
+    expect(elemLevel(at(10, 1, 10))).toBe(6);
+    expect(elemKind(at(10, 1, 12))).toBe(EL_WATER);
+    expect(elemKind(at(10, 1, 14))).toBe(EL_LAVA);
   });
 
   it('a slot reused by a bomb placed at negative polarity starts black', () => {
