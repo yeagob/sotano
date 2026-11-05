@@ -24,13 +24,14 @@ function worlds() {
 }
 
 /** A host with the player well away from everything; `debris()` answers for the active world, as the game's does. */
-function fakeHost(actors: ActorRegistry, w: ReturnType<typeof worlds>): SkyHost {
+function fakeHost(actors: ActorRegistry, w: ReturnType<typeof worlds>, sky: () => SkyWorld): SkyHost {
   const noop = () => {};
   const player: Body = { x: 6, y: 10, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
   return {
     time: () => 0,
     player: () => ({ body: player, eye: { x: 0, y: 0, z: 0 }, aim: { x: 1, y: 0, z: 0 }, hand: [], push: noop, slow: noop, hold: noop, carry: noop }),
     actors: () => actors,
+    world: sky,
     debris: () => (w.active === 'sky' ? w.sky : w.dungeon),
     fork: (...path: (string | number)[]) => new Rng(path.length * 7 + 1),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
@@ -41,7 +42,8 @@ function fakeHost(actors: ActorRegistry, w: ReturnType<typeof worlds>): SkyHost 
 function makeRealm(w: ReturnType<typeof worlds>): SkyRealm {
   const actors = new ActorRegistry();
   actors.setRealm('sky');
-  return SkyRealm.create(fakeHost(actors, w), new THREE.Group(), layout => ({ kind: 'sky', world: new SkyWorld(layout), debris: w.sky } as unknown as SkyRealmSet));
+  let world: SkyWorld | null = null;
+  return SkyRealm.create(fakeHost(actors, w, () => world!), new THREE.Group(), layout => ({ kind: 'sky', world: (world = new SkyWorld(layout)), debris: w.sky } as unknown as SkyRealmSet));
 }
 
 describe('the sky builds its nests on its first update, in the sky\'s own loose cubes', () => {

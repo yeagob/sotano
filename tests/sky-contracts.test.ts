@@ -201,8 +201,9 @@ describe('sky stubs', () => {
     installNoHarm(bus);
     new Nests(host, [], 0).update(1);
     expect(towerUnder(world, body)).toBeNull();
-    new Updraft(host, []).update(1);
-    new OutsideWatch(host, tree, () => {}).update(1);
+    // Updraft and OutsideWatch are built (L2): tests/sky-updraft.test.ts and tests/sky-outside.test.ts drive them.
+    expect(new Updraft(host, []).carrying).toBe(false);
+    new OutsideWatch(host, tree, () => {});
     runner.update(1);
     expect(runner.active()).toEqual([]);
     effects.update(1);
