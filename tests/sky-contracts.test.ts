@@ -213,7 +213,8 @@ describe('sky stubs', () => {
     knock.update(1);
     expect(stageOf(8, 24)).toBe(1);
     expect(stageOf(48, 24)).toBe(2);
-    for (const make of Object.values(gaits)) expect(typeof make).toBe('function');
+    // the gaits are built (C1): tests/sky-engine.test.ts drives them; here every maker is still a function
+    for (const make of [gaits.walk, gaits.climbFace, gaits.hangUnder, gaits.roll, gaits.file, gaits.stalk, gaits.gallopLoop, gaits.bound, gaits.pounce, gaits.compose]) expect(typeof make).toBe('function');
     new HitMarks(root, 24).add(at);
     new CreatureView(root).update(1, []);
     new EarthView(root).update(at, 1);
