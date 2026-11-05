@@ -15,7 +15,7 @@ Part of [blocks](README.md).
 - You cannot pick up a bomb. Walking into one kicks it. Intentions push a bomb and do not set it off. Blasts set off bombs in their range.
 - You start a run with one bomb. Bombs are found in rooms and taken from rewards, and you can carry up to ninety-nine.
 - **White and black bombs.** A bomb you drop while your polarity is positive is **white**: a pale seed with gold seams and a gold halo. A bomb you drop while it is negative is the **black** breakthrough, and its fuse ends in the blast above. Changing polarity later does not change a bomb that is already placed.
-- **A white bomb ends in a love explosion**, the same sphere as the blast but touched as a positive intention touches it. The blocks in it are mended and none breaks; nothing is thrown; nothing is hurt, the player included; no other bomb goes off; a door in it is mended without opening. The love explosion is the one of [Dr. Launcher](../practices/milagros/DR-LAUNCHER.md).
+- **A white bomb ends in a love explosion**, the same sphere as the blast but touched as a positive intention touches it. The blocks in it are mended and none breaks; nothing is thrown; it never hurts the player; a hostile projection in it takes the positive share of the damage (half, as any positive intention deals), and an ally in it is healed; no other bomb goes off; a love explosion leaves doors alone. The love explosion is the one of [Dr. Launcher](../practices/milagros/DR-LAUNCHER.md).
 - A white bomb caught in a negative blast goes off almost at once, as a love explosion.
 
 ## The white bomb's rule
