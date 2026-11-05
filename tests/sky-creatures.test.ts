@@ -8,13 +8,16 @@ import type { Polarity } from '../src/combat/polarity';
 import { ActorRegistry } from '../src/entities/actors';
 import { Rng } from '../src/core/rng';
 import type { Body } from '../src/physics/voxel-collide';
-import { MIN_TELEGRAPH, TELEPORT_MIN, aimOf, reachOf, stageOf } from '../src/sky/creatures/deity';
+import { BOB, DRIFT_RADIUS, MIN_TELEGRAPH, TELEPORT_MIN, aimOf, reachOf, stageOf } from '../src/sky/creatures/deity';
+import { DEITIES } from '../src/sky/creatures/deities';
 import { Puff } from '../src/sky/creatures/puff';
 import { SkyCreatures } from '../src/sky/creatures/system';
 import { linksOf, nearest, placeById, route } from '../src/sky/floors/graph';
+import { SkyRealm } from '../src/sky/sky-realm';
+import { SkyWorld } from '../src/sky/world/sky-world';
 import type {
   AttackDef, CreatureDeps, CustomState, DeityCtx, DeityDef, DeityModel, FloorGraph, HindranceRunnerApi, Link, Place,
-  SkyActor, SkyEffectsApi, SkyFloorPlan, SkyHost, Stage, TowerKnockApi,
+  SkyActor, SkyEffectsApi, SkyFloorPlan, SkyHost, SkyRealmSet, Stage, TowerKnockApi,
 } from '../src/sky/types';
 
 const DT = 0.1;
@@ -385,6 +388,7 @@ describe('parking and the touch provider (SKY.md §5.2, §5.7)', () => {
     const r = rig({ rest: [100, 100, 100] });
     r.creatures.dispose();
     expect(r.actors.get(r.actor.id)).toBeUndefined();
+    expect([...r.actors.all()].filter(a => a.kind === 'sky')).toEqual([]);
     expect(r.creatures.owns(r.actor.id)).toBe(false);
     expect(r.creatures.all()).toEqual([]);
   });
@@ -425,6 +429,72 @@ describe('the floor graph (SKY.md §5.6)', () => {
     expect(route(g, 0, 0, ['walk'])).toEqual([0]);
     expect(route(g, 0, 9, ['jump', 'walk'])).toBeNull();
     expect(route(g, 3, 0, ['drop', 'jump', 'walk'])).toEqual([3, 2, 1, 0]);
+  });
+});
+
+/** A sky realm headless: a real layout and world, the player well away, and the host calls the realm makes as no-ops. */
+function newRealm(seed = 1): SkyRealm {
+  const actors = new ActorRegistry();
+  actors.setRealm('sky');
+  const noop = () => {};
+  const player: Body = { x: 6, y: 10, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
+  const host = {
+    time: () => 0,
+    player: () => ({ body: player, eye: { x: 0, y: 0, z: 0 }, aim: { x: 1, y: 0, z: 0 }, hand: [], push: noop, slow: noop, hold: noop, carry: noop }),
+    actors: () => actors,
+    debris: () => ({ spawn: () => 0, max: 0 }),
+    fork: (...path: (string | number)[]) => new Rng(path.length * 7 + seed),
+    fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
+    drainSpirit: noop, spirit: () => 100, takeRandomPractice: () => null, sendUnderground: noop,
+  } as unknown as SkyHost;
+  return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: new SkyWorld(layout) } as unknown as SkyRealmSet));
+}
+
+describe('the five deities of the sky (SKY.md §5.3)', () => {
+  it('a new sky holds exactly five deities, one per floor, each on its floor plan’s seat', () => {
+    const realm = newRealm();
+    const all = realm.creatures.all();
+    expect(all.map(a => a.animal)).toEqual(realm.plans.floors.map(f => f.animal));
+    expect(new Set(all.map(a => a.id)).size).toBe(5);
+    realm.plans.floors.forEach((f, i) => {
+      const a = all[i];
+      expect(a.role).toBe('deity');
+      // a deity drifts round its seat (DRIFT_RADIUS) and bobs over it (BOB); the seat is its home
+      expect(Math.hypot(a.body.x - (f.seat.x + 0.5), a.body.z - (f.seat.z + 0.5))).toBeLessThanOrEqual(DRIFT_RADIUS + 1e-9);
+      expect(Math.abs(a.body.y - (f.seat.y + (DEITIES[f.animal].hover ?? 0)))).toBeLessThanOrEqual(BOB + 1e-9);
+      expect(a.body.hw).toBeGreaterThan(0);
+      expect(a.body.h).toBeGreaterThan(0);
+    });
+  });
+
+  it('two sky realms from the same seed hold the same deities, with the same ids and bodies', () => {
+    const summary = (realm: SkyRealm) => realm.creatures.all().map(a => [a.id, a.animal, a.body.x, a.body.y, a.body.z]);
+    expect(summary(newRealm(7))).toEqual(summary(newRealm(7)));
+  });
+
+  it('every deity starts parked, and only the player’s floor’s deity is unparked', () => {
+    const realm = newRealm();
+    expect(realm.creatures.all().every(a => a.parked)).toBe(true);
+    realm.creatures.update(DT, 3);
+    expect(realm.creatures.all().map(a => a.parked)).toEqual([true, true, false, true, true]);
+    realm.creatures.update(DT, 1);
+    expect(realm.creatures.all().map(a => a.parked)).toEqual([false, true, true, true, true]);
+  });
+
+  it('a won deity stays won after leave() and the next update, and is never respawned', () => {
+    const realm = newRealm();
+    realm.creatures.update(DT, 1);
+    const [a] = realm.creatures.all();
+    const ids = realm.creatures.all().map(x => x.id);
+    const p = { x: a.body.x, y: a.body.y + 0.5, z: a.body.z };
+    for (let i = 0; i < 24; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
+    expect([a.state, a.side]).toEqual(['Won', 'ally']);
+    realm.leave();
+    realm.creatures.update(DT, 1);
+    expect([a.state, a.side]).toEqual(['Won', 'ally']);
+    realm.creatures.update(DT, 4);
+    expect([a.state, a.side]).toEqual(['Won', 'ally']);
+    expect(realm.creatures.all().map(x => x.id)).toEqual(ids);
   });
 });
 

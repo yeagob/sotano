@@ -15,5 +15,6 @@ export const elephantDeity: DeityDef = {
   ally: { act: 'trumpet', every: 0, cap: 0 },
   knock: 'sweep',
   won: { toast: null, play: () => {} },
-  model: { body: [], head: [], hw: 0, h: 0, progress: () => {} },
+  // Body size PROVISIONAL (no guardian document gives one): touches land on a body until B1–B5 build the model.
+  model: { body: [], head: [], hw: 0.8, h: 1.8, progress: () => {} },
 };

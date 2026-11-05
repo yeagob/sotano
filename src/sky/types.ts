@@ -702,6 +702,8 @@ export type ThresholdCtor = new (host: SkyHost, plan: TotalityPlan) => Threshold
 
 export interface SkyViewApi { update(eye: Vec3, dt: number): void; dispose(): void }
 export type SkyViewCtor = new (root: THREE.Object3D) => SkyViewApi;
+/** The Sun is anchored to the Sun's volume (plan.sun), so its view takes the volume (render/sun.ts). */
+export type SunViewCtor = new (root: THREE.Object3D, volume: { x: number; y: number; z: number; r: number }) => SkyViewApi;
 
 /** The game builds the sky's set on the layout (SkyWorld, its renderer, elements, debris, pickups, an empty Enemies). */
 export type SkySetFactory = (layout: SkyLayout) => SkyRealmSet;

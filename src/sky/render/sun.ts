@@ -1,17 +1,23 @@
-// The Sun over the threshold, the one warmth that is not a threat (provisional, docs/art/sky/totality.md):
-// a pale disc and its corona, unfogged, seen from the solar approach. It stands above the eye, so it is in
-// the sky wherever the player stands in the upper stratum.
+// The Sun, the one warmth that is not a threat (provisional, docs/art/sky/totality.md): a pale disc and its corona,
+// unfogged, seen from the solar approach. It stands at the Sun's volume (the sphere the last jump enters, plan.sun),
+// not above the eye: from far off it is drawn on the same line at FAR_DRAW (far.ts); up close it is drawn at its
+// true size, so the last jump visibly enters it.
 
 import * as THREE from 'three';
 import { palCss } from '../../content/palette';
 import type { SkyViewApi, Vec3 } from '../types';
-import { SUN_RADIUS } from '../totality/chain';
+import { backdrop, placeFar } from './far';
 
-/** The corona's radius in blocks, and how far above the eye the Sun stands. The disc's radius is the Sun's volume's (SUN_RADIUS). */
+/**
+ * The corona's radius in blocks. The disc's radius is the Sun's volume's (plan.sun.r). The 200-block far plane bounds the
+ * group's centre only (far.ts): near the Sun, the corona's far edge may pass it, and its visible front is still drawn.
+ */
 export const CORONA_RADIUS = 90;
-export const SUN_HEIGHT = 260;
 /** Shown from this height up (the solar approach). */
 export const SUN_SHOWN_FROM = 640;
+
+/** The Sun's volume: its centre and radius, as the totality plan gives it. */
+export interface SunVolume { readonly x: number; readonly y: number; readonly z: number; readonly r: number }
 
 export class SunView implements SkyViewApi {
   private readonly group = new THREE.Group();
@@ -20,8 +26,8 @@ export class SunView implements SkyViewApi {
   private readonly disc: THREE.MeshBasicMaterial;
   private readonly corona: THREE.MeshBasicMaterial;
 
-  constructor(private readonly root: THREE.Object3D) {
-    this.discGeo = new THREE.SphereGeometry(SUN_RADIUS, 32, 24);
+  constructor(private readonly root: THREE.Object3D, private readonly volume: SunVolume) {
+    this.discGeo = new THREE.SphereGeometry(volume.r, 32, 24);
     this.coronaGeo = new THREE.SphereGeometry(CORONA_RADIUS, 32, 24);
     this.disc = new THREE.MeshBasicMaterial({ color: palCss('sky.strata.corona'), fog: false });
     // additive: the corona is light added to the dusk, so it brightens the air instead of greying it
@@ -31,14 +37,14 @@ export class SunView implements SkyViewApi {
     });
     const disc = new THREE.Mesh(this.discGeo, this.disc);
     const halo = new THREE.Mesh(this.coronaGeo, this.corona);
-    halo.renderOrder = 1;
     this.group.add(disc, halo);
+    backdrop(this.group);
     root.add(this.group);
   }
 
   update(eye: Vec3, _dt: number) {
     this.group.visible = eye.y >= SUN_SHOWN_FROM;
-    this.group.position.set(eye.x, eye.y + SUN_HEIGHT, eye.z);
+    placeFar(this.group, eye, this.volume, CORONA_RADIUS);
   }
 
   dispose() {
