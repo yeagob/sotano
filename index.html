@@ -103,8 +103,10 @@
     .spirit-ring rect { fill: none; transition: stroke-dasharray .3s linear; }
     .spirit-key { stroke: var(--pal-ink-void); stroke-width: calc(3 * var(--u)); }
     .spirit-line { stroke: var(--pal-light-core); stroke-width: var(--u); }
-    .spirit-num { display: none; font-family: "Pixelify Sans", system-ui, sans-serif; font-size: 20px; color: var(--ui-text);
+    .spirit-num { display: none; margin-left: calc(3 * var(--u)); font-family: "Pixelify Sans", system-ui, sans-serif; font-size: 20px; color: var(--ui-text);
       font-variant-numeric: tabular-nums; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
+    /* the sky's row pads 5 u so the outline (4.5 u reach from the hearts) stays inside the screen's top and left edges at any scale */
+    .hearts-row.sky { padding: calc(5 * var(--u)); }
     .hearts-row.sky .spirit-ring { display: block; }
     .hearts-row.sky .spirit-num { display: block; }
     .heart { position: relative; width: calc(11 * var(--u)); height: calc(10 * var(--u)); display: inline-block;

@@ -28,6 +28,8 @@ function demo(value: number): HTMLElement {
   num.textContent = String(value);
   row.append(box, num);
   row.style.setProperty('--u', DEMO_U);
+  // pad the demo by 5 u, as the sky's row does in index.html, so the ring and the number sit inside their figure
+  row.style.padding = `calc(5 * ${DEMO_U})`;
   return row;
 }
 
