@@ -30,12 +30,12 @@ const LOOKS: Record<SeedKind, Look> = {
     top: 'mat.seed.dark',
     halo: 'light.ember', haloRest: 0.35, haloBreathe: 0.3,
   },
-  // the white seed (§7.8): a white husk of bone and light.core, hot seams with gold lip ends and branches, a light.core halo
+  // the white seed (§7.8): a white husk of bone and light.core, core seams with hot lip ends and branches (no gold), a light.core halo at 0.3
   love: {
     dark: 'bone.paper', base: 'light.core', hi: 'light.core',
-    lip: 'light.hot', lipEnd: 'light.gold', inner: 'light.hot', heart: 'light.core', branch: 'light.gold',
+    lip: 'light.core', lipEnd: 'light.hot', inner: 'light.core', heart: 'light.core', branch: 'light.hot',
     top: 'bone.paper',
-    halo: 'light.core', haloRest: 0.45, haloBreathe: 0.45,
+    halo: 'light.core', haloRest: 0.3, haloBreathe: 0.3,
   },
 };
 
@@ -137,7 +137,18 @@ function geometries(kind: SeedKind): Geo {
   return geos[kind]!;
 }
 
-let huskMat: THREE.MeshLambertMaterial | null = null;
+const huskMats: Partial<Record<SeedKind, THREE.MeshLambertMaterial>> = {};
+
+/** One husk material per seed. The white seed carries its own emissive bone, so its shaded faces stay cream, not khaki (§7.8). */
+function huskMaterial(kind: SeedKind): THREE.MeshLambertMaterial {
+  const cached = huskMats[kind];
+  if (cached) return cached;
+  const mat = kind === 'love'
+    ? new THREE.MeshLambertMaterial({ vertexColors: true, emissive: pal('bone.paper'), emissiveIntensity: 0.35 })
+    : new THREE.MeshLambertMaterial({ vertexColors: true, emissive: pal('ink.void') });
+  huskMats[kind] = mat;
+  return mat;
+}
 
 export interface SeedModel {
   kind: SeedKind;
@@ -150,12 +161,11 @@ export interface SeedModel {
 export function buildSeed(kind: SeedKind = 'breakthrough'): SeedModel {
   const L = LOOKS[kind];
   const g = geometries(kind);
-  huskMat ??= new THREE.MeshLambertMaterial({ vertexColors: true, emissive: pal('ink.void') });
   const cracks = new THREE.MeshBasicMaterial({ vertexColors: true });
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
-  body.add(new THREE.Mesh(g.husk, huskMat), new THREE.Mesh(g.glow, cracks));
+  body.add(new THREE.Mesh(g.husk, huskMaterial(kind)), new THREE.Mesh(g.glow, cracks));
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: pal(L.halo), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: L.haloRest }));
   halo.position.set(0, SEED_H * SEED_VOXEL * 0.48, SEED_W * SEED_VOXEL * 0.25);
   halo.scale.set(0.42, 0.42, 1);
