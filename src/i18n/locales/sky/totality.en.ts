@@ -4,4 +4,5 @@ export const SKY_TOTALITY_EN = {
   'level.totality.lower': 'Lower Totality: the thinned air',
   'level.totality.mid': 'Mid Totality: the void',
   'level.totality.upper': 'Upper Totality: the solar approach',
+  'toast.updraft': 'An updraft carries you back to the last beacon',
 } as const;
