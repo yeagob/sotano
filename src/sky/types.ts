@@ -544,8 +544,13 @@ export type CreatureViewCtor = new (root: THREE.Object3D) => CreatureViewApi;
 
 // ───────────────────────── hindrances (§6) ─────────────────────────
 
-export type HindranceId = 'knockback' | 'wind' | 'opening-holes' | 'fading-platforms' | 'dense-ground' | 'cube-cage' | 'water-currents' | 'paralysis';
-export const HINDRANCE_IDS: readonly HindranceId[] = ['knockback', 'wind', 'opening-holes', 'fading-platforms', 'dense-ground', 'cube-cage', 'water-currents', 'paralysis'];
+/** The koala's own hindrances (B2, additive): src/sky/hindrances/koala-*.ts. */
+export const KOALA_HINDRANCE_IDS = ['koala-lob', 'koala-hug', 'koala-haze', 'koala-lullaby', 'koala-bellow', 'koala-hold'] as const;
+export type KoalaHindranceId = typeof KOALA_HINDRANCE_IDS[number];
+export type HindranceId = 'knockback' | 'wind' | 'opening-holes' | 'fading-platforms' | 'dense-ground' | 'cube-cage' | 'water-currents' | 'paralysis'
+  | KoalaHindranceId;
+export const HINDRANCE_IDS: readonly HindranceId[] = ['knockback', 'wind', 'opening-holes', 'fading-platforms', 'dense-ground', 'cube-cage', 'water-currents', 'paralysis',
+  ...KOALA_HINDRANCE_IDS];
 
 export interface KnockbackParams { from: Vec3; shape: 'ring' | 'line' | 'cone'; radius: number; dir?: Vec3; strength: number }
 export interface WindParams { from: Vec3; to: Vec3; radius: number; strength: number; seconds: number }
@@ -565,7 +570,28 @@ export interface HindranceParams {
   'cube-cage': CubeCageParams;
   'water-currents': WaterCurrentsParams;
   'paralysis': ParalysisParams;
+  'koala-lob': KoalaLobParams;
+  'koala-hug': KoalaHugParams;
+  'koala-haze': KoalaHazeParams;
+  'koala-lullaby': KoalaLullabyParams;
+  'koala-bellow': KoalaBellowParams;
+  'koala-hold': KoalaHoldParams;
 }
+
+// The koala's hindrances' params. A drain or a capture is the deity's
+// attack landing: the hindrance calls back into its attack (`ctx.drain`), it never reaches the spirit gate itself.
+/** Bundles that drop on marked cells (Leaf drop), or the joey that rides the player for `ride` seconds (Joey ride). */
+export interface KoalaLobParams { marks: readonly Vec3[]; ride: number }
+/** A koala minion swings and drops from `from`; it hugs the player under it for `seconds` unless `loose()` says it let go. */
+export interface KoalaHugParams { from: Vec3; seconds: number; loose: () => boolean }
+/** A circle of haze round `at` that calls `drain` if the player is inside it when it bursts. */
+export interface KoalaHazeParams { at: Vec3; radius: number; drain: () => void }
+/** A branch's original cells that glow; `drain` if the player still stands on one when it ends. */
+export interface KoalaLullabyParams { cells: readonly number[]; drain: () => void }
+/** A ring that spreads from `from` at `speed` out to `radius`, `height` high; `drain` once when it touches the player. */
+export interface KoalaBellowParams { from: Vec3; speed: number; radius: number; height: number; drain: () => void }
+/** A ring of claw marks that closes round `around`; `capture` if the player is inside when it closes, unless `stopped()`. */
+export interface KoalaHoldParams { around: Vec3; radius: number; from: Vec3; capture: () => void; stopped: () => boolean }
 
 /** What the player sees and hears, for the full length. */
 export interface Telegraph {
