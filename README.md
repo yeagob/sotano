@@ -227,6 +227,7 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Technical research and proposal](docs/research/TECHNICAL.md): how Isaac and Noita are built, the target architecture, roadmap.
 - [Architecture reviews](docs/reviews/README.md): engineer, architect and mediator reviews of key decisions.
 - [Promotional videos](docs/promo/README.md): scripts of the short videos that present a feature on social networks.
+- [Test bench](docs/testing/TEST-BENCH.md): the test bench of the game.
 
 ---
 
