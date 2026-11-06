@@ -5,6 +5,7 @@ import { GEN_VERSION } from './core/seed';
 import { setLocale, t } from './i18n';
 import { initDom } from './i18n/dom';
 import { initLanding } from './game/landing';
+import { testBenchOn } from './debug/test-bench';
 import type { HeartKind } from './content/heart-art';
 
 async function boot() {
@@ -79,6 +80,11 @@ async function boot() {
     sb,
   };
   (window as any).S = S;
+  // ?test: the test bench, a panel to skip floors, hold god mode and read the guide (docs/testing/TEST-BENCH.md)
+  if (testBenchOn(params)) {
+    const { mountTestPanel } = await import('./debug/test-panel');
+    mountTestPanel(game, S);
+  }
 
   let last = performance.now();
   const loop = (now: number) => {

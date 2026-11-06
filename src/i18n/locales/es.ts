@@ -6,6 +6,7 @@
 
 import type { Catalog } from '.';
 import { SKY_PARTS_ES } from './sky';
+import { TEST_BENCH_ES } from './test-bench.es';
 
 export const ES: Catalog = {
   code: 'es',
@@ -377,6 +378,7 @@ export const ES: Catalog = {
     ...SKY_PARTS_ES.horse,
     ...SKY_PARTS_ES.totality,
     ...SKY_PARTS_ES.endgame,
+    ...TEST_BENCH_ES,
     'unit.missileOn': 'doble toque',
   },
 
