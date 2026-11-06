@@ -206,14 +206,18 @@ export interface SkyFloorGen {
 
 /** One storey of the trunk: 0 the arrival deck, 1–5 the guardian floors. */
 export interface SkyHall { floor: 0 | FloorIndex; y0: number; y1: number; radius: number }
+/** A floor's way up: the membrane's disc on the slab's bottom layer, and the climb's ledges through it (kept when it opens). */
+export interface SkyGate { x: number; y: number; z: number; r: number; steps?: Extract<Shape, { k: 'ledges' }> }
 export interface SkyTreePlan {
   shapes: Shape[];
+  /** The climbs through the ways up: drawn over the floors (after their shapes), so a shaft cuts the next floor's blocks. */
+  climbs: Shape[];
   halls: readonly SkyHall[];
-  /** Where the player lands from the crown. */
+  /** Where the player lands from the crown: on the deck in front of the foot door. */
   deck: Place;
   door: Place;
   /** The way up over each floor, index n − 1; heartwood until `openGate(n)`. */
-  gates: readonly { x: number; y: number; z: number; r: number }[];
+  gates: readonly SkyGate[];
   /** The trunk's outer radius at a height (the outside watch reads it). */
   trunkRadius(y: number): number;
 }

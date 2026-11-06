@@ -42,7 +42,7 @@ The status line says where you are: the floor and its name, or the sky and the s
 | Practices | one button per practice | `Game.give(id)`: the practice with its banner, light and sound, as from a pedestal |
 | Guide | **Underground**, **The sky** | The guide of section 4, folded by floor, in the player's language |
 
-**Sending the player to a deity's floor is not possible.** No hook exists for it: `debugSky` takes no floor, `SkyRealm` has no teleport to a hall, and the `?sky=n` flag and `S.sky.go(n)` of [SKY §15](../architecture/SKY.md) are not built. From the deck, walk the foot door and the spiral up to floor 1, then each way up as its deity is won. God mode keeps spirit full, so a fight never sends you underground.
+**Sending the player to a deity's floor is not possible.** No hook exists for it: `debugSky` takes no floor, `SkyRealm` has no teleport to a hall, and the `?sky=n` flag and `S.sky.go(n)` of [SKY §15](../architecture/SKY.md) are not built. You arrive on the deck in front of the foot door: walk through it, climb the four steps of the spiral and hop the rim onto floor 1, where the panda wakes (a deity acts, and takes hits, only while you are on its floor). When a deity is won, climb its floor's vertical route and go on up the heartwood ledges through the open way up into the next hall ([SKY §7.1](../architecture/SKY.md)). God mode keeps spirit full, so a fight never sends you underground.
 
 ## 4. The guide, floor by floor
 

@@ -57,14 +57,14 @@ function touchDeity(realm: SkyRealm, floor: number, touches: number) {
   return actor;
 }
 
-/** Every cell of floor n's membrane disc (the way up, on its bottom layer). */
+/** Every cell of floor n's membrane disc (the way up, on its bottom layer) but the climb's ledge, which stays. */
 function membrane(realm: SkyRealm, n: number): [number, number, number][] {
   const g = realm.plans.tree.gates[n - 1];
   const disc = { k: 'ring' as const, cx: g.x, cz: g.z, r0: 0, r1: g.r, y0: g.y, y1: g.y, m: AIR };
   const out: [number, number, number][] = [];
   for (let z = g.z - g.r; z <= g.z + g.r; z++)
     for (let x = g.x - g.r; x <= g.x + g.r; x++)
-      if (covers(disc, x, g.y, z)) out.push([x, g.y, z]);
+      if (covers(disc, x, g.y, z) && !(g.steps && covers(g.steps, x, g.y, z))) out.push([x, g.y, z]);
   return out;
 }
 
@@ -105,6 +105,18 @@ describe('the way up opens when its deity is won', () => {
     touchDeity(realm, 2, 24);
     expect(cellsOf(realm.set.world, realm, 2).every(m => m === AIR)).toBe(true);
     for (const n of [1, 3, 4, 5]) expect(cellsOf(realm.set.world, realm, n).every(m => m === MAT.heartwood), `floor ${n}`).toBe(true);
+  });
+
+  it('keeps the climb\'s ledge in the membrane\'s layer when it opens', () => {
+    const realm = newRealm();
+    touchDeity(realm, 1, 24);
+    const g = realm.plans.tree.gates[0];
+    const s = g.steps!;
+    let kept = 0;
+    for (let z = g.z - g.r; z <= g.z + g.r; z++) for (let x = g.x - g.r; x <= g.x + g.r; x++) {
+      if (covers(s, x, g.y, z)) { expect(realm.set.world.get(x, g.y, z)).toBe(MAT.heartwood); kept++; }
+    }
+    expect(kept).toBe(1);
   });
 
   it('opening is idempotent: a second openGate changes no cell of any membrane', () => {

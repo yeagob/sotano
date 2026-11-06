@@ -21,7 +21,7 @@ The five deities of the sky tree's first five floors are in the code: each one i
 - **Attacks never take health.** They push, slow or hold the player through the hindrances ([abilities](../abilities/README.md)); special attacks drain spirit or capture ([SPIRIT](../laws/SPIRIT.md)).
 - **Positive hits.** A positive intention or stroke that touches the body or head, while the deity is not guarded, is one hit: a gold mark stays where it landed, and the animal shows its own sign of progress. Negative touches are puffs ([TOUCH](../laws/TOUCH.md)).
 - **Won.** At its hit count the deity is won to the player's side: it changes its attitude (provisional), a toast says so, the player's spirit refills (provisional), and only then the floor's way up opens ([WAY-UP](../laws/WAY-UP.md)). The horse also leaves its gift, the Triple Jump.
-- **Teleport.** The koala and the horse teleport (provisional): one telegraph of warning, then the deity reappears at the place of its floor farthest from the player, never within 12 blocks.
+- **Teleport.** The koala and the horse teleport (provisional). The koala gives one telegraph of warning, then reappears at the place of its floor farthest from the player that is still within its sight, never within 12 blocks (the farthest of all only when no place lies in that band), so it keeps fighting after it lands. The horse vanishes into a paddock beyond its leap, at least 12 blocks from the player ([HORSE](HORSE.md)).
 - **Allies help.** A minion turned ally that stands by its deity adds positive hits on a timer, up to its floor's cap ([minions](../minions/README.md)); on the horse's floor allies bring calm instead of hits.
 
 ## Gaps every deity shares

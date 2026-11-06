@@ -176,7 +176,7 @@ export class Deity implements DeityApi {
         },
         next: () => {
           if (this.t < this.telegraphLength()) return null;
-          const to = this.farPlace(TELEPORT_MIN);
+          const to = this.farPlace(TELEPORT_MIN, def.sight - DRIFT_RADIUS) ??this.farPlace(TELEPORT_MIN);
           if (to) this.placeAt(to);
           return 'Watching';
         },
@@ -302,14 +302,17 @@ export class Deity implements DeityApi {
     return this.deps.spirit.drain(n);
   }
 
-  /** The plan's place farthest from the player, when it is at least `min` away; otherwise null. */
-  private farPlace(min: number): Place | null {
+  /**
+   * The plan's place farthest from the player, when it is at least `min` away; otherwise null. With `max`, only the
+   * places within `max` count: a teleport lands far but still in sight, so the deity keeps engaging the player.
+   */
+  private farPlace(min: number, max = Infinity): Place | null {
     const p = this.host.player().body;
     let best: Place | null = null;
     let bestD = -1;
     for (const place of this.plan.graph.places) {
       const d = Math.hypot(place.x + 0.5 - p.x, place.z + 0.5 - p.z);
-      if (d > bestD) { bestD = d; best = place; }
+      if (d <= max && d > bestD) { bestD = d; best = place; }
     }
     return best && bestD >= min ? best : null;
   }
