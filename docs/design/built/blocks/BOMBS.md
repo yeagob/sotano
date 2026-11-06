@@ -15,18 +15,27 @@ Part of [blocks](README.md).
 - You cannot pick up a bomb. Walking into one kicks it. Intentions push a bomb and do not set it off. Blasts set off bombs in their range.
 - You start a run with one bomb. Bombs are found in rooms and taken from rewards, and you can carry up to ninety-nine.
 - **White and black bombs.** A bomb you drop while your polarity is positive is **white**: a pale seed with hot white seams, gold lip ends and branches, and a white halo. A bomb you drop while it is negative is the **black** breakthrough, and its fuse ends in the blast above. Changing polarity later does not change a bomb that is already placed.
-- **A white bomb ends in a love explosion**, the same sphere as the blast but touched as a positive intention touches it. The blocks in it are mended and none breaks; nothing is thrown; it never hurts the player; a hostile projection in it takes the positive share of the damage (half, as any positive intention deals), and an ally in it is healed; no other bomb goes off; a love explosion leaves doors alone. The love explosion is the one of [Dr. Launcher](../practices/milagros/DR-LAUNCHER.md).
-- A white bomb caught in a negative blast goes off almost at once, as a love explosion.
+- **A white bomb ends in a love explosion**, the same sphere as the blast but touched as a positive intention touches it. The blocks in it are mended and none breaks; nothing is thrown; it never hurts the player; a hostile projection in it takes the positive share of the damage (half, as any positive intention deals), and an ally in it is healed; no other bomb goes off; a love explosion leaves doors alone; and **the lava in its sphere turns to water** at the same level, with a puff of steam. The love explosion is the one of [Dr. Launcher](../practices/milagros/DR-LAUNCHER.md).
+- A white bomb caught in a negative blast goes off almost at once, as a love explosion. A white bomb that falls into lava goes off at once, as a love explosion, so it cools the lava it lands in.
+- White bombs work underground as well as in the sky: every bomb dropped at positive polarity is white, on every floor.
+- The first bomb shows no hint about polarity: the player learns the white bomb by dropping one.
 
 ## The white bomb's rule
 
-**Owner decision (2026-11-05, provisional: the owner may change it).** The polarity is captured when the bomb is dropped and kept with it, so a white bomb stays white. The rule holds in the dungeon and in the sky. A free slot forgets its polarity when it is reused, so a new bomb never inherits one. The seed's look is in [DECISIONS §7.8](../../../art/DECISIONS.md) (the husk, the seams and the halo of each polarity).
+**Owner decision (2026-11-05, provisional: the owner may change it).** The polarity is captured when the bomb is dropped and kept with it, so a white bomb stays white. The rule holds in the dungeon and in the sky.
+
+**Owner decisions (2026-11-06).**
+
+- **A love explosion turns lava into water** (built).
+- **A white bomb always explodes with love**, whatever sets it off: its fuse, another blast, lava, or fire. Built for the fuse, a blast and lava. **Not built for fire:** fire does not set off any bomb today (a bomb is not flammable), so a white bomb in fire waits for its fuse; when fire is made to set bombs off, a white one must go off as a love explosion.
+- **White bombs underground**: the white bomb is not a sky-only thing; it is dropped and explodes the same on every floor below (built).
+- **No polarity hint for the first bomb**: no toast explains polarity when the first bomb is dropped (built: there is none). A free slot forgets its polarity when it is reused, so a new bomb never inherits one. The seed's look is in [DECISIONS §7.8](../../../art/DECISIONS.md) (the husk, the seams and the halo of each polarity).
 
 ## The rule behind it
 
 The design says bombs are loose cubes too: you can kick them, enemies and intentions push them, and a bomb is set off by its fuse or a blast ([DESIGN.md, section 6](README.md)). The built rules follow that, with the two differences in the open questions below.
 
-Code: `src/game/game.ts` (placing a bomb, lines 1731-1747; the fuse and the blast, lines 415-421 and 1434-1466), `src/physics/debris.ts` (a bomb is a cube with a fuse, line 83; a bomb is only pushed by a hit, lines 137-146), `src/core/stats.ts` (the bomb radius and damage, lines 46-47). The white bomb: the `love` flag of `DebrisSystem` (`src/physics/debris.ts`), set in `Game.placeBomb` and read in `Game.newDebris` (`onFuse`); the white seed is `LOOKS` in `src/render/seed-model.ts`.
+Code: `src/game/game.ts` (placing a bomb, lines 1731-1747; the fuse and the blast, lines 415-421 and 1434-1466), `src/physics/debris.ts` (a bomb is a cube with a fuse, line 83; a bomb is only pushed by a hit, lines 137-146), `src/core/stats.ts` (the bomb radius and damage, lines 46-47). The white bomb: the `love` flag of `DebrisSystem` (`src/physics/debris.ts`), set in `Game.placeBomb` and read in `Game.newDebris` (`onFuse`); the white seed is `LOOKS` in `src/render/seed-model.ts`; lava to water is `Game.loveLava`, and a bomb in lava is fused at once in `Game.debrisElements`. Tests: `tests/love-bomb.test.ts`.
 
 ## Open questions
 
