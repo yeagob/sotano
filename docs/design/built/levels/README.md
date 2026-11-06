@@ -20,6 +20,6 @@ Code: the floor structure in `src/world/floor.ts` and `src/world/floorplan.ts`, 
 | [floors/](floors/README.md) | The ten underground floors: the roots, the Tree-of-Life floors, the circles, the silence chamber, the way down and the toll |
 | [rooms/](rooms/README.md) | The room templates, their height and ceilings, rooms bigger than their cell, challenge rooms and doors |
 | [giant-tree/](giant-tree/README.md) | The giant tree above the surface: seven stories, the trunk, the branches, the canopy and the stars |
-| [totality/](totality/README.md) | Totality, the last stretch of the sky above the crown: the entrance to the Sun is built |
+| [totality/](totality/README.md) | Totality, the last stretch of the sky above the crown: the climb, the updraft, the Earth and the Sun in view, and the entrance to the Sun |
 
 What is designed and not built (the Tree's paths, the upper kinds of map, the climb from the roots, the ending) is in [not-built/levels](../../not-built/levels/README.md).

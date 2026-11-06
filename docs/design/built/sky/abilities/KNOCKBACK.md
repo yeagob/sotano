@@ -4,7 +4,7 @@ Up: [Abilities (built)](README.md) · [The sky (built)](../README.md)
 
 A kick: an arc on the floor, shown first, then one shove along it that moves the player and never hurts them.
 
-Status: built (H0). The numbers are provisional; the animals that use it are not built yet (see [not-built](../../../not-built/sky/abilities/KNOCKBACK.md)).
+Status: built (H0). The numbers are provisional; the deities use it through their attacks ([guardians](../guardians/README.md)); what is not built is in [not-built](../../../not-built/sky/abilities/KNOCKBACK.md).
 
 ## What the player sees and feels
 
@@ -12,7 +12,7 @@ Status: built (H0). The numbers are provisional; the animals that use it are not
 - **The push.** When the warning ends, a player standing in the arc is shoved once: sideways along the arc, and up. The shove is a single impulse, and the player's own gravity takes it into an arc.
 - **The live marks.** The arc turns solid for 0.6 s, at twice the size of the dashes, then is gone.
 
-The sound and the camera lean of a kick are not built here: the animal's sounds come with its floor (B1–B5), and the camera does not lean.
+The sound and the camera lean of a kick are not built here: the deities' sounds are named but silent (only the lion's play, as placeholders), and the camera does not lean.
 
 ## The rule
 

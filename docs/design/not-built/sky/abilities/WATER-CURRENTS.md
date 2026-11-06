@@ -6,6 +6,8 @@ Water currents are instantiated water: the animal fills a channel with water tha
 
 Status: proposal. The hindrance is the owner's; the rules and the animal that uses it are proposal.
 
+Built: [Water currents, as built](../../../built/sky/abilities/WATER-CURRENTS.md) (wave 5). Not built: the flow arrows in the stone and the sound of water coming; the elephant floor's own channels (the deity uses a stand-in bed). This document keeps the design text and the open questions.
+
 ## What the player sees and feels
 
 - **The telegraph.** A dry channel first shows its outline, its flow arrows (faint ripples in the stone), and a rising sound of water coming. The water fills after that.

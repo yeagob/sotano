@@ -6,6 +6,8 @@ Dense ground is the floor turning denser, the way water is denser than air, so t
 
 Status: proposal. The hindrance is the owner's; the rules and the animal that uses it are proposal.
 
+Built: [Dense ground, as built](../../../built/sky/abilities/DENSE-GROUND.md) (wave 5). Not built: the darkening and glassy sheen (the built warning is a shimmer), and the low sound. This document keeps the design text and the open questions.
+
 ## What the player sees and feels
 
 - **The telegraph.** The cells the animal chooses ripple, darken and take on a glassy sheen, with a low sound that rises and holds. The change comes after a warning the player can read.

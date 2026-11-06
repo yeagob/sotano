@@ -6,6 +6,8 @@ The minions are the animals of the sky, embodied as smaller creatures. Each guar
 
 Status: decided for the allies rule, for the negative-intention rule and for the rule that minions never die. Proposal for the rest.
 
+Built, not in play: the minion engine and the five herds run headless in the code ([built minions](../../../built/sky/minions/README.md)), but no floor spawns them yet, so the player does not meet them. Not built: a spawner on each floor, and the `factionChange` event when a minion turns.
+
 ## 1. The shared contract
 
 ### 1.1 Embodied animal
