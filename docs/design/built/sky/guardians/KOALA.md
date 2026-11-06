@@ -9,7 +9,7 @@ The second deity: a koala head on a small plush body, its arms round an upright 
 - **Where.** The koala floats one block over the Fork, a crown of living wood over the floor's central gap, held by four limbs from the four trunks.
 - **Asleep, then Stirring.** At the start the koala sleeps. When the player comes within 12 blocks, or lands a positive hit, it stirs for 1.5 s and then watches the whole floor.
 - **Clinging, its guard.** From the second phase on, after each attack, the koala clings to its branch for 2.5 s: a positive hit then bounces off softly and does not count. An ally koala hugging the deity lifts the guard for as long as it stays. Then it dozes for 2 s, its recovery.
-- **Teleport.** When the player comes within 3 blocks of it, the koala warns for one telegraph and reappears at the place of the floor farthest from the player, at most once every 20 s.
+- **Teleport.** When the player comes within 3 blocks of it, the koala warns for one telegraph and reappears at the place of the floor farthest from the player that is still within its sight, so it keeps attacking, at most once every 20 s.
 - **Three phases**, at a third and two thirds of its 30 hits, each opened by a rally; the rest between attacks is 3 s, then 2.5 s, then 2 s.
 
 ## Attacks

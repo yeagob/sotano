@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
 import { AIR, MAT } from '../src/content/materials';
 import { Rng } from '../src/core/rng';
 import { HALLS } from '../src/sky/atmosphere';
-import { buildSkyTree, DECK_Y, floorPlans, FOOT_WELL as W, openGate, SKY_AXIS } from '../src/sky/floors/tree';
+import { ARRIVAL, buildSkyTree, DECK_Y, floorPlans, FOOT_WELL as W, openGate, SKY_AXIS } from '../src/sky/floors/tree';
+import { covers } from '../src/sky/world/shapes';
 import { buildSkyLayout } from '../src/sky/layout';
 import { formulaAt } from '../src/sky/world/shape-index';
 import { SkyWorld } from '../src/sky/world/sky-world';
@@ -70,9 +71,14 @@ describe('the trunk and the deck', () => {
     expect(at(C + 49, DECK_Y - 1, Z)).toBe(AIR);
   });
 
-  it('has the arrival place on the deck and the foot door at the trunk', () => {
-    expect([P.tree.deck.kind, P.tree.deck.y, P.tree.deck.x]).toEqual(['ground', DECK_Y, C]);
+  it('has the arrival place on the deck in front of the foot door, and the foot door at the trunk', () => {
+    expect([P.tree.deck.kind, P.tree.deck.y, P.tree.deck.x, P.tree.deck.z]).toEqual(['ground', DECK_Y, ARRIVAL.x, ARRIVAL.z]);
     expect(inDisc(48, P.tree.deck.x - C, P.tree.deck.z - Z)).toBe(true);
+    // outside the trunk, on the door's centre line (its two cells are W.z and W.z + 1), with the door's mouth in front
+    expect(inDisc(P.tree.trunkRadius(DECK_Y), P.tree.deck.x - C, P.tree.deck.z - Z)).toBe(false);
+    expect(P.tree.deck.z).toBe(W.z + 1);
+    for (let x = W.x + W.r + 1; x < P.tree.deck.x; x++) for (const z of [W.z, W.z + 1])
+      expect([at(x, DECK_Y - 1, z), at(x, DECK_Y, z), at(x, DECK_Y + 1, z)], `door ${x},${z}`).toEqual([MAT.cloud, AIR, AIR]);
     // the foot door is at the foot of the well, inside the trunk
     expect([P.tree.door.kind, P.tree.door.x, P.tree.door.z]).toEqual(['gate', W.x, W.z]);
     expect(inDisc(P.tree.trunkRadius(DECK_Y), W.x - C, W.z - Z)).toBe(true);
@@ -133,7 +139,8 @@ describe('the slabs and the membranes', () => {
         for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
           if (!inDisc(R, dx, dz)) continue;
           const x = C + dx, z = Z + dz;
-          const want = dy > 0 && inDisc(g.r, x - g.x, z - g.z) ? AIR : MAT.heartwood;
+          const ledge = !!g.steps && covers(g.steps, x, y, z);
+          const want = dy > 0 && !ledge && inDisc(g.r, x - g.x, z - g.z) ? AIR : MAT.heartwood;
           if (at(x, y, z) !== want) bad.push([x, y, z]);
         }
         expect(bad.length, `slab layer ${y}`).toBe(0);
@@ -143,13 +150,34 @@ describe('the slabs and the membranes', () => {
 
   it('keeps the membranes closed until their floor is won, and opens each one alone', () => {
     const w = new SkyWorld(P.layout);
-    const cell = (g: { x: number; y: number; z: number }) => w.get(g.x, g.y, g.z);
+    // a membrane cell beside the gate's centre that is not the climb's ledge (the ledge stays when the way opens)
+    const cell = (g: (typeof P.tree.gates)[number]) => {
+      for (const [dx, dz] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]])
+        if (!g.steps || !covers(g.steps, g.x + dx, g.y, g.z + dz)) return w.get(g.x + dx, g.y, g.z + dz);
+      return -1;
+    };
     expect(P.tree.gates.map(cell)).toEqual(P.tree.gates.map(() => MAT.heartwood));
     openGate(w, P.tree, 1);
     expect(cell(P.tree.gates[0])).toBe(AIR);
     expect(P.tree.gates.slice(1).map(cell)).toEqual(P.tree.gates.slice(1).map(() => MAT.heartwood));
     for (const n of [2, 3, 4, 5] as const) openGate(w, P.tree, n);
     expect(P.tree.gates.map(cell)).toEqual(P.tree.gates.map(() => AIR));
+  });
+
+  it('gives every way up a climb: ledges from the top of the floor\'s route to the next hall\'s ground or the surface over it', () => {
+    const grounds = [...P.tree.halls.slice(2).map(h => h.y0), 221];
+    P.tree.gates.forEach((g, i) => {
+      const s = g.steps!, top = P.floors[i].route[P.floors[i].route.length - 1];
+      expect(s, `floor ${i + 1}`).toBeDefined();
+      expect([s.k, s.m, s.y0]).toEqual(['ledges', MAT.heartwood, top.y]);
+      expect(s.y1, `floor ${i + 1} reaches the next ground`).toBeGreaterThanOrEqual(grounds[i] - 1);
+      // every ledge of the climb is in the layout, inside the way up's disc
+      for (let y = s.y0; y <= s.y1; y++) for (let z = s.z0; z <= s.z0 + 1; z++) for (let x = s.x0; x <= s.x0 + 1; x++) {
+        if (!covers(s, x, y, z)) continue;
+        expect(at(x, y, z), `ledge ${x},${y},${z}`).toBe(MAT.heartwood);
+        expect(inDisc(g.r, x - g.x, z - g.z), `ledge ${x},${z} in the disc`).toBe(true);
+      }
+    });
   });
 
   it('has no membrane without plans, and opening one is then a no-op', () => {

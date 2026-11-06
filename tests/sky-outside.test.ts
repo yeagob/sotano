@@ -16,6 +16,7 @@ const RADIUS = 20;
 /** The deck at 10, floor 1 from 20, floor 2 from 50; the trunk spans 10..80. */
 const TREE: SkyTreePlan = {
   shapes: [],
+  climbs: [],
   halls: [{ floor: 0, y0: 10, y1: 10, radius: RADIUS }, { floor: 1, y0: 20, y1: 40, radius: RADIUS }, { floor: 2, y0: 50, y1: 70, radius: RADIUS }],
   deck: { id: 0, kind: 'ground', x: C, y: 10, z: Z, w: 1, d: 1, tag: 0 },
   door: { id: 1, kind: 'ground', x: C, y: 10, z: Z, w: 1, d: 1, tag: 0 },
