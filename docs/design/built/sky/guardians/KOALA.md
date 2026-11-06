@@ -38,7 +38,7 @@ At 30 positive hits the koala lets go of its branch ("The koala lets go of its b
 - The body does not float in to the player for Hold fast, nor back to the Fork after a teleport.
 - The telegraph poses are not drawn: the model does not take its attack poses yet.
 - The sounds (cues named `koala.*`; the koala's sound part is silent).
-- The minion spawner on the floor and the tower trigger (the shared gaps in [README](README.md)).
+- The tower trigger (the shared gaps in [README](README.md)).
 - The art gate is pending owner review ([koala art](../../../../art/sky/koala.md)).
 
 Code: `src/sky/creatures/deities/koala.ts`, `src/sky/hindrances/koala-*.ts`; tests in `tests/sky-koala.test.ts`.

@@ -10,7 +10,7 @@ The fifth deity: a giant horse head on a small plush body, standing on the paddo
 - **Grazing and Alert.** It grazes until the player comes within 14 blocks, then is alert.
 - **Startle.** A player who moves, or lands a jump, within 6 blocks startles it: it leaps away, or teleports to the paddock farthest from the player. It is not startled while Gentled, while recovering, or while hurt, and not again within 2 s of a landing.
 - **Calm, its own rule.** A player who stands still for 1.5 s within 8 blocks, or on its paddock, gentles it: for 3 s the horse walks up to within 3 blocks of the player and every positive hit counts **two**. It comes again only after the horse has acted once since the last time.
-- **Sending.** From its paddock the horse sends a horse of the herd to kick the player (the herd is built, not spawned in play: see the shared gaps).
+- **Sending.** From its paddock the horse sends a horse of the herd to kick the player (the herd is spawned at the paddock gate: [minions](../minions/README.md)).
 - **The rhythm.** From the second phase the floor fades one segment of each run every 12 s, for 3 s.
 - **Three phases**, at a third and two thirds of its 48 hits; the rest between attacks is 2.5 s, then 2 s, then 1.5 s.
 - A positive hit anywhere on the horse during a telegraph is that attack's answer (the design names a part for each; the build reads any part).
@@ -40,7 +40,6 @@ At 48 positive hits the horse stops leaping and the wind drops ("The horse stops
 
 - **No leap to a tower:** the horse does not leap to a tower to kick it down.
 - **No sounds** (cues named `horse.*`; the horse's sound part is silent).
-- The herd is not spawned on the floor (the shared gaps in [README](README.md)).
 - The art gate is pending owner review ([horse art](../../../../art/sky/horse.md)).
 
 Code: `src/sky/creatures/deities/horse.ts`, `src/sky/hindrances/horse-ring.ts`; tests in `tests/sky-horse.test.ts`.

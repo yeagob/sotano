@@ -10,6 +10,8 @@ import { atmosphereAt } from './atmosphere';
 import { SKY_AXIS, openGate } from './floors/tree';
 import { buildSkyLayout } from './layout';
 import { DEITIES } from './creatures/deities';
+import { MinionSpawner } from './creatures/minion';
+import { MINIONS } from './creatures/minions';
 import { TowerKnock } from './creatures/knock';
 import { Puff } from './creatures/puff';
 import { SkyCreatures } from './creatures/system';
@@ -65,6 +67,8 @@ export class SkyRealm implements SkyRealmApi {
   private readonly threshold: Threshold;
   private readonly earth: EarthView;
   private readonly sun: SunView;
+  /** One minion spawner per guardian floor (index n − 1); the deck and Totality have none. */
+  private readonly spawners: MinionSpawner[];
   private tower: Tower | null = null;
   private unityEntered = false;
 
@@ -80,13 +84,21 @@ export class SkyRealm implements SkyRealmApi {
     const deps: CreatureDeps = {
       actors: host.actors(), runner: this.runner, effects: this.effects, puff: new Puff(host), knock: this.knock, spirit: this.spirit,
     };
-    this.creatures = new SkyCreatures(root, host, deps);
+    const creatures = new SkyCreatures(root, host, deps);
+    this.creatures = creatures;
     // All five deities exist from the sky's birth, once: deterministic ids, never respawned or reset, so a won deity
     // stays won for the run. Each starts parked, and update() unparks only the player's floor's deity.
     for (const f of plans.floors) this.creatures.spawnDeity(DEITIES[f.animal], f).parked = true;
     // A won deity refills spirit (provisional, SKY.md §19), then opens its floor's way up (owner, 2026-11-05);
     // openGate is idempotent, so a repeat changes nothing.
     this.creatures.onWon = (_d, floor) => { host.refillSpirit(); openGate(this.world, plans.tree, floor); };
+    // Each guardian floor keeps its herd at its counts while the player is on it (SKY.md §5.4). The spawner counts
+    // the floor's minions, parked or not, so a herd left behind is not doubled on the way back.
+    this.spawners = plans.floors.map(f => {
+      const def = MINIONS[f.animal];
+      return new MinionSpawner(def, f, host.fork('sky', 'floor', f.index, 'spawner'),
+        at => creatures.spawnMinion(def, f, at), () => creatures.minionsOn(f.index), true);
+    });
     this.earth = new EarthView(root);
     this.sun = new SunView(root, plans.totality.sun);
     const checkpoints = plans.totality.platforms.filter(p => plans.totality.checkpoints.includes(p.id));
@@ -123,10 +135,13 @@ export class SkyRealm implements SkyRealmApi {
     this.runner.update(dt);
     this.effects.update(dt);
     this.spirit.update();
-    this.creatures.update(dt, this.floorAt(body.y));
+    const floor = this.floorAt(body.y);
+    // only the player's floor spawns (once a frame, here); the deck (0) and Totality (6) have no herd
+    if (floor >= 1 && floor <= this.spawners.length) this.spawners[floor - 1].update(dt);
+    this.creatures.update(dt, floor);
     this.updraft.update(dt);
     this.threshold.update(dt);
-    this.host.place(placeLabel(this.floorAt(body.y)));
+    this.host.place(placeLabel(floor));
   }
 
   /** The chunks around the eye stay materialised; the ones far below or above are evicted. */

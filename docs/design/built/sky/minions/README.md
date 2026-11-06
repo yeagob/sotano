@@ -1,12 +1,13 @@
-# Minions of the sky (built, not yet in play)
+# Minions of the sky (built, in play)
 
 Up: [The sky (built)](../README.md) · the animals of each floor, embodied as smaller creatures, as they run in the code now.
 
-The minions are built and tested headless: their engine (spawning, gaits, turning, helping, the stuck guard) and the five herds, each with its own rules, helps and model. **No floor spawns them in play yet**: the realm runs no spawner, so a player in the sky does not meet them. The shared design, its open questions and the rest of each herd's targets are in [not-built minions](../../../not-built/sky/minions/README.md) and in each guardian's B5.
+The minions are built and tested headless: their engine (spawning, gaits, turning, helping, the stuck guard) and the five herds, each with its own rules, helps and model. Each guardian floor spawns its herd while the player is on it, so a player in the sky meets them. The shared design, its open questions and the rest of each herd's targets are in [not-built minions](../../../not-built/sky/minions/README.md) and in each guardian's B5.
 
 ## What every minion does
 
 - **Spawning.** A minion appears at one of its floor's spawn places after a warning of motes and a shimmer (at least 0.5 s). While it spawns, nothing can touch it. A floor keeps at most its count of minions, and at most its count of wild ones.
+- **Where and when.** Only the floor the player stands on spawns; the deck and Totality have no herd. The first time the player reaches a floor, its first minion appears at once (after its warning) and the rest follow one warning apart, each at the next spawn place, until the floor holds its count of wild ones (provisional: the koala's floor begins full by its document; for the other four this filling is the build's reading). After that, one more comes on the herd's timer while the floor is below its counts, so turning a minion into an ally lets another come. When the player leaves, the floor's minions are set aside (hidden, untouchable, still) and the same ones are there on the way back.
 - **The animal's own gait.** Each herd moves as its animal does: walking, climbing a face, hanging under a branch, rolling down a slope, walking in file, stalking, galloping a loop, bounding, pouncing. A gait follows the floor's graph of places; the player's blocks are not on it, but a minion still collides with them.
 - **Its rules, in order.** Each tick the herd's rules are asked in order and the first that acts wins. A rule that hinders the player starts a hindrance with the floor's telegraph: nothing a minion does hurts or drains.
 - **Turning.** Each warm positive hit leaves a gold mark and plays the animal's soft reaction; at its count the minion turns into an ally with a gold burst, and any hindrance of its own still in its warning is stopped. A beam's repeat ticks count nothing; a negative touch is a puff. An ally never turns back.
@@ -26,9 +27,9 @@ The minions are built and tested headless: their engine (spawning, gaits, turnin
 
 ## Not built
 
-- **A spawner on any floor**, so the herds are not met in play (and the lion's rally does not call its two minions).
+- **The lion's rally** does not call its two minions, and a koala that turns does not leave a gap that the next sleeper fills in the same cluster (the timer picks any cluster).
 - `factionChange` is not emitted when a minion turns, so no practice reacts to it.
 - The art gates of the minion models are pending owner review with their deities ([sky art](../../../../art/sky/README.md)).
 - Whether minions are projections, and what happens to them after the floor is cleared, are open ([not-built minions](../../../not-built/sky/minions/README.md)).
 
-Code: the engine in `src/sky/creatures/minion.ts` (`Minion`, `MinionSpawner`), `src/sky/creatures/gaits.ts` and `src/sky/creatures/system.ts`; one file per herd in `src/sky/creatures/minions/`. Tests: `tests/sky-engine.test.ts` and each animal's `tests/sky-<animal>.test.ts`.
+Code: the engine in `src/sky/creatures/minion.ts` (`Minion`, `MinionSpawner`), `src/sky/creatures/gaits.ts` and `src/sky/creatures/system.ts`; one file per herd in `src/sky/creatures/minions/`. The spawners are built and driven in `src/sky/sky-realm.ts`. Tests: `tests/sky-engine.test.ts`, `tests/sky-minions-spawn.test.ts` and each animal's `tests/sky-<animal>.test.ts`.

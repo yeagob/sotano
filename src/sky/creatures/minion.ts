@@ -273,9 +273,15 @@ export class Minion implements MinionApi {
  * Keeps a floor's minions at their count: one more every `spawn.every` seconds while the floor has fewer than
  * `max` minions and fewer than `wildMax` wild ones. Each comes at one of the plan's spawn places, chosen with the
  * floor's fork, and shows its own warning there (Minion's Spawning).
+ *
+ * With `opening`, the floor is filled first (the koala's floor "begins with three clusters", KOALA B5; provisional
+ * for the other four): the first minion comes on the first update, and the next ones one warning apart, each at the
+ * next spawn place in turn, until the floor holds `wildMax` wild ones (or `max` in all). Then the timer above runs.
  */
 export class MinionSpawner {
   private clock = 0;
+  private opening: boolean;
+  private next = 0;
 
   constructor(
     private def: MinionDef,
@@ -283,13 +289,30 @@ export class MinionSpawner {
     private rng: Rng,
     private spawn: (at: Place) => SkyActor,
     private living: () => readonly SkyActor[],
-  ) {}
+    opening = false,
+  ) {
+    this.opening = opening;
+    if (opening) this.clock = Infinity;
+  }
+
+  /** True while the floor is still being filled for the first time. */
+  get filling(): boolean { return this.opening; }
 
   update(dt: number) {
     const all = this.living();
     const wild = all.filter(a => a.side === 'wild').length;
-    if (all.length >= this.def.max || wild >= this.def.wildMax || this.plan.spawns.length === 0) { this.clock = 0; return; }
+    if (all.length >= this.def.max || wild >= this.def.wildMax || this.plan.spawns.length === 0) {
+      this.opening = false;
+      this.clock = 0;
+      return;
+    }
     this.clock += dt;
+    if (this.opening) {
+      if (this.clock < Math.max(MIN_WARNING, this.def.spawn.warning)) return;
+      this.clock = 0;
+      this.spawn(this.plan.spawns[this.next++ % this.plan.spawns.length]);
+      return;
+    }
     if (this.clock < this.def.spawn.every) return;
     this.clock = 0;
     this.spawn(this.plan.spawns[this.rng.int(0, this.plan.spawns.length - 1)]);

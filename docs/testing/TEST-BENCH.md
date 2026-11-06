@@ -97,5 +97,5 @@ Not bugs to fix from the bench: these are reported as not built yet.
 - **Lion:** the ledges settling when it is won; the rally's minions; a wall that stops the roar's ring; the tower glide.
 - **Horse:** the leap to a tower; its sounds.
 - **Koala:** the body floating in for Hold fast and back to the Fork after a teleport; the telegraph poses; its sounds.
-- **Panda:** floating to a tower or in Cradle; the tower trigger on the floor; the minion spawner on the floor; its sounds.
+- **Panda:** floating to a tower or in Cradle; the tower trigger on the floor; its sounds.
 - **The bench itself:** no jump to a deity's floor (section 3); no button to win a deity or open a way up; the planned `?sky=n`, `&won=`, `&jump3` flags and the `S.sky` console are not built.
