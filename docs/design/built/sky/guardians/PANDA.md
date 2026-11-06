@@ -36,7 +36,6 @@ At 24 positive hits the panda settles on its seat, wide awake and friendly ("The
 
 - The panda's float to a tower and back, and its float in Cradle: the body stays on its seat.
 - The tower trigger on the floor (see the shared gaps in [README](README.md)).
-- The minion spawner on the floor: the little pandas are built ([minions](../minions/README.md)) but not spawned in play.
 - A positive intention turning a bamboo lob into a falling leaf in flight.
 - The sounds (cues named `panda.*`; the panda's sound part is silent).
 - Cradle takes the practice without a toast of its own.

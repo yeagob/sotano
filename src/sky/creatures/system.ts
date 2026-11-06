@@ -196,6 +196,13 @@ export class SkyCreatures implements SkyCreaturesApi {
     this.view.update(dt, this.all());
   }
 
+  /** The minions of floor `floor`, parked or not: what its spawner counts against `max` and `wildMax`. */
+  minionsOn(floor: number): SkyActor[] {
+    const out: SkyActor[] = [];
+    for (const m of this.minions) if (m.floor === floor) out.push(m.actor);
+    return out;
+  }
+
   all(): readonly SkyActor[] {
     return [...this.deities.map(e => e.actor), ...this.minions.map(e => e.actor)];
   }

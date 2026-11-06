@@ -28,7 +28,6 @@ The five deities of the sky tree's first five floors are in the code: each one i
 
 - **The art gates of all five deities are pending owner review**: each model is drawn and has its gallery section (`?gallery=sky-panda` and the others), but the owner has not signed any of them off ([sky art](../../../../art/sky/README.md)).
 - **The greyscale, colour-blindness and fog captures are not taken** for any deity.
-- **No floor spawns minions in play.** The minions are built and tested headless, but the realm runs no spawner, so the herds, prides and families are not met yet ([minions](../minions/README.md)).
 - **The tower rule inside a floor** is not wired: a tower that reaches a deity's height does not start the knock, and no deity's body travels to a tower ([OUTSIDE-WATCH](../laws/OUTSIDE-WATCH.md)).
 - **The boss bar** does not show a deity's hits yet; the gold marks and the animal's own sign are the only progress shown. The names (`sky.<animal>.name`) are in both languages for when it does.
 - **Sounds.** Each deity's telegraph sounds are named, but only the lion's play (placeholders made of the game's existing cues); the others are silent.

@@ -189,7 +189,6 @@ Status: not built. Reported by the five deity builds (2026-11-05); each one is a
 **Shared by all five:**
 
 - The art gates of all five deities are pending owner review; the greyscale, colour-blindness and fog captures are not taken ([sky art](../../../../art/sky/README.md)).
-- No floor spawns minions in play ([minions](../../../built/sky/minions/README.md)).
 - The tower rule inside a floor is not wired (section 6.2).
 - The boss bar does not show a deity's hits.
 
@@ -197,7 +196,7 @@ Status: not built. Reported by the five deity builds (2026-11-05); each one is a
 
 | Deity | Not built |
 |---|---|
-| [Panda](PANDA.md) | No float to a tower, nor in Cradle; no tower trigger on the floor; no minion spawner on the floor; no sounds |
+| [Panda](PANDA.md) | No float to a tower, nor in Cradle; no tower trigger on the floor; no sounds |
 | [Koala](KOALA.md) | The body does not float in for Hold fast, nor back to the Fork after a teleport; no telegraph poses; no sounds |
 | [Elephant](ELEPHANT.md) | Positive shots into the dust circle, at the grey water or at the stone in flight do not answer; the tower sweep is not wired; the floor's channels are a stand-in; no sound |
 | [Lion](LION.md) | The ledges do not settle when it is won; no rally minions; no wall stops the roar; no tower glide |

@@ -38,7 +38,6 @@ At 36 positive hits the elephant sets its weight down and the water drains ("The
 - **The channels of the floor** are not built (F3 built the spouts only): Trunk spray and Heavy water run down a stand-in bed round the terrace, not the plan's channels.
 - **The tower sweep** is not wired.
 - **No sound** (cues named `elephant.*`; the elephant's sound part is silent).
-- The herd is not spawned on the floor (the shared gaps in [README](README.md)).
 - The art gate is pending owner review ([elephant art](../../../../art/sky/elephant.md)).
 
 Code: `src/sky/creatures/deities/elephant.ts`; tests in `tests/sky-elephant.test.ts`.

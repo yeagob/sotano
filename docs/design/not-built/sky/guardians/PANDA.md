@@ -6,7 +6,7 @@ The giant panda is the first deity the player meets above the surface: a giant p
 
 Status: proposal, specified. Decided: the animal and the floor order, that the panda levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule (B2), that minions avoid the well's mouth (owner, 2026-11-05), that the panda has special attacks too, and that the floor's way up stays closed until the panda is defeated (owner, 2026-11-05). The character, the mirror, the minions and the puzzle are proposals. The special attacks and the two phases (B3b) are provisional, to confirm.
 
-Built: the deity, its ten attacks, the rest beat, the rally at half the hits and the nap, defeat by 24 hits, and the minions; what the player meets is in [built PANDA](../../../built/sky/guardians/PANDA.md). This document keeps the full specification (its numbers are the targets the build follows) and what is not built: the panda's float to a tower and back and its float in Cradle, the tower trigger on the floor, the minion spawner on the floor, the lob turning into a leaf, and the sounds. The art gate is pending owner review ([panda art](../../../../art/sky/panda.md)).
+Built: the deity, its ten attacks, the rest beat, the rally at half the hits and the nap, defeat by 24 hits, and the minions; what the player meets is in [built PANDA](../../../built/sky/guardians/PANDA.md). This document keeps the full specification (its numbers are the targets the build follows) and what is not built: the panda's float to a tower and back and its float in Cradle, the tower trigger on the floor, the lob turning into a leaf, and the sounds. The art gate is pending owner review ([panda art](../../../../art/sky/panda.md)).
 
 ## 1. Who it is
 

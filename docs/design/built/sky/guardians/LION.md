@@ -36,7 +36,7 @@ At 42 positive hits the lion lies down and its pride with it ("The lion lies dow
 ## Not built
 
 - **The ledges do not settle** when the lion is won.
-- **No rally minions:** the two minions the rally calls are not spawned (no floor spawns minions yet).
+- **No rally minions:** the two minions the rally calls are not spawned (the pride's spawner runs on its timer only).
 - **No wall stops the roar:** a placed wall does not stop the roar's ring.
 - **No tower glide:** the lion does not glide to a tower to knock it down.
 - An ally's back as a step is not built.
