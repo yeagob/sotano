@@ -142,15 +142,16 @@ export class ChunkRenderer {
 
   private loaded(key: string) {
     if (!this.rows) return true;
-    const cy = parseChunkKey(key)[1];
-    return cy >= this.rows[0] && cy <= this.rows[1];
+    const [cx, cy, cz] = parseChunkKey(key);
+    return (cy >= this.rows[0] && cy <= this.rows[1]) || !!this.world.outerChunk?.(cx, cz);
   }
 
-  /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). */
-  setVisibleRange(y0: number, y1: number) {
+  /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). `outer`:
+   *  draw the terrain outside the stored world (the mountains) at any height above y0, or not at all. */
+  setVisibleRange(y0: number, y1: number, outer = false) {
     for (const layer of ['blocks', 'elem'] as Layer[]) for (const [key, m] of this.meshes[layer]) {
-      const cy = Number(key.split(',')[1]) * CHUNK;
-      m.visible = cy + CHUNK > y0 && cy < y1;
+      const [cx, cyi, cz] = parseChunkKey(key), cy = cyi * CHUNK;
+      m.visible = this.world.outerChunk?.(cx, cz) ? outer && cy + CHUNK > y0 : cy + CHUNK > y0 && cy < y1;
     }
   }
 

@@ -1839,7 +1839,8 @@ export class Game {
   /** Damages a block through the shared pipeline (`amount` is block damage, before armor). Returns true if it breaks. */
   damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string, debris = true): boolean {
     const id = this.world.get(x, y, z);
-    if (id === AIR) return false;
+    // the mountains outside the array are a formula: nothing breaks them (issue #10)
+    if (id === AIR || !this.world.inside(x, y, z)) return false;
     const m = mat(id);
     const ev = this.bus.emit('blockDamage', { x, y, z, material: id, amount: blockDamage(amount, m), kind, source });
     if (ev.cancelled || ev.amount <= 0) return false;
@@ -1853,6 +1854,7 @@ export class Game {
 
   /** `debris = false` starts the event with no loose cube (hooks may still ask for one). */
   breakBlock(x: number, y: number, z: number, kind: DamageKind, source: string, debris = true): boolean {
+    if (!this.world.inside(x, y, z)) return false;
     const id = this.world.get(x, y, z);
     const ev = this.bus.emit('blockBreak', { x, y, z, material: id, kind, source, spawnDebris: debris });
     if (ev.cancelled) return false;
@@ -3384,7 +3386,7 @@ export class Game {
     const p = this.player, e = p.eye;
     const below = this.below;
     const sky = !below || e.y > SURFACE_Y - 4;
-    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22));
+    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22), sky);
     this.stars.position.set(e.x, 0, e.z);
 
     // camera with a little walking bob and explosion shake

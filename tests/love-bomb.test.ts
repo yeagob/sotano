@@ -42,6 +42,8 @@ function world() {
   const w = {
     damaged,
     idx,
+    /** every cell is stored (no terrain outside, which Game.damageBlock refuses to break) */
+    inside: () => true,
     get: (x: number, y: number, z: number) => (y < 0 ? STONE : cells.get(`${x},${y},${z}`) ?? AIR),
     set: (x: number, y: number, z: number, m: number) => { cells.set(`${x},${y},${z}`, m); },
     solid: (x: number, y: number, z: number) => w.get(x, y, z) !== AIR,

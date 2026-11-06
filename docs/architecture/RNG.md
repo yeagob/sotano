@@ -41,6 +41,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH ย
 | `fork('floor', 0, 'loot')` | Structure | Where the roots' key and bomb lie, in its lesson rooms (`GEN_VERSION` 14) |
 | `fork('plan', k, kind)` | Structure | Floor k's plan for its kind (random planners); Tree floors draw nothing |
 | `fork('tree', story)` | Structure | One story of the giant tree (`GiantTree.grow`, lazily, when the player comes near): its knot windows, rings, ramps, columns, branches, limbs and stars. One fork per story, so the tree grows the same in any order |
+| `fork('mountains')` | Structure | The mountains round the surface (`Mountains`, [LEVELS.md ยง13](LEVELS.md#13-the-mountains-round-the-surface-issue-10-2026-11-06)): the passes' angles, each ridge's peak and trail, the crest's phases, then the seed of the walls' jitter (`GEN_VERSION` 26) |
 | `fork('sandbox', 'layout')` | Structure | The sandbox room's decor slots ([SANDBOX.md](SANDBOX.md)) |
 | `fork('floor', 0, 'creatures')` | Structure | Where the roots' peaceful creatures start |
 | `fork('floor', k, 'space')` | Structure | Which room may spread into each empty cell of floor k (`allotSpace`), drawn before any room's layout |
