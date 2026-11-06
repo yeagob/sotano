@@ -85,11 +85,12 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## World (`world/`)
 
-- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters.
+- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters, and `terrain`: the read-only ground outside the array (the mountains).
 - `elements.ts` — the element simulation (active cells, 10 Hz, budgeted; [ELEMENTS.md](ELEMENTS.md) §10).
 - `elem-mesher.ts` — water and lava surfaces sloped from their levels, fire quads; runs in the meshing worker.
 - `floorplan.ts` — Isaac-style plans from any start cell, with a fallback. See [ROOMS.md](ROOMS.md).
 - `floor.ts` — the stacked dungeon: `createDungeonWorld`, `carveFloor`, `openHole`, `floorY`, `bandOf`, `roomOrigin`, `cellOf`.
+- `mountains.ts` — `Mountains`: the ring of mountains round the surface, a seeded heightmap read for every cell outside the dungeon array ([LEVELS.md](LEVELS.md) §13).
 - `mesher.ts` / `mesher.worker.ts` — visible faces, per-vertex AO and face shade baked into vertex colours, in a worker.
 
 ## Physics (`physics/`)

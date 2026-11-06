@@ -4,6 +4,7 @@
 
 import { elemByte } from '../content/elements';
 import { AIR, mat } from '../content/materials';
+import type { Mountains } from './mountains';
 import type { VoxelSpace } from './space';
 
 export const CHUNK = 16;
@@ -26,6 +27,8 @@ export class VoxelWorld implements VoxelSpace {
   /** Bumped on every change (navigation caches compare against it). */
   version = 0;
   readonly ncx: number; readonly ncy: number; readonly ncz: number;
+  /** The ground outside the array (the mountains round the surface, issue #10): read-only, never stored. */
+  terrain: Mountains | null = null;
 
   constructor(readonly sx: number, readonly sy: number, readonly sz: number) {
     this.data = new Uint8Array(sx * sy * sz);
@@ -47,7 +50,8 @@ export class VoxelWorld implements VoxelSpace {
   elemAtIndex(i: number): number { return this.elem[i]; }
 
   get(x: number, y: number, z: number): number {
-    return this.inside(x, y, z) ? this.data[this.idx(x, y, z)] : AIR;
+    if (this.inside(x, y, z)) return this.data[this.idx(x, y, z)];
+    return this.terrain && y >= 0 && y < this.sy ? this.terrain.block(x, y, z) : AIR;
   }
   solid(x: number, y: number, z: number) { return this.get(x, y, z) !== AIR; }
 
@@ -90,6 +94,11 @@ export class VoxelWorld implements VoxelSpace {
     this.onChange?.(x, y, z);
   }
 
+  /** Whether a chunk column is the terrain's, outside the array (`ChunkRenderer` keeps it loaded). */
+  outerChunk(cx: number, cz: number): boolean {
+    return !!this.terrain && this.terrain.outside(cx, cz);
+  }
+
   markElemDirty(x: number, y: number, z: number) {
     const cx = Math.floor(x / CHUNK), cy = Math.floor(y / CHUNK), cz = Math.floor(z / CHUNK);
     this.elemDirty.add(chunkKey(cx, cy, cz));
@@ -107,12 +116,14 @@ export class VoxelWorld implements VoxelSpace {
     const cx = Math.floor(x / CHUNK), cy = Math.floor(y / CHUNK), cz = Math.floor(z / CHUNK);
     this.dirty.add(chunkKey(cx, cy, cz));
     const lx = x - cx * CHUNK, ly = y - cy * CHUNK, lz = z - cz * CHUNK;
-    if (lx === 0 && cx > 0) this.dirty.add(chunkKey(cx - 1, cy, cz));
-    if (lx === CHUNK - 1 && cx < this.ncx - 1) this.dirty.add(chunkKey(cx + 1, cy, cz));
+    // a change on the array's rim also changes the terrain's faces across it
+    const outer = !!this.terrain;
+    if (lx === 0 && (cx > 0 || outer)) this.dirty.add(chunkKey(cx - 1, cy, cz));
+    if (lx === CHUNK - 1 && (cx < this.ncx - 1 || outer)) this.dirty.add(chunkKey(cx + 1, cy, cz));
     if (ly === 0 && cy > 0) this.dirty.add(chunkKey(cx, cy - 1, cz));
     if (ly === CHUNK - 1 && cy < this.ncy - 1) this.dirty.add(chunkKey(cx, cy + 1, cz));
-    if (lz === 0 && cz > 0) this.dirty.add(chunkKey(cx, cy, cz - 1));
-    if (lz === CHUNK - 1 && cz < this.ncz - 1) this.dirty.add(chunkKey(cx, cy, cz + 1));
+    if (lz === 0 && (cz > 0 || outer)) this.dirty.add(chunkKey(cx, cy, cz - 1));
+    if (lz === CHUNK - 1 && (cz < this.ncz - 1 || outer)) this.dirty.add(chunkKey(cx, cy, cz + 1));
   }
 
   markAllDirty() {
@@ -123,6 +134,7 @@ export class VoxelWorld implements VoxelSpace {
 
   /** Current HP of a block (its maximum if it has never been damaged). */
   hp(x: number, y: number, z: number): number {
+    if (!this.inside(x, y, z)) return mat(this.get(x, y, z)).hp;
     const i = this.idx(x, y, z);
     return this.damaged.get(i) ?? mat(this.data[i]).hp;
   }
@@ -136,7 +148,7 @@ export class VoxelWorld implements VoxelSpace {
     const src = elem ? this.elem : this.data;
     for (let z = 0; z < P; z++) for (let y = 0; y < P; y++) for (let x = 0; x < P; x++) {
       const wx = x0 + x, wy = y0 + y, wz = z0 + z;
-      out[x + P * (y + P * z)] = this.inside(wx, wy, wz) ? src[this.idx(wx, wy, wz)] : 0;
+      out[x + P * (y + P * z)] = this.inside(wx, wy, wz) ? src[this.idx(wx, wy, wz)] : elem ? 0 : this.get(wx, wy, wz);
     }
     return out;
   }
