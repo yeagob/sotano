@@ -2,11 +2,11 @@
 
 Up: [Design](../../README.md)
 
-The ground above the surface is the sky. The sky is the reality where everything is perfect, unmovable and indestructible, and above it there are further levels of sky, each one higher and more abstract, where the player can rise further and further. The sky is a realm of its own, above the crown of the built giant tree, and the deities live in it (decided, owner, 2026-11-03: the built tree's seven stories stay as the climb; see section 1). Nothing here is in the code yet. The only built part of the upper world is the giant tree with its seven stories ([LEVELS](../../built/levels/README.md)); the rest of this folder is owner direction and proposal.
+The ground above the surface is the sky. The sky is the reality where everything is perfect, unmovable and indestructible, and above it there are further levels of sky, each one higher and more abstract, where the player can rise further and further. The sky is a realm of its own, above the crown of the built giant tree, and the deities live in it (decided, owner, 2026-11-03: the built tree's seven stories stay as the climb; see section 1). Much of the realm is now in the code: the realm itself, the sky tree and its five floors, the laws, the five deities, the minion engine, the eight hindrances and Totality. What is built is described in [built/sky](../../built/sky/README.md); this folder keeps the owner's direction, the targets the build follows, what is not built yet and the open questions.
 
 The sky is the other end of the same journey as the depths: the way down goes into the unconscious, the way up goes into the sky ([COSMOLOGY](../../../lore/COSMOLOGY.md)).
 
-Status: mixed. Each section carries its own status line. Decided sections hold the owner's own decisions; the rest are proposals waiting for the owner or for a build.
+Status: mixed. Each section carries its own status line, and a section that is built in part points to its built document. Decided sections hold the owner's own decisions; the rest are proposals waiting for the owner or for a build.
 
 ## 1. What the sky is
 
@@ -40,7 +40,7 @@ These laws hold for every sky creature, every floor and every hindrance.
 
 ### 3.1 Breaking is allowed; nothing stays broken
 
-Status: decided.
+Status: decided. Built: [REGROWTH](../../built/sky/laws/REGROWTH.md) (the shimmer's chime is silent).
 
 Blocks that belong to the original world can be broken by the player. A broken block comes back after a few seconds. The sky never keeps a hole the player made in the original world. A broken original sky block drops no loose cube (provisional, owner to confirm): with regrowth every block would be an endless supply, and the nests exist because cubes are scarce up there.
 
@@ -50,13 +50,13 @@ Status: decided.
 
 Blocks the player creates with abilities are not original. They can be destroyed for good, and only with a positive intention. A route the player builds stays until a positive intention takes it away, except a tower knocked down under law 3.9. A positive shot that destroys a player block removes it with no cube back (provisional, owner, 2026-11-03). Whether a built block can be lost in any other way is open (section 5).
 
-Built in part: a positive shot or a positive weapon stroke (blade, beam, great cut) on a placed block removes it, and the player's blocks are the only ones marked placed ([SKY.md §5.7](../../../architecture/SKY.md)).
+Built: [PLAYER-BLOCKS](../../built/sky/laws/PLAYER-BLOCKS.md) (placed blocks resist everything but a positive shot or stroke, which removes them with no cube back).
 
 ### 3.3 Negative intentions do not work on sky creatures
 
 Status: decided.
 
-Built in part: every intention, weapon stroke and blast reaches a sky creature through the touch router, and a negative one is a puff that changes nothing ([SKY.md §5.7](../../../architecture/SKY.md)). The deities' attacks are not built yet.
+Built: [TOUCH](../../built/sky/laws/TOUCH.md) (every intention, weapon stroke and blast reaches a sky creature; a negative one is a puff). Not built: thrown cubes do not reach sky creatures yet.
 
 The deities and the minions are won with positive intentions only. A negative shot has no effect on them. Every fight and every hindrance in this folder is built around this rule: the player never needs to hurt a sky creature with a negative intention, and no sky creature can be beaten that way.
 
@@ -68,7 +68,7 @@ Every sky floor can be cleared by a player with no practices. The practices carr
 
 ### 3.5 The way up opens when the deity is won
 
-Status: decided (owner, 2026-11-03, and 2026-11-05) that the way up between sky floors is closed until that floor's deity is defeated. Status for "from any point of the floor": open (section 5). Built (W4-C): each floor's deity exists from the sky's start and is won through routed hits, so the way up opens in play; the deities are invisible until B1–B5 build their models.
+Status: decided (owner, 2026-11-03, and 2026-11-05) that the way up between sky floors is closed until that floor's deity is defeated. Status for "from any point of the floor": open (section 5). Built: [WAY-UP](../../built/sky/laws/WAY-UP.md); each floor's deity exists from the sky's start, with its model, and is won through positive hits ([guardians, built](../../built/sky/guardians/README.md)). Not built: the membrane's slow opening, its chime and its toast.
 
 The way up from a floor stays closed until that floor's deity is won (decided, owner, 2026-11-03): closed until the deity is defeated, and the player cannot change floor until then (decided, owner, 2026-11-05; the gate is in [sky architecture, section 7.1](../../../architecture/SKY.md)). Until then the floor's platforming must leave a vertical route the player can build or climb, up to the way up. The route is inside the tree (law 3.8), and a tower of the player's own blocks that reaches a deity is knocked down (law 3.9), so every floor carries a vertical route of its own that the tower rule never touches.
 
@@ -80,25 +80,25 @@ Nothing in the sky takes effect without a warning the player can see or hear.
 
 ### 3.7 Nothing dies in the sky
 
-Status: decided.
+Status: decided. Built: [NO-HARM](../../built/sky/laws/NO-HARM.md).
 
 No deity and no minion ever dies. At most a sky creature transforms, changes its attitude and behaviour, or leaves. A deity is defeated by many positive intentions: the player lands a count of positive hits on it, and when the hit count is reached it transforms, changes its attitude, or leaves ([guardians](guardians/README.md)). A deity can also be turned to the player's side.
 
 ### 3.8 The only way up is inside the tree
 
-Status: decided.
+Status: decided. Built: [OUTSIDE-WATCH](../../built/sky/laws/OUTSIDE-WATCH.md).
 
-Outside the tree the player cannot climb to the sky. If the player builds or climbs a way up outside the tree, a god comes and knocks the climb down. The only way up is inside the tree, and each floor's way up inside it is closed until the deity is defeated (owner, 2026-11-05; law 3.5). The god that comes is the guardian of that height (provisional, owner, 2026-11-03). Its warning and where the player lands are open (section 5). One exception is provisional too: rising past the top of the dungeon's sky opens the realm from anywhere, including outside the tree (owner, 2026-11-03).
+Outside the tree the player cannot climb to the sky. If the player builds or climbs a way up outside the tree, a god comes and knocks the climb down. The only way up is inside the tree, and each floor's way up inside it is closed until the deity is defeated (owner, 2026-11-05; law 3.5). The god that comes is the guardian of that height (provisional, owner, 2026-11-03). The warning and the landing are built by the outside watch and the tower knock: a warning of 2 s in rising motes over the stack, then the placed cells fall as loose cubes and the player is pushed about two blocks off the column, falling unhurt to the ground or ledge below (or, off the deck, down to the crown of the built tree). Not built: the guardian's body does not travel to the tower, and the warning's grumble is silent. One exception is provisional too: rising past the top of the dungeon's sky opens the realm from anywhere, including outside the tree (owner, 2026-11-03).
 
 ### 3.9 A tower that reaches a deity is knocked down
 
-Status: decided.
+Status: decided. Built in part: the tower is detected and the knock runs ([OUTSIDE-WATCH](../../built/sky/laws/OUTSIDE-WATCH.md)); not built: the trigger when a tower reaches a deity's height inside a floor, and each deity's travel to the tower.
 
 When the player builds a tower that brings them to a deity's height, the deity leaves its place, knocks the tower down and pushes the player off it. The deity warns first (law 3.6), and the player can always answer by stepping off onto the floor's own route. The first guardian's rule is written in full in [PANDA](guardians/PANDA.md#b2-the-deity). The blocks of a tower knocked down fall as loose cubes the player can gather again (provisional, owner, 2026-11-03).
 
 ### 3.10 The player cannot die in the sky
 
-Status: decided (owner, 2026-11-03) for the rule and its consequences. Provisional for every default under it, listed at the end of this section. Build (W4-D): the spirit gate, the fall underground at zero and the spirit outline in the sky are in code (`SpiritLaw`, `docs/architecture/SKY.md` §5.2, DECISIONS §10.7); no deity attack drains spirit or captures yet, so the gate is not seen in play until B1–B5.
+Status: decided (owner, 2026-11-03) for the rule and its consequences. Provisional for every default under it, listed at the end of this section. Built: [SPIRIT](../../built/sky/laws/SPIRIT.md): the spirit gate, the deities' drains and captures, the fall underground at zero, the refill, and the spirit outline in the sky (DECISIONS §10.7; its dark frame on the light deck accepted by the owner, 2026-11-06).
 
 The player cannot die in the sky, and no sky creature takes the player's health. The owner's rule (decided, owner, 2026-11-03): if a deity captures the player, it takes one of the player's practices; if the player's spirit reaches zero, the player is teleported to a random floor of the underground. The three parts:
 
@@ -116,12 +116,12 @@ Provisional defaults (to confirm with the owner):
 - Spirit is shown as a number out of 100, and each drain is a number on that scale (decided, owner, 2026-11-05).
 - Every deity, the panda included, has special attacks; each guardian document proposes them and their drains, and the owner accepts the amounts for now, to adjust later (owner, 2026-11-05).
 - After the teleport, spirit is refilled to full.
-- When a deity is defeated, spirit is refilled to full (the owner's default, to confirm, 2026-11-05).
+- When a deity is defeated, spirit is refilled to full (the owner's default, 2026-11-05; built, and kept provisional by the owner, 2026-11-06).
 - The teleport lands on a random underground floor from floor 0 to floor 9. The silence chamber is excluded.
 
 ### 3.11 Sky blocks and item events
 
-Status: provisional (owner, 2026-11-03).
+Status: provisional (owner, 2026-11-03). Built: [NO-HARM](../../built/sky/laws/NO-HARM.md).
 
 No sky material is flammable. A sky floor is neither a room nor a floor for item events.
 
@@ -129,10 +129,10 @@ No sky material is flammable. A sky floor is neither a room nor a floor for item
 
 | Part | Contents | Status |
 |---|---|---|
-| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, defeat by positive hits, tower rule, no health damage, capture and spirit (decided, owner, 2026-11-03); the koala and the horse teleport and the capture and spirit defaults (provisional); proposal for the rest of the contract |
-| [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule and the rule that minions never die decided |
-| [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal; no hindrance takes health (decided, owner, 2026-11-03); hindrances only push, slow or hold (provisional) |
-| [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics and ascent); the last jump enters the Sun (owner, 2026-11-05) |
+| [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour specifications (built: [built/sky/guardians](../../built/sky/guardians/README.md)) | Decided order, levitation, defeat by positive hits, tower rule, no health damage, capture and spirit (decided, owner, 2026-11-03); the koala and the horse teleport and the capture and spirit defaults (provisional); proposal for the rest of the contract |
+| [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies (the engine and herds built, not spawned in play: [built/sky/minions](../../built/sky/minions/README.md)) | Proposal, with the allies rule and the rule that minions never die decided |
+| [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them (all eight built: [built/sky/abilities](../../built/sky/abilities/README.md)) | Proposal; no hindrance takes health (decided, owner, 2026-11-03); hindrances only push, slow or hold (provisional) |
+| [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics and ascent); the last jump enters the Sun (owner, 2026-11-05); the climb, the updraft and the views built ([built Totality](../../built/levels/totality/README.md)) |
 | [Unity](../levels/UNITY.md) | Sky floor 7: the final destination occurring in the Sun | Decided (setting: The Sun); not built, issue #95 |
 
 ## 5. Open questions
@@ -145,6 +145,6 @@ No sky material is flammable. A sky floor is neither a room nor a floor for item
 6. **Time limit.** Open whether the sky has a time limit.
 7. **What ends a run.** Still open, as in [LEVELS](../../built/levels/README.md).
 8. **Silence and the sky.** Silence still carries the player up to heaven (decided, owner, 2026-11-03). Beyond that, how silence connects with the sky is open in [LEVELS](../../built/levels/README.md) and [COSMOLOGY](../../../lore/COSMOLOGY.md).
-9. **The god outside the tree.** Provisional (owner, 2026-11-03): the god that knocks down a climb outside the tree is the guardian of that height (law 3.8). How it warns, and where the player lands, are open.
+9. **The god outside the tree.** Provisional (owner, 2026-11-03): the god that knocks down a climb outside the tree is the guardian of that height (law 3.8). The warning and the landing are built (law 3.8); how the guardian's body reaches the tower is still to build.
 10. **A knocked-down tower.** Provisional (owner, 2026-11-03): the blocks of a tower knocked down under law 3.9 fall as loose cubes the player can gather again. What height counts as reaching a deity is a target in each guardian document.
 11. **The levels of sky above.** Decided: defeating the 5th deity (Horse) grants the Triple Jump item (1x, 2x, 8x), allowing the player to climb through Sky Floor 6 ([Totality](../levels/TOTALITY.md)) across high-altitude platforms into space, ending at the closed threshold of the Sun, where Sky Floor 7 ([Unity](../levels/UNITY.md)) would be. Unity is issue #95 and not built (decided, owner, 2026-11-03).

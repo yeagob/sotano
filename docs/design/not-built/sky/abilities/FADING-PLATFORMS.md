@@ -6,6 +6,8 @@ Fading platforms are platforms that disappear, or parts of them, after a warning
 
 Status: proposal. The owner's rule that platforms always warn first is decided. The rest of this document is proposal.
 
+Built: [Fading platforms, as built](../../../built/sky/abilities/FADING-PLATFORMS.md) (wave 5). Not built: the speeding tick and the chime are silent. This document keeps the design text and the open questions.
+
 ## What the player sees and feels
 
 - **The telegraph.** The platform's edges turn grey, and it flickers, with a tick sound that speeds up. The warning lasts long enough to read, and the platform's full outline still shows.

@@ -12,7 +12,8 @@ Lava stands for old pain: it burns what touches it, and emotion (water) hardens 
 - **Touch.** Lava hurts 8 points, one heart, each time the player's invulnerability window opens while they touch it. The design text said a full heart each second; the build paces hits by the invulnerability window instead.
 - **Light.** Lava glows, and it warms the blocks around it.
 - **Burning blocks.** Lava lights flammable blocks next to it (crates, living wood, leaves) with a chance of 0.2 per tick, more often than fire does (0.08). A block that catches burns away and leaves a flame behind (see [FIRE.md](FIRE.md)).
-- **Loose cubes.** A loose cube that falls into lava is removed. Obsidian is the exception: lava does not consume it. A bomb thrown into lava goes off at once.
+- **Loose cubes.** A loose cube that falls into lava is removed. Obsidian is the exception: lava does not consume it. A bomb thrown into lava goes off at once; a white bomb goes off as a love explosion.
+- **Love cools lava.** A love explosion (a white bomb or a positive missile) turns every lava cell in its sphere into water at the same level, with a puff of steam (owner, 2026-11-06).
 - **Water meets lava.** Water flowing onto a lava source makes obsidian; water on a flowing lava cell makes stone (see [REACTIONS.md](REACTIONS.md)).
 
 ## How projections meet lava

@@ -2,7 +2,7 @@
 
 Up: [not-built levels](README.md) · [The realm of the sky](../sky/README.md)
 
-Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-05, replacing the closed threshold of 2026-11-03): the last jump of the climb enters the Sun; entering activates Unity (issue #95, pending), which does nothing yet. Proposal for the exact platform layout, pacing, and fall recovery.
+Status: decided for the placement (level 6 going up, above the five deities), the core mechanic (high-altitude, long-distance platforming across small platforms), the ascent theme (leaving the tree and the Earth behind, climbing through deep space toward the Sun), and the requirement of the triple jump reward. Decided (owner, 2026-11-05, replacing the closed threshold of 2026-11-03): the last jump of the climb enters the Sun; entering activates Unity (issue #95, pending), which does nothing yet. Built: the climb, the fall recovery (the updraft), the views of the Earth and the Sun and the entrance ([built Totality](../../built/levels/totality/README.md)). Decided and not built: the Earth's continents (owner, 2026-11-06).
 
 ## 1. What Totality is
 
@@ -37,13 +37,26 @@ The ascent through Totality is divided into three distinct strata:
   - The platforms glow like incandescent glass and solar embers.
   - Distances between platforms stretch to their maximum, requiring full commitment to the $8\times$ leap.
   - The last jump of the climb, taken from the final checkpoint, enters the Sun's volume (decided, owner, 2026-11-05). Entering activates [Unity](UNITY.md), which is issue #95, pending, and does nothing yet. The entrance is built and moved to [built/levels/totality/THRESHOLD.md](../../built/levels/totality/THRESHOLD.md). The 107 hops stay as they are for now.
-  - The Sun's warm light is an exception to art pillar 2 (warm light is earned and yours), provisional (owner, 2026-11-03). It is to be recorded in the sky art ledger, which is not written yet.
+  - The Sun's warm light is an exception to art pillar 2 (warm light is earned and yours), provisional (owner, 2026-11-03). It is recorded in the sky art ledger ([sky art](../../../art/sky/README.md)).
 
 ## 4. Platforming design and player feel
 
 - **Tiny platforms, immense gaps**: Platforms are small (often 2x2 or 3x3 blocks wide, narrowing to single blocks near the summit). Precision landings are mandatory.
 - **Momentum and air control**: The $8\times$ third jump provides substantial airtime, requiring player focus on trajectory, horizontal drift control, and judging landing shadows or glowing markers.
-- **Fall handling (Proposal)**: In keeping with the laws of the sky ([law 3.7: nothing dies in the sky](../sky/README.md#37-nothing-dies-in-the-sky)), missing a jump in Totality does not cause death or damage ([law 3.10](../sky/README.md#310-the-player-cannot-die-in-the-sky), decided). Instead, falling deep into the void catches the player in a gentle updraft (solar wind or cosmic currents) that returns them to the last stable checkpoint platform or safely down to the lower stratum.
+- **Fall handling**: built. A fall 20 blocks below the last checkpoint the player stood on is caught by an updraft and carried back to it; it is moved to [built/levels/totality/UPDRAFT.md](../../built/levels/totality/UPDRAFT.md). The climb's chain (108 platforms, 107 hops, a checkpoint every sixth), the strata's colour and the views of the Earth and the Sun are built too ([built Totality](../../built/levels/totality/README.md)).
+
+## 4a. Decided and not built
+
+- **The Earth has continents** (decided, owner, 2026-11-06). The built Earth is one sea colour with a rim; land (and whether cloud) is for the art pass ([sky art: Totality](../../../art/sky/totality.md)).
+- **The Sun's entrance stays a flat field** (decided, owner, 2026-11-06): the final checkpoint's view of the Sun shows its flat disc and nothing more. This is built as it is; it is noted here because the art gate had left it to the owner.
+
+## 4b. Not built yet
+
+- The strata's decoration: drifting leaf clusters, meteor fragments and embers, placed under the headroom rule (no fragment within 15 blocks above a takeoff or an arc).
+- The checkpoint's soft beacon.
+- A tower in Totality knocked down by a gust of solar wind (the knock accepts the Sun as its source, but nothing starts it; the outside watch does not watch above the tree).
+- The updraft's sound (named, silent).
+- The art gate's colour-blindness and 20-block fog captures (deferred by the owner).
 
 ## 5. Open questions
 

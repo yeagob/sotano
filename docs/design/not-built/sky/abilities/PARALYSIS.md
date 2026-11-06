@@ -6,6 +6,8 @@ Paralysis freezes the player for a short time. The player can see, but cannot mo
 
 Status: proposal. The hindrance is the owner's; the rules and the animal that uses it are proposal.
 
+Built: [Paralysis, as built](../../../built/sky/abilities/PARALYSIS.md) (wave 5). Built differently from the text below: the held player cannot walk but can still look, aim and shoot, and no grey tint covers the hands. Not built: the sound. This document keeps the design text and the open questions.
+
 ## What the player sees and feels
 
 - **The telegraph.** A ring of light and a sound spread from the animal before the freeze reaches the player. The ring has a visible edge the player can step out of.

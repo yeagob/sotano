@@ -44,10 +44,10 @@ A checkpoint (every sixth platform) is 3 × 3 whatever its stratum. Each platfor
 
 ## 6. Open, for the art pass and the owner
 
-- The Earth is flat: one sea colour and a rim, no land or cloud. The owner decides whether the Earth shows continents.
+- **The Earth has continents (owner, 2026-11-06): decided, not built.** The Earth is still one sea colour and a rim, no land or cloud. The art pass adds the land in its own `sky.earth.*` tokens (ΔE from `light.gold`, `life.heart`, `attack.red.base` and `attack.warn.base` kept), stepped like the corona, never fogged or lit, and passes the gate before it ships.
 - The strata's decoration (drifting leaf clusters, meteor fragments, embers) is not yet placed: the plan holds the platforms and the Sun's volume only. The art pass adds it with the headroom rule (no fragment within 15 blocks above a takeoff or arc).
 - The checkpoint's soft beacon is not drawn yet.
 - **Art gate passed for the far view (Opus art reviewer, 2026-11-05, on `ec2d966`; covers the §4 and §5 amendments).** `?gallery=sky-totality` in colour and grey: the Earth's body covers the rim's centre and only the limb shows; the Sun's disc is flat and unbrightened, with the corona as three falling steps round it; both read in greyscale. The entrance frame is left to the owner (below). CVD captures and the 20-block fog frames are deferred (owner: not needed for these floors yet).
 - Captures: the three frames of `?gallery=sky-totality` are the gate for this page; they are attached when the browser run is done (see the change's report).
-- The flat beige frame of the final checkpoint (the entrance capture, the Sun's entrance from its last checkpoint) reads as flat. Whether the entrance shows more than the disc is a design question for the owner; it is not changed in this pass.
-- Nothing here is ruled by the owner yet. The Spanish of the place names is a translation for the owner to review. The Sun's disc is drawn at the Sun's volume in the game (`sun.ts`, W4-C; §5 amendment): the owner rules whether the entrance shows anything more.
+- **The Sun's entrance stays a flat field (owner, 2026-11-06).** The flat beige frame of the final checkpoint (the entrance capture, the Sun's entrance from its last checkpoint) is the look: the entrance shows the disc and nothing more.
+- Ruled by the owner (2026-11-06): the Earth's continents and the flat entrance, above. The rest is not ruled yet. The Spanish of the place names is a translation for the owner to review. The Sun's disc is drawn at the Sun's volume in the game (`sun.ts`, W4-C; §5 amendment): the owner ruled that it does not (2026-11-06).

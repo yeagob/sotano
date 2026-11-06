@@ -6,7 +6,7 @@ Each section below is a folder with its own README. Open questions are listed in
 
 | Section | What it covers |
 |---|---|
-| [sky](sky/README.md) | The realm above the surface: the five guardian deities, their minions, the hindrances they use, and the laws of the sky (nothing permanent, positive intentions only) |
+| [sky](sky/README.md) | The realm above the surface: the five guardian deities, their minions, the hindrances they use, and the laws of the sky (nothing permanent, positive intentions only); what is built is in [built/sky](../built/sky/README.md) |
 | [player](player/README.md) | What the player could do that the game does not: more movement, climbing, other kinds of hearts, falls that hurt, a shop, a second life |
 | [intentions](intentions/README.md) | Planned changes to the shot, and what is still open about it |
 | [blocks](blocks/README.md) | Planned matter: new materials, flags that change what a material does, blocks that act when placed |

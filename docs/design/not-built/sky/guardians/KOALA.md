@@ -6,7 +6,7 @@ The koala is the second deity: a koala with a giant head on a small, soft plush 
 
 Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. Decided (owner, 2026-11-05): the floor's way up stays closed until the koala is defeated. The special attacks (B3b) are provisional, to confirm; the owner accepts their drain amounts for now, to adjust later (2026-11-05).
 
-Build status (B2, not merged): the deity and its minions run headless in `src/sky/creatures/deities/koala.ts` and `src/sky/creatures/minions/koala.ts`, with the koala's own hindrances in `src/sky/hindrances/koala-*.ts` and tests in `tests/sky-koala.test.ts`. Not verified in the browser; the art gate waits for the owner ([koala art](../../../../art/sky/koala.md)). The body does not yet float in for Hold fast or back to the Fork after a teleport, and the telegraph poses are not drawn.
+Built: the deity, its ten attacks, Asleep and Stirring, the Clinging guard, the teleport, defeat by 30 hits, and the minions; what the player meets is in [built KOALA](../../../built/sky/guardians/KOALA.md). Not built: the body does not float in for Hold fast nor back to the Fork after a teleport, the telegraph poses are not drawn, and there are no sounds. Not verified in the browser; the art gate is pending owner review ([koala art](../../../../art/sky/koala.md)).
 
 ## 1. Who it is
 

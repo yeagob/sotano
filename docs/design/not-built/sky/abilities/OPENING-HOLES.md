@@ -6,6 +6,8 @@ Opening holes are holes that open in the floor: the animal takes away one or mor
 
 Status: proposal. The hindrance is the owner's; the rules and the animal that uses it are proposal.
 
+Built: [Opening holes, as built](../../../built/sky/abilities/OPENING-HOLES.md) (wave 5). Not built: the deep sound of the warning; the edges falling before the middle. This document keeps the design text and the open questions.
+
 ## What the player sees and feels
 
 - **The telegraph.** The cells to open show their edges first: a crack line in the stone, a dust cue, a deep sound. The crack is visible before the floor gives way.

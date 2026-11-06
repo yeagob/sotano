@@ -4,6 +4,8 @@ Up: [The realm of the sky](../README.md)
 
 The guardians are the five deities of the first five floors of the sky tree. Each one is a small, soft body under a giant animal head, placed over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
 
+Built: the five deities run in the code, with their attacks, special attacks and defeat by positive hits; what the player meets is in [built/sky/guardians](../../../built/sky/guardians/README.md). The documents here keep the full specification (the targets the build follows), what is not built, and the open questions. The gaps still open after the build are in section 7.
+
 Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule, for the rule that a teleport lands far from the player, and for no health damage in the sky, with capture and spirit (decided, owner, 2026-11-03, realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)). Decided (owner, 2026-11-05): every deity, the panda included, has special attacks; each fight has two or three phases; spirit is shown as a number out of 100; standing still and the other calm answers show the player that they are right; and each floor's way up stays closed until its deity is defeated. Provisional: the koala and the horse teleport, each deity changes its attitude when it is defeated, and the capture and spirit defaults. Proposal for the rest of the shared contract. Open for the points listed under open questions.
 
 ## 1. The shared contract
@@ -83,11 +85,11 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 
 | Document | Contents | Status |
 |---|---|---|
-| [PANDA.md](PANDA.md) | Sky floor 1: the giant panda | Proposal, specified |
-| [KOALA.md](KOALA.md) | Sky floor 2: the koala | Proposal, specified |
-| [ELEPHANT.md](ELEPHANT.md) | Sky floor 3: the elephant | Proposal, specified |
-| [LION.md](LION.md) | Sky floor 4: the lion | Proposal, specified |
-| [HORSE.md](HORSE.md) | Sky floor 5: the horse | Proposal, specified |
+| [PANDA.md](PANDA.md) | Sky floor 1: the giant panda | Specified; built in part ([built](../../../built/sky/guardians/PANDA.md)) |
+| [KOALA.md](KOALA.md) | Sky floor 2: the koala | Specified; built in part ([built](../../../built/sky/guardians/KOALA.md)) |
+| [ELEPHANT.md](ELEPHANT.md) | Sky floor 3: the elephant | Specified; built in part ([built](../../../built/sky/guardians/ELEPHANT.md)) |
+| [LION.md](LION.md) | Sky floor 4: the lion | Specified; built in part ([built](../../../built/sky/guardians/LION.md)) |
+| [HORSE.md](HORSE.md) | Sky floor 5: the horse | Specified; built in part ([built](../../../built/sky/guardians/HORSE.md)) |
 
 ## 5. Open questions
 
@@ -136,7 +138,7 @@ The cycle is Idle, Watching, Attacking, Recovering, then Watching again while th
 
 **Teleport.** The koala and the horse teleport (provisional). A teleporting deity vanishes from its place with a warning of target one telegraph length, and reappears far from the player, never within target 12 blocks of them. Their documents mark where a teleport fits.
 
-**The tower rule.** A tower is a stack of target 3 or more player blocks that the player stands on. When a tower brings the player to within target 2 blocks of a deity's height, the deity warns, leaves its place, knocks the tower down and pushes the player off it, then returns. The floor's own vertical route never triggers it.
+**The tower rule.** A tower is a stack of target 3 or more player blocks that the player stands on. When a tower brings the player to within target 2 blocks of a deity's height, the deity warns, leaves its place, knocks the tower down and pushes the player off it, then returns. The floor's own vertical route never triggers it. Built: the tower's detection, the warning (2 s) and the knock with its push and its landing, run today by the outside watch for towers outside the tree ([OUTSIDE-WATCH](../../../built/sky/laws/OUTSIDE-WATCH.md)). Not built: the trigger at a deity's height inside a floor, and the deity's travel to the tower and back.
 
 ### 6.3 Original blocks, player blocks and where blocks come from
 
@@ -176,7 +178,27 @@ The player defeats a deity by landing many positive hits on it (decided). The sp
 - **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no positive hit, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
 - **No health damage (decided, owner, 2026-11-03).** No deity attack, hindrance or minion takes the player's health in the sky. Certain special attacks drain spirit, the outline of the hearts, and at zero spirit the player is teleported to a random underground floor. A deity can capture the player and take one practice (provisional: held for 3 s, released by themself). A deity's bolts, lobs and rings otherwise only push, slow or hold the player. The built boss touch of 8 is for comparison only.
 - **Special attacks: spirit drains and capture (provisional, to confirm; every number a target).** Every deity, the giant panda included (owner, 2026-11-05), adds special attacks to its attack list, in its own document under "B3b. Special attacks", built from the animal's habits, each with a telegraph and a counter. Spirit is shown as a number out of 100, and each drain is a number on that scale (decided, owner, 2026-11-05); the owner accepts the proposed amounts for now, to adjust later. A special attack drains a set amount of spirit (`SPIRIT_MAX` 100; target 6 to 18 per drain, broadly rising floor by floor: panda 6 to 8, koala 8 to 18, elephant 12 to 16, lion 12 to 16, horse 14 to 18), captures the player for `CAPTURE_TIME` (3 s, one practice taken), or only moves, slows or holds. Its telegraph is the floor's length in section 6.4 for a move, slow or hold, 0.2 s longer for a drain and 0.5 s longer for a capture, never under 0.8 s. A player drains at most once per attack; two drains are at least 6 s apart; a capture comes at most once every 30 s; and no drain or capture begins its telegraph while the player is held in any way (captured, frozen, caged, hugged or ridden by the koala's joey), or within 1 s after. Hindrances and minions never drain spirit or capture (realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)).
-- **Spirit refills when a deity falls (provisional, the owner's default to confirm, 2026-11-05).** When a deity is defeated, the player's spirit refills to full, with the deity's change of attitude and before its way up opens.
-- **Where the drain is called (built in W4-D).** A special attack calls `ctx.drain(n)` in its `act`, when the attack lands, never at its telegraph. The spirit gate (`SpiritLaw`, `src/sky/laws/spirit.ts`) is the one place that decides: at most once per attack run, at least 6 s from the last drain, never while the player is held, nor within 1 s after. `choose()` starts no drain attack where the gate would refuse it, so a telegraph never begins in a closed window. No attack carries a drain yet (B1–B5).
+- **Spirit refills when a deity falls (provisional: the owner's default, 2026-11-05; built, and kept provisional by the owner, 2026-11-06).** When a deity is defeated, the player's spirit refills to full, with the deity's change of attitude and before its way up opens.
+- **Where the drain is called (built in W4-D).** A special attack calls `ctx.drain(n)` in its `act`, when the attack lands, never at its telegraph. The spirit gate (`SpiritLaw`, `src/sky/laws/spirit.ts`) is the one place that decides: at most once per attack run, at least 6 s from the last drain, never while the player is held, nor within 1 s after. `choose()` starts no drain attack where the gate would refuse it, so a telegraph never begins in a closed window. Every deity's special attacks now carry their drains ([SPIRIT](../../../built/sky/laws/SPIRIT.md)).
 - **Calm feedback (design requirement, owner, 2026-11-05).** Every answer that asks the player to stand still, slow down or hold their gaze shows a visible cue that the player is doing it right, from the moment they start, not only by the drain that does not come. The horse's Herd panic and Calm, the panda's rest beat and Slow chew, and the lion's Stare-down each name their cue in their document (the cues are provisional, for the art pass). A player who breaks the calm sees the cue undo itself.
 
+## 7. Gaps after the build
+
+Status: not built. Reported by the five deity builds (2026-11-05); each one is also listed in the deity's built document.
+
+**Shared by all five:**
+
+- The art gates of all five deities are pending owner review; the greyscale, colour-blindness and fog captures are not taken ([sky art](../../../../art/sky/README.md)).
+- No floor spawns minions in play ([minions](../../../built/sky/minions/README.md)).
+- The tower rule inside a floor is not wired (section 6.2).
+- The boss bar does not show a deity's hits.
+
+**By deity:**
+
+| Deity | Not built |
+|---|---|
+| [Panda](PANDA.md) | No float to a tower, nor in Cradle; no tower trigger on the floor; no minion spawner on the floor; no sounds |
+| [Koala](KOALA.md) | The body does not float in for Hold fast, nor back to the Fork after a teleport; no telegraph poses; no sounds |
+| [Elephant](ELEPHANT.md) | Positive shots into the dust circle, at the grey water or at the stone in flight do not answer; the tower sweep is not wired; the floor's channels are a stand-in; no sound |
+| [Lion](LION.md) | The ledges do not settle when it is won; no rally minions; no wall stops the roar; no tower glide |
+| [Horse](HORSE.md) | No leap to a tower; no sounds |
