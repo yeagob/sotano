@@ -4,6 +4,7 @@
 
 import type { Catalog } from '.';
 import { SKY_PARTS_EN } from './sky';
+import { TEST_BENCH_EN } from './test-bench.en';
 
 const messages = {
   // ── start / pause card (index.html) ──
@@ -381,6 +382,7 @@ const messages = {
   ...SKY_PARTS_EN.horse,
   ...SKY_PARTS_EN.totality,
   ...SKY_PARTS_EN.endgame,
+  ...TEST_BENCH_EN,
   'unit.missileOn': 'double tap',
 } as const;
 

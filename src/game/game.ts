@@ -862,7 +862,7 @@ export class Game {
       travel: tr => this.gate.start(tr),
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
-      refillSpirit: () => { this.spirit = SPIRIT_MAX; },
+      refillSpirit: () => this.refillSpirit(),
       takeRandomPractice: () => this.takePractice(),
       sendUnderground: (floors, rng) => this.sendUnderground(floors, rng),
     };
@@ -908,6 +908,30 @@ export class Game {
     if (!floors.length || this.gate.busy) return false;
     this.underground = floors[rng.int(0, floors.length - 1)];
     this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
+    return true;
+  }
+
+  /** Spirit back to full (a won deity, the test bench). */
+  refillSpirit() { this.spirit = SPIRIT_MAX; }
+
+  /**
+   * `?test` (debug/test-bench.ts): stands the player in floor k's start room, skipping the floors and tolls above it.
+   * It takes the capture's landing path (undergroundSpawn): from the sky through the gate's fade, as a spirit fall does.
+   * False when there is no such floor, in the sandbox, or while a passage is under way.
+   */
+  debugFloor(k: number): boolean {
+    if (!Number.isInteger(k) || k < FIRST_FLOOR || k > LAST_FLOOR || this.sandbox || this.gate.busy) return false;
+    if (!this.below) {
+      this.underground = k;
+      this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
+      return true;
+    }
+    const at = this.undergroundSpawn(k);
+    if (!at) return false;
+    this.carve(k + 1);
+    this.teleport(at[0], at[1], at[2]);
+    // trackPlace announces a new deepest floor; a floor already reached gets its map back here
+    if (k <= this.maxDepth) { this.visited = new Set(); this.hud.setFloor(this.floors.get(k)!, k); }
     return true;
   }
 
