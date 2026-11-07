@@ -5,6 +5,10 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+
+## 0.2.0 · 2026-11-07
+
+### Added
 - Six kinds of heart: red, blue (one more heart, lost for good), stone (halves every hit while it takes them), blood (heals 3 per second, up to two hearts, until a hit), star (a heart back and 30 seconds untouchable, with its own theme) and the very rare berserker (stronger, faster and higher, short intentions, loose blocks break underfoot, shots bounce back, a frame and an echo while you hold it). The Berserker Draught (two will hearts and obsidian in the alembic) gives the same state for two rooms. Every heart that drops rolls its kind from chances each floor draws from the seed (#31).
 - Dr. Launcher, a quality 3 practice of the new Miracles path, found in treasure rooms: a quick double tap of the fire control (double click, double RT, or a double tap on the bead of light) launches a bomb as a missile that flies straight and explodes on the first thing it meets. Negative intentions make it a bomb blast; positive ones a love explosion that mends blocks, heals allies, warms projections and grows creatures. Seeds changed: a new practice in the pools (v24, #59).
 - A kitchen on floors 1, 3, 5 and 7 cooks a part into a meal (three cooks per run; flesh gives half a heart, other parts a heart), eaten with the drink key. A hint names the drink key when a potion or meal is made or picked up. The alembic is now one tile on the even floors; seeds changed (v22).
