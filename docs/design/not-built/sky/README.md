@@ -98,6 +98,8 @@ When the player builds a tower that brings them to a deity's height, the deity l
 | [guardians/](guardians/README.md) | The five deities, the shared contract, the order and the behaviour assignment | Decided order, levitation, stitch and tower rule; proposal for the rest of the contract |
 | [minions/](minions/README.md) | The shared minion contract: the animal embodied, its movement, allies | Proposal, with the allies rule and the rule that minions never die decided |
 | [abilities/](abilities/README.md) | The eight hindrances the animals use, and the shared rules for them | Proposal |
+| [Totality](../levels/TOTALITY.md) | Sky floor 6: precision long-distance platforming into space via the triple jump | Decided (mechanics & ascent) |
+| [Unity](../levels/UNITY.md) | Sky floor 7: the final destination occurring in the Sun | Decided (setting: The Sun) |
 
 ## 5. Open questions
 
@@ -111,4 +113,4 @@ When the player builds a tower that brings them to a deity's height, the deity l
 8. **Silence and the sky.** How silence connects with heaven is open in [LEVELS](../../built/levels/README.md) and [COSMOLOGY](../../../lore/COSMOLOGY.md).
 9. **The god outside the tree.** Which god knocks down a climb outside the tree (law 3.8), how it warns, and where the player lands, are open.
 10. **A knocked-down tower.** Whether the blocks of a tower knocked down under law 3.9 fall as loose cubes the player can gather again, or are lost, is open. What height counts as reaching a deity is a target in each guardian document.
-11. **The levels of sky above.** How the player rises from one level of sky to the next, higher and more abstract one, is open.
+11. **The levels of sky above.** Decided: defeating the 5th deity (Horse) grants the Triple Jump item (1x, 2x, 8x), allowing the player to climb through Sky Floor 6 ([Totality](../levels/TOTALITY.md)) across high-altitude platforms into space, culminating in Sky Floor 7 ([Unity](../levels/UNITY.md)) at the Sun.

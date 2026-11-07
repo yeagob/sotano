@@ -1,46 +1,39 @@
-# The endgame
+# The Endgame: The Spiked Guardian, The Ascent, and The Cosmic Return
 
-Up: [not-built story](README.md)
+Up: [not-built story](README.md) · [ENDING-AND-RETURN](../levels/ENDING-AND-RETURN.md) · [UNITY](../levels/UNITY.md)
 
-Status: open question (the owner has decided the shape of the world, and not the ending).
+Status: decided for the bottom encounter (the invulnerable Spiked Entity, its dialogue, the staircase cutting upward to the surface, the meta-progression shortcut on Floor 1, and the final confrontation enabled by the solar relic from Unity). Proposal for boss name, visual staging, and combat mechanics of the final rematch.
 
-## What the design says
+## 1. What the Endgame is
 
-The game is a descent and a return. You go down through the floors, collecting practices, until the bottom; then the way back up is the goal. The first design put the goal this way: you dig and build your own way back up to the surface, where another layer of the game begins ([DESIGN, section 1](../../built/story/PILLARS.md)).
+The journey begins as a descent into the dark depths of the basement. However, reaching the bottom reveals that the descent was only half of the journey—and fundamentally mistaken in its premise.
 
-The owner's decisions on the shape of the world, of 27 October 2026, fix the ends of the world without fixing the ending:
+At the lowest floor of the descent, the player confronts the final entity of the depths: an ancient being bristling with countless spikes.
 
-- Floor 0 is the roots, and there is no house on the surface: you climb from the roots.
-- Floor 5 ends in a great pit that leads to the next layer of the world.
-- Silence connects with heaven: it is cyclic.
-- Heaven and the bottom are connected. How is to be decided.
-- What ends a run is still to be decided.
+## 2. The Bottom Encounter: The Spiked Entity
 
-Those are in the levels documents, and the built part of the descent is described in the built levels.
+- **Visual Concept**: A formidable, brooding presence covered in countless protruding spikes and thorns. Dark, impenetrable, and immovable.
+- **Invulnerability**: The player cannot hurt or defeat this being on their initial descent. All attacks and intentions bounce off or dissolve. It is entirely indestructible.
+- **The Dialogue**: The entity does not fight back aggressively to kill the player; instead, it delivers a fundamental revelation:
+  > *"El verdadero camino no era llegar hasta aquí, el verdadero camino es ir hacia arriba. Todo el tiempo has estado equivocado, tenías que haber ido hacia arriba."*  
+  > *(“The true path was not to reach this place; the true path is to go upward. All this time you were mistaken: you were meant to climb upward.”)*
 
-## What the cosmology asks
+## 3. The Great Ascending Staircase & Meta-Progression
 
-The endgame connection is open in the cosmology:
+Immediately following this revelation:
+1. **The Ascending Sequence**: A massive sequence of stairs is unlocked, piercing through every floor of the subterranean dungeon, carving a direct upward passage back to the surface and the Giant Tree.
+2. **Permanent Meta-Progression**: From this moment on, in every new run, **Floor 1 features an ascending staircase** allowing the player to climb directly toward the surface and the upper sky tree if they choose, without needing to clear the entire descent first.
 
-- Is it a **place** (the bottom opens onto the sky), an **event** (the house changes when you reach the bottom, which no longer applies because there is no house), or **both**?
-- Should the surface be explorable during a run, or only reached at the end?
-- Should each floor's mirror counterpart be literal (the same layout above and below) or symbolic (themes that echo)?
+## 4. The Cosmic Full Circle: Facing the Depths
 
-The cosmology's answers are in [COSMOLOGY](../../../lore/COSMOLOGY.md), section 5.
+The true progression of the game forms a complete cosmic polarity:
+1. **Descent**: Dive into the bottom, meet the Spiked Entity, and receive the revelation.
+2. **Ascent**: Climb the Giant Tree, defeat the five sky deities ([HORSE](../sky/guardians/HORSE.md)), obtain the Triple Jump, conquer the cosmic platforming of [Totality](../levels/TOTALITY.md), and reach [Unity](../levels/UNITY.md) at the Sun.
+3. **The Solar Relic**: At Unity in the Sun, the player is granted a sacred solar artifact/relic of pure celestial light.
+4. **The Rematch**: Armed with this solar relic, the player is finally empowered to confront, pierce the invulnerability of, and overcome the Spiked Entity at the bottom of the world.
 
-## What is built around the ending
+## 5. Open questions
 
-- The run ends with death: the intention fades, the death screen names the cause and the floor, and a new run begins.
-- The bottom of the descent is silence. Standing still there carries the player up to heaven, and the top of the sky brings them back.
-- The giant tree rises above the roots, with its branches, leaves and stars.
-
-None of these is the ending. They are the parts the ending will attach to.
-
-## Open questions
-
-1. What ends a run other than death: reaching the top, a completed hexagram, or nothing?
-2. Is the endgame a place, an event, or both?
-3. Is the surface explorable during a run, or only at the end?
-4. How do silence and heaven connect: a fall, a door, or a shaft of light? See [THE-SKY-MEANING](THE-SKY-MEANING.md).
-5. Where does the run start: on floor 0, among the roots (the assumption), or elsewhere?
-6. Does the reading of the run (the hexagram, and the witness of the bestiary) belong to the ending? See [HEXAGRAM](../feel/HEXAGRAM.md) and the bestiary's Witness ([BESTIARY](README.md)).
+1. **Entity Name**: What is the canonical name of the Spiked Entity in the bestiary/story (e.g., The Thorns of Memory, The Spiked Root, The Obstinate)?
+2. **Rematch Mechanics**: How does the solar relic interact with the Spiked Entity's thorns (shattering spikes with light, stitching with solar intention, or converting spikes to leaves)?
+3. **Ending State**: What is the ultimate resolution when the Spiked Entity is overcome with the light of the Sun: does it trigger the final narrative ending, or transform the underground into a realm of life?

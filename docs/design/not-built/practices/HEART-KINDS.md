@@ -2,7 +2,7 @@
 
 # Heart kinds (pending)
 
-Status: **idea**, pending the owner's decision. Tracked in issue #31.
+Status: **idea**, pending the owner's decision. Tracked in issue #31. The kinds the owner has decided, starting with the Berserker heart, are in [player/hearts](../player/hearts/README.md).
 
 The kinds of heart the player picks up are built ([built/player/hearts](../../built/player/hearts/README.md)). This document is about the heart as a station's ingredient and product: the heart a released pattern leaves, and what the kitchen and the alembic could make of it. Nothing here is decided.
 
