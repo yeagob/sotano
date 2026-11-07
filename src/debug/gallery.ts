@@ -252,7 +252,7 @@ export function runGallery(params: URLSearchParams) {
     chips('trail · positive', MISSILE_TRAIL.positive);
     chips('trail · negative', MISSILE_TRAIL.negative);
     chips('love explosion', LOVE_BLAST);
-    head('Milagros practices: icons at ×2, ×3, ×5');
+    head('Miracles practices: icons at ×2, ×3, ×5');
     const ri = row();
     for (const d of ITEMS.filter(i => i.tags?.includes('milagros'))) {
       const box = document.createElement('div');

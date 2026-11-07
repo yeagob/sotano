@@ -53,7 +53,7 @@ export const PALETTE = {
   'attack.warn.base': '#EEE33C',
   'attack.warn.dim': '#A8A02E',
 
-  // The five paths: base, glow, dark and the shadow a projection takes. Milagros (miracles, the fifth,
+  // The five paths: base, glow, dark and the shadow a projection takes. Miracles (the fifth,
   // placed first by the owner) is magenta: the one hue the rainbow lacks, made where its two ends meet
   // (DECISIONS §3.5 amendment, 2026-11-02).
   'path.milagros.base': '#DE42A2', 'path.milagros.glow': '#FF7AC8', 'path.milagros.dark': '#7C1A5A', 'path.milagros.shadow': '#5E3652',
@@ -132,7 +132,7 @@ export type PalToken = keyof typeof PALETTE;
 
 /**
  * The five paths, by name. Their glyphs are shown next to the colour, never instead of it. The four
- * element paths are the Platonic solids' silhouettes (cube, sphere, octahedron, tetrahedron); Milagros
+ * element paths are the Platonic solids' silhouettes (cube, sphere, octahedron, tetrahedron); Miracles
  * is the pentagon, the face of the dodecahedron: the fifth solid, the quintessence beyond the four.
  */
 export const PATHS = ['milagros', 'body', 'emotion', 'mind', 'will'] as const;

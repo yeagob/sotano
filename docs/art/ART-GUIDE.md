@@ -98,9 +98,9 @@ No pure `#000` or `#FFF`, except 1–4 px cores of `light.core`.
 | **Emotion** | Water | ● | `#7AA3D4` | `#8EC1FF` | `#365981` | `#364A63` |
 | **Mind** | Air | ◆ | `#B074FA` | `#D5B3FF` | `#5D1AB0` | `#4A3663` |
 | **Will** | Fire | ▲ | `#CA7622` | `#E8803F` | `#66411C` | `#634D36` |
-| **Milagros** | Quintessence | ⬟ | `#DE42A2` | `#FF7AC8` | `#7C1A5A` | `#5E3652` |
+| **Miracles** | Quintessence | ⬟ | `#DE42A2` | `#FF7AC8` | `#7C1A5A` | `#5E3652` |
 
-Glyphs are always shown next to the colour: colour never carries a path alone. The glyphs are the Platonic solids of the old elements (cube, octahedron, icosahedron, tetrahedron), and Milagros, the fifth path (miracles, transcending limits), takes the pentagon, the face of the dodecahedron, the fifth solid and the old quintessence. Milagros is magenta, the one hue the rainbow lacks, made where its two ends meet. The set keeps every pair at ΔE ≥ 20 under normal, deutan, protan and tritan vision (the tightest pair is Milagros and Emotion, 20.8 for protans; the four element paths alone keep ≥ 24). Gold and red are never path colours (DECISIONS §3.5).
+Glyphs are always shown next to the colour: colour never carries a path alone. The glyphs are the Platonic solids of the old elements (cube, octahedron, icosahedron, tetrahedron), and Miracles, the fifth path (miracles, transcending limits), takes the pentagon, the face of the dodecahedron, the fifth solid and the old quintessence. Miracles is magenta, the one hue the rainbow lacks, made where its two ends meet. The set keeps every pair at ΔE ≥ 20 under normal, deutan, protan and tritan vision (the tightest pair is Miracles and Emotion, 20.8 for protans; the four element paths alone keep ≥ 24). Gold and red are never path colours (DECISIONS §3.5).
 
 ### 3.6 The cold (projections' side)
 

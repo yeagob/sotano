@@ -2,7 +2,7 @@ import { pal } from '../palette';
 import { defineItem } from '../../items/types';
 
 // Owner decisions of issue #89 (docs/design/built/practices/milagros/DR-LAUNCHER.md): tier 3, path
-// Milagros, the name is the owner's. The missile itself is core behaviour behind the `missile` stat
+// Miracles, the name is the owner's. The missile itself is core behaviour behind the `missile` stat
 // (game/game.ts `launchMissile`), so other practices can grant it or change it through `missileLaunch`.
 export default defineItem({
   id: 'drlauncher',

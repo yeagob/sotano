@@ -1,10 +1,10 @@
-# Milagros practices
+# Miracles practices
 
 Up: [all practices](../README.md) · [built design](../../README.md)
 
-Milagros is the path of transcending limits: what was thought impossible, done anyway. The owner created it for Dr. Launcher (issue #89) and placed it first among the paths. Its colour and glyph are in the [paths](../../story/PATHS.md) document. It has no state of being yet: a state needs three practices of one path, and Milagros has one.
+Miracles is the path of transcending limits: what was thought impossible, done anyway. The owner created it for Dr. Launcher (issue #89) and placed it first among the paths. Its colour and glyph are in the [paths](../../story/PATHS.md) document. It has no state of being yet: a state needs three practices of one path, and Miracles has one.
 
-The folder holds the practices whose first path tag is milagros.
+The folder holds the practices whose first path tag is `milagros`. The path is called Miracles in English and Milagros in Spanish; the code id, the palette tokens and this folder keep the owner's first spelling, `milagros`, so links, saves and seeds do not change.
 
 ## Practices in this folder
 
@@ -14,4 +14,4 @@ The folder holds the practices whose first path tag is milagros.
 
 ## Open questions
 
-- The state of being of Milagros, once the path has three practices: its name and its effect are the owner's to decide.
+- The state of being of Miracles, once the path has three practices: its name and its effect are the owner's to decide.

@@ -71,7 +71,7 @@ Not everything down here is hostile. **Creatures** are the living things of the 
 
 Practices are named after **techniques and concepts** people use to grow: Kaizen, Exposure, Box Breathing, Deep Focus, Habit Stacking, and public-domain works such as Marcus Aurelius' *Meditations*, Seneca's *Letters* and Lao Tzu's *Tao Te Ching*. Modern books and courses are credited as inspiration in each item's description, never used as a name. Practices aren't magic cures, and therapies aren't jokes.
 
-Practices sit on five paths: **Milagros**, **Body**, **Mind**, **Emotion** and **Will**. Hold three of the same path and you reach a **state of being** (Embodied, Lucid, Open-hearted or Resolute; Milagros has none yet): a bigger change you can see and feel.
+Practices sit on five paths: **Miracles**, **Body**, **Mind**, **Emotion** and **Will**. Hold three of the same path and you reach a **state of being** (Embodied, Lucid, Open-hearted or Resolute; Miracles has none yet): a bigger change you can see and feel.
 
 ### Elements
 

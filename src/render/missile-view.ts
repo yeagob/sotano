@@ -5,7 +5,7 @@
 //   positive: the seams burn white-gold and the plume is light.core in a light.gold halo (mending);
 //   negative: the seams are banked to ember and the plume is light.ember fading to light.dusk at
 //   0.75 of the positive strength (the breakthrough), as the negative intention (DECISIONS §14.1).
-// A thin ring of the Milagros hue rides the plume's tail: the practice's path, as on an intention's
+// A thin ring of the Miracles hue rides the plume's tail: the practice's path, as on an intention's
 // trail (≤ 40 %, §7.1). Unlit and baked, palette tokens only, nothing alternates faster than 3 Hz.
 
 import * as THREE from 'three';
@@ -25,7 +25,7 @@ export const MISSILE_TRAIL: Record<Polarity, PalToken[]> = {
 
 /**
  * Palette tokens for the love explosion's particle bursts (the destructive one keeps the bomb's).
- * Biggest burst first: gold is repair, the core is the light's heart, the Milagros glow is the love.
+ * Biggest burst first: gold is repair, the core is the light's heart, the Miracles glow is the love.
  */
 export const LOVE_BLAST: PalToken[] = ['light.gold', 'light.core', 'path.milagros.glow'];
 

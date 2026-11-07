@@ -1,10 +1,10 @@
 # Dr. Launcher
 
-Up: [Milagros folder](README.md) · [all practices](../README.md) · [built design](../../README.md)
+Up: [Miracles folder](README.md) · [all practices](../README.md) · [built design](../../README.md)
 
 | | |
 |---|---|
-| Path | Milagros; also none |
+| Path | Miracles; also none |
 | Quality | 3 of 4 |
 | Found in | treasure rooms |
 | Inspired by | Transcending limits (Santiago Dopazo, the owner's line) |
@@ -58,14 +58,14 @@ The owner answered the proposal of issue #59 in issue #89, and the open points w
 7. The love explosion has the bomb's radius, and heals and grows each element in it as a positive intention would, with the bomb's damage as the amount.
 8. The arming refusal is kept, to be tested in play.
 9. Synergies: only with bombs (none built yet).
-10. The path is **Milagros**, a new path, placed first. The name is **Dr. Launcher**: the owner judges "Dr." too loose a reference to count as a third-party name, a deliberate exception to the naming rule ([NAMING](../../story/NAMING.md)).
+10. The path is **Miracles**, a new path, placed first. The name is **Dr. Launcher**: the owner judges "Dr." too loose a reference to count as a third-party name, a deliberate exception to the naming rule ([NAMING](../../story/NAMING.md)).
 
 ## Synergies and states of being
 
-- None yet. Milagros has no state of being: it needs three practices of its path, and this is the first.
+- None yet. Miracles has no state of being: it needs three practices of its path, and this is the first.
 
 ## Open questions
 
 - The speed, the range and the arming distance are the owner's to test in a build.
 - The love explosion does not emit the `explosion` event, so an item that resizes explosions resizes only the negative missile. Whether it should reach the love explosion too is open.
-- "Milagros" is a word central to *A Course in Miracles* ([SOURCES](../../../../lore/SOURCES.md), Caution); the owner chose it knowingly.
+- "Miracles" is a word central to *A Course in Miracles* ([SOURCES](../../../../lore/SOURCES.md), Caution); the owner chose it knowingly.

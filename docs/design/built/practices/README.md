@@ -12,7 +12,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 
 | Folder | Path develops | Practices | State of being at three |
 |---|---|---|---|
-| [Milagros](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
+| [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
 | [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
 | [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
 | [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 12 | Open-hearted |
@@ -22,7 +22,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 
 | Practice | Path folder | Quality | Found in |
 |---|---|---|---|
-| [Dr. Launcher](milagros/DR-LAUNCHER.md) | Milagros | 3 | treasure rooms |
+| [Dr. Launcher](milagros/DR-LAUNCHER.md) | Miracles | 3 | treasure rooms |
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
