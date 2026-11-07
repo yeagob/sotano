@@ -6,6 +6,8 @@ The cube cage is instantiated cubes that rise around the player and lock them in
 
 Status: proposal. The hindrance is the owner's; the rules and the animal that uses it are proposal.
 
+Built: [Cube cage, as built](../../../built/sky/abilities/CUBE-CAGE.md) (wave 5). Not built: the soft tick of each outline is silent. This document keeps the design text and the open questions.
+
 ## What the player sees and feels
 
 - **The telegraph.** Outlines of cubes appear around the player's cell, one by one, with a soft tick for each. The outlines show the cage's shape before the cubes are solid.

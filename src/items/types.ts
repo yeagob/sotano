@@ -56,7 +56,7 @@ export interface ItemApi {
   frighten(id: ActorId, seconds: number): void;
   igniteArea(x: number, y: number, z: number, radius: number): void;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
-  tagFlying(x: number, y: number, z: number, radius: number, tag: string, except: IntentSpec): void;
+  intentsHere(): number;
   tagCube(cube: number, tag: string): void;
 }
 
@@ -102,7 +102,8 @@ export interface Effect {
   weapon?: { id: WeaponId; priority: number };
 }
 
-export type PoolName = 'treasure' | 'boss' | 'vault';
+/** 'sky' is the sky realm's gift pool: no pool draws from it at random (ItemPools leaves its items out). */
+export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky';
 
 export interface ItemDef extends Effect {
   id: string;

@@ -4,7 +4,9 @@ Up: [Guardians](README.md) · [The realm of the sky](../README.md)
 
 The koala is the second deity: a koala with a giant head on a small, soft plush body, over sky floor 2, which is built like a crown of branches. It holds the floor by holding on to its branch.
 
-Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by stitching it with many positive shots and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals.
+Status: proposal, specified. Decided: the animal and the floor order, that the koala levitates, that it is defeated by landing many positive hits on it and never dies, and the tower rule of the [sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down). The character, the mirror, the minions and the puzzle are proposals. Decided (owner, 2026-11-05): the floor's way up stays closed until the koala is defeated. The special attacks (B3b) are provisional, to confirm; the owner accepts their drain amounts for now, to adjust later (2026-11-05).
+
+Built: the deity, its ten attacks, Asleep and Stirring, the Clinging guard, the teleport, defeat by 30 hits, and the minions; what the player meets is in [built KOALA](../../../built/sky/guardians/KOALA.md). Not built: the body does not float in for Hold fast nor back to the Fork after a teleport, the telegraph poses are not drawn, and there are no sounds. Not verified in the browser; the art gate is pending owner review ([koala art](../../../../art/sky/koala.md)).
 
 ## 1. Who it is
 
@@ -48,13 +50,13 @@ A positive shot at a koala minion turns it into an ally (decided, see [minions](
 - hangs from a branch the player is building, so the new branch is held in place;
 - grabs a minion that is about to drop on the player, and holds it still.
 
-## 6. The stitch
+## 6. Defeat by many positive hits
 
-The player defeats the koala by stitching it with many positive intentions ([guardians](README.md#1-the-shared-contract)). It does not die. When it is stitched it transforms, changes its attitude, or leaves; which one is open. Proposal: it changes its attitude: it lets go of its branch, and the floor's branches give way in order from the top, which shows the player the way out of the fight.
+The player defeats the koala by landing many positive hits on it ([guardians](README.md#1-the-shared-contract)). It does not die. When the hit count is reached, it transforms, changes its attitude, or leaves; which one is open. It can also be turned to the player's side. Proposal: it changes its attitude: it lets go of its branch, and the floor's branches give way in order from the top, which shows the player the way out of the fight.
 
 ## Behaviour specification
 
-Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, the stitch, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
+Status: proposal, specified. Every number is a target, not a fact of the code. Terms shared by all five guardians (the player's reach, the shared states, the tower rule, block nests, telegraphs, defeat by positive hits, harm) are in [guardians, section 6](README.md#6-shared-terms-of-the-behaviour-specifications).
 
 ### B1. The player's read
 
@@ -64,26 +66,28 @@ A sleepy ball of grey fur that holds on. The koala floor is about letting go: br
 
 **Position.** The koala's Fork is a 3 by 3 crown of living wood over the central gap, at target 30 blocks, held by four thick limbs that come from the four trunks. The koala levitates (decided): it floats target 1 block over the Fork, its arms round an upright branch.
 
-**Teleport (which deity: open).** If the koala is one of the deities that teleport, a teleport would fit when the player reaches the Fork: it vanishes from its branch and reappears over a thick branch on the far side of the floor, always far from the player, and holds that branch until it floats back.
+**Teleport (provisional: yes).** The koala teleports (owner, 2026-11-03, provisional). A teleport fits when the player reaches the Fork: it vanishes from its branch and reappears over a thick branch on the far side of the floor, always far from the player, and holds that branch until it floats back.
 
 **The tower rule.** A tower of player blocks that brings the player to the koala's height (the shared rule in [guardians, section 6.2](README.md#62-states-every-deity-shares)) is knocked down: the koala floats to it, hugs the top of the stack until it topples, and pushes the player off, after the full warning. The trunks' knots and the limbs are the koala's floor's own way up.
+
+**The way up (decided, owner, 2026-11-05).** The floor's way up, over a trunk's knots, is closed until the koala is defeated: the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won), [sky architecture, section 7.1](../../../../architecture/SKY.md)).
 
 **States and timings (targets).**
 
 | State | What the player sees | Length |
 |---|---|---|
 | Asleep | Curled, eyes shut, slow breathing | until woken |
-| Stirring | Ears twitch, one eye opens; when the player comes within 12 blocks, or the first stitch lands | 1.5 s |
+| Stirring | Ears twitch, one eye opens; when the player comes within 12 blocks, or the first positive hit lands | 1.5 s |
 | Watching | The head follows the player | until an attack, after a rest |
 | Attacking | One attack (B3), telegraph 1.2 s | per attack |
 | Clinging (guard) | Arms and ears wrap tight round its branch, face hidden | 2.5 s |
 | Recovering | Head nods, it dozes off for a moment | 2 s |
 | Hurt | A small squeak and a blink | 0.3 s |
-| Rallying | Hugs its branch harder when the stitches reach a third and two thirds of the target; the sleeping minions wake | 2 s |
+| Rallying | Hugs its branch harder when the positive hits reach a third and two thirds of the target; the sleeping minions wake | 2 s |
 
-**The cycle.** Asleep once at the start, then Stirring, Watching, Attacking, then Clinging (from the second stage on; in the first stage it goes straight to Recovering), Recovering, Watching. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-the-stitch)).
+**The cycle.** Asleep once at the start, then Stirring, Watching, Attacking, then Clinging (from the second stage on; in the first stage it goes straight to Recovering), Recovering, Watching. The rest before the next telegraph is target 3 s in the first stage, 2.5 s in the second and 2 s in the third (stages: [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits)).
 
-**The guard.** While Clinging, a positive intention that touches the koala bounces off softly with an ear wiggle: no stitch. A koala ally that reaches the Fork and hugs the deity ends the guard for as long as it stays (B5).
+**The guard.** While Clinging, a positive intention that touches the koala bounces off softly with an ear wiggle: no positive hit. A koala ally that reaches the Fork and hugs the deity ends the guard for as long as it stays (B5).
 
 ### B3. Attacks
 
@@ -96,7 +100,7 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 
 **2. Leaf drop (lobs).**
 - *Telegraph (1.2 s):* the koala shakes the Fork; three warm marks appear on the branches round the player.
-- *Act:* three bundles of leaves drop onto the marks. A bundle that lands on the player pushes them down target 1 block and may take target 2 points (harm is open).
+- *Act:* three bundles of leaves drop onto the marks. A bundle that lands on the player pushes them down target 1 block and does no damage (decided, owner, 2026-11-03).
 - *Answer:* move off the marks. A block overhead stops a bundle: lobs stop at solid blocks ([attacks](../../../built/encounters/ATTACKS.md)), so a one-block roof is a shelter. A positive intention that meets a bundle scatters it into drifting leaves (proposal).
 
 **3. Hug ([cube cage](../abilities/CUBE-CAGE.md)).**
@@ -109,13 +113,78 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 - *Act:* a gust for target 2 s pushes the player toward the gap at target 2 blocks a second, less than half the player's walk, so walking against it holds them in place.
 - *Answer:* walk against it, or stand behind a block (a gust stops at the first block). A positive intention that lands on the koala during the telegraph turns the sigh into a yawn: no gust.
 
-### B4. The stitch
+### B3b. Special attacks
 
-- **Count:** target 30 stitches.
+Status: provisional, to confirm. The owner did not name the special attacks; every choice below (which attacks, their kind, their phase) is a proposal, and every number is a target. The shared rules for drains and capture (telegraph lengths, spacing, `SPIRIT_MAX` 100, `CAPTURE_TIME`) are in [guardians, section 6.6](README.md#66-what-works-and-harm).
+
+**Phases (provisional).** The koala's fight has three phases (a deity has two or three, owner, 2026-11-05; three here, provisional), the three stages of [guardians, section 6.5](README.md#65-defeat-by-many-positive-hits), each opened by a rally: phase 1, *Drowsy*, up to a third of the hit count; phase 2, *Clinging*, up to two thirds; phase 3, *Holding on*, to the end. An attack that enters in a phase stays in the list for the phases after it. These six are added to the four attacks of B3; the floor's platforming layout (B6) does not change.
+
+| # | Special attack | Phase | Kind | Telegraph (target) | Spirit (target) |
+|---|---|---|---|---|---|
+| 5 | Scent mark | 1 | Slows | 1.2 s | none |
+| 6 | Eucalyptus haze | 1 | Drains spirit | 1.4 s | 8 |
+| 7 | Joey ride | 2 | Holds (slows the jump) | 1.2 s | none |
+| 8 | Bellow | 2 | Drains spirit | 1.4 s | 10 |
+| 9 | Lullaby | 3 | Drains spirit | 1.4 s | 18 |
+| 10 | Hold fast | 3 | Captures | 1.7 s | none |
+
+**5. Scent mark ([dense ground](../abilities/DENSE-GROUND.md)). Slows.**
+- *Habit:* a male koala rubs the scent gland on its chest against a trunk to mark it as its own.
+- *Phase:* 1.
+- *Telegraph (target 1.2 s):* the koala rubs its chest against its upright branch; a dark streak spreads along the thick branch or the trunk knots ahead of the player, with a ripple and a glassy sheen and a low rising sound.
+- *Act:* the streak's cells are dense for target 5 s: walking on them is slowed to target 50%. Jumps keep their height.
+- *Answer:* jump over the streak, build over it (a player block is never marked), or take another branch.
+- *Positive intention:* a positive intention at a marked cell returns it to ordinary wood at once.
+
+**6. Eucalyptus haze. Drains spirit.**
+- *Habit:* the koala lives on eucalyptus leaves, a food so poor in energy that it sleeps most of the day.
+- *Phase:* 1.
+- *Telegraph (target 1.4 s):* the koala chews a sprig with a soft crunch; a pale circle of target radius 2 is drawn round the player's cell, and a faint haze starts to rise inside it with a growing hiss.
+- *Act:* the haze bursts in the circle. A player inside it drains target 8 spirit. The haze drifts off and does nothing more.
+- *Answer:* step out of the circle; any move of 2 blocks is enough. A block does not stop it: it is air, not a lob.
+- *Positive intention:* a positive intention into the circle during the telegraph scatters the haze into drifting leaves: no drain.
+
+**7. Joey ride (a lob). Holds.**
+- *Habit:* a koala joey rides on its mother's back for months.
+- *Phase:* 2.
+- *Telegraph (target 1.2 s):* a small joey climbs onto the koala's head and looks at the player; a warm mark appears on the player's cell.
+- *Act:* the joey drops onto the player's back and holds on for target 4 s. While it rides, the player's jumps are half their height; walking is not slowed. Three jumps shake it off sooner, as with a minion's hug. The joey is part of the attack, not a minion: it climbs back to its mother when it lets go. It never adds to a minion's hug: while a minion hugs the player, Joey ride is not chosen.
+- *Answer:* move off the mark. A block overhead stops it (lobs stop at solid blocks).
+- *Positive intention:* a positive intention that meets the falling joey sends it floating back up to its mother.
+
+**8. Bellow (a ring). Drains spirit.**
+- *Habit:* the male koala's bellow, a deep call far louder than its small body.
+- *Phase:* 2.
+- *Telegraph (target 1.4 s):* the koala's chest swells and its nose points up; a low rumble grows, and a ring with a clear edge forms round the Fork.
+- *Act:* the ring spreads along the branches at target 7 blocks a second, out to target 14 blocks, target 0.8 blocks high. A player it touches drains target 10 spirit. It does not push.
+- *Answer:* jump it as it passes, or stand behind a player block (a block stops a ring).
+- *Positive intention:* a positive intention into the swelling chest during the telegraph turns the bellow into a small grunt: no ring.
+
+**9. Lullaby. Drains spirit.**
+- *Habit:* a koala sleeps for most of the day in the fork of one tree, and it does not move from it. This is the koala's mirror: clinging to a place that feels safe.
+- *Phase:* 3.
+- *Telegraph (target 1.4 s):* the koala hums and sways; the whole branch the player stands on glows soft and sleepy, from its far end toward the player.
+- *Act:* a player still standing on that branch's original wood when the telegraph ends drains target 18 spirit (raised from 12: the owner found it too small, 2026-11-05).
+- *Answer:* leave the branch: jump to the next one, step onto a trunk knot, or onto a player block (the glow covers only the branch's original wood). Lullaby never chooses a branch with no other branch, knot or nest within a jump.
+- *Positive intention:* a positive intention on the glowing branch breaks the hum: the glow fades, no drain.
+
+**10. Hold fast. Captures.**
+- *Habit:* a koala hugs a cool trunk with its whole body and its double thumbs, and does not let go.
+- *Phase:* 3.
+- *Telegraph (target 1.7 s):* the koala lets go of its upright branch, opens its arms wide and floats toward the player with a soft rising "mmm"; a ring of claw marks of target radius 2 is drawn round the player's cell and shrinks to the cell over the telegraph.
+- *Act:* if the player is inside the ring when it closes, the koala wraps its arms round them: the player is captured for `CAPTURE_TIME` (target 3 s) and one practice they hold is taken ([guardians, section 6.6](README.md#66-what-works-and-harm)). Then it floats back to the Fork and is Recovering there.
+- *Answer:* leave the ring before it closes, by a jump to another branch or a knot. A player block between the koala and the player stops its float at the block, as a charge stops at a block ([attacks](../../../built/encounters/ATTACKS.md)), and it recovers there.
+- *Positive intention:* a positive intention that lands on the koala while it floats in makes it hug its own arms, blink, and float back: no capture. While it floats in and while it holds the player, it is not Clinging, so positive hits land on it as usual.
+
+**Without minions.** None of the six needs a minion.
+
+### B4. Defeat by positive hits
+
+- **Hit count:** target 30 positive hits.
 - **What counts:** a positive intention that touches the koala's body or head in any state but Clinging.
-- **Progress (target):** each stitch leaves one short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the koala's grip on its branch loosens: one arm, then the other, then only its claws. The sign is a target until the owner confirms it.
-- **Allies:** an ally hugging the deity in the Fork adds one stitch every target 4 s and keeps the guard off. At most target 2 allies hug it at once.
-- **When stitched:** as proposed in section 6 of this document (it lets go of its branch, and the branches give way in order from the top). Which of the three outcomes it takes, and whether the branches are released or held, are still open.
+- **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the koala's grip on its branch loosens: one arm, then the other, then only its claws. The sign is a target until the owner confirms it.
+- **Allies:** an ally hugging the deity in the Fork adds one positive hit every target 4 s and keeps the guard off. At most target 2 allies hug it at once.
+- **When defeated:** as proposed in section 6 of this document (it lets go of its branch, and the branches give way in order from the top). It changes its attitude (provisional, owner, 2026-11-03). Whether the branches are released or held is still open.
 
 ### B5. Minions
 
@@ -138,7 +207,7 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 - **What an ally does:**
   - *Hold:* it hangs under the thin branch ahead of the player; a branch held by an ally does not fade.
   - *Clear:* it grabs a hostile koala that is about to drop, and both curl up asleep for target 6 s.
-  - *Help:* it climbs to the Fork and hugs the deity, which ends the guard and adds stitches (B4).
+  - *Help:* it climbs to the Fork and hugs the deity, which ends the guard and adds positive hits (B4).
 - **Without minions:** if the owner makes this a platforming-only floor, the clusters are removed and the guard is dropped (nothing could lift it).
 
 ### B6. Platforming layout (rules)
@@ -154,7 +223,7 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 - **The Fork:** reached by walking in along one of the four thick limbs at 28, then one step up.
 - **Nests:** target 4, one on each thick branch of the lower half, each with 3 cubes.
 
-**Example route.** Start at the south trunk. Take the spiral east: jump the first two gaps, then take a cube from the nest on the first thick branch and carry it. When Let-go flickers under you, run on; place the cube to bridge the 3-block gap to the east trunk. Turn a cluster of koalas into allies from the thick branch (3 hits each). Climb the east trunk's knots to 28, walk in on the limb, and stitch the koala during its recovery while your allies hug it.
+**Example route.** Start at the south trunk. Take the spiral east: jump the first two gaps, then take a cube from the nest on the first thick branch and carry it. When Let-go flickers under you, run on; place the cube to bridge the 3-block gap to the east trunk. Turn a cluster of koalas into allies from the thick branch (3 hits each). Climb the east trunk's knots to 28, walk in on the limb, and land positive hits on the koala during its recovery while your allies hug it.
 
 ### B7. Hindrances used
 
@@ -166,8 +235,8 @@ The koala has four attacks. The first stage uses Let-go and Leaf drop. The secon
 
 ### B8. Routes
 
-- **With nothing:** the trunk knots and the spiral's jumps reach the Fork without a single placed block; the nests only shorten it. A player with no practices wins by stitching from the limbs and by sending allies to break the guard.
-- **With practices:** a higher or longer jump crosses the 3-block gaps flat; carrying more blocks builds a straight bridge across the central gap; a stronger shot breaks a cage cube from outside; a longer range stitches the koala from the thick branches below the Fork.
+- **With nothing:** the trunk knots and the spiral's jumps reach the Fork without a single placed block; the nests only shorten it. A player with no practices wins by landing positive hits from the limbs and by sending allies to break the guard.
+- **With practices:** a higher or longer jump crosses the 3-block gaps flat; carrying more blocks builds a straight bridge across the central gap; a stronger shot breaks a cage cube from outside; a longer range lands positive hits on the koala from the thick branches below the Fork.
 
 ### B9. Targets at a glance
 
@@ -179,20 +248,25 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2 s | up to about 1 s |
 | Guard (Clinging) | 2.5 s, from the second stage | no built equivalent |
 | Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
-| Stitches | 30 | 179 health: about 51 bad hits |
+| Positive hits | 30 | 179 health: about 51 bad hits |
 | Hits to turn a minion | 3 | 5 good hits for a projection |
 | Minions at once | 6 | no built equivalent |
 | Floor size | radius 22, 32 high | trunk story 22 high |
-| Harm of a lob | 2 points, if harm is kept | boss touch 8 |
+| Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
+| Special attacks (provisional) | 6: 3 drain spirit (8, 10, 18 of 100), 1 captures (3 s, one practice), 2 slow or hold | no built equivalent |
+| Special telegraphs | 1.2 s to slow or hold, 1.4 s to drain, 1.7 s to capture | windup 0.4 to 0.9 s |
 
 ## Open questions
 
 1. Does the koala's cage stop the player, or only slow them? Breaking out is allowed (the realm's law 3.1), but is the cage a timed hold or a break-out?
 2. Which hindrance the koala uses is proposal. Is the fading branch the koala's, or the floor's?
 3. Are the koala's branches the built world's blocks or player-made blocks? (The realm's law 3.1 and 3.2 decide the answer for each case.)
-4. When the koala is stitched, does it transform, change its attitude, or leave? Does that release the branches, or hold them until the player is done?
-5. The clinging guard. From the second stage the koala cannot be stitched for 2.5 s after each attack unless an ally hugs it. Is a guard that only allies lift right for the second floor?
+4. When the koala is defeated, does it transform, change its attitude, or leave? Provisional (owner, 2026-11-03): it changes its attitude. Does that release the branches, or hold them until the player is done?
+5. The clinging guard. From the second stage the koala cannot take a positive hit for 2.5 s after each attack unless an ally hugs it. Is a guard that only allies lift right for the second floor?
 6. The minion's hug. A koala minion's hug slows the player and is shaken off by three jumps or one positive shot. Is it the same hindrance as the cube cage, or a hold of its own?
 7. Sleepy sigh uses [wind](../abilities/WIND.md), which the abilities folder proposes for the lion and the horse, not the koala. Keep it, or replace it?
 8. The Fork and its limbs are original wood. Can the player break a limb (it regrows in 5 s), and should a broken limb drop the koala's allies?
-9. Teleport (which deity: open). Is the koala one of the deities that teleport? A teleport would always land it far from the player.
+9. Teleport (answered, provisional: yes). The koala teleports; a teleport always lands it far from the player.
+10. Special attacks (provisional, B3b). The owner keeps the six as they are and accepts the drain amounts (8, 10, 18) for now, to adjust later (2026-11-05). Which drain and which capture stay provisional.
+11. The joey. Answered (owner, 2026-11-05): keep Joey ride, the joey on the player's back.
+12. Lullaby. Answered (owner, 2026-11-05): keep it; it drained too little, so its target drain rises from 12 to 18.

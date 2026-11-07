@@ -29,7 +29,8 @@ const STAIR_CORE = 2;
 const STAIR_DA = 2 / 4.5;
 const STAIR_HEAD = 3;
 
-export interface StarPad { x: number; y: number; z: number; to: number }
+/** `up`: the last star of the last constellation; stepping on it leaves the built tree upward (SKY.md §2.4). */
+export interface StarPad { x: number; y: number; z: number; to: number; up?: boolean }
 
 export class GiantTree {
   readonly cx: number; readonly cz: number;
@@ -322,6 +323,7 @@ export class GiantTree {
       }
     }
     for (let p = 0; p < this.pads.length; p++) this.pads[p].to = (p + 1) % this.pads.length;
+    this.pads[this.pads.length - 1].up = true;
   }
 
 }

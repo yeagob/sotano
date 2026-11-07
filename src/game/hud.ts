@@ -7,6 +7,8 @@
 // LOCALIZATION.md); `relocalize()` redraws whatever is on screen when the language changes.
 
 import { heartQuarters, HEART } from '../entities/actors';
+import { heartCount } from '../entities/hearts';
+import { BERSERKER_FRAME, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
@@ -18,6 +20,7 @@ import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
 import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
+import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
@@ -36,7 +39,7 @@ const th = (key: MessageKey, params?: Params) => esc(t(key, params));
 
 const STAT_ORDER: StatName[] = [
   'damage', 'fireRate', 'shotSpeed', 'range', 'gravity', 'size', 'mining',
-  'moveSpeed', 'jump', 'maxHearts', 'invuln', 'carry', 'kick', 'throw', 'crush', 'headbutt', 'reach',
+  'moveSpeed', 'jump', 'maxHearts', 'invuln', 'carry', 'kick', 'throw', 'crush', 'headbutt', 'missile', 'reach',
   'bombRadius', 'bombDamage', 'luck',
 ];
 
@@ -69,6 +72,11 @@ export class Hud {
   private bossFill = $('bossfill');
   private bossName = $('bossname');
   private heartsEl = $('hearts');
+  private heartsRow = $('hearts-row');
+  /** The spirit (sky only): its outline round the hearts and its number; -1 until first drawn. */
+  private spiritRing = createSpiritRing();
+  private spiritNum = $('spirit-num');
+  private spiritShown = -1;
   private breathEl = $('breath');
   private breathKey = '';
   private bombsEl = $('bombs');
@@ -86,6 +94,8 @@ export class Hud {
   get guardOpen() { return this.guard !== null; }
   private flashEl = $('flash');
   private hurtEl = $('hurt');
+  private berserkEl = $('berserk');
+  private starEl = $('star');
   private deathEl = $('death');
   private fadeEl = $('fade');
   private map = $('minimap') as HTMLCanvasElement;
@@ -122,7 +132,12 @@ export class Hud {
     addEventListener('keydown', e => { if (e.code === 'F3') { e.preventDefault(); this.showDebug = !this.showDebug; } });
     this.fadeEl.style.setProperty('--fade-bg', palCss('ink.void'));
     this.fadeEl.style.setProperty('--fade-ink', palCss('bone.paper'));
+    document.documentElement.style.setProperty('--berserk-edge', palCss(BERSERKER_FRAME.edge));
+    document.documentElement.style.setProperty('--berserk-glow', palCss(BERSERKER_FRAME.glow));
+    document.documentElement.style.setProperty('--star-glow', palCss(STAR_GLOW));
     this.renderLanguages();
+    $('hearts-box').appendChild(this.spiritRing);
+    this.renderSpiritLabel();
     onLocaleChange(() => this.relocalize());
     onDeviceChange(d => { this.applyDevice(d); this.relocalize(); });
     this.applyDevice(activeDevice());
@@ -150,6 +165,7 @@ export class Hud {
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
     this.renderPolarity();
+    this.renderSpiritLabel();
     this.renderLanguages();
     this.renderControls();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
@@ -158,6 +174,13 @@ export class Hud {
     if (this.tollOpen && this.game) this.renderToll(this.game);
     if (this.guard && this.game) this.renderGuard(this.game);
     this.toastEl.classList.remove('show');
+  }
+
+  /** The spirit's name for its aria-label and title (hud.spirit). */
+  private renderSpiritLabel() {
+    const name = t('hud.spirit');
+    this.spiritNum.setAttribute('aria-label', name);
+    this.spiritNum.title = name;
   }
 
   private applyDevice(d: Device) {
@@ -223,23 +246,39 @@ export class Hud {
       this.drawMap(this.mapState.floor, this.mapState.room, this.mapState.visited);
     }
 
-    // hearts: each container drawn in quarters (2 points each), filled from the left
-    const max = Math.floor(g.stats.get('maxHearts')), hp = g.player.hp;
-    const hk = `${max}:${hp}:${g.player.invulnT > 0 ? 1 : 0}`;
+    const max = Math.floor(g.stats.get('maxHearts')), p = g.player, hp = p.hp;
+    const star = p.starT > 0, layersKey = p.layers.map(l => `${l.kind}${l.hp}`).join(',');
+    const hk = `${max}:${hp}:${p.invulnT > 0 ? 1 : 0}:${star ? 1 : 0}:${p.blood ? 1 : 0}:${layersKey}`;
     if (hk !== this.heartsKey) {
       this.heartsKey = hk;
+      const fill = (q: number, cls: string) => {
+        const shown = q === 4 ? 0 : (1 - (1 + 9 * q / 4) / 11) * 100;
+        return `<span class="heart full ${cls}" style="clip-path: inset(0 ${shown.toFixed(1)}% 0 0)"></span>`;
+      };
       let html = '';
       for (let i = 0; i < max; i++) {
         const q = heartQuarters(hp, i);
-        // the red fill spans pixels 1–10 of the 11-pixel heart: clip it to q quarters
-        const shown = q === 4 ? 0 : (1 - (1 + 9 * q / 4) / 11) * 100;
-        html += q === 0 ? '<span class="heart"></span>'
-          : `<span class="heart"><span class="heart full" style="clip-path: inset(0 ${shown.toFixed(1)}% 0 0)"></span></span>`;
+        html += q === 0 ? '<span class="heart"></span>' : `<span class="heart">${fill(q, '')}</span>`;
       }
+      for (const l of p.layers) html += `<span class="heart layer">${fill(heartQuarters(l.hp, 0), `k-${l.kind}`)}</span>`;
       this.heartsEl.innerHTML = html;
-      // invulnerable: steady and outlined, never blinking; one heart or less: the last one beats
-      this.heartsEl.classList.toggle('safe', g.player.invulnT > 0);
-      this.heartsEl.classList.toggle('low', hp > 0 && hp <= 8);
+      this.heartsEl.classList.toggle('safe', p.invulnT > 0 && !star);
+      this.heartsEl.classList.toggle('star', star);
+      this.heartsEl.classList.toggle('blood', !!p.blood);
+      this.heartsEl.classList.toggle('low', hp > 0 && heartCount(hp, p.layers) <= 1 && hp + p.layers.reduce((a, l) => a + l.hp, 0) <= HEART);
+      this.starEl.classList.toggle('on', star);
+    }
+    // spirit: only in the sky; the outline slides (CSS) to the new length, and the number is whole
+    const sky = g.inSky;
+    this.heartsRow.classList.toggle('sky', sky);
+    if (sky) {
+      const spirit = Math.round(g.spiritNow);
+      if (spirit !== this.spiritShown) {
+        this.spiritShown = spirit;
+        paintSpiritRing(this.spiritRing, spirit);
+        this.spiritNum.textContent = fmtNum(spirit, 0);
+        this.spiritNum.setAttribute('aria-valuenow', String(spirit));
+      }
     }
     // breath: only while it isn't full (under water, or catching it back)
     const bmax = g.stats.get('breath'), bubbles = 8;
@@ -313,6 +352,23 @@ export class Hud {
   /** Somewhere that is not a floor: a level of the tree, heaven or silence (`level.<zone>`). */
   setZone(zone: string) {
     this.depthEl.textContent = t(`level.${zone}` as MessageKey);
+  }
+
+  /** The sky's place label, set every frame; the text only changes when the place does. */
+  placeLabel(key: MessageKey) {
+    const text = t(key);
+    if (this.depthEl.textContent !== text) this.depthEl.textContent = text;
+  }
+
+  /** The minimap maps rooms, so it is hidden in the sky. */
+  setMinimap(on: boolean) {
+    this.map.style.display = on ? '' : 'none';
+  }
+
+  /** The realm gate's fade, set each frame (0 clear → 1 black). At 0 the restart's own fade takes over again. */
+  fadeLevel(k: number) {
+    this.fadeEl.style.setProperty('--fade-t', '0s');
+    this.fadeEl.style.opacity = k > 0 ? String(k) : '';
   }
 
   setFloor(floor: FloorResult, depth: number) {
@@ -462,6 +518,11 @@ export class Hud {
     this.flashEl.classList.remove('on');
     void this.flashEl.offsetWidth;
     this.flashEl.classList.add('on');
+  }
+
+  setBerserk(on: boolean) {
+    this.berserkEl.classList.toggle('on', on);
+    document.body.classList.toggle('berserk', on);
   }
 
   hurt() {
@@ -687,7 +748,7 @@ export class Hud {
       ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
       for (let i = 0; i < p.bombs; i++) ids.push(`bomb:${i}`);
-      for (let i = 0; i < Math.ceil(p.hp / HEART); i++) ids.push(`heart:${i}`);
+      for (let i = 0; i < heartCount(p.hp, p.layers); i++) ids.push(`heart:${i}`);
     }
     return [...ids, 'pay', 'close'];
   }
@@ -716,7 +777,7 @@ export class Hud {
     const tile = (id: string, icon: string, label: string) =>
       `<button type="button" class="tile${this.tollPicked.has(id) ? ' on' : ''}${id === cur ? ' cur' : ''}" data-id="${id}"><img src="${icon}" alt=""><span class="lbl">${esc(label)}</span></button>`;
     const section = (key: MessageKey, body: string) => (body ? `<h3>${th(key)}</h3>${body}` : '');
-    const hearts = Array.from({ length: Math.ceil(p.hp / HEART) }, (_, i) => tile(`heart:${i}`, hudIconUrl(HUD_ICONS.heart), t('toll.heart'))).join('');
+    const hearts = Array.from({ length: heartCount(p.hp, p.layers) }, (_, i) => tile(`heart:${i}`, hudIconUrl(HUD_ICONS.heart), t('toll.heart'))).join('');
     const keys = Array.from({ length: p.keys }, (_, i) => tile(`key:${i}`, hudIconUrl(HUD_ICONS.key), t('toll.key'))).join('');
     const bombs = Array.from({ length: p.bombs }, (_, i) => tile(`bomb:${i}`, hudIconUrl(HUD_ICONS.seed), t('toll.bomb'))).join('');
     const hands = p.hand.map((m, i) => (typeof m === 'number'

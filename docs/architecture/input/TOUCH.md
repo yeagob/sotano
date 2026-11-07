@@ -9,8 +9,9 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | move | left thumb: a floating stick that appears where you put it down (left 42 % of the screen) |
 | look | drag anywhere on the right; dragging the cast button also aims |
 | cast (hold) | the bead of light, the largest button, bottom right |
+| launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
 | polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which) |
-| jump (hold to swim up) | the arrow |
+| jump (hold to swim up; with air jumps, again in the air) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
 | drink | the flask (shown only while a flask is in the hand) |
@@ -49,3 +50,5 @@ The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`tou
 ## 7. Why these controls
 
 The owner's rules for the phone: a control must not change the intention by accident, and must work the first time. The double tap on the cast button was hidden, easy to miss, and a pair of taps next to the fire button could switch the intention in the middle of a fight. A half turn of the phone is deliberate, cannot be caused by a thumb, and reads as what it does (a switch). Tap to place lets the player point at the block instead of aiming with the view and then pressing a button.
+
+The double tap on the bead came back for one practice only (owner, issue #89): with Dr. Launcher, a quick double tap launches a bomb as a missile. It never switches the intention, and without that practice a double tap is two intentions. The first tap still casts at once.

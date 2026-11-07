@@ -1,6 +1,6 @@
 # The Roots documentation
 
-Everything about the game, organised in five sections. Each section has its own README with an index of what it contains.
+Everything about the game, organised in sections. Each section has its own README with an index of what it contains.
 
 | Section | What's in it |
 |---|---|
@@ -10,7 +10,9 @@ Everything about the game, organised in five sections. Each section has its own 
 | [art/](art/README.md) | Art direction "Vessel Light": the art guide (every visual element, its colours, proportions and rules), the binding decision ledger from the debate, and the presentation |
 | [lore/](lore/README.md) | References and lore: the source library (books, traditions, techniques, therapies, games) with naming status, the concept glossary, and the cosmology (as above, so below) |
 | [reviews/](reviews/README.md) | Architecture reviews (engineer, architect, mediator): critiques, rulings and what changed |
+| [promo/](promo/README.md) | Promotional videos for social networks: one folder and script per feature |
 | [process/](process/README.md) | How the project is built and released: GitFlow branches, versions, issues, releases and hotfixes |
+| [testing/](testing/TEST-BENCH.md) | The test bench of the game ([TEST-BENCH.md](testing/TEST-BENCH.md)) |
 
 ## Rules for these docs
 

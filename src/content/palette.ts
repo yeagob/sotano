@@ -3,6 +3,15 @@
 // never to hex, so a colour can be changed in one place and tested as a whole.
 // Vessel Light: dark, cold, quiet matter; warm light is earned and belongs to the player.
 
+import { SKY_BLOCKS_PALETTE } from './palette/sky-blocks';
+import { SKY_ELEPHANT_PALETTE } from './palette/sky-elephant';
+import { SKY_ENTITY_PALETTE } from './palette/sky-entity';
+import { SKY_HORSE_PALETTE } from './palette/sky-horse';
+import { SKY_KOALA_PALETTE } from './palette/sky-koala';
+import { SKY_LION_PALETTE } from './palette/sky-lion';
+import { SKY_PANDA_PALETTE } from './palette/sky-panda';
+import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
+
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
   'ink.void': '#0E0B10',
@@ -35,6 +44,14 @@ export const PALETTE = {
   'life.empty': '#4A2226',
   'life.rim': '#7A3A3E',
 
+  // Heart kinds (DECISIONS §10.6): every heart is life. Blue is an ultramarine kept ΔE ≥ 20 from the
+  // cold and from Emotion; stone is a warm grey for gold cracks; blood is a crimson under life.heart;
+  // the berserker's ember burns inside an obsidian shell. The star heart is the light's own ramp.
+  'heart.blue.base': '#4E4CFF', 'heart.blue.dark': '#1D1A80',
+  'heart.stone.dark': '#48433D', 'heart.stone.base': '#6E6860', 'heart.stone.hi': '#968E83',
+  'heart.blood.base': '#9B1236',
+  'heart.berserker.ember': '#FF8C1A',
+
   // Attacks that deal damage: a second red, never life (issue #47, DECISIONS §3.4). Their live marks and
   // shots read red; their particles and decoration stay pale blue-white (the cold ramp).
   'attack.red.dim': '#9C2620',
@@ -45,7 +62,10 @@ export const PALETTE = {
   'attack.warn.base': '#EEE33C',
   'attack.warn.dim': '#A8A02E',
 
-  // The four paths: base, glow, dark and the shadow a projection takes.
+  // The five paths: base, glow, dark and the shadow a projection takes. Miracles (the fifth,
+  // placed first by the owner) is magenta: the one hue the rainbow lacks, made where its two ends meet
+  // (DECISIONS §3.5 amendment, 2026-11-02).
+  'path.milagros.base': '#DE42A2', 'path.milagros.glow': '#FF7AC8', 'path.milagros.dark': '#7C1A5A', 'path.milagros.shadow': '#5E3652',
   'path.body.base': '#3FCF7F', 'path.body.glow': '#81E9AF', 'path.body.dark': '#276E46', 'path.body.shadow': '#36634A',
   'path.emotion.base': '#7AA3D4', 'path.emotion.glow': '#8EC1FF', 'path.emotion.dark': '#365981', 'path.emotion.shadow': '#364A63',
   'path.mind.base': '#B074FA', 'path.mind.glow': '#D5B3FF', 'path.mind.dark': '#5D1AB0', 'path.mind.shadow': '#4A3663',
@@ -115,14 +135,28 @@ export const PALETTE = {
   'cloth.base': '#3D4F73', 'cloth.cuff': '#2C3A57', 'cloth.hi': '#4E6290',
 
   'living.dark': '#26331F', 'living.base': '#46603D', 'living.hi': '#7A9A62', 'living.glow': '#B5D39A',
+
+  // The sky realm (docs/architecture/SKY.md §11): one part per package, never edited here.
+  ...SKY_BLOCKS_PALETTE,
+  ...SKY_TOTALITY_PALETTE,
+  ...SKY_ENTITY_PALETTE,
+  ...SKY_PANDA_PALETTE,
+  ...SKY_KOALA_PALETTE,
+  ...SKY_ELEPHANT_PALETTE,
+  ...SKY_LION_PALETTE,
+  ...SKY_HORSE_PALETTE,
 } as const;
 
 export type PalToken = keyof typeof PALETTE;
 
-/** The four paths, by name. Their glyphs are shown next to the colour, never instead of it. */
-export const PATHS = ['body', 'emotion', 'mind', 'will'] as const;
+/**
+ * The five paths, by name. Their glyphs are shown next to the colour, never instead of it. The four
+ * element paths are the Platonic solids' silhouettes (cube, sphere, octahedron, tetrahedron); Miracles
+ * is the pentagon, the face of the dodecahedron: the fifth solid, the quintessence beyond the four.
+ */
+export const PATHS = ['milagros', 'body', 'emotion', 'mind', 'will'] as const;
 export type PathName = typeof PATHS[number];
-export const PATH_GLYPH: Record<PathName, string> = { body: '■', emotion: '●', mind: '◆', will: '▲' };
+export const PATH_GLYPH: Record<PathName, string> = { milagros: '⬟', body: '■', emotion: '●', mind: '◆', will: '▲' };
 
 /** The palette hex as a number, for three.js and canvas painters. Throws on an unknown token. */
 export function pal(t: PalToken): number {

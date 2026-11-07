@@ -21,6 +21,9 @@ export function unlockAudio() {
   master.connect(ctx.destination);
 }
 
+/** The context once audio is unlocked, else null: for sound parts that synthesise their own voices (src/audio/sky/). */
+export function audioContext(): AudioContext | null { return ctx; }
+
 function tone(freq: number, dur: number, type: OscillatorType, vol: number, slide = 0, out: AudioNode = master) {
   if (!ctx) return;
   const t = ctx.currentTime;
@@ -188,6 +191,10 @@ export const sfx3 = {
   rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
   /** The loaded intention switches (F): a short tick, rising to positive, falling to negative. */
   polarity: (negative: boolean) => tone(negative ? 360 : 620, 0.09, 'triangle', 0.14, negative ? 0.7 : 1.5),
+  /** A missile leaves (Dr. Launcher): a rushing hiss that climbs, warmer when it carries love. */
+  launch: (negative: boolean) => { noise(0.35, 0.3, jitter(negative ? 1400 : 2200), 1.1, master, 0.02); tone(jitter(negative ? 140 : 260), 0.3, 'sawtooth', 0.06, 2.2); },
+  /** The love explosion: a soft swell and a rising chord instead of a boom. */
+  loveBoom: () => { noise(0.45, 0.2, 500, 0.7, master, 0.05); [392, 523, 784].forEach((f, i) => setTimeout(() => tone(f, 0.35, 'sine', 0.12, 1.2), i * 60)); },
   /** A projection turns to your side: a warm, rising pair. */
   converted: () => { tone(523, 0.14, 'sine', 0.14); setTimeout(() => tone(784, 0.2, 'sine', 0.14), 110); },
   /** An ally turns hostile again: a cold, falling pair. */
@@ -208,4 +215,65 @@ export const sfx3 = {
   spit: () => { tone(jitter(420), 0.09, 'sine', 0.16, 2.2); noise(0.05, 0.12, jitter(2400), 2); },
   /** R: a soft breath out as the screen goes dark. */
   restart: () => { tone(294, 0.6, 'sine', 0.14, 0.5); noise(0.5, 0.08, 500, 0.8); },
+};
+
+let echoWet: GainNode | null = null;
+
+function ensureEcho(): GainNode | null {
+  if (!ctx) return null;
+  if (echoWet) return echoWet;
+  const delay = ctx.createDelay(1), feedback = ctx.createGain(), tint = ctx.createBiquadFilter();
+  echoWet = ctx.createGain();
+  delay.delayTime.value = 0.27;
+  feedback.gain.value = 0.45;
+  tint.type = 'lowpass'; tint.frequency.value = 1800;
+  echoWet.gain.value = 0;
+  master.connect(delay);
+  delay.connect(tint).connect(feedback).connect(delay);
+  tint.connect(echoWet).connect(ctx.destination);
+  return echoWet;
+}
+
+export function setEcho(on: boolean) {
+  const wet = ensureEcho();
+  if (!wet || !ctx) return;
+  wet.gain.cancelScheduledValues(ctx.currentTime);
+  wet.gain.setTargetAtTime(on ? 0.55 : 0, ctx.currentTime, on ? 0.15 : 0.6);
+}
+
+const STAR_THEME = [659, 784, 988, 784, 880, 1047, 880, 740];
+let starNext = 0, starStep = 0;
+
+export function starTheme(on: boolean) {
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  if (!on) { starNext = 0; starStep = 0; return; }
+  if (starNext < now) starNext = now + 0.02;
+  while (starNext < now + 0.12) {
+    const at = starNext, f = STAR_THEME[starStep % STAR_THEME.length];
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(f, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(starStep % 4 === 0 ? 0.07 : 0.045, at + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, at + 0.16);
+    o.connect(g).connect(master);
+    o.start(at); o.stop(at + 0.17);
+    starStep++;
+    starNext += 0.15;
+  }
+}
+
+export const sfxHeart = {
+  blue: () => { tone(587, 0.14, 'sine', 0.14); setTimeout(() => tone(880, 0.2, 'sine', 0.12), 90); },
+  stone: () => { noise(0.14, 0.35, 700, 1.4); tone(196, 0.25, 'triangle', 0.16, 1.2); setTimeout(() => tone(988, 0.2, 'triangle', 0.06), 120); },
+  stoneHit: () => { noise(0.1, 0.35, jitter(1100), 2); tone(jitter(150), 0.12, 'square', 0.08, 0.7); },
+  blood: () => { tone(98, 0.18, 'sine', 0.3, 0.8); setTimeout(() => tone(110, 0.22, 'sine', 0.26, 0.8), 260); },
+  bloodEnd: () => tone(220, 0.3, 'sine', 0.1, 0.7),
+  star: () => [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => tone(f, 0.14, 'triangle', 0.13), i * 55)),
+  starEnd: () => [1175, 988, 784].forEach((f, i) => setTimeout(() => tone(f, 0.16, 'triangle', 0.08), i * 80)),
+  berserk: () => { noise(0.7, 0.5, 160, 0.6); tone(55, 0.9, 'sawtooth', 0.18, 1.6); tone(82, 0.9, 'square', 0.08, 1.5); },
+  layerLost: () => { noise(0.3, 0.3, 1600, 0.9); tone(523, 0.3, 'triangle', 0.1, 0.5); },
+  berserkEnd: () => { tone(110, 0.8, 'sawtooth', 0.1, 0.4); noise(0.6, 0.2, 300, 0.7); },
+  reflect: () => { tone(jitter(1400), 0.08, 'square', 0.08, 0.6); noise(0.05, 0.2, 3000, 3); },
 };

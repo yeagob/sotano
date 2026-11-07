@@ -6,6 +6,8 @@ The minions are the animals of the sky, embodied as smaller creatures. Each guar
 
 Status: decided for the allies rule, for the negative-intention rule and for the rule that minions never die. Proposal for the rest.
 
+Built, in play: the minion engine, the five herds and a spawner on each guardian floor ([built minions](../../../built/sky/minions/README.md)). Not built: the `factionChange` event when a minion turns, the lion's rally minions, and the koala's refill of the very cluster a turned koala left.
+
 ## 1. The shared contract
 
 ### 1.1 Embodied animal
@@ -50,11 +52,11 @@ An ally helps the player on the floor. The help must come from the animal's habi
 
 An ally does not do the player's platforming for them. The player still makes the jump, the block and the route.
 
-## 3. When the deity is stitched
+## 3. When the deity is defeated
 
 Status: proposal.
 
-What happens to the minions when their deity is stitched is open in form. The proposal: allies stay allies and keep their help on the floor; minions that are not allies change their attitude with their deity, or leave the floor. Whether they stay after the floor is cleared is open (section 7).
+What happens to the minions when their deity is defeated is open in form. The proposal: allies stay allies and keep their help on the floor; minions that are not allies change their attitude with their deity, or leave the floor. Whether they stay after the floor is cleared is open (section 7).
 
 ## 4. Minions never die
 
@@ -85,6 +87,6 @@ Each guardian document's "Behaviour specification" holds the minions' count, spa
 ## 7. Open questions
 
 1. Are minions projections? (Section 5.)
-2. What happens to the minions after the floor is cleared, and which of them transform, change attitude or leave when their deity is stitched? (Section 3.)
+2. What happens to the minions after the floor is cleared, and which of them transform, change attitude or leave when their deity is defeated? (Section 3.)
 3. How many minions does a floor have? Each guardian document now sets a count as a target (4, 6, 5, 6 and 5); the owner has to confirm them.
 4. Allies and negative intentions. In the built game a bad intention harms an ally and can turn it back. In the sky a negative intention does nothing to any sky creature, allies included, so an ally never turns back. Confirm.

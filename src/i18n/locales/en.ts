@@ -3,6 +3,8 @@
 // synergies, enemies, materials) are not repeated here: their English lives in their definitions.
 
 import type { Catalog } from '.';
+import { SKY_PARTS_EN } from './sky';
+import { TEST_BENCH_EN } from './test-bench.en';
 
 const messages = {
   // ── start / pause card (index.html) ──
@@ -62,7 +64,7 @@ const messages = {
   'controls.jump.pad': 'A',
   'controls.move.pad': 'Left stick',
   'controls.look.pad': 'Right stick',
-  'controls.jump': 'jump (hold to swim up)',
+  'controls.jump': 'jump (hold to swim up; with air jumps, jump again in the air)',
   'controls.jump.key': 'Space',
   'controls.look.key': 'Mouse',
   'controls.look': 'look',
@@ -80,6 +82,10 @@ const messages = {
   'controls.drink': 'drink the flask in your hand',
   'controls.bomb.key': 'E',
   'controls.bomb': 'drop a bomb',
+  'controls.launch.key': 'Quick double click',
+  'controls.launch.pad': 'Quick double RT',
+  'controls.launch.touch': 'Quick double tap on the bead of light',
+  'controls.launch': 'launch a bomb as a missile (with Dr. Launcher)',
   'controls.doors.key': 'Doors',
   'controls.doors': 'open as you approach; locked ones need a key',
   'controls.inventory.key': 'Tab',
@@ -105,6 +111,7 @@ const messages = {
 
   // ── HUD ──
   'hud.floor': 'Floor {n}',
+  'hud.spirit': 'Spirit',
   'level.roots': 'The roots',
   'level.circle1': 'Limbo',
   'level.circle2': 'The winds',
@@ -174,6 +181,16 @@ const messages = {
   'toast.seedVersion': 'This seed is from generator v{v}; this build is v{build}: the run may differ',
   'toast.floor': 'Floor {n}',
   'toast.roomClear': 'Room clear',
+  'heart.blue': 'Blue heart: one more heart, lost for good once spent.',
+  'heart.blueLost': 'The blue heart is gone.',
+  'heart.stone': 'Stone heart: while it takes the blows, every hit is halved.',
+  'heart.stoneLost': 'The stone heart crumbles. Hits land whole again.',
+  'heart.blood': 'Blood heart: you heal slowly, up to two hearts. A hit ends it.',
+  'heart.bloodBroken': 'The hit stopped the blood heart.',
+  'heart.star': 'Star heart: one heart back, and 30 seconds untouchable.',
+  'heart.starEnd': 'The star fades.',
+  'heart.berserker': 'Berserker heart: stronger, faster, higher. Short reach. Shots bounce off you.',
+  'heart.berserkerLost': 'The berserker heart burns out.',
   'toast.silence': 'Silence. Be still.',
   'presence.gardener.name': 'The Gardener',
   'presence.gardener.1': 'Walk slowly. The roots remember where you have been.',
@@ -189,6 +206,7 @@ const messages = {
   'toast.challengeWave': 'Wave {n} of 3',
   'toast.challengeDone': 'Challenge overcome: come back for more',
   'toast.noBombs': 'No bombs',
+  'toast.missileHint': 'With a {launch}, one bomb flies as a missile.',
   'toast.locked': 'Locked: you need a key',
   'toast.unlocked': 'Unlocked',
   'presence.boundary.name': 'The Boundary',
@@ -237,6 +255,9 @@ const messages = {
   'potion.questioning-tincture.effect': 'The next locked door or chest asks one key less. Never the toll. Until the next floor.',
   'potion.ember-tonic.name': 'Ember Tonic',
   'potion.ember-tonic.effect': 'Fire rate ×1.3 for {rooms} sealed rooms.',
+  'potion.berserker-draught.name': 'Berserker Draught',
+  'potion.berserker-draught.effect': 'Berserker for {rooms} sealed rooms: damage, speed and jump ×1.5, range ×0.3, shots bounce off you.',
+  'berserk.off': 'The berserker fire goes out.',
   'potion.patient-draught.name': 'Patient Draught',
   'potion.patient-draught.effect': 'Mining ×1.6 until the next floor.',
   'potion.ended': '{name} has worn off',
@@ -319,6 +340,7 @@ const messages = {
   'path.mind': 'mind',
   'path.emotion': 'emotion',
   'path.will': 'will',
+  'path.milagros': 'milagros',
 
   // ── stats: labels (`stat.<name>`) and units ──
   'stat.damage': 'Damage',
@@ -331,6 +353,7 @@ const messages = {
   'stat.luck': 'Luck',
   'stat.moveSpeed': 'Speed',
   'stat.jump': 'Jump',
+  'stat.airJumps': 'Air jumps',
   'stat.reach': 'Reach',
   'stat.carry': 'Carry',
   'stat.kick': 'Kick',
@@ -340,6 +363,7 @@ const messages = {
   'stat.maxHearts': 'Hearts',
   'stat.invuln': 'Recovery',
   'stat.breath': 'Breath',
+  'stat.missile': 'Missiles',
   'stat.bombRadius': 'Bomb radius',
   'stat.bombDamage': 'Bomb power',
   'unit.times': '×{n}',
@@ -349,6 +373,17 @@ const messages = {
   'unit.crushNone': 'none',
   'unit.crushTier': 'tier ≤ {n}',
   'unit.crushRate': '{n} per second',
+  // ── the sky realm (docs/architecture/SKY.md §12): one part per package, never edited here ──
+  ...SKY_PARTS_EN.core,
+  ...SKY_PARTS_EN.panda,
+  ...SKY_PARTS_EN.koala,
+  ...SKY_PARTS_EN.elephant,
+  ...SKY_PARTS_EN.lion,
+  ...SKY_PARTS_EN.horse,
+  ...SKY_PARTS_EN.totality,
+  ...SKY_PARTS_EN.endgame,
+  ...TEST_BENCH_EN,
+  'unit.missileOn': 'double tap',
 } as const;
 
 export type MessageKey = keyof typeof messages;

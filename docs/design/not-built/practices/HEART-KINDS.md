@@ -2,9 +2,9 @@
 
 # Heart kinds (pending)
 
-Status: **idea**, pending the owner's decision. Tracked in issue #31.
+Status: **idea**, pending the owner's decision. Tracked in issue #31. The kinds the owner has decided, starting with the Berserker heart, are in [player/hearts](../player/hearts/README.md).
 
-Today a heart is one kind: the heart a released pattern leaves, and the heart of damage in the toll. The owner wants more kinds of heart, and has not defined them yet. Nothing here is decided, and nothing in the build depends on a name below.
+The kinds of heart the player picks up are built ([built/player/hearts](../../built/player/hearts/README.md)). This document is about the heart as a station's ingredient and product: the heart a released pattern leaves, and what the kitchen and the alembic could make of it. Nothing here is decided.
 
 ## What is already known
 
@@ -14,6 +14,5 @@ Today a heart is one kind: the heart a released pattern leaves, and the heart of
 
 ## Open questions
 
-1. What are the kinds of heart, and what does each one do?
-2. Where does each kind come from: a pattern, a station, a recipe?
-3. Which station gives which kind, and at what cost?
+1. Where does each kind come from: a pattern, a station, a recipe?
+2. Which station gives which kind, and at what cost?

@@ -35,6 +35,7 @@ describe('potion effects', () => {
       'ember-tonic': { fireRate: 1.3 },
       'patient-draught': { mining: 1.6 },
       'questioning-tincture': {},
+      'berserker-draught': {},
     };
     for (const id of timed) {
       const { stats, fx } = setup();

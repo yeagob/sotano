@@ -51,7 +51,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `has(id)`, `hasTag(tag)` | Ask about other held items |
 | `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
 | `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
-| `launch`, `tagFlying`, `tagCube` | Fire a new intention, tag the intentions in flight around a point, tag a loose cube |
+| `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
@@ -71,13 +71,15 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 |---|---|
 | `damage` (to actors), `mining` (to blocks, absolute: separate from damage), `fireRate`, `shotSpeed`, `range`, `gravity`, `size` | Intentions |
 | `moveSpeed`, `jump` | Movement |
+| `airJumps` | Jumps you may make in the air before landing (0 by default, at most 4, floored); each climbs the ladder `[1, 2, 8]` of `physics/jump.ts` (SKY.md §9) |
 | `reach` | How far you can place blocks |
-| `carry` | How many blocks you can hold (1 by default) |
+| `carry` | How many blocks you can hold (2 by default: one per hand; items add to it) |
 | `kick`, `throw` | Strength of kicks and throws |
 | `crush` | Block damage per second dealt to every block you press against while walking (feet, waist and head height, never below; armor counts; 0 = none) |
 | `headbutt` | Highest block tier your head breaks when you jump into it (-1 = none); breaking keeps 45 % of the jump |
 | `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
-| `bombRadius`, `bombDamage` | Your bombs |
+| `bombRadius`, `bombDamage` | Your bombs (and the blast of a missile, love or not) |
+| `missile` | 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does nothing); `game.ts` `tapMissile`, rules in `combat/missiles.ts` |
 | `luck` | Chance of a reward when a room is cleared (more uses to come: chests) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
@@ -99,13 +101,16 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `throw` | `speed`, `lift`, `tags`, or cancel | Q, or right click with nowhere to place |
 | `drop` | — (react) | a block leaves your hand (`how`: place or throw) |
 | `debrisImpact` | `keepTags` | a tagged cube hits something hard |
-| `jump` | `velocity`, or cancel | jumping |
+| `jump` | `velocity`, or cancel (`air`: the step of an air jump, 1 then 2; absent on the ground) | jumping |
 | `land` | — (react) | touching ground after a fall (`fallSpeed` in blocks/s; the feet's position `x, y, z`) |
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
-| `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's 30% roll of a key, heart or bomb) | after a block breaks |
+| `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's roll of a key, heart or bomb, at its floor's chance of 10% to 30%) | after a block breaks |
 | `bombPlace` | `fuse`, or cancel | pressing E |
-| `pickupCollect` | `amount`, or cancel | collecting a key, bomb or heart |
+| `missileLaunch` | `speed` (steady, blocks/s), `range` (blocks), `polarity` (negative: a bomb blast; positive: a love explosion), or cancel (no bomb is spent) | a quick double tap of the fire control with the `missile` stat, a bomb in the counter and room to arm |
+| `pickupCollect` | `amount`, or cancel (`heart` names the kind of a heart other than red; a red heart has none) | collecting a key, bomb or heart |
+| `berserkChange` *(react only)* | nothing: `on` says whether the berserker state just started or ended (a berserker heart held or a Berserker Draught drunk) | the berserker state changes |
+| `heartLost` *(react only)* | nothing: `heart` is the blue, stone or berserker heart just spent | an extra heart is spent by a hit |
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |

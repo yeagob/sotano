@@ -8,6 +8,8 @@ import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
+import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
+import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { bossFor, bossHp } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
@@ -16,7 +18,7 @@ import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GA
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
-  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_WATER, elemDef, elemKind, fluidHeight, isFalling, type ElementDef, type ElementKey,
+  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
@@ -43,6 +45,7 @@ import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
+import { DOUBLE_TAP_MS } from '../input/bindings';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { Inventory } from '../items/inventory';
@@ -57,6 +60,7 @@ import { boxHits, type Body } from '../physics/voxel-collide';
 import { buildAtlas } from '../render/atlas';
 import { ChunkRenderer } from '../render/chunks';
 import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
+import { LOVE_BLAST, MISSILE_TRAIL, MissileView } from '../render/missile-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
 import { isLesson, Tablets } from '../render/tablets';
@@ -66,20 +70,33 @@ import {
   type DungeonPlan,
   type ChestSpec, type FloorResult, type RoomInfo,
 } from '../world/floor';
+import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, presenceReaction, pushedOut, rewardFor, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import { pickMission, rewardBand } from '../content/presences/missions';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
-import { rollCrate } from '../content/tables/crates';
+import { floorCrateChance, rollCrate } from '../content/tables/crates';
+import { floorHeartChances, rollHeart } from '../content/tables/hearts';
+import { HEART_FX, type HeartKind } from '../content/heart-art';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
+import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud } from './hud';
 import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
+import { playSkyCue } from '../audio/sky';
+import { swapRealm } from '../sky/realm';
+import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
+import { SkyRealm } from '../sky/sky-realm';
+import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type SkyWorldApi, type Travel } from '../sky/types';
+import { SkyWorld } from '../sky/world/sky-world';
+import type { Rng } from '../core/rng';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -95,6 +112,8 @@ const LEVEL_FOG = LEVELS.map(l => new THREE.Color(pal(l.fog)));
 const SKY = new THREE.Color(pal('sky.day'));
 /** The cosmos above the tree. */
 const NIGHT = new THREE.Color(pal('ui.night'));
+/** Above this height the dungeon's sky opens into the sky realm (docs/architecture/SKY.md §2.4). */
+const SKY_TOP = SURFACE_Y + SKY_LIMIT - 1.5;
 /** Seconds of stillness in silence before you are carried up to heaven. */
 const SILENCE_STILL = 3;
 const REST_TIME = 3;
@@ -200,7 +219,26 @@ export class Game {
   /** Floor the player is on now (by height), and the deepest one reached. */
   depth = 1;
   maxDepth = FIRST_FLOOR;
-  world!: VoxelWorld;
+  /** The active world (docs/architecture/SKY.md §2.1): the dungeon's for now, the sky's once realms swap. */
+  world!: VoxelSpace;
+  /** Always the dungeon's world [M10]: every dungeon-only caller takes it, so none can be handed the sky. */
+  dw!: VoxelWorld;
+  /** The world the player is in (docs/architecture/SKY.md §2.1). Below the crown it is the dungeon. */
+  private realm: RealmKind = 'dungeon';
+  /** The inactive world's set: the dungeon's while in the sky, the sky's below. Null until the sky is first reached. */
+  private stash: RealmSet | null = null;
+  private sky: SkyRealm | null = null;
+  /** Every non-projection actor an intention, stroke or blast can reach (SKY.md §5.7): the sky's creatures while the sky is active. */
+  private readonly router = new TouchRouter();
+  private readonly dungeonRoot = new THREE.Group();
+  private readonly skyRoot = new THREE.Group();
+  private gate!: RealmGate;
+  /** The sky's spirit (SkyHost.spirit): special attacks drain it; at zero the player goes underground. */
+  private spirit = SPIRIT_MAX;
+  /** Captures so far in this run: the seed path of each practice taken. */
+  private captures = 0;
+  /** The floor the next passage down lands on (SkyHost.sendUnderground), carved when the passage runs. */
+  private underground: number | null = null;
   floors = new Map<number, FloorResult>();
   /** The laboratories' alembics, by the world index of their block (game/alembic.ts). */
   private labs = new Map<number, Alembic>();
@@ -264,11 +302,21 @@ export class Game {
   /** The loaded intention's polarity (BESTIARY §1.1); F switches it. */
   private polarity: Polarity = 'positive';
   get polarityNow() { return this.polarity; }
+  /** The sky's spirit, and whether the player is in the sky: the HUD's outline shows only there (SKY.md §5.2). */
+  get spiritNow() { return this.spirit; }
+  get inSky() { return this.realm === 'sky'; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
    *  already warmed, so a beam warms a projection once, not on every tick. */
-  private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null } = { polarity: 'positive', warmed: new Set(), intent: null };
+  private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
+  private missiles = new Missiles();
+  private missileView: MissileView;
+  /** Game time of the last press of the fire control, for the double tap. */
+  private lastCastTap = -Infinity;
+  /** The double-tap hint has been shown this run. */
+  private missileHinted = false;
   private fpsAcc = 0; private fpsN = 0; fps = 0;
   /** The weapon replacing the intention, if any (docs/architecture/WEAPONS.md). */
   private weapon: Weapon | null = null;
@@ -314,6 +362,10 @@ export class Game {
     this.touch = new TouchControls(this.input);
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
+    // each world's scene objects hang under its own group; only the active one is visible (SKY.md §2.3)
+    this.scene.add(this.dungeonRoot, this.skyRoot);
+    this.skyRoot.visible = false;
+    this.gate = new RealmGate(this.realmGateHost());
     this.scene.add(new THREE.HemisphereLight(pal('light.core'), pal('rock.f1.outline'), 2.0));
     const sun = new THREE.DirectionalLight(pal('sky.albedo'), 1.0);
     sun.position.set(0.4, 1, 0.3);
@@ -322,6 +374,7 @@ export class Game {
     this.stars = makeStars();
     this.scene.add(this.stars);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
+    this.missileView = new MissileView(this.scene);
     this.cutHalves = new CutHalves(this.scene, this.atlas);
     this.cracks = new CrackView(this.scene);
     this.intents = new Intents(this.scene, {
@@ -333,7 +386,10 @@ export class Game {
         const k = t.knock * 6 / Math.max(1, v.length());
         this.hitCube(i, v.x * k, v.y * k + 1, v.z * k);
       },
-      enemyAt: (x, y, z, r, polarity) => this.enemies.at(x, y, z, r, e => this.meets(e, polarity)),
+      enemyAt: (x, y, z, r, polarity) => {
+        const routed = this.router.at(x, y, z, r);
+        return routed >= 0 ? routed : this.enemies.at(x, y, z, r, e => this.meets(e, polarity));
+      },
       mirrorAxis: id => (this.enemies.get(id)?.def === 'hall-of-mirrors' ? 'z' : null),
       touched: (x, _y, z, polarity) => this.hearPresences(x, z, polarity),
       hitEnemy: (uid, v, t) => {
@@ -388,6 +444,8 @@ export class Game {
   }
 
   private begin(root: number, sandbox: Scenario | null) {
+    this.leaveSky();
+    this.spirit = SPIRIT_MAX; this.captures = 0; this.underground = null;
     this.sandbox = sandbox;
     seedFx(sandbox ? root : null);
     this.seed = root;
@@ -410,49 +468,36 @@ export class Game {
     this.kitchenViews?.dispose();
     this.enemies?.dispose();
     this.tablets?.dispose();
-    this.tablets = new Tablets(this.scene);
-    this.world = createDungeonWorld(this.rng, this.dungeon);
-    const box = sandbox ? carveSandbox(this.world, this.rng, sandbox) : null;
+    this.tablets = new Tablets(this.dungeonRoot);
+    this.dw = createDungeonWorld(this.rng, this.dungeon);
+    this.world = this.dw;
+    const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
-    this.tree = new GiantTree(this.world, SURFACE_Y, i => this.rng.fork('tree', i));
+    this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     setMasterTarget(0.35);
-    this.elements = new ElementSim(this.world, {
-      seed: this.rng.fork('elements').u32(),
-      blocked: (x, y, z) => this.solid(x, y, z),
-      ignite: (x, y, z, material, by) => this.ignite(x, y, z, material, by),
-      react: (x, y, z, r, result) => {
-        const ev = this.bus.emit('materialReact', { x, y, z, reaction: r.id, result });
-        if (ev.cancelled) return null;
-        // a hook may swap the result, but only for a real material (or nothing)
-        return Number.isInteger(ev.result) && ev.result >= 0 && ev.result < MATERIALS.length ? ev.result : result;
-      },
-      fx: (kind, x, y, z) => this.elementFx(kind, x, y, z),
-    });
+    this.elements = this.elementSim(this.world, this.rng.fork('elements').u32());
     this.playerIn.clear(); this.drownT = 0;
-    this.chunks = new ChunkRenderer(this.world, this.scene, this.atlas, 48);
-    this.debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
-    this.debris.onFuse = (i, x, y, z) => {
-      const chain = this.bombCause.get(i);
-      this.bombCause.delete(i);
-      this.blasts.current = chain ?? null;
-      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
-      this.blasts.current = null;
-    };
+    this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
+    this.debris = this.newDebris();
     this.blasts.clear(); this.bombCause.clear();
-    this.doors = new Doors(this.scene);
-    this.pickups = new Pickups(this.scene);
-    this.chestViews = new Chests(this.scene);
-    this.alembicViews = new Alembics(this.scene);
-    this.kitchenViews = new Kitchens(this.scene);
-    this.enemies = new Enemies(this.scene, this.enemyHost());
+    this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
+    this.doors = new Doors(this.dungeonRoot);
+    this.pickups = new Pickups(this.dungeonRoot);
+    this.pickups.heartKind = y => rollHeart(this.rng.stream('hearts'), floorHeartChances(this.rng, depthOf(y)), Math.max(0, depthOf(y)));
+    this.chestViews = new Chests(this.dungeonRoot);
+    this.alembicViews = new Alembics(this.dungeonRoot);
+    this.kitchenViews = new Kitchens(this.dungeonRoot);
+    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost());
     this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
+    attachDevlog(this.bus);
     this.inventory.restore([]);
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.clearStates();
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -542,7 +587,7 @@ export class Game {
   private carve(k: number) {
     if (k > LAST_FLOOR || this.floors.has(k)) return;
     if (this.sandbox) return;
-    const f = carveFloor(this.world, this.rng, k, this.dungeon.plans[k], {
+    const f = carveFloor(this.dw, this.rng, k, this.dungeon.plans[k], {
       templates: ROOM_TEMPLATES,
       pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
@@ -672,16 +717,17 @@ export class Game {
     this.activate(this.depth + 1);
     const st = this.bossRooms.get(this.depth);
     if (st) { st.defeated = true; st.open = true; }
-    openHole(this.world, f.hole);
+    openHole(this.dw, f.hole);
     this.player.spawnAt(f.hole.x + f.hole.size / 2, f.hole.yTop + 1, f.hole.z + f.hole.size / 2);
   }
 
   /** World voxels plus closed doors. */
   solid(x: number, y: number, z: number) {
-    return this.world.solid(x, y, z) || this.doors.solidAt(x, y, z);
+    return this.world.solid(x, y, z) || (this.below && this.doors.solidAt(x, y, z));
   }
 
   roomAt(x: number, y: number, z: number): RoomInfo | null {
+    if (!this.below) return null;
     const f = this.floors.get(bandOf(y));
     if (!f) return null;
     const [gx, gz] = cellOf(x, z);
@@ -689,6 +735,264 @@ export class Game {
     // the room whose space holds the cell (a room may spread into empty cells the map never shows)
     const i = f.space[gx + gz * f.plan.w];
     return i < 0 ? null : f.rooms[i];
+  }
+
+  // ───────────────────────── realms (docs/architecture/SKY.md §2) ─────────────────────────
+
+  /** True in the dungeon's world, below the crown. Every dungeon-only rule is guarded by it (SKY.md §2.5a). */
+  private get below() { return this.realm === 'dungeon'; }
+
+  /** The swap's view of the game's fields (SKY.md §2.1). */
+  private realmHost(): RealmHost {
+    return {
+      install: set => {
+        this.realm = set.kind;
+        this.world = set.world; this.chunks = set.chunks; this.elements = set.elements;
+        this.debris = set.debris; this.pickups = set.pickups; this.enemies = set.enemies;
+        this.actors.setRealm(set.kind);
+      },
+      current: (): RealmSet => ({
+        kind: this.realm, root: this.below ? this.dungeonRoot : this.skyRoot,
+        world: this.world, chunks: this.chunks, elements: this.elements, debris: this.debris, pickups: this.pickups, enemies: this.enemies,
+      }),
+      // runs before install: the fields still hold the world being left
+      clearTransient: () => {
+        this.intents.clear(); this.particles.clear(); this.blasts.clear(); this.enemies.clearHazards(); this.missiles.clear();
+        // the sky's hindrances run only in the sky: they end as it is left
+        if (this.realm === 'sky') this.sky?.leave();
+      },
+      hooks: kind => {
+        const creatures = this.sky?.creatures;
+        if (kind === 'sky') { this.sky?.install(this.bus); if (creatures) this.router.add(creatures); }
+        else { this.bus.off(null, 'sky'); if (creatures) this.router.remove(creatures); }
+      },
+    };
+  }
+
+  private realmGateHost(): RealmGateHost {
+    return {
+      fade: k => this.hud.fadeLevel(k),
+      pass: t => this.passRealm(t),
+      ready: () => !this.chunks.busy,
+    };
+  }
+
+  /** The sky, built the first time the run reaches it (SKY.md §2.1: lazily, from its own forks). */
+  private skyRealm(): SkyRealm {
+    if (!this.sky) this.sky = SkyRealm.create(this.makeSkyHost(), this.skyRoot, layout => this.makeSkySet(layout));
+    return this.sky;
+  }
+
+  /** The sky's set on its layout: its own world, chunk renderer, elements, loose cubes, pickups and an empty projection system. */
+  private makeSkySet(layout: SkyLayout): SkyRealmSet {
+    const world = new SkyWorld(layout);
+    return {
+      kind: 'sky', root: this.skyRoot, world,
+      chunks: new ChunkRenderer(world, this.skyRoot, this.atlas, 48),
+      elements: this.elementSim(world, this.rng.fork('sky', 'elements').u32()),
+      debris: this.newDebris(),
+      pickups: new Pickups(this.skyRoot),
+      enemies: new Enemies(this.skyRoot, this.enemyHost()),
+    };
+  }
+
+  /** Loose cubes of a world: a bomb fuse in the sky works as it does below. */
+  private newDebris(): DebrisSystem {
+    const debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
+    debris.onFuse = (i, x, y, z, love) => {
+      const chain = this.bombCause.get(i);
+      this.bombCause.delete(i);
+      // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
+      if (love) { this.loveBlast(x, y, z); return; }
+      this.blasts.current = chain ?? null;
+      this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
+      this.blasts.current = null;
+    };
+    return debris;
+  }
+
+  /** The element simulation of a world, with the game's hooks (the same rules in both worlds). */
+  private elementSim(world: VoxelSpace, seed: number): ElementSim {
+    return new ElementSim(world, {
+      seed,
+      blocked: (x, y, z) => this.solid(x, y, z),
+      ignite: (x, y, z, material, by) => this.ignite(x, y, z, material, by),
+      react: (x, y, z, r, result) => {
+        const ev = this.bus.emit('materialReact', { x, y, z, reaction: r.id, result });
+        if (ev.cancelled) return null;
+        // a hook may swap the result, but only for a real material (or nothing)
+        return Number.isInteger(ev.result) && ev.result >= 0 && ev.result < MATERIALS.length ? ev.result : result;
+      },
+      fx: (kind, x, y, z) => this.elementFx(kind, x, y, z),
+    });
+  }
+
+  /** The one door from the sky into the game (SKY.md §5.2). No verb here takes health. */
+  private makeSkyHost(): SkyHost {
+    const p = this.player;
+    const player: SkyPlayer = {
+      get body() { return p.body; },
+      get eye() { return p.eye; },
+      get aim() { return p.forward; },
+      get hand() { return p.hand; },
+      push: (vx, vy, vz) => p.push(vx, vy, vz),
+      // the player's own slow factor applies; the sky gives the time only (provisional)
+      slow: (_f, s) => { p.slowT = Math.max(p.slowT, s); },
+      hold: s => p.hold(s),
+      carry: (to, s) => p.carry(to, s),
+      get held() { return p.heldT > 0; },
+    };
+    return {
+      time: () => this.time,
+      player: () => player,
+      actors: () => this.actors,
+      world: () => this.sky!.set.world,
+      // the sky's own loose cubes, whichever world is active (the sky's nests and blocks are its own)
+      debris: () => this.sky!.set.debris,
+      hazards: () => this.enemies.hazardField,
+      fork: (...path) => this.rng.fork(...path),
+      fx: (kind, x, y, z, n) => this.skyFx(kind, x, y, z, n),
+      cue: (kind, x, y, z) => playSkyCue(kind, x, y, z),
+      enterUnity: () => this.sky?.enterUnity(),
+      toast: (key, params) => this.hud.toast(key, params),
+      card: (name, lines) => this.hud.presenceCard(name, lines),
+      bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),
+      place: key => this.hud.placeLabel(key),
+      gift: (itemId, x, y, z) => { this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null); },
+      travel: tr => this.gate.start(tr),
+      drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
+      spirit: () => this.spirit,
+      refillSpirit: () => this.refillSpirit(),
+      takeRandomPractice: () => this.takePractice(),
+      sendUnderground: (floors, rng) => this.sendUnderground(floors, rng),
+    };
+  }
+
+  /** The sky's effects as the game's particles (placeholders until the sky's art rulings name them). */
+  private skyFx(kind: SkyFx, x: number, y: number, z: number, n = 6) {
+    switch (kind) {
+      case 'puff': this.particles.burst(x, y, z, pal('sky.deck.haze'), n, 1.2, 0.08, true); break;
+      case 'shimmer': this.particles.burst(x, y, z, pal('light.core'), n, 0.8, 0.06, true); break;
+      case 'hit': this.particles.burst(x, y, z, pal('light.gold'), n, 2.5, 0.08); break;
+      case 'gold': this.particles.burst(x, y, z, pal('light.gold'), n, 2, 0.07); break;
+      case 'motes': this.particles.burst(x, y, z, pal('bone.dim'), n, 0.8, 0.05, true); break;
+      case 'updraft': this.particles.burst(x, y, z, pal('sky.day'), n, 3, 0.06, true); break;
+      case 'gate': this.particles.burst(x, y, z, pal('light.gold'), n, 4, 0.1); break;
+      case 'pop': this.particles.burst(x, y, z, pal('bone.paper'), n, 2, 0.08); break;
+      case 'bounce': this.particles.burst(x, y, z, pal('bone.dim'), n, 2.5, 0.05); break;
+    }
+  }
+
+  /** The sky's bounds for the passages (SKY.md §2.4): the top of the dungeon's sky, the deck, the floor, the crown. */
+  private skyBounds(): SkyBounds {
+    const d = this.skyRealm().plans.tree.deck;
+    return {
+      top: SKY_TOP, floorOut: SKY_FLOOR_OUT,
+      deck: [d.x, d.y, d.z],
+      crown: [this.tree.cx, SURFACE_Y + SKY_LIMIT - 3, this.tree.cz],
+    };
+  }
+
+  /** A capture takes one practice the player holds, at random, for the rest of the run (SKY.md §19, provisional). */
+  private takePractice(): string | null {
+    const held = this.inventory.items;
+    if (!held.length) return null;
+    const id = held[this.rng.fork('sky', 'capture', this.captures++).int(0, held.length - 1)].def.id;
+    this.inventory.lose(id);
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    return id;
+  }
+
+  /** Spirit at zero: one of the floors is picked and the player goes there; spirit refills at the teleport, in passRealm (SKY.md §5.2). False while the gate is busy: SpiritLaw asks again. */
+  private sendUnderground(floors: readonly number[], rng: Rng): boolean {
+    if (!floors.length || this.gate.busy) return false;
+    this.underground = floors[rng.int(0, floors.length - 1)];
+    this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
+    return true;
+  }
+
+  /** Spirit back to full (a won deity, the test bench). */
+  refillSpirit() { this.spirit = SPIRIT_MAX; }
+
+  /**
+   * `?test` (debug/test-bench.ts): stands the player in floor k's start room, skipping the floors and tolls above it.
+   * It takes the capture's landing path (undergroundSpawn): from the sky through the gate's fade, as a spirit fall does.
+   * False when there is no such floor, in the sandbox, or while a passage is under way.
+   */
+  debugFloor(k: number): boolean {
+    if (!Number.isInteger(k) || k < FIRST_FLOOR || k > LAST_FLOOR || this.sandbox || this.gate.busy) return false;
+    if (!this.below) {
+      this.underground = k;
+      this.gate.start({ to: 'dungeon', at: this.skyBounds().crown, float: true });
+      return true;
+    }
+    const at = this.undergroundSpawn(k);
+    if (!at) return false;
+    this.carve(k + 1);
+    this.teleport(at[0], at[1], at[2]);
+    // trackPlace announces a new deepest floor; a floor already reached gets its map back here
+    if (k <= this.maxDepth) { this.visited = new Set(); this.hud.setFloor(this.floors.get(k)!, k); }
+    return true;
+  }
+
+  /** `?sky` (main.ts): the run starts on the sky's deck, as if the built tree had been climbed. */
+  debugSky() {
+    if (this.below) this.gate.start({ to: 'sky', at: this.skyBounds().deck, float: true });
+  }
+
+  /** Falling below the deck's floor goes down to the crown (SKY.md §2.4). The sky's own update runs after this. */
+  private skyGate() {
+    const travel = RealmGate.check('sky', this.player.body, null, this.skyBounds());
+    if (travel) this.gate.start(travel);
+  }
+
+  /** The gate's passage, at full black: the world is swapped, then the player is placed in the new one. */
+  private passRealm(t: Travel) {
+    if (t.to === this.realm) return;
+    const incoming = t.to === 'sky' ? this.skyRealm().set : this.stash!;
+    this.stash = swapRealm(this.realmHost(), incoming, this.dungeonRoot, this.skyRoot);
+    this.player.float = t.float;
+    // a capture's landing is carved and activated only now, with the dungeon installed (never into the sky's fields)
+    const landing = t.to === 'dungeon' && this.underground !== null ? this.undergroundSpawn(this.underground) : null;
+    // spirit refills at the teleport, so the HUD reads 0 through the gate's fade (SKY.md §5.2)
+    if (this.underground !== null) this.spirit = SPIRIT_MAX;
+    this.underground = null;
+    const at = landing ?? t.at;
+    this.teleport(at[0], at[1], at[2]);
+    this.hud.setMinimap(t.to === 'dungeon');
+    // the HUD names this place again on the next frame (updateLoop writes the zone label when it differs)
+    if (t.to === 'dungeon') this.zone = 'sky';
+    this.hud.toast(t.to === 'sky' ? 'toast.skyEnter' : 'toast.skyLeave');
+    sfx3.rumble();
+  }
+
+  /** Carves and activates the floor a capture sends the player to; its spawn cell, or null when there is none. */
+  private undergroundSpawn(k: number): SkyCell | null {
+    this.carve(k);
+    this.activate(k);
+    const f = this.floors.get(k);
+    if (!f) return null;
+    const [x, y, z] = f.spawn;
+    return [Math.floor(x), Math.floor(y), Math.floor(z)];
+  }
+
+  /** A new run starts in the dungeon: the gate stops, the sky is set aside and its set disposed (SKY.md §2.1). */
+  private leaveSky() {
+    this.gate.cancel();
+    // a run from the dungeon shows its minimap (passRealm hides it in the sky); begin() comes here too
+    this.hud.setMinimap(true);
+    if (!this.sky) return;
+    if (this.realm === 'sky') this.stash = swapRealm(this.realmHost(), this.stash!, this.dungeonRoot, this.skyRoot);
+    this.sky.dispose();
+    this.disposeSet(this.sky.set);
+    this.sky = null;
+    this.stash = null;
+  }
+
+  private disposeSet(set: RealmSet) {
+    set.chunks.dispose();
+    set.pickups.dispose();
+    set.enemies.dispose();
   }
 
   // ───────────────────────── items ─────────────────────────
@@ -724,7 +1028,7 @@ export class Game {
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
-      tagFlying: (x, y, z, r, tag, except) => { for (const s of this.intents.flying(new THREE.Vector3(x, y, z), r, except)) s.tags.add(tag); },
+      intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
     };
   }
@@ -741,7 +1045,7 @@ export class Game {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
         const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
-        this.stroke = { polarity: this.polarity, warmed: new Set(), intent };
+        this.stroke = { polarity: this.polarity, warmed: new Set(), intent, weapon };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
       },
@@ -750,27 +1054,38 @@ export class Game {
       breakable: (x, y, z) => {
         const id = this.world.get(x, y, z);
         if (id === AIR || !isFinite(mat(id).hp)) return false;
-        return this.stroke.polarity === 'negative' || this.world.damaged.has(this.world.idx(x, y, z));
+        if (this.stroke.polarity === 'negative') return true;
+        // law 3.2: a positive stroke that takes a placed block removes it, as a positive shot does
+        if (this.skyPositiveBlock(x, y, z, this.stroke.weapon)) return true;
+        return this.world.damaged.has(this.world.idx(x, y, z));
       },
       // a clean cut: far more than any block's HP, so armor never saves it (hooks still may)
       cut: (x, y, z, source) => {
-        if (this.stroke.polarity === 'positive') this.repairBlock(x, y, z, 1e6);
+        if (this.stroke.polarity === 'positive') { if (!this.skyPositiveBlock(x, y, z, this.stroke.weapon)) this.repairBlock(x, y, z, 1e6); }
         else this.damageBlock(x, y, z, 1e6, 'cut', source, this.strikeDebris-- > 0);
       },
       burn: (x, y, z, amount, source) => {
-        if (this.stroke.polarity === 'positive') { this.repairBlock(x, y, z, amount); return false; }
+        if (this.stroke.polarity === 'positive') {
+          if (this.skyPositiveBlock(x, y, z, this.stroke.weapon)) return true;
+          this.repairBlock(x, y, z, amount);
+          return false;
+        }
         return this.damageBlock(x, y, z, amount, 'beam', source);
       },
       // a stroke that reaches the alembic brews at it, exactly as a shot does (intentHitsBlock)
       answer: (x, y, z) => { if (this.world.get(x, y, z) === MAT.alembic) this.hitLab(x, y, z, this.stroke.polarity); },
-      targets: () => this.enemies.list
-        .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
-        .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
+      targets: () => [
+        ...this.router.targets(),
+        ...this.enemies.list
+          .filter(e => e.alive && e.spawning <= 0 && this.meets(e, this.stroke.polarity))
+          .map(e => ({ id: e.id, x: e.body.x, y: e.body.y, z: e.body.z, hw: e.body.hw, h: e.body.h })),
+      ],
       hit: (id, damage, kx, kz, source) => {
         const warm = !this.stroke.warmed.has(id);
         this.stroke.warmed.add(id);
         this.intentTouch(id, damage, kx, kz, source === 'beam' ? 'beam' : 'cut', source, this.stroke.polarity, warm);
-        if (warm && source !== 'blade' && this.stroke.intent) this.strokeHit(id, kx, kz, this.stroke.intent);
+        // a routed actor takes the stroke through the router alone: no projection effects reach it
+        if (warm && source !== 'blade' && this.stroke.intent && !this.router.owns(id)) this.strokeHit(id, kx, kz, this.stroke.intent);
       },
       clearProjectiles: inside => { this.enemies.clearProjectiles(p.faction, inside); },
       clearCubes: inside => this.clearCubesIn(inside),
@@ -852,8 +1167,11 @@ export class Game {
    */
   damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch): boolean {
     const p = this.player;
+    // a sky actor has no health the dungeon can take, and no Enemies entry to hurt (SKY.md §5.2)
+    if (t.kind === 'sky') return false;
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     if (t === p && p.invulnT > 0) return false;
+    if (t === p && p.starT > 0 && kind !== 'toll') return false;
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -862,7 +1180,11 @@ export class Game {
     if (ev.cancelled) return false;
     if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
     if (ev.amount <= 0) return false;
-    p.hp = Math.max(0, p.hp - ev.amount);
+    if (p.blood) { p.blood = null; sfxHeart.bloodEnd(); this.hud.toast('heart.bloodBroken'); }
+    const hit = landHit(p.layers, ev.amount, kind !== 'toll');
+    if (hit.halved) { sfxHeart.stoneHit(); this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(HEART_FX.stone), 10, 2.5, 0.07); }
+    for (const k of hit.lost) this.heartLost(k);
+    p.hp = Math.max(0, p.hp - hit.rest);
     p.invulnT = this.stats.get('invuln');
     this.hud.hurt();
     sfx3.hurt();
@@ -884,6 +1206,103 @@ export class Game {
     if (ev.cancelled || ev.amount <= 0) return;
     this.player.hp = Math.min(this.maxHp, this.player.hp + ev.amount);
     sfx3.heal();
+  }
+
+  collectHeart(kind: HeartKind): boolean {
+    const p = this.player;
+    if ((kind === 'red' || kind === 'blood') && p.hp >= this.maxHp) return false;
+    if (isLayer(kind) && heartSlots(Math.floor(this.stats.get('maxHearts')), p.layers) >= MAX_TOTAL_HEARTS) return false;
+    if (kind === 'red') return this.collect('heart', 2);
+    const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
+    if (ev.cancelled) return false;
+    const pts = Math.max(0, ev.amount) * HALF_HEART;
+    if (isLayer(kind)) {
+      p.layers.push({ kind, hp: Math.min(HEART, pts) });
+      if (kind === 'blue') sfxHeart.blue();
+      else if (kind === 'stone') sfxHeart.stone();
+    } else if (kind === 'blood') {
+      p.blood = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
+      sfxHeart.blood();
+    } else {
+      this.heal(pts, 'pickup');
+      p.starT = STAR_SECONDS;
+      sfxHeart.star();
+    }
+    this.hud.toast(`heart.${kind}`);
+    const b = p.body;
+    this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
+    return true;
+  }
+
+  private heartLost(kind: LayerKind) {
+    const b = this.player.body;
+    this.bus.emit('heartLost', { heart: kind });
+    this.particles.burst(b.x, b.y + 1.3, b.z, pal(HEART_FX[kind]), 30, 4, 0.08);
+    sfxHeart.layerLost();
+    this.hud.toast(`heart.${kind}Lost`);
+  }
+
+  private berserkOn = false;
+
+  private setBerserk(on: boolean) {
+    if (on === this.berserkOn) return;
+    this.berserkOn = on;
+    this.stats.removeSource('berserk');
+    if (on) for (const [stat, value] of [['damage', BERSERK_DAMAGE], ['moveSpeed', BERSERK_SPEED], ['jump', BERSERK_JUMP], ['range', BERSERK_RANGE]] as const)
+      this.stats.add({ stat, layer: 'mul', value, source: 'berserk' });
+    setEcho(on);
+    this.hud.setBerserk(on);
+    this.bus.emit('berserkChange', { on });
+    const b = this.player.body;
+    if (on) {
+      sfxHeart.berserk();
+      this.hud.shake(0.35);
+      this.particles.burst(b.x, b.y + 1, b.z, pal(HEART_FX.berserker), 60, 6, 0.1);
+    } else if (!this.player.dead) {
+      sfxHeart.berserkEnd();
+      this.hud.toast('berserk.off');
+    }
+  }
+
+  get berserk() { return this.berserkOn; }
+
+  private updateHearts(dt: number) {
+    const p = this.player;
+    if (p.starT > 0) {
+      p.starT = Math.max(0, p.starT - dt);
+      if (p.starT === 0) { sfxHeart.starEnd(); this.hud.toast('heart.starEnd'); }
+    }
+    starTheme(p.starT > 0 && !p.dead);
+    if (p.blood) {
+      const r = tickBlood(p.blood, dt, p.hp, this.maxHp);
+      if (r.heal > 0) p.hp = Math.min(this.maxHp, p.hp + r.heal);
+      if (r.done) { p.blood = null; sfxHeart.bloodEnd(); }
+    }
+    const on = (berserk(p.layers) || this.potions.active.some(a => POTIONS[a.potion].berserk)) && !p.dead;
+    if (on !== this.berserkOn) this.setBerserk(on);
+    if (on) this.berserkTread();
+  }
+
+  private berserkTread() {
+    const p = this.player, b = p.body, cells: [number, number, number][] = [];
+    if (b.onGround) for (const dx of [-b.hw, b.hw]) for (const dz of [-b.hw, b.hw]) cells.push([Math.floor(b.x + dx), Math.floor(b.y - 0.05), Math.floor(b.z + dz)]);
+    const l = Math.hypot(p.wishX, p.wishZ);
+    if (l > 0.1) {
+      const fx = Math.floor(b.x + p.wishX / l * (b.hw + 0.25)), fz = Math.floor(b.z + p.wishZ / l * (b.hw + 0.25));
+      cells.push([fx, Math.floor(b.y + 0.1), fz], [fx, Math.floor(b.y + 1.1), fz]);
+    }
+    for (const [x, y, z] of cells) if (this.looseBlock(x, y, z)) {
+      this.damageBlock(x, y, z, 999, 'crush', 'berserker');
+      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, pal(HEART_FX.berserker), 8, 3, 0.07);
+    }
+  }
+
+  looseBlock(x: number, y: number, z: number): boolean {
+    const id = this.world.get(x, y, z);
+    if (id === AIR || !Number.isFinite(mat(id).hp)) return false;
+    let n = 0;
+    for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) if (this.world.get(x + dx, y + dy, z + dz) !== AIR) n++;
+    return n === 1;
   }
 
   /** Adds keys, bombs or hearts through `pickupCollect`. Returns false if refused. */
@@ -913,6 +1332,12 @@ export class Game {
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
       projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
+      reflects: (t: Actor, x: number, y: number, z: number) => {
+        if (t !== this.player || !this.berserkOn) return false;
+        sfxHeart.reflect();
+        this.particles.burst(x, y, z, pal(HEART_FX.berserker), 10, 3, 0.06);
+        return true;
+      },
       projectileBlock: (x: number, y: number, z: number) => {
         const id = this.world.get(x, y, z);
         return id !== AIR && mat(id).tier === 0 && this.damageBlock(x, y, z, 999, 'crush', 'judgement');
@@ -1081,9 +1506,12 @@ export class Game {
    * The rules are in combat/polarity.ts. `warm` is false for the repeat ticks of a beam.
    */
   private intentTouch(id: number, damage: number, kx: number, kz: number, kind: DamageKind, source: string, polarity: Polarity, warm: boolean) {
+    if (this.router.owns(id)) { this.router.touchBody(id, polarity, warm, kind); return; }
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
+      // a warm love shot grows a friendly creature (issue #51); a beam's repeat ticks do not
+      if (warm && e.tags.has('creature')) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
       const b = e.body;
       e.hp += heal;
@@ -1411,7 +1839,8 @@ export class Game {
   /** Damages a block through the shared pipeline (`amount` is block damage, before armor). Returns true if it breaks. */
   damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string, debris = true): boolean {
     const id = this.world.get(x, y, z);
-    if (id === AIR) return false;
+    // the mountains outside the array are a formula: nothing breaks them (issue #10)
+    if (id === AIR || !this.world.inside(x, y, z)) return false;
     const m = mat(id);
     const ev = this.bus.emit('blockDamage', { x, y, z, material: id, amount: blockDamage(amount, m), kind, source });
     if (ev.cancelled || ev.amount <= 0) return false;
@@ -1425,6 +1854,7 @@ export class Game {
 
   /** `debris = false` starts the event with no loose cube (hooks may still ask for one). */
   breakBlock(x: number, y: number, z: number, kind: DamageKind, source: string, debris = true): boolean {
+    if (!this.world.inside(x, y, z)) return false;
     const id = this.world.get(x, y, z);
     const ev = this.bus.emit('blockBreak', { x, y, z, material: id, kind, source, spawnDebris: debris });
     if (ev.cancelled) return false;
@@ -1438,23 +1868,27 @@ export class Game {
       if (source.startsWith('enemy:')) this.shed(i);
     }
     if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.break(Math.min(3, mat(id).tier));
-    // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
-    if (kind !== 'fire') this.rollLoot(x, y, z, id, source);
-    // digging into the next floor's band activates it
-    if (depthOf(y) > this.maxDepth) this.activate(depthOf(y));
+    // dungeon only: no loot and no floor activation in the sky (SKY.md §2.5a)
+    if (this.below) {
+      // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
+      if (kind !== 'fire') this.rollLoot(x, y, z, id, source);
+      // digging into the next floor's band activates it
+      if (depthOf(y) > this.maxDepth) this.activate(depthOf(y));
+    }
     return true;
   }
 
   /**
    * Broken blocks give nothing but the block itself (owner decision: keys, items and other
    * rewards live in chests, Minecraft-style), with one exception: a crate sometimes gives a key,
-   * a heart or a small bomb (issue #6, `rollCrate`). The `blockLoot` event fires with those drops,
+   * a heart or a small bomb (issue #6, `rollCrate`; its chance is the floor's, issue #48). The `blockLoot` event fires with those drops,
    * so an item can add more.
    */
   private rollLoot(x: number, y: number, z: number, material: number, source: string) {
     const drops: PickupKind[] = [];
     if (material === MAT.crate) {
-      const drop = rollCrate(this.rng.stream('drops'), { floor: depthOf(y), luck: this.stats.get('luck') });
+      const floor = depthOf(y);
+      const drop = rollCrate(this.rng.stream('drops'), floorCrateChance(this.rng, floor), { floor, luck: this.stats.get('luck') });
       if (drop) drops.push(drop);
     }
     const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
@@ -1483,7 +1917,7 @@ export class Game {
       if (d > r) continue;
       this.damageBlock(bx, by, bz, ev.damage * (1 - 0.5 * d / r), 'explosion', `explosion:${source}`);
     }
-    this.blastDoors(x, y, z, r, source);
+    if (this.below) this.blastDoors(x, y, z, r, source);
     for (let i = 0; i < this.debris.max; i++) {
       if (!this.debris.isAlive(i)) continue;
       const i3 = i * 3;
@@ -1498,8 +1932,11 @@ export class Game {
         this.bombCause.set(i, cause);
       }
     }
+    // a routed creature in range takes one puff (law 3.3); projections and the rest are below
+    this.router.blast({ x, y, z }, r, 'negative', true, 'explosion');
     // every actor in range, whatever its side (friendly fire, like bombs on the player)
     for (const a of [...this.actors.all()]) {
+      if (a.kind === 'sky') continue;
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
@@ -1511,6 +1948,14 @@ export class Game {
     sfx2.boom();
   }
 
+  /**
+   * Law 3.2 (seam 13): a positive hit, from a shot or a weapon stroke, on a block the player placed in
+   * the sky removes it for good. True when it did. The dungeon and an unplaced block take no part.
+   */
+  private skyPositiveBlock(x: number, y: number, z: number, weapon: WeaponId): boolean {
+    return this.realm === 'sky' && !!this.sky?.positiveHitsBlock({ x, y, z, cell: this.world.idx(x, y, z), actor: -1, weapon, warm: true });
+  }
+
   /** A positive intention mends a damaged block and never breaks one; a negative one damages it. */
   private intentHitsBlock(hit: VoxelHit, mining: number, polarity: Polarity) {
     const id = this.world.get(hit.x, hit.y, hit.z);
@@ -1518,6 +1963,7 @@ export class Game {
     if (id === MAT.alembic) { this.hitLab(hit.x, hit.y, hit.z, polarity); return false; }
     if (id === MAT.kitchen) return false;   // unbreakable, and an intention does nothing to it
     if (polarity === 'positive') {
+      if (this.skyPositiveBlock(hit.x, hit.y, hit.z, 'intent')) return true;
       const block = this.world.idx(hit.x, hit.y, hit.z);
       if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
       else {
@@ -1542,6 +1988,8 @@ export class Game {
   }
 
   private intentHit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, intent: IntentSpec) {
+    // a routed creature (a sky deity) was touched through the router; no listener knows its id (SKY.md §5.7)
+    if (kind === 'actor' && this.router.owns(target)) return;
     this.bus.emit('intentHit', { kind, target, x: p.x, y: p.y, z: p.z, nx: n.x, ny: n.y, nz: n.z, vx: v.x, vy: v.y, vz: v.z, intent });
   }
 
@@ -1783,9 +2231,113 @@ export class Game {
     const b = p.body;
     const cube = this.debris.spawn(MAT.bomb, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, 0, b.vz * 0.5);
     this.debris.fuse[cube] = Math.max(0.1, ev.fuse);
+    // a bomb placed while the polarity is positive is white: its fuse ends in a love explosion (DECISIONS §7.8)
+    this.debris.love[cube] = this.polarity === 'positive' ? 1 : 0;
     this.bombCause.delete(cube); // the slot may have held an old bomb that despawned unlit
     this.debris.cooldown[cube] = 0.8;
     sfx3.fuse();
+  }
+
+  /**
+   * The double tap of the fire control (every device: a double click, a double RT, a double tap on
+   * the bead). The first press fires its intention as usual; with the `missile` stat a second press
+   * within DOUBLE_TAP_MS launches a bomb instead (docs/design/built/practices/milagros/DR-LAUNCHER.md).
+   */
+  private tapMissile() {
+    const on = this.stats.get('missile') >= 1;
+    if (on && !this.missileHinted) {
+      this.missileHinted = true;
+      this.hud.toast('toast.missileHint', controlParams(activeDevice()));
+    }
+    if (!this.input.hit('cast') || this.hands.holding || this.player.muteT > 0) return;
+    const double = this.time - this.lastCastTap <= DOUBLE_TAP_MS / 1000;
+    this.lastCastTap = this.time;
+    if (!double || !on) return;
+    this.lastCastTap = -Infinity; // a third press starts a new pair
+    this.launchMissile();
+  }
+
+  /** One bomb leaves the counter as a missile, unless there is none or a block stands at the muzzle. */
+  private launchMissile() {
+    const p = this.player;
+    if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
+    const eye = p.eye, dir = p.forward;
+    // the arming rule: a missile needs room to arm, so a shot into a wall at the muzzle is refused
+    if (muzzleBlocked((x, y, z) => this.solid(x, y, z), eye.x, eye.y, eye.z, dir.x, dir.y, dir.z)) { sfx.denied(); return; }
+    const ev = this.bus.emit('missileLaunch', { speed: MISSILE_SPEED, range: MISSILE_RANGE, polarity: this.polarity });
+    if (ev.cancelled) { sfx.denied(); return; }
+    p.bombs--;
+    // the press that launched does not also cast while it is held
+    this.input.suppress('cast');
+    const from = eye.addScaledVector(dir, 0.4).add(new THREE.Vector3(0, -0.15, 0));
+    this.missiles.launch(from.x, from.y, from.z, dir.x, dir.y, dir.z, ev.polarity, ev.speed, ev.range);
+    this.hands.fire();
+    this.hud.shake(0.08);
+    sfx3.launch(ev.polarity === 'negative');
+  }
+
+  /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
+  private updateMissiles(dt: number) {
+    if (!this.missiles.list.length) return;
+    const ends = this.missiles.update(dt, {
+      solid: (x, y, z) => this.solid(x, y, z),
+      meets: (x, y, z) => this.missileMeets(x, y, z),
+    });
+    for (const m of this.missiles.list) {
+      const trail = MISSILE_TRAIL[m.polarity];
+      this.particles.burst(m.x - m.dx * 0.3, m.y - m.dy * 0.3, m.z - m.dz * 0.3, pal(trail[Math.floor(m.age * 20) % trail.length]), 2, 0.6, 0.06);
+    }
+    for (const e of ends) {
+      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z);
+      else this.explode(e.x, e.y, e.z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'missile', this.player.id);
+    }
+  }
+
+  /** What a missile meets besides blocks: any actor but you (allies too), and loose bombs. */
+  private missileMeets(x: number, y: number, z: number) {
+    if (this.router.at(x, y, z, 0.2) >= 0) return true;
+    for (const a of this.actors.all()) {
+      if (a.kind === 'player' || a.kind === 'sky' || !a.alive || a.spawning > 0) continue;
+      const b = a.body;
+      if (Math.abs(x - b.x) < b.hw + 0.2 && Math.abs(z - b.z) < b.hw + 0.2 && y > b.y - 0.2 && y < b.y + b.h + 0.2) return true;
+    }
+    const i = this.debrisAt(x, y, z, 0.2);
+    return i >= 0 && this.debris.isBomb(i);
+  }
+
+  /**
+   * The love explosion (a positive missile): the bomb's sphere, but every block and actor in it is
+   * touched as a positive intention touches it, with the blast's own damage as the amount. It mends
+   * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
+   * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
+   */
+  private loveBlast(x: number, y: number, z: number) {
+    const r = this.stats.get('bombRadius'), damage = this.stats.get('bombDamage'), ri = Math.ceil(r);
+    for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
+      const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
+      const d = Math.hypot(bx + 0.5 - x, by + 0.5 - y, bz + 0.5 - z);
+      if (d <= r) { this.repairBlock(bx, by, bz, damage * (1 - 0.5 * d / r)); this.loveLava(bx, by, bz); }
+    }
+    // a routed creature gets one warm touch per explosion, whatever the radius (SKY.md §5.7)
+    this.router.blast({ x, y, z }, r, 'positive', true, 'item');
+    for (const a of [...this.actors.all()]) {
+      if (a.kind === 'player' || a.kind === 'sky' || !a.alive || a.spawning > 0) continue;
+      const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
+      if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
+    }
+    this.hearPresences(x, z, 'positive');
+    LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
+    this.hud.shake(0.15);
+    sfx3.loveBoom();
+  }
+
+  /** Love turns lava into water, at the same level: the sphere of a love explosion cools the lava in it. */
+  private loveLava(x: number, y: number, z: number) {
+    const b = this.world.elemAt(x, y, z);
+    if (elemKind(b) !== EL_LAVA) return;
+    this.world.setElem(x, y, z, EL_WATER, elemLevel(b));
+    this.elements.wakeAround(x, y, z);
+    this.elementFx('steam', x, y, z);
   }
 
   // ───────────────────────── elements ─────────────────────────
@@ -1959,8 +2511,14 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
     if (!a) { sfx.denied(); return; }
-    if (isFlask(p.hand.at(-1)!)) { sfx.denied(); this.hud.toast('lab.refused'); return; }
-    const r = labFeed(a, p.hand.at(-1)!);
+    const top = p.hand.at(-1)!;
+    if (isFlask(top)) {
+      sfx.denied(); this.hud.toast('lab.refused');
+      devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> refused`);
+      return;
+    }
+    const r = labFeed(a, top);
+    devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> ${r}`);
     if (r !== 'fed') {
       sfx.denied();
       this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
@@ -1977,8 +2535,17 @@ export class Game {
     const k = this.kitchens.get(this.world.idx(x, y, z));
     const p = this.player, top = p.hand.at(-1);
     if (!k || top === undefined) { sfx.denied(); return; }
-    if (typeof top === 'number' || isFlask(top)) { sfx.denied(); this.hud.toast('kitchen.refused'); return; }
-    if (!kitchenCook(k)) { sfx.denied(); this.hud.toast('kitchen.out'); return; }
+    if (typeof top === 'number' || isFlask(top)) {
+      sfx.denied(); this.hud.toast('kitchen.refused');
+      devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> refused`);
+      return;
+    }
+    if (!kitchenCook(k)) {
+      sfx.denied(); this.hud.toast('kitchen.out');
+      devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> out`);
+      return;
+    }
+    devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> cooked (${COOKS - k.cooks}/${COOKS} used)`);
     p.hand.pop();   // the part leaves the hand first, so the meal always has its place
     p.hand.push({ potion: mealOf(top.kind) });
     this.hands.placed();
@@ -1992,6 +2559,7 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
     const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
+    devlog.line(`alembic ${cell(x, y, z)}: intention ${polarity} -> ${r}${flask ? ` (${flask.potion})` : ''}`);
     if (r === 'brew' && flask) {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
@@ -2037,7 +2605,7 @@ export class Game {
     if (hit && this.world.get(hit.x, hit.y, hit.z) === MAT.kitchen) { this.cookAt(hit.x, hit.y, hit.z); return; }
     const x = hit ? hit.x + hit.nx : 0, y = hit ? hit.y + hit.ny : 0, z = hit ? hit.z + hit.nz : 0;
     const ok = hit && (hit.nx || hit.ny || hit.nz) && this.world.inside(x, y, z) && !this.solid(x, y, z)
-      && !this.doors.inDoorway(x, y, z);
+      && !(this.below && this.doors.inDoorway(x, y, z));
     // a face in reach whose cell cannot take a block (a doorway, the world's edge) is refused like a
     // blocked placement, never thrown: only aiming at nothing throws the block
     if (!ok) { if (tap || hit) sfx.denied(); else this.throwTop(); return; }
@@ -2058,7 +2626,10 @@ export class Game {
     }
     const ev = this.bus.emit('blockPlace', { x, y, z, material: p.top });
     if (ev.cancelled) return;
-    this.world.set(x, y, z, ev.material);
+    // the sky marks the player's block Placed only while it is being set (law 3.2, SKY.md §3.4)
+    const sky = this.realm === 'sky' ? this.world as SkyWorldApi : null;
+    if (sky) sky.placing = true;
+    try { this.world.set(x, y, z, ev.material); } finally { if (sky) sky.placing = false; }
     this.debris.clearCell(x, y, z);
     this.nudge(push!);
     p.hand.pop();
@@ -2238,11 +2809,9 @@ export class Game {
         }
         continue;
       }
-      // hearts stay on the floor while you're at full health, like in Isaac
-      if (p.type === 'heart' && this.player.hp >= this.maxHp) continue;
-      if (this.collect(p.type, p.type === 'heart' ? 2 : 1)) {
+      if (p.type === 'heart' ? this.collectHeart(p.heart) : this.collect(p.type, 1)) {
         this.pickups.take(p);
-        this.particles.burst(p.x, p.y + 0.3, p.z, PICKUP_FX[p.type], 10, 2, 0.06);
+        this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'heart' ? pal(HEART_FX[p.heart]) : PICKUP_FX[p.type], 10, 2, 0.06);
       }
     }
   }
@@ -2352,6 +2921,7 @@ export class Game {
         if (def) out.push({ type: 'item', def });
       }
     }
+    devlog.line(`chest ${cell(s.x, s.y, s.z)}: opened for ${cost} key(s), contents ${out.map(o => o.type === 'item' ? (o.def?.id ?? 'none') : o.type).join(', ') || 'nothing'}`);
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
       const dx = ax * Math.cos(spread) - az * Math.sin(spread), dz = az * Math.cos(spread) + ax * Math.sin(spread);
@@ -2372,6 +2942,14 @@ export class Game {
    *  let the HUD, the fog and the floor bookkeeping catch up (review L4–L6 points 3 and 5). */
   private teleport(x: number, y: number, z: number) {
     const fx0 = Math.floor(x), fz0 = Math.floor(z);
+    if (!this.below) {
+      // the sky never edits its world to make room: it finds a cell to stand in (SKY.md §2.5a)
+      const [cx, cy, cz] = this.skyRealm().placeAt([fx0, Math.floor(y), fz0]);
+      this.player.spawnAt(cx + 0.5, cy, cz + 0.5);
+      this.room = -1;
+      this.zone = '';
+      return;
+    }
     let fy = Math.floor(y);
     for (let i = 0; i < 24 && (this.solid(fx0, fy, fz0) || this.solid(fx0, fy + 1, fz0)); i++) fy++;
     if (this.solid(fx0, fy, fz0) || this.solid(fx0, fy + 1, fz0)) { this.world.set(fx0, fy, fz0, AIR); this.world.set(fx0, fy + 1, fz0, AIR); }
@@ -2458,21 +3036,39 @@ export class Game {
       const eye = this.player.eye, fwd = this.player.forward;
       this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
       e.tags.add('met');
-      if (talk.heals) this.listenerReward(e, id);
+      if (talk.drops) this.dropListenerReward(e);
       this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      // a Listener leaves in the frame its drop appears: the release is in the same call, never deferred (#84)
+      if (leavesAfterOffer(id)) this.releaseListener(e);
       this.hud.presenceCard(talk.name, talk.lines);
       return;
     }
   }
 
-  /** The Listener's reward for its part (rewardFor): a quarter heart when hurt; at full health a heart
-   *  leaves the Listener in an arc and waits on the floor until the player is hurt. */
-  private listenerReward(e: Enemy, source: string) {
-    if (rewardFor(this.player.hp, this.maxHp) === 'heal') { this.heal(QUARTER_HEART, source); return; }
+  /** The Listener's reward is always a drop, never a heal: its seeded kind, a runtime count (listenerDrops). Each
+   *  pickup leaves the Listener in its own arc toward the player; hearts wait on the floor until the player is hurt. */
+  private dropListenerReward(e: Enemy) {
+    const kind = this.rooms.get(e.room)?.presenceDrop;
+    if (!kind) return;
     const b = this.player.body;
-    const dx = b.x - e.body.x, dz = b.z - e.body.z, d = Math.hypot(dx, dz) || 1;
-    const heart = this.pickups.add('heart', e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
-    this.pickups.launch(heart, dx / d * 2.5, 3, dz / d * 2.5);
+    const dx = b.x - e.body.x, dz = b.z - e.body.z, base = Math.atan2(dz, dx);
+    const drops = listenerDrops(kind, this.rng.stream('drops'));
+    drops.forEach((k, i) => {
+      const a = base + (i - (drops.length - 1) / 2) * 0.6;
+      const p = this.pickups.add(k, e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
+      this.pickups.launch(p, Math.cos(a) * 2.5, 3, Math.sin(a) * 2.5);
+    });
+  }
+
+  /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it
+   *  (owner decision on #65: the room returns to normal). */
+  private releaseListener(e: Enemy) {
+    this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('bone.paper'), 14, 1.6, 0.06);
+    this.enemies.dissolve(e);
+    this.bus.off(null, `actor:${e.id}`);
+    this.actors.remove(e.id);
+    this.contacts.forget(e.id);
+    this.presenceReplies.delete(e.id);
   }
 
   private pushPresences() {
@@ -2514,14 +3110,15 @@ export class Game {
         sfx3.reveal();
       }
     } else this.stillT = 0;
-    // the top of the sky, once silence is known, opens down into it (it loops)
-    if (last && this.silenceSeen && b.y > SURFACE_Y + SKY_LIMIT - 1.5) {
-      this.teleport((last.x0 + last.x1) / 2 + 2, last.y0, (last.z0 + last.z1) / 2 + 2);
-      sfx3.rumble();
-    }
-    // star pads: step on one and you are on the next star of its constellation
+    // the top of the sky, and the last star, lead up into the sky realm (SKY.md §2.4): the gate runs the fade
     const fx0 = Math.floor(b.x), fy = Math.floor(b.y + 0.05), fz0 = Math.floor(b.z);
     const pad = b.onGround ? this.tree.pads.findIndex(q => q.x === fx0 && q.y === fy && q.z === fz0) : -1;
+    const up = pad >= 0 && this.tree.pads[pad].up === true;
+    if (up || b.y > SKY_TOP) {
+      const travel = RealmGate.check('dungeon', b, up ? { up: true } : null, this.skyBounds());
+      if (travel) { this.gate.start(travel); return; }
+    }
+    // star pads: step on one and you are on the next star of its constellation
     if (pad < 0) this.padLock = -1;
     else if (pad !== this.padLock) {
       const to = this.tree.pads[this.tree.pads[pad].to];
@@ -2588,7 +3185,7 @@ export class Game {
       this.player.room = r.id;
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
-      this.bus.emit('roomEnter', { room: r.id, type: r.type, firstVisit: first });
+      this.bus.emit('roomEnter', { room: r.id, floor: r.floor, type: r.type, template: r.template, firstVisit: first });
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       if (r.type === 'boss' && !this.bossRooms.has(r.floor)) {
         this.activate(r.floor + 1);
@@ -2658,7 +3255,7 @@ export class Game {
       return;
     }
     st.open = true;
-    openHole(this.world, hole);
+    openHole(this.dw, hole);
     this.particles.burst(hole.x + hole.size / 2, hole.yTop + 1, hole.z + hole.size / 2, pal('limestone.dark'), 40, 4, 0.15);
     this.hud.shake(0.5);
     this.hud.toast('toast.wayDown');
@@ -2669,7 +3266,7 @@ export class Game {
     const toll = tollOf(k), f = this.floors.get(k), st = this.bossRooms.get(k);
     const p = this.player;
     if (!toll || !f?.hole || !st || p.dead || new Set(ids).size !== ids.length || ids.length !== toll.count) return false;
-    const hearts = Math.ceil(p.hp / HEART);
+    const hearts = heartCount(p.hp, p.layers);
     const hands: number[] = [], items: string[] = [];
     let keys = 0, bombs = 0, paid = 0;
     for (const id of ids) {
@@ -2691,7 +3288,7 @@ export class Game {
     if (paid) { p.invulnT = 0; this.damageActor(p, paid * HEART, 'toll', 'toll', p.id); }
     if (p.dead) return true;
     st.open = true;
-    openHole(this.world, f.hole);
+    openHole(this.dw, f.hole);
     const h = f.hole;
     this.particles.burst(h.x + h.size / 2, h.yTop + 1, h.z + h.size / 2, pal('limestone.dark'), 40, 4, 0.15);
     this.hud.shake(0.5);
@@ -2758,6 +3355,7 @@ export class Game {
       this.revealT += dt;
       if (!this.chunks.busy || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
+    this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
     if (ctx === 'prompt' && inp.hit('confirm')) {
       this.hud.dismissBanner();
@@ -2783,11 +3381,12 @@ export class Game {
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.guardOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
-    this.stream();
+    if (this.below) this.stream(); else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
-    const sky = e.y > SURFACE_Y - 4;
-    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22));
+    const below = this.below;
+    const sky = !below || e.y > SURFACE_Y - 4;
+    this.chunks.setVisibleRange(e.y - (sky ? 60 : 22), e.y + (sky ? 120 : 22), sky);
     this.stars.position.set(e.x, 0, e.z);
 
     // camera with a little walking bob and explosion shake
@@ -2797,22 +3396,24 @@ export class Game {
     this.camera.rotation.set(p.pitch, p.yaw, 0, 'YXZ');
 
     // fog: dark dungeon below, sky above; the element your eyes are in closes it in
-    const k = THREE.MathUtils.smoothstep(e.y, SURFACE_Y - 3, SURFACE_Y + 2);
-    this.fogColor.copy(LEVEL_FOG[Math.min(LAST_FLOOR, depthOf(e.y))] ?? DUNGEON_FOG).lerp(SKY, k);
     const fog = this.scene.fog as THREE.Fog;
-    const under = this.world ? this.elementAt(e.x, e.y, e.z) : null;
-    if (under?.fog) {
-      this.fogColor.setHex(pal(under.fog.color));
-      fog.near = 0; fog.far = under.fog.far;
-    } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
-    // up the tree the sky turns to night and the stars come out (the cosmos); silence is dark
-    const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven);
-    if (night > 0) { this.fogColor.lerp(NIGHT, night); fog.far = 34 + k * 80 + night * 60; }
-    this.stars.visible = night > 0.05;
-    (this.stars.material as THREE.PointsMaterial).opacity = night;
-    const deep = this.floors.get(LAST_FLOOR)?.silence;
-    if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
-    fog.color.copy(this.fogColor);
+    if (below) {
+      const k = THREE.MathUtils.smoothstep(e.y, SURFACE_Y - 3, SURFACE_Y + 2);
+      this.fogColor.copy(LEVEL_FOG[Math.min(LAST_FLOOR, depthOf(e.y))] ?? DUNGEON_FOG).lerp(SKY, k);
+      const under = this.world ? this.elementAt(e.x, e.y, e.z) : null;
+      if (under?.fog) {
+        this.fogColor.setHex(pal(under.fog.color));
+        fog.near = 0; fog.far = under.fog.far;
+      } else { fog.near = 6 + k * 30; fog.far = 34 + k * 80; }
+      // up the tree the sky turns to night and the stars come out (the cosmos); silence is dark
+      const night = THREE.MathUtils.smoothstep(e.y, SURFACE_Y + TREE_ZONES.branches, SURFACE_Y + TREE_ZONES.heaven);
+      if (night > 0) { this.fogColor.lerp(NIGHT, night); fog.far = 34 + k * 80 + night * 60; }
+      this.stars.visible = night > 0.05;
+      (this.stars.material as THREE.PointsMaterial).opacity = night;
+      const deep = this.floors.get(LAST_FLOOR)?.silence;
+      if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
+      fog.color.copy(this.fogColor);
+    } else this.sky!.atmosphere(e, this.fogColor, fog, this.stars);
     easeMaster(dt);
     this.chunks.animate(this.time);
     this.renderer.setClearColor(this.fogColor);
@@ -2836,18 +3437,22 @@ export class Game {
     const inp = this.input;
     const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
+    const below = this.below;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
-        const cause = bandOf(b.y) !== this.groundBand ? 'descent' : 'fall';
+        // falls never hurt in the sky, and the dungeon's floor bands do not apply there (SKY.md §2.5a)
+        const cause = !below ? 'sky' : bandOf(b.y) !== this.groundBand ? 'descent' : 'fall';
         this.bus.emit('land', { fallSpeed: fall, cause, x, y, z });
       },
       bump: speed => this.headBump(speed),
-    }, this.playerMedium);
-    if (b.onGround) this.groundBand = bandOf(b.y);
+    }, this.playerMedium, below ? {} : { minJump: 1 });
+    if (below && b.onGround) this.groundBand = bandOf(b.y);
     this.clampHealth();
+    this.updateHearts(dt);
     this.touchBlocks(dt);
     this.syncWeapon();
+    this.tapMissile();
     if (this.weapon) this.weapon.update(dt);
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
     this.tryPlace();
@@ -2855,7 +3460,7 @@ export class Game {
     if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
-    this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
+    if (below) this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);
     this.debrisElements(dt);
@@ -2864,22 +3469,29 @@ export class Game {
     this.cubeStrikes();
     this.shoveCubes();
     this.touchPickups();
-    this.touchChests();
+    if (below) this.touchChests();
     this.intents.update(dt);
+    this.updateMissiles(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
-    this.trackPlace(dt);
-    this.updateLoop(dt);
-    this.updateOmens(dt);
-    this.updateCombat(dt);
-    this.updateChallenges(dt);
-    this.updateSpits(dt);
+    if (below) {
+      this.trackPlace(dt);
+      this.updateLoop(dt);
+      this.updateOmens(dt);
+      this.updateCombat(dt);
+      this.updateChallenges(dt);
+      this.updateSpits(dt);
+    } else {
+      this.skyGate();
+      this.sky!.update(dt);
+    }
     this.pickups.update(dt, solid);
-    this.chestViews.update(dt, this.player.keys);
+    if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);
+    this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
     const hand = this.player.hand;
@@ -2912,7 +3524,7 @@ export class Game {
   }
 
   /** Fading between runs (R): the world is frozen and the screen goes dark. */
-  get transitioning() { return this.restartT > 0 || this.revealT >= 0; }
+  get transitioning() { return this.restartT > 0 || this.revealT >= 0 || this.gate.busy; }
 
   /** What the debug HUD shows. */
   get debug() {
@@ -2928,6 +3540,7 @@ export class Game {
       pos: [this.player.body.x, this.player.body.y, this.player.body.z].map(v => v.toFixed(1)).join(' '),
       held: this.player.hand.length ? this.player.hand.map(c => typeof c === 'number' ? MATERIALS[c].name : isFlask(c) ? c.potion : c.name).join(', ') : '—',
       room: r ? `${r.id} (${r.type}, ${r.template})` : '—',
+      realm: this.below ? 'dungeon' : `sky · ${this.sky!.set.world.stats().exceptions} exceptions · ${this.sky!.set.world.stats().cached} cached chunks`,
     };
   }
 }

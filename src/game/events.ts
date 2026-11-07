@@ -6,6 +6,8 @@ import { EventBus } from '../core/events';
 import type { DamageKind } from '../core/damage';
 import type { ActorId, ActorKind, Faction, Owner } from '../entities/actors';
 import type { Polarity } from '../combat/polarity';
+import type { HeartKind } from '../content/heart-art';
+import type { LayerKind } from '../entities/hearts';
 
 export type { Owner } from '../entities/actors';
 
@@ -73,6 +75,10 @@ export interface GameEvents {
   touchCube: { cube: number; material: number; held: number; carry: number; bomb: boolean; action: CubeAction };
   /** About to place a bomb at your feet. Change the fuse, or cancel. */
   bombPlace: { fuse: number };
+  /** About to launch a bomb as a missile (a quick double tap with the `missile` stat). `speed` is the
+   *  steady speed (blocks/s) and `range` how far it flies (blocks); `polarity` decides the blast
+   *  (negative: a bomb blast; positive: a love explosion). Change them, or cancel: no bomb is spent. */
+  missileLaunch: { speed: number; range: number; polarity: Polarity };
   /** Kicking a loose cube. `tags` end up on the cube (see `debrisImpact`). */
   kick: { cube: number; material: number; speed: number; lift: number; tags: Set<string> };
   /** Throwing the top block of your hand (Q, or right click with nowhere to place it). */
@@ -84,10 +90,11 @@ export interface GameEvents {
   debrisImpact: { cube: number; x: number; y: number; z: number; material: number; speed: number; tags: Set<string>; keepTags: boolean };
 
   // ── movement ──
-  /** About to jump. Change `velocity` for higher jumps, or cancel. */
-  jump: { velocity: number };
-  /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor. */
-  land: { fallSpeed: number; cause: 'fall' | 'descent'; x: number; y: number; z: number };
+  /** About to jump. Change `velocity` for higher jumps, or cancel. `air` is the jump's step on the
+   *  ladder when it is made in the air (1 = the first air jump, 2 = the second; absent on the ground). */
+  jump: { velocity: number; air?: number };
+  /** Touched the ground after falling. React only. `cause` is 'descent' for the shaft to the next floor, 'sky' in the sky. */
+  land: { fallSpeed: number; cause: 'fall' | 'descent' | 'sky'; x: number; y: number; z: number };
 
   // ── actors (the player and projections; docs/architecture/ACTORS.md) ──
   // Hooks on actorDamage, contact and actorDeath must say which actors they are for
@@ -121,9 +128,11 @@ export interface GameEvents {
   /** The player walks up to a closed chest. `cost` (keys, 0 = free) can be changed; cancel to keep it shut. */
   chestOpen: { x: number; y: number; z: number; cost: number };
   /** Collecting a key, bomb or heart. `amount` can be changed (or cancel to leave it there). */
-  pickupCollect: { kind: PickupKind; amount: number };
+  pickupCollect: { kind: PickupKind; amount: number; readonly heart?: HeartKind };
+  heartLost: { readonly heart: LayerKind };
+  berserkChange: { readonly on: boolean };
   itemGained: { id: string; uid: number };
-  roomEnter: { room: number; type: string; firstVisit: boolean };
+  roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
   floorEnter: { depth: number };

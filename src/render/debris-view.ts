@@ -5,9 +5,9 @@ import * as THREE from 'three';
 import { mat } from '../content/materials';
 import { ATLAS_COLS, ATLAS_ROWS, CRACK_STAGES, tileFor } from '../content/tiles';
 import { DEBRIS_SIZE, type DebrisSystem } from '../physics/debris';
-import type { VoxelWorld } from '../world/world';
+import type { VoxelSpace } from '../world/space';
 import { crackTexture } from './atlas';
-import { buildSeed, disposeSeed, fuseSeed, SEED_H, SEED_VOXEL, type SeedModel } from './seed-model';
+import { buildSeed, disposeSeed, fuseSeed, SEED_H, SEED_VOXEL, type SeedKind, type SeedModel } from './seed-model';
 
 const SEED_SCALE = DEBRIS_SIZE / (SEED_H * SEED_VOXEL);
 
@@ -74,9 +74,12 @@ export class DebrisView {
   }
 
   private seed(sys: DebrisSystem, i: number) {
+    // the cache is keyed by slot and kind: a slot reused by a bomb of the other polarity is rebuilt
+    const kind: SeedKind = sys.love[i] ? 'love' : 'breakthrough';
     let m = this.seeds.get(i);
+    if (m && m.kind !== kind) { disposeSeed(m); m = undefined; }
     if (!m) {
-      m = buildSeed();
+      m = buildSeed(kind);
       this.scene.add(m.root);
       this.seeds.set(i, m);
     }
@@ -108,13 +111,13 @@ export class CrackView {
     }
   }
 
-  update(world: VoxelWorld) {
+  update(world: VoxelSpace) {
     const counts = new Array(CRACK_STAGES).fill(0);
     for (const [i, hp] of world.damaged) {
-      const max = mat(world.data[i]).hp;
+      const max = mat(world.getAt(i)).hp;
       const stage = Math.min(CRACK_STAGES - 1, Math.floor((1 - hp / max) * CRACK_STAGES));
       if (counts[stage] >= this.max) continue;
-      const x = i % world.sx, y = Math.floor(i / world.sx) % world.sy, z = Math.floor(i / (world.sx * world.sy));
+      const [x, y, z] = world.coords(i);
       this.m.makeTranslation(x + 0.5, y + 0.5, z + 0.5);
       this.layers[stage].setMatrixAt(counts[stage]++, this.m);
     }

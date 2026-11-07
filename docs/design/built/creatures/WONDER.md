@@ -13,7 +13,7 @@ Wonder is a small moth of pale paper that drifts among the roots and keeps away 
 ## Movement and character
 
 - Flees the player: when the player comes within four blocks, it turns away.
-- Otherwise it drifts about 1.1 blocks above the ground, changing direction every one to three seconds.
+- Otherwise it drifts about 1.1 blocks above the surface under it (it follows steps and stays under the ceiling), changing direction every one to three seconds, and turns off a wall before it reaches it.
 - Its wings flap like arms.
 - Two to four appear on floor 0.
 

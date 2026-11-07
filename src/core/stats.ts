@@ -9,9 +9,9 @@ import { fmtNum, t } from '../i18n';
 
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
-  | 'moveSpeed' | 'jump' | 'reach'
+  | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
-  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath';
+  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -35,8 +35,9 @@ export const BASE_STATS: Stats = {
   mining: 3.5,     // damage per intention to blocks (separate from `damage`, which hurts actors)
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
+  airJumps: 0,     // jumps you may make in the air before landing (floored; SKY.md §9)
   reach: 5,        // reach for placing blocks
-  carry: 1,        // how many blocks you can hold (floored)
+  carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier
   crush: 0,        // block damage per second of contact with the blocks around you (0 = none)
@@ -46,6 +47,7 @@ export const BASE_STATS: Stats = {
   bombRadius: 2.6, // blocks
   bombDamage: 40,  // damage to blocks at the centre of a bomb
   breath: 8,       // seconds you can stay with your head under water before you start drowning
+  missile: 0,      // 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does not)
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -58,6 +60,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   mining: [0.35, 350],
   moveSpeed: [0.3, 3],
   jump: [0.3, 5],
+  airJumps: [0, 4],
   carry: [1, 9],
   kick: [0.2, 6],
   throw: [0.2, 6],
@@ -68,6 +71,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   bombRadius: [1, 8],
   bombDamage: [5, 500],
   breath: [1, 120],
+  missile: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -85,6 +89,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   luck: v => fmtNum(v, 1),
   moveSpeed: times,
   jump: times,
+  airJumps: v => fmtNum(Math.floor(v), 0),
   reach: v => blocks(v, 1),
   carry: v => blocks(Math.floor(v), 0),
   kick: times,
@@ -96,6 +101,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   bombRadius: v => blocks(v, 1),
   bombDamage: v => fmtNum(v, 0),
   breath: v => t('unit.seconds', { n: fmtNum(v, 1) }),
+  missile: v => (v < 1 ? t('unit.crushNone') : t('unit.missileOn')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

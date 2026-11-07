@@ -4,24 +4,27 @@ Up: [The realm of the sky](../README.md)
 
 The guardians are the five deities of the first five floors of the sky tree. Each one is a small, soft body under a giant animal head, placed over its floor. Each guardian's floor is one giant boss fight with minions: the player must climb the floor, answer its puzzle and reach the deity. Every guardian has its own document. This README holds only what all five share, the order, and the assignment for the exact behaviour.
 
-Status: decided for the animals and their order, for levitation, for the stitch, for the rule that nothing dies, for the tower rule and for the rule that a teleport lands far from the player. Proposal for the rest of the shared contract. Open for the points listed under open questions.
+Built: the five deities run in the code, with their attacks, special attacks and defeat by positive hits; what the player meets is in [built/sky/guardians](../../../built/sky/guardians/README.md). The documents here keep the full specification (the targets the build follows), what is not built, and the open questions. The gaps still open after the build are in section 7.
+
+Status: decided for the animals and their order, for levitation, for defeat by positive hits, for the rule that nothing dies, for the tower rule, for the rule that a teleport lands far from the player, and for no health damage in the sky, with capture and spirit (decided, owner, 2026-11-03, realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)). Decided (owner, 2026-11-05): every deity, the panda included, has special attacks; each fight has two or three phases; spirit is shown as a number out of 100; standing still and the other calm answers show the player that they are right; and each floor's way up stays closed until its deity is defeated. Provisional: the koala and the horse teleport, each deity changes its attitude when it is defeated, and the capture and spirit defaults. Proposal for the rest of the shared contract. Open for the points listed under open questions.
 
 ## 1. The shared contract
 
-Status: decided for rules 1, 2, 3, 6, 10, 11 and 12. Proposal for the rest.
+Status: decided for rules 1, 2, 3, 6, 10, 11, 12 and 13. Proposal for the rest.
 
 1. **A small body under a giant head.** Each deity is a small, round, soft body, like a plush toy, that carries the giant head of its animal. The head is big and the body is small. The look is cute, not threatening. Exact proportions and any further parts are open. *(Decided: a small body with a giant animal head.)*
 2. **Levitation.** Every deity levitates over its place, except the horse. The horse is the only deity that does not levitate: it walks on the ground and jumps ([HORSE](HORSE.md)). *(Decided.)*
 3. **The arena is the floor.** The fight takes place on the whole sky floor. There is no separate arena room. *(Decided: one giant boss fight per floor.)*
 4. **Each fight is a puzzle.** Each floor has a different puzzle, built from its platforming and from the hindrances in [abilities](../abilities/README.md). The puzzle is solved with the built world's verbs: jumping, building blocks, water, lava, cubes, and going straight up.
 5. **Platforming first.** Each floor is strong platforming before it is a fight. The player must be able to reach the deity by climbing, with or without practices. Each floor's platforming is different from the others (see the table in section 2).
-6. **The stitch.** The player defeats a deity by stitching it with many shots (the owner's "coser a tiros"): hitting it with many positive intentions. The stitch is many positive shots and nothing else. The number of shots is a target in each guardian document, and the visible sign of progress is a target or an open question. When it is stitched, the deity transforms, changes its attitude, or leaves; it does not die. *(Decided.)*
+6. **Defeat by positive hits.** The player defeats a deity by landing many positive hits on it: each positive intention that touches it is one hit. Defeat is many positive hits and nothing else. The hit count is a target in each guardian document, and the visible sign of progress is a target or an open question. When the hit count is reached, the deity transforms, changes its attitude, or leaves; it does not die. It can also be turned to the player's side. *(Decided.)*
 7. **The minions help.** Minions turned into allies can help the player on the floor. What allies do is proposal in [minions](../minions/README.md).
 8. **Not every floor is a minion army.** One floor may be only challenging platforming with the player hitting the deity, with no minions. Which floor, if any, is open.
 9. **Negative intentions do nothing.** Sky creatures are won only with positive intentions ([sky laws](../README.md#33-negative-intentions-do-not-work-on-sky-creatures)).
 10. **Nothing dies.** No deity and no minion dies. At most it transforms, changes its attitude and behaviour, or leaves ([sky laws](../README.md#37-nothing-dies-in-the-sky)). *(Decided.)*
 11. **The tower rule.** When the player builds a tower that brings them to a deity's height, the deity leaves its place, knocks the tower down and pushes the player off it, after a warning ([sky laws](../README.md#39-a-tower-that-reaches-a-deity-is-knocked-down)). The first guardian's version is in [PANDA](PANDA.md). *(Decided.)*
-12. **Teleport lands far.** Some deities can teleport. A teleport always puts the deity far away from the player, never next to them. Which deity teleports is open (section 5); each guardian document marks where a teleport would fit as "teleport (which deity: open)". *(Decided for the rule; open for which deity.)*
+12. **Teleport lands far.** Some deities can teleport. A teleport always puts the deity far away from the player, never next to them. The koala and the horse teleport (provisional, section 5). Their documents mark where a teleport fits; the other three documents say that those deities do not teleport. *(Decided for the rule; provisional for which deity.)*
+13. **The gate stays closed until the deity falls.** The way up from each floor is closed until that floor's deity is defeated, and the player cannot change floor until then ([sky laws 3.5](../README.md#35-the-way-up-opens-when-the-deity-is-won); [sky architecture, section 7.1](../../../../architecture/SKY.md)). Each guardian document says it in one line in B2. *(Decided, owner, 2026-11-03 and 2026-11-05.)*
 
 ## 2. The order of appearance
 
@@ -62,7 +65,7 @@ The exact behaviour of every guardian and every minion is not decided here. It i
   - the timing of each attack, as a telegraph window and a target length, marked as target;
   - the pattern of each minion's movement, from the animal;
   - the platforming layout rules of the floor: which cells, which heights, which routes;
-  - the stitch mechanic: how many positive shots it takes, what shows progress, and what the stitched deity does (it transforms, changes its attitude, or leaves).
+  - the defeat by positive hits: how many positive hits it takes, what shows progress, and what the defeated deity does (it transforms, changes its attitude, or leaves).
 - Where the document is open, leave the question open and list it. Do not decide an open question silently.
 
 **Constraints:**
@@ -82,25 +85,25 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 
 | Document | Contents | Status |
 |---|---|---|
-| [PANDA.md](PANDA.md) | Sky floor 1: the giant panda | Proposal, specified |
-| [KOALA.md](KOALA.md) | Sky floor 2: the koala | Proposal, specified |
-| [ELEPHANT.md](ELEPHANT.md) | Sky floor 3: the elephant | Proposal, specified |
-| [LION.md](LION.md) | Sky floor 4: the lion | Proposal, specified |
-| [HORSE.md](HORSE.md) | Sky floor 5: the horse | Proposal, specified |
+| [PANDA.md](PANDA.md) | Sky floor 1: the giant panda | Specified; built in part ([built](../../../built/sky/guardians/PANDA.md)) |
+| [KOALA.md](KOALA.md) | Sky floor 2: the koala | Specified; built in part ([built](../../../built/sky/guardians/KOALA.md)) |
+| [ELEPHANT.md](ELEPHANT.md) | Sky floor 3: the elephant | Specified; built in part ([built](../../../built/sky/guardians/ELEPHANT.md)) |
+| [LION.md](LION.md) | Sky floor 4: the lion | Specified; built in part ([built](../../../built/sky/guardians/LION.md)) |
+| [HORSE.md](HORSE.md) | Sky floor 5: the horse | Specified; built in part ([built](../../../built/sky/guardians/HORSE.md)) |
 
 ## 5. Open questions
 
-1. **Which built stories are the sky floors.** Open: the mapping of the five sky floors onto the built tree's seven stories ([LEVELS](../../../built/levels/README.md)).
-2. **What a stitched deity does.** Open: which of the three outcomes (it transforms, changes its attitude, or leaves) each deity takes when it is stitched. Each guardian document proposes one.
-3. **Which deity teleports.** Open: which deities can teleport. The rule that a teleport always lands far from the player is decided.
+1. **Which built stories are the sky floors.** Decided (owner, 2026-11-03): the sky is a separate realm above the crown, and the seven built stories stay as the climb ([LEVELS](../../../built/levels/README.md)). The sky floors are not built stories.
+2. **What a defeated deity does.** Provisional (owner, 2026-11-03): each deity changes its attitude, as its guardian document proposes. Whether any deity transforms or leaves is open.
+3. **Which deity teleports.** Provisional (owner, 2026-11-03): the koala and the horse teleport. The rule that a teleport always lands far from the player is decided.
 4. **Which floor is platforming only.** Open: whether one floor has no minions, and which one.
 5. **The minions' part.** Open: whether a minion's help changes the fight's stages (see [minions](../minions/README.md)).
-6. **Stages of the fight.** The specifications pace each fight in three stages, at a third and at two thirds of the stitch target, like the built three phases. The stitch itself is only many positive shots. Does the owner want the fight to change as the stitches add up, or to keep one pace?
-7. **The stitch count and its sign.** The number of shots per deity and the visible sign of progress are targets (section 6.5). The owner has to confirm them.
+6. **Phases of the fight.** Answered (owner, 2026-11-05): each deity has two or three phases. Provisional, to confirm: the panda has two, the koala, the elephant, the lion and the horse three. Which deities have two is for the owner to confirm.
+7. **The hit count and its sign.** The number of positive hits per deity and the visible sign of progress are targets (section 6.5). The owner has to confirm them.
 8. **Block nests.** The specifications give every floor nests of loose cubes that refill (section 6.3), so building never needs a negative intention. Does the owner want nests, or should blocks come only from breaking the original world?
-9. **Broken cubes as player blocks.** A cube from a broken original block, once placed, counts as a player block in the specifications. Is that the owner's reading of the realm's law 3.2?
-10. **Winning by allies alone.** Allies add stitches with no cap on four floors. Can a floor be won with no stitch from the player's own hand?
-11. **Harm.** The specifications propose 2 points for a deity's lobs, bolts and rings, and no harm from hindrances or minions (section 6.6). The question stays open in [abilities](../abilities/README.md#4-open-questions).
+9. **Broken cubes as player blocks.** A cube from a broken original block, once placed, counts as a player block in the specifications. Is that the owner's reading of the realm's law 3.2? Provisional (law 3.1, owner to confirm): a broken original sky block drops no cube, so this does not arise until the owner confirms otherwise.
+10. **Winning by allies alone.** Allies add positive hits with no cap on four floors. Can a floor be won with no positive hit from the player's own hand?
+11. **Harm.** Decided (owner, 2026-11-03): no health damage in the sky. Certain special attacks drain spirit, and a capture takes one practice (section 6.6, realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)). Each guardian document proposes its special attacks and drains (B3b); the owner accepts the drain amounts for now, to adjust later (2026-11-05). See [abilities](../abilities/README.md#4-open-questions).
 12. **The telegraph ladder.** The warnings shorten from 1.4 s on the first floor to 0.9 s on the fifth (section 6.4). Confirm that the shortening is the sky's rising difficulty.
 
 ## 6. Shared terms of the behaviour specifications
@@ -113,7 +116,7 @@ Built values, from the built design ([player movement](../../../built/player/MOV
 
 - walk about 4.6 blocks a second; jump about 1.26 blocks high; a flat running jump crosses about 2.7 blocks (derived from the walk and the jump); coyote time 0.1 s;
 - an intention flies straight for about 8 blocks (half a second at 16 blocks a second) before it falls; 2.7 intentions a second;
-- the player places a block within about 5 blocks and carries one block by default;
+- the player places a block within about 5 blocks and carries two blocks by default, one in each hand;
 - a good intention never breaks a block, and a bad one breaks original blocks as it always did. Falling does not hurt.
 
 So, on every sky floor: a one-block step is a jump, a two-block step needs one placed block, a gap of two blocks is a jump, a gap of three is a jump only with a drop of one block or more, and a gap of four or more needs a bridge.
@@ -125,24 +128,24 @@ Each deity has the same core cycle, with its own timings and its own animal stat
 - **Idle**: the animal's own rest. No attack.
 - **Watching**: the head turns to the player. Starts when the player comes within the deity's sight (its document gives the distance).
 - **Attacking**: one attack, with its telegraph first (section 6.4).
-- **Recovering**: the deity is open after an attack. The best moment for a stitch.
-- **Hurt**: a short flinch when a stitch lands. It never cancels a telegraph already shown.
-- **Rallying**: when the stitches reach a third and two thirds of the deity's target (section 6.5), the deity holds for target 2 s, like the built phase hold of 2 s ([fight flow](../../../built/bosses/FIGHT-FLOW.md)), and its next stage begins with one more attack.
+- **Recovering**: the deity is open after an attack. The best moment for a positive hit.
+- **Hurt**: a short flinch when a positive hit lands. It never cancels a telegraph already shown.
+- **Rallying**: at each change of phase (section 6.5: at half the deity's target for a two-phase fight, at a third and two thirds for a three-phase fight), the deity holds for target 2 s, like the built phase hold of 2 s ([fight flow](../../../built/bosses/FIGHT-FLOW.md)), and its next phase begins with more attacks.
 
-The cycle is Idle, Watching, Attacking, Recovering, then Watching again while the player is in sight, or Idle when they are not. Rallying interrupts the cycle once at each stage change.
+The cycle is Idle, Watching, Attacking, Recovering, then Watching again while the player is in sight, or Idle when they are not. Rallying interrupts the cycle once at each phase change.
 
 **Levitation is decided.** Every deity levitates over its place, except the horse, which stands, walks and jumps on the ground. Each document gives the deity's height over its place as a target.
 
-**Teleport.** A deity that teleports (which deity: open) vanishes from its place with a warning of target one telegraph length, and reappears far from the player, never within target 12 blocks of them. Each document marks where a teleport would fit.
+**Teleport.** The koala and the horse teleport (provisional). A teleporting deity vanishes from its place with a warning of target one telegraph length, and reappears far from the player, never within target 12 blocks of them. Their documents mark where a teleport fits.
 
-**The tower rule.** A tower is a stack of target 3 or more player blocks that the player stands on. When a tower brings the player to within target 2 blocks of a deity's height, the deity warns, leaves its place, knocks the tower down and pushes the player off it, then returns. The floor's own vertical route never triggers it.
+**The tower rule.** A tower is a stack of target 3 or more player blocks that the player stands on. When a tower brings the player to within target 2 blocks of a deity's height, the deity warns, leaves its place, knocks the tower down and pushes the player off it, then returns. The floor's own vertical route never triggers it. Built: the tower's detection, the warning (2 s) and the knock with its push and its landing, run today by the outside watch for towers outside the tree ([OUTSIDE-WATCH](../../../built/sky/laws/OUTSIDE-WATCH.md)). Not built: the trigger at a deity's height inside a floor, and the deity's travel to the tower and back.
 
 ### 6.3 Original blocks, player blocks and where blocks come from
 
 - **Regrowth.** An original block of a sky floor that breaks comes back after target 5 s. Target 1 s before it returns, its cell shimmers. A block never returns into a cell that holds the player, a minion or a player block; it waits until the cell is free.
 - **Block nests.** Each floor has nests: hollows that hold target 3 loose cubes of the floor's material. A cube taken from a nest is replaced after target 6 s. Nests let a player with no practices build without ever using a negative intention.
-- **Broken cubes.** A cube that falls out of a broken original block is a loose cube like any other: it can be carried and placed.
-- **Placed is the player's.** A cube the player places becomes a player block (the realm's [law 3.2](../README.md#32-blocks-the-player-makes-are-the-exception)). Hindrances never change a player block, and only a positive intention destroys one. A tower knocked down by a deity follows the tower rule (section 6.2); what becomes of its blocks is open in the [sky's open questions](../README.md#5-open-questions).
+- **Broken cubes.** Provisional (owner, 2026-11-03, to confirm): a broken original sky block drops no cube. The nests are where loose cubes come from.
+- **Placed is the player's.** A cube the player places becomes a player block (the realm's [law 3.2](../README.md#32-blocks-the-player-makes-are-the-exception)). Hindrances never change a player block, and only a positive intention destroys one. A tower knocked down by a deity follows the tower rule (section 6.2); its blocks fall as loose cubes the player can gather again (provisional, owner, 2026-11-03).
 
 ### 6.4 Telegraphs
 
@@ -158,20 +161,43 @@ Every attack and every hindrance shows its telegraph first ([abilities](../abili
 
 No sky telegraph is shorter than target 0.8 s.
 
-### 6.5 The stitch
+### 6.5 Defeat by many positive hits
 
-The player defeats a deity by stitching it with many shots (decided). The specifications use only what the player sees:
+The player defeats a deity by landing many positive hits on it (decided). The specifications use only what the player sees:
 
-- **A stitch** is one positive intention that touches the deity's body or head while the deity is not in a guarded state (each document names its guards, if any).
-- **Many shots.** Each deity takes a target number of stitches. When the count is reached, the deity is stitched: it transforms, changes its attitude, or leaves (which one is open, section 5). It never dies.
-- **Progress (target).** Each landed stitch leaves a short gold stitch mark of light on the plush body where it lands, and the marks gather until the body is covered. Each document adds the animal's own sign. The sign is a target until the owner confirms it.
-- **Stages.** The fight's pace changes at a third and at two thirds of the target, like the built three phases ([fight flow](../../../built/bosses/FIGHT-FLOW.md)). Stages only pace the attacks; they are not part of the stitch (section 5).
-- **Allies help.** An ally that reaches the deity, or the place its document names, adds stitches by itself on a timer. The player can win by hitting the deity, by making the minions help, or both.
-- **For comparison**: a built floor 1 boss has 140 health, about 40 bad intentions at 3.5 each. In the built game a good intention's warmth converts any boss in about five hits, which the built fight flow lists as an open question ([fight flow](../../../built/bosses/FIGHT-FLOW.md#open-questions)). The sky's counts sit between the two, because every stitch must be climbed for.
+- **A positive hit** is one positive intention that touches the deity's body or head while the deity is not in a guarded state (each document names its guards, if any).
+- **Many hits.** Each deity takes a target number of positive hits, its hit count. When the count is reached, the deity is defeated: it transforms, changes its attitude, or leaves (provisional: it changes its attitude, section 5). It never dies. It can also be turned to the player's side.
+- **Progress (target).** Each landed positive hit leaves a short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. Each document adds the animal's own sign. The sign is a target until the owner confirms it.
+- **Phases (stages).** Each deity's fight has two or three phases (decided, owner, 2026-11-05); its document says how many. A two-phase fight changes at half the target; a three-phase fight at a third and at two thirds, like the built three phases ([fight flow](../../../built/bosses/FIGHT-FLOW.md)). Provisional, to confirm: the panda has two phases and the other four have three. Phases only pace the attacks; they are not part of the defeat (section 5).
+- **Allies help.** An ally that reaches the deity, or the place its document names, adds positive hits by itself on a timer. The player can win by hitting the deity, by making the minions help, or both.
+- **For comparison**: a built floor 1 boss has 140 health, about 40 bad intentions at 3.5 each. In the built game a good intention's warmth converts any boss in about five hits, which the built fight flow lists as an open question ([fight flow](../../../built/bosses/FIGHT-FLOW.md#open-questions)). The sky's counts sit between the two, because every positive hit must be climbed for.
 
 ### 6.6 What works, and harm
 
-- **What works is a positive intention.** It stitches a deity, turns a minion toward an ally, and answers every attack and hindrance.
-- **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no stitch, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
-- **Harm is open** ([abilities, open question 2](../abilities/README.md#4-open-questions)). The specifications propose: a deity's bolts, lobs and rings may take target 2 points (a quarter of a heart, against the built boss touch of 8); hindrances and minions only move, slow or hold the player. The real cost of a mistake in the sky is lost height.
+- **What works is a positive intention.** It lands positive hits on a deity, turns a minion toward an ally, and answers every attack and hindrance.
+- **A negative intention that touches a sky creature goes out with a small puff and does nothing**: no positive hit, no harm, no change of side, no reaction. The puff is the feedback that teaches the rule.
+- **No health damage (decided, owner, 2026-11-03).** No deity attack, hindrance or minion takes the player's health in the sky. Certain special attacks drain spirit, the outline of the hearts, and at zero spirit the player is teleported to a random underground floor. A deity can capture the player and take one practice (provisional: held for 3 s, released by themself). A deity's bolts, lobs and rings otherwise only push, slow or hold the player. The built boss touch of 8 is for comparison only.
+- **Special attacks: spirit drains and capture (provisional, to confirm; every number a target).** Every deity, the giant panda included (owner, 2026-11-05), adds special attacks to its attack list, in its own document under "B3b. Special attacks", built from the animal's habits, each with a telegraph and a counter. Spirit is shown as a number out of 100, and each drain is a number on that scale (decided, owner, 2026-11-05); the owner accepts the proposed amounts for now, to adjust later. A special attack drains a set amount of spirit (`SPIRIT_MAX` 100; target 6 to 18 per drain, broadly rising floor by floor: panda 6 to 8, koala 8 to 18, elephant 12 to 16, lion 12 to 16, horse 14 to 18), captures the player for `CAPTURE_TIME` (3 s, one practice taken), or only moves, slows or holds. Its telegraph is the floor's length in section 6.4 for a move, slow or hold, 0.2 s longer for a drain and 0.5 s longer for a capture, never under 0.8 s. A player drains at most once per attack; two drains are at least 6 s apart; a capture comes at most once every 30 s; and no drain or capture begins its telegraph while the player is held in any way (captured, frozen, caged, hugged or ridden by the koala's joey), or within 1 s after. Hindrances and minions never drain spirit or capture (realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)).
+- **Spirit refills when a deity falls (provisional: the owner's default, 2026-11-05; built, and kept provisional by the owner, 2026-11-06).** When a deity is defeated, the player's spirit refills to full, with the deity's change of attitude and before its way up opens.
+- **Where the drain is called (built in W4-D).** A special attack calls `ctx.drain(n)` in its `act`, when the attack lands, never at its telegraph. The spirit gate (`SpiritLaw`, `src/sky/laws/spirit.ts`) is the one place that decides: at most once per attack run, at least 6 s from the last drain, never while the player is held, nor within 1 s after. `choose()` starts no drain attack where the gate would refuse it, so a telegraph never begins in a closed window. Every deity's special attacks now carry their drains ([SPIRIT](../../../built/sky/laws/SPIRIT.md)).
+- **Calm feedback (design requirement, owner, 2026-11-05).** Every answer that asks the player to stand still, slow down or hold their gaze shows a visible cue that the player is doing it right, from the moment they start, not only by the drain that does not come. The horse's Herd panic and Calm, the panda's rest beat and Slow chew, and the lion's Stare-down each name their cue in their document (the cues are provisional, for the art pass). A player who breaks the calm sees the cue undo itself.
 
+## 7. Gaps after the build
+
+Status: not built. Reported by the five deity builds (2026-11-05); each one is also listed in the deity's built document.
+
+**Shared by all five:**
+
+- The art gates of all five deities are pending owner review; the greyscale, colour-blindness and fog captures are not taken ([sky art](../../../../art/sky/README.md)).
+- The tower rule inside a floor is not wired (section 6.2).
+- The boss bar does not show a deity's hits.
+
+**By deity:**
+
+| Deity | Not built |
+|---|---|
+| [Panda](PANDA.md) | No float to a tower, nor in Cradle; no tower trigger on the floor; no sounds |
+| [Koala](KOALA.md) | The body does not float in for Hold fast, nor back to the Fork after a teleport; no telegraph poses; no sounds |
+| [Elephant](ELEPHANT.md) | Positive shots into the dust circle, at the grey water or at the stone in flight do not answer; the tower sweep is not wired; the floor's channels are a stand-in; no sound |
+| [Lion](LION.md) | The ledges do not settle when it is won; no rally minions; no wall stops the roar; no tower glide |
+| [Horse](HORSE.md) | No leap to a tower; no sounds |

@@ -34,6 +34,13 @@ export class Rng {
   int(min: number, maxIncl: number) { return min + Math.floor(this.next() * (maxIncl - min + 1)); }
   chance(p: number) { return this.next() < p; }
   pick<T>(arr: readonly T[]): T { return arr[Math.floor(this.next() * arr.length)]; }
+  /** One draw from a weighted table of [value, weight] pairs. */
+  weighted<T>(table: readonly (readonly [T, number])[]): T {
+    const total = table.reduce((sum, [, w]) => sum + w, 0);
+    let r = this.next() * total;
+    for (const [value, w] of table) if ((r -= w) < 0) return value;
+    return table[table.length - 1][0];
+  }
 }
 
 /** 32-bit string hash (FNV-1a), to derive seeds from names. */
@@ -99,4 +106,4 @@ export class RunRandom {
 }
 
 /** Runtime streams: outcomes during play (no replay promise; isolated from structure). */
-export type RuntimeStream = 'drops' | 'loot' | 'ai' | 'guard';
+export type RuntimeStream = 'drops' | 'loot' | 'ai' | 'guard' | 'hearts';

@@ -44,6 +44,7 @@ Everything that today reads "floor k of 4" reads the table instead: plans, rock 
 - World height ≈ 8 + 10 × 16 + 100 ≈ 270 (≈ 2.5 M voxels × 2 bytes ≈ 5 MB). The rock column is filled once per run, as today.
 - Room ids `(floor + 1) × ROOM_ID_STRIDE + index` so they stay positive when tree floors (−1…−3) arrive.
 - `MAX_ROOM_H` / `MAX_PIT` and the rock-between-bands test hold for every pair of the ten bands.
+- Lava in the rock between floors 5 to 9 (`LevelDef.lava`, `carveLavaBelow`): one row of patches five blocks under each floor and two rows of pockets, every cell sealed by rock or lava and two blocks clear of the hole. Its own fork `fork('floor', k, 'lava')` (GEN_VERSION 25); the design is in [LAVA-BELOW](../design/built/levels/floors/LAVA-BELOW.md).
 
 ### 2.3 Runs
 
@@ -283,3 +284,35 @@ The owner asked for the tree **at least three times bigger**, built as **stories
 Every trunk story has a two-block floor slab, a wall three blocks thick and knot windows at eye height. Each story's stair (`stairAt(i)`) turns 137° from the one below and stands inside its hall, so every hall is crossed: a core of wood, a step a block higher every two blocks of tread, three blocks of air over every step; the opening in the next floor is the air over the last steps (a fall into it is a few blocks). A story's stair is drawn by both stories it touches, each clipped to its own heights, so stories grow in any order. No projections live in the tree yet. Tested: same seed same tree in any order, ranges contiguous, the foot nearly as wide as a floor, and a walk from the grass to the crown through every story.
 
 **Loading by level (`Game.stream`, `ChunkRenderer.setLoadedRange`).** The world has a single axis of levels: floors 0–9 below (silence counts with 9), and the tree's stories as −1 (the roots, which also holds the dirt and the grass) to −7 (the stars). Each frame the game finds the player's level `s`; when it changes, the tree's stories in `s − 1 … s + 1` grow if they never have, and the chunk renderer keeps meshes only for the chunk rows covering those three levels: meshes outside are disposed, rows coming in are queued for meshing, and replies for rows that left are dropped. Scope (owner): only the tree and the block and element meshes; voxels, doors, pickups and projections are untouched (the world is still one array; what is grown or dug stays). Seen from the grass, the tree shows its first two stories; the rest appears as you climb. `GEN_VERSION` 12.
+
+## 13. The mountains round the surface (issue #10, 2026-11-06)
+
+Owner, issue #10: the ground round the tree was very small and the world felt closed in. Owner, for this version: *a simple procedural mountain system round the tree, basic, but enough that the player is not standing on a square in the air.*
+
+**Which tree, and which square.** The dungeon world's giant tree (`GiantTree`, centred at `sx >> 1, sz >> 1`). The dungeon array is only the floors' footprint, 119 × 77 blocks, and the tree's foot (radius 34) almost fills it: four blocks of grass north and south of the trunk, then the array's edge, where the grass stopped and its sides of dirt and bedrock hung in the sky. That is the square in the air.
+
+**What was built (`src/world/mountains.ts`, `Mountains`).** A ring of ridges outside the array, as a formula of the run's seed (`fork('mountains')`), baked once at run start into a heightmap of columns (`Int16Array`, 377 × 377 columns, about 280 KB): blocks are never stored. Heights above the grass, distances from the tree's axis:
+
+| Radius | What stands there |
+|---|---|
+| 0–76 (`PLAIN_R`) | The plain: flat grass. The whole dungeon square lies inside it (its far corner is 70 from the axis) |
+| 76–136 (`CREST_R`) | The inner wall: foothills that steepen into cliffs, `crest × t^1.5`, with a −1/0/+1 jitter in 2 × 2 blocks so no wall is smooth |
+| 136 | The crest: half the tree's height on average (three sines with seeded phases, 47–99 blocks), each ridge's peak exactly the tree's height (`PEAK` = 146, the top of the canopy) |
+| 136–172 (`FOOT_R`) | The outer wall, steeper, down to the far plain |
+| 172–188 (`EDGE_R`) | The far plain (flat grass), where other areas will open later; past it there is no ground |
+
+- **Passes:** three (`PASSES`), about 120° apart with a seeded jitter, flat corridors eight blocks wide whose sides rise over 22 blocks. They cut the ring into three ridges and leave the far plain reachable on foot.
+- **Trails:** each ridge has one trail, a strip three blocks wide of worn earth (dirt) on a line from the plain, rising one block a block to a shoulder of 48 blocks on the crest (the crest dips to it round the trail). A ground jump rises 1.26 blocks (`physics/jump.ts`), so every ridge can be climbed by jumping; the rest of the walls are steeper and ask for building or another way up.
+- **Materials:** existing blocks only. Gentle ground under 40 blocks is grass (dirt under it), anything steeper or higher is bare stone, the trail is dirt. The ground goes six blocks under the grass (`DEPTH`), a skirt nobody sees from inside the ring.
+
+**How the world reads it.** `VoxelWorld.terrain` holds the `Mountains`. `get()` (and so `solid()`, collision, raycasts and the debris) answers for any cell outside the array from the terrain; `paddedChunk` fills its border from it, so the array's rim chunks no longer show their sides. `set()` outside the array is still ignored, and `Game.damageBlock` / `breakBlock` refuse cells outside it: the mountains cannot be broken or built on (the array holds every change; a store of exceptions like the sky's `SkyWorld` would lift this later). `hp()` outside the array returns the material's hp, never an index into the array.
+
+**Meshing and loading.** `Mountains.chunks()` lists the chunks outside the array whose cells or border cross the ground's top (about 1,160 for a seed): `createDungeonWorld` queues them once. `VoxelSpace.outerChunk` tells the `ChunkRenderer` which chunks are the terrain's: they are never unloaded by `setLoadedRange` (the rows of levels) and `setVisibleRange(y0, y1, outer)` draws them at any height above `y0` when the camera is at the surface or in the sky (`outer`), and never underground. A change on the array's rim marks the terrain chunk across it.
+
+**Costs.** Baking the heightmap takes about 55–80 ms in Node at run start; the meshes are the ring's visible faces, measured only headless. A phone performance pass is still owed (it was already owed for the whole world).
+
+**RNG.** `fork('mountains')`: pass angles (three draws), then per ridge a peak and a trail fraction, then three crest phases, then the jitter seed. `GEN_VERSION` 26 (the plans and the golden hash did not change).
+
+**Tests** (`tests/mountains.test.ts`): the plain is flat and holds the dungeon square; the ring stands at the crest's radius outside the passes; every peak is exactly the tree's height and nothing is taller; every ridge can be climbed from the plain to its crest with steps of at most one block; every pass is flat from the plain to the far plain; the walls rise in steps of several sizes; the same seed gives the same mountains; the dungeon world answers with the terrain outside its array and nothing changes inside it.
+
+**Not verified, and open.** Not seen in a browser (only headless tests). The art gate for the mountains (their read in colour, greyscale, at distance and in fog, the grass and stone ramps on a slope, and their meaning) needs the owner's review. Open: what lies past the passes; whether the far edge should be hidden (it is behind the crest, inside the fog's reach from the crest); whether the mountains should become diggable (a store of exceptions).

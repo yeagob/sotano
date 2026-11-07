@@ -15,7 +15,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ world/       voxel storage + element layer, floor plan, stacked dungeon (carve, holes),
              │               element simulation, meshing worker (blocks and elements)
              ├─ physics/     voxel raycast, box-vs-grid collision, loose cubes and bombs
-             ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts
+             ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts, the touch router (SKY.md §5.7)
              ├─ entities/    player, doors, pickups, enemies (system)
              ├─ input/       actions bound to keyboard + mouse, gamepad and touch (input/README.md)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
@@ -85,11 +85,12 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## World (`world/`)
 
-- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters.
+- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters, and `terrain`: the read-only ground outside the array (the mountains).
 - `elements.ts` — the element simulation (active cells, 10 Hz, budgeted; [ELEMENTS.md](ELEMENTS.md) §10).
 - `elem-mesher.ts` — water and lava surfaces sloped from their levels, fire quads; runs in the meshing worker.
 - `floorplan.ts` — Isaac-style plans from any start cell, with a fallback. See [ROOMS.md](ROOMS.md).
 - `floor.ts` — the stacked dungeon: `createDungeonWorld`, `carveFloor`, `openHole`, `floorY`, `bandOf`, `roomOrigin`, `cellOf`.
+- `mountains.ts` — `Mountains`: the ring of mountains round the surface, a seeded heightmap read for every cell outside the dungeon array ([LEVELS.md](LEVELS.md) §13).
 - `mesher.ts` / `mesher.worker.ts` — visible faces, per-vertex AO and face shade baked into vertex colours, in a worker.
 
 ## Physics (`physics/`)
@@ -127,7 +128,7 @@ Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md
 
 ## Debug console
 
-The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|chests|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)).
+The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|chests|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)). **`?test`** adds the test bench, a panel with god mode, a jump to any floor or the sky deck, every practice and a floor-by-floor guide (`src/debug/test-bench.ts`, `src/debug/test-panel.ts`, `Game.debugFloor`; [TEST-BENCH](../testing/TEST-BENCH.md)).
 
 
 `window.S` in the browser console:
@@ -138,6 +139,7 @@ The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the
 | `S.stats()`, `S.synergies()`, `S.hooks()`, `S.trace()` | Inspect stats, active synergies, every hook per event, which hooks touched an event |
 | `S.hold('crate', 'obsidian')` | Set the blocks in your hand |
 | `S.keys(n)`, `S.bombs(n)`, `S.heal(n)`, `S.hurt(n)` | Counters and health (through the normal events) |
+| `S.heart(kind)` | Drops a heart of that kind (`red`, `blue`, `stone`, `blood`, `star`, `berserker`) in front of the player |
 | `S.god()` / `S.god(false)` | Invulnerable |
 | `S.floor()` | Open this floor's hole and drop into the next |
 | `S.enemies()`, `S.room()` | Live projections; the current room |
@@ -149,6 +151,14 @@ The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the
 
 URL parameter `?seed=123` picks the seed; `?lang=es` picks the language.
 
+### Development logs (`src/debug/devlog.ts`)
+
+Development builds and the `develop` branch print one console line per event a developer edits layouts and content by, prefixed `[devlog]` and always in English (not in `i18n/`, which is for players): `item picked up: <id>`, `room entered: <template> (room, type, first visit or revisit)`, `monster spawned: <monster>`, `monster died: <monster> at (x, y, z), caused by <damage kind> from <source>`, `item dropped: <heart, key or bomb> from <monster, block or room reward>`, `alembic (x, y, z): feed <hand item> -> <result>` and `intention <polarity> -> <result>`, `kitchen (x, y, z): cook <hand item> -> <result>`, `chest (x, y, z): opened for N key(s), contents <items>`.
+
+**The gate** is `devlogEnabled(dev, branch)`: on when `import.meta.env.DEV` is true or the branch is `develop`; off in release builds and on `main`. The branch is the build-time constant `DEVLOG_BRANCH`, set in `vite.config.ts` from Vercel's `VERCEL_GIT_COMMIT_REF` (then GitHub's `GITHUB_REF_NAME`), and empty, so off, when neither is set. Vercel's `develop` preview prints the lines; the production build of `main` does not. With the gate off, `attachDevlog` installs no hooks at all.
+
+The bus hooks (priority 250, after every payload change, so a line shows the final drops) cover `itemGained`, `roomEnter`, `enemySpawn`, `actorDamage` (it remembers what last hurt a monster), `actorDeath`, `blockLoot` and `roomClear`. The alembic, kitchen and chest lines are written where the game acts, since the bus has no event for their results. Each run makes a new bus, and the hooks attach to it again.
+
 ## Tests (`tests/`)
 
 Vitest, Node, no rendering (102 tests):
@@ -159,6 +169,7 @@ Vitest, Node, no rendering (102 tests):
 - `items.test.ts` — catalogue integrity, inventory invariants (no residue, synergies, suppression, tag counts, `onGain` once, throwing hooks, serialize/restore), pools, the **contract** (every event emitted, every stat read).
 - `rng.test.ts` — seed codes, fork purity, determinism (same seed, same ten floors), a golden seed hash per `GEN_VERSION`, practices lasting ten floors, isolation (runtime randomness never changes structure), pre-rolled rewards, variety over 200 seeds, tables, and the randomness discipline (only `core/fx.ts` calls `Math.random`).
 - `sandbox.test.ts` — every sandbox scenario validates and carves the same room twice; a scenario's rows land where it says, sealed by its shell. The scripted runs themselves are `npm run sandbox -- --check` (headless Chromium, [SANDBOX.md](SANDBOX.md) §4).
+- `devlog.test.ts` — the gate (on in development and on `develop`, off in release and on `main`), no hooks when off, one line per logged event.
 - `helpers.ts` — builds a whole run's structure like `Game.newRun`, for tests.
 - `i18n.test.ts` — every locale has every message with the same placeholders; every item, synergy, enemy and material translated, no stale ids; translated effect lines keep English's numbers; no empty strings or markup; fallback, plurals, number formats, language detection; every damage source names a cause; the language never changes a run.
 - `controls.test.ts` — every action mapped on keyboard and mouse, gamepad and touch with its Minecraft, Noita and Isaac references; no shared input in one context; a world tap and a half turn are live in play; a `none` touch control is reached through another; touch glyphs exist; every control row and prompt has its words per device.

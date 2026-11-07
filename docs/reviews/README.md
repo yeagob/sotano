@@ -10,6 +10,7 @@ Each review records the critique, the ruling and the engineer's resolution.
 
 | Review | Subject | Outcome |
 |---|---|---|
+| [sky.md](sky.md) | The sky realm as a formula world, the five guardian floors, Totality to the closed Sun, the Spiked Entity, the staircase and the unlock ([../architecture/SKY.md](../architecture/SKY.md)) | Accepted with changes; not built |
 | [items-architecture.md](items-architecture.md) | Items, synergies and exceptions ([../architecture/ITEMS.md](../architecture/ITEMS.md)) | Accepted with changes (M1) |
 | [entities.md](entities.md) | Health, bombs, enemies, loot, stacked floors ([../architecture/ENTITIES.md](../architecture/ENTITIES.md)) | Accepted with changes (M1.5) |
 | [rng.md](rng.md) | Seeds and randomness across the whole game ([../architecture/RNG.md](../architecture/RNG.md)) | Accepted with changes |

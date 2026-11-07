@@ -14,8 +14,8 @@ Floors 4 to 9. Code: [noise.ts](../../../../src/content/enemies/noise.ts).
 
 ## How it moves and attacks
 
-- It flits around its target at about three blocks, changing direction now and then, at a fast pace.
-- Its touch does 2 damage.
+- It flits around its target at about three blocks, at eye height, changing direction now and then, at a fast pace.
+- Like the Distraction it stops, swells and flares its eyes, darts through where you stood and rests ([Distraction](DISTRACTION.md)). Only the dart touches: 2 damage.
 - It has eight health.
 
 ## How the player answers it

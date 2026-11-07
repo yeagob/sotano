@@ -5,6 +5,8 @@
 // Spanish name of the technique or public-domain work (docs/architecture/LOCALIZATION.md §5).
 
 import type { Catalog } from '.';
+import { SKY_PARTS_ES } from './sky';
+import { TEST_BENCH_ES } from './test-bench.es';
 
 export const ES: Catalog = {
   code: 'es',
@@ -55,7 +57,7 @@ export const ES: Catalog = {
     'controls.jump.pad': 'A',
     'controls.move.pad': 'Stick izquierdo',
     'controls.look.pad': 'Stick derecho',
-    'controls.jump': 'saltar (mantén para nadar hacia arriba)',
+    'controls.jump': 'saltar (mantén para nadar hacia arriba; con saltos en el aire, salta de nuevo en el aire)',
     'controls.jump.key': 'Espacio',
     'intro.tagline': 'Baja dentro de ti. Rompe lo que te retiene. Encuentra lo que vive abajo.',
     'seo.title': 'THE ROOTS: un roguelike voxel gratis en tu navegador',
@@ -83,6 +85,10 @@ export const ES: Catalog = {
     'controls.drink': 'beber el frasco de la mano',
     'controls.bomb.key': 'E',
     'controls.bomb': 'soltar una bomba',
+    'controls.launch.key': 'Doble clic rápido',
+    'controls.launch.pad': 'Doble RT rápido',
+    'controls.launch.touch': 'Doble toque rápido en la cuenta de luz',
+    'controls.launch': 'lanzar una bomba como misil (con Dr. Launcher)',
     'controls.doors.key': 'Puertas',
     'controls.doors': 'se abren al acercarte; las cerradas necesitan una llave',
     'controls.inventory.key': 'Tab',
@@ -107,6 +113,7 @@ export const ES: Catalog = {
     'controls.polarity': 'cambiar entre buenas y malas intenciones: las buenas curan y convierten enemigos en aliados; las malas rompen y destruyen',
 
     'hud.floor': 'Piso {n}',
+    'hud.spirit': 'Espíritu',
     'level.roots': 'Las raíces',
     'level.circle1': 'El limbo',
     'level.circle2': 'Los vientos',
@@ -133,6 +140,16 @@ export const ES: Catalog = {
     'toast.seedVersion': 'Esta semilla es del generador v{v}; esta versión es la v{build}: la partida puede cambiar',
     'toast.floor': 'Piso {n}',
     'toast.roomClear': 'Sala despejada',
+    'heart.blue': 'Corazón azul: un corazón más, que se pierde para siempre al gastarse.',
+    'heart.blueLost': 'El corazón azul se ha ido.',
+    'heart.stone': 'Corazón de piedra: mientras recibe los golpes, cada golpe se reduce a la mitad.',
+    'heart.stoneLost': 'El corazón de piedra se desmorona. Los golpes vuelven a entrar enteros.',
+    'heart.blood': 'Corazón de sangre: te curas despacio, hasta dos corazones. Un golpe lo corta.',
+    'heart.bloodBroken': 'El golpe ha cortado el corazón de sangre.',
+    'heart.star': 'Corazón estrella: recuperas un corazón y 30 segundos intocable.',
+    'heart.starEnd': 'La estrella se apaga.',
+    'heart.berserker': 'Corazón berserker: más fuerte, más rápido, más alto. Poco alcance. Los disparos rebotan en ti.',
+    'heart.berserkerLost': 'El corazón berserker se consume.',
     'toast.silence': 'Silencio. Quédate quieto.',
     'presence.gardener.name': 'El Jardinero',
     'presence.gardener.1': 'Camina despacio. Las raíces recuerdan por dónde has pasado.',
@@ -148,6 +165,7 @@ export const ES: Catalog = {
     'toast.challengeWave': 'Oleada {n} de 3',
     'toast.challengeDone': 'Desafío superado: vuelve cuando quieras',
     'toast.noBombs': 'No te quedan bombas',
+    'toast.missileHint': 'Con un {launch}, una bomba sale como misil.',
     'toast.locked': 'Cerrada: necesitas una llave',
     'toast.unlocked': 'Abierta',
     'presence.boundary.name': 'El Límite',
@@ -196,6 +214,9 @@ export const ES: Catalog = {
     'potion.questioning-tincture.effect': 'La siguiente puerta o cofre cerrado pide una llave menos. Nunca el peaje. Hasta el siguiente piso.',
     'potion.ember-tonic.name': 'Tónico de brasa',
     'potion.ember-tonic.effect': 'Cadencia ×1,3 durante {rooms} salas selladas.',
+    'potion.berserker-draught.name': 'Brebaje berserker',
+    'potion.berserker-draught.effect': 'Berserker durante {rooms} salas selladas: daño, velocidad y salto ×1,5, alcance ×0,3, los disparos rebotan en ti.',
+    'berserk.off': 'El fuego berserker se apaga.',
     'potion.patient-draught.name': 'Brebaje paciente',
     'potion.patient-draught.effect': 'Excavación ×1,6 hasta el siguiente piso.',
     'potion.ended': '{name} se ha disipado',
@@ -317,6 +338,7 @@ export const ES: Catalog = {
     'path.mind': 'mente',
     'path.emotion': 'emoción',
     'path.will': 'voluntad',
+    'path.milagros': 'milagros',
 
     'stat.damage': 'Daño',
     'stat.fireRate': 'Cadencia',
@@ -328,6 +350,7 @@ export const ES: Catalog = {
     'stat.luck': 'Suerte',
     'stat.moveSpeed': 'Velocidad',
     'stat.jump': 'Salto',
+    'stat.airJumps': 'Saltos en el aire',
     'stat.reach': 'Alcance',
     'stat.carry': 'Carga',
     'stat.kick': 'Patada',
@@ -337,6 +360,7 @@ export const ES: Catalog = {
     'stat.maxHearts': 'Corazones',
     'stat.invuln': 'Recuperación',
     'stat.breath': 'Aliento',
+    'stat.missile': 'Misiles',
     'stat.bombRadius': 'Radio de bomba',
     'stat.bombDamage': 'Potencia de bomba',
     'unit.times': '×{n}',
@@ -346,6 +370,16 @@ export const ES: Catalog = {
     'unit.crushNone': 'ninguno',
     'unit.crushTier': 'nivel ≤ {n}',
     'unit.crushRate': '{n} por segundo',
+    ...SKY_PARTS_ES.core,
+    ...SKY_PARTS_ES.panda,
+    ...SKY_PARTS_ES.koala,
+    ...SKY_PARTS_ES.elephant,
+    ...SKY_PARTS_ES.lion,
+    ...SKY_PARTS_ES.horse,
+    ...SKY_PARTS_ES.totality,
+    ...SKY_PARTS_ES.endgame,
+    ...TEST_BENCH_ES,
+    'unit.missileOn': 'doble toque',
   },
 
   content: {
@@ -365,7 +399,7 @@ export const ES: Catalog = {
       resonance: {
         name: 'Resonancia',
         description: 'Cuando un pensamiento suena verdadero, los que están cerca empiezan a vibrar.',
-        effect: 'Cada intención que impacta carga a las otras intenciones en vuelo a menos de 3 bloques. Una intención cargada se descarga en su siguiente golpe: 3 de daño a las proyecciones a menos de 2 bloques.',
+        effect: 'Cada otra intención en vuelo en la sala suma 1% de daño a la intención que disparas.',
         inspiredBy: 'la resonancia simpática (física); un guiño a la sintonía terapéutica',
       },
       discharge: {
@@ -442,8 +476,8 @@ export const ES: Catalog = {
       },
       arttherapy: {
         name: 'Arteterapia',
-        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte un corazón.',
-        effect: 'Colocar 4 bloques conectados en la misma sala cura un corazón. Una vez por sala.',
+        description: 'Crear algo transforma a quien lo crea: cuatro bloques conectados que colocas en una sala pueden curarte.',
+        effect: 'Colocar 4 bloques conectados en la misma sala cura un cuarto de corazón. Una vez por sala, y en cuatro salas como máximo por piso.',
         inspiredBy: 'la arteterapia; la idea de que crear arte transforma a las personas',
       },
       boxbreathing: {
@@ -535,6 +569,18 @@ export const ES: Catalog = {
         effect: 'Dos de cada tres golpes de contacto de las proyecciones no te hacen nada.',
         inspiredBy: 'Los cuatro acuerdos (don Miguel Ruiz): «no te tomes nada personalmente»',
       },
+      drlauncher: {
+        name: 'Dr. Launcher',
+        description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. El avance que llevas ya no cae bajo su propio peso; mantiene su línea y vuela hacia donde miras.',
+        effect: 'Un doble toque rápido del control de disparo (en 0,3 s) lanza una bomba como misil en lugar de una intención: vuela recto, acelera hasta 24 bloques/s y explota contra lo primero que encuentra, o a los 40 bloques, con la explosión de tu bomba. Negativo: una explosión de bomba, que también puede herirte. Positivo: una explosión de amor que repara bloques, cura a los aliados, acerca a las proyecciones a tu lado y hace crecer a las criaturas. Se rechaza, sin gastar bomba, si hay un bloque a menos de 2 bloques.',
+        inspiredBy: 'Trascender los límites (Santiago Dopazo)',
+      },
+      'triple-jump': {
+        name: 'Triple salto',
+        description: 'Subir no se hace de un solo salto. Cada salto llega más alto que el anterior, y el último te lleva adonde ningún paso solo alcanzaba.',
+        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Ningún salto sube más de 16 bloques.',
+        inspiredBy: 'Atletismo: el triple salto (un deporte, su nombre genérico)',
+      },
       occamsrazor: {
         name: 'Corta con las relaciones tóxicas',
         description: 'Hay relaciones que te quitan más de lo que te dan: con personas, sustancias, comida o tecnología. Córtalas y guarda tu energía para lo que te devuelve algo. Un filo de luz acompaña a tu intención.',
@@ -569,7 +615,7 @@ export const ES: Catalog = {
       secondbrain: {
         name: 'Segundo cerebro',
         description: 'Deja que otra cosa sostenga lo que cargas: llevas un bloque más.',
-        effect: 'Llevas 2 bloques en vez de 1 (el segundo se ve en tu otra mano).',
+        effect: 'Llevas 1 bloque más.',
         inspiredBy: 'Construye tu segundo cerebro (Tiago Forte); la memoria externa',
       },
       selfreliance: {
@@ -581,7 +627,7 @@ export const ES: Catalog = {
       senecaletters: {
         name: 'Cartas a Lucilio',
         description: 'Carga más y suelta con más fuerza: tres bloques más, patada y lanzamiento dobles.',
-        effect: 'Llevas 4 bloques. Patadas y lanzamientos ×2. Alcance +2 bloques.',
+        effect: 'Llevas 3 bloques más. Patadas y lanzamientos ×2. Alcance +2 bloques.',
         inspiredBy: 'Séneca, Cartas morales a Lucilio (dominio público)',
       },
       socratic: {
@@ -731,6 +777,20 @@ export const ES: Catalog = {
       ashlar: 'Sillar',
       slate: 'Pizarra',
       darkbrick: 'Ladrillo oscuro',
+      // the sky realm (docs/art/sky/blocks.md)
+      cloud: 'Nube',
+      skywood: 'Madera celeste',
+      heartwood: 'Duramen',
+      skyleaf: 'Hoja celeste',
+      bamboo: 'Bambú',
+      moss: 'Musgo',
+      palestone: 'Piedra pálida',
+      fencewood: 'Madera de cerca',
+      mist: 'Bruma',
+      starresin: 'Resina estelar',
+      meteorglass: 'Vidrio de meteorito',
+      solarglass: 'Vidrio solar',
+      sunseal: 'Sello del Sol',
     },
     parts: {
       'doubt.flesh': {

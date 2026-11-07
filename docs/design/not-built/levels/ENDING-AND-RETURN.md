@@ -1,29 +1,29 @@
 # What ends a run, and the return from silence
 
-Up: [not-built levels](README.md) · Status: open.
+Up: [not-built levels](README.md) · [ENDGAME](../story/ENDGAME.md) · [UNITY](UNITY.md)
 
-The owner has decided that silence connects cyclically with heaven, and that heaven and the bottom are connected. The owner has not decided what ends a run, nor how silence and heaven connect in a way that the player can call the end of the descent.
+Status: decided (owner, 2026-11-03) for the bottom revelation (the Spiked Entity, waiting in the chamber of silence), the upward staircase through all floors to the surface, the meta-progression staircase unlock on floor 0, the roots, and the sky realm above the crown. No rematch in this build: the solar relic and the cosmic loop it would close are later, with Unity (issue #95).
 
-## What the build does
+## 1. What the build does
 
 - **A run ends in death.** When the player's hearts run out, the death screen shows the deepest floor reached and the practices held, and a restart begins a new run from the roots.
-- **No victory.** The build has no state for finishing the descent. Silence and heaven loop, so the player may go round again.
 - **The run starts on the roots.** A new run places the player in the start room of floor 0.
-- **The loop is built.** Standing still in silence carries you to heaven; the top of the sky carries you back into silence (see [SILENCE](../../built/levels/floors/SILENCE.md)).
+- **The loop is built.** Standing still in silence carries you to heaven; the top of the sky carries you back into silence (see [SILENCE](../../built/levels/floors/SILENCE.md)). Decided (owner, 2026-11-03): the top of the sky opens into the sky realm instead, and silence still carries the player up to heaven ([the realm of the sky](../sky/README.md)).
 
-## What the design left open
+## 2. The Endgame structure (Status: decided)
 
-1. **What ends a run.** Death is the build's only end. The design asks whether the descent should have an end (a last room, a victory, an ending screen), or whether it is endless.
-2. **How silence and heaven connect.** The design named three options: a fall, a door, a shaft of light. The build uses stillness and the top of the sky. The owner has not confirmed that this is the connection, or whether it should be a fall, a door or a shaft.
-3. **Heaven and the bottom.** The design says heaven and the bottom are connected, and how is still to be decided. The build connects them by the silence loop only.
-4. **Where the run starts.** The design assumed the roots, and the build starts there. The owner has not confirmed it.
+1. **Reaching the lowest depth**:
+   - The player reaches the lowest floor and encounters the indestructible Spiked Entity, which waits in the chamber of silence ([ENDGAME](../story/ENDGAME.md)).
+   - The entity reveals that the true path is upward: *"The true path was not to reach this place; the true path is to go upward."*
+2. **The Ascending Stairway**:
+   - Meeting the entity unlocks a staircase carving upward through every floor to the surface.
+   - Once unlocked, future runs feature an upward staircase directly from floor 0, the roots, offering an immediate route to the surface and the Giant Tree.
+3. **The Upward Journey to Unity**:
+   - The player ascends the Giant Tree, overcomes the five deities, earns the Triple Jump from the Horse, climbs through the cosmic void in [Totality](TOTALITY.md), and its last jump enters the Sun. [Unity](UNITY.md) is issue #95 and not built: entering activates it, and it does nothing yet (decided, owner, 2026-11-05).
+4. **The Solar Relic & Final Confrontation** (later, not in this build; no rematch, owner, 2026-11-03):
+   - At the Sun, the player receives a solar artifact that grants the power to challenge and overcome the invulnerable Spiked Entity at the bottom of the world.
 
-## What the owner has decided
+## 3. Open questions
 
-- Silence connects with heaven cyclically (2026-10-27).
-- The climb from the roots is by any means the player finds (see [ROUTE-FROM-ROOTS](ROUTE-FROM-ROOTS.md)).
-
-## Questions to ask the owner
-
-- Should a run have an end? If so, where: in silence, in heaven, or on the surface?
-- Should the way from silence to heaven be stillness (built), a fall, a door, or a shaft of light?
+1. **Storage of the unlock** (provisional): the meta-progression state (the unlocked upward staircase on floor 0) is persisted in the browser's local storage (`localStorage`), and clearing the browser's data forgets it.
+2. **Physical staircase location**: The floor is decided (owner, 2026-11-03): floor 0, the roots. Where on it does the upward staircase manifest (near the start room, or in a special portal vestibule)?

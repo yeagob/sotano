@@ -23,7 +23,7 @@ export class Chests {
   private time = 0;
   private hot = new THREE.Color(pal('light.hot'));
 
-  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+  constructor(private scene: THREE.Object3D) { scene.add(this.group); }
 
   add(spec: ChestSpec, facing: number, tight = false): ChestView {
     // a guarded chest keeps its padlock (one keyhole) but no key ever fits it

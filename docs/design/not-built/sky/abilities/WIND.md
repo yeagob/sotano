@@ -2,29 +2,15 @@
 
 Up: [Abilities](README.md) · [The realm of the sky](../README.md)
 
-Wind is a gust that pushes the player in one direction for a few seconds. It moves the player across the floor without touching them directly.
+The gust itself is built: [WIND, as built](../../../built/sky/abilities/WIND.md) (the three warning lanes, the steady push, the shelter, the positive answer, nothing that hurts). This document keeps what is not built: the animals that use it, the sound and the streaks, and the open questions.
 
-Status: proposal. The hindrance is the owner's; the rules and the animals that use it are proposal.
+Status: proposal for the animals that use it and for the sound and the streaks; the owner has decided that nothing in the sky takes the player's health.
 
-## What the player sees and feels
+## What is not built
 
-- **The telegraph.** Leaves, petals or dust lift off the floor on the gust's line, with a whistle that grows louder. The line is visible before the gust arrives.
-- **The gust.** The player is pushed along the line, with a steady force that ends in a soft stop. Dust and particles streak along the line, so the direction is clear.
-- **The end.** The gust fades. The player can move again at normal speed.
-
-## The rule
-
-1. A gust has one direction and one length, shown on its line before it arrives.
-2. A gust pushes the player along the line. It does not push them off a ledge without showing the line first.
-3. A gust is not a freeze. The player keeps control of their movement against it, at a cost (a slower step, a longer jump).
-4. A gust does not reach through a solid block. It stops at the first block in its line.
-5. A player-made block in the gust's line stops the push there and stays (realm law 3.2).
-
-## How the player answers it
-
-- **Move against it.** Walking into the wind, at the cost of speed, keeps the player in place.
-- **Build a wall.** A block placed in the gust's line stops the push. The wall stays.
-- **A positive shot.** A positive shot lets the player build the wall faster (proposal).
+- **The whistle and the leaves.** The warning's whistle, growing louder as the gust comes, and the leaves, petals or dust that lift from the floor, come with the animals' floors. The built warning is the lanes and the sky's dust motes.
+- **The streaks.** Dust and particles streaking along the line during the gust are not built.
+- **A soft stop.** The gust ends at its length; it does not fade out with a soft stop of its own. The push is laid over the player's motion and fades with it.
 
 ## Which animal uses it
 
@@ -33,5 +19,6 @@ Open. Proposal: the lion, whose plain carries the gusts (see [LION](../guardians
 ## Open questions
 
 1. Is the wind the animal's, or a feature of the floor that the animal only switches on?
-2. How strong is a gust, in player terms? (A target, to be set by the design agent.)
-3. Can a gust carry a minion as well as the player?
+2. How strong is a gust, in player terms? The strength and the length are parameters of each gust; the target is for the design agent to set once a floor uses it.
+3. Can a gust carry a minion as well as the player? Not built: the gust pushes the player only.
+4. Walking against the gust, at the cost of speed, is the proposal's answer. Built: the push is added to the player's motion, so walking against it works, but the cost is not tuned yet.

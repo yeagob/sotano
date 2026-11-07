@@ -7,8 +7,10 @@ Back to [built](../README.md) · [the design document](../../README.md)
 | Document | Contents |
 |---|---|
 | [MOVEMENT.md](MOVEMENT.md) | Walking, jumping, the forgiving jump (coyote time and input buffer), ice, air control and the jump height |
+| [TRIPLE-JUMP.md](TRIPLE-JUMP.md) | The Triple Jump: two more jumps in the air, their heights, and the item (its gift is not built) |
 | [SWIMMING.md](SWIMMING.md) | Wading, swimming, breath and drowning |
 | [HEALTH.md](HEALTH.md) | Hearts, damage points and quarter hearts, invulnerability after a hit, falls, hot elements |
+| [hearts/](hearts/README.md) | The six kinds of heart: red, blue, stone, blood, star and berserker |
 | [DEATH.md](DEATH.md) | Dying, the death screen, starting a new run with R |
 | [HANDS.md](HANDS.md) | What your hands carry: the hand's capacity, picking things up, parts, counters that cost no hand |
 | [CONTROLS.md](CONTROLS.md) | The actions the player has, in plain words; the device mapping is in the input document |

@@ -23,6 +23,13 @@ export class Particles {
   private colors: Float32Array;
   private rgb: number[] = [];
 
+  /** Drops every mote (a passage between worlds). */
+  clear() {
+    this.list = [];
+    this.rgb = [];
+    this.mesh.count = 0;
+  }
+
   /** A burst of cubes from a point. `calm` motes feel no gravity (light, not matter: DECISIONS §7.3). */
   burst(x: number, y: number, z: number, color: number, n: number, speed = 3, size = 0.08, calm = false) {
     for (let i = 0; i < n; i++) {

@@ -6,12 +6,13 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
-This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 44 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 45 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
 | Folder | Path develops | Practices | State of being at three |
 |---|---|---|---|
+| [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
 | [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
 | [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
 | [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 12 | Open-hearted |
@@ -21,6 +22,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 
 | Practice | Path folder | Quality | Found in |
 |---|---|---|---|
+| [Dr. Launcher](milagros/DR-LAUNCHER.md) | Miracles | 3 | treasure rooms |
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
@@ -69,7 +71,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 ## How a practice is filed
 
 - **Folder.** A practice sits in the folder of the first path tag its code lists. The other path tags are in its document under *Path* and in the folder's table under *Also on*. Satori carries all four paths and sits in body.
-- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 10 at quality 3, 9 at quality 4.
+- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 11 at quality 3, 9 at quality 4.
 - **Found in.** Treasure rooms, boss rewards and the vault room. A vault is a room type with a richer pedestal; the deepest floors keep none (`src/world/floor.ts`).
 - **Credit.** Every practice names its inspiration, as the STORY and SOURCES documents do. The credit is not the name: the name is a generic technique or concept, or the title of a public-domain work ([NAMING](../story/NAMING.md)).
 

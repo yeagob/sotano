@@ -27,7 +27,7 @@ Source of truth, in order: [DECISIONS.md](../../../docs/art/DECISIONS.md) (the l
 - **16 texels per block** for everything. Creature boxes are whole texels; joints are pivots.
 - **Projections:** the host room's pattern, never its value. Dark husk (body L* ≤ 14, cold rim) or pale husk (≥ host + 20 L*, ≥ 55). One family eye: a 2 × 2 `cold.white` light in a socket. A 0.4 s telegraph on three channels. A release, not a kill, with a shard. A sound that resolves.
 - **Gentle:** nothing flashes faster than 3 Hz; full-screen effects obey the flash budget; the HUD never distorts to express a mood; no gore; no panic simulation on the player.
-- **Paths:** always with their glyph (■ ● ◆ ▲). Pairs keep ΔE ≥ 20 under colour-blindness simulation.
+- **Paths:** always with their glyph (⬟ ■ ● ◆ ▲). Pairs keep ΔE ≥ 20 under colour-blindness simulation.
 - **Shape before colour.** Player shots are round; hostile shots are cubes or ✗.
 
 ## 3. The gate (before you say it is done)
@@ -81,3 +81,5 @@ Append the lesson to the log below, and update the ledger if a ruling changes. A
 - **Measure the warning colour against the gold and the cold.** Under deuteranopia the warning yellow is ΔE 14 from `light.gold`: the warning is told apart by brightness and size, not hue alone. Say so in the report, and never drop a warning below the contrast floor on the grey floors.
 - **Omens are not attack warnings.** A spawn omen warns of a projection's arrival, not of a blow, so its motes stay pale. Owner to confirm if a spawn warning should turn yellow too.
 *Issue #46, Craving (Ansia) clipping, blinking and clicking (2026-10-31, owner):* a socket that sits exactly on a face of another box flickers (z-fighting) and reads as clipping through the top. Lesson: a dark inlay on a face is a depth offset (`inlay` on the model part), never a coplanar box, and a breath or a pulse runs on a clock that never resets. A sound that repeats starts from silence and swells in (`attack` in `sfx.ts` noise), never at full level on its first sample.
+
+*Owner rulings, sky wave 4 and 5 (2026-11-06):* a positive missile is the white seed (§7.8); the spirit ring stays a dark frame on the light deck (§10.7); the Sun's entrance stays a flat field and the Earth gets continents (`docs/art/sky/totality.md`); Pixelify Sans is approved, not yet added (§10.2). Lesson: when a gate leaves a look to the owner ("reads as flat", "reads as a dark frame"), record the ruling in the ledger and the part page the same day, and mark what is decided but not built (the continents) so the next art pass picks it up.

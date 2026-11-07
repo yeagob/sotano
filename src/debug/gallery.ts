@@ -3,7 +3,9 @@
 // generation, no physics, no randomness. A developer tool: English only, like the debug readout.
 //
 //   ?gallery                 every section
-//   ?gallery=materials|items|parts|enemies|pickups|chests|hud|palette
+//   ?gallery=materials|items|parts|enemies|pickups|missiles|bombs|chests|hud|palette|spirit
+//   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
+//                            totality, entity, hindrances-core|ground|hold|flow
 //   &filter=grey|deutan|protan|tritan|silhouette
 //   &angle=35                turntable angle for enemies and pickups (degrees)
 //   &id=critic               one enemy or item only
@@ -13,7 +15,7 @@ import { ENEMIES } from '../content/enemies';
 import { HUD_ICONS } from '../content/hud-icons';
 import { ITEMS } from '../content/items';
 import { MATERIALS } from '../content/materials';
-import { PALETTE, pal, palCss, type PalToken } from '../content/palette';
+import { PALETTE, PATH_GLYPH, PATHS, pal, palCss, type PalToken } from '../content/palette';
 import { PART_ICONS } from '../content/part-icons';
 import { CRACK_STAGES } from '../content/tiles';
 import { buildModel } from '../entities/enemies';
@@ -21,6 +23,50 @@ import { pickupMesh } from '../entities/pickups';
 import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
 import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
+import { bombsGallery } from './gallery/bombs';
+import { skyBlocksGallery } from './gallery/sky-blocks';
+import { skyElephantGallery } from './gallery/sky-elephant';
+import { skyEntityGallery } from './gallery/sky-entity';
+import { skyHindrancesCoreGallery } from './gallery/sky-hindrances-core';
+import { skyHindrancesFlowGallery } from './gallery/sky-hindrances-flow';
+import { skyHindrancesGroundGallery } from './gallery/sky-hindrances-ground';
+import { skyHindrancesHoldGallery } from './gallery/sky-hindrances-hold';
+import { skyHorseGallery } from './gallery/sky-horse';
+import { skyKoalaGallery } from './gallery/sky-koala';
+import { skyLionGallery } from './gallery/sky-lion';
+import { skyPandaGallery } from './gallery/sky-panda';
+import { skyTotalityGallery } from './gallery/sky-totality';
+import { spiritGallery } from './gallery/spirit';
+
+/** What a gallery part gets to draw its section with. */
+export interface GalleryKit {
+  root: HTMLElement;
+  head(title: string): void;
+  row(): HTMLElement;
+  fig(r: HTMLElement, el: HTMLElement, label: string, cls?: string): void;
+  scaled(src: HTMLCanvasElement, k: number): HTMLCanvasElement;
+  /** Turntable angle, radians. */
+  angle: number;
+  only: string | null;
+}
+
+/** The sky's sections, one part file each, written once (K0). */
+const SKY_SECTIONS: readonly [string, (g: GalleryKit) => void][] = [
+  ['sky-blocks', skyBlocksGallery],
+  ['sky-panda', skyPandaGallery],
+  ['sky-koala', skyKoalaGallery],
+  ['sky-elephant', skyElephantGallery],
+  ['sky-lion', skyLionGallery],
+  ['sky-horse', skyHorseGallery],
+  ['sky-totality', skyTotalityGallery],
+  ['sky-entity', skyEntityGallery],
+  ['sky-hindrances-core', skyHindrancesCoreGallery],
+  ['sky-hindrances-ground', skyHindrancesGroundGallery],
+  ['sky-hindrances-hold', skyHindrancesHoldGallery],
+  ['sky-hindrances-flow', skyHindrancesFlowGallery],
+];
+import { LOVE_BLAST, MISSILE_TRAIL, MissileView, type MissileState } from '../render/missile-view';
+import type { Polarity } from '../combat/polarity';
 
 // Machado et al. 2009 at full severity (the same matrices as tests/art.test.ts), applied in sRGB here
 const CVD: Record<string, number[]> = {
@@ -190,6 +236,76 @@ export function runGallery(params: URLSearchParams) {
     }
   }
 
+  if (show('missiles')) {
+    head('Paths: base · glow · dark · shadow, with their glyphs');
+    const pr = row();
+    for (const p of PATHS) {
+      const box = document.createElement('div');
+      box.className = 'row';
+      for (const k of ['base', 'glow', 'dark', 'shadow']) {
+        const d = document.createElement('div');
+        d.style.width = d.style.height = '28px';
+        d.style.background = palCss(`path.${p}.${k}` as PalToken);
+        box.appendChild(d);
+      }
+      const g = document.createElement('span');
+      g.textContent = PATH_GLYPH[p];
+      g.style.fontSize = '24px';
+      g.style.color = palCss(`path.${p}.base` as PalToken);
+      box.appendChild(g);
+      fig(pr, box, p);
+    }
+
+    // a missile is the seed turned to fly tip first: shown flying across the view at `angle`
+    const missile = (polarity: Polarity, age: number, z = 0) => (scene: THREE.Scene) => {
+      const s: MissileState = { id: 1, x: 0, y: 0.4, z, dx: Math.cos(angle), dy: 0.15, dz: -Math.sin(angle), age, polarity };
+      const n = Math.hypot(s.dx, s.dy, s.dz);
+      s.dx /= n; s.dy /= n; s.dz /= n;
+      new MissileView(scene).update([s]);
+      return new THREE.Object3D();
+    };
+    head('Dr. Launcher missiles: positive (love) and negative (breakthrough), at launch (0.1 s) and in flight (1 s)');
+    const r = row();
+    for (const polarity of ['positive', 'negative'] as Polarity[]) for (const age of [0.1, 1]) for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
+      fig(r, three(missile(polarity, age), 260, 200, 2.6, 0.4, bg), `${polarity} · ${age} s · ${bg}`);
+    }
+    head('Missiles at 8 and 20 blocks in floor-1 fog');
+    const rf = row();
+    for (const polarity of ['positive', 'negative'] as Polarity[]) for (const far of [8, 20]) {
+      const c = three(scene => {
+        scene.fog = new THREE.Fog(pal('fog.f1'), 6, 34);
+        scene.background = new THREE.Color(pal('fog.f1'));
+        return missile(polarity, 1, 2.6 - far)(scene);
+      }, 160, 120, 2.6, 0.4, 'fog.f1');
+      fig(rf, c, `${polarity} · ${far}`);
+    }
+    head('Trail and love-explosion particle tokens');
+    const rt = row();
+    const chips = (label: string, tokens: PalToken[]) => {
+      const box = document.createElement('div');
+      box.className = 'row';
+      for (const t of tokens) {
+        const d = document.createElement('div');
+        d.style.width = d.style.height = '20px';
+        d.style.background = palCss(t);
+        d.title = t;
+        box.appendChild(d);
+      }
+      fig(rt, box, label);
+    };
+    chips('trail · positive', MISSILE_TRAIL.positive);
+    chips('trail · negative', MISSILE_TRAIL.negative);
+    chips('love explosion', LOVE_BLAST);
+    head('Miracles practices: icons at ×2, ×3, ×5');
+    const ri = row();
+    for (const d of ITEMS.filter(i => i.tags?.includes('milagros'))) {
+      const box = document.createElement('div');
+      box.className = 'row';
+      for (const k of [2, 3, 5]) box.appendChild(scaled(iconCanvas(d, k), 1));
+      fig(ri, box, d.id);
+    }
+  }
+
   if (show('chests')) {
     const kinds: [string, number, boolean][] = [['free', 0, false], ['1 key', 1, false], ['2 keys', 2, false], ['3 keys', 3, false], ['practice, free', 0, true], ['practice, 2 keys', 2, true]];
     const chest = (keys: number, practice: boolean, open: boolean) => {
@@ -261,6 +377,11 @@ export function runGallery(params: URLSearchParams) {
     }
     fig(r, hearts, 'hearts 4/4 → 0/4');
   }
+
+  const kit: GalleryKit = { root, head, row, fig, scaled, angle, only };
+  for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
+  if (show('bombs')) bombsGallery(kit);
+  if (show('spirit')) spiritGallery(kit);
 }
 
 function filterCss(f: string): string {

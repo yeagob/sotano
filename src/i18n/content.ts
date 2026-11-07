@@ -11,7 +11,7 @@ import type { EnemyDef } from '../enemies/types';
 import type { ItemDef, SynergyDef } from '../items/types';
 import { catalog, fill, t, type MessageKey, type Params } from '.';
 
-export const PATHS = ['body', 'mind', 'emotion', 'will'] as const;
+export const PATHS = ['milagros', 'body', 'mind', 'emotion', 'will'] as const;
 export type PathTag = (typeof PATHS)[number];
 
 export function itemText(d: ItemDef) {

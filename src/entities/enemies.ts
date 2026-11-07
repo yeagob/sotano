@@ -4,12 +4,13 @@ import { fx } from '../core/fx';
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
-import { FlowField, type RoomArea } from '../enemies/flowfield';
+import { FlowField, reachOf, type RoomArea } from '../enemies/flowfield';
 import { Hazards, shapePoint, type FieldEffect, type HazardHost, type Shape, type Strike } from '../enemies/attacks';
 import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
 import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
+import { grownScale, setScale } from './growth';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
@@ -20,6 +21,11 @@ const RETARGET = 0.25;
 const RETARGET_MARGIN = 1.5;
 const FLY_GAIN = 3;
 const FLY_MAX = 4;
+/** Cells a hovering flyer scans up or down to find the surface under it, and the turns (radians, signed by its id) it tries when a wall is ahead. */
+const FLY_SCAN = 10;
+/** The tallest rise ahead, in blocks, a flyer climbs over rather than turns away from. */
+const FLY_STEP = 2;
+const FLY_TURNS = [0, 0.6, 1.2, 1.9, 2.6, Math.PI];
 const NO_SOLID = () => false;
 /** Hostile projectiles alive at once (a boss volley is up to a few dozen). */
 const MAX_PROJECTILES = 128;
@@ -44,6 +50,7 @@ export interface EnemyHost {
   contact(e: Enemy, target: Actor): void;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
   projectileHit(target: Actor, damage: number, thrower: number): void;
+  reflects?(target: Actor, x: number, y: number, z: number): boolean;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
   smash(e: Enemy, x: number, y: number, z: number, tier: number, damage: number): boolean;
@@ -117,7 +124,7 @@ export class Enemies {
 
   private carrying = new Map<number, PickupKind[]>();
   private shells = new Map<number, ShellState>();
-  constructor(private scene: THREE.Scene, private host: EnemyHost) {
+  constructor(private scene: THREE.Object3D, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
       new THREE.MeshBasicMaterial({ color: pal('attack.red.base') }), MAX_PROJECTILES);
@@ -142,13 +149,21 @@ export class Enemies {
     this.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
   }
 
+  /** The hazards of this set's projections (the sky's set has its own; SkyHost.hazards reads it). */
+  get hazardField(): Hazards { return this.hazards; }
+
+  /** Drops the hazards of every actor of the active realm (a passage between worlds). */
+  clearHazards() {
+    for (const a of this.host.actors()) this.hazards.clear(a.id);
+  }
+
   spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
     const e: Enemy = {
-      id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, speed, contactDamage, tags,
+      id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, scale: 1, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
+      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -156,6 +171,12 @@ export class Enemies {
   }
 
   get(id: number) { return this.list.find(e => e.id === id && e.alive); }
+
+  /** The visual of an actor, while it lives (its group's scale is the creature's size). */
+  viewOf(id: number): View | undefined { return this.views.get(id); }
+
+  /** A love shot reached a friendly creature: it grows one step, up to GROWTH_MAX (entities/growth.ts). */
+  grow(e: Enemy) { setScale(e, grownScale(e.scale)); }
 
   /** Attacks on the field and hostile projectiles in the air (the sandbox duel measures them). */
   pressure() { return { hazards: this.hazards.size, projectiles: this.projectiles.length }; }
@@ -253,7 +274,7 @@ export class Enemies {
       target: e => this.target(e, actors),
       near: e => {
         let best: Actor | null = null, bd = Infinity;
-        for (const a of actors) if (a.alive && a.faction === 'self') { const d = Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z); if (d < bd) { bd = d; best = a; } }
+        for (const a of actors) if (a !== e && a.alive && a.faction === 'self') { const d = Math.hypot(a.body.x - e.body.x, a.body.z - e.body.z); if (d < bd) { bd = d; best = a; } }
         return best ? { id: best.id, x: best.body.x, y: best.body.y, z: best.body.z, vx: best.body.vx, vz: best.body.vz } : null;
       },
       dist: (e, t) => Math.hypot(t.x - e.body.x, t.z - e.body.z),
@@ -325,6 +346,7 @@ export class Enemies {
         const dx = (rm.hx ?? rm.x0) + ROOM_W / 2 - b.x, dz = (rm.hz ?? rm.z0) + ROOM_D / 2 - b.z, l = Math.hypot(dx, dz) || 1;
         e.wishX = dx / l; e.wishZ = dz / l;
       }
+      if (e.hover >= 0 && !e.ghost) this.steerFlier(e);
       const blend = 1 - Math.exp(-(b.onGround || e.flyY >= 0 ? 10 : 2) * dt);
       b.vx += (e.wishX * e.speed * e.elemSpeed - b.vx) * blend;
       b.vz += (e.wishZ * e.speed * e.elemSpeed - b.vz) * blend;
@@ -424,17 +446,66 @@ export class Enemies {
     }
   }
 
+  /** The height of the surface under (x, z), looking from `y0` (a column that is solid there is climbed, an open one is descended). */
+  private surfaceAt(x: number, y0: number, z: number): number {
+    const cx = Math.floor(x), cz = Math.floor(z), solid = this.host.solid;
+    let y = Math.floor(y0), n = 0;
+    if (solid(cx, y, cz)) {
+      while (solid(cx, y, cz) && n++ < FLY_SCAN) y++;
+      return y;
+    }
+    while (!solid(cx, y - 1, cz) && n++ < FLY_SCAN) y--;
+    return y;
+  }
+
+  /**
+   * A flyer that hovers (`e.hover`). It keeps `hover` blocks over the surface under it and under the
+   * way ahead (so it climbs a step before the step, never into it), stays under the ceiling, and
+   * turns its heading away from a wall it would hit, so it slides along walls instead of pressing
+   * on them (issue #21). It sets `flyY` every frame; the walkers' rules do not apply to it.
+   */
+  private steerFlier(e: Enemy) {
+    const b = e.body, solid = this.host.solid;
+    const speed = Math.hypot(e.wishX, e.wishZ);
+    const ux = speed > 0.01 ? e.wishX / speed : 0, uz = speed > 0.01 ? e.wishZ / speed : 0;
+    const look = b.hw + 0.7, head = b.y + b.h;
+    const here = this.surfaceAt(b.x, head, b.z);
+    const ahead = speed > 0.01 ? this.surfaceAt(b.x + ux * look, head, b.z + uz * look) : here;
+    // a step ahead is climbed early; anything taller is a wall, and the heading turns off it instead
+    let y = (ahead - here <= FLY_STEP ? Math.max(here, ahead) : here) + e.hover;
+    // under the ceiling, but never under the surface it floats over
+    const cx = Math.floor(b.x), cz = Math.floor(b.z);
+    for (let c = Math.floor(y); c <= Math.floor(y + b.h) + 1; c++) {
+      if (solid(cx, c, cz)) { y = Math.min(y, c - b.h - 0.05); break; }
+    }
+    e.flyY = Math.max(here, y);
+    if (speed <= 0.01) return;
+    // heading: the first direction, nearest to the wished one, that is open
+    const lo = Math.min(b.y, e.flyY), span = Math.max(b.y, e.flyY) + b.h - lo;
+    const side = e.id % 2 ? 1 : -1;
+    for (const turn of FLY_TURNS) for (const sign of turn === 0 || turn === Math.PI ? [1] : [side, -side]) {
+      const c = Math.cos(turn * sign), s = Math.sin(turn * sign);
+      const dx = ux * c - uz * s, dz = ux * s + uz * c;
+      if (boxHits(solid, b.x + dx * look, lo, b.z + dz * look, b.hw, span)) continue;
+      e.wishX = dx * speed; e.wishZ = dz * speed;
+      return;
+    }
+    e.wishX = 0; e.wishZ = 0;
+  }
+
   /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
   private toward(e: Enemy, t: TargetView): [number, number] {
     const b = e.body, tx = t.x, tz = t.z;
     const dx = tx - b.x, dz = tz - b.z, l = Math.hypot(dx, dz) || 1;
     if (e.flyY >= 0 || e.ghost) return [dx / l, dz / l];
-    // one field per room, target and kind of projection (each treats the elements its own way)
-    const key = `${e.room}:${t.id}:${e.def}`;
+    // one field per room, target, kind of projection and footprint (each treats the elements its own way).
+    // A grown body needs the cells beyond its birth footprint; the birth footprint is always the same.
+    const reach = reachOf(e.body.hw) - reachOf(e.spec.size[0]);
+    const key = `${e.room}:${t.id}:${e.def}:${reach}`;
     let f = this.flows.get(key);
     if (!f) {
       if (this.flows.size > 128) this.flows.clear(); // fields are tiny; just drop stale ones now and then
-      f = new FlowField(this.host.room(e.room));
+      f = new FlowField(this.host.room(e.room), reach);
       this.flows.set(key, f);
     }
     f.update(this.host.solid, tx, tz, `${this.host.worldVersion()}:${this.host.elemVersion()}`, (x, y, z) => this.host.hazard(e, x, y, z));
@@ -556,7 +627,10 @@ export class Enemies {
       // the first actor hostile to the thrower's side that it touches
       const hit = actors.find(a => a.alive && a.spawning <= 0 && a.id !== p.thrower && hostile(p.faction, a.faction)
         && Math.abs(p.x - a.body.x) < a.body.hw + 0.12 && Math.abs(p.z - a.body.z) < a.body.hw + 0.12 && p.y > a.body.y && p.y < a.body.y + a.body.h);
-      if (hit) {
+      if (hit && this.host.reflects?.(hit, p.x, p.y, p.z)) {
+        p.vx = -p.vx; p.vy = -p.vy; p.vz = -p.vz;
+        p.faction = hit.faction; p.thrower = hit.id;
+      } else if (hit) {
         this.host.projectileHit(hit, p.damage, p.thrower);
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
@@ -592,9 +666,10 @@ export class Enemies {
     const t = e.targetId >= 0 ? this.host.actor(e.targetId) : undefined;
     if (t) v.group.rotation.y = Math.atan2(t.body.x - b.x, t.body.z - b.z);
     // materialise: grow from nothing with a wobble
-    const grow = e.spawning > 0 ? Math.max(0.05, 1 - e.spawning / SPAWN_TIME) : 1;
+    const birth = e.spawning > 0 ? Math.max(0.05, 1 - e.spawning / SPAWN_TIME) : 1;
     const pulse = 1 + e.pulse * 0.35;
-    v.group.scale.set(grow * pulse, grow * (1 + e.pulse * 0.2), grow * pulse);
+    const s = e.scale * birth;
+    v.group.scale.set(s * pulse, s * (1 + e.pulse * 0.2), s * pulse);
     // walk cycle on named limbs
     const walk = Math.sin(this.time * 9 + e.id) * Math.min(1, Math.hypot(b.vx, b.vz) / 2) * 0.5;
     for (const l of v.parts.get('legL') ?? []) l.rotation.x = walk;

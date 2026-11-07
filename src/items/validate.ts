@@ -6,9 +6,9 @@ import { BASE_STATS, type StatName } from '../core/stats';
 import { WEAPON_IDS } from '../game/events';
 import { ACTOR_EVENTS, type Effect, type ItemDef, type SynergyDef } from './types';
 
-export const PATHS = ['body', 'mind', 'emotion', 'will'] as const;
+export const PATHS = ['milagros', 'body', 'mind', 'emotion', 'will'] as const;
 const STATS = new Set(Object.keys(BASE_STATS) as StatName[]);
-const ID = /^[a-z][a-z0-9_]*$/;
+const ID = /^[a-z][a-z0-9_-]*$/;
 
 function validateWeapon(d: Effect, at: string): string[] {
   if (!d.weapon) return [];
@@ -21,7 +21,7 @@ function validateWeapon(d: Effect, at: string): string[] {
 export function validateItem(d: ItemDef): string[] {
   const e: string[] = validateWeapon(d, `item "${d.id}"`);
   const at = `item "${d.id}"`;
-  if (!ID.test(d.id)) e.push(`${at}: id must be lowercase letters, digits or _`);
+  if (!ID.test(d.id)) e.push(`${at}: id must be lowercase letters, digits, _ or -`);
   if (!d.name?.trim()) e.push(`${at}: missing name`);
   if (!d.description?.trim()) e.push(`${at}: missing description`);
   if (!d.effect?.trim()) e.push(`${at}: missing effect (what it does, plainly, with numbers)`);
@@ -29,6 +29,7 @@ export function validateItem(d: ItemDef): string[] {
   if (!(d.quality >= 0 && d.quality <= 4 && Number.isInteger(d.quality))) e.push(`${at}: quality must be 0..4`);
   if (!d.tags?.some(t => (PATHS as readonly string[]).includes(t))) e.push(`${at}: needs a path tag (${PATHS.join(', ')})`);
   if (!Object.values(d.pools).some(w => (w ?? 0) > 0)) e.push(`${at}: in no pool`);
+  if ((d.pools.sky ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'sky' && (w ?? 0) > 0)) e.push(`${at}: the sky pool must be its only pool`);
   // icon: 12×12, every key in the palette
   const rows = d.icon?.rows ?? [];
   if (rows.length !== 12 || rows.some(r => r.length !== 12)) e.push(`${at}: icon must be 12 rows of 12`);

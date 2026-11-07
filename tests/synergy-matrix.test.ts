@@ -29,11 +29,12 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   blockLoot: () => ({ x: 1, y: 1, z: 1, material: 4, source: 'intent', drops: ['key'] }),
   touchCube: () => ({ cube: 0, material: 1, held: 0, carry: 1, bomb: false, action: 'pickup' }),
   bombPlace: () => ({ fuse: 1.8 }),
+  missileLaunch: () => ({ speed: 24, range: 40, polarity: 'positive' }),
   kick: () => ({ cube: 0, material: 1, speed: 5, lift: 3, tags: new Set() }),
   throw: () => ({ cube: 0, material: 1, speed: 9, lift: 2, tags: new Set() }),
   drop: () => ({ material: 1, how: 'throw' }),
   debrisImpact: () => ({ cube: 0, x: 1, y: 1, z: 1, material: 1, speed: 8, tags: new Set(['volatile']), keepTags: false }),
-  jump: () => ({ velocity: 8.4 }),
+  jump: () => ({ velocity: 11.9, air: 1 }),
   land: () => ({ fallSpeed: 10, cause: 'fall', x: 1, y: 1, z: 1 }),
   actorDamage: () => ({ target: 1, targetKind: 'player', def: 'player', amount: 8, kind: 'explosion', source: 'bomb', owner: 1, knockback: 0, polarity: null }),
   contact: () => ({ attacker: 2, attackerDef: 'doubt', target: 1, targetKind: 'player', toTarget: 4, toAttacker: 0 }),
@@ -47,10 +48,12 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   chestOpen: () => ({ x: 1, y: 1, z: 1, cost: 2 }),
   pickupCollect: () => ({ kind: 'key', amount: 1 }),
   itemGained: () => ({ id: 'x', uid: 1 }),
-  roomEnter: () => ({ room: 1, type: 'normal', firstVisit: true }),
+  roomEnter: () => ({ room: 1, floor: 2, type: 'normal', template: 'test', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
+  heartLost: () => ({ heart: 'blue' }) as const,
+  berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
   ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
   materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),
@@ -91,7 +94,7 @@ function sandbox() {
     frighten: () => {},
     igniteArea: () => {},
     launch: () => {},
-    tagFlying: () => {},
+    intentsHere: () => 0,
     tagCube: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
@@ -145,6 +148,20 @@ describe('synergy matrix', () => {
     const ally = bus.emit('contact', { ...SAMPLES.contact(), target: 3, targetKind: 'projection' });
     expect(ally.toTarget).toBe(4);
     expect(ally.toAttacker).toBe(0);
+  });
+
+  // A sky deity turned to your side (SKY.md §5.2, m11): every item survives it, and it grants nothing until
+  // the balance milestone reviews a reward for it, so no stat moves.
+  it('with every item held, a sky conversion changes no stat and settles', () => {
+    const { bus, stats, inv } = sandbox();
+    for (const id of ids) inv.gain(id);
+    const before = { ...stats.all };
+    const turned = bus.emit('factionChange', { target: 4, targetKind: 'sky', def: 'panda', from: 'neutral', to: 'self', source: 'sky' });
+    expect(turned.target).toBe(4);
+    for (let f = 0; f < 200 && bus.pending; f++) bus.flush(64);
+    expect(bus.pending).toBe(0);
+    expect(errors).not.toHaveBeenCalled();
+    expect(stats.all).toEqual(before);
   });
 
   it('everything at once still works', () => {

@@ -61,8 +61,8 @@ export function runLab(game: Game, s: Scenario): LabResult {
       const items = game.inventory.items.map(i => i.def.id);
       if (items.length) out.push(`  practices ${items.join(' ')} · synergies ${game.inventory.synergiesActive.map(x => x.id).join(' ') || '—'}`);
       for (const e of game.enemies.list) out.push(`  ${e.def}#${e.id} ${e.alive ? `hp ${num(e.hp)}/${e.maxHp}` : 'gone'} · ${e.faction} · at ${rel(e.body.x, e.body.y, e.body.z)}`);
-      out.push(`  blocks ${blockCounts(game.world, r)}`);
-      out.push(`  elements ${elementCounts(game.world, r)}`);
+      out.push(`  blocks ${blockCounts(game.dw, r)}`);
+      out.push(`  elements ${elementCounts(game.dw, r)}`);
       const cubes = new Map<string, number>();
       for (let i = 0; i < game.debris.max; i++) if (game.debris.isAlive(i)) {
         const k = MATERIALS[game.debris.material[i]].key;
@@ -75,7 +75,7 @@ export function runLab(game: Game, s: Scenario): LabResult {
     const views = s.view ?? [0], mapTicks = new Set(s.maps ?? [ticks]), drawn: string[][] = [];
     const drawMaps = (t: number) => {
       for (const h of views) {
-        const m = mapAt(game.world, r, h);
+        const m = mapAt(game.dw, r, h);
         drawn.push(m);
         out.push('', `map t ${t} · h ${h}`, ...m.map(line => '  ' + line));
       }
@@ -87,6 +87,8 @@ export function runLab(game: Game, s: Scenario): LabResult {
       if (mapTicks.has(t)) drawMaps(t);
       while (next < actions.length && actions[next].t === t) act(game, actions[next++], o, n => { fireFor = n; }, errors);
       if (t === ticks) break;
+      // a hold starts with a press, as a real one does (the double tap reads presses)
+      if (fireFor > 0 && !game.input.touchHeld.has('cast')) game.input.touchPressed.add('cast');
       if (fireFor > 0) game.input.touchHeld.add('cast'); else game.input.touchHeld.delete('cast');
       if (fireFor > 0) fireFor--;
       game.step();
@@ -103,7 +105,7 @@ export function runLab(game: Game, s: Scenario): LabResult {
 function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, errors: string[]) {
   const w = (v: Vec3): Vec3 => [o[0] + v[0], o[1] + v[1], o[2] + v[2]];
   const p = game.player;
-  if (!('do' in a)) { applyPlacement(game.world, o, a); return; }
+  if (!('do' in a)) { applyPlacement(game.dw, o, a); return; }
   switch (a.do) {
     case 'damage': game.damageBlock(...w(a.at), a.amount, a.kind ?? 'intent', 'lab'); break;
     case 'break': game.breakBlock(...w(a.at), 'intent', 'lab'); break;

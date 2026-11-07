@@ -5,6 +5,8 @@ import { GEN_VERSION } from './core/seed';
 import { setLocale, t } from './i18n';
 import { initDom } from './i18n/dom';
 import { initLanding } from './game/landing';
+import { testBenchOn } from './debug/test-bench';
+import type { HeartKind } from './content/heart-art';
 
 async function boot() {
   initDom(); // language first: everything below may show text
@@ -21,6 +23,8 @@ async function boot() {
   // ?seed=ABCD-EFGH replays a run; without it every run is new
   const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
   initLanding(game);
+  // ?sky: the run starts on the sky's deck (docs/architecture/SKY.md §15; R2 adds the floors)
+  if (params.has('sky')) game.debugSky();
   // ?sandbox[=scenario]: the creative room; &lab runs the scenario's script and prints its report
   // (docs/architecture/SANDBOX.md)
   let sb: Record<string, unknown> | null = null;
@@ -45,6 +49,10 @@ async function boot() {
     bombs: (n = 1) => { game.collect('bomb', n); },
     heal: (n = 6) => { game.heal(n * 4, 'console'); },   // half-hearts
     hurt: (n = 1) => { game.damagePlayer(n, 'item', 'console', 'world'); },
+    heart: (kind: HeartKind = 'red') => {
+      const b = game.player.body, f = game.player.forward;
+      game.pickups.add('heart', b.x + f.x * 1.5, b.y + 0.5, b.z + f.z * 1.5, game.room, null, 0.3, null, kind);
+    },
     god: (on = true) => { game.player.invulnT = on ? 1e9 : 0; },
     lose: (id: string) => { game.inventory.lose(id); game.hud.setItems(game.inventory.items.map(i => i.def)); },
     floor: () => game.nextFloor(),
@@ -72,6 +80,11 @@ async function boot() {
     sb,
   };
   (window as any).S = S;
+  // ?test: the test bench, a panel to skip floors, hold god mode and read the guide (docs/testing/TEST-BENCH.md)
+  if (testBenchOn(params)) {
+    const { mountTestPanel } = await import('./debug/test-panel');
+    mountTestPanel(game, S);
+  }
 
   let last = performance.now();
   const loop = (now: number) => {

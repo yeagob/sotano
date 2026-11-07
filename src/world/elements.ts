@@ -19,7 +19,7 @@ import {
 import { AIR, MAT, mat } from '../content/materials';
 import { REACTIONS, type ReactionDef } from '../content/reactions';
 import { hash3 } from '../core/rng';
-import type { VoxelWorld } from './world';
+import type { VoxelSpace } from './space';
 
 export const ELEMENT_TICK = 0.1;
 /** Cells processed per tick at most; the rest wait for the next tick. */
@@ -60,7 +60,7 @@ export class ElementSim {
   /** Cells processed on the last tick (debug HUD). */
   lastWork = 0;
 
-  constructor(private world: VoxelWorld, private host: ElementHost) {
+  constructor(private world: VoxelSpace, private host: ElementHost) {
     world.onChange = (x, y, z) => this.wakeAround(x, y, z);
   }
 
@@ -79,7 +79,7 @@ export class ElementSim {
   wakeBox(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) {
     const w = this.world;
     for (let z = z0; z <= z1; z++) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++)
-      if (w.inside(x, y, z) && w.elem[w.idx(x, y, z)]) this.active.add(w.idx(x, y, z));
+      if (w.inside(x, y, z) && w.elemAtIndex(w.idx(x, y, z))) this.active.add(w.idx(x, y, z));
   }
 
   update(dt: number) {
@@ -116,7 +116,7 @@ export class ElementSim {
     const reacted = new Set<number>();
     for (const r of reactions) {
       const i = w.idx(r.x, r.y, r.z);
-      if (reacted.has(i) || !w.elem[i]) continue;
+      if (reacted.has(i) || !w.elemAtIndex(i)) continue;
       reacted.add(i);
       const key = r.source ? r.r.source : r.r.flow;
       const result = this.host.react(r.x, r.y, r.z, r.r, key ? MAT[key] : AIR);
@@ -140,8 +140,8 @@ export class ElementSim {
 
   private read(x: number, y: number, z: number, i: number, changes: Change[], reactions: Reaction[], catches: Catch[]) {
     const w = this.world;
-    if (w.data[i] !== AIR) return;
-    const b = w.elem[i], kind = elemKind(b), level = elemLevel(b);
+    if (w.getAt(i) !== AIR) return;
+    const b = w.elemAtIndex(i), kind = elemKind(b), level = elemLevel(b);
     if (this.host.blocked(x, y, z) && !b) return; // a closed door holds fluids back
     // 1. flow: anything but a fluid source takes its state from its neighbours
     if (!(isSource(b) && (kind === EL_WATER || kind === EL_LAVA))) {

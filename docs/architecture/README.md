@@ -17,5 +17,6 @@ How the code that exists today works.
 | [DISCOVERABILITY.md](DISCOVERABILITY.md) | Discoverability: the canonical address, search and social metadata, JSON-LD, robots.txt, sitemap, llms.txt for AI assistants, the social card and how to keep them in step |
 | [SANDBOX.md](SANDBOX.md) | The sandbox and the lab: one room built from a scenario (any layout, blocks, elements, projections, practices), the creative room (`?sandbox`, `S.sb`) and the deterministic lab (`npm run sandbox`) with its text reports |
 | [LEVELS.md](LEVELS.md) | Levels: the ten floors and the tutorial roots (L1, built), and the milestones to the Tree-of-Life maps, multi-cell rooms, the circles, silence and heaven, and the giant tree (L2–L6) |
+| [SKY.md](SKY.md) | The upper world (accepted with changes, [review](../reviews/sky.md); not built): two worlds in one run, the sky realm as a formula world with exceptions, the sky laws as systems, the deity and minion frameworks, the eight hindrances, the five guardian floors, Totality and the Triple Jump, the Spiked Entity, the staircase and the saved unlock, work packages |
 
 Related: the target architecture and the reasoning behind it are in [../research/TECHNICAL.md](../research/TECHNICAL.md); reviews of these designs are in [../reviews/](../reviews/README.md).
