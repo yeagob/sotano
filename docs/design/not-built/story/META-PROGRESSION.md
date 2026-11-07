@@ -13,7 +13,7 @@ A run is kept nowhere today. Death ends it, and a new run begins with nothing fr
 - **The Upward Staircase Unlock (Status: decided)**:
   - Once the player descends to the lowest floor and encounters the invulnerable Spiked Entity ([ENDGAME](ENDGAME.md)), a grand staircase is revealed that pierces through all floors upward to the surface.
   - From that point onward, in every subsequent run, **Floor 1 contains an upward staircase** allowing the player to ascend directly to the surface and the Giant Tree, bypassing the descent if they choose.
-  - This persistent progression state is stored in browser storage (`localStorage.getItem('the-roots:stairs-unlocked')`).
+  - The flag must last between runs. Proposed: browser storage under the key `the-roots:stairs-unlocked`; where it is finally kept is open (see open question 1).
 
 ## The ideas (Other meta-progression)
 
@@ -25,5 +25,5 @@ A run is kept nowhere today. Death ends it, and a new run begins with nothing fr
 
 ## Open questions
 
-1. **Storage migration**: What key in `localStorage` stores the staircase unlock flag?
+1. **Storage**: Is the unlock flag kept in browser storage under `the-roots:stairs-unlocked`, as proposed, and what happens when the player clears their browser data or plays on another device?
 2. **Floor 1 Staircase Appearance**: What does the upward staircase look like on Floor 1, and does it feature an omen or inscription reminding the player of the spiked entity's words?

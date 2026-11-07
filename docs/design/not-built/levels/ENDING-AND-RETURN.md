@@ -14,7 +14,7 @@ Status: decided for the bottom revelation (the Spiked Entity), the upward stairc
 
 1. **Reaching the lowest depth**:
    - The player reaches the lowest floor and encounters the indestructible Spiked Entity ([ENDGAME](../story/ENDGAME.md)).
-   - The entity reveals that the true path is upward: *"El verdadero camino no era llegar hasta aquí, el verdadero camino es ir hacia arriba."*
+   - The entity reveals that the true path is upward: *"The true path was not to reach this place; the true path is to go upward."*
 2. **The Ascending Stairway**:
    - Meeting the entity unlocks a staircase carving upward through every floor to the surface.
    - Once unlocked, future runs feature an upward staircase directly from Floor 1, offering an immediate route to the surface and the Giant Tree.

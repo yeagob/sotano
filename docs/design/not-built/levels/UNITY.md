@@ -21,7 +21,7 @@ If the bottom of the basement is the deep, dark Silence of the unconscious ([COS
 - **No conventional enemies or hindrances**: In accordance with the sky laws, there is no violence or negative intention here. The journey of struggle ends at the gateway of the Sun.
 - **The Culmination**: The player stands at the center of the world's origin and end.
 - **The Solar Relic Reward**: Conquering Unity bestows a celestial relic/artifact of pure solar power. This item is the only force capable of piercing the invulnerability of the **Spiked Entity** waiting at the bottom of the depths ([ENDGAME](../story/ENDGAME.md)).
-- **The Return**: Armed with the solar relic, the player can return to the abyss to face the spiked guardian and complete the ultimate reconciliation between the heavens and the depths.
+- **The Return**: Armed with the solar relic, the player can return to the abyss to face the Spiked Entity and complete the ultimate reconciliation between the heavens and the depths.
 
 ## 4. Open questions
 

@@ -1,4 +1,4 @@
-# The Endgame: The Spiked Guardian, The Ascent, and The Cosmic Return
+# The Endgame: The Spiked Entity, The Ascent, and The Cosmic Return
 
 Up: [not-built story](README.md) · [ENDING-AND-RETURN](../levels/ENDING-AND-RETURN.md) · [UNITY](../levels/UNITY.md)
 
