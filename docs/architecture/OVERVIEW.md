@@ -15,7 +15,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
              ├─ world/       voxel storage + element layer, floor plan, stacked dungeon (carve, holes),
              │               element simulation, meshing worker (blocks and elements)
              ├─ physics/     voxel raycast, box-vs-grid collision, loose cubes and bombs
-             ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts
+             ├─ combat/      intentions (the player's projectiles), intention polarity, weapons, blasts, the touch router (SKY.md §5.7)
              ├─ entities/    player, doors, pickups, enemies (system)
              ├─ input/       actions bound to keyboard + mouse, gamepad and touch (input/README.md)
              ├─ render/      atlas, item icons, chunk meshes, hands, loose cubes, cracks, particles
@@ -85,11 +85,12 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## World (`world/`)
 
-- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters.
+- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters, and `terrain`: the read-only ground outside the array (the mountains).
 - `elements.ts` — the element simulation (active cells, 10 Hz, budgeted; [ELEMENTS.md](ELEMENTS.md) §10).
 - `elem-mesher.ts` — water and lava surfaces sloped from their levels, fire quads; runs in the meshing worker.
 - `floorplan.ts` — Isaac-style plans from any start cell, with a fallback. See [ROOMS.md](ROOMS.md).
 - `floor.ts` — the stacked dungeon: `createDungeonWorld`, `carveFloor`, `openHole`, `floorY`, `bandOf`, `roomOrigin`, `cellOf`.
+- `mountains.ts` — `Mountains`: the ring of mountains round the surface, a seeded heightmap read for every cell outside the dungeon array ([LEVELS.md](LEVELS.md) §13).
 - `mesher.ts` / `mesher.worker.ts` — visible faces, per-vertex AO and face shade baked into vertex colours, in a worker.
 
 ## Physics (`physics/`)
@@ -127,7 +128,7 @@ Every player-facing word goes through `i18n/` ([LOCALIZATION.md](LOCALIZATION.md
 
 ## Debug console
 
-The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|chests|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)).
+The debug readout is off by default; **F3** toggles it. **`?gallery`** opens the art review page instead of the game (`src/debug/gallery.ts`): `?gallery=materials|items|enemies|pickups|chests|hud|palette`, `&filter=grey|deutan|protan|tritan|silhouette`, `&angle=35`, `&id=critic` (docs/art/ART-GUIDE.md §13, §15). **`?sandbox[=scenario]`** opens the creative room, with its own console `S.sb`; `&lab` runs the scenario's script and prints its report ([SANDBOX.md](SANDBOX.md)). **`?test`** adds the test bench, a panel with god mode, a jump to any floor or the sky deck, every practice and a floor-by-floor guide (`src/debug/test-bench.ts`, `src/debug/test-panel.ts`, `Game.debugFloor`; [TEST-BENCH](../testing/TEST-BENCH.md)).
 
 
 `window.S` in the browser console:

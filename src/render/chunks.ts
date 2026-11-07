@@ -4,7 +4,8 @@
 // everything opaque; lava full-bright; fire alpha-tested). Element textures animate by offset.
 
 import * as THREE from 'three';
-import { CHUNK, chunkKey, parseChunkKey, type VoxelWorld } from '../world/world';
+import type { VoxelSpace } from '../world/space';
+import { CHUNK, chunkKey, parseChunkKey } from '../world/world';
 import type { MeshData } from '../world/mesher';
 import type { MeshRequest } from '../world/mesher.worker';
 import { elementTextures } from './element-textures';
@@ -14,6 +15,15 @@ type Reply = MeshData & { key: string; version: number; layer: Layer; groups: [n
 
 /** Fire frames per second (DECISIONS §3.8: 4 frames at 8 fps, shape change only). */
 const FIRE_FPS = 8;
+
+/**
+ * Whether a dirty chunk can be dropped without meshing (docs/architecture/SKY.md §3.1, the ghost
+ * mesh [M1]): only when it is empty and no mesh exists for its key. A chunk emptied by removing its
+ * last block still has a mesh, so it must be sent (the worker's empty reply removes that mesh).
+ */
+export function skipChunk(empty: boolean, hasMesh: boolean): boolean {
+  return empty && !hasMesh;
+}
 
 export class ChunkRenderer {
   private meshes: Record<Layer, Map<string, THREE.Mesh>> = { blocks: new Map(), elem: new Map() };
@@ -25,7 +35,7 @@ export class ChunkRenderer {
   private tex = elementTextures();
   private rows: [number, number] | null = null;
 
-  constructor(private world: VoxelWorld, private scene: THREE.Scene, atlas: THREE.Texture, private perFrame = 4, private elemPerFrame = 3) {
+  constructor(private world: VoxelSpace, private scene: THREE.Object3D, atlas: THREE.Texture, private perFrame = 4, private elemPerFrame = 3) {
     this.material = new THREE.MeshBasicMaterial({ map: atlas, vertexColors: true });
     this.elemMaterials = [
       new THREE.MeshBasicMaterial({ map: this.tex.water, vertexColors: true, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide }),
@@ -57,6 +67,8 @@ export class ChunkRenderer {
       if (!this.loaded(key)) { dirty.delete(key); continue; }
       dirty.delete(key);
       const [cx, cy, cz] = parseChunkKey(key);
+      // a world that knows its empty chunks (the sky) spares the worker; the dungeon's does not offer it
+      if (this.world.emptyChunk && skipChunk(this.world.emptyChunk(cx, cy, cz), this.meshes[layer].has(key))) continue;
       const v = (this.version[layer].get(key) ?? 0) + 1;
       this.version[layer].set(key, v);
       const req: MeshRequest = {
@@ -130,15 +142,16 @@ export class ChunkRenderer {
 
   private loaded(key: string) {
     if (!this.rows) return true;
-    const cy = parseChunkKey(key)[1];
-    return cy >= this.rows[0] && cy <= this.rows[1];
+    const [cx, cy, cz] = parseChunkKey(key);
+    return (cy >= this.rows[0] && cy <= this.rows[1]) || !!this.world.outerChunk?.(cx, cz);
   }
 
-  /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). */
-  setVisibleRange(y0: number, y1: number) {
+  /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). `outer`:
+   *  draw the terrain outside the stored world (the mountains) at any height above y0, or not at all. */
+  setVisibleRange(y0: number, y1: number, outer = false) {
     for (const layer of ['blocks', 'elem'] as Layer[]) for (const [key, m] of this.meshes[layer]) {
-      const cy = Number(key.split(',')[1]) * CHUNK;
-      m.visible = cy + CHUNK > y0 && cy < y1;
+      const [cx, cyi, cz] = parseChunkKey(key), cy = cyi * CHUNK;
+      m.visible = this.world.outerChunk?.(cx, cz) ? outer && cy + CHUNK > y0 : cy + CHUNK > y0 && cy < y1;
     }
   }
 

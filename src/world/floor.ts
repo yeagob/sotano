@@ -29,7 +29,8 @@ import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
 import { CHALLENGE_ROOM, DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
 import { hash3, type Rng, type RunRandom } from '../core/rng';
 import { DEFAULT_PLAN, generatePlan, OPPOSITE, sizeOf, TREE_ENTRY, TUTORIAL_LAYOUT, treeCell, treePlan, tutorialPlan, type FloorPlan, type PlanRoom, type RoomType, type Side } from './floorplan';
-import { VoxelWorld } from './world';
+import { Mountains } from './mountains';
+import { chunkKey, VoxelWorld } from './world';
 
 /** How many floors go down (0 … LAST_FLOOR). */
 export const FLOORS = LEVELS.length;
@@ -234,6 +235,9 @@ export function pedestalSlots(dungeon: DungeonPlan): PedestalSlot[] {
 export function createDungeonWorld(rr: RunRandom, dungeon: DungeonPlan): VoxelWorld {
   const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
   fillRock(w, [rr.fork('rock', 0).u32(), rr.fork('rock', 1).u32()], dungeon.themes);
+  // the mountains round the surface, centred on the giant tree's axis (GiantTree: sx >> 1, sz >> 1)
+  w.terrain = new Mountains(rr.fork('mountains'), w.sx >> 1, w.sz >> 1, SURFACE_Y, w);
+  for (const [cx, cy, cz] of w.terrain.chunks()) w.dirty.add(chunkKey(cx, cy, cz));
   return w;
 }
 

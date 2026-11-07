@@ -75,6 +75,9 @@ describe('missiles', () => {
     expect(muzzleBlocked((x: number) => x >= 3, 0.5, 0.5, 0.5, 1, 0, 0)).toBe(false);
     expect(muzzleBlocked(solid, 0.5, 0.5, 0.5, -1, 0, 0)).toBe(false);
   });
+
+  // A sky creature's box is met through the game's own missileMeets (the touch router): tested on the
+  // real Game methods in tests/game-realm-passage.test.ts, not here with a copy of the router call.
 });
 
 describe('Dr. Launcher', () => {

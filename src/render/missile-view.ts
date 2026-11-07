@@ -2,7 +2,8 @@
 // §7.7). A missile is a bomb taken from the counter, so it is the same seed model as the pickup and
 // the placed breakthrough (seed-model.ts), turned to fly tip first along the aim, with a plume of the
 // player's light behind it (a comet tail of five fog-exempt puffs, longest once the run-up is done). Polarity is read from the light, never from a new shape:
-//   positive: the seams burn white-gold and the plume is light.core in a light.gold halo (mending);
+//   positive: the body is the white seed (DECISIONS §7.8), its seams light.core, and the plume is
+//   light.core in a light.gold halo (mending);
 //   negative: the seams are banked to ember and the plume is light.ember fading to light.dusk at
 //   0.75 of the positive strength (the breakthrough), as the negative intention (DECISIONS §14.1).
 // A thin ring of the Miracles hue rides the plume's tail: the practice's path, as on an intention's
@@ -82,7 +83,8 @@ export class MissileView {
 
   private build(polarity: Polarity): Missile {
     const look = LOOK[polarity];
-    const seed = buildSeed();
+    // a positive missile is the white seed (§7.8), a negative one the black breakthrough
+    const seed = buildSeed(polarity === 'positive' ? 'love' : 'breakthrough');
     // centre the seed on the root so it turns about its middle, tip leading
     seed.body.position.y = -HALF;
     if (look.seams) seed.cracks.color.setHex(pal(look.seams));

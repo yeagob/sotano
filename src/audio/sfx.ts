@@ -21,6 +21,9 @@ export function unlockAudio() {
   master.connect(ctx.destination);
 }
 
+/** The context once audio is unlocked, else null: for sound parts that synthesise their own voices (src/audio/sky/). */
+export function audioContext(): AudioContext | null { return ctx; }
+
 function tone(freq: number, dur: number, type: OscillatorType, vol: number, slide = 0, out: AudioNode = master) {
   if (!ctx) return;
   const t = ctx.currentTime;

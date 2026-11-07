@@ -11,6 +11,7 @@ import { PARTS } from '../src/content/parts';
 import { Intents, intentFromStats } from '../src/combat/intents';
 import { Beam, GreatCut, type WeaponHost } from '../src/combat/weapons';
 import type { Polarity } from '../src/combat/polarity';
+import { TouchRouter } from '../src/combat/touch-router';
 import { BASE_STATS } from '../src/core/stats';
 
 // game.ts makes no canvas or audio at load, but it reads matchMedia at module load; the sound
@@ -197,6 +198,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       labs: new Map<string, Alembic>([[world.idx(0, 1, -2), lab]]),
       bus,
       polarity,
+      router: new TouchRouter(),
       stroke: undefined,
       strikeDebris: 0,
       player: { eye: new THREE.Vector3(0.5, 1.6, 0.5), forward: new THREE.Vector3(0, 0, -1) },

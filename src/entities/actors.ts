@@ -3,9 +3,11 @@
 // contact, targeting and item effects work the same for any of them (clones and allies later).
 
 import type { Body } from '../physics/voxel-collide';
+import type { RealmKind } from '../sky/types';
 
 export type ActorId = number;
-export type ActorKind = 'player' | 'projection';
+/** 'sky': a sky creature (deity or minion, SKY.md §5.2). It has no health that can reach zero. */
+export type ActorKind = 'player' | 'projection' | 'sky';
 /** Sides (ACTORS.md §4). A projection that changes side becomes part of the self. */
 export type Faction = 'self' | 'projection' | 'neutral';
 /** Who caused something: an actor, or the world itself. */
@@ -42,22 +44,48 @@ export interface Actor {
   spawning: number;
 }
 
+/**
+ * One registry and one id space for both worlds (SKY.md §2.2). Each actor belongs to a realm; `all()`
+ * yields the player and the active realm's actors only, so a blast in the sky never touches a dungeon
+ * projection that happens to stand at the same numbers. `get` is by id and does not filter.
+ */
 export class ActorRegistry {
   private map = new Map<ActorId, Actor>();
+  private realmOf = new Map<ActorId, RealmKind>();
+  private active: RealmKind = 'dungeon';
   private next = 1;
 
-  /** Forget everyone and restart ids (a new run). */
-  reset() { this.map.clear(); this.next = 1; }
+  /** Forget everyone, restart ids and the active realm (a new run). */
+  reset() { this.map.clear(); this.realmOf.clear(); this.active = 'dungeon'; this.next = 1; }
 
   newId(): ActorId { return this.next++; }
 
-  add(a: Actor) { this.map.set(a.id, a); }
+  /** Adds an actor to a realm (the dungeon unless said otherwise). */
+  register(a: Actor, realm: RealmKind = 'dungeon') {
+    this.map.set(a.id, a);
+    this.realmOf.set(a.id, realm);
+  }
 
-  remove(id: ActorId) { this.map.delete(id); }
+  add(a: Actor) { this.register(a); }
+
+  remove(id: ActorId) { this.map.delete(id); this.realmOf.delete(id); }
 
   get(id: ActorId | 'world'): Actor | undefined { return id === 'world' ? undefined : this.map.get(id); }
 
-  all(): IterableIterator<Actor> { return this.map.values(); }
+  /** The realm an actor was registered in, or undefined if it is not registered. */
+  realm(id: ActorId): RealmKind | undefined { return this.realmOf.get(id); }
+
+  /** The realm the game is in now. Actors of the other realm are hidden from `all()`. */
+  get activeRealm(): RealmKind { return this.active; }
+
+  setRealm(kind: RealmKind) { this.active = kind; }
+
+  /** The player (in either realm) and the actors of the active realm. */
+  *all(): IterableIterator<Actor> {
+    for (const a of this.map.values()) {
+      if (a.kind === 'player' || this.realmOf.get(a.id) === this.active) yield a;
+    }
+  }
 
   get size() { return this.map.size; }
 }

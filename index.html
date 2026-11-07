@@ -93,7 +93,22 @@
 
     /* Isaac corner: hearts, breakthroughs (seeds), keys, practices */
     #status { position: fixed; top: 10px; left: 12px; pointer-events: none; }
-    #hearts { display: flex; gap: var(--u); margin-bottom: 6px; }
+    .hearts-row { display: flex; align-items: center; gap: calc(5 * var(--u)); margin-bottom: 6px; }
+    .hearts-box { position: relative; display: flex; }
+    #hearts, .hearts-strip { display: flex; gap: var(--u); }
+    /* spirit (sky only): a 1 u light.core outline round the hearts on a 1 u ink.void keyline, drawn clockwise from the
+       top left in proportion to spirit / 100, sliding over 0.3 s; its number at the row's end. Art: DECISIONS §10.7. */
+    .spirit-ring { position: absolute; left: calc(-3 * var(--u)); top: calc(-3 * var(--u)); width: calc(100% + 6 * var(--u));
+      height: calc(100% + 6 * var(--u)); overflow: visible; display: none; pointer-events: none; }
+    .spirit-ring rect { fill: none; transition: stroke-dasharray .3s linear; }
+    .spirit-key { stroke: var(--pal-ink-void); stroke-width: calc(3 * var(--u)); }
+    .spirit-line { stroke: var(--pal-light-core); stroke-width: var(--u); }
+    .spirit-num { display: none; margin-left: calc(3 * var(--u)); font-family: "Pixelify Sans", system-ui, sans-serif; font-size: 20px; color: var(--ui-text);
+      font-variant-numeric: tabular-nums; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
+    /* the sky's row pads 5 u so the outline (4.5 u reach from the hearts) stays inside the screen's top and left edges at any scale */
+    .hearts-row.sky { padding: calc(5 * var(--u)); }
+    .hearts-row.sky .spirit-ring { display: block; }
+    .hearts-row.sky .spirit-num { display: block; }
     .heart { position: relative; width: calc(11 * var(--u)); height: calc(10 * var(--u)); display: inline-block;
       background: no-repeat center/contain var(--ico-heartEmpty); image-rendering: pixelated; }
     .heart.full { background-image: var(--ico-heart); }
@@ -373,7 +388,10 @@
   <div id="star"></div>
   <div id="berserk"></div>
   <div id="status">
-    <div id="hearts"></div>
+    <div id="hearts-row" class="hearts-row">
+      <div id="hearts-box" class="hearts-box"><div id="hearts"></div></div>
+      <div id="spirit-num" class="spirit-num" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div>
+    </div>
     <div id="breath"></div>
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>

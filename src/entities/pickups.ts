@@ -141,7 +141,7 @@ export class Pickups {
   private time = 0;
   heartKind: ((y: number) => HeartKind) | null = null;
 
-  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+  constructor(private scene: THREE.Object3D) { scene.add(this.group); }
 
   dispose() { this.scene.remove(this.group); }
 

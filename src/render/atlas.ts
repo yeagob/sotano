@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { MATERIALS, type MaterialDef } from '../content/materials';
 import { palCss, type PalToken } from '../content/palette';
-import { ATLAS_COLS, ATLAS_ROWS, CRACK_STAGES, TILE_CRACK0, TILE_GRASS_TOP, TILE_LOG_TOP, TILE_PX } from '../content/tiles';
+import { ATLAS_COLS, ATLAS_ROWS, CRACK_STAGES, TILE_BAMBOO_TOP, TILE_CRACK0, TILE_GRASS_TOP, TILE_LOG_TOP, TILE_PX, TILE_SKYWOOD_TOP } from '../content/tiles';
 import { Rng } from '../core/rng';
 
 const T = TILE_PX;
@@ -291,6 +291,222 @@ function paintSeed(px: Px, r: Ramp) {
   px(7, 8, core); px(8, 9, core);
 }
 
+// ───────────────────────── the sky's matter (docs/art/sky/blocks.md) ─────────────────────────
+// Pale, soft, never emissive; light from the top-left like every tile. Found matter lies horizontal
+// (cloud, mist, fence rails), what grows rises (heartwood figure, bamboo culms).
+
+/** Seamless distance on the tile's torus. */
+const tor = (d: number) => { const m = ((d % T) + T) % T; return m > T / 2 ? m - T : m; };
+
+/** Cloud: two banks of billows lying flat, each billow a soft dome lit on its crest, the bank behind
+ *  showing in shade between the domes. No outline anywhere: a cloud has no hard edge (never cobble). */
+function paintCloud(px: Px, r: Ramp) {
+  // bank 0 (rows 0–7) and bank 1 (rows 8–15); domes 8 px wide, the lower bank shifted by 4 and a row
+  const banks: [number, number[]][] = [[0, [2.6, 3.2]], [4, [3.4, 2.4]]];
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const bank = y >> 3, ly = y & 7, [off, heights] = banks[bank];
+    const k = Math.floor(((x + off) % T) / 8), bx = ((x + off) % 8) - 3.5;
+    const crest = Math.round(3.6 - heights[k] * Math.sqrt(Math.max(0, 1 - (bx / 4.4) ** 2)));
+    let c: string;
+    if (ly < crest) c = ly === crest - 1 && Math.abs(bx) < 3 ? r.d : r.b;  // the bank behind, in its shade
+    else if (ly === crest) c = r.h;
+    else if (ly === crest + 1) c = bx < 1.5 ? r.h : r.b;
+    else if (ly === 7) c = Math.abs(bx) > 2.5 ? r.d : r.b;                  // the flat underside
+    else c = r.b;
+    px(x, y, c);
+  }
+}
+
+/** Mist: long thin wisps lying flat, low contrast, no outline: a step that is barely there. */
+function paintMist(px: Px, r: Ramp) {
+  const w = wrap(px);
+  const wisps: [number, number, number][] = [[1, 0.4, 1], [5, 2.1, 2], [9, 4.0, 1], [13, 5.3, 2]];
+  for (const [y0, ph, k] of wisps) for (let x = 0; x < T; x++) {
+    const y = y0 + Math.round(Math.sin((x / T) * Math.PI * 2 * k + ph) * 1.1);
+    if (Math.sin((x / T) * Math.PI * 2 + ph * 3) > -0.45) w(x, y, r.h);
+    if (Math.sin((x / T) * Math.PI * 4 + ph) > 0.35) w(x, y + 1, r.d);
+  }
+}
+
+/** Heartwood: dense polished figure, grain lines rising and parting around one knot (never boards). */
+function paintHeartwood(px: Px, r: Ramp) {
+  const kx = 8, ky = 8.5;
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const dx = tor(x - kx), dy = y - ky;
+    const push = 2.6 * Math.sign(dx || 1) * Math.exp(-(dx * dx * 0.7 + dy * dy * 0.35) / 6);
+    const u = x - push + Math.sin((y / T) * Math.PI * 2 + 0.7) * 1.2 + Math.sin((y / T) * Math.PI * 4 + x * 0.4) * 0.4;
+    const s = ((u % 4) + 4) % 4, band = Math.floor(u / 4);
+    px(x, y, s < 0.95 ? r.d : s < 1.9 && band % 2 === 0 && Math.sin((y / T) * Math.PI * 2 + band) > -0.2 ? r.h : r.b);
+  }
+  // a small knot: the grain parts around it; small, so a wall of heartwood is not a grid of dots
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const e = ((x - kx + 0.5) / 1.5) ** 2 + ((y - ky) / 2) ** 2;
+    if (e < 0.35) px(x, y, r.o);
+    else if (e < 1) px(x, y, r.d);
+    else if (e < 1.6 && x < kx && y < ky) px(x, y, r.h);
+  }
+}
+
+/** Sky wood (branches): smooth pale bark in long rising plates (never the trunk's deep crevices), a few
+ *  short lenticels across them, and one branch eye where a twig once was. */
+function paintBranch(px: Px, r: Ramp) {
+  const w = wrap(px);
+  // four shallow fissures that wander and break off, each with a lit ridge on its left
+  const seams: [number, number, number][] = [[1, 1.3, 1], [5, 0.2, 2], [9, 2.4, 1], [13, 4.1, 2]];
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) w(x, y, r.b);
+  seams.forEach(([x0, ph, k], i) => {
+    for (let y = 0; y < T; y++) {
+      if (Math.sin((y / T) * Math.PI * 2 + ph * 2 + i) < -0.55) continue;
+      const x = x0 + Math.round(Math.sin((y / T) * Math.PI * 2 * k + ph) * 0.9);
+      w(x, y, r.d); w(x - 1, y, r.h);
+    }
+  });
+  // lenticels: short dark dashes lying across the bark (the mark of a branch, never of a trunk)
+  for (const [x, y, l] of [[2, 3, 3], [10, 6, 4], [5, 10, 3], [12, 13, 3], [0, 15, 2]] as [number, number, number][]) {
+    for (let k = 0; k < l; k++) w(x + k, y, r.o);
+  }
+  const eye: [number, number, string][] = [[7, 13, r.h], [8, 13, r.d], [6, 14, r.h], [7, 14, r.o], [8, 14, r.o], [9, 14, r.d], [7, 15, r.d], [8, 15, r.d]];
+  for (const [x, y, c] of eye) w(x, y, c);
+}
+
+const SKY_LEAVES: [number, number, number, number][] = [
+  [3.5, 3, 4.6, -1.0], [11, 3.5, 4.4, 0.35], [7.5, 9, 4.8, 1.15], [14, 10.5, 4.2, -0.4], [2.5, 12.5, 4.4, 0.6], [10, 15, 4.4, -1.25],
+];
+
+/** Sky leaf: long pointed leaves lying every which way, each with a midrib and a lit upper edge,
+ *  dark shade between them (never a scale pattern: no two neighbours point the same way). */
+function paintSkyleaf(px: Px, r: Ramp) {
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    let c = (x * 3 + y) % 7 === 0 ? r.d : r.o;
+    for (let i = SKY_LEAVES.length - 1; i >= 0; i--) {
+      const [cx, cy, len, a] = SKY_LEAVES[i];
+      const dx = tor(x - cx), dy = tor(y - cy);
+      const u = dx * Math.cos(a) + dy * Math.sin(a), v = -dx * Math.sin(a) + dy * Math.cos(a);
+      if (Math.abs(u) >= len) continue;
+      const half = 2.1 * (1 - (u / len) ** 2);
+      if (Math.abs(v) > half) continue;
+      c = Math.abs(v) < 0.45 && Math.abs(u) < len - 1.2 ? r.d : Math.abs(v) > half - 0.9 ? (v < 0 ? r.h : r.d) : v < 0 ? r.b : i % 2 ? r.b : r.d;
+      break;
+    }
+    px(x, y, c);
+  }
+}
+
+/** Bamboo: two culms side by side, rounded by a lit left edge, each ringed by one node at its own height. */
+function paintBamboo(px: Px, r: Ramp) {
+  const w = wrap(px);
+  const nodes = [5, 12];
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const k = x >> 3, lx = x & 7, n = nodes[k];
+    if (y === n) w(x, y, lx === 0 ? r.d : r.o);
+    else if (y === n + 1) w(x, y, lx === 0 ? r.d : r.h);
+    else w(x, y, lx === 0 ? r.o : lx === 1 ? r.h : lx === 6 ? r.d : lx === 7 ? r.o : r.b);
+  }
+  // a sheath leaf off the first culm's node, and a long gloss streak down each culm
+  for (const [x, y] of [[7, 4], [8, 3], [9, 3], [10, 2]]) w(x, y, r.d);
+  for (let y = 8; y < 15; y++) w(3, y, r.h);
+  for (let y = 1; y < 8; y++) w(11, y, r.h);
+}
+
+/** Bamboo end: four open culms, each a ring of wall around its hollow. */
+function paintBambooTop(px: Px, r: Ramp) {
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const cx = x < 8 ? 3.5 : 11.5, cy = y < 8 ? 3.5 : 11.5;
+    const d = Math.hypot(x - cx, y - cy);
+    px(x, y, d > 3.9 ? r.o : d > 3 ? (x < cx || y < cy ? r.h : r.d) : d > 1.6 ? r.b : r.o);
+  }
+}
+
+/** Moss: a dense, uneven cushion of tufts of every size, lit on top, sunk in shade between. */
+// one tuft, 4 × 4: a little dome lit on top-left, shaded under; '.' leaves what is beneath
+const MOSS_TUFT = ['.hh.', 'hbbd', '.dd.', '.oo.'];
+
+function paintMoss(px: Px, r: Ramp) {
+  const w = wrap(px);
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) w(x, y, (x + 2 * y) % 5 === 0 ? r.o : r.d);
+  for (let gy = 0; gy < 4; gy++) for (let gx = 0; gx < 4; gx++) {
+    const i = gy * 4 + gx, ox = gx * 4 + (gy % 2) * 2 + ((i * 5) % 3) - 1, oy = gy * 4 + ((i * 3) % 2);
+    const shade = i % 5 === 2;
+    MOSS_TUFT.forEach((row, dy) => [...row].forEach((ch, dx) => {
+      if (ch === '.') return;
+      const c = ch === 'h' ? (shade ? r.b : r.h) : ch === 'b' ? (shade ? r.d : r.b) : ch === 'd' ? r.d : r.o;
+      w(ox + dx, oy + dy, c);
+    }));
+  }
+}
+
+/** Fence wood: three weathered rails laid flat (the door leaf's boards turned on their side): a lit top
+ *  edge, an outline gap, long grain lines, one butt joint and one peg, a knot on the top rail. */
+const FENCE_RAILS: [number, number][] = [[0, 5], [5, 5], [10, 6]];
+
+function paintFence(px: Px, r: Ramp) {
+  const w = wrap(px);
+  for (const [y0, h] of FENCE_RAILS) for (let y = y0; y < y0 + h; y++) for (let x = 0; x < T; x++) {
+    const ly = y - y0;
+    w(x, y, ly === h - 1 ? r.o : ly === 0 ? r.h : ly === h - 2 ? r.d : r.b);
+  }
+  // long grain, 6–11 px, each on its own rail row
+  const grain: [number, number, number][] = [[1, 2, 9], [12, 1, 3], [4, 7, 11], [0, 12, 6], [9, 13, 6], [13, 7, 2]];
+  for (const [x, y, l] of grain) for (let k = 0; k < l; k++) w(x + k, y, r.d);
+  // the middle rail's butt joint with its lit end, and the peg that holds it
+  for (let y = 5; y < 9; y++) { w(9, y, r.o); w(10, y, y === 5 ? r.h : r.b); }
+  w(11, 7, r.o); w(12, 7, r.d); w(11, 6, r.d);
+  // a knot on the top rail: an outline pip ringed in dark
+  w(13, 2, r.o); w(12, 2, r.d); w(14, 2, r.d); w(13, 3, r.d);
+}
+
+const RESIN_DROPS: Blob[] = [[3.5, 3, 3.2, 2.6], [11, 4, 3.6, 2.8], [7, 10, 3.4, 3], [14.5, 12, 2.6, 2.4], [1.5, 13, 2.4, 2]];
+
+/** Star resin: rounded drops of set light, each with a 2 px glint of starlight on its upper left. */
+function paintResin(px: Px, r: Ramp) {
+  const w = wrap(px);
+  paintBlobs(w, RESIN_DROPS, i => (i === 2 ? r.h : r.b), r, r.d, r.o);
+  const glint = r.a ?? r.h;
+  for (const [x, y] of [[2, 2], [9, 3], [6, 8]]) { w(x, y, glint); w(x + 1, y, glint); }
+}
+
+/** Solar glass: a cut block, bevelled, deeper towards the lower right, two parallel glints. */
+function paintGlass(px: Px, r: Ramp) {
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const edge = x === 0 || y === 0 ? r.h : x === T - 1 || y === T - 1 ? r.o : x === T - 2 || y === T - 2 ? r.d : '';
+    px(x, y, edge || (x + y > 19 ? r.d : r.b));
+  }
+  for (let x = 2; x < 8; x++) { px(x, 9 - x, r.h); px(x + 3, 12 - x, r.h); }
+  for (let k = 0; k < 4; k++) px(9 + k, 13 - k, r.o);
+}
+
+/** The sun seal: a pale disc set in a bevelled square, ringed like a medallion and closed on its centre:
+ *  a door of light that is not open yet. Rings, never rays (four rays read as the Critic's ✗) and never
+ *  seams that could read as cracks (cracks are the player's). */
+function paintSeal(px: Px, r: Ramp) {
+  const c = 7.5;
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const dx = x - c, dy = y - c, d = Math.hypot(dx, dy), lit = dx + dy < 0;
+    let col: string;
+    if (x === 0 || y === 0) col = r.h;
+    else if (x === T - 1 || y === T - 1) col = r.d;
+    else if (d > 7.1) col = r.b;                       // the square's field
+    else if (d > 6.2) col = r.d;                       // the groove the disc sits in
+    else if (d > 5.2) col = lit ? r.h : r.b;            // the disc's raised rim, lit top-left
+    else if (d > 3.4) col = r.b;
+    else if (d > 2.5) col = r.d;                       // a sunken ring
+    else col = d > 1.3 ? r.b : r.h;                     // the closed centre
+    px(x, y, col);
+  }
+}
+
+/** Meteor glass: dark green glass sculpted by the fall, rippled with melt-flow ridges, each ridge lit on top. */
+function paintTektite(px: Px, r: Ramp) {
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+    const a = (x / T) * Math.PI * 2;
+    const f = (y + 1.8 * Math.sin(a + 0.6) + 0.9 * Math.sin(a * 2 + 2.1) + 0.5 * Math.sin(a * 3 + (y / T) * Math.PI * 2)) / 4;
+    const s = ((f % 1) + 1) % 1;
+    px(x, y, s < 0.18 ? r.o : s < 0.36 ? r.h : s > 0.8 ? r.d : r.b);
+  }
+  // two glassy glints where the light catches a ridge
+  for (const [x, y] of [[3, 1], [11, 9]]) { px(x, y, r.h); px(x + 1, y, r.h); }
+}
+
 function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: MaterialDef, rng: Rng) {
   const r = rampOf(m);
   const px: Px = (x, y, c) => { g.fillStyle = c; g.fillRect(ox + x, oy + y, 1, 1); };
@@ -411,6 +627,18 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
     case 'seed':
       paintSeed(px, r);
       break;
+    case 'cloud': paintCloud(px, r); break;
+    case 'mist': paintMist(px, r); break;
+    case 'heartwood': paintHeartwood(px, r); break;
+    case 'branch': paintBranch(px, r); break;
+    case 'skyleaf': paintSkyleaf(px, r); break;
+    case 'bamboo': paintBamboo(px, r); break;
+    case 'moss': paintMoss(px, r); break;
+    case 'fence': paintFence(px, r); break;
+    case 'resin': paintResin(px, r); break;
+    case 'tektite': paintTektite(px, r); break;
+    case 'glass': paintGlass(px, r); break;
+    case 'seal': paintSeal(px, r); break;
   }
 }
 
@@ -455,6 +683,8 @@ export function buildAtlas(): THREE.CanvasTexture {
   }
   paintGrassTop(g, ...at(TILE_GRASS_TOP), new Rng(77));
   paintLogTopTile(g, ...at(TILE_LOG_TOP));
+  paintSkyTop(g, ...at(TILE_SKYWOOD_TOP), 'skywood');
+  paintSkyTop(g, ...at(TILE_BAMBOO_TOP), 'bamboo');
   for (let s = 0; s < CRACK_STAGES; s++) paintCracks(g, ...at(TILE_CRACK0 + s), s);
   return pixelTexture(c);
 }
@@ -473,6 +703,20 @@ export function logTopCanvas(): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = T; c.height = T;
   paintLogTopTile(c.getContext('2d')!, 0, 0);
+  return c;
+}
+
+/** The end faces of sky wood (its own growth rings) and bamboo (open culms). */
+function paintSkyTop(g: CanvasRenderingContext2D, ox: number, oy: number, key: 'skywood' | 'bamboo') {
+  const r = rampOf(MATERIALS.find(m => m.key === key)!);
+  const px: Px = (x, y, c) => { g.fillStyle = c; g.fillRect(ox + x, oy + y, 1, 1); };
+  if (key === 'skywood') paintLogTop(px, r); else paintBambooTop(px, r);
+}
+
+export function skyTopCanvas(key: 'skywood' | 'bamboo'): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = T; c.height = T;
+  paintSkyTop(c.getContext('2d')!, 0, 0, key);
   return c;
 }
 

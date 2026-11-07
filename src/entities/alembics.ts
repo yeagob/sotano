@@ -4,7 +4,7 @@ import { buildAlembicModel } from '../render/alembic-model';
 export class Alembics {
   private group = new THREE.Group();
 
-  constructor(private scene: THREE.Scene) { scene.add(this.group); }
+  constructor(private scene: THREE.Object3D) { scene.add(this.group); }
 
   add(x: number, y: number, z: number): THREE.Group {
     const model = buildAlembicModel();

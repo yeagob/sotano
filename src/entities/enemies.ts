@@ -124,7 +124,7 @@ export class Enemies {
 
   private carrying = new Map<number, PickupKind[]>();
   private shells = new Map<number, ShellState>();
-  constructor(private scene: THREE.Scene, private host: EnemyHost) {
+  constructor(private scene: THREE.Object3D, private host: EnemyHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
       new THREE.MeshBasicMaterial({ color: pal('attack.red.base') }), MAX_PROJECTILES);
@@ -147,6 +147,14 @@ export class Enemies {
     this.scene.remove(this.projMesh);
     this.hazards.dispose();
     this.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
+  }
+
+  /** The hazards of this set's projections (the sky's set has its own; SkyHost.hazards reads it). */
+  get hazardField(): Hazards { return this.hazards; }
+
+  /** Drops the hazards of every actor of the active realm (a passage between worlds). */
+  clearHazards() {
+    for (const a of this.host.actors()) this.hazards.clear(a.id);
   }
 
   spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {

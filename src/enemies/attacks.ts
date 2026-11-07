@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-import { pal } from '../content/palette';
+import { pal, type PalToken } from '../content/palette';
 import { hostile, type Actor, type Faction } from '../entities/actors';
 import { fx } from '../core/fx';
 
@@ -13,6 +13,11 @@ export type Shape =
   | { kind: 'pull'; x: number; y: number; z: number; r: number; force: number }
   | { kind: 'sweep'; axis: 'x' | 'z'; from: number; to: number; speed: number; across: [number, number]; y: number; height: number; width: number };
 
+/** The colours of a strike drawn in a world's own tones (SKY.md §6, m13): the warning, the live marks, the
+ *  reach ring of a growing ring, and the two particle colours it sheds. A tinted strike never hits: the
+ *  effect it belongs to does the touching. */
+export interface MarkPaint { tell: PalToken; live: PalToken; reach: PalToken; motes: readonly [PalToken, PalToken] }
+
 export interface Strike {
   lead: number;
   live: number;
@@ -22,6 +27,9 @@ export interface Strike {
    *  decoration blue-white. */
   warns?: boolean;
   shape: Shape;
+  /** A strike in another world's tones (the sky's rings, arcs and gusts). Its marks take these colours
+   *  instead of the attack ramp, and it never strikes an actor. */
+  tint?: MarkPaint;
 }
 
 interface Hazard extends Strike {
@@ -87,13 +95,21 @@ const WHITE = pal('cold.white'), BODY = pal('cold.body');
 const LIVE_SPARKS = 3;
 const TELL_MOTE = 0.35;
 
+const PAINT_COLOUR = new Map<PalToken, THREE.Color>();
+/** The colour of a token used by a tint (cached: a tint is read every frame). */
+function colourOf(t: PalToken): THREE.Color {
+  let c = PAINT_COLOUR.get(t);
+  if (!c) { c = new THREE.Color(pal(t)); PAINT_COLOUR.set(t, c); }
+  return c;
+}
+
 export class Hazards {
   private list: Hazard[] = [];
   private mesh: THREE.InstancedMesh;
   private m = new THREE.Matrix4();
   private time = 0;
 
-  constructor(private scene: THREE.Scene, private host: HazardHost) {
+  constructor(private scene: THREE.Object3D, private host: HazardHost) {
     this.mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(MARK, MARK, MARK), new THREE.MeshBasicMaterial(), CAPACITY);
     this.mesh.frustumCulled = false;
     this.mesh.count = 0;
@@ -132,7 +148,7 @@ export class Hazards {
       const h = this.list[i];
       h.t += dt;
       const live = h.t - h.lead;
-      if (live < 0) { if (fx.random() < TELL_MOTE) this.mote(h.shape, h.lead > 0 ? h.t / h.lead : 1); continue; }
+      if (live < 0) { if (fx.random() < TELL_MOTE) this.mote(h, h.lead > 0 ? h.t / h.lead : 1); continue; }
       if (h.shape.kind === 'field' || h.shape.kind === 'pull') {
         if (!h.started) { h.started = true; this.host.live(h.shape); }
         if (live > h.live) { this.list.splice(i, 1); continue; }
@@ -142,15 +158,17 @@ export class Hazards {
       if (!h.started) { h.started = true; this.host.live(h.shape); }
       if (live > h.live) { this.list.splice(i, 1); continue; }
       if (h.damage > 0) this.sparks(h.shape, live);
-      this.strike(h, live, actors);
+      // a tinted strike is a picture: the effect it belongs to (SKY.md §6) does the touching
+      if (!h.tint) this.strike(h, live, actors);
     }
     this.draw();
   }
 
-  /** A telegraph sheds a rising cold mote somewhere on its shape, brighter as it comes due (`k` 0 → 1). */
-  private mote(s: Shape, k: number) {
-    const [x, y, z] = this.pointOn(s, 0, true);
-    this.host.particles(x, y + 0.1, z, k > 0.7 ? WHITE : BODY, 1, 0.6, 0.05);
+  /** A telegraph sheds a rising mote somewhere on its shape, brighter as it comes due (`k` 0 → 1): cold, or the tint's own. */
+  private mote(h: Hazard, k: number) {
+    const [x, y, z] = this.pointOn(h.shape, 0, true);
+    const colour = h.tint ? pal(h.tint.motes[k > 0.7 ? 1 : 0]) : k > 0.7 ? WHITE : BODY;
+    this.host.particles(x, y + 0.1, z, colour, 1, 0.6, 0.05);
   }
 
   /** A live attack throws dust and sparks along its front, so it reads as force, not as dots. */
@@ -224,20 +242,21 @@ export class Hazards {
 
   private draw() {
     let n = 0;
-    // the tint of the hazard being drawn (set in the loop below): yellow while a hurting one warns, red live, cold if not
-    let tint: MarkTint = 'cold.body';
+    // the colour of the hazard being drawn (set in the loop below): yellow while a hurting one warns, red live, cold if not,
+    // or the strike's own tint
+    let colour: THREE.Color = MARK_COLOR['cold.body'];
     const put = (x: number, y: number, z: number, live: boolean) => {
       if (n >= CAPACITY) return;
       // a live attack's marks are twice as big: the warning is a dashed line, the blow a solid one
       const k = live ? LIVE_SCALE : 1;
       this.m.makeScale(k, k, k).setPosition(x, y, z);
       this.mesh.setMatrixAt(n, this.m);
-      this.mesh.setColorAt(n, MARK_COLOR[tint]);
+      this.mesh.setColorAt(n, colour);
       n++;
     };
     for (const h of this.list) {
       const s = h.shape, live = h.t >= h.lead;
-      tint = markTint(h.hurts, live);
+      colour = h.tint ? colourOf(live ? h.tint.live : h.tint.tell) : MARK_COLOR[markTint(h.hurts, live)];
       if (s.kind === 'line') {
         const dx = s.x1 - s.x0, dz = s.z1 - s.z0, len = Math.hypot(dx, dz);
         for (let d = 0; d <= len; d += DASH) put(s.x0 + dx * d / len, s.y + 0.1, s.z0 + dz * d / len, live);
@@ -255,7 +274,8 @@ export class Hazards {
         ring(r, live);
         // a growing ring shows how far it will reach while it is still a warning: a dimmer yellow than the ring itself
         if (!live && s.grow > 0) {
-          if (h.hurts) tint = 'attack.warn.dim';
+          if (h.tint) colour = colourOf(h.tint.reach);
+          else if (h.hurts) colour = MARK_COLOR['attack.warn.dim'];
           ring(s.r + s.grow * h.live, false);
         }
       } else if (s.kind === 'field') {

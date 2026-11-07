@@ -3,6 +3,8 @@
 // synergies, enemies, materials) are not repeated here: their English lives in their definitions.
 
 import type { Catalog } from '.';
+import { SKY_PARTS_EN } from './sky';
+import { TEST_BENCH_EN } from './test-bench.en';
 
 const messages = {
   // ── start / pause card (index.html) ──
@@ -62,7 +64,7 @@ const messages = {
   'controls.jump.pad': 'A',
   'controls.move.pad': 'Left stick',
   'controls.look.pad': 'Right stick',
-  'controls.jump': 'jump (hold to swim up)',
+  'controls.jump': 'jump (hold to swim up; with air jumps, jump again in the air)',
   'controls.jump.key': 'Space',
   'controls.look.key': 'Mouse',
   'controls.look': 'look',
@@ -109,6 +111,7 @@ const messages = {
 
   // ── HUD ──
   'hud.floor': 'Floor {n}',
+  'hud.spirit': 'Spirit',
   'level.roots': 'The roots',
   'level.circle1': 'Limbo',
   'level.circle2': 'The winds',
@@ -350,6 +353,7 @@ const messages = {
   'stat.luck': 'Luck',
   'stat.moveSpeed': 'Speed',
   'stat.jump': 'Jump',
+  'stat.airJumps': 'Air jumps',
   'stat.reach': 'Reach',
   'stat.carry': 'Carry',
   'stat.kick': 'Kick',
@@ -369,6 +373,16 @@ const messages = {
   'unit.crushNone': 'none',
   'unit.crushTier': 'tier ≤ {n}',
   'unit.crushRate': '{n} per second',
+  // ── the sky realm (docs/architecture/SKY.md §12): one part per package, never edited here ──
+  ...SKY_PARTS_EN.core,
+  ...SKY_PARTS_EN.panda,
+  ...SKY_PARTS_EN.koala,
+  ...SKY_PARTS_EN.elephant,
+  ...SKY_PARTS_EN.lion,
+  ...SKY_PARTS_EN.horse,
+  ...SKY_PARTS_EN.totality,
+  ...SKY_PARTS_EN.endgame,
+  ...TEST_BENCH_EN,
   'unit.missileOn': 'double tap',
 } as const;
 

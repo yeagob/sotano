@@ -8,7 +8,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 |---|---|
 | move | left stick |
 | look | right stick |
-| jump (hold to swim up) | A |
+| jump (hold to swim up; with air jumps, again in the air) | A |
 | cast (hold) | RT |
 | launch a missile (with Dr. Launcher) | a quick double press of RT (within 0.3 s) |
 | place | LT |

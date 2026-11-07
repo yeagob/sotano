@@ -20,6 +20,7 @@ import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
 import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
+import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
@@ -71,6 +72,11 @@ export class Hud {
   private bossFill = $('bossfill');
   private bossName = $('bossname');
   private heartsEl = $('hearts');
+  private heartsRow = $('hearts-row');
+  /** The spirit (sky only): its outline round the hearts and its number; -1 until first drawn. */
+  private spiritRing = createSpiritRing();
+  private spiritNum = $('spirit-num');
+  private spiritShown = -1;
   private breathEl = $('breath');
   private breathKey = '';
   private bombsEl = $('bombs');
@@ -130,6 +136,8 @@ export class Hud {
     document.documentElement.style.setProperty('--berserk-glow', palCss(BERSERKER_FRAME.glow));
     document.documentElement.style.setProperty('--star-glow', palCss(STAR_GLOW));
     this.renderLanguages();
+    $('hearts-box').appendChild(this.spiritRing);
+    this.renderSpiritLabel();
     onLocaleChange(() => this.relocalize());
     onDeviceChange(d => { this.applyDevice(d); this.relocalize(); });
     this.applyDevice(activeDevice());
@@ -157,6 +165,7 @@ export class Hud {
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
     this.renderPolarity();
+    this.renderSpiritLabel();
     this.renderLanguages();
     this.renderControls();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
@@ -165,6 +174,13 @@ export class Hud {
     if (this.tollOpen && this.game) this.renderToll(this.game);
     if (this.guard && this.game) this.renderGuard(this.game);
     this.toastEl.classList.remove('show');
+  }
+
+  /** The spirit's name for its aria-label and title (hud.spirit). */
+  private renderSpiritLabel() {
+    const name = t('hud.spirit');
+    this.spiritNum.setAttribute('aria-label', name);
+    this.spiritNum.title = name;
   }
 
   private applyDevice(d: Device) {
@@ -252,6 +268,18 @@ export class Hud {
       this.heartsEl.classList.toggle('low', hp > 0 && heartCount(hp, p.layers) <= 1 && hp + p.layers.reduce((a, l) => a + l.hp, 0) <= HEART);
       this.starEl.classList.toggle('on', star);
     }
+    // spirit: only in the sky; the outline slides (CSS) to the new length, and the number is whole
+    const sky = g.inSky;
+    this.heartsRow.classList.toggle('sky', sky);
+    if (sky) {
+      const spirit = Math.round(g.spiritNow);
+      if (spirit !== this.spiritShown) {
+        this.spiritShown = spirit;
+        paintSpiritRing(this.spiritRing, spirit);
+        this.spiritNum.textContent = fmtNum(spirit, 0);
+        this.spiritNum.setAttribute('aria-valuenow', String(spirit));
+      }
+    }
     // breath: only while it isn't full (under water, or catching it back)
     const bmax = g.stats.get('breath'), bubbles = 8;
     const full = Math.ceil(g.player.breath / bmax * bubbles - 1e-6);
@@ -324,6 +352,23 @@ export class Hud {
   /** Somewhere that is not a floor: a level of the tree, heaven or silence (`level.<zone>`). */
   setZone(zone: string) {
     this.depthEl.textContent = t(`level.${zone}` as MessageKey);
+  }
+
+  /** The sky's place label, set every frame; the text only changes when the place does. */
+  placeLabel(key: MessageKey) {
+    const text = t(key);
+    if (this.depthEl.textContent !== text) this.depthEl.textContent = text;
+  }
+
+  /** The minimap maps rooms, so it is hidden in the sky. */
+  setMinimap(on: boolean) {
+    this.map.style.display = on ? '' : 'none';
+  }
+
+  /** The realm gate's fade, set each frame (0 clear → 1 black). At 0 the restart's own fade takes over again. */
+  fadeLevel(k: number) {
+    this.fadeEl.style.setProperty('--fade-t', '0s');
+    this.fadeEl.style.opacity = k > 0 ? String(k) : '';
   }
 
   setFloor(floor: FloorResult, depth: number) {

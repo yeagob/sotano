@@ -34,8 +34,8 @@ type Solid = (x: number, y: number, z: number) => boolean;
 
 /** Called when a tagged (thrown/kicked) cube hits something hard. */
 export type ImpactFn = (i: number, x: number, y: number, z: number, speed: number) => void;
-/** Called when a bomb's fuse runs out (the cube is removed right after). */
-export type FuseFn = (i: number, x: number, y: number, z: number) => void;
+/** Called when a bomb's fuse runs out (the cube is already removed). `love` is the bomb's polarity flag. */
+export type FuseFn = (i: number, x: number, y: number, z: number, love: boolean) => void;
 
 export class DebrisSystem {
   readonly max: number;
@@ -53,6 +53,8 @@ export class DebrisSystem {
   readonly tags: (Set<string> | null)[];
   /** Seconds left on a bomb's fuse (0 = not a bomb). Bombs are pinned: never recycled, never age out. */
   readonly fuse: Float32Array;
+  /** 1 for a white bomb (placed while the polarity was positive): its fuse ends in a love explosion. Cleared with the fuse. */
+  readonly love: Uint8Array;
   onFuse: FuseFn = () => {};
   /** Seconds until this cube may hop again, and hops it has left before it gives up. */
   private readonly hopT: Float32Array;
@@ -84,6 +86,7 @@ export class DebrisSystem {
     this.cooldown = new Float32Array(max);
     this.tags = new Array(max).fill(null);
     this.fuse = new Float32Array(max);
+    this.love = new Uint8Array(max);
     this.hopT = new Float32Array(max);
     this.hopsLeft = new Uint8Array(max);
     this.stuckSpinT = new Float32Array(max);
@@ -122,6 +125,7 @@ export class DebrisSystem {
     this.cooldown[i] = 0.25;
     this.tags[i] = null;
     this.fuse[i] = 0;
+    this.love[i] = 0;
     this.hopT[i] = 0;
     this.hopsLeft[i] = HOPS;
     this.stuckSpinT[i] = 0;
@@ -137,6 +141,7 @@ export class DebrisSystem {
     this.stuckPushes[i] = 0;
     this.tags[i] = null;
     this.fuse[i] = 0;
+    this.love[i] = 0;
     this.alive--;
   }
 
@@ -210,8 +215,10 @@ export class DebrisSystem {
         if (this.fuse[i] <= 0) {
           this.fuse[i] = 0;
           const x = this.pos[i3], y = this.pos[i3 + 1], z = this.pos[i3 + 2];
+          // read the polarity before the slot is freed (remove clears it)
+          const love = this.love[i] === 1;
           this.remove(i);
-          this.onFuse(i, x, y, z);
+          this.onFuse(i, x, y, z, love);
           continue;
         }
       } else if (this.age[i] > DEBRIS_LIFETIME) { this.remove(i); continue; }

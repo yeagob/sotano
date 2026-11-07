@@ -50,7 +50,8 @@ try {
     if (result.errors.length) failed++;
     if (!all && !check) { process.stdout.write(result.report); continue; }
     const file = join(reports, `${job.id}.txt`);
-    const saved = existsSync(file) ? readFileSync(file, 'utf8') : null;
+    // a Windows checkout may store the saved report with CRLF; compare line endings as LF
+    const saved = existsSync(file) ? readFileSync(file, 'utf8').replace(/\r\n/g, '\n') : null;
     if (saved === result.report) { console.log(`= ${job.id}`); continue; }
     if (check) { failed++; console.log(`≠ ${job.id}\n${diff(saved ?? '', result.report)}`); continue; }
     mkdirSync(reports, { recursive: true });

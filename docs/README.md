@@ -1,6 +1,6 @@
 # The Roots documentation
 
-Everything about the game, organised in five sections. Each section has its own README with an index of what it contains.
+Everything about the game, organised in sections. Each section has its own README with an index of what it contains.
 
 | Section | What's in it |
 |---|---|
@@ -12,6 +12,7 @@ Everything about the game, organised in five sections. Each section has its own 
 | [reviews/](reviews/README.md) | Architecture reviews (engineer, architect, mediator): critiques, rulings and what changed |
 | [promo/](promo/README.md) | Promotional videos for social networks: one folder and script per feature |
 | [process/](process/README.md) | How the project is built and released: GitFlow branches, versions, issues, releases and hotfixes |
+| [testing/](testing/TEST-BENCH.md) | The test bench of the game ([TEST-BENCH.md](testing/TEST-BENCH.md)) |
 
 ## Rules for these docs
 

@@ -11,7 +11,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | cast (hold) | the bead of light, the largest button, bottom right |
 | launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
 | polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which) |
-| jump (hold to swim up) | the arrow |
+| jump (hold to swim up; with air jumps, again in the air) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
 | drink | the flask (shown only while a flask is in the hand) |

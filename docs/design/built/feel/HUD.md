@@ -7,6 +7,7 @@ What the player reads on screen, in the corners and on the screens that open ove
 ## The corner
 
 - **Hearts.** Each heart container is drawn in quarters, filled from the left. The container's full value is eight damage points, and each quarter is two. An invulnerable heart is steady and outlined, and never blinks. When one heart or less is left, the last heart beats (see [FEEDBACK](FEEDBACK.md)).
+- **Spirit (in the sky only).** A thin line of light round the hearts row, between dark keylines, with a number out of 100: the spirit left. On the light deck it reads as a dark frame. See [SPIRIT](../sky/laws/SPIRIT.md).
 - **Breath.** Eight bubbles, shown only while the breath is not full: under water, or while the breath comes back. The last bubble beats when two or fewer are left.
 - **Bombs and keys.** Two counters, capped at 99. Keys and bombs cost no hand slot.
 - **Hand slots.** The things you carry: two blocks (one per hand) by default; Second Brain adds one to what you carry and Letters from a Stoic adds three. A part takes a slot like a block.
