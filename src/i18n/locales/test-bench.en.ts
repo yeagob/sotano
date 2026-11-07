@@ -8,6 +8,7 @@ export const TEST_BENCH_EN = {
   'test.where.floor': 'Now: floor {n}, {name}',
   'test.where.sky': 'Now: the sky, spirit {n} of {max}',
   'test.where.busy': 'A passage is under way: wait for the fade.',
+  'test.fps': 'FPS {n}',
   'test.god': 'God mode',
   'test.god.on': 'God mode: on',
   'test.god.off': 'God mode: off',

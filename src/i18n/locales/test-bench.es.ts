@@ -10,6 +10,7 @@ export const TEST_BENCH_ES: { [K in keyof typeof TEST_BENCH_EN]: Message } = {
   'test.where.floor': 'Ahora: piso {n}, {name}',
   'test.where.sky': 'Ahora: el cielo, espíritu {n} de {max}',
   'test.where.busy': 'Hay un paso en curso: espera al fundido.',
+  'test.fps': 'FPS {n}',
   'test.god': 'Modo dios',
   'test.god.on': 'Modo dios: activado',
   'test.god.off': 'Modo dios: desactivado',

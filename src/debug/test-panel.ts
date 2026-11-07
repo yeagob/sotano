@@ -91,6 +91,7 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
   document.body.append(tab, panel);
 
   let status: HTMLElement | null = null;
+  let fpsEl: HTMLElement | null = null;
   let godBtn: HTMLButtonElement | null = null;
   const button = (text: string, act: () => void) => {
     const b = el('button', undefined, text);
@@ -101,6 +102,7 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
 
   const refresh = () => {
     if (godBtn) { godBtn.textContent = t(bench.god ? 'test.god.on' : 'test.god.off'); godBtn.classList.toggle('on', bench.god); }
+    if (fpsEl) fpsEl.textContent = t('test.fps', { n: fps.value });
     if (!status) return;
     status.textContent = game.inSky
       ? t('test.where.sky', { n: Math.round(game.spiritNow), max: SPIRIT_MAX })
@@ -113,7 +115,8 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
     const head = el('header');
     head.append(el('h2', undefined, t('test.title')), button(t('test.hide'), () => { panel.hidden = true; tab.hidden = false; }));
     status = el('p', 'status');
-    panel.append(head, status);
+    fpsEl = el('p', 'fps');
+    panel.append(head, status, fpsEl);
 
     panel.append(el('h3', undefined, t('test.god')));
     godBtn = button('', () => { bench.setGod(!bench.god); refresh(); });
@@ -143,8 +146,22 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
     refresh();
   };
 
+  const fps = startFpsMeter();
   render();
   onLocaleChange(render);
   setInterval(() => { bench.tick(); if (!panel.hidden) refresh(); }, TICK_MS);
   return bench;
+}
+
+/** Frames per second, counted over each second by requestAnimationFrame (the test bench shows it). */
+function startFpsMeter(): { value: number } {
+  const meter = { value: 0 };
+  let frames = 0, since = performance.now();
+  const frame = (now: number) => {
+    frames++;
+    if (now - since >= 1000) { meter.value = Math.round(frames * 1000 / (now - since)); frames = 0; since = now; }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+  return meter;
 }
