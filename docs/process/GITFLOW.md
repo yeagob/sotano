@@ -12,19 +12,21 @@ This is the rule for code, docs, art, levels, the bestiary and the process itsel
 | `develop` | `main` (once) | | forever | the integration branch; the default branch of the repository |
 | `feature/<issue>-<slug>` | `develop` | `develop` | one issue | new behaviour, content or docs |
 | `fix/<issue>-<slug>` | `develop` | `develop` | one issue | a bug that is not urgent |
-| `release/<version>` | `develop` | `main`, then `develop` | one release | the last fixes and the version bump |
+| `release/<version>` | `develop` | `main`, then `develop` | kept as history | the last fixes and the version bump |
 | `hotfix/<issue>-<slug>` | `main` | `main`, then `develop` | one fix | a bug in the stable version that cannot wait |
+| `chore/<slug>` | `develop` | `develop` | one change | process, docs or merge work that has no issue, such as the back-merge of a release |
 
 - `<issue>` is the GitHub issue number. Work without an issue is rare; open one first.
 - `<slug>` is two to five words in lowercase, joined with dashes: `feature/42-cave-water-flow`.
-- **Branches are deleted when their pull request is merged**, both on the remote and locally (`git push origin --delete <branch>`, then `git branch -d <branch>`). The history stays in the merge commit.
+- **Feature, fix, hotfix and chore branches are deleted when their pull request is merged**, both on the remote and locally (`git push origin --delete <branch>`, then `git branch -d <branch>`). The history stays in the merge commit.
+- **Release branches are kept.** `release/<version>` stays on the remote and locally after the release, as the history of that version. Nothing else is kept once merged.
 
 ## Versions
 
 Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`, set in `package.json`. The build shows it next to the build stamp (`v0.1.1-dev · 2610291200`), so every tester can say which build they played.
 
-- **`main` carries the released version**, `0.1.0` today. Each release is an annotated tag `v0.1.0` on that commit.
-- **`develop` carries the next version with a `-dev` suffix**, `0.1.1-dev` today: the next release is a patch of 0.1.0 until the owner decides otherwise. The suffix ends when the release branch is cut.
+- **`main` carries the released version**, `0.2.0` today. Each release is an annotated tag `v0.2.0` on that commit.
+- **`develop` carries the next version with a `-dev` suffix**, `0.2.1-dev` today: the next release is a patch of 0.2.0 until the owner decides otherwise, so fixes and small changes after a release are patches, not a new minor. The suffix ends when the release branch is cut.
 - **`main` and `develop` hold the same code**, except for the version number in `package.json`.
 - **Tester builds** are the tagged releases on `main`. `0.1.0` is the first one: the first stable version and the first one given to testers. A pre-release tag such as `v0.2.0-beta.1` can be cut from a `release/0.2.0` branch when testers need to try something before the stable tag.
 
@@ -53,8 +55,8 @@ A release is cut when `develop` has enough for a version, or on a steady rhythm,
 1. Create `release/<version>` from `develop`. Set `package.json` to the release version without the suffix (`npm version 0.2.0 --no-git-tag-version`). Fix only what the release needs.
 2. Open a PR from `release/<version>` into **`main`**. CI must be green. Merge with a merge commit.
 3. Tag the merge commit on `main`: `git tag -a v0.2.0 -m "THE ROOTS 0.2.0"`, then push the tag. Publish the changelog section of the version as the GitHub release notes.
-4. Merge `main` back into `develop` (a PR `main` → `develop`, or a merge commit), and set `develop` back to `0.3.0-dev` (the next minor, with the suffix).
-5. Delete the release branch.
+4. Merge `main` back into `develop` (a `chore/back-merge-<version>` branch from `develop`, merged into `develop` by PR), and set `develop` to the next patch with the suffix (`0.2.1-dev` after 0.2.0). The owner decides when a MINOR comes next, not the release itself.
+5. Keep the release branch. `release/<version>` stays on the remote and locally as the history of that version.
 6. Vercel deploys `main` to production and `develop` to a preview. The release is live when the production deployment for the tag is ready.
 
 ## Changelog
@@ -62,7 +64,7 @@ A release is cut when `develop` has enough for a version, or on a steady rhythm,
 [CHANGELOG.md](../../CHANGELOG.md) is the record of what each version changed, written for players and testers. It is kept in the repository, so the release notes travel with the code.
 
 - **Every pull request that merges into `develop` adds its entry to the changelog of the current version**, in the same branch. The entry is one line under the right heading (`Added`, `Changed`, `Fixed`, `Removed`), with the issue number: `- Locked doors open on contact, not from across the room (#5).`
-- **The current version is the `## Unreleased` section at the top**, which is the version in `package.json` on `develop` (`0.1.1-dev` today). Entries go there, never into a finished version.
+- **The current version is the `## Unreleased` section at the top**, which is the version in `package.json` on `develop` (`0.2.1-dev` today). Entries go there, never into a finished version.
 - **A PR with no changelog line is not ready to merge**, unless the change is invisible to players (a refactor, a test, a docs fix). Say so in the PR body.
 - **Cutting a release** (step 1 of Releases): the `release/<version>` branch renames `## Unreleased` to `## <version> · <date>` and opens an empty `## Unreleased` above it.
 - **Publishing a release**: the tag's changelog section is the release notes. Copy it into the GitHub release for the tag, and publish it with the tag on `main`.
