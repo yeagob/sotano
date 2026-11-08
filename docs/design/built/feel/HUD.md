@@ -32,10 +32,16 @@ Going down asks a price. The toll window lists what you carry (keys, bombs, hear
 
 Esc, or Tab, and the touch tab button open one screen with two tabs:
 
-- **Menu.** The pause card: resume, the controls, the language choice and the seed.
+- **Menu.** The pause card: resume, the controls, the language choice, the graphics settings and the seed.
 - **Practices.** The inventory: every practice you hold, with its icon, description and effect.
 
 Opening the screen pauses the world on every device. Clicking outside it on touch resumes the game.
+
+## Graphics settings
+
+The menu has a Graphics section under the language choice. Its one setting is the **field of view**: how wide the world looks, from 70° to 100° in steps of 5, starting at 75°. The value shows in gold beside its name, and it changes the view at once, with a short tick that rises when the view widens and falls when it narrows. The choice is kept in the browser for the next session; a private window or blocked storage simply starts at 75° again.
+
+It is set with the arrow keys or the mouse (drag the bar, or click − and +), the d-pad left and right on a pad, or a drag or a tap on − and + on a phone, and the line under the bar says how on the device in use. Only the world widens: the hands, the crosshair and the HUD stay where they are, and even at 100° the view never sees through a wall or a ceiling. Code: `src/game/settings.ts`, `Game.setFov`, `#graphics` in `index.html`.
 
 ## The seed
 
@@ -52,4 +58,4 @@ A readout of the game state in the corner. It is off by default. F3 toggles it. 
 ## Open questions
 
 - The art record lists a house glyph among the minimap marks. The levels say there is no house on the surface, so the glyph should be checked. The owner decides whether the mark stays.
-- A settings page (shake, flashes, field of view, interface scale, reduced motion, skin tone) is in the art ledger and is not built ([ART-NOT-BUILT](../../not-built/feel/ART-NOT-BUILT.md)).
+- The rest of the ledger's settings (shake, flashes, head bob, interface scale, reduced motion, skin tone) is not built ([ART-NOT-BUILT](../../not-built/feel/ART-NOT-BUILT.md)). The field of view is built, in the menu's Graphics section.

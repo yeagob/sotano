@@ -215,6 +215,7 @@ export const sfx3 = {
   spit: () => { tone(jitter(420), 0.09, 'sine', 0.16, 2.2); noise(0.05, 0.12, jitter(2400), 2); },
   /** R: a soft breath out as the screen goes dark. */
   restart: () => { tone(294, 0.6, 'sine', 0.14, 0.5); noise(0.5, 0.08, 500, 0.8); },
+  fov: (wider: boolean) => tone(wider ? 660 : 520, 0.06, 'triangle', 0.08, wider ? 1.3 : 0.8),
 };
 
 let echoWet: GainNode | null = null;

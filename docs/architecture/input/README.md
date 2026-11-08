@@ -53,7 +53,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
 | confirm | press | prompt, paused, dead, toll | click / Enter | A | tap |
-| navigate | axis | inventory, toll | arrows | d-pad | tap a tile |
+| navigate | axis | inventory, toll, paused | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
 | back | press | inventory, toll | Esc | B | ✕ |
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
@@ -63,6 +63,8 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 ## 4. Pausing
 
 `Input.playing` is true while the pointer is locked or the player is `engaged`. The keyboard pauses by losing pointer lock. The gamepad and touch have no pointer lock: `resume()` sets `engaged`, `release()` clears it. Losing the window (blur, a hidden tab) always pauses. **The screen.** Esc, Tab, Menu, Y and the touch tab button all open one screen with two tabs, Menu and Practices (`Hud.screenKey`, `Hud.openScreen`, `Hud.closeScreen`). Opening it releases the pointer lock and stops the world; closing it resumes on the device that opened it. On the keyboard Tab opens the Practices tab, and pressed again while Practices is shown it closes the screen; pressed on the Menu tab it switches to Practices. The touch tab button opens the Menu tab and closes the screen when pressed again.
+
+**The menu's settings.** While the menu shows (the pause card, or the screen on its Menu tab), `navigate` left and right step the field of view by 5° (`Game.frame`, `Hud.menuShown`); up and down do nothing yet. It is a new meaning of `navigate`, not a new action: the arrows on the keyboard, the d-pad on a pad, and on touch a drag of the bar or a tap on − and +. The mouse drags the bar or clicks − and +, and those clicks never capture the pointer (`KEEP_MOUSE` in `src/game/landing.ts`) nor resume on touch. The hint under the bar names the device in use (`graphics.hint`, `.pad`, `.touch`). References: Minecraft (an options slider moved by mouse drag or by left and right on a controller), Noita (the d-pad moves through its options), Isaac (left and right change an option in the pause menu).
 
 ## 5. Words and juice
 

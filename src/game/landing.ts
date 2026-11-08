@@ -41,7 +41,7 @@ const BUG: HudIcon = {
   palette: { k: 'ink.void', h: 'life.heart', b: 'bone.dim', p: 'bone.paper' },
 };
 
-const KEEP_MOUSE = '#overlay a, #newrun';
+const KEEP_MOUSE = '#overlay a, #newrun, #graphics';
 
 export function initLanding(game: Game) {
   document.documentElement.style.setProperty('--ico-coffee', `url("${hudIconUrl(COFFEE)}")`);

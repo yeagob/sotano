@@ -5,6 +5,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+- A Graphics section on the menu, with the field of view from 70° to 100° (default 75°). It changes the view at once, is kept between sessions, and is set with the arrow keys or the mouse, the d-pad, or a drag or tap on a phone (#109).
 
 ### Fixed
 - Loose cubes no longer spin endlessly in place next to another cube. A cube that lands touching another, on the edge of one, or packed tight among others in a small space now comes to rest and stays still, keeping the way it faces (#103).
