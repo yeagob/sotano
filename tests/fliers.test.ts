@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { CREATURE_BY_ID } from '../src/content/creatures';
 import distraction from '../src/content/enemies/distraction';
 import noise from '../src/content/enemies/noise';
 import type { Actor } from '../src/entities/actors';
+import { seedFx } from '../src/core/fx';
 import { boxHits } from '../src/physics/voxel-collide';
 import type { Enemy } from '../src/enemies/types';
 
@@ -47,6 +48,7 @@ describe('Distraction and Noise, the dark winged projections', () => {
 const terrace = (x: number, y: number, z: number) => closed(x, y, z) || (x >= 8 && y < 2);
 
 describe('Wonder, the white winged creature, hovers and keeps off the walls', () => {
+  beforeEach(() => seedFx(7));
   const fly = (solid: (x: number, y: number, z: number) => boolean, seconds: number) => {
     const w = world(solid);
     const e = w.add(w.en.spawn(CREATURE_BY_ID.get('wonder')!, 2, 0, 3, 0, 3, 3, 1.4, 0, new Set(['creature'])));
