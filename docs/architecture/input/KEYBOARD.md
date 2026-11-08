@@ -18,6 +18,7 @@ The desktop scheme. Part of [Input](README.md).
 | polarity | F |
 | inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |
 | pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
+| field of view (on the menu) | the left and right arrows, or the mouse on the bar or on − and + |
 | restart | R, while playing or dead |
 | confirm | any mouse button while captured, or Enter |
 

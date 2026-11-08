@@ -13,14 +13,18 @@ function fresh(): MetaState {
 }
 
 /** The browser's localStorage under one key. Reads and writes never throw. */
-export const browserStore: MetaStore = {
-  read() {
-    try { return localStorage.getItem(KEY); } catch { return null; }
-  },
-  write(s) {
-    try { localStorage.setItem(KEY, s); } catch { /* not remembered */ }
-  },
-};
+export function localStore(key: string): MetaStore {
+  return {
+    read() {
+      try { return localStorage.getItem(key); } catch { return null; }
+    },
+    write(s) {
+      try { localStorage.setItem(key, s); } catch { /* not remembered */ }
+    },
+  };
+}
+
+export const browserStore: MetaStore = localStore(KEY);
 
 /** A missing, broken or newer record reads as the default. */
 export function loadMeta(store: MetaStore = browserStore): MetaState {

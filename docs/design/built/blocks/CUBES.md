@@ -8,6 +8,7 @@ Part of [blocks](README.md).
 
 - A broken block turns into a cube a little smaller than a block, with the same look. It falls, bounces and rolls; there is no floating item to collect.
 - A cube pressed against a wall hops up over the obstacle, a few times at most, then gives up and stays.
+- A cube that lands right beside another cube, on the edge of one, or packed tight among others in a small space comes to rest and stays still. It never keeps turning in place, and when it settles it keeps the way it was facing.
 - A cube lives about ninety seconds. For the last eight seconds it shrinks smoothly to nothing.
 - There is a cap on the cubes in the world: about two thousand on a keyboard and a thousand on touch. When the cap is reached, a new cube takes the slot that comes next in the ring, which is usually the oldest; bombs are not taken.
 - An intention that hits a loose cube shatters it. A bomb is the exception: an intention only pushes it.

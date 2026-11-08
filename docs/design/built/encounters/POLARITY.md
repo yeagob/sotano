@@ -31,6 +31,6 @@ The owner's text does not state these; the review's mediator added them, and the
 
 - **Bosses.** A good intention can convert any boss, which ends its fight. The design gives conversion to the Threshold Guardian only. See [Fight flow](../bosses/FIGHT-FLOW.md#7-defeat).
 - **Warmth decay.** A projection's warmth does not fall over time. The design has no rule yet; decide whether it should.
-- **Hint.** The design asks for a hint after three good intentions in a row on the same undamaged block, saying that good intentions only heal and that the player should switch to bad ones. The build does not show it; check the design text against the toast set.
+- **Hint.** The design asks for a hint after three good intentions in a row on the same undamaged block, saying that good intentions only heal and that the player should switch to bad ones. The build shows it (`src/game/polarity-hint.ts`); on a phone it repeats, as [intentions](../intentions/POLARITY.md) describes. Check the wording against the toast set.
 - **The bad colour.** The bad intention keeps its round shape with a darker core and a cold rim. The exact colour is the owner's ruling and is awaiting it.
 - **Gifts at full health.** A converted projection at full health is meant to give a gift. The gift is not built.

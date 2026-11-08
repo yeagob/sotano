@@ -10,7 +10,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | look | drag anywhere on the right; dragging the cast button also aims |
 | cast (hold) | the bead of light, the largest button, bottom right |
 | launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
-| polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which) |
+| polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which: gold for good, ember for bad, a 6 px ring on a 92 % panel so it reads on a phone; issue #105, DECISIONS §14.1) |
 | jump (hold to swim up; with air jumps, again in the air) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
@@ -29,11 +29,11 @@ References: Minecraft's pocket edition (left joystick, look by dragging on the r
 
 **A tap on the world** is a touch that starts on the stick side or the look side, lasts under 250 ms and does not move more than 12 px. It is recorded in `Input.touchTap` with the `place` action; the game aims the placement ray through that pixel (`Game.tapDirection`). A tap that finds no block in reach is refused with the denied sound. It never throws the block in your hand, so a stray tap cannot lose it.
 
-**A half turn.** The layer listens to `screen.orientation` (and `orientationchange` on iOS). The phone is in one of two landscape sides, 90° or 270°. When the side changes, the `polarity` action fires once. A turn through portrait counts once, and the first reading only sets the side. The screen is locked to landscape, so it turns with the phone and stays readable.
+**A half turn.** The layer listens to `screen.orientation` (and `orientationchange` on iOS). The phone is in one of two landscape sides, 90° or 270°. When the side changes, the `polarity` action fires once. A turn through portrait counts once, and the first reading only sets the side. The screen is locked to landscape, so it turns with the phone and stays readable. The polarity hint (three good intentions in a row that find nothing to mend on one block) comes back each time it is needed underground, and its turn is marked in the attack red; above ground it is not shown on a phone (`src/game/polarity-hint.ts`, `Game.intentHitsBlock`).
 
 ## 3. The screen
 
-The tab button opens the screen (the same one Esc and Tab open on the keyboard, see [KEYBOARD.md](KEYBOARD.md) §1), on its **Menu** tab: the pause card, controls, language and New run. The **Practices** tab is one tap away at the top of the same screen. Tapping the button again, or "Tap to play", returns to the game. The world stops while the screen is open, on every device.
+The tab button opens the screen (the same one Esc and Tab open on the keyboard, see [KEYBOARD.md](KEYBOARD.md) §1), on its **Menu** tab: the pause card, controls, language, the field of view (drag its bar, or tap − and +; 40 px buttons) and New run. The **Practices** tab is one tap away at the top of the same screen. Tapping the button again, or "Tap to play", returns to the game. The world stops while the screen is open, on every device.
 
 ## 4. What leaves the screen
 
