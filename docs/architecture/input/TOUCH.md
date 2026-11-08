@@ -29,7 +29,7 @@ References: Minecraft's pocket edition (left joystick, look by dragging on the r
 
 **A tap on the world** is a touch that starts on the stick side or the look side, lasts under 250 ms and does not move more than 12 px. It is recorded in `Input.touchTap` with the `place` action; the game aims the placement ray through that pixel (`Game.tapDirection`). A tap that finds no block in reach is refused with the denied sound. It never throws the block in your hand, so a stray tap cannot lose it.
 
-**A half turn.** The layer listens to `screen.orientation` (and `orientationchange` on iOS). The phone is in one of two landscape sides, 90° or 270°. When the side changes, the `polarity` action fires once. A turn through portrait counts once, and the first reading only sets the side. The screen is locked to landscape, so it turns with the phone and stays readable.
+**A half turn.** The layer listens to `screen.orientation` (and `orientationchange` on iOS). The phone is in one of two landscape sides, 90° or 270°. When the side changes, the `polarity` action fires once. A turn through portrait counts once, and the first reading only sets the side. The screen is locked to landscape, so it turns with the phone and stays readable. The polarity hint (three good intentions in a row that find nothing to mend on one block) comes back each time it is needed underground, and its turn is marked in the attack red; above ground it is not shown on a phone (`src/game/polarity-hint.ts`, `Game.intentHitsBlock`).
 
 ## 3. The screen
 
