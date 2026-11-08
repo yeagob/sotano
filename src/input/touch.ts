@@ -1,12 +1,17 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
-import { palCss } from '../content/palette';
+import { palCss, type PalToken } from '../content/palette';
 import { isFlask } from '../content/potions';
 import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
+import type { Polarity } from '../combat/polarity';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
+
+export function castPolarityToken(polarity: Polarity): PalToken {
+  return polarity === 'positive' ? 'light.gold' : 'light.ember';
+}
 
 interface Track { kind: 'stick' | 'look' | 'button'; action?: Action; x: number; y: number; ox: number; oy: number; t: number }
 
@@ -178,6 +183,6 @@ export class TouchControls {
     this.buttons.get('inventory')!.querySelector('span')!.textContent = g.inventory.items.length ? String(g.inventory.items.length) : '';
     const pol = this.buttons.get('cast')!;
     pol.dataset.polarity = g.polarityNow;
-    pol.style.setProperty('--pol', palCss(g.polarityNow === 'positive' ? 'light.gold' : 'light.ember'));
+    pol.style.setProperty('--pol', palCss(castPolarityToken(g.polarityNow)));
   }
 }
