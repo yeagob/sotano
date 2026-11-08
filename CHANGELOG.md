@@ -5,6 +5,12 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+
+### Fixed
+
+## 0.2.1 · 2026-11-08
+
+### Added
 - A Graphics section on the menu, with the field of view from 70° to 100° (default 75°). It changes the view at once, is kept between sessions, and is set with the arrow keys or the mouse, the d-pad, or a drag or tap on a phone (#109).
 
 ### Fixed
