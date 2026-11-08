@@ -6,6 +6,9 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Added
 
+### Fixed
+- On a phone the polarity hint comes back each time three good intentions find nothing to mend on one block underground, with its turn in red. It used to show only once per run (#101).
+
 ## 0.2.0 · 2026-11-07
 
 ### Added

@@ -553,6 +553,11 @@ export class Hud {
   /** A short notice that fades: a message key, in the player's language. */
   toast(key: MessageKey, params?: Params) { this.showToast(t(key, params)); }
 
+  polarityHint(params: Params, marked: boolean) {
+    if (!marked) { this.toast('toast.polarityHint', params); return; }
+    this.showToast(t('toast.polarityHint', { ...params, polarity: `<b class="mark">${params.polarity}</b>` }), true);
+  }
+
   /** A notice followed by the drink hint: which key or button drinks the flask or meal ('potion.drinkHint'). */
   toastDrinkHint(key: MessageKey, params?: Params) {
     this.showToast(`${key ? t(key, params) : ''} · ${t('potion.drinkHint', { key: keyLabel('drink', activeDevice()) })}`);
@@ -565,8 +570,8 @@ export class Hud {
     this.showToast(text);
   }
 
-  private showToast(text: string) {
-    this.toastEl.textContent = text;
+  private showToast(text: string, html = false) {
+    if (html) this.toastEl.innerHTML = text; else this.toastEl.textContent = text;
     this.toastEl.classList.add('show');
     this.toastTimer = performance.now() + 2500;
   }
