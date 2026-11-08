@@ -6,7 +6,7 @@ What the player sees, hears and feels, as built: the HUD and its screens, the so
 
 | Document | Contents |
 |---|---|
-| [HUD.md](HUD.md) | What the HUD shows: hearts, breath, counters, hands, the polarity mark, the minimap, the boss bar, banners, toasts, the toll, the screen, the death screen |
+| [HUD.md](HUD.md) | What the HUD shows: hearts, breath, counters, hands, the polarity mark, the minimap, the boss bar, banners, toasts, the toll, the screen, the graphics settings (field of view), the death screen |
 | [AUDIO.md](AUDIO.md) | The synthesised sounds: about sixty cues, the spatial layer for omens and breaches, and no music track |
 | [FEEDBACK.md](FEEDBACK.md) | The gentleness rules: flash budget, the beat of the last heart, steady invulnerable hearts, the hurt vignette, shake, rumble, and the lesson tablets |
 | [ART.md](ART.md) | The built art pass: colour tokens, materials, cracks of light, projections, hands, the slate HUD, and the gallery view |

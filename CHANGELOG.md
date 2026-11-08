@@ -5,6 +5,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+- A Graphics section on the menu, with the field of view from 70° to 100° (default 75°). It changes the view at once, is kept between sessions, and is set with the arrow keys or the mouse, the d-pad, or a drag or tap on a phone (#109).
 
 ### Fixed
 - On a phone the polarity hint comes back each time three good intentions find nothing to mend on one block underground, with its turn in red. It used to show only once per run (#101).

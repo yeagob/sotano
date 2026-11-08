@@ -86,6 +86,7 @@ import { floorHeartChances, rollHeart } from '../content/tables/hearts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
+import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
@@ -199,7 +200,8 @@ interface BossRoom { room: number; wake: number; spawned: boolean; defeated: boo
 export class Game {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(75, 1, 0.05, 200);
+  readonly camera = new THREE.PerspectiveCamera(FOV_DEFAULT, 1, 0.05, 200);
+  private fovNow = FOV_DEFAULT;
   readonly input: Input;
   readonly hud = new Hud();
   readonly hands: Hands;
@@ -410,6 +412,9 @@ export class Game {
     this.input.onPadChange = on => this.hud.toast(on ? 'toast.padConnected' : 'toast.padDisconnected');
     this.hud.rumble = (strength, ms) => this.input.rumble(strength, ms);
     this.hud.onAct = act => this.act(act);
+    this.hud.onFov = fov => this.setFov(fov);
+    this.fovNow = applyFov(this.camera, loadSettings().fov);
+    this.hud.setFov(this.fovNow);
     this.input.onBlur = () => this.touch.clear();
     this.resize();
     this.newRun(seed);
@@ -3317,6 +3322,17 @@ export class Game {
 
   // ───────────────────────── loop ─────────────────────────
 
+  get fov() { return this.fovNow; }
+
+  setFov(v: number) {
+    const fov = applyFov(this.camera, v);
+    this.hud.setFov(fov);
+    if (fov === this.fovNow) return;
+    sfx3.fov(fov > this.fovNow);
+    this.fovNow = fov;
+    saveSettings({ v: 1, fov });
+  }
+
   resize() {
     const w = innerWidth, h = innerHeight;
     this.renderer.setSize(w, h, false);
@@ -3355,9 +3371,17 @@ export class Game {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
     }
+    if (ctx === 'paused') {
+      const n = inp.navigate();
+      if (n.x) this.setFov(stepFov(this.fovNow, n.x));
+    }
     if (ctx === 'inventory') {
       if (inp.hit('back')) this.hud.closeScreen(this);
-      else { const n = inp.navigate(); if (n.x || n.y) this.hud.moveSelection(n.x, n.y); }
+      else {
+        const n = inp.navigate();
+        if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
+        else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
+      }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -3504,6 +3528,7 @@ export class Game {
     else if (act === 'inventory' && this.hud.screenOpen) this.hud.closeScreen(this);
     else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
     else if (act === 'tab-items') this.hud.openScreen(this, 'items');
+    else if (act === 'fov-down' || act === 'fov-up') this.setFov(stepFov(this.fovNow, act === 'fov-up' ? 1 : -1));
   }
 
   /** Rooms whose projections are all released (the minimap lights them). */

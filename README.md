@@ -102,7 +102,8 @@ Three complete schemes; the game follows whichever device you used last (details
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
-| Menu and pause | **Esc**: the menu tab (controls, language, new run) | **Menu** | The tab button (top), the Menu tab |
+| Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |
+| Field of view (on the menu) | **← →**, or drag the bar or click − and + | D-pad **← →** | Drag the bar, or tap − and + |
 | New run | **R** | **View** (paused or dead) | "New run" on the landing and the pause card |
 
 Language: English or Spanish, picked from your browser. Switch it on the menu (it's remembered) or with `?lang=es` in the URL.

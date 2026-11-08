@@ -33,7 +33,7 @@ References: Minecraft's pocket edition (left joystick, look by dragging on the r
 
 ## 3. The screen
 
-The tab button opens the screen (the same one Esc and Tab open on the keyboard, see [KEYBOARD.md](KEYBOARD.md) §1), on its **Menu** tab: the pause card, controls, language and New run. The **Practices** tab is one tap away at the top of the same screen. Tapping the button again, or "Tap to play", returns to the game. The world stops while the screen is open, on every device.
+The tab button opens the screen (the same one Esc and Tab open on the keyboard, see [KEYBOARD.md](KEYBOARD.md) §1), on its **Menu** tab: the pause card, controls, language, the field of view (drag its bar, or tap − and +; 40 px buttons) and New run. The **Practices** tab is one tap away at the top of the same screen. Tapping the button again, or "Tap to play", returns to the game. The world stops while the screen is open, on every device.
 
 ## 4. What leaves the screen
 
