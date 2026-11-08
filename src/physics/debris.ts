@@ -27,6 +27,8 @@ export const STUCK_PUSHES = 3;
 const hopSpeed = () => HOP * (0.95 + fx.random() * 0.2);
 
 const G = 26;
+const CONTACT_SLOP = 1e-3;
+const SEPARATION = DEBRIS_SIZE * 0.98;
 const HS = DEBRIS_SIZE / 2;
 const MOVING = 1, RESTING = 2;
 
@@ -269,7 +271,7 @@ export class DebrisSystem {
    * same spot) and piles sort themselves out within a few frames.
    */
   private separate() {
-    const S = DEBRIS_SIZE * 0.98;
+    const S = SEPARATION;
     for (let i = 0; i < this.max; i++) if (this.stepped[i]) this.unsettled[i] = 1;
     for (let pass = 0; pass < 6; pass++) {
       this.cells.clear();
@@ -305,7 +307,7 @@ export class DebrisSystem {
     const i3 = i * 3, j3 = j * 3;
     const ox = this.pos[i3] - this.pos[j3], oy = this.pos[i3 + 1] - this.pos[j3 + 1], oz = this.pos[i3 + 2] - this.pos[j3 + 2];
     const px = S - Math.abs(ox), py = S - Math.abs(oy), pz = S - Math.abs(oz);
-    if (px <= 0 || py <= 0 || pz <= 0) return false;
+    if (px <= CONTACT_SLOP || py <= CONTACT_SLOP || pz <= CONTACT_SLOP) return false;
     // axis of least penetration; exact overlaps (same spawn spot) get a deterministic nudge
     let axis = px < py && px < pz ? 0 : py < pz ? 1 : 2;
     let d = axis === 0 ? ox : axis === 1 ? oy : oz;
@@ -464,13 +466,15 @@ export class DebrisSystem {
         if (bottom <= t && bottom > t - 0.6) best = best === null ? t : Math.max(best, t);
       }
     }
-    const list = this.columns.get(colKey(Math.floor(x), Math.floor(z)));
-    if (list) for (const j of list) {
-      if (j === self || this.state[j] !== RESTING) continue;
-      const j3 = j * 3;
-      if (Math.abs(this.pos[j3] - x) > DEBRIS_SIZE * 0.8 || Math.abs(this.pos[j3 + 2] - z) > DEBRIS_SIZE * 0.8) continue;
-      const t = this.pos[j3 + 1] + HS;
-      if (bottom <= t && bottom > t - 0.5) best = best === null ? t : Math.max(best, t);
+    for (let cx = Math.floor(x - HS); cx <= Math.floor(x + HS); cx++) for (let cz = Math.floor(z - HS); cz <= Math.floor(z + HS); cz++) {
+      const list = this.columns.get(colKey(cx, cz));
+      if (list) for (const j of list) {
+        if (j === self || this.state[j] !== RESTING) continue;
+        const j3 = j * 3;
+        if (Math.abs(this.pos[j3] - x) >= SEPARATION || Math.abs(this.pos[j3 + 2] - z) >= SEPARATION) continue;
+        const t = this.pos[j3 + 1] + HS;
+        if (bottom <= t && bottom > t - 0.5) best = best === null ? t : Math.max(best, t);
+      }
     }
     return best;
   }
@@ -503,10 +507,11 @@ export class DebrisSystem {
     this.quat[i4 + 3] = qw * dw - qx * dx - qy * dy - qz * dz;
   }
 
-  /** Resting cubes sit flat: keep only a random yaw so piles look like real blocks. */
+  /** Resting cubes sit flat: keep only their own yaw so piles look like real blocks. */
   private settleRotation(i: number) {
     const i4 = i * 4;
-    const yaw = fx.random() * Math.PI * 2;
+    const q = this.quat;
+    const yaw = Math.atan2(2 * (q[i4 + 3] * q[i4 + 1] + q[i4] * q[i4 + 2]), 1 - 2 * (q[i4 + 1] * q[i4 + 1] + q[i4] * q[i4]));
     this.quat[i4] = 0; this.quat[i4 + 1] = Math.sin(yaw / 2); this.quat[i4 + 2] = 0; this.quat[i4 + 3] = Math.cos(yaw / 2);
   }
 }

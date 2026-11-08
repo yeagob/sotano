@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { seedFx } from '../src/core/fx';
-import { DebrisSystem, DEBRIS_LIFETIME } from '../src/physics/debris';
+import { DEBRIS_LIFETIME, DEBRIS_SIZE, DebrisSystem } from '../src/physics/debris';
 
 const floor = (_x: number, y: number, _z: number) => y < 0;
 const step = (d: DebrisSystem, seconds: number) => { for (let t = 0; t < seconds; t += 1 / 60) d.update(1 / 60); };
@@ -143,6 +143,52 @@ describe('loose cubes', () => {
     for (let t = 0; t < 1.5; t += 1 / 60) { if (!d.isAlive(c)) break; tick(); }
     expect(pushes).toBe(3);
     expect(d.isAlive(c)).toBe(false);
+  });
+});
+
+describe('loose cubes beside other cubes always come to rest (#103)', () => {
+  beforeEach(() => seedFx(7));
+  const S = DEBRIS_SIZE * 0.98;
+  const turnsOver = (d: DebrisSystem, ids: number[], seconds: number) => {
+    let turns = 0;
+    const q = Float32Array.from(d.quat);
+    for (let t = 0; t < seconds; t += 1 / 60) {
+      d.update(1 / 60);
+      for (const i of ids) for (let k = 0; k < 4; k++) if (d.quat[i * 4 + k] !== q[i * 4 + k]) { turns++; break; }
+      q.set(d.quat);
+    }
+    return turns;
+  };
+
+  it('two cubes that just touch, a float32 hair under the separation distance, rest and stop turning', () => {
+    const d = new DebrisSystem(4, floor, () => {});
+    const a = d.spawn(1, 10.3, 0.36, 0.5), b = d.spawn(1, 10.3 + S, 0.36, 0.5);
+    expect(d.pos[b * 3] - d.pos[a * 3]).toBeLessThan(S);
+    step(d, 1);
+    expect(turnsOver(d, [a, b], 3)).toBe(0);
+    expect(d.isResting(a) && d.isResting(b)).toBe(true);
+  });
+
+  it('a cube on the edge of a resting cube lands on it, rests and stops turning', () => {
+    for (const offset of [0.5, 0.65]) {
+      const d = new DebrisSystem(4, floor, () => {});
+      const below = d.spawn(1, 1.6, 0.36, 0.5);
+      step(d, 1);
+      const top = d.spawn(1, 1.6 + offset, 0.36 + DEBRIS_SIZE, 0.5);
+      step(d, 1);
+      expect(d.isAlive(top)).toBe(true);
+      expect(d.isResting(top)).toBe(true);
+      expect(d.pos[top * 3 + 1]).toBeCloseTo(d.pos[below * 3 + 1] + DEBRIS_SIZE, 2);
+      expect(turnsOver(d, [top], 3)).toBe(0);
+    }
+  });
+
+  it('cubes jammed in a sealed cell keep their heading instead of turning every frame', () => {
+    const cell = (x: number, y: number, z: number) => x !== 0 || y !== 0 || z !== 0;
+    const d = new DebrisSystem(4, cell, () => {});
+    const a = d.spawn(1, 0.4, 0.36, 0.5), b = d.spawn(1, 0.6, 0.36, 0.5);
+    step(d, 1);
+    expect(turnsOver(d, [a, b].filter(i => d.isAlive(i)), 3)).toBe(0);
   });
 });
 
