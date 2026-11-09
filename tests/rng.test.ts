@@ -12,7 +12,8 @@ import { ROOM_CLEAR } from '../src/content/tables/rewards';
 import { hashPath, Rng, RunRandom } from '../src/core/rng';
 import { decodeSeed, encodeSeed, SEED_ALPHABET } from '../src/core/seed';
 import { ItemPools } from '../src/items/pool';
-import { carveFloor, createDungeonWorld, planDungeon } from '../src/world/floor';
+import { carveFloor, createDungeonWorld, planDungeon, templateCells } from '../src/world/floor';
+import { BOSSES } from '../src/content/bosses';
 import { buildRun, signature } from './helpers';
 
 describe('seed codes', () => {
@@ -140,8 +141,11 @@ describe('variety', () => {
       for (const p of run.floors.flatMap(f => f.pedestals)) if (p.item) items.set(p.item, (items.get(p.item) ?? 0) + 1);
     }
     expect(sigs.size).toBe(200);
-    // every template allowed on the first two floors shows up (deeper ones: tests/levels.test.ts)
-    for (const t of ROOM_TEMPLATES.filter(q => !q.floors || q.floors[0] <= 1)) expect(templates.get(t.id) ?? 0, `template ${t.id} never used`).toBeGreaterThan(0);
+    // every template allowed on the first two floors shows up (deeper ones: tests/levels.test.ts);
+    // one-cell boss rooms below the tutorial wait for a boss with the small-room flag (#131)
+    const smallBossRoom = (q: typeof ROOM_TEMPLATES[number]) => q.types.length === 1 && q.types[0] === 'boss' && templateCells(q) === 1 && q.floors?.[0] !== 0;
+    const smallBosses = BOSSES.some(b => b.smallRoom);
+    for (const t of ROOM_TEMPLATES.filter(q => (!q.floors || q.floors[0] <= 1) && (smallBosses || !smallBossRoom(q)))) expect(templates.get(t.id) ?? 0, `template ${t.id} never used`).toBeGreaterThan(0);
     for (const m of ['sparse', 'normal', 'cluttered']) expect(moods.get(m) ?? 0).toBeGreaterThan(0);
     // no single item dominates the pedestals
     const total = [...items.values()].reduce((a, b) => a + b, 0);
@@ -219,8 +223,8 @@ describe('golden seed', () => {
     });
     let h = 0x811c9dc5;
     for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
-    expect([GEN_VERSION, h.toString(16)]).toEqual([26, GOLDEN]);
+    expect([GEN_VERSION, h.toString(16)]).toEqual([27, GOLDEN]);
   });
 });
 // adding a practice to the catalogue changes reservations too: that also changes every seed
-const GOLDEN = '8cdfb1b4';
+const GOLDEN = '4741fe1f';
