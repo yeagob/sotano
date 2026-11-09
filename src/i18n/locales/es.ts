@@ -799,6 +799,11 @@ export const ES: Catalog = {
       meteorglass: 'Vidrio de meteorito',
       solarglass: 'Vidrio solar',
       sunseal: 'Sello del Sol',
+      // the giant tree (issue #12)
+      bough: 'Rama',
+      rootbark: 'Corteza de raíz',
+      oldbark: 'Corteza vieja',
+      youngleaf: 'Hojas tiernas',
     },
     parts: {
       'doubt.flesh': {
