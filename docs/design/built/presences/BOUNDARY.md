@@ -16,7 +16,7 @@ The Boundary is a tall, calm column of limestone that keeps the vault it stands 
 - **Wake.** Breaking any block of its ring, while the player is inside its room, turns it hostile. About every 2.4 seconds it throws a cube at the player.
 - **Calm again.** Putting the ring back, or leaving its room, makes it neutral again. A room is never sealed by it, since a vault holds no roster.
 
-- **Guard.** It keeps the vault chest: that chest opens for a real-world mission, not for keys. See [GUARD-MISSIONS.md](GUARD-MISSIONS.md).
+- **Guard.** It keeps the vault chest: that chest opens for a real-world mission, not for keys. The mission card has a close ✕ that cancels (no reward, the chest stays locked, it asks again later), and the breath mission can run as a guided 30-second countdown. See [GUARD-MISSIONS.md](GUARD-MISSIONS.md).
 
 ## Open questions
 

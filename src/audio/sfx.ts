@@ -179,7 +179,29 @@ export const spatial = {
   },
 };
 
+/** A soft bell for the guided breath: it swells in over 60 ms (never a click) and fades over its length. */
+function bellTone(freq: number, dur: number, vol: number) {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.06);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g).connect(master);
+  o.start(t); o.stop(t + dur);
+}
+
 export const sfx3 = {
+  /** The guided breath's cue at each step, heard with closed eyes: rising for an in-breath, lower for an
+   *  out-breath, a plain tone to settle, and two notes when the time is up. Gentle, never urgent. */
+  bell: (kind: 'in' | 'out' | 'rest' | 'end') => {
+    const f = kind === 'in' ? 528 : kind === 'out' ? 396 : 440;
+    bellTone(f * (0.99 + fx.random() * 0.02), 1.6, 0.06);
+    bellTone(f * 2, 1.0, 0.015);
+    if (kind === 'end') setTimeout(() => bellTone(660, 2, 0.05), 400);
+  },
   hurt: () => { tone(220, 0.18, 'square', 0.18, 0.5); noise(0.12, 0.3, 600, 1); },
   heal: () => { tone(523, 0.12, 'sine', 0.15); setTimeout(() => tone(784, 0.16, 'sine', 0.15), 90); },
   bombPickup: () => { tone(330, 0.08, 'square', 0.12); setTimeout(() => tone(440, 0.1, 'square', 0.12), 60); },
