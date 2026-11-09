@@ -23,6 +23,7 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 | [TRICKSTER.md](TRICKSTER.md) | The Trickster, in a dead end from floor 3 | Messenger | decided |
 | [ECHO.md](ECHO.md) | The Echo, where the last run faded | Messenger | proposal |
 | [DIALOGUE.md](DIALOGUE.md) | The dialogue card and its lines | System | proposal |
+| [MEDITATION-APP.md](MEDITATION-APP.md) | The Sanctuary: the Boundary's meditation app, its six meditations, rewards, controls and test plan | System | decided |
 | [REQUESTS.md](REQUESTS.md) | Requests from the depths, the idle window and the secret trust meter | System | decided |
 | [AGREEMENTS.md](AGREEMENTS.md) | Things the player brings to a presence | System | proposal |
 | [GIFTS.md](GIFTS.md) | The gifts of the depths and the promised trait | System | proposal |
