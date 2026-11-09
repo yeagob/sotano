@@ -46,6 +46,7 @@ import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
+import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { Inventory } from '../items/inventory';
@@ -85,6 +86,7 @@ import { floorHeartChances, rollHeart } from '../content/tables/hearts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
+import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
@@ -151,8 +153,6 @@ const RESTART_HOLD_MAX = 2;
 /** Per frame: at most this many block-break sounds and particle bursts (a great cut breaks dozens). */
 const BREAK_SFX_PER_FRAME = 4;
 const BREAK_FX_PER_FRAME = 24;
-/** Good intentions in a row that find nothing to mend on one block before the polarity hint shows. */
-const POLARITY_HINT_HITS = 3;
 /** Loose cubes a single weapon strike may leave behind; the rest of its cuts vanish as dust. */
 const STRIKE_DEBRIS: Record<WeaponId, number> = { intent: 0, blade: 16, beam: 24, greatcut: 24 };
 /** Cubes a single blade swing shows cut in two; the rest of the rubble in reach turns to dust. */
@@ -200,7 +200,8 @@ interface BossRoom { room: number; wake: number; spawned: boolean; defeated: boo
 export class Game {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(75, 1, 0.05, 200);
+  readonly camera = new THREE.PerspectiveCamera(FOV_DEFAULT, 1, 0.05, 200);
+  private fovNow = FOV_DEFAULT;
   readonly input: Input;
   readonly hud = new Hud();
   readonly hands: Hands;
@@ -325,10 +326,7 @@ export class Game {
   private strikeDebris = 0;
   /** Seconds the player has been pressing against blocks since the last contact tick. */
   private contactT = 0;
-  /** The polarity hint has been shown this run. */
-  private polarityHinted = false;
-  /** The block the last good intentions hit, and how many in a row found nothing to mend there. */
-  private idleGood = { block: -1, hits: 0 };
+  private polarityHint = new PolarityHint();
   private breakSfx = 0;
   private breakFx = 0;
   private fogColor = new THREE.Color();
@@ -414,6 +412,9 @@ export class Game {
     this.input.onPadChange = on => this.hud.toast(on ? 'toast.padConnected' : 'toast.padDisconnected');
     this.hud.rumble = (strength, ms) => this.input.rumble(strength, ms);
     this.hud.onAct = act => this.act(act);
+    this.hud.onFov = fov => this.setFov(fov);
+    this.fovNow = applyFov(this.camera, loadSettings().fov);
+    this.hud.setFov(this.fovNow);
     this.input.onBlur = () => this.touch.clear();
     this.resize();
     this.newRun(seed);
@@ -453,8 +454,7 @@ export class Game {
     this.rng = new RunRandom(root);
     this.hud.setSeed(this.seedLabel);
     this.polarity = 'positive';
-    this.polarityHinted = false;
-    this.idleGood = { block: -1, hits: 0 };
+    this.polarityHint.reset();
     this.hud.setPolarity(this.polarity);
     this.dungeon = planDungeon(this.rng);
     this.pools = new ItemPools(PLAYABLE_ITEMS);
@@ -1594,7 +1594,7 @@ export class Game {
   /** F: the loaded intention switches between positive (it mends) and negative (it harms). */
   private togglePolarity() {
     const from = this.polarity;
-    this.polarityHinted = true;
+    this.polarityHint.learned();
     this.polarity = from === 'positive' ? 'negative' : 'positive';
     this.hud.setPolarity(this.polarity);
     this.bus.emit('polarityChange', { from, to: this.polarity });
@@ -1965,14 +1965,9 @@ export class Game {
     if (polarity === 'positive') {
       if (this.skyPositiveBlock(hit.x, hit.y, hit.z, 'intent')) return true;
       const block = this.world.idx(hit.x, hit.y, hit.z);
-      if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.idleGood = { block: -1, hits: 0 };
-      else {
-        this.idleGood = { block, hits: this.idleGood.block === block ? this.idleGood.hits + 1 : 1 };
-        if (this.idleGood.hits >= POLARITY_HINT_HITS && !this.polarityHinted) {
-          this.polarityHinted = true;
-          this.hud.toast('toast.polarityHint', controlParams(activeDevice()));
-        }
-      }
+      const device = activeDevice();
+      if (this.repairBlock(hit.x, hit.y, hit.z, mining)) this.polarityHint.mended();
+      else if (this.polarityHint.idle(block, device, this.inSky || bandOf(hit.y) === SURFACE)) this.hud.polarityHint(controlParams(device), device === 'touch');
       return false;
     }
     const broke = this.damageBlock(hit.x, hit.y, hit.z, mining, 'intent', 'intent');
@@ -3327,6 +3322,17 @@ export class Game {
 
   // ───────────────────────── loop ─────────────────────────
 
+  get fov() { return this.fovNow; }
+
+  setFov(v: number) {
+    const fov = applyFov(this.camera, v);
+    this.hud.setFov(fov);
+    if (fov === this.fovNow) return;
+    sfx3.fov(fov > this.fovNow);
+    this.fovNow = fov;
+    saveSettings({ v: 1, fov });
+  }
+
   resize() {
     const w = innerWidth, h = innerHeight;
     this.renderer.setSize(w, h, false);
@@ -3365,9 +3371,17 @@ export class Game {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
     }
+    if (ctx === 'paused') {
+      const n = inp.navigate();
+      if (n.x) this.setFov(stepFov(this.fovNow, n.x));
+    }
     if (ctx === 'inventory') {
       if (inp.hit('back')) this.hud.closeScreen(this);
-      else { const n = inp.navigate(); if (n.x || n.y) this.hud.moveSelection(n.x, n.y); }
+      else {
+        const n = inp.navigate();
+        if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
+        else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
+      }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -3514,6 +3528,7 @@ export class Game {
     else if (act === 'inventory' && this.hud.screenOpen) this.hud.closeScreen(this);
     else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
     else if (act === 'tab-items') this.hud.openScreen(this, 'items');
+    else if (act === 'fov-down' || act === 'fov-up') this.setFov(stepFov(this.fovNow, act === 'fov-up' ? 1 : -1));
   }
 
   /** Rooms whose projections are all released (the minimap lights them). */

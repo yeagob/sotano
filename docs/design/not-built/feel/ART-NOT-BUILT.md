@@ -22,7 +22,7 @@ The art pass of 26 October made the build follow the guide in colour, materials,
 **Phase C, HUD and accessibility.**
 
 - **Fonts.** Pixelify Sans is approved by the owner (2026-11-06) and not yet added to the repo: the font file is not self-hosted, so the faces that name it fall back to the system sans ([DECISIONS §10.2](../../../art/DECISIONS.md)). Atkinson Hyperlegible Next is still an open owner choice.
-- **The settings page.** Shake, flashes, field of view, interface scale, reduced motion and skin tone. Not built: there is no settings page.
+- **The settings page.** Shake, flashes, head bob, interface scale, reduced motion and skin tone. Not built. The field of view is built: it is the first setting of the menu's Graphics section ([built HUD](../../built/feel/HUD.md#graphics-settings)), and the rest belongs there.
 - **The hexagram** on the start, pause and death screens. See [HEXAGRAM](HEXAGRAM.md).
 
 ## Open questions

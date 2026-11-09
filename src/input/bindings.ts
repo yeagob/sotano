@@ -127,11 +127,11 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'click / A accepts', noita: 'click / A continues', isaac: 'any shot key / A dismisses and continues' },
   },
   {
-    action: 'navigate', kind: 'axis', when: ['inventory', 'toll'],
+    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused'],
     keyboard: { keys: Object.values(NAV_KEYS).flat() },
     gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },
-    refs: { minecraft: 'the d-pad moves between slots', noita: 'the d-pad moves between slots', isaac: 'the d-pad moves the selection' },
+    refs: { minecraft: 'the d-pad moves between slots; left and right move an options slider', noita: 'the d-pad moves between slots and options', isaac: 'the d-pad moves the selection; left and right change an option' },
   },
   {
     action: 'back', kind: 'press', when: ['inventory', 'toll'],

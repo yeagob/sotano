@@ -30,6 +30,7 @@ import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
+import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -122,6 +123,9 @@ export class Hud {
   private lastFlash = 0;
   rumble: ((strength: number, ms: number) => void) | null = null;
   onAct: ((act: string) => void) | null = null;
+  onFov: ((fov: number) => void) | null = null;
+  private fovInput = $('fov') as HTMLInputElement;
+  private fovShown = FOV_DEFAULT;
   private lastCleared = new Set<number>();
   private mapState: { floor: FloorResult; room: number; visited: Set<number> } | null = null;
   private mapYaw = 0;
@@ -142,11 +146,16 @@ export class Hud {
     onDeviceChange(d => { this.applyDevice(d); this.relocalize(); });
     this.applyDevice(activeDevice());
     this.renderControls();
+    this.fovInput.min = String(FOV_MIN);
+    this.fovInput.max = String(FOV_MAX);
+    this.fovInput.step = String(FOV_STEP);
+    this.fovInput.addEventListener('input', () => this.onFov?.(Number(this.fovInput.value)));
+    this.renderGraphics();
     addEventListener('click', e => {
       const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-act]');
-      if (el) { e.stopPropagation(); this.onAct?.(el.dataset.act!); return; }
+      if (el) { e.stopPropagation(); if (el.closest('#graphics')) el.blur(); this.onAct?.(el.dataset.act!); return; }
       if (activeDevice() !== 'touch' || this.screenOpen || !this.overlay.contains(e.target as Node)) return;
-      if ((e.target as HTMLElement).closest('[data-lang], .seed')) return;
+      if ((e.target as HTMLElement).closest('[data-lang], .seed, #graphics')) return;
       this.onAct?.('resume');
     });
     // capture phase, like the seed: choosing a language must not also capture the mouse
@@ -168,6 +177,7 @@ export class Hud {
     this.renderSpiritLabel();
     this.renderLanguages();
     this.renderControls();
+    this.renderGraphics();
     if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
@@ -201,6 +211,25 @@ export class Hud {
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
+  }
+
+  get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }
+
+  setFov(fov: number) {
+    this.fovShown = fov;
+    this.renderGraphics();
+  }
+
+  private renderGraphics() {
+    const v = String(this.fovShown);
+    if (this.fovInput.value !== v) this.fovInput.value = v;
+    this.fovInput.setAttribute('aria-valuetext', t('graphics.fovValue', { n: this.fovShown }));
+    $('fov-value').textContent = t('graphics.fovValue', { n: this.fovShown });
+    $('fov-hint').textContent = t(forDevice('graphics.hint', activeDevice()));
+    for (const [act, key] of [['fov-down', 'graphics.fovNarrower'], ['fov-up', 'graphics.fovWider']] as const) {
+      const b = this.overlay.querySelector<HTMLElement>(`[data-act="${act}"]`);
+      if (b) { const label = t(key); b.title = label; b.setAttribute('aria-label', label); }
+    }
   }
 
   /** The selector on the pause card: every shipped language by its own name. */
@@ -553,6 +582,11 @@ export class Hud {
   /** A short notice that fades: a message key, in the player's language. */
   toast(key: MessageKey, params?: Params) { this.showToast(t(key, params)); }
 
+  polarityHint(params: Params, marked: boolean) {
+    if (!marked) { this.toast('toast.polarityHint', params); return; }
+    this.showToast(t('toast.polarityHint', { ...params, polarity: `<b class="mark">${params.polarity}</b>` }), true);
+  }
+
   /** A notice followed by the drink hint: which key or button drinks the flask or meal ('potion.drinkHint'). */
   toastDrinkHint(key: MessageKey, params?: Params) {
     this.showToast(`${key ? t(key, params) : ''} · ${t('potion.drinkHint', { key: keyLabel('drink', activeDevice()) })}`);
@@ -565,8 +599,8 @@ export class Hud {
     this.showToast(text);
   }
 
-  private showToast(text: string) {
-    this.toastEl.textContent = text;
+  private showToast(text: string, html = false) {
+    if (html) this.toastEl.innerHTML = text; else this.toastEl.textContent = text;
     this.toastEl.classList.add('show');
     this.toastTimer = performance.now() + 2500;
   }

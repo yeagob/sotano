@@ -6,6 +6,17 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Added
 
+### Fixed
+
+## 0.2.1 · 2026-11-08
+
+### Added
+- A Graphics section on the menu, with the field of view from 70° to 100° (default 75°). It changes the view at once, is kept between sessions, and is set with the arrow keys or the mouse, the d-pad, or a drag or tap on a phone (#109).
+
+### Fixed
+- Loose cubes no longer spin endlessly in place next to another cube. A cube that lands touching another, on the edge of one, or packed tight among others in a small space now comes to rest and stays still, keeping the way it faces (#103).
+- On a phone the polarity hint comes back each time three good intentions find nothing to mend on one block underground, with its turn in red. It used to show only once per run (#101).
+
 ## 0.2.0 · 2026-11-07
 
 ### Added

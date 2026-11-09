@@ -7,7 +7,7 @@ Part of [intentions](README.md).
 ## What the player sees and feels
 
 - Every run starts positive. The player switches with the polarity action; the switch makes a sound and a message: "Good intention: it heals" or "Bad intention: it breaks and destroys".
-- After three positive hits on the same block that is not damaged, a hint appears once: "Good intentions only heal. To break, switch to bad ones."
+- After three positive hits on the same block that is not damaged, a hint appears: "Good intentions only heal. To break, switch to bad ones: {polarity}." The control fills `{polarity}`: on a phone, the turn ("turn the phone 180 degrees, like a steering wheel") On a phone it comes back each time three more such hits land on one block, underground (depth 0 and under) and never above ground, and its turn ("turn the phone 180 degrees, like a steering wheel") is marked in the attack red (issue #101). On a keyboard or a pad it appears once per run, and not at all once the player has switched polarity.
 - **Positive** against a block: a damaged block is mended by the intention's mining each hit, and a positive intention never breaks a block. On an undamaged block it does nothing.
 - **Negative** against a block: it damages the block as any intention does, and armour counts, so the stone breaks where a positive one would only mend it.
 - **Positive** against a hostile projection: it deals half its damage, and it builds warmth, one fifth per hit. When the warmth is full, the projection turns to your side. The conversion keeps at least half its maximum health, and a positive intention never takes the projection's last point, so warmth, not a kill, is how a projection of light is won.
@@ -21,7 +21,7 @@ Part of [intentions](README.md).
 
 The design text says good intentions mend, can turn projections to your side, and that bad ones break blocks and wound everything that is yours, creatures included ([DESIGN.md, section 4](README.md)). The built rules do the mending and the breaking as written. For projections, a good intention halves its damage and converts it, and for creatures a bad one wounds without killing; the open questions below record where that differs from the text. The rules cite the polarity review in the architecture reviews.
 
-Code: `src/combat/polarity.ts` (the pure rules: damage share, warmth, ceiling, conversion, relapse and the ally heal, lines 1-60), `src/game/game.ts` (the applied rules on projections and allies, lines 1048-1124; the block rules, lines 1473-1490 and 1592-1602), `src/entities/enemies.ts` (a creature at zero hides, line 193).
+Code: `src/game/polarity-hint.ts` (the hint's count and its repeat rules, tests in `tests/polarity-hint.test.ts`), `src/combat/polarity.ts` (the pure rules: damage share, warmth, ceiling, conversion, relapse and the ally heal, lines 1-60), `src/game/game.ts` (the applied rules on projections and allies, lines 1048-1124; the block rules, lines 1473-1490 and 1592-1602), `src/entities/enemies.ts` (a creature at zero hides, line 193).
 
 ## Open questions
 
