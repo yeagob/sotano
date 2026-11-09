@@ -138,7 +138,7 @@ export function runGallery(params: URLSearchParams) {
     head('Materials (×6) and cracks of light, stages 1–4');
     const tiles: [string, string, () => HTMLCanvasElement, boolean][] = MATERIALS.filter(m => m.id !== 0).flatMap(m => {
       const own: [string, string, () => HTMLCanvasElement, boolean][] = [[m.key, m.concept ?? '', () => materialCanvas(m.id), isFinite(m.hp)]];
-      if (m.key === 'log') own.push(['log top', 'end grain', logTopCanvas, true]);
+      if (m.key === 'log') own.push(['log top', 'end grain (every trunk bark)', logTopCanvas, true]);
       return own;
     });
     for (const [key, concept, canvas, breaks] of tiles) {

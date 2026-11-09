@@ -26,9 +26,9 @@ The hits below are for a starting intention with mining 3.5 and no items. The nu
 | 0 | Dirt | 3 | 0 | 1 |
 | 0 | Grass | 3 | 0 | 1 |
 | 0 | Crate | 4 | 0 | 2 |
-| 0 | Leaves | 2 | 0 | 1 |
+| 0 | Leaves, young leaves | 2 | 0 | 1 |
 | 1 | Dungeon brick, stone, dark brick, slate, ashlar, rubble masonry, wet brick, flagstone, packed earth | 10 to 12 | 0.5 | 4 |
-| 1 | Living wood | 14 | 0.5 | 5 |
+| 1 | Living wood, root bark, old bark, bough | 14 | 0.5 | 5 |
 | 1 | Ice | 6 | 0 | 2 |
 | 2 | Iron ore | 18 | 1 | 8 |
 | 2 | Deepstone | 25 | 1.5 | 13 |

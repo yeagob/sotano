@@ -21,7 +21,7 @@ export interface MaterialDef {
   /** [base, dark, hi] as numbers, for particles and anything that needs a plain colour. */
   colors: [number, number, number];
   /** Shape grammar of its 16×16 tile (src/render/atlas.ts): shapes, never noise. */
-  pattern: 'clumps' | 'grass' | 'leaves' | 'brick' | 'plates' | 'strata' | 'planks' | 'bark' | 'facets' | 'cobble' | 'earth' | 'rubble' | 'ashlar' | 'slate' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen'
+  pattern: 'clumps' | 'grass' | 'leaves' | 'brick' | 'plates' | 'strata' | 'planks' | 'bark' | 'rootbark' | 'platebark' | 'facets' | 'cobble' | 'earth' | 'rubble' | 'ashlar' | 'slate' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen'
     // the sky's own (docs/art/sky/blocks.md)
     | 'cloud' | 'mist' | 'heartwood' | 'branch' | 'skyleaf' | 'bamboo' | 'moss' | 'fence' | 'resin' | 'tektite' | 'glass' | 'seal';
   /** What it stands for (the art's meaning test). */
@@ -39,6 +39,8 @@ const RAMPS: Record<string, [PalToken, PalToken, PalToken, PalToken]> = {
   obsidian: R('mat.obsidian'), bedrock: R('mat.bedrock'), rock: R('rock.f1'),
   loam: R('mat.loam'), flagstone: R('mat.flagstone'), rubble: R('mat.rubble'), wetbrick: R('mat.wetbrick'),
   ashlar: R('mat.ashlar'), slate: R('mat.slate'), darkbrick: R('mat.darkbrick'),
+  // the giant tree (issue #12)
+  rootbark: R('mat.rootbark'), oldbark: R('mat.oldbark'), bough: R('mat.bough'), leaf: R('mat.leaf'), youngleaf: R('mat.youngleaf'),
   // the sky (palette part sky-blocks)
   cloud: R('mat.cloud'), skywood: R('mat.skywood'), heartwood: R('mat.heartwood'), skyleaf: R('mat.skyleaf'),
   bamboo: R('mat.bamboo'), moss: R('mat.moss'), palestone: R('mat.palestone'), fencewood: R('mat.fencewood'),
@@ -76,7 +78,7 @@ const DEFS: Def[] = [
   // the ninth circle and the tree (docs/architecture/LEVELS.md §8)
   { id: 17, key: 'ice', name: 'Ice', tier: 1, hp: 6, armor: 0, slippery: true, ramp: 'ice', pattern: 'facets', concept: 'a feeling frozen still' },
   { id: 18, key: 'log', name: 'Living wood', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'crate', accent: 'mat.grass.dark', pattern: 'bark', concept: 'the tree that holds the world' },
-  { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'grass', pattern: 'leaves', concept: 'what grows when you rise' },
+  { id: 19, key: 'leaves', name: 'Leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'leaf', pattern: 'leaves', concept: 'what grows when you rise' },
   { id: 20, key: 'starstone', name: 'Star stone', tier: 3, hp: 60, armor: 3, ramp: 'limestone', accent: 'bone.paper', pattern: 'cobble', concept: 'a fixed point to steer by' },
   // each floor builds its rooms from its own palette (src/content/levels.ts, DECISIONS §6.5), as tough as brick
   { id: 21, key: 'loam', name: 'Packed earth', tier: 1, hp: 12, armor: 0.5, ramp: 'loam', accent: 'limestone.base', pattern: 'earth', concept: 'the ground you were raised on' },
@@ -105,6 +107,12 @@ const DEFS: Def[] = [
   { id: 40, key: 'meteorglass', name: 'Meteor glass', tier: 1, hp: 12, armor: 0.5, ramp: 'meteorglass', pattern: 'tektite', concept: 'what fell burning and came out clear' },
   { id: 41, key: 'solarglass', name: 'Solar glass', tier: 1, hp: 12, armor: 0.5, ramp: 'solarglass', pattern: 'glass', concept: 'what the heat of the Sun made clear' },
   { id: 42, key: 'sunseal', name: 'Sun seal', tier: Infinity, hp: Infinity, armor: 0, ramp: 'sunseal', pattern: 'seal', concept: 'the Sun, not open yet' },
+  // the giant tree's own wood and leaves (docs/design/built/levels/giant-tree/BARK.md, issue #12): as tough
+  // as living wood (or leaves), and they burn like it; only the look changes with height
+  { id: 43, key: 'bough', name: 'Bough', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'bough', pattern: 'branch', concept: 'what you reach out with, toward the others' },
+  { id: 44, key: 'rootbark', name: 'Root bark', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'rootbark', accent: 'mat.grass.dark', pattern: 'rootbark', concept: 'what holds on below, where it all began' },
+  { id: 45, key: 'oldbark', name: 'Old bark', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'oldbark', accent: 'limestone.base', pattern: 'platebark', concept: 'what the years weathered and did not break' },
+  { id: 46, key: 'youngleaf', name: 'Young leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'youngleaf', pattern: 'leaves', concept: 'what is new in you, still soft' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

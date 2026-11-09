@@ -96,9 +96,12 @@ const LEAF_CLUSTERS: Blob[] = [
   [9, 13.5, 2.2, 1.5], [14.5, 15, 2.2, 1.4],
 ];
 
-function paintLeaves(px: Px, r: Ramp) {
+/** Leaves; `young` mirrors the clusters (so a patch of young leaves never repeats the old ones) and
+ *  keeps only one cluster in six in shade: new growth is open to the light. */
+function paintLeaves(px: Px, r: Ramp, young = false) {
   const w = wrap(px);
-  paintBlobs(w, LEAF_CLUSTERS, i => (i % 4 === 2 ? r.d : r.b), r, r.d, r.o);
+  const list: Blob[] = young ? LEAF_CLUSTERS.map(([x, y, rx, ry]) => [T - 1 - x, y, rx, ry]) : LEAF_CLUSTERS;
+  paintBlobs(w, list, i => ((young ? i % 6 === 3 : i % 4 === 2) ? r.d : r.b), r, r.d, r.o);
 }
 
 function paintCrate(px: Px, r: Ramp, nail: string) {
@@ -147,6 +150,53 @@ function paintBark(px: Px, r: Ramp, moss: string | undefined) {
   for (const [x, y] of BARK_SPLITS) { w(x, y, r.o); w(x + 1, y, r.o); w(x, y + 1, r.b); w(x + 1, y + 1, r.b); }
   for (const [x, y] of [[2, 9], [7, 5], [12, 8], [7, 14]]) { w(x, y, r.h); w(x, y + 1, r.h); }
   if (moss) for (const [x, y] of [[0, 12], [1, 13], [0, 14], [10, 3], [11, 4]]) w(x, y, moss);
+}
+
+const ROOT_CREVICES: [number, number][] = [[1, 0.4], [6, 2.5], [11, 4.6]];
+const ROOT_SPLITS: [number, number][] = [[3, 3], [8, 9], [13, 14]];
+
+/** Root bark (the foot of the trunk): three wide crevices that twist as they climb, so the ridges
+ *  between them read as gnarled and thick; a lit lip on each ridge, two tufts of moss in the damp. */
+function paintRootBark(px: Px, r: Ramp, moss: string | undefined) {
+  const w = wrap(px);
+  for (let y = 0; y < T; y++) {
+    const cs = ROOT_CREVICES.map(([x0, ph]) => x0 + Math.round(Math.sin((y / T) * Math.PI * 2 + ph) * 2 + Math.sin((y / T) * Math.PI * 4 + ph * 1.7) * 0.8));
+    for (let x = 0; x < T; x++) {
+      const d = Math.min(...cs.map(c => (x - c + T) % T));
+      const next = Math.min(...cs.map(c => (c - x + T) % T));
+      w(x, y, d === 0 || next === 1 ? r.o : d === 1 ? r.h : next === 2 ? r.d : r.b);
+    }
+  }
+  for (const [x, y] of ROOT_SPLITS) { w(x, y, r.o); w(x + 1, y, r.o); w(x, y + 1, r.d); w(x + 1, y + 1, r.d); }
+  for (const [x, y] of [[4, 6], [9, 12]]) { w(x, y, r.h); w(x, y + 1, r.h); }
+  if (moss) for (const [x, y] of [[2, 12], [8, 1]]) { w(x, y, moss); w(x + 1, y, moss); w(x, y + 1, moss); w(x + 1, y + 1, moss); }
+}
+
+/** Old bark's two deep furrows: [x0, phase]. */
+const OLD_FURROWS: [number, number][] = [[2, 0.3], [10, 1.5]];
+/** Short checks across a ridge: [x, y, length]; each stops short of the next furrow. */
+const OLD_CHECKS: [number, number, number][] = [[5, 4, 3], [12, 12, 3], [4, 13, 2]];
+
+/** Old bark (high on the trunk): two deep furrows that wander, and between them wide, flat, weathered
+ *  ridges; one furrow forks off and dies out, a few short checks cross a ridge without closing it,
+ *  so it never reads as boards, bricks or scales; pale lichen in two patches. */
+function paintPlateBark(px: Px, r: Ramp, lichen: string | undefined) {
+  const w = wrap(px);
+  for (let y = 0; y < T; y++) {
+    const cs = OLD_FURROWS.map(([x0, ph]) => x0 + Math.round(Math.sin((y / T) * Math.PI * 2 + ph) * 1.2));
+    for (let x = 0; x < T; x++) {
+      const d = Math.min(...cs.map(c => (x - c + T) % T));
+      const next = Math.min(...cs.map(c => (c - x + T) % T));
+      w(x, y, d === 0 || next === 1 ? r.o : d === 1 ? r.d : d === 2 ? r.h : next === 2 ? r.d : r.b);
+    }
+  }
+  // the fork: a furrow that leaves the first one and dies out across the ridge
+  for (const [x, y] of [[5, 7], [6, 8], [6, 9], [7, 10]]) { w(x, y, r.o); w(x + 1, y, r.h); }
+  // a fibre on each ridge: a short shaded line, never full height
+  for (let y = 1; y < 5; y++) w(7, y, r.d);
+  for (let y = 9; y < 14; y++) w(14, y, r.d);
+  for (const [x, y, l] of OLD_CHECKS) for (let k = 0; k < l; k++) { w(x + k, y, r.o); w(x + k, y + 1, r.h); }
+  if (lichen) for (const [x, y] of [[4, 10], [12, 2]]) { w(x, y, lichen); w(x + 1, y, lichen); w(x, y + 1, lichen); w(x + 1, y + 1, lichen); }
 }
 
 function paintLogTop(px: Px, r: Ramp) {
@@ -516,7 +566,7 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
       paintDirt(px, r);
       break;
     case 'leaves':
-      paintLeaves(px, r);
+      paintLeaves(px, r, m.key === 'youngleaf');
       break;
     case 'grass': {
       // grass side: dirt with a ragged 3–5 px fringe of grass on top
@@ -579,6 +629,12 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
       break;
     case 'bark':
       paintBark(px, r, r.a);
+      break;
+    case 'rootbark':
+      paintRootBark(px, r, r.a);
+      break;
+    case 'platebark':
+      paintPlateBark(px, r, r.a);
       break;
     case 'facets': {
       // obsidian: three large glassy triangles, diagonal accent streaks, never noise

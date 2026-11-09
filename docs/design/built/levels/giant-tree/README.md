@@ -2,7 +2,7 @@
 
 Up: [levels](../README.md) · the tree that rises above the surface, built as seven stories you climb, and the sky that opens above it.
 
-The giant tree stands at the centre of the surface and rises through the open sky. It is made of ordinary blocks: living wood for the trunk and branches, leaves for the canopy, and starstone pads for the stars. Its height reaches the top of the sky. It is built as seven stories, each one a hall or a level you can walk through, joined by spiral stairs of living wood. Each story is generated the first time you come near it, so the tree costs nothing until you climb. The owner's words for the tree: a real, giant tree of thousands of cubes that you climb, with a trunk you move through as a vertical map, branches as a 3D map, and leaves as a star map. The first three are built as stories; the design's upper three floors are discussed in [not-built/levels/FLOOR-KINDS](../../../not-built/levels/FLOOR-KINDS.md).
+The giant tree stands at the centre of the surface and rises through the open sky. It is made of ordinary blocks: three barks for the trunk that change with height, boughs for the limbs, old and young leaves for the canopy, and starstone pads for the stars. Its height reaches the top of the sky. It is built as seven stories, each one a hall or a level you can walk through, joined by spiral stairs of living wood. Each story is generated the first time you come near it, so the tree costs nothing until you climb. The owner's words for the tree: a real, giant tree of thousands of cubes that you climb, with a trunk you move through as a vertical map, branches as a 3D map, and leaves as a star map. The first three are built as stories; the design's upper three floors are discussed in [not-built/levels/FLOOR-KINDS](../../../not-built/levels/FLOOR-KINDS.md).
 
 ## The seven stories
 
@@ -16,7 +16,7 @@ The giant tree stands at the centre of the surface and rises through the open sk
 | canopy | the leaves | 112 | 34 | the crown spreads wide |
 | stars | heaven | 146 | 114 | the pads, out to the edge of the sky |
 
-The four trunk stories are one hollow column, a wall of living wood three blocks thick around each story's hall. The base is the surface; the sky above the top story is the top of the world.
+The four trunk stories are one hollow column, a wall of bark three blocks thick around each story's hall. The base is the surface; the sky above the top story is the top of the world.
 
 ## Growing and loading
 
@@ -26,8 +26,9 @@ The four trunk stories are one hollow column, a wall of living wood three blocks
 
 ## What the tree is made of
 
-- **Living wood** (the log) is the trunk, the branches, the floors, the stairs, the pillars and the stars' disc. It burns, like every wood-like block (see [ICE-AND-WOOD](../../elements/ICE-AND-WOOD.md)).
-- **Leaves** are the canopy, the hanging strands of the galleries and the balls at the tips of the branches. They burn too.
+- **Bark** is the trunk: its walls, floors, pillars, ramps and decks. It changes with height: **root bark** at the foot, **living wood** (the log) in the middle, **old bark** high up (see [BARK](BARK.md)). The spiral stairs are living wood; the stars' disc is bough. Every bark burns, like every wood-like block (see [ICE-AND-WOOD](../../elements/ICE-AND-WOOD.md)).
+- **Boughs** are the limbs of the branch story and the crown, and come through the old bark of the crown's deck: a paler, smooth bark of their own. They burn too.
+- **Leaves** are the canopy, the hanging strands of the galleries and the balls at the tips of the branches; **young leaves** grow in patches through the crown. They burn too.
 - **Starstone** is the pad that carries you from one star to the next (see [STARS](STARS.md)). It is tier 3 with 60 points of hardness, a fixed point to steer by.
 - **Dirt and grass** lie on the floor of the first story's centre, a small clearing.
 
@@ -43,5 +44,6 @@ Above the surface, the open sky is 260 blocks high, up to the top of the world. 
 | [BRANCHES.md](BRANCHES.md) | The branch story: the limbs that leave the trunk and carry the climb out and up |
 | [CANOPY.md](CANOPY.md) | The leaves: the crown, its limbs and the floor under it |
 | [STARS.md](STARS.md) | Heaven: the disc, the pads and the constellations, and the night |
+| [BARK.md](BARK.md) | The bark by height, the boughs and the old and young leaves: what the tree is made of, story by story |
 
-Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (living wood, leaves, starstone).
+Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (the barks, boughs, leaves, starstone).
