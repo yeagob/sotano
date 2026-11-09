@@ -1,6 +1,6 @@
 # World storage: a formula with exceptions
 
-Up: [not-built levels](README.md) · Status: proposal (issue #11). The owner approves the storage format before anything is built.
+Up: [not-built levels](README.md) · Status: Accepted (issue #11). The owner accepted the proposal by the decisions in §9; nothing is built yet.
 
 The giant tree, the surface and the floors under it are computed from the run's seed by a formula, and only what differs from the formula is stored. Memory then grows with the number of features and with what the player changes, never with the size of the world. Issue #10 (a larger surface) depends on it.
 
@@ -8,7 +8,7 @@ When this is built, the format and the engine move to the architecture section (
 
 ## 1. What the player notices
 
-Nothing, if it works. The tree, the surface and the floors look exactly as they do now; every block the player breaks or places stays broken or placed; a saved run comes back exactly as it was left. What changes is that the world can be much wider (issue #10) without the game running out of memory on a phone, and the tree no longer needs to "grow" a story when the player comes near it, because every story already exists as a formula.
+Nothing, if it works. The tree, the surface and the floors look the same as they do now; every block the player breaks or places stays broken or placed. What changes is that the world can be much wider (issue #10) without the game running out of memory on a phone, and the tree no longer needs to "grow" a story when the player comes near it, because every story already exists as a formula.
 
 ## 2. What the code does today
 
@@ -70,7 +70,7 @@ The tree's centre is `(cx, cz) = (sx >> 1, sz >> 1)` and its base is `SURFACE_Y 
 
 **Order matters today.** Some writes only fill air (`canopy` at `tree.ts:291`, `blob` at `tree.ts:347`) and later writes overwrite earlier ones. Shapes keep the order of the code, and a shape gets one flag, `fill: 'air'`, meaning "only where the layers before me left air". With that, the shapes reproduce the current tree; the golden test (§7.1) proves it.
 
-**Growth.** `GiantTree.grow` stops writing cells. A story "grows" by adding its shapes to the layer the first time it is needed, or all stories are added at the start of the run (open question 3). Either way the player sees the same tree.
+**Growth.** `GiantTree.grow` stops writing cells. The whole tree is added to the layer at the start of the run, all its stories at once (decision 3), so the tree is there from the start.
 
 **Estimate.** The busiest story (roots) is about 10 arms × 80 steps as runs, 8 floor ribs, 6 columns, 4 doors and the stair: a few hundred shapes. The whole tree is under 2 000 shapes, about 0.2 MB at the sky's 100 bytes a shape (`SKY.md` §3.6), against the cells it covers today (the canopy shell alone spans 109 × 34 × 73 cells, `tree.ts:281-292`).
 
@@ -108,7 +108,7 @@ An exception is a cell whose content differs from the formula because of somethi
 | Kind | Made by | In the dungeon |
 |---|---|---|
 | `Placed` | the player placing a block | stays until the player removes it |
-| `Broken` | any other write of air over a cell whose formula is solid (digging, a bomb, an intention) | stays (no regrowth below the sky, open question 4) |
+| `Broken` | any other write of air over a cell whose formula is solid (digging, a bomb, an intention) | stays (no regrowth below the sky, decision 4) |
 | `Replaced` | a write of another material (an element reaction, a game effect) | stays |
 | `Story` | a permanent change the game makes (a boss room's shaft opening, a door unlocked into rock) | becomes the cell's new baseline |
 | `Transient` | a timed change | not used below the sky today |
@@ -147,12 +147,12 @@ A save holds the seed and the exceptions, nothing else of the voxels:
 
 | Part | Content |
 |---|---|
-| Header | format version; the run's seed; a **formula hash** (a hash of the layers' parameters and the generator version); the world's size in chunks |
+| Header | format version, bumped whenever the generator changes (decision 6); the run's seed; a **formula hash** (a hash of the layers' parameters and the generator version); the world's size in chunks |
 | Block exceptions | for each chunk with edits, in chunk-key order: the chunk key (`u32`), the form (sparse or runs), the count, the payload (sparse: `u16` local index + `u8` material + `u8` kind per cell; runs: §6) |
-| Element exceptions | the same, for the element layer |
-| Damage | optional (open question 5): `u32` cell index + `u8` HP per damaged cell |
+| Element exceptions | not saved (decision 5): flowing water, lava and fire settle again on load |
+| Damage | not saved (decision 5): cracks on damaged blocks are not kept |
 
-On load, a save whose formula hash does not match the current generator is not merged silently (open question 6). Entity state, the inventory and the floors' progress belong to the run save as a whole (`TECHNICAL.md:259`); this document covers only the voxels.
+On load, a save whose version or formula hash does not match the current generator is discarded, never merged silently (decision 6). Entity state, the inventory and the floors' progress belong to the run save as a whole (`TECHNICAL.md:259`); this document covers only the voxels.
 
 ## 6. Repeated content: runs and chunks
 
@@ -171,7 +171,7 @@ Content that repeats is never stored cell by cell:
 | Tree | written into the array | under 2 000 shapes ≈ 0.2 MB | the number of features |
 | Floors | written into the array | plans and stamps: tens of KB | the number of rooms |
 | Player changes | already inside the 7.8 MB | 4 bytes a changed cell (sparse), or 6 bytes a run | what the player changes |
-| Chunk cache | none | capped (target 4 MB, open question 7) | fixed |
+| Chunk cache | none | capped (target 4 MB); the voxels, cache included, stay under 16 MB (decision 7) | fixed |
 
 For the surface of issue #10 four times wider on each side: about 125 MB as an array (§2), against the same few MB as now with the formula. Doubling the world's width again changes only the parameters and the shapes that the new space holds.
 
@@ -181,7 +181,7 @@ For the surface of issue #10 four times wider on each side: about 125 MB as an a
 
 ### 7.1 The golden test: the formula gives today's world
 
-For a set of fixed seeds, build today's `VoxelWorld` (strata, the mountains, every floor carved, every tree story grown) and the new formula world from the same seeds. Every cell of the dungeon box, and every surface column out to the mountains' edge, must hold the same material and the same element byte. This guards the migration: until it passes, nothing in the game changes. (If the owner accepts small visual differences in the tree, open question 2, the test compares counts per material and story instead.)
+For a set of fixed seeds, build today's `VoxelWorld` (strata, the mountains, every floor carved, every tree story grown) and the new formula world from the same seeds. Every cell of the dungeon box, and every surface column out to the mountains' edge, must hold the same material and the same element byte. This guards the migration: until it passes, nothing in the game changes. (The tree may differ by a few rounded cells (decision 2), so for the tree the test compares counts per material and story instead.)
 
 ### 7.2 Memory does not grow with world size
 
@@ -189,18 +189,18 @@ For a set of fixed seeds, build today's `VoxelWorld` (strata, the mountains, eve
 - Walk a probe across the whole surface and up the whole tree with prefetch: the cache never passes its cap, and the exception count stays at zero.
 - Break 10 000 blocks in one chunk region: memory grows by at most 4 bytes a cell, and less once the chunk switches to runs.
 
-### 7.3 Round-trip
+### 7.3 Round-trip (for the save, out of scope now: decision 1)
 
 - Make random edits of every kind (break, place, replace, story, element) across many chunks, including a cell set back to its formula value (no exception left, unless `Placed`).
 - Serialise, then load into a fresh world built from the same seed: every chunk is byte-identical to the original, and `kindAt` is the same for every cell.
 - `serialise(load(save))` equals `save` byte for byte.
 - A chunk evicted from the cache and materialised again is identical to before eviction.
 
-### 7.4 Save
+### 7.4 Save (for the save, out of scope now: decision 1)
 
 - A run with no changes saves only the header (under 100 bytes), whatever the size of the world.
 - A run with N changed cells saves at most about 4N bytes plus a fixed cost per chunk; a dense chunk saves runs and never more than the sparse form.
-- A save whose formula hash does not match is refused (or handled as open question 6 decides), never merged silently.
+- A save whose version or formula hash does not match is discarded (decision 6), never merged silently.
 
 ### 7.5 Behaviour and speed
 
@@ -208,25 +208,27 @@ For a set of fixed seeds, build today's `VoxelWorld` (strata, the mountains, eve
 - The existing level, floor, tree and mountain tests pass unchanged (`npm test`).
 - Materialising a chunk stays under a time budget (target: 1 ms median on the test machine, to be measured), so streaming never stalls a frame.
 
-## 8. How it could be built (for the review, not decided)
+## 8. How it could be built (the engine is decided, decision 9; the steps are for the review)
 
 1. Generalise the sky's engine (`SkyWorld`, its shapes and cache) into a formula world both realms use, with the per-chunk exception store of §5.2.
 2. Move `fillRock` and the mountains into layers; pass the golden test for the rock and the surface.
 3. Turn `GiantTree` into a shape builder (same forks, same order); pass the golden test for the tree.
 4. Turn `carveFloor`'s writes into the floor layer; pass the golden test for the floors.
 5. Switch the game to the formula world; delete the flat array.
-6. Add the save format and its tests (only if the run save is in scope, open question 1).
+6. Add the save format and its tests. Out of scope for this proposal (decision 1); the format in §5.4 must allow it later.
 
 A change of this size is a key architecture decision: it goes through the three-party review (engineer, architect, mediator) before step 1, and its record goes to `docs/reviews/`.
 
-## 9. Open questions for the owner
+## 9. Decisions
 
-1. **Run save.** Is saving and resuming a run in scope now, or is the save format (§5.4) only a design for later? Today nothing but meta-progression is saved.
-2. **Exactness of the tree.** Must the formula tree be identical block for block to today's tree, or is "looks the same" enough if a shape rounds a few cells differently (for example the rotated door cuts in the roots)?
-3. **Growth.** Should all stories of the tree exist from the start of the run (simpler, and the tree is whole when seen from far away), or keep appearing story by story as today?
-4. **Regrowth below the sky.** In the sky, broken blocks grow back. In the dungeon and on the surface, should broken blocks stay broken for the whole run, as now?
-5. **What a save remembers.** Should a save keep the cracks of damaged blocks and the state of flowing water and lava, or only blocks, with elements settling again on load?
-6. **Saves across versions.** When an update changes the generator, an old save's exceptions sit on a different world. Refuse old saves, keep old generators, or accept that the world around the player's changes may shift?
-7. **Memory target.** What is the ceiling for the world's memory on the weakest device we support (a proposal: 16 MB for voxels, cache included)?
-8. **The surface becomes editable?** The mountains are read-only today. With exceptions they can be broken and built on like the plain. Should they be?
-9. **Engine.** One engine for the dungeon and the sky (recommended here), or a separate formula world for the dungeon? This also goes through the three-party review.
+The owner decided the nine questions this proposal left open. Each question is kept with its decision, in the order asked. The sections above already follow these decisions.
+
+1. **Run save in scope now?** Decision: no. Saving and resuming a run is out of scope for this proposal. The storage format (§5.4) must allow it later.
+2. **Exactness of the tree.** Must the tree be identical block for block to today's tree? Decision: it looks the same; it is not required to be identical block for block.
+3. **Growth.** Should the whole tree exist from the start of the run, or appear story by story? Decision: the whole tree is generated at the start of the run.
+4. **Regrowth below the sky.** Should broken blocks stay broken below the sky for the whole run? Decision: confirmed, no regrowth below the sky.
+5. **What a save remembers.** Should saves keep cracks and flowing elements? Decision: no. Saves keep only the player's changes, not cracks or flowing elements.
+6. **Saves across versions.** What happens to old saves when the generator changes? Decision: old saves are discarded when the generator changes, and the save version is bumped.
+7. **Memory ceiling.** Decision: 16 MB for the voxels, cache included.
+8. **Breakable mountains.** Should the mountains be breakable and buildable? Decision: not breakable for now.
+9. **Engine.** One engine for both realms, or a separate formula world for the dungeon? Decision: one engine, the one the sky realm already uses (`src/sky/world/sky-world.ts`).
