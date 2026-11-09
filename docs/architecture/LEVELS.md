@@ -260,10 +260,10 @@ Template choice already draws from `floor/k/room/i/layout`; flips are now drawn 
 - **Deep holes and platforming** stay inside the band: plateaus of trim three high (`3`) with `=` pits make holes five deep; single pillars one tile apart are jumped. The validator now checks two blocks of headroom over every stack under the vault or dome at that tile. There is no fall damage today, so a five-block drop is safe.
 - **The flow field** uses a bucket queue (Dial's Dijkstra): a 28 × 16 room is 448 tiles.
 - **A building palette per floor** (`LevelDef.palette`: wall, floor, trim): the shell's walls and ceiling, the floor under the interior, `#` and a plug's upper wall from `wall`, `b` and `1`–`4` from `trim`; the lining of deep pools is the floor; a vault's shell turns from wall and floor into obsidian. Seven materials (ids 21–27), as tough as brick. Colours and the table per floor: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md)). In game, floors 1–4: [../art/img/built/l7-rooms-floors-1-4.png](../art/img/built/l7-rooms-floors-1-4.png).
-- **Rooms** (templates): `long-gallery`, `cloister`, `bastions`, `wind-hall`, `stepped-well`, `drowned-nave`, `strongroom`, `styx-cavern`, `crown-hall`, `chasm`, `dis-hall` ([../design/LEVELS.md](../design/built/levels/README.md) §4).
+- **Rooms** (templates): `long-gallery`, `cloister`, `bastions`, `wind-hall`, `stepped-well`, `drowned-nave`, `strongroom`, `styx-cavern`, `crown-hall`, `chasm`, `dis-hall`, `caldera-hall` ([../design/LEVELS.md](../design/built/levels/README.md) §4).
 - Tests: rooms spread only into empty cells and never into each other, the map keeps one cell per room, every open tile has air, big rooms appear on every hostile floor (Tree floors included), the new ceilings rise in the middle; deep pools are lined with their level's floor. `GEN_VERSION` 11.
 
-Later (from the review): the chamber of silence still takes the boss room's box (no big boss on floor 9 today); `ceilingRise` over the bounding box of an irregular room; templates three cells long (the flow field is ready for them); `hardenShell` on irregular vaults.
+Later (from the review): the chamber of silence still takes the boss room's box (since #131 floor 9's boss room is two cells wide, so the chamber is too); `ceilingRise` over the bounding box of an irregular room; templates three cells long (the flow field is ready for them); `hardenShell` on irregular vaults.
 
 ## 12. The tree in stories, and loading by level (2026-10-27, owner)
 

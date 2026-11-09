@@ -11,7 +11,7 @@ import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
-import { bossFor, bossHp } from '../content/bosses';
+import { BOSS_BY_ID, bossFor, bossHp } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
@@ -588,12 +588,15 @@ export class Game {
   private carve(k: number) {
     if (k > LAST_FLOOR || this.floors.has(k)) return;
     if (this.sandbox) return;
+    // the boss is drawn first: its room is large unless it asks for a small one (issue #131)
+    const boss = bossFor(k, this.rng.fork('floor', k, 'boss'), this.bossUsed);
     const f = carveFloor(this.dw, this.rng, k, this.dungeon.plans[k], {
       templates: ROOM_TEMPLATES,
       pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
+      bossSmallRoom: !!(boss && BOSS_BY_ID.get(boss)?.smallRoom),
     });
-    f.boss = bossFor(k, this.rng.fork('floor', k, 'boss'), this.bossUsed);
+    f.boss = boss;
     if (f.boss) this.bossUsed.add(f.boss);
     this.addFloor(f);
   }

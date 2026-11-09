@@ -2,7 +2,7 @@
 
 # Bosses (built)
 
-The bosses are the large patterns behind the small ones: each is built from its floor's own breakable blocks, has three phases, and fights by moving across the room. The game holds fourteen, one per floor from a zone's pool: each floor's boss is drawn from its zone's pool by the run's seed, and a boss already fought in the run is not drawn again. Floors 5 and 9 are keystones with a fixed boss: the Threshold Guardian and the Shadow. Shared rules (the seal, the rise, phases, moves, defeat and the toll) are in [Fight flow](FIGHT-FLOW.md); the arenas that change the room are in [Arenas](ARENAS.md). The code is in `src/content/bosses/`, and the pool and the health curve in `src/content/bosses/index.ts`.
+The bosses are the large patterns behind the small ones: each is built from its floor's own breakable blocks, has three phases, and fights by moving across the room. The game holds fourteen, one per floor from a zone's pool: each floor's boss is drawn from its zone's pool by the run's seed, and a boss already fought in the run is not drawn again. Floors 5 and 9 are keystones with a fixed boss: the Threshold Guardian and the Shadow. Shared rules (the seal, the rise, phases, moves, defeat and the toll) are in [Fight flow](FIGHT-FLOW.md); the arenas that change the room are in [Arenas](ARENAS.md). Every boss fights in a large room unless its definition carries the small-room flag (`smallRoom`) and its document says why; none carries it today (see [Fight flow](FIGHT-FLOW.md#1-the-room-seals)). The code is in `src/content/bosses/`, and the pool and the health curve in `src/content/bosses/index.ts`.
 
 | Document | Contents |
 |---|---|

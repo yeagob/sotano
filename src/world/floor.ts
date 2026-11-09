@@ -187,7 +187,8 @@ export function planDungeon(rr: RunRandom): DungeonPlan {
       // the floor above the first Tree floor grows from its way down, right over the kingdom
       plan = generatePlan(rr.fork('plan', k, lv.kind), { ...DEFAULT_PLAN, ...lv.plan }, treeCell(TREE_ENTRY, treeIndex(k + 1) % 2 === 1), true);
     } else {
-      plan = generatePlan(rr.fork('plan', k, lv.kind), { ...DEFAULT_PLAN, ...lv.plan }, boss ? [boss.gx, boss.gz] : undefined);
+      // the boss room must be able to spread east or west into a large room
+      plan = generatePlan(rr.fork('plan', k, lv.kind), { ...DEFAULT_PLAN, ...lv.plan, wideBoss: true }, boss ? [boss.gx, boss.gz] : undefined);
     }
     // deep floors keep no vault (the catalogue of practices must last the run): it stays a quiet room
     if (!lv.vaults) for (const r of plan.rooms) if (r.type === 'vault') r.type = 'normal';
@@ -206,6 +207,36 @@ export function planDungeon(rr: RunRandom): DungeonPlan {
     themes.push(ROCK_THEME.roll(rr.fork('floor', k, 'theme'), { floor: k })!);
   }
   return { plans, themes };
+}
+
+export interface FittedRoom { t: RoomTemplate; flipX: boolean; flipZ: boolean; layout: Rng }
+
+/**
+ * Every room's template and flips on floor k, and the space each takes, from the plan and the
+ * floor's own forks only (nothing is carved). The boss room claims the empty cells east and west of
+ * it first, and on floor 0 and below it always gets a large template unless its boss asks for a
+ * small room (`bossRoomIsLarge`).
+ */
+export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, templates: readonly RoomTemplate[], bossSmallRoom = false): { space: Int16Array; fitted: Map<number, FittedRoom> } {
+  const lv = level(k);
+  const bossRoom = lv.tutorial ? undefined : plan.rooms.find(r => r.type === 'boss');
+  const allot = allotSpace(plan, rr.fork('floor', k, 'space'), bossRoom?.id);
+  const space = new Int16Array(plan.grid);
+  const fitted = new Map<number, FittedRoom>();
+  for (const pr of plan.rooms) {
+    const layout = rr.fork('floor', k, 'room', pr.id, 'layout');
+    const mirror = (t: RoomTemplate) => t.mirror !== false && pr.type !== 'start';
+    const cell = lv.tutorial ? TUTORIAL_CELLS[TUTORIAL_LAYOUT[pr.gz][pr.gx]] : undefined;
+    const fits = (t: RoomTemplate) => flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t)).length > 0;
+    const fixed = cell && templates.find(q => q.id === cell.template);
+    const large = pr === bossRoom && bossRoomIsLarge(k, bossSmallRoom);
+    const t = fixed || pickTemplate(templates, pr.type, k, layout, pr.size, fits, lv.bigRooms, large);
+    const flips = flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t));
+    const [flipX, flipZ] = fixed ? [false, !!cell!.flipZ] : flips.length ? flips[layout.int(0, flips.length - 1)] : [false, false];
+    for (const [cx, cz] of spaceCells(t, pr, flipX, flipZ)) space[cx + cz * plan.w] = pr.id;
+    fitted.set(pr.id, { t, flipX, flipZ, layout });
+  }
+  return { space, fitted };
 }
 
 /** Which Tree floor this is, counting from the first (0, 1, 2…): odd ones are mirrored. */
@@ -249,6 +280,19 @@ export interface CarveOptions {
   /** The item reserved for a pedestal room at run start (global room id), or null. */
   pedestalItem(room: number): string | null;
   enemies: EnemyBudget;
+  /** The floor's boss asks for a small room (`EnemyDef.smallRoom`); otherwise its room is large. */
+  bossSmallRoom?: boolean;
+}
+
+/** The floors from which every boss fights in a large room: floor 0 and every floor below it. */
+export const LARGE_BOSS_ROOMS_FROM = 0;
+
+/**
+ * Must this floor's boss room be large (a template of two cells or more)? On floor 0 and below,
+ * always, unless the boss itself asks for a small room (`EnemyDef.smallRoom`, issue #131).
+ */
+export function bossRoomIsLarge(floor: number, smallRoom = false): boolean {
+  return floor >= LARGE_BOSS_ROOMS_FROM && !smallRoom;
 }
 
 /**
@@ -284,21 +328,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
 
   // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
   //    from the plan and the floor's own fork, so a room's choice never depends on another room's
-  const allot = allotSpace(plan, rr.fork('floor', k, 'space'));
-  const space = new Int16Array(plan.grid);
-  const fitted = new Map<number, { t: RoomTemplate; flipX: boolean; flipZ: boolean; layout: Rng }>();
-  for (const pr of plan.rooms) {
-    const layout = rr.fork('floor', k, 'room', pr.id, 'layout');
-    const mirror = (t: RoomTemplate) => t.mirror !== false && pr.type !== 'start';
-    const cell = lv.tutorial ? TUTORIAL_CELLS[TUTORIAL_LAYOUT[pr.gz][pr.gx]] : undefined;
-    const fits = (t: RoomTemplate) => flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t)).length > 0;
-    const fixed = cell && opt.templates.find(q => q.id === cell.template);
-    const t = fixed || pickTemplate(opt.templates, pr.type, k, layout, pr.size, fits, lv.bigRooms);
-    const flips = flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t));
-    const [flipX, flipZ] = fixed ? [false, !!cell!.flipZ] : flips.length ? flips[layout.int(0, flips.length - 1)] : [false, false];
-    for (const [cx, cz] of spaceCells(t, pr, flipX, flipZ)) space[cx + cz * plan.w] = pr.id;
-    fitted.set(pr.id, { t, flipX, flipZ, layout });
-  }
+  const { space, fitted } = fitTemplates(rr, k, plan, opt.templates, opt.bossSmallRoom);
   const pal = { wall: MAT[lv.palette.wall], floor: MAT[lv.palette.floor], trim: MAT[lv.palette.trim] };
 
   // 1. room shells and interiors
@@ -630,7 +660,7 @@ function flipsThatFit(t: RoomTemplate, pr: PlanRoom, allot: Int16Array, gw: numb
  * beside a room goes to one of them; then every empty cell beside a cell given away goes to that
  * room too (so a room can grow two cells long, or round a corner). Rooms only take what fits them.
  */
-export function allotSpace(plan: FloorPlan, rng: Rng): Int16Array {
+export function allotSpace(plan: FloorPlan, rng: Rng, claim?: number): Int16Array {
   const { w, h } = plan;
   const own = new Int16Array(plan.grid);
   for (const r of plan.rooms) if (r.size) {
@@ -639,6 +669,13 @@ export function allotSpace(plan: FloorPlan, rng: Rng): Int16Array {
       const x = r.gx + dx, z = r.gz + dz;
       if (x < w && z < h && own[x + z * w] === -1) own[x + z * w] = r.id;
     }
+  }
+  // the boss room (`claim`) takes the empty cells east and west of it before anyone else, so a
+  // large boss room always fits (a preset footprint has its cells already)
+  const claimed = claim === undefined ? undefined : plan.rooms[claim];
+  if (claimed && !claimed.size) for (const dx of [-1, 1]) {
+    const x = claimed.gx + dx, z = claimed.gz;
+    if (x >= 0 && x < w && own[x + z * w] === -1) own[x + z * w] = claimed.id;
   }
   for (let pass = 0; pass < 2; pass++) {
     const was = new Int16Array(own);
@@ -723,18 +760,22 @@ function carveLavaBelow(w: VoxelWorld, rng: Rng, y0: number, lava: NonNullable<L
   }
 }
 
+/** How many grid cells a template's space takes (1 for a one-cell room). */
+export const templateCells = (t: RoomTemplate) => (t.size ?? [1, 1])[0] * (t.size ?? [1, 1])[1];
+
 /** `own`: only the templates made for this floor (the tutorial uses its own rooms throughout).
  *  `size`: a footprint decided with the plan (the great pit's crown); only templates of that size fit it.
- *  `fits`: does a template's space fit around the room? Templates bigger than a cell weigh `big` times more. */
-function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, floor: number, rng: Rng, size: [number, number] | undefined, fits: (t: RoomTemplate) => boolean, big = 1): RoomTemplate {
-  const cells = (t: RoomTemplate) => (t.size ?? [1, 1])[0] * (t.size ?? [1, 1])[1];
+ *  `fits`: does a template's space fit around the room? Templates bigger than a cell weigh `big` times more.
+ *  `large`: only templates of two cells or more (a boss room on floor 0 and below); none fitting is an error. */
+export function pickTemplate(templates: readonly RoomTemplate[], type: RoomType, floor: number, rng: Rng, size: [number, number] | undefined, fits: (t: RoomTemplate) => boolean, big = 1, large = false): RoomTemplate {
+  const cells = templateCells;
   const sized = (t: RoomTemplate) => (size ? (t.size ?? [1, 1])[0] === size[0] && (t.size ?? [1, 1])[1] === size[1] : true);
-  const ofType = templates.filter(t => t.types.includes(type) && sized(t));
+  const ofType = templates.filter(t => t.types.includes(type) && sized(t) && (!large || cells(t) > 1));
   const allowed = ofType.filter(t => !t.floors || (floor >= t.floors[0] && floor <= t.floors[1]));
   // a floor with no template of its own for this type borrows any (never a missing room)
   const pool = allowed.length ? allowed : ofType;
-  const options = pool.filter(fits).length ? pool.filter(fits) : ofType.filter(t => cells(t) === 1);
-  if (!options.length) throw new Error(`no room template for type "${type}"`);
+  const options = pool.filter(fits).length ? pool.filter(fits) : large ? [] : ofType.filter(t => cells(t) === 1);
+  if (!options.length) throw new Error(large ? `no large ${type} room fits on floor ${floor}` : `no room template for type "${type}"`);
   const weight = (t: RoomTemplate) => (t.weight ?? 1) * (cells(t) > 1 ? big : 1);
   const total = options.reduce((s, t) => s + weight(t), 0);
   let r = rng.next() * total;

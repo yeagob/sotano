@@ -13,7 +13,7 @@ The build's 86 templates in six kinds, and the rooms of the floors that they fil
 | Normal or path | 15 | A normal room, or a corridor of the Tree between two emanations |
 | Path | 1 | A corridor only (the ford) |
 | Treasure | 6 | Holds the floor's practice on a pedestal (or in a chest) |
-| Boss | 6 | Holds the way down (the hole) and the boss's practice |
+| Boss | 7 | Holds the way down (the hole) and the boss's practice; below the roots always a two-cell room ([MULTI-CELL](MULTI-CELL.md#boss-rooms-are-always-large)) |
 | Vault | 2 | A locked room; its shell is obsidian; on floors 1 to 5 only |
 | Challenge | 2 | Three waves per visit, repeatable |
 
@@ -108,6 +108,7 @@ The roots (floor 0) are the eleven lesson templates, marked `0`. They are descri
 | strongroom | normal or path | 4–5 | 7 stepped | 2×1 | 2 | terraces, stone |
 | styx-cavern | normal or path | 5–6 | 7 cave | 2×1 | 2 | dip, element |
 | crown-hall | boss | 1–4 | 8 dome | 2×1 | 2 | terraces, stone |
+| caldera-hall | boss | 6–9 | 8 dome | 2×1 | 1 | layers, terraces, element, stone |
 | chasm | normal or path | 6–9 | 8 cave | 1×2 | 3 | pit, terraces |
 | dis-hall | normal or path | 6–7 | 7 pointed-x | 2×1 | 2 | element, stone |
 | bastions | normal or path | 1–5 | 8 pointed-z | 1×1 | 1 | pit, terraces |

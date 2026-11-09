@@ -56,7 +56,9 @@ export interface FloorPlan {
   start: number;
 }
 
-export interface PlanOptions { w: number; h: number; minRooms: number; maxRooms: number }
+/** `wideBoss`: the boss room must have an empty cell east or west of it, so a boss room two cells
+ *  wide always fits there (docs/design/built/levels/README.md, boss rooms). */
+export interface PlanOptions { w: number; h: number; minRooms: number; maxRooms: number; wideBoss?: boolean }
 
 export const DEFAULT_PLAN: PlanOptions = { w: 7, h: 7, minRooms: 8, maxRooms: 11 };
 
@@ -78,7 +80,7 @@ export function generatePlan(rng: Rng, opt: PlanOptions = DEFAULT_PLAN, start?: 
 
 /** `fromExit`: the plan grows from its exit (the boss / way-down room) instead of its start, so a
  *  floor can end right above where the next one begins; the farthest dead end becomes the start. */
-function tryPlan(rng: Rng, { w, h, minRooms, maxRooms }: PlanOptions, [sx, sz]: [number, number], fromExit = false): FloorPlan | null {
+function tryPlan(rng: Rng, { w, h, minRooms, maxRooms, wideBoss }: PlanOptions, [sx, sz]: [number, number], fromExit = false): FloorPlan | null {
   const target = rng.int(minRooms, maxRooms);
   const grid = new Int16Array(w * h).fill(-1);
   const at = (x: number, z: number) => (x < 0 || z < 0 || x >= w || z >= h ? -2 : grid[x + z * w]);
@@ -130,10 +132,13 @@ function tryPlan(rng: Rng, { w, h, minRooms, maxRooms }: PlanOptions, [sx, sz]: 
     rest = deadEnds.slice(1);
   } else {
     rooms[0].type = 'start';
-    const boss = deadEnds[0];
-    if (boss.dist < 2) return null; // the boss should never be next to the start
+    // the farthest dead end is the boss, never next to the start; with `wideBoss`, the farthest one
+    // with an empty cell east or west to spread into (a large boss room)
+    const roomy = (r: PlanRoom) => [-1, 1].some(dx => at(r.gx + dx, r.gz) === -1);
+    const boss = deadEnds.find(r => r.dist >= 2 && (!wideBoss || roomy(r)));
+    if (!boss) return null;
     boss.type = 'boss';
-    rest = deadEnds.slice(1);
+    rest = deadEnds.filter(r => r !== boss);
   }
   const treasure = rest.splice(rng.int(0, rest.length - 1), 1)[0];
   treasure.type = 'treasure';

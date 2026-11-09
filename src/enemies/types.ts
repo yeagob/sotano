@@ -72,6 +72,9 @@ export interface EnemyDef {
   /** A shell of plates in front of the core: hits break plates first, and the core takes none until they are gone. */
   shell?: { plates: number; plateHp: number };
   breaks?: { tier: number; power: number };
+  /** Bosses only: this boss's design needs a small room (its design doc must say why). Without it,
+   *  a boss on floor 0 and below always fights in a large room (`bossRoomIsLarge`, issue #131). */
+  smallRoom?: boolean;
   /** Optional extra reaction on death (e.g. splitting). */
   onDeath?(e: Enemy, ctx: EnemyCtx): void;
 }
