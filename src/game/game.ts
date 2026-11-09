@@ -79,6 +79,7 @@ import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import { pickMission, rewardBand } from '../content/presences/missions';
+import type { GuardOutcome } from './guard-card';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { floorCrateChance, rollCrate } from '../content/tables/crates';
@@ -2851,16 +2852,23 @@ export class Game {
       if (c.refused || !near) continue;
       const mission = pickMission(this.rng.stream('guard'));
       const asked = performance.now();
-      this.hud.openGuard(this, mission, yes => this.answerGuard(c, asked, yes));
+      this.hud.openGuard(this, mission, outcome => this.answerGuard(c, asked, outcome));
       return;
     }
   }
 
   /** "Have you done it?": yes or no, the reward spawns from the chest and the Boundary leaves. A yes draws
-   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. */
-  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, yes: boolean) {
+   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. Closing the card (✕ or
+   *  Back) cancels: no reward, the chest stays locked, and the Boundary asks again once the player has
+   *  stepped away (more than three blocks) and come back. */
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, outcome: GuardOutcome) {
     if (c.opened) return;
-    const [lo, hi] = rewardBand(yes, performance.now() - asked);
+    if (outcome === 'cancel') {
+      c.refused = true;
+      this.hud.toast('mission.cancelled');
+      return;
+    }
+    const [lo, hi] = rewardBand(outcome === 'yes', performance.now() - asked);
     const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
     this.openChest(c, 0, def ?? undefined);
     this.releaseBoundary(c.spec.room);

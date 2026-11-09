@@ -34,7 +34,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
 | `inventory` | The screen is open on its menu or practices tab (it pauses the world) |
-| `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c) |
+| `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c). Also the Boundary's mission card: confirm answers or begins the guided breath, back (or its ✕) cancels the mission (GUARD-MISSIONS.md) |
 
 ## 3. The actions
 
