@@ -91,7 +91,7 @@ npm run sandbox -- --all                      # every scenario: save src/sandbox
 npm run sandbox -- --check                    # every scenario against its saved report; exit 1 on any difference
 ```
 
-`scripts/sandbox.mjs` serves the game with Vite, opens `?sandbox=<id>&lab` in headless Chromium through Playwright (it must be installed: `npm i -D playwright && npx playwright install chromium` on a new machine) and reads the report from the page. The saved reports in `src/sandbox/reports/` are the expected behaviour: after a change, `--check` tells exactly which scenarios moved and which lines; `--all` accepts the new behaviour.
+`scripts/sandbox.mjs` serves the game with Vite, opens `?sandbox=<id>&lab` in headless Chromium through Playwright (it must be installed: `npm i -D playwright && npx playwright install chromium` on a new machine) and reads the report from the page. The saved reports in `src/sandbox/reports/` are the expected behaviour: after a change, `--check` tells exactly which scenarios moved and which lines, ignoring line endings and trailing whitespace; `--all` accepts the new behaviour.
 
 **Testing a new practice**: add a scenario for each environment it may meet (water, lava, fire, crates, a projection, a bomb), give it the practice, and script the actions it reacts to; run `--check` to see that nothing else moved. `tests/sandbox.test.ts` checks in Vitest that every scenario validates and carves the same room twice.
 
