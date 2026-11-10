@@ -5,7 +5,7 @@
 import { MAT, MATERIALS } from '../content/materials';
 import { carriedDef } from '../content/potions';
 import type { Game } from '../game/game';
-import { applyPlacement, type Action, type Scenario, type Vec3 } from './scenario';
+import { applyPlacement, carriedFromId, type Action, type Scenario, type Vec3 } from './scenario';
 import { blockCounts, elementCounts, legend, mapAt, num } from './report';
 
 const TPS = 60;
@@ -60,7 +60,7 @@ export function runLab(game: Game, s: Scenario): LabResult {
       out.push(`  player hp ${p.hp}/${game.maxHp} · at ${rel(b.x, b.y, b.z)} · hand [${p.hand.map(c => typeof c === 'number' ? MATERIALS[c].key : carriedDef(c).id).join(' ')}] · bombs ${p.bombs} · keys ${p.keys}${p.dead ? ' · DEAD' : ''}`);
       const items = game.inventory.items.map(i => i.def.id);
       if (items.length) out.push(`  practices ${items.join(' ')} · synergies ${game.inventory.synergiesActive.map(x => x.id).join(' ') || '—'}`);
-      for (const e of game.enemies.list) out.push(`  ${e.def}#${e.id} ${e.alive ? `hp ${num(e.hp)}/${e.maxHp}` : 'gone'} · ${e.faction} · at ${rel(e.body.x, e.body.y, e.body.z)}`);
+      for (const e of game.enemies.list) out.push(`  ${e.def}#${e.id} ${e.alive ? `hp ${num(e.hp)}/${e.maxHp}` : 'gone'}${e.tags.has('creature') ? ` · size ${num(e.scale)}` : ''} · ${e.faction} · at ${rel(e.body.x, e.body.y, e.body.z)}`);
       out.push(`  blocks ${blockCounts(game.dw, r)}`);
       out.push(`  elements ${elementCounts(game.dw, r)}`);
       const cubes = new Map<string, number>();
@@ -69,6 +69,11 @@ export function runLab(game: Game, s: Scenario): LabResult {
         cubes.set(k, (cubes.get(k) ?? 0) + 1);
       }
       out.push(`  cubes ${[...cubes].sort().map(([k, n]) => `${k} ${n}`).join(' · ') || '—'} · pickups ${game.pickups.list.length}`);
+      const rewards = game.pickups.list
+        .filter(pickup => !pickup.taken && pickup.room === r.id && (pickup.type === 'heart' || pickup.type === 'item'))
+        .map(pickup => pickup.type === 'heart' ? `${pickup.heart}-heart` : `practice:${pickup.item?.id ?? 'unknown'}`)
+        .sort();
+      if (rewards.length) out.push(`  rewards ${rewards.join(' · ')}`);
       if (counts.size) out.push(`  events ${[...counts].sort((a, b) => a[0] < b[0] ? -1 : 1).map(([k, n]) => `${k} ${n}`).join(' · ')}`);
       counts.clear();
     };
@@ -130,6 +135,6 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     case 'fire': fire(a.ticks ?? 1); break;
     case 'key': game.input.pressed.add(a.code); break;
     case 'use': game.input.touchPressed.add('place'); break;
-    case 'hand': p.hand = a.blocks.map(k => MAT[k]); break;
+    case 'hand': p.hand = a.blocks.map(carriedFromId); break;
   }
 }

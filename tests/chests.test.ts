@@ -57,6 +57,19 @@ describe('chests', () => {
     expect(shut / items).toBeGreaterThanOrEqual(0.5);
   });
 
+  it('offers the Roots treasure practice from one free chest through the Sanctuary', () => {
+    for (const root of ROOTS) {
+      const run = buildRun(root, 1);
+      const f = run.floors[0];
+      const treasure = f.rooms.find(r => r.type === 'treasure')!;
+      const chest = f.chests.filter(c => c.room === treasure.id);
+      expect(chest).toHaveLength(1);
+      expect(chest[0]).toMatchObject({ keys: 0, meditation: true, item: expect.any(String) });
+      expect(f.pedestals.find(p => p.room === treasure.id)).toMatchObject({ chest: true, item: chest[0].item });
+      expect(run.w.get(chest[0].x, chest[0].y, chest[0].z)).toBe(MAT.chest);
+    }
+  });
+
   it('leave enough keys on the floor for most of what they cost', () => {
     for (const root of ROOTS) for (const f of buildRun(root).floors) {
       const cost = f.chests.reduce((s, c) => s + c.keys, 0);

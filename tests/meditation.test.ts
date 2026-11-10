@@ -5,8 +5,8 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  LENGTHS_SEC, SEQUENCES, SEQUENCE_IDS, blurbKey, lineKey, momentAt, nameKey, palOf, partAt, partKey, planSitting,
-  rewardBand, skipPart, type PaletteRole,
+  LINE_MS, MAX_LENGTH_SEC, MIN_LENGTH_SEC, SEQUENCES, SEQUENCE_IDS, blurbKey, lineKey, momentAt, nameKey, palOf,
+  partAt, partKey, planSitting, randomLengthSec, rewardBand, skipPart, type PaletteRole,
 } from '../src/content/presences/meditations';
 import { PALETTE } from '../src/content/palette';
 import { EFFECTS } from '../src/render/meditation-scenes';
@@ -18,6 +18,8 @@ import { join } from 'node:path';
 
 const en = EN.messages as Record<string, unknown>;
 const es = ES.messages as Record<string, unknown>;
+const SITTING_LENGTHS_SEC = [MIN_LENGTH_SEC, 30, MAX_LENGTH_SEC] as const;
+const planned = (s: typeof SEQUENCES[number], seconds: number) => planSitting(s, seconds, () => 0.5);
 const ROLES: PaletteRole[] = ['high', 'mid', 'deep', 'glow', 'accent', 'accent2', 'mote', 'ink'];
 
 const lum = (hex: string) => {
@@ -113,13 +115,17 @@ describe('the collection', () => {
 });
 
 describe('a sitting', () => {
-  it('offers 20, 30 and 40 seconds', () => {
-    expect([...LENGTHS_SEC]).toEqual([20, 30, 40]);
+  it('rolls an inclusive whole-second duration from 20 to 40 seconds', () => {
+    expect(MIN_LENGTH_SEC).toBe(20);
+    expect(MAX_LENGTH_SEC).toBe(40);
+    expect(randomLengthSec(() => 0)).toBe(20);
+    expect(randomLengthSec(() => 0.5)).toBe(30);
+    expect(randomLengthSec(() => 1)).toBe(40);
   });
 
   it('reaches the chosen length: the timer reads the full time at the start and zero only at the end', () => {
-    for (const s of SEQUENCES) for (const sec of LENGTHS_SEC) {
-      const plan = planSitting(s, sec), total = sec * 1000;
+    for (const s of SEQUENCES) for (const sec of SITTING_LENGTHS_SEC) {
+      const plan = planned(s, sec), total = sec * 1000;
       expect(plan.totalMs).toBe(total);
       expect(plan.bounds[0]).toBe(0);
       expect(plan.bounds.at(-1)).toBe(total);
@@ -134,8 +140,8 @@ describe('a sitting', () => {
   });
 
   it('gives each part its share of the length, in order, with no gap', () => {
-    for (const s of SEQUENCES) for (const sec of LENGTHS_SEC) {
-      const plan = planSitting(s, sec);
+    for (const s of SEQUENCES) for (const sec of SITTING_LENGTHS_SEC) {
+      const plan = planned(s, sec);
       for (const [i, p] of s.parts.entries()) {
         const ms = plan.bounds[i + 1] - plan.bounds[i];
         expect(Math.abs(ms - sec * 10 * p.share), `${s.id} ${sec} ${p.id}`).toBeLessThanOrEqual(1);
@@ -147,23 +153,27 @@ describe('a sitting', () => {
 
   it('a longer sitting is the same meditation, slower: the same lines in the same order', () => {
     const s = SEQUENCES[0];
-    const order = (sec: number) => {
-      const plan = planSitting(s, sec), seen: number[] = [];
-      for (let t = 0; t < plan.totalMs; t += 20) {
-        const id = momentAt(plan, t).lineSeq;
-        if (seen.at(-1) !== id) seen.push(id);
+    expect(planned(s, 60).lines).toEqual(planned(s, 30).lines);
+  });
+
+  it('shows one seeded line at the start of each part, then leaves the rest quiet', () => {
+    const plan = planned(SEQUENCES[0], MAX_LENGTH_SEC);
+    for (const [part, section] of plan.seq.parts.entries()) {
+      const start = plan.bounds[part], end = plan.bounds[part + 1];
+      expect(plan.lines[part]).toBeGreaterThanOrEqual(1);
+      expect(plan.lines[part]).toBeLessThanOrEqual(section.lines);
+      expect(momentAt(plan, start).line).toBe(plan.lines[part]);
+      expect(momentAt(plan, Math.min(end - 1, start + LINE_MS - 1)).line).toBe(plan.lines[part]);
+      if (end - start > LINE_MS) {
+        expect(momentAt(plan, start + LINE_MS).line).toBe(0);
+        expect(momentAt(plan, end - 1).line).toBe(0);
       }
-      return seen;
-    };
-    expect(order(40)).toEqual(order(20));
-    const plan = planSitting(s, 20), lines = new Set<number>();
-    for (let t = plan.bounds[1]; t < plan.bounds[2]; t += 20) lines.add(momentAt(plan, t).line);
-    expect([...lines].sort()).toEqual([1, 2, 3]);
+    }
   });
 
   it('holds a whole number of breaths in every paced part: a part never ends mid-breath', () => {
-    for (const s of SEQUENCES) for (const sec of LENGTHS_SEC) {
-      const plan = planSitting(s, sec);
+    for (const s of SEQUENCES) for (const sec of SITTING_LENGTHS_SEC) {
+      const plan = planned(s, sec);
       for (const [i, p] of s.parts.entries()) {
         if (!p.pace.length) { expect(momentAt(plan, plan.bounds[i] + 10).breath).toBe('natural'); continue; }
         const first = momentAt(plan, plan.bounds[i]), last = momentAt(plan, plan.bounds[i + 1] - 1);
@@ -178,7 +188,7 @@ describe('a sitting', () => {
 
   it('moves the lungs smoothly: full after an in-breath, empty after an out-breath, never a jump', () => {
     for (const s of SEQUENCES) {
-      const plan = planSitting(s, 20);
+      const plan = planned(s, 30);
       let prev = momentAt(plan, 0);
       for (let t = 20; t < plan.totalMs; t += 20) {
         const m = momentAt(plan, t);
@@ -192,7 +202,7 @@ describe('a sitting', () => {
 
   it('Next part ends the part now, keeps the length and shares the time left among the parts that follow', () => {
     for (const s of SEQUENCES) {
-      const plan = planSitting(s, 30), at = plan.bounds[1] + 1000;
+      const plan = planned(s, 30), at = plan.bounds[1] + 1000;
       const next = skipPart(plan, at);
       expect(next.totalMs).toBe(plan.totalMs);
       expect(next.bounds.at(-1)).toBe(plan.totalMs);
@@ -206,10 +216,10 @@ describe('a sitting', () => {
   });
 
   it('cannot skip the last part, however often it is asked', () => {
-    let plan = planSitting(SEQUENCES[3], 20);
+    let plan = planned(SEQUENCES[3], 30);
     for (let i = 0; i < 12; i++) plan = skipPart(plan, 1000 + i);
     expect(partAt(plan, 1100)).toBe(4);
-    expect(plan.totalMs).toBe(20 * 1000);
+    expect(plan.totalMs).toBe(30 * 1000);
     expect(momentAt(plan, 5000).done).toBe(false);
     expect(momentAt(plan, plan.totalMs - 1).done).toBe(false);
     expect(skipPart(plan, 5000)).toBe(plan);

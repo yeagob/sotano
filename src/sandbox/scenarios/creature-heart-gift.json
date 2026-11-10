@@ -1,0 +1,21 @@
+{
+  "note": "A floor-0 Mossling reaching maximum size gets one 15% seeded special-heart chance",
+  "floor": 0,
+  "seed": 6,
+  "rows": [
+    ".....",
+    ".....",
+    "....."
+  ],
+  "player": [1, 0, 1],
+  "god": true,
+  "enemies": [
+    { "def": "mossling", "at": [3, 0, 1] }
+  ],
+  "ticks": 480,
+  "report": [0, 60, 180, 300, 480],
+  "actions": [
+    { "t": 0, "do": "look", "at": [3, -0.3, 1] },
+    { "t": 1, "do": "fire", "ticks": 420 }
+  ]
+}

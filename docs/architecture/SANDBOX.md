@@ -12,7 +12,7 @@ It is a developer tool: English only and never localized, like the debug readout
 Nothing is simulated twice. `Game.newSandbox(scenario)` starts a run like `Game.newRun` does (one shared `begin()`), with three differences:
 
 1. The run's rock is filled as usual (`createDungeonWorld`, so the room sits in its floor's real strata), then `carveSandbox` carves **one sealed room** (no doors) on the scenario's floor band, at grid cell (2, 2). It uses `carveInterior` from `world/floor.ts`, the same code the floor generator carves every room with, so a template looks and behaves exactly as in a run. No other floor is carved.
-2. The room's contents come from the scenario (`furnish`): practices gained quietly (`Game.grant`, no banner), the hand, 99 bombs and keys, optional invulnerability, projections out at once (no omen), keys on `K` tiles, the pedestal's practice on `T`.
+2. The room's contents come from the scenario (`furnish`): practices gained quietly (`Game.grant`, no banner), materials or monster parts in the hand, 99 bombs and keys, optional invulnerability, projections, creatures or presences out at once (no omen), keys on `K` tiles, the pedestal's practice on `T`.
 3. Determinism: cosmetic randomness is seeded from the scenario's seed (`seedFx` in `core/fx.ts`, [RNG.md](RNG.md) §3), and the world moves in fixed steps of 1/60 s (`SANDBOX_DT`): one per frame in the creative room, and `Game.step()` in the lab. Everything else is already deterministic by seed.
 
 Everything after that is the normal game: the element simulation, loose cubes, bombs and blasts, intentions, weapons, projections and factions, items and synergies on the event bus. **R** rebuilds the scenario (with your console edits).
@@ -32,14 +32,14 @@ One JSON file per scenario; the file name is its id. Coordinates are room-local 
 | `shell` | Material of the two-block walls, floor and ceiling (`brick`) |
 | `place` | Placements after the template, in order: `{ "at", "block": "crate" }`, `{ "at", "element": "water" \| "lava" \| "fire", "level"? }` (a source unless `level` 1–7), `{ "at", "clear": true }` |
 | `pedestal` | The practice on a `T` tile |
-| `items`, `hand` | Practices held from the start; blocks in the hand, bottom to top |
-| `enemies` | `{ "def": "doubt", "at", "faction"?: "self" }`; a creature id spawns a neutral creature |
+| `items`, `hand` | Practices held from the start; materials or parts (for example `doubt.heart`) in the hand, bottom to top |
+| `enemies` | `{ "def": "doubt", "at", "faction"?: "self" }`; a creature id spawns a neutral creature, a presence id spawns that presence |
 | `player` | Where you stand (the template's `P`, else the centre) |
 | `god` | Invulnerable (false) |
 | `ticks`, `report`, `maps`, `view` | Lab: ticks to run (60 per second, 120), the ticks to report on (first and last), the ticks to draw maps at (last) and the heights drawn (`[0]`) |
 | `actions` | Lab: the script (below) |
 
-`validateScenario` names every unknown id (template, block, practice, projection) and every size out of range; `carveSandbox` refuses an invalid scenario.
+`validateScenario` names every unknown id (template, block, practice, projection, creature, presence, or hand object) and every size out of range; `carveSandbox` refuses an invalid scenario.
 
 ### The script (`actions`)
 
@@ -52,13 +52,13 @@ Each action has a tick `t` and runs right after that tick's report, before the t
 | `explode` | `at`, `radius`? (2.5), `damage`? (30) | A blast, as a breakthrough's |
 | `bomb` | `at`, `fuse`? (1.8) | A lit breakthrough cube |
 | `cube` | `block`, `at`, `v`? | A loose cube with a velocity |
-| `spawn` | `def`, `at`, `faction`? | A projection or creature, out at once |
+| `spawn` | `def`, `at`, `faction`? | A projection, creature, or presence, out at once |
 | `give`, `lose` | `item` | Gain (quietly) or lose a practice |
 | `tp`, `look` | `at` | Stand on a tile; aim at a cell's centre |
 | `fire` | `ticks`? (1) | Hold the fire button that many ticks (the intention, or the active weapon); each hold starts with a press, so two short `fire`s within 18 ticks are a double tap (Dr. Launcher) |
 | `key` | `code` | Press a key for one tick: `KeyE` bomb, `KeyQ` throw, `KeyF` polarity |
 | `use` | | Right click: place the top block where you look |
-| `hand` | `blocks` | Set the hand |
+| `hand` | `blocks` | Set the hand to materials or monster parts |
 
 ## 3. The report
 

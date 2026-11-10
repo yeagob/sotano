@@ -1,0 +1,21 @@
+{
+  "note": "Giving The Listener a monster heart guarantees one seeded practice or heart reward",
+  "floor": 1,
+  "seed": 4182,
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [3, 0, 3],
+  "hand": ["doubt.heart"],
+  "enemies": [
+    { "def": "listener", "at": [5, 0, 3] }
+  ],
+  "ticks": 60,
+  "report": [0, 1, 30, 60]
+}

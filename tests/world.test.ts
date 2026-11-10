@@ -311,15 +311,16 @@ describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
     expect(reach(fromLesson, start).size).toBe(f.rooms.length - 2);
   });
 
-  it('offers a tier 1–3 practice in the treasure room and a tier 1–4 one at the way down', { timeout: 60000 }, () => {
+  it('offers a tier 1–3 practice from a meditation chest and a tier 1–4 one at the way down', { timeout: 60000 }, () => {
     const run = buildRun(12, 1);
     const f = run.floors[0];
     const slots = pedestalSlots(run.dungeon);
     const treasure = f.rooms.find(r => r.type === 'treasure')!.id, way = f.rooms.find(r => r.type === 'boss')!.id;
     expect(slots.find(s => s.key === String(treasure))!.maxQuality).toBe(3);
     expect(slots.find(s => s.key === String(way))!.maxQuality).toBe(4);
-    expect(f.pedestals.filter(p => p.chest)).toHaveLength(0);
-    expect(f.chests).toHaveLength(0);
+    expect(f.pedestals.filter(p => p.chest)).toHaveLength(1);
+    expect(f.chests.filter(c => c.meditation)).toHaveLength(1);
+    expect(f.chests.find(c => c.meditation)).toMatchObject({ room: treasure, keys: 0 });
     expect(f.pedestals.map(p => p.room).sort()).toEqual([treasure, way].sort());
     for (const p of f.pedestals) {
       expect(p.item).toBeTruthy();

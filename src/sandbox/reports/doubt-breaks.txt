@@ -25,12 +25,12 @@ t 300 (5.0 s)
   events blockDamage:dirt 85
 
 t 600 (10.0 s)
-  player hp 24/24 · at 1.5 0.0 3.5 · hand [dirt] · bombs 99 · keys 99
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [dirt dirt] · bombs 99 · keys 99
   doubt#2 hp 24.0/24 · projection · at 2.9 0.0 3.5
   blocks dirt 12
   elements —
-  cubes dirt 1 · pickups 0
-  events blockBreak:dirt 2 · blockDamage:dirt 95 · blockLoot:dirt 2 · touchCube:dirt 1
+  cubes — · pickups 0
+  events blockBreak:dirt 2 · blockDamage:dirt 95 · blockLoot:dirt 2 · touchCube:dirt 2
 
 map t 600 · h -1
   bbbbbbbbbbbbb

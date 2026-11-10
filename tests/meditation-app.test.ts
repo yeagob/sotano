@@ -5,7 +5,7 @@
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { MeditationApp, PARTICLE_CAP, PARTICLE_CAP_SMALL, TOUCH_TILE, particleCap, sceneBudget } from '../src/game/meditation-app';
-import { LENGTHS_SEC, SEQUENCES, SEQUENCE_IDS, momentAt, planSitting } from '../src/content/presences/meditations';
+import { MAX_LENGTH_SEC, MIN_LENGTH_SEC, SEQUENCES, SEQUENCE_IDS, momentAt, planSitting } from '../src/content/presences/meditations';
 import { BINDING, BINDINGS, DEVICES, contextsFor, type Action, type Device } from '../src/input/bindings';
 import { makeScene, paintEnding, paintHome, type SceneFrame } from '../src/render/meditation-scenes';
 import { ITEMS } from '../src/content/items';
@@ -28,11 +28,11 @@ beforeAll(async () => {
 const S = 1000;
 
 /** An app in a sitting of `seconds`, begun at time 0. */
-function sitting(seq = SEQUENCE_IDS[0], seconds: number = 20) {
-  const app = new MeditationApp();
+function sitting(seq = SEQUENCE_IDS[0], seconds: number = MIN_LENGTH_SEC) {
+  const roll = (seconds - MIN_LENGTH_SEC + 0.5) / (MAX_LENGTH_SEC - MIN_LENGTH_SEC + 1);
+  const app = new MeditationApp(undefined, () => roll);
   app.act('meditate', 0);
   app.act(`seq:${seq}`, 0);
-  app.act(`len:${seconds}`, 0);
   return app;
 }
 
@@ -45,28 +45,35 @@ describe('the flow', () => {
     expect(app.act('quick', 0)).toBe('quick');
   });
 
-  it('goes Home, Library, Length, Session, and Back retraces it', () => {
+  it('goes Home, Library, Session, and Back opens the leave sheet', () => {
     const app = new MeditationApp();
     expect(app.act('meditate', 0)).toBeNull();
     expect(app.screen).toBe('library');
     expect(app.tiles).toEqual(SEQUENCE_IDS.map(id => `seq:${id}`));
-    app.act('seq:river', 0);
-    expect(app.screen).toBe('length');
-    expect(app.tiles).toEqual(['len:20', 'len:30', 'len:40']);
-    expect(app.selected).toBe('len:20');
-    expect(app.back(0)).toBeNull();
-    expect(app.screen).toBe('library');
-    expect(app.selected).toBe('seq:river');
     expect(app.back(0)).toBeNull();
     expect(app.screen).toBe('home');
     app.act('meditate', 0);
     app.act('seq:river', 0);
-    app.act('len:30', 0);
     expect(app.screen).toBe('session');
     expect(app.plan!.seq.id).toBe('river');
-    expect(app.plan!.totalMs).toBe(30 * S);
+    expect(app.plan!.totalMs).toBe(20 * S);
     expect(app.running).toBe(true);
     expect(app.selected).toBe('pause');
+    app.back(0);
+    expect(app.screen).toBe('leave');
+  });
+
+  it('starts with a seeded 30-to-60-second duration and one sampled line per part', () => {
+    const draws = [0.999, 0.5, 0, 0.25, 0.75, 0.999];
+    const app = new MeditationApp(undefined, () => draws.shift()!);
+    app.act('meditate', 0);
+    expect(app.act('len:60', 0)).toBeNull();
+    expect(app.screen).toBe('library');
+    app.act('seq:river', 0);
+    expect(app.screen).toBe('session');
+    expect(app.seconds).toBe(MAX_LENGTH_SEC);
+    expect(app.plan!.lines).toHaveLength(SEQUENCES.find(s => s.id === 'river')!.parts.length);
+    expect(draws).toEqual([]);
   });
 
   it('ignores a press that is not a choice of the screen', () => {
@@ -80,7 +87,7 @@ describe('the flow', () => {
 
 describe("the app's own clock", () => {
   it('reaches the chosen length, whatever the frame rate, and then shows the end', () => {
-    for (const seconds of LENGTHS_SEC) for (const step of [16, 1000, 7300]) {
+    for (const seconds of [MIN_LENGTH_SEC, 30, MAX_LENGTH_SEC]) for (const step of [16, 1000, 7300]) {
       const app = sitting('box', seconds);
       let now = 0, done = 0;
       while (app.screen === 'session') {
@@ -97,12 +104,12 @@ describe("the app's own clock", () => {
     }
   });
 
-  it('does not end a second before: at 19 s of 20 the sitting still runs', () => {
-    const app = sitting('ground', 20);
-    app.tick(20 * S - 1000);
+  it('does not end a second before: at 29 s of 30 the sitting still runs', () => {
+    const app = sitting('ground', 30);
+    app.tick(30 * S - 1000);
     expect(app.screen).toBe('session');
     expect(app.moment!.secondsLeft).toBe(1);
-    expect(app.act('receive', 20 * S - 1000)).toBeNull();
+    expect(app.act('receive', 30 * S - 1000)).toBeNull();
   });
 
   it('stops while paused and on the leave sheet, and goes on from where it was', () => {
@@ -126,7 +133,7 @@ describe("the app's own clock", () => {
   });
 
   it('reports each new part, line and beat once', () => {
-    const app = sitting('box', 20);
+    const app = sitting('box', 60);
     let parts = 0, beats = 0, lines = 0;
     for (let now = 0; app.screen === 'session'; now += 250) {
       const k = app.tick(now);
@@ -135,16 +142,16 @@ describe("the app's own clock", () => {
       if (k.line) lines++;
     }
     expect(parts).toBe(5);
-    expect(lines).toBeGreaterThanOrEqual(13);
-    const plan = planSitting(SEQUENCES.find(s => s.id === 'box')!, 20);
+    expect(lines).toBe(SEQUENCES.find(s => s.id === 'box')!.parts.length);
+    const plan = planSitting(SEQUENCES.find(s => s.id === 'box')!, 60, () => 0);
     const boxBeats = momentAt(plan, plan.bounds[2] - 1).beat + 1;
-    // The 'four' part is 5 seconds: one box breath of four beats, each beat 1.25 seconds.
+    // The 'four' part holds one full box breath.
     expect(boxBeats).toBe(4);
     expect(beats).toBeGreaterThan(boxBeats * 2);
   });
 
   it('Next part moves on without moving the timer, and cannot pass the last part', () => {
-    const app = sitting('warm', 20);
+    const app = sitting('warm', 30);
     app.tick(1000);
     expect(app.moment!.part).toBe(0);
     const left = app.moment!.secondsLeft;
@@ -156,16 +163,16 @@ describe("the app's own clock", () => {
     app.act('skip', 1000);
     expect(app.moment!.part).toBe(4);
     expect(app.screen).toBe('session');
-    app.tick(19 * S);
+    app.tick(29 * S);
     expect(app.screen).toBe('session');
-    app.tick(20 * S);
+    app.tick(30 * S);
     expect(app.screen).toBe('end');
   });
 });
 
 describe('the reward of each way out', () => {
   it('leaving early gives the quick reward, never the better one, at any moment of any sitting', () => {
-    for (const seconds of LENGTHS_SEC) for (const at of [0, 1, 10 * S, seconds * S - 1]) {
+    for (const seconds of [MIN_LENGTH_SEC, 30, MAX_LENGTH_SEC]) for (const at of [0, 1, 10 * S, seconds * S - 1]) {
       const byButton = sitting('dusk', seconds);
       byButton.tick(at);
       expect(byButton.act('leave', at)).toBeNull();
@@ -190,15 +197,15 @@ describe('the reward of each way out', () => {
   });
 
   it('completing gives the better reward, by Receive or by any way out of the end', () => {
-    const a = sitting('night', 20);
-    a.tick(20 * S);
-    expect(a.act('receive', 20 * S)).toBe('complete');
-    const b = sitting('night', 40);
-    b.tick(40 * S);
-    expect(b.back(40 * S)).toBe('complete');
+    const a = sitting('night', 30);
+    a.tick(30 * S);
+    expect(a.act('receive', 30 * S)).toBe('complete');
+    const b = sitting('night', 60);
+    b.tick(60 * S);
+    expect(b.back(60 * S)).toBe('complete');
     const c = sitting('night', 30);
-    c.tick(30 * S);
-    expect(c.act('close', 30 * S)).toBe('complete');
+    c.tick(45 * S);
+    expect(c.act('close', 45 * S)).toBe('complete');
   });
 
   it('a paused sitting never completes by waiting', () => {
@@ -216,12 +223,12 @@ describe('the reward of each way out', () => {
 
   it('is granted once only: after an outcome the app takes no more presses', () => {
     const app = sitting();
-    app.tick(20 * S);
-    expect(app.act('receive', 20 * S)).toBe('complete');
-    expect(app.act('receive', 20 * S)).toBeNull();
-    expect(app.back(20 * S)).toBeNull();
-    expect(app.act('quick', 20 * S)).toBeNull();
-    expect(app.press({ hit: () => true, navigate: () => ({ x: 0, y: 0 }) }, 20 * S, 1)).toBeNull();
+    app.tick(30 * S);
+    expect(app.act('receive', 30 * S)).toBe('complete');
+    expect(app.act('receive', 30 * S)).toBeNull();
+    expect(app.back(30 * S)).toBeNull();
+    expect(app.act('quick', 30 * S)).toBeNull();
+    expect(app.press({ hit: () => true, navigate: () => ({ x: 0, y: 0 }) }, 30 * S, 1)).toBeNull();
     expect(app.outcome).toBe('complete');
     const quick = new MeditationApp();
     expect(quick.act('quick', 0)).toBe('quick');
@@ -324,12 +331,8 @@ describe('every control on every input type', () => {
       inp.steer(0, 1); go();
       expect(app.selected).toBe(`seq:${SEQUENCE_IDS[4]}`);
       inp.press('confirm'); go();
-      expect(app.screen).toBe('length');
-      inp.steer(1, 0); go();
-      expect(app.selected).toBe('len:30');
-      inp.press('confirm'); go();
       expect(app.screen).toBe('session');
-      expect(app.plan!.totalMs).toBe(30 * S);
+      expect(app.plan!.totalMs).toBe(20 * S);
       expect(app.seq).toBe(SEQUENCE_IDS[4]);
       inp.press('skip'); go(1000);
       expect(app.moment!.part).toBe(1);
@@ -362,9 +365,9 @@ describe('every control on every input type', () => {
       inp.press('back');
       expect(new MeditationApp().press(inp, 0, 2)).toBe('cancel');
       const done = sitting();
-      done.tick(20 * S);
+      done.tick(30 * S);
       inp.press('confirm');
-      expect(done.press(inp, 20 * S, 1)).toBe('complete');
+      expect(done.press(inp, 30 * S, 1)).toBe('complete');
     });
   }
 
@@ -374,7 +377,6 @@ describe('every control on every input type', () => {
     expect(app.tiles).toContain('quick');
     app.act('meditate', 0);
     app.act('seq:river', 0);
-    app.act('len:40', 0);
     for (const a of ['skip', 'mute', 'calm'] as const) expect(app.tiles, a).toContain(TOUCH_TILE[a]);
     expect(app.tiles).toEqual(['pause', 'skip', 'mute', 'calm', 'leave']);
     app.act('skip', 1000);
@@ -394,7 +396,7 @@ describe('every control on every input type', () => {
 
   it('the switches work on every screen and never move the flow', () => {
     const app = new MeditationApp({ mute: false, calm: false });
-    for (const step of ['meditate', 'seq:ground', 'len:20']) {
+    for (const step of ['meditate', 'seq:ground', 'pause']) {
       const screen = app.screen;
       expect(app.act('mute', 0)).toBeNull();
       expect(app.act('calm', 0)).toBeNull();
@@ -489,15 +491,15 @@ describe('calm visuals and the particle caps', () => {
 
   it('calm visuals keeps the timer, the part, the instruction and the breath exactly as they are', () => {
     const calm = new MeditationApp({ mute: false, calm: true }), full = new MeditationApp({ mute: false, calm: false });
-    for (const app of [calm, full]) { app.act('meditate', 0); app.act('seq:box', 0); app.act('len:20', 0); }
-    for (let now = 0; now <= 20 * S; now += 333) {
+    for (const app of [calm, full]) { app.act('meditate', 0); app.act('seq:box', 0); }
+    for (let now = 0; now <= 30 * S; now += 333) {
       calm.tick(now); full.tick(now);
       expect(calm.moment).toEqual(full.moment);
       expect(calm.screen).toBe(full.screen);
     }
-    calm.tick(20 * S); full.tick(20 * S);
+    calm.tick(30 * S); full.tick(30 * S);
     expect(calm.screen).toBe('end');
-    expect(calm.act('receive', 20 * S)).toBe('complete');
+    expect(calm.act('receive', 30 * S)).toBe('complete');
   });
 
   it('switching calm visuals in a sitting does not touch its clock', () => {
@@ -511,11 +513,15 @@ describe('calm visuals and the particle caps', () => {
 });
 
 function stand() {
-  return {
+  const rig = {
     hud: { toast: vi.fn() },
     rng: { stream: () => ({}) },
     pools: { drawRuntime: vi.fn((_pool: string, _rng: unknown, _band: [number, number]) => ITEMS[0].id) },
     openChest: vi.fn(),
+    openSanctuaryChest: vi.fn(),
     releaseBoundary: vi.fn(),
   };
+  rig.openSanctuaryChest.mockImplementation((chest: any, outcome: any) =>
+    (Game.prototype as any).openSanctuaryChest.call(rig, chest, outcome));
+  return rig;
 }

@@ -6,7 +6,7 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss } from '../content/palette';
 import {
-  BREATH_KEY, LENGTHS_SEC, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
+  BREATH_KEY, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
   type Moment, type Outcome, type PaletteRole, type SceneId, type SequenceId,
 } from '../content/presences/meditations';
 import { MeditationAudio } from '../audio/meditation';
@@ -101,11 +101,11 @@ export class MeditationView {
   }
 
   /** Opens the app. `done` is called once, with the outcome that closed it. */
-  show(done: (o: Outcome) => void, rate = 1) {
+  show(done: (o: Outcome) => void, rate = 1, random: () => number = () => 0) {
     if (this.app) return;
     this.mount();
     const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.app = new MeditationApp(loadPrefs(prefsStore, reduced));
+    this.app = new MeditationApp(loadPrefs(prefsStore, reduced), random);
     this.app.rate = rate;
     this.done = done;
     this.key = '';
@@ -138,9 +138,9 @@ export class MeditationView {
     }
     if (app.paused !== was.paused) { this.audio.pause(app.paused); this.audio.ui('toggle'); }
     if (app.screen !== was.screen) {
-      const forward: Record<Screen, number> = { home: 0, library: 1, length: 2, session: 3, leave: 4, end: 5 };
+      const forward: Record<Screen, number> = { home: 0, library: 1, session: 2, leave: 3, end: 4 };
       this.audio.ui(forward[app.screen] > forward[was.screen] ? 'pick' : 'back');
-      if (app.screen === 'session' && was.screen === 'length') this.begin();
+      if (app.screen === 'session' && was.screen === 'library') this.begin();
       if (app.screen === 'leave') this.audio.pause(true);
       if (app.screen === 'session' && was.screen === 'leave') this.audio.pause(app.paused);
     } else if (app.selected !== was.selected) this.audio.ui('move');
@@ -301,10 +301,6 @@ export class MeditationView {
         grid.appendChild(this.tile(`seq:${s.id}`, 'card', app, sw, el('b', '', t(nameKey(s))), el('span', '', t(blurbKey(s))), el('em', '', t(`sanctuary.tier.${s.tier}` as MessageKey))));
       }
       ui.append(this.closeButton('sanctuary.backLabel'), el('h2', '', t('sanctuary.library')), grid, hint('sanctuary.hint'));
-    } else if (app.screen === 'length') {
-      const row = el('div', 'lengths');
-      for (const n of LENGTHS_SEC) row.appendChild(this.tile(`len:${n}`, 'len', app, el('b', '', String(n)), el('span', '', t('sanctuary.seconds', { n }).replace(String(n), '').trim())));
-      ui.append(this.closeButton('sanctuary.backLabel'), el('p', 'over', t(nameKey(SEQUENCE[app.seq]))), el('h2', '', t('sanctuary.length')), row, el('p', 'lead', t('sanctuary.length.sub')), hint('sanctuary.hint'));
     } else if (app.screen === 'session') {
       const top = el('div', 'top');
       const bar = el('div', 'progress');
@@ -353,7 +349,7 @@ export class MeditationView {
     set('.clock', 'clock', t('sanctuary.clock', { m: Math.floor(m.secondsLeft / 60), s: String(m.secondsLeft % 60).padStart(2, '0') }));
     if (app.screen !== 'session') return;
     set('.partname', 'part', t('sanctuary.part', { n: m.part + 1, total: seq.parts.length, name: t(partKey(seq, m.part)) }));
-    set('.line', 'line', app.paused ? t('sanctuary.paused') : t(lineKey(seq, m.part, m.line)));
+    set('.line', 'line', app.paused ? t('sanctuary.paused') : m.line ? t(lineKey(seq, m.part, m.line)) : '');
     const left = Math.max(1, Math.ceil(m.beatS * (1 - m.breathT)));
     set('.breath', 'breath', m.breath === 'natural' ? t(BREATH_KEY.natural) : `${t(BREATH_KEY[m.breath])} · ${t('sanctuary.count', { n: left })}`);
     const pct = Math.round(1000 * app.elapsed / app.plan!.totalMs);

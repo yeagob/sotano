@@ -32,21 +32,6 @@ export function leavesAfterOffer(id: PresenceId): boolean {
   return PRESENCE_TALK[id].drops;
 }
 
-/** What a Listener drops. Its kind is part of the floor's structure (drawn from the seed when the floor is built). */
-export const LISTENER_DROPS = ['heart', 'bomb', 'key'] as const;
-export type ListenerDrop = (typeof LISTENER_DROPS)[number];
-
-/** The weights of a Listener's drop, as data so the owner can tune them (#77). Kind: heart 40%, bomb 35%, key 25%.
- *  Count: one 50%, two 35%, three 15%. */
-export const LISTENER_KIND_WEIGHTS: readonly (readonly [ListenerDrop, number])[] = [['heart', 40], ['bomb', 35], ['key', 25]];
-export const LISTENER_COUNT_WEIGHTS: readonly (readonly [number, number])[] = [[1, 50], [2, 35], [3, 15]];
-
-/** How many of its kind a Listener drops for one accepted part. The count is a runtime outcome: it is drawn from
- *  the drops stream when the part is accepted, never healed. */
-export function listenerDrops(kind: ListenerDrop, rng: Rng): ListenerDrop[] {
-  return Array.from({ length: rng.weighted(LISTENER_COUNT_WEIGHTS) }, () => kind);
-}
-
 export const TALK_REACH = 2.2;
 
 export const PRESENCE_REPLY_MS = 4000;
@@ -70,9 +55,9 @@ export function presenceReaction(polarity: 'positive' | 'negative', distance: nu
   return distance < LIFT_REACH ? 'lift' : null;
 }
 
-interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence; presenceDrop?: ListenerDrop }
+interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 
-/** One Listener per Tree floor, in a quiet normal room. Its drop kind is drawn from the same floor fork, after the room. */
+/** One Listener per Tree floor, in a quiet normal room. */
 export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): void {
   if (floor === 0 || level(floor).kind !== 'tree') return;
   const normal = rooms.filter(r => r.type === 'normal');
@@ -81,5 +66,4 @@ export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): vo
   const room = rng.pick(quiet.length ? quiet : normal);
   room.enemies = [];
   room.presence = 'listener';
-  room.presenceDrop = rng.weighted(LISTENER_KIND_WEIGHTS);
 }
