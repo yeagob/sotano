@@ -4,6 +4,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+## 0.2.3 · 2026-11-10
+
 ### Added
 - The Boundary opens the Sanctuary above the Roots tutorial treasure chest as well as in vaults. Take a quick reward at once (a tier 1 or 2 practice), or sit through one of six guided meditations for a seeded duration of 20 to 40 seconds to earn a better practice (tier 3 or 4). Leaving early gives the quick reward and never a penalty; sound and calm visuals are switches inside the app (#35, #140).
 - The Listener always gives a reward when offered a monster heart: a 15% chance of a health-raising practice, a 75% chance of special hearts (usually one, rarely two different kinds), or a 10% chance of two red hearts. A friendly Roots creature that reaches maximum size has its own one-time 15% chance to give a special heart (#141).
