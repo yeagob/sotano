@@ -35,6 +35,29 @@ export function sceneBudget(width: number, height: number, calm: boolean) {
 /** The buttons a touch (or a click) reaches each action through. */
 export const TOUCH_TILE: Partial<Record<Action, string>> = { skip: 'skip', mute: 'mute', calm: 'calm', back: 'close' };
 
+/** The longest step the app's clock takes in one call. A stalled frame counts for at most this much. */
+export const MAX_CLOCK_STEP_MS = 250;
+
+/**
+ * Turns the real timestamps of the page into the app's clock. Each call moves the clock by the real time since
+ * the last call, but never by more than MAX_CLOCK_STEP_MS. A hidden tab stops its frames, so when it comes back
+ * the time it was hidden is not counted: a sitting cannot end while the game is not drawing it.
+ */
+export class AppClock {
+  private at: number | null = null;
+  private t = 0;
+
+  /** The app's time after the real time `real` (milliseconds, from a monotonic source). */
+  now(real: number): number {
+    if (this.at !== null) this.t += Math.min(MAX_CLOCK_STEP_MS, Math.max(0, real - this.at));
+    this.at = real;
+    return this.t;
+  }
+
+  /** A new sitting starts from zero. */
+  reset() { this.at = null; this.t = 0; }
+}
+
 interface PressSource { hit(a: Action): boolean; navigate(): { x: number; y: number } }
 
 export class MeditationApp {

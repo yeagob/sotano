@@ -166,7 +166,7 @@ Every meditation ends the same way, in the app's own colours (night blue, a pale
 - The breath pace is stretched by a hair so that a whole number of breaths fits in each part. A part never ends mid-breath.
 - **Next part** moves on without shortening the sitting: the time left in the part is shared among the parts that follow. The timer never jumps. The last part cannot be skipped.
 - The timer shows minutes and seconds left. It reads the full length at the start and 0:00 only at the end.
-- The clock is the app's own: it measures real time while the session is running, and stops while it is paused or the leave sheet is open. It does not depend on the frame rate.
+- The clock is the app's own: it measures real time while the session is running, and stops while it is paused or the leave sheet is open. It does not depend on the frame rate. A hidden tab stops the game's frames, so each frame counts at most 250 ms (`AppClock`): the time the tab was hidden is not counted, and a sitting cannot end while the game is not drawing it.
 
 ## 5a. The words of each part
 
@@ -315,6 +315,7 @@ One context, `meditation`. Every action on the three devices:
 | The parts fill the length exactly; shares add to 100%; a part holds a whole number of breaths | `tests/meditation.test.ts` |
 | Next part never shortens the sitting, and cannot skip the last part | `tests/meditation.test.ts` |
 | The clock stops while paused and on the leave sheet | `tests/meditation-app.test.ts` |
+| A hidden tab does not count: the clock moves at most 250 ms per frame | `tests/meditation-clock.test.ts` |
 | Leaving early gives the quick reward and never the better one; completing gives the better one | `tests/meditation-app.test.ts` |
 | Not now gives nothing, keeps the chest locked and lets the Boundary ask again | `tests/meditation-app.test.ts` |
 | The reward is granted once only | `tests/meditation-app.test.ts` |
@@ -339,6 +340,5 @@ One context, `meditation`. Every action on the three devices:
 - **"Tier 1 and 2 meditations."** Read here as: the meditations are the game's tier 1 and tier 2 practices. Owner to confirm.
 - **"Almost impossible to leave."** Read here as: it is hard to want to leave, never hard to leave. Leaving takes two presses (Leave, then confirm), and Stay is selected first. Owner to confirm that no stronger friction is wanted.
 - **Does length matter?** Every length earns the same band today.
-- **The honest clock.** Time keeps counting if the player switches away from the game during a session. The game takes the player's word; a stricter rule is possible.
 - **The not-therapy note.** The first screen carries one plain line. The owner's own text and a help line are still open ([REQUESTS.md](../../not-built/presences/REQUESTS.md)).
 - **More meditations.** Radical Acceptance and Sleep Hygiene are tier 2 practices that would fit.
