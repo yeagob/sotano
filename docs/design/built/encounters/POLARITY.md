@@ -8,7 +8,7 @@ Built, with added rules from the review. Every intention the player casts has a 
 
 | | To a projection (hostile) | To a converted projection (ally) | To a creature | To a presence |
 |---|---|---|---|---|
-| **Good** | Half damage, and warmth rises by a fifth a hit. At full warmth it turns to the player's side and is not destroyed. A good intention never takes its last point | Heals it: half the damage it would have done, never past its maximum | Heals it. A creature healed to full drops a heart, once | Nothing to heal. A good intention near it lifts a silence; it does not speak differently yet |
+| **Good** | Half damage, and warmth rises by a fifth a hit. At full warmth it turns to the player's side and is not destroyed. A good intention never takes its last point | Heals it: half the damage it would have done, never past its maximum | Heals it. A floor-0 creature has a 15% chance to drop one special heart when it first grows to three times its birth size | Nothing to heal. A good intention near it lifts a silence; it does not speak differently yet |
 | **Bad** | Full damage, and warmth cools a quarter a hit. A projection killed this way is released | Harms it. At zero it turns hostile again, with half its health | Harms it. At zero it flees into the blocks until the room clears. It never dies | Silences it: the presence turns its light away until a good intention passes near |
 
 ## Blocks and weapons

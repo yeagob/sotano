@@ -54,14 +54,14 @@ t 300 (5.0 s)
   procrastination#6 hp 36.0/36 · projection · at 12.3 0.0 4.7
   distraction#7 hp 12.0/12 · projection · at 9.2 -0.8 7.3
   undertow#8 hp 28.0/28 · projection · at 5.9 0.0 5.5
-  scarcity#10 hp 20.0/20 · projection · at 2.3 0.0 3.4
+  scarcity#10 hp 20.0/20 · projection · at 4.0 0.0 1.6
   resentment#11 hp 14.2/28 · projection · at 10.0 -1.0 6.9
   gloom#12 hp 28.0/28 · projection · at 14.5 3.2 5.5
   second-guessing#13 hp 52.0/52 · projection · at 11.9 0.0 5.5
   backlog#15 hp 116.3/120 · projection · at 7.2 0.0 8.5
   noise#16 hp 11.0/11 · projection · at 10.1 0.0 7.5
   perfectionism#17 hp 28.0/28 · projection · at 10.5 -0.3 6.7
-  not-yet#18 hp 110.3/112 · projection · at 11.8 0.0 7.6
+  not-yet#18 hp 111.1/112 · projection · at 11.7 0.0 7.5
   comparison#19 hp 60.0/60 · projection · at 16.0 0.0 6.8
   hall-of-mirrors#20 hp 44.0/44 · projection · at 2.5 0.0 11.5
   paralysis#21 hp 100.0/100 · projection · at 5.5 0.0 11.5
@@ -86,30 +86,30 @@ t 300 (5.0 s)
   blocks ice 21
   elements —
   cubes brick 14 · ice 5 · pickups 1
-  events actorDamage:backlog<kick 1 · actorDamage:not-yet<kick 2 · actorDamage:perfectionism<explosion 1 · actorDamage:perfectionism<kick 1 · actorDamage:resentment<explosion 1 · actorDamage:resentment<kick 1 · actorDeath:alarm 1 · actorDeath:rumination 1 · blockBreak:brick 16 · blockBreak:ice 5 · blockDamage:brick 17 · blockDamage:ice 5 · blockLoot:brick 16 · blockLoot:ice 5 · explosion 1 · kick:ice 1 · land 1 · roomEnter 1 · touchCube:brick 2 · touchCube:ice 1
+  events actorDamage:backlog<kick 1 · actorDamage:not-yet<kick 1 · actorDamage:perfectionism<explosion 1 · actorDamage:perfectionism<kick 1 · actorDamage:resentment<explosion 1 · actorDamage:resentment<kick 1 · actorDeath:alarm 1 · actorDeath:rumination 1 · blockBreak:brick 16 · blockBreak:ice 5 · blockDamage:brick 17 · blockDamage:ice 5 · blockLoot:brick 16 · blockLoot:ice 5 · explosion 1 · kick:brick 1 · kick:ice 1 · land 1 · roomEnter 1 · touchCube:brick 3 · touchCube:ice 1
 
 t 900 (15.0 s)
   player hp 24/24 · at 8.3 -2.0 7.7 · hand [brick brick] · bombs 99 · keys 99
   autopilot#2 hp 20.0/20 · projection · at 5.8 0.0 1.2
-  craving#3 hp 8.1/18 · projection · at 9.2 0.0 9.9
+  craving#3 hp 18.0/18 · projection · at 9.7 0.0 9.8
   impulse#4 hp 22.0/22 · projection · at 8.3 -2.0 7.7
   avoidance#5 hp 20.0/20 · projection · at 11.5 0.0 2.5
   procrastination#6 hp 36.0/36 · projection · at 8.3 -2.0 7.7
   distraction#7 hp 12.0/12 · projection · at 8.2 -0.1 8.0
   undertow#8 hp 28.0/28 · projection · at 8.3 -1.0 7.7
-  scarcity#10 hp 20.0/20 · projection · at 0.4 0.0 0.7
+  scarcity#10 hp 20.0/20 · projection · at 1.5 0.0 1.7
   resentment#11 hp 20.5/40.32 · projection · at 8.3 -1.0 7.7
   gloom#12 hp 28.0/28 · projection · at 14.5 3.2 5.5
   second-guessing#13 hp 46.2/52 · projection · at 8.3 -1.0 7.7
-  backlog#15 hp 116.3/120 · projection · at 8.3 -1.0 7.7
-  noise#16 hp 7.5/11 · projection · at 7.6 1.0 6.2
+  backlog#15 hp 113.1/120 · projection · at 8.3 -1.0 7.7
+  noise#16 hp 11.0/11 · projection · at 8.6 0.2 6.7
   perfectionism#17 hp 28.0/28 · projection · at 8.3 -1.0 7.7
-  not-yet#18 hp 110.3/112 · projection · at 8.3 -1.0 7.7
+  not-yet#18 hp 111.1/112 · projection · at 8.3 -1.0 7.7
   comparison#19 hp 60.0/60 · projection · at 12.5 0.0 3.7
   hall-of-mirrors#20 hp 44.0/44 · projection · at 2.5 0.0 11.5
   paralysis#21 hp 100.0/100 · projection · at 5.5 0.0 11.5
   margin#22 hp 78.0/78 · projection · at 8.5 0.0 11.5
-  tribunal#23 hp 141.2/144 · projection · at 12.2 0.0 11.7
+  tribunal#23 hp 144.0/144 · projection · at 11.5 0.0 11.5
   dread#24 hp 112.0/112 · projection · at 14.5 0.0 11.5
   reactivity#25 hp 48.0/48 · projection · at 11.7 0.0 8.9
   sulk#26 hp 36.0/36 · projection · at 2.5 0.0 14.5
@@ -129,7 +129,7 @@ t 900 (15.0 s)
   blocks ice 21
   elements —
   cubes brick 14 · ice 5 · pickups 1
-  events actorDamage:craving<kick 3 · actorDamage:noise<kick 1 · actorDamage:perfectionism<kick 1 · actorDamage:second-guessing<kick 1 · actorDamage:tribunal<kick 1 · kick:brick 2 · land 1 · touchCube:brick 2
+  events actorDamage:backlog<kick 1 · actorDamage:second-guessing<kick 1 · kick:brick 5 · land 1 · touchCube:brick 5
 
 map t 900 · h 0
   ..........I.........

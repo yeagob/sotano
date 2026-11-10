@@ -918,6 +918,8 @@ The Boundary's meditation app (`docs/design/built/presences/MEDITATION-APP.md`) 
 | Calm visuals | 1024 × 768, Box Breathing | Pass: still background, a circle whose light follows the breath, timer and words unchanged |
 | The real path: walk up to a Boundary, finish a sitting, Receive | Seed ABCD-EFGH, floor 1 | Pass: the chest opened with a tier 3 practice and the Boundary left |
 
+**Owner update (2026-11-10):** The duration screen is removed. Choosing a meditation starts a seeded 20–40-second sitting; one sampled guidance line appears per part for at most six seconds, then the part is quiet. The breath cue is three times larger. The same Boundary now stands directly above the tutorial treasure chest, without a ring.
+
 **Not done, and owed:** greyscale and the three colour-blindness filters (the app is not in `?gallery`; its meaning does not rest on hue, but the captures were not taken); a portrait phone (touch is landscape only: the rotate card covers the app, as it covers the game); a real phone and a real gamepad; the sound, which nobody has heard; and the pass by the dedicated art agent that §0 of the art skill asks for.
 
 ## 11. Iconographic motifs and the meaning test
