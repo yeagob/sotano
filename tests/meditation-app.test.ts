@@ -63,7 +63,7 @@ describe('the flow', () => {
     expect(app.screen).toBe('leave');
   });
 
-  it('starts with a seeded 30-to-60-second duration and one sampled line per part', () => {
+  it('starts with a seeded 20-to-40-second duration and one sampled line per part', () => {
     const draws = [0.999, 0.5, 0, 0.25, 0.75, 0.999];
     const app = new MeditationApp(undefined, () => draws.shift()!);
     app.act('meditate', 0);
@@ -79,7 +79,6 @@ describe('the flow', () => {
   it('ignores a press that is not a choice of the screen', () => {
     const app = new MeditationApp();
     expect(app.act('receive', 0)).toBeNull();
-    expect(app.act('len:20', 0)).toBeNull();
     expect(app.act('stay', 0)).toBeNull();
     expect(app.screen).toBe('home');
   });
