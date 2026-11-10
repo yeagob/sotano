@@ -1,17 +1,17 @@
 // The Sanctuary as state (docs/design/built/presences/MEDITATION-APP.md). DOM-free, so the rules are tested
 // without a page: the view draws whatever this says and sends every press through `act`, `back` or `press`.
 //
-// Screens: `home` (meditate, or take the quick reward), `library` (which meditation), `length` (20, 30 or 40
-// seconds; choosing begins), `session` (the sitting, on the app's own clock), `leave` (stay, or leave with the
-// quick reward) and `end` (receive). An outcome ends the app, once: `cancel` (not now), `quick` or `complete`.
+// Screens: `home` (meditate, or take the quick reward), `library` (which meditation; choosing begins with a
+// random duration of 20 to 40 seconds), `session` (the sitting, on the app's own clock), `leave` (stay, or leave
+// with the quick reward) and `end` (receive). An outcome ends the app, once: `cancel` (not now), `quick` or `complete`.
 
 import type { Action } from '../input/bindings';
 import {
-  LENGTHS_SEC, SEQUENCE, SEQUENCE_IDS, momentAt, planSitting, skipPart,
-  type LengthSec, type Moment, type Outcome, type Plan, type SequenceId,
+  SEQUENCE, SEQUENCE_IDS, momentAt, planSitting, randomLengthSec, skipPart,
+  type Moment, type Outcome, type Plan, type SequenceId,
 } from '../content/presences/meditations';
 
-export type Screen = 'home' | 'library' | 'length' | 'session' | 'leave' | 'end';
+export type Screen = 'home' | 'library' | 'session' | 'leave' | 'end';
 
 export interface Prefs { mute: boolean; calm: boolean }
 
@@ -63,7 +63,7 @@ interface PressSource { hit(a: Action): boolean; navigate(): { x: number; y: num
 export class MeditationApp {
   screen: Screen = 'home';
   seq: SequenceId = SEQUENCE_IDS[0];
-  seconds: LengthSec = LENGTHS_SEC[0];
+  seconds = 20;
   plan: Plan | null = null;
   paused = false;
   /** Milliseconds of the sitting that have run. Only a running session moves it. */
@@ -75,14 +75,16 @@ export class MeditationApp {
   private last: number | null = null;
   private seen = { part: -1, line: -1, beat: -1 };
 
-  constructor(readonly prefs: Prefs = { mute: false, calm: false }) {}
+  constructor(
+    readonly prefs: Prefs = { mute: false, calm: false },
+    private readonly random: () => number = () => 0,
+  ) {}
 
   /** The choices of the current screen, in order. The close ✕ is not a choice: it is always there, as Back. */
   get tiles(): string[] {
     switch (this.screen) {
       case 'home': return ['meditate', 'quick'];
       case 'library': return SEQUENCE_IDS.map(id => `seq:${id}`);
-      case 'length': return LENGTHS_SEC.map(s => `len:${s}`);
       case 'session': return ['pause', 'skip', 'mute', 'calm', 'leave'];
       case 'leave': return ['stay', 'quick'];
       case 'end': return ['receive'];
@@ -119,11 +121,8 @@ export class MeditationApp {
         return null;
       case 'library':
         this.seq = id.slice(4) as SequenceId;
-        this.go('length', `len:${this.seconds}`);
-        return null;
-      case 'length':
-        this.seconds = Number(id.slice(4)) as LengthSec;
-        this.plan = planSitting(SEQUENCE[this.seq], this.seconds);
+        this.seconds = randomLengthSec(this.random);
+        this.plan = planSitting(SEQUENCE[this.seq], this.seconds, this.random);
         this.elapsed = 0;
         this.paused = false;
         this.seen = { part: -1, line: -1, beat: -1 };
@@ -150,7 +149,6 @@ export class MeditationApp {
     switch (this.screen) {
       case 'home': return this.finish('cancel');
       case 'library': this.go('home', 'meditate'); return null;
-      case 'length': this.go('library', `seq:${this.seq}`); return null;
       case 'session': this.go('leave', 'stay'); return null;
       case 'leave': this.go('session', 'pause'); return null;
       case 'end': return this.finish('complete');

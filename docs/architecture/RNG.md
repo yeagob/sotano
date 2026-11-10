@@ -48,6 +48,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('plan', k, 'challenge')` | Structure | Whether floor k keeps a challenge room (`CHALLENGE_ROOM`) and which |
 | `fork('floor', k, 'room', i, 'wave', visit, wave)` | Runtime | A challenge room's wave (`pickWave`) |
 | `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |
+| `stream('guard')` | Runtime | Each Sanctuary sitting's duration and one randomly selected guidance line per part |
 | `fork('elements')` | Runtime | One seed for the element simulation: each fire-spread roll is `hash3(seed, cell, tick, side)`, stateless, so one fire never changes another's luck. Template elements (pools, flames) are fixed by the template and draw nothing |
 | `fork('floor', k, 'room', i, 'clear')` | Runtime | Room i's clear reward: one uniform `u`, then luck reweights the table against it |
 | `fork('floor', k, 'room', i, 'rooted', seq)` | Runtime | Whether a projection spawns rooted (`rootedChance`, BESTIARY §4.3): `seq` as for parts; a rooted one rolls its parts once more on `fork(…, 'part', seq, 'rooted')` |

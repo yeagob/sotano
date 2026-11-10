@@ -2,9 +2,9 @@
 
 # The Sanctuary: the Boundary's meditation app
 
-Up: [presences](README.md) · Status: built (owner, 2026-11-09, issue #35: the Boundary's real-world request cards are replaced by one meditation app hidden inside the game; 2026-11-10: owner set sitting lengths to 20, 30 or 40 seconds). Code: `src/content/presences/meditations.ts` (the six meditations, a sitting's time, the reward), `src/game/meditation-app.ts` (the screens, the clock, the outcome), `src/game/meditation-view.ts` (the layer on the page), `src/render/meditation-scenes.ts` (the scenes), `src/audio/meditation.ts` (the music and the cues), `src/game/game.ts` (`touchGuards`, `openSanctuary`, `answerGuard`), `src/content/palette/meditation.ts` (its colours). Tests: `tests/meditation.test.ts`, `tests/meditation-app.test.ts`, `tests/controls.test.ts`. In the debug console, `S.sanctuary()` opens it without a Boundary.
+Up: [presences](README.md) · Status: built (owner, 2026-11-09, issue #35: the Boundary's real-world request cards are replaced by one meditation app hidden inside the game; 2026-11-10: owner set sitting lengths to random whole seconds from 20 to 40). Code: `src/content/presences/meditations.ts` (the six meditations, a sitting's time, the reward), `src/game/meditation-app.ts` (the screens, the clock, the outcome), `src/game/meditation-view.ts` (the layer on the page), `src/render/meditation-scenes.ts` (the scenes), `src/audio/meditation.ts` (the music and the cues), `src/game/game.ts` (`touchGuards`, `openSanctuary`, `answerGuard`), `src/content/palette/meditation.ts` (its colours). Tests: `tests/meditation.test.ts`, `tests/meditation-app.test.ts`, `tests/controls.test.ts`. In the debug console, `S.sanctuary()` opens it without a Boundary.
 
-The Boundary keeps the centre chest of its vault. Walking up to it no longer brings a card. It opens the Sanctuary: a full-screen meditation app with its own look, sound and motion, unlike anything else in the game. The player takes a quick reward at once, or sits through a guided meditation of 20, 30 or 40 seconds and receives the better one (the owner set seconds on 2026-11-10: "las meditaciones son de 20 a 40 segundos").
+The Boundary keeps the centre chest of its vault. Walking up to it no longer brings a card. It opens the Sanctuary: a full-screen meditation app with its own look, sound and motion, unlike anything else in the game. The player takes a quick reward at once, or sits through a guided meditation lasting a random whole number of seconds from 20 to 40 and receives the better one.
 
 ## 1. Meaning
 
@@ -19,11 +19,10 @@ The Boundary keeps the centre chest of its vault. Walking up to it no longer bri
 |---|---|---|---|
 | 1 | Approach | Within about two blocks of a Boundary that still keeps its chest, the world fades and the app opens. The world is paused underneath. | Home |
 | 2 | Home (choose the reward) | The app's name, one line on what it is, and two choices: **Meditate** (the better reward, selected first) and **Take the quick reward**. A small note: stopping is always fine. A close ✕ means "not now". | Library, or out |
-| 3 | Library | Six meditations as cards: name, one line, tier mark, a live swatch of its colours. | Length, or back to Home |
-| 4 | Length | 20, 30 or 40 seconds (20 selected first; set to seconds by the owner on 2026-11-10). Choosing one begins. | Session, or back to Library |
-| 5 | Session | The scene of the meditation, a timer counting down, the part's name, the instruction for this moment, the breath cue, and a control bar that hides after six seconds without input. | End, or the leave sheet |
-| 6 | Leave sheet | Opened by Leave. The clock stops. **Stay** (selected first) or **Leave with the quick reward**. | Session, or out |
-| 7 | End | When the timer reaches zero: the shared ending, and **Receive**. | Out |
+| 3 | Library | Six meditations as cards: name, one line, tier mark, a live swatch of its colours. Choosing one begins a randomly timed sitting of 20–40 whole seconds. | Session, or back to Home |
+| 4 | Session | The scene of the meditation, a timer counting down, the part's name, one randomly chosen instruction for that part, the breath cue, and a control bar that hides after six seconds without input. | End, or the leave sheet |
+| 5 | Leave sheet | Opened by Leave. The clock stops. **Stay** (selected first) or **Leave with the quick reward**. | Session, or out |
+| 6 | End | When the timer reaches zero: the shared ending, and **Receive**. | Out |
 
 Out means the app fades, the world resumes and the Boundary answers:
 
@@ -43,7 +42,7 @@ Rules:
 - The quick reward is always one press away on the first screen. The meditation is never required.
 - Leaving early never gives the better reward and never costs anything: it gives the quick one.
 - The reward is given once. After an outcome the app accepts no more input, and an opened chest ignores a second answer.
-- The length does not change the reward: 20 seconds earn the same band as 40. The longer sittings are there for whoever wants them.
+- Every duration from 20 to 40 seconds has the same reward band.
 - The reward is not the practice reserved for the room at the start of the run; it is a runtime draw, like every chest's.
 - The game takes the player's word. It sees only its own clock, not whether the player sat still, and it never says otherwise.
 
@@ -162,7 +161,7 @@ Every meditation ends the same way, in the app's own colours (night blue, a pale
 ## 5. How a meditation adapts to its length
 
 - The parts keep their shares, so a 40-second sitting is the same meditation as a 20-second one, slower.
-- Inside a part, the guidance line changes about every 45 seconds. A longer part goes round its lines again; a shorter one shows each once.
+- Each part selects one of its guidance lines at random. It stays for up to six seconds, then the words clear so the player can stay with the breath and scene; lines never cycle rapidly.
 - The breath pace is stretched by a hair so that a whole number of breaths fits in each part. A part never ends mid-breath.
 - **Next part** moves on without shortening the sitting: the time left in the part is shared among the parts that follow. The timer never jumps. The last part cannot be skipped.
 - The timer shows minutes and seconds left. It reads the full length at the start and 0:00 only at the end.
@@ -277,7 +276,7 @@ One context, `meditation`. Every action on the three devices:
 | Action | What it does | Keyboard and mouse | Gamepad | Touch |
 |---|---|---|---|---|
 | `navigate` | Moves the selection between the choices on screen | Arrow keys; the mouse hovers | D-pad | Tap the choice |
-| `confirm` | Chooses: the reward, the meditation, the length (this begins), Pause or Resume, Stay, Receive | Enter, or a click | A | Tap |
+| `confirm` | Chooses the reward or meditation, Pause or Resume, Stay, Receive | Enter, or a click | A | Tap |
 | `skip` | Next part, in a session | N | RB | The Next button on the bar |
 | `mute` | Sound on or off | M | X | The Sound button |
 | `calm` | Calm visuals on or off | C | Y | The Calm button |
@@ -311,7 +310,8 @@ One context, `meditation`. Every action on the three devices:
 
 | Rule | Test |
 |---|---|
-| The timer reaches the chosen length, for each of 20, 30 and 40 seconds and each meditation, and reads zero only at the end | `tests/meditation.test.ts` |
+| The timer reaches its randomly chosen whole-second length from 20 to 40, for every meditation, and reads zero only at the end | `tests/meditation.test.ts`, `tests/meditation-app.test.ts` |
+| A sitting samples one guidance line per part, holds it, and clears it after six seconds | `tests/meditation.test.ts`, `tests/meditation-app.test.ts` |
 | The parts fill the length exactly; shares add to 100%; a part holds a whole number of breaths | `tests/meditation.test.ts` |
 | Next part never shortens the sitting, and cannot skip the last part | `tests/meditation.test.ts` |
 | The clock stops while paused and on the leave sheet | `tests/meditation-app.test.ts` |
@@ -325,7 +325,7 @@ One context, `meditation`. Every action on the three devices:
 | Each input type drives the app end to end (start, next, pause, mute, leave, choose reward) | `tests/meditation-app.test.ts` |
 | Calm visuals removes particles and scene motion and keeps the timer and the instruction | `tests/meditation-app.test.ts` |
 | Particle caps hold | `tests/meditation-app.test.ts` |
-| In the browser: every meditation, every part, the Home, Library, Length, Leave and End screens, at desktop and phone widths, in both languages | by hand, recorded in the pull request and in [the art ledger](../../../art/DECISIONS.md) §10.8 |
+| In the browser: every meditation, every part, the Home, Library, Leave and End screens, at desktop and phone widths, in both languages | by hand, recorded in the pull request and in [the art ledger](../../../art/DECISIONS.md) §10.8 |
 
 ## Not verified yet
 

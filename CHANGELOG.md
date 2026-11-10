@@ -10,6 +10,11 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Fixed
 
+## 0.2.2.f2 · 2026-11-10
+
+### Fixed
+- Sanctuary sittings now last a random 20–40 seconds, and each part shows one randomly chosen guidance phrase for up to six seconds before quiet time.
+
 ## 0.2.2.f1 · 2026-11-10
 
 ### Fixed
