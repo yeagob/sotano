@@ -2869,7 +2869,7 @@ export class Game {
       if (this.input.device === 'keyboard') { this.input.release(); this.input.lock(); }
       else this.input.resume();
       done(outcome);
-    }, rate);
+    }, rate, () => this.rng.stream('guard').next());
   }
 
   /** The Sanctuary closed. The quick reward draws a tier 1 or 2 practice and a finished meditation a tier 3 or

@@ -5,7 +5,7 @@
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { MeditationApp, PARTICLE_CAP, PARTICLE_CAP_SMALL, TOUCH_TILE, particleCap, sceneBudget } from '../src/game/meditation-app';
-import { LENGTHS_SEC, SEQUENCES, SEQUENCE_IDS, momentAt, planSitting } from '../src/content/presences/meditations';
+import { MAX_LENGTH_SEC, MIN_LENGTH_SEC, SEQUENCES, SEQUENCE_IDS, momentAt, planSitting } from '../src/content/presences/meditations';
 import { BINDING, BINDINGS, DEVICES, contextsFor, type Action, type Device } from '../src/input/bindings';
 import { makeScene, paintEnding, paintHome, type SceneFrame } from '../src/render/meditation-scenes';
 import { ITEMS } from '../src/content/items';
@@ -29,10 +29,9 @@ const S = 1000;
 
 /** An app in a sitting of `seconds`, begun at time 0. */
 function sitting(seq = SEQUENCE_IDS[0], seconds: number = 20) {
-  const app = new MeditationApp();
+  const app = new MeditationApp(undefined, () => (seconds - MIN_LENGTH_SEC) / (MAX_LENGTH_SEC - MIN_LENGTH_SEC + 1));
   app.act('meditate', 0);
   app.act(`seq:${seq}`, 0);
-  app.act(`len:${seconds}`, 0);
   return app;
 }
 
@@ -45,23 +44,15 @@ describe('the flow', () => {
     expect(app.act('quick', 0)).toBe('quick');
   });
 
-  it('goes Home, Library, Length, Session, and Back retraces it', () => {
-    const app = new MeditationApp();
+  it('goes Home, Library, Session, and Back retraces it', () => {
+    const app = new MeditationApp(undefined, () => 10 / 21);
     expect(app.act('meditate', 0)).toBeNull();
     expect(app.screen).toBe('library');
     expect(app.tiles).toEqual(SEQUENCE_IDS.map(id => `seq:${id}`));
-    app.act('seq:river', 0);
-    expect(app.screen).toBe('length');
-    expect(app.tiles).toEqual(['len:20', 'len:30', 'len:40']);
-    expect(app.selected).toBe('len:20');
-    expect(app.back(0)).toBeNull();
-    expect(app.screen).toBe('library');
-    expect(app.selected).toBe('seq:river');
     expect(app.back(0)).toBeNull();
     expect(app.screen).toBe('home');
     app.act('meditate', 0);
     app.act('seq:river', 0);
-    app.act('len:30', 0);
     expect(app.screen).toBe('session');
     expect(app.plan!.seq.id).toBe('river');
     expect(app.plan!.totalMs).toBe(30 * S);
@@ -72,7 +63,6 @@ describe('the flow', () => {
   it('ignores a press that is not a choice of the screen', () => {
     const app = new MeditationApp();
     expect(app.act('receive', 0)).toBeNull();
-    expect(app.act('len:20', 0)).toBeNull();
     expect(app.act('stay', 0)).toBeNull();
     expect(app.screen).toBe('home');
   });
@@ -80,7 +70,7 @@ describe('the flow', () => {
 
 describe("the app's own clock", () => {
   it('reaches the chosen length, whatever the frame rate, and then shows the end', () => {
-    for (const seconds of LENGTHS_SEC) for (const step of [16, 1000, 7300]) {
+    for (const seconds of [MIN_LENGTH_SEC, 30, MAX_LENGTH_SEC]) for (const step of [16, 1000, 7300]) {
       const app = sitting('box', seconds);
       let now = 0, done = 0;
       while (app.screen === 'session') {
@@ -135,8 +125,8 @@ describe("the app's own clock", () => {
       if (k.line) lines++;
     }
     expect(parts).toBe(5);
-    expect(lines).toBeGreaterThanOrEqual(13);
-    const plan = planSitting(SEQUENCES.find(s => s.id === 'box')!, 20);
+    expect(lines).toBe(5);
+    const plan = planSitting(SEQUENCES.find(s => s.id === 'box')!, 20, () => 0);
     const boxBeats = momentAt(plan, plan.bounds[2] - 1).beat + 1;
     // The 'four' part is 5 seconds: one box breath of four beats, each beat 1.25 seconds.
     expect(boxBeats).toBe(4);
@@ -165,7 +155,7 @@ describe("the app's own clock", () => {
 
 describe('the reward of each way out', () => {
   it('leaving early gives the quick reward, never the better one, at any moment of any sitting', () => {
-    for (const seconds of LENGTHS_SEC) for (const at of [0, 1, 10 * S, seconds * S - 1]) {
+    for (const seconds of [MIN_LENGTH_SEC, 30, MAX_LENGTH_SEC]) for (const at of [0, 1, 10 * S, seconds * S - 1]) {
       const byButton = sitting('dusk', seconds);
       byButton.tick(at);
       expect(byButton.act('leave', at)).toBeNull();
@@ -324,12 +314,7 @@ describe('every control on every input type', () => {
       inp.steer(0, 1); go();
       expect(app.selected).toBe(`seq:${SEQUENCE_IDS[4]}`);
       inp.press('confirm'); go();
-      expect(app.screen).toBe('length');
-      inp.steer(1, 0); go();
-      expect(app.selected).toBe('len:30');
-      inp.press('confirm'); go();
       expect(app.screen).toBe('session');
-      expect(app.plan!.totalMs).toBe(30 * S);
       expect(app.seq).toBe(SEQUENCE_IDS[4]);
       inp.press('skip'); go(1000);
       expect(app.moment!.part).toBe(1);

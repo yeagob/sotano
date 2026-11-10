@@ -6,12 +6,16 @@
 import type { MessageKey } from '../../i18n';
 import type { PalToken } from '../palette';
 
-/** The sitting lengths the owner set, in seconds (20 to 40 seconds). */
-export const LENGTHS_SEC = [20, 30, 40] as const;
-export type LengthSec = typeof LENGTHS_SEC[number];
+/** The sitting length is rolled for each visit, in whole seconds. */
+export const MIN_LENGTH_SEC = 20;
+export const MAX_LENGTH_SEC = 40;
 
-/** A guidance line stays on screen for about this long before the next one. */
-export const LINE_MS = 45000;
+export function randomLengthSec(rng: () => number): number {
+  return MIN_LENGTH_SEC + Math.floor(rng() * (MAX_LENGTH_SEC - MIN_LENGTH_SEC + 1));
+}
+
+/** A guidance line stays on screen for at most this long before quiet/breath. */
+export const LINE_MS = 6000;
 /** With no paced breath the breath shape still moves, on a slow tide of this length. */
 export const NATURAL_MS = 11000;
 
@@ -173,7 +177,7 @@ export const BREATH_KEY: Record<BreathKind, MessageKey> = {
 };
 
 /** A planned sitting: where each part starts. `bounds` has one more entry than there are parts; the last is the total. */
-export interface Plan { seq: Sequence; totalMs: number; bounds: readonly number[] }
+export interface Plan { seq: Sequence; totalMs: number; bounds: readonly number[]; lines: readonly number[] }
 
 function share(seq: Sequence, from: number, startMs: number, totalMs: number): number[] {
   const parts = seq.parts.slice(from);
@@ -188,9 +192,10 @@ function share(seq: Sequence, from: number, startMs: number, totalMs: number): n
   return out;
 }
 
-export function planSitting(seq: Sequence, seconds: number): Plan {
+export function planSitting(seq: Sequence, seconds: number, rng: () => number): Plan {
   const totalMs = seconds * 1000;
-  return { seq, totalMs, bounds: [0, ...share(seq, 0, 0, totalMs)] };
+  const pickedLines = seq.parts.map(p => Math.floor(rng() * p.lines) + 1);
+  return { seq, totalMs, bounds: [0, ...share(seq, 0, 0, totalMs)], lines: pickedLines };
 }
 
 export function partAt(plan: Plan, elapsedMs: number): number {
@@ -213,7 +218,7 @@ export interface Moment {
   part: number;
   /** How far into the part, 0 to 1. */
   partT: number;
-  /** The guidance line on screen, counted from 1, and how many lines the sitting has shown before it. */
+  /** The guidance line on screen, counted from 1, or 0 if quiet; lineSeq identifies the moment. */
   line: number;
   lineSeq: number;
   breath: BreathKind;
@@ -237,8 +242,7 @@ export function momentAt(plan: Plan, elapsedMs: number): Moment {
   const def = plan.seq.parts[part];
   const start = plan.bounds[part], ms = Math.max(1, plan.bounds[part + 1] - start);
   const into = Math.min(t - start, ms - 0.001);
-  const slots = Math.max(def.lines, Math.round(ms / LINE_MS));
-  const slot = Math.min(slots - 1, Math.floor(into / (ms / slots)));
+  const line = into < LINE_MS ? plan.lines[part] : 0;
   let breath: BreathKind = 'natural', breathT = 0, beat = 0, lung = 0, beatS = NATURAL_MS / 1000;
   const cycle = def.pace.reduce((a, [, s]) => a + s * 1000, 0);
   if (cycle > 0) {
@@ -261,7 +265,7 @@ export function momentAt(plan: Plan, elapsedMs: number): Moment {
     lung = 0.5 - Math.cos(2 * Math.PI * tide) / 2;
   }
   return {
-    part, partT: into / ms, line: slot % def.lines + 1, lineSeq: part * 1000 + slot,
+    part, partT: into / ms, line, lineSeq: line > 0 ? part * 1000 + line : part * 1000,
     breath, breathT, beatS, beat, lung,
     secondsLeft: Math.ceil((plan.totalMs - t) / 1000),
     done: t >= plan.totalMs,
