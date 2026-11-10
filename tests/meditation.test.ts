@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  LENGTHS_MIN, SEQUENCES, SEQUENCE_IDS, blurbKey, lineKey, momentAt, nameKey, palOf, partAt, partKey, planSitting,
+  LENGTHS_SEC, SEQUENCES, SEQUENCE_IDS, blurbKey, lineKey, momentAt, nameKey, palOf, partAt, partKey, planSitting,
   rewardBand, skipPart, type PaletteRole,
 } from '../src/content/presences/meditations';
 import { PALETTE } from '../src/content/palette';
@@ -113,17 +113,17 @@ describe('the collection', () => {
 });
 
 describe('a sitting', () => {
-  it('offers 20, 30 and 40 minutes', () => {
-    expect([...LENGTHS_MIN]).toEqual([20, 30, 40]);
+  it('offers 20, 30 and 40 seconds', () => {
+    expect([...LENGTHS_SEC]).toEqual([20, 30, 40]);
   });
 
   it('reaches the chosen length: the timer reads the full time at the start and zero only at the end', () => {
-    for (const s of SEQUENCES) for (const min of LENGTHS_MIN) {
-      const plan = planSitting(s, min), total = min * 60000;
+    for (const s of SEQUENCES) for (const sec of LENGTHS_SEC) {
+      const plan = planSitting(s, sec), total = sec * 1000;
       expect(plan.totalMs).toBe(total);
       expect(plan.bounds[0]).toBe(0);
       expect(plan.bounds.at(-1)).toBe(total);
-      expect(momentAt(plan, 0).secondsLeft).toBe(min * 60);
+      expect(momentAt(plan, 0).secondsLeft).toBe(sec);
       expect(momentAt(plan, 0).done).toBe(false);
       expect(momentAt(plan, total - 1).secondsLeft).toBe(1);
       expect(momentAt(plan, total - 1).done).toBe(false);
@@ -134,33 +134,36 @@ describe('a sitting', () => {
   });
 
   it('gives each part its share of the length, in order, with no gap', () => {
-    for (const s of SEQUENCES) for (const min of LENGTHS_MIN) {
-      const plan = planSitting(s, min);
+    for (const s of SEQUENCES) for (const sec of LENGTHS_SEC) {
+      const plan = planSitting(s, sec);
       for (const [i, p] of s.parts.entries()) {
         const ms = plan.bounds[i + 1] - plan.bounds[i];
-        expect(Math.abs(ms - min * 600 * p.share), `${s.id} ${min} ${p.id}`).toBeLessThanOrEqual(1);
+        expect(Math.abs(ms - sec * 10 * p.share), `${s.id} ${sec} ${p.id}`).toBeLessThanOrEqual(1);
         expect(partAt(plan, plan.bounds[i])).toBe(i);
         expect(partAt(plan, plan.bounds[i + 1] - 1)).toBe(i);
       }
     }
   });
 
-  it('a longer sitting is the same meditation, slower: more rounds of the same lines', () => {
+  it('a longer sitting is the same meditation, slower: the same lines in the same order', () => {
     const s = SEQUENCES[0];
-    const count = (min: number) => {
-      const plan = planSitting(s, min), seen = new Set<number>();
-      for (let t = 0; t < plan.totalMs; t += 5000) seen.add(momentAt(plan, t).lineSeq);
-      return seen.size;
+    const order = (sec: number) => {
+      const plan = planSitting(s, sec), seen: number[] = [];
+      for (let t = 0; t < plan.totalMs; t += 20) {
+        const id = momentAt(plan, t).lineSeq;
+        if (seen.at(-1) !== id) seen.push(id);
+      }
+      return seen;
     };
-    expect(count(40)).toBeGreaterThan(count(20));
+    expect(order(40)).toEqual(order(20));
     const plan = planSitting(s, 20), lines = new Set<number>();
-    for (let t = plan.bounds[1]; t < plan.bounds[2]; t += 5000) lines.add(momentAt(plan, t).line);
+    for (let t = plan.bounds[1]; t < plan.bounds[2]; t += 20) lines.add(momentAt(plan, t).line);
     expect([...lines].sort()).toEqual([1, 2, 3]);
   });
 
   it('holds a whole number of breaths in every paced part: a part never ends mid-breath', () => {
-    for (const s of SEQUENCES) for (const min of LENGTHS_MIN) {
-      const plan = planSitting(s, min);
+    for (const s of SEQUENCES) for (const sec of LENGTHS_SEC) {
+      const plan = planSitting(s, sec);
       for (const [i, p] of s.parts.entries()) {
         if (!p.pace.length) { expect(momentAt(plan, plan.bounds[i] + 10).breath).toBe('natural'); continue; }
         const first = momentAt(plan, plan.bounds[i]), last = momentAt(plan, plan.bounds[i + 1] - 1);
@@ -177,7 +180,7 @@ describe('a sitting', () => {
     for (const s of SEQUENCES) {
       const plan = planSitting(s, 20);
       let prev = momentAt(plan, 0);
-      for (let t = 100; t < plan.totalMs; t += 100) {
+      for (let t = 20; t < plan.totalMs; t += 20) {
         const m = momentAt(plan, t);
         expect(m.lung).toBeGreaterThanOrEqual(0);
         expect(m.lung).toBeLessThanOrEqual(1);
@@ -189,7 +192,7 @@ describe('a sitting', () => {
 
   it('Next part ends the part now, keeps the length and shares the time left among the parts that follow', () => {
     for (const s of SEQUENCES) {
-      const plan = planSitting(s, 30), at = plan.bounds[1] + 60000;
+      const plan = planSitting(s, 30), at = plan.bounds[1] + 1000;
       const next = skipPart(plan, at);
       expect(next.totalMs).toBe(plan.totalMs);
       expect(next.bounds.at(-1)).toBe(plan.totalMs);
@@ -206,7 +209,7 @@ describe('a sitting', () => {
     let plan = planSitting(SEQUENCES[3], 20);
     for (let i = 0; i < 12; i++) plan = skipPart(plan, 1000 + i);
     expect(partAt(plan, 1100)).toBe(4);
-    expect(plan.totalMs).toBe(20 * 60000);
+    expect(plan.totalMs).toBe(20 * 1000);
     expect(momentAt(plan, 5000).done).toBe(false);
     expect(momentAt(plan, plan.totalMs - 1).done).toBe(false);
     expect(skipPart(plan, 5000)).toBe(plan);

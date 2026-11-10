@@ -6,7 +6,7 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss } from '../content/palette';
 import {
-  BREATH_KEY, LENGTHS_MIN, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
+  BREATH_KEY, LENGTHS_SEC, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
   type Moment, type Outcome, type PaletteRole, type SceneId, type SequenceId,
 } from '../content/presences/meditations';
 import { MeditationAudio } from '../audio/meditation';
@@ -14,7 +14,7 @@ import { makeScene, paintEnding, paintHome, type SceneFrame, type ScenePainter }
 import { activeDevice, type Input } from '../input/input';
 import { controlParams } from '../input/labels';
 import { localStore, type MetaStore } from './meta';
-import { MeditationApp, sceneBudget, type Prefs, type Screen } from './meditation-app';
+import { AppClock, MeditationApp, sceneBudget, type Prefs, type Screen } from './meditation-app';
 
 const ROLES: readonly PaletteRole[] = ['high', 'mid', 'deep', 'glow', 'accent', 'accent2', 'mote', 'ink'];
 /** The session bar hides after this long without input. */
@@ -63,6 +63,8 @@ export class MeditationView {
   private endAt = 0;
   private shown = { clock: '', part: '', line: '', breath: '', bar: -1 };
   private wake: { release(): Promise<void> } | null = null;
+  /** The app's clock: real time, but no more than a short step per call, so a hidden tab does not count. */
+  private clock = new AppClock();
 
   constructor() {
     onLocaleChange(() => { this.key = ''; });
@@ -90,7 +92,7 @@ export class MeditationView {
       const b = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-id]');
       if (!b) return;
       e.stopPropagation();
-      this.run(app => app.act(b.dataset.id!, performance.now()));
+      this.run(app => app.act(b.dataset.id!, this.clock.now(performance.now())));
     });
     root.addEventListener('mouseover', e => {
       const b = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('.tile');
@@ -108,6 +110,7 @@ export class MeditationView {
     this.done = done;
     this.key = '';
     this.openedAt = this.lastFrame = this.lastInput = performance.now();
+    this.clock.reset();
     this.sceneT = 0;
     this.endAt = 0;
     this.audio.setMuted(this.app.prefs.mute);
@@ -176,7 +179,7 @@ export class MeditationView {
     const n = inp.navigate();
     const any = n.x || n.y || (['confirm', 'back', 'skip', 'mute', 'calm'] as const).some(a => inp.hit(a));
     if (!any) return;
-    this.run(app => app.press(inp, now, cols));
+    this.run(app => app.press(inp, this.clock.now(now), cols));
   }
 
   /** Called every frame while the app is open: the clock, the sound, the scene and the words. */
@@ -185,7 +188,7 @@ export class MeditationView {
     if (!app || !this.root) return;
     const dt = Math.min(0.1, Math.max(0, (now - this.lastFrame) / 1000));
     this.lastFrame = now;
-    const tick = app.tick(now);
+    const tick = app.tick(this.clock.now(now));
     const m = app.moment;
     if (app.running) this.sceneT += dt;
     if (tick.done) { this.endAt = now; this.audio.end(); this.touched(); }
@@ -300,7 +303,7 @@ export class MeditationView {
       ui.append(this.closeButton('sanctuary.backLabel'), el('h2', '', t('sanctuary.library')), grid, hint('sanctuary.hint'));
     } else if (app.screen === 'length') {
       const row = el('div', 'lengths');
-      for (const n of LENGTHS_MIN) row.appendChild(this.tile(`len:${n}`, 'len', app, el('b', '', String(n)), el('span', '', t('sanctuary.minutes', { n }).replace(String(n), '').trim())));
+      for (const n of LENGTHS_SEC) row.appendChild(this.tile(`len:${n}`, 'len', app, el('b', '', String(n)), el('span', '', t('sanctuary.seconds', { n }).replace(String(n), '').trim())));
       ui.append(this.closeButton('sanctuary.backLabel'), el('p', 'over', t(nameKey(SEQUENCE[app.seq]))), el('h2', '', t('sanctuary.length')), row, el('p', 'lead', t('sanctuary.length.sub')), hint('sanctuary.hint'));
     } else if (app.screen === 'session') {
       const top = el('div', 'top');

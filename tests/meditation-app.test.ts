@@ -5,7 +5,7 @@
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { MeditationApp, PARTICLE_CAP, PARTICLE_CAP_SMALL, TOUCH_TILE, particleCap, sceneBudget } from '../src/game/meditation-app';
-import { LENGTHS_MIN, SEQUENCES, SEQUENCE_IDS, momentAt, planSitting } from '../src/content/presences/meditations';
+import { LENGTHS_SEC, SEQUENCES, SEQUENCE_IDS, momentAt, planSitting } from '../src/content/presences/meditations';
 import { BINDING, BINDINGS, DEVICES, contextsFor, type Action, type Device } from '../src/input/bindings';
 import { makeScene, paintEnding, paintHome, type SceneFrame } from '../src/render/meditation-scenes';
 import { ITEMS } from '../src/content/items';
@@ -25,14 +25,14 @@ beforeAll(async () => {
   }
 });
 
-const MIN = 60000;
+const S = 1000;
 
-/** An app in a sitting of `minutes`, begun at time 0. */
-function sitting(seq = SEQUENCE_IDS[0], minutes: number = 20) {
+/** An app in a sitting of `seconds`, begun at time 0. */
+function sitting(seq = SEQUENCE_IDS[0], seconds: number = 20) {
   const app = new MeditationApp();
   app.act('meditate', 0);
   app.act(`seq:${seq}`, 0);
-  app.act(`len:${minutes}`, 0);
+  app.act(`len:${seconds}`, 0);
   return app;
 }
 
@@ -64,7 +64,7 @@ describe('the flow', () => {
     app.act('len:30', 0);
     expect(app.screen).toBe('session');
     expect(app.plan!.seq.id).toBe('river');
-    expect(app.plan!.totalMs).toBe(30 * MIN);
+    expect(app.plan!.totalMs).toBe(30 * S);
     expect(app.running).toBe(true);
     expect(app.selected).toBe('pause');
   });
@@ -80,49 +80,49 @@ describe('the flow', () => {
 
 describe("the app's own clock", () => {
   it('reaches the chosen length, whatever the frame rate, and then shows the end', () => {
-    for (const minutes of LENGTHS_MIN) for (const step of [16, 1000, 7300]) {
-      const app = sitting('box', minutes);
+    for (const seconds of LENGTHS_SEC) for (const step of [16, 1000, 7300]) {
+      const app = sitting('box', seconds);
       let now = 0, done = 0;
       while (app.screen === 'session') {
         now += step;
         if (app.tick(now).done) done++;
-        expect(now).toBeLessThan(minutes * MIN + step + 1);
+        expect(now).toBeLessThan(seconds * S + step + 1);
       }
       expect(done).toBe(1);
-      expect(now).toBeGreaterThanOrEqual(minutes * MIN);
-      expect(app.elapsed).toBe(minutes * MIN);
+      expect(now).toBeGreaterThanOrEqual(seconds * S);
+      expect(app.elapsed).toBe(seconds * S);
       expect(app.screen).toBe('end');
       expect(app.selected).toBe('receive');
       expect(app.moment!.secondsLeft).toBe(0);
     }
   });
 
-  it('does not end a second before: at 19:59 of 20 the sitting still runs', () => {
+  it('does not end a second before: at 19 s of 20 the sitting still runs', () => {
     const app = sitting('ground', 20);
-    app.tick(20 * MIN - 1000);
+    app.tick(20 * S - 1000);
     expect(app.screen).toBe('session');
     expect(app.moment!.secondsLeft).toBe(1);
-    expect(app.act('receive', 20 * MIN - 1000)).toBeNull();
+    expect(app.act('receive', 20 * S - 1000)).toBeNull();
   });
 
   it('stops while paused and on the leave sheet, and goes on from where it was', () => {
     const app = sitting();
-    app.tick(5 * MIN);
-    app.act('pause', 5 * MIN);
+    app.tick(2 * S);
+    app.act('pause', 2 * S);
     expect(app.running).toBe(false);
-    app.tick(25 * MIN);
-    expect(app.elapsed).toBe(5 * MIN);
-    app.act('pause', 25 * MIN);
-    app.tick(26 * MIN);
-    expect(app.elapsed).toBe(6 * MIN);
-    app.act('leave', 26 * MIN);
+    app.tick(8 * S);
+    expect(app.elapsed).toBe(2 * S);
+    app.act('pause', 8 * S);
+    app.tick(9 * S);
+    expect(app.elapsed).toBe(3 * S);
+    app.act('leave', 9 * S);
     expect(app.screen).toBe('leave');
-    app.tick(90 * MIN);
-    expect(app.elapsed).toBe(6 * MIN);
-    expect(app.act('stay', 90 * MIN)).toBeNull();
+    app.tick(15 * S);
+    expect(app.elapsed).toBe(3 * S);
+    expect(app.act('stay', 15 * S)).toBeNull();
     expect(app.screen).toBe('session');
-    app.tick(91 * MIN);
-    expect(app.elapsed).toBe(7 * MIN);
+    app.tick(16 * S);
+    expect(app.elapsed).toBe(4 * S);
   });
 
   it('reports each new part, line and beat once', () => {
@@ -138,39 +138,40 @@ describe("the app's own clock", () => {
     expect(lines).toBeGreaterThanOrEqual(13);
     const plan = planSitting(SEQUENCES.find(s => s.id === 'box')!, 20);
     const boxBeats = momentAt(plan, plan.bounds[2] - 1).beat + 1;
-    expect(boxBeats).toBe(Math.round(5 * 60 / 16) * 4);
+    // The 'four' part is 5 seconds: one box breath of four beats, each beat 1.25 seconds.
+    expect(boxBeats).toBe(4);
     expect(beats).toBeGreaterThan(boxBeats * 2);
   });
 
   it('Next part moves on without moving the timer, and cannot pass the last part', () => {
     const app = sitting('warm', 20);
-    app.tick(30000);
+    app.tick(1000);
     expect(app.moment!.part).toBe(0);
     const left = app.moment!.secondsLeft;
     for (let i = 1; i <= 4; i++) {
-      app.act('skip', 30000);
+      app.act('skip', 1000);
       expect(app.moment!.part).toBe(i);
       expect(app.moment!.secondsLeft).toBe(left);
     }
-    app.act('skip', 30000);
+    app.act('skip', 1000);
     expect(app.moment!.part).toBe(4);
     expect(app.screen).toBe('session');
-    app.tick(19 * MIN);
+    app.tick(19 * S);
     expect(app.screen).toBe('session');
-    app.tick(20 * MIN);
+    app.tick(20 * S);
     expect(app.screen).toBe('end');
   });
 });
 
 describe('the reward of each way out', () => {
   it('leaving early gives the quick reward, never the better one, at any moment of any sitting', () => {
-    for (const minutes of LENGTHS_MIN) for (const at of [0, 1, 10 * MIN, minutes * MIN - 1]) {
-      const byButton = sitting('dusk', minutes);
+    for (const seconds of LENGTHS_SEC) for (const at of [0, 1, 10 * S, seconds * S - 1]) {
+      const byButton = sitting('dusk', seconds);
       byButton.tick(at);
       expect(byButton.act('leave', at)).toBeNull();
       expect(byButton.selected).toBe('stay');
       expect(byButton.act('quick', at)).toBe('quick');
-      const byBack = sitting('dusk', minutes);
+      const byBack = sitting('dusk', seconds);
       byBack.tick(at);
       expect(byBack.back(at)).toBeNull();
       expect(byBack.act('receive', at)).toBeNull();
@@ -190,22 +191,22 @@ describe('the reward of each way out', () => {
 
   it('completing gives the better reward, by Receive or by any way out of the end', () => {
     const a = sitting('night', 20);
-    a.tick(20 * MIN);
-    expect(a.act('receive', 20 * MIN)).toBe('complete');
+    a.tick(20 * S);
+    expect(a.act('receive', 20 * S)).toBe('complete');
     const b = sitting('night', 40);
-    b.tick(40 * MIN);
-    expect(b.back(40 * MIN)).toBe('complete');
+    b.tick(40 * S);
+    expect(b.back(40 * S)).toBe('complete');
     const c = sitting('night', 30);
-    c.tick(30 * MIN);
-    expect(c.act('close', 30 * MIN)).toBe('complete');
+    c.tick(30 * S);
+    expect(c.act('close', 30 * S)).toBe('complete');
   });
 
   it('a paused sitting never completes by waiting', () => {
     const app = sitting();
     app.act('pause', 0);
-    app.tick(500 * MIN);
+    app.tick(500 * S);
     expect(app.screen).toBe('session');
-    expect(app.act('receive', 500 * MIN)).toBeNull();
+    expect(app.act('receive', 500 * S)).toBeNull();
   });
 
   it('not now, on Home, gives nothing', () => {
@@ -215,12 +216,12 @@ describe('the reward of each way out', () => {
 
   it('is granted once only: after an outcome the app takes no more presses', () => {
     const app = sitting();
-    app.tick(20 * MIN);
-    expect(app.act('receive', 20 * MIN)).toBe('complete');
-    expect(app.act('receive', 20 * MIN)).toBeNull();
-    expect(app.back(20 * MIN)).toBeNull();
-    expect(app.act('quick', 20 * MIN)).toBeNull();
-    expect(app.press({ hit: () => true, navigate: () => ({ x: 0, y: 0 }) }, 20 * MIN, 1)).toBeNull();
+    app.tick(20 * S);
+    expect(app.act('receive', 20 * S)).toBe('complete');
+    expect(app.act('receive', 20 * S)).toBeNull();
+    expect(app.back(20 * S)).toBeNull();
+    expect(app.act('quick', 20 * S)).toBeNull();
+    expect(app.press({ hit: () => true, navigate: () => ({ x: 0, y: 0 }) }, 20 * S, 1)).toBeNull();
     expect(app.outcome).toBe('complete');
     const quick = new MeditationApp();
     expect(quick.act('quick', 0)).toBe('quick');
@@ -328,7 +329,7 @@ describe('every control on every input type', () => {
       expect(app.selected).toBe('len:30');
       inp.press('confirm'); go();
       expect(app.screen).toBe('session');
-      expect(app.plan!.totalMs).toBe(30 * MIN);
+      expect(app.plan!.totalMs).toBe(30 * S);
       expect(app.seq).toBe(SEQUENCE_IDS[4]);
       inp.press('skip'); go(1000);
       expect(app.moment!.part).toBe(1);
@@ -361,9 +362,9 @@ describe('every control on every input type', () => {
       inp.press('back');
       expect(new MeditationApp().press(inp, 0, 2)).toBe('cancel');
       const done = sitting();
-      done.tick(20 * MIN);
+      done.tick(20 * S);
       inp.press('confirm');
-      expect(done.press(inp, 20 * MIN, 1)).toBe('complete');
+      expect(done.press(inp, 20 * S, 1)).toBe('complete');
     });
   }
 
@@ -489,22 +490,22 @@ describe('calm visuals and the particle caps', () => {
   it('calm visuals keeps the timer, the part, the instruction and the breath exactly as they are', () => {
     const calm = new MeditationApp({ mute: false, calm: true }), full = new MeditationApp({ mute: false, calm: false });
     for (const app of [calm, full]) { app.act('meditate', 0); app.act('seq:box', 0); app.act('len:20', 0); }
-    for (let now = 0; now <= 20 * MIN; now += 7777) {
+    for (let now = 0; now <= 20 * S; now += 333) {
       calm.tick(now); full.tick(now);
       expect(calm.moment).toEqual(full.moment);
       expect(calm.screen).toBe(full.screen);
     }
-    calm.tick(20 * MIN); full.tick(20 * MIN);
+    calm.tick(20 * S); full.tick(20 * S);
     expect(calm.screen).toBe('end');
-    expect(calm.act('receive', 20 * MIN)).toBe('complete');
+    expect(calm.act('receive', 20 * S)).toBe('complete');
   });
 
   it('switching calm visuals in a sitting does not touch its clock', () => {
     const app = sitting();
-    app.tick(3 * MIN);
-    app.act('calm', 3 * MIN);
-    app.tick(4 * MIN);
-    expect(app.elapsed).toBe(4 * MIN);
+    app.tick(3 * S);
+    app.act('calm', 3 * S);
+    app.tick(4 * S);
+    expect(app.elapsed).toBe(4 * S);
     expect(app.prefs.calm).toBe(true);
   });
 });

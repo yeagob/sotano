@@ -6,8 +6,9 @@
 import type { MessageKey } from '../../i18n';
 import type { PalToken } from '../palette';
 
-export const LENGTHS_MIN = [20, 30, 40] as const;
-export type LengthMin = typeof LENGTHS_MIN[number];
+/** The sitting lengths the owner set, in seconds (20 to 40 seconds). */
+export const LENGTHS_SEC = [20, 30, 40] as const;
+export type LengthSec = typeof LENGTHS_SEC[number];
 
 /** A guidance line stays on screen for about this long before the next one. */
 export const LINE_MS = 45000;
@@ -187,8 +188,8 @@ function share(seq: Sequence, from: number, startMs: number, totalMs: number): n
   return out;
 }
 
-export function planSitting(seq: Sequence, minutes: number): Plan {
-  const totalMs = minutes * 60000;
+export function planSitting(seq: Sequence, seconds: number): Plan {
+  const totalMs = seconds * 1000;
   return { seq, totalMs, bounds: [0, ...share(seq, 0, 0, totalMs)] };
 }
 

@@ -2,13 +2,13 @@
 // without a page: the view draws whatever this says and sends every press through `act`, `back` or `press`.
 //
 // Screens: `home` (meditate, or take the quick reward), `library` (which meditation), `length` (20, 30 or 40
-// minutes; choosing begins), `session` (the sitting, on the app's own clock), `leave` (stay, or leave with the
+// seconds; choosing begins), `session` (the sitting, on the app's own clock), `leave` (stay, or leave with the
 // quick reward) and `end` (receive). An outcome ends the app, once: `cancel` (not now), `quick` or `complete`.
 
 import type { Action } from '../input/bindings';
 import {
-  LENGTHS_MIN, SEQUENCE, SEQUENCE_IDS, momentAt, planSitting, skipPart,
-  type LengthMin, type Moment, type Outcome, type Plan, type SequenceId,
+  LENGTHS_SEC, SEQUENCE, SEQUENCE_IDS, momentAt, planSitting, skipPart,
+  type LengthSec, type Moment, type Outcome, type Plan, type SequenceId,
 } from '../content/presences/meditations';
 
 export type Screen = 'home' | 'library' | 'length' | 'session' | 'leave' | 'end';
@@ -35,12 +35,35 @@ export function sceneBudget(width: number, height: number, calm: boolean) {
 /** The buttons a touch (or a click) reaches each action through. */
 export const TOUCH_TILE: Partial<Record<Action, string>> = { skip: 'skip', mute: 'mute', calm: 'calm', back: 'close' };
 
+/** The longest step the app's clock takes in one call. A stalled frame counts for at most this much. */
+export const MAX_CLOCK_STEP_MS = 250;
+
+/**
+ * Turns the real timestamps of the page into the app's clock. Each call moves the clock by the real time since
+ * the last call, but never by more than MAX_CLOCK_STEP_MS. A hidden tab stops its frames, so when it comes back
+ * the time it was hidden is not counted: a sitting cannot end while the game is not drawing it.
+ */
+export class AppClock {
+  private at: number | null = null;
+  private t = 0;
+
+  /** The app's time after the real time `real` (milliseconds, from a monotonic source). */
+  now(real: number): number {
+    if (this.at !== null) this.t += Math.min(MAX_CLOCK_STEP_MS, Math.max(0, real - this.at));
+    this.at = real;
+    return this.t;
+  }
+
+  /** A new sitting starts from zero. */
+  reset() { this.at = null; this.t = 0; }
+}
+
 interface PressSource { hit(a: Action): boolean; navigate(): { x: number; y: number } }
 
 export class MeditationApp {
   screen: Screen = 'home';
   seq: SequenceId = SEQUENCE_IDS[0];
-  minutes: LengthMin = LENGTHS_MIN[0];
+  seconds: LengthSec = LENGTHS_SEC[0];
   plan: Plan | null = null;
   paused = false;
   /** Milliseconds of the sitting that have run. Only a running session moves it. */
@@ -59,7 +82,7 @@ export class MeditationApp {
     switch (this.screen) {
       case 'home': return ['meditate', 'quick'];
       case 'library': return SEQUENCE_IDS.map(id => `seq:${id}`);
-      case 'length': return LENGTHS_MIN.map(m => `len:${m}`);
+      case 'length': return LENGTHS_SEC.map(s => `len:${s}`);
       case 'session': return ['pause', 'skip', 'mute', 'calm', 'leave'];
       case 'leave': return ['stay', 'quick'];
       case 'end': return ['receive'];
@@ -96,11 +119,11 @@ export class MeditationApp {
         return null;
       case 'library':
         this.seq = id.slice(4) as SequenceId;
-        this.go('length', `len:${this.minutes}`);
+        this.go('length', `len:${this.seconds}`);
         return null;
       case 'length':
-        this.minutes = Number(id.slice(4)) as LengthMin;
-        this.plan = planSitting(SEQUENCE[this.seq], this.minutes);
+        this.seconds = Number(id.slice(4)) as LengthSec;
+        this.plan = planSitting(SEQUENCE[this.seq], this.seconds);
         this.elapsed = 0;
         this.paused = false;
         this.seen = { part: -1, line: -1, beat: -1 };
