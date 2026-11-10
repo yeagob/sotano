@@ -8,6 +8,8 @@ Built. How every boss fight runs, from the sealed door to the way down. The code
 
 A boss room is one room of its floor. Entering it shuts its doors at once, with the same slam as any fight (see [Seal and omens](../encounters/SEAL-AND-OMENS.md)). The floor's boss is not yet there.
 
+**The room is large.** On floor 0 and every floor below it, a boss always fights in a large room: a template two cells wide (28 by 7 blocks), so the fight has space to move and dodge. The boss is drawn before its floor is carved, and the room follows from it: `crown-hall` on floors 1 to 4, `abyss` (the great pit) on floor 5 and `caldera-hall` on floors 6 to 9. A boss may fight in a small, one-cell room only when its own definition says so (`EnemyDef.smallRoom`) and its design document says why; no boss does today, so the one-cell boss templates (`arena`, `pit`, `caldera`) are not chosen. The rule is `bossRoomIsLarge` in `src/world/floor.ts`, tested in `tests/boss-rooms-large.test.ts` (issue #131). How the space is found is in [Rooms bigger than their cell](../levels/rooms/MULTI-CELL.md).
+
 ## 2. The boss rises
 
 The boss wakes 1.2 seconds after the player enters. An omen opens on a seeded floor cell of the room, away from the player: the cold motes gather, the crack opens, and the boss breaches out of it. The omen holds at its crack while the player stands within 3.5 blocks, as any projection's does. The boss then looks at the player and begins.

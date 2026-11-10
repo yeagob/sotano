@@ -11,6 +11,7 @@ import { SKY_KOALA_PALETTE } from './palette/sky-koala';
 import { SKY_LION_PALETTE } from './palette/sky-lion';
 import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
+import { MEDITATION_PALETTE } from './palette/meditation';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -116,6 +117,13 @@ export const PALETTE = {
   'mat.ashlar.outline': '#293C3B', 'mat.ashlar.dark': '#3F5C59', 'mat.ashlar.base': '#567977', 'mat.ashlar.hi': '#6C8C89',
   'mat.slate.outline': '#3F343F', 'mat.slate.dark': '#604F60', 'mat.slate.base': '#7F697F', 'mat.slate.hi': '#917D91',
   'mat.darkbrick.outline': '#271724', 'mat.darkbrick.dark': '#42293E', 'mat.darkbrick.base': '#5A3C56', 'mat.darkbrick.hi': '#755871',
+  // The giant tree (docs/design/built/levels/giant-tree/BARK.md): the bark changes with height, the
+  // limbs have their own smooth bark, the crown has its own leaves (DECISIONS §6.2, issue #12).
+  'mat.rootbark.outline': '#1C1611', 'mat.rootbark.dark': '#33271D', 'mat.rootbark.base': '#4A3A2B', 'mat.rootbark.hi': '#665240',
+  'mat.oldbark.outline': '#2A2C25', 'mat.oldbark.dark': '#474A3E', 'mat.oldbark.base': '#686A5C', 'mat.oldbark.hi': '#8A8D7C',
+  'mat.bough.outline': '#3A2B1C', 'mat.bough.dark': '#6B5136', 'mat.bough.base': '#94744F', 'mat.bough.hi': '#B4946A',
+  'mat.leaf.outline': '#182A1C', 'mat.leaf.dark': '#2B4A2F', 'mat.leaf.base': '#3F6A40', 'mat.leaf.hi': '#5E8F55',
+  'mat.youngleaf.outline': '#2E4219', 'mat.youngleaf.dark': '#4D6E2A', 'mat.youngleaf.base': '#6E963A', 'mat.youngleaf.hi': '#95BC55',
 
   // Elements (DECISIONS §3.8): owned by the world. Fire and lava are the only warm emitters that
   // are not the player's, and they hurt: warmth that isn't yours burns. Water never glows.
@@ -145,6 +153,9 @@ export const PALETTE = {
   ...SKY_ELEPHANT_PALETTE,
   ...SKY_LION_PALETTE,
   ...SKY_HORSE_PALETTE,
+
+  // The Sanctuary, the Boundary's meditation app: its own namespace (DECISIONS §10.8).
+  ...MEDITATION_PALETTE,
 } as const;
 
 export type PalToken = keyof typeof PALETTE;

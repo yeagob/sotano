@@ -1,11 +1,11 @@
 export type Device = 'keyboard' | 'gamepad' | 'touch';
 export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 
-export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll';
+export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll' | 'meditation';
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back';
+  | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -120,25 +120,46 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'respawn from the death screen', noita: 'new game from the pause menu', isaac: 'hold R to restart; on a pad, restart from the pause menu' },
   },
   {
-    action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll'],
+    action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll', 'meditation'],
     keyboard: { keys: ['Enter'], mouse: [0, 1, 2] },
     gamepad: { buttons: [PAD.A] },
     touch: { control: 'tap' },
     refs: { minecraft: 'click / A accepts', noita: 'click / A continues', isaac: 'any shot key / A dismisses and continues' },
   },
   {
-    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused'],
+    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused', 'meditation'],
     keyboard: { keys: Object.values(NAV_KEYS).flat() },
     gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },
     refs: { minecraft: 'the d-pad moves between slots; left and right move an options slider', noita: 'the d-pad moves between slots and options', isaac: 'the d-pad moves the selection; left and right change an option' },
   },
   {
-    action: 'back', kind: 'press', when: ['inventory', 'toll'],
+    action: 'back', kind: 'press', when: ['inventory', 'toll', 'meditation'],
     keyboard: { keys: ['Escape'] },
     gamepad: { buttons: [PAD.B] },
     touch: { control: 'menuButton' },
     refs: { minecraft: 'Esc / B closes a screen', noita: 'Esc / B closes a screen', isaac: 'Esc / B closes a screen' },
+  },
+  {
+    action: 'skip', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyN'] },
+    gamepad: { buttons: [PAD.RB] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'the right bumper moves to the next slot or tab', noita: 'the right shoulder moves to the next wand', isaac: 'one button per thing: the next card or pill has its own' },
+  },
+  {
+    action: 'mute', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyM'] },
+    gamepad: { buttons: [PAD.X] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'sound is a switch in the options screen', noita: 'sound is a switch in the options screen', isaac: 'M mutes the music' },
+  },
+  {
+    action: 'calm', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyC'] },
+    gamepad: { buttons: [PAD.Y] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'screen shake is a switch in the options', isaac: 'Y opens what the screen offers beside the main choice' },
   },
 ];
 

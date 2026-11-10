@@ -2,11 +2,11 @@
 
 Up: [giant tree](README.md) · Status: built.
 
-The stars are the last story of the tree: the sky above the crown, the place the HUD calls heaven. A disc of living wood stands above the crown, and from it the star pads rise into the sky, each pad carrying you to the next. The owner's line: a star map of constellations, with teleport doors and views of the cosmos. The build has the pads and the night; the constellations are placed in the heaven zone, and where they belong is an open question (see [TREE-CONSTELLATIONS](../../../not-built/levels/TREE-CONSTELLATIONS.md)).
+The stars are the last story of the tree: the sky above the crown, the place the HUD calls heaven. A disc of bough stands above the crown, and from it the star pads rise into the sky, each pad carrying you to the next. The owner's line: a star map of constellations, with teleport doors and views of the cosmos. The build has the pads and the night; the constellations are placed in the heaven zone, and where they belong is an open question (see [TREE-CONSTELLATIONS](../../../not-built/levels/TREE-CONSTELLATIONS.md)).
 
 ## The disc
 
-A disc of living wood, nine blocks in radius and two thick, lies over the stair from the canopy. It is the landing where you arrive from below.
+A disc of bough, nine blocks in radius and two thick, lies over the stair from the canopy. It is the landing where you arrive from below.
 
 ## The pads
 

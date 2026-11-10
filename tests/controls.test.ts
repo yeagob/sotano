@@ -4,7 +4,7 @@ import { LESSON_CONTROLS } from '../src/input/labels';
 import { HUD_ICONS } from '../src/content/hud-icons';
 import { EN } from '../src/i18n/locales/en';
 
-const CONTEXTS: Context[] = ['play', 'prompt', 'paused', 'dead', 'inventory'];
+const CONTEXTS: Context[] = ['play', 'prompt', 'paused', 'dead', 'inventory', 'toll', 'meditation'];
 const messages = EN.messages as Record<string, unknown>;
 
 function inputs(b: Binding, d: Device): string[] {

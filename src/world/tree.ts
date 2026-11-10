@@ -23,6 +23,18 @@ export const TREE_STORIES: readonly TreeStory[] = [
 
 export const TREE_ZONES = { trunk: 0, branches: 88, leaves: 112, heaven: 146 } as const;
 
+/** The bark of each trunk story (docs/design/built/levels/giant-tree/BARK.md): root bark at the foot,
+ *  living wood in the middle, old bark high up; the stair stays living wood all the way; above the trunk, boughs. */
+export const STORY_BARK: Readonly<Record<TreeStory['key'], string>> = {
+  roots: 'rootbark', rings: 'log', galleries: 'log', hollows: 'oldbark', branches: 'oldbark', canopy: 'bough', stars: 'bough',
+};
+/** Rows at the foot of a story where its bark gives way, patch by patch, to the bark of the story below. */
+export const BARK_BLEND = 4;
+/** Share of the crown's leaf cells (4 × 4 × 4) that are young leaves; more of them towards the top. */
+export const YOUNG_LEAF_SHARE = 0.3;
+
+/** Stands for "this story's bark" in the builders; `put` resolves it cell by cell (`barkAt`). */
+const BARK = -1;
 const WALL = 3;
 const STAIR_R = 6.5;
 const STAIR_CORE = 2;
@@ -39,9 +51,12 @@ export class GiantTree {
   readonly pads: StarPad[] = [];
   voxels = 0;
   private grown = new Set<number>();
+  /** The run's salt for the bark and leaf patches: the same seed grows the same bark. */
+  private readonly salt: number;
 
   constructor(private w: VoxelWorld, surfaceY: number, private fork: (story: number) => Rng) {
     this.cx = w.sx >> 1; this.cz = w.sz >> 1; this.base = surfaceY + 1;
+    this.salt = fork(TREE_STORIES.length).u32() & 0x7fffffff;
     this.top = Math.min(w.sy - 1, this.base + TREE_STORIES[TREE_STORIES.length - 1].y0 + TREE_STORIES[TREE_STORIES.length - 1].h - 1);
   }
 
@@ -59,6 +74,25 @@ export class GiantTree {
 
   isGrown(i: number) { return this.grown.has(i); }
 
+  /** The bark at a cell: its story's bark, with ragged patches of the bark below in the story's
+   *  lowest rows, so a change of bark is a seam of patches and never a straight line. */
+  barkAt(x: number, y: number, z: number): number {
+    const i = Math.max(0, this.storyAt(y));
+    const own = MAT[STORY_BARK[TREE_STORIES[i].key]];
+    if (i === 0) return own;
+    const h = y - this.range(i)[0];
+    if (h >= BARK_BLEND) return own;
+    const below = MAT[STORY_BARK[TREE_STORIES[i - 1].key]];
+    return hash3(this.salt, x >> 1, y, z >> 1) < (BARK_BLEND - h) / (BARK_BLEND + 1) ? below : own;
+  }
+
+  /** The crown's leaves at a cell: patches of young leaves, more of them the higher the cell. */
+  leafAt(x: number, y: number, z: number): number {
+    const [y0, y1] = this.range(TREE_STORIES.findIndex(s => s.key === 'canopy'));
+    const t = Math.min(1, Math.max(0, (y - y0) / (y1 - y0)));
+    return hash3(this.salt + 1, x >> 2, y >> 2, z >> 2) < YOUNG_LEAF_SHARE * (0.4 + 1.2 * t) ? MAT.youngleaf : MAT.leaves;
+  }
+
   grow(i: number) {
     if (i < 0 || i >= TREE_STORIES.length || this.grown.has(i)) return;
     this.grown.add(i);
@@ -66,6 +100,7 @@ export class GiantTree {
     const rng = this.fork(i);
     const put = (x: number, y: number, z: number, m: number) => {
       if (x < 1 || z < 1 || x > this.w.sx - 2 || z > this.w.sz - 2 || y < cy0 || y > cy1) return;
+      if (m === BARK) m = this.barkAt(x, y, z);
       const k = this.w.idx(x, y, z);
       if (this.w.data[k] === m) return;
       if (m !== AIR && this.w.data[k] === AIR) this.voxels++;
@@ -108,12 +143,12 @@ export class GiantTree {
       const d = Math.hypot(dx, dz);
       if (d > r + 0.5) continue;
       const x = cx + dx, z = cz + dz, a = Math.atan2(dz, dx);
-      if (i > 0) { put(x, fy - 2, z, MAT.log); put(x, fy - 1, z, MAT.log); }
+      if (i > 0) { put(x, fy - 2, z, BARK); put(x, fy - 1, z, BARK); }
       if (d <= r - WALL + 0.5) continue;
       for (let y = fy; y <= ceil; y++) {
         const h = y - fy;
         const knot = h >= 3 && h <= 6 && knots.some(k => Math.abs(angleDiff(a, k)) * r < 2.2);
-        put(x, y, z, knot ? AIR : MAT.log);
+        put(x, y, z, knot ? AIR : BARK);
       }
     }
   }
@@ -161,7 +196,7 @@ export class GiantTree {
         const height = Math.round(10 * (1 - t) * (1 - t)), half = Math.max(0, Math.round(2 * (1 - t)));
         if (height <= 0) break;
         for (let o = -half; o <= half; o++) for (let y = 0; y < height - Math.abs(o); y++)
-          put(x + Math.round(-Math.sin(aa) * o), fy + y, z + Math.round(Math.cos(aa) * o), MAT.log);
+          put(x + Math.round(-Math.sin(aa) * o), fy + y, z + Math.round(Math.cos(aa) * o), BARK);
       }
     }
     for (let k = 0; k < 8; k++) {
@@ -169,15 +204,15 @@ export class GiantTree {
       for (let s = 6; s < r - WALL; s++) {
         const x = cx + Math.round(Math.cos(a) * s), z = cz + Math.round(Math.sin(a) * s);
         if (this.nearStairs(0, x, z) || (s % 9 === 4)) continue;
-        put(x, fy, z, MAT.log);
-        if (s > r - WALL - 9) put(x, fy + 1, z, MAT.log);
+        put(x, fy, z, BARK);
+        if (s > r - WALL - 9) put(x, fy + 1, z, BARK);
       }
     }
     for (let k = 0; k < 6; k++) {
       const a = (k + 0.5) / 6 * Math.PI * 2, d = r * 0.55;
       const px = cx + Math.round(Math.cos(a) * d), pz = cz + Math.round(Math.sin(a) * d);
       if (this.nearStairs(0, px, pz, 4)) continue;
-      column(put, px, pz, fy, ceil, 2.2, MAT.log);
+      column(put, px, pz, fy, ceil, 2.2, BARK);
     }
     for (let dz = -4; dz <= 4; dz++) for (let dx = -4; dx <= 4; dx++) {
       const d = Math.hypot(dx, dz);
@@ -195,11 +230,11 @@ export class GiantTree {
         if (Math.abs(d - rr) > 0.5) continue;
         const x = cx + dx, z = cz + dz, a = Math.atan2(dz, dx);
         if (gaps.some(g => Math.abs(angleDiff(a, g)) * rr < 2) || this.nearStairs(i, x, z)) continue;
-        put(x, fy, z, MAT.log);
-        if (rr % 2 === 0) put(x, fy + 1, z, MAT.log);
+        put(x, fy, z, BARK);
+        if (rr % 2 === 0) put(x, fy + 1, z, BARK);
       }
     }
-    if (!this.nearStairs(i, cx, cz, 3)) column(put, cx, cz, fy, ceil, 1.6, MAT.log);
+    if (!this.nearStairs(i, cx, cz, 3)) column(put, cx, cz, fy, ceil, 1.6, BARK);
   }
 
   private galleries(i: number, put: Put, fy: number, ceil: number, rng: Rng) {
@@ -209,8 +244,8 @@ export class GiantTree {
       const d = Math.hypot(dx, dz);
       if (d > inner + 0.5 || d < inner - 4.5) continue;
       if (this.nearStairs(i, cx + dx, cz + dz)) continue;
-      put(cx + dx, fy + level - 1, cz + dz, MAT.log);
-      if (d < inner - 3.5 && hash3(7, cx + dx, i, cz + dz) > 0.3) put(cx + dx, fy + level, cz + dz, MAT.log);
+      put(cx + dx, fy + level - 1, cz + dz, BARK);
+      if (d < inner - 3.5 && hash3(7, cx + dx, i, cz + dz) > 0.3) put(cx + dx, fy + level, cz + dz, BARK);
     }
     for (let k = 0; k < 2; k++) {
       const a0 = rng.range(0, Math.PI * 2) + k * Math.PI, rr = inner - 2;
@@ -219,7 +254,7 @@ export class GiantTree {
         for (let o = -1; o <= 1; o++) {
           const x = cx + Math.round(Math.cos(a) * (rr + o)), z = cz + Math.round(Math.sin(a) * (rr + o));
           if (this.nearStairs(i, x, z)) continue;
-          for (let y = fy; y < fy + j; y++) put(x, y, z, MAT.log);
+          for (let y = fy; y < fy + j; y++) put(x, y, z, BARK);
           for (let y = fy + j; y < fy + level + 2; y++) put(x, y, z, AIR);
         }
       }
@@ -239,7 +274,7 @@ export class GiantTree {
     for (let gz = -inner; gz <= inner; gz += 8) for (let gx = -inner; gx <= inner; gx += 8) {
       const x = cx + gx + rng.int(-1, 1), z = cz + gz + rng.int(-1, 1);
       if (Math.hypot(x - cx, z - cz) > inner - 3 || this.nearStairs(i, x, z, 3) || rng.chance(0.25)) continue;
-      column(put, x, z, fy, ceil, 1.5, MAT.log);
+      column(put, x, z, fy, ceil, 1.5, BARK);
       posts.push([x, z]);
     }
     const deck = fy + 9;
@@ -248,7 +283,7 @@ export class GiantTree {
       const n = Math.max(Math.abs(bx - ax), Math.abs(bz - az));
       for (let t = 0; t <= n; t++) {
         const x = Math.round(ax + (bx - ax) * t / n), z = Math.round(az + (bz - az) * t / n);
-        for (let ox = 0; ox <= 1; ox++) for (let oz = 0; oz <= 1; oz++) if (!this.nearStairs(i, x + ox, z + oz)) put(x + ox, deck, z + oz, MAT.log);
+        for (let ox = 0; ox <= 1; ox++) for (let oz = 0; oz <= 1; oz++) if (!this.nearStairs(i, x + ox, z + oz)) put(x + ox, deck, z + oz, BARK);
       }
     }
   }
@@ -265,14 +300,14 @@ export class GiantTree {
         if (x < 5 || z < 5 || x > this.w.sx - 6 || z > this.w.sz - 6) break;
         const thick = s < r + 10 ? 1 : 0;
         for (let ox = -thick; ox <= 1; ox++) for (let oz = -thick; oz <= 1; oz++) {
-          put(x + ox, y, z + oz, MAT.log);
-          if (thick) put(x + ox, y - 1, z + oz, MAT.log);
+          put(x + ox, y, z + oz, MAT.bough);
+          if (thick) put(x + ox, y - 1, z + oz, MAT.bough);
         }
         if (s <= r + 1) for (let oy = 1; oy <= 4; oy++) for (let ox = -1; ox <= 2; ox++) for (let oz = -1; oz <= 2; oz++) put(x + ox, y + oy, z + oz, AIR);
         ex = x; ez = z; ey = y;
       }
       if (Math.hypot(ex - cx, ez - cz) < r + 4) continue;
-      for (let dz = -3; dz <= 3; dz++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dz * dz <= 10) put(ex + dx, ey, ez + dz, MAT.log);
+      for (let dz = -3; dz <= 3; dz++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dz * dz <= 10) put(ex + dx, ey, ez + dz, MAT.bough);
       blob(this.w, put, ex, Math.min(ey + 8, ceil - 4), ez, 5);
     }
   }
@@ -282,20 +317,20 @@ export class GiantTree {
     for (let dz = -30; dz <= 30; dz++) for (let dx = -30; dx <= 30; dx++) {
       const d = Math.hypot(dx, dz);
       if (d > 30 || (d > 22 && hash3(13, cx + dx, i, cz + dz) < 0.35)) continue;
-      put(cx + dx, fy - 2, cz + dz, MAT.log); put(cx + dx, fy - 1, cz + dz, MAT.log);
+      put(cx + dx, fy - 2, cz + dz, BARK); put(cx + dx, fy - 1, cz + dz, BARK);
     }
     for (let y = fy - 2; y <= ceil; y++) for (let z = cz - rz; z <= cz + rz; z++) for (let x = cx - rx; x <= cx + rx; x++) {
       const e = ((x - cx) / rx) ** 2 + ((y - fy + 2) / (ry + 2)) ** 2 + ((z - cz) / rz) ** 2;
       if (e > 1 || e < 0.84) continue;
       if (hash3(17, x >> 3, y >> 3, z >> 3) < 0.18) continue;
-      if (this.w.data[this.w.idx(x, y, z)] === AIR) put(x, y, z, MAT.leaves);
+      if (this.w.data[this.w.idx(x, y, z)] === AIR) put(x, y, z, this.leafAt(x, y, z));
     }
     for (let k = 0; k < 5; k++) {
       const a = rng.range(0, Math.PI * 2), len = 26 + rng.int(0, 10);
       for (let s = 0; s < len; s++) {
         const x = cx + Math.round(Math.cos(a) * s), z = cz + Math.round(Math.sin(a) * s), y = fy + Math.round(s * 0.55);
         if (this.nearStairs(i, x, z, 2)) continue;
-        for (let ox = 0; ox <= 1; ox++) for (let oz = 0; oz <= 1; oz++) put(x + ox, y, z + oz, MAT.log);
+        for (let ox = 0; ox <= 1; ox++) for (let oz = 0; oz <= 1; oz++) put(x + ox, y, z + oz, MAT.bough);
       }
     }
   }
@@ -303,7 +338,7 @@ export class GiantTree {
   private stars(put: Put, fy: number, rng: Rng) {
     const [sx, sz] = this.stairAt(TREE_STORIES.length - 2);
     for (let dz = -9; dz <= 9; dz++) for (let dx = -9; dx <= 9; dx++) if (dx * dx + dz * dz <= 81) {
-      put(sx + dx, fy - 2, sz + dz, MAT.log); put(sx + dx, fy - 1, sz + dz, MAT.log);
+      put(sx + dx, fy - 2, sz + dz, BARK); put(sx + dx, fy - 1, sz + dz, BARK);
     }
     const pad = (x: number, y: number, z: number) => {
       for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) put(x + dx, y - 1, z + dz, MAT.starstone);

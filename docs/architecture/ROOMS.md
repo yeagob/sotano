@@ -7,7 +7,7 @@ How a floor is put together: a procedural **plan** (which room goes where) fille
 Isaac-style (see [TECHNICAL.md §1.6](../research/TECHNICAL.md#16-floor-generation)):
 
 1. A 7×7 grid. Start in the middle (floor 0) or **right under the boss room of the floor above** (floors 1–9), and grow with a queue: each room tries its four neighbours; a new cell is accepted only if it would touch **exactly one** existing room (so there are no loops) and a coin flip says yes. Target: 8–11 rooms.
-2. Rooms with a single neighbour are **dead ends**. The farthest one (by steps from the start) becomes the **boss** room; another one at random the **treasure** room; a third, if there is one, a locked **vault**.
+2. Rooms with a single neighbour are **dead ends**. The farthest one (by steps from the start) becomes the **boss** room; another one at random the **treasure** room; a third, if there is one, a locked **vault**. On floors with a boss (`wideBoss`), the boss is the farthest dead end with an empty cell east or west of it, so its room can always be two cells wide (issue #131; `fitTemplates` and `bossRoomIsLarge` in `world/floor.ts`, design in [../design/built/levels/rooms/MULTI-CELL.md](../design/built/levels/rooms/MULTI-CELL.md#boss-rooms-are-always-large)).
 3. If there aren't enough rooms or dead ends, or the boss would be next to the start, try again. Starts on an edge or a corner have fewer ways to grow, so after many failed attempts the minimum room count is relaxed step by step (tested from all 49 start cells).
 
 Every floor's plan is decided when the run starts, from the run's seed (see [RNG.md](RNG.md)): same seed, same plans. Tests check every plan has one start, one treasure and one boss room, that every room is reachable, and that it's a tree.

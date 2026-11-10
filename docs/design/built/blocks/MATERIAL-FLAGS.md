@@ -6,7 +6,7 @@ Part of [blocks](README.md).
 
 ## What the player sees and feels
 
-- **Flammable**: crates, living wood and leaves. Fire or lava that touches one sets it alight, and it burns away, leaving a flame in its place. A loose flammable cube that falls into water floats up to the surface instead of sinking.
+- **Flammable**: crates, the tree's wood (living wood, root bark, old bark and boughs) and its leaves (leaves and young leaves). Fire or lava that touches one sets it alight, and it burns away, leaving a flame in its place. A loose flammable cube that falls into water floats up to the surface instead of sinking.
 - **Slippery**: ice. On ice you keep sliding: starting, turning and stopping take far longer than on stone.
 - **Heavy**: obsidian and iron ore are declared heavy. Nothing reads the flag yet, so a heavy block behaves like any other. The design's effect for heavy blocks, that they hurt what they land on, is not built ([not-built/blocks/MATERIAL-PROPERTIES.md](../../not-built/blocks/MATERIAL-PROPERTIES.md)).
 

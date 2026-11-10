@@ -44,6 +44,8 @@ Then add it to `src/content/items/index.ts`.
 11. **Names:** generic technique names or public-domain works; modern books, courses and branded methods only in `inspiredBy`. No trademarks (Pomodoro®, GTD®, Wim Hof Method®, 7 Habits®…). Respectful tone.
 12. **Two texts, always:** `description` is the meaning (philosophical, the story's voice); `effect` says plainly what it does and its impact on the run, with numbers. The player must never have to guess what an item does.
 13. **Icon:** 12×12, every non-`.` key in the palette, readable at 24 px (high contrast, clear silhouette). The renderer adds an outline.
+14. **Every practice has a recipe.** Once the crafting table is resolved (issue #112), every practice must have a recipe the crafting table can use: inputs are monster parts, potions and blocks (food is never an input, it cannot be carried in hand). The higher the tier, the harder the recipe: higher tiers need potions, or several potions. A new practice is not finished until its recipe exists and a test checks it. Recipes respect the per-floor craft cap (1 practice on floor 1, up to 5 on floor 5).
+15. **Every practice has a positive outcome.** Every practice always has a positive or healing outcome, especially in special cases. State it in the design (docs/design/not-built/practices/) before the item is built, and say it in the `effect` line when it is a special case. A practice that only punishes or only costs is not accepted.
 
 ## 3. Safety layers (don't remove them; extend them)
 
@@ -70,3 +72,5 @@ When you add an **event**, add a sample payload to `SAMPLES` in the synergy matr
 - [ ] Sandbox: a scenario per environment and item it may meet (`src/sandbox/scenarios/<item>-<case>.json`), its report read and saved (`npm run sandbox -- --all`); `npm run sandbox -- --check` shows no other scenario moved, or every move is explained.
 - [ ] Docs: STORY.md §5 catalogue row; ITEMS.md if you added a stat/event/API verb; README items table.
 - [ ] Browser check: pick it up, read the banner, open Tab, see the effect.
+- [ ] Positive or healing outcome stated in the design, including its special cases (rule 15).
+- [ ] Recipe defined for the crafting table, tier-appropriate, with a test (rule 14), once issue #112 is resolved.

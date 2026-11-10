@@ -1094,6 +1094,28 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
+    // the deep circles' boss hall (floors 6–9): the caldera spread over two cells, open ground round
+    // the way down and the boss's practice at the far end between lava pools and braziers on pillars
+    id: 'caldera-hall', types: ['boss'], floors: [6, 9], size: [2, 1], height: 8, ceiling: 'dome', rows: [
+      '...............LLL.......LLL',
+      '..r.......r....LL.2.....2.LL',
+      '............................',
+      '......H...............T.....',
+      '............................',
+      '..r.......r....LL.2.....2.LL',
+      '...............LLL.......LLL',
+    ],
+    layers: [{ y: 2, rows: [
+      '............................',
+      '..................f.....f...',
+      '............................',
+      '............................',
+      '............................',
+      '..................f.....f...',
+      '............................',
+    ] }],
+  },
+  {
     // a chasm: the room's second cell is a plateau of trim broken by holes five deep, joined by a bridge
     // of single blocks with gaps you jump; the key at the bottom of the deepest hole
     id: 'chasm', types: ['normal', 'path'], floors: [6, 9], size: [1, 2], weight: 3, height: 8, ceiling: 'cave', rows: [

@@ -383,6 +383,8 @@ The hands never tremble, and the screen never pulses to express the player's sta
 - **Crosshair:** a cross that opens over a projection and forms an ✕ on a hit. Shape, not colour.
 - **Debug readout is off by default.**
 
+**One exception: the Sanctuary.** The Boundary's meditation app does not use the slate. It is round, soft and slow on purpose, with its own colours (`med.*`), because it is the one place outside the depths. Its limits and its review are in the ledger ([DECISIONS.md](DECISIONS.md) §10.8). Nothing else may borrow its look.
+
 ### 10.3 The run's hexagram
 
 - Drawn from the bottom up, six lines. A solid line is 15 units wide, a broken line two 6-unit halves with a gap, and the whole hexagram is 15 × 33 units.

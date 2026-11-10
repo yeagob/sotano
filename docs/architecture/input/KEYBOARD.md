@@ -35,3 +35,7 @@ Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cu
 - Key repeat never creates a new press (`KeyboardEvent.repeat` is ignored), so holding Tab or E across a lock change does nothing twice.
 - `move` and `navigate` read `MOVE_KEYS` and `NAV_KEYS` from `bindings.ts`, the same lists the table declares.
 - F3 toggles the debug readout (developers only, not an action).
+
+## The Sanctuary (context `meditation`)
+
+The Boundary's meditation app takes the arrow keys (move between the choices), Enter or a click (choose; in a sitting, pause and resume), N (next part), M (sound on or off), C (calm visuals on or off) and Esc (one screen back; not now on the first screen; the leave sheet in a sitting). The mouse is free while it is open and a click never captures it. Hovering a choice selects it.
