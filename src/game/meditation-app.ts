@@ -2,7 +2,7 @@
 // without a page: the view draws whatever this says and sends every press through `act`, `back` or `press`.
 //
 // Screens: `home` (meditate, or take the quick reward), `library` (which meditation; choosing begins a random
-// 30-to-60-second sitting), `session` (the sitting, on the app's own clock), `leave` (stay, or leave with the
+// 20-to-40-second sitting), `session` (the sitting, on the app's own clock), `leave` (stay, or leave with the
 // quick reward) and `end` (receive). An outcome ends the app, once: `cancel` (not now), `quick` or `complete`.
 
 import type { Action } from '../input/bindings';

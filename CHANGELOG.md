@@ -13,6 +13,26 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ### Fixed
 - A meditation no longer runs out while the game is in a hidden tab: time spent away is not counted, so a sitting always takes the time it says (#35).
 
+## 0.2.2.f2 · 2026-11-10
+
+### Fixed
+- Sanctuary sittings now last a random 20–40 seconds, and each part shows one randomly chosen guidance phrase for up to six seconds before quiet time.
+
+## 0.2.2.f1 · 2026-11-10
+
+### Fixed
+- Meditation sittings in the Sanctuary last 20, 30 or 40 seconds instead of minutes (#35).
+- A meditation no longer runs out while the game is in a hidden tab: time spent away is not counted, so a sitting always takes the time it says (#35).
+
+## 0.2.2 · 2026-11-10
+
+### Added
+- The Boundary opens the Sanctuary: a meditation app inside the game, with its own look, music and sounds. Take a quick reward at once (a tier 1 or 2 practice), or sit through a guided meditation of 20, 30 or 40 minutes for the better one (tier 3 or 4). Six meditations: Grounding, Gratitude, Visualization, Box Breathing, Self-Compassion and Listening to the River. Leaving early gives the quick reward and never a penalty; sound and calm visuals are switches inside the app. It replaces the Boundary's real-world missions (#35).
+- The giant tree has its own leaf, branch and bark textures, and its bark changes with height so no two parts of the trunk look the same (#130).
+
+### Changed
+- Every boss on floor 0 and below now fights in a large room, and floors 6 to 9 have a new two-cell boss room, the caldera hall (#133).
+
 ## 0.2.1 · 2026-11-08
 
 ### Added

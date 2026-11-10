@@ -8,7 +8,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 |---|---|---|---|
 | [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Takes a monster heart, always drops a 15/75/10 practice or heart reward, and leaves at once |
 | [BOUNDARY.md](BOUNDARY.md) | The Boundary | One per vault of a dungeon floor | Stays still while its sanctuary holds; wakes and throws cubes when the sanctuary is broken |
-| [MEDITATION-APP.md](MEDITATION-APP.md) | The Sanctuary, the Boundary's meditation app | Opens at the Boundary of each vault, and above the tutorial treasure chest | A quick reward at once (a tier 1–2 practice), or a guided meditation of a random 30–60 seconds for the better one (tier 3–4); six meditations, each with its own scene, music and words |
+| [MEDITATION-APP.md](MEDITATION-APP.md) | The Sanctuary, the Boundary's meditation app | Opens at the Boundary of each vault, and above the tutorial treasure chest | A quick reward at once (a tier 1–2 practice), or a guided meditation of a random 20–40 seconds for the better one (tier 3–4); six meditations, each with its own scene, music and words |
 
 ## What they share (built)
 

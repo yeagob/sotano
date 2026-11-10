@@ -98,7 +98,8 @@ export function runLab(game: Game, s: Scenario): LabResult {
       if (fireFor > 0) fireFor--;
       game.step();
     }
-    out.push('', `legend ${legend(drawn)}`);
+    const mapLegend = legend(drawn);
+    out.push('', mapLegend ? `legend ${mapLegend}` : 'legend');
     if (errors.length) out.push('', ...errors.map(e => `ERROR ${e}`));
     return { report: out.join('\n') + '\n', errors };
   } finally {

@@ -35,7 +35,7 @@ Which part of the version changes:
 - **PATCH** (`0.1.1`): every release while the game is in development: fixes, new practices, floors, enemies and systems alike. The owner does not bump MINOR for features until a version is declared a stable testing version.
 - **MINOR** (`0.2.0`): only when the owner declares a new stable testing version, the one that goes to testers. Not a feature count.
 - **MAJOR** (`1.0.0`): the release we call finished.
-- **Hotfix suffix** (`0.1.2.F1`, `0.1.2.F2`…): a hotfix on a released PATCH adds `.F1`, `.F2` and so on to that version. It never changes the number before it.
+- **Hotfix suffix** (`0.1.2.f1`, `0.1.2.f2`…): a hotfix on a released PATCH adds `.f1`, `.f2` and so on to that version. Its valid SemVer package version uses `-f1`, `-f2`; the build UI converts that suffix to the dotted release label.
 
 ## Issues
 
@@ -75,8 +75,8 @@ A release is cut when `develop` has enough for a version, or on a steady rhythm,
 For a bug in the stable version that cannot wait for the next release:
 
 1. Create `hotfix/<issue>-<slug>` from `main`.
-2. Fix, and add the next hotfix suffix to the current PATCH version (`0.1.2` → `0.1.2.F1`, then `0.1.2.F2`), and open a PR into **`main`**.
-3. Tag `v0.1.2.F1` on `main` after the merge.
+2. Fix, set the next hotfix suffix in `package.json` (`0.1.2-f1`, then `0.1.2-f2`), and open a PR into **`main`**.
+3. Tag the merged release with its dotted label (`v0.1.2.f1`) and publish the matching changelog section as a GitHub release.
 4. Merge `main` into `develop` so the fix is not lost in the next release.
 
 ## Rules
