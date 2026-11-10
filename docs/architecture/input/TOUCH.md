@@ -52,3 +52,7 @@ The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`tou
 The owner's rules for the phone: a control must not change the intention by accident, and must work the first time. The double tap on the cast button was hidden, easy to miss, and a pair of taps next to the fire button could switch the intention in the middle of a fight. A half turn of the phone is deliberate, cannot be caused by a thumb, and reads as what it does (a switch). Tap to place lets the player point at the block instead of aiming with the view and then pressing a button.
 
 The double tap on the bead came back for one practice only (owner, issue #89): with Dr. Launcher, a quick double tap launches a bomb as a missile. It never switches the intention, and without that practice a double tap is two intentions. The first tap still casts at once.
+
+## The Sanctuary (context `meditation`)
+
+The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Sound, Calm visuals and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.

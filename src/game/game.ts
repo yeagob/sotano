@@ -78,8 +78,7 @@ import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
-import { pickMission, rewardBand } from '../content/presences/missions';
-import type { GuardOutcome } from './guard-card';
+import { rewardBand, type Outcome } from '../content/presences/meditations';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { floorCrateChance, rollCrate } from '../content/tables/crates';
@@ -2816,7 +2815,7 @@ export class Game {
   }
 
   /** Walking up to a closed chest opens it, spending its keys (some cost none). A guarded chest is not
-   *  opened here: its Boundary asks for a mission first (see askGuard). */
+   *  opened here: its Boundary opens the Sanctuary first (see touchGuards). */
   private touchChests() {
     const b = this.player.body;
     for (const c of this.chests) {
@@ -2840,10 +2839,11 @@ export class Game {
     }
   }
 
-  /** Walking up to the Boundary of a vault asks one real-world mission for the chest it keeps. Not yet
-   *  waits until the player steps three blocks away from the Boundary. */
+  /** Walking up to the Boundary of a vault opens the Sanctuary, its meditation app, for the chest it keeps
+   *  (docs/design/built/presences/MEDITATION-APP.md). After a "not now" it waits until the player has stepped
+   *  three blocks away from the Boundary. */
   private touchGuards() {
-    if (this.hud.tollOpen || this.hud.guardOpen || this.hud.bannerOpen) return;
+    if (this.hud.tollOpen || this.hud.sanctuaryOpen || this.hud.bannerOpen) return;
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || !e.tags.has('boundary')) continue;
@@ -2853,31 +2853,43 @@ export class Game {
       if (!c) continue;
       if (dist > 3) c.refused = false;
       if (c.refused || !near) continue;
-      const mission = pickMission(this.rng.stream('guard'));
-      const asked = performance.now();
-      this.hud.openGuard(this, mission, outcome => this.answerGuard(c, asked, outcome));
+      this.openSanctuary(outcome => this.answerGuard(c, outcome));
       return;
     }
   }
 
-  /** "Have you done it?": yes or no, the reward spawns from the chest and the Boundary leaves. A yes draws
-   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. Closing the card (✕ or
-   *  Back) cancels: no reward, the chest stays locked, and the Boundary asks again once the player has
-   *  stepped away (more than three blocks) and come back. */
-  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, outcome: GuardOutcome) {
+  /** Opens the Sanctuary over the paused world and hands the mouse back to play when it closes. `rate` speeds
+   *  its clock for the debug console only. */
+  openSanctuary(done: (outcome: Outcome) => void, rate = 1) {
+    if (this.hud.sanctuaryOpen) return;
+    this.input.modal = true;
+    this.input.unlockFor();
+    this.hud.sanctuary.show(outcome => {
+      this.input.modal = false;
+      if (this.input.device === 'keyboard') { this.input.release(); this.input.lock(); }
+      else this.input.resume();
+      done(outcome);
+    }, rate);
+  }
+
+  /** The Sanctuary closed. The quick reward draws a tier 1 or 2 practice and a finished meditation a tier 3 or
+   *  4 one: the reward spawns from the chest and the Boundary leaves. Not now gives nothing: the chest stays
+   *  locked, and the Boundary opens the Sanctuary again once the player has stepped away (more than three
+   *  blocks) and come back. An opened chest ignores a second answer, so the reward is given once. */
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome) {
     if (c.opened) return;
     if (outcome === 'cancel') {
       c.refused = true;
-      this.hud.toast('mission.cancelled');
+      this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const [lo, hi] = rewardBand(outcome === 'yes', performance.now() - asked);
+    const [lo, hi] = rewardBand(outcome);
     const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
     this.openChest(c, 0, def ?? undefined);
     this.releaseBoundary(c.spec.room);
   }
 
-  /** The Boundary of a vault leaves once its mission is answered yes. */
+  /** The Boundary of a vault leaves once its chest has opened. */
   private releaseBoundary(room: number) {
     for (const e of [...this.enemies.list]) {
       if (!e.alive || !e.tags.has('boundary') || e.room !== room) continue;
@@ -3357,7 +3369,7 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen || this.hud.guardOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
+    const ctx = this.player.dead ? 'dead' : this.hud.sanctuaryOpen ? 'meditation' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
     const live = ctx === 'play' || ctx === 'prompt';
     if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
@@ -3402,8 +3414,9 @@ export class Game {
         if (inp.hit('confirm')) this.hud.confirmToll(this);
       }
     }
+    if (ctx === 'meditation') this.hud.sanctuary.input(inp, performance.now());
     this.touch.update(this, ctx);
-    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.guardOpen && !this.transitioning;
+    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     if (this.below) this.stream(); else this.sky!.stream(this.player.eye);
@@ -3445,10 +3458,13 @@ export class Game {
 
     this.camera.getWorldDirection(this.camDir);
     spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
-    this.renderer.clear();
-    this.renderer.render(this.scene, this.camera);
-    this.renderer.clearDepth();
-    this.renderer.render(this.hands.scene, this.hands.camera);
+    // the Sanctuary covers the whole screen: the world under it is not drawn while it does
+    if (!this.hud.sanctuary.covering) {
+      this.renderer.clear();
+      this.renderer.render(this.scene, this.camera);
+      this.renderer.clearDepth();
+      this.renderer.render(this.hands.scene, this.hands.camera);
+    }
 
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }

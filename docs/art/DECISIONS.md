@@ -881,6 +881,45 @@ Spirit is the player's reserve in the sky: the light a special attack can dim wi
 
 ---
 
+### 10.8 The Sanctuary: a deliberate exception to the HUD look (build agent, 2026-11-10, issue #35; OWNER to confirm the look)
+
+The Boundary's meditation app (`docs/design/built/presences/MEDITATION-APP.md`) is the one surface of the game that does not follow §10.2. The owner asked for it (2026-11-09): "not a panel like the others", "its own look", breaking the game's usual look on purpose. The exception is bounded here so it cannot spread.
+
+**Side and meaning.** Side: none of the three. It is outside the depths: the space the Boundary keeps (`concept: Boundaries`). The intention does nothing to it; it is a fixed point because it is not in the world. It reads with no text as "somewhere else": round, soft and slow where the depths are square, hard and quick.
+
+**What the exception allows, only inside `#sanctuary`:**
+
+| §10.2 rule | In the Sanctuary |
+|---|---|
+| No border-radius anywhere; chamfered corners | Round corners and circles everywhere |
+| No gradients except the banner glow; no blur | Vertical background gradients and radial glows, drawn on a 2D canvas; still no CSS blur |
+| Pixel art, nearest filtering, 16 texels | Smooth vector shapes; the canvas is not pixelated |
+| Pixelify Sans / Atkinson, bold display | A light system sans with wide spacing; the instruction in a serif italic (Georgia and its fallbacks). No font file is added |
+| `ink.*`, `bone.*` and the reserved colours | Its own tokens, `med.*` (`src/content/palette/meditation.ts`): eight roles for the app and for each of the six meditations |
+
+**Reserved colours.** The `med.*` tokens are used by nothing but the app, and the app uses no other token. Some sit near reserved hues on purpose of mood, not meaning: `med.dusk.accent` and `med.dusk.glow` are warm ambers near `light.ember`, and `med.warm.accent` and `med.dusk.accent2` are pinks. None is `life.heart` or `attack.red.*`. The reserved meanings (gold is the light, red is life, cold is the projections') are meanings of the world and its HUD; the app covers the whole screen, so its colours are never seen beside them. OWNER to confirm that this reading is acceptable, or to ask for the dusk ambers to move away from the light's ramp.
+
+**What still binds it, with no exception:**
+
+- Zero hex outside the palette: the canvas painters and the CSS read `med.*` tokens only (the ratchet in `tests/art.test.ts` stays empty).
+- §10.4: nothing alternates faster than 3 Hz (the fastest thing on screen is a star's twinkle at 0.25 Hz); no flashes; every brightness change is a ramp of a second or more; text ≥ 14 px and never below 60 % opacity. Ink and secondary text are ≥ 4.5:1 on all three background stops of every palette (`tests/meditation.test.ts`).
+- §10.5 and the red lines: no sacred names or symbols, no figures or bodies, no mental-health imagery, nothing copied. The breath shapes are a seed, a lantern, a moon, a square, an orb and a moon on water. The open ring on the first screen is the Boundary's own ring of pedestals, never an ensō copied from the death screen.
+- Meaning never on colour alone: the breath is a word, a shape that grows and a sound.
+- Budgets: motes ≤ 160 (≤ 70 on a small screen, 0 with calm visuals); the world is not drawn while the app covers it.
+- Reduce motion: "Calm visuals" inside the app, on by default when the system asks for reduced motion.
+
+**The gate, as run (2026-11-10, in the browser, English and Spanish):**
+
+| Checked | Where | Result |
+|---|---|---|
+| Home, Library (with the live preview of each meditation), Length, the leave sheet, the paused sitting, the shared ending | 1024 × 768 | Pass |
+| All 30 parts: five for each of Grounding, Gratitude, Visualization, Box Breathing, Self-Compassion, Listening to the River | 1024 × 768 | Pass after two rounds of fixes: the column and leaves of Grounding lowered out of the clock; lanterns fade before the clock; the moon moved under the clock's block; aurora strips drawn edge to edge on whole pixels (overlap showed as bars, then as steps); the rings of Self-Compassion thinned and shortened; river leaves recoloured |
+| Home, Library, Length, a sitting of each meditation, the leave sheet and the ending | 812 × 375 and 667 × 375 (touch emulation, landscape) | Pass after one round: on a short screen the scenes draw their centre smaller and higher, the clock and the line shrink, and the ending's words sit under the seed |
+| Calm visuals | 1024 × 768, Box Breathing | Pass: still background, a circle whose light follows the breath, timer and words unchanged |
+| The real path: walk up to a Boundary, finish a sitting, Receive | Seed ABCD-EFGH, floor 1 | Pass: the chest opened with a tier 3 practice and the Boundary left |
+
+**Not done, and owed:** greyscale and the three colour-blindness filters (the app is not in `?gallery`; its meaning does not rest on hue, but the captures were not taken); a portrait phone (touch is landscape only: the rotate card covers the app, as it covers the game); a real phone and a real gamepad; the sound, which nobody has heard; and the pass by the dedicated art agent that §0 of the art skill asks for.
+
 ## 11. Iconographic motifs and the meaning test
 
 Mea's vocabulary, adopted by all. Repetition makes a language; a motif out of place breaks it.

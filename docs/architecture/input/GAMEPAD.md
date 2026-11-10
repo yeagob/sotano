@@ -43,3 +43,7 @@ The gamepad becomes the active device only on new input: a button going down, or
 ## 5. Rumble
 
 Every screen shake (hurt, blasts, slams) plays a `dual-rumble` scaled to its strength, at most 400 ms, through `Hud.shake` → `Input.rumble`.
+
+## The Sanctuary (context `meditation`)
+
+The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.

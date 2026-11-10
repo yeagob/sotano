@@ -5,6 +5,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+- The Boundary opens the Sanctuary: a meditation app inside the game, with its own look, music and sounds. Take a quick reward at once (a tier 1 or 2 practice), or sit through a guided meditation of 20, 30 or 40 minutes for the better one (tier 3 or 4). Six meditations: Grounding, Gratitude, Visualization, Box Breathing, Self-Compassion and Listening to the River. Leaving early gives the quick reward and never a penalty; sound and calm visuals are switches inside the app. It replaces the Boundary's real-world missions (#35).
 
 ### Fixed
 

@@ -25,9 +25,7 @@ import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
 import { handTollIds } from './toll';
-import { MISSIONS, type MissionId } from '../content/presences/missions';
-import { GuardCard, type GuardOutcome } from './guard-card';
-import { sfx3 } from '../audio/sfx';
+import { MeditationView } from './meditation-view';
 import type { Game } from './game';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -92,11 +90,9 @@ export class Hud {
   tollOpen = false;
   private tollFloor = 0;
   private tollPicked = new Set<string>();
-  /** The Boundary's mission card for a guarded chest; it shares the toll's card and its controls. */
-  guard: { card: GuardCard; answer: (outcome: GuardOutcome) => void } | null = null;
-  /** The guide's last drawn second and step, so the countdown only rewrites text when it changes. */
-  private guideShown = { s: -1, step: -1 };
-  get guardOpen() { return this.guard !== null; }
+  /** The Sanctuary, the Boundary's meditation app: a full-screen layer of its own (meditation-view.ts). */
+  readonly sanctuary = new MeditationView();
+  get sanctuaryOpen() { return this.sanctuary.open; }
   private flashEl = $('flash');
   private hurtEl = $('hurt');
   private berserkEl = $('berserk');
@@ -186,7 +182,6 @@ export class Hud {
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
     if (this.tollOpen && this.game) this.renderToll(this.game);
-    if (this.guard && this.game) this.renderGuard(this.game);
     this.toastEl.classList.remove('show');
   }
 
@@ -270,7 +265,7 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
-    this.overlay.style.display = running || this.tollOpen || this.guardOpen || g.player.dead ? 'none' : 'flex';
+    this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
 
     this.mapYaw = g.player.yaw;
     const yawKey = Math.round(this.mapYaw * 64);
@@ -368,7 +363,7 @@ export class Hud {
     this.debugEl.style.display = this.showDebug ? 'block' : 'none';
     const now = performance.now();
     if (now > this.toastTimer) this.toastEl.classList.remove('show');
-    this.tickGuard(g, now);
+    this.sanctuary.frame(now);
   }
 
   private slotUrl(m: number) {
@@ -701,14 +696,14 @@ export class Hud {
   moveSelection(dx: number, dy: number) {
     const g = this.game;
     if (!g) return;
-    const root = this.tollOpen || this.guardOpen ? this.tollEl : this.invEl;
+    const root = this.tollOpen ? this.tollEl : this.invEl;
     const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
     if (!tiles.length) return;
     const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
     const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
     const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
     this.selected = tiles[next].dataset.id!;
-    if (this.tollOpen) this.renderToll(g); else if (this.guard) this.renderGuard(g); else this.renderInventory(g);
+    if (this.tollOpen) this.renderToll(g); else this.renderInventory(g);
     root.querySelector<HTMLElement>('.tile.sel, .tile.cur')?.scrollIntoView({ block: 'nearest' });
   }
 
@@ -723,110 +718,7 @@ export class Hud {
     this.renderToll(g);
   }
 
-  /** The Boundary asks for a mission: a card with the mission, its answers and a close ✕. A guided mission
-   *  (the breath) also offers Begin, which turns the card into a countdown with the step to follow. */
-  openGuard(g: Game, mission: MissionId, answer: (outcome: GuardOutcome) => void) {
-    this.game = g;
-    const card = new GuardCard(mission);
-    this.guard = { card, answer };
-    this.tollEl.classList.add('show');
-    g.input.unlockFor();
-    this.selected = card.first;
-    this.renderGuard(g);
-  }
-
-  private closeGuard(g: Game, outcome: GuardOutcome) {
-    const guard = this.guard;
-    if (!guard) return;
-    this.guard = null;
-    this.tollEl.classList.remove('show');
-    if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
-    else g.input.resume();
-    guard.answer(outcome);
-  }
-
-  private guardAct(g: Game, id: string) {
-    const guard = this.guard;
-    if (!guard) return;
-    const outcome = guard.card.act(id, performance.now());
-    if (outcome) { this.closeGuard(g, outcome); return; }
-    if (guard.card.phase === 'guide') sfx3.bell('rest');
-    this.selected = guard.card.first;
-    this.renderGuard(g);
-  }
-
-  /** The countdown runs on the HUD's clock, every frame, while the world stays paused behind the card. */
-  private tickGuard(g: Game, now: number) {
-    const card = this.guard?.card;
-    if (!card) return;
-    if (card.tick(now)) {
-      sfx3.bell('end');
-      this.selected = card.first;
-      this.renderGuard(g);
-      return;
-    }
-    const v = card.guide(now);
-    if (!v) return;
-    const root = this.tollEl;
-    if (v.index !== this.guideShown.step) {
-      if (this.guideShown.step >= 0) sfx3.bell(v.step.breath);
-      this.guideShown.step = v.index;
-      const step = root.querySelector('.guide .step');
-      if (step) step.textContent = t(v.step.text);
-    }
-    if (v.secondsLeft !== this.guideShown.s) {
-      this.guideShown.s = v.secondsLeft;
-      const clock = root.querySelector('.guide .clock');
-      if (clock) clock.textContent = t('mission.clock', { m: Math.floor(v.secondsLeft / 60), s: String(v.secondsLeft % 60).padStart(2, '0') });
-    }
-    // the breath circle grows over an in-breath and shrinks over an out-breath (eased, never a jump)
-    const ease = (x: number) => 0.5 - Math.cos(Math.PI * x) / 2;
-    const scale = v.step.breath === 'in' ? 0.55 + 0.45 * ease(v.progress) : v.step.breath === 'out' ? 1 - 0.45 * ease(v.progress) : 0.55;
-    root.querySelector<HTMLElement>('.guide .breath i')?.style.setProperty('--s', scale.toFixed(3));
-    const steps = card.steps!;
-    const total = steps.reduce((a, s) => a + s.ms, 0);
-    const before = steps.slice(0, v.index).reduce((a, s) => a + s.ms, 0);
-    root.querySelector<HTMLElement>('.guide .bar i')?.style.setProperty('width', `${(100 * (before + v.progress * v.step.ms) / total).toFixed(1)}%`);
-  }
-
-  private renderGuard(g: Game) {
-    const guard = this.guard;
-    if (!guard) return;
-    const card = guard.card;
-    const m: { title: MessageKey; body: MessageKey; alt?: MessageKey } = MISSIONS[card.mission];
-    const answers = card.answers;
-    const cur = this.selected && answers.includes(this.selected) ? this.selected : card.first;
-    const device = activeDevice();
-    const labels: Record<string, MessageKey> = { begin: 'mission.begin', yes: 'mission.yes', no: 'mission.no' };
-    const tiles = answers.map(id => `<button type="button" class="tile go${id === cur ? ' cur' : ''}" data-id="${id}"><span class="lbl">${th(labels[id])}</span></button>`).join('');
-    let body: string;
-    if (card.phase === 'guide') {
-      body = `<div class="guide"><div class="breath" aria-hidden="true"><i></i></div>` +
-        `<div class="clock" role="timer"></div><p class="step" aria-live="polite"></p><div class="bar" aria-hidden="true"><i></i></div></div>` +
-        `<p class="hint">${th('mission.guideHint', controlParams(device))}</p>`;
-    } else if (card.phase === 'question') {
-      body = `<p>${th('mission.ended')}</p><p class="hint">${th('mission.hint', controlParams(device))}</p>`;
-    } else {
-      body = `<p>${th(m.body)}</p>${m.alt ? `<p class="hint">${th(m.alt)}</p>` : ''}` +
-        (card.steps ? `<p class="hint">${th('mission.guideOffer')}</p>` : '') +
-        `<p class="hint">${th('mission.hint', controlParams(device))}</p>`;
-    }
-    this.tollEl.innerHTML =
-      `<div class="card slate guard"><header><div><h2>${th('presence.boundary.name')}</h2><small>${th('mission.lead')}</small></div>` +
-      `<button type="button" class="close" data-id="close" aria-label="${th('mission.closeLabel')}" title="${th('mission.closeLabel')}">✕</button></header>` +
-      `<h3>${th(m.title)}</h3>${body}${tiles ? `<div class="go-row">${tiles}</div>` : ''}</div>`;
-    for (const b of this.tollEl.querySelectorAll<HTMLButtonElement>('.tile')) {
-      b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
-      b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.guardAct(g, b.dataset.id!); });
-    }
-    this.tollEl.querySelector<HTMLButtonElement>('.close')?.addEventListener('click', () => this.guardAct(g, 'close'));
-    // the guide's text is written by tickGuard; force it to redraw on this frame
-    this.guideShown = { s: -1, step: -1 };
-    if (card.phase === 'guide') this.tickGuard(g, performance.now());
-  }
-
   closeToll(g: Game) {
-    if (this.guard) { this.closeGuard(g, 'cancel'); return; }
     this.tollOpen = false;
     this.tollEl.classList.remove('show');
     if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
@@ -834,8 +726,7 @@ export class Hud {
   }
 
   confirmToll(g: Game) {
-    if (this.guard) { if (this.selected) this.guardAct(g, this.selected); }
-    else if (this.selected) this.tollAct(g, this.selected);
+    if (this.selected) this.tollAct(g, this.selected);
   }
 
   private tollIds(g: Game): string[] {

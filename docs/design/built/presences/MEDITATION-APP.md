@@ -2,7 +2,7 @@
 
 # The Sanctuary: the Boundary's meditation app
 
-Status: **decided** (owner, 2026-11-09, issue #35: the Boundary's real-world request cards are replaced by one meditation app hidden inside the game). The numbers below are targets until the build confirms them.
+Up: [presences](README.md) · Status: built (owner, 2026-11-09, issue #35: the Boundary's real-world request cards are replaced by one meditation app hidden inside the game). Code: `src/content/presences/meditations.ts` (the six meditations, a sitting's time, the reward), `src/game/meditation-app.ts` (the screens, the clock, the outcome), `src/game/meditation-view.ts` (the layer on the page), `src/render/meditation-scenes.ts` (the scenes), `src/audio/meditation.ts` (the music and the cues), `src/game/game.ts` (`touchGuards`, `openSanctuary`, `answerGuard`), `src/content/palette/meditation.ts` (its colours). Tests: `tests/meditation.test.ts`, `tests/meditation-app.test.ts`, `tests/controls.test.ts`. In the debug console, `S.sanctuary()` opens it without a Boundary.
 
 The Boundary keeps the centre chest of its vault. Walking up to it no longer brings a card. It opens the Sanctuary: a full-screen meditation app with its own look, sound and motion, unlike anything else in the game. The player takes a quick reward at once, or sits through a guided meditation of 20, 30 or 40 minutes and receives the better one.
 
@@ -92,7 +92,7 @@ Tier is the tier of the practice the meditation comes from. It only says how muc
 - **Practice and source:** Visualization (`sports-psych`): seeing before doing.
 - **What the player does:** builds a quiet place in the mind's eye, one sense at a time, and rests there.
 - **Colours:** night teal, deep blue and aurora green, with a pale star light.
-- **Scene:** a night sky over layered mountains, with ribbons of aurora and still water below.
+- **Scene:** a night sky over layered mountains, with ribbons of aurora and still water below. The breath is the moon.
 - **Music:** a drone on E, a Lydian pad, glassy high notes; a thin shimmer of air.
 - **Sounds:** in-breath a glassy rise, out-breath a soft fall; each part opens with two high notes a fifth apart.
 
@@ -168,6 +168,72 @@ Every meditation ends the same way, in the app's own colours (night blue, a pale
 - The timer shows minutes and seconds left. It reads the full length at the start and 0:00 only at the end.
 - The clock is the app's own: it measures real time while the session is running, and stops while it is paused or the leave sheet is open. It does not depend on the frame rate.
 
+## 5a. The words of each part
+
+Every line is in English and Spanish in `src/i18n/locales/`. They are short, they ask and never order, and none says anything about the player's life. English, in the order they are shown:
+
+**Grounding** (*Enraizamiento*)
+
+| Part | Lines |
+|---|---|
+| Arrive | Sit or lie down, whichever is easier. Let the body be heavy. / Close your eyes, or rest them on the screen. |
+| Feet and legs | Feel your feet. Notice what they touch. / Feel the ground holding them. It holds without effort. / Let the attention rise through the legs, slowly. |
+| Belly and back | Feel where the body rests on the seat or the bed. / Notice the belly moving with the breath. / Feel the back, from its base to the neck. |
+| Shoulders and face | Let the shoulders drop a little on each breath out. / Loosen the jaw. Let the tongue rest. / Soften the eyes and the forehead. |
+| Return | Feel the whole body at once, heavy and held. / Notice the room around you. Come back when you are ready. |
+
+**Gratitude** (*Gratitud*)
+
+| Part | Lines |
+|---|---|
+| Arrive | Settle where you are. Take a few easy breaths. / There is nothing to find yet. Only to arrive. |
+| Something small | Bring to mind one small good thing. Any one will do. / Stay with it. Notice what is good about it. / On each breath out, let it be enough. |
+| Something that holds you | Think of something that supports you: a place, a habit, a thing. / Notice how it is there without being asked. / Breathe with it for a while. |
+| Something given | Think of something that came to you without being earned. / Let another one come, and another. No need to count. / If nothing comes, the breath itself is one. |
+| Return | Let the list go. Keep the warmth that is left. / Notice the room around you. Come back when you are ready. |
+
+**Visualization** (*Visualización*)
+
+| Part | Lines |
+|---|---|
+| Arrive | Close your eyes, or rest them on the screen. / Let the breath slow down by itself. |
+| The way there | Imagine a path. It leads somewhere quiet. / Walk it slowly. There is no hurry to arrive. / The place can be real or invented. Both are fine. |
+| The place | You are there. Look around. / Notice the light. Notice the shapes, near and far. / Find a spot to rest in it, and rest. |
+| The senses | Listen. What can be heard in this place? / Feel the air on the skin. Warm or cool. / Let the place become as clear as it wants to be. |
+| Return | The place stays where it is. You can come back to it. / Walk the path back. Notice the room around you. |
+
+**Box Breathing** (*Respiración cuadrada*)
+
+| Part | Lines |
+|---|---|
+| Arrive | Sit upright and at ease. Breathe as you normally do. / Watch the square draw itself. The count comes next. |
+| Four sides | Follow the light around the square. Each side is a count of four. / In through the nose. Out through the nose or the mouth. / If a hold is not comfortable, breathe normally and rejoin later. |
+| The square holds | The holds are rests, not effort. Nothing is squeezed. / Keep the shoulders loose on every side. / Let each side be the same as the last. |
+| Wide square | The count is a little slower now. The ease is the same. / Follow the light. It keeps the count for you. / Shorten the holds whenever you need to. |
+| Return | Let the count go. The breath breathes itself. / Notice the room around you. Come back when you are ready. |
+
+**Self-Compassion** (*Autocompasión*)
+
+| Part | Lines |
+|---|---|
+| Arrive | Settle where you are. Let the breath be easy. / Rest a hand on the chest, if that is comfortable. |
+| For yourself | Say inwardly: may I be at ease. / May I be kind to myself. / The words need not be felt. Offering them is enough. |
+| For someone close | Think of someone it is easy to wish well. / Say inwardly: may you be at ease. / May you be treated with kindness. |
+| For everyone | Let the wish widen: to those nearby, then further. / Say inwardly: may all be at ease. / No one needs to be left out, yourself included. |
+| Return | Let the words rest. Stay with the warmth that is left. / Notice the room around you. Come back when you are ready. |
+
+**Listening to the River** (*Escuchar el río*)
+
+| Part | Lines |
+|---|---|
+| Arrive | Settle where you are. There is nothing to do yet. / Let the breath go at its own pace for the whole sitting. |
+| Sounds | Listen to the nearest sound. Do not name it. / Listen to the farthest sound you can find. / Notice the silence between one sound and the next. |
+| Leaves | When a thought comes, set it on the water like a leaf. / Watch it go downstream. There is no need to follow it. / Another will come. It is a leaf too. |
+| The whole river | Sounds, breath and thoughts: one river, passing. / You are on the bank. Nothing needs to be held. / Wait. Waiting is the whole practice. |
+| Return | The river keeps flowing without you watching it. / Keep the listening. Come back when you are ready. |
+
+The breath cue above the line is one of five: Breathe in, Hold, Breathe out, Rest, or Breathe at your own pace, with the seconds left of a paced beat.
+
 ## 6. Look (a deliberate exception to the game's HUD)
 
 The app does not use the cellar slate. The exception is recorded in the art ledger ([DECISIONS.md](../../../art/DECISIONS.md)).
@@ -224,6 +290,8 @@ One context, `meditation`. Every action on the three devices:
 
 ## 10. Performance
 
+- Measured in the browser (2026-11-10, desktop, 1024 × 768): one frame of the app (clock, words and scene) takes 0.2 to 0.35 ms of script for every meditation. A phone was not measured.
+- On a short screen (under 460 px high, a phone on its side) each scene draws its centre of attention smaller and higher, so the words never cover it.
 - The scene is a 2D canvas drawn at no more than 1.5 device pixels per CSS pixel and no more than 1280 px wide.
 - Particles are capped at 160, and at 70 on a small screen (shorter side under 500 px). Calm visuals draw none.
 - While the app covers the screen, the world underneath is not drawn.
@@ -237,7 +305,7 @@ One context, `meditation`. Every action on the three devices:
 4. No judgement, no streaks, no scores, no reminder that the player left early.
 5. No therapy claims; no word about the player's life, past or feelings.
 6. Nothing is recorded but the two switches. No camera, no microphone.
-7. This replaces safety rule 8 of [REQUESTS.md](REQUESTS.md) ("no request asks for longer than the idle window") for the Boundary only, by the owner's decision.
+7. This replaces safety rule 8 of [REQUESTS.md](../../not-built/presences/REQUESTS.md) ("no request asks for longer than the idle window") for the Boundary only, by the owner's decision.
 
 ## 12. Test plan
 
@@ -256,7 +324,14 @@ One context, `meditation`. Every action on the three devices:
 | Each input type drives the app end to end (start, next, pause, mute, leave, choose reward) | `tests/meditation-app.test.ts` |
 | Calm visuals removes particles and scene motion and keeps the timer and the instruction | `tests/meditation-app.test.ts` |
 | Particle caps hold | `tests/meditation-app.test.ts` |
-| In the browser: every meditation, every part, the Home, Library, Length, Leave and End screens, at desktop and phone widths, in both languages | by hand, recorded in the pull request |
+| In the browser: every meditation, every part, the Home, Library, Length, Leave and End screens, at desktop and phone widths, in both languages | by hand, recorded in the pull request and in [the art ledger](../../../art/DECISIONS.md) §10.8 |
+
+## Not verified yet
+
+- **By ear.** The music and the cues were built to the rules of §7 and never heard by a person: the browser used for the review has no sound. The owner listens before this is final.
+- **On a real phone and a real gamepad.** Touch was reviewed in emulation (667 × 375 and 812 × 375); the gamepad through the binding table in the tests.
+- **A whole sitting in real time.** Sittings were reviewed with the clock moved by hand to each part; nobody has sat 20 minutes with it.
+- **The art agent.** The art skill asks for a dedicated art agent for everything visible. This was drawn by the build agent and reviewed against the gate; a pass by the art agent is still owed.
 
 ## Open questions
 
@@ -265,5 +340,5 @@ One context, `meditation`. Every action on the three devices:
 - **"Almost impossible to leave."** Read here as: it is hard to want to leave, never hard to leave. Leaving takes two presses (Leave, then confirm), and Stay is selected first. Owner to confirm that no stronger friction is wanted.
 - **Does length matter?** Every length earns the same band today.
 - **The honest clock.** Time keeps counting if the player switches away from the game during a session. The game takes the player's word; a stricter rule is possible.
-- **The not-therapy note.** The first screen carries one plain line. The owner's own text and a help line are still open ([REQUESTS.md](REQUESTS.md)).
+- **The not-therapy note.** The first screen carries one plain line. The owner's own text and a help line are still open ([REQUESTS.md](../../not-built/presences/REQUESTS.md)).
 - **More meditations.** Radical Acceptance and Sleep Hygiene are tier 2 practices that would fit.
