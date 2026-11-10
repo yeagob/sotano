@@ -47,6 +47,8 @@ export class Input {
   lookDX = 0; lookDY = 0;
   locked = false;
   engaged = false;
+  /** A full-screen layer of its own (the Sanctuary) is open: a click belongs to it and never captures the mouse. */
+  modal = false;
   sensitivity = 0.0022;
   onPadChange: ((connected: boolean) => void) | null = null;
 
@@ -63,7 +65,7 @@ export class Input {
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
-      if (!this.locked) { if (!this.engaged) this.lock(); return; }
+      if (!this.locked) { if (!this.engaged && !this.modal) this.lock(); return; }
       if (!this.mouse.has(e.button)) this.mousePressed.add(e.button);
       this.mouse.add(e.button);
     });

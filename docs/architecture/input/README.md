@@ -34,7 +34,8 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
 | `inventory` | The screen is open on its menu or practices tab (it pauses the world) |
-| `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c). Also the Boundary's mission card: confirm answers or begins the guided breath, back (or its ✕) cancels the mission (GUARD-MISSIONS.md) |
+| `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c) |
+| `meditation` | The Sanctuary, the Boundary's meditation app, over the paused world: navigate moves between the choices of its screen, confirm chooses (and pauses or resumes a sitting), skip moves to the next part, mute and calm are its two switches, back goes one screen back (not now on its first screen, the leave sheet in a sitting). A click on it never captures the mouse (`Input.modal`) ([MEDITATION-APP.md](../../design/built/presences/MEDITATION-APP.md)) |
 
 ## 3. The actions
 
@@ -52,9 +53,12 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
-| confirm | press | prompt, paused, dead, toll | click / Enter | A | tap |
-| navigate | axis | inventory, toll, paused | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
-| back | press | inventory, toll | Esc | B | ✕ |
+| confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
+| navigate | axis | inventory, toll, paused, meditation | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+| back | press | inventory, toll, meditation | Esc | B | ✕ (in a sitting, the Leave button) |
+| skip | press | meditation | N | RB | the Next part button |
+| mute | press | meditation | M | X | the Sound button |
+| calm | press | meditation | C | Y | the Calm visuals button |
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
 

@@ -11,6 +11,7 @@ import { SKY_KOALA_PALETTE } from './palette/sky-koala';
 import { SKY_LION_PALETTE } from './palette/sky-lion';
 import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
+import { MEDITATION_PALETTE } from './palette/meditation';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -152,6 +153,9 @@ export const PALETTE = {
   ...SKY_ELEPHANT_PALETTE,
   ...SKY_LION_PALETTE,
   ...SKY_HORSE_PALETTE,
+
+  // The Sanctuary, the Boundary's meditation app: its own namespace (DECISIONS §10.8).
+  ...MEDITATION_PALETTE,
 } as const;
 
 export type PalToken = keyof typeof PALETTE;
