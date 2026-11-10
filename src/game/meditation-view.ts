@@ -6,7 +6,7 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss } from '../content/palette';
 import {
-  BREATH_KEY, LENGTHS_MIN, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
+  BREATH_KEY, LENGTHS_SEC, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
   type Moment, type Outcome, type PaletteRole, type SceneId, type SequenceId,
 } from '../content/presences/meditations';
 import { MeditationAudio } from '../audio/meditation';
@@ -303,7 +303,7 @@ export class MeditationView {
       ui.append(this.closeButton('sanctuary.backLabel'), el('h2', '', t('sanctuary.library')), grid, hint('sanctuary.hint'));
     } else if (app.screen === 'length') {
       const row = el('div', 'lengths');
-      for (const n of LENGTHS_MIN) row.appendChild(this.tile(`len:${n}`, 'len', app, el('b', '', String(n)), el('span', '', t('sanctuary.minutes', { n }).replace(String(n), '').trim())));
+      for (const n of LENGTHS_SEC) row.appendChild(this.tile(`len:${n}`, 'len', app, el('b', '', String(n)), el('span', '', t('sanctuary.seconds', { n }).replace(String(n), '').trim())));
       ui.append(this.closeButton('sanctuary.backLabel'), el('p', 'over', t(nameKey(SEQUENCE[app.seq]))), el('h2', '', t('sanctuary.length')), row, el('p', 'lead', t('sanctuary.length.sub')), hint('sanctuary.hint'));
     } else if (app.screen === 'session') {
       const top = el('div', 'top');
