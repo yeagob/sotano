@@ -364,7 +364,7 @@
     #sanctuary.show { opacity: 1; }
     #sanctuary canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: auto; background: var(--m-deep); }
     #sanctuary .veil { position: absolute; inset: 0; background: var(--m-deep); opacity: 0; transition: opacity .8s ease; pointer-events: none; }
-    #sanctuary[data-screen="library"] .veil, #sanctuary[data-screen="length"] .veil { opacity: .5; }
+    #sanctuary[data-screen="library"] .veil { opacity: .5; }
     #sanctuary[data-screen="leave"] .veil { opacity: .66; }
     #sanctuary .ui { position: absolute; inset: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: clamp(8px, 2.2vh, 20px); padding: max(14px, 3vh) max(16px, 4vw); text-align: center; overflow: auto;
@@ -401,10 +401,6 @@
     #sanctuary .card b { grid-area: b; font-weight: 400; font-size: 18px; line-height: 1.25; }
     #sanctuary .card span { grid-area: t; font-size: 14px; line-height: 1.35; color: var(--m-ink); }
     #sanctuary .card em { grid-area: e; font-style: normal; font-size: 14px; letter-spacing: .16em; text-transform: uppercase; color: var(--m-dim); }
-    #sanctuary .lengths { display: flex; gap: clamp(12px, 3vw, 28px); }
-    #sanctuary .len { width: clamp(88px, 22vh, 132px); height: clamp(88px, 22vh, 132px); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    #sanctuary .len b { font-weight: 200; font-size: clamp(30px, 8vh, 48px); line-height: 1; font-variant-numeric: tabular-nums; }
-    #sanctuary .len span { font-size: 14px; letter-spacing: .2em; text-transform: uppercase; color: var(--m-dim); }
     #sanctuary[data-screen="session"] .ui { justify-content: space-between; }
     #sanctuary .top { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     #sanctuary .clock { font-weight: 200; font-size: clamp(34px, 9vh, 60px); line-height: 1; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
@@ -413,7 +409,7 @@
     #sanctuary .progress u { position: absolute; top: -3px; width: 1px; height: 9px; background: color-mix(in srgb, var(--m-ink) 60%, transparent); }
     #sanctuary .partname { font-size: 14px; letter-spacing: .22em; text-transform: uppercase; color: var(--m-ink); }
     #sanctuary .guide { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-bottom: clamp(4px, 2vh, 18px); }
-    #sanctuary .breath { font-size: clamp(15px, 2.8vh, 18px); letter-spacing: .24em; text-indent: .24em; text-transform: uppercase; color: var(--m-glow); font-variant-numeric: tabular-nums; }
+    #sanctuary .breath { font-size: clamp(45px, 8.4vh, 54px); letter-spacing: .24em; text-indent: .24em; text-transform: uppercase; color: var(--m-glow); font-variant-numeric: tabular-nums; }
     #sanctuary .line { max-width: 26em; min-height: 2.7em; font: italic 400 clamp(19px, 4.2vh, 28px)/1.35 Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif; }
     #sanctuary .line.in { animation: sanctuary-line 1.8s ease both; }
     @keyframes sanctuary-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

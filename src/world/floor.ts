@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { placePresences, type ListenerDrop, type RoomPresence } from '../content/presences';
+import { placePresences, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -98,8 +98,6 @@ export interface RoomInfo {
   enemies: string[];
   /** A Presence that lives here (the Gardener on floor 0, a Listener on the Tree floors). */
   presence?: RoomPresence;
-  /** What the Listener of this room drops once its part is accepted (docs/design/built/presences/LISTENER.md). */
-  presenceDrop?: ListenerDrop;
 }
 
 export interface DoorSpec {
@@ -119,6 +117,8 @@ export interface ChestSpec {
   keys: number;
   /** The practice reserved for it when it stands where a pedestal would (null: it holds loot rolled when opened). */
   item: string | null;
+  /** The Roots' tutorial treasure asks for an optional meditation before it opens. */
+  meditation?: boolean;
   /** Kept by the Boundary of its vault: it opens for a real-world mission, not for keys (docs/design/built/presences/BOUNDARY.md). */
   guard?: boolean;
 }
@@ -399,10 +399,14 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         // the vault's centre practice is kept by the Boundary: a chest that opens for a real-world mission
         const guarded = pr.type === 'vault' && !lv.tutorial;
         // the boss's practice is earned, never locked away; most others wait in a chest
-        const inChest = guarded || (!boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST));
+        const meditationChest = lv.tutorial && pr.type === 'treasure';
+        const inChest = guarded || meditationChest || (!boss && !lv.tutorial && chestRng.chance(ITEM_IN_CHEST));
         w.data[w.idx(x, y0, z)] = inChest ? MAT.chest : MAT.pedestal;
         if (inChest && guarded) chests.push({ room: gid(pr.id), x, y: y0, z, keys: 0, item: null, guard: true });
-        else if (inChest) chests.push({ room: gid(pr.id), x, y: y0, z, keys: CHEST_LOCK.roll(chestRng, { floor: k })!, item });
+        else if (inChest) chests.push({
+          room: gid(pr.id), x, y: y0, z, keys: meditationChest ? 0 : CHEST_LOCK.roll(chestRng, { floor: k })!,
+          item, ...(meditationChest ? { meditation: true } : {}),
+        });
         pedestals.push({ room: gid(pr.id), x, y: y0 + 1, z, item: guarded ? null : item, boss, chest: inChest });
       }
       if (ch === 'K') keySpots.push({ room: gid(pr.id), x, y: y0, z });

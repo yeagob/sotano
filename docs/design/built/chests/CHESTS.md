@@ -37,7 +37,7 @@ Two kinds of chest hold different things.
 | **Pedestal chest** | where a pedestal would stand, in treasure and vault rooms | the practice reserved for that room at the start of the run. Sixty percent of the treasure and vault practices sit in a chest. The boss's practice never does: it is earned, not locked away. It floats where it lands |
 | **Room chest** | free-standing, in normal rooms (about four in ten of them) | one, two or three rolls of the chest table: a key, a bomb, a heart (each weight 3 of 10) or a practice (weight 1, drawn from the treasure pool). At most one practice per chest; a chest that rolls no practice has a 6 percent chance of one anyway |
 
-Room chests are not placed on the roots (see [ROOTS](../levels/floors/ROOTS.md)). The owner's text said every floor including the roots; the build leaves the roots without room chests. That is open: see [not-built/chests/ROOT-CHESTS.md](../../not-built/chests/ROOT-CHESTS.md).
+Free-standing room chests are not placed on the roots. The tutorial treasure room does have one pedestal chest: it is free, and opens through the Sanctuary's quick-reward or meditation choice. Cancelling leaves it closed. The separate proposal for free-standing room chests on the roots remains open in [not-built/chests/ROOT-CHESTS.md](../../not-built/chests/ROOT-CHESTS.md).
 
 The vault's centre holds one chest, the practice of the room, kept by the Boundary: it opens through the Boundary's meditation app, not for keys (see [MEDITATION-APP.md](../presences/MEDITATION-APP.md)). The pedestals on the ring around it hold nothing.
 

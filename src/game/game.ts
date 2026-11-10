@@ -77,13 +77,15 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome } from '../content/presences/meditations';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, rollHeart } from '../content/tables/hearts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
+import { GROWTH_MAX } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
@@ -91,7 +93,7 @@ import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, 
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud } from './hud';
-import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
+import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
 import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
@@ -533,7 +535,7 @@ export class Game {
   private furnish(box: SandboxRoom, s: Scenario) {
     for (const id of s.items ?? []) this.grant(id);
     const p = this.player;
-    p.hand = (s.hand ?? []).map(k => MAT[k]);
+    p.hand = (s.hand ?? []).map(carriedFromId);
     p.bombs = p.keys = COUNTER_CAP;
     p.hp = this.maxHp;
     if (s.god) p.invulnT = 1e9;
@@ -557,6 +559,14 @@ export class Game {
   sandboxSpawn(defId: string, x: number, y: number, z: number, faction?: Faction) {
     const r = this.rooms.get(this.floors.get(this.depth)?.rooms[0]?.id ?? -1);
     if (!r) return null;
+    const presence = PRESENCE_BY_ID.get(defId);
+    if (presence) {
+      const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, presence.hp, presence.speed, 0, new Set(['presence']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+      return e;
+    }
     const creature = CREATURE_BY_ID.get(defId);
     if (creature) {
       const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, creature.hp, creature.speed, 0, new Set(['creature']));
@@ -635,6 +645,12 @@ export class Game {
     for (const spec of f.chests) {
       const face = this.chestFacing(spec);
       this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, face.angle, face.tight) });
+      if (!this.sandbox && spec.meditation) {
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), spec.room, spec.x + 0.5, spec.y + 1, spec.z + 0.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        e.faction = 'neutral';
+        e.spawning = 0;
+        this.actors.add(e);
+      }
     }
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
     for (const bp of f.bombs) this.pickups.add('bomb', bp.x + 0.5, bp.y + 0.5, bp.z + 0.5, bp.room);
@@ -1514,18 +1530,39 @@ export class Game {
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
       // a warm love shot grows a friendly creature (issue #51); a beam's repeat ticks do not
+      const oldScale = e.scale;
       if (warm && e.tags.has('creature')) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
       const b = e.body;
       e.hp += heal;
       this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
-      if (heal > 0 && e.spec.kind === 'creature' && e.hp >= e.maxHp && !e.tags.has('gifted')) {
-        e.tags.add('gifted');
-        this.pickups.add('heart', b.x, b.y + 0.6, b.z, e.room, null, 0.3);
-      }
+      if (warm && e.spec.kind === 'creature' && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX &&
+          this.rooms.get(e.room)?.floor === 0 && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
       return;
     }
     this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
+  }
+
+  private dropCreatureGrowthGift(e: Enemy) {
+    const heart = rollCreatureGrowthHeart(this.rng.stream('gifts'));
+    if (!heart) return;
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 18, 2, 0.07);
+    sfx3.reveal();
+    this.launchGiftPickups(e, [{ type: 'heart', heart }]);
+  }
+
+  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind })[]) {
+    const b = e.body, player = this.player.body;
+    const base = Math.atan2(player.z - b.z, player.x - b.x);
+    rewards.forEach((reward, i) => {
+      const angle = base + (i - (rewards.length - 1) / 2) * 0.6;
+      const x = b.x + Math.cos(angle) * 0.45, z = b.z + Math.sin(angle) * 0.45;
+      const pickup = reward.type === 'item'
+        ? this.pickups.add('item', x, b.y + 1.02, z, e.room, reward.item, 0.3)
+        : this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart);
+      this.pickups.launch(pickup, Math.cos(angle) * 1.5, 3, Math.sin(angle) * 1.5);
+    });
   }
 
   /**
@@ -2823,20 +2860,41 @@ export class Game {
       const s = c.spec, dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
       if (dist > 3) c.refused = false;
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
-      const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
-      const asked = Math.max(0, Math.floor(ev.cost));
-      const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
-      const cost = question ? asked - 1 : asked;
-      if (ev.cancelled || this.player.keys < cost) {
+      if (s.meditation) {
         c.refused = true;
-        this.hud.toast('toast.chestLocked', { n: cost });
-        sfx.denied();
+        this.openSanctuary(outcome => this.answerTutorialChest(c, outcome));
         continue;
       }
-      this.player.keys -= cost;
-      if (question) this.questioned();
-      this.openChest(c, cost);
+      this.openKeyedChest(c);
     }
+  }
+
+  private openKeyedChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }) {
+    const s = c.spec;
+    const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
+    const asked = Math.max(0, Math.floor(ev.cost));
+    const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
+    const cost = question ? asked - 1 : asked;
+    if (ev.cancelled || this.player.keys < cost) {
+      c.refused = true;
+      this.hud.toast('toast.chestLocked', { n: cost });
+      sfx.denied();
+      return;
+    }
+    this.player.keys -= cost;
+    if (question) this.questioned();
+    this.openChest(c, cost);
+  }
+
+  private answerTutorialChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome) {
+    if (c.opened) return;
+    if (outcome === 'cancel') {
+      c.refused = true;
+      this.hud.toast('sanctuary.cancelled');
+      return;
+    }
+    this.openSanctuaryChest(c, outcome);
+    this.releaseBoundary(c.spec.room);
   }
 
   /** Walking up to the Boundary of a vault opens the Sanctuary, its meditation app, for the chest it keeps
@@ -2883,10 +2941,15 @@ export class Game {
       this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const [lo, hi] = rewardBand(outcome);
-    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
-    this.openChest(c, 0, def ?? undefined);
+    this.openSanctuaryChest(c, outcome);
     this.releaseBoundary(c.spec.room);
+  }
+
+  private openSanctuaryChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, outcome: Exclude<Outcome, 'cancel'>) {
+    const [lo, hi] = rewardBand(outcome);
+    const maxQuality = c.spec.meditation ? 3 : hi;
+    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, Math.min(hi, maxQuality)])) ?? null;
+    this.openChest(c, 0, def ?? undefined);
   }
 
   /** The Boundary of a vault leaves once its chest has opened. */
@@ -3063,19 +3126,14 @@ export class Game {
     }
   }
 
-  /** The Listener's reward is always a drop, never a heal: its seeded kind, a runtime count (listenerDrops). Each
-   *  pickup leaves the Listener in its own arc toward the player; hearts wait on the floor until the player is hurt. */
+  /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
   private dropListenerReward(e: Enemy) {
-    const kind = this.rooms.get(e.room)?.presenceDrop;
-    if (!kind) return;
-    const b = this.player.body;
-    const dx = b.x - e.body.x, dz = b.z - e.body.z, base = Math.atan2(dz, dx);
-    const drops = listenerDrops(kind, this.rng.stream('drops'));
-    drops.forEach((k, i) => {
-      const a = base + (i - (drops.length - 1) / 2) * 0.6;
-      const p = this.pickups.add(k, e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
-      this.pickups.launch(p, Math.cos(a) * 2.5, 3, Math.sin(a) * 2.5);
-    });
+    const gift = rollListenerGift(this.rng.stream('drops'));
+    const rewards = gift.kind === 'practice'
+      ? [{ type: 'item' as const, item: gift.item }]
+      : gift.hearts.map(heart => ({ type: 'heart' as const, heart }));
+    this.launchGiftPickups(e, rewards);
+    sfx3.reveal();
   }
 
   /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it

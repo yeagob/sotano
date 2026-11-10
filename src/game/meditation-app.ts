@@ -1,9 +1,9 @@
 // The Sanctuary as state (docs/design/built/presences/MEDITATION-APP.md). DOM-free, so the rules are tested
 // without a page: the view draws whatever this says and sends every press through `act`, `back` or `press`.
 //
-// Screens: `home` (meditate, or take the quick reward), `library` (which meditation; choosing begins with a
-// random duration of 20 to 40 seconds), `session` (the sitting, on the app's own clock), `leave` (stay, or leave
-// with the quick reward) and `end` (receive). An outcome ends the app, once: `cancel` (not now), `quick` or `complete`.
+// Screens: `home` (meditate, or take the quick reward), `library` (which meditation; choosing begins a random
+// 20-to-40-second sitting), `session` (the sitting, on the app's own clock), `leave` (stay, or leave with the
+// quick reward) and `end` (receive). An outcome ends the app, once: `cancel` (not now), `quick` or `complete`.
 
 import type { Action } from '../input/bindings';
 import {
@@ -63,7 +63,7 @@ interface PressSource { hit(a: Action): boolean; navigate(): { x: number; y: num
 export class MeditationApp {
   screen: Screen = 'home';
   seq: SequenceId = SEQUENCE_IDS[0];
-  seconds = 20;
+  seconds = 30;
   plan: Plan | null = null;
   paused = false;
   /** Milliseconds of the sitting that have run. Only a running session moves it. */
@@ -190,7 +190,7 @@ export class MeditationApp {
     }
     const beat = m.part * 100000 + m.beat;
     out.part = m.part !== this.seen.part;
-    out.line = m.lineSeq !== this.seen.line;
+    out.line = m.line > 0 && m.lineSeq !== this.seen.line;
     out.beat = beat !== this.seen.beat;
     this.seen = { part: m.part, line: m.lineSeq, beat };
     return out;

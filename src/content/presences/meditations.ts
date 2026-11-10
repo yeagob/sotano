@@ -11,10 +11,11 @@ export const MIN_LENGTH_SEC = 20;
 export const MAX_LENGTH_SEC = 40;
 
 export function randomLengthSec(rng: () => number): number {
-  return MIN_LENGTH_SEC + Math.floor(rng() * (MAX_LENGTH_SEC - MIN_LENGTH_SEC + 1));
+  const range = MAX_LENGTH_SEC - MIN_LENGTH_SEC;
+  return MIN_LENGTH_SEC + Math.min(range, Math.max(0, Math.floor(rng() * (range + 1))));
 }
 
-/** A guidance line stays on screen for at most this long before quiet/breath. */
+/** One sampled guidance line appears at the start of each part, then gives way to silence. */
 export const LINE_MS = 6000;
 /** With no paced breath the breath shape still moves, on a slow tide of this length. */
 export const NATURAL_MS = 11000;
@@ -194,8 +195,8 @@ function share(seq: Sequence, from: number, startMs: number, totalMs: number): n
 
 export function planSitting(seq: Sequence, seconds: number, rng: () => number): Plan {
   const totalMs = seconds * 1000;
-  const pickedLines = seq.parts.map(p => Math.floor(rng() * p.lines) + 1);
-  return { seq, totalMs, bounds: [0, ...share(seq, 0, 0, totalMs)], lines: pickedLines };
+  const lines = seq.parts.map(part => Math.floor(rng() * part.lines) + 1);
+  return { seq, totalMs, bounds: [0, ...share(seq, 0, 0, totalMs)], lines };
 }
 
 export function partAt(plan: Plan, elapsedMs: number): number {
@@ -218,7 +219,7 @@ export interface Moment {
   part: number;
   /** How far into the part, 0 to 1. */
   partT: number;
-  /** The guidance line on screen, counted from 1, or 0 if quiet; lineSeq identifies the moment. */
+  /** The sampled guidance line on screen, counted from 1, or 0 during the quiet part of a section. */
   line: number;
   lineSeq: number;
   breath: BreathKind;

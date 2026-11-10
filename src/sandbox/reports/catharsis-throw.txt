@@ -14,6 +14,7 @@ t 120 (2.0 s)
   blocks crate 2
   elements —
   cubes crate 3 · stone 1 · pickups 2
+  rewards red-heart
   events blockBreak:crate 3 · blockDamage:crate 3 · blockLoot:crate 3 · debrisImpact:stone 1 · drop 1 · explosion 1 · roomEnter 1 · throw:stone 1
 
 map t 120 · h 0

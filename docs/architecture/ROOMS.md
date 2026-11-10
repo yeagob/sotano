@@ -33,6 +33,8 @@ During combat a room's doors are **sealed** (they stay shut) until every project
 
 If a floor has a locked door, it also has one **key**, placed on a `K` spot of a normal room (or the middle of one if no template has a `K`). **The room behind a locked door is wrapped in obsidian** (walls, floor, ceiling): very hard, still breakable. More keys lie on open tiles for the floor's **chests**, which are unbreakable blocks that hold shut practices and loot ([design/CHESTS.md](../design/built/chests/CHESTS.md)); `freeSpots` picks the tiles and `carveFloor` returns `FloorResult.chests`. Chest decisions use the forks `floor/k/room/i/chest` and `floor/k/chestkeys`.
 
+The fixed treasure room on floor 0 is the exception to the pedestal rule: its reserved practice sits in one free chest with no key cost. Approaching opens the Sanctuary. A quick reward or a completed meditation opens the chest; cancelling leaves it closed until the player steps away and returns. Its reward is capped at quality 3, as all practices on the roots are.
+
 ## 3. Templates
 
 A template is 7 strings of 13 characters, top-down, first row = north:
