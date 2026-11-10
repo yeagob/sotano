@@ -9,6 +9,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ### Changed
 
 ### Fixed
+- A meditation no longer runs out while the game is in a hidden tab: time spent away is not counted, so a sitting always takes the time it says (#35).
 
 ## 0.2.2 · 2026-11-10
 
