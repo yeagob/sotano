@@ -350,6 +350,9 @@
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
+    /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
+    .tb[hidden] { display: none; }
+    .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41vmin); background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
     .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
     .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
     /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
