@@ -36,7 +36,7 @@ export const BASE_STATS: Stats = {
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
   airJumps: 0,     // jumps you may make in the air before landing (floored; SKY.md §9)
-  reach: 5,        // reach for placing blocks
+  reach: 4,        // reach for placing blocks, in blocks (4 = 20% less than the old 5; issue #162)
   carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
   throw: 1,        // throw strength multiplier

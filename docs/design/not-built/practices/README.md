@@ -13,6 +13,7 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 | [MENTAL-TRANSMUTATION.md](MENTAL-TRANSMUTATION.md) | Status: idea | Practices that move a state along its own pole (fear toward courage) instead of removing it |
 | [RIDING-THE-PENDULUM.md](RIDING-THE-PENDULUM.md) | Status: idea | Rhythms in rooms or projections that reward timing over reaction |
 | [EARLY-SKETCHES.md](EARLY-SKETCHES.md) | Status: idea (superseded) | The first ten item sketches of the design, with provisional names; most are not built |
+| [REACH-PRACTICES.md](REACH-PRACTICES.md) | Status: proposed, owner approval needed | The secondary effects of the four reach practices, after the starting reach cut (issue #162) |
 
 ## Decided design rule
 

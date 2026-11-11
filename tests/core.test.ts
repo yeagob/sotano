@@ -107,6 +107,19 @@ describe('stats', () => {
     sheet.removeSource('x');
     expect(sheet.get('damage')).toBe(BASE_STATS.damage);
   });
+  it('starts with a reach of 4 blocks, 20% less than the old 5 (issue #162)', () => {
+    expect(BASE_STATS.reach).toBe(4);
+    expect(computeStats([]).reach).toBe(4);
+    // a reach practice still adds on top of the new base
+    expect(computeStats([{ stat: 'reach', layer: 'add', value: 2, source: 'letters' }]).reach).toBe(6);
+  });
+  it('the reach reduction leaves mining and damage untouched (issue #162)', () => {
+    expect(BASE_STATS.mining).toBe(3.5);
+    expect(BASE_STATS.damage).toBe(3.5);
+    const s = computeStats([]);
+    expect(s.mining).toBe(3.5);
+    expect(s.damage).toBe(3.5);
+  });
 });
 
 describe('BlastQueue (chain safety)', () => {
