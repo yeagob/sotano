@@ -4,6 +4,11 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+## 0.2.3.f1 · 2026-11-11
+
+### Fixed
+- The Listener now searches carried items from the interaction item down, asks before taking the first monster heart, and leaves it and all other objects untouched if the offer is declined (#150).
+
 ## 0.2.3 · 2026-11-10
 
 ### Added

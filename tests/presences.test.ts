@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
-import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, leavesAfterOffer, placePresences, presenceReaction, pushedOut, unlocksPresence, type PresenceId } from '../src/content/presences';
+import { PRESENCE_BY_ID, PRESENCE_KEY, PRESENCE_TALK, answerDue, findPresenceOffer, leavesAfterOffer, placePresences, presenceReaction, pushedOut, unlocksPresence, type PresenceId } from '../src/content/presences';
 import { PART_KINDS, PARTS } from '../src/content/parts';
 import { POTION_IDS } from '../src/content/potions';
 
@@ -91,9 +91,9 @@ describe('presences: the part each one takes', () => {
 });
 
 describe('presences: every offer the Listener has', () => {
-  // The Listener's offer paths (Game.updatePresences): a heart on top of the hand is accepted once; anything
-  // else on top, or an empty hand, is refused with a line; a heart left under another item is not on top.
+  // The hand is bottom-to-top; offers scan from the interaction object down and consume the first matching part.
   const heart = PARTS.find(p => p.kind === 'heart')!;
+  const secondHeart = PARTS.find(p => p.kind === 'heart' && p !== heart)!;
   const flask = { potion: POTION_IDS[0] };
   const paths: [string, Parameters<typeof unlocksPresence>[1], boolean][] = [
     ['an empty hand', undefined, false],
@@ -106,6 +106,19 @@ describe('presences: every offer the Listener has', () => {
   ];
   it.each(paths)('%s on top of the hand: accepted only when it is the heart', (_name, carried, accepted) => {
     expect(unlocksPresence('listener', carried)).toBe(accepted);
+  });
+
+  it('finds the first valid offering from the interaction object down, leaving other carried things alone', () => {
+    const hand = [heart, 3, flask, secondHeart];
+    expect(findPresenceOffer('listener', hand)).toEqual({ index: 3, carried: secondHeart });
+    expect(hand).toEqual([heart, 3, flask, secondHeart]);
+    hand.splice(3, 1);
+    expect(findPresenceOffer('listener', hand)).toEqual({ index: 0, carried: heart });
+  });
+
+  it('returns no offering when no carried part matches', () => {
+    expect(findPresenceOffer('listener', [3, flask, PARTS.find(p => p.kind === 'flesh')!])).toBeUndefined();
+    expect(findPresenceOffer('listener', [])).toBeUndefined();
   });
 
   it('a part of any pattern works, but only its kind opens the Listener', () => {

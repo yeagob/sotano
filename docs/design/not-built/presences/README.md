@@ -4,7 +4,7 @@
 
 Status: **mixed**: decided, proposal and idea, as each document's line says.
 
-Presences are the beings of the depths who speak: the parts of the player that already know. The built ones, the Listener and the Boundary, are in [built/presences](../../built/presences/README.md). This folder holds every other presence in the design, and the systems they depend on: dialogue, requests, agreements, gifts, memory across runs, the codex and the Covenant. Presences are archetypes, never gods, saints or real people; they never give orders, never diagnose and never promise a cure. The Gardener is defined in the code, and it is listed here because it is not placed.
+Presences are the beings of the depths who speak: the parts of the player that already know. The built ones, the Listener and the Boundary, are in [built/presences](../../built/presences/README.md). This folder holds every other presence in the design, and the systems they depend on: dialogue, requests, agreements, gifts, memory across runs, the codex and the Covenant. Presences are archetypes, never gods, saints or real people; they never give orders, never diagnose and never promise a cure. The Gardener is defined in the code, and it is listed here because it is not placed. The Echo (proposal) and the Trickster (decided) have no implementation or placement; those status labels describe design maturity, not whether they are in the game.
 
 Dwellers keep one place in the depths and remember the player across runs (see [Memory](MEMORY.md)). Messengers come once: they appear on the way, say what they came to say, and vanish.
 

@@ -30,7 +30,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | Context | When |
 |---|---|
 | `play` | Simulating |
-| `prompt` | Simulating with an information banner open (confirm dismisses it) |
+| `prompt` | Information banners dismiss with confirm; a Presence offer pauses the world until confirm accepts or back declines |
 | `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
 | `inventory` | The screen is open on its menu or practices tab (it pauses the world) |
@@ -55,7 +55,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
 | navigate | axis | inventory, toll, paused, meditation | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
-| back | press | inventory, toll, meditation | Esc | B | ✕ (in a sitting, the Leave button) |
+| back | press | inventory, toll, meditation; prompt (keyboard/gamepad) | Esc | B | ✕ (in a sitting, the Leave button); offer card buttons |
 | skip | press | meditation | N | RB | the Next part button |
 | mute | press | meditation | M | X | the Sound button |
 | calm | press | meditation | C | Y | the Calm visuals button |
