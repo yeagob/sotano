@@ -43,7 +43,9 @@ const NO_NORMAL = new THREE.Vector3();
 
 const MIRROR_CALM = 0.25;
 
-interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null }
+interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null;
+  /** The look, cached for `lookOf` (the spec it was built from, so a spent pierce, phase or bounce rebuilds it). */
+  look: IntentLook; lookSpec: IntentSpec }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -141,6 +143,7 @@ export class Intents {
   private m = new THREE.Matrix4();
   private c = new THREE.Color();
   private g = new THREE.Vector3();
+  private meshes: THREE.InstancedMesh[];
 
   constructor(scene: THREE.Scene, private hooks: IntentHooks, private max = 200) {
     const geo = new THREE.IcosahedronGeometry(1, 0);
@@ -160,6 +163,7 @@ export class Intents {
     this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * (1 + GHOSTS_MAX) * 3), 3);
     this.halo = inst(new THREE.MeshBasicMaterial({ color: pal('light.ember'), transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
     this.halo.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
+    this.meshes = [this.mesh, this.core, this.halo];
   }
 
   get count() { return this.list.length; }
@@ -183,7 +187,7 @@ export class Intents {
   private push(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null });
+    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, look: intentLook(spec), lookSpec: spec });
   }
 
   within(test: (p: THREE.Vector3) => boolean): number {
@@ -290,12 +294,18 @@ export class Intents {
   }
 
   /** The look of every intention in flight, in the order drawn (for tests and the gallery). */
-  looks(): IntentLook[] { return this.list.map(t => intentLook(t.spec)); }
+  looks(): IntentLook[] { return this.list.map(t => this.lookOf(t)); }
+
+  /** The intention's look, rebuilt only when its spec is replaced (a spent pierce, phase or bounce). */
+  private lookOf(t: Intent): IntentLook {
+    if (t.lookSpec !== t.spec) { t.look = intentLook(t.spec); t.lookSpec = t.spec; }
+    return t.look;
+  }
 
   private draw() {
     let n = 0, s = 0;
     for (const t of this.list) {
-      const look = intentLook(t.spec);
+      const look = this.lookOf(t);
       const r = look.radius;
       const neg = t.spec.polarity === 'negative';
       this.m.makeScale(r, r, r).setPosition(t.pos);
@@ -325,8 +335,9 @@ export class Intents {
       n++;
     }
     this.mesh.count = s;
-    for (const m of [this.core, this.halo]) m.count = n;
-    for (const m of [this.mesh, this.core, this.halo]) {
+    this.core.count = n;
+    this.halo.count = n;
+    for (const m of this.meshes) {
       m.instanceMatrix.needsUpdate = true;
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
