@@ -174,6 +174,20 @@
     #banner i.up { color: var(--ui-up); } #banner i.down { color: var(--ui-down); } #banner i.syn { color: var(--ui-gold); }
     .q { font-style: normal; letter-spacing: 1px; font-size: 15px; color: var(--ui-gold); }
     .q4 { text-shadow: 0 0 6px var(--ui-gold); }
+    #banner[data-offer="true"] { width: min(440px, calc(100vw - 24px)); max-width: min(440px, calc(100vw - 24px)); pointer-events: auto; }
+    #banner .offer-question, #banner .offer-controls { visibility: hidden; }
+    #banner[data-offer="true"] .offer-question, #banner[data-offer="true"] .offer-controls { visibility: visible; }
+    #banner .offer-question { margin: 0; font-size: 16px; line-height: 1.4; color: var(--ui-text); }
+    #banner .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; visibility: hidden; pointer-events: none; }
+    #banner[data-offer="true"] .offer-actions { visibility: visible; pointer-events: auto; }
+    #banner .offer-actions button { flex: 1 1 0; min-width: 44px; min-height: 48px; padding: 8px 12px; font: inherit; font-weight: bold;
+      color: var(--ui-text); background: var(--ui-line); border: 0; cursor: pointer; pointer-events: none; touch-action: manipulation;
+      box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #banner[data-offer="true"] .offer-actions button { pointer-events: auto; }
+    #banner .offer-actions .offer-accept { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #banner .offer-actions button:hover { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #banner .offer-actions button:focus-visible { outline: 2px solid var(--ui-text); outline-offset: 2px; }
+    #banner .offer-controls { display: block; margin-top: 8px; font-size: 14px; line-height: 1.4; color: var(--ui-faded); }
 
     /* screen effects, gentle (§10.4): item flash peak .45 over .5 s; hurt vignette life.dark peak .35 over .4 s */
     #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 45%, var(--c) 0%, transparent 70%); }
@@ -468,6 +482,17 @@
     body.dev-touch #inventory .card { width: 96vw; max-height: 94vh; padding: calc(4 * var(--u)) calc(5 * var(--u)); }
     body.dev-touch #inventory .cols { grid-template-columns: 1fr 220px; }
     body.dev-touch #inventory header .close { width: 44px; height: 44px; }
+    @media (max-width: 480px) {
+      #banner[data-offer="true"] { width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
+      #banner .offer-actions { flex-direction: column; }
+      #banner .offer-actions button { width: 100%; }
+    }
+    @media (hover: none) and (pointer: coarse) {
+      #banner[data-offer="true"] { width: min(440px, calc(100vw - 24px)); max-width: calc(100vw - 24px); }
+      body.dev-touch #banner[data-offer="true"] { max-width: calc(100vw - 24px); }
+      #banner .offer-actions { flex-direction: column; }
+      #banner .offer-actions button { width: 100%; }
+    }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
   </style>
 </head>

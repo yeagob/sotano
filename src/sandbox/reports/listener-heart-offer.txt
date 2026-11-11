@@ -1,35 +1,34 @@
-# listener-heart-offer — Giving The Listener a monster heart guarantees one seeded practice or heart reward
+# listener-heart-offer — The Listener offers the first carried monster heart from the interaction item down without consuming it before confirmation
 floor 1 · seed 4182 · room 13×7×5 · 60 ticks (1.0 s)
 
 t 0 (0.0 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart stone] · bombs 99 · keys 99
   listener#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
   cubes — · pickups 0
 
 t 1 (0.0 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [] · bombs 99 · keys 99
-  listener#2 gone · neutral · at 5.5 0.0 3.5
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart stone] · bombs 99 · keys 99
+  listener#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
-  cubes — · pickups 1
-  rewards stone-heart
+  cubes — · pickups 0
   events roomEnter 1
 
 t 30 (0.5 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart stone] · bombs 99 · keys 99
+  listener#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
-  cubes — · pickups 1
-  rewards stone-heart
+  cubes — · pickups 0
 
 t 60 (1.0 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart stone] · bombs 99 · keys 99
+  listener#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
-  cubes — · pickups 1
-  rewards stone-heart
+  cubes — · pickups 0
 
 map t 60 · h 0
   .............

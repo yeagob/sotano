@@ -4,11 +4,12 @@
 
 Status: **proposal** (design text, bestiary section 8.6). The owner has not confirmed the agreement readings k to o (design section 13).
 
-Some presences make an agreement instead of asking for an action: "bring me this". They ask for objects from the world: hard, valuable materials, or parts of projections. The player delivers them in person, in the presence's room. Handing the item over closes the agreement and gives its gift.
+Some presences make an agreement instead of asking for an action: "bring me this". They ask for objects from the world: hard, valuable materials, or parts of projections. The player delivers them in person, in the presence's room. Handing the item over closes the agreement and gives its gift. Every delivery is opt-in: the presence names all requested objects and asks before taking any of them. Declining costs nothing and leaves the agreement open.
 
 ## Rules
 
 - **Every request has a reason** in one line of story. The reason fits the floor and the character. A request that does not fit is never made.
+- **Nothing is taken automatically.** A confirmation card lists every requested object and gives the player a clear way to accept or decline. Declining consumes nothing; the presence asks again after the player steps away and returns.
 - **It can be done with what the run offers.** The items are on the floor the player is on, or one above, unless the card says "bring it from the deep".
 - **Complexity grows with depth.** Floor 0: one plain item. Floors 1 to 2: one part or one common material. Floors 3 to 4: two items, one of them hard. Floors 5 to 6: three items, with one condition. Floors 7 to 9: a set with a condition the world enforces. Silence: one part of each pattern released.
 - **Conditions are things the world does.** "Cooled in water", "from a room with a window", "not from a projection the player converted". Polarity counts: a part of a Numbness, thawed by a good intention, uses the rule as it is.

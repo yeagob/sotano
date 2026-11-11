@@ -19,7 +19,8 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
-| confirm | A (dismisses banners, resumes, begins again after death) |
+| confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death) |
+| back | B (declines a Presence offer) |
 
 Free in `play` for future actions: X, LS and RS (`sotano-controls` §2).
 
