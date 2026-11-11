@@ -10,7 +10,7 @@ import type { Enemy, EnemyCtx, EnemyDef, TargetView } from '../enemies/types';
 import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
-import { grownScale, setScale } from './growth';
+import { grownScale, setScale, shrunkScale } from './growth';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
@@ -175,8 +175,11 @@ export class Enemies {
   /** The visual of an actor, while it lives (its group's scale is the creature's size). */
   viewOf(id: number): View | undefined { return this.views.get(id); }
 
-  /** A love shot reached a friendly creature: it grows one step, up to GROWTH_MAX (entities/growth.ts). */
+  /** A love shot reached a friendly actor: it grows one step, up to GROWTH_MAX (entities/growth.ts). */
   grow(e: Enemy) { setScale(e, grownScale(e.scale)); }
+
+  /** A negative shot reached a grown friendly actor: it shrinks one step, down to its birth size (#102). */
+  shrink(e: Enemy) { setScale(e, shrunkScale(e.scale)); }
 
   /** Attacks on the field and hostile projectiles in the air (the sandbox duel measures them). */
   pressure() { return { hazards: this.hazards.size, projectiles: this.projectiles.length }; }

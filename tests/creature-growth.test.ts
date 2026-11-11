@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
-import { GROWTH_MAX, GROWTH_STEP, grownScale, setScale } from '../src/entities/growth';
+import { GROWTH_MAX, GROWTH_STEP, grownScale, growsUnder, setScale } from '../src/entities/growth';
+import { claimCreatureGrowthGift } from '../src/content/tables/heart-gifts';
 import { CREATURE_BY_ID } from '../src/content/creatures';
 import { FlowField, reachOf, type RoomArea } from '../src/enemies/flowfield';
 import type { Actor } from '../src/entities/actors';
@@ -102,5 +103,75 @@ describe('navigation of a grown creature', () => {
     const f = new FlowField(room, reachOf(0.6));
     f.update(wide, 7.5, 2.5, 'v1');
     expect(f.direction(1.5, 2.5)).not.toBeNull();
+  });
+});
+
+describe('friendly actors grow, and negative shots shrink them back (#102)', () => {
+  const def = CREATURE_BY_ID.get('huddler')!;
+
+  it('a negative step takes a grown creature down one step, never below its birth size', () => {
+    const en = new Enemies(new THREE.Scene(), host());
+    const e = friend(en);
+    for (let n = 0; n < 4; n++) en.grow(e);
+    en.shrink(e);
+    expect(e.scale).toBeCloseTo(1 + GROWTH_STEP * 3, 9);
+    expect(e.body.hw).toBeCloseTo(def.size[0] * e.scale, 9);
+    expect(e.body.h).toBeCloseTo(def.size[1] * e.scale, 9);
+    for (let n = 0; n < 10; n++) en.shrink(e);
+    expect(e.scale).toBe(1);
+    expect(e.body.hw).toBe(def.size[0]);
+    expect(e.body.h).toBe(def.size[1]);
+  });
+
+  it('the hitbox and the visual size follow a shrink at every step', () => {
+    const en = new Enemies(new THREE.Scene(), host());
+    const e = friend(en);
+    for (let n = 0; n < 8; n++) en.grow(e);
+    for (let n = 0; n <= 8; n++) {
+      if (n > 0) en.shrink(e);
+      en.update(1 / 60);
+      const b = e.body, v = en.viewOf(e.id)!;
+      expect(b.hw).toBeCloseTo(def.size[0] * e.scale, 9);
+      expect(v.group.scale.x).toBeCloseTo(e.scale, 9);
+      const y = b.y + b.h / 2;
+      expect(en.at(b.x + b.hw * 0.99, y, b.z, 0)).toBe(e.id);
+      expect(en.at(b.x + b.hw * 1.01, y, b.z, 0)).toBe(-1);
+    }
+  });
+
+  it('every friendly actor grows, and projections and the Boundary do not', () => {
+    const en = new Enemies(new THREE.Scene(), host());
+    const make = (id: number, faction: 'neutral' | 'self' | 'projection', tags: string[]) => {
+      const e = en.spawn(def, id, 0, 3, 0, 3, def.hp, def.speed, 0, new Set(tags));
+      e.faction = faction;
+      e.spawning = 0;
+      return e;
+    };
+    expect(growsUnder(make(20, 'neutral', ['creature']))).toBe(true);
+    expect(growsUnder(make(21, 'self', []))).toBe(true);
+    expect(growsUnder(make(22, 'neutral', ['presence']))).toBe(true);
+    expect(growsUnder(make(23, 'neutral', ['boundary']))).toBe(false);
+    expect(growsUnder(make(24, 'projection', []))).toBe(false);
+  });
+
+  it('a converted ally grows under love shots like a creature, and its box follows', () => {
+    const en = new Enemies(new THREE.Scene(), host());
+    const ally = en.spawn(def, 30, 0, 3, 0, 3, def.hp, def.speed, 0, new Set());
+    ally.faction = 'self';
+    ally.spawning = 0;
+    en.grow(ally);
+    expect(ally.scale).toBeCloseTo(1 + GROWTH_STEP, 9);
+    expect(ally.body.hw).toBeCloseTo(def.size[0] * ally.scale, 9);
+  });
+
+  it('the maximum-growth gift is claimed once, even after a shrink and a second growth to three times', () => {
+    const en = new Enemies(new THREE.Scene(), host());
+    const e = friend(en);
+    for (let n = 0; n < 8; n++) en.grow(e);
+    expect(claimCreatureGrowthGift(e.tags)).toBe(true);
+    en.shrink(e);
+    for (let n = 0; n < 8; n++) en.grow(e);
+    expect(e.scale).toBe(GROWTH_MAX);
+    expect(claimCreatureGrowthGift(e.tags)).toBe(false);
   });
 });
