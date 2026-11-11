@@ -27,6 +27,7 @@ import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
 import { handTollIds } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
+import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
@@ -111,6 +112,7 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
@@ -118,6 +120,7 @@ export class Hud {
   private screenTab: ScreenTab = 'menu';
   private shownTab: ScreenTab | null = null;
   bannerOpen = false;
+  get presenceOfferOpen() { return this.lastPresenceOffer !== null; }
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
@@ -143,7 +146,14 @@ export class Hud {
     $('hearts-box').appendChild(this.spiritRing);
     this.renderSpiritLabel();
     onLocaleChange(() => this.relocalize());
-    onDeviceChange(d => { this.applyDevice(d); this.relocalize(); });
+    onDeviceChange(d => {
+      this.applyDevice(d);
+      if (this.presenceOfferOpen) {
+        this.renderControls();
+        this.renderGraphics();
+        this.renderPresenceOfferControls();
+      } else this.relocalize();
+    });
     this.applyDevice(activeDevice());
     this.renderControls();
     this.fovInput.min = String(FOV_MIN);
@@ -178,7 +188,8 @@ export class Hud {
     this.renderLanguages();
     this.renderControls();
     this.renderGraphics();
-    if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
+    if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
     if (this.tollOpen && this.game) this.renderToll(this.game);
@@ -495,6 +506,7 @@ export class Hud {
   /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
   presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: Params) {
     this.lastBanner = null;
+    this.clearPresenceOfferState();
     this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b>${th(nameKey)}</b>` +
@@ -506,8 +518,63 @@ export class Hud {
     this.bannerOpen = true;
   }
 
+  presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+    this.lastBanner = null;
+    this.lastPresenceOffer = { nameKey, carried };
+    this.bannerEl.dataset.offer = 'true';
+    this.bannerEl.setAttribute('role', 'dialog');
+    this.bannerEl.setAttribute('aria-modal', 'true');
+    this.bannerEl.setAttribute('aria-labelledby', 'presence-offer-title');
+    this.bannerEl.setAttribute('aria-describedby', 'presence-offer-question');
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.renderPresenceOffer();
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  private renderPresenceOffer() {
+    const offer = this.lastPresenceOffer;
+    if (!offer) return;
+    const item = typeof offer.carried === 'number'
+      ? materialName(offer.carried)
+      : isFlask(offer.carried)
+        ? t(POTIONS[offer.carried.potion].name)
+        : partText(offer.carried).name;
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
+      `<span class="offer-question" id="presence-offer-question">${th('presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
+      `<small class="offer-controls"></small></div></div>`;
+    this.renderPresenceOfferControls();
+    this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
+  }
+
+  private renderPresenceOfferControls() {
+    const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
+    if (el) el.textContent = t(forDevice('presence.offer.controls', activeDevice()), controlParams(activeDevice()));
+  }
+
+  closePresenceOffer() {
+    this.clearPresenceOfferState();
+    this.bannerOpen = false;
+    this.bannerEl.classList.remove('show');
+  }
+
+  private clearPresenceOfferState() {
+    this.lastPresenceOffer = null;
+    delete this.bannerEl.dataset.offer;
+    this.bannerEl.removeAttribute('role');
+    this.bannerEl.removeAttribute('aria-modal');
+    this.bannerEl.removeAttribute('aria-labelledby');
+    this.bannerEl.removeAttribute('aria-describedby');
+  }
+
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
     this.lastBanner = [def, changes, synergies];
+    this.clearPresenceOfferState();
     this.renderBanner(def, changes, synergies);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
@@ -534,6 +601,7 @@ export class Hud {
 
   /** Information banners stay until the player clicks (owner rule). */
   dismissBanner() {
+    this.clearPresenceOfferState();
     this.bannerOpen = false;
     this.bannerEl.classList.remove('show');
   }

@@ -2,7 +2,7 @@
 
 # Presences (built)
 
-Presences are the beings of the depths who speak: the parts of the player that already know. They are archetypes, never gods, saints or real people, and they never give orders. They are immortal: they have no health and take no damage, and a negative intention silences them rather than hurting them. Two are in the game: the Listener, on floors 1 to 5, and the Boundary, a calm guardian of the vaults. The Gardener is defined in the code but not placed. Everything else in the design is in [not-built/presences](../../not-built/presences/README.md).
+Presences are the beings of the depths who speak: the parts of the player that already know. They are archetypes, never gods, saints or real people, and they never give orders. They are immortal: they have no health and take no damage, and a negative intention silences them rather than hurting them. Two are in the game: the Listener, on floors 1 to 5, and the Boundary, a calm guardian of the vaults. The Listener is the reference implementation for a part-for-reward Presence: it searches the carried hand and asks before taking the first matching part. The Gardener is defined in the code but not placed. Everything else in the design is in [not-built/presences](../../not-built/presences/README.md).
 
 | Document | Presence | Where it is | What it does |
 |---|---|---|---|
@@ -16,7 +16,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 - **Polarity.** Positive intentions pass through with a chime or a healing where it applies. Negative intentions silence a presence within two blocks: its card shows one line of refusal, and it says nothing more until a positive intention passes within eight blocks. See [Polarity](../encounters/POLARITY.md).
 - **Talk by contact.** A presence speaks when the player comes within about two blocks of it, in a card with its lines, read in the player's language. The card stays until it is dismissed.
 - **Replies and bodies.** Each presence has a body the player cannot walk through. Until its part is brought, it answers each approach with the name of what the player holds, and says it is not what it waits for; with empty hands it says so. It answers at most once every four seconds.
-- **The key part.** A presence speaks only to the player who brings it its part. The Listener takes a heart; the Gardener, which is not placed, takes a flesh. The part is taken from the top of the hand and is gone. Until then the presence says nothing, not even its silence line. See [Parts](../projections/PARTS.md).
+- **The key part.** A presence speaks only to the player who brings it its part. The Listener takes a heart; the Gardener, which is not placed, takes a flesh. The carried hand is searched from the interaction item down, and the first matching part is taken; other carried things stay. Until then the presence says nothing, not even its silence line. See [Parts](../projections/PARTS.md).
 - **Their rooms never seal.** A presence's room is placed with no projections in it, so it is cleared from the start and its doors stay open.
 - **Look.** The Listener is built from bone tones. The Boundary is limestone, like its vault. Neither uses the cold or the living tones.
 

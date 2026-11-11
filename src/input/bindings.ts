@@ -135,8 +135,8 @@ export const BINDINGS: readonly Binding[] = [
   },
   {
     action: 'back', kind: 'press', when: ['inventory', 'toll', 'meditation'],
-    keyboard: { keys: ['Escape'] },
-    gamepad: { buttons: [PAD.B] },
+    keyboard: { keys: ['Escape'], when: ['inventory', 'toll', 'meditation', 'prompt'] },
+    gamepad: { buttons: [PAD.B], when: ['inventory', 'toll', 'meditation', 'prompt'] },
     touch: { control: 'menuButton' },
     refs: { minecraft: 'Esc / B closes a screen', noita: 'Esc / B closes a screen', isaac: 'Esc / B closes a screen' },
   },

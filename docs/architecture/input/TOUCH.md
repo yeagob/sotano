@@ -19,7 +19,8 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |
-| confirm | tap anywhere (dismisses banners); "Tap to play" on the menu tab |
+| confirm | tap a Presence offer button; tap anywhere to dismiss other banners; "Tap to play" on the menu tab |
+| back | no separate binding for offers: tap Keep to decline |
 
 References: Minecraft's pocket edition (left joystick, look by dragging on the right, jump at the lower right, tap to place), Noita (fire held while you aim), Isaac (one button per consumable, a glance tells you what you have).
 

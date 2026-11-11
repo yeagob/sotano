@@ -1,5 +1,5 @@
 {
-  "note": "Giving The Listener a monster heart guarantees one seeded practice or heart reward",
+  "note": "The Listener offers the first carried monster heart from the interaction item down without consuming it before confirmation",
   "floor": 1,
   "seed": 4182,
   "rows": [
@@ -12,7 +12,7 @@
     "............."
   ],
   "player": [3, 0, 3],
-  "hand": ["doubt.heart"],
+  "hand": ["doubt.heart", "stone"],
   "enemies": [
     { "def": "listener", "at": [5, 0, 3] }
   ],

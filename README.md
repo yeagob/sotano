@@ -101,6 +101,7 @@ Three complete schemes; the game follows whichever device you used last (details
 | Drop a bomb | **E** | **RB** | The seed |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
+| Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |
 | Field of view (on the menu) | **← →**, or drag the bar or click − and + | D-pad **← →** | Drag the bar, or tap − and + |

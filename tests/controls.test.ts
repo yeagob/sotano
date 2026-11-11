@@ -44,6 +44,12 @@ describe('controls contract', () => {
     }
   });
 
+  it('back declines a presence offer on keyboard and gamepad; touch uses the card buttons', () => {
+    expect(contextsFor(BINDING.back, 'keyboard')).toContain('prompt');
+    expect(contextsFor(BINDING.back, 'gamepad')).toContain('prompt');
+    expect(contextsFor(BINDING.back, 'touch')).not.toContain('prompt');
+  });
+
   it('a touch action with no button of its own is reached through another control', () => {
     for (const b of BINDINGS.filter(x => x.touch.control === 'none')) {
       expect(BINDING.inventory.touch.control, b.action).toBe('systemButton');
@@ -63,6 +69,6 @@ describe('controls contract', () => {
   });
 
   it('every prompt the player reads has a gamepad and a touch version', () => {
-    for (const k of ['intro.play', 'banner.continue', 'death.restart', 'inv.close']) for (const s of ['pad', 'touch']) expect(messages).toHaveProperty(`${k}.${s}`);
+    for (const k of ['intro.play', 'banner.continue', 'death.restart', 'inv.close', 'presence.offer.controls']) for (const s of ['pad', 'touch']) expect(messages).toHaveProperty(`${k}.${s}`);
   });
 });
