@@ -5,6 +5,7 @@ import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './binding
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
+import { intentPowerLevel } from '../combat/intents';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
@@ -172,7 +173,9 @@ export class TouchControls {
     if (!show) return;
     const p = g.player;
     const top = p.hand.at(-1), flask = !!top && isFlask(top);
-    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${flask}`;
+    // the loaded intention's power (#111): the ring thickens and glows with every step of damage
+    const power = intentPowerLevel(g.stats.get('damage')).toFixed(3);
+    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${flask}:${power}`;
     if (key === this.key) return;
     this.key = key;
     const thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
@@ -184,5 +187,6 @@ export class TouchControls {
     const pol = this.buttons.get('cast')!;
     pol.dataset.polarity = g.polarityNow;
     pol.style.setProperty('--pol', palCss(castPolarityToken(g.polarityNow)));
+    pol.style.setProperty('--power', power);
   }
 }

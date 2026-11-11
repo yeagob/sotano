@@ -463,6 +463,19 @@ Capture (tiles at ×2, 3 × 3, flat light; the strata each floor sits in on the 
 | Hit block | 6 shell-coloured light particles in a hemisphere, 3 matter chips, 2 `light.gold` motes, ring 0 → 0.35 m in 0.12 s, no shake | Mat |
 | Hit projection | 10 light particles, the projection flashes its **host material's `hi`** for 0.06 s (not white), squash 0.9/1.1 for 0.08 s | Cre, Mat |
 
+#### 7.1.1 Power shows (issue #111, 2026-11-11; OWNER to review)
+
+An intention's look grows with its damage and its effects, so each shot feels as full as it is. Rule (`intentLook` in `src/combat/intents.ts`), with power `p = log2(damage / base damage)` clamped to −1…4 and `e` the effects it carries (pierce, phase, bounce, homing, volley > 1, each item tag; capped at 4):
+
+| Knob | Value |
+|---|---|
+| Shell radius | `radius × (1 + 0.18·p)`, at most 0.42 m (a bead, never a ball) |
+| Halo | `(2.4 + 0.5·p + 0.25·e) ×` shell radius; strength `1 + 0.3·p + 0.1·e` (floor 0.5), the negative one 0.6 of it as before |
+| Trail | `2 + p + e` ghosts (1 to 8), 0.014 s of flight apart, scale 0.8 → 0.2, drawn in the shell's draw call; untinted positive trails `light.ember`, untinted negative trails `ink.ash`, a tinted shell trails its tint |
+| Fire button (phone) | ring `6 px × (1 + q)` and a glow of the same token `4vmin × q`, `q = clamp(p / 4, 0, 1)` |
+
+Each doubling of damage is one step (+18 % size, +0.5 halo radii, +30 % glow, +1 ghost), so two damage levels never look the same. Power is read from size and trail length first, glow second, so it holds in greyscale and under every colour-blindness filter; no new colour or token is added, and nothing pulses or flashes (no 3 Hz risk). Core and shell colours and the polarity rules of §14.1 are unchanged. Not verified by capture: an intention in flight is not in `?gallery` (as §14.1 notes).
+
 **Item modifiers** only through these knobs: size, rim/trail colour, halo radius, ghost count, and **one** special slot (ember, arc, ripple, spiral); newest wins, older ones fold into the trail colour (Mat). Core and shell never change colour. Items that "tint intentions" tint the rim/trail. Mea's Platonic-solid intention shapes lost: the cube would collide with the hostile shape; the solids live on in the glyphs.
 
 ### 7.2 Hostile projectiles

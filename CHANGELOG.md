@@ -6,6 +6,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
+- Intentions show their power: more damage and more effects make them bigger, with a wider, brighter halo and a longer trail, one clear step per doubling of damage, and the phone fire button's ring thickens and glows to match (#111).
 
 ## 0.2.3.f1 · 2026-11-11
 
