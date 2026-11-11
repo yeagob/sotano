@@ -5,12 +5,21 @@ import { floorHeartChances, HEART_CHANCE, RARE_HEARTS, rollHeart } from '../src/
 import { Rng, RunRandom } from '../src/core/rng';
 import { StatSheet } from '../src/core/stats';
 import { createBus } from '../src/game/events';
-import type { Game } from '../src/game/game';
+import { Game } from '../src/game/game';
+import { Player } from '../src/entities/player';
+import { LOCALES } from '../src/i18n/locales';
 
-// game.ts loads without audio; the sound module is silenced so the real collectHeart can run in node.
-vi.mock('../src/audio/sfx', () => {
-  const silent = new Proxy({}, { get: () => () => {} });
-  return { sfx: silent, sfx2: silent, sfx3: silent, sfxHeart: silent, easeMaster: () => {}, setMasterTarget: () => {}, spatial: () => {}, unlockAudio: () => {}, setEcho: () => {}, starTheme: () => {} };
+// The game module reads the browser's pointer query once at load; Node has no matchMedia.
+vi.hoisted(() => {
+  const g = globalThis as { matchMedia?: unknown };
+  g.matchMedia ??= () => ({ matches: false, addEventListener: () => undefined, removeEventListener: () => undefined });
+});
+// Sounds are recorded, not played: the game's audio needs a browser.
+const sfx = vi.hoisted(() => ({ played: [] as string[] }));
+vi.mock('../src/audio/sfx', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../src/audio/sfx')>();
+  return { ...real, sfxHeart: new Proxy({}, { get: (_target, name) => () => { sfx.played.push(String(name)); } }) as typeof real.sfxHeart };
+});
 });
 
 const u = (n: number) => n * HEALTH_UNIT;
@@ -105,7 +114,64 @@ describe('black heart', () => {
     const chances = floorHeartChances(new RunRandom(3), 4), rng = new Rng(9), n = 40000;
     let black = 0;
     for (let i = 0; i < n; i++) if (rollHeart(rng, chances, 4) === 'black') black++;
-    expect(black / n).toBeCloseTo(chances.black, 1);
+    // a binomial estimate: within five standard errors of the chance drawn for this floor
+    const se = Math.sqrt(chances.black * (1 - chances.black) / n);
+    expect(Math.abs(black / n - chances.black)).toBeLessThan(5 * se);
+  });
+
+  describe('in the game (Game.collectHeart and heartLost, on a stub of the game)', () => {
+    // The real methods run on a plain object with the systems they touch; the renderer is not needed.
+    type GameMethods = { collectHeart(kind: string): boolean; heartLost(kind: string): void };
+    const methods = Game.prototype as unknown as GameMethods;
+    const stub = (player: Player, maxHearts = 2) => {
+      const toasts: string[] = [];
+      const bus = { emit: (name: string, payload?: { amount?: number }) => ({ cancelled: false, amount: name === 'pickupCollect' ? payload?.amount ?? 0 : 0 }) };
+      const game = {
+        player, maxHp: HEART * maxHearts,
+        stats: { get: (key: string) => (key === 'maxHearts' ? maxHearts : 0) },
+        bus, hud: { toast: (key: string) => { toasts.push(key); } },
+        particles: { burst: () => undefined }, heal: () => undefined, collect: () => true,
+      };
+      return { game, toasts };
+    };
+
+    it('adds one full black heart at full health, without touching the red health, and toasts it', () => {
+      const player = new Player();
+      player.hp = HEART * 2;
+      const { game, toasts } = stub(player);
+      sfx.played.length = 0;
+      expect(methods.collectHeart.call(game, 'black')).toBe(true);
+      expect(player.layers).toEqual([{ kind: 'black', hp: HEART }]);
+      expect(player.hp).toBe(HEART * 2);
+      expect(toasts).toEqual(['heart.black']);
+      expect(sfx.played).toContain('black');
+    });
+
+    it('stays on the floor when the room for hearts is full', () => {
+      const player = new Player();
+      player.hp = HEART * 2;
+      player.layers = Array.from({ length: 10 }, () => ({ kind: 'blue' as const, hp: HEART }));
+      const { game, toasts } = stub(player);
+      expect(methods.collectHeart.call(game, 'black')).toBe(false);
+      expect(player.layers).toHaveLength(10);
+      expect(toasts).toEqual([]);
+    });
+
+    it('toasts its own line and plays the lost sound when a black heart is spent', () => {
+      const player = new Player();
+      const { game, toasts } = stub(player);
+      sfx.played.length = 0;
+      methods.heartLost.call(game, 'black');
+      expect(toasts).toEqual(['heart.blackLost']);
+      expect(sfx.played).toContain('layerLost');
+    });
+
+    it('has its pickup and lost lines in both shipped languages', () => {
+      for (const locale of LOCALES) {
+        expect(locale.messages['heart.black']).toBeTruthy();
+        expect(locale.messages['heart.blackLost']).toBeTruthy();
+      }
+    });
   });
 });
 
