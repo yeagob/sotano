@@ -23,7 +23,7 @@ import {
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
-import { tollIndex } from './toll';
+import { heartTollPlan, tollIndex } from './toll';
 import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
@@ -86,7 +86,7 @@ import { floorHeartChances, rollHeart } from '../content/tables/hearts';
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX } from '../entities/growth';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -499,6 +499,7 @@ export class Game {
     this.bus = createBus();
     attachDevlog(this.bus);
     this.inventory.restore([]);
+    this.stats.removeSource('toll');
     this.syncWeapon();
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
@@ -3375,9 +3376,8 @@ export class Game {
     const toll = tollOf(k), f = this.floors.get(k), st = this.bossRooms.get(k);
     const p = this.player;
     if (!toll || !f?.hole || !st || p.dead || new Set(ids).size !== ids.length || ids.length !== toll.count) return false;
-    const hearts = heartCount(p.hp, p.layers);
-    const hands: number[] = [], items: string[] = [];
-    let keys = 0, bombs = 0, paid = 0;
+    const hands: number[] = [], items: string[] = [], base: number[] = [], bonus: number[] = [];
+    let keys = 0, bombs = 0;
     for (const id of ids) {
       const [kind, at] = id.split(':'), i = tollIndex(at);
       if (i === null) return false;
@@ -3385,17 +3385,24 @@ export class Game {
       if (kind === 'hand') { if (!(i < p.hand.length)) return false; hands.push(i); }
       else if (kind === 'key') { if (!(i < p.keys)) return false; keys++; }
       else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
-      else if (kind === 'heart') { if (!(i < hearts)) return false; paid++; }
+      else if (kind === 'heart') base.push(i);
+      else if (kind === 'layer') bonus.push(i);
       else if (kind === 'item') { const held = this.inventory.items[i]; if (!held) return false; items.push(held.def.id); }
       else return false;
     }
+    // every heart is checked before anything is taken: a refused payment spends nothing
+    const plan = heartTollPlan(p.hp, Math.floor(this.stats.get('maxHearts')), p.layers, base, bonus);
+    if (!plan) return false;
     for (const i of hands.sort((a, b) => b - a)) p.hand.splice(i, 1);
     p.keys -= keys;
     p.bombs -= bombs;
     for (const id of items) this.inventory.lose(id);
     if (items.length) this.hud.setItems(this.inventory.items.map(i => i.def));
-    if (paid) { p.invulnT = 0; this.damageActor(p, paid * HEART, 'toll', 'toll', p.id); }
-    if (p.dead) return true;
+    // a base heart takes its capacity and the health it holds; a bonus heart goes whole and leaves base health alone
+    if (base.length) this.stats.add({ stat: 'maxHearts', layer: 'add', value: -base.length, source: 'toll' });
+    p.hp = plan.hp;
+    this.clampHealth();
+    for (const j of [...plan.layers].sort((a, b) => b - a)) this.heartLost(p.layers.splice(j, 1)[0].kind);
     st.open = true;
     openHole(this.dw, f.hole);
     const h = f.hole;
