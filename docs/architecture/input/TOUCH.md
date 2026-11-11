@@ -44,6 +44,8 @@ The phone screen keeps only what matters every second: hearts, counters, the pol
 
 Resuming asks for fullscreen and locks the orientation to landscape where the browser allows it. In portrait a rotate card covers everything and the game pauses. Every edge control respects `env(safe-area-inset-*)` (notches), with `viewport-fit=cover`.
 
+**Return to fullscreen (#161).** When the player leaves fullscreen (the browser or the system gesture), a fullscreen button appears in the top bar, left of the inventory button, on every screen (play, menus, the rotate card). It is outside the touch layer and is not an action in `BINDINGS`: it exists only on a phone (the last input was touch) and is hidden while the page is fullscreen, so it leaves only once fullscreen is confirmed. A request that the browser cannot make (no API, as on iPhone Safari) or refuses shows a short toast (`toast.fullscreenUnsupported`, `toast.fullscreenDenied`) and leaves the game playable. The request logic is `src/input/fullscreen.ts` (DOM-free, `tests/fullscreen.test.ts`); the button is `src/input/fullscreen-button.ts`.
+
 ## 6. Glyphs and feedback
 
 The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`), drawn from palette tokens (`sotano-art`). Buttons dim when they cannot act (empty hand, no seeds) and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).

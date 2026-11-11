@@ -2,6 +2,7 @@ import {
   BINDING, BINDINGS, deadzone, lookCurve, MOVE_KEYS, NAV_KEYS, NAV_PAD, PAD_LOOK_SPEED, PAD_TRIGGER, PAD_WAKE, TOUCH_LOOK_SPEED,
   type Action, type Device,
 } from './bindings';
+import { enterFullscreen } from './fullscreen';
 
 let current: Device = 'keyboard';
 const deviceListeners = new Set<(d: Device) => void>();
@@ -118,18 +119,11 @@ export class Input {
 
   resume() {
     if (current === 'keyboard') { this.lock(); return; }
-    if (current === 'touch') this.fullscreen();
+    // a tap that starts play asks for fullscreen; a refusal here stays quiet (the return button reports it)
+    if (current === 'touch') void enterFullscreen(document);
     this.engaged = true;
     this.suppress(...BUTTON_ACTIONS);
     this.touchHeld.clear();
-  }
-
-  private fullscreen() {
-    const doc = document.documentElement;
-    if (document.fullscreenElement || !doc.requestFullscreen) return;
-    doc.requestFullscreen({ navigationUI: 'hide' })
-      .then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape'))
-      .catch(() => {});
   }
 
   private lost() {

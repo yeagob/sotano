@@ -49,6 +49,7 @@ import { DOUBLE_TAP_MS } from '../input/bindings';
 import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
+import { FullscreenButton } from '../input/fullscreen-button';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
@@ -361,6 +362,8 @@ export class Game {
     this.renderer.autoClear = false;
     this.input = new Input(canvas);
     this.touch = new TouchControls(this.input);
+    // the phone's way back to fullscreen after it was left (#161); its failures use the shared toast
+    new FullscreenButton(this.input, key => this.hud.toast(key));
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
     // each world's scene objects hang under its own group; only the active one is visible (SKY.md §2.3)

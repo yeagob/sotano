@@ -4,6 +4,9 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+### Added
+- On a phone, a fullscreen button sits in the top bar whenever the game is not fullscreen, so you can return to fullscreen after leaving it; if the browser cannot or will not go fullscreen, a short notice says so (#161).
+
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
 
