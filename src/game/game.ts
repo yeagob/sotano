@@ -3303,6 +3303,7 @@ export class Game {
       }
     }
     for (const [k, st] of this.bossRooms) this.updateBossRoom(k, st, dt);
+    this.syncBossBar();
   }
 
   private enterBossRoom(r: RoomInfo) {
@@ -3334,6 +3335,13 @@ export class Game {
     sfx3.clear();
   }
 
+  /** The boss bar follows the one fight the player is in: the spawned boss of this room, alive, while the player lives. It is set every frame, so a death, a reset (which clears bossRooms) or leaving the room hides it, and only a resumed fight shows it again. */
+  private syncBossBar() {
+    const st = [...this.bossRooms.values()].find(s => s.spawned && s.room === this.room);
+    const boss = st && !this.player.dead ? this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room) : undefined;
+    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
+  }
+
   /**
    */
   private updateBossRoom(k: number, st: BossRoom, dt: number) {
@@ -3343,8 +3351,6 @@ export class Game {
       if (st.wake <= 0) { st.spawned = true; this.summonBoss(f, this.rooms.get(st.room)!); }
       return;
     }
-    const boss = this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room);
-    this.hud.bossBar(boss && this.room === st.room ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
     if (!st.defeated || st.open) return;
     const hole = f.hole;
     st.t -= dt;

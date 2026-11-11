@@ -7,6 +7,9 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
 
+### Fixed
+- The boss health bar hides when you die, reset with R or respawn, and shows again only when the boss fight resumes (#163).
+
 ## 0.2.3.f1 · 2026-11-11
 
 ### Fixed
