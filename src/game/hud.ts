@@ -8,7 +8,7 @@
 
 import { heartQuarters, HEART } from '../entities/actors';
 import { heartCount } from '../entities/hearts';
-import { BERSERKER_FRAME, STAR_GLOW } from '../content/heart-art';
+import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
@@ -24,7 +24,7 @@ import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
-import { handTollIds } from './toll';
+import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
 import type { Carried } from '../entities/player';
@@ -38,6 +38,8 @@ const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 /** A message, escaped for innerHTML. */
 const th = (key: MessageKey, params?: Params) => esc(t(key, params));
+/** A heart's name in the toll window, with its quarters when it is not whole (the window's tiles show them). */
+const tollHeartLabel = (name: string, quarters: number) => (quarters >= 4 ? name : t('toll.heartPart', { name, q: quarters }));
 
 const STAT_ORDER: StatName[] = [
   'damage', 'fireRate', 'shotSpeed', 'range', 'gravity', 'size', 'mining',
@@ -806,7 +808,7 @@ export class Hud {
       ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
       for (let i = 0; i < p.bombs; i++) ids.push(`bomb:${i}`);
-      for (let i = 0; i < heartCount(p.hp, p.layers); i++) ids.push(`heart:${i}`);
+      ids.push(...heartTollIds(p.hp, p.layers, Math.floor(g.stats.get('maxHearts'))));
     }
     return [...ids, 'pay', 'close'];
   }
@@ -816,8 +818,9 @@ export class Hud {
     if (!toll) return;
     if (id === 'close') { this.closeToll(g); return; }
     if (id === 'pay') {
-      if (this.tollPicked.size === toll.count && g.payToll(this.tollFloor, [...this.tollPicked])) { this.closeToll(g); return; }
-      this.toast('toll.need', { n: toll.count });
+      if (this.tollPicked.size !== toll.count) this.toast('toll.need', { n: toll.count });
+      else if (g.payToll(this.tollFloor, [...this.tollPicked])) { this.closeToll(g); return; }
+      else this.toast('toll.cannot');
       this.renderToll(g);
       return;
     }
@@ -835,7 +838,13 @@ export class Hud {
     const tile = (id: string, icon: string, label: string) =>
       `<button type="button" class="tile${this.tollPicked.has(id) ? ' on' : ''}${id === cur ? ' cur' : ''}" data-id="${id}"><img src="${icon}" alt=""><span class="lbl">${esc(label)}</span></button>`;
     const section = (key: MessageKey, body: string) => (body ? `<h3>${th(key)}</h3>${body}` : '');
-    const hearts = Array.from({ length: heartCount(p.hp, p.layers) }, (_, i) => tile(`heart:${i}`, hudIconUrl(HUD_ICONS.heart), t('toll.heart'))).join('');
+    // each heart is its own tile: base hearts with the health they hold, bonus hearts by their type
+    const hearts = heartTollIds(p.hp, p.layers, Math.floor(g.stats.get('maxHearts'))).map(id => {
+      const [kind, at] = id.split(':'), i = Number(at);
+      if (kind === 'heart') return tile(id, hudIconUrl(HUD_ICONS.heart), tollHeartLabel(t('toll.heart'), heartQuarters(p.hp, i)));
+      const layer = p.layers[i];
+      return tile(id, hudIconUrl(HEART_HUD[layer.kind]), tollHeartLabel(t(`toll.layer.${layer.kind}`), heartQuarters(layer.hp, 0)));
+    }).join('');
     const keys = Array.from({ length: p.keys }, (_, i) => tile(`key:${i}`, hudIconUrl(HUD_ICONS.key), t('toll.key'))).join('');
     const bombs = Array.from({ length: p.bombs }, (_, i) => tile(`bomb:${i}`, hudIconUrl(HUD_ICONS.seed), t('toll.bomb'))).join('');
     const hands = p.hand.map((m, i) => (typeof m === 'number'
@@ -853,6 +862,7 @@ export class Hud {
       `<div class="card slate"><header><h2>${th('toll.title')}</h2>` +
       `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · ${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</small></header>` +
       `<p class="hint">${th('toll.hint', controlParams(device))}</p>` +
+      `<p class="hint">${this.tollCost(g)}</p>` +
       `<div class="grid">${body || `<p class="none">${th('toll.none')}</p>`}</div>` +
       `<div class="go-row"><button type="button" class="tile go${ready ? '' : ' off'}${cur === 'pay' ? ' cur' : ''}" data-id="pay"><span class="lbl">${th('toll.go')}</span></button>` +
       `<button type="button" class="tile go${cur === 'close' ? ' cur' : ''}" data-id="close"><span class="lbl">${th('toll.stay')}</span></button></div></div>`;
@@ -860,6 +870,23 @@ export class Hud {
       b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
       b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.tollAct(g, b.dataset.id!); });
     }
+  }
+
+  /** What the picks would cost, in words: the bonus hearts by type, the base hearts, and the health and capacity left. */
+  private tollCost(g: Game): string {
+    const p = g.player, maxHearts = Math.floor(g.stats.get('maxHearts'));
+    const { base, bonus } = splitHeartPicks(this.tollPicked);
+    if (!base.length && !bonus.length) return th('toll.costNone');
+    const plan = heartTollPlan(p.hp, maxHearts, p.layers, base, bonus);
+    if (!plan) return th('toll.cannot');
+    const lines: string[] = [];
+    if (bonus.length) lines.push(th('toll.costBonus', { list: bonus.map(j => t(`toll.layer.${p.layers[j].kind}`)).join(', ') }));
+    if (base.length) lines.push(th('toll.costBase', { n: base.length }));
+    lines.push(th('toll.costNow', {
+      hpFrom: fmtNum(p.hp / HEART, 2), hpTo: fmtNum(plan.hp / HEART, 2),
+      capFrom: fmtNum(maxHearts, 0), capTo: fmtNum(plan.maxHearts, 0),
+    }));
+    return lines.join('<br>');
   }
 
   private moveCursor(id: string) {

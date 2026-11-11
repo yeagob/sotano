@@ -9,7 +9,7 @@ Part of [kinds of heart](README.md).
 - Walking into it adds one extra heart of 100 health, even at full health.
 - While it is the heart a hit lands on (the most recently picked up extra heart), every hit is halved, rounded down: 30 becomes 15, 60 becomes 30, 100 becomes 50. There is no threshold: any hit is halved. A halved hit sounds like stone and throws grey chips.
 - It is spent like any extra heart and lost for good; after that, hits land whole.
-- A toll paid with a heart is a payment, not a hit: it is never halved.
+- A stone heart given to a toll is a payment, not a hit: it goes whole, with what it holds, and is never halved. See [TOLL](../../levels/floors/TOLL.md).
 
 ## Numbers
 

@@ -180,7 +180,16 @@ const messages = {
   'toll.sec.hand': 'In your hand',
   'toll.sec.key': 'Keys',
   'toll.sec.bomb': 'Bombs',
-  'toll.sec.heart': 'Hearts (each one is a heart of damage)',
+  'toll.sec.heart': 'Hearts (each one goes whole, with the health it holds)',
+  'toll.layer.blue': 'Blue heart',
+  'toll.layer.stone': 'Stone heart',
+  'toll.layer.berserker': 'Berserker heart',
+  'toll.heartPart': '{name} ({q}/4)',
+  'toll.costNone': 'Nothing chosen yet. Staying spends nothing.',
+  'toll.costBonus': 'Bonus hearts given: {list}. Each one goes whole.',
+  'toll.costBase': 'Base hearts given: {n}, each with the health it holds.',
+  'toll.costNow': 'Health: {hpFrom} to {hpTo} hearts. Capacity: {capFrom} to {capTo} hearts.',
+  'toll.cannot': 'That choice cannot be paid: a base heart cannot be the last one, and some health must stay.',
   'toll.sec.item': 'Practices',
 
   // ── toasts ──
