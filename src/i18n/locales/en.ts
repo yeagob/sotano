@@ -204,6 +204,7 @@ const messages = {
   'heart.stoneLost': 'The stone heart crumbles. Hits land whole again.',
   'heart.blood': 'Blood heart: you heal slowly, up to two hearts. A hit ends it.',
   'heart.bloodBroken': 'The hit stopped the blood heart.',
+  'heart.bloodSlot': 'Blood heart: one more heart, and it is filled at once.',
   'heart.star': 'Star heart: one heart back, and 30 seconds untouchable.',
   'heart.starEnd': 'The star fades.',
   'heart.berserker': 'Berserker heart: stronger, faster, higher. Short reach. Shots bounce off you.',

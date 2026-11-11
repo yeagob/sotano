@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { HEART } from '../src/entities/actors';
-import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, HEALTH_UNIT, berserk, heartCount, landHit, stoneHalve, tickBlood, type HeartLayer } from '../src/entities/hearts';
+import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, HEALTH_UNIT, berserk, hasHeartRoom, heartCount, landHit, stoneHalve, tickBlood, type HeartLayer } from '../src/entities/hearts';
 import { floorHeartChances, HEART_CHANCE, RARE_HEARTS, rollHeart } from '../src/content/tables/hearts';
 import { Rng, RunRandom } from '../src/core/rng';
+import { StatSheet } from '../src/core/stats';
 
 const u = (n: number) => n * HEALTH_UNIT;
 
@@ -80,6 +81,30 @@ describe('blood heart', () => {
     let hp = 0;
     for (let i = 0; i < 130; i++) { const s = tickBlood(r, 1, hp, HEART * 100); hp += s.heal; if (s.done) break; }
     expect(hp).toBeLessThanOrEqual(BLOOD_BUDGET + 1e-9);
+  });
+});
+
+describe('blood heart at full health (#146)', () => {
+  const slot = (stats: StatSheet) => stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: BLOOD_SLOT_SOURCE });
+
+  it('each blood heart taken at full health adds one heart container, and the run clears them', () => {
+    const stats = new StatSheet();
+    expect(stats.get('maxHearts')).toBe(3);
+    slot(stats);
+    slot(stats);
+    expect(stats.get('maxHearts')).toBe(5);
+    stats.removeSource(BLOOD_SLOT_SOURCE);
+    expect(stats.get('maxHearts')).toBe(3);
+  });
+
+  it('never opens past the twelve heart slots shared with blue, stone and berserker hearts', () => {
+    const stats = new StatSheet();
+    for (let i = 0; i < 20; i++) slot(stats);
+    expect(stats.get('maxHearts')).toBe(12);
+    expect(hasHeartRoom(stats.get('maxHearts'), [])).toBe(false);
+    expect(hasHeartRoom(10, [{ kind: 'blue', hp: HEART }])).toBe(true);
+    expect(hasHeartRoom(11, [{ kind: 'blue', hp: HEART }])).toBe(false);
+    expect(hasHeartRoom(3, [])).toBe(true);
   });
 });
 

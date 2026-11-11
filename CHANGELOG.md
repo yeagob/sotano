@@ -6,6 +6,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
+- A blood heart taken at full health opens one more heart container and fills it at once, instead of doing nothing; below full health it still heals over time (#146).
 
 ## 0.2.3.f1 · 2026-11-11
 

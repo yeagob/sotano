@@ -86,7 +86,7 @@ import { floorHeartChances, rollHeart } from '../content/tables/hearts';
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX } from '../entities/growth';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -502,7 +502,7 @@ export class Game {
     this.stats.removeSource('toll');
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     p.clearStates();
     // actors: one id space per run, the player first
     this.actors.reset();
@@ -1234,8 +1234,10 @@ export class Game {
 
   collectHeart(kind: HeartKind): boolean {
     const p = this.player;
-    if ((kind === 'red' || kind === 'blood') && p.hp >= this.maxHp) return false;
-    if (isLayer(kind) && heartSlots(Math.floor(this.stats.get('maxHearts')), p.layers) >= MAX_TOTAL_HEARTS) return false;
+    // a blood heart at full health opens one heart slot and fills it (#146); below full it heals over time
+    const slot = kind === 'blood' && p.hp >= this.maxHp;
+    if (kind === 'red' && p.hp >= this.maxHp) return false;
+    if ((isLayer(kind) || slot) && !hasHeartRoom(this.stats.get('maxHearts'), p.layers)) return false;
     if (kind === 'red') return this.collect('heart', 2);
     const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
     if (ev.cancelled) return false;
@@ -1244,6 +1246,10 @@ export class Game {
       p.layers.push({ kind, hp: Math.min(HEART, pts) });
       if (kind === 'blue') sfxHeart.blue();
       else if (kind === 'stone') sfxHeart.stone();
+    } else if (slot) {
+      this.stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: BLOOD_SLOT_SOURCE });
+      p.hp = this.maxHp;
+      sfxHeart.blood();
     } else if (kind === 'blood') {
       p.blood = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
       sfxHeart.blood();
@@ -1252,7 +1258,7 @@ export class Game {
       p.starT = STAR_SECONDS;
       sfxHeart.star();
     }
-    this.hud.toast(`heart.${kind}`);
+    this.hud.toast(slot ? 'heart.bloodSlot' : `heart.${kind}`);
     const b = p.body;
     this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
     return true;
