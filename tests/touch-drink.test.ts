@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import { POTIONS, type Flask, type PotionId } from '../src/content/potions';
 import { PALETTE } from '../src/content/palette';
-import { drinkView } from '../src/input/touch';
+import { drinkView, forgetButtonPress, halfTurn, landscapeSide } from '../src/input/touch';
+import type { Action } from '../src/input/bindings';
 
 const flask = (potion: PotionId, iced?: true): Flask => (iced ? { potion, iced } : { potion });
 
@@ -64,5 +65,62 @@ describe('mobile drink button: every potion can be drawn', () => {
       expect(v.liquid).toBeDefined();
       expect(PALETTE[v.liquid!]).toBeDefined();
     }
+  });
+});
+
+describe('mobile drink button: hiding it while it is pressed', () => {
+  const track = (kind: 'stick' | 'look' | 'button', action?: Action) => ({ kind, action, x: 0, y: 0, ox: 0, oy: 0, t: 0 });
+
+  it('forgets the press: its held state and its button track, so a later end finds nothing', () => {
+    const tracks = new Map<number, ReturnType<typeof track>>([[1, track('button', 'drink')], [2, track('button', 'throw')]]);
+    const held = new Set<Action>(['drink', 'throw']);
+    forgetButtonPress(tracks, held, 'drink');
+    expect(tracks.has(1)).toBe(false);
+    expect(held.has('drink')).toBe(false);
+  });
+
+  it('leaves the other buttons and the stick alone', () => {
+    const tracks = new Map<number, ReturnType<typeof track>>([[1, track('button', 'drink')], [2, track('button', 'throw')], [3, track('stick')]]);
+    const held = new Set<Action>(['drink', 'throw']);
+    forgetButtonPress(tracks, held, 'drink');
+    expect(tracks.has(2)).toBe(true);
+    expect(tracks.has(3)).toBe(true);
+    expect(held.has('throw')).toBe(true);
+  });
+
+  it('forgets every track of the button when two fingers were on it', () => {
+    const tracks = new Map<number, ReturnType<typeof track>>([[1, track('button', 'drink')], [2, track('button', 'drink')]]);
+    forgetButtonPress(tracks, new Set<Action>(['drink']), 'drink');
+    expect(tracks.size).toBe(0);
+  });
+});
+
+describe('mobile drink button: device rotation', () => {
+  it('reads the two landscape sides and ignores portrait and upside down', () => {
+    expect(landscapeSide(90)).toBe(90);
+    expect(landscapeSide(270)).toBe(270);
+    expect(landscapeSide(0)).toBeNull();
+    expect(landscapeSide(180)).toBeNull();
+    expect(landscapeSide(-90)).toBe(270);
+    expect(landscapeSide(450)).toBe(90);
+  });
+
+  it('the first landscape reading only sets the side; a change of side is a half turn', () => {
+    const first = halfTurn(null, 90);
+    expect(first).toEqual({ side: 90, flip: false });
+    expect(halfTurn(first.side, 270)).toEqual({ side: 270, flip: true });
+    expect(halfTurn(270, 270)).toEqual({ side: 270, flip: false });
+  });
+
+  it('a turn through portrait counts once, and portrait readings keep the last side', () => {
+    const toPortrait = halfTurn(90, 0);
+    expect(toPortrait).toEqual({ side: 90, flip: false });
+    expect(halfTurn(toPortrait.side, 270)).toEqual({ side: 270, flip: true });
+  });
+
+  it('the flask in hand is shown the same before and after a half turn', () => {
+    const before = drinkView(flask('plain-tonic'));
+    halfTurn(90, 270);
+    expect(drinkView(flask('plain-tonic'))).toEqual(before);
   });
 });

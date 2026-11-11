@@ -32,6 +32,34 @@ export function drinkView(top: Carried | undefined): DrinkView {
   };
 }
 
+/**
+ * Forget a press on a button that is being hidden: its held state and every track still bound to it, so the
+ * touch's later end or cancel finds no stale track to act on. Other buttons and the stick are left alone.
+ */
+export function forgetButtonPress<T extends { kind: string; action?: Action }>(tracks: Map<number, T>, held: Set<Action>, action: Action): void {
+  for (const [id, tr] of tracks) if (tr.kind === 'button' && tr.action === action) tracks.delete(id);
+  held.delete(action);
+}
+
+/**
+ * One reading of the phone's orientation (degrees, any sign or turn): the landscape side it is on (90 or
+ * 270), or null in portrait and upside down. A reading that is not a side is ignored.
+ */
+export function landscapeSide(raw: number): number | null {
+  const side = ((raw % 360) + 360) % 360;
+  return side === 90 || side === 270 ? side : null;
+}
+
+/**
+ * A half turn of the phone (see TouchControls.turned): `flip` when the side changed from the last one. The
+ * first reading only sets the side; a reading that is not a landscape side keeps the last side.
+ */
+export function halfTurn(last: number | null, raw: number): { side: number | null; flip: boolean } {
+  const side = landscapeSide(raw);
+  if (side === null) return { side: last, flip: false };
+  return { side, flip: last !== null && last !== side };
+}
+
 interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number }
 
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
@@ -176,10 +204,9 @@ export class TouchControls {
    */
   private turned() {
     const raw = screen.orientation?.angle ?? (window as { orientation?: number }).orientation ?? 0;
-    const side = ((raw % 360) + 360) % 360;
-    if (side !== 90 && side !== 270) return;
-    if (this.side !== null && this.side !== side) this.input.touchPressed.add('polarity');
-    this.side = side;
+    const turn = halfTurn(this.side, raw);
+    if (turn.flip) this.input.touchPressed.add('polarity');
+    this.side = turn.side;
   }
 
   private radius() { return Math.min(innerWidth, innerHeight) * 0.13; }
@@ -214,7 +241,7 @@ export class TouchControls {
     const el = this.buttons.get('drink')!;
     el.hidden = !v.show;
     if (!v.show || !v.flask || !v.liquid) {
-      this.input.touchHeld.delete('drink');
+      forgetButtonPress(this.tracks, this.input.touchHeld, 'drink');
       el.classList.remove('on');
       return;
     }
