@@ -431,7 +431,7 @@ const messages = {
   'lab.fed': 'In the alembic: {n} of {total}',
   'lab.full': 'The alembic is full: three things at most',
   'lab.cold': 'The alembic has gone cold: its brews are spent',
-  'lab.brewed': 'The mixture settles: {left} of {total} brews used',
+  'lab.brewed': 'The mixture settles into {name}: {left} of {total} brews used',
   'lab.boiled': 'The bulb boils off: nothing is brewed, and no brew is spent',
   'lab.refused': 'Only parts and blocks go in the bulb',
   'presence.wrong': '{item}. That is not what I am waiting for.',

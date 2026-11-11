@@ -2614,7 +2614,7 @@ export class Game {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
-      this.hud.toastDrinkHint('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+      this.hud.toastDrinkHint('lab.brewed', { name: t(POTIONS[flask.potion].name), left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);

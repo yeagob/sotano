@@ -7,6 +7,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ### Added
 - On a phone, a fullscreen button sits in the top bar whenever the game is not fullscreen, so you can return to fullscreen after leaving it; if the browser cannot or will not go fullscreen, a short notice says so (#161).
 - A black heart: one more heart after the containers, even at full health, lost for good once spent, rarer than the blue heart (#154).
+- A successful brew at the alembic names the potion it made in its notice, in English and Spanish, with the drink key (#158).
 
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
@@ -15,9 +16,6 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Fixed
 - The boss health bar hides when you die, reset with R or respawn, and shows again only when the boss fight resumes (#163).
-
-### Added
-- Choose the active carried item with the mouse wheel, the D-pad or the number keys 1 to 9 (a tap on a hand slot on touch); the next place, throw, drink, alembic or kitchen use targets it. The hand and the inventory outline it in gold, and the inventory shows what you carry (#144).
 
 ## 0.2.3.f1 · 2026-11-11
 
