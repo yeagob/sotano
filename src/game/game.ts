@@ -38,9 +38,9 @@ import type { Enemy } from '../enemies/types';
 import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
-import { Pickups, type Pickup } from '../entities/pickups';
+import { Pickups, PICKUP_GRAVITY, type Pickup } from '../entities/pickups';
 import { Chests, OPEN_TIME, type ChestView } from '../entities/chests';
-import { ejectAngle } from '../entities/eject';
+import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
@@ -1584,23 +1584,17 @@ export class Game {
   /**
    * Dispenses a reward away from the player (issue #156). Every reward source calls this (or `ejectRewards`)
    * after it adds its pickup: the reward is launched straight away from the player, turned by `offset` (a spread
-   * for several rewards from one source), onto the nearest landing spot that is clear ground with no element in
+   * for several rewards from one source), onto the nearest throw whose whole flight is clear and that lands on ground with no element in
    * it (`ejectAngle`). Its delay keeps it from being collected where it appears. `speed` and `lift` set the throw.
    */
   private ejectReward(p: Pickup, speed: number, lift: number, offset = 0) {
-    const fy = Math.floor(p.y);
-    const clear = (x: number, z: number) => {
-      const fx = Math.floor(x), fz = Math.floor(z);
-      if (this.solid(fx, fy, fz) || this.solid(fx, fy + 1, fz)) return false;
-      // it must come to rest on ground within a few blocks (not fall down a shaft), with no element on the way
-      for (let d = 0; d <= 3; d++) {
-        const y = fy - d;
-        if (this.elementAt(fx + 0.5, y + 0.5, fz + 0.5)) return false;
-        if (this.solid(fx, y - 1, fz)) return true;
-      }
-      return false;
+    // what the world holds at a cell, for the throw's whole path (eject.ts decides what a clear throw is)
+    const ground: Ground = {
+      solid: (x, y, z) => this.solid(x, y, z),
+      element: (x, y, z) => this.elementAt(x + 0.5, y + 0.5, z + 0.5) !== null,
     };
-    const a = ejectAngle(p, this.player.body, clear, offset);
+    const reach = throwReach(speed, lift, PICKUP_GRAVITY);
+    const a = ejectAngle(p, this.player.body, ground, Math.floor(p.y), reach, offset);
     this.pickups.launch(p, Math.cos(a) * speed, lift, Math.sin(a) * speed);
   }
 
