@@ -1,12 +1,12 @@
 # Placing
 
-Putting the top block of your hand back into the world, on the face you aim at.
+Putting the active block of your hand back into the world, on the face you aim at.
 
 Part of [blocks](README.md).
 
 ## What the player sees and feels
 
-- You aim at a face of a block and press place. The top block of your hand goes into the empty cell against that face, within reach of about five blocks.
+- You aim at a face of a block and press place. The active block of your hand (the top one, unless you chose another: the mouse wheel, the D-pad or the number keys) goes into the empty cell against that face, within reach of about five blocks. Choosing moves nothing; only the placement, a throw, a drink or a feed uses up the active item.
 - A placed block replaces a loose cube that sits in that cell.
 - Placing is refused when the cell is outside the world or a doorway. A body that reaches into the cell is handled like Minecraft, without throwing anything: if it reaches a quarter of a block or less into the cell, you are nudged out of it and the block goes down; if it reaches deeper, the block stays in your hand until you step clear. A nudge into a wall is refused the same way.
 - A face you aim at whose cell takes no block (a doorway, the world's edge) is refused with the same soft sound, and the block stays in your hand. The block is never thrown from there, so it cannot bounce back at you.

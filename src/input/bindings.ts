@@ -5,7 +5,7 @@ export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'tol
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm';
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -24,7 +24,7 @@ export interface Binding {
   action: Action;
   kind: 'axis' | 'hold' | 'press';
   when: readonly Context[];
-  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; when?: readonly Context[] };
+  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; when?: readonly Context[] };
   gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; when?: readonly Context[] };
   touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
   refs: { minecraft: string; noita: string; isaac: string };
@@ -99,6 +99,27 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'the bumpers cycle the hotbar (what the next use does)', noita: 'the shoulders and the wheel switch the active wand', isaac: 'one button swaps the pocket slot' },
   },
   {
+    action: 'previous', kind: 'press', when: ['play'],
+    keyboard: { wheel: -1 },
+    gamepad: { buttons: [PAD.LEFT] },
+    touch: { control: 'none' },
+    refs: { minecraft: 'the scroll wheel moves the hotbar back; the bumpers cycle it on a controller', noita: 'the mouse wheel switches the active wand', isaac: 'the active item has its own button; there is no hand to scroll' },
+  },
+  {
+    action: 'next', kind: 'press', when: ['play'],
+    keyboard: { wheel: 1 },
+    gamepad: { buttons: [PAD.RIGHT] },
+    touch: { control: 'none' },
+    refs: { minecraft: 'the scroll wheel moves the hotbar forward; the bumpers cycle it on a controller', noita: 'the mouse wheel switches the active wand', isaac: 'the active item has its own button; there is no hand to scroll' },
+  },
+  {
+    action: 'pick', kind: 'press', when: ['play', 'inventory'],
+    keyboard: { keys: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Enter'] },
+    gamepad: { buttons: [PAD.A], when: ['inventory'] },
+    touch: { control: 'tap', when: ['inventory'] },
+    refs: { minecraft: 'the number keys pick a hotbar slot; in the inventory a click picks the item', noita: 'the number keys pick a wand slot', isaac: 'one item, one button: a slot is chosen by its own number' },
+  },
+  {
     action: 'inventory', kind: 'press', when: ['play', 'paused', 'inventory'],
     keyboard: { keys: ['Tab', 'KeyI'] },
     gamepad: { buttons: [PAD.Y] },
@@ -168,7 +189,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'inventory', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {

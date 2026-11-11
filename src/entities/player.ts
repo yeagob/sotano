@@ -66,8 +66,10 @@ export class Player implements Actor {
   set alive(v: boolean) { this.dead = !v; }
   body: Body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: false };
   yaw = 0; pitch = 0;
-  /** What your hand holds, bottom to top. The top one is placed or thrown first. */
+  /** What your hand holds, bottom to top. The active one is placed, thrown, drunk or fed first. */
   hand: Carried[] = [];
+  /** The slot the player chose in the hand; -1 means the top (the newest carry). Choosing never moves an item. */
+  activeSlot = -1;
   keys = 0;
   bombs = 1;
   /** Health in damage points (max = HEART × the maxHearts stat; the HUD draws quarter hearts). */
@@ -103,8 +105,39 @@ export class Player implements Actor {
   /** The current carry: the body eases from `from` to `to` over `s` seconds. */
   private carrying: { from: PlayerPoint; to: PlayerPoint; s: number; t: number } | null = null;
 
-  /** The material of the top block: 0 when the hand is empty or its top is a part. */
-  get top() { const c = this.hand.at(-1); return typeof c === 'number' ? c : 0; }
+  /** The slot of the active carried item, or -1 when the hand is empty. */
+  get activeIndex(): number {
+    const n = this.hand.length;
+    if (n === 0) return -1;
+    return this.activeSlot >= 0 && this.activeSlot < n ? this.activeSlot : n - 1;
+  }
+
+  /** The carried item the next use targets (place, throw, drink, the alembic, the kitchen). */
+  get active(): Carried | undefined { const i = this.activeIndex; return i < 0 ? undefined : this.hand[i]; }
+
+  /** The material of the active block: 0 when the hand is empty or its active item is a part. */
+  get top() { const c = this.active; return typeof c === 'number' ? c : 0; }
+
+  /** Chooses a carried item by its slot; a slot out of the hand is ignored. */
+  select(slot: number) { if (slot >= 0 && slot < this.hand.length) this.activeSlot = slot; }
+
+  /** Steps the choice through the hand, wrapping round. */
+  cycle(step: 1 | -1) {
+    const n = this.hand.length;
+    if (n) this.select((this.activeIndex + step + n) % n);
+  }
+
+  /** A new carry goes on top and becomes the choice again. */
+  gain(c: Carried) { this.hand.push(c); this.activeSlot = -1; }
+
+  /** Takes the active carried item out of the hand; the choice goes back to the top. */
+  takeActive(): Carried | undefined {
+    const i = this.activeIndex;
+    if (i < 0) return undefined;
+    const [c] = this.hand.splice(i, 1);
+    this.activeSlot = -1;
+    return c;
+  }
 
   /**
    * Puts the body at a point, still, and drops every motion in progress: a carry, a push, a hold, the

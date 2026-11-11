@@ -68,6 +68,7 @@ export type ScreenTab = 'menu' | 'items';
 export class Hud {
   private hand = $('hand');
   private itemsBar = $('items');
+  private carriedEl = $('carried');
   private debugEl = $('debug');
   private overlay = $('overlay');
   private bannerEl = $('banner');
@@ -336,34 +337,14 @@ export class Hud {
     this.bombsEl.textContent = String(g.player.bombs).padStart(2, '0');
     this.keysEl.textContent = String(g.player.keys).padStart(2, '0');
 
-    // hand slots: one per carry point, top block highlighted
+    // hand slots: one per carry point; the active carried item is outlined in gold
     const carry = Math.floor(g.stats.get('carry'));
-    const key = carry + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
+    const active = g.player.activeIndex;
+    const key = carry + ':' + active + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
     if (key !== this.handKey) {
       this.handKey = key;
       this.hand.innerHTML = '';
-      for (let i = 0; i < carry; i++) {
-        const c = g.player.hand[i];
-        const slot = document.createElement('div');
-        slot.className = 'slot' + (c ? ' full' : '') + (i === g.player.hand.length - 1 ? ' top' : '');
-        if (c) {
-          const img = document.createElement('img');
-          if (typeof c === 'number') {
-            img.src = this.slotUrl(c);
-            img.title = materialName(c);
-          } else if (isFlask(c)) {
-            const pd = POTIONS[c.potion];
-            img.src = iconDataUrl(carriedDef(c), 3);
-            img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
-          } else {
-            const tx = partText(c);
-            img.src = iconDataUrl(c, 3);
-            img.title = `${tx.name}\n${tx.description}`;
-          }
-          slot.appendChild(img);
-        }
-        this.hand.appendChild(slot);
-      }
+      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active));
     }
 
     if (--this.debugTimer <= 0 && this.showDebug) {
@@ -383,6 +364,29 @@ export class Hud {
     let url = this.slotUrls.get(m);
     if (!url) { url = (materialTexture(m).image as HTMLCanvasElement).toDataURL(); this.slotUrls.set(m, url); }
     return url;
+  }
+
+  /** One carry slot: the item in it, or an empty well; outlined in gold when it is the active item. */
+  private handSlot(c: Carried | undefined, active: boolean) {
+    const slot = document.createElement('div');
+    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '');
+    if (c) {
+      const img = document.createElement('img');
+      if (typeof c === 'number') {
+        img.src = this.slotUrl(c);
+        img.title = materialName(c);
+      } else if (isFlask(c)) {
+        const pd = POTIONS[c.potion];
+        img.src = iconDataUrl(carriedDef(c), 3);
+        img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
+      } else {
+        const tx = partText(c);
+        img.src = iconDataUrl(c, 3);
+        img.title = `${tx.name}\n${tx.description}`;
+      }
+      slot.appendChild(img);
+    }
+    return slot;
   }
 
   /** Small icons of the items you hold, under the counters. */
@@ -750,7 +754,41 @@ export class Hud {
 
   private renderScreen(g: Game) {
     this.showTab(this.screenTab);
+    this.renderCarried(g);
     if (this.screenTab === 'items') this.renderInventory(g);
+  }
+
+  /** The active carried item changed (the game calls this): an open screen redraws its outline. */
+  carriedChanged() {
+    if (this.screenOpen && this.game) this.renderScreen(this.game);
+  }
+
+  /** The carried item the inventory has highlighted, as its hand slot; -1 when a practice is highlighted. */
+  selectedCarried(): number {
+    const m = /^hand:(\d+)$/.exec(this.selected ?? '');
+    return m ? Number(m[1]) : -1;
+  }
+
+  /** The pause menu's row: what you carry (the active item in gold) and the practices you hold. */
+  private renderCarried(g: Game) {
+    const active = g.player.activeIndex;
+    const nodes: HTMLElement[] = g.player.hand.map((c, i) => {
+      const slot = this.handSlot(c, i === active);
+      slot.addEventListener('click', () => g.chooseCarried(i));
+      return slot;
+    });
+    for (const it of g.inventory.items) {
+      const slot = document.createElement('div');
+      slot.className = 'slot full';
+      const img = document.createElement('img');
+      img.src = iconDataUrl(it.def, 2);
+      img.title = itemText(it.def).name;
+      img.alt = '';
+      slot.appendChild(img);
+      nodes.push(slot);
+    }
+    this.carriedEl.replaceChildren(...nodes);
+    this.carriedEl.hidden = nodes.length === 0;
   }
 
   private showTab(tab: ScreenTab) {
@@ -901,16 +939,22 @@ export class Hud {
     const counts = new Map<string, number>();
     for (const d of held) counts.set(d.id, (counts.get(d.id) ?? 0) + 1);
     const unique = [...new Map(held.map(d => [d.id, d])).values()];
-    const ids = unique.map(d => d.id);
+    const hand = g.player.hand, chosen = g.player.activeIndex;
+    const ids =[...hand.map((_, i) => `hand:${i}`), ...unique.map(d => d.id)];
     const selId = ids.find(id => id === this.selected) ?? ids.at(-1);
     const sel = unique.find(d => d.id === selId);
+    const handSel = selId?.startsWith('hand:') ? hand[Number(selId.slice(5))] : undefined;
 
     const tile = (id: string, c: number, icon: { id: string; icon: ItemDef['icon'] }, name: string, n: number) =>
       `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
       `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
+    const handGrid = hand.map((c, i) => this.carriedTile(c, i, i === chosen, selId === `hand:${i}`)).join('');
+    const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="grid">${handGrid}</div>` : '';
 
-    const detail = sel ? this.itemDetail(sel) : `<p class="none">${th('inv.empty')}</p>`;
+    const detail = sel ? this.itemDetail(sel)
+      : handSel ? this.carriedDetail(handSel)
+      : `<p class="none">${th('inv.empty')}</p>`;
 
     const active = new Set(g.inventory.synergiesActive.map(x => x.id));
     const synRows = SYNERGIES.map(sy => {
@@ -927,14 +971,35 @@ export class Hud {
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
-      `<div class="cols"><section class="left"><div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
+      `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
     for (const b of this.invEl.querySelectorAll<HTMLButtonElement>('.tile')) {
       b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
-      b.addEventListener('click', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
+      b.addEventListener('click', () => {
+        this.selected = b.dataset.id!;
+        if (this.selected.startsWith('hand:')) g.chooseCarried(this.selectedCarried());
+        this.renderInventory(g);
+      });
     }
+  }
+
+  /** A carried item in the inventory grid: its icon and name, gold when it is the active item. */
+  private carriedTile(c: Carried, i: number, on: boolean, selected: boolean) {
+    const icon = typeof c === 'number' ? this.slotUrl(c) : iconDataUrl(isFlask(c) ? carriedDef(c) : c, 3);
+    return `<button type="button" class="tile${selected ? ' sel' : ''}${on ? ' on' : ''}" data-id="hand:${i}" style="--c:${palCss('bone.paper')}">` +
+      `<img src="${icon}" alt=""><span class="lbl">${esc(this.carriedLabel(c))}</span></button>`;
+  }
+
+  private carriedDetail(c: Carried) {
+    return `<div class="detail"><div><b>${esc(this.carriedLabel(c))}</b><p>${th(forDevice('inv.choose', activeDevice()))}</p></div></div>`;
+  }
+
+  private carriedLabel(c: Carried): string {
+    if (typeof c === 'number') return materialName(c);
+    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    return partText(c).name;
   }
 
   private itemDetail(d: ItemDef) {

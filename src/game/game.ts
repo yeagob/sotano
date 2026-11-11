@@ -2237,7 +2237,7 @@ export class Game {
       });
       if (ev.cancelled || ev.action === 'ignore') continue;
       if (ev.action === 'pickup' && !bomb) {
-        p.hand.push(d.material[i]);
+        p.gain(d.material[i]);
         d.remove(i);
         sfx.pickup();
         continue;
@@ -2551,7 +2551,7 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
     if (!a) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (isFlask(top)) {
       sfx.denied(); this.hud.toast('lab.refused');
       devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> refused`);
@@ -2564,7 +2564,7 @@ export class Game {
       this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
       return;
     }
-    p.hand.pop();
+    p.takeActive();
     this.hands.placed();
     sfx.place();
     this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
@@ -2573,7 +2573,7 @@ export class Game {
   /** Right click on the kitchen: the part on top of the hand is cooked into a meal (game/kitchen.ts). */
   private cookAt(x: number, y: number, z: number) {
     const k = this.kitchens.get(this.world.idx(x, y, z));
-    const p = this.player, top = p.hand.at(-1);
+    const p = this.player, top = p.active;
     if (!k || top === undefined) { sfx.denied(); return; }
     if (typeof top === 'number' || isFlask(top)) {
       sfx.denied(); this.hud.toast('kitchen.refused');
@@ -2586,8 +2586,8 @@ export class Game {
       return;
     }
     devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> cooked (${COOKS - k.cooks}/${COOKS} used)`);
-    p.hand.pop();   // the part leaves the hand first, so the meal always has its place
-    p.hand.push({ potion: mealOf(top.kind) });
+    p.takeActive();   // the part leaves the hand first, so the meal always has its place
+    p.gain({ potion: mealOf(top.kind) });
     this.hands.placed();
     this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 16, 2, 0.06);
     sfx.place();
@@ -2614,11 +2614,11 @@ export class Game {
 
   /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
   private drink() {
-    const p = this.player, top = p.hand.at(-1);
+    const p = this.player, top = p.active;
     if (!top || !isFlask(top)) { sfx.denied(); return; }
     const def = POTIONS[top.potion];
     const rooms = flaskRooms(top);
-    p.hand.pop();
+    p.takeActive();
     this.hands.placed();
     if (def.heal) this.heal(def.heal, `potion.${top.potion}`);
     this.potions.drink(top);
@@ -2655,11 +2655,11 @@ export class Game {
     const over = cellOverlap(p.body, x, y, z);
     const push: [number, number] | null = over ? this.nudgeTarget(over) : [0, 0];
     if (over && (over.depth > PLACE_NUDGE_MAX || !push)) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (typeof top !== 'number') {
       this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
       this.nudge(push!);
-      p.hand.pop();
+      p.takeActive();
       this.hands.placed();
       sfx.place();
       return;
@@ -2672,7 +2672,7 @@ export class Game {
     try { this.world.set(x, y, z, ev.material); } finally { if (sky) sky.placing = false; }
     this.debris.clearCell(x, y, z);
     this.nudge(push!);
-    p.hand.pop();
+    p.takeActive();
     this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
@@ -2705,12 +2705,12 @@ export class Game {
     if (!p.hand.length) { sfx.denied(); return; }
     const e = p.eye.addScaledVector(p.forward, 0.7), dir = p.forward;
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (typeof top !== 'number') {
       const part = this.pickups.add(isFlask(top) ? 'flask' : 'part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
       const speed = 9 * this.stats.get('throw');
       this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
-      p.hand.pop();
+      p.takeActive();
       this.hands.placed();
       sfx.kick();
       return;
@@ -2722,7 +2722,7 @@ export class Game {
     this.debris.launch(cube, dir.x * ev.speed + p.body.vx, dir.y * ev.speed + ev.lift, dir.z * ev.speed + p.body.vz);
     this.debris.tags[cube] = ev.tags.size ? ev.tags : null;
     this.debris.cooldown[cube] = 0.6;
-    p.hand.pop();
+    p.takeActive();
     this.bus.emit('drop', { material: m, how: 'throw' });
     this.hands.placed();
     sfx.kick();
@@ -2839,7 +2839,7 @@ export class Game {
         const carried = p.carried;
         if (carried && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
           this.pickups.take(p);
-          this.player.hand.push(carried);
+          this.player.gain(carried);
           this.hands.holdUp(carriedDef(carried));
           if (typeof carried === 'object') {
             if (isFlask(carried)) this.hud.toastDrinkHint('hand.took', { item: this.carriedName(carried) });
@@ -3191,6 +3191,22 @@ export class Game {
     }
   }
 
+  /** Makes a carried item the active one (the next use targets it): a sound and a notice; slots out of the hand are ignored. */
+  chooseCarried(slot: number) {
+    const p = this.player;
+    if (slot < 0 || slot >= p.hand.length || slot === p.activeIndex) return;
+    p.select(slot);
+    sfx.select();
+    this.hud.carriedChanged();
+    this.hud.toast('hand.active', { item: this.carriedName(p.active!) });
+  }
+
+  /** The wheel and the D-pad step the active carried item through the hand, wrapping round. */
+  private stepCarried(step: 1 | -1) {
+    const n = this.player.hand.length;
+    if (n > 1) this.chooseCarried((this.player.activeIndex + step + n) % n);
+  }
+
   private carriedName(c: Carried): string {
     if (typeof c === 'number') return materialName(c);
     if (isFlask(c)) return t(POTIONS[c.potion].name);
@@ -3506,6 +3522,8 @@ export class Game {
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
         else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
       }
+      // a number key picks its slot; Enter or A picks the highlighted carried item
+      if (inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -3602,6 +3620,9 @@ export class Game {
     if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
+    if (inp.hit('previous')) this.stepCarried(-1);
+    if (inp.hit('next')) this.stepCarried(1);
+    if (inp.hit('pick') && inp.digit() >= 0) this.chooseCarried(inp.digit());
     if (below) this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);
@@ -3636,8 +3657,9 @@ export class Game {
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
-    const hand = this.player.hand;
-    this.hands.update(dt, this.player.walkPhase, hand.at(-1) ?? 0, hand.at(-2) ?? 0);
+    // the active item is the one in the right hand; the item under the choice goes in the other
+    const p = this.player, active = p.activeIndex;
+    this.hands.update(dt, p.walkPhase, p.active ?? 0, p.hand.filter((_, i) => i !== active).at(-1) ?? 0);
   }
 
   requestRestart() {

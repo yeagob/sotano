@@ -384,6 +384,8 @@ function placeFirstBlock(rig: ReturnType<typeof skyRig>) {
   const g = rig.g;
   g.player.hand = [MAT.stone];
   g.player.top = MAT.stone;
+  g.player.active = MAT.stone;
+  g.player.takeActive = () => g.player.hand.pop();
   g.player.body = { x: 20, y: 20, z: 20, hw: 0.3, h: 1.8 };
   g.player.forward = new THREE.Vector3(0, 0, 1);
   g.input = { hit: () => true, hitBy: () => 'mouse', touchTap: null };

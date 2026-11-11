@@ -171,7 +171,7 @@ export class TouchControls {
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
-    const top = p.hand.at(-1), flask = !!top && isFlask(top);
+    const top = p.active, flask = !!top && isFlask(top);
     const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${flask}`;
     if (key === this.key) return;
     this.key = key;
