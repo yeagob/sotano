@@ -1,9 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { HEART } from '../src/entities/actors';
-import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, HEALTH_UNIT, berserk, hasHeartRoom, heartCount, landHit, stoneHalve, tickBlood, type HeartLayer } from '../src/entities/hearts';
+import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, HEALTH_UNIT, berserk, hasHeartRoom, heartCount, landHit, stoneHalve, tickBlood, type BloodRegen, type HeartLayer } from '../src/entities/hearts';
 import { floorHeartChances, HEART_CHANCE, RARE_HEARTS, rollHeart } from '../src/content/tables/hearts';
 import { Rng, RunRandom } from '../src/core/rng';
 import { StatSheet } from '../src/core/stats';
+import { createBus } from '../src/game/events';
+import type { Game } from '../src/game/game';
+
+// game.ts loads without audio; the sound module is silenced so the real collectHeart can run in node.
+vi.mock('../src/audio/sfx', () => {
+  const silent = new Proxy({}, { get: () => () => {} });
+  return { sfx: silent, sfx2: silent, sfx3: silent, sfxHeart: silent, easeMaster: () => {}, setMasterTarget: () => {}, spatial: () => {}, unlockAudio: () => {}, setEcho: () => {}, starTheme: () => {} };
+});
 
 const u = (n: number) => n * HEALTH_UNIT;
 
@@ -105,6 +113,62 @@ describe('blood heart at full health (#146)', () => {
     expect(hasHeartRoom(10, [{ kind: 'blue', hp: HEART }])).toBe(true);
     expect(hasHeartRoom(11, [{ kind: 'blue', hp: HEART }])).toBe(false);
     expect(hasHeartRoom(3, [])).toBe(true);
+  });
+});
+
+describe('collecting a blood heart (#146)', () => {
+  // The real Game.collectHeart on a stand-in object (Object.create(Game.prototype)) that holds only
+  // what it reads: the stat sheet, the player, the bus, the HUD toast and the particles.
+  let Game: typeof import('../src/game/game').Game;
+  beforeAll(async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    try {
+      ({ Game } = await import('../src/game/game'));
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }, 120000);
+
+  // `extra` heart containers beyond the three the player starts with; hp is set from the resulting maximum.
+  function rig(extra: number, hpOf: (maxHp: number) => number) {
+    const stats = new StatSheet();
+    for (let i = 0; i < extra; i++) stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: 'test' });
+    const maxHp = Math.floor(stats.get('maxHearts')) * HEART;
+    const player = { hp: hpOf(maxHp), layers: [] as HeartLayer[], blood: null as BloodRegen | null, body: { x: 0, y: 0, z: 0 } };
+    const toast = vi.fn();
+    const g = Object.assign(Object.create(Game.prototype), {
+      player, stats, bus: createBus(), hud: { toast }, particles: { burst: () => {} },
+    }) as Game;
+    return { g, player, stats, toast };
+  }
+
+  it('at full health it opens one heart container and fills it to the new maximum', () => {
+    const { g, player, stats, toast } = rig(0, max => max);
+    expect(g.collectHeart('blood')).toBe(true);
+    expect(stats.get('maxHearts')).toBe(4);
+    expect(player.hp).toBe(4 * HEART);
+    expect(player.blood).toBeNull();
+    expect(toast).toHaveBeenCalledWith('heart.bloodSlot');
+  });
+
+  it('below full health it still starts the slow healing and opens no container', () => {
+    const { g, player, stats, toast } = rig(0, () => HEART);
+    expect(g.collectHeart('blood')).toBe(true);
+    expect(stats.get('maxHearts')).toBe(3);
+    expect(player.hp).toBe(HEART);
+    expect(player.blood).toEqual({ left: BLOOD_BUDGET, t: BLOOD_SECONDS });
+    expect(toast).toHaveBeenCalledWith('heart.blood');
+  });
+
+  it('at the twelve-slot cap it is refused at full health and stays on the floor', () => {
+    const { g, player, stats, toast } = rig(9, max => max);
+    expect(stats.get('maxHearts')).toBe(12);
+    const hp = player.hp;
+    expect(g.collectHeart('blood')).toBe(false);
+    expect(stats.get('maxHearts')).toBe(12);
+    expect(player.hp).toBe(hp);
+    expect(player.blood).toBeNull();
+    expect(toast).not.toHaveBeenCalled();
   });
 });
 
