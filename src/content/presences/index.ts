@@ -21,6 +21,14 @@ export function unlocksPresence(id: PresenceId, carried: Carried | undefined): b
   return typeof carried === 'object' && !isFlask(carried) && carried.kind === PRESENCE_KEY[id];
 }
 
+export function findPresenceOffer(id: PresenceId, hand: readonly Carried[]): { index: number; carried: Carried } | undefined {
+  for (let index = hand.length - 1; index >= 0; index--) {
+    const carried = hand[index];
+    if (carried !== undefined && unlocksPresence(id, carried)) return { index, carried };
+  }
+  return undefined;
+}
+
 export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; hint: MessageKey; drops: boolean }> = {
   gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', hint: 'presence.gardener.hint', drops: false },
   listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', drops: true },

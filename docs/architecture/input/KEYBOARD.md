@@ -20,7 +20,8 @@ The desktop scheme. Part of [Input](README.md).
 | pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
 | field of view (on the menu) | the left and right arrows, or the mouse on the bar or on − and + |
 | restart | R, while playing or dead |
-| confirm | any mouse button while captured, or Enter |
+| confirm | any mouse button while captured, or Enter; accepts a Presence offer |
+| back | Esc; declines a Presence offer |
 
 References: Minecraft (WASD, left click to break, right click to place, Q to drop, E for the inventory), Noita (the mouse aims, Tab opens the inventory and pauses), Isaac (E drops a bomb, R restarts, Tab shows your items).
 

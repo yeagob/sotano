@@ -77,7 +77,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome } from '../content/presences/meditations';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
@@ -263,6 +263,7 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
+  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried: Carried } | null = null;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -477,6 +478,8 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.pendingPresenceOffer = null;
+    this.input.modal = false;
     setMasterTarget(0.35);
     this.elements = this.elementSim(this.world, this.rng.fork('elements').u32());
     this.playerIn.clear(); this.drownT = 0;
@@ -524,6 +527,7 @@ export class Game {
     this.room = -1;
     this.visited = new Set();
     this.hud.hideDeath();
+    this.hud.closePresenceOffer();
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(k)!, k);
@@ -3086,14 +3090,17 @@ export class Game {
   }
 
   private updatePresences() {
+    if (this.pendingPresenceOffer) return;
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
-      if (!near) { e.tags.delete('answering'); continue; }
+      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
+      if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
       const top = this.player.hand.at(-1);
-      if (!unlocksPresence(id, top)) {
+      const offer = findPresenceOffer(id, this.player.hand);
+      if (!offer) {
         if (e.tags.has('answering')) continue;
         const now = performance.now();
         if (!e.tags.has('hinted')) {
@@ -3110,20 +3117,46 @@ export class Game {
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
         return;
       }
-      // the offer is accepted: the part leaves the hand (the hand dips, the part's colour leaves with it)
-      const part = this.player.hand.pop();
-      this.hands.placed();
-      const color = typeof part === 'object' && !isFlask(part) ? part.color : pal('bone.dim');
-      const eye = this.player.eye, fwd = this.player.forward;
-      this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
-      e.tags.add('met');
-      if (talk.drops) this.dropListenerReward(e);
-      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-      // a Listener leaves in the frame its drop appears: the release is in the same call, never deferred (#84)
-      if (leavesAfterOffer(id)) this.releaseListener(e);
-      this.hud.presenceCard(talk.name, talk.lines);
+      this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried };
+      this.hud.presenceOfferCard(talk.name, offer.carried);
+      this.input.modal = true;
+      this.input.unlockFor();
       return;
     }
+  }
+
+  private resolvePresenceOffer(accept: boolean) {
+    const pending = this.pendingPresenceOffer;
+    if (!pending) return;
+    this.pendingPresenceOffer = null;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+
+    const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
+    const carried = this.player.hand[pending.index];
+    if (!e?.alive || !e.tags.has('presence') || e.tags.has('met') || carried !== pending.carried || !unlocksPresence(pending.id, carried)) {
+      this.hud.toast('presence.offer.stale');
+      return;
+    }
+    if (!accept) {
+      e.tags.add('offer-declined');
+      sfx.denied();
+      return;
+    }
+
+    this.player.hand.splice(pending.index, 1);
+    this.hands.placed();
+    const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
+    const eye = this.player.eye, fwd = this.player.forward;
+    this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
+    const talk = PRESENCE_TALK[pending.id];
+    e.tags.add('met');
+    if (talk.drops) this.dropListenerReward(e);
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    if (leavesAfterOffer(pending.id)) this.releaseListener(e);
+    this.hud.presenceCard(talk.name, talk.lines);
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
@@ -3429,11 +3462,10 @@ export class Game {
     const playing = inp.playing || this.simulateUnlocked;
     const ctx = this.player.dead ? 'dead' : this.hud.sanctuaryOpen ? 'meditation' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
-    const live = ctx === 'play' || ctx === 'prompt';
-    if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
+    if (restartBy === 'keyboard' ? ctx === 'play' || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
     else if (ctx === 'dead' && this.deadT > DEATH_GRACE && inp.hit('confirm')) this.requestRestart();
     if (ctx === 'paused' && (inp.hit('confirm') || (inp.hitBy('pause') ?? 'keyboard') !== 'keyboard')) inp.resume();
-    else if (live && inp.hit('pause')) inp.release();
+    else if (ctx === 'play' && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
       if (this.restartT <= 0) { if (this.sandbox) this.newSandbox(this.sandbox); else this.newRun(); this.revealT = 0; }
@@ -3444,11 +3476,15 @@ export class Game {
     }
     this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
-    if (ctx === 'prompt' && inp.hit('confirm')) {
+    if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
+      const confirmedBy = inp.hitBy('confirm');
+      if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceOffer(true);
+      else if (inp.hit('back')) this.resolvePresenceOffer(false);
+    } else if (ctx === 'prompt' && inp.hit('confirm')) {
       this.hud.dismissBanner();
       inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }
-    if (live || ctx === 'paused' || ctx === 'inventory') {
+    if (ctx === 'play' || ctx === 'paused' || ctx === 'inventory') {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
     }
@@ -3476,7 +3512,7 @@ export class Game {
     this.touch.update(this, ctx);
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
-    if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
+    if (running && !this.hud.presenceOfferOpen && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     if (this.below) this.stream(); else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
@@ -3605,7 +3641,9 @@ export class Game {
   }
 
   act(act: string) {
-    if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
+    if (act === 'presence-offer-accept') this.resolvePresenceOffer(true);
+    else if (act === 'presence-offer-decline') this.resolvePresenceOffer(false);
+    else if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
     else if (act === 'resume' && !this.player.dead) {
       if (this.hud.screenOpen) this.hud.closeScreen(this);
       else this.input.resume();

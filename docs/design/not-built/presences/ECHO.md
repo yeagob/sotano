@@ -2,7 +2,7 @@
 
 # The Echo
 
-Status: **proposal**.
+Status: **proposal**; not implemented or placed in the game.
 
 A messenger of learning from failure. Where the player's last run faded, if the player reaches that place again, a faint copy of the player waits. It says how far the player got last time, gives back one key or one bomb, and fades into them.
 
