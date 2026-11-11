@@ -39,7 +39,8 @@ import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
 import { Pickups, type Pickup } from '../entities/pickups';
-import { Chests, type ChestView } from '../entities/chests';
+import { Chests, OPEN_TIME, type ChestView } from '../entities/chests';
+import { ejectAngle } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
@@ -885,7 +886,7 @@ export class Game {
       card: (name, lines) => this.hud.presenceCard(name, lines),
       bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),
       place: key => this.hud.placeLabel(key),
-      gift: (itemId, x, y, z) => { this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null); },
+      gift: (itemId, x, y, z) => { this.ejectReward(this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null), 1.5, 3); },
       travel: tr => this.gate.start(tr),
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
@@ -1045,7 +1046,7 @@ export class Game {
       isPlayer: id => id === this.player.id,
       collect: (kind, n) => this.collect(kind, n),
       counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.maxHp }),
-      spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
+      spawnPickup: (kind, x, y, z) => { this.ejectReward(this.pickups.add(kind, x, y, z, this.room, null, 0.3), 3.2, 4); },
       pulse: (x, y, z, r, d, k, c, src) => this.pulse(x, y, z, r, d, k, c, src),
       arc: (x, y, z, to, d, src, pol) => this.arc(x, y, z, to, d, src, pol),
       nearestProjection: (x, y, z, r, except) => this.nearestProjection(x, y, z, r, except),
@@ -1569,15 +1570,43 @@ export class Game {
 
   private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind })[]) {
     const b = e.body, player = this.player.body;
-    const base = Math.atan2(player.z - b.z, player.x - b.x);
+    const base = Math.atan2(b.z - player.z, b.x - player.x);
     rewards.forEach((reward, i) => {
       const angle = base + (i - (rewards.length - 1) / 2) * 0.6;
       const x = b.x + Math.cos(angle) * 0.45, z = b.z + Math.sin(angle) * 0.45;
       const pickup = reward.type === 'item'
         ? this.pickups.add('item', x, b.y + 1.02, z, e.room, reward.item, 0.3)
         : this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart);
-      this.pickups.launch(pickup, Math.cos(angle) * 1.5, 3, Math.sin(angle) * 1.5);
+      this.ejectReward(pickup, 1.5, 3);
     });
+  }
+
+  /**
+   * Dispenses a reward away from the player (issue #156). Every reward source calls this (or `ejectRewards`)
+   * after it adds its pickup: the reward is launched straight away from the player, turned by `offset` (a spread
+   * for several rewards from one source), onto the nearest landing spot that is clear ground with no element in
+   * it (`ejectAngle`). Its delay keeps it from being collected where it appears. `speed` and `lift` set the throw.
+   */
+  private ejectReward(p: Pickup, speed: number, lift: number, offset = 0) {
+    const fy = Math.floor(p.y);
+    const clear = (x: number, z: number) => {
+      const fx = Math.floor(x), fz = Math.floor(z);
+      if (this.solid(fx, fy, fz) || this.solid(fx, fy + 1, fz)) return false;
+      // it must come to rest on ground within a few blocks (not fall down a shaft), with no element on the way
+      for (let d = 0; d <= 3; d++) {
+        const y = fy - d;
+        if (this.elementAt(fx + 0.5, y + 0.5, fz + 0.5)) return false;
+        if (this.solid(fx, y - 1, fz)) return true;
+      }
+      return false;
+    };
+    const a = ejectAngle(p, this.player.body, clear, offset);
+    this.pickups.launch(p, Math.cos(a) * speed, lift, Math.sin(a) * speed);
+  }
+
+  /** `ejectReward` for a batch from one source: the batch fans out so the rewards do not land on one spot. */
+  private ejectRewards(ps: Pickup[], speed: number, lift: number) {
+    ps.forEach((p, i) => this.ejectReward(p, speed, lift, ps.length > 1 ? (i / (ps.length - 1) - 0.5) * 1.1 : 0));
   }
 
   /**
@@ -1670,9 +1699,9 @@ export class Game {
     const drops = (Object.entries(e.spec.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
     const b = e.body;
     const ev = this.bus.emit('actorDeath', { target: e.id, targetKind: 'projection', def: e.def, x: b.x, y: b.y, z: b.z, drops });
-    for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    const dropped: Pickup[] = ev.drops.map(k => this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3));
     const stolen = this.enemies.takeCarried(e.id);
-    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) dropped.push(this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3));
     const floor = this.rooms.get(e.room)?.floor;
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
@@ -1681,8 +1710,9 @@ export class Game {
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
       if (e.tags.has('rooted')) parts.push(...rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq, 'rooted'), e.def));
-      for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
+      for (const part of parts) dropped.push(this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part));
     }
+    this.ejectRewards(dropped, 3.2, 4);
     sfx3.dissolve();
   }
 
@@ -1729,7 +1759,7 @@ export class Game {
         const reward = ROOM_CLEAR.pickU(u, { floor: r0.floor, luck: this.stats.get('luck') });
         const drops: PickupKind[] = reward ? [reward] : [];
         const ev = this.bus.emit('roomClear', { room: id, drops });
-        for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
+        this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3)), 3.2, 4);
         this.hud.toast('toast.roomClear');
         this.potionsEnded(this.potions.roomCleared());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
@@ -1774,7 +1804,7 @@ export class Game {
       const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
       const reward = ROOM_CLEAR.pickU(u, { floor: r.floor, luck: this.stats.get('luck') + st.wave });
       const ev = this.bus.emit('roomClear', { room: r.id, drops: reward ? [reward] : [] });
-      for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3);
+      this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3)), 3.2, 4);
       if (st.wave < CHALLENGE_WAVES) { this.nextWave(r, st); st.next = WAVE_GAP; sfx3.clear(); continue; }
       st.active = false;
       this.doors.seal(r.id, false);
@@ -1947,10 +1977,8 @@ export class Game {
       if (drop) drops.push(drop);
     }
     const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
-    for (const k of ev.drops) {
-      this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
-      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
-    }
+    this.ejectRewards(ev.drops.map(k => this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4)), 2.6, 3.5);
+    for (const k of ev.drops) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
   }
 
   /**
@@ -2997,8 +3025,6 @@ export class Game {
     this.hud.shake(0.08);
     if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
     sfx3.creak();
-    const b = this.player.body;
-    const len = Math.hypot(b.x - cx, b.z - cz) || 1, ax = (b.x - cx) / len, az = (b.z - cz) / len;
     const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
     else if (reward) out.push({ type: 'item', def: reward });
@@ -3020,13 +3046,21 @@ export class Game {
     devlog.line(`chest ${cell(s.x, s.y, s.z)}: opened for ${cost} key(s), contents ${out.map(o => o.type === 'item' ? (o.def?.id ?? 'none') : o.type).join(', ') || 'nothing'}`);
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
-      const dx = ax * Math.cos(spread) - az * Math.sin(spread), dz = az * Math.cos(spread) + ax * Math.sin(spread);
       const p: Pickup = this.pickups.add(o.type, cx, s.y + 1.02, cz, s.room, o.def, 0.6);
       const speed = (o.type === 'item' ? 1.7 : 1.5) / 0.68;
-      this.pickups.launch(p, dx * speed, 6.5, dz * speed);
+      this.ejectReward(p, speed, 6.5, spread);
       this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), o.type === 'item' ? 22 : 10, 2.5, 0.07);
       if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
     } }));
+    // once the last thing has left the mouth the chest is empty: its model and its block go (issue #156)
+    this.spits.push({ t: Math.max(lead + out.length * 0.16, OPEN_TIME + 0.3), run: () => this.removeChest(c) });
+  }
+
+  /** An opened chest that has dispensed everything leaves the world: its model, and its block (so no collision). */
+  private removeChest(c: { spec: ChestSpec; view: ChestView }) {
+    const s = c.spec;
+    this.world.set(s.x, s.y, s.z, AIR);
+    this.chestViews.remove(c.view);
   }
 
   private updateSpits(dt: number) {
