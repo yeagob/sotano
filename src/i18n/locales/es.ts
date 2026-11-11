@@ -163,6 +163,8 @@ export const ES: Catalog = {
     'toast.roomClear': 'Sala despejada',
     'heart.blue': 'Corazón azul: un corazón más, que se pierde para siempre al gastarse.',
     'heart.blueLost': 'El corazón azul se ha ido.',
+    'heart.black': 'Corazón negro: un corazón más, que se pierde para siempre al gastarse.',
+    'heart.blackLost': 'El corazón negro se ha ido.',
     'heart.stone': 'Corazón de piedra: mientras recibe los golpes, cada golpe se reduce a la mitad.',
     'heart.stoneLost': 'El corazón de piedra se desmorona. Los golpes vuelven a entrar enteros.',
     'heart.blood': 'Corazón de sangre: te curas despacio, hasta dos corazones. Un golpe lo corta.',

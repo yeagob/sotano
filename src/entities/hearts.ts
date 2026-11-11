@@ -1,7 +1,7 @@
 import { HEART } from './actors';
 import type { HeartKind } from '../content/heart-art';
 
-export type LayerKind = 'blue' | 'stone' | 'berserker';
+export type LayerKind = 'blue' | 'black' | 'stone' | 'berserker';
 export interface HeartLayer { kind: LayerKind; hp: number }
 export interface BloodRegen { left: number; t: number }
 export const HEALTH_UNIT = HEART / 100;
@@ -15,7 +15,7 @@ export const BERSERK_SPEED = 1.5;
 export const BERSERK_JUMP = 1.5;
 export const BERSERK_RANGE = 0.3;
 
-export const isLayer = (k: HeartKind): k is LayerKind => k === 'blue' || k === 'stone' || k === 'berserker';
+export const isLayer = (k: HeartKind): k is LayerKind => k === 'blue' || k === 'black' || k === 'stone' || k === 'berserker';
 export const stoneHalve = (amount: number) => Math.floor(amount / HEALTH_UNIT / 2 + 1e-6) * HEALTH_UNIT;
 export const heartCount = (hp: number, layers: readonly HeartLayer[]) => Math.ceil(hp / HEART - 1e-9) + layers.length;
 export const heartSlots = (maxHearts: number, layers: readonly HeartLayer[]) => maxHearts + layers.length;

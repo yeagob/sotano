@@ -49,6 +49,9 @@ export const PALETTE = {
   // cold and from Emotion; stone is a warm grey for gold cracks; blood is a crimson under life.heart;
   // the berserker's ember burns inside an obsidian shell. The star heart is the light's own ramp.
   'heart.blue.base': '#4E4CFF', 'heart.blue.dark': '#1D1A80',
+  // The black heart (issue #154): soot-black, a violet-tinged ink that stays off the cold ramp and off
+  // the obsidian of the berserker heart; its paper glint keeps the outline readable on the dark HUD.
+  'heart.black.base': '#3A3442', 'heart.black.dark': '#16131C',
   'heart.stone.dark': '#48433D', 'heart.stone.base': '#6E6860', 'heart.stone.hi': '#968E83',
   'heart.blood.base': '#9B1236',
   'heart.berserker.ember': '#FF8C1A',
