@@ -35,7 +35,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Archetypes** (the wise one, the trickster, the witness) | `jung`, `monomyth` | Presences: immortal beings who ask, listen and teach; never gods or real people ([BESTIARY §8](../design/built/presences/README.md)) |
 | **The witness** (seeing without judging) | `jung` (concept generic) | The Witness in silence reads your run back to you |
 | **What keeps living anyway** (instinct, curiosity, play, rest) | — (our own) | Creatures: the living beings of the depths, never hostile ([BESTIARY §7](../design/built/creatures/README.md)) |
-| **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it |
+| **Boundaries** | — (our own) | The Boundary: a guardian that wakes only if you break a sanctuary, and settles when you mend it; the Sanctuary, its meditation app: the space a boundary keeps for you ([MEDITATION-APP.md](../design/built/presences/MEDITATION-APP.md)) |
 | **Resistance** | `war-of-art` | A future boss |
 | **What's in your control** | `meditations`, `enchiridion` | Stoic Resolve, Meditations |
 | **Rhythm and polarity** | `kybalion` | Fire and water, cycles of runs ([COSMOLOGY.md §2](COSMOLOGY.md#2-the-seven-principles-as-systems)) |

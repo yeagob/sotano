@@ -8,7 +8,7 @@
 
 import { heartQuarters, HEART } from '../entities/actors';
 import { heartCount } from '../entities/hearts';
-import { BERSERKER_FRAME, STAR_GLOW } from '../content/heart-art';
+import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
@@ -24,11 +24,10 @@ import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
-import { handTollIds } from './toll';
-import { MISSIONS, type MissionId } from '../content/presences/missions';
-import { GuardCard, type GuardOutcome } from './guard-card';
-import { sfx3 } from '../audio/sfx';
+import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
+import { MeditationView } from './meditation-view';
 import type { Game } from './game';
+import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
@@ -39,6 +38,8 @@ const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 /** A message, escaped for innerHTML. */
 const th = (key: MessageKey, params?: Params) => esc(t(key, params));
+/** A heart's name in the toll window, with its quarters when it is not whole (the window's tiles show them). */
+const tollHeartLabel = (name: string, quarters: number) => (quarters >= 4 ? name : t('toll.heartPart', { name, q: quarters }));
 
 const STAT_ORDER: StatName[] = [
   'damage', 'fireRate', 'shotSpeed', 'range', 'gravity', 'size', 'mining',
@@ -92,11 +93,9 @@ export class Hud {
   tollOpen = false;
   private tollFloor = 0;
   private tollPicked = new Set<string>();
-  /** The Boundary's mission card for a guarded chest; it shares the toll's card and its controls. */
-  guard: { card: GuardCard; answer: (outcome: GuardOutcome) => void } | null = null;
-  /** The guide's last drawn second and step, so the countdown only rewrites text when it changes. */
-  private guideShown = { s: -1, step: -1 };
-  get guardOpen() { return this.guard !== null; }
+  /** The Sanctuary, the Boundary's meditation app: a full-screen layer of its own (meditation-view.ts). */
+  readonly sanctuary = new MeditationView();
+  get sanctuaryOpen() { return this.sanctuary.open; }
   private flashEl = $('flash');
   private hurtEl = $('hurt');
   private berserkEl = $('berserk');
@@ -115,6 +114,7 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
@@ -122,6 +122,7 @@ export class Hud {
   private screenTab: ScreenTab = 'menu';
   private shownTab: ScreenTab | null = null;
   bannerOpen = false;
+  get presenceOfferOpen() { return this.lastPresenceOffer !== null; }
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
@@ -147,7 +148,14 @@ export class Hud {
     $('hearts-box').appendChild(this.spiritRing);
     this.renderSpiritLabel();
     onLocaleChange(() => this.relocalize());
-    onDeviceChange(d => { this.applyDevice(d); this.relocalize(); });
+    onDeviceChange(d => {
+      this.applyDevice(d);
+      if (this.presenceOfferOpen) {
+        this.renderControls();
+        this.renderGraphics();
+        this.renderPresenceOfferControls();
+      } else this.relocalize();
+    });
     this.applyDevice(activeDevice());
     this.renderControls();
     this.fovInput.min = String(FOV_MIN);
@@ -182,11 +190,11 @@ export class Hud {
     this.renderLanguages();
     this.renderControls();
     this.renderGraphics();
-    if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
+    if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
     if (this.tollOpen && this.game) this.renderToll(this.game);
-    if (this.guard && this.game) this.renderGuard(this.game);
     this.toastEl.classList.remove('show');
   }
 
@@ -270,7 +278,7 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
-    this.overlay.style.display = running || this.tollOpen || this.guardOpen || g.player.dead ? 'none' : 'flex';
+    this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
 
     this.mapYaw = g.player.yaw;
     const yawKey = Math.round(this.mapYaw * 64);
@@ -328,34 +336,14 @@ export class Hud {
     this.bombsEl.textContent = String(g.player.bombs).padStart(2, '0');
     this.keysEl.textContent = String(g.player.keys).padStart(2, '0');
 
-    // hand slots: one per carry point, top block highlighted
+    // hand slots: one per carry point; the active carried item is outlined in gold
     const carry = Math.floor(g.stats.get('carry'));
-    const key = carry + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
+    const active = g.player.activeIndex;
+    const key = carry + ':' + active + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
     if (key !== this.handKey) {
       this.handKey = key;
       this.hand.innerHTML = '';
-      for (let i = 0; i < carry; i++) {
-        const c = g.player.hand[i];
-        const slot = document.createElement('div');
-        slot.className = 'slot' + (c ? ' full' : '') + (i === g.player.hand.length - 1 ? ' top' : '');
-        if (c) {
-          const img = document.createElement('img');
-          if (typeof c === 'number') {
-            img.src = this.slotUrl(c);
-            img.title = materialName(c);
-          } else if (isFlask(c)) {
-            const pd = POTIONS[c.potion];
-            img.src = iconDataUrl(carriedDef(c), 3);
-            img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
-          } else {
-            const tx = partText(c);
-            img.src = iconDataUrl(c, 3);
-            img.title = `${tx.name}\n${tx.description}`;
-          }
-          slot.appendChild(img);
-        }
-        this.hand.appendChild(slot);
-      }
+      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active));
     }
 
     if (--this.debugTimer <= 0 && this.showDebug) {
@@ -368,13 +356,36 @@ export class Hud {
     this.debugEl.style.display = this.showDebug ? 'block' : 'none';
     const now = performance.now();
     if (now > this.toastTimer) this.toastEl.classList.remove('show');
-    this.tickGuard(g, now);
+    this.sanctuary.frame(now);
   }
 
   private slotUrl(m: number) {
     let url = this.slotUrls.get(m);
     if (!url) { url = (materialTexture(m).image as HTMLCanvasElement).toDataURL(); this.slotUrls.set(m, url); }
     return url;
+  }
+
+  /** One carry slot: the item in it, or an empty well; outlined in gold when it is the active item. */
+  private handSlot(c: Carried | undefined, active: boolean) {
+    const slot = document.createElement('div');
+    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '');
+    if (c) {
+      const img = document.createElement('img');
+      if (typeof c === 'number') {
+        img.src = this.slotUrl(c);
+        img.title = materialName(c);
+      } else if (isFlask(c)) {
+        const pd = POTIONS[c.potion];
+        img.src = iconDataUrl(carriedDef(c), 3);
+        img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
+      } else {
+        const tx = partText(c);
+        img.src = iconDataUrl(c, 3);
+        img.title = `${tx.name}\n${tx.description}`;
+      }
+      slot.appendChild(img);
+    }
+    return slot;
   }
 
   /** Small icons of the items you hold, under the counters. */
@@ -500,6 +511,7 @@ export class Hud {
   /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
   presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: Params) {
     this.lastBanner = null;
+    this.clearPresenceOfferState();
     this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b>${th(nameKey)}</b>` +
@@ -511,8 +523,63 @@ export class Hud {
     this.bannerOpen = true;
   }
 
+  presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+    this.lastBanner = null;
+    this.lastPresenceOffer = { nameKey, carried };
+    this.bannerEl.dataset.offer = 'true';
+    this.bannerEl.setAttribute('role', 'dialog');
+    this.bannerEl.setAttribute('aria-modal', 'true');
+    this.bannerEl.setAttribute('aria-labelledby', 'presence-offer-title');
+    this.bannerEl.setAttribute('aria-describedby', 'presence-offer-question');
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.renderPresenceOffer();
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  private renderPresenceOffer() {
+    const offer = this.lastPresenceOffer;
+    if (!offer) return;
+    const item = typeof offer.carried === 'number'
+      ? materialName(offer.carried)
+      : isFlask(offer.carried)
+        ? t(POTIONS[offer.carried.potion].name)
+        : partText(offer.carried).name;
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
+      `<span class="offer-question" id="presence-offer-question">${th('presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
+      `<small class="offer-controls"></small></div></div>`;
+    this.renderPresenceOfferControls();
+    this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
+  }
+
+  private renderPresenceOfferControls() {
+    const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
+    if (el) el.textContent = t(forDevice('presence.offer.controls', activeDevice()), controlParams(activeDevice()));
+  }
+
+  closePresenceOffer() {
+    this.clearPresenceOfferState();
+    this.bannerOpen = false;
+    this.bannerEl.classList.remove('show');
+  }
+
+  private clearPresenceOfferState() {
+    this.lastPresenceOffer = null;
+    delete this.bannerEl.dataset.offer;
+    this.bannerEl.removeAttribute('role');
+    this.bannerEl.removeAttribute('aria-modal');
+    this.bannerEl.removeAttribute('aria-labelledby');
+    this.bannerEl.removeAttribute('aria-describedby');
+  }
+
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
     this.lastBanner = [def, changes, synergies];
+    this.clearPresenceOfferState();
     this.renderBanner(def, changes, synergies);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
@@ -539,6 +606,7 @@ export class Hud {
 
   /** Information banners stay until the player clicks (owner rule). */
   dismissBanner() {
+    this.clearPresenceOfferState();
     this.bannerOpen = false;
     this.bannerEl.classList.remove('show');
   }
@@ -688,6 +756,17 @@ export class Hud {
     if (this.screenTab === 'items') this.renderInventory(g);
   }
 
+  /** The active carried item changed (the game calls this): an open screen redraws its outline. */
+  carriedChanged() {
+    if (this.screenOpen && this.game) this.renderScreen(this.game);
+  }
+
+  /** The carried item the inventory has highlighted, as its hand slot; -1 when a practice is highlighted. */
+  selectedCarried(): number {
+    const m = /^hand:(\d+)$/.exec(this.selected ?? '');
+    return m ? Number(m[1]) : -1;
+  }
+
   private showTab(tab: ScreenTab) {
     if (tab === this.shownTab) return;
     this.shownTab = tab;
@@ -701,15 +780,15 @@ export class Hud {
   moveSelection(dx: number, dy: number) {
     const g = this.game;
     if (!g) return;
-    const root = this.tollOpen || this.guardOpen ? this.tollEl : this.invEl;
-    const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
+    const root = this.tollOpen ? this.tollEl : this.invEl;
+    const tiles = [...root.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')];
     if (!tiles.length) return;
     const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
     const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
     const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
     this.selected = tiles[next].dataset.id!;
-    if (this.tollOpen) this.renderToll(g); else if (this.guard) this.renderGuard(g); else this.renderInventory(g);
-    root.querySelector<HTMLElement>('.tile.sel, .tile.cur')?.scrollIntoView({ block: 'nearest' });
+    if (this.tollOpen) this.renderToll(g); else this.renderInventory(g);
+    root.querySelector<HTMLElement>('.tile.sel, .tile.cur, .slot.sel')?.scrollIntoView({ block: 'nearest' });
   }
 
   openToll(g: Game, k: number) {
@@ -723,110 +802,7 @@ export class Hud {
     this.renderToll(g);
   }
 
-  /** The Boundary asks for a mission: a card with the mission, its answers and a close ✕. A guided mission
-   *  (the breath) also offers Begin, which turns the card into a countdown with the step to follow. */
-  openGuard(g: Game, mission: MissionId, answer: (outcome: GuardOutcome) => void) {
-    this.game = g;
-    const card = new GuardCard(mission);
-    this.guard = { card, answer };
-    this.tollEl.classList.add('show');
-    g.input.unlockFor();
-    this.selected = card.first;
-    this.renderGuard(g);
-  }
-
-  private closeGuard(g: Game, outcome: GuardOutcome) {
-    const guard = this.guard;
-    if (!guard) return;
-    this.guard = null;
-    this.tollEl.classList.remove('show');
-    if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
-    else g.input.resume();
-    guard.answer(outcome);
-  }
-
-  private guardAct(g: Game, id: string) {
-    const guard = this.guard;
-    if (!guard) return;
-    const outcome = guard.card.act(id, performance.now());
-    if (outcome) { this.closeGuard(g, outcome); return; }
-    if (guard.card.phase === 'guide') sfx3.bell('rest');
-    this.selected = guard.card.first;
-    this.renderGuard(g);
-  }
-
-  /** The countdown runs on the HUD's clock, every frame, while the world stays paused behind the card. */
-  private tickGuard(g: Game, now: number) {
-    const card = this.guard?.card;
-    if (!card) return;
-    if (card.tick(now)) {
-      sfx3.bell('end');
-      this.selected = card.first;
-      this.renderGuard(g);
-      return;
-    }
-    const v = card.guide(now);
-    if (!v) return;
-    const root = this.tollEl;
-    if (v.index !== this.guideShown.step) {
-      if (this.guideShown.step >= 0) sfx3.bell(v.step.breath);
-      this.guideShown.step = v.index;
-      const step = root.querySelector('.guide .step');
-      if (step) step.textContent = t(v.step.text);
-    }
-    if (v.secondsLeft !== this.guideShown.s) {
-      this.guideShown.s = v.secondsLeft;
-      const clock = root.querySelector('.guide .clock');
-      if (clock) clock.textContent = t('mission.clock', { m: Math.floor(v.secondsLeft / 60), s: String(v.secondsLeft % 60).padStart(2, '0') });
-    }
-    // the breath circle grows over an in-breath and shrinks over an out-breath (eased, never a jump)
-    const ease = (x: number) => 0.5 - Math.cos(Math.PI * x) / 2;
-    const scale = v.step.breath === 'in' ? 0.55 + 0.45 * ease(v.progress) : v.step.breath === 'out' ? 1 - 0.45 * ease(v.progress) : 0.55;
-    root.querySelector<HTMLElement>('.guide .breath i')?.style.setProperty('--s', scale.toFixed(3));
-    const steps = card.steps!;
-    const total = steps.reduce((a, s) => a + s.ms, 0);
-    const before = steps.slice(0, v.index).reduce((a, s) => a + s.ms, 0);
-    root.querySelector<HTMLElement>('.guide .bar i')?.style.setProperty('width', `${(100 * (before + v.progress * v.step.ms) / total).toFixed(1)}%`);
-  }
-
-  private renderGuard(g: Game) {
-    const guard = this.guard;
-    if (!guard) return;
-    const card = guard.card;
-    const m: { title: MessageKey; body: MessageKey; alt?: MessageKey } = MISSIONS[card.mission];
-    const answers = card.answers;
-    const cur = this.selected && answers.includes(this.selected) ? this.selected : card.first;
-    const device = activeDevice();
-    const labels: Record<string, MessageKey> = { begin: 'mission.begin', yes: 'mission.yes', no: 'mission.no' };
-    const tiles = answers.map(id => `<button type="button" class="tile go${id === cur ? ' cur' : ''}" data-id="${id}"><span class="lbl">${th(labels[id])}</span></button>`).join('');
-    let body: string;
-    if (card.phase === 'guide') {
-      body = `<div class="guide"><div class="breath" aria-hidden="true"><i></i></div>` +
-        `<div class="clock" role="timer"></div><p class="step" aria-live="polite"></p><div class="bar" aria-hidden="true"><i></i></div></div>` +
-        `<p class="hint">${th('mission.guideHint', controlParams(device))}</p>`;
-    } else if (card.phase === 'question') {
-      body = `<p>${th('mission.ended')}</p><p class="hint">${th('mission.hint', controlParams(device))}</p>`;
-    } else {
-      body = `<p>${th(m.body)}</p>${m.alt ? `<p class="hint">${th(m.alt)}</p>` : ''}` +
-        (card.steps ? `<p class="hint">${th('mission.guideOffer')}</p>` : '') +
-        `<p class="hint">${th('mission.hint', controlParams(device))}</p>`;
-    }
-    this.tollEl.innerHTML =
-      `<div class="card slate guard"><header><div><h2>${th('presence.boundary.name')}</h2><small>${th('mission.lead')}</small></div>` +
-      `<button type="button" class="close" data-id="close" aria-label="${th('mission.closeLabel')}" title="${th('mission.closeLabel')}">✕</button></header>` +
-      `<h3>${th(m.title)}</h3>${body}${tiles ? `<div class="go-row">${tiles}</div>` : ''}</div>`;
-    for (const b of this.tollEl.querySelectorAll<HTMLButtonElement>('.tile')) {
-      b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
-      b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.guardAct(g, b.dataset.id!); });
-    }
-    this.tollEl.querySelector<HTMLButtonElement>('.close')?.addEventListener('click', () => this.guardAct(g, 'close'));
-    // the guide's text is written by tickGuard; force it to redraw on this frame
-    this.guideShown = { s: -1, step: -1 };
-    if (card.phase === 'guide') this.tickGuard(g, performance.now());
-  }
-
   closeToll(g: Game) {
-    if (this.guard) { this.closeGuard(g, 'cancel'); return; }
     this.tollOpen = false;
     this.tollEl.classList.remove('show');
     if (g.input.device === 'keyboard') { g.input.release(); g.input.lock(); }
@@ -834,8 +810,7 @@ export class Hud {
   }
 
   confirmToll(g: Game) {
-    if (this.guard) { if (this.selected) this.guardAct(g, this.selected); }
-    else if (this.selected) this.tollAct(g, this.selected);
+    if (this.selected) this.tollAct(g, this.selected);
   }
 
   private tollIds(g: Game): string[] {
@@ -847,7 +822,7 @@ export class Hud {
       ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
       for (let i = 0; i < p.bombs; i++) ids.push(`bomb:${i}`);
-      for (let i = 0; i < heartCount(p.hp, p.layers); i++) ids.push(`heart:${i}`);
+      ids.push(...heartTollIds(p.hp, p.layers, Math.floor(g.stats.get('maxHearts'))));
     }
     return [...ids, 'pay', 'close'];
   }
@@ -857,8 +832,9 @@ export class Hud {
     if (!toll) return;
     if (id === 'close') { this.closeToll(g); return; }
     if (id === 'pay') {
-      if (this.tollPicked.size === toll.count && g.payToll(this.tollFloor, [...this.tollPicked])) { this.closeToll(g); return; }
-      this.toast('toll.need', { n: toll.count });
+      if (this.tollPicked.size !== toll.count) this.toast('toll.need', { n: toll.count });
+      else if (g.payToll(this.tollFloor, [...this.tollPicked])) { this.closeToll(g); return; }
+      else this.toast('toll.cannot');
       this.renderToll(g);
       return;
     }
@@ -876,7 +852,13 @@ export class Hud {
     const tile = (id: string, icon: string, label: string) =>
       `<button type="button" class="tile${this.tollPicked.has(id) ? ' on' : ''}${id === cur ? ' cur' : ''}" data-id="${id}"><img src="${icon}" alt=""><span class="lbl">${esc(label)}</span></button>`;
     const section = (key: MessageKey, body: string) => (body ? `<h3>${th(key)}</h3>${body}` : '');
-    const hearts = Array.from({ length: heartCount(p.hp, p.layers) }, (_, i) => tile(`heart:${i}`, hudIconUrl(HUD_ICONS.heart), t('toll.heart'))).join('');
+    // each heart is its own tile: base hearts with the health they hold, bonus hearts by their type
+    const hearts = heartTollIds(p.hp, p.layers, Math.floor(g.stats.get('maxHearts'))).map(id => {
+      const [kind, at] = id.split(':'), i = Number(at);
+      if (kind === 'heart') return tile(id, hudIconUrl(HUD_ICONS.heart), tollHeartLabel(t('toll.heart'), heartQuarters(p.hp, i)));
+      const layer = p.layers[i];
+      return tile(id, hudIconUrl(HEART_HUD[layer.kind]), tollHeartLabel(t(`toll.layer.${layer.kind}`), heartQuarters(layer.hp, 0)));
+    }).join('');
     const keys = Array.from({ length: p.keys }, (_, i) => tile(`key:${i}`, hudIconUrl(HUD_ICONS.key), t('toll.key'))).join('');
     const bombs = Array.from({ length: p.bombs }, (_, i) => tile(`bomb:${i}`, hudIconUrl(HUD_ICONS.seed), t('toll.bomb'))).join('');
     const hands = p.hand.map((m, i) => (typeof m === 'number'
@@ -894,6 +876,7 @@ export class Hud {
       `<div class="card slate"><header><h2>${th('toll.title')}</h2>` +
       `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · ${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</small></header>` +
       `<p class="hint">${th('toll.hint', controlParams(device))}</p>` +
+      `<p class="hint">${this.tollCost(g)}</p>` +
       `<div class="grid">${body || `<p class="none">${th('toll.none')}</p>`}</div>` +
       `<div class="go-row"><button type="button" class="tile go${ready ? '' : ' off'}${cur === 'pay' ? ' cur' : ''}" data-id="pay"><span class="lbl">${th('toll.go')}</span></button>` +
       `<button type="button" class="tile go${cur === 'close' ? ' cur' : ''}" data-id="close"><span class="lbl">${th('toll.stay')}</span></button></div></div>`;
@@ -901,6 +884,23 @@ export class Hud {
       b.addEventListener('mouseenter', () => this.moveCursor(b.dataset.id!));
       b.addEventListener('click', () => { this.moveCursor(b.dataset.id!); this.tollAct(g, b.dataset.id!); });
     }
+  }
+
+  /** What the picks would cost, in words: the bonus hearts by type, the base hearts, and the health and capacity left. */
+  private tollCost(g: Game): string {
+    const p = g.player, maxHearts = Math.floor(g.stats.get('maxHearts'));
+    const { base, bonus } = splitHeartPicks(this.tollPicked);
+    if (!base.length && !bonus.length) return th('toll.costNone');
+    const plan = heartTollPlan(p.hp, maxHearts, p.layers, base, bonus);
+    if (!plan) return th('toll.cannot');
+    const lines: string[] = [];
+    if (bonus.length) lines.push(th('toll.costBonus', { list: bonus.map(j => t(`toll.layer.${p.layers[j].kind}`)).join(', ') }));
+    if (base.length) lines.push(th('toll.costBase', { n: base.length }));
+    lines.push(th('toll.costNow', {
+      hpFrom: fmtNum(p.hp / HEART, 2), hpTo: fmtNum(plan.hp / HEART, 2),
+      capFrom: fmtNum(maxHearts, 0), capTo: fmtNum(plan.maxHearts, 0),
+    }));
+    return lines.join('<br>');
   }
 
   private moveCursor(id: string) {
@@ -915,16 +915,21 @@ export class Hud {
     const counts = new Map<string, number>();
     for (const d of held) counts.set(d.id, (counts.get(d.id) ?? 0) + 1);
     const unique = [...new Map(held.map(d => [d.id, d])).values()];
-    const ids = unique.map(d => d.id);
+    const hand = g.player.hand, chosen = g.player.activeIndex;
+    const ids =[...hand.map((_, i) => `hand:${i}`), ...unique.map(d => d.id)];
     const selId = ids.find(id => id === this.selected) ?? ids.at(-1);
     const sel = unique.find(d => d.id === selId);
+    const handSel = selId?.startsWith('hand:') ? hand[Number(selId.slice(5))] : undefined;
 
     const tile = (id: string, c: number, icon: { id: string; icon: ItemDef['icon'] }, name: string, n: number) =>
       `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
       `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
+    const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="hand-row"></div>` : '';
 
-    const detail = sel ? this.itemDetail(sel) : `<p class="none">${th('inv.empty')}</p>`;
+    const detail = sel ? this.itemDetail(sel)
+      : handSel ? this.carriedDetail(handSel)
+      : `<p class="none">${th('inv.empty')}</p>`;
 
     const active = new Set(g.inventory.synergiesActive.map(x => x.id));
     const synRows = SYNERGIES.map(sy => {
@@ -941,14 +946,35 @@ export class Hud {
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
-      `<div class="cols"><section class="left"><div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
+      `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
-    for (const b of this.invEl.querySelectorAll<HTMLButtonElement>('.tile')) {
+    // the carried items are the HUD's own hand slots, chosen by a click or a tap
+    this.invEl.querySelector('.hand-row')?.replaceChildren(...hand.map((c, i) => {
+      const slot = this.handSlot(c, i === chosen);
+      slot.dataset.id = `hand:${i}`;
+      slot.classList.toggle('sel', selId === slot.dataset.id);
+      return slot;
+    }));
+    for (const b of this.invEl.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')) {
       b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
-      b.addEventListener('click', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
+      b.addEventListener('click', () => {
+        this.selected = b.dataset.id!;
+        if (this.selected.startsWith('hand:')) g.chooseCarried(this.selectedCarried());
+        this.renderInventory(g);
+      });
     }
+  }
+
+  private carriedDetail(c: Carried) {
+    return `<div class="detail"><div><b>${esc(this.carriedLabel(c))}</b><p>${th(forDevice('inv.choose', activeDevice()))}</p></div></div>`;
+  }
+
+  private carriedLabel(c: Carried): string {
+    if (typeof c === 'number') return materialName(c);
+    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    return partText(c).name;
   }
 
   private itemDetail(d: ItemDef) {

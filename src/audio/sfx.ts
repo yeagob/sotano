@@ -72,6 +72,7 @@ export const sfx = {
   kick: () => { noise(0.1, 0.5, 300, 1); tone(110, 0.12, 'sine', 0.4, 0.5); },
   place: () => { noise(0.08, 0.4, 500, 1.5); tone(200, 0.08, 'triangle', 0.2, 0.7); },
   denied: () => tone(160, 0.12, 'square', 0.12, 0.8),
+  select: () => tone(880, 0.05, 'triangle', 0.1),
   mend: () => tone(jitter(700), 0.09, 'sine', 0.1, 1.4),
   /** A block breaks against your head: a dull knock and a little upward chirp. */
   headbutt: () => { noise(0.12, 0.45, jitter(420), 1.2); tone(jitter(380), 0.14, 'square', 0.1, 1.9); },
@@ -289,6 +290,7 @@ export function starTheme(on: boolean) {
 
 export const sfxHeart = {
   blue: () => { tone(587, 0.14, 'sine', 0.14); setTimeout(() => tone(880, 0.2, 'sine', 0.12), 90); },
+  black: () => { tone(330, 0.14, 'sine', 0.14); setTimeout(() => tone(165, 0.3, 'sine', 0.13), 100); },
   stone: () => { noise(0.14, 0.35, 700, 1.4); tone(196, 0.25, 'triangle', 0.16, 1.2); setTimeout(() => tone(988, 0.2, 'triangle', 0.06), 120); },
   stoneHit: () => { noise(0.1, 0.35, jitter(1100), 2); tone(jitter(150), 0.12, 'square', 0.08, 0.7); },
   blood: () => { tone(98, 0.18, 'sine', 0.3, 0.8); setTimeout(() => tone(110, 0.22, 'sine', 0.26, 0.8), 260); },

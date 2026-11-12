@@ -6,6 +6,10 @@ Status: **proposal** (design text, bestiary section 8.7). Names are proposals; e
 
 The presences give gifts: objects with a name, a line of text and a plain effect line, like practices, shown in the inventory. A gift is the reward of a request or an agreement.
 
+## Reward distribution
+
+Every Presence reward is selected from a seeded probability distribution with outcomes of different value, from a lesser result to a better one. The roll belongs to the run's deterministic seeded sequence, so the same seed and preceding sequence of events reproduce the same result. Each Presence has its own table and weights; the exact tables remain open until that Presence is designed. The built Listener's guaranteed reward and its existing 15/75/10 table are not changed by this future rule.
+
 ## Tiers
 
 | Tier | Gift names (proposals) | Given by |

@@ -23,7 +23,7 @@ import {
 import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
-import { tollIndex } from './toll';
+import { heartTollPlan, tollIndex } from './toll';
 import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
@@ -38,8 +38,9 @@ import type { Enemy } from '../enemies/types';
 import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
-import { Pickups, type Pickup } from '../entities/pickups';
-import { Chests, type ChestView } from '../entities/chests';
+import { Pickups, PICKUP_GRAVITY, type Pickup } from '../entities/pickups';
+import { Chests, OPEN_TIME, type ChestView } from '../entities/chests';
+import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
@@ -49,6 +50,7 @@ import { DOUBLE_TAP_MS } from '../input/bindings';
 import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
+import { FullscreenButton } from '../input/fullscreen-button';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
@@ -77,22 +79,23 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, listenerDrops, presenceReaction, pushedOut, TALK_REACH, unlocksPresence, answerDue, type PresenceId } from '../content/presences';
-import { pickMission, rewardBand } from '../content/presences/missions';
-import type { GuardOutcome } from './guard-card';
+import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { rewardBand, type Outcome } from '../content/presences/meditations';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, rollHeart } from '../content/tables/hearts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartCount, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { GROWTH_MAX, growsUnder } from '../entities/growth';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud } from './hud';
-import { carveSandbox, type SandboxRoom, type Scenario } from '../sandbox/scenario';
+import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
 import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
@@ -262,6 +265,7 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
+  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried: Carried } | null = null;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -359,6 +363,8 @@ export class Game {
     this.renderer.autoClear = false;
     this.input = new Input(canvas);
     this.touch = new TouchControls(this.input);
+    // the phone's way back to fullscreen after it was left (#161); its failures use the shared toast
+    new FullscreenButton(this.input, key => this.hud.toast(key));
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
     // each world's scene objects hang under its own group; only the active one is visible (SKY.md §2.3)
@@ -476,6 +482,8 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.pendingPresenceOffer = null;
+    this.input.modal = false;
     setMasterTarget(0.35);
     this.elements = this.elementSim(this.world, this.rng.fork('elements').u32());
     this.playerIn.clear(); this.drownT = 0;
@@ -495,9 +503,10 @@ export class Game {
     this.bus = createBus();
     attachDevlog(this.bus);
     this.inventory.restore([]);
+    this.stats.removeSource('toll');
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     p.clearStates();
     // actors: one id space per run, the player first
     this.actors.reset();
@@ -523,6 +532,7 @@ export class Game {
     this.room = -1;
     this.visited = new Set();
     this.hud.hideDeath();
+    this.hud.closePresenceOffer();
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(k)!, k);
@@ -534,7 +544,7 @@ export class Game {
   private furnish(box: SandboxRoom, s: Scenario) {
     for (const id of s.items ?? []) this.grant(id);
     const p = this.player;
-    p.hand = (s.hand ?? []).map(k => MAT[k]);
+    p.hand = (s.hand ?? []).map(carriedFromId);
     p.bombs = p.keys = COUNTER_CAP;
     p.hp = this.maxHp;
     if (s.god) p.invulnT = 1e9;
@@ -558,6 +568,14 @@ export class Game {
   sandboxSpawn(defId: string, x: number, y: number, z: number, faction?: Faction) {
     const r = this.rooms.get(this.floors.get(this.depth)?.rooms[0]?.id ?? -1);
     if (!r) return null;
+    const presence = PRESENCE_BY_ID.get(defId);
+    if (presence) {
+      const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, presence.hp, presence.speed, 0, new Set(['presence']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+      return e;
+    }
     const creature = CREATURE_BY_ID.get(defId);
     if (creature) {
       const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, creature.hp, creature.speed, 0, new Set(['creature']));
@@ -636,6 +654,12 @@ export class Game {
     for (const spec of f.chests) {
       const face = this.chestFacing(spec);
       this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, face.angle, face.tight) });
+      if (!this.sandbox && spec.meditation) {
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), spec.room, spec.x + 0.5, spec.y + 1, spec.z + 0.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        e.faction = 'neutral';
+        e.spawning = 0;
+        this.actors.add(e);
+      }
     }
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
     for (const bp of f.bombs) this.pickups.add('bomb', bp.x + 0.5, bp.y + 0.5, bp.z + 0.5, bp.room);
@@ -862,7 +886,7 @@ export class Game {
       card: (name, lines) => this.hud.presenceCard(name, lines),
       bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),
       place: key => this.hud.placeLabel(key),
-      gift: (itemId, x, y, z) => { this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null); },
+      gift: (itemId, x, y, z) => { this.ejectReward(this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null), 1.5, 3); },
       travel: tr => this.gate.start(tr),
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
@@ -1022,7 +1046,7 @@ export class Game {
       isPlayer: id => id === this.player.id,
       collect: (kind, n) => this.collect(kind, n),
       counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.maxHp }),
-      spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
+      spawnPickup: (kind, x, y, z) => { this.ejectReward(this.pickups.add(kind, x, y, z, this.room, null, 0.3), 3.2, 4); },
       pulse: (x, y, z, r, d, k, c, src) => this.pulse(x, y, z, r, d, k, c, src),
       arc: (x, y, z, to, d, src, pol) => this.arc(x, y, z, to, d, src, pol),
       nearestProjection: (x, y, z, r, except) => this.nearestProjection(x, y, z, r, except),
@@ -1214,8 +1238,10 @@ export class Game {
 
   collectHeart(kind: HeartKind): boolean {
     const p = this.player;
-    if ((kind === 'red' || kind === 'blood') && p.hp >= this.maxHp) return false;
-    if (isLayer(kind) && heartSlots(Math.floor(this.stats.get('maxHearts')), p.layers) >= MAX_TOTAL_HEARTS) return false;
+    // a blood heart at full health opens one heart slot and fills it (#146); below full it heals over time
+    const slot = kind === 'blood' && p.hp >= this.maxHp;
+    if (kind === 'red' && p.hp >= this.maxHp) return false;
+    if ((isLayer(kind) || slot) && !hasHeartRoom(this.stats.get('maxHearts'), p.layers)) return false;
     if (kind === 'red') return this.collect('heart', 2);
     const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
     if (ev.cancelled) return false;
@@ -1223,7 +1249,12 @@ export class Game {
     if (isLayer(kind)) {
       p.layers.push({ kind, hp: Math.min(HEART, pts) });
       if (kind === 'blue') sfxHeart.blue();
+      else if (kind === 'black') sfxHeart.black();
       else if (kind === 'stone') sfxHeart.stone();
+    } else if (slot) {
+      this.stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: BLOOD_SLOT_SOURCE });
+      p.hp = this.maxHp;
+      sfxHeart.blood();
     } else if (kind === 'blood') {
       p.blood = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
       sfxHeart.blood();
@@ -1232,7 +1263,7 @@ export class Game {
       p.starT = STAR_SECONDS;
       sfxHeart.star();
     }
-    this.hud.toast(`heart.${kind}`);
+    this.hud.toast(slot ? 'heart.bloodSlot' : `heart.${kind}`);
     const b = p.body;
     this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
     return true;
@@ -1514,19 +1545,67 @@ export class Game {
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
-      // a warm love shot grows a friendly creature (issue #51); a beam's repeat ticks do not
-      if (warm && e.tags.has('creature')) this.enemies.grow(e);
+      // a warm love shot grows a friendly creature (issue #51, #102); a beam's repeat ticks do not
+      const oldScale = e.scale;
+      if (warm && growsUnder(e)) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
       const b = e.body;
       e.hp += heal;
       this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
-      if (heal > 0 && e.spec.kind === 'creature' && e.hp >= e.maxHp && !e.tags.has('gifted')) {
-        e.tags.add('gifted');
-        this.pickups.add('heart', b.x, b.y + 0.6, b.z, e.room, null, 0.3);
-      }
+      if (warm && growsUnder(e) && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
       return;
     }
+    // a warm negative shot takes a grown friendly creature one step back down (#102); it still harms it as before
+    if (warm && e.faction !== 'projection' && growsUnder(e) && e.scale > 1 && this.meets(e, polarity)) {
+      this.enemies.shrink(e);
+      const b = e.body;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('mat.dirt.base'), 4, 1, 0.05);
+    }
     this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
+  }
+
+  private dropCreatureGrowthGift(e: Enemy) {
+    const heart = rollCreatureGrowthHeart(this.rng.stream('gifts'));
+    if (!heart) return;
+    const b = e.body;
+    this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 18, 2, 0.07);
+    sfx3.reveal();
+    this.launchGiftPickups(e, [{ type: 'heart', heart }]);
+  }
+
+  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind })[]) {
+    const b = e.body, player = this.player.body;
+    const base = Math.atan2(b.z - player.z, b.x - player.x);
+    rewards.forEach((reward, i) => {
+      const angle = base + (i - (rewards.length - 1) / 2) * 0.6;
+      const x = b.x + Math.cos(angle) * 0.45, z = b.z + Math.sin(angle) * 0.45;
+      const pickup = reward.type === 'item'
+        ? this.pickups.add('item', x, b.y + 1.02, z, e.room, reward.item, 0.3)
+        : this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart);
+      this.ejectReward(pickup, 1.5, 3);
+    });
+  }
+
+  /**
+   * Dispenses a reward away from the player (issue #156). Every reward source calls this (or `ejectRewards`)
+   * after it adds its pickup: the reward is launched straight away from the player, turned by `offset` (a spread
+   * for several rewards from one source), onto the nearest throw whose whole flight is clear and that lands on ground with no element in
+   * it (`ejectAngle`). Its delay keeps it from being collected where it appears. `speed` and `lift` set the throw.
+   */
+  private ejectReward(p: Pickup, speed: number, lift: number, offset = 0) {
+    // what the world holds at a cell, for the throw's whole path (eject.ts decides what a clear throw is)
+    const ground: Ground = {
+      solid: (x, y, z) => this.solid(x, y, z),
+      element: (x, y, z) => this.elementAt(x + 0.5, y + 0.5, z + 0.5) !== null,
+    };
+    const reach = throwReach(speed, lift, PICKUP_GRAVITY);
+    const a = ejectAngle(p, this.player.body, ground, Math.floor(p.y), reach, offset);
+    this.pickups.launch(p, Math.cos(a) * speed, lift, Math.sin(a) * speed);
+  }
+
+  /** `ejectReward` for a batch from one source: the batch fans out so the rewards do not land on one spot. */
+  private ejectRewards(ps: Pickup[], speed: number, lift: number) {
+    ps.forEach((p, i) => this.ejectReward(p, speed, lift, ps.length > 1 ? (i / (ps.length - 1) - 0.5) * 1.1 : 0));
   }
 
   /**
@@ -1619,9 +1698,9 @@ export class Game {
     const drops = (Object.entries(e.spec.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
     const b = e.body;
     const ev = this.bus.emit('actorDeath', { target: e.id, targetKind: 'projection', def: e.def, x: b.x, y: b.y, z: b.z, drops });
-    for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    const dropped: Pickup[] = ev.drops.map(k => this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3));
     const stolen = this.enemies.takeCarried(e.id);
-    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) dropped.push(this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3));
     const floor = this.rooms.get(e.room)?.floor;
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
@@ -1630,8 +1709,9 @@ export class Game {
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
       if (e.tags.has('rooted')) parts.push(...rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq, 'rooted'), e.def));
-      for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
+      for (const part of parts) dropped.push(this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part));
     }
+    this.ejectRewards(dropped, 3.2, 4);
     sfx3.dissolve();
   }
 
@@ -1678,7 +1758,7 @@ export class Game {
         const reward = ROOM_CLEAR.pickU(u, { floor: r0.floor, luck: this.stats.get('luck') });
         const drops: PickupKind[] = reward ? [reward] : [];
         const ev = this.bus.emit('roomClear', { room: id, drops });
-        for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
+        this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3)), 3.2, 4);
         this.hud.toast('toast.roomClear');
         this.potionsEnded(this.potions.roomCleared());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
@@ -1723,7 +1803,7 @@ export class Game {
       const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
       const reward = ROOM_CLEAR.pickU(u, { floor: r.floor, luck: this.stats.get('luck') + st.wave });
       const ev = this.bus.emit('roomClear', { room: r.id, drops: reward ? [reward] : [] });
-      for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3);
+      this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3)), 3.2, 4);
       if (st.wave < CHALLENGE_WAVES) { this.nextWave(r, st); st.next = WAVE_GAP; sfx3.clear(); continue; }
       st.active = false;
       this.doors.seal(r.id, false);
@@ -1896,10 +1976,8 @@ export class Game {
       if (drop) drops.push(drop);
     }
     const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
-    for (const k of ev.drops) {
-      this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
-      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
-    }
+    this.ejectRewards(ev.drops.map(k => this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4)), 2.6, 3.5);
+    for (const k of ev.drops) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
   }
 
   /**
@@ -2196,7 +2274,7 @@ export class Game {
       });
       if (ev.cancelled || ev.action === 'ignore') continue;
       if (ev.action === 'pickup' && !bomb) {
-        p.hand.push(d.material[i]);
+        p.gain(d.material[i]);
         d.remove(i);
         sfx.pickup();
         continue;
@@ -2510,7 +2588,7 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
     if (!a) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (isFlask(top)) {
       sfx.denied(); this.hud.toast('lab.refused');
       devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> refused`);
@@ -2523,7 +2601,7 @@ export class Game {
       this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
       return;
     }
-    p.hand.pop();
+    p.takeActive();
     this.hands.placed();
     sfx.place();
     this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
@@ -2532,7 +2610,7 @@ export class Game {
   /** Right click on the kitchen: the part on top of the hand is cooked into a meal (game/kitchen.ts). */
   private cookAt(x: number, y: number, z: number) {
     const k = this.kitchens.get(this.world.idx(x, y, z));
-    const p = this.player, top = p.hand.at(-1);
+    const p = this.player, top = p.active;
     if (!k || top === undefined) { sfx.denied(); return; }
     if (typeof top === 'number' || isFlask(top)) {
       sfx.denied(); this.hud.toast('kitchen.refused');
@@ -2545,8 +2623,8 @@ export class Game {
       return;
     }
     devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> cooked (${COOKS - k.cooks}/${COOKS} used)`);
-    p.hand.pop();   // the part leaves the hand first, so the meal always has its place
-    p.hand.push({ potion: mealOf(top.kind) });
+    p.takeActive();   // the part leaves the hand first, so the meal always has its place
+    p.gain({ potion: mealOf(top.kind) });
     this.hands.placed();
     this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 16, 2, 0.06);
     sfx.place();
@@ -2563,7 +2641,7 @@ export class Game {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
-      this.hud.toastDrinkHint('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+      this.hud.toastDrinkHint('lab.brewed', { name: t(POTIONS[flask.potion].name), left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);
@@ -2573,11 +2651,11 @@ export class Game {
 
   /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
   private drink() {
-    const p = this.player, top = p.hand.at(-1);
+    const p = this.player, top = p.active;
     if (!top || !isFlask(top)) { sfx.denied(); return; }
     const def = POTIONS[top.potion];
     const rooms = flaskRooms(top);
-    p.hand.pop();
+    p.takeActive();
     this.hands.placed();
     if (def.heal) this.heal(def.heal, `potion.${top.potion}`);
     this.potions.drink(top);
@@ -2614,11 +2692,11 @@ export class Game {
     const over = cellOverlap(p.body, x, y, z);
     const push: [number, number] | null = over ? this.nudgeTarget(over) : [0, 0];
     if (over && (over.depth > PLACE_NUDGE_MAX || !push)) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (typeof top !== 'number') {
       this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
       this.nudge(push!);
-      p.hand.pop();
+      p.takeActive();
       this.hands.placed();
       sfx.place();
       return;
@@ -2631,7 +2709,7 @@ export class Game {
     try { this.world.set(x, y, z, ev.material); } finally { if (sky) sky.placing = false; }
     this.debris.clearCell(x, y, z);
     this.nudge(push!);
-    p.hand.pop();
+    p.takeActive();
     this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
@@ -2664,12 +2742,12 @@ export class Game {
     if (!p.hand.length) { sfx.denied(); return; }
     const e = p.eye.addScaledVector(p.forward, 0.7), dir = p.forward;
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (typeof top !== 'number') {
       const part = this.pickups.add(isFlask(top) ? 'flask' : 'part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
       const speed = 9 * this.stats.get('throw');
       this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
-      p.hand.pop();
+      p.takeActive();
       this.hands.placed();
       sfx.kick();
       return;
@@ -2681,7 +2759,7 @@ export class Game {
     this.debris.launch(cube, dir.x * ev.speed + p.body.vx, dir.y * ev.speed + ev.lift, dir.z * ev.speed + p.body.vz);
     this.debris.tags[cube] = ev.tags.size ? ev.tags : null;
     this.debris.cooldown[cube] = 0.6;
-    p.hand.pop();
+    p.takeActive();
     this.bus.emit('drop', { material: m, how: 'throw' });
     this.hands.placed();
     sfx.kick();
@@ -2798,7 +2876,7 @@ export class Game {
         const carried = p.carried;
         if (carried && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
           this.pickups.take(p);
-          this.player.hand.push(carried);
+          this.player.gain(carried);
           this.hands.holdUp(carriedDef(carried));
           if (typeof carried === 'object') {
             if (isFlask(carried)) this.hud.toastDrinkHint('hand.took', { item: this.carriedName(carried) });
@@ -2816,7 +2894,7 @@ export class Game {
   }
 
   /** Walking up to a closed chest opens it, spending its keys (some cost none). A guarded chest is not
-   *  opened here: its Boundary asks for a mission first (see askGuard). */
+   *  opened here: its Boundary opens the Sanctuary first (see touchGuards). */
   private touchChests() {
     const b = this.player.body;
     for (const c of this.chests) {
@@ -2824,26 +2902,48 @@ export class Game {
       const s = c.spec, dist = Math.hypot(b.x - (s.x + 0.5), b.z - (s.z + 0.5));
       if (dist > 3) c.refused = false;
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
-      const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
-      const asked = Math.max(0, Math.floor(ev.cost));
-      const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
-      const cost = question ? asked - 1 : asked;
-      if (ev.cancelled || this.player.keys < cost) {
+      if (s.meditation) {
         c.refused = true;
-        this.hud.toast('toast.chestLocked', { n: cost });
-        sfx.denied();
+        this.openSanctuary(outcome => this.answerTutorialChest(c, outcome));
         continue;
       }
-      this.player.keys -= cost;
-      if (question) this.questioned();
-      this.openChest(c, cost);
+      this.openKeyedChest(c);
     }
   }
 
-  /** Walking up to the Boundary of a vault asks one real-world mission for the chest it keeps. Not yet
-   *  waits until the player steps three blocks away from the Boundary. */
+  private openKeyedChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }) {
+    const s = c.spec;
+    const ev = this.bus.emit('chestOpen', { x: s.x, y: s.y, z: s.z, cost: s.keys });
+    const asked = Math.max(0, Math.floor(ev.cost));
+    const question = asked > 0 && !ev.cancelled && this.potions.lockDiscount() > 0 && this.player.keys >= asked - 1;
+    const cost = question ? asked - 1 : asked;
+    if (ev.cancelled || this.player.keys < cost) {
+      c.refused = true;
+      this.hud.toast('toast.chestLocked', { n: cost });
+      sfx.denied();
+      return;
+    }
+    this.player.keys -= cost;
+    if (question) this.questioned();
+    this.openChest(c, cost);
+  }
+
+  private answerTutorialChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome) {
+    if (c.opened) return;
+    if (outcome === 'cancel') {
+      c.refused = true;
+      this.hud.toast('sanctuary.cancelled');
+      return;
+    }
+    this.openSanctuaryChest(c, outcome);
+    this.releaseBoundary(c.spec.room);
+  }
+
+  /** Walking up to the Boundary of a vault opens the Sanctuary, its meditation app, for the chest it keeps
+   *  (docs/design/built/presences/MEDITATION-APP.md). After a "not now" it waits until the player has stepped
+   *  three blocks away from the Boundary. */
   private touchGuards() {
-    if (this.hud.tollOpen || this.hud.guardOpen || this.hud.bannerOpen) return;
+    if (this.hud.tollOpen || this.hud.sanctuaryOpen || this.hud.bannerOpen) return;
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || !e.tags.has('boundary')) continue;
@@ -2853,31 +2953,48 @@ export class Game {
       if (!c) continue;
       if (dist > 3) c.refused = false;
       if (c.refused || !near) continue;
-      const mission = pickMission(this.rng.stream('guard'));
-      const asked = performance.now();
-      this.hud.openGuard(this, mission, outcome => this.answerGuard(c, asked, outcome));
+      this.openSanctuary(outcome => this.answerGuard(c, outcome));
       return;
     }
   }
 
-  /** "Have you done it?": yes or no, the reward spawns from the chest and the Boundary leaves. A yes draws
-   *  tier 1 or 2 inside the window and tier 3 or 4 after it; a no draws tier 1 or 2. Closing the card (✕ or
-   *  Back) cancels: no reward, the chest stays locked, and the Boundary asks again once the player has
-   *  stepped away (more than three blocks) and come back. */
-  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, asked: number, outcome: GuardOutcome) {
+  /** Opens the Sanctuary over the paused world and hands the mouse back to play when it closes. `rate` speeds
+   *  its clock for the debug console only. */
+  openSanctuary(done: (outcome: Outcome) => void, rate = 1) {
+    if (this.hud.sanctuaryOpen) return;
+    this.input.modal = true;
+    this.input.unlockFor();
+    this.hud.sanctuary.show(outcome => {
+      this.input.modal = false;
+      if (this.input.device === 'keyboard') { this.input.release(); this.input.lock(); }
+      else this.input.resume();
+      done(outcome);
+    }, rate, () => this.rng.stream('guard').next());
+  }
+
+  /** The Sanctuary closed. The quick reward draws a tier 1 or 2 practice and a finished meditation a tier 3 or
+   *  4 one: the reward spawns from the chest and the Boundary leaves. Not now gives nothing: the chest stays
+   *  locked, and the Boundary opens the Sanctuary again once the player has stepped away (more than three
+   *  blocks) and come back. An opened chest ignores a second answer, so the reward is given once. */
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome) {
     if (c.opened) return;
     if (outcome === 'cancel') {
       c.refused = true;
-      this.hud.toast('mission.cancelled');
+      this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const [lo, hi] = rewardBand(outcome === 'yes', performance.now() - asked);
-    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, hi])) ?? null;
-    this.openChest(c, 0, def ?? undefined);
+    this.openSanctuaryChest(c, outcome);
     this.releaseBoundary(c.spec.room);
   }
 
-  /** The Boundary of a vault leaves once its mission is answered yes. */
+  private openSanctuaryChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, outcome: Exclude<Outcome, 'cancel'>) {
+    const [lo, hi] = rewardBand(outcome);
+    const maxQuality = c.spec.meditation ? 3 : hi;
+    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, Math.min(hi, maxQuality)])) ?? null;
+    this.openChest(c, 0, def ?? undefined);
+  }
+
+  /** The Boundary of a vault leaves once its chest has opened. */
   private releaseBoundary(room: number) {
     for (const e of [...this.enemies.list]) {
       if (!e.alive || !e.tags.has('boundary') || e.room !== room) continue;
@@ -2907,8 +3024,6 @@ export class Game {
     this.hud.shake(0.08);
     if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
     sfx3.creak();
-    const b = this.player.body;
-    const len = Math.hypot(b.x - cx, b.z - cz) || 1, ax = (b.x - cx) / len, az = (b.z - cz) / len;
     const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
     else if (reward) out.push({ type: 'item', def: reward });
@@ -2930,17 +3045,32 @@ export class Game {
     devlog.line(`chest ${cell(s.x, s.y, s.z)}: opened for ${cost} key(s), contents ${out.map(o => o.type === 'item' ? (o.def?.id ?? 'none') : o.type).join(', ') || 'nothing'}`);
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
-      const dx = ax * Math.cos(spread) - az * Math.sin(spread), dz = az * Math.cos(spread) + ax * Math.sin(spread);
       const p: Pickup = this.pickups.add(o.type, cx, s.y + 1.02, cz, s.room, o.def, 0.6);
       const speed = (o.type === 'item' ? 1.7 : 1.5) / 0.68;
-      this.pickups.launch(p, dx * speed, 6.5, dz * speed);
+      this.ejectReward(p, speed, 6.5, spread);
       this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), o.type === 'item' ? 22 : 10, 2.5, 0.07);
       if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
     } }));
+    // once the last thing has left the mouth the chest is empty: its model and its block go (issue #156)
+    const world = this.world;
+    this.spits.push({ t: Math.max(lead + out.length * 0.16, OPEN_TIME + 0.3), run: () => this.removeChest(c, world) });
+  }
+
+  /**
+   * An opened chest that has dispensed everything leaves its world: its model, and its block (so no collision).
+   * The chest belongs to the dungeon's world, so if a realm swap came first the removal waits in the queue until
+   * the dungeon is current again: clearing the same cell in the sky's world would remove a block that is not the chest's.
+   */
+  private removeChest(c: { spec: ChestSpec; view: ChestView }, world: VoxelSpace) {
+    if (this.world !== world) { this.spits.push({ t: 0.25, run: () => this.removeChest(c, world) }); return; }
+    const s = c.spec;
+    world.set(s.x, s.y, s.z, AIR);
+    this.chestViews.remove(c.view);
   }
 
   private updateSpits(dt: number) {
-    for (const q of this.spits) { q.t -= dt; if (q.t <= 0) q.run(); }
+    // over a snapshot: a run may queue itself again (a removal waiting for its world), and that waits for the next frame
+    for (const q of [...this.spits]) { q.t -= dt; if (q.t <= 0) q.run(); }
     this.spits = this.spits.filter(q => q.t > 0);
   }
 
@@ -3011,14 +3141,18 @@ export class Game {
   }
 
   private updatePresences() {
+    if (this.pendingPresenceOffer) return;
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
-      if (!near) { e.tags.delete('answering'); continue; }
+      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
+      if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
-      const top = this.player.hand.at(-1);
-      if (!unlocksPresence(id, top)) {
+      // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
+      const top = this.player.active;
+      const offer = findPresenceOffer(id, this.player.hand);
+      if (!offer) {
         if (e.tags.has('answering')) continue;
         const now = performance.now();
         if (!e.tags.has('hinted')) {
@@ -3035,35 +3169,56 @@ export class Game {
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
         return;
       }
-      // the offer is accepted: the part leaves the hand (the hand dips, the part's colour leaves with it)
-      const part = this.player.hand.pop();
-      this.hands.placed();
-      const color = typeof part === 'object' && !isFlask(part) ? part.color : pal('bone.dim');
-      const eye = this.player.eye, fwd = this.player.forward;
-      this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
-      e.tags.add('met');
-      if (talk.drops) this.dropListenerReward(e);
-      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-      // a Listener leaves in the frame its drop appears: the release is in the same call, never deferred (#84)
-      if (leavesAfterOffer(id)) this.releaseListener(e);
-      this.hud.presenceCard(talk.name, talk.lines);
+      this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried };
+      this.hud.presenceOfferCard(talk.name, offer.carried);
+      this.input.modal = true;
+      this.input.unlockFor();
       return;
     }
   }
 
-  /** The Listener's reward is always a drop, never a heal: its seeded kind, a runtime count (listenerDrops). Each
-   *  pickup leaves the Listener in its own arc toward the player; hearts wait on the floor until the player is hurt. */
+  private resolvePresenceOffer(accept: boolean) {
+    const pending = this.pendingPresenceOffer;
+    if (!pending) return;
+    this.pendingPresenceOffer = null;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+
+    const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
+    const carried = this.player.hand[pending.index];
+    if (!e?.alive || !e.tags.has('presence') || e.tags.has('met') || carried !== pending.carried || !unlocksPresence(pending.id, carried)) {
+      this.hud.toast('presence.offer.stale');
+      return;
+    }
+    if (!accept) {
+      e.tags.add('offer-declined');
+      sfx.denied();
+      return;
+    }
+
+    this.player.removeAt(pending.index);
+    this.hands.placed();
+    const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
+    const eye = this.player.eye, fwd = this.player.forward;
+    this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
+    const talk = PRESENCE_TALK[pending.id];
+    e.tags.add('met');
+    if (talk.drops) this.dropListenerReward(e);
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    if (leavesAfterOffer(pending.id)) this.releaseListener(e);
+    this.hud.presenceCard(talk.name, talk.lines);
+  }
+
+  /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
   private dropListenerReward(e: Enemy) {
-    const kind = this.rooms.get(e.room)?.presenceDrop;
-    if (!kind) return;
-    const b = this.player.body;
-    const dx = b.x - e.body.x, dz = b.z - e.body.z, base = Math.atan2(dz, dx);
-    const drops = listenerDrops(kind, this.rng.stream('drops'));
-    drops.forEach((k, i) => {
-      const a = base + (i - (drops.length - 1) / 2) * 0.6;
-      const p = this.pickups.add(k, e.body.x, e.body.y + 1.6, e.body.z, e.room, null, 0.3);
-      this.pickups.launch(p, Math.cos(a) * 2.5, 3, Math.sin(a) * 2.5);
-    });
+    const gift = rollListenerGift(this.rng.stream('drops'));
+    const rewards = gift.kind === 'practice'
+      ? [{ type: 'item' as const, item: gift.item }]
+      : gift.hearts.map(heart => ({ type: 'heart' as const, heart }));
+    this.launchGiftPickups(e, rewards);
+    sfx3.reveal();
   }
 
   /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it
@@ -3081,10 +3236,27 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !(e.tags.has('presence') || e.tags.has('boundary'))) continue;
-      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.spec.size[1]) continue;
-      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.spec.size[0] / 2 + b.hw);
+      // the box the presence is hit with, not its birth size (#102)
+      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.body.h) continue;
+      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.body.hw / 2 + b.hw);
       if (at && !boxHits((x, y, z) => this.solid(x, y, z), at.x, b.y, at.z, b.hw, b.h)) { b.x = at.x; b.z = at.z; }
     }
+  }
+
+  /** Makes a carried item the active one (the next use targets it): a sound and a notice; slots out of the hand are ignored. */
+  chooseCarried(slot: number) {
+    const p = this.player;
+    if (slot < 0 || slot >= p.hand.length || slot === p.activeIndex) return;
+    p.select(slot);
+    sfx.select();
+    this.hud.carriedChanged();
+    this.hud.toast('hand.active', { item: this.carriedName(p.active!) });
+  }
+
+  /** The wheel and the D-pad step the active carried item through the hand, wrapping round. */
+  private stepCarried(step: 1 | -1) {
+    const n = this.player.hand.length;
+    if (n > 1) this.chooseCarried((this.player.activeIndex + step + n) % n);
   }
 
   private carriedName(c: Carried): string {
@@ -3230,6 +3402,13 @@ export class Game {
     sfx3.clear();
   }
 
+  /** The boss bar follows the one fight the player is in: the spawned boss of this room, alive, while the player lives. Called every underground frame outside the simulation step, so it also runs under the death screen, a menu, the pause card and the R fade; a death, a reset (which clears bossRooms) or leaving the room hides it, and only a resumed fight shows it again. */
+  private syncBossBar() {
+    const st = [...this.bossRooms.values()].find(s => s.spawned && s.room === this.room);
+    const boss = st && !this.player.dead ? this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room) : undefined;
+    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
+  }
+
   /**
    */
   private updateBossRoom(k: number, st: BossRoom, dt: number) {
@@ -3239,8 +3418,6 @@ export class Game {
       if (st.wake <= 0) { st.spawned = true; this.summonBoss(f, this.rooms.get(st.room)!); }
       return;
     }
-    const boss = this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room);
-    this.hud.bossBar(boss && this.room === st.room ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
     if (!st.defeated || st.open) return;
     const hole = f.hole;
     st.t -= dt;
@@ -3272,9 +3449,8 @@ export class Game {
     const toll = tollOf(k), f = this.floors.get(k), st = this.bossRooms.get(k);
     const p = this.player;
     if (!toll || !f?.hole || !st || p.dead || new Set(ids).size !== ids.length || ids.length !== toll.count) return false;
-    const hearts = heartCount(p.hp, p.layers);
-    const hands: number[] = [], items: string[] = [];
-    let keys = 0, bombs = 0, paid = 0;
+    const hands: number[] = [], items: string[] = [], base: number[] = [], bonus: number[] = [];
+    let keys = 0, bombs = 0;
     for (const id of ids) {
       const [kind, at] = id.split(':'), i = tollIndex(at);
       if (i === null) return false;
@@ -3282,17 +3458,24 @@ export class Game {
       if (kind === 'hand') { if (!(i < p.hand.length)) return false; hands.push(i); }
       else if (kind === 'key') { if (!(i < p.keys)) return false; keys++; }
       else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
-      else if (kind === 'heart') { if (!(i < hearts)) return false; paid++; }
+      else if (kind === 'heart') base.push(i);
+      else if (kind === 'layer') bonus.push(i);
       else if (kind === 'item') { const held = this.inventory.items[i]; if (!held) return false; items.push(held.def.id); }
       else return false;
     }
-    for (const i of hands.sort((a, b) => b - a)) p.hand.splice(i, 1);
+    // every heart is checked before anything is taken: a refused payment spends nothing
+    const plan = heartTollPlan(p.hp, Math.floor(this.stats.get('maxHearts')), p.layers, base, bonus);
+    if (!plan) return false;
+    for (const i of hands.sort((a, b) => b - a)) p.removeAt(i);
     p.keys -= keys;
     p.bombs -= bombs;
     for (const id of items) this.inventory.lose(id);
     if (items.length) this.hud.setItems(this.inventory.items.map(i => i.def));
-    if (paid) { p.invulnT = 0; this.damageActor(p, paid * HEART, 'toll', 'toll', p.id); }
-    if (p.dead) return true;
+    // a base heart takes its capacity and the health it holds; a bonus heart goes whole and leaves base health alone
+    if (base.length) this.stats.add({ stat: 'maxHearts', layer: 'add', value: -base.length, source: 'toll' });
+    p.hp = plan.hp;
+    this.clampHealth();
+    for (const j of [...plan.layers].sort((a, b) => b - a)) this.heartLost(p.layers.splice(j, 1)[0].kind);
     st.open = true;
     openHole(this.dw, f.hole);
     const h = f.hole;
@@ -3357,13 +3540,12 @@ export class Game {
     inp.poll(dt);
     this.deadT = this.player.dead ? this.deadT + dt : 0;
     const playing = inp.playing || this.simulateUnlocked;
-    const ctx = this.player.dead ? 'dead' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen || this.hud.guardOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
+    const ctx = this.player.dead ? 'dead' : this.hud.sanctuaryOpen ? 'meditation' : this.hud.screenOpen ? 'inventory' : this.hud.tollOpen ? 'toll' : !playing ? 'paused' : this.hud.bannerOpen ? 'prompt' : 'play';
     const restartBy = inp.hitBy('restart');
-    const live = ctx === 'play' || ctx === 'prompt';
-    if (restartBy === 'keyboard' ? live || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
+    if (restartBy === 'keyboard' ? ctx === 'play' || ctx === 'dead' : restartBy && (ctx === 'paused' || ctx === 'dead')) this.requestRestart();
     else if (ctx === 'dead' && this.deadT > DEATH_GRACE && inp.hit('confirm')) this.requestRestart();
     if (ctx === 'paused' && (inp.hit('confirm') || (inp.hitBy('pause') ?? 'keyboard') !== 'keyboard')) inp.resume();
-    else if (live && inp.hit('pause')) inp.release();
+    else if (ctx === 'play' && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
       if (this.restartT <= 0) { if (this.sandbox) this.newSandbox(this.sandbox); else this.newRun(); this.revealT = 0; }
@@ -3374,11 +3556,15 @@ export class Game {
     }
     this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
-    if (ctx === 'prompt' && inp.hit('confirm')) {
+    if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
+      const confirmedBy = inp.hitBy('confirm');
+      if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceOffer(true);
+      else if (inp.hit('back')) this.resolvePresenceOffer(false);
+    } else if (ctx === 'prompt' && inp.hit('confirm')) {
       this.hud.dismissBanner();
       inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }
-    if (live || ctx === 'paused' || ctx === 'inventory') {
+    if (ctx === 'play' || ctx === 'paused' || ctx === 'inventory') {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
     }
@@ -3393,6 +3579,8 @@ export class Game {
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
         else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
       }
+      // a number key picks its slot; Enter or A picks the highlighted carried item
+      if (inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -3402,10 +3590,11 @@ export class Game {
         if (inp.hit('confirm')) this.hud.confirmToll(this);
       }
     }
+    if (ctx === 'meditation') this.hud.sanctuary.input(inp, performance.now());
     this.touch.update(this, ctx);
-    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.guardOpen && !this.transitioning;
+    const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
-    if (running && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
+    if (running && !this.hud.presenceOfferOpen && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
     if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
@@ -3445,13 +3634,17 @@ export class Game {
 
     this.camera.getWorldDirection(this.camDir);
     spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
-    this.renderer.clear();
-    this.renderer.render(this.scene, this.camera);
-    this.renderer.clearDepth();
-    this.renderer.render(this.hands.scene, this.hands.camera);
+    // the Sanctuary covers the whole screen: the world under it is not drawn while it does
+    if (!this.hud.sanctuary.covering) {
+      this.renderer.clear();
+      this.renderer.render(this.scene, this.camera);
+      this.renderer.clearDepth();
+      this.renderer.render(this.hands.scene, this.hands.camera);
+    }
 
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
+    if (this.below) this.syncBossBar();
     this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }
@@ -3485,6 +3678,10 @@ export class Game {
     if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
+    if (inp.hit('previous')) this.stepCarried(-1);
+    if (inp.hit('next')) this.stepCarried(1);
+    // a number key, or a tap on a slot of the hand (touch), makes that carried item the active one
+    if (inp.hit('pick')) this.chooseCarried(inp.digit() >= 0 ? inp.digit() : inp.hitBy('pick') === 'touch' ? inp.touchSlot : -1);
     if (below) this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);
@@ -3519,8 +3716,9 @@ export class Game {
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
-    const hand = this.player.hand;
-    this.hands.update(dt, this.player.walkPhase, hand.at(-1) ?? 0, hand.at(-2) ?? 0);
+    // the active item is the one in the right hand; the item under the choice goes in the other
+    const p = this.player, active = p.activeIndex;
+    this.hands.update(dt, p.walkPhase, p.active ?? 0, p.hand.filter((_, i) => i !== active).at(-1) ?? 0);
   }
 
   requestRestart() {
@@ -3531,7 +3729,9 @@ export class Game {
   }
 
   act(act: string) {
-    if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
+    if (act === 'presence-offer-accept') this.resolvePresenceOffer(true);
+    else if (act === 'presence-offer-decline') this.resolvePresenceOffer(false);
+    else if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
     else if (act === 'resume' && !this.player.dead) {
       if (this.hud.screenOpen) this.hud.closeScreen(this);
       else this.input.resume();

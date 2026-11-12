@@ -11,6 +11,7 @@ import { SKY_KOALA_PALETTE } from './palette/sky-koala';
 import { SKY_LION_PALETTE } from './palette/sky-lion';
 import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
+import { MEDITATION_PALETTE } from './palette/meditation';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -48,6 +49,9 @@ export const PALETTE = {
   // cold and from Emotion; stone is a warm grey for gold cracks; blood is a crimson under life.heart;
   // the berserker's ember burns inside an obsidian shell. The star heart is the light's own ramp.
   'heart.blue.base': '#4E4CFF', 'heart.blue.dark': '#1D1A80',
+  // The black heart (issue #154): soot-black, a violet-tinged ink that stays off the cold ramp and off
+  // the obsidian of the berserker heart; its paper glint keeps the outline readable on the dark HUD.
+  'heart.black.base': '#3A3442', 'heart.black.dark': '#16131C',
   'heart.stone.dark': '#48433D', 'heart.stone.base': '#6E6860', 'heart.stone.hi': '#968E83',
   'heart.blood.base': '#9B1236',
   'heart.berserker.ember': '#FF8C1A',
@@ -152,6 +156,9 @@ export const PALETTE = {
   ...SKY_ELEPHANT_PALETTE,
   ...SKY_LION_PALETTE,
   ...SKY_HORSE_PALETTE,
+
+  // The Sanctuary, the Boundary's meditation app: its own namespace (DECISIONS §10.8).
+  ...MEDITATION_PALETTE,
 } as const;
 
 export type PalToken = keyof typeof PALETTE;

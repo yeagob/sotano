@@ -2,7 +2,7 @@
 
 # The Trickster
 
-Status: **decided** (the owner approved the Trickster's deals on 2026-10-27; the deals' costs are still to be set).
+Status: **decided**, not implemented or placed (the owner approved the Trickster's deals on 2026-10-27; the deals' costs are still to be set).
 
 A messenger of the trickster archetype: the shortcut that teaches. It can be met from floor 3, in a dead-end room. It offers a deal with a plain cost, and it says the cost plainly. The player may decline; then it laughs and is gone.
 

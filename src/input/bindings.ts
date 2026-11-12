@@ -1,11 +1,11 @@
 export type Device = 'keyboard' | 'gamepad' | 'touch';
 export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 
-export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll';
+export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll' | 'meditation';
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back';
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -24,7 +24,7 @@ export interface Binding {
   action: Action;
   kind: 'axis' | 'hold' | 'press';
   when: readonly Context[];
-  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; when?: readonly Context[] };
+  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; when?: readonly Context[] };
   gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; when?: readonly Context[] };
   touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
   refs: { minecraft: string; noita: string; isaac: string };
@@ -99,6 +99,27 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'the bumpers cycle the hotbar (what the next use does)', noita: 'the shoulders and the wheel switch the active wand', isaac: 'one button swaps the pocket slot' },
   },
   {
+    action: 'previous', kind: 'press', when: ['play'],
+    keyboard: { wheel: -1 },
+    gamepad: { buttons: [PAD.LEFT] },
+    touch: { control: 'none' },
+    refs: { minecraft: 'the scroll wheel moves the hotbar back; the bumpers cycle it on a controller', noita: 'the mouse wheel switches the active wand', isaac: 'the active item has its own button; there is no hand to scroll' },
+  },
+  {
+    action: 'next', kind: 'press', when: ['play'],
+    keyboard: { wheel: 1 },
+    gamepad: { buttons: [PAD.RIGHT] },
+    touch: { control: 'none' },
+    refs: { minecraft: 'the scroll wheel moves the hotbar forward; the bumpers cycle it on a controller', noita: 'the mouse wheel switches the active wand', isaac: 'the active item has its own button; there is no hand to scroll' },
+  },
+  {
+    action: 'pick', kind: 'press', when: ['play', 'inventory'],
+    keyboard: { keys: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Enter'] },
+    gamepad: { buttons: [PAD.A], when: ['inventory'] },
+    touch: { control: 'tap', when: ['play', 'inventory'] },
+    refs: { minecraft: 'the number keys pick a hotbar slot; a click on the hotbar or the inventory picks the item', noita: 'the number keys pick a wand slot', isaac: 'one item, one button: a slot is chosen by its own number' },
+  },
+  {
     action: 'inventory', kind: 'press', when: ['play', 'paused', 'inventory'],
     keyboard: { keys: ['Tab', 'KeyI'] },
     gamepad: { buttons: [PAD.Y] },
@@ -120,25 +141,46 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'respawn from the death screen', noita: 'new game from the pause menu', isaac: 'hold R to restart; on a pad, restart from the pause menu' },
   },
   {
-    action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll'],
+    action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll', 'meditation'],
     keyboard: { keys: ['Enter'], mouse: [0, 1, 2] },
     gamepad: { buttons: [PAD.A] },
     touch: { control: 'tap' },
     refs: { minecraft: 'click / A accepts', noita: 'click / A continues', isaac: 'any shot key / A dismisses and continues' },
   },
   {
-    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused'],
+    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused', 'meditation'],
     keyboard: { keys: Object.values(NAV_KEYS).flat() },
     gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },
     refs: { minecraft: 'the d-pad moves between slots; left and right move an options slider', noita: 'the d-pad moves between slots and options', isaac: 'the d-pad moves the selection; left and right change an option' },
   },
   {
-    action: 'back', kind: 'press', when: ['inventory', 'toll'],
-    keyboard: { keys: ['Escape'] },
-    gamepad: { buttons: [PAD.B] },
+    action: 'back', kind: 'press', when: ['inventory', 'toll', 'meditation'],
+    keyboard: { keys: ['Escape'], when: ['inventory', 'toll', 'meditation', 'prompt'] },
+    gamepad: { buttons: [PAD.B], when: ['inventory', 'toll', 'meditation', 'prompt'] },
     touch: { control: 'menuButton' },
     refs: { minecraft: 'Esc / B closes a screen', noita: 'Esc / B closes a screen', isaac: 'Esc / B closes a screen' },
+  },
+  {
+    action: 'skip', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyN'] },
+    gamepad: { buttons: [PAD.RB] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'the right bumper moves to the next slot or tab', noita: 'the right shoulder moves to the next wand', isaac: 'one button per thing: the next card or pill has its own' },
+  },
+  {
+    action: 'mute', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyM'] },
+    gamepad: { buttons: [PAD.X] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'sound is a switch in the options screen', noita: 'sound is a switch in the options screen', isaac: 'M mutes the music' },
+  },
+  {
+    action: 'calm', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyC'] },
+    gamepad: { buttons: [PAD.Y] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'screen shake is a switch in the options', isaac: 'Y opens what the screen offers beside the main choice' },
   },
 ];
 
@@ -147,7 +189,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'inventory', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {
@@ -161,6 +203,8 @@ export const PAD_WAKE = 0.5;
 /** Two presses of the fire control closer than this are a double tap: with the `missile` stat,
  *  the second press launches a bomb instead of an intention (Dr. Launcher). Every device. */
 export const DOUBLE_TAP_MS = 300;
+/** A wheel step is taken at most once in this many milliseconds (a free-spinning wheel sends many events). */
+export const WHEEL_STEP_MS = 150;
 /** A touch shorter than this, that does not drag, is a tap. */
 export const TAP_MS = 250;
 /** How far a tap may wander, in pixels, before it counts as a drag. */

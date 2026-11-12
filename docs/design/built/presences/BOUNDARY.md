@@ -2,7 +2,7 @@
 
 # The Boundary
 
-Built. One per vault of a dungeon floor, from floor 1 on, except the tutorial floor. Code: `src/content/presences/boundary.ts`, placed in `src/world/floor.ts`.
+Built. One per vault of a dungeon floor from floor 1 on, and above the tutorial treasure chest. Code: `src/content/presences/boundary.ts`; vault and tutorial placement in `src/world/floor.ts` and `src/game/game.ts`.
 
 The Boundary is a tall, calm column of limestone that keeps the vault it stands in. Its sanctuary is a ring of pedestal blocks two blocks around its centre. It never moves. Breaking the ring wakes it, and it throws cubes at the player while the player stays in its room. It cannot be hurt, only calmed.
 
@@ -16,7 +16,8 @@ The Boundary is a tall, calm column of limestone that keeps the vault it stands 
 - **Wake.** Breaking any block of its ring, while the player is inside its room, turns it hostile. About every 2.4 seconds it throws a cube at the player.
 - **Calm again.** Putting the ring back, or leaving its room, makes it neutral again. A room is never sealed by it, since a vault holds no roster.
 
-- **Guard.** It keeps the vault chest: that chest opens for a real-world mission, not for keys. The mission card has a close ✕ that cancels (no reward, the chest stays locked, it asks again later), and the breath mission can run as a guided 30-second countdown. See [GUARD-MISSIONS.md](GUARD-MISSIONS.md).
+- **Guard.** It keeps the vault chest: that chest opens through the Sanctuary, the meditation app the Boundary opens when the player walks up to it, not for keys. The player takes a quick reward at once or meditates for the better one; the ✕ on its first screen means not now (no reward, the chest stays locked, it opens again later). See [MEDITATION-APP.md](MEDITATION-APP.md).
+- **Tutorial.** The same Boundary stands directly above the unlocked treasure chest in the Roots. It has no ring there; approaching the chest opens the Sanctuary, and the Boundary dissolves when the chest opens.
 
 ## Open questions
 

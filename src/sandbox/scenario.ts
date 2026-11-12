@@ -13,6 +13,8 @@ import { ROOM_H, ROOM_TEMPLATES, type CeilingShape, type RoomTemplate, type Temp
 import type { RoomMood } from '../content/tables/rooms';
 import { ENEMY_BY_ID } from '../content/enemies';
 import { CREATURE_BY_ID } from '../content/creatures';
+import { PART_BY_ID } from '../content/parts';
+import { PRESENCE_BY_ID } from '../content/presences';
 import type { RunRandom } from '../core/rng';
 import { carveInterior, cellOf, floorY, GRID, roomGid, roomOrigin, type FloorResult, type RoomInfo } from '../world/floor';
 import type { FloorPlan } from '../world/floorplan';
@@ -70,6 +72,7 @@ export interface Scenario {
   /** What a pedestal (T) holds. */
   pedestal?: string;
   items?: string[];
+  /** Materials or part ids (for example `doubt.heart`) carried in the starting hand. */
   hand?: string[];
   enemies?: { def: string; at: Vec3; faction?: 'projection' | 'self' }[];
   /** Where the player stands (room-local). Default: the template's P, else the centre. */
@@ -114,19 +117,27 @@ export function validateScenario(s: Scenario): string[] {
   }
   if (s.height !== undefined && (s.height < 3 || s.height > 8)) errs.push(`${s.id}: height ${s.height} outside 3…8`);
   mats(s.shell ? [s.shell] : [], 'shell');
-  mats(s.hand, 'hand');
+  for (const id of s.hand ?? []) if (MAT[id] === undefined && !PART_BY_ID.has(id)) errs.push(`${s.id}: unknown hand object "${id}"`);
   const places = [...(s.place ?? []), ...(s.actions ?? []).filter((a): a is Action & Placement => !('do' in a))];
   mats(places.flatMap(p => 'block' in p ? [p.block] : []), 'place');
   for (const a of s.actions ?? []) if ('do' in a) {
     if ((a.do === 'cube') && MAT[a.block] === undefined) errs.push(`${s.id}: unknown block "${a.block}" at t ${a.t}`);
-    if (a.do === 'hand') mats(a.blocks, `hand at t ${a.t}`);
+    if (a.do === 'hand') for (const id of a.blocks) if (MAT[id] === undefined && !PART_BY_ID.has(id)) errs.push(`${s.id}: unknown hand object "${id}" at t ${a.t}`);
     if ((a.do === 'give' || a.do === 'lose') && !ITEM_BY_ID.has(a.item)) errs.push(`${s.id}: unknown item "${a.item}" at t ${a.t}`);
-    if (a.do === 'spawn' && !ENEMY_BY_ID.has(a.def) && !CREATURE_BY_ID.has(a.def)) errs.push(`${s.id}: unknown projection "${a.def}" at t ${a.t}`);
+    if (a.do === 'spawn' && !ENEMY_BY_ID.has(a.def) && !CREATURE_BY_ID.has(a.def) && !PRESENCE_BY_ID.has(a.def)) errs.push(`${s.id}: unknown projection "${a.def}" at t ${a.t}`);
   }
   for (const id of s.items ?? []) if (!ITEM_BY_ID.has(id)) errs.push(`${s.id}: unknown item "${id}"`);
   if (s.pedestal && !ITEM_BY_ID.has(s.pedestal)) errs.push(`${s.id}: unknown pedestal item "${s.pedestal}"`);
-  for (const e of s.enemies ?? []) if (!ENEMY_BY_ID.has(e.def) && !CREATURE_BY_ID.has(e.def)) errs.push(`${s.id}: unknown projection "${e.def}"`);
+  for (const e of s.enemies ?? []) if (!ENEMY_BY_ID.has(e.def) && !CREATURE_BY_ID.has(e.def) && !PRESENCE_BY_ID.has(e.def)) errs.push(`${s.id}: unknown projection "${e.def}"`);
   return errs;
+}
+
+export function carriedFromId(id: string) {
+  const block = MAT[id];
+  if (block !== undefined) return block;
+  const part = PART_BY_ID.get(id);
+  if (!part) throw new Error(`sandbox: unknown hand object "${id}"`);
+  return part;
 }
 
 /** The template a scenario carves: its own rows, or a catalogue template with overrides. */

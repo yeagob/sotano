@@ -5,8 +5,54 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ## Unreleased
 
 ### Added
+- On a phone, a fullscreen button sits in the top bar whenever the game is not fullscreen, so you can return to fullscreen after leaving it; if the browser cannot or will not go fullscreen, a short notice says so (#161).
+- A black heart: one more heart after the containers, even at full health, lost for good once spent, rarer than the blue heart (#154).
+- A successful brew at the alembic names the potion it made in its notice, in English and Spanish, with the drink key (#158).
+
+### Changed
+- At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
+- A blood heart taken at full health opens one more heart container and fills it at once, instead of doing nothing; below full health it still heals over time (#146).
+- Starting reach is 4 blocks, 20% less than before; Self-Efficacy, Second Brain, Grounding and Kaizen each add 1 block of reach (#162).
+- The mobile drink button appears only while a flask is on top of your hand, drawn as that potion in its liquid colour in the right-thumb column above throw, and is hidden the moment the flask is drunk or put away (#159).
+- Every reward is ejected away from the player instead of landing toward them, and an emptied chest disappears once it has given its reward, whether or not you collect it (#156).
+- A grown friendly creature that is not an enemy shrinks one step under a warm negative shot, never below its birth size, and its one-time 7.5% growth gift applies on any floor (#102)
 
 ### Fixed
+- The boss health bar hides when you die, reset with R or respawn, and shows again only when the boss fight resumes (#163).
+
+## 0.2.3.f1 · 2026-11-11
+
+### Fixed
+- The Listener now searches carried items from the interaction item down, asks before taking the first monster heart, and leaves it and all other objects untouched if the offer is declined (#150).
+
+## 0.2.3 · 2026-11-10
+
+### Added
+- The Boundary opens the Sanctuary above the Roots tutorial treasure chest as well as in vaults. Take a quick reward at once (a tier 1 or 2 practice), or sit through one of six guided meditations for a seeded duration of 20 to 40 seconds to earn a better practice (tier 3 or 4). Leaving early gives the quick reward and never a penalty; sound and calm visuals are switches inside the app (#35, #140).
+- The Listener always gives a reward when offered a monster heart: a 15% chance of a health-raising practice, a 75% chance of special hearts (usually one, rarely two different kinds), or a 10% chance of two red hearts. A friendly Roots creature that reaches maximum size has its own one-time 15% chance to give a special heart (#141).
+
+### Fixed
+- A meditation no longer runs out while the game is in a hidden tab: time spent away is not counted, so a sitting always takes the time it says (#35).
+
+## 0.2.2.f2 · 2026-11-10
+
+### Fixed
+- Sanctuary sittings now last a random 20–40 seconds, and each part shows one randomly chosen guidance phrase for up to six seconds before quiet time.
+
+## 0.2.2.f1 · 2026-11-10
+
+### Fixed
+- Meditation sittings in the Sanctuary last 20, 30 or 40 seconds instead of minutes (#35).
+- A meditation no longer runs out while the game is in a hidden tab: time spent away is not counted, so a sitting always takes the time it says (#35).
+
+## 0.2.2 · 2026-11-10
+
+### Added
+- The Boundary opens the Sanctuary: a meditation app inside the game, with its own look, music and sounds. Take a quick reward at once (a tier 1 or 2 practice), or sit through a guided meditation of 20, 30 or 40 minutes for the better one (tier 3 or 4). Six meditations: Grounding, Gratitude, Visualization, Box Breathing, Self-Compassion and Listening to the River. Leaving early gives the quick reward and never a penalty; sound and calm visuals are switches inside the app. It replaces the Boundary's real-world missions (#35).
+- The giant tree has its own leaf, branch and bark textures, and its bark changes with height so no two parts of the trunk look the same (#130).
+
+### Changed
+- Every boss on floor 0 and below now fights in a large room, and floors 6 to 9 have a new two-cell boss room, the caldera hall (#133).
 
 ## 0.2.1 · 2026-11-08
 

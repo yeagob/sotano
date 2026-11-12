@@ -74,6 +74,8 @@ async function boot() {
     tp: (x: number, y: number, z: number) => game.player.spawnAt(x, y, z),
     debug: (on = true) => { game.hud.showDebug = on; },
     trace: (on = true) => { game.bus.trace = on; },
+    /** Opens the Sanctuary without a Boundary, to review it: S.sanctuary(60) runs its clock 60 times faster. */
+    sanctuary: (rate = 1) => game.openSanctuary(o => console.log(`sanctuary: ${o}`), rate),
     /** Switch language without saving the choice ('en', 'es'). */
     lang: (code: string) => setLocale(code),
     /** The sandbox's console (only with ?sandbox): S.sb.help(). */

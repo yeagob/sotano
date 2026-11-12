@@ -21,6 +21,14 @@ export function unlocksPresence(id: PresenceId, carried: Carried | undefined): b
   return typeof carried === 'object' && !isFlask(carried) && carried.kind === PRESENCE_KEY[id];
 }
 
+export function findPresenceOffer(id: PresenceId, hand: readonly Carried[]): { index: number; carried: Carried } | undefined {
+  for (let index = hand.length - 1; index >= 0; index--) {
+    const carried = hand[index];
+    if (carried !== undefined && unlocksPresence(id, carried)) return { index, carried };
+  }
+  return undefined;
+}
+
 export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readonly MessageKey[]; silent: MessageKey; hint: MessageKey; drops: boolean }> = {
   gardener: { name: 'presence.gardener.name', lines: ['presence.gardener.1', 'presence.gardener.2'], silent: 'presence.gardener.silent', hint: 'presence.gardener.hint', drops: false },
   listener: { name: 'presence.listener.name', lines: ['presence.listener.1', 'presence.listener.2'], silent: 'presence.listener.silent', hint: 'presence.listener.hint', drops: true },
@@ -30,21 +38,6 @@ export const PRESENCE_TALK: Record<PresenceId, { name: MessageKey; lines: readon
  *  silence goes with it (docs/design/built/presences/LISTENER.md). */
 export function leavesAfterOffer(id: PresenceId): boolean {
   return PRESENCE_TALK[id].drops;
-}
-
-/** What a Listener drops. Its kind is part of the floor's structure (drawn from the seed when the floor is built). */
-export const LISTENER_DROPS = ['heart', 'bomb', 'key'] as const;
-export type ListenerDrop = (typeof LISTENER_DROPS)[number];
-
-/** The weights of a Listener's drop, as data so the owner can tune them (#77). Kind: heart 40%, bomb 35%, key 25%.
- *  Count: one 50%, two 35%, three 15%. */
-export const LISTENER_KIND_WEIGHTS: readonly (readonly [ListenerDrop, number])[] = [['heart', 40], ['bomb', 35], ['key', 25]];
-export const LISTENER_COUNT_WEIGHTS: readonly (readonly [number, number])[] = [[1, 50], [2, 35], [3, 15]];
-
-/** How many of its kind a Listener drops for one accepted part. The count is a runtime outcome: it is drawn from
- *  the drops stream when the part is accepted, never healed. */
-export function listenerDrops(kind: ListenerDrop, rng: Rng): ListenerDrop[] {
-  return Array.from({ length: rng.weighted(LISTENER_COUNT_WEIGHTS) }, () => kind);
 }
 
 export const TALK_REACH = 2.2;
@@ -70,9 +63,9 @@ export function presenceReaction(polarity: 'positive' | 'negative', distance: nu
   return distance < LIFT_REACH ? 'lift' : null;
 }
 
-interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence; presenceDrop?: ListenerDrop }
+interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 
-/** One Listener per Tree floor, in a quiet normal room. Its drop kind is drawn from the same floor fork, after the room. */
+/** One Listener per Tree floor, in a quiet normal room. */
 export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): void {
   if (floor === 0 || level(floor).kind !== 'tree') return;
   const normal = rooms.filter(r => r.type === 'normal');
@@ -81,5 +74,4 @@ export function placePresences(rooms: PlacedRoom[], floor: number, rng: Rng): vo
   const room = rng.pick(quiet.length ? quiet : normal);
   room.enemies = [];
   room.presence = 'listener';
-  room.presenceDrop = rng.weighted(LISTENER_KIND_WEIGHTS);
 }

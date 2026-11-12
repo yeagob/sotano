@@ -96,15 +96,19 @@ Three complete schemes; the game follows whichever device you used last (details
 | Switch between good and bad intentions: good ones heal and turn projections into allies; bad ones break and destroy, and harm your allies too | **F** | **LB** | A half turn of the phone (180 degrees), like a steering wheel |
 | Pick up a block or a part | Walk over it with room in your hand | same | same |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
-| Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
-| Throw the top block or part | **Q** | **B** | The flying block |
+| Place the active block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
+| Throw the active block or part | **Q** | **B** | The flying block |
+| Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap a slot of your hand (or an item in the inventory) |
 | Drop a bomb | **E** | **RB** | The seed |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
+| Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |
 | Field of view (on the menu) | **← →**, or drag the bar or click − and + | D-pad **← →** | Drag the bar, or tap − and + |
 | New run | **R** | **View** (paused or dead) | "New run" on the landing and the pause card |
+
+The Sanctuary, the meditation app a Boundary opens, has its own keys: arrows or the d-pad to choose, Enter or A to confirm (and to pause a sitting), N or RB for the next part, M or X for sound, C or Y for calm visuals, Esc or B to go back or leave. On a phone everything is a button.
 
 Language: English or Spanish, picked from your browser. Switch it on the menu (it's remembered) or with `?lang=es` in the URL.
 

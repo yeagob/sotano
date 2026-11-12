@@ -16,11 +16,13 @@ The desktop scheme. Part of [Input](README.md).
 | drink | G |
 | bomb | E |
 | polarity | F |
+| choose the active carried item (the next place, throw, drink or feed uses it) | mouse wheel up (previous) and down (next); the number keys 1 to 9 pick a slot; in the inventory, Enter picks the highlighted item |
 | inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |
 | pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
 | field of view (on the menu) | the left and right arrows, or the mouse on the bar or on − and + |
 | restart | R, while playing or dead |
-| confirm | any mouse button while captured, or Enter |
+| confirm | any mouse button while captured, or Enter; accepts a Presence offer |
+| back | Esc; declines a Presence offer |
 
 References: Minecraft (WASD, left click to break, right click to place, Q to drop, E for the inventory), Noita (the mouse aims, Tab opens the inventory and pauses), Isaac (E drops a bomb, R restarts, Tab shows your items).
 
@@ -35,3 +37,7 @@ Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cu
 - Key repeat never creates a new press (`KeyboardEvent.repeat` is ignored), so holding Tab or E across a lock change does nothing twice.
 - `move` and `navigate` read `MOVE_KEYS` and `NAV_KEYS` from `bindings.ts`, the same lists the table declares.
 - F3 toggles the debug readout (developers only, not an action).
+
+## The Sanctuary (context `meditation`)
+
+The Boundary's meditation app takes the arrow keys (move between the choices), Enter or a click (choose; in a sitting, pause and resume), N (next part), M (sound on or off), C (calm visuals on or off) and Esc (one screen back; not now on the first screen; the leave sheet in a sitting). The mouse is free while it is open and a click never captures it. Hovering a choice selects it.

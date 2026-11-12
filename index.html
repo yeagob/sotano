@@ -119,6 +119,7 @@
     #hearts.low > .heart:last-child { animation: beat .9s ease-in-out infinite; }
     .heart.layer { background-image: none; }
     .heart.full.k-blue { background-image: var(--ico-heartBlue); }
+    .heart.full.k-black { background-image: var(--ico-heartBlack); }
     .heart.full.k-stone { background-image: var(--ico-heartStone); }
     .heart.full.k-berserker { background-image: var(--ico-heartBerserker); }
     #hearts.star > .heart { outline: 1px solid var(--star-glow); filter: drop-shadow(0 0 3px var(--star-glow)); }
@@ -148,8 +149,11 @@
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
-    .slot.top { box-shadow: inset 0 0 0 2px var(--ui-text); }
+    .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
     .slot img { width: 100%; height: 100%; display: block; }
+    #inventory .hand-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    #inventory .hand-row .slot { cursor: pointer; }
+    #inventory .hand-row .slot.sel { outline: 2px solid var(--ui-text); outline-offset: 2px; }
 
     /* minimap top-right (the right hand used to cover it), floor label underneath */
     #corner { position: fixed; right: 12px; top: 10px; text-align: right; pointer-events: none; }
@@ -174,6 +178,20 @@
     #banner i.up { color: var(--ui-up); } #banner i.down { color: var(--ui-down); } #banner i.syn { color: var(--ui-gold); }
     .q { font-style: normal; letter-spacing: 1px; font-size: 15px; color: var(--ui-gold); }
     .q4 { text-shadow: 0 0 6px var(--ui-gold); }
+    #banner[data-offer="true"] { width: min(440px, calc(100vw - 24px)); max-width: min(440px, calc(100vw - 24px)); pointer-events: auto; }
+    #banner .offer-question, #banner .offer-controls { visibility: hidden; }
+    #banner[data-offer="true"] .offer-question, #banner[data-offer="true"] .offer-controls { visibility: visible; }
+    #banner .offer-question { margin: 0; font-size: 16px; line-height: 1.4; color: var(--ui-text); }
+    #banner .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; visibility: hidden; pointer-events: none; }
+    #banner[data-offer="true"] .offer-actions { visibility: visible; pointer-events: auto; }
+    #banner .offer-actions button { flex: 1 1 0; min-width: 44px; min-height: 48px; padding: 8px 12px; font: inherit; font-weight: bold;
+      color: var(--ui-text); background: var(--ui-line); border: 0; cursor: pointer; pointer-events: none; touch-action: manipulation;
+      box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #banner[data-offer="true"] .offer-actions button { pointer-events: auto; }
+    #banner .offer-actions .offer-accept { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #banner .offer-actions button:hover { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #banner .offer-actions button:focus-visible { outline: 2px solid var(--ui-text); outline-offset: 2px; }
+    #banner .offer-controls { display: block; margin-top: 8px; font-size: 14px; line-height: 1.4; color: var(--ui-faded); }
 
     /* screen effects, gentle (§10.4): item flash peak .45 over .5 s; hurt vignette life.dark peak .35 over .4 s */
     #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 45%, var(--c) 0%, transparent 70%); }
@@ -271,6 +289,7 @@
     #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
     #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); }
     #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
+    #inventory .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory .tile img { width: 42px; height: 42px; }
     #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: normal; hyphens: auto; font-size: 14px; line-height: 1.3; color: var(--ui-text); }
     #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
@@ -331,8 +350,16 @@
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
+    /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
+    .tb[hidden] { display: none; }
+    .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41.5vmin); width: 13vmin; height: 13vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
     .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
     .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
+    /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
+    #fullscreen { --glyph: none; right: calc(12px + 130px + 8px + 11vmin + 8px + env(safe-area-inset-right)); z-index: 61;
+      display: flex; align-items: center; justify-content: center; color: var(--ui-text); }
+    #fullscreen[hidden] { display: none; }
+    #fullscreen svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: square; }
     #death .go { font: inherit; font-weight: bold; color: var(--ui-gold); background: var(--ui-line); border: 0; padding: 8px 18px; margin-top: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory header .close { margin-left: 10px; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
@@ -356,17 +383,87 @@
     #toll .tile.go { width: auto; min-width: 120px; padding: 8px 14px; }
     #toll .tile.go.off { opacity: .5; }
     #toll .tile.go .lbl { width: auto; }
-    /* the Boundary's mission card: a close ✕ that cancels, and the guided breath (countdown, step, breath circle) */
-    #toll .guard header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    #toll .guard header .close { flex: 0 0 auto; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
-    #toll .guard header .close:hover, #toll .guard header .close:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-text); outline: none; }
-    #toll .guide { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 10px 0 4px; }
-    #toll .guide .breath { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
-    #toll .guide .breath i { --s: .55; width: 120px; height: 120px; border-radius: 50%; box-shadow: inset 0 0 0 3px var(--ui-gold); background: color-mix(in srgb, var(--ui-gold) 12%, transparent); transform: scale(var(--s)); }
-    #toll .guide .clock { font-size: 40px; letter-spacing: 2px; color: var(--ui-text); font-variant-numeric: tabular-nums; }
-    #toll .guide .step { margin: 0; min-height: 2.6em; text-align: center; font-size: 20px; color: var(--ui-text); }
-    #toll .guide .bar { width: 100%; height: 4px; background: var(--ui-line); }
-    #toll .guide .bar i { display: block; height: 100%; width: 0; background: var(--ui-gold); }
+    /* the Sanctuary, the Boundary's meditation app: its own look on purpose (docs/art/DECISIONS.md 10.8):
+       round, soft, light type; colours only from the med.* tokens, written as --m-* by the view */
+    #sanctuary { position: fixed; inset: 0; z-index: 40; display: none; opacity: 0; transition: opacity .7s ease; color: var(--m-ink);
+      font: 300 16px/1.5 "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif; -webkit-tap-highlight-color: transparent; }
+    #sanctuary.on { display: block; }
+    #sanctuary.show { opacity: 1; }
+    #sanctuary canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: auto; background: var(--m-deep); }
+    #sanctuary .veil { position: absolute; inset: 0; background: var(--m-deep); opacity: 0; transition: opacity .8s ease; pointer-events: none; }
+    #sanctuary[data-screen="library"] .veil { opacity: .5; }
+    #sanctuary[data-screen="leave"] .veil { opacity: .66; }
+    #sanctuary .ui { position: absolute; inset: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: clamp(8px, 2.2vh, 20px); padding: max(14px, 3vh) max(16px, 4vw); text-align: center; overflow: auto;
+      text-shadow: 0 1px 14px var(--m-deep), 0 0 3px var(--m-deep); }
+    #sanctuary button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-shadow: inherit; }
+    #sanctuary h1 { margin: 0; font-weight: 200; font-size: clamp(30px, 7vh, 54px); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; line-height: 1.15; }
+    #sanctuary h2 { margin: 0; font-weight: 200; font-size: clamp(24px, 5.4vh, 38px); letter-spacing: .08em; line-height: 1.2; }
+    #sanctuary p { margin: 0; }
+    #sanctuary .lead { max-width: 34em; font-size: clamp(15px, 2.6vh, 18px); color: var(--m-ink); }
+    #sanctuary .over { font-size: 14px; letter-spacing: .28em; text-transform: uppercase; color: var(--m-dim); }
+    #sanctuary .note, #sanctuary .hint { max-width: 40em; font-size: 14px; color: var(--m-dim); }
+    #sanctuary .mark { width: clamp(34px, 8vh, 56px); height: clamp(34px, 8vh, 56px); border-radius: 50%; box-sizing: border-box;
+      border: 2px solid var(--m-glow); border-bottom-color: transparent; box-shadow: 0 0 26px color-mix(in srgb, var(--m-glow) 35%, transparent); }
+    #sanctuary .x { position: absolute; top: max(12px, 2.4vh); right: max(12px, 2.4vw); width: 44px; height: 44px; border-radius: 50%; font-size: 18px;
+      background: color-mix(in srgb, var(--m-ink) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-ink) 28%, transparent); }
+    #sanctuary .x:hover { box-shadow: inset 0 0 0 2px var(--m-glow); }
+    #sanctuary .tile { border-radius: 24px; background: color-mix(in srgb, var(--m-deep) 46%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-ink) 26%, transparent); transition: background .3s ease, box-shadow .3s ease, transform .3s ease; }
+    #sanctuary .tile.cur { background: color-mix(in srgb, var(--m-glow) 20%, color-mix(in srgb, var(--m-deep) 50%, transparent));
+      box-shadow: inset 0 0 0 2px var(--m-glow), 0 0 30px color-mix(in srgb, var(--m-glow) 28%, transparent); transform: translateY(-2px); }
+    #sanctuary .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+    #sanctuary .choice { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 64px; padding: 12px 26px; width: min(320px, 86vw); }
+    #sanctuary .choice b { font-weight: 400; font-size: 19px; letter-spacing: .04em; }
+    #sanctuary .choice span { font-size: 14px; color: var(--m-dim); }
+    #sanctuary .switches { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    #sanctuary .sw { min-height: 40px; padding: 6px 18px; border-radius: 999px; font-size: 14px; letter-spacing: .04em;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-ink) 26%, transparent); }
+    #sanctuary .sw.set { box-shadow: inset 0 0 0 1px var(--m-accent); color: var(--m-accent); }
+    #sanctuary .library { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(940px, 100%); }
+    #sanctuary .card { display: grid; grid-template-columns: 46px 1fr; grid-template-areas: "s b" "s t" "s e"; column-gap: 14px; align-items: center; text-align: left; padding: 14px 18px; min-height: 96px; }
+    #sanctuary .card .swatch { grid-area: s; width: 46px; height: 46px; border-radius: 50%;
+      background: radial-gradient(circle at 50% 42%, var(--s-glow) 0 14%, var(--s-accent) 30%, var(--s-mid) 62%, var(--s-high) 100%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-ink) 30%, transparent); }
+    #sanctuary .card b { grid-area: b; font-weight: 400; font-size: 18px; line-height: 1.25; }
+    #sanctuary .card span { grid-area: t; font-size: 14px; line-height: 1.35; color: var(--m-ink); }
+    #sanctuary .card em { grid-area: e; font-style: normal; font-size: 14px; letter-spacing: .16em; text-transform: uppercase; color: var(--m-dim); }
+    #sanctuary[data-screen="session"] .ui { justify-content: space-between; }
+    #sanctuary .top { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    #sanctuary .clock { font-weight: 200; font-size: clamp(34px, 9vh, 60px); line-height: 1; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+    #sanctuary .progress { position: relative; width: min(280px, 60vw); height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--m-ink) 24%, transparent); }
+    #sanctuary .progress i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 3px; background: var(--m-glow); }
+    #sanctuary .progress u { position: absolute; top: -3px; width: 1px; height: 9px; background: color-mix(in srgb, var(--m-ink) 60%, transparent); }
+    #sanctuary .partname { font-size: 14px; letter-spacing: .22em; text-transform: uppercase; color: var(--m-ink); }
+    #sanctuary .guide { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-bottom: clamp(4px, 2vh, 18px); }
+    #sanctuary .breath { font-size: clamp(45px, 8.4vh, 54px); letter-spacing: .24em; text-indent: .24em; text-transform: uppercase; color: var(--m-glow); font-variant-numeric: tabular-nums; }
+    #sanctuary .line { max-width: 26em; min-height: 2.7em; font: italic 400 clamp(19px, 4.2vh, 28px)/1.35 Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif; }
+    #sanctuary .line.in { animation: sanctuary-line 1.8s ease both; }
+    @keyframes sanctuary-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    #sanctuary .bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; transition: opacity .9s ease; }
+    #sanctuary .ctl { min-height: 44px; padding: 8px 18px; border-radius: 999px; font-size: 14px; letter-spacing: .04em; }
+    #sanctuary.idle .bar { opacity: 0; pointer-events: none; }
+    #sanctuary.idle { cursor: none; }
+    #sanctuary .sheet { display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 2.2vh, 18px); }
+    #sanctuary[data-screen="end"] .ui { justify-content: flex-end; padding-bottom: max(28px, 9vh); }
+    @media (max-width: 760px) { #sanctuary .library { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 460px) { #sanctuary .library { grid-template-columns: 1fr; } #sanctuary .card { min-height: 0; padding: 10px 14px; } }
+    @media (max-height: 460px) {
+      #sanctuary .ui { gap: 6px; padding: 8px 16px; justify-content: flex-start; }
+      #sanctuary[data-screen="home"] .mark { display: none; }
+      #sanctuary .hint { display: none; }
+      #sanctuary .card { min-height: 0; padding: 8px 12px; grid-template-columns: 34px 1fr; column-gap: 10px; }
+      #sanctuary .card .swatch { width: 34px; height: 34px; }
+      #sanctuary .card b { font-size: 16px; }
+      #sanctuary .choice { min-height: 52px; padding: 8px 20px; }
+      #sanctuary .ctl { padding: 6px 14px; }
+      #sanctuary .clock { font-size: 30px; }
+      #sanctuary .line { min-height: 1.4em; font-size: 19px; }
+      #sanctuary .guide { padding-bottom: 2px; gap: 2px; }
+      #sanctuary[data-screen="end"] .ui { padding-bottom: 14px; }
+      #sanctuary h1 { font-size: 30px; }
+    }
+    @media (prefers-reduced-motion: reduce) { #sanctuary, #sanctuary .tile, #sanctuary .bar, #sanctuary .veil { transition: none; } #sanctuary .line.in { animation: none; } #sanctuary .tile.cur { transform: none; } }
     #rotate { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 24px; text-align: center; font-size: 20px; background: var(--pal-ink-void); color: var(--ui-text); }
     @media (orientation: portrait) { body.dev-touch #rotate { display: flex; } }
     body.dev-touch #items { display: none; }
@@ -398,7 +495,17 @@
     body.dev-touch #inventory .card { width: 96vw; max-height: 94vh; padding: calc(4 * var(--u)) calc(5 * var(--u)); }
     body.dev-touch #inventory .cols { grid-template-columns: 1fr 220px; }
     body.dev-touch #inventory header .close { width: 44px; height: 44px; }
-    body.dev-touch #toll .guard header .close { width: 44px; height: 44px; }
+    @media (max-width: 480px) {
+      #banner[data-offer="true"] { width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
+      #banner .offer-actions { flex-direction: column; }
+      #banner .offer-actions button { width: 100%; }
+    }
+    @media (hover: none) and (pointer: coarse) {
+      #banner[data-offer="true"] { width: min(440px, calc(100vw - 24px)); max-width: calc(100vw - 24px); }
+      body.dev-touch #banner[data-offer="true"] { max-width: calc(100vw - 24px); }
+      #banner .offer-actions { flex-direction: column; }
+      #banner .offer-actions button { width: 100%; }
+    }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
   </style>
 </head>

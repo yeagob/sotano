@@ -4,11 +4,11 @@ import { LESSON_CONTROLS } from '../src/input/labels';
 import { HUD_ICONS } from '../src/content/hud-icons';
 import { EN } from '../src/i18n/locales/en';
 
-const CONTEXTS: Context[] = ['play', 'prompt', 'paused', 'dead', 'inventory'];
+const CONTEXTS: Context[] = ['play', 'prompt', 'paused', 'dead', 'inventory', 'toll', 'meditation'];
 const messages = EN.messages as Record<string, unknown>;
 
 function inputs(b: Binding, d: Device): string[] {
-  if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : [])];
+  if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : []), ...(b.keyboard.wheel ? [`wheel${b.keyboard.wheel}`] : [])];
   if (d === 'gamepad') return [...(b.gamepad.buttons ?? []).map(i => `button${i}`), ...(b.gamepad.stick ? [`stick-${b.gamepad.stick}`] : [])];
   return b.touch.control === 'tap' ? [] : [`${b.touch.control}-${b.action}`];
 }
@@ -44,6 +44,12 @@ describe('controls contract', () => {
     }
   });
 
+  it('back declines a presence offer on keyboard and gamepad; touch uses the card buttons', () => {
+    expect(contextsFor(BINDING.back, 'keyboard')).toContain('prompt');
+    expect(contextsFor(BINDING.back, 'gamepad')).toContain('prompt');
+    expect(contextsFor(BINDING.back, 'touch')).not.toContain('prompt');
+  });
+
   it('a touch action with no button of its own is reached through another control', () => {
     for (const b of BINDINGS.filter(x => x.touch.control === 'none')) {
       expect(BINDING.inventory.touch.control, b.action).toBe('systemButton');
@@ -63,6 +69,6 @@ describe('controls contract', () => {
   });
 
   it('every prompt the player reads has a gamepad and a touch version', () => {
-    for (const k of ['intro.play', 'banner.continue', 'death.restart', 'inv.close']) for (const s of ['pad', 'touch']) expect(messages).toHaveProperty(`${k}.${s}`);
+    for (const k of ['intro.play', 'banner.continue', 'death.restart', 'inv.close', 'presence.offer.controls']) for (const s of ['pad', 'touch']) expect(messages).toHaveProperty(`${k}.${s}`);
   });
 });

@@ -2,7 +2,7 @@
 
 # The Listener
 
-Built. Floors 1 to 5, one per floor, in a quiet room. Code: `src/content/presences/listener.ts`, placed by `src/content/presences/index.ts`. A run meets up to five Listeners, one on each Tree floor. Each drops its reward and leaves at once, in the frame the drop appears (#65, #77, #84).
+Built and the reference implementation for offering parts to a Presence. Floors 1 to 5, one per floor, in a quiet room. Code: `src/content/presences/listener.ts`, placed by `src/content/presences/index.ts`; its reward is rolled by `src/content/tables/heart-gifts.ts` when the offered heart is accepted. A run meets up to five Listeners, one on each Tree floor. Each drops its reward and leaves at once, in the frame the drop appears (#65, #84, #141).
 
 The Listener is a pale stone figure of bone, a tall column with a paper-coloured head and two small side plates. It is the first presence the player meets, and what it offers is being heard. It asks nothing and orders nothing.
 
@@ -16,14 +16,15 @@ On each floor from 1 to 5, one room is chosen from the normal rooms that hold no
 
 ## What the player meets
 
-- **Replies.** Until the Listener has its key, each time the player comes near with something else on top of the hand, it names that thing and says it is not what it waits for. With empty hands it says so. It answers at most once every four seconds.
+- **Replies.** If the player carries no heart, each time they come near with something else on top of the hand, the Listener names that thing and says it is not what it waits for. With empty hands it says so. It answers at most once every four seconds.
 - **Body.** The Listener has a body: the player cannot walk through it.
-- **The key.** The Listener stays silent until a heart is brought to it. Within about two blocks, a heart of a released pattern on top of the hand is taken, and then the Listener talks. Any other thing, and any other kind of part, does nothing. The first time the player comes near without the right part, the Listener says one line that points at what it wants without naming it.
+- **The key.** Within about two blocks, the Listener scans the carried hand from the interaction item down and asks whether the player wants to give the first heart of a released pattern it finds. Accepting takes only that heart; declining takes nothing, and the Listener asks again only after the player steps away and returns. Other carried things stay in hand. It then talks. If no heart is carried, the first approach gives a hint without naming what it wants.
 - **Talk.** Once the heart is taken, a card shows two lines. The first asks what weighs on the player; the second says it heard them. The card stays until it is dismissed, and the lines are the same on every visit.
-- **The reward.** The Listener never heals. It drops its reward and leaves:
-  - **What it drops** is chosen by the floor's seed when the floor is built: a heart 40%, a bomb 35% or a key 25%. It is the same for every visit to that floor in the same run.
-  - **How many** is drawn from the run's runtime drops stream when the part is accepted: one 50%, two 35% or three 15%. It follows the player's actions, not the seed's structure.
-  - **How it lands.** Each pickup leaves the Listener in its own arc toward the player, with the gold sparks of a release. A heart is a full heart (two half-hearts), and at full health a heart waits on the floor until the player is hurt, as hearts do. Keys and bombs are collected as usual.
+- **The reward.** Accepting the heart always gives one reward, rolled from the run's `drops` stream at that moment:
+  - **15%:** a practice with a maximum-health stat.
+  - **75%:** special hearts; 90% of these rewards are one heart, and 10% are two hearts of different special kinds.
+  - **10%:** exactly two red hearts.
+  - **How it lands.** The reward leaves the Listener in an arc away from the player, never toward them, with the gold sparks of a release. At full health a heart waits on the floor until the player is hurt.
 - **Leaving.** The Listener is removed from the world in the same frame its drop appears: its body, its hooks and its contacts go with it, and the room is ordinary again. Its pickups stay where they landed, so the reward does not depend on the Listener any more. A card that is already open stays on the screen.
 - **Light.** The design has it show its face only while the player listens, as light from the player's lantern. The build draws it as bone tones, with no such effect.
 
@@ -34,17 +35,19 @@ The silence rule (BESTIARY §8.1) applies to presences that stay, the Gardener a
 ## Decisions taken for #65
 
 - **One Listener per floor, never two on the same floor.** A run has up to five Listeners, one per Tree floor, so "several per run" is met by the floors, not by a second Listener in the same place. A floor that has given its reward keeps none.
+- **Offer order and consent.** The Listener searches from the top of the hand (the interaction item) toward the bottom, asks before consuming, and accepts only the first matching heart the player agrees to give.
 - **The count is 1 to 3.** The issue leaves the number open; a single drop is too little for a reward that always lands. The weights are set by #77.
 - **Leaving is immediate.** The Listener is removed in the same moment its drop appears. (#77 made it wait for the pickups; #84 reverted that, see below.)
 
-## Decisions taken for #77
+## Reward (owner correction, #141)
 
-- **The weights are data, one place.** `LISTENER_KIND_WEIGHTS` (heart 40, bomb 35, key 25) and `LISTENER_COUNT_WEIGHTS` (one 50, two 35, three 15) in `src/content/presences/index.ts`, the owner's suggested starting values, to be tuned there.
-- **No seed bump.** The owner said the seed does not need to change for this. The kind is still one draw from the floor's fork, now read through the weighted table, so a seed code may give a different kind on a Listener floor than it did before #77.
+- **The guaranteed reward is runtime.** The floor seed chooses only the Listener's room. The accepted heart rolls its 15/75/10 reward from `stream('drops')`, so it cannot change floor structure.
+- **Two separate reward sources.** The Listener's guaranteed heart-offer reward is distinct from the creatures' one-time 7.5% growth gift (`stream('gifts')`).
+- **Special hearts.** Within the 75% special-heart category, 90% of rewards are one special heart and 10% are two different special-heart kinds.
 
 ## Decisions taken for #84
 
-- **The Listener leaves at once.** The owner's answer on #84: the Listener leaves as soon as it drops, and does not wait for the drop to be picked up. The stay rule of #77 is reverted; the release is in the same frame as the drop, with the existing release path. The weights of #77 stay as they are.
+- **The Listener leaves at once.** The owner's answer on #84: the Listener leaves as soon as it drops, and does not wait for the drop to be picked up. The release is in the same frame as the reward, with the existing release path.
 
 ## Open questions
 

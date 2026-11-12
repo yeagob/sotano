@@ -16,10 +16,12 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | drink | X |
 | bomb | RB |
 | polarity | LB |
+| choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
-| confirm | A (dismisses banners, resumes, begins again after death) |
+| confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death) |
+| back | B (declines a Presence offer) |
 
 Free in `play` for future actions: X, LS and RS (`sotano-controls` §2).
 
@@ -43,3 +45,7 @@ The gamepad becomes the active device only on new input: a button going down, or
 ## 5. Rumble
 
 Every screen shake (hurt, blasts, slams) plays a `dual-rumble` scaled to its strength, at most 400 ms, through `Hud.shake` → `Input.rumble`.
+
+## The Sanctuary (context `meditation`)
+
+The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.

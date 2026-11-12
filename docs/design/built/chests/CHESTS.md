@@ -28,7 +28,7 @@ Walk up to it within about one and a half blocks, at its height. The chest asks 
 
 ## What is inside
 
-What a chest kept is spat out. As the lid opens, each thing leaps out of the mouth on an arc, about one block up, and lands in front of the player, one every 0.16 seconds, each with a pop and a spark. A practice gets the reveal chord. Each thing can be collected 0.6 seconds after it lands.
+What a chest kept is spat out. As the lid opens, each thing leaps out of the mouth on an arc, about one block up, and lands away from the player, never toward them, on clear ground (the same rule as every reward, see [ENTITIES.md](../../../architecture/ENTITIES.md)), one every 0.16 seconds, each with a pop and a spark. A practice gets the reveal chord. Each thing can be collected 0.6 seconds after it lands. Once the last thing has left the mouth the chest is empty: its model and its block are removed, whether or not anything was collected.
 
 Two kinds of chest hold different things.
 
@@ -37,9 +37,9 @@ Two kinds of chest hold different things.
 | **Pedestal chest** | where a pedestal would stand, in treasure and vault rooms | the practice reserved for that room at the start of the run. Sixty percent of the treasure and vault practices sit in a chest. The boss's practice never does: it is earned, not locked away. It floats where it lands |
 | **Room chest** | free-standing, in normal rooms (about four in ten of them) | one, two or three rolls of the chest table: a key, a bomb, a heart (each weight 3 of 10) or a practice (weight 1, drawn from the treasure pool). At most one practice per chest; a chest that rolls no practice has a 6 percent chance of one anyway |
 
-Room chests are not placed on the roots (see [ROOTS](../levels/floors/ROOTS.md)). The owner's text said every floor including the roots; the build leaves the roots without room chests. That is open: see [not-built/chests/ROOT-CHESTS.md](../../not-built/chests/ROOT-CHESTS.md).
+Free-standing room chests are not placed on the roots. The tutorial treasure room does have one pedestal chest: it is free, and opens through the Sanctuary's quick-reward or meditation choice. Cancelling leaves it closed. The separate proposal for free-standing room chests on the roots remains open in [not-built/chests/ROOT-CHESTS.md](../../not-built/chests/ROOT-CHESTS.md).
 
-The vault's centre holds one chest, the practice of the room, kept by the Boundary: it opens for a real-world mission, not for keys (see [GUARD-MISSIONS.md](../presences/GUARD-MISSIONS.md)). The pedestals on the ring around it hold nothing.
+The vault's centre holds one chest, the practice of the room, kept by the Boundary: it opens through the Boundary's meditation app, not for keys (see [MEDITATION-APP.md](../presences/MEDITATION-APP.md)). The pedestals on the ring around it hold nothing.
 
 ## Where chests may stand
 

@@ -50,10 +50,10 @@ try {
     if (result.errors.length) failed++;
     if (!all && !check) { process.stdout.write(result.report); continue; }
     const file = join(reports, `${job.id}.txt`);
-    // a Windows checkout may store the saved report with CRLF; compare line endings as LF
-    const saved = existsSync(file) ? readFileSync(file, 'utf8').replace(/\r\n/g, '\n') : null;
-    if (saved === result.report) { console.log(`= ${job.id}`); continue; }
-    if (check) { failed++; console.log(`≠ ${job.id}\n${diff(saved ?? '', result.report)}`); continue; }
+    const saved = existsSync(file) ? normalize(readFileSync(file, 'utf8')) : null;
+    const report = normalize(result.report);
+    if (saved === report) { console.log(`= ${job.id}`); continue; }
+    if (check) { failed++; console.log(`≠ ${job.id}\n${diff(saved ?? '', report)}`); continue; }
     mkdirSync(reports, { recursive: true });
     writeFileSync(file, result.report);
     console.log(`${saved === null ? '+' : '≠'} ${job.id}${saved === null ? '' : '\n' + diff(saved, result.report)}`);
@@ -72,4 +72,8 @@ function diff(a, b) {
     if (y[i] !== undefined) out.push(`  ${i + 1}+ ${y[i]}`);
   }
   return out.join('\n');
+}
+
+function normalize(report) {
+  return report.replace(/\r\n/g, '\n').replace(/[ \t]+(?=\n)/g, '');
 }
