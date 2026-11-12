@@ -247,5 +247,12 @@
         }
       }
     }
-  ]
+  ],
+  "easy": {
+    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Move and jump", "text": "{jump} jumps one block, never two. The steps you built are still here; deeper down, build your own.", "key": "move", "image": "lesson/step" } },
+    "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "This wall once stood in your way. You broke it, and the way stays open. Bad intentions break; good ones mend.", "key": "cast", "image": "lesson/dig" } },
+    "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "The way out", "text": "You built your way out of here once, and the roots kept your steps. Deeper down: carry a block, set it, step up.", "key": "place", "image": "lesson/pit" } },
+    "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Your bridge", "text": "Your bridge still stands. Deeper down, stand at the edge, place a block in front of you, step on, and again.", "key": "place", "image": "lesson/bridge" } },
+    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Breakthroughs", "text": "The obsidian seal is gone. Deeper down, obsidian is too hard for intentions: drop a breakthrough with bad ones.", "key": "bomb", "image": "lesson/breakthrough" } }
+  }
 }

@@ -6,7 +6,7 @@ import bookEn from '../src/content/book/book.en.json';
 import bookEs from '../src/content/book/book.es.json';
 import {
   type Book, BookValidationError, PLACEHOLDER_ACTIONS, type RoomKey, type Side, bookMessage, bookRefs, loadBook, pageCount, panelAt,
-  panelById, panelIdOf, quoteSource, validateBook, type BookRefs,
+  panelById, panelIdOf, easyPanelIdOf, quoteSource, validateBook, type BookRefs, ROOM_KEYS, SIDES,
 } from '../src/content/book';
 import { BESTIARY_PORTRAITS, LESSON_IMAGES, knownImageIds, resolveImage } from '../src/content/book/images';
 import { BOSS_BY_ID } from '../src/content/bosses';
@@ -529,5 +529,227 @@ describe('panel ids (BOOK-DATA §2): page, room and side, unique, the same in bo
     expect(panelById(en, '1-hall-n')).toEqual(en.pages[0].panels['roots-hall']?.north);
     expect(panelById(shipped('es'), '1-hall-n')).toEqual(shipped('es').pages[0].panels['roots-hall']?.north);
     expect(panelById(en, '9-hall-n')).toBeUndefined();
+  });
+});
+
+// ── the remembered panels (EASY-LAYOUT §4, BOOK-DATA §1, §2, §6 rule 11) ──
+
+/** The five slots whose page-1 panel teaches an exercise the easy layout no longer has. */
+const REMEMBERED: readonly (readonly [RoomKey, Side])[] = [
+  ['roots-step', 'south'], ['roots-dig', 'south'], ['roots-pit', 'north'], ['roots-bridge', 'north'], ['roots-seal', 'south'],
+];
+const isRemembered = (room: RoomKey, side: Side) => REMEMBERED.some(([r, s]) => r === room && s === side);
+
+/** Every (room, side) slot of the Roots. */
+const EVERY_SLOT: readonly (readonly [RoomKey, Side])[] = ROOM_KEYS.flatMap(room => SIDES.map(side => [room, side] as const));
+
+/** A copy of a raw book with its `easy` object replaced, or removed when `easy` is undefined. */
+const withEasy = (raw: Raw, easy: unknown): Raw => {
+  if (easy === undefined) delete raw.easy;
+  else raw.easy = easy;
+  return raw;
+};
+
+describe('the remembered panels: the shipped layer (EASY-LAYOUT §4)', () => {
+  it('holds exactly the five remembered slots, with their ids, in both languages', () => {
+    const listed = (book: Book) => Object.entries(book.easy ?? {}).flatMap(
+      ([room, slot]) => Object.entries(slot ?? {}).map(([side, panel]) => [room, side, panel?.id]),
+    );
+    const expected = [
+      ['roots-step', 'south', 'easy-step-s'], ['roots-dig', 'south', 'easy-dig-s'], ['roots-pit', 'north', 'easy-pit-n'],
+      ['roots-bridge', 'north', 'easy-bridge-n'], ['roots-seal', 'south', 'easy-seal-s'],
+    ];
+    expect(listed(shipped('en'))).toEqual(expected);
+    expect(listed(shipped('es'))).toEqual(expected);
+  });
+
+  it('every remembered panel is a lesson with a key and an image that resolves', () => {
+    for (const lang of ['en', 'es'] as const) {
+      for (const [room, side] of REMEMBERED) {
+        const panel = shipped(lang).easy?.[room]?.[side];
+        expect(panel?.layout, `${lang} ${room} ${side}`).toBe('lesson');
+        expect(resolveImage((panel as { image: string }).image), `${lang} ${room} ${side}`).toBeDefined();
+      }
+    }
+  });
+
+  it('the id of a remembered panel is easy-<room>-<side>, whatever its page', () => {
+    expect(easyPanelIdOf('roots-step', 'south')).toBe('easy-step-s');
+    expect(easyPanelIdOf('roots-pit', 'north')).toBe('easy-pit-n');
+    expect(easyPanelIdOf('roots-seal', 'south')).toBe('easy-seal-s');
+  });
+
+  it('easy is optional: a book without it passes', () => {
+    expect(problemsOf(withEasy(copyEn(), undefined), withEasy(copyEs(), undefined))).toEqual([]);
+  });
+
+  it('a book with an empty easy object passes', () => {
+    expect(problemsOf(withEasy(copyEn(), {}), withEasy(copyEs(), {}))).toEqual([]);
+  });
+});
+
+describe('the remembered panels: validation (BOOK-DATA §6 rule 11)', () => {
+  /** The problems of the shipped book with one remembered panel patched in both languages, or with `patch` per language. */
+  const patched = (patchEn: (easy: Raw) => void, patchEs: (easy: Raw) => void = patchEn) => {
+    const en = copyEn();
+    const es = copyEs();
+    patchEn(en.easy);
+    patchEs(es.easy);
+    return problemsOf(en, es);
+  };
+
+  it('easy must be an object of rooms', () => {
+    expectProblem(problemsOf(withEasy(copyEn(), 'roots-step'), withEasy(copyEs(), 'roots-step')), 'easy must be an object of rooms');
+  });
+
+  it('an easy room must be one of the eleven', () => {
+    const en = copyEn();
+    en.easy['roots-moon'] = { south: en.easy['roots-step'].south };
+    expectProblem(problemsOf(en, copyEs()), 'easy: unknown room "roots-moon"');
+  });
+
+  it('an easy side must be north or south', () => {
+    const en = copyEn();
+    en.easy['roots-step'].east = en.easy['roots-step'].south;
+    expectProblem(problemsOf(en, copyEs()), 'easy roots-step: unknown side "east"');
+  });
+
+  it('an easy panel carries the id of its room and side', () => {
+    expectProblem(patched(easy => { easy['roots-step'].south.id = 'easy-step-n'; }), 'id "easy-step-n" must be "easy-step-s"');
+  });
+
+  it('an easy id is unique in the file', () => {
+    expectProblem(patched(easy => { easy['roots-dig'].south.id = 'easy-step-s'; }), 'id "easy-step-s" is not unique in the file');
+  });
+
+  it('an easy id does not collide with a page id', () => {
+    const en = copyEn();
+    en.easy['roots-dig'].south.id = '1-hall-n';
+    expectProblem(problemsOf(en, copyEs()), 'id "1-hall-n" is not unique in the file');
+  });
+
+  it('an easy panel has a known layout and no field its layout does not allow', () => {
+    expectProblem(patched(easy => { easy['roots-pit'].north.layout = 'poster'; }), 'unknown layout "poster"');
+    expectProblem(patched(easy => { easy['roots-pit'].north.note = 'x'; }), '"note" is not a field of a lesson panel');
+  });
+
+  it('a quote is refused in the easy layout, which is not a book page', () => {
+    const quote = { id: 'easy-dig-s', layout: 'quote', text: 'A quotation.', author: 'A', work: 'W', lang: 'es' };
+    expectProblem(patched(easy => { easy['roots-dig'].south = { ...quote }; }), 'a quote is only allowed on a book page');
+  });
+
+  it('an easy text has the same budget as a tutorial text, with the longest labels', () => {
+    expectProblem(patched(easy => { easy['roots-dig'].south.title = 'a'.repeat(23); }), '"title" is 23 characters with the longest labels, the budget is 22');
+    expectProblem(patched(easy => { easy['roots-step'].south.text = `{jump} ${'a'.repeat(120)}`; }), 'the budget is 120');
+  });
+
+  it('an easy image must resolve, its key must be an action, and its placeholders must be known', () => {
+    expectProblem(patched(easy => { easy['roots-dig'].south.image = 'lesson/nowhere'; }), 'image "lesson/nowhere" does not resolve');
+    expectProblem(patched(easy => { easy['roots-dig'].south.key = 'fly'; }), 'key "fly" is not an action with a key cap');
+    expectProblem(patched(easy => { easy['roots-step'].south.text = '{fly} jumps one block.'; }), 'unknown placeholder {fly}');
+  });
+
+  it('an easy slot filled in one language only fails', () => {
+    const en = copyEn();
+    const es = copyEs();
+    delete es.easy['roots-pit'];
+    expectProblem(problemsOf(en, es), 'easy roots-pit north: the slot is filled in en only');
+  });
+
+  it('an easy slot whose facts differ between the files fails', () => {
+    const es = copyEs();
+    es.easy['roots-pit'].north.key = 'cast';
+    expectProblem(problemsOf(copyEn(), es), 'easy roots-pit north: key is "place" in en and "cast" in es');
+  });
+
+  it('an easy slot whose fields differ between the files fails', () => {
+    const es = copyEs();
+    delete es.easy['roots-dig'].south.key;
+    expectProblem(problemsOf(copyEn(), es), 'easy roots-dig south: fields differ');
+  });
+});
+
+describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
+  const book = shipped('en');
+  const pages = pageCount(book);
+  const pageOne = (room: RoomKey, side: Side) => book.pages[0].panels[room]?.[side];
+  const own = (page: number, room: RoomKey, side: Side) => book.pages[page - 1].panels[room]?.[side];
+  const remembered = (room: RoomKey, side: Side) => book.easy?.[room]?.[side];
+
+  it('the layout defaults to the teaching layout', () => {
+    for (let page = 1; page <= pages; page++) {
+      for (const [room, side] of EVERY_SLOT) {
+        expect(panelAt(book, page, room, side), `page ${page} ${room} ${side}`).toBe(panelAt(book, page, room, side, 'teaching'));
+      }
+    }
+  });
+
+  it('the teaching layout is today\'s rule on every page and every slot', () => {
+    for (let page = 1; page <= pages; page++) {
+      for (const [room, side] of EVERY_SLOT) {
+        const expected = (page >= 2 && own(page, room, side)) || pageOne(room, side);
+        expect(panelAt(book, page, room, side, 'teaching'), `page ${page} ${room} ${side}`).toBe(expected);
+      }
+    }
+  });
+
+  it('the teaching layout never shows a remembered panel', () => {
+    for (let page = 1; page <= pages; page++) {
+      for (const [room, side] of REMEMBERED) {
+        expect(panelAt(book, page, room, side, 'teaching')).not.toBe(remembered(room, side));
+      }
+    }
+  });
+
+  it('the easy layout equals the teaching layout in every slot the easy layer does not remember', () => {
+    for (let page = 1; page <= pages; page++) {
+      for (const [room, side] of EVERY_SLOT) {
+        if (isRemembered(room, side)) continue;
+        expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(panelAt(book, page, room, side, 'teaching'));
+      }
+    }
+  });
+
+  it('the easy layout shows the remembered panel of the four lesson walls on every page', () => {
+    for (let page = 1; page <= pages; page++) {
+      expect(panelAt(book, page, 'roots-dig', 'south', 'easy')).toBe(remembered('roots-dig', 'south'));
+      expect(panelAt(book, page, 'roots-pit', 'north', 'easy')).toBe(remembered('roots-pit', 'north'));
+      expect(panelAt(book, page, 'roots-bridge', 'north', 'easy')).toBe(remembered('roots-bridge', 'north'));
+      expect(panelAt(book, page, 'roots-seal', 'south', 'easy')).toBe(remembered('roots-seal', 'south'));
+    }
+  });
+
+  it('the easy layout shows the step room\'s remembered panel on page 1 and on the book pages (7 to 9)', () => {
+    for (const page of [1, 7, 8, 9]) {
+      expect(panelAt(book, page, 'roots-step', 'south', 'easy')).toBe(remembered('roots-step', 'south'));
+    }
+  });
+
+  it('the easy layout shows page n\'s own panel where page n fills the step room\'s south slot (pages 2 to 6)', () => {
+    for (let page = 2; page <= 6; page++) {
+      expect(own(page, 'roots-step', 'south')).toBeDefined();
+      expect(panelAt(book, page, 'roots-step', 'south', 'easy')).toBe(own(page, 'roots-step', 'south'));
+    }
+    expect(panelAt(book, 1, 'roots-step', 'south', 'easy')).toBe(remembered('roots-step', 'south'));
+  });
+
+  it('the easy layout on page 1 reads the remembered panels in the five slots, page 1\'s elsewhere', () => {
+    expect(panelAt(book, 1, 'roots-dig', 'south', 'easy')).toBe(remembered('roots-dig', 'south'));
+    expect(panelAt(book, 1, 'roots-dig', 'north', 'easy')).toBe(pageOne('roots-dig', 'north'));
+    expect(panelAt(book, 1, 'roots-gift', 'north', 'easy')).toBe(pageOne('roots-gift', 'north'));
+  });
+
+  it('a remembered slot on page 3 in the teaching layout shows the exercise, as before', () => {
+    expect(panelAt(book, 3, 'roots-dig', 'south', 'teaching')).toBe(pageOne('roots-dig', 'south'));
+  });
+
+  it('throws on a layout that does not exist', () => {
+    expect(() => panelAt(book, 1, 'roots-hall', 'north', 'night' as never)).toThrow(RangeError);
+  });
+
+  it('panelById finds the remembered panels in both languages', () => {
+    expect(panelById(shipped('en'), 'easy-dig-s')).toBe(shipped('en').easy?.['roots-dig']?.south);
+    expect(panelById(shipped('es'), 'easy-seal-s')).toBe(shipped('es').easy?.['roots-seal']?.south);
+    expect(panelById(shipped('en'), 'easy-gift-n')).toBeUndefined();
   });
 });

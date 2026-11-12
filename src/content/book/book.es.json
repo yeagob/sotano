@@ -247,5 +247,12 @@
         }
       }
     }
-  ]
+  ],
+  "easy": {
+    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "{jump}: saltas un bloque, nunca dos. Tus escalones siguen aquí; más abajo, constrúyete los tuyos.", "key": "move", "image": "lesson/step" } },
+    "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Paso abierto", "text": "Este muro te cortaba el paso. Lo rompiste, y el paso sigue abierto. Las intenciones malas rompen; las buenas reparan.", "key": "cast", "image": "lesson/dig" } },
+    "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "La salida", "text": "Una vez saliste de aquí construyendo, y las raíces guardaron tus pasos. Más abajo: lleva un bloque, ponlo y súbete.", "key": "place", "image": "lesson/pit" } },
+    "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Tu puente", "text": "Tu puente sigue en pie. Más abajo, ponte en el borde, coloca un bloque delante, súbete y vuelve a empezar.", "key": "place", "image": "lesson/bridge" } },
+    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Avances", "text": "El sello de obsidiana ya no está. Más abajo, la obsidiana es demasiado dura: suelta un avance con intenciones malas.", "key": "bomb", "image": "lesson/breakthrough" } }
+  }
 }

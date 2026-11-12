@@ -73,6 +73,13 @@ export type Panel = LessonPanel | PlatePanel | ProsePanel | QuotePanel;
 
 export type Slot = Partial<Record<Side, Panel>>;
 
+/** The remembered panels of the easy layout, by room and side (EASY-LAYOUT §4, BOOK-DATA §2). */
+export type EasyPanels = Partial<Record<RoomKey, Slot>>;
+
+/** The layout the Roots are carved in: the teaching layout on page 1, the easy layout from page 2 (EASY-LAYOUT §1). */
+export type BookLayout = 'teaching' | 'easy';
+const BOOK_LAYOUTS: readonly BookLayout[] = ['teaching', 'easy'];
+
 export interface BookPage {
   readonly id: string;
   readonly kind: 'tutorial' | 'book';
@@ -83,6 +90,8 @@ export interface Book {
   readonly version: 1;
   readonly language: Lang;
   readonly pages: readonly BookPage[];
+  /** The remembered panels, optional on the file (BOOK-DATA §2). Only the easy layout reads them. */
+  readonly easy?: EasyPanels;
 }
 
 export interface BookPair {
@@ -150,7 +159,7 @@ const KEYCAP_BUDGET = 14;
 const KEYCAP_PARTS = ['key', 'pad', 'touch', 'verb'] as const;
 const DEVICE_PARTS = ['key', 'pad', 'touch'] as const;
 const PAGE_FIELDS: readonly string[] = ['id', 'kind', 'panels'];
-const TOP_FIELDS: readonly string[] = ['version', 'language', 'pages'];
+const TOP_FIELDS: readonly string[] = ['version', 'language', 'pages', 'easy'];
 const PAGE_ID = /^[a-z0-9-]+$/;
 const ROOM_SET: ReadonlySet<string> = new Set<string>(ROOM_KEYS);
 const SIDE_SET: ReadonlySet<string> = new Set<string>(SIDES);
@@ -169,6 +178,11 @@ const length = (s: string) => [...s].length;
 /** The id a panel must carry: its page number, its room without `roots-`, and `n` or `s` (BOOK-DATA §2). */
 export function panelIdOf(page: number, room: RoomKey, side: Side): string {
   return `${page}-${room.slice('roots-'.length)}-${side === 'north' ? 'n' : 's'}`;
+}
+
+/** The id a remembered panel must carry: `easy`, its room without `roots-`, and `n` or `s` (EASY-LAYOUT §4). */
+export function easyPanelIdOf(room: RoomKey, side: Side): string {
+  return `easy-${room.slice('roots-'.length)}-${side === 'north' ? 'n' : 's'}`;
 }
 
 /**
@@ -304,6 +318,33 @@ function checkPanelId(where: string, page: number, room: RoomKey, side: Side, ra
   seen.add(id);
 }
 
+/**
+ * The remembered panels (EASY-LAYOUT §4, BOOK-DATA §6 rule 11): room, then side, then a panel held to the rules of a
+ * panel on a tutorial page. The layout is `easy`, so a quote is refused; the id is `easy-<room>-<side>`, unique in the file.
+ */
+function checkEasy(lang: Lang, raw: unknown, refs: BookRefs, panelIds: Set<string>, problems: string[]) {
+  const where = `${lang}: easy`;
+  if (!isRecord(raw)) { problems.push(`${where} must be an object of rooms, each holding north and/or south panels`); return; }
+  for (const room of Object.keys(raw)) {
+    if (!ROOM_SET.has(room)) { problems.push(`${where}: unknown room "${room}"`); continue; }
+    const slot = raw[room];
+    if (!isRecord(slot)) { problems.push(`${where} ${room} must hold north and/or south panels`); continue; }
+    if (Object.keys(slot).length === 0) problems.push(`${where} ${room} has no panel`);
+    for (const side of Object.keys(slot)) {
+      if (!SIDE_SET.has(side)) { problems.push(`${where} ${room}: unknown side "${side}"`); continue; }
+      const at = `${where} ${room} ${side}`;
+      const panel = slot[side];
+      checkPanel(at, lang, 'easy', panel, refs, problems);
+      const id = isRecord(panel) ? panel.id : undefined;
+      if (typeof id !== 'string') continue;
+      const expected = easyPanelIdOf(room as RoomKey, side as Side);
+      if (id !== expected) problems.push(`${at}: id "${id}" must be "${expected}" (its room and side)`);
+      if (panelIds.has(id)) problems.push(`${at}: id "${id}" is not unique in the file`);
+      panelIds.add(id);
+    }
+  }
+}
+
 function checkFile(lang: Lang, raw: unknown, refs: BookRefs, problems: string[]) {
   const file = `book.${lang}.json`;
   if (!isRecord(raw)) { problems.push(`${file}: the file is not an object`); return; }
@@ -312,12 +353,15 @@ function checkFile(lang: Lang, raw: unknown, refs: BookRefs, problems: string[])
   }
   if (raw.version !== 1) problems.push(`${lang}: version must be 1, is ${show(raw.version)}`);
   if (raw.language !== lang) problems.push(`${file}: language must be "${lang}", is ${show(raw.language)}`);
+  // The panel ids of the file, the pages' and the remembered ones: one set, so no two panels share an id.
+  const panelIds = new Set<string>();
+  if (raw.easy !== undefined) checkEasy(lang, raw.easy, refs, panelIds, problems);
   if (!Array.isArray(raw.pages) || raw.pages.length === 0) {
     problems.push(`${lang}: pages must be a list with at least one page`);
     return;
   }
   const seenIds = new Set<string>();
-  const state = { seenBook: false, panelIds: new Set<string>() };
+  const state = { seenBook: false, panelIds };
   raw.pages.forEach((page: unknown, index: number) => checkPage(lang, index, page, refs, problems, seenIds, state));
 }
 
@@ -389,25 +433,38 @@ function checkShape(en: unknown, es: unknown, problems: string[]) {
     const panelsB = isRecord(b.panels) ? b.panels : {};
     for (const room of ROOM_KEYS) {
       for (const side of SIDES) {
-        const slotA = slotOf(panelsA, room, side);
-        const slotB = slotOf(panelsB, room, side);
-        const where = `${head} ${room} ${side}`;
-        if (slotA === undefined || slotB === undefined) {
-          if (slotA !== slotB) problems.push(`${where}: the slot is filled in ${slotA === undefined ? 'es' : 'en'} only`);
-          continue;
-        }
-        if (!isRecord(slotA) || !isRecord(slotB)) continue;
-        const fieldsA = Object.keys(slotA).sort();
-        const fieldsB = Object.keys(slotB).sort();
-        if (fieldsA.join(',') !== fieldsB.join(',')) {
-          problems.push(`${where}: fields differ: en [${fieldsA.join(', ')}], es [${fieldsB.join(', ')}]`);
-          continue;
-        }
-        // The facts: the layout, the id, the image, the key, and a quotation's author, work, publisher, year and language.
-        for (const field of ['layout', 'id', 'image', 'key', 'author', 'work', 'publisher', 'year', 'lang'] as const) {
-          if (slotA[field] !== slotB[field]) problems.push(`${where}: ${field} is ${show(slotA[field])} in en and ${show(slotB[field])} in es`);
-        }
+        checkSlotShape(`${head} ${room} ${side}`, slotOf(panelsA, room, side), slotOf(panelsB, room, side), problems);
       }
+    }
+  }
+}
+
+/** One panel must have the same shape in both languages: the same fields and the same facts (BOOK-DATA §6 rule 9). */
+function checkSlotShape(where: string, slotA: unknown, slotB: unknown, problems: string[]) {
+  if (slotA === undefined || slotB === undefined) {
+    if (slotA !== slotB) problems.push(`${where}: the slot is filled in ${slotA === undefined ? 'es' : 'en'} only`);
+    return;
+  }
+  if (!isRecord(slotA) || !isRecord(slotB)) return;
+  const fieldsA = Object.keys(slotA).sort();
+  const fieldsB = Object.keys(slotB).sort();
+  if (fieldsA.join(',') !== fieldsB.join(',')) {
+    problems.push(`${where}: fields differ: en [${fieldsA.join(', ')}], es [${fieldsB.join(', ')}]`);
+    return;
+  }
+  // The facts: the layout, the id, the image, the key, and a quotation's author, work, publisher, year and language.
+  for (const field of ['layout', 'id', 'image', 'key', 'author', 'work', 'publisher', 'year', 'lang'] as const) {
+    if (slotA[field] !== slotB[field]) problems.push(`${where}: ${field} is ${show(slotA[field])} in en and ${show(slotB[field])} in es`);
+  }
+}
+
+/** The remembered panels must sit in the same slots, with the same facts, in both languages (BOOK-DATA §6 rule 11). */
+function checkEasyShape(en: unknown, es: unknown, problems: string[]) {
+  const easyEn = isRecord(en) && isRecord(en.easy) ? en.easy : {};
+  const easyEs = isRecord(es) && isRecord(es.easy) ? es.easy : {};
+  for (const room of ROOM_KEYS) {
+    for (const side of SIDES) {
+      checkSlotShape(`easy ${room} ${side}`, slotOf(easyEn, room, side), slotOf(easyEs, room, side), problems);
     }
   }
 }
@@ -421,6 +478,7 @@ export function validateBook(en: unknown, es: unknown, refs: BookRefs): BookPair
   checkFile('en', en, refs, problems);
   checkFile('es', es, refs, problems);
   checkShape(en, es, problems);
+  checkEasyShape(en, es, problems);
   checkQuoteNote(refs, problems);
   if (problems.length > 0) throw new BookValidationError(problems);
   // The checks above prove the shape; the cast only gives it the type.
@@ -435,12 +493,15 @@ export function loadBook(lang: Lang): Book {
   return checked[lang];
 }
 
-/** The panel with this id (BOOK-DATA §2) on any page of the book, or undefined. Ids are unique in a validated file. */
+/** The panel with this id (BOOK-DATA §2) on any page of the book or among the remembered panels, or undefined. Ids are unique in a validated file. */
 export function panelById(book: Book, id: string): Panel | undefined {
   for (const page of book.pages) {
     for (const slot of Object.values(page.panels)) {
       for (const panel of Object.values(slot ?? {})) if (panel?.id === id) return panel;
     }
+  }
+  for (const slot of Object.values(book.easy ?? {})) {
+    for (const panel of Object.values(slot ?? {})) if (panel?.id === id) return panel;
   }
   return undefined;
 }
@@ -451,17 +512,28 @@ export function pageCount(book: Book): number {
 }
 
 /**
- * The panel a slot shows on page `page` (1-based): that page's panel if it has one, otherwise page 1's.
- * Throws on a page, room or side that does not exist; a validated book always has page 1's panel.
+ * The panel a slot shows on page `page` (1-based) in `layout` (EASY-LAYOUT §4), in this order:
+ * 1. page `page`'s own panel, when `page` is 2 or more and the page fills the slot;
+ * 2. in the easy layout, the slot's remembered panel, when it has one;
+ * 3. page 1's panel.
+ * The layout is optional and defaults to the teaching layout, which is today's rule. Throws on a page, room,
+ * side or layout that does not exist; a validated book always has page 1's panel.
  */
-export function panelAt(book: Book, page: number, room: RoomKey, side: Side): Panel {
+export function panelAt(book: Book, page: number, room: RoomKey, side: Side, layout: BookLayout = 'teaching'): Panel {
   if (!Number.isInteger(page) || page < 1 || page > book.pages.length) {
     throw new RangeError(`page ${page} is outside 1..${book.pages.length}`);
   }
   if (!ROOM_SET.has(room)) throw new RangeError(`unknown room "${room}"`);
   if (!SIDE_SET.has(side)) throw new RangeError(`unknown side "${side}"`);
-  const own = book.pages[page - 1].panels[room]?.[side];
-  if (own) return own;
+  if (!(BOOK_LAYOUTS as readonly string[]).includes(layout)) throw new RangeError(`unknown layout "${layout}"`);
+  if (page >= 2) {
+    const own = book.pages[page - 1].panels[room]?.[side];
+    if (own) return own;
+  }
+  if (layout === 'easy') {
+    const remembered = book.easy?.[room]?.[side];
+    if (remembered) return remembered;
+  }
   const first = book.pages[0].panels[room]?.[side];
   if (!first) throw new RangeError(`page 1 has no panel for ${room} ${side}`);
   return first;

@@ -24,6 +24,14 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 }
 ```
 
+An optional top-level `easy` object sits beside `pages`: room key → side → panel, for the five **remembered panels** of the easy layout (EASY-LAYOUT §4). It has the same panel schema as a page, its ids are `easy-<room>-<side>`, and it is read only in the easy layout (section 7). Its five slots are the ones whose page-1 panel teaches an exercise the easy rooms no longer hold: `roots-step` south, `roots-dig` south, `roots-pit` north, `roots-bridge` north, `roots-seal` south.
+
+```json
+"easy": {
+  "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "…", "key": "cast", "image": "lesson/dig" } }
+}
+```
+
 ## 2. Fields
 
 | Field | Where | Type | Rule |
@@ -31,6 +39,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 | `version` | top | integer | The schema version. `1` today. A reader refuses any other value |
 | `language` | top | `"en"` or `"es"` | Must match the file name (`book.<language>.json`) |
 | `pages` | top | array, at least 1 | The page number is the position: the first entry is page 1 |
+| `easy` | top | object, optional | Room key → side → panel: the remembered panels of the easy layout (section 1). Each panel follows the rules of a tutorial page panel (lesson, plate or prose; no quote); its id is `easy-<room>-<side>` (`easy-dig-s`, `easy-pit-n`) and is unique in the file with the page ids. Only the easy layout reads it |
 | `id` | page | string, `^[a-z0-9-]+$` | Unique in the file; the same id at the same position in every language. Stable: tests and the gallery refer to pages by id |
 | `kind` | page | `"tutorial"` or `"book"` | Page 1 is `tutorial`. Every `tutorial` page comes before every `book` page. The page stone shows a number only on `book` pages |
 | `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel |
@@ -164,10 +173,15 @@ The book is checked at build time by a test and again when the game loads it. An
 8. Every field is within its character budget ([PANELS §5](PANELS.md#5-character-budgets)), counting each placeholder at its longest label in that language. A quote's source line ("Work · Publisher, Year", as drawn) is within 60 characters, and the translation note `book.quote.translated` exists in both languages within 24.
 9. **The languages match**: the same number of pages; at each position the same `id` and `kind`; the same slots; in each slot the same `layout`, `id`, `image`, `key` and the same set of fields, and for a quote the same `author`, `work`, `publisher`, `year` and `lang`. Only the words differ.
 10. The two key-cap labels and the verb exist for every action used, in every language (the i18n test covers the message keys).
+11. **The remembered panels** (section 1, `easy`), when present: an object of known rooms and sides, each panel passing rules 4 to 8 as a tutorial panel does (a quote is refused, since the easy layout is not a book page); each id is `easy-<room>-<side>` for its position and unique in the file; the two languages hold the same slots with the same facts, as rule 9 requires. A file without `easy` passes.
 
 ## 7. How the game reads it
 
-- The panel of a slot on page *n* is page *n*'s panel if it has one, otherwise page 1's.
+- `panelAt(book, page, room, side, layout = 'teaching')` gives the panel a slot shows on page *n* in a layout (EASY-LAYOUT §4), in this order:
+  1. page *n*'s own panel, when *n* is 2 or more and page *n* fills the slot;
+  2. in the easy layout (`'easy'`), the slot's remembered panel from `easy`, when it has one;
+  3. otherwise page 1's panel.
+  The layout is the last argument and defaults to `'teaching'`, where step 2 never applies, so the rule is the same as before: page *n*'s own panel, otherwise page 1's. An unknown page, room, side or layout throws a `RangeError`. The five remembered slots therefore show their remembered panel on page 1 and on every book page in the easy layout, and page *n*'s own panel on pages 2 to 6 for the step room's south slot, which those pages fill.
 - The book of the player's language is used; switching language redraws every panel at once from the other file (the same page, the same slots).
 - The number of pages is the length of `pages`; both files have the same length by rule 9.
 - A panel is found by its id with `panelById(book, id)` (`src/content/book/index.ts`), in either language's book; `panelIdOf(page, room, side)` gives the id a position must carry.
