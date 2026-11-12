@@ -2,7 +2,7 @@
 
 # The bestiary (built)
 
-The illustrated catalogue of every creature, entity, presence and voice of The Roots. Each entry has a screenshot taken in the game, from the sandbox at a fixed seed (see [How the pictures were taken](#how-the-pictures-were-taken)), its kind and floors, one or two lines on what it is, and a link to the document that holds its detail.
+The illustrated catalogue of every creature, entity, presence and voice of The Roots. Each entry has a screenshot taken in the game, from the sandbox or the sky at a fixed seed (see [How the pictures were taken](#how-the-pictures-were-taken)), its kind and floors, one or two lines on what it is, and a link to the document that holds its detail.
 
 The detail is written once, in that document: behaviour, numbers, pickups, growth, meaning and open questions. This page does not repeat it. The code is the authority; kinds and floors were checked against `src/content/` (`enemies/`, `creatures/`, `bosses/`, `presences/`, `tables/enemies.ts`) when written.
 
@@ -42,10 +42,12 @@ An entity without a picture says so, with the reason, in its entry or under [Gap
 
 ## How the pictures were taken
 
-- **Method.** `npm run bestiary` (`scripts/bestiary-capture.mjs`) serves the game with Vite, opens the creative sandbox (`?sandbox=<scenario>`) in headless Chromium through Playwright, and for each entity: builds a plain room on one of its floors, spawns the entity in front of the player, faces the player at it, pauses the world, steps it two fixed ticks (enough for the room to build, few enough that the creature stays where it was placed), waits three seconds for the room mesh, then saves the game canvas as `img/<id>.png`. The sandbox has a fixed seed and a fixed step, so the same build gives the same pictures.
-- **Bosses** stand in a larger room, eight blocks away, so that the whole body is in the frame.
-- **Framing.** The title card, the debug readout and the toasts are hidden for the capture. The held hand is part of the player's view and is left in.
+- **Method.** `npm run bestiary` (`scripts/bestiary-capture.mjs`) serves the game with Vite and opens it in headless Chromium through Playwright. Each picture is the game canvas saved as `img/<id>.png`, from a fixed seed, so the same build gives the same pictures. There are two routes.
+- **The sandbox** (`?sandbox=<scenario>`) is used for the projections, creatures, bosses, presences and the Boundary. For each entity it builds a plain room on one of its floors, spawns the entity in front of the player, faces the player at it, pauses the world, steps it two fixed ticks (enough for the room to build, few enough that the creature stays where it was placed), waits three seconds for the room mesh, and saves the canvas. The sandbox has a fixed seed and a fixed step. Bosses stand in a larger room, eight blocks away, so that the whole body is in the frame.
+- **The sky** is not in the sandbox, which does not build the sky realm. It is taken in the real game: `?sky` starts the run on the sky deck, on the seed `SKYBARK7`, and the capture pauses the world and steps it itself. The player stands on the subject's floor, out of the deity's sight, and the world is stepped until the creature settles into a rest state; the capture's log names that state (Watching, Asleep, Basking, Grazing, Idle, Wild). Then the camera moves to a clear line to the creature, and the world is not stepped again, so the picture shows that rest. A herd's picture is one member of its floor's herd, once it is out of its spawn warning. The horse startles at a player who moves within six blocks, so its picture is taken still from seven blocks. Each sky subject has its camera side set in the script, chosen by eye so that its face shows, because the paddock fences and the herds' wandering hide the other sides.
+- **Framing.** The title card, the debug readout and the toasts are hidden for the capture. The HUD (hearts, counters, minimap, zone name) and the held hand are part of the player's view and are left in.
 - **Not shown.** An entity with no body has no picture and says so in its entry. An entity the sandbox cannot spawn is listed in the gaps at the end of this document with the reason.
+
 
 ## Gaps and open questions (shared)
 
@@ -633,10 +635,11 @@ Three presences. They are immortal, never gods or people, and never give orders.
 
 ### The Boundary
 
+![The Boundary](img/boundary.png)
+
 - **Kind and floors:** presence in the design, projection kind in the code; one per vault of a dungeon floor from floor 1 on, and above the tutorial treasure chest (`src/world/floor.ts`).
 - **What it is:** boundaries. A tall, calm column of limestone that keeps the vault it stands in.
-- **Document:** [BOUNDARY.md](../presences/BOUNDARY.md).
-- **Screenshot:** none. The sandbox refuses this entity (its id is not in the sandbox's projection roster), so it was not captured. See [Gaps](#gaps).
+- **Document:** [BOUNDARY.md](../presences/BOUNDARY.md). Its picture is the Boundary alone, without its vault or its ring of blocks: the sandbox has no chest, so no ring is built.
 
 ---
 
@@ -657,32 +660,107 @@ A voice here is speech that has no body of its own. The game has one such entity
 
 ## 6. The sky guardians
 
-Five deities, one on each sky floor of the built sky tree, in `src/sky/`. Each is a small soft body under a giant animal head, floating over its seat, won by positive hits. What they share is in [sky/guardians](../sky/guardians/README.md).
+Five deities, one on each sky floor of the built sky tree, in `src/sky/`. Each is a small soft body under a giant animal head, floating over its seat, won by positive hits. What they share is in [sky/guardians](../sky/guardians/README.md). Each picture is taken at rest, as described above.
 
-| Entity | Floor and seat | What it is | Document |
-|---|---|---|---|
-| Giant panda | 1, the bamboo seat | A giant panda head on a plush body. It rests between attacks. | [PANDA.md](../sky/guardians/PANDA.md) |
-| Koala | 2, the branches (the Fork) | A koala asleep until the player comes near. It clings to its branch and teleports across the floor. | [KOALA.md](../sky/guardians/KOALA.md) |
-| Elephant | 3, the channels (the Basin) | An elephant listening over the Basin pool. Its spray carries the player down the channels. | [ELEPHANT.md](../sky/guardians/ELEPHANT.md) |
-| Lion | 4, the plain (the Sunning Ledge) | A lion basking on its ledge. A roar sends a ring of paralysis across the ground. | [LION.md](../sky/guardians/LION.md) |
-| Horse | 5, the meadow (the paddocks) | The only deity that walks and leaps, between six fenced paddocks. | [HORSE.md](../sky/guardians/HORSE.md) |
+### Giant panda
 
-**Meaning:** not yet documented in the built sky documents. **Screenshots: not captured** (see [Gaps](#gaps)).
+![Giant panda](img/guardian-panda.png)
+
+- **Kind and floors:** sky guardian; sky floor 1, the bamboo seat.
+- **What it is:** a giant panda head on a plush body. It rests between attacks.
+- **Meaning:** not yet documented.
+- **Document:** [PANDA.md](../sky/guardians/PANDA.md).
+
+### Koala
+
+![Koala](img/guardian-koala.png)
+
+- **Kind and floors:** sky guardian; sky floor 2, the branches (the Fork).
+- **What it is:** a koala asleep until the player comes near. It clings to its branch and teleports across the floor.
+- **Meaning:** not yet documented.
+- **Document:** [KOALA.md](../sky/guardians/KOALA.md).
+
+### Elephant
+
+![Elephant](img/guardian-elephant.png)
+
+- **Kind and floors:** sky guardian; sky floor 3, the channels (the Basin).
+- **What it is:** an elephant listening over the Basin pool. Its spray carries the player down the channels.
+- **Meaning:** not yet documented.
+- **Document:** [ELEPHANT.md](../sky/guardians/ELEPHANT.md).
+
+### Lion
+
+![Lion](img/guardian-lion.png)
+
+- **Kind and floors:** sky guardian; sky floor 4, the plain (the Sunning Ledge).
+- **What it is:** a lion basking on its ledge. A roar sends a ring of paralysis across the ground.
+- **Meaning:** not yet documented.
+- **Document:** [LION.md](../sky/guardians/LION.md).
+
+### Horse
+
+![Horse](img/guardian-horse.png)
+
+- **Kind and floors:** sky guardian; sky floor 5, the meadow (the paddocks).
+- **What it is:** the only deity that walks and leaps, between six fenced paddocks. Its picture shows its head over a paddock fence, watching.
+- **Meaning:** not yet documented.
+- **Document:** [HORSE.md](../sky/guardians/HORSE.md).
+
+---
+
 
 ## 7. The sky minions
 
-Five herds, one per sky floor: the animals of each floor, embodied as smaller creatures. The engine, the spawn places, the counts and the herd rules are in [sky/minions](../sky/minions/README.md). Every herd spawns while the player is on its floor and turns to the player's side after the number of positive hits in its row.
+Five herds, one per sky floor: the animals of each floor, embodied as smaller creatures. Each picture shows one member of its herd. The engine, the spawn places, the counts and the herd rules are in [sky/minions](../sky/minions/README.md): every herd spawns while the player is on its floor and turns to the player's side after the number of positive hits in its row.
 
-| Herd | Spawn place | Hits to turn | What it is |
-|---|---|---|---|
-| Little pandas | the bamboo clumps | 3 | Small pandas that walk slowly, climb, roll and sit. |
-| Koalas | asleep in clusters | 3 | Koalas that sleep until disturbed, hang under branches and drop on a passing player. |
-| Young elephants | the waterhole | 5 | Young elephants that walk the ground ring in file and shoulder aside a player in the way. |
-| The pride (lions) | the shade rocks | 4 | Lions that stalk low, pounce from above and roar a small freeze. |
-| The herd (horses) | the paddock gate | 4 | Horses that gallop a wide loop and kick a player standing behind them. |
+### Little pandas
 
-- **Meaning:** not yet documented in the built sky documents.
-- **Screenshots: not captured** (see [Gaps](#gaps)).
+![Little pandas](img/herd-panda.png)
+
+- **Kind and floors:** sky minion (a herd); sky floor 1, spawns at the bamboo clumps; turns after 3 positive hits.
+- **What it is:** small pandas that walk slowly, climb, roll and sit.
+- **Meaning:** not yet documented.
+- **Document:** [sky/minions](../sky/minions/README.md) (the herd's row in its table).
+
+### Koalas
+
+![Koalas](img/herd-koala.png)
+
+- **Kind and floors:** sky minion (a herd); sky floor 2, asleep in clusters; turns after 3 positive hits.
+- **What it is:** koalas that sleep until disturbed, hang under branches and drop on a passing player.
+- **Meaning:** not yet documented.
+- **Document:** [sky/minions](../sky/minions/README.md) (the herd's row in its table).
+
+### Young elephants
+
+![Young elephants](img/herd-elephant.png)
+
+- **Kind and floors:** sky minion (a herd); sky floor 3, the waterhole; turns after 5 positive hits.
+- **What it is:** young elephants that walk the ground ring in file and shoulder aside a player in the way.
+- **Meaning:** not yet documented.
+- **Document:** [sky/minions](../sky/minions/README.md) (the herd's row in its table).
+
+### The pride
+
+![The pride](img/herd-lion.png)
+
+- **Kind and floors:** sky minion (a herd); sky floor 4, the shade rocks; turns after 4 positive hits.
+- **What it is:** lions that stalk low, pounce from above and roar a small freeze.
+- **Meaning:** not yet documented.
+- **Document:** [sky/minions](../sky/minions/README.md) (the herd's row in its table).
+
+### The herd
+
+![The herd](img/herd-horse.png)
+
+- **Kind and floors:** sky minion (a herd); sky floor 5, the paddock gate; turns after 4 positive hits.
+- **What it is:** horses that gallop a wide loop and kick a player standing behind them.
+- **Meaning:** not yet documented.
+- **Document:** [sky/minions](../sky/minions/README.md) (the herd's row in its table).
+
+---
+
 
 ## Gaps
 
@@ -690,12 +768,12 @@ These are the entities this bestiary cannot yet describe fully or picture. Each 
 
 ### Screenshots not taken
 
-- **The Boundary.** The sandbox's room roster refuses the id `boundary` (`carveSandbox`: "unknown projection"), because the Boundary is placed by the floor generator on each vault, not by the sandbox. It needs either a sandbox hook for vault presences or a vault in a real run. Not captured in this pass.
-- **The five sky guardians and the five sky herds.** They live in the sky realm above the built tree, which the sandbox does not build. Pictures need a harness that moves the player to each sky floor. Not captured in this pass.
+- **None for a creature, presence, projection or sky entity.** Every entity listed above has a picture from the game, taken as described in [How the pictures were taken](#how-the-pictures-were-taken).
+- **The Sanctuary's guidance** (section 5) has no body, so it has no picture by design: it is words, a scene and a sound on the app's own screen.
 
 ### Meaning not yet documented
 
-- **The sky guardians and the sky minions** (the deities and herds, see sections 6 and 7): the built sky documents describe what they do, not what they mean.
+- **The sky guardians** (section 6: Giant panda, Koala, Elephant, Lion, Horse) and **the sky herds** (section 7: little pandas, koalas, young elephants, the pride, the herd). The built sky documents describe what they do, not what they mean, so each entry says "not yet documented". The owner is asked for their meaning.
 - **The Gardener:** its meaning is written in the design, but it is not placed (the owner ruled on 2026-10-29), so the meaning is recorded as not built.
 
 ## Found while writing

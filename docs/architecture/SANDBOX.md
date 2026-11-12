@@ -52,7 +52,7 @@ Each action has a tick `t` and runs right after that tick's report, before the t
 | `explode` | `at`, `radius`? (2.5), `damage`? (30) | A blast, as a breakthrough's |
 | `bomb` | `at`, `fuse`? (1.8) | A lit breakthrough cube |
 | `cube` | `block`, `at`, `v`? | A loose cube with a velocity |
-| `spawn` | `def`, `at`, `faction`? | A projection, creature, or presence, out at once |
+| `spawn` | `def`, `at`, `faction`? | A projection, creature, or presence, out at once. The Boundary too, placed as a vault places it but without its ring (a sandbox has no chest) |
 | `give`, `lose` | `item` | Gain (quietly) or lose a practice |
 | `tp`, `look` | `at` | Stand on a tile; aim at a cell's centre |
 | `fire` | `ticks`? (1) | Hold the fire button that many ticks (the intention, or the active weapon); each hold starts with a press, so two short `fire`s within 18 ticks are a double tap (Dr. Launcher) |

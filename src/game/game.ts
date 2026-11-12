@@ -568,6 +568,14 @@ export class Game {
   sandboxSpawn(defId: string, x: number, y: number, z: number, faction?: Faction) {
     const r = this.rooms.get(this.floors.get(this.depth)?.rooms[0]?.id ?? -1);
     if (!r) return null;
+    // the Boundary as a vault places it (updateBoundaries reads its tag), without the Sanctuary's ring: a sandbox has no chest
+    if (defId === boundaryDef.id) {
+      const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, x, y, z, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+      e.faction = 'neutral';
+      e.spawning = 0;
+      this.actors.add(e);
+      return e;
+    }
     const presence = PRESENCE_BY_ID.get(defId);
     if (presence) {
       const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, presence.hp, presence.speed, 0, new Set(['presence']));

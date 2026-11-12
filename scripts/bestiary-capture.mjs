@@ -8,6 +8,10 @@
 //   npm run bestiary                     capture every entity listed below (documentation screenshots)
 //   npm run bestiary -- doubt boss ...   capture the named ids only
 //
+// The sky's entities (the five deities, guardian-*, and one member of each herd, herd-*) are not in the sandbox: they
+// are framed in the real game, started on the sky deck (?sky) with a fixed seed (SKY_SEED), and the world is paused
+// between the explicit steps of stageSky, so the same build gives the same pictures. The Boundary is a sandbox subject.
+//
 // Portrait mode (docs/design/not-built/levels/roots/BOOK-DATA.md §4) makes the square pictures the book's
 // plates show, from the same game, with no HUD and no held hand:
 //
@@ -57,6 +61,29 @@ const SUBJECTS = [
   ['impostor', 7], ['many-faces', 7], ['shadow', 9],
   // presences (src/content/presences)
   ['listener', 1], ['gardener', 1],
+  // the Boundary (src/content/presences/boundary.ts): a vault's presence, staged in the sandbox
+  ['boundary', 1],
+];
+
+// The sky's creatures (src/sky/): the five deities and one member of each herd. They are staged in the real game,
+// not the sandbox, which does not build the sky: `?sky` starts the run on the sky deck, on a fixed seed, and the player
+// is placed by the deity's or the herd's floor. The floor is the sky tree's (1 to 5), the animal is the floor's.
+const SKY_SEED = 'SKYBARK7';
+const SKY_SUBJECTS = [
+  // the deities. `turn` is the camera's side, in radians, from the side toward the standing place, chosen by eye so that
+  // the face shows. The horse startles at a moving player within six blocks: it is framed from seven blocks, still, until
+  // it watches (its head up), and its paddock fences hide most sides
+  { id: 'guardian-panda', animal: 'panda', floor: 1, role: 'deity' },
+  { id: 'guardian-koala', animal: 'koala', floor: 2, role: 'deity', turn: -Math.PI / 2 },
+  { id: 'guardian-elephant', animal: 'elephant', floor: 3, role: 'deity' },
+  { id: 'guardian-lion', animal: 'lion', floor: 4, role: 'deity', turn: -Math.PI / 2 },
+  { id: 'guardian-horse', animal: 'horse', floor: 5, role: 'deity', minDist: 7, settle: 'Watching', turn: -Math.PI / 4 },
+  // one member of each herd (it wanders, so its `turn` is chosen by eye too)
+  { id: 'herd-panda', animal: 'panda', floor: 1, role: 'minion', minDist: 2.4, turn: -Math.PI / 2 },
+  { id: 'herd-koala', animal: 'koala', floor: 2, role: 'minion', minDist: 2.4, turn: Math.PI },
+  { id: 'herd-elephant', animal: 'elephant', floor: 3, role: 'minion', minDist: 3.2, turn: -Math.PI / 2 },
+  { id: 'herd-lion', animal: 'lion', floor: 4, role: 'minion', minDist: 2.4, turn: -Math.PI / 2 },
+  { id: 'herd-horse', animal: 'horse', floor: 5, role: 'minion', minDist: 2.4, turn: Math.PI / 2 },
 ];
 
 // The nineteen portraits of the book (src/content/book/images.ts, BESTIARY_PORTRAITS); the floor is the one above.
@@ -71,14 +98,15 @@ const floorOf = new Map(SUBJECTS.map(([id, floor]) => [id, floor]));
 const jobs = portrait
   ? (only.length === 0 ? PORTRAITS : only).map(id => [id, floorOf.get(id) ?? 1])
   : SUBJECTS.filter(([id]) => only.length === 0 || only.includes(id));
-if (jobs.length === 0 || (portrait && jobs.some(([id]) => !floorOf.has(id)))) { console.error('bestiary: no matching ids'); process.exit(2); }
+const skyJobs = portrait ? [] : SKY_SUBJECTS.filter(s => only.length === 0 || only.includes(s.id));
+if (jobs.length + skyJobs.length === 0 || (portrait && jobs.some(([id]) => !floorOf.has(id)))) { console.error('bestiary: no matching ids'); process.exit(2); }
 mkdirSync(portrait ? portraitDir : imgDir, { recursive: true });
 
 // A plain room: the subject stands east of the player, who faces it. Bosses need a larger room and more distance
 // to fit in the frame.
 const BOSSES = new Set(['resistance', 'inertia', 'insatiable', 'overwhelm', 'hoard', 'downpour', 'threshold-guardian', 'verdict', 'grudge', 'old-rule', 'furnace', 'impostor', 'many-faces', 'shadow']);
 // Small subjects (the creatures and the two smallest projections) are shot from three tiles away, or they are a dot.
-const CLOSE = new Set(['wonder', 'rootling', 'mossling', 'chirper', 'delver', 'leafling', 'star-mite', 'bubbler', 'ferryback', 'drifter', 'inkmite', 'cinderwalker', 'huddler', 'noise', 'distraction']);
+const CLOSE = new Set(['wonder', 'rootling', 'mossling', 'chirper', 'delver', 'leafling', 'star-mite', 'bubbler', 'ferryback', 'drifter', 'inkmite', 'cinderwalker', 'huddler', 'noise', 'distraction', 'boundary']);
 const rows = (cols, n) => Array.from({ length: n }, () => '.'.repeat(cols));
 const scenarioFor = (id, floor) => {
   const boss = BOSSES.has(id);
@@ -195,6 +223,145 @@ async function encodeWebp(page, png) {
   }
 }
 
+/**
+ * Frames one sky creature (a deity, or a herd's member) and hides the HUD. It runs in the page. The player first stands
+ * on the floor, out of the deity's sight, and the world is stepped so the creature settles into its rest; then the
+ * camera moves, at a clear line to the subject, and the world is not stepped again, so the picture shows that rest.
+ */
+const stageSky = ({ animal, floor, role, turn = 0, minDist = 0, settle = null }) => {
+  const g = window.S.game, sky = g.sky, world = sky.set.world;
+  g.paused = true;
+  const plan = sky.plans.floors.find(f => f.animal === animal);
+  const deity = sky.creatures.deities.find(e => e.def.animal === animal);
+  if (!plan || !deity) return { error: `no sky creature for ${animal}` };
+  const seat = plan.seat;
+  const ref = role === 'deity' ? deity.actor.body : { x: seat.x + 0.5, z: seat.z + 0.5 };
+  // a standing place on the floor beyond the deity's sight (the nearest one that is), else the farthest found
+  const sight = deity.def.sight;
+  let beyond = null, farthest = null;
+  for (let k = 0; k < 24; k++) {
+    const a = k * Math.PI / 12;
+    for (const R of [sight + 1, sight + 3, sight + 6]) {
+      const p = sky.placeAt([Math.floor(ref.x + R * Math.cos(a)), seat.y, Math.floor(ref.z + R * Math.sin(a))]);
+      if (sky.floorAt(p[1]) !== floor) continue;
+      const d = Math.hypot(p[0] + 0.5 - ref.x, p[2] + 0.5 - ref.z);
+      if (d >= sight + 1 && (!beyond || d < beyond.d)) beyond = { p, d };
+      if (!farthest || d > farthest.d) farthest = { p, d };
+    }
+  }
+  const stand = beyond ?? farthest;
+  if (!stand) return { error: `no standing place on floor ${floor}` };
+  g.player.spawnAt(stand.p[0] + 0.5, stand.p[1], stand.p[2] + 0.5);
+  let subject = null;
+  if (role === 'deity') {
+    subject = deity.actor;
+    for (let i = 0; i < 90; i++) g.step();
+  } else {
+    // the spawner brings the floor's herd in over a few seconds; the member nearest the seat, not still showing its warning
+    for (let i = 0; i < 1200 && !subject; i++) {
+      g.step();
+      let bd = Infinity;
+      for (const m of sky.creatures.minions) {
+        if (m.floor !== floor || m.def.animal !== animal || m.actor.state === 'Spawning') continue;
+        const d = Math.hypot(m.actor.body.x - ref.x, m.actor.body.z - ref.z);
+        if (d < bd) { subject = m.actor; bd = d; }
+      }
+    }
+    for (let i = 0; i < 60 && subject; i++) g.step();
+  }
+  if (!subject) return { error: `no ${role} of ${animal} on floor ${floor}` };
+  const holder = sky.creatures.view.parts(subject.id)?.get('@holder');
+  if (!holder) return { error: `no drawn parts for ${animal}` };
+  holder.updateMatrixWorld(true);
+  const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+  holder.traverse(o => {
+    if (!o.isMesh || !o.visible) return;
+    if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    const bb = o.geometry.boundingBox, m = o.matrixWorld.elements;
+    for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]) {
+      const p = [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
+      for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], p[k]); hi[k] = Math.max(hi[k], p[k]); }
+    }
+  });
+  if (!Number.isFinite(lo[0])) return { error: `no meshes for ${animal}` };
+  const centre = [0, 1, 2].map(k => (lo[k] + hi[k]) / 2);
+  const size = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+  // the subject's larger extent fills a share of the frame's height: more for a deity, less for a small herd member
+  const tan = Math.tan(g.camera.fov * Math.PI / 360);
+  const base = size / ((role === 'deity' ? 0.6 : 0.5) * 2 * tan);
+  const feet = subject.body.y, eye = feet + 1.62;
+  const solid = (x, y, z) => world.solid(Math.floor(x), Math.floor(y), Math.floor(z));
+  const clear = (cx, cz) => {
+    const len = Math.hypot(centre[0] - cx, centre[1] - eye, centre[2] - cz);
+    for (let s = 0.25; s < len - size * 0.5; s += 0.25) {
+      const t = s / len;
+      if (solid(cx + (centre[0] - cx) * t, eye + (centre[1] - eye) * t, cz + (centre[2] - cz) * t)) return false;
+    }
+    return !solid(cx, feet, cz) && !solid(cx, eye, cz);
+  };
+  // the side toward the standing place first: a creature that watches the player turns its face that way
+  const toward = Math.atan2(stand.p[0] + 0.5 - centre[0], stand.p[2] + 0.5 - centre[2]) + turn;
+  const sides = [0, Math.PI / 2, Math.PI, -Math.PI / 2, Math.PI / 4, 3 * Math.PI / 4, -3 * Math.PI / 4, -Math.PI / 4].map(a => toward + a);
+  let pick = null;
+  for (const m of [1, 1.25, 1.6, 2, 2.5, 3]) {
+    for (const side of sides) {
+      const dist = Math.max(base * m, minDist);
+      const cx = centre[0] + dist * Math.sin(side), cz = centre[2] + dist * Math.cos(side);
+      if (clear(cx, cz)) { pick = { side, dist, cx, cz }; break; }
+    }
+    if (pick) break;
+  }
+  if (!pick) return { error: `no clear view of the ${role} of ${animal}` };
+  g.player.spawnAt(pick.cx, feet, pick.cz);
+  g.player.yaw = pick.side;
+  g.player.pitch = Math.atan2(centre[1] - eye, pick.dist);
+  if (settle) for (let i = 0; i < 600 && subject.state !== settle; i++) g.step();
+  document.querySelectorAll('#overlay, #debug, #toast').forEach(el => { el.style.display = 'none'; });
+  return { size, dist: pick.dist, state: subject.state };
+};
+
+/**
+ * The sky's subjects, in one run of the real game on SKY_SEED: each is staged by stageSky, then shot once its chunks are
+ * meshed. The page can reload while the dev server optimises its dependencies, so a subject that finds the game gone
+ * reopens the run and is staged again (the staging is stateless, so a second try gives the same picture).
+ */
+async function captureSky(browser, url, subjects) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const errors = [];
+  page.on('pageerror', e => errors.push(String(e)));
+  const open = async () => {
+    await page.goto(`${url}?seed=${SKY_SEED}&sky`);
+    await page.waitForFunction(() => window.S && window.S.game && window.S.game.inSky, null, { timeout: 120000, polling: 200 });
+    // the world waits for the explicit steps of stageSky, so every picture starts from the same tick
+    await page.evaluate(() => { window.S.game.simulateUnlocked = true; window.S.game.paused = true; });
+  };
+  let failed = 0;
+  let opened = false;
+  for (const s of subjects) {
+    let shot = false;
+    for (let attempt = 0; attempt < 3 && !shot; attempt++) {
+      try {
+        if (!opened || attempt > 0) { await open(); opened = true; }
+        const framed = await page.evaluate(stageSky, s);
+        if (framed.error) throw new Error(framed.error);
+        await page.waitForFunction(() => !window.S.game.sky.set.chunks.busy, null, { timeout: 120000, polling: 200 });
+        await page.waitForTimeout(3000);
+        await page.screenshot({ path: join(imgDir, `${s.id}.png`) });
+        console.log(`+ ${s.id}  (subject ${framed.size.toFixed(2)} blocks at ${framed.dist.toFixed(2)}, state ${framed.state})`);
+        shot = true;
+      } catch (e) {
+        if (attempt === 2) {
+          failed++;
+          console.log(`✗ ${s.id}: ${String(e).split('\n')[0]}`);
+        }
+      }
+    }
+  }
+  if (errors.length) { failed++; console.log(errors.slice(0, 3).join('\n')); }
+  await page.close();
+  return failed;
+}
+
 try {
   for (const [id, floor] of jobs) {
     const page = await browser.newPage({ viewport: portrait ? { width: PORTRAIT_PX, height: PORTRAIT_PX } : { width: 1280, height: 720 } });
@@ -238,9 +405,10 @@ try {
     }
     await page.close();
   }
+  if (skyJobs.length) failed += await captureSky(browser, url, skyJobs);
 } finally {
   await browser.close();
   await server.close();
 }
-console.log(`bestiary: ${jobs.length - failed} captured, ${failed} failed`);
+console.log(`bestiary: ${jobs.length + skyJobs.length - failed} captured, ${failed} failed`);
 process.exit(failed ? 1 : 0);
