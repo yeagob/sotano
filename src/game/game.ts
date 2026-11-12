@@ -3303,7 +3303,6 @@ export class Game {
       }
     }
     for (const [k, st] of this.bossRooms) this.updateBossRoom(k, st, dt);
-    this.syncBossBar();
   }
 
   private enterBossRoom(r: RoomInfo) {
@@ -3335,7 +3334,7 @@ export class Game {
     sfx3.clear();
   }
 
-  /** The boss bar follows the one fight the player is in: the spawned boss of this room, alive, while the player lives. It is set every frame, so a death, a reset (which clears bossRooms) or leaving the room hides it, and only a resumed fight shows it again. */
+  /** The boss bar follows the one fight the player is in: the spawned boss of this room, alive, while the player lives. Called every underground frame outside the simulation step, so it also runs under the death screen, a menu, the pause card and the R fade; a death, a reset (which clears bossRooms) or leaving the room hides it, and only a resumed fight shows it again. */
   private syncBossBar() {
     const st = [...this.bossRooms.values()].find(s => s.spawned && s.room === this.room);
     const boss = st && !this.player.dead ? this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room) : undefined;
@@ -3575,6 +3574,7 @@ export class Game {
 
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
+    if (this.below) this.syncBossBar();
     this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }

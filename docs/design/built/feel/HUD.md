@@ -12,7 +12,7 @@ What the player reads on screen, in the corners and on the screens that open ove
 - **Bombs and keys.** Two counters, capped at 99. Keys and bombs cost no hand slot.
 - **Hand slots.** The things you carry: two blocks (one per hand) by default; Second Brain adds one to what you carry and Letters from a Stoic adds three. A part takes a slot like a block.
 - **Polarity mark.** A static mark for the loaded intention: a filled circle for good, a ring for bad. The F key switches it, and a short tick sounds.
-- **Boss bar.** The boss's name and its health ratio, shown while you fight the boss of the room you are in. It hides when you die, when you reset with R, after respawn, and when the boss falls or you leave its room; it shows again only when the fight resumes.
+- **Boss bar.** The boss's name and its health ratio, shown underground while you are alive in the boss room and its boss is alive. It hides at once when you die (under the death screen too), when a reset makes the new world (R or respawn), when the boss falls, and when you leave its room; it shows again only when a fight resumes. A menu, the toll or the pause card leaves it as it is. In the sky the same bar shows a deity's hits.
 - **Path chips.** A practice's path is shown as a chip: the path's colour, always with its glyph and its word.
 
 ## The minimap
