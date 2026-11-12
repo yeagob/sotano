@@ -11,6 +11,9 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 ### Fixed
 - The boss health bar hides when you die, reset with R or respawn, and shows again only when the boss fight resumes (#163).
 
+### Added
+- Choose the active carried item with the mouse wheel, the D-pad or the number keys 1 to 9 (a tap on a hand slot on touch); the next place, throw, drink, alembic or kitchen use targets it. The hand and the inventory outline it in gold, and the inventory shows what you carry (#144).
+
 ## 0.2.3.f1 · 2026-11-11
 
 ### Fixed

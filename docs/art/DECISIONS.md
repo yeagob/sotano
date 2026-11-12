@@ -93,7 +93,7 @@ Fixed material ramps are in §6.2.
 |---|---|---|
 | `light.core` | `#FFF1C8` | Hottest pixel: intention core, seed core, stars below bedrock, Satori, the lantern (35 %), the breakthrough flash. 1–4 px per sprite |
 | `light.hot` | `#FFD77A` | Shard hot core, room-heart light, released-room warm tint |
-| `light.gold` | `#F2C14E` | Intention shell, crack cores, shard lines, **kintsugi seams**, changing hexagram lines, keys, quality stars, stat-up, synergy ✦, treasure keystone, cleared rooms on the map, sunrise mid-band |
+| `light.gold` | `#F2C14E` | Intention shell, crack cores, shard lines, **kintsugi seams**, changing hexagram lines, keys, quality stars, stat-up, synergy ✦, treasure keystone, the outline of the active carried item (HUD hand slot and inventory tile, #144), cleared rooms on the map, sunrise mid-band |
 | `light.ember` | `#EAA640` | Intention halo (35 %), lit lamps, breakthrough cracks, default trail |
 | `light.dusk` | `#B8502A` | Dying light only: a falling intention, embers going out |
 

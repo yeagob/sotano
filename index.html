@@ -148,8 +148,11 @@
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
-    .slot.top { box-shadow: inset 0 0 0 2px var(--ui-text); }
+    .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
     .slot img { width: 100%; height: 100%; display: block; }
+    #inventory .hand-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    #inventory .hand-row .slot { cursor: pointer; }
+    #inventory .hand-row .slot.sel { outline: 2px solid var(--ui-text); outline-offset: 2px; }
 
     /* minimap top-right (the right hand used to cover it), floor label underneath */
     #corner { position: fixed; right: 12px; top: 10px; text-align: right; pointer-events: none; }
@@ -285,6 +288,7 @@
     #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
     #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); }
     #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
+    #inventory .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory .tile img { width: 42px; height: 42px; }
     #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: normal; hyphens: auto; font-size: 14px; line-height: 1.3; color: var(--ui-text); }
     #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
