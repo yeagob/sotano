@@ -15,6 +15,7 @@ Read the relevant documents and invoke the matching skill in `.claude/skills/` b
 
 ## Project rules
 
+- When the owner asks to create an issue, always create it on GitHub (not as a local file). Write the issue in English.
 - Write repository documentation, identifiers and source player text in English; chat with the owner in their language.
 - Keep design claims in the correct branch. Never describe a proposed or partially built feature as built; update the matching design document and its indexes when behavior changes.
 - Follow the relevant project skills for design, levels, items, lore, art, controls, localization and production quality. Ask the owner when meaning, names or scope are unclear.
