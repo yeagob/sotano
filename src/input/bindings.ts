@@ -116,8 +116,8 @@ export const BINDINGS: readonly Binding[] = [
     action: 'pick', kind: 'press', when: ['play', 'inventory'],
     keyboard: { keys: ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Enter'] },
     gamepad: { buttons: [PAD.A], when: ['inventory'] },
-    touch: { control: 'tap', when: ['inventory'] },
-    refs: { minecraft: 'the number keys pick a hotbar slot; in the inventory a click picks the item', noita: 'the number keys pick a wand slot', isaac: 'one item, one button: a slot is chosen by its own number' },
+    touch: { control: 'tap', when: ['play', 'inventory'] },
+    refs: { minecraft: 'the number keys pick a hotbar slot; a click on the hotbar or the inventory picks the item', noita: 'the number keys pick a wand slot', isaac: 'one item, one button: a slot is chosen by its own number' },
   },
   {
     action: 'inventory', kind: 'press', when: ['play', 'paused', 'inventory'],
@@ -203,6 +203,8 @@ export const PAD_WAKE = 0.5;
 /** Two presses of the fire control closer than this are a double tap: with the `missile` stat,
  *  the second press launches a bomb instead of an intention (Dr. Launcher). Every device. */
 export const DOUBLE_TAP_MS = 300;
+/** A wheel step is taken at most once in this many milliseconds (a free-spinning wheel sends many events). */
+export const WHEEL_STEP_MS = 150;
 /** A touch shorter than this, that does not drag, is a tap. */
 export const TAP_MS = 250;
 /** How far a tap may wander, in pixels, before it counts as a drag. */

@@ -61,6 +61,37 @@ describe('the active carried item', () => {
     expect(p.activeIndex).toBe(2);
   });
 
+  it('an item leaving before the active one keeps the choice on the same item', () => {
+    const p = hand(3, 5, 7, 9);
+    p.select(2); // the 7
+    expect(p.removeAt(0)).toBe(3);
+    expect(p.active).toBe(7);
+    expect(p.activeIndex).toBe(1);
+  });
+
+  it('an item leaving after the active one leaves the choice where it is', () => {
+    const p = hand(3, 5, 7, 9);
+    p.select(1); // the 5
+    p.removeAt(3);
+    expect(p.active).toBe(5);
+    expect(p.activeIndex).toBe(1);
+  });
+
+  it('losing the active item itself sends the choice back to the last valid slot', () => {
+    const p = hand(3, 5, 7);
+    p.select(0);
+    p.removeAt(0);
+    expect(p.hand).toEqual([5, 7]);
+    expect(p.activeIndex).toBe(1);
+    expect(p.active).toBe(7);
+  });
+
+  it('removing from a hand with no choice keeps the top as the active item', () => {
+    const p = hand(3, 5, 7);
+    p.removeAt(0);
+    expect(p.active).toBe(7);
+  });
+
   it('an empty hand has no active item and no material on top', () => {
     const p = hand();
     expect(p.activeIndex).toBe(-1);
@@ -97,6 +128,7 @@ describe('the carried-item controls', () => {
     expect(keys).toContain('Enter');
     expect(contextsFor(BINDING.pick, 'keyboard')).toEqual(['play', 'inventory']);
     expect(contextsFor(BINDING.pick, 'gamepad')).toEqual(['inventory']);
+    expect(contextsFor(BINDING.pick, 'touch')).toEqual(['play', 'inventory']);
   });
 
   it('the new rows are on the pause card', () => {

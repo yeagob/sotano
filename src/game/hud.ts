@@ -68,7 +68,6 @@ export type ScreenTab = 'menu' | 'items';
 export class Hud {
   private hand = $('hand');
   private itemsBar = $('items');
-  private carriedEl = $('carried');
   private debugEl = $('debug');
   private overlay = $('overlay');
   private bannerEl = $('banner');
@@ -754,7 +753,6 @@ export class Hud {
 
   private renderScreen(g: Game) {
     this.showTab(this.screenTab);
-    this.renderCarried(g);
     if (this.screenTab === 'items') this.renderInventory(g);
   }
 
@@ -767,28 +765,6 @@ export class Hud {
   selectedCarried(): number {
     const m = /^hand:(\d+)$/.exec(this.selected ?? '');
     return m ? Number(m[1]) : -1;
-  }
-
-  /** The pause menu's row: what you carry (the active item in gold) and the practices you hold. */
-  private renderCarried(g: Game) {
-    const active = g.player.activeIndex;
-    const nodes: HTMLElement[] = g.player.hand.map((c, i) => {
-      const slot = this.handSlot(c, i === active);
-      slot.addEventListener('click', () => g.chooseCarried(i));
-      return slot;
-    });
-    for (const it of g.inventory.items) {
-      const slot = document.createElement('div');
-      slot.className = 'slot full';
-      const img = document.createElement('img');
-      img.src = iconDataUrl(it.def, 2);
-      img.title = itemText(it.def).name;
-      img.alt = '';
-      slot.appendChild(img);
-      nodes.push(slot);
-    }
-    this.carriedEl.replaceChildren(...nodes);
-    this.carriedEl.hidden = nodes.length === 0;
   }
 
   private showTab(tab: ScreenTab) {
@@ -805,14 +781,14 @@ export class Hud {
     const g = this.game;
     if (!g) return;
     const root = this.tollOpen ? this.tollEl : this.invEl;
-    const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
+    const tiles = [...root.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')];
     if (!tiles.length) return;
     const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
     const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
     const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
     this.selected = tiles[next].dataset.id!;
     if (this.tollOpen) this.renderToll(g); else this.renderInventory(g);
-    root.querySelector<HTMLElement>('.tile.sel, .tile.cur')?.scrollIntoView({ block: 'nearest' });
+    root.querySelector<HTMLElement>('.tile.sel, .tile.cur, .slot.sel')?.scrollIntoView({ block: 'nearest' });
   }
 
   openToll(g: Game, k: number) {
@@ -949,8 +925,7 @@ export class Hud {
       `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
       `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
-    const handGrid = hand.map((c, i) => this.carriedTile(c, i, i === chosen, selId === `hand:${i}`)).join('');
-    const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="grid">${handGrid}</div>` : '';
+    const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="hand-row"></div>` : '';
 
     const detail = sel ? this.itemDetail(sel)
       : handSel ? this.carriedDetail(handSel)
@@ -975,7 +950,14 @@ export class Hud {
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
-    for (const b of this.invEl.querySelectorAll<HTMLButtonElement>('.tile')) {
+    // the carried items are the HUD's own hand slots, chosen by a click or a tap
+    this.invEl.querySelector('.hand-row')?.replaceChildren(...hand.map((c, i) => {
+      const slot = this.handSlot(c, i === chosen);
+      slot.dataset.id = `hand:${i}`;
+      slot.classList.toggle('sel', selId === slot.dataset.id);
+      return slot;
+    }));
+    for (const b of this.invEl.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')) {
       b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
       b.addEventListener('click', () => {
         this.selected = b.dataset.id!;
@@ -983,13 +965,6 @@ export class Hud {
         this.renderInventory(g);
       });
     }
-  }
-
-  /** A carried item in the inventory grid: its icon and name, gold when it is the active item. */
-  private carriedTile(c: Carried, i: number, on: boolean, selected: boolean) {
-    const icon = typeof c === 'number' ? this.slotUrl(c) : iconDataUrl(isFlask(c) ? carriedDef(c) : c, 3);
-    return `<button type="button" class="tile${selected ? ' sel' : ''}${on ? ' on' : ''}" data-id="hand:${i}" style="--c:${palCss('bone.paper')}">` +
-      `<img src="${icon}" alt=""><span class="lbl">${esc(this.carriedLabel(c))}</span></button>`;
   }
 
   private carriedDetail(c: Carried) {

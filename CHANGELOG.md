@@ -4,13 +4,11 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
-<<<<<<< HEAD
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
-=======
+
 ### Added
-- Choose the active carried item with the mouse wheel, the D-pad or the number keys 1 to 9 (a tap in the inventory on touch); the next place, throw, drink, alembic or kitchen use targets it. The hand and the inventory outline it in gold, and the pause menu shows what you carry (#144).
->>>>>>> 95302d2 (Choose the active carried item and show the full inventory)
+- Choose the active carried item with the mouse wheel, the D-pad or the number keys 1 to 9 (a tap on a hand slot on touch); the next place, throw, drink, alembic or kitchen use targets it. The hand and the inventory outline it in gold, and the inventory shows what you carry (#144).
 
 ## 0.2.3.f1 · 2026-11-11
 

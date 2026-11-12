@@ -150,9 +150,9 @@
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
     .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
     .slot img { width: 100%; height: 100%; display: block; }
-    #carried { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 0 12px; }
-    #carried[hidden] { display: none; }
-    #carried .slot { cursor: pointer; }
+    #inventory .hand-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    #inventory .hand-row .slot { cursor: pointer; }
+    #inventory .hand-row .slot.sel { outline: 2px solid var(--ui-text); outline-offset: 2px; }
 
     /* minimap top-right (the right hand used to cover it), floor label underneath */
     #corner { position: fixed; right: 12px; top: 10px; text-align: right; pointer-events: none; }
@@ -544,7 +544,6 @@
       <div class="panel-menu">
       <h1 class="cover"><img src="/the-roots-cover.jpg" alt="THE ROOTS" width="1663" height="640" /></h1>
       <p class="tagline" data-i18n="intro.tagline">Go down into yourself. Break what holds you. Find the way back up.</p>
-      <div id="carried" class="carried" hidden></div>
       <div class="menu">
         <div class="actions">
           <button type="button" class="go" id="play" data-act="resume" data-i18n="intro.play">Click to play</button>

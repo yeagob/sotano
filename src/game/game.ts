@@ -3099,7 +3099,8 @@ export class Game {
       if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
-      const top = this.player.hand.at(-1);
+      // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
+      const top = this.player.active;
       const offer = findPresenceOffer(id, this.player.hand);
       if (!offer) {
         if (e.tags.has('answering')) continue;
@@ -3147,7 +3148,7 @@ export class Game {
       return;
     }
 
-    this.player.hand.splice(pending.index, 1);
+    this.player.removeAt(pending.index);
     this.hands.placed();
     const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
     const eye = this.player.eye, fwd = this.player.forward;
@@ -3409,7 +3410,7 @@ export class Game {
     // every heart is checked before anything is taken: a refused payment spends nothing
     const plan = heartTollPlan(p.hp, Math.floor(this.stats.get('maxHearts')), p.layers, base, bonus);
     if (!plan) return false;
-    for (const i of hands.sort((a, b) => b - a)) p.hand.splice(i, 1);
+    for (const i of hands.sort((a, b) => b - a)) p.removeAt(i);
     p.keys -= keys;
     p.bombs -= bombs;
     for (const id of items) this.inventory.lose(id);
@@ -3622,7 +3623,8 @@ export class Game {
     if (inp.hit('polarity')) this.togglePolarity();
     if (inp.hit('previous')) this.stepCarried(-1);
     if (inp.hit('next')) this.stepCarried(1);
-    if (inp.hit('pick') && inp.digit() >= 0) this.chooseCarried(inp.digit());
+    // a number key, or a tap on a slot of the hand (touch), makes that carried item the active one
+    if (inp.hit('pick')) this.chooseCarried(inp.digit() >= 0 ? inp.digit() : inp.hitBy('pick') === 'touch' ? inp.touchSlot : -1);
     if (below) this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);

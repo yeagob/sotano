@@ -1,5 +1,6 @@
 import {
   BINDING, BINDINGS, deadzone, lookCurve, MOVE_KEYS, NAV_KEYS, NAV_PAD, PAD_LOOK_SPEED, PAD_TRIGGER, PAD_WAKE, TOUCH_LOOK_SPEED,
+  WHEEL_STEP_MS,
   type Action, type Device,
 } from './bindings';
 
@@ -31,6 +32,9 @@ export class Input {
   readonly mousePressed = new Set<number>();
   /** Wheel steps this frame: -1 scrolled up, 1 scrolled down (`keyboard.wheel` in the bindings). */
   private wheelHit = new Set<number>();
+  private lastWheel = -Infinity;
+  /** The carried slot a touch tapped on the hand (`pick` on touch); -1 when none. */
+  touchSlot = -1;
   readonly touchHeld = new Set<Action>();
   readonly touchPressed = new Set<Action>();
   readonly touchMove = { x: 0, y: 0 };
@@ -72,7 +76,11 @@ export class Input {
       this.mouse.add(e.button);
     });
     addEventListener('mouseup', e => this.mouse.delete(e.button));
-    addEventListener('wheel', e => { const s = Math.sign(e.deltaY); if (s) this.wheelHit.add(s); }, { passive: true });
+    // one step per WHEEL_STEP_MS: a free-spinning wheel must not skip carried slots
+    addEventListener('wheel', e => {
+      const s = Math.sign(e.deltaY), now = performance.now();
+      if (s && now - this.lastWheel >= WHEEL_STEP_MS) { this.wheelHit.add(s); this.lastWheel = now; }
+    }, { passive: true });
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === this.el;

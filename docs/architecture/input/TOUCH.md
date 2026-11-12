@@ -11,7 +11,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | cast (hold) | the bead of light, the largest button, bottom right |
 | launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
 | polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which: gold for good, ember for bad, a 6 px ring on a 92 % panel so it reads on a phone; issue #105, DECISIONS §14.1) |
-| choose the active carried item | tap an item in the inventory: the screen the tab button opens lists what you carry, and the tapped item becomes the active one |
+| choose the active carried item (`pick`, and `previous` / `next` by the same tap) | **a tap on a slot of the hand** (bottom centre, in play): that carried item becomes the active one. In the inventory the tab button opens, a tap on a hand slot or on an item chooses it. A tap that drags does nothing, and it never places a block |
 | jump (hold to swim up; with air jumps, again in the air) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |

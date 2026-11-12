@@ -13,7 +13,7 @@ export function castPolarityToken(polarity: Polarity): PalToken {
   return polarity === 'positive' ? 'light.gold' : 'light.ember';
 }
 
-interface Track { kind: 'stick' | 'look' | 'button'; action?: Action; x: number; y: number; ox: number; oy: number; t: number }
+interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number }
 
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
 
@@ -72,7 +72,11 @@ export class TouchControls {
       const x = tc.clientX, y = tc.clientY;
       const t = performance.now();
       inp.touchPressed.add('confirm');
-      if (btn) {
+      const slot = btn ? -1 : this.slotAt(x, y);
+      if (slot >= 0) {
+        // a tap on the hand chooses that carried item (`pick`); it never places a block
+        this.tracks.set(tc.identifier, { kind: 'slot', slot, x, y, ox: x, oy: y, t });
+      } else if (btn) {
         const a = btn.dataset.a as Action;
         inp.touchHeld.add(a); inp.touchPressed.add(a);
         btn.classList.add('on');
@@ -107,12 +111,29 @@ export class TouchControls {
     }
   }
 
+  /** The index of the carried slot under a point of the hand row (bottom centre), or -1. */
+  private slotAt(x: number, y: number): number {
+    const hand = document.getElementById('hand');
+    if (!hand) return -1;
+    return [...hand.children].findIndex(s => {
+      const r = s.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    });
+  }
+
   private end(e: TouchEvent) {
     e.preventDefault();
     for (const tc of e.changedTouches) {
       const tr = this.tracks.get(tc.identifier);
       this.tracks.delete(tc.identifier);
       if (!tr) continue;
+      if (tr.kind === 'slot') {
+        if (performance.now() - tr.t < TAP_MS && Math.hypot(tr.x - tr.ox, tr.y - tr.oy) < TAP_SLOP) {
+          this.input.touchSlot = tr.slot ?? -1;
+          this.input.touchPressed.add('pick');
+        }
+        continue;
+      }
       if (tr.kind === 'stick') this.releaseStick();
       else if (tr.kind === 'button' && tr.action) {
         if (![...this.tracks.values()].some(o => o.action === tr.action)) {

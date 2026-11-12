@@ -119,15 +119,15 @@ const messages = {
   'controls.previous': 'make the previous carried item the active one: the next use targets it',
   'controls.previous.key': 'Mouse wheel up',
   'controls.previous.pad': 'Left on the d-pad',
-  'controls.previous.touch': 'Tap the item in the inventory',
+  'controls.previous.touch': 'Tap a slot of your hand to choose it',
   'controls.next': 'make the next carried item the active one: the next use targets it',
   'controls.next.key': 'Mouse wheel down',
   'controls.next.pad': 'Right on the d-pad',
-  'controls.next.touch': 'Tap the item in the inventory',
+  'controls.next.touch': 'Tap a slot of your hand to choose it',
   'controls.pick': 'make a carried item the active one by its number',
   'controls.pick.key': 'Number keys 1 to 9',
   'controls.pick.pad': 'A in the inventory',
-  'controls.pick.touch': 'Tap an item in the inventory',
+  'controls.pick.touch': 'Tap a slot of your hand, or an item in the inventory',
 
   // ── HUD ──
   'hud.floor': 'Floor {n}',

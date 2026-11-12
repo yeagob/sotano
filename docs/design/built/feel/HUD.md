@@ -10,7 +10,7 @@ What the player reads on screen, in the corners and on the screens that open ove
 - **Spirit (in the sky only).** A thin line of light round the hearts row, between dark keylines, with a number out of 100: the spirit left. On the light deck it reads as a dark frame. See [SPIRIT](../sky/laws/SPIRIT.md).
 - **Breath.** Eight bubbles, shown only while the breath is not full: under water, or while the breath comes back. The last bubble beats when two or fewer are left.
 - **Bombs and keys.** Two counters, capped at 99. Keys and bombs cost no hand slot.
-- **Hand slots.** The things you carry: two blocks (one per hand) by default; Second Brain adds one to what you carry and Letters from a Stoic adds three. A part takes a slot like a block.
+- **Hand slots.** The things you carry: two blocks (one per hand) by default; Second Brain adds one to what you carry and Letters from a Stoic adds three. A part takes a slot like a block. One of them is the **active** item: the next place, throw, drink, alembic or kitchen use takes it, and it is outlined in gold. Choose it with the mouse wheel, the D-pad, the number keys 1 to 9 or a tap on its slot; choosing moves nothing and uses nothing. Code: `Game.chooseCarried`, `Player.active`, `Player.removeAt`.
 - **Polarity mark.** A static mark for the loaded intention: a filled circle for good, a ring for bad. The F key switches it, and a short tick sounds.
 - **Boss bar.** The boss's name and its health ratio, shown while a boss is present.
 - **Path chips.** A practice's path is shown as a chip: the path's colour, always with its glyph and its word.
@@ -33,7 +33,7 @@ Going down asks a price. The toll window lists what you carry (keys, bombs, hear
 Esc, or Tab, and the touch tab button open one screen with two tabs:
 
 - **Menu.** The pause card: resume, the controls, the language choice, the graphics settings and the seed.
-- **Practices.** The inventory: every practice you hold, with its icon, description and effect.
+- **Practices.** The inventory: every practice you hold, with its icon, description and effect, and the carried items in your hand above them (the same slots as the HUD's hand). The pause card shows no inventory of its own; the inventory is one tap away on the same screen.
 
 Opening the screen pauses the world on every device. Clicking outside it on touch resumes the game.
 

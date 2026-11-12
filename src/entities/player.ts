@@ -130,13 +130,24 @@ export class Player implements Actor {
   /** A new carry goes on top and becomes the choice again. */
   gain(c: Carried) { this.hand.push(c); this.activeSlot = -1; }
 
+  /**
+   * Takes one carried item out of the hand (a placement, a throw, a gift, a toll). The choice stays on
+   * the same item: an item leaving before it moves the choice down one slot with it. Only losing the
+   * active item itself sends the choice back to the last valid slot, the top.
+   */
+  removeAt(i: number): Carried | undefined {
+    if (i < 0 || i >= this.hand.length) return undefined;
+    const active = this.activeIndex;
+    const [c] = this.hand.splice(i, 1);
+    if (i === active) this.activeSlot = -1;
+    else if (i < active) this.activeSlot = active - 1;
+    return c;
+  }
+
   /** Takes the active carried item out of the hand; the choice goes back to the top. */
   takeActive(): Carried | undefined {
     const i = this.activeIndex;
-    if (i < 0) return undefined;
-    const [c] = this.hand.splice(i, 1);
-    this.activeSlot = -1;
-    return c;
+    return i < 0 ? undefined : this.removeAt(i);
   }
 
   /**

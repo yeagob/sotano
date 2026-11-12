@@ -98,7 +98,7 @@ Three complete schemes; the game follows whichever device you used last (details
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
 | Place the active block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
 | Throw the active block or part | **Q** | **B** | The flying block |
-| Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap an item in the inventory |
+| Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap a slot of your hand (or an item in the inventory) |
 | Drop a bomb | **E** | **RB** | The seed |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |

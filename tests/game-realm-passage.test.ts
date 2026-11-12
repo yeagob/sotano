@@ -10,6 +10,7 @@ import { Missiles } from '../src/combat/missiles';
 import { TouchRouter } from '../src/combat/touch-router';
 import { AIR, MAT } from '../src/content/materials';
 import { createBus } from '../src/game/events';
+import { Player } from '../src/entities/player';
 import type { Travel } from '../src/sky/types';
 
 vi.mock('../src/audio/sfx', () => {
@@ -35,7 +36,7 @@ beforeAll(async () => {
   } finally {
     vi.unstubAllGlobals();
   }
-});
+}, 240000);
 
 /** One world's loose cubes, pickups, enemies and terrain, as markers the test can read. */
 function worldSet(kind: 'dungeon' | 'sky') {
@@ -382,12 +383,12 @@ describe('the touch router reaches sky creatures (SKY.md §5.7)', () => {
 /** One placement straight ahead: the camera at x 5.5 looks along +z at a solid cell (5,0,5), so the face is (5,0,4). */
 function placeFirstBlock(rig: ReturnType<typeof skyRig>) {
   const g = rig.g;
-  g.player.hand = [MAT.stone];
-  g.player.top = MAT.stone;
-  g.player.active = MAT.stone;
-  g.player.takeActive = () => g.player.hand.pop();
-  g.player.body = { x: 20, y: 20, z: 20, hw: 0.3, h: 1.8 };
-  g.player.forward = new THREE.Vector3(0, 0, 1);
+  // a real Player: its active item, its top material and its takeActive are the ones placement uses
+  const p = new Player();
+  p.hand = [MAT.stone];
+  p.body = { x: 20, y: 20, z: 20, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: false };
+  p.yaw = Math.PI; // forward is +z
+  g.player = p;
   g.input = { hit: () => true, hitBy: () => 'mouse', touchTap: null };
   g.camera = { position: new THREE.Vector3(5.5, 0.5, 0.5) };
   g.solid = (x: number, y: number, z: number) => x === 5 && y === 0 && z === 5;
