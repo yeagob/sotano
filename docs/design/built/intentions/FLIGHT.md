@@ -12,9 +12,10 @@ Part of [intentions](README.md).
 - Water drags it: it keeps going, but slower. Lava puts it out.
 - Presences in the world hear it: a positive one lifts them and a negative one silences them. The presences are part of the bestiary, not of this document.
 - A positive intention has a round, white-hot core and a gold shell. A negative one has the same shape with a dimmer core and an ash shell, so the polarity reads in the air.
+- **Power shows.** The more damage an intention carries, the bigger it is, the wider and brighter its halo, and the longer the trail of fading copies behind it. Each doubling of damage over the base is one clear step: about 18 % bigger, a wider halo, one more copy in the trail. Every effect it carries (pierce, phase, bounce, homing, a volley, an item's mark) widens the halo and adds one more copy to the trail. A positive trail is ember and a negative one is ash, so polarity and power read apart. Size and trail length carry the power, not colour alone, so it reads for colour-blind players. On a phone, the fire button's ring thickens and glows with the same steps (issue #111).
 
 ## The rule behind it
 
 An intention falls under gravity and breaks on contact, so that it is a physical object in the same world as the blocks. The design calls it "small orbs of will that fly, drop and hit" ([DESIGN.md, section 4](README.md)). The visual language is still open; the art decisions that exist are in the art ledger, and the open question is in [not-built/intentions/README.md](../../not-built/intentions/README.md).
 
-Code: `src/combat/intents.ts` (the update of the flight, the fall, the contact with projections, cubes and blocks, lines 160-260; the drawing at the end of the file), `src/content/palette.ts` (the gold and ash tokens).
+Code: `src/combat/intents.ts` (the update of the flight, the fall, the contact with projections, cubes and blocks, lines 160-260; the drawing at the end of the file; `intentLook` gives the size, halo, glow and trail from damage and effects; `intentPowerLevel` gives the fire button's power), `src/content/palette.ts` (the gold and ash tokens).

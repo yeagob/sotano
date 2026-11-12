@@ -47,7 +47,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', 0, 'roots', 'key')`, `…'bomb'`, `…'heart'` | Structure | The tile of each loose key, breakthrough and heart on the roots, in its lesson rooms; a heart's kind is the table's, not drawn (GEN_VERSION 28; replaces `fork('floor', 0, 'loot')`, GEN_VERSION 14) |
 | `fork('plan', k, kind)` | Structure | Floor k's plan for its kind (random planners); Tree floors draw nothing |
 | `fork('tree', story)` | Structure | One story of the giant tree (`GiantTree.grow`, lazily, when the player comes near): its knot windows, rings, ramps, columns, branches, limbs and stars. One fork per story, so the tree grows the same in any order |
-| `fork('mountains')` | Structure | The mountains round the surface (`Mountains`, [LEVELS.md §13](LEVELS.md#13-the-mountains-round-the-surface-issue-10-2026-11-06)): the passes' angles, each ridge's peak and trail, the crest's phases, then the seed of the walls' jitter (`GEN_VERSION` 26) |
+| `fork('mountains')` | Structure | The surface and its mountains (`Mountains`, [LEVELS.md §13](LEVELS.md#13-the-surface-and-its-mountains-issue-10)): the passes' angles, each ridge's summit, the crest's phases, the seed of the ledges' jitter, then the offset of the stairs (`GEN_VERSION` 28) |
 | `fork('sandbox', 'layout')` | Structure | The sandbox room's decor slots ([SANDBOX.md](SANDBOX.md)) |
 | `fork('floor', 0, 'creatures')` | Structure | Where the roots' peaceful creatures start |
 | `fork('floor', k, 'space')` | Structure | Which room may spread into each empty cell of floor k (`allotSpace`), drawn before any room's layout |

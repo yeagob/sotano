@@ -15,7 +15,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - Starting reach is 4 blocks, 20% less than before; Self-Efficacy, Second Brain, Grounding and Kaizen each add 1 block of reach (#162).
 - The mobile drink button appears only while a flask is on top of your hand, drawn as that potion in its liquid colour in the right-thumb column above throw, and is hidden the moment the flask is drunk or put away (#159).
 - Every reward is ejected away from the player instead of landing toward them, and an emptied chest disappears once it has given its reward, whether or not you collect it (#156).
-- A grown friendly creature that is not an enemy shrinks one step under a warm negative shot, never below its birth size, and its one-time 7.5% growth gift applies on any floor (#102)
+- A grown friendly creature that is not an enemy shrinks one step under a warm negative shot, never below its birth size, and its one-time 7.5% growth gift applies on any floor (#102).
+- Intentions show their power: more damage and more effects make them bigger, with a wider, brighter halo and a longer trail, one clear step per doubling of damage, and the phone fire button's ring thickens and glows to match (#111).
 
 ### Fixed
 - The boss health bar hides when you die, reset with R or respawn, and shows again only when the boss fight resumes (#163).

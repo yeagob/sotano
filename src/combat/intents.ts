@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { pal } from '../content/palette';
-import type { Stats } from '../core/stats';
+import { BASE_STATS, type Stats } from '../core/stats';
 import type { IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import type { Polarity } from './polarity';
@@ -43,13 +43,70 @@ const NO_NORMAL = new THREE.Vector3();
 
 const MIRROR_CALM = 0.25;
 
-interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null }
+interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null;
+  /** The look, cached for `lookOf` (the spec it was built from, so a spent pierce, phase or bounce rebuilds it). */
+  look: IntentLook; lookSpec: IntentSpec }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
 const CORE_NEGATIVE = new THREE.Color(pal('light.ember'));
 /** The negative halo's strength relative to the positive one (additive, so colour × strength). */
 const HALO_NEGATIVE = 0.6;
+/** The untinted shell, and the trail an untinted intention leaves (DECISIONS §7.1: no path, trail ember). */
+const DEFAULT_SHELL = pal('light.gold');
+const DEFAULT_SHELL_NEGATIVE = pal('ink.ash');
+const TRAIL_POSITIVE = pal('light.ember');
+const TRAIL_NEGATIVE = pal('ink.ash');
+
+/** How an intention's power shows (issue #111, docs/art/DECISIONS.md §7.1.1). Size, halo and trail
+ *  grow with damage and with the effects it carries, so power reads without colour. */
+export interface IntentLook {
+  /** Damage steps above base: log2(damage / base damage), clamped to [POWER_MIN, POWER_MAX]. */
+  power: number;
+  /** Effects the intention carries: pierce, phase, bounce, homing, volley and item tags (capped). */
+  effects: number;
+  /** Shell radius in metres. */
+  radius: number;
+  /** Halo radius as a multiple of the shell radius. */
+  halo: number;
+  /** Halo strength (additive colour scale; the negative one is HALO_NEGATIVE of it). */
+  glow: number;
+  /** Trail ghosts drawn behind the intention. */
+  ghosts: number;
+}
+
+export const POWER_MIN = -1;
+export const POWER_MAX = 4;
+export const EFFECTS_MAX = 4;
+export const GHOSTS_MAX = 8;
+/** Seconds of flight between two trail ghosts. */
+const GHOST_DT = 0.014;
+/** The largest an intention may draw, whatever its damage and size (a bead, never a ball). */
+const RADIUS_MAX = 0.42;
+
+export function intentLook(spec: IntentSpec, baseDamage = BASE_STATS.damage): IntentLook {
+  const ratio = Math.max(1e-3, spec.damage) / baseDamage;
+  const power = Math.min(POWER_MAX, Math.max(POWER_MIN, Math.log2(ratio)));
+  const effects = Math.min(EFFECTS_MAX,
+    (spec.pierce > 0 ? 1 : 0) + (spec.phase > 0 ? 1 : 0) + (spec.bounces > 0 ? 1 : 0)
+    + (spec.homing > 0 ? 1 : 0) + (spec.volley > 1 ? 1 : 0) + spec.tags.size);
+  return {
+    power,
+    effects,
+    // every doubling of damage is a visible step in size (+18 %), halo (+0.5 radii, +30 % glow)
+    // and trail (+1 ghost); each effect widens the halo and lengthens the trail by one more
+    radius: Math.min(RADIUS_MAX, spec.radius * (1 + 0.18 * power)),
+    halo: 2.4 + 0.5 * power + 0.25 * effects,
+    glow: Math.max(0.5, 1 + 0.3 * power + 0.1 * effects),
+    ghosts: Math.min(GHOSTS_MAX, Math.max(1, Math.round(2 + power + effects))),
+  };
+}
+
+/** The fire button's power (0..1) for the loaded intention: the same damage steps as the look. */
+export function intentPowerLevel(damage: number, baseDamage = BASE_STATS.damage): number {
+  const p = Math.log2(Math.max(1e-3, damage) / baseDamage);
+  return Math.min(1, Math.max(0, p / POWER_MAX));
+}
 
 export interface IntentHooks {
   solid(x: number, y: number, z: number): boolean;
@@ -85,11 +142,13 @@ export class Intents {
   private halo: THREE.InstancedMesh;
   private m = new THREE.Matrix4();
   private c = new THREE.Color();
+  private g = new THREE.Vector3();
+  private meshes: THREE.InstancedMesh[];
 
   constructor(scene: THREE.Scene, private hooks: IntentHooks, private max = 200) {
     const geo = new THREE.IcosahedronGeometry(1, 0);
-    const inst = (mat: THREE.Material) => {
-      const m = new THREE.InstancedMesh(geo, mat, max);
+    const inst = (mat: THREE.Material, cap = max) => {
+      const m = new THREE.InstancedMesh(geo, mat, cap);
       m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       m.frustumCulled = false;
       m.count = 0;
@@ -99,10 +158,12 @@ export class Intents {
     // core and halo take a per-instance colour so polarity costs no extra draw call
     this.core = inst(new THREE.MeshBasicMaterial());
     this.core.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
-    this.mesh = inst(new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.6, depthWrite: false }));
-    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
+    // the shell mesh also draws the trail ghosts (one draw call, DECISIONS §7.1)
+    this.mesh = inst(new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.6, depthWrite: false }), max * (1 + GHOSTS_MAX));
+    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * (1 + GHOSTS_MAX) * 3), 3);
     this.halo = inst(new THREE.MeshBasicMaterial({ color: pal('light.ember'), transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
     this.halo.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
+    this.meshes = [this.mesh, this.core, this.halo];
   }
 
   get count() { return this.list.length; }
@@ -126,7 +187,7 @@ export class Intents {
   private push(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null });
+    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, look: intentLook(spec), lookSpec: spec });
   }
 
   within(test: (p: THREE.Vector3) => boolean): number {
@@ -232,26 +293,51 @@ export class Intents {
     this.draw();
   }
 
+  /** The look of every intention in flight, in the order drawn (for tests and the gallery). */
+  looks(): IntentLook[] { return this.list.map(t => this.lookOf(t)); }
+
+  /** The intention's look, rebuilt only when its spec is replaced (a spent pierce, phase or bounce). */
+  private lookOf(t: Intent): IntentLook {
+    if (t.lookSpec !== t.spec) { t.look = intentLook(t.spec); t.lookSpec = t.spec; }
+    return t.look;
+  }
+
   private draw() {
-    let n = 0;
+    let n = 0, s = 0;
     for (const t of this.list) {
-      const r = t.spec.radius;
+      const look = this.lookOf(t);
+      const r = look.radius;
+      const neg = t.spec.polarity === 'negative';
       this.m.makeScale(r, r, r).setPosition(t.pos);
-      this.mesh.setMatrixAt(n, this.m);
-      this.mesh.setColorAt(n, this.c.setHex(t.spec.color));
+      this.mesh.setMatrixAt(s, this.m);
+      this.mesh.setColorAt(s++, this.c.setHex(t.spec.color));
+      // the trail: ghosts back along the flight, shrinking 0.8 → 0.2; never further back than it has flown.
+      // An untinted intention trails ember (positive) or ash (negative); a tinted one trails its tint.
+      const trail = t.spec.color === DEFAULT_SHELL || t.spec.color === DEFAULT_SHELL_NEGATIVE ? (neg ? TRAIL_NEGATIVE : TRAIL_POSITIVE) : t.spec.color;
+      for (let k = 1; k <= look.ghosts; k++) {
+        const back = Math.min(k * GHOST_DT, t.age);
+        if (back <= 0) break;
+        const f = 0.8 - 0.6 * (k - 1) / Math.max(1, look.ghosts - 1);
+        this.g.copy(t.pos).addScaledVector(t.vel, -back);
+        this.m.makeScale(r * f, r * f, r * f).setPosition(this.g);
+        this.mesh.setMatrixAt(s, this.m);
+        this.mesh.setColorAt(s++, this.c.setHex(trail));
+      }
       // polarity is carried by the core and the halo, so an item that tints the shell never hides it:
       // positive is white-hot in a full ember halo; negative is a banked ember in a dimmer one
-      const neg = t.spec.polarity === 'negative';
       this.m.makeScale(r * 0.55, r * 0.55, r * 0.55).setPosition(t.pos);
       this.core.setMatrixAt(n, this.m);
       this.core.setColorAt(n, neg ? CORE_NEGATIVE : CORE_POSITIVE);
-      this.m.makeScale(r * 2.4, r * 2.4, r * 2.4).setPosition(t.pos);
+      const h = r * look.halo;
+      this.m.makeScale(h, h, h).setPosition(t.pos);
       this.halo.setMatrixAt(n, this.m);
-      this.halo.setColorAt(n, this.c.setScalar(neg ? HALO_NEGATIVE : 1));
+      this.halo.setColorAt(n, this.c.setScalar(look.glow * (neg ? HALO_NEGATIVE : 1)));
       n++;
     }
-    for (const m of [this.mesh, this.core, this.halo]) {
-      m.count = n;
+    this.mesh.count = s;
+    this.core.count = n;
+    this.halo.count = n;
+    for (const m of this.meshes) {
       m.instanceMatrix.needsUpdate = true;
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }

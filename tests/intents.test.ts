@@ -1,7 +1,7 @@
 // Intentions against blocks: phasing (Tao Te Ching) and the shrinking of old loose cubes.
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { Intents, intentFromStats, type IntentHooks } from '../src/combat/intents';
+import { Intents, intentFromStats, intentLook, intentPowerLevel, GHOSTS_MAX, POWER_MAX, type IntentHooks } from '../src/combat/intents';
 import { BASE_STATS } from '../src/core/stats';
 import { DebrisSystem, DEBRIS_LIFETIME, DEBRIS_SHRINK } from '../src/physics/debris';
 
@@ -97,5 +97,74 @@ describe('mirrors', () => {
     for (let i = 0; i < 12; i++) intents.update(1 / 60);
     expect(hits).toEqual(['hit 7']);
     expect(intents.count).toBe(1);
+  });
+});
+
+describe('the look of an intention grows with its power (#111)', () => {
+  const base = () => intentFromStats(BASE_STATS, 'positive');
+  const at = (damage: number) => intentLook({ ...base(), damage });
+
+  it('a base intention keeps the base bead', () => {
+    const look = intentLook(base());
+    expect(look.power).toBe(0);
+    expect(look.radius).toBeCloseTo(base().radius);
+    expect(look.halo).toBeCloseTo(2.4);
+    expect(look.glow).toBeCloseTo(1);
+  });
+
+  it('every step of damage is a visible step in size, halo, glow and trail', () => {
+    const steps = [3.5, 4.5, 5.5, 7, 10.5, 14, 28].map(at);
+    for (let i = 1; i < steps.length; i++) {
+      expect(steps[i].radius).toBeGreaterThan(steps[i - 1].radius);
+      expect(steps[i].halo).toBeGreaterThan(steps[i - 1].halo);
+      expect(steps[i].glow).toBeGreaterThan(steps[i - 1].glow);
+      expect(steps[i].ghosts).toBeGreaterThanOrEqual(steps[i - 1].ghosts);
+    }
+    // a doubling is at least 15 % bigger and one ghost longer, so it reads without colour
+    expect(at(7).radius / at(3.5).radius).toBeGreaterThan(1.15);
+    expect(at(7).ghosts).toBe(at(3.5).ghosts + 1);
+  });
+
+  it('effects widen the halo and lengthen the trail, at the same damage', () => {
+    const plain = intentLook(base());
+    const rich = intentLook({ ...base(), pierce: 1, homing: 2, tags: new Set(['x']) });
+    expect(rich.effects).toBe(3);
+    expect(rich.halo).toBeGreaterThan(plain.halo);
+    expect(rich.glow).toBeGreaterThan(plain.glow);
+    expect(rich.ghosts).toBe(plain.ghosts + 3);
+    expect(rich.radius).toBeCloseTo(plain.radius);
+  });
+
+  it('stays a bead: size, effects and trail are capped', () => {
+    const huge = intentLook({ ...base(), damage: 1e6, radius: 5, pierce: 9, phase: 9, bounces: 9, homing: 9, volley: 9, tags: new Set(['a', 'b']) });
+    expect(huge.power).toBe(POWER_MAX);
+    expect(huge.radius).toBeLessThanOrEqual(0.42);
+    expect(huge.ghosts).toBeLessThanOrEqual(GHOSTS_MAX);
+    expect(at(0.5).radius).toBeGreaterThan(0);
+  });
+
+  it('negative intentions grow the same way, so polarity and power read apart', () => {
+    const neg = intentLook({ ...intentFromStats(BASE_STATS, 'negative'), damage: 14 });
+    expect(neg).toEqual(at(14));
+  });
+
+  it('the meshes draw the trail behind a stronger intention', () => {
+    const scene = new THREE.Scene();
+    const { intents } = rig(new Set());
+    const weak = new Intents(scene, (intents as unknown as { hooks: IntentHooks }).hooks);
+    const strong = new Intents(scene, (intents as unknown as { hooks: IntentHooks }).hooks);
+    weak.fire(base(), new THREE.Vector3(), new THREE.Vector3(1, 0, 0), new THREE.Vector3());
+    strong.fire({ ...base(), damage: 28 }, new THREE.Vector3(), new THREE.Vector3(1, 0, 0), new THREE.Vector3());
+    for (let i = 0; i < 10; i++) { weak.update(1 / 60); strong.update(1 / 60); }
+    const shells = (m: Intents) => (m as unknown as { mesh: THREE.InstancedMesh }).mesh.count;
+    expect(shells(weak)).toBe(1 + at(3.5).ghosts);
+    expect(shells(strong)).toBe(1 + at(28).ghosts);
+  });
+
+  it('the fire button power follows the same damage steps', () => {
+    expect(intentPowerLevel(3.5)).toBe(0);
+    expect(intentPowerLevel(1)).toBe(0);
+    expect(intentPowerLevel(7)).toBeCloseTo(1 / POWER_MAX);
+    expect(intentPowerLevel(1e6)).toBe(1);
   });
 });
