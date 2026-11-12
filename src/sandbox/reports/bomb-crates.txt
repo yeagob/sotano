@@ -1,4 +1,4 @@
-# bomb-crates — A breakthrough among crates and stone: blast damage by distance, loose cubes, crates fly
+# bomb-crates — A bomb among crates and stone: blast damage by distance, loose cubes, crates fly
 floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
 
 t 0 (0.0 s)

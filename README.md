@@ -61,7 +61,7 @@ Enemies are the patterns that stop you, in bodies of the room's own matter. They
 - **The Inner Critic** keeps its distance and lobs judgements in arcs. Dangerous when you stand still.
 - **Panic** rushes you, swells, and **bursts**, breaking the blocks around it. Destructive, and it also opens paths.
 
-Rooms work like *The Binding of Isaac*: the doors stand open while a room holds no projections. When you enter one that does, they seal, and the projections rise from the room's own matter, each one announced first. They open again on their own when the room is clear. A breakthrough destroys a door for good.
+Rooms work like *The Binding of Isaac*: the doors stand open while a room holds no projections. When you enter one that does, they seal, and the projections rise from the room's own matter, each one announced first. They open again on their own when the room is clear. A bomb destroys a door for good.
 
 ### Creatures and presences
 
@@ -99,9 +99,9 @@ Three complete schemes; the game follows whichever device you used last (details
 | Place the active block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
 | Throw the active block or part | **Q** | **B** | The flying block |
 | Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap a slot of your hand (or an item in the inventory) |
-| Drop a bomb | **E** | **RB** | The seed |
+| Drop a bomb | **E** | **RB** | The bomb |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
-| Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
+| Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a bomb destroys any door | same | same |
 | Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |

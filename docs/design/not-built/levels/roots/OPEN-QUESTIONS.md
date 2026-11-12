@@ -2,7 +2,7 @@
 
 Up: [the Roots as an evolving tutorial](README.md) · Status: open. Only what the owner's decisions on issue #147 (and the corrections of 2026-11-12) do not settle. Each question has the default the design uses, so no work waits on it.
 
-Answered by the owner on 2026-11-12 and removed: level 0 gives exactly one key or one breakthrough; "five times lower" is the chance a crate gives anything; a converted boss has its own achievement, separate from destroying it; step lines speak in stars (`qualityStars`).
+Answered by the owner on 2026-11-12 and removed: level 0 gives exactly one key or one bomb; "five times lower" is the chance a crate gives anything; a converted boss has its own achievement, separate from destroying it; step lines speak in stars (`qualityStars`).
 
 1. **Lesson wall or "south for plates".** Taken literally, plates on every south wall would put the lesson behind a forward walker in six rooms. *Default:* each room's lesson hangs on the wall a forward walker faces; plates go on the other wall ([PANELS §7](PANELS.md#7-which-wall-holds-the-lesson)).
 2. **After the last page.** The issue says wrap to page 1; the owner said "never beyond the current page". *Default:* the current page stops at the last page and moves on when the owner adds pages; browsing still reaches every page ([PAGES §1](PAGES.md#1-the-current-page)).

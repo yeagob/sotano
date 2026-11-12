@@ -208,13 +208,13 @@ describe('the rewards fit the easy layout (EASY-LAYOUT §3, §9.5)', () => {
     let most = 0;
     for (let L = 0; L <= 100; L++) {
       const R = rootsRewards(L);
-      most = Math.max(most, (R.oneOfKeyOrBreakthrough ? 1 : R.keys + R.breakthroughs) + R.hearts.length + R.freeChests + R.extraPractices);
+      most = Math.max(most, (R.oneOfKeyOrBomb ? 1 : R.keys + R.bombs) + R.hearts.length + R.freeChests + R.extraPractices);
     }
     for (const seed of [1, 0xBEEF, 7]) {
       const run = buildRun(seed, undefined, undefined, { mastery: 100, easyRoots: true });
       const f0 = run.floors[0], R = rootsRewards(100), where = `seed ${seed}`;
       expect(f0.keys.length, where).toBe(R.keys);
-      expect(f0.bombs.length, where).toBe(R.breakthroughs);
+      expect(f0.bombs.length, where).toBe(R.bombs);
       expect(f0.hearts.map(h => h.kind), where).toEqual(R.hearts);
       const free = f0.chests.filter(c => c.draws);
       expect(free.length, where).toBe(R.freeChests);

@@ -33,7 +33,7 @@ Everything on screen belongs to exactly one side. The side decides its colour, v
 | Side | What it is | Colour | Glow |
 |---|---|---|---|
 | **World / vessels** | Blocks, rooms, doors, pedestals, the house | The floor's rock ramp. Low chroma, cooler and darker with depth | Never, unless cracked by the player (gold crack cores) or holding an element (lava, fire) |
-| **The light / the player** | Intentions, shards, seams, practices, keys, breakthroughs, hands, cleared-room light, the lantern | Gold-white `light.*` ramp, with the path hues as rims and trails | The only side that emits freely |
+| **The light / the player** | Intentions, shards, seams, practices, keys, bombs, hands, cleared-room light, the lantern | Gold-white `light.*` ramp, with the path hues as rims and trails | The only side that emits freely |
 | **Projections / husks** | Enemies, bosses, hostile shots | The host room's pattern, pushed to a cold shadow. Cold `cold.*` eyes; a shot or live mark that hurts is the attack red, and its warning is yellow (`attack.red.*` and `attack.warn.*`, §3.4) | Eyes, and the bright marks of a live attack. Captive light shows only through cracks |
 
 **Ownership axis: warm is yours, cold is theirs. Shape decides first, colour confirms.** Player shots are round with a smooth trail. Hostile shots are tumbling cubes (or the Critic's ✗) with a jagged trail and a dark rim. Warm light seen inside a projection is *your light held captive*: it never flies at you.
@@ -76,7 +76,7 @@ No pure `#000` or `#FFF`, except 1–4 px cores of `light.core`.
 | `light.core` | `#FFF1C8` | Hottest pixel: intention core, seed core, stars below bedrock |
 | `light.hot` | `#FFD77A` | Shard core, room-heart light, cleared-room warmth |
 | `light.gold` | `#F2C14E` | Intention shell, crack cores, **kintsugi seams**, changing hexagram lines, keys |
-| `light.ember` | `#EAA640` | Intention halo, lit lamps, breakthrough cracks |
+| `light.ember` | `#EAA640` | Intention halo, lit lamps, bomb cracks |
 | `light.dusk` | `#B8502A` | Dying light only: a falling intention |
 
 ### 3.4 Life
@@ -152,7 +152,7 @@ Fog far is never under 24; floor 4 ambient is never under 0.30. A cleared room i
 
 **One model, three layers, zero scene lights.** Every cube (chunks, debris, held block, doors, pickups, creatures, hands) uses the same unlit shading. `HemisphereLight` and `DirectionalLight` are removed.
 
-1. **Baked (mesh time, in the worker):** face shade × ambient occlusion × RGB block light, written into vertex colours. Convert authored values from sRGB first (three r186 vertex colours are linear, so the current bottom shade displays too bright). Face shades: top 1.0, ±X 0.78, ±Z 0.62, bottom 0.42. Block light is a flood fill, levels 0–15: lava 12, fire 10, lit furnace 8, room heart 8 (cleared rooms), lit lamp 7, pedestal holding a practice 6, breakthrough seed 4, mended block 2.
+1. **Baked (mesh time, in the worker):** face shade × ambient occlusion × RGB block light, written into vertex colours. Convert authored values from sRGB first (three r186 vertex colours are linear, so the current bottom shade displays too bright). Face shades: top 1.0, ±X 0.78, ±Z 0.62, bottom 0.42. Block light is a flood fill, levels 0–15: lava 12, fire 10, lit furnace 8, room heart 8 (cleared rooms), lit lamp 7, pedestal holding a practice 6, bomb seed 4, mended block 2.
 2. **Per frame (uniforms):** the floor look (fog, tint, shade contrast, ambient), the cleared state of each room, the lantern (radius 6 m, 35 % of `light.core`, +0.5 m per state of being), and two virtual lights for flashes and the held shard.
 3. **Emissive texels:** bypass the shade and 70 % of the fog. Used for eyes, seeds, shards, cracks and the intention core.
 
@@ -198,7 +198,7 @@ Fog far is never under 24; floor 4 ambient is never under 0.30. A cleared room i
 | **Brass frame** (was "Gilded") | Brass ramp; keystone lights gold once the room is cleared | — | — |
 | **Obsidian frame** (was "Bone") | Obsidian ramp with one crack of `captive.ember` pulsing at 0.4 Hz | — | — |
 | **Pedestal** | Limestone, big bevelled blocks; a rim in the practice's path glow while a practice sits on it | As brick | 10 chips |
-| **Breakthrough** (seed) | A dark seed with a pointed top split by one jagged `light.ember` seam with a white-hot heart (never a cross: on a cube it read as ✗). In the world it is a voxel seed model, not a cube | — | See §7 |
+| **Bomb** (seed) | A dark seed with a pointed top split by one jagged `light.ember` seam with a white-hot heart (never a cross: on a cube it read as ✗). In the world it is a voxel seed model, not a cube | — | See §7 |
 
 ### 6.3 Cracks of light
 
@@ -235,7 +235,7 @@ Numbers and tokens: DECISIONS §6.5. Captures: `?gallery=chests`.
 
 **Particles** are two pools. *Matter* chips use the material's ramp (50 % base, 30 % dark, 20 % hi). *Light* is additive, with fog reduced. Each event has a cap, and above 80 % pool fill the events spawn half as many particles.
 
-**Screen feedback is gentle.** Shake is positional only, with no camera roll, and chained events take the maximum, never the sum. Player hits give a short, muted vignette. Breakthroughs flash once at most and fade over 0.15 s. A placed breakthrough never blinks: the seed swells to 1.25 × and its seam and halo pulse faster as the fuse runs, from 0.8 Hz up to 2.5 Hz at most. Health at one heart beats the last heart on the HUD.
+**Screen feedback is gentle.** Shake is positional only, with no camera roll, and chained events take the maximum, never the sum. Player hits give a short, muted vignette. Bombs flash once at most and fade over 0.15 s. A placed bomb never blinks: the seed swells to 1.25 × and its seam and halo pulse faster as the fuse runs, from 0.8 Hz up to 2.5 Hz at most. Health at one heart beats the last heart on the HUD.
 
 ---
 
@@ -429,7 +429,7 @@ The hands never tremble, and the screen never pulses to express the player's sta
 | **Crack of light** | the limit is already giving way | damaged blocks, captive light, the bottom of the world | the player's body or hearts |
 | **Shard** | freed light carrying an intent | loose and held blocks, release shards | weapons; enemy shots |
 | **Gold seam** | what was broken and rebuilt is stronger | placed blocks, rebuilt rooms | pre-placed world blocks |
-| **Seed** | potential, a breakthrough waiting to open | breakthroughs, the start of a run | skulls, fuses, cartoon bombs |
+| **Seed** | potential, a bomb waiting to open | bombs, the start of a run | skulls, fuses, cartoon bombs |
 | **Eye** | insight | keys, Lucid | projections' eyes (those are lights in sockets) |
 | **Hand** | agency | first-person hands, open palms | a fist striking a figure. Pointing belongs only to the Lectern |
 | **Six lines** | the reading of this moment | the run's hexagram only | decoration |
@@ -493,21 +493,21 @@ The owner asked to review every element of the game against this guide, fix what
 | Area | Now | Rule |
 |---|---|---|
 | **Colour sources** | Every colour is a palette token: **0 hex literals** outside `palette.ts` (there were 264). The ratchet test fails on any new one | §3, DECISIONS §12.6 |
-| **Blocks** | All 15 materials repainted from their ramps with the shape grammar: running-bond brick, stone plates, dirt clumps, deepstone strata, crates with a rope band (no X brace), obsidian facets, bedrock cobble without highlights, copper nuggets in ore, bevelled frames with rivets, a limestone pedestal, a seed for the breakthrough. Light from the top-left everywhere | §6.1, §6.2 |
+| **Blocks** | All 15 materials repainted from their ramps with the shape grammar: running-bond brick, stone plates, dirt clumps, deepstone strata, crates with a rope band (no X brace), obsidian facets, bedrock cobble without highlights, copper nuggets in ore, bevelled frames with rivets, a limestone pedestal, a seed for the bomb. Light from the top-left everywhere | §6.1, §6.2 |
 | **Cracks** | Cracks of light: an ink edge and a gold core whose intensity grows with the stage | §6.3 |
 | **Frames and doors** | "Bone frame" is now the **Obsidian frame** (with one long crack of captive light) and "Gilded frame" the **Brass frame**. Door leaves are built wood with vertical boards and iron bands at 16 texels per block; the boss door has a captive-light crack instead of a skull; the locked door a gold keyhole | §6.2, OWNER Q3 |
 | **Projections** | Doubt, the Lectern (Inner Critic) and Panic rebuilt to their final specs in whole texels: dark husks with a cold rim, the pale paper Lectern, one family eye (2 × 2 cold lights in dark sockets). No skin, no warm light, no true path hues. The hit flash is a short cold lift, never white; the telegraph brightens the tell toward cold white instead of tinting the body red. Panic swells in three steps; Doubt pauses to reconsider and reaches for you for 0.5 s before it can hurt (OWNER Q4). Their GPU memory is freed on release | §8, OWNER Q4 |
 | **Release** | Host chips fall and gold motes rise; no gore | §8.6 |
 | **Craving (Ansia), as built** | Its dark socket on the top is an inlay: the socket's top had sat on the slab's top face and flickered (issue #46); it is now depth-offset, geometry unchanged. Its breath runs on a steady clock, so a hit or a wind does not make it jump. Its wind swells in over 0.3 s, so the release is a gust, never a click | §8, issue #46 |
 | **Intentions** | A bead of light: white-hot core, gold shell, ember halo. Hostile projectiles are red cubes (the attack red) tumbling on two axes, with pale chips on impact (issue #47) | §7.1, §7.2 |
-| **Pickups** | A gold key with an eye (an insight), the breakthrough as a seed (never a cartoon bomb), life's red heart | §10.2 |
+| **Pickups** | A gold key with an eye (an insight), the bomb as a seed (never a cartoon bomb), life's red heart | §10.2 |
 | **Hands** | Whole texels: skin tone `t3`, the knitted jumper from the house above (rib-knit, cuff band) and a thumb | §9 |
 | **Practices** | Every practice's colour is its primary path's glow; icon palettes use tokens and never life or cold (light only where the concept is light: Satori, Cut Ties with Toxic Relationships, Remember Breathing). Satori is an open ensō; Tao Te Ching is a stream parting around a stone (no yin-yang); Box Breathing is one bold square; Stoic is tinted. Clashing silhouettes redrawn (Exposure, Gratitude, Symbolic Act, Letters from a Stoic, Deep Focus, Second Brain, Nothing Personal, Art Therapy) | §10.1, OWNER Q6 |
 | **HUD** | The cellar slate on every panel (bevel, chamfered corners, no radius); minimap top-right with glyph marks (house, hollow ◇, ▭, ▣) and cleared rooms in gold; toasts top-centre at 22 %; hearts, seed and key drawn from pixel strings; path chips carry their glyph (■ ● ◆ ▲); quality stars and ▲ in gold, ▼ in cold; the debug readout off by default (F3) | §10.2 |
 | **Gentleness** | No blinking hearts (invulnerable hearts are steady at 55 % with an outline); the last heart beats at 1.1 Hz; item flash peak 0.45 over 0.5 s with a 333 ms flash budget; hurt vignette `life.dark` at 0.35 | §10.4 |
 | **Death** | Night to ink, an ensō that does not close, "The intention faded", the pattern as the agent ("Panic held you") | §10.2, §10.5 |
 | **Floor 0–3 building materials** (owner, 2026-10-27: "very bad wood on the first floors") | Floor 0's packed earth (`loam`) shared the strata painter and read as cheap boards; it is now rammed earth (`earth`: wandering compaction lifts, short cracks, pebbles, pores). Rubble masonry got bevelled rough stones (`rubble`) instead of bedrock's flat cobble, ashlar real cut courses (`ashlar`) and slate thin split slabs (`slate`); deepstone keeps the strata painter alone. Floor 1 flagstone and brick, floor 3 wet brick unchanged | DECISIONS §6.2 |
-| **Wood, dirt and the seed** (owner, 2026-10-27: "several wood textures are very bad, dirt is so-so, the bombs are very ugly") | Crates are framed crate faces with recessed slats and iron nails; living wood has bark on its sides and end grain with rings on top and bottom (its own atlas tile); door leaves are wide boards with butt joints and knots; door frames are dressed ashlar instead of a board-like plate; dirt is soft round clods with pebbles; leaves have their own leaf clusters; deepstone strata gained lit seams and lenses. Brick and obsidian are untouched. The breakthrough is one voxel seed (pickup and placed) split by a glowing seam, with a matching HUD icon; the placed one swells and pulses up to 2.5 Hz instead of blinking at 8–16 Hz | §6.2, §7, DECISIONS §6.2, §7.4, §10.2 |
+| **Wood, dirt and the seed** (owner, 2026-10-27: "several wood textures are very bad, dirt is so-so, the bombs are very ugly") | Crates are framed crate faces with recessed slats and iron nails; living wood has bark on its sides and end grain with rings on top and bottom (its own atlas tile); door leaves are wide boards with butt joints and knots; door frames are dressed ashlar instead of a board-like plate; dirt is soft round clods with pebbles; leaves have their own leaf clusters; deepstone strata gained lit seams and lenses. Brick and obsidian are untouched. The bomb is one voxel seed (pickup and placed) split by a glowing seam, with a matching HUD icon; the placed one swells and pulses up to 2.5 Hz instead of blinking at 8–16 Hz | §6.2, §7, DECISIONS §6.2, §7.4, §10.2 |
 | **The Roots' wall panels** (issue #147, package C1; renderer built, not yet read by the game) | Four layouts on one limestone slab (lesson, plate, prose, quote), 896 × 512, palette tokens only: a mitred light edge and bevel, a quiet grain seeded by the panel id, text cut into the stone (ink with a pale lip a pixel below and right), the gold diamond as the only accent, pictures set in an ink frame with a recess shadow, the control as a pale key cap with its verb, a drop cap and a gold margin for the book, a paler inset page, a gold opening mark and italic serif for a quotation, and the panel id as a tiny mason's mark. A missing picture draws a neutral hatched placeholder. The page stone carries the book page's number. Code: `src/render/tablets.ts`, `panel-layout.ts`, `page-stone.ts`; review: `?gallery=book` | [PANELS](../design/not-built/levels/roots/PANELS.md) |
 | **Tests** | `tests/art-content.test.ts`: ramps dark to light, a concept for every material, icon colours and namespaces, item colour = path glow, icon silhouettes IoU < 0.8, creatures on the texel grid with a cold tell, no warm/life/skin/path hues in projections, dark and pale husk values | DECISIONS §12.6 |
 

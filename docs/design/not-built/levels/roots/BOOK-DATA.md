@@ -94,7 +94,7 @@ The validator checks that every id resolves: a bestiary id is an entity with a c
 - **Portrait mode.** No HUD and no held hand. The subject stands on a one-block stone plinth in an 11 × 9 room (a boss stands on the floor in a 21 × 15 room) and turns to face the camera. The camera uses a 40° lens placed so the subject's drawn extent fills 72 per cent of the frame, levelled on its centre. The shell is `palestone`. `overwhelm` is framed from its other side (`PORTRAIT_SIDE`).
 - **Lessons.** Each lesson is one staged room, one lab script when something must be in flight or burn (thrown cubes, bombs, damage, lava and water), one prep step when the game needs a state set by hand (a missile, a warmth, a grown creature, the toll window), and one eye point and target. The HUD and the hand are hidden unless the lesson is about them (`counters`, `polarity`, the toll windows, the Sanctuary). Every capture runs in English. The scenes are inline in the script rather than in `src/sandbox/scenarios/`: a scenario file joins `npm run sandbox -- --check`, which needs a saved report for each file, and these pictures do not need one.
 - **Fixed inputs.** Every capture uses the sandbox's fixed seed and fixed step, so a re-run gives the same pictures.
-- **Pending (11), not faked.** `ring` (a minimap of the whole Roots needs a real run), `drink` (the sandbox hand holds blocks and parts, not potions), `alembic`, `kitchen` and `recipe` (the floor generator places the labs), `paths` and `state` (the sandbox does not open the inventory screen), `white-seed` (no coloured explosion hook), `boss-room` (the lit pedestal needs a defeated boss), `parts` (no part pickup hook) and `chests` (the keyhole chest is placed by the floor generator). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
+- **Pending (11), not faked.** `ring` (a minimap of the whole Roots needs a real run), `drink` (the sandbox hand holds blocks and parts, not potions), `alembic`, `kitchen` and `recipe` (the floor generator places the labs), `paths` and `state` (the sandbox does not open the inventory screen), `white-bomb` (no coloured explosion hook), `boss-room` (the lit pedestal needs a defeated boss), `parts` (no part pickup hook) and `chests` (the keyhole chest is placed by the floor generator). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
 - **Content gaps seen in the captures.** `resistance`, `inertia`, `insatiable` and `overwhelm` draw as dark husk bodies with eyes; `overwhelm` is built from Doubt's husk palette (`src/content/bosses/overwhelm.ts`). Their portraits are faithful captures of what the game draws today, and the boss models need their own art. The `convert` lesson shows a projection at warmth 0.95 as a red-brown body rather than gold; the warm glow needs checking against the ledger.
 
 ### Every image the nine pages use
@@ -115,8 +115,8 @@ Lesson screenshots (33, **all new captures**; 22 are taken, the 11 marked pendin
 | `mend` | A cracked dirt block closing under a good intention | `roots-mend` |
 | `pit` | A stair of placed blocks up out of a trench | `roots-pit` |
 | `bridge` | A half-built bridge across a trench | `roots-bridge` |
-| `counters` | The HUD key and breakthrough counters, close | any roots room |
-| `breakthrough` | A black breakthrough at the foot of an obsidian wall | `roots-seal` |
+| `counters` | The HUD key and bomb counters, close | any roots room |
+| `bomb` | A black bomb at the foot of an obsidian wall | `roots-seal` |
 | `kick` | A loose cube in flight after a kick | `roots-crates` |
 | `crates` | A broken crate and the key it held | `roots-crates` |
 | `lava` | Water meeting lava, the steam and the obsidian | a sandbox room on floor 3 |
@@ -135,7 +135,7 @@ Lesson screenshots (33, **all new captures**; 22 are taken, the 11 marked pendin
 | `state` | The banner of a state of being | the inventory screen or its banner |
 | `recipe` | The alembic and the potion it made | a laboratory room, floor 2 |
 | `creatures` | A creature hiding into the blocks | `roots-mend` |
-| `white-seed` | A white breakthrough's love explosion over lava turning to water | a sandbox room, floor 3 |
+| `white-bomb` | A white bomb's love explosion over lava turning to water | a sandbox room, floor 3 |
 | `throw` | A thrown obsidian cube hitting a projection | a sandbox room, floor 1 |
 | `chests` | A locked chest with two keyholes next to a brass-trimmed chest | a sandbox room, floor 2 |
 | `toll` | The toll window on floor 3 | a boss room, floor 3 |
@@ -153,7 +153,7 @@ Lesson screenshots (33, **all new captures**; 22 are taken, the 11 marked pendin
 | `polarity` | F | LB | (half-turn glyph) 180° | switch / cambiar |
 | `place` | Right click / Clic der. | LT | Tap a block / Toca un bloque | place / colocar |
 | `throw` | Q | B | Flying block / Bloque volador | throw / tirar |
-| `bomb` | E | RB | Seed / Semilla | drop a seed / soltar avance |
+| `bomb` | E | RB | Bomb / Bomba | drop a bomb / soltar bomba |
 | `drink` | G | X | Flask / Frasco | drink / beber |
 | `inventory` | Tab | Y | Practices / Prácticas | your practices / tus prácticas |
 

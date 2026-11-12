@@ -25,7 +25,7 @@ Linked rooms get a **3×3 doorway** through the middle of the shared wall, frame
 | Obsidian frame (one crack of captive light) | Obsidian leaf with a long captive-light crack | The boss room |
 | Brass frame | Wood leaf with an iron padlock and a gold keyhole | The vault: needs a key |
 
-**Doors** are Isaac-style (owner, 2026-10-27): a solid slab fills the doorway, and it stands **open whenever its rooms hold no projections**. Entering a room with projections seals its doors (never on top of you); clearing it opens them again by themselves. Locked doors still wait for you to touch them (direct contact with the frame, 0.05 blocks, never from across the room; issue #5): they ask the game first (`doorOpen` event): with a key they unlock for good; without one you get a "Locked" message. Items can hook `doorOpen` (e.g. a skeleton key that sets `needsKey = false`). **A breakthrough that reaches a door blows it apart for good** (`doorBreak`, cancellable): the doorway stays open forever, never sealed or locked again, a locked one included. The frame is breakable too, so you can still dig around a door if you're stubborn.
+**Doors** are Isaac-style (owner, 2026-10-27): a solid slab fills the doorway, and it stands **open whenever its rooms hold no projections**. Entering a room with projections seals its doors (never on top of you); clearing it opens them again by themselves. Locked doors still wait for you to touch them (direct contact with the frame, 0.05 blocks, never from across the room; issue #5): they ask the game first (`doorOpen` event): with a key they unlock for good; without one you get a "Locked" message. Items can hook `doorOpen` (e.g. a skeleton key that sets `needsKey = false`). **A bomb that reaches a door blows it apart for good** (`doorBreak`, cancellable): the doorway stays open forever, never sealed or locked again, a locked one included. The frame is breakable too, so you can still dig around a door if you're stubborn.
 
 During combat a room's doors are **sealed** (they stay shut) until every projection in it is gone.
 
@@ -69,7 +69,7 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 | `!` | decor slot: ore or obsidian | `b` | brick, 1 high |
 | `1`–`4` | a built terrace (brick) of that height | `_` | a dip, 1 deep |
 | `w` / `W` | water 1 / 2 deep (dug into the floor, a source) | `l` / `L` | lava 1 / 2 deep |
-| `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a breakthrough) |
+| `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a bomb) |
 | ` ` (space) | not room: the rock stays (the outline of a template bigger than one cell) | | |
 | `=` | a dry pit, 2 deep (you need a block to climb out) | `D` / `E` | a door-shaped plug (3 wide, 3 high) of dirt set in a `#` / `X` wall; above the dirt the wall goes on |
 

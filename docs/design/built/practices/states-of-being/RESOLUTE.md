@@ -15,7 +15,7 @@ Damage x1.15 and mining x1.2.
 
 ## Design text
 
-Every tenth intention is a breakthrough (a small explosion) (STORY section 3).
+Every tenth intention is a bomb (a small explosion) (STORY section 3).
 
 ## Visuals
 
@@ -23,4 +23,4 @@ No visual is built.
 
 ## Open questions
 
-- S4: the design text promises a breakthrough on every tenth intention, which is not built. The built effect is damage and mining. The owner decides which effect is the state's.
+- S4: the design text promises a bomb on every tenth intention, which is not built. The built effect is damage and mining. The owner decides which effect is the state's.

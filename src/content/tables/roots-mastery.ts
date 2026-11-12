@@ -23,12 +23,12 @@ export const EXTRA_PRACTICE_BAND: TierBand = { min: 1, max: 3 };
 export interface RootsRewards {
   /** The level this table was read at, clamped to 0…100. */
   readonly level: number;
-  /** Loose keys in the lesson rooms. Level 0 has none guaranteed (see `oneOfKeyOrBreakthrough`). */
+  /** Loose keys in the lesson rooms. Level 0 has none guaranteed (see `oneOfKeyOrBomb`). */
   readonly keys: number;
-  /** Loose breakthroughs (bombs). Level 0 has none guaranteed. */
-  readonly breakthroughs: number;
-  /** Level 0 only: the floor lays exactly one of a key or a breakthrough, the choice drawn per seed. */
-  readonly oneOfKeyOrBreakthrough: boolean;
+  /** Loose bombs. Level 0 has none guaranteed. */
+  readonly bombs: number;
+  /** Level 0 only: the floor lays exactly one of a key or a bomb, the choice drawn per seed. */
+  readonly oneOfKeyOrBomb: boolean;
   /** Loose hearts, in the order the table adds them. */
   readonly hearts: readonly HeartKind[];
   /** Free chests (no key needed) in the lesson rooms, at most one a room. */
@@ -47,8 +47,8 @@ export interface RootsRewards {
 
 /** The level at which each loose key starts (one more key each time): 1, 2, 3, 4, 5 and 6 keys. */
 const KEYS_AT = [1, 6, 14, 22, 31, 37] as const;
-/** Each loose breakthrough: 1, 2, 3, 4 and 5 of them. */
-const BREAKTHROUGHS_AT = [1, 9, 19, 28, 38] as const;
+/** Each loose bomb: 1, 2, 3, 4 and 5 of them. */
+const BOMBS_AT = [1, 9, 19, 28, 38] as const;
 /** Each free chest: one more from the level given. */
 const CHESTS_AT = [4, 12, 17, 23, 29, 35] as const;
 /** Each extra practice: one more from the level given. */
@@ -101,8 +101,8 @@ export function rootsRewards(level: number): RootsRewards {
   return {
     level: L,
     keys: reached(KEYS_AT),
-    breakthroughs: reached(BREAKTHROUGHS_AT),
-    oneOfKeyOrBreakthrough: L === 0,
+    bombs: reached(BOMBS_AT),
+    oneOfKeyOrBomb: L === 0,
     hearts: HEARTS_AT.filter(([at]) => at <= L).map(([, kind]) => kind),
     freeChests: reached(CHESTS_AT),
     chestDraws: chestDrawsAt(L),
@@ -140,11 +140,11 @@ export function gainsAt(level: number): GainLine[] {
   const before = rootsRewards(L - 1);
   const now = rootsRewards(L);
   const lines: GainLine[] = [];
-  if (before.oneOfKeyOrBreakthrough && !now.oneOfKeyOrBreakthrough) {
+  if (before.oneOfKeyOrBomb && !now.oneOfKeyOrBomb) {
     lines.push({ key: 'mastery.gain.both', params: {} });
   } else {
     if (now.keys > before.keys) lines.push({ key: 'mastery.gain.key', params: { n: now.keys } });
-    if (now.breakthroughs > before.breakthroughs) lines.push({ key: 'mastery.gain.bomb', params: { n: now.breakthroughs } });
+    if (now.bombs > before.bombs) lines.push({ key: 'mastery.gain.bomb', params: { n: now.bombs } });
   }
   // A heart of a kind the Roots already lay gets its own line ("One more ... heart"), not the first-time one.
   for (const kind of now.hearts.slice(before.hearts.length)) {

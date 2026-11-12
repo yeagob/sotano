@@ -523,7 +523,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
   if (lv.tutorial) {
     // The Roots (REWARDS §2–§5): what the mastery level lays on floor 0. Each kind draws from its own fork,
-    // in this order: extra practices, the altar, the second Sanctuary, free chests, keys, breakthroughs, hearts.
+    // in this order: extra practices, the altar, the second Sanctuary, free chests, keys, bombs, hearts.
     // Each takes free tiles only (never a door approach, the centre, the shaft or beside a marker), and a room
     // holds at most one practice pedestal and one free chest. The Sanctuary chest and the way-down pedestal are untouched.
     const roots = rootsRewards(opt.mastery ?? 0);
@@ -580,14 +580,14 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       chests.push({ room: spot.room, x: spot.x, y: y0, z: spot.z, keys: 0, item: null, draws: { ...roots.chestDraws } });
     }
 
-    // level 0 lays exactly one of a key or a breakthrough, drawn once; from level 1 the table's counts
-    const oneOf = roots.oneOfKeyOrBreakthrough ? rOneOf.pick(['key', 'bomb'] as const) : null;
+    // level 0 lays exactly one of a key or a bomb, drawn once; from level 1 the table's counts
+    const oneOf = roots.oneOfKeyOrBomb ? rOneOf.pick(['key', 'bomb'] as const) : null;
     for (let i = 0; i < roots.keys + (oneOf === 'key' ? 1 : 0); i++) {
       const spot = takeFree(rKey, freeByRoom, lessons);
       if (!spot) break;
       keys.push(laid(spot.room, spot.x, spot.z));
     }
-    for (let i = 0; i < roots.breakthroughs + (oneOf === 'bomb' ? 1 : 0); i++) {
+    for (let i = 0; i < roots.bombs + (oneOf === 'bomb' ? 1 : 0); i++) {
       const spot = takeFree(rBomb, freeByRoom, lessons);
       if (!spot) break;
       bombs.push(laid(spot.room, spot.x, spot.z));

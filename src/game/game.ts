@@ -2222,7 +2222,7 @@ export class Game {
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
-    // a breakthrough: white-hot core, ember sparks, ash (docs/art/DECISIONS.md §7.4)
+    // a bomb: white-hot core, ember sparks, ash (docs/art/DECISIONS.md §7.4)
     this.particles.burst(x, y, z, pal('light.ember'), 40, 8, 0.15);
     this.particles.burst(x, y, z, pal('light.core'), 20, 5, 0.1);
     this.particles.burst(x, y, z, pal('ink.ash'), 24, 4, 0.22);
@@ -2496,7 +2496,7 @@ export class Game {
     }
   }
 
-  /** E: drop a bomb (a breakthrough) at your feet. */
+  /** E: drop a bomb at your feet. */
   private placeBomb() {
     const p = this.player;
     if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
@@ -2749,7 +2749,7 @@ export class Game {
       if (!b) continue;
       const k = ELEMENTS[elemKind(b)]!.key, m = d.material[i];
       if (k === 'lava' || (k === 'fire' && mat(m).flammable)) {
-        // a breakthrough in the fire goes off at once
+        // a bomb in the fire goes off at once
         if (d.isBomb(i)) { d.fuse[i] = Math.min(d.fuse[i], 0.05); continue; }
         // old pain can't melt a core belief
         if (k === 'lava' && m === MAT.obsidian) continue;

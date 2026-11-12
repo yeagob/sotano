@@ -34,7 +34,7 @@ Status: **built (M1.5)**, after the three-party review in [../reviews/entities.m
 - Collecting goes through **`pickupCollect { kind, amount }`** (mutable amount; cancel to leave it). Counters cap at 99. Keys and bombs show top-left with hearts, Isaac-style.
 - **Breaking blocks drops nothing but the block** (owner decision), with one exception: a **crate** gives one key, heart or small bomb with its floor's chance, between 10% and 30%: each floor draws its own chance from the seed, once per run (`floorCrateChance` and `rollCrate` in `content/tables/crates.ts`; the roll is on `stream('drops')`, luck-scaled). Above floor 0 the surface uses floor 0's chance. `blockLoot` fires with those drops so an item can add more. Keys and treasures are moving into **chests** ([ELEMENTS.md §7](ELEMENTS.md)). Today the floor's key for the vault sits on a key spot, and cleared rooms may drop a heart, bomb or key (40%, raised by `luck`).
 
-## 4. Bombs ("breakthroughs")
+## 4. Bombs
 
 - Start with 1. **E** drops one at your feet through **`bombPlace { fuse }`**.
 - A bomb **is a loose cube** (material `bomb`) with a fuse in `DebrisSystem.fuse`: it falls, stacks, can be kicked (walking into a bomb always kicks it) and is pushed by explosions. Bombs are **pinned**: never recycled by the ring buffer and never aged out.

@@ -18,11 +18,11 @@ const at = (level: number) => rootsRewards(level);
 const shape = ({ level: _level, ...rest }: RootsRewards) => rest;
 
 describe('level 0 (REWARDS §2: poorer than today, nothing extra)', () => {
-  it('lays exactly one key or one breakthrough, both counts zero, the crates at factor 0.2', () => {
+  it('lays exactly one key or one bomb, both counts zero, the crates at factor 0.2', () => {
     const r = at(0);
-    expect(r.oneOfKeyOrBreakthrough).toBe(true);
+    expect(r.oneOfKeyOrBomb).toBe(true);
     expect(r.keys).toBe(0);
-    expect(r.breakthroughs).toBe(0);
+    expect(r.bombs).toBe(0);
     expect(r.crateFactor).toBe(0.2);
   });
 
@@ -47,54 +47,54 @@ describe('level 0 (REWARDS §2: poorer than today, nothing extra)', () => {
 });
 
 describe('spot values (REWARDS §2 at-a-glance and the rows)', () => {
-  it('level 5: a key, a breakthrough, a red heart, one free chest, crates 4 to 12 %', () => {
+  it('level 5: a key, a bomb, a red heart, one free chest, crates 4 to 12 %', () => {
     expect(shape(at(5))).toEqual({
-      oneOfKeyOrBreakthrough: false, keys: 1, breakthroughs: 1, hearts: ['red'], freeChests: 1,
+      oneOfKeyOrBomb: false, keys: 1, bombs: 1, hearts: ['red'], freeChests: 1,
       chestDraws: { min: 1, max: 3 }, crateFactor: 0.4, extraPractices: 0, altar: null, secondSanctuary: false,
     });
     expect(rootsCrateChance(CRATE_DROP_MIN, 5)).toBeCloseTo(0.04, 10);
     expect(rootsCrateChance(CRATE_DROP, 5)).toBeCloseTo(0.12, 10);
   });
 
-  it('level 10: two keys, two breakthroughs, red and blue hearts, one free chest, one extra practice', () => {
+  it('level 10: two keys, two bombs, red and blue hearts, one free chest, one extra practice', () => {
     const r = at(10);
-    expect([r.keys, r.breakthroughs, r.hearts, r.freeChests, r.extraPractices, r.crateFactor])
+    expect([r.keys, r.bombs, r.hearts, r.freeChests, r.extraPractices, r.crateFactor])
       .toEqual([2, 2, ['red', 'blue'], 1, 1, 0.5]);
   });
 
-  it('level 15: three keys, two breakthroughs, red, blue and stone hearts, two free chests, crates 7 to 21 %', () => {
+  it('level 15: three keys, two bombs, red, blue and stone hearts, two free chests, crates 7 to 21 %', () => {
     const r = at(15);
-    expect([r.keys, r.breakthroughs, r.hearts, r.freeChests, r.extraPractices]).toEqual([3, 2, ['red', 'blue', 'stone'], 2, 1]);
+    expect([r.keys, r.bombs, r.hearts, r.freeChests, r.extraPractices]).toEqual([3, 2, ['red', 'blue', 'stone'], 2, 1]);
     expect(rootsCrateChance(CRATE_DROP, 15)).toBeCloseTo(0.21, 10);
   });
 
-  it('level 22: four keys, three breakthroughs, five hearts, three free chests, crates 9 to 27 %', () => {
+  it('level 22: four keys, three bombs, five hearts, three free chests, crates 9 to 27 %', () => {
     const r = at(22);
-    expect([r.keys, r.breakthroughs, r.hearts.length, r.freeChests, r.extraPractices]).toEqual([4, 3, 5, 3, 1]);
+    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices]).toEqual([4, 3, 5, 3, 1]);
     expect(r.hearts).toEqual(['red', 'blue', 'stone', 'red', 'blood']);
     expect(rootsCrateChance(CRATE_DROP, 22)).toBeCloseTo(0.27, 10);
   });
 
   it('level 25: as 22 with four free chests, crates 10 to 30 % (as every other floor), two extra practices', () => {
     const r = at(25);
-    expect([r.keys, r.breakthroughs, r.freeChests, r.extraPractices, r.crateFactor]).toEqual([4, 3, 4, 2, 1.0]);
+    expect([r.keys, r.bombs, r.freeChests, r.extraPractices, r.crateFactor]).toEqual([4, 3, 4, 2, 1.0]);
     expect(rootsCrateChance(CRATE_DROP_MIN, 25)).toBeCloseTo(0.1, 10);
     expect(rootsCrateChance(CRATE_DROP, 25)).toBeCloseTo(0.3, 10);
   });
 
-  it('level 36: five keys, four breakthroughs, eight hearts, six free chests of two to four draws, crates 13 to 39 %', () => {
+  it('level 36: five keys, four bombs, eight hearts, six free chests of two to four draws, crates 13 to 39 %', () => {
     const r = at(36);
-    expect([r.keys, r.breakthroughs, r.hearts.length, r.freeChests, r.extraPractices]).toEqual([5, 4, 8, 6, 2]);
+    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices]).toEqual([5, 4, 8, 6, 2]);
     expect(r.hearts).toEqual(['red', 'blue', 'stone', 'red', 'blood', 'star', 'blue', 'black']);
     expect(r.chestDraws).toEqual({ min: 2, max: 4 });
     expect(rootsCrateChance(CRATE_DROP_MIN, 36)).toBeCloseTo(0.13, 10);
     expect(rootsCrateChance(CRATE_DROP, 36)).toBeCloseTo(0.39, 10);
   });
 
-  it('level 40: six keys, five breakthroughs, ten hearts (one star, two blood), six free chests, crates 13 to 39 %', () => {
+  it('level 40: six keys, five bombs, ten hearts (one star, two blood), six free chests, crates 13 to 39 %', () => {
     const r = at(40);
     expect(shape(r)).toEqual({
-      oneOfKeyOrBreakthrough: false, keys: 6, breakthroughs: 5,
+      oneOfKeyOrBomb: false, keys: 6, bombs: 5,
       hearts: ['red', 'blue', 'stone', 'red', 'blood', 'star', 'blue', 'black', 'stone', 'blood'],
       freeChests: 6, chestDraws: { min: 2, max: 4 }, crateFactor: 1.3, extraPractices: 2, altar: null, secondSanctuary: false,
     });
@@ -102,18 +102,18 @@ describe('spot values (REWARDS §2 at-a-glance and the rows)', () => {
     expect(rootsCrateChance(CRATE_DROP, 40)).toBeCloseTo(0.39, 10);
   });
 
-  it('level 50: six keys, five breakthroughs, ten hearts, six free chests, crates 15 to 45 %, two extra practices', () => {
+  it('level 50: six keys, five bombs, ten hearts, six free chests, crates 15 to 45 %, two extra practices', () => {
     const r = at(50);
-    expect([r.keys, r.breakthroughs, r.hearts.length, r.freeChests, r.extraPractices, r.altar]).toEqual([6, 5, 10, 6, 2, null]);
+    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices, r.altar]).toEqual([6, 5, 10, 6, 2, null]);
     expect(r.crateFactor).toBe(1.5);
     expect(rootsCrateChance(CRATE_DROP_MIN, 50)).toBeCloseTo(0.15, 10);
     expect(rootsCrateChance(CRATE_DROP, 50)).toBeCloseTo(0.45, 10);
   });
 
-  it('level 100: six keys, five breakthroughs, eleven hearts, six free chests of three to five draws, crates 25 to 75 %, an altar up to four stars, a second Sanctuary', () => {
+  it('level 100: six keys, five bombs, eleven hearts, six free chests of three to five draws, crates 25 to 75 %, an altar up to four stars, a second Sanctuary', () => {
     const r = at(100);
     expect(shape(r)).toEqual({
-      oneOfKeyOrBreakthrough: false, keys: 6, breakthroughs: 5,
+      oneOfKeyOrBomb: false, keys: 6, bombs: 5,
       hearts: ['red', 'blue', 'stone', 'red', 'blood', 'star', 'blue', 'black', 'stone', 'blood', 'red'],
       freeChests: 6, chestDraws: { min: 3, max: 5 }, crateFactor: 2.5, extraPractices: 2,
       altar: { min: 2, max: 4 }, secondSanctuary: true,
@@ -165,7 +165,7 @@ describe('monotonic (every level keeps every step of the level below)', () => {
       const a = at(L);
       const b = at(L + 1);
       expect(b.keys, `keys at ${L + 1}`).toBeGreaterThanOrEqual(a.keys);
-      expect(b.breakthroughs, `breakthroughs at ${L + 1}`).toBeGreaterThanOrEqual(a.breakthroughs);
+      expect(b.bombs, `bombs at ${L + 1}`).toBeGreaterThanOrEqual(a.bombs);
       expect(b.freeChests, `free chests at ${L + 1}`).toBeGreaterThanOrEqual(a.freeChests);
       expect(b.extraPractices, `extra practices at ${L + 1}`).toBeGreaterThanOrEqual(a.extraPractices);
       expect(b.chestDraws.min, `draws min at ${L + 1}`).toBeGreaterThanOrEqual(a.chestDraws.min);
@@ -191,7 +191,7 @@ describe('bounded (REWARDS §6)', () => {
     for (const L of LEVELS) {
       const r = at(L);
       expect(r.keys).toBeLessThanOrEqual(6);
-      expect(r.breakthroughs).toBeLessThanOrEqual(5);
+      expect(r.bombs).toBeLessThanOrEqual(5);
       expect(r.hearts.length).toBeLessThanOrEqual(11);
       expect(r.freeChests).toBeLessThanOrEqual(6);
       expect(r.extraPractices).toBeLessThanOrEqual(2);
@@ -237,7 +237,7 @@ describe('the Sanctuary chest and the way-down pedestal stay as they are', () =>
   it('the table has the same fields at every level and no field for the Sanctuary or the pedestal', () => {
     const fields = Object.keys(at(0)).sort();
     for (const L of LEVELS) expect(Object.keys(at(L)).sort(), `level ${L}`).toEqual(fields);
-    expect(fields).toEqual(['altar', 'breakthroughs', 'chestDraws', 'crateFactor', 'extraPractices', 'freeChests', 'hearts', 'keys', 'level', 'oneOfKeyOrBreakthrough', 'secondSanctuary']);
+    expect(fields).toEqual(['altar', 'bombs', 'chestDraws', 'crateFactor', 'extraPractices', 'freeChests', 'hearts', 'keys', 'level', 'oneOfKeyOrBomb', 'secondSanctuary']);
   });
 });
 
@@ -264,7 +264,7 @@ describe('gainsAt (REWARDS §7: one named line for each step)', () => {
     expect(gainsAt(36)).toEqual([{ key: 'mastery.gain.heart.black', params: {} }]);
   });
 
-  it('names the steps of levels 37 to 40: a sixth key, a fifth breakthrough, a second stone and a second blood heart', () => {
+  it('names the steps of levels 37 to 40: a sixth key, a fifth bomb, a second stone and a second blood heart', () => {
     expect(gainsAt(37)).toEqual([{ key: 'mastery.gain.key', params: { n: 6 } }]);
     expect(gainsAt(38)).toEqual([{ key: 'mastery.gain.bomb', params: { n: 5 } }]);
     expect(gainsAt(39)).toEqual([{ key: 'mastery.gain.heartAgain.stone', params: {} }]);

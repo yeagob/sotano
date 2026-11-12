@@ -1,4 +1,4 @@
-// Things you collect by walking into them: keys (insights), bombs (breakthroughs), hearts,
+// Things you collect by walking into them: keys (insights), bombs, hearts,
 // and items on pedestals. They only know where they are and what they look like; the game
 // decides what touching them does (through `pickupCollect` / the inventory).
 // Floor pickups fall until they rest on something solid (a vertical settle, no physics engine).

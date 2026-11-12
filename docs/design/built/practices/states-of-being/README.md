@@ -11,7 +11,7 @@ In code, each state is a tag-count synergy in `src/content/synergies.ts`: it tur
 | [Embodied](EMBODIED.md) | Body | 10 | Move speed x1.15 and kick strength x1.3. | Faster, harder to knock back; the hands change colour (STORY section 3). |
 | [Lucid](LUCID.md) | Mind | 20 | Range x1.25 and reach +1. | Intentions home in slightly; you see hidden pockets nearby (STORY section 3). |
 | [Open-hearted](OPEN-HEARTED.md) | Emotion | 16 | Luck +2. | Enemies that touch you take damage too; more hearts drop (STORY section 3). |
-| [Resolute](RESOLUTE.md) | Will | 13 | Damage x1.15 and mining x1.2. | Every tenth intention is a breakthrough (a small explosion) (STORY section 3). |
+| [Resolute](RESOLUTE.md) | Will | 13 | Damage x1.15 and mining x1.2. | Every tenth intention is a bomb (a small explosion) (STORY section 3). |
 
 The design text and the code disagree for all four states. The code is what is built, and each state document keeps the design text beside it. The owner decides which effect each state keeps.
 

@@ -328,8 +328,8 @@ describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
     }
   });
 
-  it('at mastery 0 lays one key or one breakthrough as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
-    // REWARDS §2 (level 0): exactly one of a key or a breakthrough, the choice drawn per seed (floor/0/roots/oneof)
+  it('at mastery 0 lays one key or one bomb as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
+    // REWARDS §2 (level 0): exactly one of a key or a bomb, the choice drawn per seed (floor/0/roots/oneof)
     const rooms = new Set<number>();
     for (let s = 1; s <= 40; s++) {
       const f = buildRun(s * 13, 1).floors[0];

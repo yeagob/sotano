@@ -120,7 +120,7 @@ export interface GameEvents {
   enemySpawn: { id: ActorId; def: string; hp: number; speed: number; contactDamage: number; tags: Set<string>; x: number; y: number; z: number };
 
   // ── dungeon ──
-  /** A breakthrough caught a door: it is about to be blown apart for good (open forever, never
+  /** A bomb caught a door: it is about to be blown apart for good (open forever, never
    *  sealed or locked again). Cancel to keep it. */
   doorBreak: { door: number; locked: boolean; source: string };
   /** A door wants to open. Locked doors ask for a key: hooks may set `needsKey = false`. */

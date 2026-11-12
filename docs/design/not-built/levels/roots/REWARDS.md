@@ -1,6 +1,6 @@
 # What the Roots give, by mastery level
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one breakthrough; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 40, the four page achievements being added on the same day; step lines in stars). Owner, 2026-11-12, later the same day: **star hearts are halved** (of little use in the Roots): only the first star heart is ever laid, and the step that would give a second gives a second blood heart; a repeated heart kind has its own line ("One more … heart", §7); the free chests draw three to five from level 70. The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
+Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one bomb; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 40, the four page achievements being added on the same day; step lines in stars). Owner, 2026-11-12, later the same day: **star hearts are halved** (of little use in the Roots): only the first star heart is ever laid, and the step that would give a second gives a second blood heart; a repeated heart kind has its own line ("One more … heart", §7); the free chests draw three to five from level 70. The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
 
 The Roots read one number when a run starts: the mastery level, 0 to 100. Everything below is a pure function of that level and the run's seed. It changes only floor 0's own sources; every other floor, and the surface, keep their numbers.
 
@@ -10,7 +10,7 @@ The Roots read one number when a run starts: the mastery level, 0 to 100. Everyt
 |---|---|---|
 | The Sanctuary chest (`roots-gift`) | Free, under the Boundary. Quick reward: a practice of ★ to ★★; a finished meditation: ★★★ (the ★★★ to ★★★★ band capped at ★★★ on the Roots) | **Unchanged at every level** |
 | The way-down pedestal (`roots-door`) | A practice of up to ★★★★ from the treasure pool, reserved at run start (`pedestalSlots`) | **Unchanged at every level** |
-| Loose loot | Always one key and one bomb, each on a free tile of a lesson room (`floor/0/loot` fork) | Level 0: exactly one key **or** one breakthrough; both from level 1, more later |
+| Loose loot | Always one key and one bomb, each on a free tile of a lesson room (`floor/0/loot` fork) | Level 0: exactly one key **or** one bomb; both from level 1, more later |
 | Crates | The 28 crates of `roots-crates`. A broken crate gives something with the floor's chance, drawn per seed uniformly in **0.10 to 0.30** (`CRATE_DROP` 0.3, `CRATE_DROP_MIN` 0.1, `floorCrateChance`); a key (3), a heart (3) or a bomb (2) by weight. Crates never hold practices | The chance times a factor: level 0 is five times lower |
 | Hearts, chests, extra practices | None | Grow with the level |
 | The player | Starts every run with one bomb | Unchanged |
@@ -21,10 +21,10 @@ The Roots read one number when a run starts: the mastery level, 0 to 100. Everyt
 
 Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (40 achievements exist today). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
 
-| Level | What the Roots gain | Keys | Breakthroughs | Hearts lying loose | Free chests | Crate factor | Extra practices |
+| Level | What the Roots gain | Keys | Bombs | Hearts lying loose | Free chests | Crate factor | Extra practices |
 |---|---|---|---|---|---|---|---|
-| **0** | Poorer than today | one key **or** one breakthrough | | none | 0 | 0.2 | 0 |
-| 1 | A key and a breakthrough both | 1 | 1 | | | | |
+| **0** | Poorer than today | one key **or** one bomb | | none | 0 | 0.2 | 0 |
+| 1 | A key and a bomb both | 1 | 1 | | | | |
 | 2 | Crates give more | | | | | 0.3 | |
 | 3 | A red heart | | | red | | | |
 | 4 | A chest that needs no key | | | | 1 | | |
@@ -32,7 +32,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 6 | A second key | 2 | | | | | |
 | 7 | A blue heart | | | + blue | | | |
 | 8 | Crates give more | | | | | 0.5 | |
-| 9 | A second breakthrough | | 2 | | | | |
+| 9 | A second bomb | | 2 | | | | |
 | 10 | **A practice waits on a pedestal** | | | | | | 1 |
 | 11 | Crates give more | | | | | 0.6 | |
 | 12 | A second free chest | | | | 2 | | |
@@ -42,7 +42,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 16 | A second red heart | | | + red | | | |
 | 17 | A third free chest | | | | 3 | | |
 | 18 | Crates give more | | | | | 0.8 | |
-| 19 | A third breakthrough | | 3 | | | | |
+| 19 | A third bomb | | 3 | | | | |
 | 20 | A blood heart | | | + blood | | | |
 | 21 | Crates give more | | | | | 0.9 | |
 | 22 | A fourth key | 4 | | | | | |
@@ -51,7 +51,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 25 | **A second practice waits on a pedestal** | | | | | | 2 |
 | 26 | A star heart | | | + star | | | |
 | 27 | Crates give more than elsewhere | | | | | 1.1 | |
-| 28 | A fourth breakthrough | | 4 | | | | |
+| 28 | A fourth bomb | | 4 | | | | |
 | 29 | A fifth free chest | | | | 5 | | |
 | 30 | Crates give more | | | | | 1.2 | |
 | 31 | A fifth key | 5 | | | | | |
@@ -61,7 +61,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 35 | A sixth free chest | | | | 6 | | |
 | 36 | A black heart | | | + black | | | |
 | 37 | A sixth key | 6 | | | | | |
-| 38 | A fifth breakthrough | | 5 | | | | |
+| 38 | A fifth bomb | | 5 | | | | |
 | 39 | A second stone heart | | | + stone | | | |
 | 40 | A second blood heart (star hearts are halved: only the first is laid) | | | + blood | | | |
 | 41 to 100 | Crates give a little more each level | | | | | +0.02 a level | |
@@ -75,16 +75,16 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 | Level | The floor (besides today's Sanctuary chest and way-down pedestal, always there) |
 |---|---|
-| 0 | One key or one breakthrough; crates give something 2 to 6% of the time |
-| 5 | A key, a breakthrough, a red heart, one free chest; crates 4–12% |
-| 10 | Two keys, two breakthroughs, red and blue hearts, one free chest, crates 5–15%, **one extra practice** |
-| 15 | Three keys, two breakthroughs, red, blue and stone hearts, two free chests, crates 7–21%, one extra practice |
-| 22 | Four keys, three breakthroughs, five hearts (two red, blue, stone, blood), three free chests, crates 9–27%, one extra practice |
+| 0 | One key or one bomb; crates give something 2 to 6% of the time |
+| 5 | A key, a bomb, a red heart, one free chest; crates 4–12% |
+| 10 | Two keys, two bombs, red and blue hearts, one free chest, crates 5–15%, **one extra practice** |
+| 15 | Three keys, two bombs, red, blue and stone hearts, two free chests, crates 7–21%, one extra practice |
+| 22 | Four keys, three bombs, five hearts (two red, blue, stone, blood), three free chests, crates 9–27%, one extra practice |
 | 25 | As 22 with four free chests, crates 10–30% (as other floors), **two extra practices** |
-| 36 | Five keys, four breakthroughs, eight hearts (two red, two blue, stone, blood, star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
-| 40 | Six keys, five breakthroughs, ten hearts (two red, two blue, two stone, two blood, one star, one black), six free chests of two to four draws, crates 13–39%, two extra practices |
-| 50 | Six keys, five breakthroughs, ten hearts, six free chests, crates 15–45%, two extra practices |
-| 100 | Six keys, five breakthroughs, eleven hearts, six free chests of three to five draws, crates 25–75%, two extra practices, an altar up to ★★★★, and two Sanctuaries |
+| 36 | Five keys, four bombs, eight hearts (two red, two blue, stone, blood, star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
+| 40 | Six keys, five bombs, ten hearts (two red, two blue, two stone, two blood, one star, one black), six free chests of two to four draws, crates 13–39%, two extra practices |
+| 50 | Six keys, five bombs, ten hearts, six free chests, crates 15–45%, two extra practices |
+| 100 | Six keys, five bombs, eleven hearts, six free chests of three to five draws, crates 25–75%, two extra practices, an altar up to ★★★★, and two Sanctuaries |
 
 ## 3. Crates
 
@@ -104,17 +104,17 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 ## 5. Where the rest goes
 
-- Free chests, loose keys, breakthroughs and hearts lie on free tiles of the eight lesson rooms (the same free tiles the build uses for chests and keys elsewhere), at most one free chest per room. They are placed after the extra practices, in this order: chests, keys, breakthroughs, hearts (in the table's order). Each kind draws from its own fork: `floor/0/roots/chest`, `…/key`, `…/bomb`, `…/heart`; level 0's key-or-breakthrough choice draws once from `floor/0/roots/oneof`.
+- Free chests, loose keys, bombs and hearts lie on free tiles of the eight lesson rooms (the same free tiles the build uses for chests and keys elsewhere), at most one free chest per room. They are placed after the extra practices, in this order: chests, keys, bombs, hearts (in the table's order). Each kind draws from its own fork: `floor/0/roots/chest`, `…/key`, `…/bomb`, `…/heart`; level 0's key-or-bomb choice draws once from `floor/0/roots/oneof`.
 - A free chest needs no key and holds what free-standing chests hold elsewhere, rolled when opened: one to three draws of the chest table (two to four from level 33, three to five from level 70). A practice that comes out of a Roots chest is drawn in the band ★ to ★★★.
 
 ## 6. Rules the table keeps
 
-- **Bounded.** At most 6 keys, 5 breakthroughs, 11 hearts of which one is a star heart, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
+- **Bounded.** At most 6 keys, 5 bombs, 11 hearts of which one is a star heart, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
 - **Monotonic.** For every level L, everything at L + 1 is at least what it is at L.
 - **Deterministic.** Floor 0 depends only on the seed and the level.
 - **Only the Roots.** Floors 1 to 9, the sky and the surface are identical at every mastery level for a given seed, because every new Roots practice is a runtime draw made after the whole reservation, and every other new decision draws from a new `floor/0/roots/*` fork.
 - **`pedestalSlots` stays as it is.** The earlier draft took the Roots' two slots out of the reservation so that a scaled way-down pedestal could not change deeper floors. The way-down pedestal no longer scales, so the reservation, and with it every deeper floor's practices for a given seed, stays exactly as today. The treasure room's slot is still reserved and unused (the Sanctuary chest draws when it opens); it is left alone so the reservation order does not move.
-- **`GEN_VERSION` still goes up by one**, because floor 0 itself changes for a given seed (level 0 lays one key or one breakthrough instead of both, and the new forks place new things); the levels skill asks for a bump whenever a random decision is added. Floors 1 to 9 replay identically.
+- **`GEN_VERSION` still goes up by one**, because floor 0 itself changes for a given seed (level 0 lays one key or one bomb instead of both, and the new forks place new things); the levels skill asks for a bump whenever a random decision is added. Floors 1 to 9 replay identically.
 - **Generation never reads the save.** `main.ts` loads the record once and hands the level to the game; `newRun` passes it to the carving of floor 0. A level earned during a run takes effect at the next run.
 
 ## 7. What each step says
@@ -123,9 +123,9 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 
 | Key | English | Spanish |
 |---|---|---|
-| `mastery.gain.both` | A key and a breakthrough both lie in the Roots. | En las raíces te esperan una llave y un avance. |
+| `mastery.gain.both` | A key and a bomb both lie in the Roots. | En las raíces te esperan una llave y una bomba. |
 | `mastery.gain.key` | One more key lies in the Roots ({n} in all). | Una llave más te espera en las raíces ({n} en total). |
-| `mastery.gain.bomb` | One more breakthrough lies in the Roots ({n} in all). | Un avance más te espera en las raíces ({n} en total). |
+| `mastery.gain.bomb` | One more bomb lies in the Roots ({n} in all). | Una bomba más te espera en las raíces ({n} en total). |
 | `mastery.gain.heart.red` | A red heart lies in the Roots. | Un corazón rojo te espera en las raíces. |
 | `mastery.gain.heart.blue` | A blue heart lies in the Roots. | Un corazón azul te espera en las raíces. |
 | `mastery.gain.heart.stone` | A stone heart lies in the Roots. | Un corazón de piedra te espera en las raíces. |

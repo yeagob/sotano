@@ -1,4 +1,4 @@
-// HUD glyphs as pixel strings (docs/art/DECISIONS.md §10.2): hearts, the breakthrough seed and the
+// HUD glyphs as pixel strings (docs/art/DECISIONS.md §10.2): hearts, the bomb seed and the
 // key with an eye. Drawn by `hudIconUrl` from palette tokens; no SVG, no hex.
 
 import type { PalToken } from './palette';

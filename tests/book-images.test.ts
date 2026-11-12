@@ -24,7 +24,7 @@ const PENDING: Record<string, string> = {
   recipe: 'the alembic and the potion it made: the alembic is placed by the floor generator',
   paths: 'the practices tab of the inventory screen: the sandbox does not open the inventory yet',
   state: 'the banner of a state of being: shown only after three practices of one path',
-  'white-seed': 'a white breakthrough over lava needs a polarity-coloured explosion the sandbox cannot drop',
+  'white-bomb': 'a white bomb over lava needs a polarity-coloured explosion the sandbox cannot drop',
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss',
   parts: 'the four parts of a released projection: the sandbox has no part pickup hook',
   chests: 'the locked chest with keyholes is a model the floor generator places',

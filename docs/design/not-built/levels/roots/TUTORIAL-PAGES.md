@@ -8,7 +8,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: proposal (written 
 - **The lesson wall** of each room (the one a forward walker faces, [PANELS §7](PANELS.md#7-which-wall-holds-the-lesson)) keeps page 1's lesson on every page. From page 2 the rooms are carved in the easy layout, and the four lesson walls whose exercise is gone (dig, pit, bridge, seal), with the step room's south slot, show a remembered panel instead ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)).
 - **Pages 2 to 6 change the nine other slots**: the plate wall of every room except `roots-gift` (the Sanctuary) and `roots-door` ("come back"), which stay because they belong to their room.
 - The order of the themes follows the owner: potions and foods (2), projections and bosses with what they drop (3), practices and recipes (4), the creatures of the world (5), deeper mechanics (6).
-- Tone: short, warm, concrete, for a child and an adult at once. No "positive" or "negative" in player text: good and bad. Bombs are breakthroughs, keys open locks.
+- Tone: short, warm, concrete, for a child and an adult at once. No "positive" or "negative" in player text: good and bad. Bombs go off; keys open locks.
 - Every fact below was checked in the code on 2026-11-12 (develop at bc98102); a change to that code must update the slot in the same commit.
 
 ## Page 1: the roots teach themselves
@@ -27,15 +27,15 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: proposal (written 
 | pit | S | plate | Wonder (A creature of curiosity) | A paper moth that keeps you company from a distance. It never touches you and never fights. Note: Good intentions make it grow. | | bestiary/wonder | Wonder flees within four blocks; growth rule |
 | bridge | N (lesson) | lesson | A bridge | Stand at the edge, place a block in front of you, step onto it, and do it again. | place | lesson/bridge | Four-wide trenches |
 | bridge | S | plate | Rootling (A creature of the roots) | It potters along on two short legs, never too close to you and never too far away. Note: Grown three times: a gift? | | bestiary/rootling | Keeps two to six blocks; a friendly creature has a 7.5% chance of a special heart when first grown to three times its size (any floor, issue #102) |
-| seal | S (lesson) | lesson | Breakthroughs | Obsidian is too hard for intentions. Break the dirt in the wall, or drop a breakthrough with bad intentions. | bomb | lesson/breakthrough | Obsidian `X` walls with dirt `E` plugs; a breakthrough dropped while good is a white bomb that mends, so bad is needed to break |
-| seal | N | lesson | Keys and seeds | Keys open locks. Breakthroughs are seeds that burst, and can hurt you too. You count them; they take no hand. | | lesson/counters | Keys and bombs are counters, not hand slots; your own black blast costs a heart |
-| crates | S (lesson) | lesson | Crates | Break a crate with bad intentions. Now and then one holds a key, a heart or a breakthrough. | cast | lesson/crates | `rollCrate` (key, heart, bomb) |
+| seal | S (lesson) | lesson | Bombs | Obsidian is too hard for intentions. Break the dirt in the wall, or drop a bomb with bad intentions. | bomb | lesson/bomb | Obsidian `X` walls with dirt `E` plugs; a bomb dropped while good is a white bomb that mends, so bad is needed to break |
+| seal | N | lesson | Keys and bombs | Keys open locks. Bombs burst, and can hurt you too. You count them; they take no hand. | | lesson/counters | Keys and bombs are counters, not hand slots; your own black blast costs a heart |
+| crates | S (lesson) | lesson | Crates | Break a crate with bad intentions. Now and then one holds a key, a heart or a bomb. | cast | lesson/crates | `rollCrate` (key, heart, bomb) |
 | crates | N | lesson | Kick and throw | With full hands, you kick the loose cubes you walk into. You can also throw one. Both hurt projections. | throw | lesson/kick | KICK-AND-THROW |
 | spring | S (lesson) | lesson | Water | Wade through the shallows. In deep water, {jump} swims you up. | jump | lesson/water | Swimming: hold jump to swim up |
 | spring | N | lesson | Fire and lava | Not in the roots. Deeper down, fire and lava burn. Water puts out fire and turns lava into stone. | | lesson/lava | The tutorial validator keeps fire and lava off floor 0; `quench` and `douse` reactions |
 | gift | S (lesson) | lesson | Practices | A practice is a way of growing. Take one and it changes what you can do, and who you are. | inventory | lesson/practice | STORY premise |
 | gift | N (kept) | lesson | The Sanctuary | The Boundary keeps this chest. Take the quick gift, or sit a short meditation for a better one. | | lesson/sanctuary | MEDITATION-APP: quick reward or a finished sitting |
-| door | S (lesson) | lesson | The way down | The way down asks a price: one thing you carry. A key, a breakthrough, a block or a heart. | | lesson/way-down | `tollOf(0)` asks one thing |
+| door | S (lesson) | lesson | The way down | The way down asks a price: one thing you carry. A key, a bomb, a block or a heart. | | lesson/way-down | `tollOf(0)` asks one thing |
 | door | N (kept) | lesson | Come back | The roots remember you. Walk through every room before you go, and next time the walls may say more. | | lesson/ring | The page advance rule ([PAGES §1](PAGES.md#1-the-current-page)) |
 
 ## Page 2: potions and foods
@@ -59,7 +59,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: proposal (written 
 | hall | S | lesson (key: polarity) | Projections | Bad intentions release a projection; good ones warm it until it turns to your side | lesson/convert |
 | step | S | lesson | Parts | A released projection may leave flesh, heart, mind or essence; it rides in the hand | lesson/parts |
 | dig | N | plate | Inner Critic | Keeps its distance, lobs judgements; a placed block stops them. Leaves a heart or a key sometimes (10%, 8%) | bestiary/critic |
-| mend | S | plate | Panic | Rushes, swells, bursts; step out of reach. May leave a breakthrough (25%) | bestiary/panic |
+| mend | S | plate | Panic | Rushes, swells, bursts; step out of reach. May leave a bomb (25%) | bestiary/panic |
 | pit | S | plate | Resistance (A boss · floors 1–2) | A door that walks and rams. Leaves a practice | bestiary/resistance |
 | bridge | S | plate | Inertia (A boss · floors 1–2) | Asleep until pushed; rolls and bounces. Leaves a practice | bestiary/inertia |
 | seal | N | plate | The Insatiable (A boss · floors 1–2) | Never walks; pulls the room in and spits it back. Leaves a practice | bestiary/insatiable |
@@ -98,7 +98,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: proposal (written 
 
 | Room | Side | Layout | Title | Point | Image |
 |---|---|---|---|---|---|
-| hall | S | lesson (key: bomb) | White seeds | A breakthrough dropped while good mends blocks and turns lava to water (BOMBS) | lesson/white-seed |
+| hall | S | lesson (key: bomb) | White bombs | A bomb dropped while good mends blocks and turns lava to water (BOMBS) | lesson/white-bomb |
 | step | S | lesson (key: throw) | Hard hits | Thrown blocks hurt by hardness; obsidian about two or three intentions | lesson/throw |
 | dig | N | lesson | Chests | Keyholes tell the keys; brass trim means a practice (CHESTS) | lesson/chests |
 | mend | S | plate | Stone heart | Every hit halved while it takes the blows | icon/heart/stone |

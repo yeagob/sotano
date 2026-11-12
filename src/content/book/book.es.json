@@ -31,12 +31,12 @@
           "south": { "id": "1-bridge-s", "layout": "plate", "title": "Raicilla", "subtitle": "Una criatura de las raíces", "text": "Pasea sobre dos patitas cortas, ni muy cerca de ti ni muy lejos.", "image": "bestiary/rootling", "note": "Hazla crecer: quizá un regalo." }
         },
         "roots-seal": {
-          "north": { "id": "1-seal-n", "layout": "lesson", "title": "Llaves y semillas", "text": "Las llaves abren cerrojos. Los avances son semillas que estallan, y pueden herirte. Se cuentan; no ocupan la mano.", "image": "lesson/counters" },
-          "south": { "id": "1-seal-s", "layout": "lesson", "title": "Avances", "text": "La obsidiana es demasiado dura. Rompe la tierra del muro, o suelta un avance con las intenciones malas.", "image": "lesson/breakthrough", "key": "bomb" }
+          "north": { "id": "1-seal-n", "layout": "lesson", "title": "Llaves y bombas", "text": "Las llaves abren cerrojos. Las bombas estallan y también pueden herirte. Se cuentan; no ocupan la mano.", "image": "lesson/counters" },
+          "south": { "id": "1-seal-s", "layout": "lesson", "title": "Bombas", "text": "La obsidiana es demasiado dura. Rompe la tierra del muro, o suelta una bomba con las intenciones malas.", "image": "lesson/bomb", "key": "bomb" }
         },
         "roots-crates": {
           "north": { "id": "1-crates-n", "layout": "lesson", "title": "Patea y lanza", "text": "Con las manos llenas, pateas los cubos sueltos que tocas. También puedes lanzar uno. Los dos hieren.", "image": "lesson/kick", "key": "throw" },
-          "south": { "id": "1-crates-s", "layout": "lesson", "title": "Cajas", "text": "Rompe una caja con intenciones malas. De vez en cuando guarda una llave, un corazón o un avance.", "image": "lesson/crates", "key": "cast" }
+          "south": { "id": "1-crates-s", "layout": "lesson", "title": "Cajas", "text": "Rompe una caja con intenciones malas. De vez en cuando guarda una llave, un corazón o una bomba.", "image": "lesson/crates", "key": "cast" }
         },
         "roots-spring": {
           "north": { "id": "1-spring-n", "layout": "lesson", "title": "Fuego y lava", "text": "En las raíces no hay. Más abajo, el fuego y la lava queman. El agua apaga el fuego y vuelve piedra la lava.", "image": "lesson/lava" },
@@ -48,7 +48,7 @@
         },
         "roots-door": {
           "north": { "id": "1-door-n", "layout": "lesson", "title": "Vuelve", "text": "Las raíces te recuerdan. Pasa por todas las salas antes de irte y la próxima vez los muros dirán más.", "image": "lesson/ring" },
-          "south": { "id": "1-door-s", "layout": "lesson", "title": "La bajada", "text": "La bajada pide un precio: una cosa que lleves. Una llave, un avance, un bloque o un corazón.", "image": "lesson/way-down" }
+          "south": { "id": "1-door-s", "layout": "lesson", "title": "La bajada", "text": "La bajada pide un precio: una cosa que lleves. Una llave, una bomba, un bloque o un corazón.", "image": "lesson/way-down" }
         }
       }
     },
@@ -99,7 +99,7 @@
           "north": { "id": "3-dig-n", "layout": "plate", "title": "Crítico interior", "subtitle": "Una proyección", "text": "Guarda las distancias y te lanza juicios a la cabeza. Un bloque colocado los detiene.", "image": "bestiary/critic", "note": "Puede dejar corazón o llave." }
         },
         "roots-mend": {
-          "south": { "id": "3-mend-s", "layout": "plate", "title": "Pánico", "subtitle": "Una proyección", "text": "Corre hacia ti y se hincha antes de estallar. Apártate mientras se hincha.", "image": "bestiary/panic", "note": "Puede dejar un avance." }
+          "south": { "id": "3-mend-s", "layout": "plate", "title": "Pánico", "subtitle": "Una proyección", "text": "Corre hacia ti y se hincha antes de estallar. Apártate mientras se hincha.", "image": "bestiary/panic", "note": "Puede dejar una bomba." }
         },
         "roots-pit": {
           "south": { "id": "3-pit-s", "layout": "plate", "title": "Resistencia", "subtitle": "Un jefe · pisos 1–2", "text": "Una puerta que camina. Viene a por ti y embiste, y lo que embiste se rompe.", "image": "bestiary/resistance", "note": "Deja una práctica." }
@@ -189,7 +189,7 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "id": "6-hall-s", "layout": "lesson", "title": "Semillas blancas", "text": "Suelta un avance con intenciones buenas: estalla en luz, repara bloques y convierte la lava en agua.", "image": "lesson/white-seed", "key": "bomb" }
+          "south": { "id": "6-hall-s", "layout": "lesson", "title": "Bombas blancas", "text": "Suelta una bomba con intenciones buenas: estalla en luz, repara bloques y convierte la lava en agua.", "image": "lesson/white-bomb", "key": "bomb" }
         },
         "roots-step": {
           "south": { "id": "6-step-s", "layout": "lesson", "title": "Golpes duros", "text": "Un bloque lanzado hiere según su dureza. La tierra apenas roza; la obsidiana pega como dos o tres intenciones.", "image": "lesson/throw", "key": "throw" }
@@ -253,6 +253,6 @@
     "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Paso abierto", "text": "Este muro te cortaba el paso. Lo rompiste, y el paso sigue abierto. Las intenciones malas rompen; las buenas reparan.", "key": "cast", "image": "lesson/dig" } },
     "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "La salida", "text": "Una vez saliste de aquí construyendo, y las raíces guardaron tus pasos. Más abajo: lleva un bloque, ponlo y súbete.", "key": "place", "image": "lesson/pit" } },
     "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Tu puente", "text": "Tu puente sigue en pie. Más abajo, ponte en el borde, coloca un bloque delante, súbete y vuelve a empezar.", "key": "place", "image": "lesson/bridge" } },
-    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Avances", "text": "El sello de obsidiana ya no está. Más abajo, la obsidiana es demasiado dura: suelta un avance con intenciones malas.", "key": "bomb", "image": "lesson/breakthrough" } }
+    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Bombas", "text": "El sello de obsidiana ya no está. Más abajo, la obsidiana es demasiado dura: suelta una bomba con intenciones malas.", "key": "bomb", "image": "lesson/bomb" } }
   }
 }

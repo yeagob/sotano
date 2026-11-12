@@ -123,10 +123,10 @@ describe('the Roots carved by mastery (C2)', () => {
     for (const seed of SEEDS) for (const level of LEVELS) {
       const { f0 } = carve(seed, level);
       const R = rootsRewards(level), where = `seed ${seed}, level ${level}`;
-      if (R.oneOfKeyOrBreakthrough) expect(f0.keys.length + f0.bombs.length, where).toBe(1);
+      if (R.oneOfKeyOrBomb) expect(f0.keys.length + f0.bombs.length, where).toBe(1);
       else {
         expect(f0.keys.length, where).toBe(R.keys);
-        expect(f0.bombs.length, where).toBe(R.breakthroughs);
+        expect(f0.bombs.length, where).toBe(R.bombs);
       }
       expect(f0.hearts.map(h => h.kind), where).toEqual(R.hearts);
       const free = f0.chests.filter(c => c.draws);
@@ -140,7 +140,7 @@ describe('the Roots carved by mastery (C2)', () => {
     }
   });
 
-  it('level 0 holds exactly one of a key or a breakthrough, and across seeds both kinds come up', () => {
+  it('level 0 holds exactly one of a key or a bomb, and across seeds both kinds come up', () => {
     const kinds = new Set<string>();
     for (let seed = 1; seed <= 24; seed++) {
       const { f0 } = carve(seed, 0);

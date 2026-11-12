@@ -16,7 +16,7 @@ The easy rooms are not empty boxes. Each keeps the trace of its lesson, worked: 
 
 ## 2. The rooms
 
-The bar every easy room meets: crossed on foot from every door to every other door, and from every tile it holds back to every door, with at most a step or a drop of one block or a jump over a one-tile gap. No trench that needs a block, no wall that needs breaking, no obsidian, nothing that needs a breakthrough, nowhere to fall into that you cannot walk out of.
+The bar every easy room meets: crossed on foot from every door to every other door, and from every tile it holds back to every door, with at most a step or a drop of one block or a jump over a one-tile gap. No trench that needs a block, no wall that needs breaking, no obsidian, nothing that needs a bomb, nowhere to fall into that you cannot walk out of.
 
 | Room | Changes? | Easy template | In one glance | Free tiles (teaching → easy) |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ The art gate applies (`sotano-art`): no new block, texture or colour is introduc
 Everything floor 0 lays by mastery ([REWARDS §4–§5](REWARDS.md#4-the-extra-practices-the-altar-and-the-second-sanctuary)) takes free tiles of the eight lesson rooms (`freeByRoom`), and the altar and the second Sanctuary take a free tile of the start room and of the way-down room (`freeIn`). The easy layout changes none of that code; it only changes how many free tiles each lesson room offers.
 
 - **The eight easy lesson rooms offer 256 free tiles** (32 + 42 + 48 + 20 + 16 + 32 + 36 + 30), against 240 today.
-- **The table's maximum fits many times over.** Level 100 lays 6 keys, 5 breakthroughs, 11 hearts, 6 free chests and 2 extra-practice pedestals on lesson-room tiles: 30 tiles, at most one free chest and one pedestal per room (6 and 2 of 8 rooms). The smallest easy room (`roots-bridge-easy`) has 16 tiles. The altar has 44 tiles in the start room, the second Sanctuary 48 in the way-down room; both rooms are unchanged.
+- **The table's maximum fits many times over.** Level 100 lays 6 keys, 5 bombs, 11 hearts, 6 free chests and 2 extra-practice pedestals on lesson-room tiles: 30 tiles, at most one free chest and one pedestal per room (6 and 2 of 8 rooms). The smallest easy room (`roots-bridge-easy`) has 16 tiles. The altar has 44 tiles in the start room, the second Sanctuary 48 in the way-down room; both rooms are unchanged.
 - **Every free tile is reachable on foot**, because every tile of every easy room reaches every door (§2). A chest, a pedestal or a heart on a free tile never seals anything: chests, pedestals and crates are one block high and stood on like any step.
 - **The Sanctuary chest and the way-down pedestal** sit on the `T` markers of `roots-gift` and `roots-door`, which do not change.
 
@@ -172,7 +172,7 @@ The proposed slots (English, `book.en.json`):
   "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "This wall once stood in your way. You broke it, and the way stays open. Bad intentions break; good ones mend.", "key": "cast", "image": "lesson/dig" } },
   "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "The way out", "text": "You built your way out of here once, and the roots kept your steps. Deeper down: carry a block, set it, step up.", "key": "place", "image": "lesson/pit" } },
   "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Your bridge", "text": "Your bridge still stands. Deeper down, stand at the edge, place a block in front of you, step on, and again.", "key": "place", "image": "lesson/bridge" } },
-  "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Breakthroughs", "text": "The obsidian seal is gone. Deeper down, obsidian is too hard for intentions: drop a breakthrough with bad ones.", "key": "bomb", "image": "lesson/breakthrough" } }
+  "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Bombs", "text": "The obsidian seal is gone. Deeper down, obsidian is too hard for intentions: drop a bomb with bad ones.", "key": "bomb", "image": "lesson/bomb" } }
 }
 ```
 
@@ -184,11 +184,11 @@ Spanish (`book.es.json`):
   "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Paso abierto", "text": "Este muro te cortaba el paso. Lo rompiste, y el paso sigue abierto. Las intenciones malas rompen; las buenas reparan.", "key": "cast", "image": "lesson/dig" } },
   "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "La salida", "text": "Una vez saliste de aquí construyendo, y las raíces guardaron tus pasos. Más abajo: lleva un bloque, ponlo y súbete.", "key": "place", "image": "lesson/pit" } },
   "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Tu puente", "text": "Tu puente sigue en pie. Más abajo, ponte en el borde, coloca un bloque delante, súbete y vuelve a empezar.", "key": "place", "image": "lesson/bridge" } },
-  "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Avances", "text": "El sello de obsidiana ya no está. Más abajo, la obsidiana es demasiado dura: suelta un avance con intenciones malas.", "key": "bomb", "image": "lesson/breakthrough" } }
+  "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Bombas", "text": "El sello de obsidiana ya no está. Más abajo, la obsidiana es demasiado dura: suelta una bomba con intenciones malas.", "key": "bomb", "image": "lesson/bomb" } }
 }
 ```
 
-Every text is within its budget with the longest label of `{jump}` ("The arrow", "La flecha"): titles at most 15 characters, texts 100 to 117 of 120. Each line rests on the easy template it hangs in: the step room keeps its stairs; the dig wall is a stub with a gap; the pit's trenches are shallow with a causeway; the bridge's causeway stands; the seal room holds no obsidian. The deeper-down halves rest on the same facts page 1 cites (`place` builds, obsidian resists intentions, a breakthrough dropped while bad breaks it).
+Every text is within its budget with the longest label of `{jump}` ("The arrow", "La flecha"): titles at most 15 characters, texts 100 to 117 of 120. Each line rests on the easy template it hangs in: the step room keeps its stairs; the dig wall is a stub with a gap; the pit's trenches are shallow with a causeway; the bridge's causeway stands; the seal room holds no obsidian. The deeper-down halves rest on the same facts page 1 cites (`place` builds, obsidian resists intentions, a bomb dropped while bad breaks it).
 
 ### The secret panel behind the dig wall
 

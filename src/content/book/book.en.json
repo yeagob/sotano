@@ -31,12 +31,12 @@
           "south": { "id": "1-bridge-s", "layout": "plate", "title": "Rootling", "subtitle": "A creature of the roots", "text": "It potters along on two short legs, never too close to you and never too far away.", "image": "bestiary/rootling", "note": "Grown three times: a gift?" }
         },
         "roots-seal": {
-          "north": { "id": "1-seal-n", "layout": "lesson", "title": "Keys and seeds", "text": "Keys open locks. Breakthroughs are seeds that burst, and can hurt you too. You count them; they take no hand.", "image": "lesson/counters" },
-          "south": { "id": "1-seal-s", "layout": "lesson", "title": "Breakthroughs", "text": "Obsidian is too hard for intentions. Break the dirt in the wall, or drop a breakthrough with bad intentions.", "image": "lesson/breakthrough", "key": "bomb" }
+          "north": { "id": "1-seal-n", "layout": "lesson", "title": "Keys and bombs", "text": "Keys open locks. Bombs burst, and can hurt you too. You count them; they take no hand.", "image": "lesson/counters" },
+          "south": { "id": "1-seal-s", "layout": "lesson", "title": "Bombs", "text": "Obsidian is too hard for intentions. Break the dirt in the wall, or drop a bomb with bad intentions.", "image": "lesson/bomb", "key": "bomb" }
         },
         "roots-crates": {
           "north": { "id": "1-crates-n", "layout": "lesson", "title": "Kick and throw", "text": "With full hands, you kick the loose cubes you walk into. You can also throw one. Both hurt projections.", "image": "lesson/kick", "key": "throw" },
-          "south": { "id": "1-crates-s", "layout": "lesson", "title": "Crates", "text": "Break a crate with bad intentions. Now and then one holds a key, a heart or a breakthrough.", "image": "lesson/crates", "key": "cast" }
+          "south": { "id": "1-crates-s", "layout": "lesson", "title": "Crates", "text": "Break a crate with bad intentions. Now and then one holds a key, a heart or a bomb.", "image": "lesson/crates", "key": "cast" }
         },
         "roots-spring": {
           "north": { "id": "1-spring-n", "layout": "lesson", "title": "Fire and lava", "text": "Not in the roots. Deeper down, fire and lava burn. Water puts out fire and turns lava into stone.", "image": "lesson/lava" },
@@ -48,7 +48,7 @@
         },
         "roots-door": {
           "north": { "id": "1-door-n", "layout": "lesson", "title": "Come back", "text": "The roots remember you. Walk through every room before you go, and next time the walls may say more.", "image": "lesson/ring" },
-          "south": { "id": "1-door-s", "layout": "lesson", "title": "The way down", "text": "The way down asks a price: one thing you carry. A key, a breakthrough, a block or a heart.", "image": "lesson/way-down" }
+          "south": { "id": "1-door-s", "layout": "lesson", "title": "The way down", "text": "The way down asks a price: one thing you carry. A key, a bomb, a block or a heart.", "image": "lesson/way-down" }
         }
       }
     },
@@ -99,7 +99,7 @@
           "north": { "id": "3-dig-n", "layout": "plate", "title": "Inner Critic", "subtitle": "A projection", "text": "It keeps its distance and lobs judgements at your head. A placed block stops them.", "image": "bestiary/critic", "note": "May leave a heart or a key." }
         },
         "roots-mend": {
-          "south": { "id": "3-mend-s", "layout": "plate", "title": "Panic", "subtitle": "A projection", "text": "It rushes at you and swells before it bursts. Step out of reach while it swells.", "image": "bestiary/panic", "note": "May leave a breakthrough." }
+          "south": { "id": "3-mend-s", "layout": "plate", "title": "Panic", "subtitle": "A projection", "text": "It rushes at you and swells before it bursts. Step out of reach while it swells.", "image": "bestiary/panic", "note": "May leave a bomb." }
         },
         "roots-pit": {
           "south": { "id": "3-pit-s", "layout": "plate", "title": "Resistance", "subtitle": "A boss · floors 1–2", "text": "A door that walks. It comes at you and rams, and what it rams breaks.", "image": "bestiary/resistance", "note": "Leaves a practice." }
@@ -189,7 +189,7 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "id": "6-hall-s", "layout": "lesson", "title": "White seeds", "text": "Drop a breakthrough with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-seed", "key": "bomb" }
+          "south": { "id": "6-hall-s", "layout": "lesson", "title": "White bombs", "text": "Drop a bomb with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-bomb", "key": "bomb" }
         },
         "roots-step": {
           "south": { "id": "6-step-s", "layout": "lesson", "title": "Hard hits", "text": "A thrown block hurts by its hardness. Dirt barely bruises; obsidian hits like two or three intentions.", "image": "lesson/throw", "key": "throw" }
@@ -253,6 +253,6 @@
     "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "This wall once stood in your way. You broke it, and the way stays open. Bad intentions break; good ones mend.", "key": "cast", "image": "lesson/dig" } },
     "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "The way out", "text": "You built your way out of here once, and the roots kept your steps. Deeper down: carry a block, set it, step up.", "key": "place", "image": "lesson/pit" } },
     "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Your bridge", "text": "Your bridge still stands. Deeper down, stand at the edge, place a block in front of you, step on, and again.", "key": "place", "image": "lesson/bridge" } },
-    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Breakthroughs", "text": "The obsidian seal is gone. Deeper down, obsidian is too hard for intentions: drop a breakthrough with bad ones.", "key": "bomb", "image": "lesson/breakthrough" } }
+    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Bombs", "text": "The obsidian seal is gone. Deeper down, obsidian is too hard for intentions: drop a bomb with bad ones.", "key": "bomb", "image": "lesson/bomb" } }
   }
 }

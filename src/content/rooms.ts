@@ -754,7 +754,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    // walls of obsidian: too hard to dig with intentions; a breakthrough opens them (or climb them)
+    // walls of obsidian: too hard to dig with intentions; a bomb opens them (or climb them)
     id: 'roots-seal', types: ['normal'], floors: [0, 0], lesson: 'bomb', weight: 3, height: 6, rows: [
       '...X.....X...',
       '.d.X.....X.d.',
@@ -894,7 +894,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    // obsidian walls shut the north and south doors off: over them, or through them with a breakthrough
+    // obsidian walls shut the north and south doors off: over them, or through them with a bomb
     id: 'path-wall', types: ['path', 'normal'], floors: [1, 9], weight: 3, height: 7, rows: [
       '.d.........d.',
       'XXXXXEEEXXXXX',

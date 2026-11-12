@@ -49,8 +49,8 @@ Each action has a tick `t` and runs right after that tick's report, before the t
 |---|---|---|
 | `damage` | `at`, `amount`, `kind`? | Block damage through the normal pipeline (`blockDamage`, armour) |
 | `break` | `at` | Breaks a block (`blockBreak`, a loose cube) |
-| `explode` | `at`, `radius`? (2.5), `damage`? (30) | A blast, as a breakthrough's |
-| `bomb` | `at`, `fuse`? (1.8) | A lit breakthrough cube |
+| `explode` | `at`, `radius`? (2.5), `damage`? (30) | A blast, as a bomb's |
+| `bomb` | `at`, `fuse`? (1.8) | A lit bomb cube |
 | `cube` | `block`, `at`, `v`? | A loose cube with a velocity |
 | `spawn` | `def`, `at`, `faction`? | A projection, creature, or presence, out at once. The Boundary too, placed as a vault places it but without its ring (a sandbox has no chest) |
 | `give`, `lose` | `item` | Gain (quietly) or lose a practice |

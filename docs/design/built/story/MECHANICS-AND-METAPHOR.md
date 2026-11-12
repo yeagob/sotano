@@ -17,7 +17,7 @@ The mechanics live in the world code under `src/`, and the floors and rooms are 
 | **Going down** | Going inward: introspection, shadow work | The floors get deeper and harder. The circles' names show on the HUD |
 | **The silence and the tree** | Integration: what the depths taught reaches up into daily life | Standing still in the silence under the ninth circle carries you up to heaven; the top of the sky brings you back down. The giant tree rises above the roots |
 | **Keys** | Insights | Found by breaking through something. They open locked doors, which were locked to you until then |
-| **Bombs** | Breakthroughs | Rare and powerful. They clear a lot at once and can hurt you if you are careless |
+| **Bombs** | Not named yet (owner to decide) | Rare and powerful. They clear a lot at once and can hurt you if you are careless |
 | **Hearts** | Resilience, self-worth | Lost when projections hit you. Practices and care restore them, and some practices add a heart container |
 | **Doors** | Opportunities respond to movement and to what you have learned | A locked door needs a key. A room with projections seals its doors until the projections are gone |
 | **Treasure rooms** | Moments of learning | A practice waits on a pedestal. Its door is a treasure door, and the vault room holds the richer pedestals |

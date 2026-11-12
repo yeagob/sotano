@@ -1,7 +1,7 @@
 // Spanish. Same keys and placeholders as en.ts (checked by the type system and tests/i18n.test.ts),
 // plus every item, synergy, enemy and material by id. Vocabulary: intention → intención,
 // practice → práctica, projection → proyección, state of being → estado de ser,
-// breakthrough (bomb) → avance, floor → piso, seed → semilla. Practices keep the established
+// bomb → bomba, floor → piso, seed → semilla. Practices keep the established
 // Spanish name of the technique or public-domain work (docs/architecture/LOCALIZATION.md §5).
 
 import type { Catalog } from '.';
@@ -42,7 +42,7 @@ export const ES: Catalog = {
     'controls.restart.touch': '«Nueva partida» en la pausa',
     'controls.inventory.touch': 'Prácticas: la otra pestaña de la misma pantalla',
     'controls.doors.touch': 'Puertas',
-    'controls.bomb.touch': 'La semilla',
+    'controls.bomb.touch': 'La bomba',
     'controls.throw.touch': 'El bloque en vuelo',
     'controls.drink.touch': 'El frasco',
     'controls.place.touch': 'Toca el bloque sobre el que quieres poner el tuyo',
@@ -460,7 +460,7 @@ export const ES: Catalog = {
     'death.restart': 'Pulsa R para empezar de nuevo',
     'cause.unknown': 'la profundidad',
     'cause.judgement': 'el juicio',
-    'cause.bomb': 'tu propio avance',
+    'cause.bomb': 'tu propia bomba',
     'cause.explosion': 'una explosión',
     'cause.contact': 'el contacto',
     'cause.item': 'una práctica',
@@ -483,7 +483,7 @@ export const ES: Catalog = {
     'lesson.bridge.text': 'Coloca un bloque en el borde, súbete y repite.',
     'lesson.kick.title': 'Patada',
     'lesson.kick.text': 'Con las manos llenas pateas los cubos que tocas.',
-    'lesson.bomb.title': 'Avances',
+    'lesson.bomb.title': 'Bombas',
     'lesson.bomb.text': '{bomb}: suelta uno. Patéalo adonde lo necesites.',
     'lesson.water.title': 'Agua, fuego, lava',
     'lesson.water.text': '{jump}: nada hacia arriba. El fuego y la lava queman; el agua calma a ambos.',
@@ -609,8 +609,8 @@ export const ES: Catalog = {
     'keycap.throw.verb': 'tirar',
     'keycap.bomb.key': 'E',
     'keycap.bomb.pad': 'RB',
-    'keycap.bomb.touch': 'Semilla',
-    'keycap.bomb.verb': 'soltar avance',
+    'keycap.bomb.touch': 'Bomba',
+    'keycap.bomb.verb': 'soltar bomba',
     'keycap.drink.key': 'G',
     'keycap.drink.pad': 'X',
     'keycap.drink.touch': 'Frasco',
@@ -711,9 +711,9 @@ export const ES: Catalog = {
     'achievement.card.mastery': 'Maestría de las raíces: {level} de 100',
 
     // ── the mastery steps (REWARDS §7): what the new level brings ──
-    'mastery.gain.both': 'En las raíces te esperan una llave y un avance.',
+    'mastery.gain.both': 'En las raíces te esperan una llave y una bomba.',
     'mastery.gain.key': 'Una llave más te espera en las raíces ({n} en total).',
-    'mastery.gain.bomb': 'Un avance más te espera en las raíces ({n} en total).',
+    'mastery.gain.bomb': 'Una bomba más te espera en las raíces ({n} en total).',
     'mastery.gain.heart.red': 'Un corazón rojo te espera en las raíces.',
     'mastery.gain.heart.blue': 'Un corazón azul te espera en las raíces.',
     'mastery.gain.heart.stone': 'Un corazón de piedra te espera en las raíces.',
@@ -821,7 +821,7 @@ export const ES: Catalog = {
       },
       acceptance: {
         name: 'Aceptación radical',
-        description: 'Deja de luchar contra lo que ya pasó: tus propios avances ya no te hacen daño.',
+        description: 'Deja de luchar contra lo que ya pasó: tus propias bombas ya no te hacen daño.',
         effect: 'Las explosiones de tus bombas y de tus bloques lanzados ya no te dañan. +1 contenedor de corazón.',
         inspiredBy: 'la aceptación radical (terapia dialéctica conductual)',
       },
@@ -922,7 +922,7 @@ export const ES: Catalog = {
       },
       drlauncher: {
         name: 'Dr. Launcher',
-        description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. El avance que llevas ya no cae bajo su propio peso; mantiene su línea y vuela hacia donde miras.',
+        description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. La bomba que llevas ya no cae bajo su propio peso; mantiene su línea y vuela hacia donde miras.',
         effect: 'Un doble toque rápido del control de disparo (en 0,3 s) lanza una bomba como misil en lugar de una intención: vuela recto, acelera hasta 24 bloques/s y explota contra lo primero que encuentra, o a los 40 bloques, con la explosión de tu bomba. Negativo: una explosión de bomba, que también puede herirte. Positivo: una explosión de amor que repara bloques, cura a los aliados, acerca a las proyecciones a tu lado y hace crecer a las criaturas. Se rechaza, sin gastar bomba, si hay un bloque a menos de 2 bloques.',
         inspiredBy: 'Trascender los límites (Santiago Dopazo)',
       },
@@ -1114,7 +1114,7 @@ export const ES: Catalog = {
       goldframe: 'Marco de latón',
       bossframe: 'Marco de obsidiana',
       pedestal: 'Pedestal',
-      bomb: 'Avance',
+      bomb: 'Bomba',
       chest: 'Cofre',
       chestopen: 'Cofre abierto',
       ice: 'Hielo',

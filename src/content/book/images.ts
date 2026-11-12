@@ -9,9 +9,9 @@ import { HEART_KINDS } from '../heart-art';
 /** `lesson/<name>`: the thirty-three mechanic captures, one file each in `public/book/lesson/`. */
 export const LESSON_IMAGES = [
   'blocks', 'polarity', 'step', 'behind-wall', 'dig', 'mend', 'pit', 'bridge', 'counters',
-  'breakthrough', 'kick', 'crates', 'lava', 'water', 'sanctuary', 'practice', 'ring', 'way-down',
+  'bomb', 'kick', 'crates', 'lava', 'water', 'sanctuary', 'practice', 'ring', 'way-down',
   'drink', 'alembic', 'kitchen', 'convert', 'parts', 'boss-room', 'paths', 'state', 'recipe',
-  'creatures', 'white-seed', 'throw', 'chests', 'toll', 'grow',
+  'creatures', 'white-bomb', 'throw', 'chests', 'toll', 'grow',
 ] as const;
 
 /** `bestiary/<entity id>`: the nineteen portraits the book's plates use, one file each in `public/book/bestiary/`. */

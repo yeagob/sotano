@@ -40,6 +40,6 @@ At least half of the fighting rooms with two or more doors need building on ever
 | [HEIGHT-AND-CEILINGS.md](HEIGHT-AND-CEILINGS.md) | Rooms taller than 5 blocks, the nine ceiling shapes, pits, dips, plateaus and layers |
 | [MULTI-CELL.md](MULTI-CELL.md) | Rooms bigger than their cell: the twelve footprints, the home cell, and how space is allotted |
 | [CHALLENGE.md](CHALLENGE.md) | Challenge rooms: three waves per visit, harder each time |
-| [DOORS.md](DOORS.md) | Doors: their kinds, opening and sealing, locked vaults, hard walls, breakthroughs and door plugs |
+| [DOORS.md](DOORS.md) | Doors: their kinds, opening and sealing, locked vaults, hard walls, bombs and door plugs |
 
 Code: `src/content/rooms.ts` (the templates and the validator), `src/world/floor.ts` (carving, allotting space, doors), `src/world/floorplan.ts` (the plans the rooms fill), `src/content/tables/rooms.ts` (mood, challenge chance), `tests/levels.test.ts` (the building rule and the bands).

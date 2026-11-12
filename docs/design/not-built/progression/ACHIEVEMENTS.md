@@ -12,7 +12,7 @@ Ids are stable: the save refers to them. Names follow `sotano-lore`: each names 
 
 Each boss has two achievements, independent of each other (owner, 2026-11-12):
 
-- **Destroyed**: the boss's health reaches zero. Good intentions never take a projection's last point (`src/combat/polarity.ts`), so zero is always the work of harm: bad intentions, breakthroughs, kicked or thrown blocks, weapons.
+- **Destroyed**: the boss's health reaches zero. Good intentions never take a projection's last point (`src/combat/polarity.ts`), so zero is always the work of harm: bad intentions, bombs, kicked or thrown blocks, weapons.
 - **Turned to your side**: good intentions fill its warmth and it converts (`convert` in `src/game/game.ts`), staying in the room as an ally.
 
 A player who only converts a boss gets only that boss's conversion achievement; holding both means doing each at least once, in different runs (a boss is overcome once per run). Every first time counts, several in one run too.
