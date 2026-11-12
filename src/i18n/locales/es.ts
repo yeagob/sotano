@@ -651,7 +651,7 @@ export const ES: Catalog = {
       selfefficacy: {
         name: 'Autoeficacia',
         description: 'Creer que puedes subir hace posible la subida.',
-        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar.',
+        effect: 'Una proyección golpeada por una intención huye de ti durante 3 segundos en lugar de atacar. Alcance +1 bloque.',
         inspiredBy: 'la autoeficacia (Albert Bandura, 1977)',
       },
       selfcompassion: {
@@ -728,7 +728,7 @@ export const ES: Catalog = {
       grounding: {
         name: 'Enraizamiento',
         description: 'Arraigado en el cuerpo, empujas con todo tu peso: pateas el doble de fuerte.',
-        effect: 'Las patadas son el doble de fuertes.',
+        effect: 'Las patadas son el doble de fuertes. Alcance +1 bloque.',
         inspiredBy: 'las técnicas somáticas de enraizamiento (grounding)',
       },
       habitstack: {
@@ -740,7 +740,7 @@ export const ES: Catalog = {
       kaizen: {
         name: 'Kaizen',
         description: 'Pasos pequeños y continuos: las intenciones atraviesan dos bloques blandos.',
-        effect: 'Tus intenciones atraviesan hasta 2 bloques blandos más (tierra, cajas) y siguen volando.',
+        effect: 'Tus intenciones atraviesan hasta 2 bloques blandos más (tierra, cajas) y siguen volando. Alcance +1 bloque.',
         inspiredBy: 'el kaizen, la práctica de la mejora continua en pasos pequeños',
       },
       manthinketh: {
@@ -813,7 +813,7 @@ export const ES: Catalog = {
       secondbrain: {
         name: 'Segundo cerebro',
         description: 'Deja que otra cosa sostenga lo que cargas: llevas un bloque más.',
-        effect: 'Llevas 1 bloque más.',
+        effect: 'Llevas 1 bloque más. Alcance +1 bloque.',
         inspiredBy: 'Construye tu segundo cerebro (Tiago Forte); la memoria externa',
       },
       selfreliance: {

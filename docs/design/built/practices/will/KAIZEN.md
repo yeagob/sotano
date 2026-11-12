@@ -16,12 +16,17 @@ Small, continuous steps: intentions keep going through two soft blocks.
 
 ## What it does
 
-Your intentions break through up to 2 extra soft blocks (dirt, crates) and keep flying.
+Your intentions break through up to 2 extra soft blocks (dirt, crates) and keep flying. Reach +1 block.
 
 ## Stats and events
 
 - pierce count: +2 (soft blocks only)
 - when an intention is fired
+- reach: +1 block (`reach` add 1; starting reach 4, so 5 while held)
+
+## Why reach fits
+
+Each small step reaches a little further than the last. A continuous improvement adds one block to what you can place, the way a small change adds up over time.
 
 ## Synergies and states of being
 

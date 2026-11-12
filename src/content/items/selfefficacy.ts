@@ -5,7 +5,7 @@ export default defineItem({
   id: 'selfefficacy',
   name: 'Self-Efficacy',
   description: 'Believing you can climb makes the climb possible.',
-  effect: 'A projection hit by an intention runs away from you for 3 seconds instead of attacking.',
+  effect: 'A projection hit by an intention runs away from you for 3 seconds instead of attacking. Reach +1 block.',
   inspiredBy: 'Self-efficacy (Albert Bandura, 1977)',
   pools: { treasure: 1 },
   tags: ['will', 'intent'],
@@ -28,6 +28,7 @@ export default defineItem({
     ],
     palette: { a: pal('path.will.dark'), b: pal('path.will.base'), c: pal('path.will.glow'), d: pal('el.fire.hi') },
   },
+  stats: [{ stat: 'reach', layer: 'add', value: 1 }],
   hooks: [
     hook('intentHit', (e, api) => {
       if (e.kind === 'actor') api.frighten(e.target, 3);
