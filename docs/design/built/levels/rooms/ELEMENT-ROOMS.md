@@ -2,7 +2,7 @@
 
 Up: [rooms](README.md) · Status: built.
 
-Twenty-eight templates put water, lava or fire at the centre of the room: a flooded hall, a river of lava across a floor, a row of eternal flames. Each is a room where an element is a verb. The table gives each room's floors, the element it uses (`W` deep water, `w` shallow, `L` deep lava, `l` shallow, `f` an eternal flame; `on a layer` marks braziers and flames raised on blocks), and what the player does with it. Where the design gives no verb for a room yet, the last column says so and the grid is the only description.
+Twenty-nine templates put water, lava or fire at the centre of the room: a flooded hall, a river of lava across a floor, a row of eternal flames. Each is a room where an element is a verb. The table gives each room's floors, the element it uses (`W` deep water, `w` shallow, `L` deep lava, `l` shallow, `f` an eternal flame; `on a layer` marks braziers and flames raised on blocks), and what the player does with it. Where the design gives no verb for a room yet, the last column says so and the grid is the only description.
 
 Water, lava and fire are the three elements, and each one's behaviour is in [elements](../../elements/README.md).
 
@@ -18,6 +18,7 @@ Water, lava and fire are the three elements, and each one's behaviour is in [ele
 | `spring` | treasure, all | shallow water in a ring around an island with the practice | Wade to the practice; wading is the only verb |
 | `reliquary` | vault, 3–9 | lava in the corners, braziers on pillars | Break the floor next to the lava and the lava spills (it slopes like a ramp) |
 | `caldera` | boss, 3–9 | lava pools around the arena, braziers on pillars | The boss's arena, with the lava pools around it |
+| `caldera-hall` | boss, 6–9 | the caldera spread over two cells (2×1): lava pools and braziers on pillars at the far end, open ground round the way down | The deep circles' boss hall: the boss's practice waits between the lava pools; see [TEMPLATES](TEMPLATES.md) for its size and features |
 | `well` | start, all | shallow pools under a high vault | A first taste of wading |
 | `roots-spring` | roots | shallow water | The roots' water lesson: the pool teaches wading, nothing hurts |
 | `lava-bridge` | 3–5 | a lava river from wall to wall, one brick span across it, crates on the east bank | Cross the span, or build your own over the lava |

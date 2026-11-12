@@ -27,7 +27,7 @@ export class VoxelWorld implements VoxelSpace {
   /** Bumped on every change (navigation caches compare against it). */
   version = 0;
   readonly ncx: number; readonly ncy: number; readonly ncz: number;
-  /** The ground outside the array (the mountains round the surface, issue #10): read-only, never stored. */
+  /** The ground outside the array (the surface and its mountains, issue #10): a formula, read-only for now. */
   terrain: Mountains | null = null;
 
   constructor(readonly sx: number, readonly sy: number, readonly sz: number) {
@@ -94,9 +94,14 @@ export class VoxelWorld implements VoxelSpace {
     this.onChange?.(x, y, z);
   }
 
-  /** Whether a chunk column is the terrain's, outside the array (`ChunkRenderer` keeps it loaded). */
+  /** Whether a chunk column is the terrain's, outside the array (`ChunkRenderer` streams it). */
   outerChunk(cx: number, cz: number): boolean {
     return !!this.terrain && this.terrain.outside(cx, cz);
+  }
+
+  /** The terrain's chunks to mesh within `radius` blocks of (x, z), nearest first. */
+  outerChunksNear(x: number, z: number, radius: number): [number, number, number][] {
+    return this.terrain ? this.terrain.chunksNear(x, z, radius) : [];
   }
 
   markElemDirty(x: number, y: number, z: number) {
