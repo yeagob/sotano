@@ -18,6 +18,8 @@ This folder has one document per practice, in a folder for its path. The catalog
 | [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 12 | Open-hearted |
 | [Will](will/README.md) | Consistency, discipline, small steps compounding | 10 | Resolute |
 
+A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
+
 ## Index
 
 | Practice | Path folder | Quality | Found in |

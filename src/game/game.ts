@@ -38,8 +38,9 @@ import type { Enemy } from '../enemies/types';
 import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
-import { Pickups, type Pickup } from '../entities/pickups';
-import { Chests, type ChestView } from '../entities/chests';
+import { Pickups, PICKUP_GRAVITY, type Pickup } from '../entities/pickups';
+import { Chests, OPEN_TIME, type ChestView } from '../entities/chests';
+import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
@@ -49,6 +50,7 @@ import { DOUBLE_TAP_MS } from '../input/bindings';
 import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
+import { FullscreenButton } from '../input/fullscreen-button';
 import { Inventory } from '../items/inventory';
 import { ItemPools } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
@@ -85,8 +87,8 @@ import { floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, rollHeart } from '../content/tables/hearts';
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
-import { GROWTH_MAX } from '../entities/growth';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, berserk, heartSlots, isLayer, landHit, MAX_TOTAL_HEARTS, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { GROWTH_MAX, growsUnder } from '../entities/growth';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -361,6 +363,8 @@ export class Game {
     this.renderer.autoClear = false;
     this.input = new Input(canvas);
     this.touch = new TouchControls(this.input);
+    // the phone's way back to fullscreen after it was left (#161); its failures use the shared toast
+    new FullscreenButton(this.input, key => this.hud.toast(key));
     this.hands = new Hands(1);
     this.scene.fog = new THREE.Fog(DUNGEON_FOG, 6, 34);
     // each world's scene objects hang under its own group; only the active one is visible (SKY.md §2.3)
@@ -502,7 +506,7 @@ export class Game {
     this.stats.removeSource('toll');
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     p.clearStates();
     // actors: one id space per run, the player first
     this.actors.reset();
@@ -882,7 +886,7 @@ export class Game {
       card: (name, lines) => this.hud.presenceCard(name, lines),
       bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),
       place: key => this.hud.placeLabel(key),
-      gift: (itemId, x, y, z) => { this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null); },
+      gift: (itemId, x, y, z) => { this.ejectReward(this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null), 1.5, 3); },
       travel: tr => this.gate.start(tr),
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
@@ -1042,7 +1046,7 @@ export class Game {
       isPlayer: id => id === this.player.id,
       collect: (kind, n) => this.collect(kind, n),
       counts: () => ({ keys: this.player.keys, bombs: this.player.bombs, hp: this.player.hp, maxHp: this.maxHp }),
-      spawnPickup: (kind, x, y, z) => { this.pickups.add(kind, x, y, z, this.room, null, 0.3); },
+      spawnPickup: (kind, x, y, z) => { this.ejectReward(this.pickups.add(kind, x, y, z, this.room, null, 0.3), 3.2, 4); },
       pulse: (x, y, z, r, d, k, c, src) => this.pulse(x, y, z, r, d, k, c, src),
       arc: (x, y, z, to, d, src, pol) => this.arc(x, y, z, to, d, src, pol),
       nearestProjection: (x, y, z, r, except) => this.nearestProjection(x, y, z, r, except),
@@ -1234,8 +1238,10 @@ export class Game {
 
   collectHeart(kind: HeartKind): boolean {
     const p = this.player;
-    if ((kind === 'red' || kind === 'blood') && p.hp >= this.maxHp) return false;
-    if (isLayer(kind) && heartSlots(Math.floor(this.stats.get('maxHearts')), p.layers) >= MAX_TOTAL_HEARTS) return false;
+    // a blood heart at full health opens one heart slot and fills it (#146); below full it heals over time
+    const slot = kind === 'blood' && p.hp >= this.maxHp;
+    if (kind === 'red' && p.hp >= this.maxHp) return false;
+    if ((isLayer(kind) || slot) && !hasHeartRoom(this.stats.get('maxHearts'), p.layers)) return false;
     if (kind === 'red') return this.collect('heart', 2);
     const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
     if (ev.cancelled) return false;
@@ -1243,7 +1249,12 @@ export class Game {
     if (isLayer(kind)) {
       p.layers.push({ kind, hp: Math.min(HEART, pts) });
       if (kind === 'blue') sfxHeart.blue();
+      else if (kind === 'black') sfxHeart.black();
       else if (kind === 'stone') sfxHeart.stone();
+    } else if (slot) {
+      this.stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: BLOOD_SLOT_SOURCE });
+      p.hp = this.maxHp;
+      sfxHeart.blood();
     } else if (kind === 'blood') {
       p.blood = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
       sfxHeart.blood();
@@ -1252,7 +1263,7 @@ export class Game {
       p.starT = STAR_SECONDS;
       sfxHeart.star();
     }
-    this.hud.toast(`heart.${kind}`);
+    this.hud.toast(slot ? 'heart.bloodSlot' : `heart.${kind}`);
     const b = p.body;
     this.particles.burst(b.x, b.y + 1.2, b.z, pal(HEART_FX[kind]), 24, 3, 0.07);
     return true;
@@ -1534,16 +1545,21 @@ export class Game {
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
-      // a warm love shot grows a friendly creature (issue #51); a beam's repeat ticks do not
+      // a warm love shot grows a friendly creature (issue #51, #102); a beam's repeat ticks do not
       const oldScale = e.scale;
-      if (warm && e.tags.has('creature')) this.enemies.grow(e);
+      if (warm && growsUnder(e)) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
       const b = e.body;
       e.hp += heal;
       this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
-      if (warm && e.spec.kind === 'creature' && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX &&
-          this.rooms.get(e.room)?.floor === 0 && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
+      if (warm && growsUnder(e) && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
       return;
+    }
+    // a warm negative shot takes a grown friendly creature one step back down (#102); it still harms it as before
+    if (warm && e.faction !== 'projection' && growsUnder(e) && e.scale > 1 && this.meets(e, polarity)) {
+      this.enemies.shrink(e);
+      const b = e.body;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('mat.dirt.base'), 4, 1, 0.05);
     }
     this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
   }
@@ -1559,15 +1575,37 @@ export class Game {
 
   private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind })[]) {
     const b = e.body, player = this.player.body;
-    const base = Math.atan2(player.z - b.z, player.x - b.x);
+    const base = Math.atan2(b.z - player.z, b.x - player.x);
     rewards.forEach((reward, i) => {
       const angle = base + (i - (rewards.length - 1) / 2) * 0.6;
       const x = b.x + Math.cos(angle) * 0.45, z = b.z + Math.sin(angle) * 0.45;
       const pickup = reward.type === 'item'
         ? this.pickups.add('item', x, b.y + 1.02, z, e.room, reward.item, 0.3)
         : this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart);
-      this.pickups.launch(pickup, Math.cos(angle) * 1.5, 3, Math.sin(angle) * 1.5);
+      this.ejectReward(pickup, 1.5, 3);
     });
+  }
+
+  /**
+   * Dispenses a reward away from the player (issue #156). Every reward source calls this (or `ejectRewards`)
+   * after it adds its pickup: the reward is launched straight away from the player, turned by `offset` (a spread
+   * for several rewards from one source), onto the nearest throw whose whole flight is clear and that lands on ground with no element in
+   * it (`ejectAngle`). Its delay keeps it from being collected where it appears. `speed` and `lift` set the throw.
+   */
+  private ejectReward(p: Pickup, speed: number, lift: number, offset = 0) {
+    // what the world holds at a cell, for the throw's whole path (eject.ts decides what a clear throw is)
+    const ground: Ground = {
+      solid: (x, y, z) => this.solid(x, y, z),
+      element: (x, y, z) => this.elementAt(x + 0.5, y + 0.5, z + 0.5) !== null,
+    };
+    const reach = throwReach(speed, lift, PICKUP_GRAVITY);
+    const a = ejectAngle(p, this.player.body, ground, Math.floor(p.y), reach, offset);
+    this.pickups.launch(p, Math.cos(a) * speed, lift, Math.sin(a) * speed);
+  }
+
+  /** `ejectReward` for a batch from one source: the batch fans out so the rewards do not land on one spot. */
+  private ejectRewards(ps: Pickup[], speed: number, lift: number) {
+    ps.forEach((p, i) => this.ejectReward(p, speed, lift, ps.length > 1 ? (i / (ps.length - 1) - 0.5) * 1.1 : 0));
   }
 
   /**
@@ -1660,9 +1698,9 @@ export class Game {
     const drops = (Object.entries(e.spec.drops ?? {}) as [PickupKind, number][]).filter(([, p]) => rng.chance(p)).map(([k]) => k);
     const b = e.body;
     const ev = this.bus.emit('actorDeath', { target: e.id, targetKind: 'projection', def: e.def, x: b.x, y: b.y, z: b.z, drops });
-    for (const k of ev.drops) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    const dropped: Pickup[] = ev.drops.map(k => this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3));
     const stolen = this.enemies.takeCarried(e.id);
-    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3);
+    if (stolen.length) for (const k of [...stolen, this.rng.stream('drops').pick(stolen)]) dropped.push(this.pickups.add(k, b.x, b.y + 0.6, b.z, e.room, null, 0.3));
     const floor = this.rooms.get(e.room)?.floor;
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
@@ -1671,8 +1709,9 @@ export class Game {
     if (floor !== undefined) {
       const parts = rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq), e.def);
       if (e.tags.has('rooted')) parts.push(...rollParts(this.rng.fork('floor', floor, 'room', e.room % ROOM_ID_STRIDE, 'part', seq, 'rooted'), e.def));
-      for (const part of parts) this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part);
+      for (const part of parts) dropped.push(this.pickups.add('part', b.x, b.y + 0.6, b.z, e.room, null, 0.3, part));
     }
+    this.ejectRewards(dropped, 3.2, 4);
     sfx3.dissolve();
   }
 
@@ -1719,7 +1758,7 @@ export class Game {
         const reward = ROOM_CLEAR.pickU(u, { floor: r0.floor, luck: this.stats.get('luck') });
         const drops: PickupKind[] = reward ? [reward] : [];
         const ev = this.bus.emit('roomClear', { room: id, drops });
-        for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3);
+        this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3)), 3.2, 4);
         this.hud.toast('toast.roomClear');
         this.potionsEnded(this.potions.roomCleared());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
@@ -1764,7 +1803,7 @@ export class Game {
       const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
       const reward = ROOM_CLEAR.pickU(u, { floor: r.floor, luck: this.stats.get('luck') + st.wave });
       const ev = this.bus.emit('roomClear', { room: r.id, drops: reward ? [reward] : [] });
-      for (const k of ev.drops) this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3);
+      this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3)), 3.2, 4);
       if (st.wave < CHALLENGE_WAVES) { this.nextWave(r, st); st.next = WAVE_GAP; sfx3.clear(); continue; }
       st.active = false;
       this.doors.seal(r.id, false);
@@ -1937,10 +1976,8 @@ export class Game {
       if (drop) drops.push(drop);
     }
     const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
-    for (const k of ev.drops) {
-      this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4);
-      this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
-    }
+    this.ejectRewards(ev.drops.map(k => this.pickups.add(k, x + 0.5, y + 0.1, z + 0.5, this.room, null, 0.4)), 2.6, 3.5);
+    for (const k of ev.drops) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, PICKUP_FX[k], 14, 2.5, 0.07);
   }
 
   /**
@@ -2237,7 +2274,7 @@ export class Game {
       });
       if (ev.cancelled || ev.action === 'ignore') continue;
       if (ev.action === 'pickup' && !bomb) {
-        p.hand.push(d.material[i]);
+        p.gain(d.material[i]);
         d.remove(i);
         sfx.pickup();
         continue;
@@ -2551,7 +2588,7 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     const p = this.player;
     if (!a) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (isFlask(top)) {
       sfx.denied(); this.hud.toast('lab.refused');
       devlog.line(`alembic ${cell(x, y, z)}: feed ${carriedName(top)} -> refused`);
@@ -2564,7 +2601,7 @@ export class Game {
       this.hud.toast(r === 'cold' ? 'lab.cold' : 'lab.full');
       return;
     }
-    p.hand.pop();
+    p.takeActive();
     this.hands.placed();
     sfx.place();
     this.hud.toast('lab.fed', { n: a.bulb.length, total: BULB });
@@ -2573,7 +2610,7 @@ export class Game {
   /** Right click on the kitchen: the part on top of the hand is cooked into a meal (game/kitchen.ts). */
   private cookAt(x: number, y: number, z: number) {
     const k = this.kitchens.get(this.world.idx(x, y, z));
-    const p = this.player, top = p.hand.at(-1);
+    const p = this.player, top = p.active;
     if (!k || top === undefined) { sfx.denied(); return; }
     if (typeof top === 'number' || isFlask(top)) {
       sfx.denied(); this.hud.toast('kitchen.refused');
@@ -2586,8 +2623,8 @@ export class Game {
       return;
     }
     devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> cooked (${COOKS - k.cooks}/${COOKS} used)`);
-    p.hand.pop();   // the part leaves the hand first, so the meal always has its place
-    p.hand.push({ potion: mealOf(top.kind) });
+    p.takeActive();   // the part leaves the hand first, so the meal always has its place
+    p.gain({ potion: mealOf(top.kind) });
     this.hands.placed();
     this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 16, 2, 0.06);
     sfx.place();
@@ -2604,7 +2641,7 @@ export class Game {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
-      this.hud.toastDrinkHint('lab.brewed', { left: BREWS - a.brews, total: BREWS });
+      this.hud.toastDrinkHint('lab.brewed', { name: t(POTIONS[flask.potion].name), left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);
@@ -2614,11 +2651,11 @@ export class Game {
 
   /** Drink: the top of the hand, when it is a flask, is drunk at once and its potion heals (content/potions.ts). */
   private drink() {
-    const p = this.player, top = p.hand.at(-1);
+    const p = this.player, top = p.active;
     if (!top || !isFlask(top)) { sfx.denied(); return; }
     const def = POTIONS[top.potion];
     const rooms = flaskRooms(top);
-    p.hand.pop();
+    p.takeActive();
     this.hands.placed();
     if (def.heal) this.heal(def.heal, `potion.${top.potion}`);
     this.potions.drink(top);
@@ -2655,11 +2692,11 @@ export class Game {
     const over = cellOverlap(p.body, x, y, z);
     const push: [number, number] | null = over ? this.nudgeTarget(over) : [0, 0];
     if (over && (over.depth > PLACE_NUDGE_MAX || !push)) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (typeof top !== 'number') {
       this.pickups.add(isFlask(top) ? 'flask' : 'part', x + 0.5, y, z + 0.5, this.room, null, PART_DROP_DELAY, top);
       this.nudge(push!);
-      p.hand.pop();
+      p.takeActive();
       this.hands.placed();
       sfx.place();
       return;
@@ -2672,7 +2709,7 @@ export class Game {
     try { this.world.set(x, y, z, ev.material); } finally { if (sky) sky.placing = false; }
     this.debris.clearCell(x, y, z);
     this.nudge(push!);
-    p.hand.pop();
+    p.takeActive();
     this.bus.emit('drop', { material: top, how: 'place' });
     this.hands.placed();
     sfx.place();
@@ -2705,12 +2742,12 @@ export class Game {
     if (!p.hand.length) { sfx.denied(); return; }
     const e = p.eye.addScaledVector(p.forward, 0.7), dir = p.forward;
     if (this.solid(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))) { sfx.denied(); return; }
-    const top = p.hand.at(-1)!;
+    const top = p.active!;
     if (typeof top !== 'number') {
       const part = this.pickups.add(isFlask(top) ? 'flask' : 'part', e.x, e.y, e.z, this.room, null, PART_DROP_DELAY, top);
       const speed = 9 * this.stats.get('throw');
       this.pickups.launch(part, dir.x * speed + p.body.vx, dir.y * speed + 2, dir.z * speed + p.body.vz);
-      p.hand.pop();
+      p.takeActive();
       this.hands.placed();
       sfx.kick();
       return;
@@ -2722,7 +2759,7 @@ export class Game {
     this.debris.launch(cube, dir.x * ev.speed + p.body.vx, dir.y * ev.speed + ev.lift, dir.z * ev.speed + p.body.vz);
     this.debris.tags[cube] = ev.tags.size ? ev.tags : null;
     this.debris.cooldown[cube] = 0.6;
-    p.hand.pop();
+    p.takeActive();
     this.bus.emit('drop', { material: m, how: 'throw' });
     this.hands.placed();
     sfx.kick();
@@ -2839,7 +2876,7 @@ export class Game {
         const carried = p.carried;
         if (carried && p.delay <= 0 && this.player.hand.length < Math.floor(this.stats.get('carry'))) {
           this.pickups.take(p);
-          this.player.hand.push(carried);
+          this.player.gain(carried);
           this.hands.holdUp(carriedDef(carried));
           if (typeof carried === 'object') {
             if (isFlask(carried)) this.hud.toastDrinkHint('hand.took', { item: this.carriedName(carried) });
@@ -2987,8 +3024,6 @@ export class Game {
     this.hud.shake(0.08);
     if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
     sfx3.creak();
-    const b = this.player.body;
-    const len = Math.hypot(b.x - cx, b.z - cz) || 1, ax = (b.x - cx) / len, az = (b.z - cz) / len;
     const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
     else if (reward) out.push({ type: 'item', def: reward });
@@ -3010,17 +3045,32 @@ export class Game {
     devlog.line(`chest ${cell(s.x, s.y, s.z)}: opened for ${cost} key(s), contents ${out.map(o => o.type === 'item' ? (o.def?.id ?? 'none') : o.type).join(', ') || 'nothing'}`);
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
       const spread = out.length > 1 ? (i / (out.length - 1) - 0.5) * 1.1 : 0;
-      const dx = ax * Math.cos(spread) - az * Math.sin(spread), dz = az * Math.cos(spread) + ax * Math.sin(spread);
       const p: Pickup = this.pickups.add(o.type, cx, s.y + 1.02, cz, s.room, o.def, 0.6);
       const speed = (o.type === 'item' ? 1.7 : 1.5) / 0.68;
-      this.pickups.launch(p, dx * speed, 6.5, dz * speed);
+      this.ejectReward(p, speed, 6.5, spread);
       this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), o.type === 'item' ? 22 : 10, 2.5, 0.07);
       if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
     } }));
+    // once the last thing has left the mouth the chest is empty: its model and its block go (issue #156)
+    const world = this.world;
+    this.spits.push({ t: Math.max(lead + out.length * 0.16, OPEN_TIME + 0.3), run: () => this.removeChest(c, world) });
+  }
+
+  /**
+   * An opened chest that has dispensed everything leaves its world: its model, and its block (so no collision).
+   * The chest belongs to the dungeon's world, so if a realm swap came first the removal waits in the queue until
+   * the dungeon is current again: clearing the same cell in the sky's world would remove a block that is not the chest's.
+   */
+  private removeChest(c: { spec: ChestSpec; view: ChestView }, world: VoxelSpace) {
+    if (this.world !== world) { this.spits.push({ t: 0.25, run: () => this.removeChest(c, world) }); return; }
+    const s = c.spec;
+    world.set(s.x, s.y, s.z, AIR);
+    this.chestViews.remove(c.view);
   }
 
   private updateSpits(dt: number) {
-    for (const q of this.spits) { q.t -= dt; if (q.t <= 0) q.run(); }
+    // over a snapshot: a run may queue itself again (a removal waiting for its world), and that waits for the next frame
+    for (const q of [...this.spits]) { q.t -= dt; if (q.t <= 0) q.run(); }
     this.spits = this.spits.filter(q => q.t > 0);
   }
 
@@ -3099,7 +3149,8 @@ export class Game {
       if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
-      const top = this.player.hand.at(-1);
+      // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
+      const top = this.player.active;
       const offer = findPresenceOffer(id, this.player.hand);
       if (!offer) {
         if (e.tags.has('answering')) continue;
@@ -3147,7 +3198,7 @@ export class Game {
       return;
     }
 
-    this.player.hand.splice(pending.index, 1);
+    this.player.removeAt(pending.index);
     this.hands.placed();
     const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
     const eye = this.player.eye, fwd = this.player.forward;
@@ -3185,10 +3236,27 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !(e.tags.has('presence') || e.tags.has('boundary'))) continue;
-      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.spec.size[1]) continue;
-      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.spec.size[0] / 2 + b.hw);
+      // the box the presence is hit with, not its birth size (#102)
+      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.body.h) continue;
+      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.body.hw / 2 + b.hw);
       if (at && !boxHits((x, y, z) => this.solid(x, y, z), at.x, b.y, at.z, b.hw, b.h)) { b.x = at.x; b.z = at.z; }
     }
+  }
+
+  /** Makes a carried item the active one (the next use targets it): a sound and a notice; slots out of the hand are ignored. */
+  chooseCarried(slot: number) {
+    const p = this.player;
+    if (slot < 0 || slot >= p.hand.length || slot === p.activeIndex) return;
+    p.select(slot);
+    sfx.select();
+    this.hud.carriedChanged();
+    this.hud.toast('hand.active', { item: this.carriedName(p.active!) });
+  }
+
+  /** The wheel and the D-pad step the active carried item through the hand, wrapping round. */
+  private stepCarried(step: 1 | -1) {
+    const n = this.player.hand.length;
+    if (n > 1) this.chooseCarried((this.player.activeIndex + step + n) % n);
   }
 
   private carriedName(c: Carried): string {
@@ -3334,6 +3402,13 @@ export class Game {
     sfx3.clear();
   }
 
+  /** The boss bar follows the one fight the player is in: the spawned boss of this room, alive, while the player lives. Called every underground frame outside the simulation step, so it also runs under the death screen, a menu, the pause card and the R fade; a death, a reset (which clears bossRooms) or leaving the room hides it, and only a resumed fight shows it again. */
+  private syncBossBar() {
+    const st = [...this.bossRooms.values()].find(s => s.spawned && s.room === this.room);
+    const boss = st && !this.player.dead ? this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room) : undefined;
+    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
+  }
+
   /**
    */
   private updateBossRoom(k: number, st: BossRoom, dt: number) {
@@ -3343,8 +3418,6 @@ export class Game {
       if (st.wake <= 0) { st.spawned = true; this.summonBoss(f, this.rooms.get(st.room)!); }
       return;
     }
-    const boss = this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room);
-    this.hud.bossBar(boss && this.room === st.room ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
     if (!st.defeated || st.open) return;
     const hole = f.hole;
     st.t -= dt;
@@ -3393,7 +3466,7 @@ export class Game {
     // every heart is checked before anything is taken: a refused payment spends nothing
     const plan = heartTollPlan(p.hp, Math.floor(this.stats.get('maxHearts')), p.layers, base, bonus);
     if (!plan) return false;
-    for (const i of hands.sort((a, b) => b - a)) p.hand.splice(i, 1);
+    for (const i of hands.sort((a, b) => b - a)) p.removeAt(i);
     p.keys -= keys;
     p.bombs -= bombs;
     for (const id of items) this.inventory.lose(id);
@@ -3506,6 +3579,8 @@ export class Game {
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
         else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
       }
+      // a number key picks its slot; Enter or A picks the highlighted carried item
+      if (inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -3520,7 +3595,7 @@ export class Game {
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.hud.presenceOfferOpen && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
-    if (this.below) this.stream(); else this.sky!.stream(this.player.eye);
+    if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
     const below = this.below;
@@ -3569,6 +3644,7 @@ export class Game {
 
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
+    if (this.below) this.syncBossBar();
     this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }
@@ -3602,6 +3678,10 @@ export class Game {
     if (inp.hit('drink')) this.drink();
     if (inp.hit('bomb')) this.placeBomb();
     if (inp.hit('polarity')) this.togglePolarity();
+    if (inp.hit('previous')) this.stepCarried(-1);
+    if (inp.hit('next')) this.stepCarried(1);
+    // a number key, or a tap on a slot of the hand (touch), makes that carried item the active one
+    if (inp.hit('pick')) this.chooseCarried(inp.digit() >= 0 ? inp.digit() : inp.hitBy('pick') === 'touch' ? inp.touchSlot : -1);
     if (below) this.doors.update(dt, b.x, b.y, b.z, b.hw, b.h, d => this.requestDoor(d));
     this.debris.update(dt);
     this.elements.update(dt);
@@ -3636,8 +3716,9 @@ export class Game {
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
     this.cracks.update(this.world);
-    const hand = this.player.hand;
-    this.hands.update(dt, this.player.walkPhase, hand.at(-1) ?? 0, hand.at(-2) ?? 0);
+    // the active item is the one in the right hand; the item under the choice goes in the other
+    const p = this.player, active = p.activeIndex;
+    this.hands.update(dt, p.walkPhase, p.active ?? 0, p.hand.filter((_, i) => i !== active).at(-1) ?? 0);
   }
 
   requestRestart() {

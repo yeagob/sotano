@@ -5,6 +5,8 @@ import type { ChestSpec } from '../world/floor';
 
 const SHUDDER = 0.16;
 const SWING = 0.42;
+/** Seconds from the first touch until the lid has swung open. */
+export const OPEN_TIME = SHUDDER + SWING;
 const OPEN_ANGLE = -1.9;
 const TIGHT_ANGLE = -0.5;
 
@@ -45,6 +47,13 @@ export class Chests {
     v.t = 0;
     for (const h of v.holes) h.mat.color.copy(this.hot);
     return SHUDDER + SWING * 0.45;
+  }
+
+  /** Takes a chest's model out of the scene once it has dispensed everything (issue #156). */
+  remove(v: ChestView) {
+    const i = this.list.indexOf(v);
+    if (i >= 0) this.list.splice(i, 1);
+    disposeChest(v.model);
   }
 
   update(dt: number, keys: number) {

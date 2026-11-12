@@ -13,6 +13,7 @@ import { Beam, GreatCut, type WeaponHost } from '../src/combat/weapons';
 import type { Polarity } from '../src/combat/polarity';
 import { TouchRouter } from '../src/combat/touch-router';
 import { BASE_STATS } from '../src/core/stats';
+import { t } from '../src/i18n';
 
 // game.ts makes no canvas or audio at load, but it reads matchMedia at module load; the sound
 // module is silenced so that the real Game methods below can run in node.
@@ -178,12 +179,12 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     }
   });
 
-  function rig(polarity: Polarity) {
+  function rig(polarity: Polarity, bulb: readonly (typeof heart)[] = [heart, flesh, mind]) {
     const bus = createBus();
     const seen: GameEvents['brew'][] = [];
     bus.on('brew', { priority: 200, source: 'test', fn: e => { seen.push({ ...e }); } });
     const lab = newAlembic();
-    for (const item of [heart, flesh, mind]) expect(feed(lab, item)).toBe('fed');
+    for (const item of bulb) expect(feed(lab, item)).toBe('fed');
 
     const world = {
       get: (x: number, y: number, z: number) => (at(x, y, z) === LAB ? MAT.alembic : AIR),
@@ -261,6 +262,20 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     expect(r.lab.brews).toBe(BREWS - 1);
   });
 
+  it('the brew notice names the potion it made, in the player\'s language', () => {
+    const r = rig('positive');
+    r.shoot();
+    expect(r.hud.toastDrinkHint).toHaveBeenCalledTimes(1);
+    expect(r.hud.toastDrinkHint).toHaveBeenCalledWith('lab.brewed', { name: t('potion.plain-tonic.name'), left: 1, total: BREWS });
+  });
+
+  it('the notice names the potion the bulb makes, not a fixed one', () => {
+    const r = rig('positive', [flesh, flesh]);
+    r.shoot();
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'restoring-draught' });
+    expect(r.hud.toastDrinkHint).toHaveBeenCalledWith('lab.brewed', expect.objectContaining({ name: t('potion.restoring-draught.name') }));
+  });
+
   it('Remember Breathing brews the same three fed items once, however many beam ticks land', () => {
     const r = rig('positive');
     r.fireBeam();
@@ -285,6 +300,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     const shot = rig('negative');
     shot.shoot();
     expect(shot.hud.toast).toHaveBeenCalledWith('lab.boiled');
+    expect(shot.hud.toastDrinkHint).not.toHaveBeenCalled();
     expect(shot.seen).toEqual([]);
     expect(shot.pickups.add).not.toHaveBeenCalled();
     expect(shot.lab.brews).toBe(BREWS);

@@ -1,7 +1,9 @@
 import {
   BINDING, BINDINGS, deadzone, lookCurve, MOVE_KEYS, NAV_KEYS, NAV_PAD, PAD_LOOK_SPEED, PAD_TRIGGER, PAD_WAKE, TOUCH_LOOK_SPEED,
+  WHEEL_STEP_MS,
   type Action, type Device,
 } from './bindings';
+import { enterFullscreen } from './fullscreen';
 
 let current: Device = 'keyboard';
 const deviceListeners = new Set<(d: Device) => void>();
@@ -29,6 +31,11 @@ export class Input {
   readonly pressed = new Set<string>();
   readonly mouse = new Set<number>();
   readonly mousePressed = new Set<number>();
+  /** Wheel steps this frame: -1 scrolled up, 1 scrolled down (`keyboard.wheel` in the bindings). */
+  private wheelHit = new Set<number>();
+  private lastWheel = -Infinity;
+  /** The carried slot a touch tapped on the hand (`pick` on touch); -1 when none. */
+  touchSlot = -1;
   readonly touchHeld = new Set<Action>();
   readonly touchPressed = new Set<Action>();
   readonly touchMove = { x: 0, y: 0 };
@@ -70,6 +77,11 @@ export class Input {
       this.mouse.add(e.button);
     });
     addEventListener('mouseup', e => this.mouse.delete(e.button));
+    // one step per WHEEL_STEP_MS: a free-spinning wheel must not skip carried slots
+    addEventListener('wheel', e => {
+      const s = Math.sign(e.deltaY), now = performance.now();
+      if (s && now - this.lastWheel >= WHEEL_STEP_MS) { this.wheelHit.add(s); this.lastWheel = now; }
+    }, { passive: true });
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === this.el;
@@ -118,18 +130,11 @@ export class Input {
 
   resume() {
     if (current === 'keyboard') { this.lock(); return; }
-    if (current === 'touch') this.fullscreen();
+    // a tap that starts play asks for fullscreen; a refusal here stays quiet (the return button reports it)
+    if (current === 'touch') void enterFullscreen(document);
     this.engaged = true;
     this.suppress(...BUTTON_ACTIONS);
     this.touchHeld.clear();
-  }
-
-  private fullscreen() {
-    const doc = document.documentElement;
-    if (document.fullscreenElement || !doc.requestFullscreen) return;
-    doc.requestFullscreen({ navigationUI: 'hide' })
-      .then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape'))
-      .catch(() => {});
   }
 
   private lost() {
@@ -165,8 +170,15 @@ export class Input {
     const b = BINDING[a];
     if (b.keyboard.keys?.some(k => this.pressed.has(k))) return true;
     if (b.keyboard.mouse?.some(m => this.mousePressed.has(m))) return true;
+    if (b.keyboard.wheel && this.wheelHit.has(b.keyboard.wheel)) return true;
     if (b.gamepad.buttons?.some(i => this.padHeld.has(i) && !this.padPrev.has(i))) return true;
     return this.touchPressed.has(a);
+  }
+
+  /** The number key pressed this frame, 0 for `1` up to 8 for `9`; -1 when none was. */
+  digit(): number {
+    for (let i = 1; i <= 9; i++) if (this.pressed.has(`Digit${i}`)) return i - 1;
+    return -1;
   }
 
   held(a: Action) { return !this.suppressed.has(a) && this.raw(a); }
@@ -177,6 +189,7 @@ export class Input {
     if (this.suppressed.has(a)) return null;
     const b = BINDING[a];
     if (b.keyboard.keys?.some(k => this.pressed.has(k)) || b.keyboard.mouse?.some(m => this.mousePressed.has(m))) return 'keyboard';
+    if (b.keyboard.wheel && this.wheelHit.has(b.keyboard.wheel)) return 'keyboard';
     if (b.gamepad.buttons?.some(i => this.padHeld.has(i) && !this.padPrev.has(i))) return 'gamepad';
     return this.touchPressed.has(a) ? 'touch' : null;
   }
@@ -243,7 +256,7 @@ export class Input {
   }
 
   endFrame() {
-    this.pressed.clear(); this.mousePressed.clear(); this.touchPressed.clear();
+    this.pressed.clear(); this.mousePressed.clear(); this.touchPressed.clear(); this.wheelHit.clear();
     this.lookDX = 0; this.lookDY = 0;
   }
 }

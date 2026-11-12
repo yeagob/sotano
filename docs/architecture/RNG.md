@@ -41,7 +41,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH ย
 | `fork('floor', 0, 'loot')` | Structure | Where the roots' key and bomb lie, in its lesson rooms (`GEN_VERSION` 14) |
 | `fork('plan', k, kind)` | Structure | Floor k's plan for its kind (random planners); Tree floors draw nothing |
 | `fork('tree', story)` | Structure | One story of the giant tree (`GiantTree.grow`, lazily, when the player comes near): its knot windows, rings, ramps, columns, branches, limbs and stars. One fork per story, so the tree grows the same in any order |
-| `fork('mountains')` | Structure | The mountains round the surface (`Mountains`, [LEVELS.md ยง13](LEVELS.md#13-the-mountains-round-the-surface-issue-10-2026-11-06)): the passes' angles, each ridge's peak and trail, the crest's phases, then the seed of the walls' jitter (`GEN_VERSION` 26) |
+| `fork('mountains')` | Structure | The surface and its mountains (`Mountains`, [LEVELS.md ยง13](LEVELS.md#13-the-surface-and-its-mountains-issue-10)): the passes' angles, each ridge's summit, the crest's phases, the seed of the ledges' jitter, then the offset of the stairs (`GEN_VERSION` 28) |
 | `fork('sandbox', 'layout')` | Structure | The sandbox room's decor slots ([SANDBOX.md](SANDBOX.md)) |
 | `fork('floor', 0, 'creatures')` | Structure | Where the roots' peaceful creatures start |
 | `fork('floor', k, 'space')` | Structure | Which room may spread into each empty cell of floor k (`allotSpace`), drawn before any room's layout |
@@ -55,7 +55,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH ย
 | `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
 | `stream('drops')` | Runtime | Enemy and crate drops (`rollCrate`); The Listener's guaranteed heart-offer reward, rolled when accepted (15% max-health practice, 75% special hearts, 10% double red hearts) |
-| `stream('gifts')` | Runtime | The floor-0 creature's one-time 15% special-heart roll when it first reaches three times its birth size; independent of Listener reward rolls |
+| `stream('gifts')` | Runtime | A friendly creature's one-time 7.5% special-heart roll (any floor since #102) when it first reaches three times its birth size; independent of Listener reward rolls |
 | `stream('guard')` | Runtime | The Sanctuary's sitting duration and one sampled guidance line per part; independent of its loot reward |
 | `fork('floor', k, 'hearts')` | Structure | Floor k's chance of each rare kind of heart, uniform in its range (`floorHeartChances`, issue #31): blue, stone, blood, star, berserker, in that order. Read by each heart roll, never drawn on a stream. The surface uses floor 0 |
 | `stream('hearts')` | Runtime | The kind of each heart pickup as it is added (`rollHeart` on the `heart` table built from the floor's chances), so the kind never moves `stream('drops')` |

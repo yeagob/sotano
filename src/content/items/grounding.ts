@@ -5,7 +5,7 @@ export default defineItem({
   id: 'grounding',
   name: 'Grounding',
   description: 'Rooted in the body, you push with your whole weight: kick twice as hard.',
-  effect: 'Kicks are twice as strong.',
+  effect: 'Kicks are twice as strong. Reach +1 block.',
   inspiredBy: 'Somatic grounding techniques',
   pools: { treasure: 1 },
   tags: ['body', 'contact'],
@@ -28,5 +28,8 @@ export default defineItem({
     ],
     palette: { a: pal('mat.grass.hi'), b: pal('mat.crate.base') },
   },
-  stats: [{ stat: 'kick', layer: 'mul', value: 2 }],
+  stats: [
+    { stat: 'kick', layer: 'mul', value: 2 },
+    { stat: 'reach', layer: 'add', value: 1 },
+  ],
 });

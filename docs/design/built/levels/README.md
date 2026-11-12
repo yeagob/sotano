@@ -11,15 +11,15 @@ Vertical rules that hold for every level (the validator and the tests enforce th
 - Three rock layers separate one band from the next. The tests carve every element room across every pair of bands and fail if any of that rock is air.
 - Layers (single blocks above the floor) sit at heights 1 to height minus 3, leaving two blocks of headroom over anything you can stand on.
 - The shaft between floors (the boss room's hole to the next start room) stays clear in every flip of the room.
-- The surface has grass at height 167, dirt under it from 159 to 166, and open sky above it up to height 427 (`src/world/floor.ts`). No house stands on the surface; a plain of grass round the tree is ringed by mountains as tall as the tree ([SURFACE](SURFACE.md)). The open sky above the grass counts as depth 0 for anything that asks how deep the player is (`depthOf`).
+- The surface has grass at height 167, dirt under it from 159 to 166, and open sky above it up to height 427 (`src/world/floor.ts`). No house stands on the surface; a wide plain of grass round the tree (304 blocks from the trunk's axis) is ringed by terraced mountains at most as tall as the tree, with stairs up their walls ([SURFACE](SURFACE.md)). The open sky above the grass counts as depth 0 for anything that asks how deep the player is (`depthOf`).
 
-Code: the floor structure in `src/world/floor.ts` and `src/world/floorplan.ts`, the level data in `src/content/levels.ts`, the giant tree in `src/world/tree.ts`, the mountains round the surface in `src/world/mountains.ts`, the silence and heaven loop in `src/game/game.ts`.
+Code: the floor structure in `src/world/floor.ts` and `src/world/floorplan.ts`, the level data in `src/content/levels.ts`, the giant tree in `src/world/tree.ts`, the surface and its mountains in `src/world/mountains.ts`, the silence and heaven loop in `src/game/game.ts`.
 
 | Folder or document | Contents |
 |---|---|
 | [floors/](floors/README.md) | The ten underground floors: the roots, the Tree-of-Life floors, the circles, the silence chamber, the way down and the toll |
 | [rooms/](rooms/README.md) | The room templates, their height and ceilings, rooms bigger than their cell, challenge rooms and doors |
-| [SURFACE.md](SURFACE.md) | The surface round the tree: the plain, the ring of mountains, its trails and passes (issue #10) |
+| [SURFACE.md](SURFACE.md) | The surface round the tree: the plain, the ring of mountains, its ledges, stairs and passes (issue #10) |
 | [giant-tree/](giant-tree/README.md) | The giant tree above the surface: seven stories, the trunk, the branches, the canopy and the stars |
 | [totality/](totality/README.md) | Totality, the last stretch of the sky above the crown: the climb, the updraft, the Earth and the Sun in view, and the entrance to the Sun |
 
