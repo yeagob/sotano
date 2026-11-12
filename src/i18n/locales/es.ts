@@ -380,7 +380,7 @@ export const ES: Catalog = {
     'lab.fed': 'En el alambique: {n} de {total}',
     'lab.full': 'El alambique está lleno: tres cosas como mucho',
     'lab.cold': 'El alambique se ha enfriado: sus brebajes están gastados',
-    'lab.brewed': 'La mezcla se asienta: {left} de {total} brebajes usados',
+    'lab.brewed': 'La mezcla se asienta en {name}: {left} de {total} brebajes usados',
     'lab.boiled': 'La carga hierve y se pierde: no se brebaja, y no se gasta ningún brebaje',
     'lab.refused': 'En el bulbo solo entran partes y bloques',
     'presence.wrong': '{item}. No es eso lo que espero.',
