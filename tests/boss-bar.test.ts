@@ -72,7 +72,7 @@ function rig(realm: 'dungeon' | 'sky' = 'dungeon'): any {
     renderer: anything, hands: anything, touch: anything, sky: anything,
     // `transitioning` (a getter) reads restartT, revealT and gate.busy: no transition unless a test starts one
     gate: { busy: false, update() {} },
-    chunks: { busy: false, update() {}, setVisibleRange() {}, animate() {} },
+    chunks: { busy: false, update() {}, streamOuter() {}, setVisibleRange() {}, animate() {} },
     // the world's simulation: the real place and boss-room step, and the rest of the world is left out
     simulated: 0,
     simulate(this: any, dt: number) { this.simulated++; if (this.below) this.trackPlace(dt); },
