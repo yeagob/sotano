@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "sandbox": "node scripts/sandbox.mjs"
+    "sandbox": "node scripts/sandbox.mjs",
+    "bestiary": "node scripts/bestiary-capture.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"
