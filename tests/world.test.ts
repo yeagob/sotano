@@ -328,13 +328,13 @@ describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
     }
   });
 
-  it('always lays one key and one bomb as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
+  it('at mastery 0 lays one key or one breakthrough as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
+    // REWARDS §2 (level 0): exactly one of a key or a breakthrough, the choice drawn per seed (floor/0/roots/oneof)
     const rooms = new Set<number>();
     for (let s = 1; s <= 40; s++) {
       const f = buildRun(s * 13, 1).floors[0];
       const lesson = new Set(f.rooms.filter(r => r.type === 'normal').map(r => r.id));
-      expect(f.keys, `keys, seed ${s}`).toHaveLength(1);
-      expect(f.bombs, `bombs, seed ${s}`).toHaveLength(1);
+      expect(f.keys.length + f.bombs.length, `key or bomb, seed ${s}`).toBe(1);
       for (const k of [...f.keys, ...f.bombs]) { expect(lesson.has(k.room), `seed ${s}`).toBe(true); rooms.add(k.room); }
     }
     expect(rooms.size).toBeGreaterThan(1);

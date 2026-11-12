@@ -35,6 +35,8 @@ If a floor has a locked door, it also has one **key**, placed on a `K` spot of a
 
 The fixed treasure room on floor 0 is the exception to the pedestal rule: its reserved practice sits in one free chest with no key cost. Approaching opens the Sanctuary. A quick reward or a completed meditation opens the chest; cancelling leaves it closed until the player steps away and returns. Its reward is capped at quality 3, as all practices on the roots are.
 
+The roots' loose things (what the mastery level lays, [REWARDS](../design/not-built/levels/roots/REWARDS.md) §2–§5) are placed by `carveFloor` on the `freeSpots` of the lesson rooms (`floor/0/roots/*` forks): at most one free chest and one extra practice pedestal per room, never a door approach, the centre, the shaft or beside a marker, with three blocks of air above a pedestal. A second Sanctuary chest and the altar take a free tile of the way-down room and the start room. The way-down pedestal and the treasure room's chest are carved exactly as before at every level.
+
 ## 3. Templates
 
 A template is 7 strings of 13 characters, top-down, first row = north:
