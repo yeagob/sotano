@@ -39,7 +39,11 @@ export async function enterFullscreen(doc: FullscreenDoc, lock: () => Promise<vo
   return 'entered';
 }
 
-/** The return button is offered on a phone whenever the page is not fullscreen, on every screen. */
-export function showFullscreenButton(touch: boolean, inFullscreen: boolean): boolean {
-  return touch && !inFullscreen;
+/**
+ * The return button is offered on a phone while the page is not fullscreen, on every screen, but only
+ * where the browser reports the Fullscreen API usable (`fullscreenEnabled`). iPhone Safari reports it
+ * unusable, so the button is hidden there rather than offered for a request that cannot work.
+ */
+export function showFullscreenButton(touch: boolean, inFullscreen: boolean, supported: boolean): boolean {
+  return touch && !inFullscreen && supported;
 }

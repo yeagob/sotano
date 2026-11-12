@@ -1,6 +1,6 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { onDeviceChange, type Input } from './input';
-import { enterFullscreen, showFullscreenButton } from './fullscreen';
+import { canEnterFullscreen, enterFullscreen, showFullscreenButton } from './fullscreen';
 
 // Four corners, drawn in the current colour: a plain outline that needs no pixel icon from the art agent yet.
 const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></svg>';
@@ -35,9 +35,9 @@ export class FullscreenButton {
     this.el.title = text;
   }
 
-  /** Visible on a phone while the page is not fullscreen; `hidden` is what keeps it out of the way. */
+  /** Visible on a phone while the page is not fullscreen and the API is usable; hidden otherwise (iPhone). */
   sync() {
-    this.el.hidden = !showFullscreenButton(this.input.device === 'touch', !!document.fullscreenElement);
+    this.el.hidden = !showFullscreenButton(this.input.device === 'touch', !!document.fullscreenElement, canEnterFullscreen(document));
   }
 
   private async press() {

@@ -100,16 +100,21 @@ describe('fullscreen request (#161)', () => {
 });
 
 describe('return button visibility (#161)', () => {
-  it('is offered on a phone while the page is not fullscreen', () => {
-    expect(showFullscreenButton(true, false)).toBe(true);
+  it('is offered on a phone while the page is not fullscreen and the API is usable', () => {
+    expect(showFullscreenButton(true, false, true)).toBe(true);
   });
 
   it('is hidden while the page is fullscreen', () => {
-    expect(showFullscreenButton(true, true)).toBe(false);
+    expect(showFullscreenButton(true, true, true)).toBe(false);
+  });
+
+  it('is hidden where the Fullscreen API is unusable (iPhone: fullscreenEnabled false), even on touch', () => {
+    const iphone = fakeDoc({ enabled: false, request: granted });
+    expect(showFullscreenButton(true, false, canEnterFullscreen(iphone as unknown as FullscreenDoc))).toBe(false);
   });
 
   it('is never offered on keyboard or pad, fullscreen or not', () => {
-    expect(showFullscreenButton(false, false)).toBe(false);
-    expect(showFullscreenButton(false, true)).toBe(false);
+    expect(showFullscreenButton(false, false, true)).toBe(false);
+    expect(showFullscreenButton(false, true, true)).toBe(false);
   });
 });
