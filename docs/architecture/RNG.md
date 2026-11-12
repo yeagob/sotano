@@ -30,7 +30,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', k, 'theme')` | Structure | Floor k's rock theme |
 | `fork('rock', 0)`, `fork('rock', 1)` | Structure | The two rock noise layers (seeds for `hash3`) |
 | `fork('reserve')` | Structure | Every pedestal's item, in (floor, room) order, at run start |
-| `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template (among those whose space fits its allotment) → flips (one draw among the flips that fit) → mood → decor slots, row by row, in that order |
+| `fork('floor', k, 'room', i, 'layout')` | Structure | Room i: template (among those whose space fits its allotment) → flips (one draw among the flips that fit) → mood → decor slots, row by row, in that order. On floor 0 the template is the plan cell's, never drawn: the easy layout (`easyRoots`, page 2 on) takes the cell's easy template with the same draws in the same order, so floor 0 depends on the seed, the mastery level and the layout, and no new fork exists |
 | `fork('floor', k, 'room', i, 'roster')` | Structure | Room i's projections |
 | `fork('floor', k, 'presence')` | Structure | Which normal room of a Tree floor holds the Listener (GEN_VERSION 15); the Gardener is the start room of floor 0 |
 | `fork('floor', k, 'key')` | Structure | Where floor k's key lies |

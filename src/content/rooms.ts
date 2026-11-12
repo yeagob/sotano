@@ -28,7 +28,7 @@
 // blocks above the floor (bridges, balconies, galleries). A room never reaches the floor above or
 // below: the validator caps height and depth so rock always remains between bands.
 
-import type { RoomType } from '../world/floorplan';
+import { TUTORIAL_LAYOUT, type RoomType } from '../world/floorplan';
 import { hash3 } from '../core/rng';
 import { MAT } from './materials';
 
@@ -810,6 +810,76 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
     ],
   },
+  // ── the easy layout of the Roots (from page 2 on, docs/design/not-built/levels/roots/EASY-LAYOUT.md §2):
+  //    the six rooms that change. Each keeps its teaching twin's lesson. No weight: floor 0 is a fixed plan,
+  //    and the half-need-building rule counts these as they are carved (ROOMS.md). Only cells a, b, d, e, f, g
+  //    name them (TUTORIAL_CELLS.easy); the other five rooms are the same in both layouts. ──
+  {
+    id: 'roots-step-easy', types: ['normal'], floors: [0, 0], lesson: 'step', rows: [
+      '.d.........d.',
+      '...2.....2...',
+      '..121...121..',
+      '..121.K.121..',
+      '..121...121..',
+      '...2.....2...',
+      '.d.........d.',
+    ],
+  },
+  {
+    id: 'roots-dig-easy', types: ['normal'], floors: [0, 0], lesson: 'intent', rows: [
+      '.............',
+      '.............',
+      '.....d.d.....',
+      '......K......',
+      '.............',
+      'bbbbb...bbbbb',
+      '.............',
+    ],
+  },
+  {
+    id: 'roots-pit-easy', types: ['normal'], floors: [0, 0], lesson: 'pit', rows: [
+      'd.___...___.d',
+      '.._._..._._..',
+      '..___...___..',
+      '......K......',
+      '..___...___..',
+      '.._._..._._..',
+      'd.___...___.d',
+    ],
+  },
+  {
+    id: 'roots-bridge-easy', types: ['normal'], floors: [0, 0], lesson: 'bridge', height: 6, rows: [
+      '._==_..._==_.',
+      '._==_.d._==_.',
+      '.b..b...b..b.',
+      '......K......',
+      '.b..b...b..b.',
+      '._==_.d._==_.',
+      '._==_..._==_.',
+    ],
+  },
+  {
+    id: 'roots-crates-easy', types: ['normal'], floors: [0, 0], lesson: 'kick', rows: [
+      '.............',
+      '.cc.c...c.cc.',
+      '.cc.c...c.cc.',
+      '.cc...K...cc.',
+      '.cc.c...c.cc.',
+      '.cc.c...c.cc.',
+      '.............',
+    ],
+  },
+  {
+    id: 'roots-seal-easy', types: ['normal'], floors: [0, 0], lesson: 'bomb', height: 6, rows: [
+      '.............',
+      '.d.d.....d.d.',
+      '...__...__...',
+      '..___.K.___..',
+      '...__...__...',
+      '.d.d.....d.d.',
+      '.............',
+    ],
+  },
   // ── paths of the Tree (floors 1–5): corridors between emanations, most of them built across ──
   {
     // two dry trenches cut the path: east and west are islands until you bridge them
@@ -1323,19 +1393,31 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
 ];
 
-export const TUTORIAL_CELLS: Record<string, { template: string; flipZ?: boolean; maxQuality?: number }> = {
+/** The Roots' plan cells: the teaching template of each, and (for the six rooms that change from page 2) the
+ *  easy template the easy layout carves instead (EASY-LAYOUT §2, §7). */
+export const TUTORIAL_CELLS: Record<string, { template: string; flipZ?: boolean; maxQuality?: number; easy?: string }> = {
   S: { template: 'roots-hall' },
   B: { template: 'roots-door', maxQuality: 4 },
   T: { template: 'roots-gift', maxQuality: 3 },
-  a: { template: 'roots-step' },
-  b: { template: 'roots-dig', flipZ: true },
+  a: { template: 'roots-step', easy: 'roots-step-easy' },
+  b: { template: 'roots-dig', flipZ: true, easy: 'roots-dig-easy' },
   c: { template: 'roots-mend' },
-  d: { template: 'roots-pit' },
-  e: { template: 'roots-bridge' },
-  f: { template: 'roots-seal' },
-  g: { template: 'roots-crates' },
+  d: { template: 'roots-pit', easy: 'roots-pit-easy' },
+  e: { template: 'roots-bridge', easy: 'roots-bridge-easy' },
+  f: { template: 'roots-seal', easy: 'roots-seal-easy' },
+  g: { template: 'roots-crates', easy: 'roots-crates-easy' },
   h: { template: 'roots-spring' },
 };
+
+/**
+ * The key a Roots room is known by: the teaching template id of its plan cell, in both layouts (EASY-LAYOUT §7).
+ * The book, the sight sets and the page stone name rooms by it; `RoomInfo.template` is the easy id in the easy layout.
+ */
+export function rootsRoomKey(gx: number, gz: number): string {
+  const cell = TUTORIAL_CELLS[TUTORIAL_LAYOUT[gz]?.[gx] ?? '.'];
+  if (!cell) throw new Error(`rootsRoomKey: cell ${gx},${gz} is not a Roots room`);
+  return cell.template;
+}
 
 /** Solid stacks per character: material and height in blocks. */
 export const CELL_STACK: Record<string, { m: number; h: number }> = {
@@ -1602,38 +1684,53 @@ function standLevels(t: RoomTemplate, col: number, row: number): number[] {
  * and lava block; water is swum. Returns the part id of every key tile (door approaches, the
  * centre, markers); a room **needs building** when they are not all in one part.
  */
-export function walkParts(t: RoomTemplate): Map<string, number> {
+/**
+ * The walk rules (LEVELS §5.2) from one standing state: the states one step or jump away on foot. A step
+ * goes up one block at most and down any height; a jump clears one tile (or two, the second as a step)
+ * to the same level or lower, over nothing taller than a step. Ordered: the first move of each direction first.
+ */
+function walkEdges(t: RoomTemplate): { levels: number[][][]; next: (c: number, r: number, i: number) => [number, number, number][] } {
   const [W, D] = [t.rows[0].length, t.rows.length];
   const levels: number[][][] = [];
   for (let r = 0; r < D; r++) { levels.push([]); for (let c = 0; c < W; c++) levels[r].push(standLevels(t, c, r)); }
+  const maxAt = (c: number, r: number) => (levels[r]?.[c]?.length ? Math.max(...levels[r][c]) : (t.rows[r]?.[c] === '#' || t.rows[r]?.[c] === ROCK ? Infinity : -Infinity));
+  const next = (c: number, r: number, i: number) => {
+    const out: [number, number, number][] = [];
+    const a = levels[r][c][i];
+    // jumps clear a gap of one tile; two is too marginal to count on (review L2 point 4)
+    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let dist = 1; dist <= 2; dist++) {
+      const nc = c + dc * dist, nr = r + dr * dist;
+      if (nc < 0 || nr < 0 || nc >= W || nr >= D) break;
+      // a jump (dist 2–3) needs nothing in the way taller than a step
+      if (dist > 1) {
+        let clear = true;
+        for (let k = 1; k < dist; k++) if (maxAt(c + dc * k, r + dr * k) > a + 1) clear = false;
+        if (!clear) break;
+      }
+      levels[nr][nc].forEach((b, j) => { if (dist === 1 ? b - a <= 1 : b <= a) out.push([nc, nr, j]); });
+    }
+    return out;
+  };
+  return { levels, next };
+}
+
+export function walkParts(t: RoomTemplate): Map<string, number> {
+  const [W, D] = [t.rows[0].length, t.rows.length];
+  const { levels, next } = walkEdges(t);
   const id = (c: number, r: number, i: number) => `${c},${r},${i}`;
   const part = new Map<string, number>();
-  let next = 0;
-  const maxAt = (c: number, r: number) => (levels[r]?.[c]?.length ? Math.max(...levels[r][c]) : (t.rows[r]?.[c] === '#' || t.rows[r]?.[c] === ROCK ? Infinity : -Infinity));
+  let nextPart = 0;
   for (let r0 = 0; r0 < D; r0++) for (let c0 = 0; c0 < W; c0++) levels[r0][c0].forEach((_, i0) => {
     if (part.has(id(c0, r0, i0))) return;
-    const p = next++;
+    const p = nextPart++;
     const q: [number, number, number][] = [[c0, r0, i0]];
     part.set(id(c0, r0, i0), p);
     while (q.length) {
       const [c, r, i] = q.pop()!;
-      const a = levels[r][c][i];
-      // jumps clear a gap of one tile; two is too marginal to count on (review L2 point 4)
-      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let dist = 1; dist <= 2; dist++) {
-        const nc = c + dc * dist, nr = r + dr * dist;
-        if (nc < 0 || nr < 0 || nc >= W || nr >= D) break;
-        // a jump (dist 2–3) needs nothing in the way taller than a step
-        if (dist > 1) {
-          let clear = true;
-          for (let k = 1; k < dist; k++) if (maxAt(c + dc * k, r + dr * k) > a + 1) clear = false;
-          if (!clear) break;
-        }
-        levels[nr][nc].forEach((b, j) => {
-          const ok = dist === 1 ? b - a <= 1 : b <= a;
-          if (!ok || part.has(id(nc, nr, j))) return;
-          part.set(id(nc, nr, j), p);
-          q.push([nc, nr, j]);
-        });
+      for (const [nc, nr, j] of next(c, r, i)) {
+        if (part.has(id(nc, nr, j))) continue;
+        part.set(id(nc, nr, j), p);
+        q.push([nc, nr, j]);
       }
     }
   });
@@ -1684,4 +1781,42 @@ export function needsBuildingIn(t: RoomTemplate, flipX: boolean, flipZ: boolean,
     ids.add(part);
   }
   return ids.size > 1;
+}
+
+/**
+ * The standing tiles of a room, as carved with these flips, from which a door approach cannot be reached on
+ * foot (EASY-LAYOUT §9.1). Unlike `needsBuilding`, which joins parts both ways, this follows the walk one way:
+ * from each tile, the states reachable by the steps and jumps of `walkEdges`, so a pit with no way out is
+ * stranded even though it touches the room above. `sides` limits the doors checked (default: every side the
+ * template has). Returns the [col, row] of each stranded tile once; an empty list means every tile walks to
+ * every door.
+ */
+export function strandedTiles(t: RoomTemplate, flipX = false, flipZ = false, sides?: readonly string[]): [number, number][] {
+  const ft = flipped(t, flipX, flipZ);
+  const { levels, next } = walkEdges(ft);
+  const targets: { side: string; states: string }[] = [];
+  for (const [side, tiles] of Object.entries(doorApproach(ft))) {
+    if (sides && !sides.includes(side)) continue;
+    const states: string[] = [];
+    for (const [c, r] of tiles!) levels[r]?.[c]?.forEach((_, i) => states.push(`${c},${r},${i}`));
+    targets.push({ side, states: states.join(';') });
+  }
+  const out = new Map<string, [number, number]>();
+  levels.forEach((row, r) => row.forEach((ls, c) => ls.forEach((_, i) => {
+    // every standing state of this tile, followed one way until no new state is reached
+    const seen = new Set<string>([`${c},${r},${i}`]);
+    const queue: [number, number, number][] = [[c, r, i]];
+    while (queue.length) {
+      const [x, y, k] = queue.pop()!;
+      for (const [nc, nr, j] of next(x, y, k)) {
+        const key = `${nc},${nr},${j}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        queue.push([nc, nr, j]);
+      }
+    }
+    const stranded = targets.some(g => !g.states.split(';').some(s => seen.has(s)));
+    if (stranded) out.set(`${c},${r}`, [c, r]);
+  })));
+  return [...out.values()];
 }

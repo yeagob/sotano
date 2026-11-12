@@ -227,7 +227,7 @@ export interface FittedRoom { t: RoomTemplate; flipX: boolean; flipZ: boolean; l
  * it first, and on floor 0 and below it always gets a large template unless its boss asks for a
  * small room (`bossRoomIsLarge`).
  */
-export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, templates: readonly RoomTemplate[], bossSmallRoom = false): { space: Int16Array; fitted: Map<number, FittedRoom> } {
+export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, templates: readonly RoomTemplate[], bossSmallRoom = false, easyRoots = false): { space: Int16Array; fitted: Map<number, FittedRoom> } {
   const lv = level(k);
   const bossRoom = lv.tutorial ? undefined : plan.rooms.find(r => r.type === 'boss');
   const allot = allotSpace(plan, rr.fork('floor', k, 'space'), bossRoom?.id);
@@ -238,7 +238,8 @@ export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, template
     const mirror = (t: RoomTemplate) => t.mirror !== false && pr.type !== 'start';
     const cell = lv.tutorial ? TUTORIAL_CELLS[TUTORIAL_LAYOUT[pr.gz][pr.gx]] : undefined;
     const fits = (t: RoomTemplate) => flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t)).length > 0;
-    const fixed = cell && templates.find(q => q.id === cell.template);
+    // the easy layout (EASY-LAYOUT §7) takes the cell's easy template; the cell's own flips stay
+    const fixed = cell && templates.find(q => q.id === (easyRoots && cell.easy ? cell.easy : cell.template));
     const large = pr === bossRoom && bossRoomIsLarge(k, bossSmallRoom);
     const t = fixed || pickTemplate(templates, pr.type, k, layout, pr.size, fits, lv.bigRooms, large);
     const flips = flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t));
@@ -295,6 +296,9 @@ export interface CarveOptions {
   /** The player's mastery level (0 to 100), read by floor 0 only (REWARDS). Default 0. Generation never reads the save:
    *  the game passes the level it read at run start. */
   mastery?: number;
+  /** Floor 0 only (EASY-LAYOUT §7): carve the easy layout of the Roots, which the game asks for from page 2 on.
+   *  Default false: the teaching layout, byte for byte as before. Read at run start; no random decision depends on it. */
+  easyRoots?: boolean;
 }
 
 /** The floors from which every boss fights in a large room: floor 0 and every floor below it. */
@@ -341,7 +345,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
 
   // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
   //    from the plan and the floor's own fork, so a room's choice never depends on another room's
-  const { space, fitted } = fitTemplates(rr, k, plan, opt.templates, opt.bossSmallRoom);
+  const { space, fitted } = fitTemplates(rr, k, plan, opt.templates, opt.bossSmallRoom, !!opt.easyRoots);
   const pal = { wall: MAT[lv.palette.wall], floor: MAT[lv.palette.floor], trim: MAT[lv.palette.trim] };
 
   // 1. room shells and interiors
