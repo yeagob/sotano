@@ -1534,7 +1534,7 @@ export class Game {
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
-      // a warm love shot grows a friendly actor (issue #51, every friendly actor since #102); a beam's repeat ticks do not
+      // a warm love shot grows a friendly creature (issue #51, #102); a beam's repeat ticks do not
       const oldScale = e.scale;
       if (warm && growsUnder(e)) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
@@ -1544,7 +1544,7 @@ export class Game {
       if (warm && growsUnder(e) && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
       return;
     }
-    // a warm negative shot takes a grown friendly actor one step back down (#102); it still harms it as before
+    // a warm negative shot takes a grown friendly creature one step back down (#102); it still harms it as before
     if (warm && e.faction !== 'projection' && growsUnder(e) && e.scale > 1 && this.meets(e, polarity)) {
       this.enemies.shrink(e);
       const b = e.body;
@@ -3190,7 +3190,7 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !(e.tags.has('presence') || e.tags.has('boundary'))) continue;
-      // the grown box, not the birth size: a presence that grew pushes from where it stands (#102)
+      // the box the presence is hit with, not its birth size (#102)
       if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.body.h) continue;
       const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.body.hw / 2 + b.hw);
       if (at && !boxHits((x, y, z) => this.solid(x, y, z), at.x, b.y, at.z, b.hw, b.h)) { b.x = at.x; b.z = at.z; }

@@ -156,30 +156,22 @@ describe('friendly actors grow, and negative shots shrink them back (#102)', () 
     }
   });
 
-  it('every friendly actor grows, and projections and the Boundary do not', () => {
+  it('only friendly creatures grow: not converted enemies, bosses, presences, the Boundary or projections', () => {
     const en = new Enemies(new THREE.Scene(), host());
-    const make = (id: number, faction: 'neutral' | 'self' | 'projection', tags: string[]) => {
-      const e = en.spawn(def, id, 0, 3, 0, 3, def.hp, def.speed, 0, new Set(tags));
+    const make = (id: number, faction: 'neutral' | 'self' | 'projection', tags: string[], kind = def) => {
+      const e = en.spawn(kind, id, 0, 3, 0, 3, kind.hp, kind.speed, 0, new Set(tags));
       e.faction = faction;
       e.spawning = 0;
       return e;
     };
     expect(growsUnder(make(20, 'neutral', ['creature']))).toBe(true);
-    expect(growsUnder(make(21, 'self', []))).toBe(true);
-    expect(growsUnder(make(22, 'neutral', ['presence']))).toBe(true);
+    expect(growsUnder(make(21, 'self', []))).toBe(false);
+    expect(growsUnder(make(22, 'neutral', ['presence']))).toBe(false);
     expect(growsUnder(make(23, 'neutral', ['boundary']))).toBe(false);
     expect(growsUnder(make(24, 'projection', []))).toBe(false);
+    expect(growsUnder(make(25, 'neutral', [], { ...def, kind: 'boss' } as typeof def))).toBe(false);
   });
 
-  it('a converted ally grows under love shots like a creature, and its box follows', () => {
-    const en = new Enemies(new THREE.Scene(), host());
-    const ally = en.spawn(def, 30, 0, 3, 0, 3, def.hp, def.speed, 0, new Set());
-    ally.faction = 'self';
-    ally.spawning = 0;
-    en.grow(ally);
-    expect(ally.scale).toBeCloseTo(1 + GROWTH_STEP, 9);
-    expect(ally.body.hw).toBeCloseTo(def.size[0] * ally.scale, 9);
-  });
 
   it('the maximum-growth gift is claimed once, even after a shrink and a second growth to three times', () => {
     const en = new Enemies(new THREE.Scene(), host());
@@ -252,18 +244,23 @@ describe('the wiring of shots in Game (#102)', () => {
     expect(e.scale).toBe(2);
   });
 
-  it('a converted ally grows under warm love shots and rolls its maximum-growth gift once, off floor 0', () => {
+  it('a creature grows under warm love shots and rolls its maximum-growth gift once, off floor 0; a converted ally neither grows nor rolls', () => {
     const en = new Enemies(new THREE.Scene(), host());
     // the stand-in has no rooms, so a floor check would throw: the gift needs no floor
     const g = wiring(en);
-    const ally = en.spawn(def, 50, 0, 3, 0, 3, def.hp, def.speed, 0, new Set());
+    const cr = creature(en, 50);
+    for (let n = 0; n < 8; n++) g.intentTouch(cr.id, 8, 0, 0, 'cut', 'love', 'positive', true);
+    expect(cr.scale).toBe(GROWTH_MAX);
+    expect(g.dropCreatureGrowthGift).toHaveBeenCalledTimes(1);
+    expect(g.dropCreatureGrowthGift).toHaveBeenCalledWith(cr);
+    for (let n = 0; n < 4; n++) g.intentTouch(cr.id, 8, 0, 0, 'cut', 'love', 'positive', true);
+    expect(g.dropCreatureGrowthGift).toHaveBeenCalledTimes(1);
+
+    const ally = en.spawn(def, 51, 0, 3, 0, 3, def.hp, def.speed, 0, new Set());
     ally.faction = 'self';
     ally.spawning = 0;
     for (let n = 0; n < 8; n++) g.intentTouch(ally.id, 8, 0, 0, 'cut', 'love', 'positive', true);
-    expect(ally.scale).toBe(GROWTH_MAX);
-    expect(g.dropCreatureGrowthGift).toHaveBeenCalledTimes(1);
-    expect(g.dropCreatureGrowthGift).toHaveBeenCalledWith(ally);
-    for (let n = 0; n < 4; n++) g.intentTouch(ally.id, 8, 0, 0, 'cut', 'love', 'positive', true);
+    expect(ally.scale).toBe(1);
     expect(g.dropCreatureGrowthGift).toHaveBeenCalledTimes(1);
   });
 
