@@ -7,17 +7,17 @@ The Roots have a mastery level: **the number of achievements unlocked, capped at
 ## Rules
 
 - **The count.** `mastery = min(100, number of unlocked achievement ids that exist in the catalogue)`. An id in the save that the catalogue no longer has is kept in the save and not counted. The level is computed, never stored, so it can never drift from the achievements.
-- **Any order, no sequence.** Every achievement counts the moment it is earned, however many in one run (the issue's sequential "one boss step per run" is superseded by the owner's decision: every first boss defeat counts, several in one run too).
+- **Any order, no sequence.** Every achievement counts the moment it is earned, however many in one run (the issue's sequential "one boss step per run" is superseded by the owner's decision: each boss has two achievements, destroyed and turned to your side, and every first time counts, several in one run too).
 - **No double award.** An achievement is unlocked once. A second time does nothing: no level, no notice.
 - **When it applies.** The Roots are carved at the start of a run. A level earned during a run changes the Roots from the next run; the notice says so. The level a run uses is fixed at its start.
-- **The cap.** 100 achievements exist in total once #179 is done, so the cap is reached exactly when all of them are. Today 22 exist, so a player can reach level 22.
+- **The cap.** 100 achievements exist in total once #179 is done, so the cap is reached exactly when all of them are. Today 36 exist (28 for the bosses, 6 meditations, the first brew and the first meal), so a player can reach level 36, and the reward table has a named step at every level from 1 to 36.
 - **Separate from the page.** The page of the book and the mastery level are two numbers that do not touch: the page moves by walking the Roots and ending a run, the level by achievements.
 - **Deterministic.** The Roots of a run depend only on the seed and the level the run started with.
 
 ## Where the player sees it
 
 - In the achievement notice: "Mastery of the Roots: 5 of 100" ([ACHIEVEMENTS §4](ACHIEVEMENTS.md#4-the-notice)).
-- In the Roots themselves: more on the floor, a pedestal that is no longer bare, a second Boundary at 100.
+- In the Roots themselves: more on the floor, an extra practice from level 10 and a second from level 25, an altar near the top, a second Boundary at 100. The two practices the Roots offer today (the Sanctuary chest and the way-down pedestal) are the same at every level.
 - A screen that lists achievements and the level is not part of #147 (it would come with #180, the completion percentage).
 
 ## Open questions
