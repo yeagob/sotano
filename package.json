@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "sandbox": "node scripts/sandbox.mjs",
-    "bestiary": "node scripts/bestiary-capture.mjs"
+    "bestiary": "node scripts/bestiary-capture.mjs",
+    "book:captures": "node scripts/book-captures.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"
