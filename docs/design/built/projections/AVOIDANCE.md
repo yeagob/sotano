@@ -26,6 +26,10 @@ It can be hit only while it is peeking. Good intentions do half damage and warm 
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 7%, key 4%.
+
 ## Status
 
 Partial. The built part is the shutting and peeking. Spawning inside a block and breaking its block are in [GAPS](../../not-built/projections/GAPS.md).

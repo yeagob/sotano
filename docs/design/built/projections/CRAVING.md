@@ -26,6 +26,10 @@ Leave the wind's radius before it opens. Good intentions do half damage and warm
 
 None.
 
+## Numbers
+
+- **Pickups on release:** bomb 10%, key 5%.
+
 ## Status
 
 Partial. The built part is the circling and the wind. Swallowing, lunging and release are in [GAPS](../../not-built/projections/GAPS.md).

@@ -2,6 +2,8 @@
 
 # Creatures (built)
 
+Pictures and a catalogue entry for each creature are in the [bestiary](../bestiary/README.md). The detail of each creature is in its document below.
+
 Creatures are the living things of the depths: instinct, curiosity, play, rest and care. They are not patterns and never become projections. They are neutral: no projection hunts them, and they hunt nothing. The player can harm them with negative intentions and heal them with positive ones, and they never die. Thirteen are in the game, placed in the rooms of floors 0 to 9 by `src/content/creatures/index.ts`. Each one has its own document; what they share is below.
 
 | Document | Creature | Floors | Answers only positive intentions |
@@ -28,6 +30,7 @@ Creatures are the living things of the depths: instinct, curiosity, play, rest a
 - **Polarity.** A negative intention harms a creature, and a warm one also takes a grown creature a quarter of its birth size back down, never below its birth size (issue #102). At zero it flees into the blocks, and it stays hidden until the room clears. A positive intention heals it. The four positive-only creatures ignore negative intentions entirely: they pass through, with no harm and no flight.
 - **Growth gift.** Every creature that grows rolls once, on any floor, for a 7.5% chance to give one special heart when a warm positive intention first grows it to three times its birth size (issue #102). Full health alone does not trigger a gift, and shrinking and growing again does not roll again.
 - **Seal and clear.** When a room with projections seals, its creatures hide. When the room clears, they return at full health.
+- **Drops.** No creature drops a pickup or a part. The growth gift is their only reward.
 - **Blasts.** Explosions push creatures gently and never hurt them.
 - **Silence.** No creature speaks. Chirpers sing; others make no sound of their own.
 - **Placement.** Ambient creatures are placed in normal and start rooms of their floors, a few per floor. They are not part of any projection roster.

@@ -26,6 +26,10 @@ It stands still, so you can choose the moment. While you are in its pull, you ar
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 5%.
+
 ## Status
 
 Built. Breaking its line of sight and its water behaviour are open questions ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

@@ -5,7 +5,7 @@ Everything about the game, organised in sections. Each section has its own READM
 | Section | What's in it |
 |---|---|
 | [design/](design/README.md) | The game design document, a folder tree in two branches: [built/](design/built/README.md) (what exists) and [not-built/](design/not-built/README.md) (decided or proposed). Pillars, mechanics, story, metaphor, enemies, bosses, levels and practices (items) from the player's side |
-| [bestiary](design/built/bestiary/README.md) | Every creature, entity, presence and voice of the game in one document, with an in-game screenshot of each: where it is, how it behaves, what it gives, how it changes and what it means |
+| [bestiary](design/built/bestiary/README.md) | The illustrated catalogue: a screenshot of every creature, projection, boss, presence and voice, with its kind, where it appears and a link to the document that holds its detail |
 | [architecture/](architecture/README.md) | How the code works today: overview, items and synergies, rooms and floors, entities |
 | [research/](research/README.md) | Research into how Isaac and Noita are built, the target technical architecture, budgets, IP notes and the roadmap |
 | [art/](art/README.md) | Art direction "Vessel Light": the art guide (every visual element, its colours, proportions and rules), the binding decision ledger from the debate, and the presentation |

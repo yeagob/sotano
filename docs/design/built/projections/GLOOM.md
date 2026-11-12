@@ -26,6 +26,10 @@ Keep moving: its drops follow you around the room. Reach it with intentions from
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 6%, bomb 5%.
+
 ## Status
 
 Built. Its card's release (the rain thins and the floor dries) is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

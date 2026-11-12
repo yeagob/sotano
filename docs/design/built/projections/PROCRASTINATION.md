@@ -26,6 +26,12 @@ Each hit makes more of it, so a fight with Procrastination is a fight with its s
 
 None. The card's fire behaviour is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).
 
+## Numbers
+
+- **Pickups on release:** none.
+- **Health:** 36.
+- **Forms:** it splits into [Procrastination B](PROCRASTINATION-B.md), and B splits into [Procrastination C](PROCRASTINATION-C.md). Its later form is [Backlog](BACKLOG.md) (floors 5 to 9).
+
 ## Status
 
 Built.

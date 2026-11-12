@@ -26,6 +26,10 @@ Stay beyond three blocks and it will not reach you. Good intentions do half dama
 
 - **Water:** it keeps to water cells (it dwells there), and walks at half speed in them.
 
+## Numbers
+
+- **Pickups on release:** heart 8%.
+
 ## Status
 
 Partial. The built part is the stay, the field and the water keeping. Its eruption as a burst, the mud and its release are in [GAPS](../../not-built/projections/GAPS.md).

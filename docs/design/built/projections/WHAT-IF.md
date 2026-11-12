@@ -26,6 +26,10 @@ Cover does not stop it, only its bolts. Good intentions do half damage and warm 
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 8%, key 6%.
+
 ## Status
 
 Partial. The built part is the drift through blocks and the bolt. Its rising from released shards and its replays are in [GAPS](../../not-built/projections/GAPS.md).
