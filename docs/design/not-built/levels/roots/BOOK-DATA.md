@@ -75,13 +75,26 @@ An image is an id `namespace/name`, never a path. Three namespaces:
 
 The validator checks that every id resolves: a bestiary id is an entity with a capture, a lesson id is in the lesson manifest (`src/content/book/images.ts`, a list the build script and the validator share), an item id is in the item list, a potion id in `POTION_IDS`, a heart kind in the heart kinds.
 
+### How the pictures are taken
+
+| Set | Command | Output | Size and budget |
+|---|---|---|---|
+| Portraits (19) | `npm run bestiary -- --portrait [ids]` (`scripts/bestiary-capture.mjs`) | `public/book/bestiary/<id>.webp` | 512 × 512 WebP at quality 0.9; each under 60 KB (largest about 41 KB) |
+| Lessons (22 taken) | `npm run book:captures [names]` (`scripts/book-captures.mjs`) | `public/book/lesson/<name>.webp` | 960 × 540 WebP; the crops `counters` and `polarity` are 3× their on-screen size; the quality steps down (0.9, 0.8, 0.7, 0.6, 0.5) only until a file is under 60 KB |
+
+- **Portrait mode.** No HUD and no held hand. The subject stands on a one-block stone plinth in an 11 × 9 room (a boss stands on the floor in a 21 × 15 room) and turns to face the camera. The camera uses a 40° lens placed so the subject's drawn extent fills 72 per cent of the frame, levelled on its centre. The shell is `palestone`. `overwhelm` is framed from its other side (`PORTRAIT_SIDE`).
+- **Lessons.** Each lesson is one staged room, one lab script when something must be in flight or burn (thrown cubes, bombs, damage, lava and water), one prep step when the game needs a state set by hand (a missile, a warmth, a grown creature, the toll window), and one eye point and target. The HUD and the hand are hidden unless the lesson is about them (`counters`, `polarity`, the toll windows, the Sanctuary). Every capture runs in English. The scenes are inline in the script rather than in `src/sandbox/scenarios/`: a scenario file joins `npm run sandbox -- --check`, which needs a saved report for each file, and these pictures do not need one.
+- **Fixed inputs.** Every capture uses the sandbox's fixed seed and fixed step, so a re-run gives the same pictures.
+- **Pending (11), not faked.** `ring` (a minimap of the whole Roots needs a real run), `drink` (the sandbox hand holds blocks and parts, not potions), `alembic`, `kitchen` and `recipe` (the floor generator places the labs), `paths` and `state` (the sandbox does not open the inventory screen), `white-seed` (no coloured explosion hook), `boss-room` (the lit pedestal needs a defeated boss), `parts` (no part pickup hook) and `chests` (the keyhole chest is placed by the floor generator). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
+- **Content gaps seen in the captures.** `resistance`, `inertia`, `insatiable` and `overwhelm` draw as dark husk bodies with eyes; `overwhelm` is built from Doubt's husk palette (`src/content/bosses/overwhelm.ts`). Their portraits are faithful captures of what the game draws today, and the boss models need their own art. The `convert` lesson shows a projection at warmth 0.95 as a red-brown body rather than gold; the warm glow needs checking against the ledger.
+
 ### Every image the nine pages use
 
 Bestiary (19; each entity has a documentation screenshot in PR #181, and each needs a **new portrait capture** in the portrait mode): `doubt`, `critic`, `panic`, `resistance`, `inertia`, `insatiable`, `overwhelm`, `wonder`, `rootling`, `mossling`, `chirper`, `delver`, `bubbler`, `ferryback`, `leafling`, `star-mite`, `inkmite`, `cinderwalker`, `listener`.
 
 Icons (13, existing art, nothing to capture): `icon/potion/plain-tonic`, `restoring-draught`, `spring-tonic`, `clear-infusion`, `questioning-tincture`, `meal-hearty`; `icon/item/grounding`, `gratitude`, `boxbreathing`, `selfcompassion`; `icon/heart/stone`, `star`, `blood`. The flask icons are still placeholders (one bottle, a liquid colour per potion) until the potion art pass; the plates inherit them.
 
-Lesson screenshots (33, **all new captures**):
+Lesson screenshots (33, **all new captures**; 22 are taken, the 11 marked pending below are not, see [how the pictures are taken](#how-the-pictures-are-taken)):
 
 | Id | What the capture shows | Where to stage it |
 |---|---|---|
