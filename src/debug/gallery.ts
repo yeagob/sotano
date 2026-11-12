@@ -4,6 +4,8 @@
 //
 //   ?gallery                 every section
 //   ?gallery=materials|items|parts|enemies|pickups|missiles|bombs|chests|hud|palette|spirit
+//   ?gallery=book            the Roots' wall panels, every page, both languages, every device (gallery/book.ts;
+//                            only by name: it is not part of `all`)
 //   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
 //                            totality, entity, hindrances-core|ground|hold|flow
 //   &filter=grey|deutan|protan|tritan|silhouette
@@ -24,6 +26,7 @@ import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook }
 import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
 import { bombsGallery } from './gallery/bombs';
+import { bookGallery } from './gallery/book';
 import { skyBlocksGallery } from './gallery/sky-blocks';
 import { skyElephantGallery } from './gallery/sky-elephant';
 import { skyEntityGallery } from './gallery/sky-entity';
@@ -382,6 +385,7 @@ export function runGallery(params: URLSearchParams) {
   for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
   if (show('bombs')) bombsGallery(kit);
   if (show('spirit')) spiritGallery(kit);
+  if (section === 'book') void bookGallery(kit, params);
 }
 
 function filterCss(f: string): string {

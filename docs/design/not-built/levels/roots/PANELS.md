@@ -1,6 +1,6 @@
 # Panels: four layouts on one limestone slab
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decision 5: panels stay on the walls, where they are and about the same size, never an overlay; three layouts on the same limestone slab; a fourth, `quote`, added by the owner on 2026-11-12: "a panel type for quotes from other books"). The geometry below is a proposal for the art agent and the owner to confirm through the art gate (`sotano-art`).
+Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decision 5: panels stay on the walls, where they are and about the same size, never an overlay; three layouts on the same limestone slab; a fourth, `quote`, added by the owner on 2026-11-12: "a panel type for quotes from other books"). The geometry below is a proposal for the art agent and the owner to confirm through the art gate (`sotano-art`). **Renderer built** (package C1, `src/render/tablets.ts`, `src/render/panel-layout.ts`, `src/render/page-stone.ts`; review in `?gallery=book`, captures in [ART-GUIDE §15](../../../../art/ART-GUIDE.md#15-as-built-art-pass-2026-10-26)); the game does not read the book yet (package D1). Where the build changed this geometry, the section says so and why.
 
 Every panel is a stone tablet on a wall of a room of the Roots, as today (`src/render/tablets.ts`). What changes: the canvas doubles to **896 × 512**, the two panels of a room can differ, and a panel has one of four layouts. The tablet's size in the world stays **3.7 × 2.1 blocks**.
 
@@ -32,9 +32,9 @@ Contrast on the face (`limestone.base`, #A39C93): `ink.line` about 6.8 : 1, `ink
 | Rule | 352, 116, 504, 4 | `ink.bevel` |
 | Text | x 352, top 136, width 504, line height 44, at most 5 lines | sans 34 px, `ink.line`; sentence case after placeholders are filled (as today) |
 | Key cap (if `key`) | x 352, y 384, height 80, width = label width + 48, clamped to 80…280; corner radius 12 | fill `limestone.hi`, 4 px `ink.line` border, 6 px `ink.bevel` inner shadow at the bottom; label bold sans 36 px (down to 24 px to fit), centred |
-| Verb (if `key`) | x = right edge of the cap + 20, centred on the cap, max width to x 856 | bold sans 30 px, `ink.bevel` |
+| Verb (if `key`) | x = right edge of the cap + 20, centred on the cap, max width to x 856 | bold sans 30 px, shrinks down to 22 px, `ink.bevel` |
 
-The key cap shows the control of the device in use: `keycap.<action>.key`, `.pad` or `.touch` (short labels, new message keys, see [BOOK-DATA](BOOK-DATA.md#key-caps)). The verb beside it is `keycap.<action>.verb` ("switch", "jump"…). On touch, the polarity cap draws the existing half-turn glyph (`halfTurn` in `tablets.ts`) instead of a label. Without `key`, the area under the text stays empty: the text keeps its five lines.
+The key cap shows the control of the device in use: `keycap.<action>.key`, `.pad` or `.touch` (short labels, new message keys, see [BOOK-DATA](BOOK-DATA.md#key-caps)). The verb beside it is `keycap.<action>.verb` ("switch", "jump"…). On touch, the polarity cap draws the existing half-turn glyph (`halfTurn` in `tablets.ts`) instead of a label, in `ink.line` on a cap 150 px wide (gold on the pale cap did not hold). Without `key`, the area under the text stays empty: the text keeps its five lines.
 
 ## 3. `plate`: a bestiary portrait, name, kind, text and a note
 
@@ -58,7 +58,7 @@ For creatures, projections, bosses, presences, potions, foods, hearts and practi
 | Text | x 96, top 56, width 744, line height 44, at most 8 lines | serif 32 px, `ink.line` |
 | Page number | centred on x 448, top 436 | bold serif 30 px, `ink.bevel`, between two small gold diamonds at (404, 452) and (492, 452) |
 
-The page number is the page's position in the book; it is drawn by the renderer, never written in the data.
+When the text begins with a letter, that letter is a drop cap two lines high (bold serif 92 px, `ink.line`) and the first two lines start after it (its width + 12): the book opens like a book. The page number is the page's position in the book; it is drawn by the renderer, never written in the data.
 
 ## 4b. `quote`: someone else's voice
 
@@ -66,12 +66,14 @@ A quotation from another book: the quoted words, who wrote them and where. It mu
 
 | Element | Geometry | Style |
 |---|---|---|
-| Inset page | 40, 40, 816, 432, with a 2 px `ink.bevel` border | fill `limestone.hi` |
-| Opening mark | the glyph “ at x 52, top 36 | bold serif 96 px, `light.gold` (a glyph, never words) |
-| Text | x 112, top 64, width 712, line height 38, at most 9 lines (to 406) | italic serif 28 px, `ink.line` |
-| Author | right-aligned at x 824, top 414, one line, drawn as "— Author" | bold sans 26 px, `ink.line`, shrinks down to 20 px |
-| Source | right-aligned at x 824, top 446, max width 440, one line: "Work · Publisher, Year" (publisher and year only if given) | italic sans 22 px, `ink.bevel`, shrinks down to 18 px |
-| Translation note | left-aligned at x 64, top 448, max width 300, one line; only when the book's language is not the quotation's original language | sans 20 px, `ink.bevel`: `book.quote.translated` ("Our translation" / "Traducción nuestra") |
+| Inset page | 40, 34, 816, 424, with a 2 px `ink.bevel` border and a soft `limestone.dark` shadow along its top and left | fill `limestone.hi` |
+| Opening mark | the glyph “ at x 52, top 30 | bold serif 96 px, `light.gold` with a 3 px `ink.bevel` keyline (a glyph, never words) |
+| Text | x 112, top 58, width 712, line height 38, at most 9 lines (to 390) | italic serif 28 px, `ink.line` |
+| Author | right-aligned at x 824, top 398, one line, drawn as "— Author" | bold sans 26 px, `ink.line`, shrinks down to 20 px |
+| Source | right-aligned at x 824, top 428, max width 440, one line: "Work · Publisher, Year" (publisher and year only if given) | italic sans 22 px, `ink.bevel`, shrinks down to 18 px |
+| Translation note | left-aligned at x 64, top 430, max width 300, one line; only when the book's language is not the quotation's original language | sans 20 px, `ink.bevel`: `book.quote.translated` ("Our translation" / "Traducción nuestra") |
+
+Changed in the build (C1): the first proposal's page ran to y 472, and the mason's mark (§10) then crossed its lower border; the page now ends at 458 and everything on it rose by 6 to 18 px, so the mark sits on the bare face under it. The opening mark gained an ink keyline because gold alone faded on the pale page.
 
 At 28 px a line holds about 54 characters, and nine lines hold about 440 after word-wrap losses: one quotation of up to 440 characters fits one panel at a readable size. A longer quotation does not run over two panels (the two panels of a room face opposite walls and cannot be read as one text); it is cut by the owner or split across two book pages.
 
@@ -105,7 +107,7 @@ The six tutorial pages and the three book pages are inside every budget in both 
 
 ## 6. Where each panel hangs
 
-As today: the **north** panel on the north wall, west of the door (centre `x0 + 2.0`, `y0 + 2.0`, `z0 + 0.02`, facing south); the **south** panel on the south wall, east of the door (centre `x0 + 11.0`, `y0 + 2.0`, `z0 + 6.98`, facing north). Size 3.7 × 2.1 blocks.
+The mounts are data: one table per **layout variant** of the Roots' rooms (`MOUNT_TABLES` in `src/render/panel-layout.ts`, `panelMount(room, side, x0, y0, z0, layout)`), a default for each side plus the rooms whose own exercise asks for another place. Today's rooms are the only variant (`classic`); a second set of room templates (the simpler rooms planned from page 2 on) adds its own table, and `Tablets.mountRoom` takes the variant. For `classic`, as today: the **north** panel on the north wall, west of the door (centre `x0 + 2.0`, `y0 + 2.0`, `z0 + 0.02`, facing south); the **south** panel on the south wall, east of the door (centre `x0 + 11.0`, `y0 + 2.0`, `z0 + 6.98`, facing north). Size 3.7 × 2.1 blocks.
 
 Three rooms hide part of their panels behind their own exercise today. The geometry of the rooms does not change; the panels move a little (proposal, [open question 5](OPEN-QUESTIONS.md)):
 
@@ -137,7 +139,7 @@ On pages 2 to 6, two plate-wall slots stay as page 1 has them because they belon
 
 ## 8. Images
 
-Images are ids, never paths ([BOOK-DATA](BOOK-DATA.md#images)). The renderer draws a panel only when its image is loaded: the panels of the shown page are loaded during the dark of the run's start fade (the game already builds the run in the dark and reveals it only when the world is meshed), and the panels of the pages next to it are loaded in the background so a browse never waits. An image that fails to load is an error in development (the book is validated at build time, so it cannot happen with valid data).
+Images are ids, never paths ([BOOK-DATA](BOOK-DATA.md#images)). The renderer draws a panel only when its image is loaded: the panels of the shown page are loaded during the dark of the run's start fade (the game already builds the run in the dark and reveals it only when the world is meshed), and the panels of the pages next to it are loaded in the background so a browse never waits. An image that fails to load never breaks a panel: the panel draws a neutral hatched placeholder in its frame, the console warns once, and `?gallery=book` outlines the panel and lists the image (the captures arrive in batches, package B5). The renderer's cache (`panelImages`) keeps every loaded image for the session; `panelImages.preloadPage(book, page)` loads the 22 slots of a page.
 
 ## 9. The art gate
 
@@ -145,4 +147,4 @@ The look of the four layouts, the key cap, the verb and the page stone is new ar
 
 ## 10. The panel id: the mason's mark
 
-Every panel carries its id (`1-hall-n`, `3-pit-s`, `7-gift-n`; [BOOK-DATA §2](BOOK-DATA.md#2-fields)). The renderer draws it **very small in a lower corner of the slab**, like a mason's mark cut into a block: a few pixels inside the face, in `ink.bevel`, never over the text, the image, the key cap or the page number. It is for the builder and the owner, who read a panel by its place, and it is not text for the reader: it takes no budget and needs no translation. Both languages show the same mark, because the ids are the same in both files.
+Every panel carries its id (`1-hall-n`, `3-pit-s`, `7-gift-n`; [BOOK-DATA §2](BOOK-DATA.md#2-fields)). The renderer draws it **very small in a lower corner of the slab**, like a mason's mark cut into a block: a few pixels inside the face, in `ink.bevel`, never over the text, the image, the key cap or the page number. As built: bold sans 13 px, right-aligned at x 864 on the baseline 478, `ink.bevel` at 85 % with the pale lip of carved text. It is for the builder and the owner, who read a panel by its place, and it is not text for the reader: it takes no budget and needs no translation. Both languages show the same mark, because the ids are the same in both files.
