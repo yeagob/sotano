@@ -1,6 +1,6 @@
 # Pages: advancing, browsing and turning out of sight
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decisions 1 to 4), with the lap and visibility rules below designed to make those decisions testable.
+Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decisions 1 to 4), with the lap and visibility rules below designed to make those decisions testable. Built in package D1: the rules in `src/game/roots-book.ts`, the run's walls and the record in `src/game/roots-keeper.ts`, the wiring in `src/game/game.ts`.
 
 The walls of the Roots show one page at a time. A page is a set of panels for some of the 22 slots; any slot a page leaves out shows page 1's panel, so the lessons never leave the walls. In the easy layout, five slots whose page-1 lesson describes an exercise that is gone show a remembered panel instead of page 1's ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)). Pages 1 to 6 are the tutorial. Page 7 is the first page of the hidden book.
 

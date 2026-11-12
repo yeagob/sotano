@@ -1,11 +1,11 @@
 // The pure parts of the Roots' wall panels (docs/design/not-built/levels/roots/PANELS.md): the canvas
 // geometry, word wrapping and shrink-to-fit against a measure the caller gives, which key cap a device
-// reads, when a quotation carries the translation note, and where each panel hangs in its room.
+// reads, when a quotation carries the translation note, and where each panel hangs in its room (per layout).
 // No DOM and no Three.js here, so every rule is tested in tests/tablets.test.ts; the drawing lives in
 // tablets.ts and page-stone.ts.
 
 import type { Device } from '../input/bindings';
-import type { KeyAction, Lang, Panel, RoomKey, Side } from '../content/book';
+import type { BookLayout, KeyAction, Lang, Panel, RoomKey, Side } from '../content/book';
 
 /** The panel canvas (PANELS §1). */
 export const PANEL_W = 896;
@@ -171,16 +171,20 @@ export interface MountTable {
   readonly rooms: Partial<Record<RoomKey, Partial<Record<Side, MountSpec>>>>;
 }
 
-/** The room-template sets the Roots can be built from. Today's rooms are the only one for now. */
-export type RootsLayout = 'classic';
+/**
+ * The layout variant the panels hang in: the teaching layout (page 1, today's rooms) or the easy layout (page 2 on,
+ * EASY-LAYOUT). The same names as the book's layouts: a variant is picked by the layout the Roots are carved in.
+ */
+export type MountVariant = BookLayout;
 
 /**
- * The mount tables, one per layout variant (PANELS §6). A new set of room templates adds its table here as data.
- * `classic` (today's rooms): north west of the door, south east of it; `roots-step` lifts both over its two-high
- * walls; `roots-seal` narrows both into the strips beside its obsidian walls.
+ * The mount tables, one per layout variant (PANELS §6, EASY-LAYOUT §5). `teaching` (today's rooms): north west of
+ * the door, south east of it; `roots-step` lifts both over its two-high walls; `roots-seal` narrows both into the
+ * strips beside its obsidian walls. `easy`: the standard mount everywhere, since no easy room has a wall in front of
+ * a panel.
  */
-export const MOUNT_TABLES: Readonly<Record<RootsLayout, MountTable>> = {
-  classic: {
+export const MOUNT_TABLES: Readonly<Record<MountVariant, MountTable>> = {
+  teaching: {
     north: { dx: 2.0, dy: 2.0, w: SLAB_W, h: SLAB_H },
     south: { dx: 11.0, dy: 2.0, w: SLAB_W, h: SLAB_H },
     rooms: {
@@ -194,13 +198,18 @@ export const MOUNT_TABLES: Readonly<Record<RootsLayout, MountTable>> = {
       },
     },
   },
+  easy: {
+    north: { dx: 2.0, dy: 2.0, w: SLAB_W, h: SLAB_H },
+    south: { dx: 11.0, dy: 2.0, w: SLAB_W, h: SLAB_H },
+    rooms: {},
+  },
 };
 
 /**
  * Where the panel of a room's side hangs, from the room's interior corner (x0, y0, z0) of its 13 × 7 cell, in a
- * layout variant (today's rooms by default). North faces south from z0; south faces north from z0 + 7.
+ * layout variant (the teaching layout by default). North faces south from z0; south faces north from z0 + 7.
  */
-export function panelMount(room: RoomKey, side: Side, x0: number, y0: number, z0: number, layout: RootsLayout = 'classic'): Mount {
+export function panelMount(room: RoomKey, side: Side, x0: number, y0: number, z0: number, layout: MountVariant = 'teaching'): Mount {
   const table = MOUNT_TABLES[layout];
   const spec = table.rooms[room]?.[side] ?? table[side];
   const north = side === 'north';

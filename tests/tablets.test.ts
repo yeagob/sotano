@@ -176,10 +176,18 @@ describe('mounts (PANELS §6)', () => {
     }
   });
 
-  it('reads its numbers from a table per layout variant, so another set of rooms is data', () => {
-    expect(Object.keys(MOUNT_TABLES)).toEqual(['classic']);
-    expect(panelMount('roots-pit', 'north', 0, 0, 0, 'classic')).toEqual(panelMount('roots-pit', 'north', 0, 0, 0));
-    expect(MOUNT_TABLES.classic.rooms['roots-step']?.north?.dy).toBe(3.1);
+  it('reads its numbers from a table per layout variant: the teaching rooms keep their exceptions', () => {
+    expect(Object.keys(MOUNT_TABLES).sort()).toEqual(['easy', 'teaching']);
+    expect(panelMount('roots-pit', 'north', 0, 0, 0, 'teaching')).toEqual(panelMount('roots-pit', 'north', 0, 0, 0));
+    expect(MOUNT_TABLES.teaching.rooms['roots-step']?.north?.dy).toBe(3.1);
+  });
+
+  it('hangs every easy panel at the standard mount: no room of the easy layout has an exception (EASY-LAYOUT §5)', () => {
+    expect(MOUNT_TABLES.easy.rooms).toEqual({});
+    for (const room of ROOM_KEYS) for (const side of SIDES) {
+      // the standard mount is the one the hall (no exception) takes
+      expect(panelMount(room, side, 3, 4, 5, 'easy'), `${room} ${side}`).toEqual(panelMount('roots-hall', side, 3, 4, 5, 'easy'));
+    }
   });
 });
 

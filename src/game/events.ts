@@ -136,6 +136,8 @@ export interface GameEvents {
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
   floorEnter: { depth: number };
+  /** A run's end advanced the Roots' page (PAGES §1): the new current page, once per run. React only. */
+  pageReached: { page: number };
 
   brew: { potion: string; iced: boolean; contents: number; x: number; y: number; z: number };
   drink: { potion: string; rooms: number };

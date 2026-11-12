@@ -1,8 +1,8 @@
 # The save record, version 2
 
-Up: [progression](README.md) · Status: decided (owner, issue #147: the page, the achievements and the mastery level are kept between runs; generation never reads the save). The reset is a proposal. Not built.
+Up: [progression](README.md) · Status: decided (owner, issue #147: the page, the achievements and the mastery level are kept between runs; generation never reads the save). Built for the Roots' page in package D1 (`src/game/meta.ts`; `main.ts` reads it once and gives it to `Game` with the browser store; `roots-keeper.ts` writes it when a run advances). The achievements and counts are read and written from D2 through the same record and store. The reset is a proposal.
 
-Today the record is version 1 (`src/game/meta.ts`): `{ v: 1, staircase: boolean, metAt?: number }`, under the browser key `the-roots.meta`. Its header comment says `main.ts` loads it once and passes it to `newRun`; that is not true yet: nothing in `src/` outside the tests loads or saves it, and no host implements the sky encounter's `saveMeta`. Version 2 is where it gets wired.
+Today the record is version 1 (`src/game/meta.ts`): `{ v: 1, staircase: boolean, metAt?: number }`, under the browser key `the-roots.meta`. Before package D1 nothing in `src/` loaded or saved it. Version 2 is wired in D1. The sky encounter still calls a host `saveMeta` (`src/endgame/encounter.ts`, declared in `src/sky/types.ts`) that no host implements yet, so the staircase unlock is not written by the game.
 
 ## 1. Fields
 

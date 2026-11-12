@@ -1,4 +1,5 @@
 import { Game } from './game/game';
+import { browserStore, loadMeta } from './game/meta';
 import { ITEMS } from './content/items';
 import { MAT } from './content/materials';
 import { GEN_VERSION } from './core/seed';
@@ -20,8 +21,10 @@ async function boot() {
     document.getElementById('loading')?.remove();
     return;
   }
+  // the save record is read once here; the game writes it through the browser's store (SAVE.md)
+  const save = { meta: loadMeta(browserStore), store: browserStore };
   // ?seed=ABCD-EFGH replays a run; without it every run is new
-  const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined);
+  const game = new Game(document.getElementById('game') as HTMLCanvasElement, params.get('seed') ?? undefined, save);
   initLanding(game);
   // ?sky: the run starts on the sky's deck (docs/architecture/SKY.md §15; R2 adds the floors)
   if (params.has('sky')) game.debugSky();
@@ -76,6 +79,8 @@ async function boot() {
     trace: (on = true) => { game.bus.trace = on; },
     /** Opens the Sanctuary without a Boundary, to review it: S.sanctuary(60) runs its clock 60 times faster. */
     sanctuary: (rate = 1) => game.openSanctuary(o => console.log(`sanctuary: ${o}`), rate),
+    /** The Roots' page the next run starts on (debug, in memory): S.roots(3), then S.restart(). */
+    roots: (page: number) => game.setRootsPage(page),
     /** Switch language without saving the choice ('en', 'es'). */
     lang: (code: string) => setLocale(code),
     /** The sandbox's console (only with ?sandbox): S.sb.help(). */

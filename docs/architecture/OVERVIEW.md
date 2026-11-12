@@ -35,6 +35,7 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
 - `carve(k)` — carves floor *k* one floor ahead of the player (per-floor RNG; pedestal items drawn now). `activate(k)` — adds its doors, pedestals and keys ("the next floor loads"), on entering the boss room above or digging into its band.
 - `trackPlace()` — derives `depth` from the player's height; going deeper than `maxDepth` activates that floor, carves the next one, clears deferred chain reactions and emits `floorEnter`. Entering a boss room schedules its hole to open.
 - See [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts).
+- **The save and the Roots' walls** (#147 D1). `main.ts` reads the save record once (`loadMeta(browserStore)`) and passes it with the browser store to `new Game(canvas, seed, { meta, store })`; without it the game plays on a record in memory that is never written. `begin()` ends the previous run first (`endRoots`: the page advances at most once, is saved at once and emits `pageReached`), then makes the run's `RootsKeeper` (`game/roots-keeper.ts`, none in the sandbox). The keeper reads the page once, sets the layout (`easyRoots` from page 2 on, passed to `carve(0)`), and drives the walls through `WallSink`: `hangRoots` mounts the eleven rooms and the page stone and shows the shown page, `updateRoots` runs every frame and carves a room's panels only where `RootsBook` turns them (out of sight and outside the camera frustum). Rooms are named by `rootsRoomKey(gx, gz)`, never by `RoomInfo.template`.
 
 ## Frame order (`Game.frame` → `simulate`)
 

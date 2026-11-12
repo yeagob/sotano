@@ -15,7 +15,7 @@
 import * as THREE from 'three';
 import {
   ROOM_KEYS, SIDES, bookMessage, loadBook, panelAt, panelById, quoteSource,
-  type Book, type ImageId, type Lang, type Panel, type RoomKey, type Side,
+  type Book, type BookLayout, type ImageId, type Lang, type Panel, type RoomKey, type Side,
 } from '../content/book';
 import { resolveImage } from '../content/book/images';
 import { HEART_HUD, type HeartKind } from '../content/heart-art';
@@ -23,21 +23,15 @@ import { ITEM_BY_ID } from '../content/items';
 import { palCss, type PalToken } from '../content/palette';
 import { flaskDef } from '../content/potions';
 import type { PotionId } from '../content/potions';
-import { locale, t, type MessageKey } from '../i18n';
+import { locale } from '../i18n';
 import type { Device } from '../input/bindings';
 import { activeDevice } from '../input/input';
-import { controlParams, sentenceCase } from '../input/labels';
 import { iconCanvas } from './icons';
 import {
   PANEL_H, PANEL_W, authorLine, controlLabelKey, fillControls, fitBlock, fitLine, hashString, keycapGlyph, keycapLabelKey,
-  keycapVerbKey, keycapWidth, panelImageIds, panelMount, seededRandom, showsTranslationNote, wrapText,
-  type MeasureAt, type Mount, type RootsLayout, type SizeRange,
+  keycapVerbKey, keycapWidth, panelImageIds, panelMount, seededRandom, showsTranslationNote,
+  type MeasureAt, type Mount, type MountVariant, type SizeRange,
 } from './panel-layout';
-
-/** Every lesson the roots can teach today (rooms carry theirs: `RoomTemplate.lesson`); read by the legacy entry point. */
-export const LESSONS = ['move', 'intent', 'polarity', 'step', 'kick', 'pit', 'bridge', 'bomb', 'water', 'practice', 'down', 'carry'] as const;
-export type LessonKey = typeof LESSONS[number];
-export const isLesson = (k: string): k is LessonKey => (LESSONS as readonly string[]).includes(k);
 
 const SANS = 'system-ui, "Segoe UI", sans-serif';
 const SERIF = 'Georgia, "Times New Roman", serif';
@@ -124,16 +118,16 @@ export class PanelImages {
     return Promise.all(waits).then(() => undefined);
   }
 
-  /** Every image the 22 slots of a page show (page 1's panel where the page leaves a slot out). */
-  static pageIds(book: Book, page: number): ImageId[] {
+  /** Every image the 22 slots of a page show in a layout (page 1's panel, or a remembered one, where the page leaves a slot out). */
+  static pageIds(book: Book, page: number, layout: BookLayout = 'teaching'): ImageId[] {
     const ids = new Set<ImageId>();
-    for (const room of ROOM_KEYS) for (const side of SIDES) for (const id of panelImageIds(panelAt(book, page, room, side))) ids.add(id);
+    for (const room of ROOM_KEYS) for (const side of SIDES) for (const id of panelImageIds(panelAt(book, page, room, side, layout))) ids.add(id);
     return [...ids];
   }
 
-  /** Preloads every image of a page; resolves when they are all settled. */
-  preloadPage(book: Book, page: number): Promise<void> {
-    return this.preload(PanelImages.pageIds(book, page));
+  /** Preloads every image of a page in a layout; resolves when they are all settled. */
+  preloadPage(book: Book, page: number, layout: BookLayout = 'teaching'): Promise<void> {
+    return this.preload(PanelImages.pageIds(book, page, layout));
   }
 }
 
@@ -564,48 +558,17 @@ export function halfTurn(g: CanvasRenderingContext2D, cx: number, cy: number, sc
   g.restore();
 }
 
-// ── today's lesson tablets (the legacy entry point, kept until the game reads the book: package D1) ──
-
-const LEGACY_W = 448, LEGACY_H = 256;
-
-/** Today's tablet, unchanged: the lesson's title and text from the `lesson.*` messages on a 448 × 256 slab. */
-function carveLegacy(g: CanvasRenderingContext2D, lesson: LessonKey) {
-  const PX = LEGACY_W, PY = LEGACY_H;
-  g.fillStyle = css('limestone.dark'); g.fillRect(0, 0, PX, PY);
-  g.fillStyle = css('limestone.base'); g.fillRect(8, 8, PX - 16, PY - 16);
-  g.fillStyle = css('limestone.hi'); g.fillRect(8, 8, PX - 16, 4); g.fillRect(8, 8, 4, PY - 16);
-  g.fillStyle = css('ink.bevel'); g.fillRect(8, PY - 12, PX - 16, 4); g.fillRect(PX - 12, 8, 4, PY - 16);
-  g.fillStyle = css('light.gold');
-  g.beginPath(); g.moveTo(40, 26); g.lineTo(50, 36); g.lineTo(40, 46); g.lineTo(30, 36); g.closePath(); g.fill();
-  g.fillStyle = css('ink.line');
-  g.textBaseline = 'top';
-  g.font = `bold 32px ${SANS}`;
-  g.fillText(t(`lesson.${lesson}.title` as MessageKey), 64, 22);
-  // on a phone the polarity is a half turn: draw it, so the words are not the only way to learn it
-  const onPhone = lesson === 'polarity' && activeDevice() === 'touch';
-  if (onPhone) halfTurn(g, PX - 58, 46);
-  g.fillStyle = css('ink.bevel');
-  g.fillRect(36, 72, PX - 72, 2);
-  g.fillStyle = css('ink.line');
-  g.font = `24px ${SANS}`;
-  let y = 92;
-  const key = onPhone ? 'lesson.polarity.touch.text' : `lesson.${lesson}.text`;
-  const text = sentenceCase(t(key as MessageKey, controlParams(activeDevice())));
-  for (const line of wrapText(text, PX - 72, s => g.measureText(s).width)) { g.fillText(line, 36, y); y += 32; }
-}
-
 // ── the slots on the walls ──
 
-type Shown =
-  | { readonly kind: 'panel'; readonly panel: Panel; readonly page: number }
-  | { readonly kind: 'legacy'; readonly lesson: LessonKey };
+/** What a slot shows: a book panel and the page it belongs to. */
+interface Shown { readonly panel: Panel; readonly page: number }
 
 interface Slot {
   readonly mesh: THREE.Mesh;
   readonly canvas: HTMLCanvasElement;
   readonly texture: THREE.CanvasTexture;
-  readonly room?: RoomKey;
-  readonly side?: Side;
+  readonly room: RoomKey;
+  readonly side: Side;
   shown?: Shown;
   /** Bumped by every show: a load that finishes after a newer show is dropped. */
   token: number;
@@ -622,19 +585,16 @@ function scratchCanvas(w: number, h: number): HTMLCanvasElement {
 /**
  * The panels on the walls of the Roots.
  *
- * - `mountRoom(room, x0, y0, z0, layout?)` hangs a room's two slots at their mounts (PANELS §6); they stay invisible until
- *   their first panel is carved.
+ * - `mountRoom(room, x0, y0, z0, variant)` hangs a room's two slots at their mounts of a layout variant (PANELS §6,
+ *   EASY-LAYOUT §5); they stay invisible until their first panel is carved. Calling it again moves them.
  * - `show(room, side, panel, page)` carves a panel offscreen and swaps it in. If its image is already loaded
  *   (`panelImages.preloadPage`) the swap happens inside the call; otherwise the old panel stays until the image
  *   settles. The promise gives the carving's report.
  * - `redraw()` carves every slot again in the player's language and device (the same panel id, from the other
  *   language's book).
- * - `add(lesson, ...)` is today's entry point (lesson tablets from the `lesson.*` messages), kept until the game
- *   reads the book.
  */
 export class Tablets {
   private slots = new Map<string, Slot>();
-  private legacy: Slot[] = [];
   private group = new THREE.Group();
   private disposed = false;
 
@@ -644,19 +604,18 @@ export class Tablets {
    * Hangs the two slots of a Roots room whose interior corner is (x0, y0, z0), at the mounts of its layout
    * variant (MOUNT_TABLES). Calling it again moves them.
    */
-  mountRoom(room: RoomKey, x0: number, y0: number, z0: number, layout: RootsLayout = 'classic') {
+  mountRoom(room: RoomKey, x0: number, y0: number, z0: number, variant: MountVariant = 'teaching') {
     for (const side of SIDES) {
       const key = `${room}:${side}`;
       const old = this.slots.get(key);
       if (old) this.free(old);
-      this.slots.set(key, this.makeSlot(panelMount(room, side, x0, y0, z0, layout), PANEL_W, PANEL_H, room, side));
+      this.slots.set(key, this.makeSlot(panelMount(room, side, x0, y0, z0, variant), PANEL_W, PANEL_H, room, side));
     }
   }
 
   /** What a slot shows now: the panel and its page, or undefined while it is still blank. */
-  shownAt(room: RoomKey, side: Side): { readonly panel: Panel; readonly page: number } | undefined {
-    const s = this.slots.get(`${room}:${side}`)?.shown;
-    return s?.kind === 'panel' ? s : undefined;
+  shownAt(room: RoomKey, side: Side): Shown | undefined {
+    return this.slots.get(`${room}:${side}`)?.shown;
   }
 
   /**
@@ -668,7 +627,7 @@ export class Tablets {
     if (!slot) throw new Error(`Tablets.show: ${room} is not mounted`);
     const token = ++slot.token;
     const ids = panelImageIds(panel);
-    const carve = () => this.carveInto(slot, { kind: 'panel', panel, page }, voice);
+    const carve = () => this.carveInto(slot, { panel, page }, voice);
     if (this.images.settled(ids)) return Promise.resolve(carve());
     return this.images.preload(ids).then(() => (token === slot.token && !this.disposed ? carve() : { id: panel.id, overflow: [], missing: [] }));
   }
@@ -679,34 +638,20 @@ export class Tablets {
     let book: Book | undefined;
     for (const slot of this.slots.values()) {
       const s = slot.shown;
-      if (s?.kind !== 'panel' || !slot.room || !slot.side) continue;
+      if (!s) continue;
       book ??= loadBook(voice.lang);
       void this.show(slot.room, slot.side, panelById(book, s.panel.id) ?? s.panel, s.page, voice);
-    }
-    for (const slot of this.legacy) if (slot.shown) this.carveInto(slot, slot.shown, voice);
-  }
-
-  /** Today's entry point: a lesson on the north and south walls of a room (interior corner x0, y0, z0, 13 × 7). */
-  add(lesson: LessonKey, x0: number, y0: number, z0: number, second: LessonKey = lesson) {
-    // north wall, west of the door (facing south); south wall, east of the door (facing north)
-    const at = (side: Side) => panelMount('roots-hall', side, x0, y0, z0);
-    for (const [side, l] of [['north', lesson], ['south', second]] as const) {
-      const slot = this.makeSlot(at(side), LEGACY_W, LEGACY_H);
-      this.legacy.push(slot);
-      this.carveInto(slot, { kind: 'legacy', lesson: l }, currentVoice());
     }
   }
 
   dispose() {
     this.disposed = true;
     for (const slot of this.slots.values()) this.free(slot);
-    for (const slot of this.legacy) this.free(slot);
     this.slots.clear();
-    this.legacy = [];
     this.scene.remove(this.group);
   }
 
-  private makeSlot(m: Mount, w: number, h: number, room?: RoomKey, side?: Side): Slot {
+  private makeSlot(m: Mount, w: number, h: number, room: RoomKey, side: Side): Slot {
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     const texture = new THREE.CanvasTexture(canvas);
@@ -723,10 +668,7 @@ export class Tablets {
   /** Carves offscreen, then copies onto the slot's canvas and flags the texture, in one synchronous step. */
   private carveInto(slot: Slot, shown: Shown, voice: PanelVoice): PanelReport {
     const off = scratchCanvas(slot.canvas.width, slot.canvas.height);
-    const g = off.getContext('2d')!;
-    const report = shown.kind === 'panel'
-      ? carvePanel(g, shown.panel, shown.page, voice, this.images)
-      : (carveLegacy(g, shown.lesson), { id: shown.lesson, overflow: [], missing: [] });
+    const report = carvePanel(off.getContext('2d')!, shown.panel, shown.page, voice, this.images);
     slot.canvas.getContext('2d')!.drawImage(off, 0, 0);
     slot.texture.needsUpdate = true;
     slot.shown = shown;

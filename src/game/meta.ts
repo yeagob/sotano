@@ -3,10 +3,12 @@
 // opens (docs/architecture/SKY.md §10.3). Browser storage, like the language: a private window, blocked
 // storage or cleared data simply read as the default, and no write ever throws.
 //
-// This module is pure: it touches no game state and no DOM beyond the default browser store. Nothing in
-// the game loads or saves the record yet; that wiring is package D1 of #147. Generation never reads it.
-// A version 1 record (only the unlock) is migrated on read and written back as version 2 at the next save.
-// A record from a newer build reads as the default in read-only mode, and is never written over.
+// This module is pure: it touches no game state and no DOM beyond the default browser store. main.ts loads
+// the record once and hands it to the game with the browser store (game.ts `GameSave`); the sandbox, the lab
+// and the tests use an in-memory record with `noStore`. Generation never reads it: the game passes the page
+// and, later, the mastery level to the carving. A version 1 record (only the unlock) is migrated on read and
+// written back as version 2 at the next save. A record from a newer build reads as the default in read-only
+// mode, and is never written over.
 
 export const META_VERSION = 2;
 
@@ -68,6 +70,9 @@ export function localStore(key: string): MetaStore {
 }
 
 export const browserStore: MetaStore = localStore(KEY);
+
+/** A store that keeps nothing: the sandbox, the lab and the tests play on an in-memory record and never write. */
+export const noStore: MetaStore = { read: () => null, write: () => undefined };
 
 /**
  * Reads the record. Missing, broken or not-an-object records, and records without a version, read as the

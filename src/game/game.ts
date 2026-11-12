@@ -24,6 +24,8 @@ import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { heartTollPlan, tollIndex } from './toll';
+import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
+import { openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
@@ -66,7 +68,9 @@ import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { LOVE_BLAST, MISSILE_TRAIL, MissileView } from '../render/missile-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
-import { isLesson, Tablets } from '../render/tablets';
+import { currentVoice, panelImages, Tablets } from '../render/tablets';
+import { PageStone } from '../render/page-stone';
+import { loadBook } from '../content/book';
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import {
   BAND, bandOf, carveFloor, cellOf, createDungeonWorld, inRoomSpace, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
@@ -198,6 +202,9 @@ const CHALLENGE_WAVES = 3;
 const WAVE_GAP = 1.4;
 /** The breath between two waves of a normal room (BESTIARY §2.4). */
 const BREATH = 1.5;
+
+/** The save record and the store it is written through (main.ts gives the browser's; the sandbox and the tests give none). */
+export interface GameSave { readonly meta: LoadedMeta; readonly store: MetaStore }
 
 interface BossRoom { room: number; wake: number; spawned: boolean; defeated: boolean; t: number; open: boolean; warned: boolean; dust: number; asked: boolean }
 
@@ -346,8 +353,28 @@ export class Game {
   /** What the HUD says about where you are (a floor, or a level of the tree). */
   private zone = '';
   private stars: THREE.Points;
-  /** The tutorial's lessons, carved into the roots' walls. */
+  /** The Roots' wall panels (tablets.ts), and the page stone of the start room (page-stone.ts). */
   private tablets!: Tablets;
+  private pageStone!: PageStone;
+  /** The save record (meta.ts). It is written through `metaStore` when a run advances the Roots' page; achievements (D2) save the same way. */
+  private readonly meta: LoadedMeta;
+  private readonly metaStore: MetaStore;
+  /** The Roots' walls of this run (roots-keeper.ts); undefined in the sandbox. */
+  private roots: RootsKeeper | undefined;
+  /** Each Roots room's box and the view frustum: the walls turn only out of sight (PAGES §3). */
+  private rootsBoxes = new Map<string, THREE.Box3>();
+  private readonly frustum = new THREE.Frustum();
+  private readonly frustumM = new THREE.Matrix4();
+  /** The shown page's pictures are loading: the run's start fade waits for them (PANELS §8). */
+  private wallsLoading = false;
+  private wallsToken = 0;
+  /** The page stone's block (x, y, z) and whether it was broken this run: the stone goes until the next run (PAGES §4). */
+  private stoneBlock: [number, number, number] | undefined;
+  private stoneGone = false;
+  private readonly walls: WallSink = {
+    show: (room, side, panel, page) => this.tablets.show(room, side, panel, page),
+    stone: page => this.setStone(page),
+  };
   /** Fire, water and lava (docs/architecture/ELEMENTS.md §9). */
   elements!: ElementSim;
   private elemFx = 0;
@@ -357,7 +384,10 @@ export class Game {
   private playerIn = new Set<ElementKey>();
   private playerMedium: PlayerMedium = { feet: null, head: null };
 
-  constructor(canvas: HTMLCanvasElement, seed?: string) {
+  /** `save`: the record and its store (main.ts). Without it the game plays on a fresh record in memory that is never written. */
+  constructor(canvas: HTMLCanvasElement, seed?: string, save?: GameSave) {
+    this.meta = save?.meta ?? defaultMeta();
+    this.metaStore = save?.store ?? noStore;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.autoClear = false;
@@ -452,6 +482,7 @@ export class Game {
   }
 
   private begin(root: number, sandbox: Scenario | null) {
+    this.endRoots();
     this.leaveSky();
     this.spirit = SPIRIT_MAX; this.captures = 0; this.underground = null;
     this.sandbox = sandbox;
@@ -476,6 +507,17 @@ export class Game {
     this.enemies?.dispose();
     this.tablets?.dispose();
     this.tablets = new Tablets(this.dungeonRoot);
+    this.pageStone?.dispose();
+    this.pageStone = new PageStone(this.dungeonRoot);
+    this.stoneGone = false; this.stoneBlock = undefined;
+    // the walls exist before floor 0 is carved: the page the run starts on decides its layout (EASY-LAYOUT §7)
+    this.roots = openRoots(sandbox !== null, {
+      record: this.meta,
+      store: this.metaStore,
+      book: () => loadBook(currentVoice().lang),
+      images: panelImages,
+      inView: room => this.rootsInView(room),
+    });
     this.dw = createDungeonWorld(this.rng, this.dungeon);
     this.world = this.dw;
     const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
@@ -537,6 +579,7 @@ export class Game {
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(k)!, k);
     this.bus.emit('floorEnter', { depth: k });
+    if (this.roots) this.hangRoots(this.roots);
     if (box && sandbox) this.furnish(box, sandbox);
   }
 
@@ -621,6 +664,9 @@ export class Game {
       pedestalItem: room => this.pools.reservedFor(String(room)) ?? null,
       enemies: ENEMY_BUDGET,
       bossSmallRoom: !!(boss && BOSS_BY_ID.get(boss)?.smallRoom),
+      // the Roots' layout, read once at run start (EASY-LAYOUT §7); only floor 0 reads it
+      easyRoots: k === FIRST_FLOOR && (this.roots?.easyRoots ?? false),
+      // D2: the mastery level is passed here too, read from this.meta (REWARDS §4-§6)
     });
     f.boss = boss;
     if (f.boss) this.bossUsed.add(f.boss);
@@ -649,6 +695,74 @@ export class Game {
         waves: splitWaves(r.enemies), wave: -1, queue: [], next: 0, breath: 0, armed: false, waveT: 0,
       });
     }
+  }
+
+  /**
+   * The Roots' walls of this run: each room's box for the out-of-sight guard, the mounts of the run's layout, the page
+   * stone and the shown page's panels. The start fade waits for the shown page's pictures (PANELS §8).
+   */
+  private hangRoots(keeper: RootsKeeper) {
+    const floor = this.floors.get(FIRST_FLOOR);
+    if (!floor) return;
+    this.rootsBoxes.clear();
+    for (const r of floor.rooms) {
+      const key = roomKeyOf(r);
+      this.tablets.mountRoom(key, r.hx, r.y0, r.hz, keeper.variant);
+      this.rootsBoxes.set(key, new THREE.Box3(
+        new THREE.Vector3(r.x0 - 1, r.y0 - 1, r.z0 - 1),
+        new THREE.Vector3(r.x0 + r.w + 1, r.y0 + r.height + 1, r.z0 + r.d + 1),
+      ));
+      if (key === keeper.start) {
+        this.pageStone.mount(r.hx, r.y0, r.hz);
+        // the wall block behind the stone: the stone is its face (pageStoneMount sits 0.015 in front of z0)
+        this.stoneBlock = [r.hx + 6, r.y0 + 2, r.hz - 1];
+      }
+    }
+    const token = ++this.wallsToken;
+    this.wallsLoading = true;
+    void keeper.preload().then(() => { if (token === this.wallsToken) this.wallsLoading = false; });
+    keeper.update(this.walls);
+  }
+
+  /** Each frame: the view frustum for the out-of-sight guard, the rooms' panels and the stone where the book turns them. */
+  private updateRoots() {
+    const keeper = this.roots;
+    if (!keeper) return;
+    this.camera.updateMatrixWorld();
+    this.frustumM.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+    this.frustum.setFromProjectionMatrix(this.frustumM);
+    keeper.update(this.walls);
+    const b = this.stoneBlock;
+    if (b && !this.stoneGone && !this.solid(b[0], b[1], b[2])) {
+      this.stoneGone = true;
+      this.pageStone.hide();
+    }
+  }
+
+  private rootsInView(room: string): boolean {
+    const box = this.rootsBoxes.get(room);
+    return box !== undefined && this.frustum.intersectsBox(box);
+  }
+
+  private setStone(page: number | null) {
+    if (this.stoneGone) return;
+    if (page === null) this.pageStone.hide();
+    else this.pageStone.show(page, 'book');
+  }
+
+  /**
+   * A run ends (death, R, a new run, a new seed; PAGES §1): the Roots' page advances at most once per run. When it does,
+   * the record is saved at once (roots-keeper.ts) and `pageReached` is emitted. Its achievements come in package D2.
+   */
+  private endRoots() {
+    const page = this.roots?.endRun();
+    if (page !== undefined) this.bus.emit('pageReached', { page });
+  }
+
+  /** Debug (the console's S.roots): the page the next run starts on, in memory. The save is written when a run advances. */
+  setRootsPage(page: number) {
+    if (this.meta.readOnly) return;
+    this.meta.roots.page = Math.max(1, Math.floor(page));
   }
 
   /** Activates floor k: its doors, pedestals and keys appear ("the next floor loads"). */
@@ -699,12 +813,6 @@ export class Game {
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
-    }
-    // the tutorial is carved into the walls of its rooms (never an overlay)
-    for (const r of f.rooms) {
-      const tpl = ROOM_TEMPLATES.find(q => q.id === r.template);
-      const lesson = tpl?.lesson, second = tpl?.lesson2;
-      if (lesson && isLesson(lesson)) this.tablets.add(lesson, r.hx, r.y0, r.hz, second && isLesson(second) ? second : lesson);
     }
   }
 
@@ -1232,6 +1340,7 @@ export class Game {
       this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
       sfx3.death();
       this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
+      this.endRoots();
     }
     return true;
   }
@@ -3372,6 +3481,7 @@ export class Game {
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
       this.bus.emit('roomEnter', { room: r.id, floor: r.floor, type: r.type, template: r.template, firstVisit: first });
+      this.roots?.enterRoom(r.floor === FIRST_FLOOR ? r : undefined);
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       if (r.type === 'boss' && !this.bossRooms.has(r.floor)) {
         this.activate(r.floor + 1);
@@ -3560,7 +3670,7 @@ export class Game {
     } else if (this.revealT >= 0) {
       // stay dark until the new world is meshed, so it never pops in
       this.revealT += dt;
-      if (!this.chunks.busy || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
+      if ((!this.chunks.busy && !this.wallsLoading) || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
     this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
@@ -3642,6 +3752,7 @@ export class Game {
 
     this.camera.getWorldDirection(this.camDir);
     spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
+    this.updateRoots();
     // the Sanctuary covers the whole screen: the world under it is not drawn while it does
     if (!this.hud.sanctuary.covering) {
       this.renderer.clear();

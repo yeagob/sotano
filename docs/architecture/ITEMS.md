@@ -122,6 +122,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `roomClear` | `drops` | a room cleared |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
+| `pageReached` | — (react) | a run's end advanced the Roots' page (`page`, the new current page); once per run, never in the sandbox |
 | `brew` | — (react) | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
 | `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |
 

@@ -50,6 +50,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, floor: 2, type: 'normal', template: 'test', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
+  pageReached: () => ({ page: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
   heartLost: () => ({ heart: 'blue' }) as const,

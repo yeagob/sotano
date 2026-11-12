@@ -8,7 +8,7 @@
 
 /**
  * The events the catalogue listens to. `bossOvercome`, `meditationComplete` and `cook` are added to GameEvents by package D2,
- * `pageReached` (the current page of the Roots' book at a run's end) by package D1; until then nothing emits it.
+ * `pageReached` (the current page of the Roots' book at a run's end) by package D1, emitted by `Game.endRoots`.
  */
 export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
