@@ -12,6 +12,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
 - A blood heart taken at full health opens one more heart container and fills it at once, instead of doing nothing; below full health it still heals over time (#146).
 - Starting reach is 4 blocks, 20% less than before; Self-Efficacy, Second Brain, Grounding and Kaizen each add 1 block of reach (#162).
+- The mobile drink button appears only while a flask is on top of your hand, drawn as that potion in its liquid colour in the right-thumb column above throw, and is hidden the moment the flask is drunk or put away (#159).
 
 ### Fixed
 - The boss health bar hides when you die, reset with R or respawn, and shows again only when the boss fight resumes (#163).

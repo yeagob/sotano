@@ -1,6 +1,8 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss, type PalToken } from '../content/palette';
-import { isFlask } from '../content/potions';
+import { carriedDef, isFlask, POTIONS, type Flask } from '../content/potions';
+import type { Carried } from '../entities/player';
+import { iconDataUrl } from '../render/icons';
 import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
@@ -11,6 +13,51 @@ const STICK_DEAD = 0.12;
 
 export function castPolarityToken(polarity: Polarity): PalToken {
   return polarity === 'positive' ? 'light.gold' : 'light.ember';
+}
+
+/**
+ * What the drink button shows for the top of the hand. Only a flask on top can be drunk (Game.drink
+ * takes the top), so the button is shown for exactly that case and hidden for everything else.
+ * `key` changes whenever the button's look must be redrawn (another flask, or an iced one).
+ */
+export interface DrinkView { show: boolean; key: string; flask?: Flask; liquid?: PalToken }
+
+export function drinkView(top: Carried | undefined): DrinkView {
+  if (!top || !isFlask(top)) return { show: false, key: '' };
+  return {
+    show: true,
+    key: top.iced ? `${top.potion}+iced` : top.potion,
+    flask: top,
+    liquid: POTIONS[top.potion].liquid,
+  };
+}
+
+/**
+ * Forget a press on a button that is being hidden: its held state and every track still bound to it, so the
+ * touch's later end or cancel finds no stale track to act on. Other buttons and the stick are left alone.
+ */
+export function forgetButtonPress<T extends { kind: string; action?: Action }>(tracks: Map<number, T>, held: Set<Action>, action: Action): void {
+  for (const [id, tr] of tracks) if (tr.kind === 'button' && tr.action === action) tracks.delete(id);
+  held.delete(action);
+}
+
+/**
+ * One reading of the phone's orientation (degrees, any sign or turn): the landscape side it is on (90 or
+ * 270), or null in portrait and upside down. A reading that is not a side is ignored.
+ */
+export function landscapeSide(raw: number): number | null {
+  const side = ((raw % 360) + 360) % 360;
+  return side === 90 || side === 270 ? side : null;
+}
+
+/**
+ * A half turn of the phone (see TouchControls.turned): `flip` when the side changed from the last one. The
+ * first reading only sets the side; a reading that is not a landscape side keeps the last side.
+ */
+export function halfTurn(last: number | null, raw: number): { side: number | null; flip: boolean } {
+  const side = landscapeSide(raw);
+  if (side === null) return { side: last, flip: false };
+  return { side, flip: last !== null && last !== side };
 }
 
 interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number }
@@ -157,10 +204,9 @@ export class TouchControls {
    */
   private turned() {
     const raw = screen.orientation?.angle ?? (window as { orientation?: number }).orientation ?? 0;
-    const side = ((raw % 360) + 360) % 360;
-    if (side !== 90 && side !== 270) return;
-    if (this.side !== null && this.side !== side) this.input.touchPressed.add('polarity');
-    this.side = side;
+    const turn = halfTurn(this.side, raw);
+    if (turn.flip) this.input.touchPressed.add('polarity');
+    this.side = turn.side;
   }
 
   private radius() { return Math.min(innerWidth, innerHeight) * 0.13; }
@@ -186,19 +232,36 @@ export class TouchControls {
     for (const el of this.buttons.values()) el.classList.remove('on');
   }
 
+  /**
+   * The drink button exists only while a flask is on top of the hand: it is hidden (not dimmed) otherwise,
+   * drawn as that flask's own pixel icon, framed in its liquid colour. Hiding it also lets go of a press
+   * that was still held, so no hidden control stays pressed.
+   */
+  private updateDrink(v: DrinkView) {
+    const el = this.buttons.get('drink')!;
+    el.hidden = !v.show;
+    if (!v.show || !v.flask || !v.liquid) {
+      forgetButtonPress(this.tracks, this.input.touchHeld, 'drink');
+      el.classList.remove('on');
+      return;
+    }
+    el.style.setProperty('--glyph', `url("${iconDataUrl(carriedDef(v.flask), 3)}")`);
+    el.style.setProperty('--liquid', palCss(v.liquid));
+  }
+
   update(g: Game, ctx: Context) {
     const show = this.input.device === 'touch' && (ctx === 'play' || ctx === 'prompt');
     if (!show && this.tracks.size) this.clear();
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
-    const top = p.active, flask = !!top && isFlask(top);
-    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${flask}`;
+    const drink = drinkView(p.active);
+    const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${drink.key}`;
     if (key === this.key) return;
     this.key = key;
     const thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
     thr.classList.toggle('off', !p.hand.length);
-    this.buttons.get('drink')!.classList.toggle('off', !flask);
+    this.updateDrink(drink);
     bomb.classList.toggle('off', p.bombs <= 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     this.buttons.get('inventory')!.querySelector('span')!.textContent = g.inventory.items.length ? String(g.inventory.items.length) : '';
