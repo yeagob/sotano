@@ -2,7 +2,9 @@
 
 Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decisions 1 to 4), with the lap and visibility rules below designed to make those decisions testable.
 
-The walls of the Roots show one page at a time. A page is a set of panels for some of the 22 slots; any slot a page leaves out shows page 1's panel, so the lessons never leave the walls. Pages 1 to 6 are the tutorial. Page 7 is the first page of the hidden book.
+The walls of the Roots show one page at a time. A page is a set of panels for some of the 22 slots; any slot a page leaves out shows page 1's panel, so the lessons never leave the walls. In the easy layout, five slots whose page-1 lesson describes an exercise that is gone show a remembered panel instead of page 1's ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)). Pages 1 to 6 are the tutorial. Page 7 is the first page of the hidden book.
+
+The current page also decides the shape of the rooms: page 1 is carved in the teaching layout, page 2 and later in the easy layout, read once at run start ([EASY-LAYOUT](EASY-LAYOUT.md)). The geometry is not fixed for ever any more: it changes once, between the run that reaches page 2 and the next.
 
 ## 1. The current page
 
@@ -22,7 +24,7 @@ The walls of the Roots show one page at a time. A page is a set of panels for so
 - At the start of a run, the shown page is the current page.
 - **A full lap forward shows the next page**, if the shown page is lower than the current page; at the current page a forward lap does nothing.
 - **A full lap in reverse shows the previous page**, down to page 1; on page 1 it does nothing.
-- Browsing changes only the panels and the page stone. It never changes rewards, and it is not saved: the next run starts on the current page again.
+- Browsing changes only the panels and the page stone. It never changes rewards or the layout of the rooms, and it is not saved: the next run starts on the current page again. A player on page 3 who browses back to page 1 reads page 1 in the easy rooms, with the remembered panels where page 1's lessons would describe an exercise the room no longer holds ([EASY-LAYOUT §6](EASY-LAYOUT.md#6-browsing-in-the-easy-layout)).
 
 ### What a lap is (the rule a test can check)
 
@@ -63,7 +65,7 @@ The sight sets of the Roots, from the plan:
 | `roots-gift` | gift, seal, crates, spring, hall, step |
 | `roots-door` | door, hall |
 
-The sets are computed from the plan, not written by hand, so a test checks them against this table. A hole the player digs through a wall is not part of the rule; a second guard covers it: a panel is also never re-carved while it lies inside the camera's view frustum.
+The sets are computed from the plan, not written by hand, so a test checks them against this table. They are the same in both layouts: the plan and its doors do not change, and the sets already assume every line of doors open. A hole the player digs through a wall is not part of the rule; a second guard covers it: a panel is also never re-carved while it lies inside the camera's view frustum.
 
 What the player sees after a forward lap that ends in the start room: the rooms out of sight of the start room (dig, mend, pit, bridge, seal, crates, spring) turn at once; the step room, the treasure room and the way down turn as soon as the player has walked out of their sight. The page turns behind the player, never in front of them.
 
@@ -82,4 +84,4 @@ Nothing is explained by a menu. The door room's north panel on page 1 says that 
 
 ## Open questions
 
-See [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md): the cap instead of a wrap (2), which run endings count (4), and the page stone's place (3).
+See [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md): the cap instead of a wrap (2), which run endings count (4), the page stone's place (3), and the easy layout (19 to 25).

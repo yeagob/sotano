@@ -94,7 +94,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 - The cap 0.75 keeps a crate from always giving: at level 100 the chance is 0.25 to 0.75.
 - What a crate gives is unchanged (key, heart or bomb by today's weights and luck; a heart's kind by the floor's heart chances). Crates never hold practices.
 - **Only crates broken inside floor 0's band** read the factor. Crates above the Roots (the surface counts as depth 0 for crates today) keep floor 0's base chance without it.
-- The crates are the 28 of `roots-crates`. No crate is added; no room changes.
+- The crates are the 28 of `roots-crates`. No crate is added. In the easy layout (page 2 on) the same 28 stand stacked aside in `roots-crates-easy` ([EASY-LAYOUT](EASY-LAYOUT.md)); their count and the factor do not change.
 
 ## 4. The extra practices, the altar and the second Sanctuary
 

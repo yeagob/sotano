@@ -5,7 +5,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: proposal (written 
 ## How the pages are built
 
 - **Page 1 fills all 22 slots** and teaches, in the order of the forward ring: what a block is and what a projection is; good and bad intentions (good heals and makes creatures grow, bad breaks blocks and hurts); moving and jumping; picking up, carrying and placing a block. Every room's lesson is true to the exercise it holds.
-- **The lesson wall** of each room (the one a forward walker faces, [PANELS §7](PANELS.md#7-which-wall-holds-the-lesson)) keeps page 1's lesson on every page.
+- **The lesson wall** of each room (the one a forward walker faces, [PANELS §7](PANELS.md#7-which-wall-holds-the-lesson)) keeps page 1's lesson on every page. From page 2 the rooms are carved in the easy layout, and the four lesson walls whose exercise is gone (dig, pit, bridge, seal), with the step room's south slot, show a remembered panel instead ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)).
 - **Pages 2 to 6 change the nine other slots**: the plate wall of every room except `roots-gift` (the Sanctuary) and `roots-door` ("come back"), which stay because they belong to their room.
 - The order of the themes follows the owner: potions and foods (2), projections and bosses with what they drop (3), practices and recipes (4), the creatures of the world (5), deeper mechanics (6).
 - Tone: short, warm, concrete, for a child and an adult at once. No "positive" or "negative" in player text: good and bad. Bombs are breakthroughs, keys open locks.

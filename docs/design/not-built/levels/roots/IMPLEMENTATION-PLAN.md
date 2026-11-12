@@ -10,12 +10,13 @@ Read first, for every package: this folder, [progression](../../progression/READ
 Wave A   A1 i18n keys and labels                       (alone, first)
 Wave B   B1 save v2 | B2 book loader | B3 pages state | B4 mastery + achievements | B5 portraits and lesson captures
          B6 quotes and page achievements (after A1, B2 and B4)
-Wave C   C1 panel renderer (after B2)   |   C2 Roots generation by mastery (after B4)
-Wave D   D1 game wiring: book and pages (after B1, B3, C1)  →  D2 game wiring: achievements and rewards (after D1, C2)
+         B7 the remembered panels of the easy layout (after B6)
+Wave C   C1 panel renderer (after B2)   |   C2 Roots generation by mastery (after B4)   |   C3 the easy layout (after C2)
+Wave D   D1 game wiring: book, pages and layout (after B1, B3, B7, C1, C3)  →  D2 game wiring: achievements and rewards (after D1, C2)
 Wave E   E1 real-game check, sandbox scenario, docs to built, cleanup (after everything)
 ```
 
-Packages in the same wave touch disjoint files and can run in parallel. `src/game/game.ts` and `src/main.ts` are touched only in wave D, one package at a time. `src/i18n/locales/en.ts` and `es.ts` are touched only in A1 (every message key any package needs is listed there), in B6 (the keys added after A1 was cut) and in E1 (removing the old `lesson.*` keys). The book JSON files are changed only by B6 until E1.
+Packages in the same wave touch disjoint files and can run in parallel. `src/game/game.ts` and `src/main.ts` are touched only in wave D, one package at a time. `src/i18n/locales/en.ts` and `es.ts` are touched only in A1 (every message key any package needs is listed there), in B6 (the keys added after A1 was cut) and in E1 (removing the old `lesson.*` keys). The book JSON files are changed only by B6, then B7, until E1. `src/world/floor.ts` and `src/content/rooms.ts` are touched by C2, then C3, one at a time.
 
 ## A1. Message keys and labels (normal)
 
@@ -76,6 +77,14 @@ Packages in the same wave touch disjoint files and can run in parallel. `src/gam
 - **Tests:** a quote passes; a quote missing `author` or `work` fails; a quote on a tutorial page fails; a quote whose facts differ between the files fails; budgets; the real files pass with page 7's quote in Spanish and English; the four achievements unlock on `pageReached` with their page and never on another; levels 37 to 40 each have one named step; monotonic and bounded from 0 to 100 with the new rows.
 - **Done:** book, catalogue and table carry the additions; the i18n and book tests are green; SOURCES.md has the row.
 
+## B7. The remembered panels of the easy layout (normal)
+
+- **Goal:** the book's `easy` layer ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)): five remembered panels that the easy layout shows instead of page 1's in the slots whose exercise is gone, and the three-step resolution (page *n*'s own panel if *n* ≥ 2, else the remembered panel in the easy layout, else page 1's).
+- **Depends on:** B2, B6 (it extends their files).
+- **Files:** `src/content/book/index.ts` (the optional top-level `easy` object, its validation, `panelAt(book, page, room, side, easy = false)`), `src/content/book/book.en.json`, `book.es.json` (the five panels exactly as in EASY-LAYOUT §4), `tests/book.test.ts`, `docs/design/not-built/levels/roots/BOOK-DATA.md` (the `easy` object, its ids `easy-<room>-<side>`, the resolution rule), `PANELS.md` (§6: its exceptions hold in the teaching layout only, pointing to EASY-LAYOUT §5; §10: the `easy-` ids), `TUTORIAL-PAGES.md` (a table of the five remembered slots and what each rests on).
+- **Tests:** the real files pass; `panelAt` in the easy layout returns the remembered panel for the five slots on page 1, on every tutorial page that leaves the slot out and on every book page, and page *n*'s own panel where page *n* fills the slot (the step room's south slot on pages 2 to 6); in the teaching layout it returns exactly what it returns today for every slot of every page; an `easy` slot on an unknown room or side fails; an `easy` slot in one language only fails; budgets at the longest label.
+- **Done:** the layer is data and resolution only; nothing renders it until D1.
+
 ## C1. The panel renderer (complex, art)
 
 - **Goal:** the four layouts (lesson, plate, prose, quote), key caps, verbs and the page stone at 896 × 512 ([PANELS](PANELS.md)). The quote draws its inset page, the gold opening mark, the italic text, the right-aligned author and source, and the translation note only when the book's language differs from the quote's `lang`.
@@ -92,13 +101,28 @@ Packages in the same wave touch disjoint files and can run in parallel. `src/gam
 - **Tests:** same seed and level → identical floor 0; floors 1 to 9 (their reserved practices included) identical for levels 0, 36 and 100 with the same seed and identical to before this change; the Sanctuary chest and the way-down pedestal identical at every level; counts on the floor match the table at 0, 10, 25, 36, 100; at most one free chest per room and one pedestal per room, never on a door approach, the centre or the shaft, three blocks clear above a pedestal; level 0 holds exactly one of key or breakthrough.
 - **Done:** generation reads only its options; tests green.
 
+## C3. The easy layout (complex)
+
+- **Goal:** the second layout of the Roots ([EASY-LAYOUT](EASY-LAYOUT.md)): six easy templates, the cell table that names them, and the carve option that picks them. Floor 0 only; the teaching layout carved byte for byte as today when the option is off.
+- **Depends on:** C2 (same files; it is merged).
+- **Files:**
+  - `src/content/rooms.ts`: the six templates `roots-step-easy`, `roots-dig-easy`, `roots-pit-easy`, `roots-bridge-easy`, `roots-crates-easy`, `roots-seal-easy` exactly as in EASY-LAYOUT §2 (no `weight`; the twin's `lesson`); `TUTORIAL_CELLS` entries gain `easy?: string` for cells a, b, d, e, f, g; `rootsRoomKey(gx, gz)` (the teaching template id of a plan cell, the room's key for the book); an exported reachability check that lists the tiles of a template (with flips) from which some door approach cannot be reached on foot (the walk rules of `walkParts`, run from each tile or backwards from each door).
+  - `src/world/floor.ts`: `easyRoots?: boolean` in `CarveOptions` (default `false`, read only where `lv.tutorial`); `fitTemplates(…, bossSmallRoom = false, easyRoots = false)` takes the cell's `easy` template when asked, with the cell's `flipZ`; `carveFloor` passes it. Nothing else: no fork, no order of draws, no `GEN_VERSION` change.
+  - `src/sandbox/scenario.ts`: a scenario field for the layout, as C2 did for mastery, so the lab can carve either.
+  - `tests/helpers.ts`: `buildRun` takes carve options (mastery, `easyRoots`), defaults unchanged.
+  - `tests/roots-easy.test.ts`: the six tests of EASY-LAYOUT §9.
+  - Docs: `docs/architecture/ROOMS.md` (the easy cells and the option), `docs/architecture/RNG.md` (floor 0 depends on seed, mastery and layout; no new fork), `docs/design/built/levels/README.md` §4 table only when E1 moves the design to built.
+- **Tests:** EASY-LAYOUT §9: every easy template passes `validateTemplate`, needs no building and strands no tile; the walker crosses the easy Roots forward and in reverse with no block, and fails the same route in the teaching layout; floor 0 with the option off or absent equals hashes recorded from the code before C3 (seeds 1 and `0xBEEF`, mastery 0 and 22); floors 1 to 9 and the world outside floor 0's band are identical for both layouts at mastery 0 and 100; at mastery 100 in the easy layout the counts equal `rootsRewards(100)` and the free tiles of the eight easy lesson rooms cover the table's maximum; the six cells carve their easy template, the crates room holds 28 crates, `rootsRoomKey` gives the teaching id in both layouts; the existing suite (half-need-building by weight, the roots tests of `world.test.ts`, `roots-carving.test.ts`, `boss-rooms-large.test.ts`) stays green unchanged.
+- **Art:** the easy rooms use only blocks floor 0 already has; the art agent captures each easy room in the lab in colour and greyscale and runs the meaning test (`sotano-art` §3) before C3 merges.
+- **Done:** generation reads only its options; nothing in the game passes `easyRoots` yet (D1 does); tests green.
+
 ## D1. Game wiring: the book on the walls (complex)
 
-- **Goal:** the book, the pages and the page stone in the real game, and the `pageReached` event emitted when a run's end advances the page.
-- **Depends on:** B1, B3, C1.
-- **Files:** `src/main.ts` (load the save once, hand the game a store and the record), `src/game/game.ts` (create `RootsBook` per run from the record's page; feed it room-enter and run-end; ask it each frame which rooms may swap and call the renderer; save the advanced page; preload the shown page's images inside the start fade; sandbox and lab use an in-memory record), `tests/roots-book-game.test.ts` (with the game's headless helpers if they exist, otherwise through the walker helper of `tests/helpers/walker.ts`).
-- **Tests:** a scripted walk of the whole Roots then a death advances the saved page; R after it does not advance twice; a forward lap in the game changes a far room's panel and not the current one; a run start shows the saved page.
-- **Done:** browser check: walk the ring both ways on page 3 (set by the console), watch rooms turn only behind you; screenshots.
+- **Goal:** the book, the pages and the page stone in the real game, the `pageReached` event emitted when a run's end advances the page, and the layout of the Roots chosen from the saved page.
+- **Depends on:** B1, B3, B7, C1, C3.
+- **Files:** `src/main.ts` (load the save once, hand the game a store and the record), `src/game/game.ts` (create `RootsBook` per run from the record's page; feed it room-enter and run-end; ask it each frame which rooms may swap and call the renderer; save the advanced page; preload the shown page's images inside the start fade; sandbox and lab use an in-memory record; **at run start pass `easyRoots: record.roots.page >= 2` to the carving of floor 0, read once, from the current page and never the shown page**; **name every room of the Roots by `rootsRoomKey(gx, gz)`, never by `RoomInfo.template`, wherever it talks to `RootsBook`, the book or the renderer**), `src/render/tablets.ts` (**the mount table by layout: PANELS §6's exceptions in the teaching layout, the standard mount everywhere in the easy layout (EASY-LAYOUT §5)**; `panelAt` called with the run's layout), `tests/roots-book-game.test.ts` (with the game's headless helpers if they exist, otherwise through the walker helper of `tests/helpers/walker.ts`).
+- **Tests:** a scripted walk of the whole Roots then a death advances the saved page; R after it does not advance twice; a forward lap in the game changes a far room's panel and not the current one; a run start shows the saved page; **a run started on page 1 carves the teaching layout and one started on page 2 or later the easy layout; the advance at a run's end never changes the layout of the run that ends, only the next; in the easy layout, walking every room completes the visited set (the keys are the rooms' cells, not their easy template ids); the remembered panel hangs on the dig room's south wall in the easy layout on page 2 and after browsing back to page 1; the step and seal panels hang at the standard mount in the easy layout and at PANELS §6's mount in the teaching layout**.
+- **Done:** browser check: walk the ring both ways on page 3 (set by the console), watch rooms turn only behind you, cross every room without placing or breaking a block; on page 1 the exercises are there; screenshots.
 
 ## D2. Game wiring: achievements, the notice and the rewards (complex)
 
@@ -111,7 +135,7 @@ Packages in the same wave touch disjoint files and can run in parallel. `src/gam
 ## E1. Real-game check, docs to built, cleanup (normal)
 
 - **Goal:** prove it end to end and move the design to `built/`.
-- **Files:** `src/sandbox/scenarios/roots-book.json` and its report (a deterministic lab run: seed fixed, mastery 0, walk every room of the Roots, die, restart; assert the page moved to 2 and the walls show page 2; walk a reverse lap and read page 1 on a far wall; set mastery 36 and restart; count keys, bombs, hearts, chests and extra practices on floor 0, and check the Sanctuary chest and the way-down pedestal are as at mastery 0; overcome a boss through the console and read the card), `src/i18n/locales/en.ts`, `es.ts` (remove the old `lesson.*` keys no longer read), `src/content/rooms.ts` (drop `lesson`/`lesson2` from the roots templates if nothing reads them), `docs/design/built/levels/floors/ROOTS.md` and new `built/` documents (move, not copy, the text of this folder and of progression; leave pointers for what stays open), `docs/architecture/` (OVERVIEW, ENTITIES, RNG, LOCALIZATION as touched), `README.md` and `CHANGELOG.md`, the feedback logs of `sotano-feature` and `sotano-levels` with this round's lessons.
+- **Files:** `src/sandbox/scenarios/roots-book.json` and its report (a deterministic lab run: seed fixed, mastery 0, walk every room of the Roots in the teaching layout, using its exercises, die, restart; assert the page moved to 2, the walls show page 2 and the run was carved in the easy layout (the six changed rooms carry their easy templates); walk a full lap with no block placed or broken; read the remembered panel on the dig room's south wall; walk a reverse lap and read page 1 on a far wall, with the remembered panels still in their five slots; set mastery 36 and restart; count keys, bombs, hearts, chests and extra practices on floor 0, and check the Sanctuary chest and the way-down pedestal are as at mastery 0; overcome a boss through the console and read the card), `src/i18n/locales/en.ts`, `es.ts` (remove the old `lesson.*` keys no longer read), `src/content/rooms.ts` (drop `lesson`/`lesson2` from the roots templates, the six easy ones included, if nothing reads them), `docs/design/built/levels/floors/ROOTS.md` (the two layouts: the teaching layout on page 1, the easy layout from page 2, the remembered panels) and new `built/` documents, `docs/design/built/levels/README.md` §4 (the six easy templates in the rooms table) (move, not copy, the text of this folder and of progression; leave pointers for what stays open), `docs/architecture/` (OVERVIEW, ENTITIES, RNG, LOCALIZATION as touched), `README.md` and `CHANGELOG.md`, the feedback logs of `sotano-feature` and `sotano-levels` with this round's lessons (for `sotano-levels`: a fixed plan may have more than one layout, chosen by a carve option the game reads from the save at run start; a room's identity is its plan cell, never its template id; "no building needed" means every tile walks out to every door, which a one-way flood does not prove).
 - **Tests:** `npm run sandbox -- --check` shows only the new scenario and explained moves; the full suite.
 - **Done:** every acceptance criterion below is checked in the browser and in the lab; the not-built text that shipped is gone from `not-built/`.
 
@@ -126,5 +150,6 @@ Packages in the same wave touch disjoint files and can run in parallel. `src/gam
 | Reward values bounded and tested at 0, in between and at 100; other sources unchanged | B4, C2, D2 |
 | Achievements persist, are localized, never double-award | B1, B4, D2 |
 | The full flow in the real game and the deterministic sandbox | D1, D2, E1 |
+| From page 2 the Roots are the easy layout, crossed on foot with no block placed or broken; the teaching layout unchanged on page 1; floors 1 to 9 unchanged (owner, 2026-11-12) | B7, C3, D1, E1 |
 
 Superseded or out of scope: sequential boss steps and one step per run (owner decision 8), sky-plant first clears (decision 11), #113, #180. Controls: no new control (key caps are labels; `sotano-controls` needs no mapping). Pop-ups: no new type (the presence card gains a kicker, D2).

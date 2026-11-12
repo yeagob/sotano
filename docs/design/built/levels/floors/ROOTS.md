@@ -26,6 +26,7 @@ The roots are the earth the player starts in: a friendly, lit, safe floor where 
 - A climb from the roots to the surface is not built. Above the roots lies dirt, then the grass at height 167. The player can dig or build through the dirt, but there is no stair or shaft (see [ROUTE-FROM-ROOTS](../../../not-built/levels/ROUTE-FROM-ROOTS.md)).
 - Free-standing room chests on the roots are not built; the design says there should be some (see [ROOT-CHESTS](../../../not-built/chests/ROOT-CHESTS.md)).
 - The redesign of issue #147 (pages of panels that change, a hidden book, rewards that grow with a mastery level, a poorer start) is designed, not built: see [not-built/levels/roots](../../../not-built/levels/roots/README.md).
+- The same rooms are designed to change shape once: from page 2 of the Roots' book, every run carves an easy layout of the same plan, with the exercises already worked and no block to place or break ([EASY-LAYOUT](../../../not-built/levels/roots/EASY-LAYOUT.md)). Until that is built, the roots are the same every run, as above.
 - The Gardener, a presence the design planned for the roots, is not built; it is described with the bestiary's presences, not here.
 
 Code: `src/world/floorplan.ts` (the tutorial plan), `src/content/rooms.ts` (the eleven roots templates and the tutorial cells), `src/world/floor.ts` (no projections, open doors, the loose loot), `src/render/tablets.ts` (the stone tablets), `src/content/creatures/index.ts` (the roots' creatures), `src/game/game.ts` (the Mossling rest).
