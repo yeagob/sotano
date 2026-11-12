@@ -23,10 +23,10 @@ Creatures are the living things of the depths: instinct, curiosity, play, rest a
 ## What they share (built)
 
 - **Kind and side.** Each is a creature in the code, in the neutral faction. Their look uses the living tones (`living.*`), not a projection's cold eye.
-- **Growth.** Each warm love shot that reaches a creature makes it a quarter of its birth size bigger, up to three times its birth size (eight shots). Its look, its hitbox and what it can walk through grow together. A beam's repeat ticks do not count as shots. Allies that were projections do not grow.
+- **Growth.** Each warm love shot that reaches a creature makes it a quarter of its birth size bigger, up to three times its birth size (eight shots). Its look, its hitbox and what it can walk through grow together. A beam's repeat ticks do not count as shots. Only friendly creatures grow. Allies that were projections, presences (the Listener, the Gardener), bosses and the Boundary do not (issue #102).
 - **Never killed.** A creature at zero health is not removed. It is hidden: it drops out of sight and out of play until its room clears.
-- **Polarity.** A negative intention harms a creature. At zero it flees into the blocks, and it stays hidden until the room clears. A positive intention heals it. The four positive-only creatures ignore negative intentions entirely: they pass through, with no harm and no flight.
-- **Growth gift.** A floor-0 creature rolls once for a 15% chance to give one special heart when a warm positive intention first grows it to three times its birth size. Full health alone does not trigger a gift.
+- **Polarity.** A negative intention harms a creature, and a warm one also takes a grown creature a quarter of its birth size back down, never below its birth size (issue #102). At zero it flees into the blocks, and it stays hidden until the room clears. A positive intention heals it. The four positive-only creatures ignore negative intentions entirely: they pass through, with no harm and no flight.
+- **Growth gift.** Every creature that grows rolls once, on any floor, for a 7.5% chance to give one special heart when a warm positive intention first grows it to three times its birth size (issue #102). Full health alone does not trigger a gift, and shrinking and growing again does not roll again.
 - **Seal and clear.** When a room with projections seals, its creatures hide. When the room clears, they return at full health.
 - **Blasts.** Explosions push creatures gently and never hurt them.
 - **Silence.** No creature speaks. Chirpers sing; others make no sound of their own.
