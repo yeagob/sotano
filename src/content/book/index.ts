@@ -31,7 +31,9 @@ export const PLACEHOLDER_ACTIONS: readonly PlaceholderAction[] = [...new Set<Pla
 
 export type ImageId = string;
 
+/** Every panel carries a small id: its page number, room and side (BOOK-DATA §2, `panelIdOf`). */
 export interface LessonPanel {
+  readonly id: string;
   readonly layout: 'lesson';
   readonly title: string;
   readonly text: string;
@@ -40,6 +42,7 @@ export interface LessonPanel {
 }
 
 export interface PlatePanel {
+  readonly id: string;
   readonly layout: 'plate';
   readonly title: string;
   readonly subtitle: string;
@@ -49,11 +52,24 @@ export interface PlatePanel {
 }
 
 export interface ProsePanel {
+  readonly id: string;
   readonly layout: 'prose';
   readonly text: string;
 }
 
-export type Panel = LessonPanel | PlatePanel | ProsePanel;
+/** Someone else's words, on a book page only (BOOK-DATA §2b, PANELS §4b). `text` is the quotation in its own language. */
+export interface QuotePanel {
+  readonly id: string;
+  readonly layout: 'quote';
+  readonly text: string;
+  readonly author: string;
+  readonly work: string;
+  readonly publisher?: string;
+  readonly year?: number;
+  readonly lang: Lang;
+}
+
+export type Panel = LessonPanel | PlatePanel | ProsePanel | QuotePanel;
 
 export type Slot = Partial<Record<Side, Panel>>;
 
@@ -108,9 +124,10 @@ export function bookRefs(): BookRefs {
 type Layout = Panel['layout'];
 
 const LAYOUTS: Record<Layout, { required: readonly string[]; optional: readonly string[] }> = {
-  lesson: { required: ['title', 'text', 'image'], optional: ['key'] },
-  plate: { required: ['title', 'subtitle', 'text', 'image'], optional: ['note'] },
-  prose: { required: ['text'], optional: [] },
+  lesson: { required: ['id', 'title', 'text', 'image'], optional: ['key'] },
+  plate: { required: ['id', 'title', 'subtitle', 'text', 'image'], optional: ['note'] },
+  prose: { required: ['id', 'text'], optional: [] },
+  quote: { required: ['id', 'text', 'author', 'work', 'lang'], optional: ['publisher', 'year'] },
 };
 
 /** Characters per text field, counted with each placeholder at its longest label. */
@@ -118,7 +135,16 @@ const BUDGET: Record<Layout, Partial<Record<string, number>>> = {
   lesson: { title: 22, text: 120 },
   plate: { title: 22, subtitle: 30, text: 110, note: 30 },
   prose: { text: 320 },
+  quote: { text: 440, author: 40, work: 48, publisher: 32 },
 };
+
+/** The source line of a quote as drawn ("Work · Publisher, Year", PANELS §4b). */
+const QUOTE_SOURCE_BUDGET = 60;
+/** The translation note of a quote, a message key in both catalogues (PANELS §4b). */
+export const QUOTE_NOTE_KEY = 'book.quote.translated';
+const QUOTE_NOTE_BUDGET = 24;
+/** The earliest year a quotation's edition may carry. The latest is the current year. */
+const QUOTE_YEAR_FROM = 1000;
 
 const KEYCAP_BUDGET = 14;
 const KEYCAP_PARTS = ['key', 'pad', 'touch', 'verb'] as const;
@@ -128,13 +154,31 @@ const TOP_FIELDS: readonly string[] = ['version', 'language', 'pages'];
 const PAGE_ID = /^[a-z0-9-]+$/;
 const ROOM_SET: ReadonlySet<string> = new Set<string>(ROOM_KEYS);
 const SIDE_SET: ReadonlySet<string> = new Set<string>(SIDES);
+const LANGS: readonly Lang[] = ['en', 'es'];
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isLayout = (v: unknown): v is Layout => typeof v === 'string' && v in LAYOUTS;
 const isKeyAction = (v: unknown): v is KeyAction => typeof v === 'string' && (KEY_ACTIONS as readonly string[]).includes(v);
 const isPlaceholder = (v: string): v is PlaceholderAction => (PLACEHOLDER_ACTIONS as readonly string[]).includes(v);
+const isLang = (v: unknown): v is Lang => typeof v === 'string' && (LANGS as readonly string[]).includes(v);
+const isYear = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v >= QUOTE_YEAR_FROM && v <= new Date().getFullYear();
 const show = (v: unknown): string => JSON.stringify(v) ?? String(v);
 const length = (s: string) => [...s].length;
+
+/** The id a panel must carry: its page number, its room without `roots-`, and `n` or `s` (BOOK-DATA §2). */
+export function panelIdOf(page: number, room: RoomKey, side: Side): string {
+  return `${page}-${room.slice('roots-'.length)}-${side === 'north' ? 'n' : 's'}`;
+}
+
+/**
+ * The source line of a quote as the panel draws it: "Work · Publisher, Year", with the publisher and the year
+ * only when they are given (PANELS §4b).
+ */
+export function quoteSource(q: { readonly work: string; readonly publisher?: string; readonly year?: number }): string {
+  const head = q.publisher === undefined ? q.work : `${q.work} · ${q.publisher}`;
+  return q.year === undefined ? head : `${head}, ${q.year}`;
+}
 
 /** The longest label a control has on any device in a language (BOOK-DATA §3). */
 function longestLabel(refs: BookRefs, lang: Lang, action: string): string | undefined {
@@ -182,10 +226,11 @@ function checkKeyCaps(where: string, lang: Lang, action: KeyAction, refs: BookRe
   }
 }
 
-function checkPanel(where: string, lang: Lang, raw: unknown, refs: BookRefs, problems: string[]) {
+function checkPanel(where: string, lang: Lang, pageKind: unknown, raw: unknown, refs: BookRefs, problems: string[]) {
   if (!isRecord(raw)) { problems.push(`${where}: the panel is not an object`); return; }
   const layout = raw.layout;
   if (!isLayout(layout)) { problems.push(`${where}: unknown layout ${show(layout)}`); return; }
+  if (layout === 'quote' && pageKind !== 'book') problems.push(`${where}: a quote is only allowed on a book page`);
   const spec = LAYOUTS[layout];
   for (const field of Object.keys(raw)) {
     if (field !== 'layout' && !spec.required.includes(field) && !spec.optional.includes(field)) {
@@ -201,6 +246,14 @@ function checkPanel(where: string, lang: Lang, raw: unknown, refs: BookRefs, pro
     if (field === 'key') {
       if (!isKeyAction(value)) problems.push(`${where}: key ${show(value)} is not an action with a key cap`);
       else if (layout === 'lesson') checkKeyCaps(where, lang, value, refs, problems);
+      continue;
+    }
+    if (field === 'year') {
+      if (!isYear(value)) problems.push(`${where}: year must be a whole number from ${QUOTE_YEAR_FROM} to ${new Date().getFullYear()}, is ${show(value)}`);
+      continue;
+    }
+    if (field === 'lang') {
+      if (!isLang(value)) problems.push(`${where}: lang ${show(value)} is not a shipped language (${LANGS.join(', ')})`);
       continue;
     }
     if (typeof value !== 'string') { problems.push(`${where}: "${field}" must be a string`); continue; }
@@ -220,6 +273,35 @@ function checkPanel(where: string, lang: Lang, raw: unknown, refs: BookRefs, pro
       problems.push(`${where}: "${field}" is ${count} characters with the longest labels, the budget is ${budget}`);
     }
   }
+  if (layout === 'quote' && typeof raw.work === 'string' && typeof raw.author === 'string') {
+    const publisher = typeof raw.publisher === 'string' ? raw.publisher : undefined;
+    const year = isYear(raw.year) ? raw.year : undefined;
+    const source = quoteSource({ work: raw.work, publisher, year });
+    if (length(source) > QUOTE_SOURCE_BUDGET) {
+      problems.push(`${where}: the source line "${source}" is ${length(source)} characters, the budget is ${QUOTE_SOURCE_BUDGET}`);
+    }
+  }
+}
+
+/** The translation note of a quote (book.quote.translated) must exist in both languages within its budget. */
+function checkQuoteNote(refs: BookRefs, problems: string[]) {
+  for (const lang of LANGS) {
+    const note = refs.message(lang, QUOTE_NOTE_KEY);
+    if (note === undefined) problems.push(`message ${QUOTE_NOTE_KEY} is missing in ${lang}`);
+    else if (length(note) > QUOTE_NOTE_BUDGET) {
+      problems.push(`${QUOTE_NOTE_KEY} is ${length(note)} characters in ${lang}, the budget is ${QUOTE_NOTE_BUDGET}`);
+    }
+  }
+}
+
+/** A panel's id is its position (page, room, side) and unique in the file. A missing or non-text id is reported by checkPanel. */
+function checkPanelId(where: string, page: number, room: RoomKey, side: Side, raw: unknown, seen: Set<string>, problems: string[]) {
+  const id = isRecord(raw) ? raw.id : undefined;
+  if (typeof id !== 'string') return;
+  const expected = panelIdOf(page, room, side);
+  if (id !== expected) problems.push(`${where}: id "${id}" must be "${expected}" (its page, room and side)`);
+  if (seen.has(id)) problems.push(`${where}: id "${id}" is not unique in the file`);
+  seen.add(id);
 }
 
 function checkFile(lang: Lang, raw: unknown, refs: BookRefs, problems: string[]) {
@@ -235,13 +317,13 @@ function checkFile(lang: Lang, raw: unknown, refs: BookRefs, problems: string[])
     return;
   }
   const seenIds = new Set<string>();
-  const state = { seenBook: false };
+  const state = { seenBook: false, panelIds: new Set<string>() };
   raw.pages.forEach((page: unknown, index: number) => checkPage(lang, index, page, refs, problems, seenIds, state));
 }
 
 function checkPage(
   lang: Lang, index: number, page: unknown, refs: BookRefs, problems: string[],
-  seenIds: Set<string>, state: { seenBook: boolean },
+  seenIds: Set<string>, state: { seenBook: boolean; panelIds: Set<string> },
 ) {
   const number = index + 1;
   const head = `${lang}: page ${number}`;
@@ -267,7 +349,9 @@ function checkPage(
     if (Object.keys(slot).length === 0) problems.push(`${where}: ${room} has no panel`);
     for (const side of Object.keys(slot)) {
       if (!SIDE_SET.has(side)) { problems.push(`${where}: ${room}: unknown side "${side}"`); continue; }
-      checkPanel(`${where} ${room} ${side}`, lang, slot[side], refs, problems);
+      const at = `${where} ${room} ${side}`;
+      checkPanel(at, lang, page.kind, slot[side], refs, problems);
+      checkPanelId(at, number, room as RoomKey, side as Side, slot[side], state.panelIds, problems);
     }
   }
   if (index === 0) {
@@ -319,7 +403,8 @@ function checkShape(en: unknown, es: unknown, problems: string[]) {
           problems.push(`${where}: fields differ: en [${fieldsA.join(', ')}], es [${fieldsB.join(', ')}]`);
           continue;
         }
-        for (const field of ['layout', 'image', 'key'] as const) {
+        // The facts: the layout, the id, the image, the key, and a quotation's author, work, publisher, year and language.
+        for (const field of ['layout', 'id', 'image', 'key', 'author', 'work', 'publisher', 'year', 'lang'] as const) {
           if (slotA[field] !== slotB[field]) problems.push(`${where}: ${field} is ${show(slotA[field])} in en and ${show(slotB[field])} in es`);
         }
       }
@@ -336,6 +421,7 @@ export function validateBook(en: unknown, es: unknown, refs: BookRefs): BookPair
   checkFile('en', en, refs, problems);
   checkFile('es', es, refs, problems);
   checkShape(en, es, problems);
+  checkQuoteNote(refs, problems);
   if (problems.length > 0) throw new BookValidationError(problems);
   // The checks above prove the shape; the cast only gives it the type.
   return { en: en as Book, es: es as Book };
@@ -347,6 +433,16 @@ let checked: BookPair | undefined;
 export function loadBook(lang: Lang): Book {
   checked ??= validateBook(bookEn, bookEs, bookRefs());
   return checked[lang];
+}
+
+/** The panel with this id (BOOK-DATA §2) on any page of the book, or undefined. Ids are unique in a validated file. */
+export function panelById(book: Book, id: string): Panel | undefined {
+  for (const page of book.pages) {
+    for (const slot of Object.values(page.panels)) {
+      for (const panel of Object.values(slot ?? {})) if (panel?.id === id) return panel;
+    }
+  }
+  return undefined;
 }
 
 /** The number of pages (page 1 is the first tutorial page). */

@@ -1,13 +1,16 @@
-// The achievement catalogue (docs/design/not-built/progression/ACHIEVEMENTS.md §1-2): the 36 that ship with
-// #147, as data. The names and descriptions are message keys (`achievement.<id>.name|desc`, in src/i18n/locales).
-// The tracker that reads this list is src/game/achievements.ts.
+// The achievement catalogue (docs/design/not-built/progression/ACHIEVEMENTS.md §1-2): the 40 that ship with
+// #147, as data (36 plus the 4 book pages). The names and descriptions are message keys (`achievement.<id>.name|desc`,
+// in src/i18n/locales). The tracker that reads this list is src/game/achievements.ts.
 //
 // An entry says which event may unlock it (`on`), the payload fields that must match (`where`; a list means any
 // of its values) and how many matching events it needs across runs (`times`, default 1). A boss has two entries,
 // `destroyed` and `converted`; the Shadow's `converted` also takes the stillness ending (`how: 'stillness'`).
 
-/** The events the catalogue listens to. `bossOvercome`, `meditationComplete` and `cook` are added to GameEvents by package D2. */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook'] as const;
+/**
+ * The events the catalogue listens to. `bossOvercome`, `meditationComplete` and `cook` are added to GameEvents by package D2,
+ * `pageReached` (the current page of the Roots' book at a run's end) by package D1; until then nothing emits it.
+ */
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -75,6 +78,12 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // Stations: the first potion brewed, the first meal cooked (2).
   { id: 'brew.first', on: 'brew' },
   { id: 'cook.first', on: 'cook' },
+
+  // Book pages: the Roots' book reached at a page number (4). Pages 54, 69 and 100 need that many pages in the book.
+  { id: 'book.page.7', on: 'pageReached', where: { page: 7 } },
+  { id: 'book.page.54', on: 'pageReached', where: { page: 54 } },
+  { id: 'book.page.69', on: 'pageReached', where: { page: 69 } },
+  { id: 'book.page.100', on: 'pageReached', where: { page: 100 } },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

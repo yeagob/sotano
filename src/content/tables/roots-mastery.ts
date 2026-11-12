@@ -33,7 +33,7 @@ export interface RootsRewards {
   readonly hearts: readonly HeartKind[];
   /** Free chests (no key needed) in the lesson rooms, at most one a room. */
   readonly freeChests: number;
-  /** Draws a free chest gives when opened, inclusive: 1 to 3, and 2 to 4 from level 33. */
+  /** Draws a free chest gives when opened, inclusive: 1 to 3, 2 to 4 from level 33, 3 to 5 from level 70. */
   readonly chestDraws: { readonly min: number; readonly max: number };
   /** Multiplies the floor's crate chance (see `rootsCrateChance`). */
   readonly crateFactor: number;
@@ -46,25 +46,30 @@ export interface RootsRewards {
 }
 
 /** The level at which each loose key starts (one more key each time): 1, 2, 3, 4, 5 and 6 keys. */
-const KEYS_AT = [1, 6, 14, 22, 31, 45] as const;
+const KEYS_AT = [1, 6, 14, 22, 31, 37] as const;
 /** Each loose breakthrough: 1, 2, 3, 4 and 5 of them. */
-const BREAKTHROUGHS_AT = [1, 9, 19, 28, 55] as const;
+const BREAKTHROUGHS_AT = [1, 9, 19, 28, 38] as const;
 /** Each free chest: one more from the level given. */
 const CHESTS_AT = [4, 12, 17, 23, 29, 35] as const;
 /** Each extra practice: one more from the level given. */
 const PRACTICES_AT = [10, 25] as const;
-/** Each loose heart, in the order it is added (a second red comes at 16, and so on). */
+/**
+ * Each loose heart, in the order it is added (a second red comes at 16, and so on). Star hearts are halved (owner,
+ * 2026-11-12): only the first one is ever laid, so the step that would give a second gives a second blood heart.
+ */
 const HEARTS_AT: readonly (readonly [number, HeartKind])[] = [
   [3, 'red'], [7, 'blue'], [13, 'stone'], [16, 'red'], [20, 'blood'],
-  [26, 'star'], [32, 'blue'], [36, 'black'], [65, 'stone'], [70, 'star'],
+  [26, 'star'], [32, 'blue'], [36, 'black'], [39, 'stone'], [40, 'blood'], [60, 'red'],
 ];
-/** The crate factor, a step at each level given, up to level 36. From 37 it follows `crateFactorAt`. */
+/** The crate factor, a step at each level given, up to level 40. From 41 it follows `crateFactorAt`. */
 const CRATE_STEPS: readonly (readonly [number, number])[] = [
   [0, 0.2], [2, 0.3], [5, 0.4], [8, 0.5], [11, 0.6], [15, 0.7], [18, 0.8], [21, 0.9],
   [24, 1.0], [27, 1.1], [30, 1.2], [34, 1.3],
 ];
-const CRATE_STEPS_END = 36;
+/** From this level the crate factor grows by 0.02 a level: 1.3 + 0.02 × (level − 40). */
+const CRATE_FORMULA_FROM = 41;
 const DRAWS_UP_AT = 33;
+const DRAWS_UP_AGAIN_AT = 70;
 const ALTAR_AT = 80;
 const ALTAR_BEST_AT = 90;
 const SANCTUARY_AT = 100;
@@ -77,10 +82,16 @@ export function clampLevel(level: number): number {
 const round2 = (x: number) => Math.round(x * 100) / 100;
 
 function crateFactorAt(level: number): number {
-  if (level > CRATE_STEPS_END) return round2(1.3 + 0.02 * (level - 36));
+  if (level >= CRATE_FORMULA_FROM) return round2(1.3 + 0.02 * (level - 40));
   let factor = CRATE_STEPS[0][1];
   for (const [at, value] of CRATE_STEPS) if (level >= at) factor = value;
   return factor;
+}
+
+/** The free chests' draws at a level: 1 to 3, 2 to 4 from 33, 3 to 5 from 70. */
+function chestDrawsAt(level: number): { readonly min: number; readonly max: number } {
+  if (level >= DRAWS_UP_AGAIN_AT) return { min: 3, max: 5 };
+  return level >= DRAWS_UP_AT ? { min: 2, max: 4 } : { min: 1, max: 3 };
 }
 
 /** What the Roots lay out at a mastery level. Pure: the same level always gives the same table. */
@@ -94,7 +105,7 @@ export function rootsRewards(level: number): RootsRewards {
     oneOfKeyOrBreakthrough: L === 0,
     hearts: HEARTS_AT.filter(([at]) => at <= L).map(([, kind]) => kind),
     freeChests: reached(CHESTS_AT),
-    chestDraws: L >= DRAWS_UP_AT ? { min: 2, max: 4 } : { min: 1, max: 3 },
+    chestDraws: chestDrawsAt(L),
     crateFactor: crateFactorAt(L),
     extraPractices: reached(PRACTICES_AT),
     altar: L >= ALTAR_BEST_AT ? { min: 2, max: 4 } : L >= ALTAR_AT ? { min: 1, max: 3 } : null,
@@ -135,7 +146,11 @@ export function gainsAt(level: number): GainLine[] {
     if (now.keys > before.keys) lines.push({ key: 'mastery.gain.key', params: { n: now.keys } });
     if (now.breakthroughs > before.breakthroughs) lines.push({ key: 'mastery.gain.bomb', params: { n: now.breakthroughs } });
   }
-  for (const kind of now.hearts.slice(before.hearts.length)) lines.push({ key: `mastery.gain.heart.${kind}`, params: {} });
+  // A heart of a kind the Roots already lay gets its own line ("One more ... heart"), not the first-time one.
+  for (const kind of now.hearts.slice(before.hearts.length)) {
+    const again = before.hearts.includes(kind);
+    lines.push({ key: again ? `mastery.gain.heartAgain.${kind}` : `mastery.gain.heart.${kind}`, params: {} });
+  }
   if (now.freeChests > before.freeChests) lines.push({ key: 'mastery.gain.chest', params: { n: now.freeChests } });
   if (now.chestDraws.min !== before.chestDraws.min || now.chestDraws.max !== before.chestDraws.max) {
     lines.push({ key: 'mastery.gain.chestDraws', params: {} });

@@ -16,6 +16,7 @@ const SAMPLES: Record<(typeof ACHIEVEMENT_EVENTS)[number], Payload> = {
   meditationComplete: { meditation: 'ground', source: 'roots' },
   brew: { potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 },
   cook: { meal: 'meal-small', part: 'fruit' },
+  pageReached: { page: 7 },
 };
 
 const EMPTY: AchievementState = { achievements: {}, counts: {} };
@@ -30,8 +31,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 36 achievements that ship with #147, and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(36);
+  it('holds the 40 achievements that ship with #147 (36 plus the 4 book pages), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(40);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -66,6 +67,12 @@ describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
   it('has the first brew and the first meal', () => {
     expect(ACHIEVEMENTS.find(d => d.id === 'brew.first')).toEqual({ id: 'brew.first', on: 'brew' });
     expect(ACHIEVEMENTS.find(d => d.id === 'cook.first')).toEqual({ id: 'cook.first', on: 'cook' });
+  });
+
+  it('has the four book-page achievements, each on pageReached with its page number', () => {
+    const pages = ACHIEVEMENTS.filter(d => d.on === 'pageReached');
+    expect(pages.map(d => d.id)).toEqual(['book.page.7', 'book.page.54', 'book.page.69', 'book.page.100']);
+    for (const d of pages) expect(d.where).toEqual({ page: Number(d.id.slice('book.page.'.length)) });
   });
 
   it('the Shadow\'s converted entry also takes the stillness ending, and its destroyed entry does not', () => {
@@ -147,6 +154,18 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 
   it('brew.first counts any potion, the Plain Tonic included', () => {
     expect(ids(run(EMPTY, 'brew', { ...SAMPLES.brew, potion: 'plain-tonic' }).unlocked)).toEqual(['brew.first']);
+  });
+
+  it('each book-page achievement unlocks on pageReached with its own page, and on no other', () => {
+    for (const page of [7, 54, 69, 100]) {
+      const id = `book.page.${page}`;
+      for (const other of [1, 6, 8, 53, 55, 99]) {
+        expect(run(EMPTY, 'pageReached', { page: other }).unlocked.map(d => d.id), `page ${other}`).not.toContain(id);
+      }
+      const reached = run(EMPTY, 'pageReached', { page });
+      expect(reached.unlocked.map(d => d.id), `page ${page}`).toEqual([id]);
+      expect(run(reached.state, 'pageReached', { page }).unlocked, `second time at ${page}`).toEqual([]);
+    }
   });
 
   it('cook.first unlocks on the first meal', () => {
@@ -246,11 +265,15 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 36 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 40 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(36);
+    expect(mastery({ achievements: all })).toBe(40);
+  });
+
+  it('a book-page achievement counts toward the level like any other', () => {
+    expect(mastery({ achievements: { 'book.page.7': NOW } })).toBe(1);
   });
 
   it('is capped at 100 even when the catalogue is longer', () => {

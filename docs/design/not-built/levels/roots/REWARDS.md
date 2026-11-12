@@ -1,6 +1,6 @@
 # What the Roots give, by mastery level
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one breakthrough; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 36, then 40 when four page achievements were added; step lines in stars). The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
+Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one breakthrough; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 40, the four page achievements being added on the same day; step lines in stars). Owner, 2026-11-12, later the same day: **star hearts are halved** (of little use in the Roots): only the first star heart is ever laid, and the step that would give a second gives a second blood heart; a repeated heart kind has its own line ("One more … heart", §7); the free chests draw three to five from level 70. The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
 
 The Roots read one number when a run starts: the mastery level, 0 to 100. Everything below is a pure function of that level and the run's seed. It changes only floor 0's own sources; every other floor, and the surface, keep their numbers.
 
@@ -63,7 +63,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 37 | A sixth key | 6 | | | | | |
 | 38 | A fifth breakthrough | | 5 | | | | |
 | 39 | A second stone heart | | | + stone | | | |
-| 40 | A second star heart | | | + star | | | |
+| 40 | A second blood heart (star hearts are halved: only the first is laid) | | | + blood | | | |
 | 41 to 100 | Crates give a little more each level | | | | | +0.02 a level | |
 | 60 | A third red heart | | | + red | | | |
 | 70 | Free chests give one thing more again | | | | (3 to 5 draws each) | | |
@@ -82,7 +82,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 22 | Four keys, three breakthroughs, five hearts (two red, blue, stone, blood), three free chests, crates 9–27%, one extra practice |
 | 25 | As 22 with four free chests, crates 10–30% (as other floors), **two extra practices** |
 | 36 | Five keys, four breakthroughs, eight hearts (two red, two blue, stone, blood, star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
-| 40 | Six keys, five breakthroughs, ten hearts (two red, two blue, two stone, blood, two star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
+| 40 | Six keys, five breakthroughs, ten hearts (two red, two blue, two stone, two blood, one star, one black), six free chests of two to four draws, crates 13–39%, two extra practices |
 | 50 | Six keys, five breakthroughs, ten hearts, six free chests, crates 15–45%, two extra practices |
 | 100 | Six keys, five breakthroughs, eleven hearts, six free chests of three to five draws, crates 25–75%, two extra practices, an altar up to ★★★★, and two Sanctuaries |
 
@@ -109,7 +109,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 ## 6. Rules the table keeps
 
-- **Bounded.** At most 6 keys, 5 breakthroughs, 11 hearts, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
+- **Bounded.** At most 6 keys, 5 breakthroughs, 11 hearts of which one is a star heart, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
 - **Monotonic.** For every level L, everything at L + 1 is at least what it is at L.
 - **Deterministic.** Floor 0 depends only on the seed and the level.
 - **Only the Roots.** Floors 1 to 9, the sky and the surface are identical at every mastery level for a given seed, because every new Roots practice is a runtime draw made after the whole reservation, and every other new decision draws from a new `floor/0/roots/*` fork.
@@ -132,6 +132,10 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 | `mastery.gain.heart.blood` | A blood heart lies in the Roots. | Un corazón de sangre te espera en las raíces. |
 | `mastery.gain.heart.star` | A star heart lies in the Roots. | Un corazón estrella te espera en las raíces. |
 | `mastery.gain.heart.black` | A black heart lies in the Roots. | Un corazón negro te espera en las raíces. |
+| `mastery.gain.heartAgain.red` | One more red heart lies in the Roots. | Un corazón rojo más te espera en las raíces. |
+| `mastery.gain.heartAgain.blue` | One more blue heart lies in the Roots. | Un corazón azul más te espera en las raíces. |
+| `mastery.gain.heartAgain.stone` | One more stone heart lies in the Roots. | Un corazón de piedra más te espera en las raíces. |
+| `mastery.gain.heartAgain.blood` | One more blood heart lies in the Roots. | Un corazón de sangre más te espera en las raíces. |
 | `mastery.gain.chest` | One more chest that needs no key ({n} in all). | Un cofre más que no pide llave ({n} en total). |
 | `mastery.gain.chestDraws` | Chests that need no key give one thing more. | Los cofres sin llave dan una cosa más. |
 | `mastery.gain.crates` | Crates give something more often: {lo} to {hi} % of the time. | Las cajas dan algo más a menudo: entre el {lo} y el {hi} % de las veces. |
@@ -141,3 +145,5 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 | `mastery.gain.sanctuary` | A second Boundary keeps a chest by the way down. | Un segundo Límite guarda un cofre junto a la bajada. |
 
 Percentages go through `fmtNum`. From 41 on, a level with only the crate step shows `mastery.gain.crates`; a level with two changes shows both lines.
+
+A heart of a kind the Roots already lay (red at 3 and 16 and 60, blue at 7 and 32, stone at 13 and 39, blood at 20 and 40) gives the `mastery.gain.heartAgain.<kind>` line; the first heart of a kind gives `mastery.gain.heart.<kind>`. The free chests' draws going up at 70 use `mastery.gain.chestDraws` again: the same line as at 33, since it says the same thing (one more draw).

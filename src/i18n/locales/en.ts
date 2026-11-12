@@ -697,6 +697,17 @@ const messages = {
   'achievement.brew.first.desc': 'Brew a potion in an alembic for the first time.',
   'achievement.cook.first.name': 'A Warm Meal',
   'achievement.cook.first.desc': 'Cook a meal in a kitchen for the first time.',
+  'achievement.book.page.7.name': 'The Hidden Book',
+  'achievement.book.page.7.desc': 'Reach page 7: the first page of the hidden book.',
+  'achievement.book.page.54.name': 'Lucky Number',
+  'achievement.book.page.54.desc': 'Reach page 54 of the Roots\' book.',
+  'achievement.book.page.69.name': 'Nice',
+  'achievement.book.page.69.desc': 'Reach page 69 of the Roots\' book.',
+  'achievement.book.page.100.name': 'Still Reading',
+  'achievement.book.page.100.desc': 'Reach page 100 of the Roots\' book.',
+
+  // ── the hidden book: a quotation's translation note (PANELS §4b) ──
+  'book.quote.translated': 'Our translation',
 
   // ── the achievement card (ACHIEVEMENTS §4) ──
   'achievement.card.kicker': 'Achievement',
@@ -713,6 +724,10 @@ const messages = {
   'mastery.gain.heart.blood': 'A blood heart lies in the Roots.',
   'mastery.gain.heart.star': 'A star heart lies in the Roots.',
   'mastery.gain.heart.black': 'A black heart lies in the Roots.',
+  'mastery.gain.heartAgain.red': 'One more red heart lies in the Roots.',
+  'mastery.gain.heartAgain.blue': 'One more blue heart lies in the Roots.',
+  'mastery.gain.heartAgain.stone': 'One more stone heart lies in the Roots.',
+  'mastery.gain.heartAgain.blood': 'One more blood heart lies in the Roots.',
   'mastery.gain.chest': 'One more chest that needs no key ({n} in all).',
   'mastery.gain.chestDraws': 'Chests that need no key give one thing more.',
   'mastery.gain.crates': 'Crates give something more often: {lo} to {hi} % of the time.',

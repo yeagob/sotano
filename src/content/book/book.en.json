@@ -7,48 +7,48 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "north": { "layout": "lesson", "title": "The roots", "text": "Everything down here is made of blocks. Throw an intention at one and see what happens.", "image": "lesson/blocks", "key": "cast" },
-          "south": { "layout": "plate", "title": "Doubt", "subtitle": "A projection", "text": "A pattern that blocks your way, given a body made of blocks. No projection lives in the roots.", "image": "bestiary/doubt", "note": "It waits from floor 1." }
+          "north": { "id": "1-hall-n", "layout": "lesson", "title": "The roots", "text": "Everything down here is made of blocks. Throw an intention at one and see what happens.", "image": "lesson/blocks", "key": "cast" },
+          "south": { "id": "1-hall-s", "layout": "plate", "title": "Doubt", "subtitle": "A projection", "text": "A pattern that blocks your way, given a body made of blocks. No projection lives in the roots.", "image": "bestiary/doubt", "note": "It waits from floor 1." }
         },
         "roots-step": {
-          "north": { "layout": "lesson", "title": "Good and bad", "text": "Your intentions are good or bad. Good ones heal and make creatures grow; bad ones break blocks and hurt.", "image": "lesson/polarity", "key": "polarity" },
-          "south": { "layout": "lesson", "title": "Move and jump", "text": "{jump} jumps one block, never two. Break some dirt, walk into it to pick it up, set it by the wall, climb.", "image": "lesson/step", "key": "move" }
+          "north": { "id": "1-step-n", "layout": "lesson", "title": "Good and bad", "text": "Your intentions are good or bad. Good ones heal and make creatures grow; bad ones break blocks and hurt.", "image": "lesson/polarity", "key": "polarity" },
+          "south": { "id": "1-step-s", "layout": "lesson", "title": "Move and jump", "text": "{jump} jumps one block, never two. Break some dirt, walk into it to pick it up, set it by the wall, climb.", "image": "lesson/step", "key": "move" }
         },
         "roots-dig": {
-          "north": { "layout": "lesson", "title": "Behind the wall", "text": "Every wall was once built to keep you safe. You can always break one, or build a better one.", "image": "lesson/behind-wall" },
-          "south": { "layout": "lesson", "title": "Break through", "text": "A wall stands in your way. Make your intentions bad and break it: the dirt in the middle gives way first.", "image": "lesson/dig", "key": "cast" }
+          "north": { "id": "1-dig-n", "layout": "lesson", "title": "Behind the wall", "text": "Every wall was once built to keep you safe. You can always break one, or build a better one.", "image": "lesson/behind-wall" },
+          "south": { "id": "1-dig-s", "layout": "lesson", "title": "Break through", "text": "A wall stands in your way. Make your intentions bad and break it: the dirt in the middle gives way first.", "image": "lesson/dig", "key": "cast" }
         },
         "roots-mend": {
-          "north": { "layout": "lesson", "title": "Mend", "text": "Good intentions close cracks. Crack a dirt block with bad ones, switch back, and mend it.", "image": "lesson/mend", "key": "polarity" },
-          "south": { "layout": "plate", "title": "Mossling", "subtitle": "A creature of rest", "text": "Stay still beside it for three seconds and it rests with you: you heal a quarter of a heart.", "image": "bestiary/mossling", "note": "Once for each Mossling." }
+          "north": { "id": "1-mend-n", "layout": "lesson", "title": "Mend", "text": "Good intentions close cracks. Crack a dirt block with bad ones, switch back, and mend it.", "image": "lesson/mend", "key": "polarity" },
+          "south": { "id": "1-mend-s", "layout": "plate", "title": "Mossling", "subtitle": "A creature of rest", "text": "Stay still beside it for three seconds and it rests with you: you heal a quarter of a heart.", "image": "bestiary/mossling", "note": "Once for each Mossling." }
         },
         "roots-pit": {
-          "north": { "layout": "lesson", "title": "A way out", "text": "Too wide to jump, too deep to climb. Carry a block, set it against the wall, step up, build your way out.", "image": "lesson/pit", "key": "place" },
-          "south": { "layout": "plate", "title": "Wonder", "subtitle": "A creature of curiosity", "text": "A paper moth that keeps you company from a distance. It never touches you and never fights.", "image": "bestiary/wonder", "note": "Good intentions make it grow." }
+          "north": { "id": "1-pit-n", "layout": "lesson", "title": "A way out", "text": "Too wide to jump, too deep to climb. Carry a block, set it against the wall, step up, build your way out.", "image": "lesson/pit", "key": "place" },
+          "south": { "id": "1-pit-s", "layout": "plate", "title": "Wonder", "subtitle": "A creature of curiosity", "text": "A paper moth that keeps you company from a distance. It never touches you and never fights.", "image": "bestiary/wonder", "note": "Good intentions make it grow." }
         },
         "roots-bridge": {
-          "north": { "layout": "lesson", "title": "A bridge", "text": "Stand at the edge, place a block in front of you, step onto it, and do it again.", "image": "lesson/bridge", "key": "place" },
-          "south": { "layout": "plate", "title": "Rootling", "subtitle": "A creature of the roots", "text": "It potters along on two short legs, never too close to you and never too far away.", "image": "bestiary/rootling", "note": "Grown three times: a gift?" }
+          "north": { "id": "1-bridge-n", "layout": "lesson", "title": "A bridge", "text": "Stand at the edge, place a block in front of you, step onto it, and do it again.", "image": "lesson/bridge", "key": "place" },
+          "south": { "id": "1-bridge-s", "layout": "plate", "title": "Rootling", "subtitle": "A creature of the roots", "text": "It potters along on two short legs, never too close to you and never too far away.", "image": "bestiary/rootling", "note": "Grown three times: a gift?" }
         },
         "roots-seal": {
-          "north": { "layout": "lesson", "title": "Keys and seeds", "text": "Keys open locks. Breakthroughs are seeds that burst, and can hurt you too. You count them; they take no hand.", "image": "lesson/counters" },
-          "south": { "layout": "lesson", "title": "Breakthroughs", "text": "Obsidian is too hard for intentions. Break the dirt in the wall, or drop a breakthrough with bad intentions.", "image": "lesson/breakthrough", "key": "bomb" }
+          "north": { "id": "1-seal-n", "layout": "lesson", "title": "Keys and seeds", "text": "Keys open locks. Breakthroughs are seeds that burst, and can hurt you too. You count them; they take no hand.", "image": "lesson/counters" },
+          "south": { "id": "1-seal-s", "layout": "lesson", "title": "Breakthroughs", "text": "Obsidian is too hard for intentions. Break the dirt in the wall, or drop a breakthrough with bad intentions.", "image": "lesson/breakthrough", "key": "bomb" }
         },
         "roots-crates": {
-          "north": { "layout": "lesson", "title": "Kick and throw", "text": "With full hands, you kick the loose cubes you walk into. You can also throw one. Both hurt projections.", "image": "lesson/kick", "key": "throw" },
-          "south": { "layout": "lesson", "title": "Crates", "text": "Break a crate with bad intentions. Now and then one holds a key, a heart or a breakthrough.", "image": "lesson/crates", "key": "cast" }
+          "north": { "id": "1-crates-n", "layout": "lesson", "title": "Kick and throw", "text": "With full hands, you kick the loose cubes you walk into. You can also throw one. Both hurt projections.", "image": "lesson/kick", "key": "throw" },
+          "south": { "id": "1-crates-s", "layout": "lesson", "title": "Crates", "text": "Break a crate with bad intentions. Now and then one holds a key, a heart or a breakthrough.", "image": "lesson/crates", "key": "cast" }
         },
         "roots-spring": {
-          "north": { "layout": "lesson", "title": "Fire and lava", "text": "Not in the roots. Deeper down, fire and lava burn. Water puts out fire and turns lava into stone.", "image": "lesson/lava" },
-          "south": { "layout": "lesson", "title": "Water", "text": "Wade through the shallows. In deep water, {jump} swims you up.", "image": "lesson/water", "key": "jump" }
+          "north": { "id": "1-spring-n", "layout": "lesson", "title": "Fire and lava", "text": "Not in the roots. Deeper down, fire and lava burn. Water puts out fire and turns lava into stone.", "image": "lesson/lava" },
+          "south": { "id": "1-spring-s", "layout": "lesson", "title": "Water", "text": "Wade through the shallows. In deep water, {jump} swims you up.", "image": "lesson/water", "key": "jump" }
         },
         "roots-gift": {
-          "north": { "layout": "lesson", "title": "The Sanctuary", "text": "The Boundary keeps this chest. Take the quick gift, or sit a short meditation for a better one.", "image": "lesson/sanctuary" },
-          "south": { "layout": "lesson", "title": "Practices", "text": "A practice is a way of growing. Take one and it changes what you can do, and who you are.", "image": "lesson/practice", "key": "inventory" }
+          "north": { "id": "1-gift-n", "layout": "lesson", "title": "The Sanctuary", "text": "The Boundary keeps this chest. Take the quick gift, or sit a short meditation for a better one.", "image": "lesson/sanctuary" },
+          "south": { "id": "1-gift-s", "layout": "lesson", "title": "Practices", "text": "A practice is a way of growing. Take one and it changes what you can do, and who you are.", "image": "lesson/practice", "key": "inventory" }
         },
         "roots-door": {
-          "north": { "layout": "lesson", "title": "Come back", "text": "The roots remember you. Walk through every room before you go, and next time the walls may say more.", "image": "lesson/ring" },
-          "south": { "layout": "lesson", "title": "The way down", "text": "The way down asks a price: one thing you carry. A key, a breakthrough, a block or a heart.", "image": "lesson/way-down" }
+          "north": { "id": "1-door-n", "layout": "lesson", "title": "Come back", "text": "The roots remember you. Walk through every room before you go, and next time the walls may say more.", "image": "lesson/ring" },
+          "south": { "id": "1-door-s", "layout": "lesson", "title": "The way down", "text": "The way down asks a price: one thing you carry. A key, a breakthrough, a block or a heart.", "image": "lesson/way-down" }
         }
       }
     },
@@ -57,31 +57,31 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "lesson", "title": "Potions", "text": "What released projections leave can become potions. With a flask on top of your hand, drink it.", "image": "lesson/drink", "key": "drink" }
+          "south": { "id": "2-hall-s", "layout": "lesson", "title": "Potions", "text": "What released projections leave can become potions. With a flask on top of your hand, drink it.", "image": "lesson/drink", "key": "drink" }
         },
         "roots-step": {
-          "south": { "layout": "lesson", "title": "The alembic", "text": "On floors 2, 4, 6 and 8. Feed it up to three parts or blocks, then touch it with a good intention.", "image": "lesson/alembic", "key": "place" }
+          "south": { "id": "2-step-s", "layout": "lesson", "title": "The alembic", "text": "On floors 2, 4, 6 and 8. Feed it up to three parts or blocks, then touch it with a good intention.", "image": "lesson/alembic", "key": "place" }
         },
         "roots-dig": {
-          "north": { "layout": "lesson", "title": "The kitchen", "text": "On floors 1, 3, 5 and 7. Give it a part and it cooks you a meal. Three meals, then its fire is out.", "image": "lesson/kitchen", "key": "place" }
+          "north": { "id": "2-dig-n", "layout": "lesson", "title": "The kitchen", "text": "On floors 1, 3, 5 and 7. Give it a part and it cooks you a meal. Three meals, then its fire is out.", "image": "lesson/kitchen", "key": "place" }
         },
         "roots-mend": {
-          "south": { "layout": "plate", "title": "Plain Tonic", "subtitle": "A potion", "text": "What the alembic makes when no recipe fits. Plain, but never nothing.", "image": "icon/potion/plain-tonic", "note": "Restores half a heart." }
+          "south": { "id": "2-mend-s", "layout": "plate", "title": "Plain Tonic", "subtitle": "A potion", "text": "What the alembic makes when no recipe fits. Plain, but never nothing.", "image": "icon/potion/plain-tonic", "note": "Restores half a heart." }
         },
         "roots-pit": {
-          "south": { "layout": "plate", "title": "Restoring Draught", "subtitle": "A potion", "text": "A deep breath in a bottle, for when the hearts run low.", "image": "icon/potion/restoring-draught", "note": "Restores one heart." }
+          "south": { "id": "2-pit-s", "layout": "plate", "title": "Restoring Draught", "subtitle": "A potion", "text": "A deep breath in a bottle, for when the hearts run low.", "image": "icon/potion/restoring-draught", "note": "Restores one heart." }
         },
         "roots-bridge": {
-          "south": { "layout": "plate", "title": "Spring Tonic", "subtitle": "A potion", "text": "Your legs remember how to leap. It lasts until the next floor.", "image": "icon/potion/spring-tonic", "note": "Jump strength ×1.4" }
+          "south": { "id": "2-bridge-s", "layout": "plate", "title": "Spring Tonic", "subtitle": "A potion", "text": "Your legs remember how to leap. It lasts until the next floor.", "image": "icon/potion/spring-tonic", "note": "Jump strength ×1.4" }
         },
         "roots-seal": {
-          "north": { "layout": "plate", "title": "Clear Infusion", "subtitle": "A potion", "text": "The mind clears: intentions fly farther and faster for three sealed rooms.", "image": "icon/potion/clear-infusion", "note": "Range ×1.3 · shot speed ×1.2" }
+          "north": { "id": "2-seal-n", "layout": "plate", "title": "Clear Infusion", "subtitle": "A potion", "text": "The mind clears: intentions fly farther and faster for three sealed rooms.", "image": "icon/potion/clear-infusion", "note": "Range ×1.3 · shot speed ×1.2" }
         },
         "roots-crates": {
-          "north": { "layout": "plate", "title": "Questioning Tincture", "subtitle": "A potion", "text": "A question loosens a lock: the next locked door or chest asks one key less.", "image": "icon/potion/questioning-tincture", "note": "Never the toll." }
+          "north": { "id": "2-crates-n", "layout": "plate", "title": "Questioning Tincture", "subtitle": "A potion", "text": "A question loosens a lock: the next locked door or chest asks one key less.", "image": "icon/potion/questioning-tincture", "note": "Never the toll." }
         },
         "roots-spring": {
-          "north": { "layout": "plate", "title": "Hearty Meal", "subtitle": "A food", "text": "Cooked from a heart, mind or essence part. A flesh part makes a Small Meal instead.", "image": "icon/potion/meal-hearty", "note": "Restores one heart." }
+          "north": { "id": "2-spring-n", "layout": "plate", "title": "Hearty Meal", "subtitle": "A food", "text": "Cooked from a heart, mind or essence part. A flesh part makes a Small Meal instead.", "image": "icon/potion/meal-hearty", "note": "Restores one heart." }
         }
       }
     },
@@ -90,31 +90,31 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "lesson", "title": "Projections", "text": "Bad intentions release a projection. Good ones warm it until it turns to your side.", "image": "lesson/convert", "key": "polarity" }
+          "south": { "id": "3-hall-s", "layout": "lesson", "title": "Projections", "text": "Bad intentions release a projection. Good ones warm it until it turns to your side.", "image": "lesson/convert", "key": "polarity" }
         },
         "roots-step": {
-          "south": { "layout": "lesson", "title": "Parts", "text": "A released projection may leave a part: flesh, heart, mind or essence. It rides in your hand.", "image": "lesson/parts" }
+          "south": { "id": "3-step-s", "layout": "lesson", "title": "Parts", "text": "A released projection may leave a part: flesh, heart, mind or essence. It rides in your hand.", "image": "lesson/parts" }
         },
         "roots-dig": {
-          "north": { "layout": "plate", "title": "Inner Critic", "subtitle": "A projection", "text": "It keeps its distance and lobs judgements at your head. A placed block stops them.", "image": "bestiary/critic", "note": "May leave a heart or a key." }
+          "north": { "id": "3-dig-n", "layout": "plate", "title": "Inner Critic", "subtitle": "A projection", "text": "It keeps its distance and lobs judgements at your head. A placed block stops them.", "image": "bestiary/critic", "note": "May leave a heart or a key." }
         },
         "roots-mend": {
-          "south": { "layout": "plate", "title": "Panic", "subtitle": "A projection", "text": "It rushes at you and swells before it bursts. Step out of reach while it swells.", "image": "bestiary/panic", "note": "May leave a breakthrough." }
+          "south": { "id": "3-mend-s", "layout": "plate", "title": "Panic", "subtitle": "A projection", "text": "It rushes at you and swells before it bursts. Step out of reach while it swells.", "image": "bestiary/panic", "note": "May leave a breakthrough." }
         },
         "roots-pit": {
-          "south": { "layout": "plate", "title": "Resistance", "subtitle": "A boss · floors 1–2", "text": "A door that walks. It comes at you and rams, and what it rams breaks.", "image": "bestiary/resistance", "note": "Leaves a practice." }
+          "south": { "id": "3-pit-s", "layout": "plate", "title": "Resistance", "subtitle": "A boss · floors 1–2", "text": "A door that walks. It comes at you and rams, and what it rams breaks.", "image": "bestiary/resistance", "note": "Leaves a practice." }
         },
         "roots-bridge": {
-          "south": { "layout": "plate", "title": "Inertia", "subtitle": "A boss · floors 1–2", "text": "A ball of packed earth, asleep. A push wakes it; then it rolls and bounces off the walls.", "image": "bestiary/inertia", "note": "Leaves a practice." }
+          "south": { "id": "3-bridge-s", "layout": "plate", "title": "Inertia", "subtitle": "A boss · floors 1–2", "text": "A ball of packed earth, asleep. A push wakes it; then it rolls and bounces off the walls.", "image": "bestiary/inertia", "note": "Leaves a practice." }
         },
         "roots-seal": {
-          "north": { "layout": "plate", "title": "The Insatiable", "subtitle": "A boss · floors 1–2", "text": "A giant stone cup that never walks. It pulls the room toward its mouth and spits it back.", "image": "bestiary/insatiable", "note": "Leaves a practice." }
+          "north": { "id": "3-seal-n", "layout": "plate", "title": "The Insatiable", "subtitle": "A boss · floors 1–2", "text": "A giant stone cup that never walks. It pulls the room toward its mouth and spits it back.", "image": "bestiary/insatiable", "note": "Leaves a practice." }
         },
         "roots-crates": {
-          "north": { "layout": "plate", "title": "Overwhelm", "subtitle": "A boss · floors 3–4", "text": "A tide with a face of foam. It surges at you, and its waves are low enough to jump.", "image": "bestiary/overwhelm", "note": "Leaves a practice." }
+          "north": { "id": "3-crates-n", "layout": "plate", "title": "Overwhelm", "subtitle": "A boss · floors 3–4", "text": "A tide with a face of foam. It surges at you, and its waves are low enough to jump.", "image": "bestiary/overwhelm", "note": "Leaves a practice." }
         },
         "roots-spring": {
-          "north": { "layout": "lesson", "title": "Bosses", "text": "Every floor below ends with a boss. Overcome it and its practice appears, and the way down opens.", "image": "lesson/boss-room" }
+          "north": { "id": "3-spring-n", "layout": "lesson", "title": "Bosses", "text": "Every floor below ends with a boss. Overcome it and its practice appears, and the way down opens.", "image": "lesson/boss-room" }
         }
       }
     },
@@ -123,31 +123,31 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "lesson", "title": "Paths", "text": "Every practice follows a path: miracles, body, mind, emotion or will. Its mark tells you which.", "image": "lesson/paths", "key": "inventory" }
+          "south": { "id": "4-hall-s", "layout": "lesson", "title": "Paths", "text": "Every practice follows a path: miracles, body, mind, emotion or will. Its mark tells you which.", "image": "lesson/paths", "key": "inventory" }
         },
         "roots-step": {
-          "south": { "layout": "lesson", "title": "States of being", "text": "Hold three practices of one path, body, mind, emotion or will, and you reach a state of being.", "image": "lesson/state" }
+          "south": { "id": "4-step-s", "layout": "lesson", "title": "States of being", "text": "Hold three practices of one path, body, mind, emotion or will, and you reach a state of being.", "image": "lesson/state" }
         },
         "roots-dig": {
-          "north": { "layout": "plate", "title": "Grounding", "subtitle": "A practice · body", "text": "Rooted in the body, you push with your whole weight. The Sanctuary keeps a sitting of it.", "image": "icon/item/grounding", "note": "Kicks ×2 · reach +1" }
+          "north": { "id": "4-dig-n", "layout": "plate", "title": "Grounding", "subtitle": "A practice · body", "text": "Rooted in the body, you push with your whole weight. The Sanctuary keeps a sitting of it.", "image": "icon/item/grounding", "note": "Kicks ×2 · reach +1" }
         },
         "roots-mend": {
-          "south": { "layout": "plate", "title": "Gratitude Journal", "subtitle": "A practice · emotion", "text": "Notice what is going well. The Sanctuary keeps a sitting of it.", "image": "icon/item/gratitude", "note": "Luck +1.5" }
+          "south": { "id": "4-mend-s", "layout": "plate", "title": "Gratitude Journal", "subtitle": "A practice · emotion", "text": "Notice what is going well. The Sanctuary keeps a sitting of it.", "image": "icon/item/gratitude", "note": "Luck +1.5" }
         },
         "roots-pit": {
-          "south": { "layout": "plate", "title": "Box Breathing", "subtitle": "A practice · body", "text": "In for four, hold for four, out for four. The Sanctuary keeps a sitting of it.", "image": "icon/item/boxbreathing", "note": "+1 heart and a full heal" }
+          "south": { "id": "4-pit-s", "layout": "plate", "title": "Box Breathing", "subtitle": "A practice · body", "text": "In for four, hold for four, out for four. The Sanctuary keeps a sitting of it.", "image": "icon/item/boxbreathing", "note": "+1 heart and a full heal" }
         },
         "roots-bridge": {
-          "south": { "layout": "plate", "title": "Self-Compassion", "subtitle": "A practice · emotion", "text": "You speak to yourself the way you would to a friend. The Sanctuary keeps a sitting of it.", "image": "icon/item/selfcompassion", "note": "+1 heart, and heals one" }
+          "south": { "id": "4-bridge-s", "layout": "plate", "title": "Self-Compassion", "subtitle": "A practice · emotion", "text": "You speak to yourself the way you would to a friend. The Sanctuary keeps a sitting of it.", "image": "icon/item/selfcompassion", "note": "+1 heart, and heals one" }
         },
         "roots-seal": {
-          "north": { "layout": "lesson", "title": "Recipes", "text": "The alembic reads all it holds. The most exact recipe wins; if none fits, you get a Plain Tonic.", "image": "lesson/recipe" }
+          "north": { "id": "4-seal-n", "layout": "lesson", "title": "Recipes", "text": "The alembic reads all it holds. The most exact recipe wins; if none fits, you get a Plain Tonic.", "image": "lesson/recipe" }
         },
         "roots-crates": {
-          "north": { "layout": "plate", "title": "Restoring Draught", "subtitle": "A recipe", "text": "Two flesh parts, from any pattern.", "image": "icon/potion/restoring-draught", "note": "Restores one heart." }
+          "north": { "id": "4-crates-n", "layout": "plate", "title": "Restoring Draught", "subtitle": "A recipe", "text": "Two flesh parts, from any pattern.", "image": "icon/potion/restoring-draught", "note": "Restores one heart." }
         },
         "roots-spring": {
-          "north": { "layout": "plate", "title": "Spring Tonic", "subtitle": "A recipe", "text": "One heart part, from a pattern of the body path.", "image": "icon/potion/spring-tonic", "note": "Jump ×1.4 for the floor" }
+          "north": { "id": "4-spring-n", "layout": "plate", "title": "Spring Tonic", "subtitle": "A recipe", "text": "One heart part, from a pattern of the body path.", "image": "icon/potion/spring-tonic", "note": "Jump ×1.4 for the floor" }
         }
       }
     },
@@ -156,31 +156,31 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "lesson", "title": "Creatures", "text": "Creatures are not patterns, and they never die. Hurt one and it hides until its room is cleared.", "image": "lesson/creatures" }
+          "south": { "id": "5-hall-s", "layout": "lesson", "title": "Creatures", "text": "Creatures are not patterns, and they never die. Hurt one and it hides until its room is cleared.", "image": "lesson/creatures" }
         },
         "roots-step": {
-          "south": { "layout": "plate", "title": "Chirper", "subtitle": "A creature · floors 1–2", "text": "A cellar cricket. It sings while its room is safe and falls silent when a projection is there.", "image": "bestiary/chirper", "note": "Listen before you go in." }
+          "south": { "id": "5-step-s", "layout": "plate", "title": "Chirper", "subtitle": "A creature · floors 1–2", "text": "A cellar cricket. It sings while its room is safe and falls silent when a projection is there.", "image": "bestiary/chirper", "note": "Listen before you go in." }
         },
         "roots-dig": {
-          "north": { "layout": "plate", "title": "Delver", "subtitle": "A creature · floors 1–3", "text": "A small digger with a cap of dirt, wandering as if it had a hole to get to.", "image": "bestiary/delver", "note": "It stands for play." }
+          "north": { "id": "5-dig-n", "layout": "plate", "title": "Delver", "subtitle": "A creature · floors 1–3", "text": "A small digger with a cap of dirt, wandering as if it had a hole to get to.", "image": "bestiary/delver", "note": "It stands for play." }
         },
         "roots-mend": {
-          "south": { "layout": "plate", "title": "Bubbler", "subtitle": "A creature · floors 3–4", "text": "A small fish of deep water. It never climbs out of its pool.", "image": "bestiary/bubbler", "note": "Breath, the body's rhythm." }
+          "south": { "id": "5-mend-s", "layout": "plate", "title": "Bubbler", "subtitle": "A creature · floors 3–4", "text": "A small fish of deep water. It never climbs out of its pool.", "image": "bestiary/bubbler", "note": "Breath, the body's rhythm." }
         },
         "roots-pit": {
-          "south": { "layout": "plate", "title": "Ferryback", "subtitle": "A creature · floors 3–4", "text": "The largest creature of all. It drifts slowly across deep water, broad and pale.", "image": "bestiary/ferryback", "note": "It stands for being carried." }
+          "south": { "id": "5-pit-s", "layout": "plate", "title": "Ferryback", "subtitle": "A creature · floors 3–4", "text": "The largest creature of all. It drifts slowly across deep water, broad and pale.", "image": "bestiary/ferryback", "note": "It stands for being carried." }
         },
         "roots-bridge": {
-          "south": { "layout": "plate", "title": "Leafling", "subtitle": "A creature · floors 1–5", "text": "A little light shaped like a leaf. Bad intentions pass right through it.", "image": "bestiary/leafling", "note": "It stands for wonder." }
+          "south": { "id": "5-bridge-s", "layout": "plate", "title": "Leafling", "subtitle": "A creature · floors 1–5", "text": "A little light shaped like a leaf. Bad intentions pass right through it.", "image": "bestiary/leafling", "note": "It stands for wonder." }
         },
         "roots-seal": {
-          "north": { "layout": "plate", "title": "Star-mite", "subtitle": "A creature · floors 1–5", "text": "A tiny mite with three points of light on its back, like a small constellation.", "image": "bestiary/star-mite", "note": "Joining what is apart." }
+          "north": { "id": "5-seal-n", "layout": "plate", "title": "Star-mite", "subtitle": "A creature · floors 1–5", "text": "A tiny mite with three points of light on its back, like a small constellation.", "image": "bestiary/star-mite", "note": "Joining what is apart." }
         },
         "roots-crates": {
-          "north": { "layout": "plate", "title": "Inkmite", "subtitle": "A creature · floors 5–6", "text": "A tiny mite, black as ink. Its two eyes are the only light on it.", "image": "bestiary/inkmite", "note": "Letting things go." }
+          "north": { "id": "5-crates-n", "layout": "plate", "title": "Inkmite", "subtitle": "A creature · floors 5–6", "text": "A tiny mite, black as ink. Its two eyes are the only light on it.", "image": "bestiary/inkmite", "note": "Letting things go." }
         },
         "roots-spring": {
-          "north": { "layout": "plate", "title": "Cinderwalker", "subtitle": "A creature · floors 7–8", "text": "It walks through fire and over lava, and nothing burns it.", "image": "bestiary/cinderwalker", "note": "Through fire, unburned." }
+          "north": { "id": "5-spring-n", "layout": "plate", "title": "Cinderwalker", "subtitle": "A creature · floors 7–8", "text": "It walks through fire and over lava, and nothing burns it.", "image": "bestiary/cinderwalker", "note": "Through fire, unburned." }
         }
       }
     },
@@ -189,31 +189,31 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "lesson", "title": "White seeds", "text": "Drop a breakthrough with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-seed", "key": "bomb" }
+          "south": { "id": "6-hall-s", "layout": "lesson", "title": "White seeds", "text": "Drop a breakthrough with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-seed", "key": "bomb" }
         },
         "roots-step": {
-          "south": { "layout": "lesson", "title": "Hard hits", "text": "A thrown block hurts by its hardness. Dirt barely bruises; obsidian hits like two or three intentions.", "image": "lesson/throw", "key": "throw" }
+          "south": { "id": "6-step-s", "layout": "lesson", "title": "Hard hits", "text": "A thrown block hurts by its hardness. Dirt barely bruises; obsidian hits like two or three intentions.", "image": "lesson/throw", "key": "throw" }
         },
         "roots-dig": {
-          "north": { "layout": "lesson", "title": "Chests", "text": "A padlock's keyholes tell how many keys a chest asks. Brass trim means a practice waits inside.", "image": "lesson/chests" }
+          "north": { "id": "6-dig-n", "layout": "lesson", "title": "Chests", "text": "A padlock's keyholes tell how many keys a chest asks. Brass trim means a practice waits inside.", "image": "lesson/chests" }
         },
         "roots-mend": {
-          "south": { "layout": "plate", "title": "Stone heart", "subtitle": "A heart", "text": "While it takes the blows, every hit you take is halved.", "image": "icon/heart/stone", "note": "It crumbles when spent." }
+          "south": { "id": "6-mend-s", "layout": "plate", "title": "Stone heart", "subtitle": "A heart", "text": "While it takes the blows, every hit you take is halved.", "image": "icon/heart/stone", "note": "It crumbles when spent." }
         },
         "roots-pit": {
-          "south": { "layout": "plate", "title": "Star heart", "subtitle": "A heart", "text": "One heart back, and thirty seconds when nothing can touch you.", "image": "icon/heart/star", "note": "Then the star fades." }
+          "south": { "id": "6-pit-s", "layout": "plate", "title": "Star heart", "subtitle": "A heart", "text": "One heart back, and thirty seconds when nothing can touch you.", "image": "icon/heart/star", "note": "Then the star fades." }
         },
         "roots-bridge": {
-          "south": { "layout": "plate", "title": "Blood heart", "subtitle": "A heart", "text": "You heal slowly, up to two hearts. A single hit stops it.", "image": "icon/heart/blood", "note": "Keep out of harm's way." }
+          "south": { "id": "6-bridge-s", "layout": "plate", "title": "Blood heart", "subtitle": "A heart", "text": "You heal slowly, up to two hearts. A single hit stops it.", "image": "icon/heart/blood", "note": "Keep out of harm's way." }
         },
         "roots-seal": {
-          "north": { "layout": "lesson", "title": "The toll", "text": "Each way down asks more: one thing more on every floor until the fifth, then practices.", "image": "lesson/toll" }
+          "north": { "id": "6-seal-n", "layout": "lesson", "title": "The toll", "text": "Each way down asks more: one thing more on every floor until the fifth, then practices.", "image": "lesson/toll" }
         },
         "roots-crates": {
-          "north": { "layout": "plate", "title": "The Listener", "subtitle": "A presence · floors 1–5", "text": "Offer it the heart part of a released pattern, and it gives you something back.", "image": "bestiary/listener", "note": "It only listens." }
+          "north": { "id": "6-crates-n", "layout": "plate", "title": "The Listener", "subtitle": "A presence · floors 1–5", "text": "Offer it the heart part of a released pattern, and it gives you something back.", "image": "bestiary/listener", "note": "It only listens." }
         },
         "roots-spring": {
-          "north": { "layout": "lesson", "title": "Growing", "text": "Good intentions make a creature grow, up to three times its size. The first time, a grown one may leave a heart.", "image": "lesson/grow", "key": "cast" }
+          "north": { "id": "6-spring-n", "layout": "lesson", "title": "Growing", "text": "Good intentions make a creature grow, up to three times its size. The first time, a grown one may leave a heart.", "image": "lesson/grow", "key": "cast" }
         }
       }
     },
@@ -222,7 +222,10 @@
       "kind": "book",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "prose", "text": "You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it." }
+          "south": { "id": "7-hall-s", "layout": "prose", "text": "You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it." }
+        },
+        "roots-gift": {
+          "north": { "id": "7-gift-n", "layout": "quote", "text": "Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
         }
       }
     },
@@ -231,7 +234,7 @@
       "kind": "book",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "prose", "text": "The shapes that block your way are not people. They are patterns: a doubt, a judging voice, a fear at the edge of change. Each one wants something for you, in its own clumsy way. Warm them, and some will turn and walk beside you." }
+          "south": { "id": "8-hall-s", "layout": "prose", "text": "The shapes that block your way are not people. They are patterns: a doubt, a judging voice, a fear at the edge of change. Each one wants something for you, in its own clumsy way. Warm them, and some will turn and walk beside you." }
         }
       }
     },
@@ -240,7 +243,7 @@
       "kind": "book",
       "panels": {
         "roots-hall": {
-          "south": { "layout": "prose", "text": "Above the roots, a great tree climbs into the sky. Below them, the floors go down, older and colder, to the silence. It is one journey, seen from both ends. What you learn at the bottom grows toward the light." }
+          "south": { "id": "9-hall-s", "layout": "prose", "text": "Above the roots, a great tree climbs into the sky. Below them, the floors go down, older and colder, to the silence. It is one journey, seen from both ends. What you learn at the bottom grows toward the light." }
         }
       }
     }

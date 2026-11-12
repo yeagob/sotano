@@ -693,6 +693,17 @@ export const ES: Catalog = {
     'achievement.brew.first.desc': 'Destila una poción en un alambique por primera vez.',
     'achievement.cook.first.name': 'Un plato caliente',
     'achievement.cook.first.desc': 'Prepara una comida en una cocina por primera vez.',
+    'achievement.book.page.7.name': 'El libro escondido',
+    'achievement.book.page.7.desc': 'Llega a la página 7: la primera del libro escondido.',
+    'achievement.book.page.54.name': 'Número de la suerte',
+    'achievement.book.page.54.desc': 'Llega a la página 54 del libro de las raíces.',
+    'achievement.book.page.69.name': 'Nice',
+    'achievement.book.page.69.desc': 'Llega a la página 69 del libro de las raíces.',
+    'achievement.book.page.100.name': 'Sigues leyendo',
+    'achievement.book.page.100.desc': 'Llega a la página 100 del libro de las raíces.',
+
+    // ── the hidden book: a quotation's translation note (PANELS §4b) ──
+    'book.quote.translated': 'Traducción nuestra',
 
     // ── the achievement card (ACHIEVEMENTS §4) ──
     'achievement.card.kicker': 'Logro',
@@ -709,6 +720,10 @@ export const ES: Catalog = {
     'mastery.gain.heart.blood': 'Un corazón de sangre te espera en las raíces.',
     'mastery.gain.heart.star': 'Un corazón estrella te espera en las raíces.',
     'mastery.gain.heart.black': 'Un corazón negro te espera en las raíces.',
+    'mastery.gain.heartAgain.red': 'Un corazón rojo más te espera en las raíces.',
+    'mastery.gain.heartAgain.blue': 'Un corazón azul más te espera en las raíces.',
+    'mastery.gain.heartAgain.stone': 'Un corazón de piedra más te espera en las raíces.',
+    'mastery.gain.heartAgain.blood': 'Un corazón de sangre más te espera en las raíces.',
     'mastery.gain.chest': 'Un cofre más que no pide llave ({n} en total).',
     'mastery.gain.chestDraws': 'Los cofres sin llave dan una cosa más.',
     'mastery.gain.crates': 'Las cajas dan algo más a menudo: entre el {lo} y el {hi} % de las veces.',

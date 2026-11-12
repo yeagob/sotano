@@ -142,3 +142,7 @@ Images are ids, never paths ([BOOK-DATA](BOOK-DATA.md#images)). The renderer dra
 ## 9. The art gate
 
 The look of the four layouts, the key cap, the verb and the page stone is new art: it is made by the dedicated art agent (`sotano-art` §0) and passes the gate (captures in colour, greyscale and the three colour-blindness filters, and at distance in the room) before it ships. The `?gallery` gets a section that draws every panel of every page in both languages and on every device, and flags any text that does not fit.
+
+## 10. The panel id: the mason's mark
+
+Every panel carries its id (`1-hall-n`, `3-pit-s`, `7-gift-n`; [BOOK-DATA §2](BOOK-DATA.md#2-fields)). The renderer draws it **very small in a lower corner of the slab**, like a mason's mark cut into a block: a few pixels inside the face, in `ink.bevel`, never over the text, the image, the key cap or the page number. It is for the builder and the owner, who read a panel by its place, and it is not text for the reader: it takes no budget and needs no translation. Both languages show the same mark, because the ids are the same in both files.

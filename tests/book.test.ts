@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import bookEn from '../src/content/book/book.en.json';
 import bookEs from '../src/content/book/book.es.json';
 import {
-  type Book, BookValidationError, PLACEHOLDER_ACTIONS, bookMessage, bookRefs, loadBook, pageCount, panelAt, validateBook, type BookRefs,
+  type Book, BookValidationError, PLACEHOLDER_ACTIONS, type RoomKey, type Side, bookMessage, bookRefs, loadBook, pageCount, panelAt,
+  panelById, panelIdOf, quoteSource, validateBook, type BookRefs,
 } from '../src/content/book';
 import { BESTIARY_PORTRAITS, LESSON_IMAGES, knownImageIds, resolveImage } from '../src/content/book/images';
 import { BOSS_BY_ID } from '../src/content/bosses';
@@ -375,5 +376,158 @@ describe('the image manifest (images.ts)', () => {
   it('the placeholders are every lesson control plus drink', () => {
     for (const action of LESSON_CONTROLS) expect(PLACEHOLDER_ACTIONS).toContain(action);
     expect(PLACEHOLDER_ACTIONS).toContain('drink');
+  });
+});
+
+/** A quotation in the treasure room's north slot of `page` (a book page by default), in both files. */
+function withQuote(en: Raw, es: Raw, page = 8, patchEn: Record<string, unknown> = {}, patchEs: Record<string, unknown> = {}) {
+  const facts = { author: 'Ana Autora', work: 'La obra', publisher: 'Editorial Uno', year: 1995, lang: 'es' };
+  // JSON.parse(JSON.stringify(…)) drops every field a patch sets to undefined.
+  const build = (text: string, patch: Record<string, unknown>) => JSON.parse(JSON.stringify({ id: `${page}-gift-n`, layout: 'quote', text, ...facts, ...patch }));
+  en.pages[page - 1].panels['roots-gift'] = { north: build('A quotation, translated.', patchEn) };
+  es.pages[page - 1].panels['roots-gift'] = { north: build('Una cita original.', patchEs) };
+  return { en, es };
+}
+
+/** The problems of a book with a quotation on page 8, the copies patched per language. */
+const quoted = (patchEn: Record<string, unknown> = {}, patchEs: Record<string, unknown> = {}, page = 8) => {
+  const { en, es } = withQuote(copyEn(), copyEs(), page, patchEn, patchEs);
+  return problemsOf(en, es);
+};
+
+describe('quotations (BOOK-DATA §2b, PANELS §4b): the quote layout', () => {
+  it('a quote with its author, work and language passes on a book page', () => {
+    expect(quoted()).toEqual([]);
+  });
+
+  it('a quote without an author fails', () => {
+    expectProblem(quoted({ author: undefined }, { author: undefined }), '"author" is missing');
+  });
+
+  it('a quote without a work fails', () => {
+    expectProblem(quoted({ work: undefined }, { work: undefined }), '"work" is missing');
+  });
+
+  it('a quote without its language fails', () => {
+    expectProblem(quoted({ lang: undefined }, { lang: undefined }), '"lang" is missing');
+  });
+
+  it('a quote on a tutorial page fails', () => {
+    expectProblem(quoted({}, {}, 2), 'a quote is only allowed on a book page');
+  });
+
+  it('a quote takes no image, key or other field its layout does not allow', () => {
+    expectProblem(quoted({ image: 'lesson/blocks' }, { image: 'lesson/blocks' }), '"image" is not a field of a quote panel');
+  });
+
+  it('a quote has no placeholders: its text is the quotation as printed', () => {
+    expectProblem(quoted({ text: 'Press {jump}.' }, { text: 'Press {jump}.' }), 'placeholders are only allowed in lesson and plate text');
+  });
+
+  it('the facts of a quote (author, work, publisher, year, language) are identical in both files', () => {
+    expectProblem(quoted({}, { author: 'Otra Persona' }), 'author is "Ana Autora" in en and "Otra Persona" in es');
+    expectProblem(quoted({ year: 1996 }, {}), 'year is 1996 in en and 1995 in es');
+  });
+
+  it('a quote year is a whole number from 1000 to this year', () => {
+    expect(quoted({ year: 1000 }, { year: 1000 })).toEqual([]);
+    const next = new Date().getFullYear() + 1;
+    for (const bad of [999, next, 1995.5, '1995']) {
+      expectProblem(quoted({ year: bad }, { year: bad }), 'year must be a whole number from 1000');
+    }
+  });
+
+  it('a quote language is one of the shipped languages', () => {
+    expectProblem(quoted({ lang: 'fr' }, { lang: 'fr' }), 'lang "fr" is not a shipped language');
+  });
+
+  it('the quotation text is within its budget of 440 characters', () => {
+    expect(quoted({ text: 'a'.repeat(440) }, { text: 'a'.repeat(440) })).toEqual([]);
+    expectProblem(quoted({ text: 'a'.repeat(441) }, { text: 'a'.repeat(441) }), '"text" is 441 characters with the longest labels, the budget is 440');
+  });
+
+  it('the author is within 40 characters, the work within 48 and the publisher within 32', () => {
+    expectProblem(quoted({ author: 'a'.repeat(41) }, { author: 'a'.repeat(41) }), 'the budget is 40');
+    expectProblem(quoted({ work: 'w'.repeat(49) }, { work: 'w'.repeat(49) }), 'the budget is 48');
+    expectProblem(quoted({ publisher: 'p'.repeat(33) }, { publisher: 'p'.repeat(33) }), 'the budget is 32');
+  });
+
+  it('the source line ("Work · Publisher, Year") is within 60 characters', () => {
+    // 40 + 3 + 11 + 6 = 60 passes; one more letter does not.
+    expect(quoted({ work: 'w'.repeat(40), publisher: 'p'.repeat(11) }, { work: 'w'.repeat(40), publisher: 'p'.repeat(11) })).toEqual([]);
+    expectProblem(quoted({ work: 'w'.repeat(40), publisher: 'p'.repeat(12) }, { work: 'w'.repeat(40), publisher: 'p'.repeat(12) }), 'the budget is 60');
+  });
+
+  it('the translation note (book.quote.translated) exists in both languages, within 24 characters', () => {
+    const { en, es } = withQuote(copyEn(), copyEs());
+    const missing: BookRefs = { images: knownImageIds(), message: (lang, key) => (key === 'book.quote.translated' && lang === 'es' ? undefined : bookMessage(lang, key)) };
+    expectProblem(problemsOf(en, es, missing), 'message book.quote.translated is missing in es');
+    const long: BookRefs = { images: knownImageIds(), message: (lang, key) => (key === 'book.quote.translated' ? 'x'.repeat(25) : bookMessage(lang, key)) };
+    expectProblem(problemsOf(en, es, long), 'book.quote.translated is 25 characters in en, the budget is 24');
+  });
+
+  it('the source line is drawn as "Work · Publisher, Year", with only the parts that are given', () => {
+    expect(quoteSource({ work: 'W', publisher: 'P', year: 1995 })).toBe('W · P, 1995');
+    expect(quoteSource({ work: 'W', publisher: 'P' })).toBe('W · P');
+    expect(quoteSource({ work: 'W', year: 1995 })).toBe('W, 1995');
+    expect(quoteSource({ work: 'W' })).toBe('W');
+  });
+
+  it('page 7 quotes the same source in both files, in Spanish, as the owner gave it', () => {
+    const en = panelById(shipped('en'), '7-gift-n');
+    const es = panelById(shipped('es'), '7-gift-n');
+    expect(en).toMatchObject({ layout: 'quote', author: 'Guillermo Borja', work: 'La locura lo cura (extractos)', publisher: 'Editorial La Llave', year: 1995, lang: 'es' });
+    expect(es).toMatchObject({ layout: 'quote', author: 'Guillermo Borja', work: 'La locura lo cura (extractos)', publisher: 'Editorial La Llave', year: 1995, lang: 'es' });
+    expect(quoteSource(es as { work: string; publisher: string; year: number })).toBe('La locura lo cura (extractos) · Editorial La Llave, 1995');
+    expect((es as { text: string }).text.length).toBeLessThanOrEqual(440);
+  });
+});
+
+describe('panel ids (BOOK-DATA §2): page, room and side, unique, the same in both files', () => {
+  it('every shipped panel carries the id of its page, room and side', () => {
+    shipped('en').pages.forEach((page, index) => {
+      for (const [room, slot] of Object.entries(page.panels)) {
+        for (const [side, panel] of Object.entries(slot ?? {})) {
+          expect(panel?.id, `page ${index + 1} ${room} ${side}`).toBe(panelIdOf(index + 1, room as RoomKey, side as Side));
+        }
+      }
+    });
+  });
+
+  it('the ids read as the examples: 1-hall-n, 3-pit-s, 7-gift-n', () => {
+    expect(panelIdOf(1, 'roots-hall', 'north')).toBe('1-hall-n');
+    expect(panelIdOf(3, 'roots-pit', 'south')).toBe('3-pit-s');
+    expect(panelIdOf(7, 'roots-gift', 'north')).toBe('7-gift-n');
+  });
+
+  it('an id that does not match its page, room and side fails', () => {
+    const en = copyEn();
+    en.pages[0].panels['roots-hall'].north.id = '2-hall-n';
+    expectProblem(problemsOf(en, copyEs()), 'id "2-hall-n" must be "1-hall-n" (its page, room and side)');
+  });
+
+  it('a panel without an id fails', () => {
+    const en = copyEn();
+    delete en.pages[0].panels['roots-hall'].north.id;
+    expectProblem(problemsOf(en, copyEs()), '"id" is missing');
+  });
+
+  it('an id is unique in the file', () => {
+    const en = copyEn();
+    en.pages[0].panels['roots-hall'].south.id = '1-hall-n';
+    expectProblem(problemsOf(en, copyEs()), 'id "1-hall-n" is not unique in the file');
+  });
+
+  it('the two languages give a panel the same id', () => {
+    const es = copyEs();
+    es.pages[0].panels['roots-hall'].north.id = '1-hall-x';
+    expectProblem(problemsOf(copyEn(), es), 'id is "1-hall-n" in en and "1-hall-x" in es');
+  });
+
+  it('panelById finds a panel of either file by its id, and nothing for an unknown id', () => {
+    const en = shipped('en');
+    expect(panelById(en, '1-hall-n')).toEqual(en.pages[0].panels['roots-hall']?.north);
+    expect(panelById(shipped('es'), '1-hall-n')).toEqual(shipped('es').pages[0].panels['roots-hall']?.north);
+    expect(panelById(en, '9-hall-n')).toBeUndefined();
   });
 });

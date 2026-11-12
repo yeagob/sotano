@@ -14,8 +14,8 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "north": { "layout": "lesson", "title": "The roots", "text": "…", "image": "lesson/blocks", "key": "cast" },
-          "south": { "layout": "plate", "title": "Doubt", "subtitle": "A projection", "text": "…", "image": "bestiary/doubt", "note": "…" }
+          "north": { "id": "1-hall-n", "layout": "lesson", "title": "The roots", "text": "…", "image": "lesson/blocks", "key": "cast" },
+          "south": { "id": "1-hall-s", "layout": "plate", "title": "Doubt", "subtitle": "A projection", "text": "…", "image": "bestiary/doubt", "note": "…" }
         }
       }
     },
@@ -34,6 +34,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 | `id` | page | string, `^[a-z0-9-]+$` | Unique in the file; the same id at the same position in every language. Stable: tests and the gallery refer to pages by id |
 | `kind` | page | `"tutorial"` or `"book"` | Page 1 is `tutorial`. Every `tutorial` page comes before every `book` page. The page stone shows a number only on `book` pages |
 | `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel |
+| `id` | panel | string, `<page>-<room>-<side>` | Required on every panel. The page number (its position in `pages`, from 1), the room key without its `roots-` prefix, and `n` for north or `s` for south: `1-hall-n`, `3-pit-s`, `7-gift-n`. It must match the panel's position, be unique in the file, and be identical in both languages. The renderer draws it very small, like a mason's mark ([PANELS §10](PANELS.md#10-the-panel-id-the-masons-mark)); `panelById(book, id)` finds the panel. Renumbering (a page inserted before others) renumbers the ids: the validator names every id that is out of place |
 | `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"` | Decides which other fields are allowed. `quote` only on `book` pages |
 | `title` | lesson, plate | string | Required. A plate's title is the name of what it shows, in that language's established name |
 | `subtitle` | plate | string | Required. What kind of thing it is ("A projection", "A boss · floors 1–2") |
@@ -47,7 +48,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 | `year` | quote | integer | Optional. The year of the edition quoted |
 | `lang` | quote | `"en"` or `"es"` | Required. The quotation's original language |
 
-No other field is allowed. Prose has no title, image or key, and never draws its own page number. A quote has no title, image, key or page number.
+No other field is allowed. Every panel has an `id` (above). Prose has no title, image or key, and never draws its own page number. A quote has no title, image, key or page number.
 
 ## 2b. Quotations
 
@@ -143,12 +144,12 @@ The book is checked at build time by a test and again when the game loads it. An
 1. The file parses; `version` is 1; `language` matches the file name; no unknown top-level field.
 2. `pages` has at least one page; page 1 is `tutorial` and fills all 22 slots; no `tutorial` page follows a `book` page.
 3. Page ids are unique and match `^[a-z0-9-]+$`.
-4. Every room key is one of the eleven; every side is `north` or `south`; every panel has a known `layout`, all its required fields, and no field its layout does not allow.
+4. Every room key is one of the eleven; every side is `north` or `south`; every panel has a known `layout`, all its required fields (`id` included), and no field its layout does not allow. Every panel's `id` is the id of its position (`page-room-side`, section 2) and is unique in the file.
 5. Every string is non-empty (a quote's `author` and `work` included), has no markup (`<`, `>`), no leading or trailing space and no double space.
 6. Every `{placeholder}` names an allowed action, and appears only in `text` of a lesson or plate.
 7. Every `image` resolves (section 4). Every `key` is an allowed action. A `quote` sits only on a `book` page; its `lang` is a shipped language; its `year`, if given, is an integer from 1000 to the current year.
-8. Every field is within its character budget ([PANELS §5](PANELS.md#5-character-budgets)), counting each placeholder at its longest label in that language.
-9. **The languages match**: the same number of pages; at each position the same `id` and `kind`; the same slots; in each slot the same `layout`, `image`, `key` and the same set of fields, and for a quote the same `author`, `work`, `publisher`, `year` and `lang`. Only the words differ.
+8. Every field is within its character budget ([PANELS §5](PANELS.md#5-character-budgets)), counting each placeholder at its longest label in that language. A quote's source line ("Work · Publisher, Year", as drawn) is within 60 characters, and the translation note `book.quote.translated` exists in both languages within 24.
+9. **The languages match**: the same number of pages; at each position the same `id` and `kind`; the same slots; in each slot the same `layout`, `id`, `image`, `key` and the same set of fields, and for a quote the same `author`, `work`, `publisher`, `year` and `lang`. Only the words differ.
 10. The two key-cap labels and the verb exist for every action used, in every language (the i18n test covers the message keys).
 
 ## 7. How the game reads it
@@ -156,7 +157,8 @@ The book is checked at build time by a test and again when the game loads it. An
 - The panel of a slot on page *n* is page *n*'s panel if it has one, otherwise page 1's.
 - The book of the player's language is used; switching language redraws every panel at once from the other file (the same page, the same slots).
 - The number of pages is the length of `pages`; both files have the same length by rule 9.
+- A panel is found by its id with `panelById(book, id)` (`src/content/book/index.ts`), in either language's book; `panelIdOf(page, room, side)` gives the id a position must carry.
 
 ## 8. Writing a new page by hand (for the owner)
 
-Add an entry at the end of `pages` in **both** files, with the same `id` and `kind: "book"`, and one or more slots with `layout: "prose"` and a `text` of at most 320 characters. Run `npm test`: the book test lists anything out of place. The start room's south slot (`roots-hall` → `south`) is the one the first book pages use; any slot may be used. A quotation goes in `roots-gift` → `north` with `layout: "quote"` (section 2b), the original text in the file of its language, our translation in the other, and its source added to `docs/lore/SOURCES.md`.
+Add an entry at the end of `pages` in **both** files, with the same `id` and `kind: "book"`, and one or more slots with `layout: "prose"` and a `text` of at most 320 characters. Give each panel its id: the page number, the room without `roots-`, and `n` or `s` (page 10's prose on `roots-hall` south is `10-hall-s`). Run `npm test`: the book test lists anything out of place. The start room's south slot (`roots-hall` → `south`) is the one the first book pages use; any slot may be used. A quotation goes in `roots-gift` → `north` with `layout: "quote"` (section 2b), the original text in the file of its language, our translation in the other, and its source added to `docs/lore/SOURCES.md`.

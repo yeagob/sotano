@@ -24,7 +24,7 @@ From the premise: the basement of the mind, reality bending to intention, every 
 >
 > — our translation
 
-The page-7 entry, exactly as it is to replace `book-1` in each file (package B6 applies it; the files are not changed by this document):
+The page-7 entry, as package B6 wrote it in place of `book-1` in each file, with the panel ids of [BOOK-DATA §2](BOOK-DATA.md#2-fields) (`7-hall-s`, `7-gift-n`):
 
 `src/content/book/book.es.json`:
 
@@ -34,10 +34,10 @@ The page-7 entry, exactly as it is to replace `book-1` in each file (package B6 
   "kind": "book",
   "panels": {
     "roots-hall": {
-      "south": { "layout": "prose", "text": "Bajaste al sótano de tu propia mente. Aquí abajo cambia todo aquello en lo que pones tu voluntad. Cada muro es algo que levantaste para estar a salvo. Un día te protegió. Ahora te empequeñece, y tienes permiso para romperlo." }
+      "south": { "id": "7-hall-s", "layout": "prose", "text": "Bajaste al sótano de tu propia mente. Aquí abajo cambia todo aquello en lo que pones tu voluntad. Cada muro es algo que levantaste para estar a salvo. Un día te protegió. Ahora te empequeñece, y tienes permiso para romperlo." }
     },
     "roots-gift": {
-      "north": { "layout": "quote", "text": "La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
+      "north": { "id": "7-gift-n", "layout": "quote", "text": "La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
     }
   }
 }
@@ -51,10 +51,10 @@ The page-7 entry, exactly as it is to replace `book-1` in each file (package B6 
   "kind": "book",
   "panels": {
     "roots-hall": {
-      "south": { "layout": "prose", "text": "You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it." }
+      "south": { "id": "7-hall-s", "layout": "prose", "text": "You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it." }
     },
     "roots-gift": {
-      "north": { "layout": "quote", "text": "Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
+      "north": { "id": "7-gift-n", "layout": "quote", "text": "Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
     }
   }
 }
