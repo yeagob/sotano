@@ -24,7 +24,7 @@ On each floor from 1 to 5, one room is chosen from the normal rooms that hold no
   - **15%:** a practice with a maximum-health stat.
   - **75%:** special hearts; 90% of these rewards are one heart, and 10% are two hearts of different special kinds.
   - **10%:** exactly two red hearts.
-  - **How it lands.** The reward leaves the Listener in an arc toward the player, with the gold sparks of a release. At full health a heart waits on the floor until the player is hurt.
+  - **How it lands.** The reward leaves the Listener in an arc away from the player, never toward them, with the gold sparks of a release. At full health a heart waits on the floor until the player is hurt.
 - **Leaving.** The Listener is removed from the world in the same frame its drop appears: its body, its hooks and its contacts go with it, and the room is ordinary again. Its pickups stay where they landed, so the reward does not depend on the Listener any more. A card that is already open stays on the screen.
 - **Light.** The design has it show its face only while the player listens, as light from the player's lantern. The build draws it as bone tones, with no such effect.
 
