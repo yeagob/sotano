@@ -4,6 +4,9 @@ import { defineEnemy, TX, type Behaviour, type Enemy, type EnemyCtx } from '../.
 
 const SHADOWS = ['doubt', 'critic', 'panic'];
 const STILL = 3;
+/** The tag its stillness ending leaves on the enemy as it dies: the game reads it and reports `how: 'stillness'`
+ *  (ACHIEVEMENTS §1). Turned to your side in the achievements, not destroyed. */
+export const STILLNESS_TAG = 'stillness';
 
 const follow = (e: Enemy, ctx: EnemyCtx) => {
   const you = ctx.near(e);
@@ -29,7 +32,7 @@ const stops: Behaviour = {
     const you = ctx.near(e);
     const beside = !!you && Math.hypot(you.x - e.body.x, you.z - e.body.z) < 2.5 && Math.hypot(you.vx ?? 0, you.vz ?? 0) < 0.2;
     e.timer = beside ? e.timer + ctx.dt : 0;
-    if (e.timer >= STILL) ctx.kill(e);
+    if (e.timer >= STILL) { e.tags.add(STILLNESS_TAG); ctx.kill(e); }
   },
 };
 

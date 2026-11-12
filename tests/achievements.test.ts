@@ -1,5 +1,5 @@
 // The achievement catalogue (docs/design/not-built/progression/ACHIEVEMENTS.md) and its tracker (MASTERY.md):
-// the 36 entries, their ids and message keys, the events they wait for, and the rules of the tracker: unlock
+// the 40 entries, their ids and message keys, the events they wait for, and the rules of the tracker: unlock
 // once, `times` across runs, no double award, which boss ending counts for which achievement, the mastery count.
 
 import { describe, expect, it } from 'vitest';
@@ -10,14 +10,10 @@ import { EN } from '../src/i18n/locales/en';
 import { ES } from '../src/i18n/locales/es';
 import { catalogueErrors, isUnlocked, mastery, matches, track, type AchievementState, type Payload } from '../src/game/achievements';
 
-/** Sample payloads of the events the catalogue uses. The `where` fields must exist in these (package D2 moves them to the synergy matrix). */
-const SAMPLES: Record<(typeof ACHIEVEMENT_EVENTS)[number], Payload> = {
-  bossOvercome: { boss: 'resistance', floor: 1, how: 'destroyed' },
-  meditationComplete: { meditation: 'ground', source: 'roots' },
-  brew: { potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 },
-  cook: { meal: 'meal-small', part: 'fruit' },
-  pageReached: { page: 7 },
-};
+/** The payloads the tracker tests feed. The sample of every event lives in the synergy matrix (tests/synergy-matrix.test.ts),
+ *  which also checks that each `where` field is in its event's sample. */
+const BREW = { potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 };
+const COOK = { meal: 'meal-small', part: 'fruit' };
 
 const EMPTY: AchievementState = { achievements: {}, counts: {} };
 const NOW = 1_700_000_000_000;
@@ -82,13 +78,8 @@ describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
     expect(destroyed?.where).toEqual({ boss: 'shadow', how: 'destroyed' });
   });
 
-  it('every event is one the catalogue declares, and every where field is in that event\'s sample payload', () => {
-    for (const d of ACHIEVEMENTS) {
-      expect(ACHIEVEMENT_EVENTS).toContain(d.on);
-      for (const field of Object.keys(d.where ?? {})) {
-        expect(SAMPLES[d.on], `${d.id} waits on ${field}`).toHaveProperty(field);
-      }
-    }
+  it('every event is one the catalogue declares', () => {
+    for (const d of ACHIEVEMENTS) expect(ACHIEVEMENT_EVENTS).toContain(d.on);
   });
 
   it('every id has its two message keys in English and in Spanish', () => {
@@ -143,17 +134,17 @@ describe('matching (where, and a list means any of its values)', () => {
 
 describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
   it('unlocks an achievement once, at the given time', () => {
-    const first = run(EMPTY, 'brew', SAMPLES.brew);
+    const first = run(EMPTY, 'brew', BREW);
     expect(ids(first.unlocked)).toEqual(['brew.first']);
     expect(first.state.achievements).toEqual({ 'brew.first': NOW });
-    const again = run(first.state, 'brew', SAMPLES.brew, NOW + 5);
+    const again = run(first.state, 'brew', BREW, NOW + 5);
     expect(again.unlocked).toEqual([]);
     expect(again.state).toBe(first.state);
     expect(again.state.achievements['brew.first']).toBe(NOW);
   });
 
   it('brew.first counts any potion, the Plain Tonic included', () => {
-    expect(ids(run(EMPTY, 'brew', { ...SAMPLES.brew, potion: 'plain-tonic' }).unlocked)).toEqual(['brew.first']);
+    expect(ids(run(EMPTY, 'brew', { ...BREW, potion: 'plain-tonic' }).unlocked)).toEqual(['brew.first']);
   });
 
   it('each book-page achievement unlocks on pageReached with its own page, and on no other', () => {
@@ -169,7 +160,7 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
   });
 
   it('cook.first unlocks on the first meal', () => {
-    expect(ids(run(EMPTY, 'cook', SAMPLES.cook).unlocked)).toEqual(['cook.first']);
+    expect(ids(run(EMPTY, 'cook', COOK).unlocked)).toEqual(['cook.first']);
   });
 
   it('a meditation with times 3 needs three completed sittings, and counts them', () => {
@@ -230,7 +221,7 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     let s = EMPTY;
     s = run(s, 'bossOvercome', { boss: 'verdict', floor: 3, how: 'converted' }).state;
     s = run(s, 'bossOvercome', { boss: 'grudge', floor: 4, how: 'destroyed' }).state;
-    s = run(s, 'brew', SAMPLES.brew).state;
+    s = run(s, 'brew', BREW).state;
     expect(mastery(s)).toBe(3);
   });
 
@@ -239,7 +230,7 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
       { id: 'x.first', on: 'brew' },
       { id: 'x.second', on: 'brew' },
     ];
-    const r = track(EMPTY, 'brew', SAMPLES.brew, NOW, pair);
+    const r = track(EMPTY, 'brew', BREW, NOW, pair);
     expect(ids(r.unlocked)).toEqual(['x.first', 'x.second']);
   });
 
@@ -253,14 +244,14 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     const before: AchievementState = { achievements: { 'brew.first': 1 }, counts: { 'meditation.ground': 1 } };
     const snapshot = JSON.stringify(before);
     run(before, 'meditationComplete', { meditation: 'ground', source: 'roots' });
-    run(before, 'cook', SAMPLES.cook);
+    run(before, 'cook', COOK);
     expect(JSON.stringify(before)).toBe(snapshot);
   });
 
   it('an unknown id in the save is kept, not counted and not an error', () => {
     const state: AchievementState = { achievements: { 'boss.gone.destroyed': 5, 'brew.first': 6 }, counts: {} };
     expect(mastery(state)).toBe(1);
-    expect(run(state, 'cook', SAMPLES.cook).state.achievements['boss.gone.destroyed']).toBe(5);
+    expect(run(state, 'cook', COOK).state.achievements['boss.gone.destroyed']).toBe(5);
   });
 });
 

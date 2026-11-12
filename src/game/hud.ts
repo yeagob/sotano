@@ -38,6 +38,9 @@ const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 /** A message, escaped for innerHTML. */
 const th = (key: MessageKey, params?: Params) => esc(t(key, params));
+/** A parameter of the Presence card: text, a number, or a function that gives the text on each redraw (see presenceCard). */
+export type CardParams = Record<string, string | number | (() => string)>;
+interface CardSpec { nameKey: MessageKey; lineKeys: readonly MessageKey[]; params?: CardParams; kicker?: MessageKey }
 /** A heart's name in the toll window, with its quarters when it is not whole (the window's tiles show them). */
 const tollHeartLabel = (name: string, quarters: number) => (quarters >= 4 ? name : t('toll.heartPart', { name, q: quarters }));
 
@@ -114,6 +117,7 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
+  private lastCard: CardSpec | null = null;
   private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
@@ -191,6 +195,7 @@ export class Hud {
     this.renderControls();
     this.renderGraphics();
     if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastCard) this.renderCard(this.lastCard);
     else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
@@ -508,23 +513,36 @@ export class Hud {
 
   // ───────────────────────── feedback ─────────────────────────
 
-  /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
-  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: Params) {
+  /**
+   * The Presence card: a name and a few lines read once, confirmed to continue (sotano-popups §2). `kicker` is an optional
+   * short line above the name (the achievements' "Achievement", ACHIEVEMENTS §4). A param may be a function: it is
+   * called again on every redraw, so a line that names a sentence built from other keys follows a language change.
+   */
+  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: CardParams, kicker?: MessageKey) {
     this.lastBanner = null;
+    this.lastCard = { nameKey, lineKeys, params, kicker };
     this.clearPresenceOfferState();
-    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
-    this.bannerEl.innerHTML =
-      `<div class="ribbon slate"><div><b>${th(nameKey)}</b>` +
-      lineKeys.map(k => `<span>${th(k, params)}</span>`).join('') +
-      `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+    this.renderCard(this.lastCard);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth;
     this.bannerEl.classList.add('show');
     this.bannerOpen = true;
   }
 
+  private renderCard(c: CardSpec) {
+    const params: Params = {};
+    for (const [k, v] of Object.entries(c.params ?? {})) params[k] = typeof v === 'function' ? v() : v;
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.bannerEl.style.setProperty('--gold', palCss('light.gold'));
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div>${c.kicker ? `<em class="kicker">${th(c.kicker)}</em>` : ''}<b>${th(c.nameKey)}</b>` +
+      c.lineKeys.map(k => `<span>${th(k, params)}</span>`).join('') +
+      `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+  }
+
   presenceOfferCard(nameKey: MessageKey, carried: Carried) {
     this.lastBanner = null;
+    this.lastCard = null;
     this.lastPresenceOffer = { nameKey, carried };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
@@ -579,6 +597,7 @@ export class Hud {
 
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
     this.lastBanner = [def, changes, synergies];
+    this.lastCard = null;
     this.clearPresenceOfferState();
     this.renderBanner(def, changes, synergies);
     this.bannerEl.classList.remove('show');
@@ -606,6 +625,7 @@ export class Hud {
 
   /** Information banners stay until the player clicks (owner rule). */
   dismissBanner() {
+    this.lastCard = null;
     this.clearPresenceOfferState();
     this.bannerOpen = false;
     this.bannerEl.classList.remove('show');

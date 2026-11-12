@@ -1,7 +1,7 @@
 // The achievement tracker (docs/design/not-built/progression/ACHIEVEMENTS.md §2-3, MASTERY.md §1): pure. An event
 // name and its payload go in with the time; the achievements that just unlocked come out, with the new state.
 // It touches no game state, no DOM and no save: the caller writes `state` into the save record (SAVE.md §3).
-// It takes the event by name, so it works before the events exist in GameEvents (package D2 declares them).
+// It takes the event by name, so it stays independent of GameEvents; the session keeper (achievement-keeper.ts) feeds it.
 
 import { ACHIEVEMENTS, ACHIEVEMENT_CAP, ACHIEVEMENT_EVENTS, type AchievementDef } from '../content/achievements';
 

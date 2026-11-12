@@ -220,6 +220,8 @@ export const sfx3 = {
   loveBoom: () => { noise(0.45, 0.2, 500, 0.7, master, 0.05); [392, 523, 784].forEach((f, i) => setTimeout(() => tone(f, 0.35, 'sine', 0.12, 1.2), i * 60)); },
   /** A projection turns to your side: a warm, rising pair. */
   converted: () => { tone(523, 0.14, 'sine', 0.14); setTimeout(() => tone(784, 0.2, 'sine', 0.14), 110); },
+  /** An achievement is recognised: a soft rising chime, three gentle notes with a long tail. Once per card, never repeated. */
+  achievement: () => [523, 659, 880].forEach((f, i) => setTimeout(() => tone(f, 0.9, 'sine', 0.07, 1.04), i * 170)),
   /** An ally turns hostile again: a cold, falling pair. */
   relapsed: () => { tone(330, 0.16, 'triangle', 0.16, 0.6); setTimeout(() => tone(220, 0.25, 'triangle', 0.14, 0.7), 110); },
   judge: () => tone(880, 0.12, 'sawtooth', 0.06, 0.5),

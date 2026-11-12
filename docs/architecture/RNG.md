@@ -41,6 +41,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('floor', 0, 'roots', 'oneof')` | Structure | Level 0 only: whether the roots lay a key or a breakthrough, one draw (`rootsRewards`, REWARDS §2; GEN_VERSION 28) |
 | `fork('floor', 0, 'roots', 'practice-spot')` | Structure | The room and tile of each extra practice pedestal on the roots, one room each (REWARDS §4; GEN_VERSION 28) |
 | `fork('floor', 0, 'roots', 'altar-spot')` | Structure | The tile of the altar in the start room (level 80+; GEN_VERSION 28) |
+| `fork('floor', 0, 'roots', 'practice', i)` and `fork('floor', 0, 'roots', 'altar')` | Structure (drawn at run start) | The practice of extra pedestal i, and of the altar: `drawRuntime` from the treasure pool in the Roots' band (★ to ★★★; the altar's band from the table). Drawn in `game/roots-draws.ts` after every reservation, so a reserved practice is never taken; each draw marks its practice taken. Changes nothing outside floor 0 |
 | `fork('floor', 0, 'roots', 'sanctuary-spot')` | Structure | The tile of the second Sanctuary chest in the way-down room (level 100; GEN_VERSION 28) |
 | `fork('floor', 0, 'roots', 'chest')` | Structure | The room and tile of each free chest that needs no key, one room each (GEN_VERSION 28) |
 | `fork('floor', 0, 'roots', 'key')`, `…'bomb'`, `…'heart'` | Structure | The tile of each loose key, breakthrough and heart on the roots, in its lesson rooms; a heart's kind is the table's, not drawn (GEN_VERSION 28; replaces `fork('floor', 0, 'loot')`, GEN_VERSION 14) |

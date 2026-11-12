@@ -168,6 +168,9 @@
       100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
     @media (prefers-reduced-motion: reduce) { #banner.show { animation: none; opacity: 1; transform: translate(-50%, 0); } }
     #banner .dismiss { margin: 8px 0 0; font-size: 14px; color: var(--ui-faded); text-align: right; }
+    /* the kicker of an achievement card: a short line above the name, with a gold diamond (ACHIEVEMENTS §4) */
+    #banner .kicker { display: block; font-style: normal; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, var(--c)); }
+    #banner .kicker::before { content: '\25C6  '; }
     #banner .ribbon { display: flex; gap: 14px; align-items: flex-start; padding: calc(6 * var(--u)); border-left: calc(2 * var(--u)) solid var(--c); }
     #banner .ribbon img { width: 70px; height: 70px; flex: none; filter: drop-shadow(0 0 8px var(--c)); }
     #banner b { display: block; font-size: 28px; letter-spacing: 1px; }

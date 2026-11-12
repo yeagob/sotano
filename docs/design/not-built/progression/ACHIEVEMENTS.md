@@ -143,7 +143,7 @@ When an achievement is earned the player reads, in one window: its name, its des
   2. `achievement.card.gain`: "Next time you wake in the Roots: {gain}" / "La próxima vez que despiertes en las raíces: {gain}", where `{gain}` is the step line of the new level ([REWARDS §7](../levels/roots/REWARDS.md#7-what-each-step-says)).
   3. `achievement.card.mastery`: "Mastery of the Roots: {level} of 100" / "Maestría de las raíces: {level} de 100".
 - **Kicker:** `achievement.card.kicker`: "Achievement" / "Logro".
-- **When it shows.** The unlock is saved at once; the card waits for a calm moment: no other blocking window open (item banner, presence card or offer, toll, menu, death screen, Sanctuary), and the player not in a sealed room with live projections. After a boss is overcome the room is cleared, so the card shows at once, before the way down cracks open; the toll window waits until the card is closed. Pending cards are kept in the game's run state, in order, and shown one at a time; the HUD never stacks them. If the run ends first, the remaining cards are dropped (the achievements stay saved).
+- **When it shows.** The unlock is saved at once; the card waits for a calm moment: no other blocking window open (item banner, presence card or offer, toll, menu, death screen, Sanctuary), and the player not in a sealed room with live projections. After a boss is overcome the room is cleared, so the card shows at once, before the way down cracks open; the toll window waits until the card is closed. Pending cards are kept in order and shown one at a time; the HUD never stacks them. Built in D2 (`game/achievement-keeper.ts`, `game.ts` `showAchievement`): the queue is kept across runs, not dropped at a run's end. This departs from the first draft's default, because a page achievement (`book.page.7`) is earned by the run's end itself and its card would otherwise never show; the owner should confirm it (open question below).
 - **Juice.** A burst of gold motes around the player, a soft rising chime (a new short WebAudio cue, gentle, no repetition), no screen shake. The card is redrawn on a language change like the item banner (`Hud.relocalize`).
 - **Cap.** At level 100 the gain line names no step if none is left; the mastery line still shows 100 of 100.
 
@@ -156,4 +156,5 @@ When an achievement is earned the player reads, in one window: its name, its des
 ## Open questions
 
 - The names (both languages) are a proposal, except the owner's "Lucky Number" and "Nice".
-- Should cards that were pending when a run ended show at the start of the next run? Default: no.
+- Should cards that were pending when a run ended show at the start of the next run? The first draft said no; package D2 built yes, because the page achievements are earned at a run's end (see §4). The owner decides.
+- The Shadow's stillness ending is tagged on its enemy (`STILLNESS_TAG` in `src/content/bosses/shadow.ts`); `game.ts` reads the tag when it dies and reports `how: 'stillness'`.
