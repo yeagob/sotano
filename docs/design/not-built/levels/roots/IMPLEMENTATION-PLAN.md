@@ -9,12 +9,13 @@ Read first, for every package: this folder, [progression](../../progression/READ
 ```
 Wave A   A1 i18n keys and labels                       (alone, first)
 Wave B   B1 save v2 | B2 book loader | B3 pages state | B4 mastery + achievements | B5 portraits and lesson captures
+         B6 quotes and page achievements (after A1, B2 and B4)
 Wave C   C1 panel renderer (after B2)   |   C2 Roots generation by mastery (after B4)
 Wave D   D1 game wiring: book and pages (after B1, B3, C1)  →  D2 game wiring: achievements and rewards (after D1, C2)
 Wave E   E1 real-game check, sandbox scenario, docs to built, cleanup (after everything)
 ```
 
-Packages in the same wave touch disjoint files and can run in parallel. `src/game/game.ts` and `src/main.ts` are touched only in wave D, one package at a time. `src/i18n/locales/en.ts` and `es.ts` are touched only in A1 (every message key any package needs is listed there) and in E1 (removing the old `lesson.*` keys).
+Packages in the same wave touch disjoint files and can run in parallel. `src/game/game.ts` and `src/main.ts` are touched only in wave D, one package at a time. `src/i18n/locales/en.ts` and `es.ts` are touched only in A1 (every message key any package needs is listed there), in B6 (the keys added after A1 was cut) and in E1 (removing the old `lesson.*` keys). The book JSON files are changed only by B6 until E1.
 
 ## A1. Message keys and labels (normal)
 
@@ -60,10 +61,25 @@ Packages in the same wave touch disjoint files and can run in parallel. `src/gam
 - **Tests:** the file test above; the capture is deterministic (fixed seed, fixed steps), so a re-run gives the same images.
 - **Done:** 19 portraits and 33 lesson images in `public/book/`, each under 60 KB, reviewed against `sotano-art` (captures, the meaning test) by the art agent; sizes and the capture commands documented in BOOK-DATA.
 
+## B6. Quotes and the page achievements (normal)
+
+- **Goal:** the owner's two additions of 2026-11-12: the `quote` layout ([PANELS §4b](PANELS.md#4b-quote-someone-elses-voice), [BOOK-DATA §2b](BOOK-DATA.md#2b-quotations)) with page 7's quotation, and the four book-page achievements with their reward steps ([ACHIEVEMENTS, book pages](../../progression/ACHIEVEMENTS.md#book-pages-4), [REWARDS](REWARDS.md) levels 37 to 41).
+- **Depends on:** A1, B2, B4 merged (it extends their files).
+- **Files:**
+  - `src/content/book/index.ts` and `tests/book.test.ts`: the `quote` layout (fields `text`, `author`, `work` required, `publisher`, `year`, `lang`; only on `book` pages; budgets 440, 40, 48, 32 and the 60-character source line; facts identical across languages; `year` an integer from 1000 to the current year; `lang` a shipped language).
+  - `src/content/book/book.en.json`, `book.es.json`: replace the `book-1` entry with the exact JSON in [HIDDEN-BOOK](HIDDEN-BOOK.md) (the prose unchanged, the quote added on `roots-gift` → `north`; the Spanish text exactly as the owner gave it).
+  - `src/game/events.ts`: the `pageReached { page: number }` event type (its emit site is D1's, in `RootsBook`'s run-end advance; if the contract test in `tests/items.test.ts` demands an emit site for every event, B6 leaves the type out and D1 adds type, sample and emit together), and its synergy-matrix sample in `tests/synergy-matrix.test.ts`.
+  - `src/content/achievements.ts`, `tests/achievements.test.ts`: the four entries `book.page.7`, `book.page.54`, `book.page.69`, `book.page.100` (`on: 'pageReached'`, `where: { page: N }`); the total becomes 40.
+  - `src/content/tables/roots-mastery.ts`, `tests/roots-mastery.test.ts`: the named steps of levels 37 to 40, the crate formula starting at 41, the steps at 60 and 70, the new bounds (11 hearts).
+  - `src/i18n/locales/en.ts`, `es.ts`: `achievement.book.page.<n>.name|desc` for the four, and `book.quote.translated` ("Our translation" / "Traducción nuestra").
+  - `docs/lore/SOURCES.md`: the `la-locura-lo-cura` row (Credit), given in [HIDDEN-BOOK](HIDDEN-BOOK.md); `docs/lore/CONCEPTS.md` if authenticity has no row.
+- **Tests:** a quote passes; a quote missing `author` or `work` fails; a quote on a tutorial page fails; a quote whose facts differ between the files fails; budgets; the real files pass with page 7's quote in Spanish and English; the four achievements unlock on `pageReached` with their page and never on another; levels 37 to 40 each have one named step; monotonic and bounded from 0 to 100 with the new rows.
+- **Done:** book, catalogue and table carry the additions; the i18n and book tests are green; SOURCES.md has the row.
+
 ## C1. The panel renderer (complex, art)
 
-- **Goal:** the three layouts, key caps, verbs and the page stone at 896 × 512 ([PANELS](PANELS.md)).
-- **Depends on:** B2 (types), A1 (keys).
+- **Goal:** the four layouts (lesson, plate, prose, quote), key caps, verbs and the page stone at 896 × 512 ([PANELS](PANELS.md)). The quote draws its inset page, the gold opening mark, the italic text, the right-aligned author and source, and the translation note only when the book's language differs from the quote's `lang`.
+- **Depends on:** B2 (types), A1 (keys), B6 (the quote layout and `book.quote.translated`).
 - **Files:** `src/render/tablets.ts` (rewrite: `Tablets.show(room, side, panel, pageNumber)` draws offscreen and swaps the texture in one step; image cache with preload; icons drawn from the item, flask and heart art; the mount table of PANELS §6), `src/render/page-stone.ts`, `src/debug/gallery.ts` (a `book` section: every panel of every page, both languages, three devices, flagging overflow), `tests/tablets.test.ts` (the pure parts: wrapping, shrink-to-fit with a fake measure, mount positions, which keycap key is read per device).
 - **Art:** the look is made by the dedicated art agent (`sotano-art` §0) and passes the gate: colour, greyscale, the three colour-blindness filters, at distance in each room; captures go into the art guide's as-built record.
 - **Done:** the gallery shows every panel with no overflow in either language; gate passed; no game wiring yet.
@@ -78,7 +94,7 @@ Packages in the same wave touch disjoint files and can run in parallel. `src/gam
 
 ## D1. Game wiring: the book on the walls (complex)
 
-- **Goal:** the book, the pages and the page stone in the real game.
+- **Goal:** the book, the pages and the page stone in the real game, and the `pageReached` event emitted when a run's end advances the page.
 - **Depends on:** B1, B3, C1.
 - **Files:** `src/main.ts` (load the save once, hand the game a store and the record), `src/game/game.ts` (create `RootsBook` per run from the record's page; feed it room-enter and run-end; ask it each frame which rooms may swap and call the renderer; save the advanced page; preload the shown page's images inside the start fade; sandbox and lab use an in-memory record), `tests/roots-book-game.test.ts` (with the game's headless helpers if they exist, otherwise through the walker helper of `tests/helpers/walker.ts`).
 - **Tests:** a scripted walk of the whole Roots then a death advances the saved page; R after it does not advance twice; a forward lap in the game changes a far room's panel and not the current one; a run start shows the saved page.

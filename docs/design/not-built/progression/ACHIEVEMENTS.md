@@ -2,9 +2,9 @@
 
 Up: [progression](README.md) · Status: decided (owner, issue #147, decisions 8 and 10). The names are a proposal for the owner to confirm. Not built.
 
-An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
+An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
-## 1. The 36 that ship with #147
+## 1. The 40 that ship with #147
 
 Ids are stable: the save refers to them. Names follow `sotano-lore`: each names what the moment means, not the mechanic.
 
@@ -85,7 +85,20 @@ The ids use the meditation ids of `src/content/presences/meditations.ts` (`groun
 | `brew.first` | The first potion brewed in an alembic (the `brew` event, any potion, the Plain Tonic included) | First Distillation | Primera destilación | Brew a potion in an alembic for the first time. | Destila una poción en un alambique por primera vez. |
 | `cook.first` | The first meal cooked in a kitchen (a new `cook` event) | A Warm Meal | Un plato caliente | Cook a meal in a kitchen for the first time. | Prepara una comida en una cocina por primera vez. |
 
-## 2. The data model (takes the other 64 without code changes)
+### Book pages (4)
+
+The current page reaching a number at a run's end ([PAGES §1](../levels/roots/PAGES.md#1-the-current-page)): the event `pageReached { page }`. Pages 54, 69 and 100 **cannot be earned until the book has that many pages** (it has 9 today); they are in the catalogue, but a player cannot reach level 40 until the owner has written a hundred pages.
+
+| Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `book.page.7` | `pageReached` with page 7 | The Hidden Book | El libro escondido | Reach page 7: the first page of the hidden book. | Llega a la página 7: la primera del libro escondido. |
+| `book.page.54` | `pageReached` with page 54 | Lucky Number | Número de la suerte | Reach page 54 of the Roots' book. | Llega a la página 54 del libro de las raíces. |
+| `book.page.69` | `pageReached` with page 69 | Nice | Nice | Reach page 69 of the Roots' book. | Llega a la página 69 del libro de las raíces. |
+| `book.page.100` | `pageReached` with page 100 | Still Reading | Sigues leyendo | Reach page 100 of the Roots' book. | Llega a la página 100 del libro de las raíces. |
+
+The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages (the wink is English in Spanish too). Page 7 names what the player finds; page 100 says that a hundred pages in, the reading goes on.
+
+## 2. The data model (takes the other 60 without code changes)
 
 The catalogue is data, in `src/content/achievements.ts`:
 
@@ -98,14 +111,15 @@ interface AchievementDef {
 }
 ```
 
-The 36 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`. One tracker in the game listens to every event the catalogue names, matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for (then the event is added like any event: emit site, synergy-matrix sample, contract list).
+The 40 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. One tracker in the game listens to every event the catalogue names, matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for (then the event is added like any event: emit site, synergy-matrix sample, contract list).
 
-New events the 36 need (`src/game/events.ts`):
+New events the 40 need (`src/game/events.ts`):
 
 | Event | Payload | Emitted |
 |---|---|---|
 | `bossOvercome` | `{ boss: string; floor: number; how: 'destroyed' \| 'converted' \| 'stillness' }` | In `bossDown`, once per boss room, with the floor's boss id and how it ended: `converted` from `convert`, `stillness` when the Shadow's stillness rule ends it (its behaviour marks that end), `destroyed` for every other death |
 | `meditationComplete` | `{ meditation: string; source: 'roots' \| 'vault' }` | When the Sanctuary ends with `complete`, from the Roots' chest or a vault's Boundary |
+| `pageReached` | `{ page: number }` | When a run's end advances the current page, once, with the new page (`RootsBook`, D1) |
 | `cook` | `{ meal: 'meal-small' \| 'meal-hearty'; part: string }` | When a kitchen turns a part into a meal (`src/game/kitchen.ts`) |
 
 Rules the tracker keeps:
@@ -137,9 +151,9 @@ When an achievement is earned the player reads, in one window: its name, its des
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 36 defined ones; the other 64 are pending in #179 (the issue still says 78 and should be updated) and enter as data when the owner defines them.
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 40 defined ones; the other 60 are pending in #179 (the issue still says 78 and should be updated) and enter as data when the owner defines them.
 
 ## Open questions
 
-- The 36 names (both languages) are a proposal.
+- The names (both languages) are a proposal, except the owner's "Lucky Number" and "Nice".
 - Should cards that were pending when a run ended show at the start of the next run? Default: no.

@@ -15,6 +15,7 @@ The walls of the Roots show one page at a time. A page is a set of panels for so
   - Sky plants play no part here.
 - **The cap.** The current page never goes past the last page in the book files. A player on the last page stays there; when the owner adds pages, the next qualifying run moves on to the first new one. (The issue asked to wrap to page 1 after the last page; the owner's decision "never beyond the current page" and a book that grows by hand point to a cap. See [open questions](OPEN-QUESTIONS.md), question 2.)
 - If the save holds a page higher than the book has (pages removed), the walls show the last page and the save keeps its number.
+- **The event.** When a run's end advances the current page, the game emits `pageReached { page }` with the new page number, once. Four achievements listen to it: pages 7, 54, 69 and 100 ([ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md#book-pages-4)). Because the page advances by exactly one and never past the last page, an achievement for page N can be earned only once the book has at least N pages: today it has 9, so 54, 69 and 100 wait for the owner's pages.
 
 ## 2. Browsing: laps of the ring
 

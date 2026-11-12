@@ -14,6 +14,54 @@ The three pages draw only on the documented story: the premise ([PREMISE](../../
 
 From the premise: the basement of the mind, reality bending to intention, every wall something once built to stay safe that now keeps you small.
 
+**The page's quotation (owner, 2026-11-12).** Page 7 ends with a quotation from Guillermo Borja, *La locura lo cura* (extractos), Editorial La Llave, 1995, on the `quote` panel of the treasure room's north wall (`roots-gift` → `north`, the end of the page: [BOOK-DATA §2b](BOOK-DATA.md#2b-quotations)). The Spanish is the original, exactly as the owner gave it (369 characters); the English is our translation (369 characters) and the panel says so. Both fit one panel (budget 440, [PANELS §4b](PANELS.md#4b-quote-someone-elses-voice)). The prose and the quotation speak to each other: walls built to stay safe, then authenticity as showing oneself without a façade.
+
+> La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.
+>
+> — Guillermo Borja, *La locura lo cura* (extractos), Editorial La Llave, 1995
+
+> Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.
+>
+> — our translation
+
+The page-7 entry, exactly as it is to replace `book-1` in each file (package B6 applies it; the files are not changed by this document):
+
+`src/content/book/book.es.json`:
+
+```json
+{
+  "id": "book-1",
+  "kind": "book",
+  "panels": {
+    "roots-hall": {
+      "south": { "layout": "prose", "text": "Bajaste al sótano de tu propia mente. Aquí abajo cambia todo aquello en lo que pones tu voluntad. Cada muro es algo que levantaste para estar a salvo. Un día te protegió. Ahora te empequeñece, y tienes permiso para romperlo." }
+    },
+    "roots-gift": {
+      "north": { "layout": "quote", "text": "La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
+    }
+  }
+}
+```
+
+`src/content/book/book.en.json`:
+
+```json
+{
+  "id": "book-1",
+  "kind": "book",
+  "panels": {
+    "roots-hall": {
+      "south": { "layout": "prose", "text": "You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it." }
+    },
+    "roots-gift": {
+      "north": { "layout": "quote", "text": "Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
+    }
+  }
+}
+```
+
+Its source row for `docs/lore/SOURCES.md` (package B6): id `la-locura-lo-cura`, *La locura lo cura* (extractos), Guillermo Borja, Editorial La Llave, 1995, kind book, naming status **Credit** (a modern work: quoted with attribution, never used as a name), key idea: authenticity as showing oneself without a façade, not as trying to be better; in the game: the quotation on page 7 of the Roots' book.
+
 ## Page 8 (`book-2`): the patterns
 
 > The shapes that block your way are not people. They are patterns: a doubt, a judging voice, a fear at the edge of change. Each one wants something for you, in its own clumsy way. Warm them, and some will turn and walk beside you.
@@ -34,4 +82,5 @@ From the premise ("the depths and the tree are one journey seen from its two end
 
 - Keep, change or replace each of the three pages.
 - Should the book use a slot other than the start room's south wall (for example the secret panel behind the dig wall, which already speaks in the book's voice on page 1)?
-- Should a book page ever change more than one slot (a page across two rooms)?
+- Should a book page ever change more than one slot (a page across two rooms)? Page 7 already uses two: its prose and its quotation.
+- The quotation is about seventy words of a modern book; it is shown with full attribution as a quotation. Confirm the owner is comfortable quoting it at this length ([open question 16](OPEN-QUESTIONS.md)).

@@ -10,7 +10,7 @@ The Roots have a mastery level: **the number of achievements unlocked, capped at
 - **Any order, no sequence.** Every achievement counts the moment it is earned, however many in one run (the issue's sequential "one boss step per run" is superseded by the owner's decision: each boss has two achievements, destroyed and turned to your side, and every first time counts, several in one run too).
 - **No double award.** An achievement is unlocked once. A second time does nothing: no level, no notice.
 - **When it applies.** The Roots are carved at the start of a run. A level earned during a run changes the Roots from the next run; the notice says so. The level a run uses is fixed at its start.
-- **The cap.** 100 achievements exist in total once #179 is done, so the cap is reached exactly when all of them are. Today 36 exist (28 for the bosses, 6 meditations, the first brew and the first meal), so a player can reach level 36, and the reward table has a named step at every level from 1 to 36.
+- **The cap.** 100 achievements exist in total once #179 is done, so the cap is reached exactly when all of them are. Today 40 exist (28 for the bosses, 6 meditations, the first brew, the first meal and 4 pages of the book), and the reward table has a named step at every level from 1 to 40. Three of them (pages 54, 69 and 100) wait for the book to have that many pages, so today a player can reach level 37.
 - **Separate from the page.** The page of the book and the mastery level are two numbers that do not touch: the page moves by walking the Roots and ending a run, the level by achievements.
 - **Deterministic.** The Roots of a run depend only on the seed and the level the run started with.
 

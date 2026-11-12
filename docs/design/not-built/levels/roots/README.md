@@ -11,10 +11,10 @@ The game should be one a parent is glad to see a child play, that an adult can u
 | Document | Contents | Status |
 |---|---|---|
 | [PAGES.md](PAGES.md) | The page counter, when it advances, browsing by laps of the ring, the rule that keeps a change out of sight, the page stone | decided |
-| [PANELS.md](PANELS.md) | The three layouts (lesson, plate, prose) on the 896 × 512 slab, exact geometry, character budgets, key caps, where each panel hangs | decided (geometry: proposal) |
+| [PANELS.md](PANELS.md) | The four layouts (lesson, plate, prose, quote) on the 896 × 512 slab, exact geometry, character budgets, key caps, where each panel hangs | decided (geometry: proposal) |
 | [BOOK-DATA.md](BOOK-DATA.md) | The two JSON files, every field, the validation rules, the image ids and which are new captures | decided |
 | [TUTORIAL-PAGES.md](TUTORIAL-PAGES.md) | The six tutorial pages, slot by slot, and why each slot says what it says | proposal |
-| [HIDDEN-BOOK.md](HIDDEN-BOOK.md) | The first three pages of the hidden book (pages 7 to 9) | proposal, awaiting the owner |
+| [HIDDEN-BOOK.md](HIDDEN-BOOK.md) | The first three pages of the hidden book (pages 7 to 9) and page 7's quotation | proposal, awaiting the owner |
 | [REWARDS.md](REWARDS.md) | What the Roots give at each mastery level, 0 to 100, and what stays as it is everywhere else | decided (numbers: proposal) |
 | [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) | The work in ordered packages for coding agents, with files, tests and the definition of done | proposal |
 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | What the owner's decisions leave open, each with the default the design uses | open |

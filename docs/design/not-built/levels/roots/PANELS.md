@@ -1,8 +1,8 @@
-# Panels: three layouts on one limestone slab
+# Panels: four layouts on one limestone slab
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decision 5: panels stay on the walls, where they are and about the same size, never an overlay; three layouts on the same limestone slab). The geometry below is a proposal for the art agent and the owner to confirm through the art gate (`sotano-art`).
+Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decision 5: panels stay on the walls, where they are and about the same size, never an overlay; three layouts on the same limestone slab; a fourth, `quote`, added by the owner on 2026-11-12: "a panel type for quotes from other books"). The geometry below is a proposal for the art agent and the owner to confirm through the art gate (`sotano-art`).
 
-Every panel is a stone tablet on a wall of a room of the Roots, as today (`src/render/tablets.ts`). What changes: the canvas doubles to **896 × 512**, the two panels of a room can differ, and a panel has one of three layouts. The tablet's size in the world stays **3.7 × 2.1 blocks**.
+Every panel is a stone tablet on a wall of a room of the Roots, as today (`src/render/tablets.ts`). What changes: the canvas doubles to **896 × 512**, the two panels of a room can differ, and a panel has one of four layouts. The tablet's size in the world stays **3.7 × 2.1 blocks**.
 
 ## 1. The slab (shared by every layout)
 
@@ -60,6 +60,25 @@ For creatures, projections, bosses, presences, potions, foods, hearts and practi
 
 The page number is the page's position in the book; it is drawn by the renderer, never written in the data.
 
+## 4b. `quote`: someone else's voice
+
+A quotation from another book: the quoted words, who wrote them and where. It must read at a glance as **another voice**, not as the book's own prose, so it changes everything the prose keeps: a paler inset page instead of the bare face, italic instead of upright, a large gold opening mark instead of the gold margin line, an attribution under the text, and no page number.
+
+| Element | Geometry | Style |
+|---|---|---|
+| Inset page | 40, 40, 816, 432, with a 2 px `ink.bevel` border | fill `limestone.hi` |
+| Opening mark | the glyph “ at x 52, top 36 | bold serif 96 px, `light.gold` (a glyph, never words) |
+| Text | x 112, top 64, width 712, line height 38, at most 9 lines (to 406) | italic serif 28 px, `ink.line` |
+| Author | right-aligned at x 824, top 414, one line, drawn as "— Author" | bold sans 26 px, `ink.line`, shrinks down to 20 px |
+| Source | right-aligned at x 824, top 446, max width 440, one line: "Work · Publisher, Year" (publisher and year only if given) | italic sans 22 px, `ink.bevel`, shrinks down to 18 px |
+| Translation note | left-aligned at x 64, top 448, max width 300, one line; only when the book's language is not the quotation's original language | sans 20 px, `ink.bevel`: `book.quote.translated` ("Our translation" / "Traducción nuestra") |
+
+At 28 px a line holds about 54 characters, and nine lines hold about 440 after word-wrap losses: one quotation of up to 440 characters fits one panel at a readable size. A longer quotation does not run over two panels (the two panels of a room face opposite walls and cannot be read as one text); it is cut by the owner or split across two book pages.
+
+**The original language is the source.** In the file of the quotation's original language (`lang`), `text` is the quotation exactly as printed, never shortened or reworded. In the other file, `text` is the game's own faithful translation, and the panel shows the translation note. Author, work, publisher, year and `lang` are facts and are identical in both files.
+
+**Every quotation's source is recorded** in `docs/lore/SOURCES.md` (id, author, work, publisher, year, naming status, what the game quotes and where), per `sotano-lore`, in the same change that adds it to the book.
+
 ## 5. Character budgets
 
 Every text in both languages must fit its budget. A budget counts characters after each `{placeholder}` is replaced by the **longest** label that control has on any device in that language. The book test enforces the budgets ([BOOK-DATA](BOOK-DATA.md#validation)); the gallery check in the browser enforces the real fit (no text past its last line).
@@ -73,6 +92,12 @@ Every text in both languages must fit its budget. A budget counts characters aft
 | plate | `text` | 110 | ≤ 5 |
 | plate | `note` | 30 | 1 |
 | prose | `text` | 320 | ≤ 8 |
+| quote | `text` | 440 | ≤ 9 |
+| quote | `author` | 40 | 1 |
+| quote | `work` | 48 | 1 |
+| quote | `publisher` | 32 | 1 |
+| quote | source line ("Work · Publisher, Year" as drawn) | 60 | 1 |
+| quote | `book.quote.translated` (message key) | 24 | 1 |
 | key cap | `keycap.<action>.<device>` | 14 | 1 |
 | key cap | `keycap.<action>.verb` | 14 | 1 |
 
@@ -116,4 +141,4 @@ Images are ids, never paths ([BOOK-DATA](BOOK-DATA.md#images)). The renderer dra
 
 ## 9. The art gate
 
-The look of the three layouts, the key cap, the verb and the page stone is new art: it is made by the dedicated art agent (`sotano-art` §0) and passes the gate (captures in colour, greyscale and the three colour-blindness filters, and at distance in the room) before it ships. The `?gallery` gets a section that draws every panel of every page in both languages and on every device, and flags any text that does not fit.
+The look of the four layouts, the key cap, the verb and the page stone is new art: it is made by the dedicated art agent (`sotano-art` §0) and passes the gate (captures in colour, greyscale and the three colour-blindness filters, and at distance in the room) before it ships. The `?gallery` gets a section that draws every panel of every page in both languages and on every device, and flags any text that does not fit.

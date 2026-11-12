@@ -34,15 +34,27 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 | `id` | page | string, `^[a-z0-9-]+$` | Unique in the file; the same id at the same position in every language. Stable: tests and the gallery refer to pages by id |
 | `kind` | page | `"tutorial"` or `"book"` | Page 1 is `tutorial`. Every `tutorial` page comes before every `book` page. The page stone shows a number only on `book` pages |
 | `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel |
-| `layout` | panel | `"lesson"`, `"plate"`, `"prose"` | Decides which other fields are allowed |
+| `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"` | Decides which other fields are allowed. `quote` only on `book` pages |
 | `title` | lesson, plate | string | Required. A plate's title is the name of what it shows, in that language's established name |
 | `subtitle` | plate | string | Required. What kind of thing it is ("A projection", "A boss · floors 1–2") |
-| `text` | lesson, plate, prose | string | Required. May hold `{action}` placeholders (lesson and plate only) |
+| `text` | lesson, plate, prose, quote | string | Required. May hold `{action}` placeholders (lesson and plate only). In a quote: the quotation (section 2b) |
 | `image` | lesson, plate | image id | Required (section 4) |
 | `key` | lesson | action | Optional. Draws that control as a key cap with its verb (section 5) |
 | `note` | plate | string | Optional. One line under the text: a number, a drop, a hint |
+| `author` | quote | string | Required. The author's name as printed |
+| `work` | quote | string | Required. The title of the work, in its original language |
+| `publisher` | quote | string | Optional |
+| `year` | quote | integer | Optional. The year of the edition quoted |
+| `lang` | quote | `"en"` or `"es"` | Required. The quotation's original language |
 
-No other field is allowed. Prose has no title, image or key, and never draws its own page number.
+No other field is allowed. Prose has no title, image or key, and never draws its own page number. A quote has no title, image, key or page number.
+
+## 2b. Quotations
+
+- A quotation is not the game's own text. In the file whose `language` equals the quote's `lang`, `text` is the quotation exactly as printed. In the other file, `text` is our faithful translation, and the panel adds the note "Our translation" / "Traducción nuestra" by itself (the `book.quote.translated` message key; nothing in the data says it).
+- `author`, `work`, `publisher`, `year` and `lang` are identical in both files.
+- Every quotation's source has its row in `docs/lore/SOURCES.md` before it enters the book (`sotano-lore`).
+- **Where a quote goes: the end of the page.** A page is read along the forward ring: it begins in the start room (the prose on `roots-hall` → `south`) and ends in the treasure room, the last room before the ring closes. The quote slot is **`roots-gift` → `north`**, the plate wall of the treasure room. On tutorial pages that slot keeps the Sanctuary panel; on a book page it may hold a quote, or nothing (then page 1's Sanctuary panel shows). Any book page may carry one quote or none; the validator allows `quote` in any slot of a book page, and the owner's convention is this one.
 
 **Room keys** are the template ids of the eleven rooms: `roots-hall`, `roots-step`, `roots-dig`, `roots-mend`, `roots-pit`, `roots-bridge`, `roots-seal`, `roots-crates`, `roots-spring`, `roots-gift`, `roots-door`. **Sides** are `north` and `south`.
 
@@ -132,11 +144,11 @@ The book is checked at build time by a test and again when the game loads it. An
 2. `pages` has at least one page; page 1 is `tutorial` and fills all 22 slots; no `tutorial` page follows a `book` page.
 3. Page ids are unique and match `^[a-z0-9-]+$`.
 4. Every room key is one of the eleven; every side is `north` or `south`; every panel has a known `layout`, all its required fields, and no field its layout does not allow.
-5. Every string is non-empty, has no markup (`<`, `>`), no leading or trailing space and no double space.
+5. Every string is non-empty (a quote's `author` and `work` included), has no markup (`<`, `>`), no leading or trailing space and no double space.
 6. Every `{placeholder}` names an allowed action, and appears only in `text` of a lesson or plate.
-7. Every `image` resolves (section 4). Every `key` is an allowed action.
+7. Every `image` resolves (section 4). Every `key` is an allowed action. A `quote` sits only on a `book` page; its `lang` is a shipped language; its `year`, if given, is an integer from 1000 to the current year.
 8. Every field is within its character budget ([PANELS §5](PANELS.md#5-character-budgets)), counting each placeholder at its longest label in that language.
-9. **The languages match**: the same number of pages; at each position the same `id` and `kind`; the same slots; in each slot the same `layout`, `image`, `key` and the same set of fields. Only the words differ.
+9. **The languages match**: the same number of pages; at each position the same `id` and `kind`; the same slots; in each slot the same `layout`, `image`, `key` and the same set of fields, and for a quote the same `author`, `work`, `publisher`, `year` and `lang`. Only the words differ.
 10. The two key-cap labels and the verb exist for every action used, in every language (the i18n test covers the message keys).
 
 ## 7. How the game reads it
@@ -147,4 +159,4 @@ The book is checked at build time by a test and again when the game loads it. An
 
 ## 8. Writing a new page by hand (for the owner)
 
-Add an entry at the end of `pages` in **both** files, with the same `id` and `kind: "book"`, and one or more slots with `layout: "prose"` and a `text` of at most 320 characters. Run `npm test`: the book test lists anything out of place. The start room's south slot (`roots-hall` → `south`) is the one the first book pages use; any slot may be used.
+Add an entry at the end of `pages` in **both** files, with the same `id` and `kind: "book"`, and one or more slots with `layout: "prose"` and a `text` of at most 320 characters. Run `npm test`: the book test lists anything out of place. The start room's south slot (`roots-hall` → `south`) is the one the first book pages use; any slot may be used. A quotation goes in `roots-gift` → `north` with `layout: "quote"` (section 2b), the original text in the file of its language, our translation in the other, and its source added to `docs/lore/SOURCES.md`.

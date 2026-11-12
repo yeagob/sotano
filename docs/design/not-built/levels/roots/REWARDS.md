@@ -1,6 +1,6 @@
 # What the Roots give, by mastery level
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one breakthrough; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 36; step lines in stars). The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
+Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one breakthrough; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 36, then 40 when four page achievements were added; step lines in stars). The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
 
 The Roots read one number when a run starts: the mastery level, 0 to 100. Everything below is a pure function of that level and the run's seed. It changes only floor 0's own sources; every other floor, and the surface, keep their numbers.
 
@@ -19,7 +19,7 @@ The Roots read one number when a run starts: the mastery level, 0 to 100. Everyt
 
 ## 2. The table
 
-Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 36 each bring one named step (36 achievements exist today, so 36 is the most a player can reach now). From 37 to 100, the crate factor grows a little every level and a few larger steps come on top.
+Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (40 achievements exist today). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
 
 | Level | What the Roots gain | Keys | Breakthroughs | Hearts lying loose | Free chests | Crate factor | Extra practices |
 |---|---|---|---|---|---|---|---|
@@ -60,14 +60,16 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 34 | Crates give more | | | | | 1.3 | |
 | 35 | A sixth free chest | | | | 6 | | |
 | 36 | A black heart | | | + black | | | |
-| 37 to 100 | Crates give a little more each level | | | | | +0.02 a level | |
-| 45 | A sixth key | 6 | | | | | |
-| 55 | A fifth breakthrough | | 5 | | | | |
-| 65 | A second stone heart | | | + stone | | | |
-| 70 | A second star heart | | | + star | | | |
+| 37 | A sixth key | 6 | | | | | |
+| 38 | A fifth breakthrough | | 5 | | | | |
+| 39 | A second stone heart | | | + stone | | | |
+| 40 | A second star heart | | | + star | | | |
+| 41 to 100 | Crates give a little more each level | | | | | +0.02 a level | |
+| 60 | A third red heart | | | + red | | | |
+| 70 | Free chests give one thing more again | | | | (3 to 5 draws each) | | |
 | 80 | An altar in the start room | | | | | | + the altar (★ to ★★★) |
 | 90 | The altar can hold the best | | | | | | altar ★★ to ★★★★ |
-| **100** | A second Sanctuary | 6 | 5 | 10 | 6 | 2.58 | 2 + altar, and a second Sanctuary chest |
+| **100** | A second Sanctuary | 6 | 5 | 11 | 6 (3 to 5 draws) | 2.5 | 2 + altar, and a second Sanctuary chest |
 
 ### At a glance
 
@@ -80,15 +82,16 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 22 | Four keys, three breakthroughs, five hearts (two red, blue, stone, blood), three free chests, crates 9–27%, one extra practice |
 | 25 | As 22 with four free chests, crates 10–30% (as other floors), **two extra practices** |
 | 36 | Five keys, four breakthroughs, eight hearts (two red, two blue, stone, blood, star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
-| 50 | Six keys, four breakthroughs, eight hearts, six free chests, crates 16–47%, two extra practices |
-| 100 | Six keys, five breakthroughs, ten hearts, six free chests, crates 26–75%, two extra practices, an altar up to ★★★★, and two Sanctuaries |
+| 40 | Six keys, five breakthroughs, ten hearts (two red, two blue, two stone, blood, two star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
+| 50 | Six keys, five breakthroughs, ten hearts, six free chests, crates 15–45%, two extra practices |
+| 100 | Six keys, five breakthroughs, eleven hearts, six free chests of three to five draws, crates 25–75%, two extra practices, an altar up to ★★★★, and two Sanctuaries |
 
 ## 3. Crates
 
 - The crate chance on floor 0 is `min(0.75, base × factor)`, where `base` is today's per-seed chance of floor 0 (0.10 to 0.30, unchanged) and `factor` is the table's crate factor.
 - **Level 0: factor 0.2, five times lower than today**: a crate gives anything 2 to 6% of the time.
-- From level 37: `factor = 1.3 + 0.02 × (level − 36)`, so 1.58 at 50 and 2.58 at 100.
-- The cap 0.75 keeps a crate from always giving: at level 100 the chance is 0.26 to 0.75.
+- From level 41: `factor = 1.3 + 0.02 × (level − 40)`, so 1.5 at 50 and 2.5 at 100.
+- The cap 0.75 keeps a crate from always giving: at level 100 the chance is 0.25 to 0.75.
 - What a crate gives is unchanged (key, heart or bomb by today's weights and luck; a heart's kind by the floor's heart chances). Crates never hold practices.
 - **Only crates broken inside floor 0's band** read the factor. Crates above the Roots (the surface counts as depth 0 for crates today) keep floor 0's base chance without it.
 - The crates are the 28 of `roots-crates`. No crate is added; no room changes.
@@ -102,11 +105,11 @@ Each row is the level at which something changes. Every step is kept at every hi
 ## 5. Where the rest goes
 
 - Free chests, loose keys, breakthroughs and hearts lie on free tiles of the eight lesson rooms (the same free tiles the build uses for chests and keys elsewhere), at most one free chest per room. They are placed after the extra practices, in this order: chests, keys, breakthroughs, hearts (in the table's order). Each kind draws from its own fork: `floor/0/roots/chest`, `…/key`, `…/bomb`, `…/heart`; level 0's key-or-breakthrough choice draws once from `floor/0/roots/oneof`.
-- A free chest needs no key and holds what free-standing chests hold elsewhere, rolled when opened: one to three draws of the chest table (two to four from level 33). A practice that comes out of a Roots chest is drawn in the band ★ to ★★★.
+- A free chest needs no key and holds what free-standing chests hold elsewhere, rolled when opened: one to three draws of the chest table (two to four from level 33, three to five from level 70). A practice that comes out of a Roots chest is drawn in the band ★ to ★★★.
 
 ## 6. Rules the table keeps
 
-- **Bounded.** At most 6 keys, 5 breakthroughs, 10 hearts, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
+- **Bounded.** At most 6 keys, 5 breakthroughs, 11 hearts, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
 - **Monotonic.** For every level L, everything at L + 1 is at least what it is at L.
 - **Deterministic.** Floor 0 depends only on the seed and the level.
 - **Only the Roots.** Floors 1 to 9, the sky and the surface are identical at every mastery level for a given seed, because every new Roots practice is a runtime draw made after the whole reservation, and every other new decision draws from a new `floor/0/roots/*` fork.
@@ -137,4 +140,4 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 | `mastery.gain.altarBest` | The altar's practice can reach {stars}. | La práctica del altar puede llegar a {stars}. |
 | `mastery.gain.sanctuary` | A second Boundary keeps a chest by the way down. | Un segundo Límite guarda un cofre junto a la bajada. |
 
-Percentages go through `fmtNum`. From 37 on, a level with only the crate step shows `mastery.gain.crates`; a level with two changes shows both lines.
+Percentages go through `fmtNum`. From 41 on, a level with only the crate step shows `mastery.gain.crates`; a level with two changes shows both lines.
