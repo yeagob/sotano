@@ -20,6 +20,7 @@ Each section below is a folder with its own README. Open questions are listed in
 | [bosses](bosses/README.md) | Boss mechanics not built: voxel bodies, the Guardian's route of light, the Verdict and the Grudge, and the rest |
 | [practices](practices/README.md) | Practices not built, the shop, the purpose of parts, and early sketches |
 | [stations](stations/README.md) | Stations, props and zones: furnaces, kitchens, laboratories, gardens and more (ideas) |
+| [progression](progression/README.md) | What the player keeps between runs: achievements, the Roots' mastery level and the save record (issue #147) |
 | [story](story/README.md) | The ending, the meaning of the sky, the protagonist, the mental-health link and meta-progression |
 | [feel](feel/README.md) | Art that is not built yet, the hexagram, and the art and safety notes |
 

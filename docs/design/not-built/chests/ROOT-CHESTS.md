@@ -1,6 +1,6 @@
 # Room chests on the roots
 
-Up: [not-built chests](README.md) · Status: proposal, open question.
+Up: [not-built chests](README.md) · Status: proposal, open question. Answered by the design of issue #147: the Roots get free chests that need no key, from mastery level 5 ([REWARDS](../levels/roots/REWARDS.md)).
 
 The chest design says that free-standing chests appear in normal rooms "every floor including the roots". The build places no room chest on floor 0. The roots are the tutorial: their rooms are fixed templates with lessons, and the tutorial gives its rewards as loose keys and bombs instead.
 
