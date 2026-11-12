@@ -120,11 +120,12 @@ export interface GainLine { readonly key: string; readonly params: Readonly<Reco
 /**
  * The lines that name what the Roots gained when the player reaches `level`: the difference between the table at
  * level - 1 and at level. A level with two changes gives both lines, named steps first and the crate line last.
- * Level 0 gains nothing. Level 1 gives the single `mastery.gain.both` line.
+ * Level 0 gains nothing, and so does a level above 100 (the cap names no step once none is left). Level 1 gives
+ * the single `mastery.gain.both` line.
  */
 export function gainsAt(level: number): GainLine[] {
   const L = clampLevel(level);
-  if (L === 0) return [];
+  if (L === 0 || Math.floor(level) > MASTERY_MAX) return [];
   const before = rootsRewards(L - 1);
   const now = rootsRewards(L);
   const lines: GainLine[] = [];

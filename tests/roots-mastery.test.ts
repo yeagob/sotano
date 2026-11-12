@@ -235,6 +235,12 @@ describe('gainsAt (REWARDS §7: one named line for each step)', () => {
     expect(gainsAt(36)).toEqual([{ key: 'mastery.gain.heart.black', params: {} }]);
   });
 
+  it('names no step above the cap: level 101 and beyond give no line, level 100 still gives its own', () => {
+    expect(gainsAt(101)).toEqual([]);
+    expect(gainsAt(1000)).toEqual([]);
+    expect(gainsAt(100).length).toBeGreaterThan(0);
+  });
+
   it('gives the crate line with its percentages at the levels the factor moves', () => {
     expect(gainsAt(2)).toEqual([{ key: 'mastery.gain.crates', params: { lo: 3, hi: 9 } }]);
     expect(gainsAt(100)).toEqual(expect.arrayContaining([
