@@ -1248,6 +1248,7 @@ export class Game {
     if (isLayer(kind)) {
       p.layers.push({ kind, hp: Math.min(HEART, pts) });
       if (kind === 'blue') sfxHeart.blue();
+      else if (kind === 'black') sfxHeart.black();
       else if (kind === 'stone') sfxHeart.stone();
     } else if (slot) {
       this.stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: BLOOD_SLOT_SOURCE });

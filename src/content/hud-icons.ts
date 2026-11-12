@@ -25,6 +25,8 @@ export const HUD_ICONS = {
   heartEmpty: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'life.empty', h: 'life.rim', d: 'life.rim' } },
   /** A blue heart: the red heart's shape in ultramarine; once spent it does not come back. */
   heartBlue: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'heart.blue.base', h: 'bone.paper', d: 'heart.blue.dark' } },
+  /** A black heart: the red heart's shape in soot-black; once spent it does not come back (issue #154). */
+  heartBlack: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'heart.black.base', h: 'bone.paper', d: 'heart.black.dark' } },
   /** A stone heart: warm grey with a gold crack of kintsugi, light coming through the stone. */
   heartStone: {
     rows: [

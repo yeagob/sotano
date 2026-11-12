@@ -2,7 +2,14 @@ import { table, type Table } from '../../core/tables';
 import type { Rng } from '../../core/rng';
 import type { HeartKind } from '../heart-art';
 import { ITEMS } from '../items';
-import { RARE_HEARTS, type RareHeart } from './hearts';
+import type { RareHeart } from './hearts';
+
+/**
+ * The kinds a friendly creature's growth gift and The Listener's special heart can give: the five
+ * kinds that predate the black heart. Black is a drop only (`RARE_HEARTS`) until the owner gives it
+ * a gift weight (issue #154), so these tables keep their previous weights and kinds.
+ */
+export const GIFT_HEART_KINDS: readonly RareHeart[] = ['blue', 'stone', 'blood', 'star', 'berserker'];
 
 export type HeartGift =
   | { kind: 'practice'; item: (typeof ITEMS)[number] }
@@ -19,7 +26,7 @@ export const LISTENER_GIFT_TABLE = table<ListenerGiftKind>('listener-heart-gift'
 
 export const CREATURE_GIFT_TABLE = table<CreatureGiftKind>('creature-max-growth-gift', 'runtime', [
   { value: 'none', weight: 85 },
-  ...RARE_HEARTS.map(heart => ({ value: heart as CreatureGiftKind, weight: 15 / RARE_HEARTS.length })),
+  ...GIFT_HEART_KINDS.map(heart => ({ value: heart as CreatureGiftKind, weight: 15 / GIFT_HEART_KINDS.length })),
 ]);
 
 const HEALTH_PRACTICES = ITEMS.filter(item => item.stats?.some(stat => stat.stat === 'maxHearts'));
@@ -27,13 +34,13 @@ export const HEALTH_PRACTICE_TABLE = table<(typeof HEALTH_PRACTICES)[number]>('l
   HEALTH_PRACTICES.map(item => ({ value: item, weight: 1 })),
 );
 const SPECIAL_HEART_TABLE = table<RareHeart>('listener-special-heart', 'runtime',
-  RARE_HEARTS.map(heart => ({ value: heart, weight: 1 })),
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
 );
 const SPECIAL_ALTERNATIVES: Record<RareHeart, Table<RareHeart>> = Object.fromEntries(
-  RARE_HEARTS.map(heart => [
+  GIFT_HEART_KINDS.map(heart => [
     heart,
     table<RareHeart>(`listener-special-heart-without-${heart}`, 'runtime',
-      RARE_HEARTS.filter(candidate => candidate !== heart).map(value => ({ value, weight: 1 })),
+      GIFT_HEART_KINDS.filter(candidate => candidate !== heart).map(value => ({ value, weight: 1 })),
     ),
   ]),
 ) as Record<RareHeart, Table<RareHeart>>;

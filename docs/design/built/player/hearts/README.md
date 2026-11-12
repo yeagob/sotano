@@ -1,6 +1,6 @@
 # Kinds of heart
 
-Six kinds of heart the player can pick up (issue #31). Red hearts fill the containers; blue, stone and berserker hearts sit on top of the containers as extra hearts and are lost for good once spent; blood and star hearts act the moment they are taken and store nothing. Each kind has its own document.
+Seven kinds of heart the player can pick up (issue #31; black added in #154). Red hearts fill the containers; blue, black, stone and berserker hearts sit on top of the containers as extra hearts and are lost for good once spent; blood and star hearts act the moment they are taken and store nothing. Each kind has its own document.
 
 Part of [the player](../README.md). Health itself (points, quarters, invulnerability) is in [HEALTH.md](../HEALTH.md).
 
@@ -8,6 +8,7 @@ Part of [the player](../README.md). Health itself (points, quarters, invulnerabi
 |---|---|
 | [RED.md](RED.md) | The normal heart: one heart back into the containers |
 | [BLUE.md](BLUE.md) | One more heart, lost for good when spent |
+| [BLACK.md](BLACK.md) | One more heart, lost for good when spent, rarer than blue (issue #154) |
 | [STONE.md](STONE.md) | One more heart that halves every hit while it takes the blows |
 | [BLOOD.md](BLOOD.md) | Slow healing, up to two hearts over two minutes, broken by any hit; at full health, one more container, filled |
 | [STAR.md](STAR.md) | One heart back and thirty seconds untouchable |
@@ -27,7 +28,8 @@ Part of [the player](../README.md). Health itself (points, quarters, invulnerabi
 | Blood | 4 % to 8 % |
 | Star | 2 % to 4 % |
 | Berserker | 0.5 % to 1.5 % |
-| Red | the rest (about 70 % to 83 %) |
+| Black | 1 % to 2 % |
+| Red | the rest (about 65 % to 82 %) |
 
 - **The look.** Gold on brown tones with light around each rare heart (a soft halo on the pickup), following the art guide. The art ruling is in [DECISIONS.md](../../../../art/DECISIONS.md).
 - **Feedback.** Every kind has its own pickup sound, a burst in its colour and a toast that says what it does; losing an extra heart bursts and toasts too.

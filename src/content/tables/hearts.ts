@@ -10,9 +10,10 @@ export const HEART_CHANCE: Readonly<Record<RareHeart, readonly [number, number]>
   blood: [0.04, 0.08],
   star: [0.02, 0.04],
   berserker: [0.005, 0.015],
+  black: [0.01, 0.02],
 };
 
-export const RARE_HEARTS: readonly RareHeart[] = ['blue', 'stone', 'blood', 'star', 'berserker'];
+export const RARE_HEARTS: readonly RareHeart[] = ['blue', 'stone', 'blood', 'star', 'berserker', 'black'];
 
 export function floorHeartChances(rr: RunRandom, floor: number): Record<RareHeart, number> {
   const r = rr.fork('floor', Math.max(0, floor), 'hearts');
