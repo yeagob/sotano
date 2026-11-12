@@ -55,7 +55,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH Â
 | `fork('floor', k, 'room', i, 'part', seq)` | Runtime | The parts a released projection leaves (`rollParts`): `seq` is the room's spawn count when its omen opened, so each projection has its own roll and `stream('drops')` is untouched |
 | `fork('item', id, copy)` | Runtime | One held copy of an item: `api.rng()` inside its hooks (kept across inventory rebuilds) |
 | `stream('drops')` | Runtime | Enemy and crate drops (`rollCrate`); The Listener's guaranteed heart-offer reward, rolled when accepted (15% max-health practice, 75% special hearts, 10% double red hearts) |
-| `stream('gifts')` | Runtime | The floor-0 creature's one-time 15% special-heart roll when it first reaches three times its birth size; independent of Listener reward rolls |
+| `stream('gifts')` | Runtime | A friendly creature's one-time 7.5% special-heart roll (any floor since #102) when it first reaches three times its birth size; independent of Listener reward rolls |
 | `stream('guard')` | Runtime | The Sanctuary's sitting duration and one sampled guidance line per part; independent of its loot reward |
 | `fork('floor', k, 'hearts')` | Structure | Floor k's chance of each rare kind of heart, uniform in its range (`floorHeartChances`, issue #31): blue, stone, blood, star, berserker, in that order. Read by each heart roll, never drawn on a stream. The surface uses floor 0 |
 | `stream('hearts')` | Runtime | The kind of each heart pickup as it is added (`rollHeart` on the `heart` table built from the floor's chances), so the kind never moves `stream('drops')` |

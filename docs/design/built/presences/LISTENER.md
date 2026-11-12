@@ -42,7 +42,7 @@ The silence rule (BESTIARY §8.1) applies to presences that stay, the Gardener a
 ## Reward (owner correction, #141)
 
 - **The guaranteed reward is runtime.** The floor seed chooses only the Listener's room. The accepted heart rolls its 15/75/10 reward from `stream('drops')`, so it cannot change floor structure.
-- **Two separate reward sources.** The Listener's guaranteed heart-offer reward is distinct from the floor-0 creatures' one-time 15% growth gift (`stream('gifts')`).
+- **Two separate reward sources.** The Listener's guaranteed heart-offer reward is distinct from the creatures' one-time 7.5% growth gift (`stream('gifts')`).
 - **Special hearts.** Within the 75% special-heart category, 90% of rewards are one special heart and 10% are two different special-heart kinds.
 
 ## Decisions taken for #84

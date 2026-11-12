@@ -87,7 +87,7 @@ import { floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, rollHeart } from '../content/tables/hearts';
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
-import { GROWTH_MAX } from '../entities/growth';
+import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
@@ -1545,16 +1545,21 @@ export class Game {
     const e = this.enemies.get(id);
     if (!e) return;
     if (e.faction !== 'projection' && polarity === 'positive') {
-      // a warm love shot grows a friendly creature (issue #51); a beam's repeat ticks do not
+      // a warm love shot grows a friendly creature (issue #51, #102); a beam's repeat ticks do not
       const oldScale = e.scale;
-      if (warm && e.tags.has('creature')) this.enemies.grow(e);
+      if (warm && growsUnder(e)) this.enemies.grow(e);
       const heal = allyHeal(damage, e.hp, e.maxHp);
       const b = e.body;
       e.hp += heal;
       this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 4, 1, 0.05);
-      if (warm && e.spec.kind === 'creature' && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX &&
-          this.rooms.get(e.room)?.floor === 0 && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
+      if (warm && growsUnder(e) && oldScale < GROWTH_MAX && e.scale >= GROWTH_MAX && claimCreatureGrowthGift(e.tags)) this.dropCreatureGrowthGift(e);
       return;
+    }
+    // a warm negative shot takes a grown friendly creature one step back down (#102); it still harms it as before
+    if (warm && e.faction !== 'projection' && growsUnder(e) && e.scale > 1 && this.meets(e, polarity)) {
+      this.enemies.shrink(e);
+      const b = e.body;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('mat.dirt.base'), 4, 1, 0.05);
     }
     this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
   }
@@ -3231,8 +3236,9 @@ export class Game {
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !(e.tags.has('presence') || e.tags.has('boundary'))) continue;
-      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.spec.size[1]) continue;
-      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.spec.size[0] / 2 + b.hw);
+      // the box the presence is hit with, not its birth size (#102)
+      if (b.y + b.h <= e.body.y || b.y >= e.body.y + e.body.h) continue;
+      const at = pushedOut(b.x, b.z, e.body.x, e.body.z, e.body.hw / 2 + b.hw);
       if (at && !boxHits((x, y, z) => this.solid(x, y, z), at.x, b.y, at.z, b.hw, b.h)) { b.x = at.x; b.z = at.z; }
     }
   }
