@@ -9,7 +9,7 @@ import type { DamageKind } from '../src/core/damage';
 import { CARD_WAIT, ENCOUNTER_RANGE, Encounter } from '../src/endgame/encounter';
 import { ENTITY_H, ENTITY_HW, ENTITY_MAX_H, SpikedEntity, facingToward } from '../src/endgame/entity';
 import { EntityView, entityBoxes, modelHeight } from '../src/endgame/entity-view';
-import { loadMeta, saveMeta, type MetaStore } from '../src/game/meta';
+import { defaultMeta, loadMeta, saveMeta, type MetaStore } from '../src/game/meta';
 import { SKY_ENDGAME_EN } from '../src/i18n/locales/sky/endgame.en';
 import { SKY_ENDGAME_ES } from '../src/i18n/locales/sky/endgame.es';
 import type { EncounterHost, Pos } from '../src/sky/types';
@@ -161,7 +161,7 @@ function encounterHost() {
     rumble: s => calls.push(`rumble ${s > 0}`),
     toast: key => calls.push(`toast ${key}`),
     openStairs: () => calls.push(`openStairs held=${enc!.holdsStill}`),
-    saveMeta: () => { calls.push('saveMeta'); saveMeta({ v: 1, staircase: true }, store); },
+    saveMeta: () => { calls.push('saveMeta'); saveMeta({ ...defaultMeta(), staircase: true }, store); },
     holdStill: on => calls.push(`holdStill ${on}`),
   };
   enc = new Encounter(host);
