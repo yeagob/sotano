@@ -5,7 +5,7 @@ export default defineItem({
   id: 'secondbrain',
   name: 'Second Brain',
   description: 'Let something else hold what you carry: carry one more block.',
-  effect: 'Carry 1 more block.',
+  effect: 'Carry 1 more block. Reach +1 block.',
   inspiredBy: 'Building a Second Brain (Tiago Forte); external memory',
   pools: { treasure: 1 },
   tags: ['mind', 'blocks'],
@@ -28,5 +28,8 @@ export default defineItem({
     ],
     palette: { a: pal('mat.obsidian.accent'), b: pal('path.mind.glow'), c: pal('mat.stone.hi') },
   },
-  stats: [{ stat: 'carry', layer: 'add', value: 1 }],
+  stats: [
+    { stat: 'carry', layer: 'add', value: 1 },
+    { stat: 'reach', layer: 'add', value: 1 },
+  ],
 });
