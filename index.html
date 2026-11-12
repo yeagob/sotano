@@ -351,6 +351,11 @@
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
     .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
+    /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
+    #fullscreen { --glyph: none; right: calc(12px + 130px + 8px + 11vmin + 8px + env(safe-area-inset-right)); z-index: 61;
+      display: flex; align-items: center; justify-content: center; color: var(--ui-text); }
+    #fullscreen[hidden] { display: none; }
+    #fullscreen svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: square; }
     #death .go { font: inherit; font-weight: bold; color: var(--ui-gold); background: var(--ui-line); border: 0; padding: 8px 18px; margin-top: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory header .close { margin-left: 10px; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
