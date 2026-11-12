@@ -20,7 +20,6 @@ vi.mock('../src/audio/sfx', async (importOriginal) => {
   const real = await importOriginal<typeof import('../src/audio/sfx')>();
   return { ...real, sfxHeart: new Proxy({}, { get: (_target, name) => () => { sfx.played.push(String(name)); } }) as typeof real.sfxHeart };
 });
-});
 
 const u = (n: number) => n * HEALTH_UNIT;
 
