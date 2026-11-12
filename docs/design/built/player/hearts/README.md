@@ -9,7 +9,7 @@ Part of [the player](../README.md). Health itself (points, quarters, invulnerabi
 | [RED.md](RED.md) | The normal heart: one heart back into the containers |
 | [BLUE.md](BLUE.md) | One more heart, lost for good when spent |
 | [STONE.md](STONE.md) | One more heart that halves every hit while it takes the blows |
-| [BLOOD.md](BLOOD.md) | Slow healing, up to two hearts over two minutes, broken by any hit |
+| [BLOOD.md](BLOOD.md) | Slow healing, up to two hearts over two minutes, broken by any hit; at full health, one more container, filled |
 | [STAR.md](STAR.md) | One heart back and thirty seconds untouchable |
 | [BERSERKER.md](BERSERKER.md) | The rarest: stronger, faster and higher while it is held, with short intentions, a frame and an echo |
 

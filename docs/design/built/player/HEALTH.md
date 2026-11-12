@@ -10,7 +10,7 @@ Part of [the player](README.md).
 - A heart that is partly full shows its filled quarters from the left. A partly filled quarter shows as full, so a small amount of health is never hidden.
 - When you are hit, the points come off, and for one second after that you cannot be hit again. During that second the hearts stay steady with an outline instead of blinking.
 - When one heart or less is left, the last heart beats, so the player always knows they are close to death.
-- A heart pickup is one of six kinds ([hearts/](hearts/README.md)). A red heart heals one whole heart; at full health you do not take it: it stays on the floor until you are hurt. Blue, stone and berserker hearts add an extra heart after the containers, spent first and lost for good; blood and star hearts heal over time or make you untouchable.
+- A heart pickup is one of six kinds ([hearts/](hearts/README.md)). A red heart heals one whole heart; at full health you do not take it: it stays on the floor until you are hurt. Blue, stone and berserker hearts add an extra heart after the containers, spent first and lost for good; a blood heart heals over time, or at full health opens one more container and fills it; a star heart heals and makes you untouchable.
 - A heart container, from an item, adds a heart to the maximum and fills it at once. If a practice takes a container away, the health is brought down to the new maximum.
 - Standing in fire or lava hurts by the element's harm value at each invulnerability window. The elements themselves are described outside this document.
 - Falling does not hurt you. Landing from a fall makes a sound and an event, and nothing more.

@@ -154,6 +154,7 @@ export const ES: Catalog = {
     'heart.stoneLost': 'El corazón de piedra se desmorona. Los golpes vuelven a entrar enteros.',
     'heart.blood': 'Corazón de sangre: te curas despacio, hasta dos corazones. Un golpe lo corta.',
     'heart.bloodBroken': 'El golpe ha cortado el corazón de sangre.',
+    'heart.bloodSlot': 'Corazón de sangre: un corazón más, y se llena al momento.',
     'heart.star': 'Corazón estrella: recuperas un corazón y 30 segundos intocable.',
     'heart.starEnd': 'La estrella se apaga.',
     'heart.berserker': 'Corazón berserker: más fuerte, más rápido, más alto. Poco alcance. Los disparos rebotan en ti.',
