@@ -66,11 +66,13 @@ describe('The Listener’s reward', () => {
 });
 
 describe('first-floor creature growth gifts', () => {
-  it('offers only a special heart on 15% of maximum-growth reaches', () => {
-    const weights = CREATURE_GIFT_TABLE.weights({ floor: 0 });
-    expect(weights.reduce((sum, entry) => sum + entry.w, 0)).toBe(100);
-    expect(weights.find(entry => entry.value === 'none')?.w).toBe(85);
-    expect(weights.filter(entry => entry.value !== 'none').reduce((sum, entry) => sum + entry.w, 0)).toBe(15);
+  it('offers only a special heart on 7.5% of maximum-growth reaches, on any floor', () => {
+    for (const floor of [0, 1, 5]) {
+      const weights = CREATURE_GIFT_TABLE.weights({ floor });
+      expect(weights.reduce((sum, entry) => sum + entry.w, 0)).toBe(200);
+      expect(weights.find(entry => entry.value === 'none')?.w).toBe(185);
+      expect(weights.filter(entry => entry.value !== 'none').reduce((sum, entry) => sum + entry.w, 0)).toBe(15);
+    }
 
     const rng = new Rng(512);
     for (let i = 0; i < 1000; i++) {
@@ -79,12 +81,12 @@ describe('first-floor creature growth gifts', () => {
     }
   });
 
-  it('matches the 15% rate over a deterministic sample', () => {
+  it('matches the 7.5% rate over a deterministic sample', () => {
     const rng = new Rng(9163);
     const samples = 20000;
     let gifts = 0;
     for (let i = 0; i < samples; i++) if (rollCreatureGrowthHeart(rng) !== null) gifts++;
-    expect(gifts / samples).toBeCloseTo(0.15, 1);
+    expect(gifts / samples).toBeCloseTo(0.075, 2);
   });
 
   it('claims the maximum-growth roll once, whether or not a heart was awarded', () => {

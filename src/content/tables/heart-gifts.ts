@@ -17,8 +17,9 @@ export const LISTENER_GIFT_TABLE = table<ListenerGiftKind>('listener-heart-gift'
   { value: 'red', weight: 10 },
 ]);
 
+// 7.5% of maximum-size reaches give one special heart (owner decision on #172: any floor, half the old 15%)
 export const CREATURE_GIFT_TABLE = table<CreatureGiftKind>('creature-max-growth-gift', 'runtime', [
-  { value: 'none', weight: 85 },
+  { value: 'none', weight: 185 },
   ...RARE_HEARTS.map(heart => ({ value: heart as CreatureGiftKind, weight: 15 / RARE_HEARTS.length })),
 ]);
 

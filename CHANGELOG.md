@@ -6,7 +6,7 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Changed
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
-- A grown friendly creature that is not an enemy shrinks one step under a warm negative shot, never below its birth size, and its one-time 15% growth gift applies on any floor (#102)
+- A grown friendly creature that is not an enemy shrinks one step under a warm negative shot, never below its birth size, and its one-time 7.5% growth gift applies on any floor (#102)
 
 ## 0.2.3.f1 · 2026-11-11
 
