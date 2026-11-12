@@ -195,6 +195,7 @@ const messages = {
   'toll.sec.bomb': 'Bombs',
   'toll.sec.heart': 'Hearts (each one goes whole, with the health it holds)',
   'toll.layer.blue': 'Blue heart',
+  'toll.layer.black': 'Black heart',
   'toll.layer.stone': 'Stone heart',
   'toll.layer.berserker': 'Berserker heart',
   'toll.heartPart': '{name} ({q}/4)',

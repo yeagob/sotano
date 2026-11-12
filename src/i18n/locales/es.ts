@@ -508,6 +508,7 @@ export const ES: Catalog = {
     'toll.sec.bomb': 'Bombas',
     'toll.sec.heart': 'Corazones (cada uno se entrega entero, con la vida que tiene)',
     'toll.layer.blue': 'Corazón azul',
+    'toll.layer.black': 'Corazón negro',
     'toll.layer.stone': 'Corazón de piedra',
     'toll.layer.berserker': 'Corazón berserker',
     'toll.heartPart': '{name} ({q}/4)',
