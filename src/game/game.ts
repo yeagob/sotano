@@ -3047,18 +3047,25 @@ export class Game {
       if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
     } }));
     // once the last thing has left the mouth the chest is empty: its model and its block go (issue #156)
-    this.spits.push({ t: Math.max(lead + out.length * 0.16, OPEN_TIME + 0.3), run: () => this.removeChest(c) });
+    const world = this.world;
+    this.spits.push({ t: Math.max(lead + out.length * 0.16, OPEN_TIME + 0.3), run: () => this.removeChest(c, world) });
   }
 
-  /** An opened chest that has dispensed everything leaves the world: its model, and its block (so no collision). */
-  private removeChest(c: { spec: ChestSpec; view: ChestView }) {
+  /**
+   * An opened chest that has dispensed everything leaves its world: its model, and its block (so no collision).
+   * The chest belongs to the dungeon's world, so if a realm swap came first the removal waits in the queue until
+   * the dungeon is current again: clearing the same cell in the sky's world would remove a block that is not the chest's.
+   */
+  private removeChest(c: { spec: ChestSpec; view: ChestView }, world: VoxelSpace) {
+    if (this.world !== world) { this.spits.push({ t: 0.25, run: () => this.removeChest(c, world) }); return; }
     const s = c.spec;
-    this.world.set(s.x, s.y, s.z, AIR);
+    world.set(s.x, s.y, s.z, AIR);
     this.chestViews.remove(c.view);
   }
 
   private updateSpits(dt: number) {
-    for (const q of this.spits) { q.t -= dt; if (q.t <= 0) q.run(); }
+    // over a snapshot: a run may queue itself again (a removal waiting for its world), and that waits for the next frame
+    for (const q of [...this.spits]) { q.t -= dt; if (q.t <= 0) q.run(); }
     this.spits = this.spits.filter(q => q.t > 0);
   }
 
