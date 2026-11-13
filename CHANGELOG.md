@@ -8,8 +8,14 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 - On a phone, a fullscreen button sits in the top bar whenever the game is not fullscreen, so you can return to fullscreen after leaving it; if the browser cannot or will not go fullscreen, a short notice says so (#161).
 - A black heart: one more heart after the containers, even at full health, lost for good once spent, rarer than the blue heart (#154).
 - A successful brew at the alembic names the potion it made in its notice, in English and Spanish, with the drink key (#158).
+- The Roots' walls carry a book: six tutorial pages, then the first pages of a hidden book. A full lap of the ring, forward or in reverse, leafs through the pages you have reached; a run that walks every room and ends advances the page by one, and a page stone in the start room shows its number (#147).
+- From the second page on, the Roots are carved in an easy layout: the same eleven rooms with their work already done, crossed on foot with no block to place or break (#147).
+- Achievements: forty deeds are kept between runs, each boss destroyed and each boss turned to your side, six meditations sat to the end, the first potion brewed, the first meal cooked and four pages of the book. Each one adds a level of the Roots' mastery and a notice shows it (#147).
+- The Roots grow richer as their mastery rises: more loose keys, bombs and hearts, free chests and two extra practices, an altar from level 80, and a second Boundary at 100. At level 0 the Roots start poorer; the Sanctuary chest and the way-down pedestal stay the same (#147).
 
 ### Changed
+- The Roots' stone tablets are replaced by the book's panels, carved in English and Spanish (#147).
+- The save keeps the Roots' page and the achievements (record version 2; a version 1 save is read and kept) (#147).
 - At a descent toll each heart is its own choice: base hearts with the health they hold, and bonus hearts by type. The window shows what the choice costs before you pay, and a payment never turns into damage to base health (#155).
 - A blood heart taken at full health opens one more heart container and fills it at once, instead of doing nothing; below full health it still heals over time (#146).
 - Starting reach is 4 blocks, 20% less than before; Self-Efficacy, Second Brain, Grounding and Kaizen each add 1 block of reach (#162).

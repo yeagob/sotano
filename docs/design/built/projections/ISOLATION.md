@@ -26,6 +26,10 @@ Break the wall or go around it. Good intentions do half damage and warm it; bad 
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 5%.
+
 ## Status
 
 Partial. The built part is the single ice wall. Several walls and the cells they make, and the melt on release, are in [GAPS](../../not-built/projections/GAPS.md).

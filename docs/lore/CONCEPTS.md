@@ -18,6 +18,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Be impeccable with your word** | `four-agreements` | Future: intentions that never miss what they're aimed at |
 | **Don't make assumptions / always do your best** | `four-agreements` | Future practices |
 | **The symbolic act** | `psychomagic`, `psychodrama` | **Symbolic Act** (thrown blocks burst); burning barrels where you let things go |
+| **Authenticity: showing oneself as one is** | `la-locura-lo-cura` | Page 7 of the Roots' book: the walls built to stay safe are for breaking; the quotation on the treasure room's wall says authenticity is not a façade and not trying to be better. Not a practice yet |
 | **The system and its orders** (belonging, order, balance) | `constellations` | **Systemic Constellation**: seeing the whole system weakens its projections; future: rooms as family systems, ancestors in the deepest floor |
 | **Art transforms the maker** | `art-therapy` | **Art Therapy**: placing blocks (building, creating) can heal you |
 | **Listening to the river** | `siddhartha`, `tao-te-ching` | Water as emotion ([ELEMENTS](../design/built/elements/WATER.md)); a future river place in the depths |

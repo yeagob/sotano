@@ -26,6 +26,10 @@ It dies to a few hits. Good intentions do half damage and warm it; bad intention
 
 None.
 
+## Numbers
+
+- **Pickups on release:** none.
+
 ## Status
 
 Built.

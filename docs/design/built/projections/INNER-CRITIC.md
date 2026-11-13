@@ -28,6 +28,11 @@ Good intentions do half damage and warm it. Bad intentions do full damage. A blo
 - **Lava:** takes double harm and keeps out of lava.
 - **Water:** walks at 45 per cent speed in water and crosses it.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 8%, bomb 6%.
+- **Forms:** the second form is [Margin](MARGIN.md) (floors 3 to 6); the third is [Tribunal](TRIBUNAL.md) (floors 6 to 9).
+
 ## Status
 
 Built.

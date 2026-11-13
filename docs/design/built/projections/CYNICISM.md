@@ -26,6 +26,10 @@ Stay out of the ring and cast from outside it. Good intentions do half damage an
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 8%, bomb 6%.
+
 ## Status
 
 Partial. The built part is the mute ring. Dimming intentions inside the ring, the shorter range of dimmed intentions, and its release are in [GAPS](../../not-built/projections/GAPS.md).

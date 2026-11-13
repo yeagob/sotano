@@ -9,7 +9,7 @@ Status: idea. Questions the stations brainstorm asked, the conflicts found betwe
 3. **The instruments of self-punishment.** Are they welcome at all (always empty, used as tools on cubes, dismantled as a reward), or should the torture imagery stay out entirely? This covers [RACK](RACK.md), [PRESS](PRESS.md), [STOCKS](STOCKS.md), [WEIGHING-CHAIR](WEIGHING-CHAIR.md). A penance image (a hair-shirt rack or a scourge wall) was marked "maybe never": the owner decides whether it belongs at all.
 4. **Field notes across runs.** Should discoveries in the laboratory persist between runs? See [FIELD-NOTES](FIELD-NOTES.md).
 5. **Floor-crossing zones** (dumbwaiter, chutes, drains, a shared archive). Worth breaking the "rooms never touch the floor above or below" rule? See [VERTICALITY](VERTICALITY.md).
-6. **Bombs as seeds.** Should a planter turn a breakthrough into a vine? See [PLANTER](PLANTER.md).
+6. **Bombs in planters.** Should a planter turn a bomb into a vine? See [PLANTER](PLANTER.md).
 7. **Which floors** get which stations first? Is the kitchen on floor 0 the friendly tutorial floor?
 
 ## Conflicts between documents

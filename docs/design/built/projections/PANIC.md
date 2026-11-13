@@ -27,6 +27,11 @@ Stay outside its burst radius while it swells. Good intentions do half damage an
 - **Water:** calms it for 2.5 seconds, even mid-swell: it drifts and its light dims. It crosses water.
 - **Fire and lava:** it swells at once (0.3 seconds) and keeps out of them.
 
+## Numbers
+
+- **Pickups on release:** bomb 25%, heart 5%.
+- **Forms:** the second form is [Alarm](ALARM.md) (floors 3 to 6); the third is [Dread](DREAD.md) (floors 6 to 9).
+
 ## Status
 
 Built.

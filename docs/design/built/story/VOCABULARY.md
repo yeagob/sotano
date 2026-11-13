@@ -26,11 +26,11 @@ The loaded intention is either good or bad. The player switches it with the F ke
 | Concept | In-game word | Notes |
 |---|---|---|
 | Keys | Keys (art: a key with an eye) | Insights: they open locked doors. Built |
-| Bombs | Bombs (art: a glowing seed) | Breakthroughs: they clear blocks at once and can hurt you. Built |
+| Bombs | Bombs (art: a glowing seed) | They clear blocks at once and can hurt you. Built |
 | Hearts | Hearts | Heart containers and their quarters. Built |
 | Parts | Parts | Collectibles a projection leaves when it is released (flesh, heart, mind, essence). They take a hand slot and have no effect yet. Built as collectibles ([PARTS-PURPOSE](../../not-built/practices/PARTS-PURPOSE.md)) |
 | Toll | Toll | What you give to go down, shown in its own window. Built |
-| Breakthrough | Breakthrough | The name of a bomb in descriptions |
+| Bomb | Bomb | The name of a bomb in descriptions |
 | Insight | Insight | The name of a key in descriptions |
 
 ## Decided, not built

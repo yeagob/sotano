@@ -29,6 +29,14 @@ export function floorCrateChance(rr: RunRandom, floor: number): number {
   return CRATE_DROP_MIN + (CRATE_DROP - CRATE_DROP_MIN) * u;
 }
 
+/**
+ * The chance a crate broken in `band` (`bandOf`: 0 is floor 0, `SURFACE` the surface) gives anything. Only floor 0
+ * reads the Roots' mastery factor, capped at `cap` (REWARDS §3); every other band, the surface included, keeps `base`.
+ */
+export function crateChanceInBand(base: number, band: number, factor: number, cap: number): number {
+  return band === 0 ? Math.min(cap, base * factor) : base;
+}
+
 /** The drop of one broken crate: nothing (most of the time) or one pickup. `chance` is the floor's. */
 export function rollCrate(rng: Rng, chance: number, ctx: { floor: number; luck?: number }): PickupKind | null {
   if (!rng.chance(chance)) return null;

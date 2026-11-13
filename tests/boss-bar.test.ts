@@ -9,6 +9,8 @@
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { BOSS_BY_ID } from '../src/content/bosses';
+import { AchievementKeeper } from '../src/game/achievement-keeper';
+import { defaultMeta, noStore } from '../src/game/meta';
 
 vi.mock('../src/audio/sfx', () => {
   const silent = new Proxy({}, { get: () => () => {} });
@@ -44,6 +46,8 @@ const boss = (room = ROOM, hp = 50) => ({ id: room * 10, alive: true, spec: BOSS
 /** The game's fields as the frame sees them: the player alive in room ROOM, the HUD and input stand-ins. */
 function rig(realm: 'dungeon' | 'sky' = 'dungeon'): any {
   const g: any = Object.create(Game.prototype);
+  // the achievements' keeper the frame checks for a card (the constructor makes it; this rig skips the constructor)
+  g.keeper = new AchievementKeeper(defaultMeta(), noStore);
   const hud: any = {
     bar: null as unknown,
     bossBar(b: unknown) { this.bar = b; },

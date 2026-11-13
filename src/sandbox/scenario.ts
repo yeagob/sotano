@@ -15,6 +15,7 @@ import { ENEMY_BY_ID } from '../content/enemies';
 import { CREATURE_BY_ID } from '../content/creatures';
 import { PART_BY_ID } from '../content/parts';
 import { PRESENCE_BY_ID } from '../content/presences';
+import boundaryDef from '../content/presences/boundary';
 import type { RunRandom } from '../core/rng';
 import { carveInterior, cellOf, floorY, GRID, roomGid, roomOrigin, type FloorResult, type RoomInfo } from '../world/floor';
 import type { FloorPlan } from '../world/floorplan';
@@ -124,13 +125,16 @@ export function validateScenario(s: Scenario): string[] {
     if ((a.do === 'cube') && MAT[a.block] === undefined) errs.push(`${s.id}: unknown block "${a.block}" at t ${a.t}`);
     if (a.do === 'hand') for (const id of a.blocks) if (MAT[id] === undefined && !PART_BY_ID.has(id)) errs.push(`${s.id}: unknown hand object "${id}" at t ${a.t}`);
     if ((a.do === 'give' || a.do === 'lose') && !ITEM_BY_ID.has(a.item)) errs.push(`${s.id}: unknown item "${a.item}" at t ${a.t}`);
-    if (a.do === 'spawn' && !ENEMY_BY_ID.has(a.def) && !CREATURE_BY_ID.has(a.def) && !PRESENCE_BY_ID.has(a.def)) errs.push(`${s.id}: unknown projection "${a.def}" at t ${a.t}`);
+    if (a.do === 'spawn' && !knownProjection(a.def)) errs.push(`${s.id}: unknown projection "${a.def}" at t ${a.t}`);
   }
   for (const id of s.items ?? []) if (!ITEM_BY_ID.has(id)) errs.push(`${s.id}: unknown item "${id}"`);
   if (s.pedestal && !ITEM_BY_ID.has(s.pedestal)) errs.push(`${s.id}: unknown pedestal item "${s.pedestal}"`);
-  for (const e of s.enemies ?? []) if (!ENEMY_BY_ID.has(e.def) && !CREATURE_BY_ID.has(e.def) && !PRESENCE_BY_ID.has(e.def)) errs.push(`${s.id}: unknown projection "${e.def}"`);
+  for (const e of s.enemies ?? []) if (!knownProjection(e.def)) errs.push(`${s.id}: unknown projection "${e.def}"`);
   return errs;
 }
+
+/** A projection, creature or presence the sandbox can spawn. The Boundary is placed on vaults by the floor generator, so it is named here too (game.sandboxSpawn). */
+const knownProjection = (id: string) => ENEMY_BY_ID.has(id) || CREATURE_BY_ID.has(id) || PRESENCE_BY_ID.has(id) || id === boundaryDef.id;
 
 export function carriedFromId(id: string) {
   const block = MAT[id];
@@ -152,7 +156,6 @@ export function scenarioTemplate(s: Scenario): RoomTemplate {
     height: s.height ?? base?.height,
     ceiling: s.ceiling ?? base?.ceiling,
     layers: s.layers ?? base?.layers,
-    lesson: s.rows ? undefined : base?.lesson,
     size: s.rows ? undefined : base?.size,
   };
 }
@@ -225,7 +228,7 @@ export function carveSandbox(w: VoxelWorld, rr: RunRandom, s: Scenario): Sandbox
     floor: k, boss: null, plan, rooms: [room], doors: [], spawn, chests: [], hole: null, silence: null, laboratory: null, kitchen: null,
     pedestals: pedestals.map(([x, y, z]) => ({ room: id, x, y, z, item: s.pedestal ?? null, boss: false, chest: false })),
     keys: keys.map(([x, y, z]) => ({ room: id, x, y, z })),
-    bombs: [],
+    bombs: [], hearts: [], practices: [], altar: null,
     space: Int16Array.from(grid),
   };
   return { floor, room, template: t, origin, pedestals, keys };

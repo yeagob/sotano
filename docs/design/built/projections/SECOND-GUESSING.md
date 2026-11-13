@@ -26,6 +26,10 @@ Its pauses are the windows. Good intentions do half damage and warm it; bad inte
 
 - **Water:** it keeps out of water when it can, and walks at 35 per cent speed in it.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 5%, bomb 6%.
+
 ## Status
 
 Partial. The built part is the walk, the pauses, the reach and the lunge. The stones it drops and its release are in [GAPS](../../not-built/projections/GAPS.md).

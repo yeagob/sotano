@@ -2,6 +2,8 @@
 
 # Presences (built)
 
+Pictures and a catalogue entry for each presence are in the [bestiary](../bestiary/README.md). The detail of each presence is in its document below.
+
 Presences are the beings of the depths who speak: the parts of the player that already know. They are archetypes, never gods, saints or real people, and they never give orders. They are immortal: they have no health and take no damage, and a negative intention silences them rather than hurting them. Two are in the game: the Listener, on floors 1 to 5, and the Boundary, a calm guardian of the vaults. The Listener is the reference implementation for a part-for-reward Presence: it searches the carried hand and asks before taking the first matching part. The Gardener is defined in the code but not placed. Everything else in the design is in [not-built/presences](../../not-built/presences/README.md).
 
 | Document | Presence | Where it is | What it does |

@@ -94,7 +94,8 @@ export class GiantTree {
   }
 
   grow(i: number) {
-    if (i < 0 || i >= TREE_STORIES.length || this.grown.has(i)) return;
+    // NaN fails every comparison, so only a whole number is a story (a NaN height must not index the table)
+    if (!Number.isInteger(i) || i < 0 || i >= TREE_STORIES.length || this.grown.has(i)) return;
     this.grown.add(i);
     const s = TREE_STORIES[i], [cy0, cy1] = this.range(i);
     const rng = this.fork(i);

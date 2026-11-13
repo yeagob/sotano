@@ -22,6 +22,16 @@ export function floorHeartChances(rr: RunRandom, floor: number): Record<RareHear
   return out;
 }
 
+/**
+ * The chances a heart's kind is rolled with on a band (`bandOf`, docs/architecture/LEVELS.md): on floor 0 (the
+ * Roots) the star heart's chance is halved, because star hearts are of little use there (owner, 2026-11-12). The red
+ * takes the difference, since `heartTable` gives red the rest. Every other band, the surface (`SURFACE`) included,
+ * keeps its chances. The game calls it wherever a random heart's kind is rolled (`Game`'s heart roll, `stream('hearts')`).
+ */
+export function heartChancesOnBand(band: number, chances: Readonly<Record<RareHeart, number>>): Record<RareHeart, number> {
+  return band === 0 ? { ...chances, star: chances.star / 2 } : { ...chances };
+}
+
 export function heartTable(chances: Readonly<Record<RareHeart, number>>): Table<HeartKind> {
   const rare = RARE_HEARTS.reduce((s, k) => s + chances[k], 0);
   return table<HeartKind>('heart', 'runtime', [

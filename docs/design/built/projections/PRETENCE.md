@@ -26,6 +26,10 @@ It comes straight at you, so intentions and blocks are the answer. Good intentio
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 6%.
+
 ## Status
 
 Partial. The built part is the chase. Its disguise and the bite after its opening are in [GAPS](../../not-built/projections/GAPS.md), and whether the disguise is still wanted is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

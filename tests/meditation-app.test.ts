@@ -514,6 +514,7 @@ describe('calm visuals and the particle caps', () => {
 function stand() {
   const rig = {
     hud: { toast: vi.fn() },
+    bus: { emit: vi.fn() },
     rng: { stream: () => ({}) },
     pools: { drawRuntime: vi.fn((_pool: string, _rng: unknown, _band: [number, number]) => ITEMS[0].id) },
     openChest: vi.fn(),

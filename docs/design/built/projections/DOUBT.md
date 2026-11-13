@@ -27,6 +27,11 @@ Good intentions do half damage and warm it; at full warmth it turns to your side
 
 - **Water:** it keeps out of water when it can, and walks at 35 per cent speed in it.
 
+## Numbers
+
+- **Pickups on release:** heart 12%, key 4%, bomb 5%.
+- **Forms:** the second form is [Second-Guessing](SECOND-GUESSING.md) (floors 3 to 7); the third is [Paralysis](PARALYSIS.md) (floors 6 to 9).
+
 ## Status
 
 Built.

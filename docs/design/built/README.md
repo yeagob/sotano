@@ -17,9 +17,10 @@ Each section below is a folder with its own README. Read one section's folder to
 | [projections](projections/README.md) | The patterns that block intention: forty projection entries, sixteen fully built and twenty-four partly built |
 | [creatures](creatures/README.md) | The living things of the depths: they wander, hide and heal, and do not fight |
 | [presences](presences/README.md) | The archetypes you can talk to: the Listener and the Boundary |
-| [bestiary](bestiary/README.md) | The whole bestiary in one document: every projection, creature, boss, presence, voice and sky entity, each with an in-game screenshot |
+| [bestiary](bestiary/README.md) | The illustrated catalogue: an in-game screenshot of each projection, creature, boss, presence and voice, with a link to its document. The detail lives in those documents |
 | [encounters](encounters/README.md) | How a fight begins: the seal, the omens, the spawns, the waves, the attacks and how beings move and choose targets |
 | [bosses](bosses/README.md) | The fourteen bosses, their fight flow, and the arenas that change the world |
 | [practices](practices/README.md) | The practices (items), the synergies and the four states of being |
 | [story](story/README.md) | The premise, the metaphor, the naming rules and the in-game vocabulary |
 | [feel](feel/README.md) | The HUD, the sound, the feedback, the art and the languages as built |
+| [progression](progression/README.md) | What the player keeps between runs: the page of the Roots' book, the achievements (40), the Roots' mastery level and the save record (version 2) |

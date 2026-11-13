@@ -68,6 +68,8 @@ Any of these runs the same defeat (`bossDown`):
 3. A toast says the boss is down, and the screen gives a short shake.
 4. The way down is cracked open after 1.5 seconds: the hole's top blocks crack in stages, then it opens.
 
+No boss drops a pickup or a part. The practice on the pedestal is drawn by the floor's seed from the pedestal pool.
+
 On floors 1 to 8 the way down asks a toll first (section 8). Floor 9 has none.
 
 ## 8. The toll

@@ -120,7 +120,7 @@ export interface GameEvents {
   enemySpawn: { id: ActorId; def: string; hp: number; speed: number; contactDamage: number; tags: Set<string>; x: number; y: number; z: number };
 
   // ── dungeon ──
-  /** A breakthrough caught a door: it is about to be blown apart for good (open forever, never
+  /** A bomb caught a door: it is about to be blown apart for good (open forever, never
    *  sealed or locked again). Cancel to keep it. */
   doorBreak: { door: number; locked: boolean; source: string };
   /** A door wants to open. Locked doors ask for a key: hooks may set `needsKey = false`. */
@@ -136,9 +136,18 @@ export interface GameEvents {
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
   floorEnter: { depth: number };
+  /** A run's end advanced the Roots' page (PAGES §1): the new current page, once per run. React only. */
+  pageReached: { page: number };
 
   brew: { potion: string; iced: boolean; contents: number; x: number; y: number; z: number };
   drink: { potion: string; rooms: number };
+  /** A boss of a floor was overcome, once per boss room (ACHIEVEMENTS §1): its health reached zero (`destroyed`), it turned
+   *  to the player's side (`converted`), or the Shadow's own ending was reached by standing still beside it (`stillness`). React only. */
+  bossOvercome: { boss: string; floor: number; how: 'destroyed' | 'converted' | 'stillness' };
+  /** A Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (ACHIEVEMENTS §1). React only. */
+  meditationComplete: { meditation: string; source: 'roots' | 'vault' };
+  /** A kitchen cooked a part into a meal (game/kitchen.ts). React only. */
+  cook: { meal: string; part: string };
 }
 
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */

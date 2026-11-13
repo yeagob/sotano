@@ -53,7 +53,7 @@ export class MeditationView {
   private ui!: HTMLElement;
   private audio = new MeditationAudio();
   private scenes = new Map<SceneId, ScenePainter>();
-  private done: ((o: Outcome) => void) | null = null;
+  private done: ((o: Outcome, meditation: SequenceId) => void) | null = null;
   private key = '';
   private openedAt = 0;
   private lastFrame = 0;
@@ -100,8 +100,8 @@ export class MeditationView {
     });
   }
 
-  /** Opens the app. `done` is called once, with the outcome that closed it. */
-  show(done: (o: Outcome) => void, rate = 1, random: () => number = () => 0) {
+  /** Opens the app. `done` is called once, with the outcome that closed it and the meditation the app was on (its sequence). */
+  show(done: (o: Outcome, meditation: SequenceId) => void, rate = 1, random: () => number = () => 0) {
     if (this.app) return;
     this.mount();
     const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -159,7 +159,7 @@ export class MeditationView {
   }
 
   private close(outcome: Outcome) {
-    const root = this.root!, done = this.done;
+    const root = this.root!, done = this.done, meditation = this.app!.seq;
     this.app = null;
     this.done = null;
     this.audio.stop();
@@ -168,7 +168,7 @@ export class MeditationView {
     this.wake = null;
     root.classList.remove('show');
     setTimeout(() => { if (!this.app) root.classList.remove('on'); }, 750);
-    done?.(outcome);
+    done?.(outcome, meditation);
   }
 
   /** One frame of input from the bindings (keyboard and gamepad). The mouse and touch press the buttons. */

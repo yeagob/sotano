@@ -16,7 +16,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
 | drink | the flask on top of the hand: shown only while it is there, drawn as that potion in its liquid colour, in the right-thumb column above throw (#159) |
-| bomb | the seed (shows the count) |
+| bomb | the bomb (shows the count) |
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |

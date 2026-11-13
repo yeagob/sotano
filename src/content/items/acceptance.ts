@@ -4,7 +4,7 @@ import { defineItem, hook } from '../../items/types';
 export default defineItem({
   id: 'acceptance',
   name: 'Radical Acceptance',
-  description: 'Stop fighting what already happened: your own breakthroughs no longer hurt you.',
+  description: 'Stop fighting what already happened: your own bombs no longer hurt you.',
   effect: 'Your own bomb and thrown-block explosions no longer damage you. +1 heart container.',
   inspiredBy: 'Radical acceptance (Dialectical Behaviour Therapy)',
   pools: { treasure: 1 },

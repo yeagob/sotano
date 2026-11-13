@@ -27,6 +27,11 @@ Step off the leg before it charges, or put a block on the route. Good intentions
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 8%, bomb 6%.
+- **Forms:** none in the code.
+
 ## Status
 
 Built.

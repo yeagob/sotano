@@ -328,16 +328,29 @@ describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
     }
   });
 
-  it('always lays one key and one bomb as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
+  it('at mastery 0 lays one key or one bomb as random rewards in its lesson rooms, never in the start, the treasure room or the way down', { timeout: 60000 }, () => {
+    // REWARDS §2 (level 0): exactly one of a key or a bomb, the choice drawn per seed (floor/0/roots/oneof)
     const rooms = new Set<number>();
     for (let s = 1; s <= 40; s++) {
       const f = buildRun(s * 13, 1).floors[0];
       const lesson = new Set(f.rooms.filter(r => r.type === 'normal').map(r => r.id));
-      expect(f.keys, `keys, seed ${s}`).toHaveLength(1);
-      expect(f.bombs, `bombs, seed ${s}`).toHaveLength(1);
+      expect(f.keys.length + f.bombs.length, `key or bomb, seed ${s}`).toBe(1);
       for (const k of [...f.keys, ...f.bombs]) { expect(lesson.has(k.room), `seed ${s}`).toBe(true); rooms.add(k.room); }
     }
     expect(rooms.size).toBeGreaterThan(1);
+  });
+});
+
+describe('the giant tree takes only whole story numbers', () => {
+  it('a NaN or fractional story is ignored: nothing grows and no table entry is read (tree.ts range)', async () => {
+    const { GiantTree, TREE_STORIES } = await import('../src/world/tree');
+    const { VoxelWorld } = await import('../src/world/world');
+    const { WORLD_SIZE } = await import('../src/world/floor');
+    const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
+    const t = new GiantTree(w, SURFACE_Y, i => new Rng(9 + i));
+    for (const bad of [Number.NaN, 0.5, -1, TREE_STORIES.length, Number.POSITIVE_INFINITY]) expect(() => t.grow(bad)).not.toThrow();
+    expect(t.voxels).toBe(0);
+    for (let i = 0; i < TREE_STORIES.length; i++) expect(t.isGrown(i)).toBe(false);
   });
 });
 

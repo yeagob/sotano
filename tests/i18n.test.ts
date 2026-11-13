@@ -89,6 +89,10 @@ describe('catalogs', () => {
     }
   });
 
+  it.each(LOCALES.map(l => [l.code, l] as const))('%s key caps fit in 14 characters (BOOK-DATA §5)', (_, l) => {
+    for (const [k, s] of strings(l)) if (k.startsWith('keycap.')) expect([...s].length, `${l.code} ${k}`).toBeLessThanOrEqual(14);
+  });
+
   it('every item message has English text in its definition', () => {
     for (const d of [...ITEMS, ...SYNERGIES]) for (const [id, s] of Object.entries(d.messages ?? {})) expect(s.trim(), `${d.id}.${id}`).not.toBe('');
   });

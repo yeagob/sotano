@@ -12,7 +12,7 @@ Up: [Emotion folder](README.md) · [all practices](../README.md) · [built desig
 
 ## What it means
 
-Stop fighting what already happened: your own breakthroughs no longer hurt you.
+Stop fighting what already happened: your own bombs no longer hurt you.
 
 ## What it does
 
@@ -29,5 +29,5 @@ Your own bomb and thrown-block explosions no longer damage you. +1 heart contain
 
 ## Open questions
 
-- Scope A1: the story text speaks of breakthroughs (bombs) only. The built effect also cancels your thrown-block explosions (Symbolic Act). The owner decides which rule stands.
+- Scope A1: the story text speaks of bombs only. The built effect also cancels your thrown-block explosions (Symbolic Act). The owner decides which rule stands.
 - Naming N6: "radical acceptance" is also the title of a 2003 book (verify). The term comes from the credited therapy. The owner decides whether the name stays.

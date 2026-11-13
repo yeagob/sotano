@@ -11,7 +11,7 @@ Each section below is a folder with its own README. Open questions are listed in
 | [intentions](intentions/README.md) | Planned changes to the shot, and what is still open about it |
 | [blocks](blocks/README.md) | Planned matter: new materials, flags that change what a material does, blocks that act when placed |
 | [elements](elements/README.md) | Mud, sand, glass, electricity, furnaces, burning barrels, and other element ideas |
-| [levels](levels/README.md) | What the level design says that the code does not do: tree paths, constellations, the route from the roots to the surface, the ending |
+| [levels](levels/README.md) | What the level design says that the code does not do: tree paths, constellations, the route from the roots to the surface, the ending, and the Roots' pending parts (the hidden book's pages 7 to 9, the open questions, the pictures not taken yet) |
 | [chests](chests/README.md) | What the chest and key design says that the code does not do, or does differently |
 | [projections](projections/README.md) | The gaps in partly built projections, and the projection that exists only in the design |
 | [creatures](creatures/README.md) | Creature interactions and befriending |
@@ -20,6 +20,7 @@ Each section below is a folder with its own README. Open questions are listed in
 | [bosses](bosses/README.md) | Boss mechanics not built: voxel bodies, the Guardian's route of light, the Verdict and the Grudge, and the rest |
 | [practices](practices/README.md) | Practices not built, the shop, the purpose of parts, and early sketches |
 | [stations](stations/README.md) | Stations, props and zones: furnaces, kitchens, laboratories, gardens and more (ideas) |
+| [progression](progression/README.md) | What is not built about progression: the other 60 achievements (issue #179), the completion percentage (#180), the unlockables (#113) |
 | [story](story/README.md) | The ending, the meaning of the sky, the protagonist, the mental-health link and meta-progression |
 | [feel](feel/README.md) | Art that is not built yet, the hexagram, and the art and safety notes |
 
