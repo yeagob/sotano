@@ -378,6 +378,8 @@ export class Game {
   private rootsGuards = new Map<string, Rng>();
   /** How many floor-0 hearts had their kind rolled this run: each roll takes its own fork (`rootsFork(…'heart', n)`). */
   private rootsHearts = 0;
+  /** Debug (S.roots): the page the next runs start on, in memory only; null reads the save (roots-keeper.ts `startPage`). */
+  private debugRootsPage: number | null = null;
   /** The Roots' walls of this run (roots-keeper.ts); undefined in the sandbox. */
   private roots: RootsKeeper | undefined;
   /** Each Roots room's box and the view frustum: the walls turn only out of sight (PAGES §3). */
@@ -540,6 +542,7 @@ export class Game {
       book: () => loadBook(currentVoice().lang),
       images: panelImages,
       inView: room => this.rootsInView(room),
+      startPage: this.debugRootsPage ?? undefined,
     });
     this.dw = createDungeonWorld(this.rng, this.dungeon);
     this.world = this.dw;
@@ -791,17 +794,20 @@ export class Game {
 
   /**
    * A run ends (death, R, a new run, a new seed; PAGES §1): the Roots' page advances at most once per run. When it does,
-   * the record is saved at once (roots-keeper.ts) and `pageReached` is emitted. Its achievements come in package D2.
+   * the record is saved at once (roots-keeper.ts) and `pageReached` is emitted on the bus, where the achievement keeper
+   * tracks it (achievement-keeper.ts). A run that started on the debug page advances nothing.
    */
   private endRoots() {
     const page = this.roots?.endRun();
     if (page !== undefined) this.bus.emit('pageReached', { page });
   }
 
-  /** Debug (the console's S.roots): the page the next run starts on, in memory. The save is written when a run advances. */
-  setRootsPage(page: number) {
-    if (this.meta.readOnly) return;
-    this.meta.roots.page = Math.max(1, Math.floor(page));
+  /**
+   * Debug (the console's S.roots): the page the next run starts on, in memory, or null to read the save again. It is an
+   * override, not the save: the record is never changed, and a run started on it advances nothing (roots-keeper.ts).
+   */
+  setRootsPage(page: number | null) {
+    this.debugRootsPage = page === null ? null : Math.max(1, Math.floor(page));
   }
 
   /** Debug (the console's S.mastery): the mastery level the next runs start with, in memory only; the save is not written. Returns it. */

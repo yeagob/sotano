@@ -79,8 +79,8 @@ async function boot() {
     trace: (on = true) => { game.bus.trace = on; },
     /** Opens the Sanctuary without a Boundary, to review it: S.sanctuary(60) runs its clock 60 times faster. */
     sanctuary: (rate = 1) => game.openSanctuary(o => console.log(`sanctuary: ${o}`), rate),
-    /** The Roots' page the next run starts on (debug, in memory): S.roots(3), then S.restart(). */
-    roots: (page: number) => game.setRootsPage(page),
+    /** The Roots' page the next run starts on (debug, in memory, never saved): S.roots(3), then S.restart(); S.roots(null) reads the save again. */
+    roots: (page: number | null) => game.setRootsPage(page),
     /** The Roots' mastery level the next runs start with (debug, in memory, never saved): S.mastery(36), then S.restart(). */
     mastery: (level: number) => game.setMastery(level),
     /** Switch language without saving the choice ('en', 'es'). */

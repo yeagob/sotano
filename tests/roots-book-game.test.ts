@@ -6,6 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { loadBook, pageCount, panelAt, type Book, type BookLayout, type Panel, type RoomKey, type Side } from '../src/content/book';
+import { AchievementKeeper } from '../src/game/achievement-keeper';
 import { loadMeta, type MetaStore } from '../src/game/meta';
 import { openRoots, roomKeyOf, RootsKeeper, type RootsCell, type WallImages, type WallSink } from '../src/game/roots-keeper';
 import { LAP_STEPS } from '../src/game/roots-book';
@@ -311,5 +312,43 @@ describe('the page stone', () => {
     a.keeper.update(a.wall.sink);
     expect(a.keeper.shown).toBe(6);
     expect(a.wall.stones.at(-1)).toBe(null);
+  });
+});
+
+describe('the debug page (S.roots) is an override that never reaches the save', () => {
+  /** A run started on `startPage` (the console's override) over the saved `page`, with its store. */
+  function overridden(page: number, startPage: number) {
+    const store = memory(saved(page));
+    const record = loadMeta(store);
+    const keeper = openRoots(false, {
+      record, store, book: () => book, images: { preloadPage: () => Promise.resolve() }, inView: () => false, startPage,
+    })!;
+    return { keeper, store, record };
+  }
+
+  it('the run starts on the override page and lays its layout, the save keeps its own page', () => {
+    const a = overridden(1, 3);
+    expect(a.keeper.current).toBe(3);
+    expect(a.keeper.shown).toBe(3);
+    expect(a.keeper.easyRoots).toBe(true);
+    expect(a.record.roots.page).toBe(1);
+  });
+
+  it('a run started on the override walks the whole Roots and advances nothing, in memory or in the store', () => {
+    const a = overridden(1, 3);
+    walk(a.keeper, floor0(true), FULL);
+    expect(a.keeper.endRun()).toBeUndefined();
+    expect(a.store.writes).toBe(0);
+    expect(a.record.roots.page).toBe(1);
+    expect(loadMeta(a.store).roots.page).toBe(1);
+  });
+
+  it('an achievement saved in an overridden run writes the save page, never the debug page', () => {
+    const a = overridden(1, 5);
+    const keeper = new AchievementKeeper(a.record, a.store);
+    keeper.track('brew', {}, 1_700_000_000_000);
+    expect(a.store.writes).toBe(1);
+    expect(loadMeta(a.store).roots.page).toBe(1);
+    expect(Object.keys(loadMeta(a.store).achievements)).toContain('brew.first');
   });
 });

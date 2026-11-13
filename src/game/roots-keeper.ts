@@ -33,6 +33,11 @@ export interface RootsKeeperOptions {
   readonly images: WallImages;
   /** The camera test (RootsBook §3): true when the room lies inside the view frustum. */
   readonly inView: (room: RoomKey) => boolean;
+  /**
+   * The debug override (the console's S.roots): the page this run starts on, in memory. Such a run never advances the save:
+   * `endRun` writes nothing, so a debug page cannot reach the store.
+   */
+  readonly startPage?: number;
 }
 
 /** A Roots room by its plan cell: its column and row (`RoomInfo.gx`, `gz`). */
@@ -61,12 +66,13 @@ export class RootsKeeper {
   private stoneNow: number | null | undefined;
 
   constructor(private readonly o: RootsKeeperOptions) {
+    const start = o.startPage ?? o.record.roots.page;
     this.book = new RootsBook({
       pages: pageCount(o.book()),
-      current: o.record.roots.page,
+      current: start,
       inView: room => o.inView(room as RoomKey),
     });
-    this.variant = o.record.roots.page >= 2 ? 'easy' : 'teaching';
+    this.variant = start >= 2 ? 'easy' : 'teaching';
   }
 
   /** Floor 0's carve option for this run: the easy layout from page 2 on, read from the current page, never the shown one. */
@@ -95,6 +101,7 @@ export class RootsKeeper {
    * undefined. A read-only record (a newer build's) is never written, so nothing it advances persists.
    */
   endRun(): number | undefined {
+    if (this.o.startPage !== undefined) return undefined;
     if (!this.book.endRun()) return undefined;
     if (this.o.record.readOnly) return undefined;
     this.o.record.roots.page = this.book.current;
