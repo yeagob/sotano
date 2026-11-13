@@ -1,9 +1,9 @@
 // The Roots' wall panels: the book carved into limestone slabs on the walls of its rooms (owner: the tutorial
-// lives in the world, never in an overlay). Four layouts share one slab (docs/design/not-built/levels/roots/
+// lives in the world, never in an overlay). Five layouts share one slab (docs/design/built/levels/roots/
 // PANELS.md): `lesson` (an image, a title, a short text and the control as a key cap), `plate` (a portrait or
-// an icon, a name, a kind, a text and a note), `prose` (the hidden book, with its page number) and `quote`
-// (someone else's voice on a paler inset page). Every panel carries its id small in a lower corner, like a
-// mason's mark.
+// an icon, a name, a kind, a text and a note), `prose` (the hidden book, with its page number), `quote`
+// (someone else's voice on a paler inset page) and `image` (a picture alone, fitted, with an optional caption).
+// Every panel carries its id small in a lower corner, like a mason's mark.
 //
 // A panel is carved in full on an offscreen canvas and copied onto its slot's canvas in one synchronous step,
 // so the wall never shows a blank, half-drawn or mixed panel. Its image is loaded first (PanelImages); a
@@ -28,9 +28,9 @@ import type { Device } from '../input/bindings';
 import { activeDevice } from '../input/input';
 import { iconCanvas } from './icons';
 import {
-  PANEL_H, PANEL_W, authorLine, controlLabelKey, fillControls, fitBlock, fitLine, hashString, keycapGlyph, keycapLabelKey,
-  keycapVerbKey, keycapWidth, panelImageIds, panelMount, seededRandom, showsTranslationNote,
-  type MeasureAt, type Mount, type MountVariant, type SizeRange,
+  IMAGE_CAPTION, PANEL_H, PANEL_W, authorLine, controlLabelKey, fillControls, fitBlock, fitLine, hashString, imageFrame,
+  keycapGlyph, keycapLabelKey, keycapVerbKey, keycapWidth, panelImageIds, panelMount, seededRandom, showsTranslationNote,
+  type MeasureAt, type Mount, type MountVariant, type SizeRange, type Size,
 } from './panel-layout';
 
 const SANS = 'system-ui, "Segoe UI", sans-serif';
@@ -388,7 +388,7 @@ function block(
   carveLines(g, fit.lines, x, top, Math.round(fit.px * lineRatio), ink, lip);
 }
 
-// ── the four layouts (PANELS §2–§4b; every number below is the canvas geometry of that section) ──
+// ── the five layouts (PANELS §2–§4b; every number below is the canvas geometry of that section) ──
 
 function carveLesson(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'lesson' }>, voice: PanelVoice, images: PanelImages, over: string[], missing: ImageId[]) {
   if (!framedImage(g, p.image, 40, 40, 280, 432, images)) missing.push(p.image);
@@ -485,6 +485,22 @@ function carveProse(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'pr
   diamond(g, 448 + half, 452, 6);
 }
 
+/**
+ * The image layout: the picture fitted in its area, as large as it goes, keeping its ratio and set in the same ink
+ * frame as the other layouts; the caption, when there is one, centred under it. A picture whose size is not known
+ * (an icon, a file not loaded) is fitted as a square, and a missing file draws the neutral placeholder.
+ */
+function carveImage(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'image' }>, images: PanelImages, over: string[], missing: ImageId[]) {
+  const loaded = images.image(p.image);
+  const natural: Size | undefined = loaded ? { w: loaded.naturalWidth, h: loaded.naturalHeight } : undefined;
+  const frame = imageFrame(natural, p.caption !== undefined);
+  if (!framedImage(g, p.image, frame.x, frame.y, frame.w, frame.h, images)) missing.push(p.image);
+  // a caption carries no placeholders (the validator refuses braces outside lesson and plate text), so it is drawn as written
+  if (p.caption !== undefined) {
+    oneLine(g, 'caption', p.caption, IMAGE_CAPTION.cx, IMAGE_CAPTION.top, IMAGE_CAPTION.w, { from: IMAGE_CAPTION.from, to: IMAGE_CAPTION.to }, 'bold', SANS, 'ink.line', over, 'center');
+  }
+}
+
 function carveQuote(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'quote' }>, voice: PanelVoice, over: string[]) {
   // the inset page: paler, set into the face, its border in the bevel ink and a shadow along its top and left
   // (34 to 458, a little higher and shorter than PANELS §4b's first proposal, so the mason's mark fits under it)
@@ -523,6 +539,7 @@ export function carvePanel(g: CanvasRenderingContext2D, panel: Panel, page: numb
   if (panel.layout === 'lesson') carveLesson(g, panel, voice, images, over, missing);
   else if (panel.layout === 'plate') carvePlate(g, panel, voice, images, over, missing);
   else if (panel.layout === 'prose') carveProse(g, panel, page, over);
+  else if (panel.layout === 'image') carveImage(g, panel, images, over, missing);
   else carveQuote(g, panel, voice, over);
   masonMark(g, panel.id);
   g.restore();

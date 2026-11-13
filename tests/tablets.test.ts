@@ -3,11 +3,11 @@
 // the control placeholders, and the images a page needs. The drawing itself is checked in ?gallery=book.
 
 import { describe, expect, it } from 'vitest';
-import { KEY_ACTIONS, ROOM_KEYS, SIDES, loadBook, pageCount, panelAt, type QuotePanel } from '../src/content/book';
+import { IMAGE_CAPTION_BUDGET, KEY_ACTIONS, ROOM_KEYS, SIDES, loadBook, pageCount, panelAt, type Panel, type QuotePanel } from '../src/content/book';
 import {
-  MOUNT_TABLES, SLAB_H, SLAB_W, authorLine, fillControls, fitBlock, fitLine, inlineLabel, keycapGlyph, keycapLabelKey,
-  keycapVerbKey, keycapWidth, pageStoneMount, pageStoneShows, panelImageIds, panelMount, seededRandom, sizesOf,
-  showsTranslationNote, wrapText, wrapIndented, hashString, type MeasureAt,
+  FRAME_INSET, IMAGE_AREA, IMAGE_CAPTION, MOUNT_TABLES, SLAB_H, SLAB_W, authorLine, fillControls, fitBlock, fitLine, fitRect,
+  imageArea, imageFrame, inlineLabel, keycapGlyph, keycapLabelKey, keycapVerbKey, keycapWidth, pageStoneMount, pageStoneShows,
+  panelImageIds, panelMount, pictureSize, seededRandom, sizesOf, showsTranslationNote, wrapText, wrapIndented, hashString, type MeasureAt,
 } from '../src/render/panel-layout';
 import { PanelImages } from '../src/render/tablets';
 import { EN } from '../src/i18n/locales/en';
@@ -246,5 +246,92 @@ describe('the stone’s grain', () => {
     expect(take(b)).toEqual(first);
     expect(take(c)).not.toEqual(first);
     for (const v of first) { expect(v).toBeGreaterThanOrEqual(0); expect(v).toBeLessThan(1); }
+  });
+});
+
+describe('the image layout: the picture fitted in its area (pure maths)', () => {
+  const SQUARE = { w: 512, h: 512 }; // a portrait
+  const WIDE = { w: 960, h: 540 }; // a 16:9 lesson capture
+  const TALL = { w: 1, h: 2 };
+  const SHAPES = [SQUARE, WIDE, TALL, { w: 3, h: 1 }, undefined];
+  /** The bottom of a frame may not pass this line: the caption band when there is one, the mason's mark's top otherwise. */
+  const bottomOf = (captioned: boolean) => (captioned ? 412 : 456);
+
+  it('the image area is the margin the other layouts keep: x 40 to 856, y 40 down to 456', () => {
+    expect(IMAGE_AREA).toEqual({ x: 40, y: 40, w: 816, h: 416 });
+    expect(imageArea(false)).toEqual({ x: 40, y: 40, w: 816, h: 416 });
+    expect(imageArea(true)).toEqual({ x: 40, y: 40, w: 816, h: 372 });
+    expect(FRAME_INSET).toBe(4);
+  });
+
+  it('fits a square portrait as large as the area allows: 408 square, centred, with its 4 px frame round it', () => {
+    expect(imageFrame(SQUARE, false)).toEqual({ x: 240, y: 40, w: 416, h: 416 });
+  });
+
+  it('fits a 16:9 capture to the height, keeping its ratio, centred across the width', () => {
+    const f = imageFrame(WIDE, false);
+    expect(f.h).toBeCloseTo(416);
+    expect(f.w - 2 * FRAME_INSET).toBeCloseTo((408 * 960) / 540);
+    expect(f.x + f.w / 2).toBeCloseTo(448);
+  });
+
+  it('a captioned picture is fitted above the caption band: a square at 364 inside a frame of 372', () => {
+    expect(imageFrame(SQUARE, true)).toEqual({ x: 262, y: 40, w: 372, h: 372 });
+  });
+
+  it('a picture whose size is not known is fitted as a square (an icon, a file not loaded yet)', () => {
+    expect(pictureSize(undefined)).toEqual({ w: 1, h: 1 });
+    expect(pictureSize({ w: 0, h: 0 })).toEqual({ w: 1, h: 1 });
+    expect(imageFrame(undefined, false)).toEqual(imageFrame(SQUARE, false));
+    expect(imageFrame(undefined, true)).toEqual(imageFrame(SQUARE, true));
+  });
+
+  it('keeps every picture inside its area, its frame never past the margin, with and without a caption', () => {
+    for (const captioned of [false, true]) for (const size of SHAPES) {
+      const f = imageFrame(size, captioned);
+      expect(f.x, JSON.stringify(size)).toBeGreaterThanOrEqual(IMAGE_AREA.x);
+      expect(f.x + f.w, JSON.stringify(size)).toBeLessThanOrEqual(IMAGE_AREA.x + IMAGE_AREA.w);
+      expect(f.y, JSON.stringify(size)).toBeGreaterThanOrEqual(IMAGE_AREA.y);
+      expect(f.y + f.h, JSON.stringify(size)).toBeLessThanOrEqual(bottomOf(captioned));
+    }
+  });
+
+  it('never stretches or crops: the picture keeps its own ratio in every shape', () => {
+    for (const size of [SQUARE, WIDE, TALL, { w: 3, h: 1 }]) {
+      for (const captioned of [false, true]) {
+        const f = imageFrame(size, captioned);
+        const pic = { w: f.w - 2 * FRAME_INSET, h: f.h - 2 * FRAME_INSET };
+        expect(pic.w / pic.h).toBeCloseTo(size.w / size.h);
+      }
+    }
+  });
+
+  it('is as large as the area allows: one side of the picture touches its box', () => {
+    const f = imageFrame(WIDE, false);
+    expect(Math.min(IMAGE_AREA.w - f.w, IMAGE_AREA.h - f.h)).toBeCloseTo(0);
+  });
+
+  it('fitRect centres a picture in a box, and a tall one is limited by the height', () => {
+    expect(fitRect(10, 10, { x: 0, y: 0, w: 100, h: 50 })).toEqual({ x: 25, y: 0, w: 50, h: 50 });
+    expect(fitRect(1, 2, { x: 0, y: 0, w: 100, h: 50 })).toEqual({ x: 37.5, y: 0, w: 25, h: 50 });
+  });
+
+  it('the caption is one line, centred on the picture, its top below the frame and above the mason’s mark', () => {
+    expect(IMAGE_CAPTION.cx).toBe(448);
+    expect(IMAGE_CAPTION.top).toBeGreaterThan(bottomOf(true));
+    // the mason's mark is 13 px high on a baseline of 478: its top is near 465; the caption's largest size ends above it
+    expect(IMAGE_CAPTION.top + IMAGE_CAPTION.from * 1.2).toBeLessThan(465);
+  });
+
+  it('the longest caption fits its line at the caption’s sizes, with glyphs 0.6 em wide', () => {
+    const wide: MeasureAt = (text, px) => [...text].length * px * 0.6;
+    const longest = 'W'.repeat(IMAGE_CAPTION_BUDGET);
+    expect(fitLine(longest, IMAGE_CAPTION.w, { from: IMAGE_CAPTION.from, to: IMAGE_CAPTION.to }, wide).fits).toBe(true);
+    expect(IMAGE_CAPTION_BUDGET * 0.6 * IMAGE_CAPTION.to).toBeLessThanOrEqual(IMAGE_CAPTION.w);
+  });
+
+  it('a picture alone draws its picture: the image layout lists it among the images a panel needs', () => {
+    const panel: Panel = { id: 'sample', layout: 'image', image: 'lesson/blocks', caption: 'One line.' };
+    expect(panelImageIds(panel)).toEqual(['lesson/blocks']);
   });
 });

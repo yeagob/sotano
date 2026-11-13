@@ -1,6 +1,6 @@
 ---
 name: sotano-book
-description: The Roots' book and its wall panels. Use it EVERY time a wall panel of the Roots, a tutorial page or a page of the hidden book is added, changed or removed, or a panel image is added or recaptured (for example when the owner says "change panel 3-pit-s"). Covers how the book works for the player, the two JSON files, panel ids, the four layouts and their character budgets, placeholders and key caps, quotations, images (where they live, sizes, capture), how to check a change, the owner's writing rules and step-by-step recipes. Also use sotano-i18n (both languages), sotano-art (anything visible), sotano-lore (quotations, names), sotano-levels (the Roots' rooms) and sotano-docs.
+description: The Roots' book and its wall panels. Use it EVERY time a wall panel of the Roots, a tutorial page or a page of the hidden book is added, changed or removed, or a panel image is added or recaptured (for example when the owner says "change panel 3-pit-s"). Covers how the book works for the player, the two JSON files, panel ids, the five layouts and their character budgets, placeholders and key caps, quotations, images (where they live, sizes, capture), how to check a change, the owner's writing rules and step-by-step recipes. Also use sotano-i18n (both languages), sotano-art (anything visible), sotano-lore (quotations, names), sotano-levels (the Roots' rooms) and sotano-docs.
 ---
 
 # The Roots book skill
@@ -37,7 +37,7 @@ Every panel carries a small unique id: **`<page>-<room without roots->-<n|s>`**,
 - **On the slab** the id is carved small, as a mason's mark, at the bottom-right corner (`masonMark` in `src/render/tablets.ts`). The owner reads it in the game and names the panel by it.
 - **To find it:** search the id in both JSON files (`"id": "3-pit-s"`); in code, `panelById(book, id)`; in the browser, `?gallery=book&id=3-pit-s`.
 
-## 4. The four layouts, their fields and budgets
+## 4. The five layouts, their fields and budgets
 
 Budgets are **characters, in both languages**, enforced by the validator (`BUDGET` in `src/content/book/index.ts`), with **every `{placeholder}` counted at its longest label** on any device in that language.
 
@@ -60,6 +60,12 @@ Budgets are **characters, in both languages**, enforced by the validator (`BUDGE
 ```json
 { "id": "7-gift-n", "layout": "quote", "text": "Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
 ```
+
+**`image`**: a picture alone, with nothing else but an optional caption line under it. Fields `id`, `image` (any id `resolveImage` knows: `lesson/`, `bestiary/` or `icon/`); optional `caption` (60, one line). No title and no text. Allowed on every page (tutorial and book) and among the remembered panels. An example, not on any page yet (the owner places them):
+```json
+{ "id": "8-hall-s", "layout": "image", "image": "lesson/blocks", "caption": "One short line under the picture." }
+```
+The picture is fitted in the area (x 40 to 856, y 40 down to 456, or to 412 with a caption), as large as it goes, keeping its ratio and never cropped, centred, inside the same 4 px ink frame as the other layouts. A square is fitted as a square, a 16:9 capture to the height. An icon, or a missing file, is fitted as a square. The caption is centred under it. The mason's mark stays at the bottom right, beside the picture (`fitRect`, `imageFrame` in `src/render/panel-layout.ts`).
 
 Every string: not empty, no `<` or `>`, no leading, trailing or double space. A budget fits the validator, not always the stone: wide letters can still overflow, so the gallery check (section 8) is the real fit.
 
@@ -86,7 +92,7 @@ An image is an **id**, never a path (`src/content/book/images.ts`, `resolveImage
 | `icon/item/<id>`, `icon/potion/<id>`, `icon/heart/<kind>` | the game's own icon art | nothing to capture |
 
 - **Every file is a WebP under 60 KB** (`tests/book-images.test.ts`); the capture scripts step the quality down until it fits.
-- **The frame crops the centre.** The image is cover-fitted into a portrait window (lesson 272 × 424 px, plate 352 × 424 px on the 896 × 512 slab), so of a 960 × 540 lesson capture only about the **central third of the width** shows. Keep the lesson in the middle of the frame.
+- **The frame crops the centre** (lesson and plate). The image is cover-fitted into a portrait window (lesson 272 × 424 px, plate 352 × 424 px on the 896 × 512 slab), so of a 960 × 540 lesson capture only about the **central third of the width** shows. Keep the lesson in the middle of the frame. The image layout does not crop: it fits the whole picture (section 4).
 - **Capturing.** Lessons: `npm run book:captures -- <name>` (`scripts/book-captures.mjs`; each lesson is an entry of `LESSONS` there: a staged sandbox room, an optional lab script and prep, the eye and the point it looks at; fixed seed and step, so a re-run gives the same file). Portraits: `npm run bestiary -- --portrait <id>` (`scripts/bestiary-capture.mjs`). Both need Playwright with Chromium.
 - **Look at every image** after capturing (open the WebP, then the panel in the gallery): the lesson must be visible inside the crop, true to what the game does today, and readable at panel size.
 - **Pending images.** Lesson ids the sandbox cannot stage (or nobody has captured) yet are listed with their reason in `PENDING` in both `scripts/book-captures.mjs` and `tests/book-images.test.ts` (the two lists must match; that is where the truth is). Portraits not captured yet are in `PENDING_PORTRAITS` in `tests/book-images.test.ts` and `scripts/bestiary-capture.mjs`; the sky's portraits (`guardian-*`, `herd-*`) are in the script's `SKY_PORTRAITS` and are framed by the sky route of portrait mode (the real game on the sky seed, paused, at rest). BOOK-DATA §4 says, one line each, what every pending image must show. **A pending id must have no file**; a panel using it draws a neutral placeholder (pale stone, hatching, an empty diamond, no words) and the gallery flags it yellow. Never fake a pending image with a different scene; to capture one, stage it, write the file and remove the id from both `PENDING` lists.
@@ -95,7 +101,7 @@ An image is an **id**, never a path (`src/content/book/images.ts`, `resolveImage
 ## 8. How to check a change
 
 1. `npx vitest run tests/book.test.ts tests/book-images.test.ts tests/tablets.test.ts`: the validator lists **every** problem at once (budget, id, shape mismatch between languages, unknown image, placeholder).
-2. **The gallery**: `npm run dev`, open `?gallery=book` (filters: `&lang=en|es`, `&device=keyboard|gamepad|touch`, `&page=3`, `&id=3-pit-s`, `&scale=1`). Every panel of every page is carved by the game's renderer in both languages, and on keyboard, gamepad and touch when it has a key cap or a placeholder. A panel outlined **red** overflows (named in the summary); **yellow** has a missing image. `window.__book` holds the same lists for scripts. Look at the panel in **both languages and all three devices**. The gallery shows the pages' own panels; the remembered panels (`easy`) are not in it, so check those in the game.
+2. **The gallery**: `npm run dev`, open `?gallery=book` (filters: `&lang=en|es`, `&device=keyboard|gamepad|touch`, `&page=3`, `&id=3-pit-s`, `&scale=1`). Every panel of every page is carved by the game's renderer in both languages, and on keyboard, gamepad and touch when it has a key cap or a placeholder. A panel outlined **red** overflows (named in the summary); **yellow** has a missing image. The `samples` group at the end of each language shows the image layout (square and 16:9, with and without a caption), since no page uses it yet. `window.__book` holds the same lists for scripts. Look at the panel in **both languages and all three devices**. The gallery shows the pages' own panels; the remembered panels (`easy`) are not in it, so check those in the game.
 3. **The real game**: `S.roots(3)` then `S.restart()` starts on page 3 (in memory, never saved); walk to the panel. Page 2 and later are in the easy layout.
 4. `npm run typecheck && npm test`.
 

@@ -6,7 +6,7 @@ import bookEn from '../src/content/book/book.en.json';
 import bookEs from '../src/content/book/book.es.json';
 import {
   type Book, BookValidationError, PLACEHOLDER_ACTIONS, type RoomKey, type Side, bookMessage, bookRefs, loadBook, pageCount, panelAt,
-  panelById, panelIdOf, easyPanelIdOf, quoteSource, validateBook, type BookRefs, ROOM_KEYS, SIDES,
+  panelById, panelIdOf, easyPanelIdOf, quoteSource, validateBook, type BookRefs, ROOM_KEYS, SIDES, IMAGE_CAPTION_BUDGET,
 } from '../src/content/book';
 import { BESTIARY_PORTRAITS, LESSON_IMAGES, knownImageIds, resolveImage } from '../src/content/book/images';
 import { BOSS_BY_ID } from '../src/content/bosses';
@@ -813,5 +813,89 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
     expect(panelById(shipped('en'), 'easy-dig-s')).toBe(shipped('en').easy?.['roots-dig']?.south);
     expect(panelById(shipped('es'), 'easy-seal-s')).toBe(shipped('es').easy?.['roots-seal']?.south);
     expect(panelById(shipped('en'), 'easy-gift-n')).toBeUndefined();
+  });
+});
+
+describe('the image layout: a picture alone, with an optional caption', () => {
+  /** An image panel with its id by position, the copy patched per language (undefined drops a field). */
+  const imagePanel = (id: string, patch: Record<string, unknown>) => JSON.parse(JSON.stringify({ id, layout: 'image', image: 'bestiary/doubt', ...patch }));
+
+  /** The problems of the shipped book with an image panel in a slot of page `page` (its id by position), patched per language. */
+  const imageOn = (page: number, room: RoomKey, side: Side, patchEn: Record<string, unknown> = {}, patchEs: Record<string, unknown> = patchEn) => {
+    const en = copyEn();
+    const es = copyEs();
+    const id = panelIdOf(page, room, side);
+    en.pages[page - 1].panels[room] ??= {};
+    es.pages[page - 1].panels[room] ??= {};
+    en.pages[page - 1].panels[room][side] = imagePanel(id, patchEn);
+    es.pages[page - 1].panels[room][side] = imagePanel(id, patchEs);
+    return problemsOf(en, es);
+  };
+
+  /** The problems of the shipped book with an image panel in the remembered slot of `room` and `side`, patched per language. */
+  const imageEasy = (room: RoomKey, side: Side, patchEn: Record<string, unknown> = {}, patchEs: Record<string, unknown> = patchEn) => {
+    const en = copyEn();
+    const es = copyEs();
+    en.easy[room][side] = imagePanel(easyPanelIdOf(room, side), patchEn);
+    es.easy[room][side] = imagePanel(easyPanelIdOf(room, side), patchEs);
+    return problemsOf(en, es);
+  };
+
+  const sixty = 'a'.repeat(IMAGE_CAPTION_BUDGET);
+
+  it('a picture alone passes on a tutorial page, on a book page and among the remembered panels', () => {
+    expect(imageOn(2, 'roots-hall', 'south')).toEqual([]);
+    expect(imageOn(8, 'roots-hall', 'south')).toEqual([]);
+    expect(imageOn(7, 'roots-gift', 'south', { caption: 'A caption.' }, { caption: 'Un pie.' })).toEqual([]);
+    expect(imageEasy('roots-dig', 'south')).toEqual([]);
+  });
+
+  it('a picture alone needs its id and its image', () => {
+    expectProblem(imageOn(2, 'roots-hall', 'south', { image: undefined }), '"image" is missing');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { id: undefined }), '"id" is missing');
+  });
+
+  it('a picture alone has no title, text or other field: the layout refuses them', () => {
+    expectProblem(imageOn(2, 'roots-hall', 'south', { title: 'A title' }), '"title" is not a field of a image panel');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { text: 'Some text.' }), '"text" is not a field of a image panel');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { key: 'move' }), '"key" is not a field of a image panel');
+  });
+
+  it('the image resolves to a lesson capture, a portrait or a game icon, and nothing else', () => {
+    expect(imageOn(2, 'roots-hall', 'south', { image: 'lesson/blocks' })).toEqual([]);
+    expect(imageOn(2, 'roots-hall', 'south', { image: 'icon/heart/stone' })).toEqual([]);
+    expectProblem(imageOn(2, 'roots-hall', 'south', { image: 'lesson/nowhere' }), 'image "lesson/nowhere" does not resolve');
+  });
+
+  it('the caption is optional: a picture without one passes', () => {
+    expect(imageOn(2, 'roots-hall', 'south', { caption: undefined })).toEqual([]);
+  });
+
+  it('a caption is within its budget of 60 characters, the longest labels counted', () => {
+    expect(imageOn(2, 'roots-hall', 'south', { caption: sixty }, { caption: sixty })).toEqual([]);
+    const over = 'a'.repeat(IMAGE_CAPTION_BUDGET + 1);
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: over }, { caption: over }), `"caption" is ${IMAGE_CAPTION_BUDGET + 1} characters with the longest labels, the budget is ${IMAGE_CAPTION_BUDGET}`);
+    expect(IMAGE_CAPTION_BUDGET).toBe(60);
+  });
+
+  it('a caption is not empty and has no markup or stray spaces', () => {
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: '' }), '"caption" is empty');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: '<i>Sample</i>' }), '"caption" contains markup');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: ' Sample.' }), '"caption" has a leading or trailing space');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: 'Two  spaces.' }), '"caption" has a double space');
+  });
+
+  it('a caption is a string and carries no placeholders: its words are drawn as written', () => {
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: 42 }), '"caption" must be a string');
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: 'Press {jump}.' }), 'placeholders are only allowed in lesson and plate text');
+  });
+
+  it('a caption may differ in words between the files, but the layout and the image are the same fact in both', () => {
+    expect(imageOn(2, 'roots-hall', 'south', { caption: 'One.' }, { caption: 'Uno.' })).toEqual([]);
+    expectProblem(imageOn(2, 'roots-hall', 'south', { image: 'lesson/blocks' }, { image: 'bestiary/doubt' }), 'image is "lesson/blocks" in en and "bestiary/doubt" in es');
+  });
+
+  it('a caption is in both files or in neither: its fields differ otherwise', () => {
+    expectProblem(imageOn(2, 'roots-hall', 'south', { caption: 'One.' }, { caption: undefined }), 'fields differ');
   });
 });

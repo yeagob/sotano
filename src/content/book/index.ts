@@ -69,7 +69,15 @@ export interface QuotePanel {
   readonly lang: Lang;
 }
 
-export type Panel = LessonPanel | PlatePanel | ProsePanel | QuotePanel;
+/** A picture alone, with an optional caption line under it: no title, no text. Any page, any image id. */
+export interface ImagePanel {
+  readonly id: string;
+  readonly layout: 'image';
+  readonly image: ImageId;
+  readonly caption?: string;
+}
+
+export type Panel = LessonPanel | PlatePanel | ProsePanel | QuotePanel | ImagePanel;
 
 export type Slot = Partial<Record<Side, Panel>>;
 
@@ -137,7 +145,14 @@ const LAYOUTS: Record<Layout, { required: readonly string[]; optional: readonly 
   plate: { required: ['id', 'title', 'subtitle', 'text', 'image'], optional: ['note'] },
   prose: { required: ['id', 'text'], optional: [] },
   quote: { required: ['id', 'text', 'author', 'work', 'lang'], optional: ['publisher', 'year'] },
+  image: { required: ['id', 'image'], optional: ['caption'] },
 };
+
+/**
+ * The caption under a picture: one line at the slab's small text size (the image layout's caption shrinks from 24 to 20 px,
+ * bold sans). At 0.6 em a glyph, 60 characters are 720 px at 20 px, inside the 816 px line.
+ */
+export const IMAGE_CAPTION_BUDGET = 60;
 
 /** Characters per text field, counted with each placeholder at its longest label. */
 const BUDGET: Record<Layout, Partial<Record<string, number>>> = {
@@ -145,6 +160,7 @@ const BUDGET: Record<Layout, Partial<Record<string, number>>> = {
   plate: { title: 22, subtitle: 30, text: 110, note: 30 },
   prose: { text: 320 },
   quote: { text: 440, author: 40, work: 48, publisher: 32 },
+  image: { caption: IMAGE_CAPTION_BUDGET },
 };
 
 /** The source line of a quote as drawn ("Work · Publisher, Year", PANELS §4b). */

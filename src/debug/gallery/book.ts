@@ -32,6 +32,20 @@ function ownPanels(book: Book, page: number): Panel[] {
   return out;
 }
 
+/**
+ * Sample panels of the image layout, for the gallery only: no page of the book uses the layout yet. A square portrait and a
+ * 16:9 lesson capture, each with and without a caption. The captions are sample text, not the book's words.
+ */
+function imageSamples(lang: Lang): Panel[] {
+  const caption = lang === 'en' ? 'A caption, one short line under the picture.' : 'Un pie de foto: una línea corta bajo la imagen.';
+  return [
+    { id: 'sample-image-square', layout: 'image', image: 'bestiary/doubt' },
+    { id: 'sample-image-square-caption', layout: 'image', image: 'bestiary/doubt', caption },
+    { id: 'sample-image-wide', layout: 'image', image: 'lesson/blocks' },
+    { id: 'sample-image-wide-caption', layout: 'image', image: 'lesson/blocks', caption },
+  ];
+}
+
 /** The remembered panels of the easy layout (EASY-LAYOUT §4), in book order: the easy-* ids. */
 function rememberedPanels(book: Book): Panel[] {
   const out: Panel[] = [];
@@ -69,6 +83,7 @@ export async function bookGallery(kit: GalleryKit, params: URLSearchParams) {
   const ids = new Set<string>();
   for (const l of LANGS) for (let page = 1; page <= pageCount(books[l]); page++) for (const p of ownPanels(books[l], page)) for (const id of panelImageIds(p)) ids.add(id);
   for (const l of LANGS) for (const p of rememberedPanels(books[l])) for (const id of panelImageIds(p)) ids.add(id);
+  for (const l of LANGS) for (const p of imageSamples(l)) for (const id of panelImageIds(p)) ids.add(id);
   await panelImages.preload(ids);
 
   const summary = document.createElement('pre');
@@ -86,6 +101,8 @@ export async function bookGallery(kit: GalleryKit, params: URLSearchParams) {
     }
     // the remembered panels (easy-*): the easy layout's slots, carved as page 1 (they carry no page number)
     if (pageOnly === undefined) sections.push({ title: `${lang.toUpperCase()} · remembered panels (easy layout, easy-*)`, page: 1, panels: rememberedPanels(book) });
+    // the samples of the image layout: no page of the book uses it yet, so they are shown here only
+    if (pageOnly === undefined) sections.push({ title: `${lang.toUpperCase()} · samples (image layout, no page uses it yet)`, page: 1, panels: imageSamples(lang) });
     for (const sec of sections) {
       const page = sec.page;
       const panels = sec.panels.filter(p => !idOnly || p.id === idOnly);

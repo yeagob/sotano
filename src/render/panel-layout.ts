@@ -221,9 +221,61 @@ export function panelMount(room: RoomKey, side: Side, x0: number, y0: number, z0
   };
 }
 
-/** The image ids a panel draws (lesson and plate carry one; prose and quote none). */
+/** The image ids a panel draws (lesson, plate and image carry one; prose and quote none). */
 export function panelImageIds(panel: Panel): string[] {
-  return panel.layout === 'lesson' || panel.layout === 'plate' ? [panel.image] : [];
+  return panel.layout === 'lesson' || panel.layout === 'plate' || panel.layout === 'image' ? [panel.image] : [];
+}
+
+// ── the image layout: a picture alone, fitted, with an optional caption line ──
+
+/** A rectangle on the canvas, in pixels. */
+export interface Rect { readonly x: number; readonly y: number; readonly w: number; readonly h: number }
+
+/** A picture's size in pixels. */
+export interface Size { readonly w: number; readonly h: number }
+
+/** The ink frame a picture is set in (the same 4 px as the lesson and plate frames). */
+export const FRAME_INSET = 4;
+/** The picture's area: the margin the other layouts keep (x 40 to 856), from y 40 down to the mason's mark (above y 466). */
+export const IMAGE_AREA = { x: 40, y: 40, w: 816, h: 416 } as const;
+/** With a caption, the picture stops above the caption line (its frame ends by y 412). */
+export const IMAGE_AREA_CAPTIONED_H = 372;
+/** The caption line: centred on x 448, its top at y 424, between two lines of the stone: the mason's mark sits below it. */
+export const IMAGE_CAPTION = { cx: 448, top: 424, w: 816, from: 24, to: 20 } as const;
+
+/**
+ * The area the picture is fitted in: the image area, its height less the caption band when there is one.
+ * Its frame (the ink frame) stays inside it.
+ */
+export function imageArea(captioned: boolean): Rect {
+  return { x: IMAGE_AREA.x, y: IMAGE_AREA.y, w: IMAGE_AREA.w, h: captioned ? IMAGE_AREA_CAPTIONED_H : IMAGE_AREA.h };
+}
+
+/**
+ * The size a picture is fitted at: its own size, or a square when it is not known (an icon, or a file not loaded
+ * yet), so a placeholder takes the shape of the commonest picture.
+ */
+export function pictureSize(natural: Size | undefined): Size {
+  return natural !== undefined && natural.w > 0 && natural.h > 0 ? natural : { w: 1, h: 1 };
+}
+
+/** A w × h picture fitted inside a box: as large as the box allows, keeping its ratio, centred. Never cropped, never stretched. */
+export function fitRect(w: number, h: number, box: Rect): Rect {
+  const k = Math.min(box.w / w, box.h / h);
+  const fw = w * k, fh = h * k;
+  return { x: box.x + (box.w - fw) / 2, y: box.y + (box.h - fh) / 2, w: fw, h: fh };
+}
+
+/**
+ * The framed picture of the image layout: the picture fitted inside the area less the frame, and the frame round it
+ * (FRAME_INSET on every side). `natural` is the picture's size, undefined when it is not known.
+ */
+export function imageFrame(natural: Size | undefined, captioned: boolean): Rect {
+  const area = imageArea(captioned);
+  const inner: Rect = { x: area.x + FRAME_INSET, y: area.y + FRAME_INSET, w: area.w - 2 * FRAME_INSET, h: area.h - 2 * FRAME_INSET };
+  const size = pictureSize(natural);
+  const pic = fitRect(size.w, size.h, inner);
+  return { x: pic.x - FRAME_INSET, y: pic.y - FRAME_INSET, w: pic.w + 2 * FRAME_INSET, h: pic.h + 2 * FRAME_INSET };
 }
 
 // ── the page stone (PAGES §4) ──
