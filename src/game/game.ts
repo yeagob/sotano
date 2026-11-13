@@ -28,6 +28,7 @@ import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { mastery as achievedMastery, type Payload } from './achievements';
 import { AchievementKeeper, gainText, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
+import { HeightWatch } from './height-watch';
 import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSites, type RootsSite } from './roots-draws';
 import { offerPedestal, rollChestContents } from './chest-draws';
 import { STILLNESS_TAG } from '../content/bosses/shadow';
@@ -366,6 +367,8 @@ export class Game {
   private readonly metaStore: MetaStore;
   /** The achievements of the session (achievement-keeper.ts): they track on the run's bus, and their cards queue here. */
   private readonly keeper: AchievementKeeper;
+  /** Warns once a run when the player's height is not a finite number (height-watch.ts). */
+  private readonly heightWatch = new HeightWatch();
   /** The Roots' mastery level this run started with (REWARDS §6): read once at run start, never during the run. */
   private runMastery = 0;
   /** Debug (S.mastery): the level the next runs start with, in memory only. Null reads the save. */
@@ -510,6 +513,7 @@ export class Game {
     this.sandbox = sandbox;
     // the sandbox and the lab unlock nothing and write nothing (ACHIEVEMENTS §2); their Roots are level 0
     this.keeper.live = sandbox === null;
+    this.heightWatch.reset();
     this.runMastery = sandbox ? 0 : clampLevel(this.debugMastery ?? achievedMastery(this.meta));
     seedFx(sandbox ? root : null);
     this.seed = root;
@@ -3585,6 +3589,8 @@ export class Game {
   }
 
   private stream() {
+    // a height that is not finite has no story: streaming waits, and the watch warns once a run (height-watch.ts)
+    if (!this.heightWatch.check(this.player.eye.y)) return;
     const s = this.storyOf(this.player.eye.y);
     if (!Number.isFinite(s) || s === this.story) return;
     this.story = s;
