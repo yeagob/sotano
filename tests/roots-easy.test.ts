@@ -153,9 +153,6 @@ describe('the easy templates (EASY-LAYOUT §2, §9.1)', () => {
     for (const id of CHANGED.filter(id => id !== 'roots-crates')) expect(needsBuilding(templateOf(id)), id).toBe(true);
   });
 
-  it('each easy template keeps its twin\'s lesson', () => {
-    for (const id of EASY_IDS) expect(templateOf(id).lesson, id).toBe(templateOf(id.replace('-easy', '')).lesson);
-  });
 });
 
 describe('a walker with no blocks crosses the easy Roots (EASY-LAYOUT §9.2)', () => {

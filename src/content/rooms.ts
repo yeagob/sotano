@@ -64,10 +64,6 @@ export interface RoomTemplate {
   ceiling?: CeilingShape;
   /** Grids of single blocks above the floor: bridges, balconies, galleries. */
   layers?: TemplateLayer[];
-  /** The lesson this room teaches on the tutorial floor (`lesson.<key>` texts). */
-  lesson?: string;
-  /** A second lesson, carved on the south tablet instead of repeating the first. */
-  lesson2?: string;
   /** Space in grid cells [east, south], 1–2 each (default [1, 1]): 13 or 28 blocks wide, 7 or 16
    *  deep. The room is one cell on the map wherever its space reaches (docs/architecture/LEVELS.md §10). */
   size?: [number, number];
@@ -678,12 +674,12 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       'ww.........ww',
     ],
   },
-  // ── the roots (floor 0): the tutorial, one lesson per room, in the order they are reached ──
+  // ── the roots (floor 0): the teaching layout, one room per cell, in the order they are reached (the book's panels hang on them) ──
   // Door approaches: rows 0/6 columns 5–7 (north, south) and columns 0/12 rows 2–4 (west, east).
   // A room "needs building" when walking alone can't join them (walkParts): trenches three wide
   // between columns, walls between rows.
   {
-    id: 'roots-hall', types: ['start'], floors: [0, 0], lesson: 'move', rows: [
+    id: 'roots-hall', types: ['start'], floors: [0, 0], rows: [
       'd...........d',
       '.~.........~.',
       '.............',
@@ -695,7 +691,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a wall of brick between you and the south door: break through it
-    id: 'roots-dig', types: ['normal'], floors: [0, 0], lesson: 'intent', weight: 3, rows: [
+    id: 'roots-dig', types: ['normal'], floors: [0, 0], weight: 3, rows: [
       '.............',
       '.............',
       '.....d.d.....',
@@ -707,7 +703,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a step two blocks high on each side: break a block, pick it up, place it, climb
-    id: 'roots-step', types: ['normal'], floors: [0, 0], lesson: 'step', weight: 3, rows: [
+    id: 'roots-step', types: ['normal'], floors: [0, 0], weight: 3, rows: [
       '.d.2.....2.d.',
       '...2.....2...',
       '...2.....2...',
@@ -719,7 +715,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a trench too wide to jump and too deep to climb: drop in and build your way out
-    id: 'roots-pit', types: ['normal'], floors: [0, 0], lesson: 'pit', weight: 3, rows: [
+    id: 'roots-pit', types: ['normal'], floors: [0, 0], weight: 3, rows: [
       'd.===...===.d',
       '..===...===..',
       '..===...===..',
@@ -731,7 +727,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // a wide trench: bridge it, one block at a time, placed against the edge in front of you
-    id: 'roots-bridge', types: ['normal'], floors: [0, 0], lesson: 'bridge', weight: 3, height: 6, rows: [
+    id: 'roots-bridge', types: ['normal'], floors: [0, 0], weight: 3, height: 6, rows: [
       '.====...====.',
       '.====.d.====.',
       '.====...====.',
@@ -743,7 +739,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // crates in the way: kick them aside or shoot them
-    id: 'roots-crates', types: ['normal'], floors: [0, 0], lesson: 'kick', rows: [
+    id: 'roots-crates', types: ['normal'], floors: [0, 0], rows: [
       '..c.c...c.c..',
       '.c.c.c.c.c.c.',
       '..c.c...c.c..',
@@ -755,7 +751,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // walls of obsidian: too hard to dig with intentions; a bomb opens them (or climb them)
-    id: 'roots-seal', types: ['normal'], floors: [0, 0], lesson: 'bomb', weight: 3, height: 6, rows: [
+    id: 'roots-seal', types: ['normal'], floors: [0, 0], weight: 3, height: 6, rows: [
       '...X.....X...',
       '.d.X.....X.d.',
       '...E.....E...',
@@ -766,7 +762,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-mend', types: ['normal'], floors: [0, 0], lesson: 'polarity', rows: [
+    id: 'roots-mend', types: ['normal'], floors: [0, 0], rows: [
       '.............',
       '.d.........d.',
       '.............',
@@ -778,7 +774,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     // shallow pools to wade through, and soil to build with
-    id: 'roots-spring', types: ['normal'], floors: [0, 0], lesson: 'water', height: 7, ceiling: 'dome', rows: [
+    id: 'roots-spring', types: ['normal'], floors: [0, 0], height: 7, ceiling: 'dome', rows: [
       'dww.......wwd',
       'ww.........ww',
       '.....www.....',
@@ -789,7 +785,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-gift', types: ['treasure'], floors: [0, 0], lesson: 'practice', height: 6, ceiling: 'vault-x', rows: [
+    id: 'roots-gift', types: ['treasure'], floors: [0, 0], height: 6, ceiling: 'vault-x', rows: [
       '.............',
       '..d.......d..',
       '....1...1....',
@@ -800,7 +796,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-door', types: ['boss'], floors: [0, 0], lesson: 'down', height: 7, ceiling: 'dome', rows: [
+    id: 'roots-door', types: ['boss'], floors: [0, 0], height: 7, ceiling: 'dome', rows: [
       '.............',
       '..d...T...d..',
       '.............',
@@ -811,11 +807,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   // ── the easy layout of the Roots (from page 2 on, docs/design/not-built/levels/roots/EASY-LAYOUT.md §2):
-  //    the six rooms that change. Each keeps its teaching twin's lesson. No weight: floor 0 is a fixed plan,
+  //    the six rooms that change. Each is carved in its cell's place (rootsRoomKey names it by its teaching twin). No weight: floor 0 is a fixed plan,
   //    and the half-need-building rule counts these as they are carved (ROOMS.md). Only cells a, b, d, e, f, g
   //    name them (TUTORIAL_CELLS.easy); the other five rooms are the same in both layouts. ──
   {
-    id: 'roots-step-easy', types: ['normal'], floors: [0, 0], lesson: 'step', rows: [
+    id: 'roots-step-easy', types: ['normal'], floors: [0, 0], rows: [
       '.d.........d.',
       '...2.....2...',
       '..121...121..',
@@ -826,7 +822,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-dig-easy', types: ['normal'], floors: [0, 0], lesson: 'intent', rows: [
+    id: 'roots-dig-easy', types: ['normal'], floors: [0, 0], rows: [
       '.............',
       '.............',
       '.....d.d.....',
@@ -837,7 +833,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-pit-easy', types: ['normal'], floors: [0, 0], lesson: 'pit', rows: [
+    id: 'roots-pit-easy', types: ['normal'], floors: [0, 0], rows: [
       'd.___...___.d',
       '.._._..._._..',
       '..___...___..',
@@ -848,7 +844,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-bridge-easy', types: ['normal'], floors: [0, 0], lesson: 'bridge', height: 6, rows: [
+    id: 'roots-bridge-easy', types: ['normal'], floors: [0, 0], height: 6, rows: [
       '._==_..._==_.',
       '._==_.d._==_.',
       '.b..b...b..b.',
@@ -859,7 +855,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-crates-easy', types: ['normal'], floors: [0, 0], lesson: 'kick', rows: [
+    id: 'roots-crates-easy', types: ['normal'], floors: [0, 0], rows: [
       '.............',
       '.cc.c...c.cc.',
       '.cc.c...c.cc.',
@@ -870,7 +866,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    id: 'roots-seal-easy', types: ['normal'], floors: [0, 0], lesson: 'bomb', height: 6, rows: [
+    id: 'roots-seal-easy', types: ['normal'], floors: [0, 0], height: 6, rows: [
       '.............',
       '.d.d.....d.d.',
       '...__...__...',

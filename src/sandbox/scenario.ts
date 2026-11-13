@@ -156,7 +156,6 @@ export function scenarioTemplate(s: Scenario): RoomTemplate {
     height: s.height ?? base?.height,
     ceiling: s.ceiling ?? base?.ceiling,
     layers: s.layers ?? base?.layers,
-    lesson: s.rows ? undefined : base?.lesson,
     size: s.rows ? undefined : base?.size,
   };
 }
