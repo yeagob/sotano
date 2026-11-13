@@ -62,8 +62,12 @@ const LESSONS = [
   { name: 'blocks', floor: 0, rows: grid(11, 9), place: [B('dirt', 2, 0, 2, 3, 1, 2), B('stone', 4, 0, 2, 5, 1, 2), B('crate', 6, 0, 2, 7, 1, 2), B('dirt', 8, 0, 2, 8, 1, 2)],
     eye: [5, 1.62, 7.5], at: [5, 1, 2],
     prep: `const m = g.missiles.launch(...W(5, 1.4, 7.5), 0, -0.04, -1, 'positive'); S.sb.step(14);` },
-  { name: 'polarity', floor: 0, hud: true, dpr: 3, clip: ['#hearts-box', '#polarity'], rows: grid(11, 9), place: [B('crate', 4, 0, 3, 6, 1, 3)],
-    eye: [5, 1.62, 7.5], at: [5, 1, 3] },
+  // a good intention (white and gold) in flight to a creature, a bad one (ember and black) to a block: the two kinds at a glance
+  { name: 'polarity', floor: 0, rows: grid(11, 9), place: [B('dirt', 3, 0, 2, 3, 1, 2)], enemies: [{ def: 'rootling', at: [5, 0, 2] }],
+    prep: `const n = (x, y, z) => { const l = Math.hypot(x, y, z); return [x / l, y / l, z / l]; };
+const [gx, gy, gz] = n(0.5, -0.9, -4.5), [bx, by, bz] = n(-0.5, -0.9, -4.5);
+g.missiles.launch(...W(4.5, 1.4, 6.5), gx, gy, gz, 'positive'); g.missiles.launch(...W(3.5, 1.4, 6.5), bx, by, bz, 'negative'); S.sb.step(12);`,
+    eye: [4, 1.62, 7.5], at: [4, 0.9, 3.5] },
   { name: 'step', floor: 0, rows: grid(11, 9), place: [B('stone', 3, 0, 2, 9, 1, 2), B('dirt', 5, 0, 3, 5, 0, 3), B('dirt', 5, 0, 6, 5, 0, 6)],
     eye: [5.5, 2.62, 6.5], at: [5.5, 1.0, 2.5] },
   { name: 'dig', floor: 0, rows: grid(9, 9), place: [B('stone', 0, 0, 3, 8, 1, 3), B('dirt', 3, 0, 3, 5, 1, 3)],
@@ -92,13 +96,14 @@ const LESSONS = [
     eye: [4.5, 1.0, 4.2], at: [4.5, 0.3, 3.2] },
   { name: 'lava', floor: 3, rows: grid(11, 9), place: [E('lava', 0, 0, 4, 4, 0, 8), E('water', 5, 0, 4, 9, 0, 8)],
     lab: { ticks: 200, actions: [] },
-    eye: [3, 2.2, 1.5], at: [4.5, 0.5, 6] },
+    eye: [4.5, 3.0, 8.2], at: [4.5, 0.2, 4.5] },
   { name: 'water', floor: 3, rows: grid(11, 9), place: [E('water', 0, 0, 0, 10, 2, 8)],
     lab: { ticks: 30, actions: [] },
-    eye: [5, 1.6, 6.5], at: [5, 1.4, 1] },
-  { name: 'sanctuary', floor: 1, rows: grid(9, 9), sanctuary: true, eye: [4.5, 1.62, 7], at: [4.5, 1, 4] },
+    eye: [5, 3.4, 7.8], at: [5, 0.6, 3] },
+  // the Sanctuary's own screen with its words hidden (hideText): the two ways to sit, not the English around them
+  { name: 'sanctuary', floor: 1, rows: grid(9, 9), sanctuary: true, hideText: '#sanctuary', eye: [4.5, 1.62, 7], at: [4.5, 1, 4] },
   { name: 'practice', floor: 0, rows: grid(9, 9).map((r, z) => z === 5 ? r.slice(0, 4) + 'T' + r.slice(5) : r), pedestal: 'grounding',
-    eye: [4.5, 1.62, 8], at: [4.5, 1.2, 5.5] },
+    eye: [4.5, 1.0, 7.4], at: [4.5, 1.0, 5] },
   { name: 'convert', floor: 1, rows: grid(9, 9), enemies: [{ def: 'doubt', at: [4, 0, 4] }],
     prep: `const e = g.enemies.list.find(x => x.def === 'doubt' && x.alive); e.warmth = 0.95; S.sb.step(1);`,
     eye: [4.5, 1.62, 7.5], at: [4.5, 0.9, 4.5] },
@@ -112,9 +117,10 @@ const LESSONS = [
   { name: 'grow', floor: 0, rows: grid(9, 9), enemies: [{ def: 'rootling', at: [4, 0, 4] }],
     prep: `const e = g.enemies.list.find(x => x.def === 'rootling' && x.alive); e.scale = 3; S.sb.step(1);`,
     eye: [4.5, 1.62, 7.5], at: [4.5, 0.9, 4.5] },
-  { name: 'way-down', floor: 0, rows: grid(9, 9), place: [C(3, -2, 3, 5, -1, 5)], toll: 1, keep: ['toll'],
-    eye: [4.5, 1.62, 7.5], at: [4.5, -1, 4] },
-  { name: 'toll', floor: 3, rows: grid(9, 9), toll: 3, keep: ['toll'], eye: [4.5, 1.62, 7.5], at: [4.5, 1, 4] },
+  // the way down itself: the hole in the floor, no window
+  { name: 'way-down', floor: 0, rows: grid(9, 9), place: [C(3, -3, 2, 5, -1, 6)], eye: [4.5, 2.2, 8], at: [4.5, -1, 4] },
+  // the toll window with its words hidden (hideText): the keys to give, not the English around them
+  { name: 'toll', floor: 3, rows: grid(9, 9), toll: 3, keep: ['toll'], hideText: '#toll', eye: [4.5, 1.62, 7.5], at: [4.5, 1, 4] },
 ];
 
 const WEBP_QUALITY = [0.9, 0.8, 0.7, 0.6, 0.5];
@@ -154,6 +160,7 @@ const setScene = job => {
   const W = (x, h, z) => [o[0] + x, o[1] + h, o[2] + z];
   if (job.prep) new Function('S', 'W', 'g', job.prep)(S, W, g);
   if (job.toll) g.hud.openToll(g, job.toll);
+  if (job.hideText) { const st = document.createElement('style'); st.textContent = `${job.hideText}, ${job.hideText} * { color: transparent !important; text-shadow: none !important; }`; document.head.appendChild(st); }
   if (job.sanctuary) g.openSanctuary(() => {});
   const [ex, ey, ez] = W(...job.eye);
   const [ax, ay, az] = W(...job.at);
