@@ -15,8 +15,8 @@
 // Portrait mode (docs/design/not-built/levels/roots/BOOK-DATA.md §4) makes the square pictures the book's
 // plates show, from the same game, with no HUD and no held hand:
 //
-//   npm run bestiary -- --portrait              the book's sandbox portraits (PORTRAITS; the sky ones are pending)
-//   npm run bestiary -- --portrait doubt rootling   the named portraits only
+//   npm run bestiary -- --portrait              the book's portraits (PORTRAITS, and the sky's SKY_PORTRAITS)
+//   npm run bestiary -- --portrait doubt rootling   the named portraits only (a sky id takes the sky route)
 //
 // The subject stands on a stone plinth (creatures and projections) in a plain room, the camera is a
 // narrow lens placed so the subject's height fills about 72 per cent of the picture, the view is
@@ -81,7 +81,7 @@ const SKY_SUBJECTS = [
   // one member of each herd (it wanders, so its `turn` is chosen by eye too)
   { id: 'herd-panda', animal: 'panda', floor: 1, role: 'minion', minDist: 2.4, turn: -Math.PI / 2 },
   { id: 'herd-koala', animal: 'koala', floor: 2, role: 'minion', minDist: 2.4, turn: Math.PI },
-  { id: 'herd-elephant', animal: 'elephant', floor: 3, role: 'minion', minDist: 3.2, turn: -Math.PI / 2 },
+  { id: 'herd-elephant', animal: 'elephant', floor: 3, role: 'minion', minDist: 3.2, turn: Math.PI / 2 },
   { id: 'herd-lion', animal: 'lion', floor: 4, role: 'minion', minDist: 2.4, turn: -Math.PI / 2 },
   { id: 'herd-horse', animal: 'horse', floor: 5, role: 'minion', minDist: 2.4, turn: Math.PI / 2 },
 ];
@@ -93,24 +93,24 @@ const PORTRAITS = ['doubt', 'critic', 'panic', 'resistance', 'inertia', 'insatia
   // pages 3 to 6 filling all 22 slots (owner, 2026-11-13)
   'second-guessing', 'margin', 'alarm', 'hoard', 'downpour', 'threshold-guardian', 'verdict', 'grudge',
   'old-rule', 'furnace', 'impostor', 'many-faces', 'shadow', 'drifter', 'huddler', 'boundary'];
-// The book's sky portraits (page 5). Portrait mode stages the sandbox only, and the sky is not in it: these are framed
-// from the sky route (SKY_SUBJECTS) once portrait mode learns it, or cropped from the bestiary's own pictures.
+// The book's sky portraits (page 5): framed in the real game from the sky route (SKY_SUBJECTS), with portrait framing.
 const SKY_PORTRAITS = ['guardian-panda', 'herd-panda', 'guardian-koala', 'herd-koala', 'guardian-elephant',
   'herd-elephant', 'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse'];
 // The portraits with no file yet: the same list as tests/book-images.test.ts (PENDING_PORTRAITS). A plate that uses one
 // draws the neutral placeholder; capture it, look at it, and remove it from both lists.
-const PENDING_PORTRAITS = [...SKY_PORTRAITS];
+const PENDING_PORTRAITS = [];
 
 const args = process.argv.slice(2);
 const portrait = args.includes('--portrait');
 const only = args.filter(a => a !== '--portrait');
-if (portrait) for (const id of (only.length === 0 ? SKY_PORTRAITS : only.filter(a => SKY_PORTRAITS.includes(a)))) console.log(`- ${id}: pending (portrait mode does not stage the sky yet)`);
+// the portraits: every book portrait (the sandbox ones and the sky ones) unless ids are named
+const wanted = portrait ? (only.length === 0 ? [...PORTRAITS, ...SKY_PORTRAITS] : only) : null;
 if (portrait) console.log(`bestiary: ${PENDING_PORTRAITS.length} portraits have no file yet`);
 const floorOf = new Map(SUBJECTS.map(([id, floor]) => [id, floor]));
 const jobs = portrait
-  ? (only.length === 0 ? PORTRAITS : only.filter(a => !SKY_PORTRAITS.includes(a))).map(id => [id, floorOf.get(id) ?? 1])
+  ? wanted.filter(id => !SKY_PORTRAITS.includes(id)).map(id => [id, floorOf.get(id) ?? 1])
   : SUBJECTS.filter(([id]) => only.length === 0 || only.includes(id));
-const skyJobs = portrait ? [] : SKY_SUBJECTS.filter(s => only.length === 0 || only.includes(s.id));
+const skyJobs = portrait ? SKY_SUBJECTS.filter(s => wanted.includes(s.id)) : SKY_SUBJECTS.filter(s => only.length === 0 || only.includes(s.id));
 if (jobs.length + skyJobs.length === 0 || (portrait && jobs.some(([id]) => !floorOf.has(id)))) { console.error('bestiary: no matching ids'); process.exit(2); }
 mkdirSync(portrait ? portraitDir : imgDir, { recursive: true });
 
@@ -245,9 +245,11 @@ async function encodeWebp(page, png) {
  * on the floor, out of the deity's sight, and the world is stepped so the creature settles into its rest; then the
  * camera moves, at a clear line to the subject, and the world is not stepped again, so the picture shows that rest.
  */
-const stageSky = ({ animal, floor, role, turn = 0, minDist = 0, settle = null }) => {
+const stageSky = ({ animal, floor, role, turn = 0, minDist = 0, settle = null, portrait = false }) => {
   const g = window.S.game, sky = g.sky, world = sky.set.world;
   g.paused = true;
+  // a portrait: the lens of the sandbox portraits (40 degrees), a square frame, and no HUD and no held hand
+  if (portrait) { g.camera.fov = 40; g.camera.updateProjectionMatrix(); }
   const plan = sky.plans.floors.find(f => f.animal === animal);
   const deity = sky.creatures.deities.find(e => e.def.animal === animal);
   if (!plan || !deity) return { error: `no sky creature for ${animal}` };
@@ -305,7 +307,7 @@ const stageSky = ({ animal, floor, role, turn = 0, minDist = 0, settle = null })
   const size = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
   // the subject's larger extent fills a share of the frame's height: more for a deity, less for a small herd member
   const tan = Math.tan(g.camera.fov * Math.PI / 360);
-  const base = size / ((role === 'deity' ? 0.6 : 0.5) * 2 * tan);
+  const base = size / ((portrait ? 0.72 : role === 'deity' ? 0.6 : 0.5) * 2 * tan);
   const feet = subject.body.y, eye = feet + 1.62;
   const solid = (x, y, z) => world.solid(Math.floor(x), Math.floor(y), Math.floor(z));
   const clear = (cx, cz) => {
@@ -333,7 +335,10 @@ const stageSky = ({ animal, floor, role, turn = 0, minDist = 0, settle = null })
   g.player.yaw = pick.side;
   g.player.pitch = Math.atan2(centre[1] - eye, pick.dist);
   if (settle) for (let i = 0; i < 600 && subject.state !== settle; i++) g.step();
-  document.querySelectorAll('#overlay, #debug, #toast').forEach(el => { el.style.display = 'none'; });
+  if (portrait) {
+    g.hands.scene.children.forEach(c => { c.visible = false; });
+    for (const el of [...document.body.children]) if (el.id !== 'game' && el.tagName !== 'SCRIPT') el.style.display = 'none';
+  } else document.querySelectorAll('#overlay, #debug, #toast').forEach(el => { el.style.display = 'none'; });
   return { size, dist: pick.dist, state: subject.state };
 };
 
@@ -342,8 +347,8 @@ const stageSky = ({ animal, floor, role, turn = 0, minDist = 0, settle = null })
  * meshed. The page can reload while the dev server optimises its dependencies, so a subject that finds the game gone
  * reopens the run and is staged again (the staging is stateless, so a second try gives the same picture).
  */
-async function captureSky(browser, url, subjects) {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+async function captureSky(browser, url, subjects, portrait) {
+  const page = await browser.newPage({ viewport: portrait ? { width: PORTRAIT_PX, height: PORTRAIT_PX } : { width: 1280, height: 720 } });
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   const open = async () => {
@@ -359,12 +364,18 @@ async function captureSky(browser, url, subjects) {
     for (let attempt = 0; attempt < 3 && !shot; attempt++) {
       try {
         if (!opened || attempt > 0) { await open(); opened = true; }
-        const framed = await page.evaluate(stageSky, s);
+        const framed = await page.evaluate(stageSky, { ...s, portrait });
         if (framed.error) throw new Error(framed.error);
         await page.waitForFunction(() => !window.S.game.sky.set.chunks.busy, null, { timeout: 120000, polling: 200 });
         await page.waitForTimeout(3000);
-        await page.screenshot({ path: join(imgDir, `${s.id}.png`) });
-        console.log(`+ ${s.id}  (subject ${framed.size.toFixed(2)} blocks at ${framed.dist.toFixed(2)}, state ${framed.state})`);
+        if (portrait) {
+          const { bytes, q } = await encodeWebp(page, await page.screenshot({ type: 'png' }));
+          writeFileSync(join(portraitDir, `${s.id}.webp`), bytes);
+          console.log(`+ ${s.id}  ${(bytes.length / 1024).toFixed(1)} KB (quality ${q}, subject ${framed.size.toFixed(2)} blocks at ${framed.dist.toFixed(2)}, state ${framed.state})`);
+        } else {
+          await page.screenshot({ path: join(imgDir, `${s.id}.png`) });
+          console.log(`+ ${s.id}  (subject ${framed.size.toFixed(2)} blocks at ${framed.dist.toFixed(2)}, state ${framed.state})`);
+        }
         shot = true;
       } catch (e) {
         if (attempt === 2) {
@@ -422,7 +433,7 @@ try {
     }
     await page.close();
   }
-  if (skyJobs.length) failed += await captureSky(browser, url, skyJobs);
+  if (skyJobs.length) failed += await captureSky(browser, url, skyJobs, portrait);
 } finally {
   await browser.close();
   await server.close();

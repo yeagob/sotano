@@ -39,10 +39,7 @@ const PENDING: Record<string, string> = {
 
 // The portraits that are not captured yet (scripts/bestiary-capture.mjs, PENDING_PORTRAITS). Each must have no file;
 // a plate using one draws the neutral placeholder until it is captured.
-const PENDING_PORTRAITS: readonly string[] = [
-  'guardian-panda', 'herd-panda', 'guardian-koala', 'herd-koala', 'guardian-elephant', 'herd-elephant',
-  'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse',
-];
+const PENDING_PORTRAITS: readonly string[] = [];
 
 /** Every `image` id of both book files. */
 function imageIds(book: { pages: { panels: Record<string, Record<string, { image?: string }>> }[] }): string[] {
