@@ -60,6 +60,17 @@ export class ItemPools {
     return id;
   }
 
+  /**
+   * A draw for the Roots' practices (REWARDS §4-§5). Like `drawRuntime` it never takes a reserved item, a held one or one
+   * in `avoid` (what the Roots already drew this run), and it stays in the band. Unlike `drawRuntime` it does NOT mark the
+   * item taken: a later floor's chests and pedestals draw from the same pool at every mastery level, and a Roots practice
+   * leaves that pool only when the player actually holds it (`remove`).
+   */
+  drawRoots(rng: Rng, band: readonly [number, number] | undefined, avoid: ReadonlySet<string>): string {
+    const inBand = (id: string) => !band || ((this.quality.get(id) ?? 0) >= band[0] && (this.quality.get(id) ?? 0) <= band[1]);
+    return this.pick('treasure', rng, id => !this.reservedIds.has(id) && !this.taken.has(id) && !avoid.has(id) && inBand(id));
+  }
+
   /** The player got this item (from anywhere): it won't be drawn again at runtime. */
   remove(id: string) { this.taken.add(id); }
 

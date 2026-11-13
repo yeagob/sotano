@@ -28,7 +28,8 @@ import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
 import { openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { mastery as achievedMastery, type Payload } from './achievements';
 import { AchievementKeeper, gainText, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
-import { drawRootsItems, spotKey } from './roots-draws';
+import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSites, type RootsSite } from './roots-draws';
+import { offerPedestal, rollChestContents } from './chest-draws';
 import { STILLNESS_TAG } from '../content/bosses/shadow';
 import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { SYNERGIES } from '../content/synergies';
@@ -89,9 +90,8 @@ import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
-import { clampLevel, CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, rootsRewards } from '../content/tables/roots-mastery';
+import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
-import { CHEST_CONTENTS, CHEST_RARE } from '../content/tables/chests';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
@@ -370,8 +370,14 @@ export class Game {
   private runMastery = 0;
   /** Debug (S.mastery): the level the next runs start with, in memory only. Null reads the save. */
   private debugMastery: number | null = null;
-  /** The practices floor 0 holds, by spot (`spotKey`), drawn at run start after the reservation (roots-draws.ts). */
-  private rootsItems = new Map<string, string>();
+  /** Floor 0's Roots pedestals (extra practices and the altar): each site, the item it shows and its pickup (roots-draws.ts). */
+  private rootsSpots: { site: RootsSite; item: string | null; again: number; pickup: Pickup | null }[] = [];
+  /** Every item the Roots drew this run (pedestals, chests, the Sanctuary): the Roots never offer one of them twice. */
+  private rootsDrawn = new Set<string>();
+  /** The Sanctuary sittings' draws of each Roots chest, one fork per chest, kept across a "not now" (roots-draws.ts). */
+  private rootsGuards = new Map<string, Rng>();
+  /** How many floor-0 hearts had their kind rolled this run: each roll takes its own fork (`rootsFork(…'heart', n)`). */
+  private rootsHearts = 0;
   /** The Roots' walls of this run (roots-keeper.ts); undefined in the sandbox. */
   private roots: RootsKeeper | undefined;
   /** Each Roots room's box and the view frustum: the walls turn only out of sight (PAGES §3). */
@@ -553,7 +559,11 @@ export class Game {
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
     // a random heart's kind reads the chances of its band: floor 0 halves the star heart, the surface keeps its numbers (REWARDS §3)
-    this.pickups.heartKind = y => rollHeart(this.rng.stream('hearts'), heartChancesOnBand(bandOf(y), floorHeartChances(this.rng, depthOf(y))), Math.max(0, depthOf(y)));
+    // a heart's kind on floor 0 takes its own fork, so the Roots' crates never move the hearts stream the floors below read
+    this.pickups.heartKind = y => rollHeart(
+      bandOf(y) === FIRST_FLOOR ? rootsFork(this.rng, 'heart', this.rootsHearts++) : this.rng.stream('hearts'),
+      heartChancesOnBand(bandOf(y), floorHeartChances(this.rng, depthOf(y))), Math.max(0, depthOf(y)),
+    );
     this.chestViews = new Chests(this.dungeonRoot);
     this.alembicViews = new Alembics(this.dungeonRoot);
     this.kitchenViews = new Kitchens(this.dungeonRoot);
@@ -584,9 +594,14 @@ export class Game {
       for (let z = r.z0 - 1; z <= r.z0 + r.d; z++) for (let y = r.y0 - 3; y <= r.y0 + r.height; y++)
         for (let x = r.x0 - 1; x <= r.x0 + r.w; x++) this.elements.wake(x, y, z);
     } else this.carve(FIRST_FLOOR);
-    // the Roots' practices are drawn now, after every pedestal of every floor has been reserved (REWARDS §4)
+    // the Roots' practices are drawn now, after every pedestal of every floor has been reserved (REWARDS §4); they never
+    // mark an item taken (roots-draws.ts)
     const roots0 = this.floors.get(FIRST_FLOOR);
-    this.rootsItems = roots0 ? drawRootsItems(this.pools, this.rng, roots0, this.runMastery) : new Map();
+    this.rootsDrawn = new Set();
+    this.rootsGuards.clear();
+    this.rootsHearts = 0;
+    const rootsItems = roots0 ? drawRootsItems(this.pools, this.rng, roots0, this.runMastery, this.rootsDrawn) : new Map<string, string>();
+    this.rootsSpots = roots0 ? rootsSites(roots0, this.runMastery).map(site => ({ site, item: rootsItems.get(site.key) ?? null, again: 0, pickup: null })) : [];
     this.activate(k);
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
@@ -623,6 +638,7 @@ export class Game {
     const r = this.inventory.gain(id);
     if (!r) return false;
     this.pools.remove(id);
+    this.reofferRoots(id);
     this.bus.emit('itemGained', { id, uid: r.instance.uid });
     this.clampHealth();
     this.hud.setItems(this.inventory.items.map(i => i.def));
@@ -859,11 +875,7 @@ export class Game {
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
     for (const bp of f.bombs) this.pickups.add('bomb', bp.x + 0.5, bp.y + 0.5, bp.z + 0.5, bp.room);
     // the Roots (REWARDS §4-5): the extra practices and the altar float over their pedestals, the loose hearts lie with their kinds
-    for (const spot of [...f.practices, ...(f.altar ? [f.altar] : [])]) {
-      const id = this.rootsItems.get(spotKey(spot));
-      const def = id ? ITEM_BY_ID.get(id) ?? null : null;
-      if (def) this.pickups.add('item', spot.x + 0.5, spot.y, spot.z + 0.5, spot.room, def);
-    }
+    if (k === FIRST_FLOOR) this.placeRootsSpots();
     for (const h of f.hearts) this.pickups.add('heart', h.x + 0.5, h.y + 0.5, h.z + 0.5, h.room, null, 0, null, h.kind);
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
     for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
@@ -905,12 +917,35 @@ export class Game {
   }
 
   private pedestalDef(p: { room: number; item: string | null }) {
-    let id = p.item;
-    if (id && (this.inventory.has(id) || this.pools.isTaken(id))) {
+    const id = offerPedestal(p.item, id => this.inventory.has(id) || this.pools.isTaken(id), () => {
       const type = this.rooms.get(p.room)?.type;
-      id = this.pools.drawRuntime(type === 'vault' || type === 'boss' ? type : 'treasure', this.rng.stream('loot'));
-    }
+      return this.pools.drawRuntime(type === 'vault' || type === 'boss' ? type : 'treasure', this.rng.stream('loot'));
+    });
     return id ? ITEM_BY_ID.get(id) ?? null : null;
+  }
+
+  /** Floor 0's Roots pedestals (extra practices and the altar) hold their practices from the moment floor 0 activates. */
+  private placeRootsSpots() {
+    for (const r of this.rootsSpots) {
+      const s = r.site.spot;
+      const def = r.item ? ITEM_BY_ID.get(r.item) ?? null : null;
+      if (def) r.pickup = this.pickups.add('item', s.x + 0.5, s.y, s.z + 0.5, s.room, def);
+    }
+  }
+
+  /**
+   * The player got `id` from somewhere: a Roots pedestal still showing it draws another practice, so no pedestal offers
+   * an item its player already holds (REWARDS §4). The taken pedestal's own pickup is not one of these.
+   */
+  private reofferRoots(id: string) {
+    for (const r of this.rootsSpots) {
+      if (!r.pickup || r.pickup.taken || r.item !== id) continue;
+      const s = r.site.spot;
+      this.pickups.take(r.pickup);
+      r.item = redrawRootsSite(this.pools, this.rng, r.site, ++r.again, this.rootsDrawn);
+      const def = ITEM_BY_ID.get(r.item) ?? null;
+      r.pickup = def ? this.pickups.add('item', s.x + 0.5, s.y, s.z + 0.5, s.room, def) : null;
+    }
   }
 
   private chestFacing(s: ChestSpec) {
@@ -1356,6 +1391,7 @@ export class Game {
     const r = this.inventory.gain(id);
     if (!r) { console.warn('Unknown item:', id, '· available:', ITEMS.map(i => i.id)); return; }
     this.pools.remove(id);
+    this.reofferRoots(id);
     const def = r.instance.def;
     this.bus.emit('itemGained', { id, uid: r.instance.uid });
     this.clampHealth();
@@ -2172,7 +2208,9 @@ export class Game {
       const floor = depthOf(y);
       // only a crate inside floor 0's band reads the Roots' factor (REWARDS §3); the surface and every other floor keep their chance
       const chance = crateChanceInBand(floorCrateChance(this.rng, floor), bandOf(y), rootsRewards(this.runMastery).crateFactor, CRATE_CHANCE_CAP);
-      const drop = rollCrate(this.rng.stream('drops'), chance, { floor, luck: this.stats.get('luck') });
+      // a crate on floor 0 takes its own fork by cell: the Roots' factor changes how many draws it makes, and the drops
+      // stream is the floors' (REWARDS §3, RNG.md)
+      const drop = rollCrate(bandOf(y) === FIRST_FLOOR ? rootsFork(this.rng, 'crate', x, y, z) : this.rng.stream('drops'), chance, { floor, luck: this.stats.get('luck') });
       if (drop) drops.push(drop);
     }
     const ev = this.bus.emit('blockLoot', { x, y, z, material, source, drops });
@@ -3105,7 +3143,7 @@ export class Game {
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
       if (s.meditation) {
         c.refused = true;
-        this.openSanctuary((outcome, meditation) => this.answerTutorialChest(c, outcome, meditation));
+        this.openSanctuary((outcome, meditation) => this.answerTutorialChest(c, outcome, meditation), 1, () => this.rootsGuard(c.spec).next());
         continue;
       }
       this.openKeyedChest(c);
@@ -3163,7 +3201,7 @@ export class Game {
 
   /** Opens the Sanctuary over the paused world and hands the mouse back to play when it closes. `rate` speeds
    *  its clock for the debug console only. */
-  openSanctuary(done: (outcome: Outcome, meditation: SequenceId) => void, rate = 1) {
+  openSanctuary(done: (outcome: Outcome, meditation: SequenceId) => void, rate = 1, guard: () => number = () => this.rng.stream('guard').next()) {
     if (this.hud.sanctuaryOpen) return;
     this.input.modal = true;
     this.input.unlockFor();
@@ -3172,7 +3210,15 @@ export class Game {
       if (this.input.device === 'keyboard') { this.input.release(); this.input.lock(); }
       else this.input.resume();
       done(outcome, meditation);
-    }, rate, () => this.rng.stream('guard').next());
+    }, rate, guard);
+  }
+
+  /** The Sanctuary sittings' random draws for a Roots chest: one fork per chest, continued across a "not now" (REWARDS §5). */
+  private rootsGuard(s: ChestSpec): Rng {
+    const key = `${s.x},${s.y},${s.z}`;
+    let g = this.rootsGuards.get(key);
+    if (!g) { g = rootsFork(this.rng, 'guard', s.x, s.y, s.z); this.rootsGuards.set(key, g); }
+    return g;
   }
 
   /** The Sanctuary closed. The quick reward draws a tier 1 or 2 practice and a finished meditation a tier 3 or
@@ -3195,7 +3241,12 @@ export class Game {
   private openSanctuaryChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, outcome: Exclude<Outcome, 'cancel'>) {
     const [lo, hi] = rewardBand(outcome);
     const maxQuality = c.spec.meditation ? 3 : hi;
-    const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), [lo, Math.min(hi, maxQuality)])) ?? null;
+    const band: [number, number] = [lo, Math.min(hi, maxQuality)];
+    // a Sanctuary on floor 0 is the Roots': its practice comes from the Roots' fork and never marks an item taken
+    const s = c.spec;
+    const def = bandOf(s.y) === FIRST_FLOOR
+      ? ITEM_BY_ID.get(drawRootsPractice(this.pools, rootsFork(this.rng, 'gift', s.x, s.y, s.z), band, this.rootsDrawn)) ?? null
+      : ITEM_BY_ID.get(this.pools.drawRuntime('treasure', this.rng.stream('loot'), band)) ?? null;
     this.openChest(c, 0, def ?? undefined);
   }
 
@@ -3233,21 +3284,15 @@ export class Game {
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
     else if (reward) out.push({ type: 'item', def: reward });
     else {
-      const rng = this.rng.stream('loot'), floor = depthOf(s.y), luck = this.stats.get('luck');
-      // a free chest of the Roots gives the draws its level sets, and its practice is drawn in the Roots' band (REWARDS §5)
-      const n = s.draws ? rng.int(s.draws.min, s.draws.max) : 1 + (rng.chance(0.4) ? 1 : 0) + (rng.chance(0.15) ? 1 : 0);
-      const band = s.draws ? [EXTRA_PRACTICE_BAND.min, EXTRA_PRACTICE_BAND.max] as const : undefined;
-      let practice = false;
-      for (let i = 0; i < n; i++) {
-        const what = CHEST_CONTENTS.roll(rng, { floor, luck }) ?? 'key';
-        const def = what === 'item' && !practice ? ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng, band)) ?? null : null;
-        if (def) { practice = true; out.push({ type: 'item', def }); }
-        else out.push({ type: what === 'item' ? 'key' : what, def: null });
-      }
-      if (!practice && rng.chance(CHEST_RARE)) {
-        const def = ITEM_BY_ID.get(this.pools.drawRuntime('treasure', rng, band)) ?? null;
-        if (def) out.push({ type: 'item', def });
-      }
+      // a free chest of the Roots draws from its own fork and its practice from the Roots' pool (REWARDS §5): it never moves
+      // the loot stream the floors below read. Any other chest draws from the loot stream as before.
+      const roots = s.draws !== undefined;
+      out.push(...rollChestContents(roots ? rootsFork(this.rng, 'open', s.x, s.y, s.z) : this.rng.stream('loot'), {
+        floor: depthOf(s.y), luck: this.stats.get('luck'), draws: s.draws,
+        practice: roots
+          ? (r, band) => ITEM_BY_ID.get(drawRootsPractice(this.pools, r, band, this.rootsDrawn)) ?? null
+          : (r, band) => ITEM_BY_ID.get(this.pools.drawRuntime('treasure', r, band)) ?? null,
+      }));
     }
     devlog.line(`chest ${cell(s.x, s.y, s.z)}: opened for ${cost} key(s), contents ${out.map(o => o.type === 'item' ? (o.def?.id ?? 'none') : o.type).join(', ') || 'nothing'}`);
     out.forEach((o, i) => this.spits.push({ t: lead + i * 0.16, run: () => {
