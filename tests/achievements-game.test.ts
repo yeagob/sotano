@@ -76,17 +76,49 @@ describe('bosses: destroyed and turned to your side (ACHIEVEMENTS §1)', () => {
     const k = session(record, store);
     k.track('bossOvercome', BOSS_DOWN, NOW);
     k.track('bossOvercome', { boss: 'verdict', floor: 3, how: 'converted' }, NOW + 1);
-    const first = k.take()!, second = k.take()!;
+    const first = k.peek()!;
+    k.confirm(first);
+    const second = k.peek()!;
+    k.confirm(second);
     expect([first.id, second.id]).toEqual(['boss.resistance.destroyed', 'boss.verdict.converted']);
     expect([first.level, second.level]).toEqual([1, 2]);
-    expect(k.take()).toBeUndefined();
+    expect(k.peek()).toBeUndefined();
+  });
+
+  it('a notice leaves the queue only when its card is confirmed: peeking, or a card cut off, keeps it', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    k.track('bossOvercome', BOSS_DOWN, NOW);
+    const card = k.peek()!;
+    expect(k.peek()).toBe(card);
+    expect(k.pending).toBe(1);
+    // the card is cut off (a restart, a death, another banner): nothing confirmed, so it is still the next card
+    expect(k.peek()).toBe(card);
+    expect(k.pending).toBe(1);
+    k.confirm(card);
+    expect(k.pending).toBe(0);
+    expect(k.peek()).toBeUndefined();
+  });
+
+  it('a late confirmation of a card that already left the queue removes nothing else', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    k.track('bossOvercome', BOSS_DOWN, NOW);
+    k.track('bossOvercome', { boss: 'verdict', floor: 3, how: 'converted' }, NOW + 1);
+    const first = k.peek()!, second = k.peek()!;
+    expect(first).toBe(second);
+    k.confirm(first);
+    const next = k.peek()!;
+    k.confirm(first);
+    expect(k.peek()).toBe(next);
+    expect(k.pending).toBe(1);
   });
 
   it('a second destruction of the same boss gives nothing: no level, no notice, no write', () => {
     const { record, store } = fresh();
     const k = session(record, store);
     k.track('bossOvercome', BOSS_DOWN, NOW);
-    k.take();
+    k.confirm(k.peek()!);
     const writes = store.writes;
     expect(k.track('bossOvercome', BOSS_DOWN, NOW + 9)).toEqual([]);
     expect(k.pending).toBe(0);
@@ -154,7 +186,9 @@ describe('stations and pages (ACHIEVEMENTS §1)', () => {
     endOfRun.track('pageReached', { page: 7 }, NOW);
     expect(endOfRun.pending).toBe(1);
     // the queue is the session's, not the run's: the next run's keeper is the same one
-    expect(endOfRun.take()?.id).toBe('book.page.7');
+    const card = endOfRun.peek();
+    expect(card?.id).toBe('book.page.7');
+    endOfRun.confirm(card!);
   });
 });
 
@@ -250,7 +284,7 @@ describe('the toll waits for an open card (ACHIEVEMENTS §4)', () => {
     const k = session(record, store);
     k.track('bossOvercome', BOSS_DOWN, NOW);
     expect(tollMayOpen(k.showable, false)).toBe(false);
-    k.take();
+    k.confirm(k.peek()!);
     expect(tollMayOpen(k.showable, false)).toBe(true);
   });
 

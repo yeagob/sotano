@@ -72,9 +72,21 @@ export class AchievementKeeper {
     return fresh;
   }
 
-  /** The next notice to show, removed from the queue; undefined when none waits. */
-  take(): AchievementNotice | undefined {
-    return this.queue.shift();
+  /**
+   * The notice to show next, still queued: it leaves the queue only when the player confirms its card (`confirm`). A card
+   * cut off before that (a restart, a death, another banner) is the same notice at the next calm moment. Undefined when
+   * none waits.
+   */
+  peek(): AchievementNotice | undefined {
+    return this.queue[0];
+  }
+
+  /**
+   * The player read the card of `notice`: it leaves the queue. Only the head of the queue can leave, so a card's late
+   * confirmation never removes another notice.
+   */
+  confirm(notice: AchievementNotice): void {
+    if (this.queue[0] === notice) this.queue.shift();
   }
 }
 

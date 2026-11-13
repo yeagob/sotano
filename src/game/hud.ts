@@ -40,7 +40,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt
 const th = (key: MessageKey, params?: Params) => esc(t(key, params));
 /** A parameter of the Presence card: text, a number, or a function that gives the text on each redraw (see presenceCard). */
 export type CardParams = Record<string, string | number | (() => string)>;
-interface CardSpec { nameKey: MessageKey; lineKeys: readonly MessageKey[]; params?: CardParams; kicker?: MessageKey }
+interface CardSpec { nameKey: MessageKey; lineKeys: readonly MessageKey[]; params?: CardParams; kicker?: MessageKey; onRead?: () => void }
 /** A heart's name in the toll window, with its quarters when it is not whole (the window's tiles show them). */
 const tollHeartLabel = (name: string, quarters: number) => (quarters >= 4 ? name : t('toll.heartPart', { name, q: quarters }));
 
@@ -517,10 +517,11 @@ export class Hud {
    * The Presence card: a name and a few lines read once, confirmed to continue (sotano-popups §2). `kicker` is an optional
    * short line above the name (the achievements' "Achievement", ACHIEVEMENTS §4). A param may be a function: it is
    * called again on every redraw, so a line that names a sentence built from other keys follows a language change.
+   * `onRead` runs only when the player confirms this card (`confirmBanner`), never when it is cut off.
    */
-  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: CardParams, kicker?: MessageKey) {
+  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: CardParams, kicker?: MessageKey, onRead?: () => void) {
     this.lastBanner = null;
-    this.lastCard = { nameKey, lineKeys, params, kicker };
+    this.lastCard = { nameKey, lineKeys, params, kicker, onRead };
     this.clearPresenceOfferState();
     this.renderCard(this.lastCard);
     this.bannerEl.classList.remove('show');
@@ -629,6 +630,17 @@ export class Hud {
     this.clearPresenceOfferState();
     this.bannerOpen = false;
     this.bannerEl.classList.remove('show');
+  }
+
+  /**
+   * The player confirmed the banner on screen: it closes, and a Presence card's `onRead` runs once (the achievement card
+   * leaves its queue only here, ACHIEVEMENTS §4). Any other close (a restart, another banner) is `dismissBanner`, which
+   * runs no `onRead`.
+   */
+  confirmBanner() {
+    const read = this.lastCard?.onRead;
+    this.dismissBanner();
+    read?.();
   }
 
   flash(color: number) {

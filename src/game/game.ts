@@ -843,7 +843,7 @@ export class Game {
     if (this.transitioning || this.gate.busy || this.restartT > 0 || this.revealT >= 0) return;
     const rs = this.roomState.get(this.room);
     if (rs?.sealed && !rs.cleared) return;
-    const n = this.keeper.take();
+    const n = this.keeper.peek();
     if (n) this.presentAchievement(n);
   }
 
@@ -854,6 +854,8 @@ export class Game {
       [`achievement.${n.id}.desc` as MessageKey, ...gain, 'achievement.card.mastery'],
       { level: n.level, gain: () => gainText(n.gains, t) },
       'achievement.card.kicker',
+      // the notice leaves the queue only when the player confirms the card; a card cut off stays queued (ACHIEVEMENTS §4)
+      () => this.keeper.confirm(n),
     );
     const b = this.player.body;
     this.particles.burst(b.x, b.y + 1.6, b.z, pal('light.gold'), 28, 2.6, 0.06);
@@ -3824,7 +3826,7 @@ export class Game {
       if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceOffer(true);
       else if (inp.hit('back')) this.resolvePresenceOffer(false);
     } else if (ctx === 'prompt' && inp.hit('confirm')) {
-      this.hud.dismissBanner();
+      this.hud.confirmBanner();
       inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }
     if (ctx === 'play' || ctx === 'paused' || ctx === 'inventory') {
