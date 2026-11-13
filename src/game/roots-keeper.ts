@@ -5,7 +5,7 @@
 
 import { ROOM_KEYS, SIDES, pageCount, panelAt, type Book, type BookLayout, type Panel, type RoomKey, type Side } from '../content/book';
 import { rootsRoomKey } from '../content/rooms';
-import { saveMeta, type LoadedMeta, type MetaStore } from './meta';
+import { adoptMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
 import { RootsBook } from './roots-book';
 
 /** The name the book gives every room that is not one of the Roots. */
@@ -105,7 +105,8 @@ export class RootsKeeper {
     if (!this.book.endRun()) return undefined;
     if (this.o.record.readOnly) return undefined;
     this.o.record.roots.page = this.book.current;
-    saveMeta(this.o.record, this.o.store);
+    const merged = saveMeta(this.o.record, this.o.store);
+    if (merged) adoptMeta(this.o.record, merged);
     return this.book.current;
   }
 

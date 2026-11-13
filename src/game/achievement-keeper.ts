@@ -14,7 +14,7 @@ import type { MessageKey } from '../i18n';
 import type { Params } from '../i18n';
 import { qualityStars } from '../render/icons';
 import { mastery, track, type Payload } from './achievements';
-import { saveMeta, type LoadedMeta, type MetaStore } from './meta';
+import { adoptMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
 
 /** One achievement earned, waiting for its card. `level` is the mastery level once it counts (1 to 100). */
 export interface AchievementNotice {
@@ -59,8 +59,11 @@ export class AchievementKeeper {
     if (r.state === before) return [];
     this.record.achievements = { ...r.state.achievements };
     this.record.counts = { ...r.state.counts };
-    saveMeta(this.record, this.store);
-    const base = mastery(before);
+    // the save merges with what the store holds now (another tab's unlocks, page), and this tab takes that over
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+    // the level before this track's unlocks, as the record now stands (the store may hold unlocks this tab did not see)
+    const base = mastery(this.record) - r.unlocked.length;
     const fresh = r.unlocked.map((def, i): AchievementNotice => {
       const level = Math.min(ACHIEVEMENT_CAP, base + i + 1);
       return { id: def.id, level, gains: gainsAt(level) };

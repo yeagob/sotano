@@ -3,7 +3,8 @@
 // A record from a newer build is read-only: it reads as the default and is never written over.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { browserStore, defaultMeta, loadMeta, resetMeta, saveMeta, type MetaState, type MetaStore } from '../src/game/meta';
+import { AchievementKeeper } from '../src/game/achievement-keeper';
+import { adoptMeta, browserStore, defaultMeta, loadMeta, resetMeta, saveMeta, type MetaState, type MetaStore } from '../src/game/meta';
 
 /** An in-memory store that remembers the last string written and counts writes. */
 function memory(initial: string | null = null): MetaStore & { value: string | null; writes: number } {
@@ -23,7 +24,8 @@ const FULL: MetaState = {
   metAt: 1234,
   roots: { page: 3 },
   achievements: { 'first-brew': 1000, 'three-sittings': 2000.5 },
-  counts: { 'three-sittings': 2 },
+  // a count only while its achievement is locked (SAVE §1): 'meditation.ground' is not unlocked here
+  counts: { 'meditation.ground': 2 },
 };
 
 const raw = (o: unknown) => JSON.stringify(o);
@@ -245,5 +247,72 @@ describe('browserStore', () => {
     expect(browserStore.read()).toBeNull();
     expect(() => browserStore.write('{}')).not.toThrow();
     expect(loadMeta(browserStore)).toEqual(DEFAULT);
+  });
+});
+
+describe('two tabs never overwrite each other (SAVE §3)', () => {
+  const NOW = 1_700_000_000_000;
+  const tab = (store: MetaStore) => loadMeta(store);
+
+  it('tab A unlocks an achievement and saves; tab B, loaded before that, advances the page and saves; the store holds both', () => {
+    const store = memory();
+    const a = tab(store), b = tab(store);
+    const keeper = new AchievementKeeper(a, store);
+    keeper.track('brew', { potion: 'x', iced: false, contents: 1, x: 0, y: 0, z: 0 }, NOW);
+    expect(Object.keys(loadMeta(store).achievements)).toContain('brew.first');
+
+    b.roots.page = 4;
+    saveMeta(b, store);
+    const stored = loadMeta(store);
+    expect(stored.roots.page).toBe(4);
+    expect(stored.achievements['brew.first']).toBe(NOW);
+  });
+
+  it('an achievement both tabs hold keeps the earlier unlock time', () => {
+    const store = memory(raw({ ...defaultMeta(), achievements: { 'a.one': 3000 } }));
+    const later = tab(store);
+    const earlier = { ...defaultMeta(), achievements: { 'a.one': 1000 } } as MetaState;
+    saveMeta(later, store);
+    saveMeta(earlier, store);
+    expect(loadMeta(store).achievements['a.one']).toBe(1000);
+  });
+
+  it('the highest page wins, and the staircase unlock is kept if either tab has it', () => {
+    const store = memory(raw({ ...defaultMeta(), staircase: true, roots: { page: 2 } }));
+    saveMeta({ ...defaultMeta(), roots: { page: 5 } }, store);
+    expect(loadMeta(store).roots.page).toBe(5);
+    expect(loadMeta(store).staircase).toBe(true);
+  });
+
+  it('a counter keeps the higher of the two counts, and is dropped once its achievement is unlocked by either tab', () => {
+    const store = memory(raw({ ...defaultMeta(), counts: { 'med.ground': 2, 'med.dusk': 1 } }));
+    saveMeta({ ...defaultMeta(), counts: { 'med.ground': 1, 'med.dusk': 2 } }, store);
+    expect(loadMeta(store).counts).toEqual({ 'med.ground': 2, 'med.dusk': 2 });
+    saveMeta({ ...defaultMeta(), achievements: { 'med.ground': 9 } }, store);
+    expect(loadMeta(store).counts).toEqual({ 'med.dusk': 2 });
+  });
+
+  it('a newer build\'s record in the store is never written over', () => {
+    const newer = raw({ v: 3, roots: { page: 9 } });
+    const store = memory(newer);
+    expect(saveMeta(FULL, store)).toBeUndefined();
+    expect(store.value).toBe(newer);
+    expect(store.writes).toBe(0);
+  });
+
+  it('a save returns the merged record it wrote, which a tab takes over', () => {
+    const store = memory(raw({ ...defaultMeta(), roots: { page: 6 }, achievements: { 'x.y': 5 } }));
+    const merged = saveMeta({ ...defaultMeta(), roots: { page: 2 } }, store);
+    expect(merged?.roots.page).toBe(6);
+    expect(merged?.achievements).toEqual({ 'x.y': 5 });
+    const mine = tab(memory());
+    adoptMeta(mine, merged!);
+    expect(mine.roots.page).toBe(6);
+  });
+
+  it('the debug reset still resets: it replaces the stored progress and does not merge it back', () => {
+    const store = memory(raw({ ...defaultMeta(), roots: { page: 6 }, achievements: { 'x.y': 5 }, counts: { 'z': 1 } }));
+    resetMeta(loadMeta(store), store);
+    expect(loadMeta(store)).toEqual(DEFAULT);
   });
 });

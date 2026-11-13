@@ -92,21 +92,71 @@ export function loadMeta(store: MetaStore = browserStore): LoadedMeta {
   }
 }
 
-/** Remembers the whole record as version 2. A read-only record is never written. If the store refuses, nothing is kept. */
-export function saveMeta(s: MetaState | LoadedMeta, store: MetaStore = browserStore): void {
-  if ((s as LoadedMeta).readOnly) return;
-  try { store.write(JSON.stringify(clean(s))); } catch { /* not remembered */ }
+/**
+ * The union of the record in the store and the one this tab holds (SAVE §3): every unlocked achievement, at the earlier
+ * of its two times; the higher page; the higher count of each counter, except those of achievements now unlocked; the
+ * staircase unlock if either has it; the earlier time of the staircase. Both inputs are clean records.
+ */
+export function mergeMeta(stored: MetaState, mine: MetaState): MetaState {
+  const achievements: Record<string, number> = { ...stored.achievements };
+  for (const [id, time] of Object.entries(mine.achievements)) {
+    achievements[id] = id in achievements ? Math.min(achievements[id], time) : time;
+  }
+  const counts: Record<string, number> = {};
+  for (const source of [stored.counts, mine.counts]) {
+    for (const [id, n] of Object.entries(source)) counts[id] = Math.max(counts[id] ?? 0, n);
+  }
+  for (const id of Object.keys(achievements)) delete counts[id];
+  const out: MetaState = {
+    v: META_VERSION,
+    staircase: stored.staircase || mine.staircase,
+    roots: { page: Math.max(stored.roots.page, mine.roots.page) },
+    achievements,
+    counts,
+  };
+  const times = [stored.metAt, mine.metAt].filter((t): t is number => t !== undefined);
+  if (times.length) out.metAt = Math.min(...times);
+  return out;
 }
 
 /**
- * Forgets the Roots: page 1, no achievements, no counts. The staircase unlock and its time are kept.
- * Writes the result unless the record is read-only. Returns the new record.
+ * Remembers the record as version 2, merged with what the store holds at this moment (SAVE §3): two tabs never overwrite
+ * each other's progress. A store holding a newer build's record is never written over, and a read-only record is never
+ * written. If the store refuses, nothing is kept. Returns the merged record now in the store, or undefined when nothing
+ * was written; the caller may take it over as its own.
+ */
+export function saveMeta(s: MetaState | LoadedMeta, store: MetaStore = browserStore): MetaState | undefined {
+  if ((s as LoadedMeta).readOnly) return undefined;
+  try {
+    const stored = loadMeta(store);
+    if (stored.readOnly) return undefined;
+    const merged = mergeMeta(clean(stored), clean(s));
+    store.write(JSON.stringify(merged));
+    return merged;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Copies a record into the one this tab holds, so the tab's later saves and unlocks see what the store holds. */
+export function adoptMeta(target: LoadedMeta, from: MetaState): void {
+  target.staircase = from.staircase;
+  if (from.metAt !== undefined) target.metAt = from.metAt; else delete target.metAt;
+  target.roots = { page: from.roots.page };
+  target.achievements = { ...from.achievements };
+  target.counts = { ...from.counts };
+}
+
+/**
+ * Forgets the Roots: page 1, no achievements, no counts. The staircase unlock and its time are kept. This is the one write
+ * that is not merged: the stored achievements and page are replaced, as the debug reset means (SAVE §4). Nothing is written
+ * over a newer build's record or from a read-only record. Returns the new record.
  */
 export function resetMeta(s: LoadedMeta, store: MetaStore = browserStore): LoadedMeta {
   const out: LoadedMeta = defaultMeta();
   out.staircase = s.staircase;
   if (s.metAt !== undefined) out.metAt = s.metAt;
-  if (s.readOnly) out.readOnly = true;
-  saveMeta(out, store);
+  if (s.readOnly || loadMeta(store).readOnly) { out.readOnly = true; return out; }
+  try { store.write(JSON.stringify(clean(out))); } catch { /* not remembered */ }
   return out;
 }

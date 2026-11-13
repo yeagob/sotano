@@ -36,15 +36,23 @@ Reading and writing never throw: blocked storage, a private window or a full quo
 ## 3. Writing
 
 - When an achievement unlocks (at once), when a count changes, and when a run ends with the page advanced.
-- `main.ts` loads the record once at start and gives the game a store and the record; the game keeps it in memory and writes the whole record through the store. Generation reads only what `newRun` is handed (the page and the mastery level at that moment), never the store.
+- `main.ts` loads the record once at start and gives the game a store and the record; the game keeps it in memory. Generation reads only what `newRun` is handed (the page and the mastery level at that moment), never the store.
+- **A save merges with the store.** Every write re-reads the store at that moment and writes the union of the two records (`mergeMeta`, `saveMeta` in `src/game/meta.ts`), so two tabs of the game never overwrite each other's progress:
+  - the unlocked achievements of both, each at the earlier of its two times;
+  - the higher page;
+  - the higher count of each counter, and a counter of an achievement now unlocked by either tab is dropped;
+  - the staircase unlock if either has it, and the earlier time of it.
+  
+  The tab takes the merged record over (`adoptMeta`), so its later unlocks see what the store holds. A stored record of a newer build still makes the write refuse, and a read-only record is never written.
 - The sandbox and the lab use an in-memory record that is never written.
+- **The debug page is not saved.** `S.roots(n)` (the console) sets an in-memory override of the page the next run starts on (`startPage`, roots-keeper.ts). The record is never changed by it, and a run started on it advances nothing, so no debug page reaches the store.
 
 ## 4. Reset
 
-- **Forget the Roots**, in the debug console: `S.meta.reset()` writes the default record (page 1, no achievements, no counts) and keeps the staircase unlock, which already has its own console command (owner, 2026-11-03).
+- **Forget the Roots**, in the debug console: `S.meta.reset()` writes the default record (page 1, no achievements, no counts) and keeps the staircase unlock, which already has its own console command (owner, 2026-11-03). The reset is the one write that is not merged: it replaces the stored progress, as a reset means. It still writes nothing over a newer build's record.
 - A player-facing reset (a "forget my progress" entry with a confirmation) is not part of #147: [open question 11](../levels/roots/OPEN-QUESTIONS.md).
 - Clearing the browser's site data forgets everything, as today.
 
 ## 5. Tests
 
-Round trip of every field; the version 1 migration; each broken field read on its own; broken JSON; the read-only newer version (a write is refused); a store that throws on read and on write; the reset keeping the staircase.
+Round trip of every field; the version 1 migration; each broken field read on its own; broken JSON; the read-only newer version (a write is refused); a store that throws on read and on write; the reset keeping the staircase; two tabs (an unlock in one, a page in the other, both in the store); the merge rules (earlier unlock time, higher page, higher counts dropped when unlocked, staircase either way); the debug page never reaching the store (`tests/roots-book-game.test.ts`).
