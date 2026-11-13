@@ -17,20 +17,23 @@ const SERIF = 'Georgia, "Times New Roman", serif';
 export function carvePageStone(g: CanvasRenderingContext2D, page: number) {
   const S = STONE_PX;
   carveSlab(g, `page-stone-${page}`, S, S, 12, 6);
+  // the number is measured first: its glyph box is centred on the face (a line box would sit low), and the
+  // gold diamond sits a gap above the number's top
+  const text = String(page);
+  const fit = fitLine(text, S - 64, { from: 132, to: 64, step: 4 }, (s, px) => { g.font = `bold ${px}px ${SERIF}`; return g.measureText(s).width; });
+  g.font = `bold ${fit.px}px ${SERIF}`;
+  const m = g.measureText(text);
+  const base = S / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  const cx = S / 2, r = 16, cy = base - m.actualBoundingBoxAscent - 22 - r;
   // the gold diamond above the number
-  const cx = S / 2, cy = 58, r = 16;
   g.fillStyle = palCss('light.gold');
   g.beginPath(); g.moveTo(cx, cy - r); g.lineTo(cx + r, cy); g.lineTo(cx, cy + r); g.lineTo(cx - r, cy); g.closePath(); g.fill();
   g.save(); g.globalAlpha = 0.35; g.fillStyle = palCss('light.dusk');
   g.beginPath(); g.moveTo(cx - r, cy); g.lineTo(cx + r, cy); g.lineTo(cx, cy + r); g.closePath(); g.fill();
   g.restore();
-  // the number, cut deep: as large as fits in the face
-  const text = String(page);
-  const fit = fitLine(text, S - 64, { from: 132, to: 64, step: 4 }, (s, px) => { g.font = `bold ${px}px ${SERIF}`; return g.measureText(s).width; });
-  g.font = `bold ${fit.px}px ${SERIF}`;
+  // the number, cut deep: as large as fits in the face, centred on it
   g.textAlign = 'center';
   g.textBaseline = 'alphabetic';
-  const base = 214;
   g.save(); g.globalAlpha = 0.55; g.fillStyle = palCss('limestone.hi'); g.fillText(text, cx + 2, base + 3); g.restore();
   g.fillStyle = palCss('ink.line'); g.fillText(text, cx, base);
   g.textAlign = 'left';
