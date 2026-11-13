@@ -114,7 +114,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 - **Deterministic.** Floor 0 depends only on the seed and the level.
 - **Only the Roots.** Floors 1 to 9, the sky and the surface are identical at every mastery level for a given seed, because every new Roots practice is a runtime draw made after the whole reservation, and every other new decision draws from a new `floor/0/roots/*` fork.
 - **`pedestalSlots` stays as it is.** The reservation of every pedestal of every floor is what it was: the way-down pedestal does not scale, so the reservation, and with it every deeper floor's practices for a given seed, is the same at every mastery level. The treasure room's slot is still reserved and unused (the Sanctuary chest draws when it opens); it is left alone so the reservation order does not move.
-- **`GEN_VERSION` still goes up by one**, because floor 0 itself changes for a given seed (level 0 lays one key or one bomb instead of both, and the new forks place new things); the levels skill asks for a bump whenever a random decision is added. Floors 1 to 9 replay identically.
+- **`GEN_VERSION` goes up by one, to 28** (main is 27; the easy layout of the Roots adds no bump, see [EASY-LAYOUT](EASY-LAYOUT.md)), because floor 0 itself changes for a given seed (level 0 lays one key or one bomb instead of both, and the new forks place new things); the levels skill asks for a bump whenever a random decision is added. Floors 1 to 9 replay identically.
 - **Generation never reads the save.** `main.ts` loads the record once and hands the level to the game; `newRun` passes it to the carving of floor 0. A level earned during a run takes effect at the next run.
 
 ## 7. What each step says
