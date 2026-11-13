@@ -1,29 +1,29 @@
 # What the Roots give, by mastery level
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147: decision 9, and the corrections of 2026-11-12: level 0 gives exactly one key or one bomb; "five times lower" is the chance a crate gives anything; the Roots' two practices of today never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 40, the four page achievements being added on the same day; step lines in stars). Owner, 2026-11-12, later the same day: **star hearts are halved** (of little use in the Roots): only the first star heart is ever laid, and the step that would give a second gives a second blood heart; a repeated heart kind has its own line ("One more … heart", §7); the free chests draw three to five from level 70. The exact numbers are a proposal. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
+Up: [the Roots](README.md) · Status: built (issue #147; the table is `src/content/tables/roots-mastery.ts`). The rules are the owner's: decision 9 of issue #147, and the corrections of 2026-11-12: level 0 gives exactly one key or one bomb; "five times lower" is the chance a crate gives anything; the Roots' two practices never change; an extra guaranteed practice from level 10 and a second from level 25; steps through level 40, the four page achievements being added on the same day; step lines in stars). Owner, 2026-11-12, later the same day: **star hearts are halved** (of little use in the Roots): only the first star heart is ever laid, and the step that would give a second gives a second blood heart; a repeated heart kind has its own line ("One more … heart", §7); the free chests draw three to five from level 70. Mastery itself is in [MASTERY](../../progression/MASTERY.md).
 
 The Roots read one number when a run starts: the mastery level, 0 to 100. Everything below is a pure function of that level and the run's seed. It changes only floor 0's own sources; every other floor, and the surface, keep their numbers.
 
-## 1. What exists today
+## 1. What the Roots lay
 
-| Source | Today (`src/world/floor.ts`, `src/content/tables/`) | With mastery |
+| Source | At level 0 (`src/world/floor.ts`, `src/content/tables/`) | With mastery |
 |---|---|---|
 | The Sanctuary chest (`roots-gift`) | Free, under the Boundary. Quick reward: a practice of ★ to ★★; a finished meditation: ★★★ (the ★★★ to ★★★★ band capped at ★★★ on the Roots) | **Unchanged at every level** |
 | The way-down pedestal (`roots-door`) | A practice of up to ★★★★ from the treasure pool, reserved at run start (`pedestalSlots`) | **Unchanged at every level** |
-| Loose loot | Always one key and one bomb, each on a free tile of a lesson room (`floor/0/loot` fork) | Level 0: exactly one key **or** one bomb; both from level 1, more later |
+| Loose loot | One key **or** one bomb, on a free tile of a lesson room (`floor/0/roots/oneof`, `…/key`, `…/bomb`) | From level 1 the table's counts, more later |
 | Crates | The 28 crates of `roots-crates`. A broken crate gives something with the floor's chance, drawn per seed uniformly in **0.10 to 0.30** (`CRATE_DROP` 0.3, `CRATE_DROP_MIN` 0.1, `floorCrateChance`); a key (3), a heart (3) or a bomb (2) by weight. Crates never hold practices | The chance times a factor: level 0 is five times lower |
 | Hearts, chests, extra practices | None | Grow with the level |
 | The player | Starts every run with one bomb | Unchanged |
 
-"Poorer at level 0" applies only to the loose loot and the crates of the lesson rooms; the two practices of the Roots are what they are today.
+"Poorer at level 0" applies only to the loose loot and the crates of the lesson rooms; the two practices of the Roots are the same at every level.
 
 ## 2. The table
 
-Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (40 achievements exist today). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
+Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (40 achievements exist). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
 
 | Level | What the Roots gain | Keys | Bombs | Hearts lying loose | Free chests | Crate factor | Extra practices |
 |---|---|---|---|---|---|---|---|
-| **0** | Poorer than today | one key **or** one bomb | | none | 0 | 0.2 | 0 |
+| **0** | Poorest | one key **or** one bomb | | none | 0 | 0.2 | 0 |
 | 1 | A key and a bomb both | 1 | 1 | | | | |
 | 2 | Crates give more | | | | | 0.3 | |
 | 3 | A red heart | | | red | | | |
@@ -73,7 +73,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 ### At a glance
 
-| Level | The floor (besides today's Sanctuary chest and way-down pedestal, always there) |
+| Level | The floor (besides the Sanctuary chest and way-down pedestal, always there) |
 |---|---|
 | 0 | One key or one bomb; crates give something 2 to 6% of the time |
 | 5 | A key, a bomb, a red heart, one free chest; crates 4–12% |
@@ -88,12 +88,12 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 ## 3. Crates
 
-- The crate chance on floor 0 is `min(0.75, base × factor)`, where `base` is today's per-seed chance of floor 0 (0.10 to 0.30, unchanged) and `factor` is the table's crate factor.
-- **Level 0: factor 0.2, five times lower than today**: a crate gives anything 2 to 6% of the time.
+- The crate chance on floor 0 is `min(0.75, base × factor)`, where `base` is the per-seed chance of floor 0 (0.10 to 0.30, unchanged) and `factor` is the table's crate factor.
+- **Level 0: factor 0.2, five times lower**: a crate gives anything 2 to 6% of the time.
 - From level 41: `factor = 1.3 + 0.02 × (level − 40)`, so 1.5 at 50 and 2.5 at 100.
 - The cap 0.75 keeps a crate from always giving: at level 100 the chance is 0.25 to 0.75.
-- What a crate gives is unchanged (key, heart or bomb by today's weights and luck; a heart's kind by the floor's heart chances). Crates never hold practices.
-- **Only crates broken inside floor 0's band** read the factor. Crates above the Roots (the surface counts as depth 0 for crates today) keep floor 0's base chance without it.
+- What a crate gives is unchanged (key, heart or bomb by the floor's weights and luck; a heart's kind by the floor's heart chances). Crates never hold practices.
+- **Only crates broken inside floor 0's band** read the factor. Crates above the Roots (the surface counts as depth 0 for crates) keep floor 0's base chance without it.
 - The crates are the 28 of `roots-crates`. No crate is added. In the easy layout (page 2 on) the same 28 stand stacked aside in `roots-crates-easy` ([EASY-LAYOUT](EASY-LAYOUT.md)); their count and the factor do not change.
 
 ## 4. The extra practices, the altar and the second Sanctuary
@@ -113,7 +113,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 - **Monotonic.** For every level L, everything at L + 1 is at least what it is at L.
 - **Deterministic.** Floor 0 depends only on the seed and the level.
 - **Only the Roots.** Floors 1 to 9, the sky and the surface are identical at every mastery level for a given seed, because every new Roots practice is a runtime draw made after the whole reservation, and every other new decision draws from a new `floor/0/roots/*` fork.
-- **`pedestalSlots` stays as it is.** The earlier draft took the Roots' two slots out of the reservation so that a scaled way-down pedestal could not change deeper floors. The way-down pedestal no longer scales, so the reservation, and with it every deeper floor's practices for a given seed, stays exactly as today. The treasure room's slot is still reserved and unused (the Sanctuary chest draws when it opens); it is left alone so the reservation order does not move.
+- **`pedestalSlots` stays as it is.** The reservation of every pedestal of every floor is what it was: the way-down pedestal does not scale, so the reservation, and with it every deeper floor's practices for a given seed, is the same at every mastery level. The treasure room's slot is still reserved and unused (the Sanctuary chest draws when it opens); it is left alone so the reservation order does not move.
 - **`GEN_VERSION` still goes up by one**, because floor 0 itself changes for a given seed (level 0 lays one key or one bomb instead of both, and the new forks place new things); the levels skill asks for a bump whenever a random decision is added. Floors 1 to 9 replay identically.
 - **Generation never reads the save.** `main.ts` loads the record once and hands the level to the game; `newRun` passes it to the carving of floor 0. A level earned during a run takes effect at the next run.
 

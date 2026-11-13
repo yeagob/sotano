@@ -1,53 +1,12 @@
-# The Roots as an evolving tutorial and a hidden book
+# The Roots: what is still open
 
-Up: [not-built levels](../README.md) · Status: decided (the owner's decisions on issue #147, 2026-11-12), with the parts marked *proposal* awaiting the owner. What is built today is in [built/levels/floors/ROOTS.md](../../../built/levels/floors/ROOTS.md).
-
-The Roots (floor 0) keep their eleven rooms, their plan and their doors for ever. Their shape changes once: while the player is on page 1 the rooms hold their exercises (the **teaching layout**); from page 2 on, every run is carved in the **easy layout**, the same rooms with the work already done, crossed on foot with no block to place or break ([EASY-LAYOUT](EASY-LAYOUT.md); owner, 2026-11-12, replacing the earlier rule that the geometry never changes). What changes besides is what their walls say and what the floor gives. The walls turn **pages**: six pages of tutorial, then the first pages of a **hidden book**. The page moves on by one each time a run ends after the player has walked every room of the Roots. A full lap of the ring, forward or in reverse, lets the player leaf through the pages already reached. Separately, the Roots have a **mastery level** (0 to 100, one level per achievement, see [progression](../../progression/README.md)) that makes the floor richer: its loose loot and crates start poorer than today, the two practices it offers today never change, and close to 100 it prepares a well-equipped player.
-
-The game should be one a parent is glad to see a child play, that an adult can use to know themselves and to rest, and that is simply fun. The Roots are where that promise is made: every panel is short, warm and concrete, and true to what the room holds.
-
-## Documents
+Up: [not-built levels](../README.md) · Status: open. The Roots' book, its two layouts and the mastery table are built: see [built/levels/roots](../../../built/levels/roots/README.md). This folder keeps only what is not built or not decided.
 
 | Document | Contents | Status |
 |---|---|---|
-| [PAGES.md](PAGES.md) | The page counter, when it advances, browsing by laps of the ring, the rule that keeps a change out of sight, the page stone | decided |
-| [EASY-LAYOUT.md](EASY-LAYOUT.md) | The second layout of the Roots from page 2 on: the six changed templates, free tiles for the rewards, the remembered panels and their texts, the panel mounts, the carve option, the tests | decided (templates and texts: proposal) |
-| [PANELS.md](PANELS.md) | The four layouts (lesson, plate, prose, quote) on the 896 × 512 slab, exact geometry, character budgets, key caps, where each panel hangs | decided (geometry: proposal) |
-| [BOOK-DATA.md](BOOK-DATA.md) | The two JSON files, every field, the validation rules, the image ids and which are new captures | decided |
-| [TUTORIAL-PAGES.md](TUTORIAL-PAGES.md) | The six tutorial pages, slot by slot, and why each slot says what it says | proposal |
-| [HIDDEN-BOOK.md](HIDDEN-BOOK.md) | The first three pages of the hidden book (pages 7 to 9) and page 7's quotation | proposal, awaiting the owner |
-| [REWARDS.md](REWARDS.md) | What the Roots give at each mastery level, 0 to 100, and what stays as it is everywhere else | decided (numbers: proposal) |
-| [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) | The work in ordered packages for coding agents, with files, tests and the definition of done | proposal |
-| [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | What the owner's decisions leave open, each with the default the design uses | open |
+| [HIDDEN-BOOK.md](HIDDEN-BOOK.md) | The first three pages of the hidden book (pages 7 to 9) and page 7's quotation. The pages are in the book files; their words are the owner's to approve | proposal, awaiting the owner |
+| [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | The questions the owner's decisions leave open, each with the default that is built | open |
+| [PENDING.md](PENDING.md) | The lesson pictures not captured yet, the achievements still to define (issue #179), the names awaiting the owner | open |
+| [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) | A short record of the work of issue #147: what was built, what is left | record |
 
-The achievements, the mastery level and the save record are not specific to the Roots; they are in [progression](../../progression/README.md).
-
-## The eleven rooms (shared by every document here)
-
-The plan is `TUTORIAL_LAYOUT` (`src/world/floorplan.ts`) with one template per cell (`TUTORIAL_CELLS`, `src/content/rooms.ts`). Every document and the book files name a room by its **room key**: the template id of its cell in the teaching layout. In the easy layout six cells carve another template (`roots-step-easy`…), but the room keeps its key ([EASY-LAYOUT §7](EASY-LAYOUT.md#7-how-the-layout-is-chosen)). The exercises below are the teaching layout's.
-
-| Cell | Room key (template) | Grid (x, z) | Exercise it holds | Doors |
-|---|---|---|---|---|
-| S | `roots-hall` | (3, 5) | The start: the spawn, facing north | W, E, S |
-| a | `roots-step` | (4, 5) | Two-high brick walls: build a step and climb | W, N |
-| b | `roots-dig` (flipped north–south) | (4, 4) | A full-height brick wall with a dirt plug between you and the north door | S, N |
-| c | `roots-mend` | (4, 3) | An open room with dirt blocks to crack and mend | S, N |
-| d | `roots-pit` | (4, 2) | Two trenches, too wide to jump and too deep to climb | S, W |
-| e | `roots-bridge` | (3, 2) | Two wide trenches to bridge, block by block | E, W |
-| f | `roots-seal` | (2, 2) | Obsidian walls with dirt plugs: dig, climb or break through | E, S |
-| g | `roots-crates` | (2, 3) | Twenty-eight crates | N, S |
-| h | `roots-spring` | (2, 4) | Shallow pools under a dome | N, S |
-| T | `roots-gift` | (2, 5) | The Sanctuary chest with the Boundary over it | N, E |
-| B | `roots-door` | (3, 6) | The way down and its pedestal | N |
-
-**The ring** is the ten rooms S, a, b, c, d, e, f, g, h, T, each joined to the next by a door, and T joined back to S. **Forward** is the order the lessons were made to be read in: from the start room east into the step room, north up the east side, west along the top, south down the west side to the treasure room and back east into the start room (`roots-hall → roots-step → roots-dig → roots-mend → roots-pit → roots-bridge → roots-seal → roots-crates → roots-spring → roots-gift → roots-hall`). On the map, with north up, that is anticlockwise. **Reverse** is the other way. The way down (B) is a spur off the start room and is not on the ring.
-
-## Words used here
-
-- **Page**: one entry of the book files; its number is its position (page 1 is the first entry).
-- **Current page**: the page the player has reached; saved between runs.
-- **Shown page**: the page the walls show in this run. It starts as the current page and changes only by browsing.
-- **Slot**: one of the 22 panels (11 rooms × north and south).
-- **Lesson wall**: the wall a player walking forward faces on entering a room. It holds the room's lesson on pages 1 and 2 ([PANELS.md](PANELS.md#7-which-wall-holds-the-lesson)); in the easy layout, a lesson whose exercise is gone is told as a remembered panel ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)). Pages 3 to 6 fill every slot, the lesson walls included: there it is simply the wall read first ([BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)).
-- **Teaching layout, easy layout**: the two shapes of the Roots. The teaching layout is carved while the current page is 1, the easy layout for every run that starts on page 2 or later ([EASY-LAYOUT](EASY-LAYOUT.md)).
-- **Mastery level**: the number of achievements unlocked, at most 100 ([MASTERY](../../progression/MASTERY.md)).
+The achievements still to define are in [PENDING.md](PENDING.md#achievements-still-to-define); the mastery level, the achievements that ship and the save are in [built/progression](../../../built/progression/README.md).

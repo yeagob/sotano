@@ -352,3 +352,33 @@ describe('the debug page (S.roots) is an override that never reaches the save', 
     expect(Object.keys(loadMeta(a.store).achievements)).toContain('brew.first');
   });
 });
+
+// The whole flow of the Roots in one chain. The lab cannot carve the Roots (its rooms are sealed, with no floor plan,
+// and it moves the player by teleport only: docs/architecture/SANDBOX.md §6), so this test is the chain's record.
+describe('the whole flow in one chain: walk, die, the next run on page 2, a reverse lap', () => {
+  it('a full walk of page 1 and a death put the walls on page 2 in the easy layout; a reverse lap turns the far walls to page 1 and keeps the remembered panels', () => {
+    const first = openAt(1);
+    expect(first.keeper.variant).toBe('teaching');
+    walk(first.keeper, floor0(false), FULL);
+    expect(first.keeper.endRun()).toBe(2);
+
+    const next = openRoots(false, { record: loadMeta(first.store), store: first.store, book: () => book, images: { preloadPage: () => Promise.resolve() }, inView: () => false })!;
+    expect(next.current).toBe(2);
+    expect(next.shown).toBe(2);
+    expect(next.variant).toBe('easy');
+    const onPage2 = recorder();
+    next.update(onPage2.sink);
+    expect(onPage2.calls).toHaveLength(22);
+    expect(last(onPage2.calls, 'roots-dig', 'south')!.id).toBe('easy-dig-s');
+
+    walk(next, floor0(true), LAP_BACK);
+    expect(next.shown).toBe(1);
+    const turned = recorder();
+    next.update(turned.sink);
+    const far = last(turned.calls, 'roots-crates', 'north');
+    expect(far, 'the far wall turned').toBeDefined();
+    expect(far!.page).toBe(1);
+    expect(far!.id).toBe(panelAt(book, 1, 'roots-crates', 'north', 'easy').id);
+    expect(last(turned.calls, 'roots-dig', 'south')!.id).toBe('easy-dig-s');
+  });
+});

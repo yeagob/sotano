@@ -7,7 +7,7 @@ description: The Roots' book and its wall panels. Use it EVERY time a wall panel
 
 The eleven rooms of the Roots (floor 0) carry **22 stone panels**, a north and a south one per room. Together they are a book: pages 1 to 6 teach the game, and from page 7 the walls show the **hidden book**, the game's own voice. Everything a panel says is data in two JSON files, checked by a validator; the renderer carves it into the stone.
 
-Design, for depth (all in `docs/design/not-built/levels/roots/`): [BOOK-DATA](../../../docs/design/not-built/levels/roots/BOOK-DATA.md) (the files, fields, images, key caps, validation), [PANELS](../../../docs/design/not-built/levels/roots/PANELS.md) (the look, §5 budgets), [PAGES](../../../docs/design/not-built/levels/roots/PAGES.md) (advance, laps, out of sight, the page stone), [TUTORIAL-PAGES](../../../docs/design/not-built/levels/roots/TUTORIAL-PAGES.md), [HIDDEN-BOOK](../../../docs/design/not-built/levels/roots/HIDDEN-BOOK.md), [EASY-LAYOUT](../../../docs/design/not-built/levels/roots/EASY-LAYOUT.md).
+Design, for depth (built in `docs/design/built/levels/roots/`; what is still open in `docs/design/not-built/levels/roots/`): [BOOK-DATA](../../../docs/design/built/levels/roots/BOOK-DATA.md) (the files, fields, images, key caps, validation), [PANELS](../../../docs/design/built/levels/roots/PANELS.md) (the look, §5 budgets), [PAGES](../../../docs/design/built/levels/roots/PAGES.md) (advance, laps, out of sight, the page stone), [TUTORIAL-PAGES](../../../docs/design/built/levels/roots/TUTORIAL-PAGES.md), [HIDDEN-BOOK](../../../docs/design/not-built/levels/roots/HIDDEN-BOOK.md), [EASY-LAYOUT](../../../docs/design/built/levels/roots/EASY-LAYOUT.md).
 
 ## 1. How the book works for the player
 

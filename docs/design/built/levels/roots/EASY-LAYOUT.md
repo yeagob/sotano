@@ -1,8 +1,8 @@
 # The easy layout: the Roots after the first page
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, 2026-11-12: "from the second lap, that is, from page 2 on, the layout of the Roots does change, one single time; easy to walk through, no complicated obstacles, only simple jumps, no need to place or break any cube to get through"). The templates, the panel rule and the texts below are a proposal.
+Up: [the Roots](README.md) · Status: built (issue #147). The owner's rule of 2026-11-12 (the layout of the Roots changes once, from page 2 on): "from the second lap, that is, from page 2 on, the layout of the Roots does change, one single time; easy to walk through, no complicated obstacles, only simple jumps, no need to place or break any cube to get through"). The templates, the panel rule and the texts below are built. The owner's open words on them are in [OPEN-QUESTIONS](../../../not-built/levels/roots/OPEN-QUESTIONS.md), questions 19 to 25.
 
-The Roots have exactly **two layouts** of the same eleven rooms on the same plan. The **teaching layout** (today's rooms, with their exercises) is carved while the current page is 1. The **easy layout** is carved for every run that starts on page 2 or later. It replaces the earlier rule that the Roots' geometry never changes. The reason is plain: from page 2 the player walks the whole ring every run to turn the page, and must not redo eleven exercises each time.
+The Roots have exactly **two layouts** of the same eleven rooms on the same plan. The **teaching layout** (the rooms with their exercises) is carved while the current page is 1. The **easy layout** is carved for every run that starts on page 2 or later. It replaces the earlier rule that the Roots' geometry never changes. The reason is plain: from page 2 the player walks the whole ring every run to turn the page, and must not redo eleven exercises each time.
 
 The easy rooms are not empty boxes. Each keeps the trace of its lesson, worked: the wall is down to a low stub with the gap where its plug was, the trenches are filled to shallow dips with a causeway across, the bridge stands, the crates are stacked aside, the seal is a ring of dirt heaps and blast craters. The meaning is *you did the work, and the way is open now* (concepts: **The obstacle is the way**, **Repair**, [CONCEPTS](../../../../lore/CONCEPTS.md)).
 
@@ -131,7 +131,7 @@ The six were run through the real `validateTemplate` (no errors), `needsBuilding
 - **Seal** (doors E, S). No obsidian at all. Where the two walls stood, a dirt heap in rows 1 and 5 (the dirt of the plugs), and between them a shallow crater (`_`, one deep) where the seal burst, wider in the middle row. Rows 0 and 6 are clear.
 - **Crates** (doors N, S). The same 28 one-high crates, all of them still breakable and still the room's crates for the mastery factor ([REWARDS §3](REWARDS.md#3-crates)), stacked in two neat stores in the west and east thirds. The middle aisle (columns 5 to 7), every door approach and rows 0 and 6 are clear. Crates are one block high, so a player can also walk over the stores.
 
-The hall, the mend room, the spring, the treasure room and the way-down room need nothing: none of them asks a block to be placed or broken today.
+The hall, the mend room, the spring, the treasure room and the way-down room need nothing: none of them asks a block to be placed or broken.
 
 The art gate applies (`sotano-art`): no new block, texture or colour is introduced (brick trim, dirt, crate, floor and dips already exist on floor 0), but each easy room is captured in `?gallery` or the lab in colour and greyscale and passes the meaning test before it ships.
 
@@ -139,7 +139,7 @@ The art gate applies (`sotano-art`): no new block, texture or colour is introduc
 
 Everything floor 0 lays by mastery ([REWARDS §4–§5](REWARDS.md#4-the-extra-practices-the-altar-and-the-second-sanctuary)) takes free tiles of the eight lesson rooms (`freeByRoom`), and the altar and the second Sanctuary take a free tile of the start room and of the way-down room (`freeIn`). The easy layout changes none of that code; it only changes how many free tiles each lesson room offers.
 
-- **The eight easy lesson rooms offer 256 free tiles** (32 + 42 + 48 + 20 + 16 + 32 + 36 + 30), against 240 today.
+- **The eight easy lesson rooms offer 256 free tiles** (32 + 42 + 48 + 20 + 16 + 32 + 36 + 30), against 240 in the teaching layout.
 - **The table's maximum fits many times over.** Level 100 lays 6 keys, 5 bombs, 11 hearts, 6 free chests and 2 extra-practice pedestals on lesson-room tiles: 30 tiles, at most one free chest and one pedestal per room (6 and 2 of 8 rooms). The smallest easy room (`roots-bridge-easy`) has 16 tiles. The altar has 44 tiles in the start room, the second Sanctuary 48 in the way-down room; both rooms are unchanged.
 - **Every free tile is reachable on foot**, because every tile of every easy room reaches every door (§2). A chest, a pedestal or a heart on a free tile never seals anything: chests, pedestals and crates are one block high and stood on like any step.
 - **The Sanctuary chest and the way-down pedestal** sit on the `T` markers of `roots-gift` and `roots-door`, which do not change.
@@ -156,7 +156,7 @@ Which panel a slot shows, for a page *n* and a layout:
 2. Otherwise, in the easy layout, the slot's remembered panel, if it has one.
 3. Otherwise, page 1's panel.
 
-So the remembered layer sits between page 1 and every later page. Page 2 does not fill the four lesson-wall slots, so they show the remembered panel there; pages 3 to 6 fill all 22 slots (owner, 2026-11-13, [BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)), so on them no remembered panel shows. The step room's south slot is a plate-wall slot: pages 2 to 6 fill it with their own panel. A remembered panel therefore shows only on page 1 browsed back to in the easy rooms, on page 2 (the four lesson walls) and on the book pages (7 on) that leave its slot out. In the teaching layout nothing changes: a missing slot shows page 1's panel, as today.
+So the remembered layer sits between page 1 and every later page. Page 2 does not fill the four lesson-wall slots, so they show the remembered panel there; pages 3 to 6 fill all 22 slots (owner, 2026-11-13, [BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)), so on them no remembered panel shows. The step room's south slot is a plate-wall slot: pages 2 to 6 fill it with their own panel. A remembered panel therefore shows only on page 1 browsed back to in the easy rooms, on page 2 (the four lesson walls) and on the book pages (7 on) that leave its slot out. In the teaching layout nothing changes: a missing slot shows page 1's panel.
 
 The remembered slots: `roots-dig` south, `roots-pit` north, `roots-bridge` north, `roots-seal` south (the four lesson walls whose exercise is gone) and `roots-step` south (the page-1 text that tells the player to "set it by the wall, climb"). The step room's lesson wall (north, "Good and bad"), the hall, mend, crates, spring, gift and door lessons all stay true in the easy layout, and stay as they are.
 
@@ -164,7 +164,7 @@ The remembered slots: `roots-dig` south, `roots-pit` north, `roots-bridge` north
 
 The book files gain one optional top-level object, `easy`, beside `pages`: room key → side → panel, with the same panel schema as a page (`lesson` layout, budgets, key, image, id). Its panel ids are `easy-<room>-<side>`. Validation: only rooms and sides that exist; the same slots in both languages; every panel passes the rules of a tutorial page panel. `panelAt` takes the layout as a fifth argument (default teaching). The images are page 1's own captures: they show how the work was done, which is what a memory shows. Nothing else in the files changes; the existing texts of pages 1 to 9 stay word for word.
 
-The proposed slots (English, `book.en.json`):
+The slots (English, `book.en.json`):
 
 ```json
 "easy": {
@@ -212,7 +212,7 @@ Every panel hangs at the **standard mount** in every room: the north panel on th
 | `roots-gift` | standard | standard | unchanged |
 | `roots-door` | standard | standard | unchanged |
 
-A one-high block in row 0 or row 6 under a panel (the dirt corners of the hall, the step and the pit) covers only the slab's bottom 0.05 blocks, inside its border; this is as today. The lesson wall of each room ([PANELS §7](PANELS.md#7-which-wall-holds-the-lesson)) is the same in both layouts, because the doors are the same.
+A one-high block in row 0 or row 6 under a panel (the dirt corners of the hall, the step and the pit) covers only the slab's bottom 0.05 blocks, inside its border; this is as in the teaching layout. The lesson wall of each room ([PANELS §7](PANELS.md#7-which-wall-holds-the-lesson)) is the same in both layouts, because the doors are the same.
 
 ## 6. Browsing in the easy layout
 
@@ -224,22 +224,22 @@ Walking a lap in reverse shows earlier pages, as in [PAGES §2](PAGES.md#2-brows
 - **Who passes it:** the game, at run start, from the save record it already holds: `easyRoots: record.roots.page >= 2` (the current page, never the shown page). The sandbox and the lab use their in-memory record, so they carve the teaching layout unless a scenario sets a page; a scenario may set it directly.
 - **Determinism:** floor 0 is a pure function of the seed, the mastery level and the layout. The option adds no random decision: the same forks are drawn in the same order (the six templates have no decor slots, and their rooms draw the same mood roll as before, which on floor 0 can never be `reinforced`), and the plan, the doors, the reservation (`pedestalSlots`) and the hole are identical. Only the free tiles differ, so the same seed places its loose loot on different tiles in the two layouts.
 - **Floors 1 to 9, the sky and the surface** are identical for both layouts with the same seed: nothing outside floor 0's band reads the option, and the band's rock between floors is not touched.
-- **`GEN_VERSION`: no bump.** With the option off, floor 0 is carved byte for byte as before, and the option is not a random decision. As with the mastery level, a seed code alone no longer fixes floor 0: it replays exactly only for a player with the same current page (1 or more) and mastery ([open question 22](OPEN-QUESTIONS.md)).
+- **`GEN_VERSION`: no bump.** With the option off, floor 0 is carved byte for byte as before, and the option is not a random decision. As with the mastery level, a seed code alone no longer fixes floor 0: it replays exactly only for a player with the same current page (1 or more) and mastery ([open question 22](../../../not-built/levels/roots/OPEN-QUESTIONS.md)).
 - **The book keys rooms by their plan cell.** In the easy layout `RoomInfo.template` is the easy template id, while the book, the sight sets and `RootsBook` name rooms by the teaching template id of their cell. Everything that keys the Roots by room must read the cell (`TUTORIAL_CELLS[TUTORIAL_LAYOUT[gz][gx]].template`), never `RoomInfo.template`. `src/content/rooms.ts` exports that lookup as one helper (`rootsRoomKey(gx, gz)`) so nobody writes it twice.
 
 ## 8. The page advance still holds
 
 The page advances when a run ends after the player entered every room of the Roots ([PAGES §1](PAGES.md#1-the-current-page)). In the easy layout this is a walk: every room is reachable from the start room on foot, forward or in reverse, with no block in hand and no intention thrown, and the way-down room is the room every descent passes through. One lap of the ring and a step into the way-down room is all a run needs. The rule makes more sense now than before: it asks the player to walk through the place they learned in, not to redo it. The sight sets ([PAGES §3](PAGES.md#3-panels-change-only-out-of-sight)) are computed from the plan and its doors, which are the same in both layouts, so they do not change; they already assumed every line of doors open.
 
-## 9. Tests the implementation adds
+## 9. Tests
 
 1. **Every easy template passes the validator** (`validateTemplate` returns nothing), **needs no building** (`needsBuilding` is false, and `needsBuildingIn` is false with its real doors and flips), and **strands no tile**: from every tile a player can stand on, every door approach of the room is reachable on foot. `walkParts` cannot prove this alone, because its flood joins a pit to the part above it even when the pit has no way out; the test needs a reachability from each tile (or a reverse flood from each door), which `src/content/rooms.ts` exports for it.
 2. **A walker with no blocks crosses the easy Roots.** With `tests/helpers/walker.ts` (`walkRoute`, the real player's walk and jump, no air jumps, base stats) over the solid blocks of a floor 0 carved with `easyRoots: true`: from the spawn, through every doorway of the ring in forward order back into the start room, then into the way-down room to the tile beside its pedestal; then the same lap in reverse. Waypoints are door middles and room centres, plus one on each stair top in the step room. The walker never places or breaks anything. **Control:** the same forward route fails in the teaching layout (in the step room), so the test can tell the two apart.
-3. **The teaching layout is byte-identical to today's** when the option is off or absent: for seeds 1 and `0xBEEF` at mastery 0 and 22, the shape of floor 0 (rooms, templates, flips, moods, doors, pedestals, chests, keys, bombs, hearts, practices, altar, hole, spawn) and the hash of its band's voxels equal values recorded from the code before this change, pinned in the test.
+3. **The teaching layout is byte-identical to the layout before the easy option** when the option is off or absent: for seeds 1 and `0xBEEF` at mastery 0 and 22, the shape of floor 0 (rooms, templates, flips, moods, doors, pedestals, chests, keys, bombs, hearts, practices, altar, hole, spawn) and the hash of its band's voxels equal values recorded from the code before this change, pinned in the test.
 4. **Floors 1 to 9 are identical for both layouts:** with the same seed, at mastery 0 and 100, the shape of every floor from 1 to 9 and the hash of the world outside floor 0's band are the same with `easyRoots` false and true.
 5. **The rewards fit:** at mastery 100 in the easy layout, for several seeds, floor 0's counts equal `rootsRewards(100)` exactly (nothing dropped for lack of a tile), the altar and the second Sanctuary are laid, at most one free chest and one pedestal per room, nothing on an approach, the centre or the shaft, and the sum of `freeSpots` over the eight easy lesson rooms is at least the table's largest total.
 6. **The easy layout is the right rooms:** carved easy, the six changed cells carry their easy template and the five others their teaching one; the easy crates room holds exactly 28 crates; `rootsRoomKey` of every room equals its teaching template id in both layouts; the existing half-need-building rule (`tests/world.test.ts`) still passes.
 
-## Open questions
+## Not decided
 
-Listed in [OPEN-QUESTIONS](OPEN-QUESTIONS.md), questions 19 to 25, each with the default this document uses: which rooms change (six); the remembered panels and their wording; reusing page 1's images; browsing to page 1 keeps the remembered panels; the bridge keeps its deep cores; seed codes do not carry the layout and `GEN_VERSION` is not bumped; the "half the rooms need building" rule gives way on floor 0 from page 2.
+Listed in [OPEN-QUESTIONS](../../../not-built/levels/roots/OPEN-QUESTIONS.md), questions 19 to 25, each with the default this document builds: which rooms change (six); the remembered panels and their wording; reusing page 1's images; browsing to page 1 keeps the remembered panels; the bridge keeps its deep cores; seed codes do not carry the layout and `GEN_VERSION` is not bumped; the "half the rooms need building" rule gives way on floor 0 from page 2.

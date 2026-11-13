@@ -26,7 +26,7 @@ The saved choice is written only if storage allows it; a blocked or private wind
 - The Spanish vocabulary: intention becomes intención, practice práctica, projection proyección, state of being estado de ser, bomb becomes bomba, floor piso, seed semilla.
 - Practices keep the established Spanish name of the technique or of the public-domain work, and the credit stays in English. (The rule is in the localization architecture document.)
 - The static page (`index.html`) is mostly static text with translation attributes. Its English is the fallback, and the page is translated when it loads.
-- When the language changes, the HUD, the banners, the death screen and the lesson tablets are redrawn in the new language.
+- When the language changes, the HUD, the banners, the death screen and the book's panels are redrawn in the new language.
 
 ## Open questions
 

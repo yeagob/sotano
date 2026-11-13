@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: decided (owner, issue #147, decisions 8 and 10). The names are a proposal for the owner to confirm. Not built.
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 40 entries are in `src/content/achievements.ts`. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -87,7 +87,7 @@ The ids use the meditation ids of `src/content/presences/meditations.ts` (`groun
 
 ### Book pages (4)
 
-The current page reaching a number at a run's end ([PAGES §1](../levels/roots/PAGES.md#1-the-current-page)): the event `pageReached { page }`. Pages 54, 69 and 100 **cannot be earned until the book has that many pages** (it has 9 today); they are in the catalogue, but a player cannot reach level 40 until the owner has written a hundred pages.
+The current page reaching a number at a run's end ([PAGES §1](../levels/roots/PAGES.md#1-the-current-page)): the event `pageReached { page }`. Pages 54, 69 and 100 **cannot be earned until the book has that many pages** (it has 9 pages); they are in the catalogue, but a player cannot reach level 40 until the owner has written a hundred pages.
 
 | Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
 |---|---|---|---|---|---|
@@ -151,10 +151,10 @@ When an achievement is earned the player reads, in one window: its name, its des
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 40 defined ones; the other 60 are pending in #179 (the issue still says 78 and should be updated) and enter as data when the owner defines them.
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 40 defined ones; the other 60 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
-## Open questions
+## Not decided
 
-- The names (both languages) are a proposal, except the owner's "Lucky Number" and "Nice".
-- Should cards that were pending when a run ended show at the start of the next run? The first draft said no; package D2 built yes, because the page achievements are earned at a run's end (see §4). The owner decides.
-- The Shadow's stillness ending is tagged on its enemy (`STILLNESS_TAG` in `src/content/bosses/shadow.ts`); `game.ts` reads the tag when it dies and reports `how: 'stillness'`.
+- The names (both languages) await the owner, except "Lucky Number" and "Nice", which are the owner's ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+- Cards pending when a run ends show at the start of the next run: built so, because the page achievements are earned at a run's end (see §4). The owner may decide otherwise ([open question 6](../../not-built/levels/roots/OPEN-QUESTIONS.md)).
+- The Shadow's stillness ending counts as conversion: tagged on its enemy (`STILLNESS_TAG` in `src/content/bosses/shadow.ts`), reported as `how: 'stillness'` when it dies ([open question 13](../../not-built/levels/roots/OPEN-QUESTIONS.md)).

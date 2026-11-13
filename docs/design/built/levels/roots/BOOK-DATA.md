@@ -1,6 +1,6 @@
 # Book data: the two JSON files
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decision 6: one JSON file per language, same structure; the owner will add the book by hand). The files exist: [`src/content/book/book.en.json`](../../../../../src/content/book/book.en.json) and [`src/content/book/book.es.json`](../../../../../src/content/book/book.es.json). Nothing reads them yet.
+Up: [the Roots](README.md) · Status: built (issue #147). One JSON file per language, the same structure: [`src/content/book/book.en.json`](../../../../../src/content/book/book.en.json) and [`src/content/book/book.es.json`](../../../../../src/content/book/book.es.json). The validator is `src/content/book/index.ts` (`loadBook`, `validateBook`, `panelAt`, `panelById`), the image manifest `src/content/book/images.ts`. The owner writes new pages by hand in both files (§8).
 
 ## 1. Shape
 
@@ -26,7 +26,7 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 
 An optional top-level `easy` object sits beside `pages`: room key → side → panel, for the five **remembered panels** of the easy layout (EASY-LAYOUT §4). It has the same panel schema as a page, its ids are `easy-<room>-<side>`, and it is read only in the easy layout (section 7). Its five slots are the ones whose page-1 panel teaches an exercise the easy rooms no longer hold: `roots-step` south, `roots-dig` south, `roots-pit` north, `roots-bridge` north, `roots-seal` south.
 
-Since pages 3 to 6 fill every slot (section 1b), a remembered panel now shows only where a page leaves its slot out in the easy rooms: on page 1 when the player browses back to it, on page 2 (which fills only its nine plate walls) and on the book pages (7 on), which leave most slots out. They stay in the file for those pages.
+Since pages 3 to 6 fill every slot (section 1b), a remembered panel shows only where a page leaves its slot out in the easy rooms: on page 1 when the player browses back to it, on page 2 (which fills only its nine plate walls) and on the book pages (7 on), which leave most slots out.
 
 ```json
 "easy": {
@@ -49,7 +49,7 @@ The test `tests/book.test.ts` ("which pages fill which slots") checks that pages
 
 | Field | Where | Type | Rule |
 |---|---|---|---|
-| `version` | top | integer | The schema version. `1` today. A reader refuses any other value |
+| `version` | top | integer | The schema version. `1`. A reader refuses any other value |
 | `language` | top | `"en"` or `"es"` | Must match the file name (`book.<language>.json`) |
 | `pages` | top | array, at least 1 | The page number is the position: the first entry is page 1 |
 | `easy` | top | object, optional | Room key → side → panel: the remembered panels of the easy layout (section 1). Each panel follows the rules of a tutorial page panel (lesson, plate or prose; no quote); its id is `easy-<room>-<side>` (`easy-dig-s`, `easy-pit-n`) and is unique in the file with the page ids. Only the easy layout reads it |
@@ -83,7 +83,7 @@ No other field is allowed. Every panel has an `id` (above). Prose has no title, 
 
 ## 3. Placeholders
 
-`{action}` in a `text` is replaced by the label of that control on the device in use, as today's tablets do (`controlParams` in `src/input/labels.ts`, then sentence case). Allowed names: the actions of `LESSON_CONTROLS`, plus `drink`, which the build adds to that list. The tutorial pages use only `{jump}`: everything else is shown by the key cap, which keeps the sentences short on every device (the touch labels are long sentences).
+`{action}` in a `text` is replaced by the label of that control on the device in use, as every panel is drawn (`controlParams` in `src/input/labels.ts`, then sentence case). Allowed names: the actions of `LESSON_CONTROLS`, plus `drink`, which the build adds to that list. The tutorial pages use only `{jump}`: everything else is shown by the key cap, which keeps the sentences short on every device (the touch labels are long sentences).
 
 ## 4. Images
 
@@ -91,7 +91,7 @@ An image is an id `namespace/name`, never a path. Three namespaces:
 
 | Namespace | What it is | Where the pixels come from |
 |---|---|---|
-| `bestiary/<entity id>` | A portrait of a creature, projection, boss or presence; the name after the slash is the entity's id in `src/content` | The bestiary capture script of issue #177 (`scripts/bestiary-capture.mjs`, PR #181, not merged yet). Its documentation screenshots show the HUD, the hand and small creatures very small, so they are not used as they are: a **portrait mode** of the same script (no HUD, no hand, the camera close to the subject, a square crop) writes `public/book/bestiary/<id>.webp` for the game ([IMPLEMENTATION-PLAN](IMPLEMENTATION-PLAN.md), package B5) |
+| `bestiary/<entity id>` | A portrait of a creature, projection, boss or presence; the name after the slash is the entity's id in `src/content` | The bestiary capture script (`scripts/bestiary-capture.mjs`). Its documentation screenshots show the HUD, the hand and small creatures very small, so the book does not use them as they are: its **portrait mode** (no HUD, no hand, the camera close to the subject, a square crop) writes `public/book/bestiary/<id>.webp` for the game |
 | `lesson/<name>` | A screenshot of a mechanic, captured the same way: a sandbox scenario with a fixed seed and a fixed camera | New captures, written by the same build script to `public/book/lesson/<name>.webp` |
 | `icon/item/<item id>`, `icon/potion/<potion id>`, `icon/heart/<kind>` | An in-game icon, drawn by the game's own icon code (practice icons, flask icons, heart art), scaled by whole multiples | Nothing to capture: existing art |
 
@@ -107,9 +107,9 @@ The validator checks that every id resolves: a bestiary id is an entity with a c
 - **Portrait mode.** No HUD and no held hand. The subject stands on a one-block stone plinth in an 11 × 9 room (a boss stands on the floor in a 21 × 15 room) and turns to face the camera. The camera uses a 40° lens placed so the subject's drawn extent fills 72 per cent of the frame, levelled on its centre. The shell is `palestone`. `overwhelm` is framed from its other side (`PORTRAIT_SIDE`).
 - **Lessons.** Each lesson is one staged room, one lab script when something must be in flight or burn (thrown cubes, bombs, damage, lava and water), one prep step when the game needs a state set by hand (a missile, a warmth, a grown creature, the toll window), and one eye point and target. The HUD and the hand are hidden unless the lesson is about them (`counters`, `polarity`, the toll windows, the Sanctuary). Every capture runs in English. The scenes are inline in the script rather than in `src/sandbox/scenarios/`: a scenario file joins `npm run sandbox -- --check`, which needs a saved report for each file, and these pictures do not need one.
 - **Fixed inputs.** Every capture uses the sandbox's fixed seed and fixed step, so a re-run gives the same pictures.
-- **Pending (11), not faked.** `ring` (the minimap of the Roots shows only the rooms near the player, not the ring: no real view of the whole ring yet), `drink` (the sandbox hand holds blocks and parts, not potions), `recipe` (a brewed potion in an alembic, not staged), `paths` and `state` (the inventory screen and its banner are not opened by the capture), `boss-room` (the lit pedestal needs a defeated boss), `chests` (the keyhole chest is placed by the floor generator and not found yet), `sky` (the real game on the sky seed puts the camera inside the trunk in every view tried), `seal` (the room seal needs its doors shut), `omen` (the cold motes need an omen mid-gather), `room-clear` (the clear drop needs a cleared room). Captured since: `alembic`, `kitchen` (the real game, the floor's own station tiles), `mastery` (the real game at mastery 100, the wall panels hidden), `parts` (the sandbox, the game's own part pickups), `warm-boss` and `white-bomb` (the sandbox). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
-- **Portraits, all taken (45).** The sandbox portraits (`PORTRAITS` in the script) come from the sandbox; the ten sky portraits (`SKY_PORTRAITS`: the five guardians and one member of each herd) come from the sky route of the same mode: the real game on the fixed sky seed, paused, at rest, framed the same way (`SKY_SUBJECTS`). The horse's paddock fence hides its body from every side tried, so `guardian-horse` shows its head over the fence. `PENDING_PORTRAITS` is empty in `tests/book-images.test.ts` and in `scripts/bestiary-capture.mjs`: a portrait added later goes there until it has a file. A plate whose portrait is missing draws the neutral placeholder and the gallery flags it yellow.
-- **Content gaps seen in the captures.** `resistance`, `inertia`, `insatiable` and `overwhelm` draw as dark husk bodies with eyes; `overwhelm` is built from Doubt's husk palette (`src/content/bosses/overwhelm.ts`). Their portraits are faithful captures of what the game draws today, and the boss models need their own art. The `convert` lesson shows a projection at warmth 0.95 as a red-brown body rather than gold; the warm glow needs checking against the ledger.
+- **Pending (11), not faked.** The list and the reasons are in [PENDING](../../../not-built/levels/roots/PENDING.md#lesson-pictures-not-captured-yet). `ring` (the minimap of the Roots shows only the rooms near the player, not the ring: no real view of the whole ring yet), `drink` (the sandbox hand holds blocks and parts, not potions), `recipe` (a brewed potion in an alembic, not staged), `paths` and `state` (the inventory screen and its banner are not opened by the capture), `boss-room` (the lit pedestal needs a defeated boss), `chests` (the keyhole chest is placed by the floor generator and not found yet), `sky` (the real game on the sky seed puts the camera inside the trunk in every view tried), `seal` (the room seal needs its doors shut), `omen` (the cold motes need an omen mid-gather), `room-clear` (the clear drop needs a cleared room). Captured since: `alembic`, `kitchen` (the real game, the floor's own station tiles), `mastery` (the real game at mastery 100, the wall panels hidden), `parts` (the sandbox, the game's own part pickups), `warm-boss` and `white-bomb` (the sandbox). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
+- **Portraits, all taken (45).** The pending list of the lessons and of pages 3 to 6 is in [PENDING](../../../not-built/levels/roots/PENDING.md). The sandbox portraits (`PORTRAITS` in the script) come from the sandbox; the ten sky portraits (`SKY_PORTRAITS`: the five guardians and one member of each herd) come from the sky route of the same mode: the real game on the fixed sky seed, paused, at rest, framed the same way (`SKY_SUBJECTS`). The horse's paddock fence hides its body from every side tried, so `guardian-horse` shows its head over the fence. `PENDING_PORTRAITS` is empty in `tests/book-images.test.ts` and in `scripts/bestiary-capture.mjs`: a portrait added later goes there until it has a file. A plate whose portrait is missing draws the neutral placeholder and the gallery flags it yellow.
+- **Content gaps seen in the captures.** `resistance`, `inertia`, `insatiable` and `overwhelm` draw as dark husk bodies with eyes; `overwhelm` is built from Doubt's husk palette (`src/content/bosses/overwhelm.ts`). Their portraits are faithful captures of what the game draws now, and the boss models need their own art. The `convert` lesson shows a projection at warmth 0.95 as a red-brown body rather than gold; the warm glow needs checking against the ledger.
 
 ### Every image the nine pages use
 
@@ -163,7 +163,7 @@ Lesson screenshots (39, **all new captures**; 28 are taken, the 11 marked pendin
 
 ### New images for pages 3 to 6
 
-One line per image that pages 3 to 6 added, for whoever captures them. Portraits follow the portrait mode (section 4: no HUD, no hand, the subject facing the camera, 72 per cent of the frame, 512 × 512 WebP under 60 KB); lessons follow the lesson rules (960 × 540, the lesson inside the central third, no on-screen text). After a capture: look at it, remove its id from both pending lists.
+One line per image that pages 3 to 6 use, for whoever captures the ones still missing (see [PENDING](../../../not-built/levels/roots/PENDING.md)). Portraits follow the portrait mode (section 4: no HUD, no hand, the subject facing the camera, 72 per cent of the frame, 512 × 512 WebP under 60 KB); lessons follow the lesson rules (960 × 540, the lesson inside the central third, no on-screen text). After a capture: look at it, remove its id from the pending list in the test and from PENDING.
 
 Portraits, sandbox (16):
 

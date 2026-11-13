@@ -1,6 +1,6 @@
 # The six tutorial pages
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: proposal (written to the owner's direction for issue #147; awaiting the owner's read). The words live in the book files ([`book.en.json`](../../../../../src/content/book/book.en.json), [`book.es.json`](../../../../../src/content/book/book.es.json)); this document gives each slot's purpose and the fact in the code it rests on. If the two disagree, the files are the text and this document is the reason.
+Up: [the Roots](README.md) · Status: built (issue #147). The texts are the book files' words, reviewed with the owner's direction of 2026-11-12 and 2026-11-13; the owner's open word on the wording is listed in [OPEN-QUESTIONS](../../../not-built/levels/roots/OPEN-QUESTIONS.md). The words live in the book files ([`book.en.json`](../../../../../src/content/book/book.en.json), [`book.es.json`](../../../../../src/content/book/book.es.json)); this document gives each slot's purpose and the fact in the code it rests on. If the two disagree, the files are the text and this document is the reason.
 
 ## How the pages are built
 
@@ -114,7 +114,7 @@ The arc: where practices wait (hall), the paths and the states, practices of eve
 
 ## Page 5: the creatures of the world
 
-The arc: the hall names both worlds (the sky above the great tree and the creatures below); then each room pairs one being of the sky, read first, with one creature of the depths: the sky climbs from floor 1 (the giant panda and its little pandas) to floor 5 while the depths go down; the treasure room holds the two deepest creatures (the Drifter, the Huddler); the way-down room closes with the horse's herd and the horse, which leaves the Triple Jump. The sky's beings are described only by what their code does: their meaning is not documented ([bestiary, gaps](../../../built/bestiary/README.md#gaps)). "Good hits" are positive hits: what wins a guardian and turns a herd's member ([sky guardians](../../../built/sky/guardians/README.md), [sky minions](../../../built/sky/minions/README.md)).
+The arc: the hall names both worlds (the sky above the great tree and the creatures below); then each room pairs one being of the sky, read first, with one creature of the depths: the sky climbs from floor 1 (the giant panda and its little pandas) to floor 5 while the depths go down; the treasure room holds the two deepest creatures (the Drifter, the Huddler); the way-down room closes with the horse's herd and the horse, which leaves the Triple Jump. The sky's beings are described only by what their code does: their meaning is not documented ([bestiary, gaps](../../../built/bestiary/README.md)). "Good hits" are positive hits: what wins a guardian and turns a herd's member ([sky guardians](../../../built/sky/guardians/README.md), [sky minions](../../../built/sky/minions/README.md)).
 
 | # | Id | Layout | Title | Point | Image | Rests on |
 |---|---|---|---|---|---|---|
@@ -170,11 +170,11 @@ The arc: good intentions reach further than they seem (warming a boss, white bom
 | 21 | 6-door-s | lesson | Mastery | Every achievement raises the mastery of the roots, up to 100; the higher, the more the roots lay out when you wake | lesson/mastery | `mastery()` (achievements unlocked, capped at 100, `achievements.ts`); `rootsRewards` (keys, bombs, hearts, chests, `tables/roots-mastery.ts`) |
 | 22 | 6-door-n | lesson | The hidden book | The last lesson: walk every room once more, and next time the walls speak in their own voice | lesson/ring | The page advance ([PAGES §1](PAGES.md#1-the-current-page)); page 7 is the first book page (`FIRST_BOOK_PAGE`) |
 
-## What is left for later pages
+## What is not taught yet
 
 Pages 3 to 6 now hold every boss, the Drifter and the Huddler, the sky's guardians and herds, every potion recipe but the Ember Tonic's, and every kind of heart. Still untaught: most projections of floors 1 to 9 (all but Doubt, the Inner Critic, Panic and their second forms), the third forms (Paralysis, the Tribunal, Dread), the Ember Tonic and ice in the alembic, the states of being one by one, keys and locked doors on their own, challenge rooms, fire, and the Gardener (defined, not placed). They can join the book as the owner writes it.
 
-## Open questions
+## Not decided
 
-- The lesson wall instead of "south for plates": [question 1](OPEN-QUESTIONS.md).
-- The Rootling's note hints at the 7.5% gift; if the owner prefers no hint of chance to a child, the note becomes "Good intentions make it grow".
+- The lesson wall instead of "south for plates": [question 1](../../../not-built/levels/roots/OPEN-QUESTIONS.md), built with its default.
+- The Rootling's note hints at the 7.5% gift; if the owner prefers no hint of chance to a child, the note becomes "Good intentions make it grow" ([question 26](../../../not-built/levels/roots/OPEN-QUESTIONS.md)).

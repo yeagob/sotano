@@ -1,10 +1,10 @@
 # Pages: advancing, browsing and turning out of sight
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, issue #147, decisions 1 to 4), with the lap and visibility rules below designed to make those decisions testable. Built in package D1: the rules in `src/game/roots-book.ts`, the run's walls and the record in `src/game/roots-keeper.ts`, the wiring in `src/game/game.ts`.
+Up: [the Roots](README.md) · Status: built (issue #147). The rules are in `src/game/roots-book.ts` (no DOM, no Three.js), the run's walls and the record in `src/game/roots-keeper.ts`, the wiring in `src/game/game.ts`. Tests: `tests/roots-book.test.ts`, `tests/roots-book-game.test.ts`.
 
-The walls of the Roots show one page at a time. A page is a set of panels for some of the 22 slots; any slot a page leaves out shows page 1's panel, so the lessons never leave the walls. In the easy layout, five slots whose page-1 lesson describes an exercise that is gone show a remembered panel instead of page 1's ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)). Page 2 fills nine slots; pages 3 to 6 fill all 22, so on them every wall reads that page and nothing falls back (owner, 2026-11-13, [BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)); the book pages (7 on) fill a few. Pages 1 to 6 are the tutorial. Page 7 is the first page of the hidden book.
+The walls of the Roots show one page at a time. A page is a set of panels for some of the 22 slots; any slot a page leaves out shows page 1's panel, so the lessons never leave the walls. In the easy layout, five slots whose page-1 lesson describes an exercise that is gone show a remembered panel instead of page 1's ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)). Page 2 fills nine slots; pages 3 to 6 fill all 22, so on them every wall reads that page and nothing falls back ([BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)); the book pages (7 on) fill a few. Pages 1 to 6 are the tutorial. Page 7 is the first page of the hidden book.
 
-The current page also decides the shape of the rooms: page 1 is carved in the teaching layout, page 2 and later in the easy layout, read once at run start ([EASY-LAYOUT](EASY-LAYOUT.md)). The geometry is not fixed for ever any more: it changes once, between the run that reaches page 2 and the next.
+The current page also decides the shape of the rooms: page 1 is carved in the teaching layout, page 2 and later in the easy layout, read once at run start ([EASY-LAYOUT](EASY-LAYOUT.md)). The geometry changes once, between the run that reaches page 2 and the next.
 
 ## 1. The current page
 
@@ -15,9 +15,9 @@ The current page also decides the shape of the rooms: page 1 is carved in the te
   - The sandbox and the lab never advance the page. Closing the tab is not a run end.
   - Browsing (section 2) never changes the current page.
   - Sky plants play no part here.
-- **The cap.** The current page never goes past the last page in the book files. A player on the last page stays there; when the owner adds pages, the next qualifying run moves on to the first new one. (The issue asked to wrap to page 1 after the last page; the owner's decision "never beyond the current page" and a book that grows by hand point to a cap. See [open questions](OPEN-QUESTIONS.md), question 2.)
+- **The cap.** The current page never goes past the last page in the book files. A player on the last page stays there; when the owner adds pages, the next qualifying run moves on to the first new one. (The issue asked to wrap to page 1 after the last page; the owner's decision "never beyond the current page" and a book that grows by hand gave a cap. Open: [question 2](../../../not-built/levels/roots/OPEN-QUESTIONS.md).)
 - If the save holds a page higher than the book has (pages removed), the walls show the last page and the save keeps its number.
-- **The event.** When a run's end advances the current page, the game emits `pageReached { page }` with the new page number, once. Four achievements listen to it: pages 7, 54, 69 and 100 ([ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md#book-pages-4)). Because the page advances by exactly one and never past the last page, an achievement for page N can be earned only once the book has at least N pages: today it has 9, so 54, 69 and 100 wait for the owner's pages.
+- **The event.** When a run's end advances the current page, the game emits `pageReached { page }` with the new page number, once. Four achievements listen to it: pages 7, 54, 69 and 100 ([ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md#book-pages-4)). Because the page advances by exactly one and never past the last page, an achievement for page N can be earned only once the book has at least N pages: the book has 9 pages, so 54, 69 and 100 wait for the pages the owner will write.
 
 ## 2. Browsing: laps of the ring
 
@@ -65,7 +65,7 @@ The sight sets of the Roots, from the plan:
 | `roots-gift` | gift, seal, crates, spring, hall, step |
 | `roots-door` | door, hall |
 
-The sets are computed from the plan, not written by hand, so a test checks them against this table. They are the same in both layouts: the plan and its doors do not change, and the sets already assume every line of doors open. A hole the player digs through a wall is not part of the rule; a second guard covers it: a panel is also never re-carved while it lies inside the camera's view frustum.
+The sets are computed from the plan, not written by hand, so a test checks them against this table. They are the same in both layouts: the plan and its doors do not change, and the sets assume every line of doors open. A hole the player digs through a wall is not part of the rule; a second guard covers it: a panel is also never re-carved while it lies inside the camera's view frustum.
 
 What the player sees after a forward lap that ends in the start room: the rooms out of sight of the start room (dig, mend, pit, bridge, seal, crates, spring) turn at once; the step room, the treasure room and the way down turn as soon as the player has walked out of their sight. The page turns behind the player, never in front of them.
 
@@ -82,6 +82,6 @@ From page 7 on, one block in the start room shows the shown page's number.
 
 Nothing is explained by a menu. The door room's north panel on page 1 says that the Roots remember and that walking every room before leaving lets the walls say more ([TUTORIAL-PAGES](TUTORIAL-PAGES.md)). The page stone appears when the book begins. Browsing is a secret a curious player finds by walking the ring backwards.
 
-## Open questions
+## Not decided
 
-See [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md): the cap instead of a wrap (2), which run endings count (4), the page stone's place (3), and the easy layout (19 to 25).
+The cap instead of a wrap, which run endings count, and the page stone's place are the owner's to confirm; each has the default built here. See [the open questions](../../../not-built/levels/roots/OPEN-QUESTIONS.md): 2, 3 and 4.

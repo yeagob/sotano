@@ -7,7 +7,7 @@ description: Achievement discipline for The Roots. Use it EVERY time an achievem
 
 An **achievement** is a moment the game remembers between runs: a boss overcome, a meditation sat to the end, a first potion, a page of the Roots' book. **Each achievement is one level of the Roots' mastery**, and the mastery level decides what floor 0 lays out for the next run. The catalogue is data; the tracker is pure; the game only feeds it events and shows a card.
 
-Design, for depth: [ACHIEVEMENTS](../../../docs/design/not-built/progression/ACHIEVEMENTS.md) (the 40, the data model, the notice), [MASTERY](../../../docs/design/not-built/progression/MASTERY.md), [SAVE](../../../docs/design/not-built/progression/SAVE.md), [REWARDS](../../../docs/design/not-built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
+Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVEMENTS.md) (the 40, the data model, the notice), [MASTERY](../../../docs/design/built/progression/MASTERY.md), [SAVE](../../../docs/design/built/progression/SAVE.md), [REWARDS](../../../docs/design/built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
 
 ## 1. The owner's rules (binding)
 

@@ -6,7 +6,7 @@ The built levels are in [built/levels](../../built/levels/README.md). This folde
 
 | Document | Status | Contents |
 |---|---|---|
-| [roots/](roots/README.md) | decided, with proposals | The Roots as an evolving tutorial and a hidden book: pages, panels, book data, rewards by mastery, the plan (issue #147) |
+| [roots/](roots/README.md) | open | What is not built of the Roots' book (issue #147): the hidden book's pages 7 to 9, the open questions, the pictures and achievements still pending. The built parts are in [built/levels/roots](../../built/levels/roots/README.md) |
 | [TREE-PATHS.md](TREE-PATHS.md) | proposal | Seeded variation: which corridors of the Tree are open, locked or hidden |
 | [FLOOR-KINDS.md](FLOOR-KINDS.md) | proposal, open | The trunk, branches and leaves as maps of rooms, and the contradiction with seven stories |
 | [ROUTE-FROM-ROOTS.md](ROUTE-FROM-ROOTS.md) | decided, not built | The climb from the roots to the surface, however you can |

@@ -1,8 +1,8 @@
 # The save record, version 2
 
-Up: [progression](README.md) · Status: decided (owner, issue #147: the page, the achievements and the mastery level are kept between runs; generation never reads the save). Built for the Roots' page in package D1 (`src/game/meta.ts`; `main.ts` reads it once and gives it to `Game` with the browser store; `roots-keeper.ts` writes it when a run advances). The achievements and counts are written from D2 through the same record and store: `achievement-keeper.ts` saves at once when an unlock or a count changes, and the sandbox and the lab never write. The reset is a proposal.
+Up: [progression](README.md) · Status: built (issue #147). The page, the achievements and the mastery level are kept between runs; generation never reads the save. Code: `src/game/meta.ts` (the record, its reading, merging and writing); `main.ts` reads it once and gives it to `Game` with the browser store; `roots-keeper.ts` writes the page when a run advances; `achievement-keeper.ts` writes an unlock or a count at once. The sandbox and the lab never write.
 
-Today the record is version 1 (`src/game/meta.ts`): `{ v: 1, staircase: boolean, metAt?: number }`, under the browser key `the-roots.meta`. Before package D1 nothing in `src/` loaded or saved it. Version 2 is wired in D1. The sky encounter still calls a host `saveMeta` (`src/endgame/encounter.ts`, declared in `src/sky/types.ts`) that no host implements yet, so the staircase unlock is not written by the game.
+The record is version 2 under the browser key `the-roots.meta`. A version 1 record (`{ v: 1, staircase: boolean, metAt?: number }`) is read and migrated (§2). The sky encounter still calls a host `saveMeta` (`src/endgame/encounter.ts`, declared in `src/sky/types.ts`) that no host implements yet, so the staircase unlock is not written by the game.
 
 ## 1. Fields
 
@@ -50,8 +50,8 @@ Reading and writing never throw: blocked storage, a private window or a full quo
 ## 4. Reset
 
 - **Forget the Roots**, in the debug console: `S.meta.reset()` writes the default record (page 1, no achievements, no counts) and keeps the staircase unlock, which already has its own console command (owner, 2026-11-03). The reset is the one write that is not merged: it replaces the stored progress, as a reset means. It still writes nothing over a newer build's record.
-- A player-facing reset (a "forget my progress" entry with a confirmation) is not part of #147: [open question 11](../levels/roots/OPEN-QUESTIONS.md).
-- Clearing the browser's site data forgets everything, as today.
+- A player-facing reset (a "forget my progress" entry with a confirmation) is not built: [open question 9](../../not-built/levels/roots/OPEN-QUESTIONS.md).
+- Clearing the browser's site data forgets everything.
 
 ## 5. Tests
 

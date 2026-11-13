@@ -1,8 +1,8 @@
 # The hidden book: pages 7 to 9
 
-Up: [the Roots as an evolving tutorial](README.md) · Status: **proposal, awaiting the owner.** These three pages are a first draft for the owner to keep, change or replace; the owner will write the rest of the book by hand ([BOOK-DATA §8](BOOK-DATA.md#8-writing-a-new-page-by-hand-for-the-owner)).
+Up: [the Roots: what is still open](README.md) · Status: **proposal, awaiting the owner.** These three pages are a first draft for the owner to keep, change or replace; the owner will write the rest of the book by hand ([BOOK-DATA §8](../../../built/levels/roots/BOOK-DATA.md#8-writing-a-new-page-by-hand-for-the-owner)). The pages are in the book files already; the mechanism that shows them is built ([PAGES](../../../built/levels/roots/PAGES.md)).
 
-After the six tutorial pages the walls start a book. A book page is a single `prose` panel on the start room's south wall (`roots-hall`, south), the panel a player sees on turning round from the spawn; every other slot shows page 1. The page stone in the start room shows the page number ([PAGES §4](PAGES.md#4-the-page-stone)).
+After the six tutorial pages the walls start a book. A book page is a single `prose` panel on the start room's south wall (`roots-hall`, south), the panel a player sees on turning round from the spawn; every other slot shows page 1. The page stone in the start room shows the page number ([PAGES §4](../../../built/levels/roots/PAGES.md#4-the-page-stone)).
 
 The three pages draw only on the documented story: the premise ([PREMISE](../../../built/story/PREMISE.md)), the naming rule that projections are patterns and never people ([NAMING](../../../built/story/NAMING.md)), what a projection wants ("need" in the bestiary documents) and the shape of the world, the roots between the tree above and the silence below ([COSMOLOGY](../../../../lore/COSMOLOGY.md)). They name no tradition, author or therapy, promise nothing and diagnose nothing. They are written for a child and an adult at once, in the second person, gender-neutral in Spanish.
 
@@ -14,7 +14,7 @@ The three pages draw only on the documented story: the premise ([PREMISE](../../
 
 From the premise: the basement of the mind, reality bending to intention, every wall something once built to stay safe that now keeps you small.
 
-**The page's quotation (owner, 2026-11-12).** Page 7 ends with a quotation from Guillermo Borja, *La locura lo cura* (extractos), Editorial La Llave, 1995, on the `quote` panel of the treasure room's north wall (`roots-gift` → `north`, the end of the page: [BOOK-DATA §2b](BOOK-DATA.md#2b-quotations)). The Spanish is the original, exactly as the owner gave it (369 characters); the English is our translation (369 characters) and the panel says so. Both fit one panel (budget 440, [PANELS §4b](PANELS.md#4b-quote-someone-elses-voice)). The prose and the quotation speak to each other: walls built to stay safe, then authenticity as showing oneself without a façade.
+**The page's quotation (owner, 2026-11-12).** Page 7 ends with a quotation from Guillermo Borja, *La locura lo cura* (extractos), Editorial La Llave, 1995, on the `quote` panel of the treasure room's north wall (`roots-gift` → `north`, the end of the page: [BOOK-DATA §2b](../../../built/levels/roots/BOOK-DATA.md#2b-quotations)). The Spanish is the original, exactly as the owner gave it (369 characters); the English is our translation (369 characters) and the panel says so. Both fit one panel (budget 440, [PANELS §4b](../../../built/levels/roots/PANELS.md#4b-quote-someone-elses-voice)). The prose and the quotation speak to each other: walls built to stay safe, then authenticity as showing oneself without a façade.
 
 > La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.
 >
@@ -24,7 +24,7 @@ From the premise: the basement of the mind, reality bending to intention, every 
 >
 > — our translation
 
-The page-7 entry, as package B6 wrote it in place of `book-1` in each file, with the panel ids of [BOOK-DATA §2](BOOK-DATA.md#2-fields) (`7-hall-s`, `7-gift-n`):
+The page-7 entry, as package B6 wrote it in place of `book-1` in each file, with the panel ids of [BOOK-DATA §2](../../../built/levels/roots/BOOK-DATA.md#2-fields) (`7-hall-s`, `7-gift-n`):
 
 `src/content/book/book.es.json`:
 
