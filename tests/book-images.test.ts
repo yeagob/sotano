@@ -40,8 +40,6 @@ const PENDING: Record<string, string> = {
 // The portraits that are not captured yet (scripts/bestiary-capture.mjs, PENDING_PORTRAITS). Each must have no file;
 // a plate using one draws the neutral placeholder until it is captured.
 const PENDING_PORTRAITS: readonly string[] = [
-  'second-guessing', 'margin', 'alarm', 'hoard', 'downpour', 'threshold-guardian', 'verdict', 'grudge',
-  'old-rule', 'furnace', 'impostor', 'many-faces', 'shadow', 'drifter', 'huddler', 'boundary',
   'guardian-panda', 'herd-panda', 'guardian-koala', 'herd-koala', 'guardian-elephant', 'herd-elephant',
   'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse',
 ];

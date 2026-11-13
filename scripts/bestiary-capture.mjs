@@ -99,7 +99,7 @@ const SKY_PORTRAITS = ['guardian-panda', 'herd-panda', 'guardian-koala', 'herd-k
   'herd-elephant', 'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse'];
 // The portraits with no file yet: the same list as tests/book-images.test.ts (PENDING_PORTRAITS). A plate that uses one
 // draws the neutral placeholder; capture it, look at it, and remove it from both lists.
-const PENDING_PORTRAITS = [...PORTRAITS.slice(19), ...SKY_PORTRAITS];
+const PENDING_PORTRAITS = [...SKY_PORTRAITS];
 
 const args = process.argv.slice(2);
 const portrait = args.includes('--portrait');
@@ -165,6 +165,9 @@ const portraitScenario = (id, floor) => {
 // The side the camera comes from, as the subject's facing (0 = the camera on its south side, +z): a subject whose
 // face is on its back is framed from the other side.
 const PORTRAIT_SIDE = { overwhelm: Math.PI };
+// The subject's heading relative to the camera side: a turn of PI shows its back to the camera. The Impostor's figure
+// stands behind its dark inner panel, so it shows only from the back.
+const PORTRAIT_TURN = { impostor: Math.PI };
 
 // Lens and framing: a 40 degree vertical lens, the subject's larger extent fills 72 per cent of the frame.
 const PORTRAIT_FOV = 40, PORTRAIT_FILL = 0.72, PORTRAIT_PX = 720, PORTRAIT_OUT = 512;
@@ -180,14 +183,16 @@ let failed = 0;
 
 /** Frames the subject: the camera on the subject's near side, levelled on its centre, the HUD and the hands removed. */
 async function framePortrait(page, id) {
-  return page.evaluate(({ id, fov, fill, side }) => {
+  return page.evaluate(({ id, fov, fill, side, turn }) => {
     const g = window.S.game;
     const e = g.enemies.list.find(x => x.def === id && x.alive);
     if (!e) return { error: `no ${id} in the room` };
     // the picture's extent is the subject's drawn meshes (its wings, its legs), measured in world space
-    // the subject turns to face the camera (the game turns a projection to its target the same way)
+    // the subject turns to face the camera (the game turns a projection to its target the same way); a subject framed
+    // from another side has no target, so it keeps the heading the frame gives it
+    if (turn) e.targetId = -1;
     const view = g.enemies.viewOf(e.id);
-    view.group.rotation.y = side;
+    view.group.rotation.y = side + turn;
     view.group.updateMatrixWorld(true);
     let lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
     view.group.traverse(o => {
@@ -213,7 +218,7 @@ async function framePortrait(page, id) {
     g.hands.scene.children.forEach(c => { c.visible = false; });
     for (const el of [...document.body.children]) if (el.id !== 'game' && el.tagName !== 'SCRIPT') el.style.display = 'none';
     return { dist, size };
-  }, { id, fov: PORTRAIT_FOV, fill: PORTRAIT_FILL, side: PORTRAIT_SIDE[id] ?? 0 });
+  }, { id, fov: PORTRAIT_FOV, fill: PORTRAIT_FILL, side: PORTRAIT_SIDE[id] ?? 0, turn: PORTRAIT_TURN[id] ?? 0 });
 }
 
 /** The square frame as a 512 × 512 WebP at the first quality that fits 60 KB. */
