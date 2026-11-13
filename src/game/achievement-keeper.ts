@@ -14,7 +14,7 @@ import type { MessageKey } from '../i18n';
 import type { Params } from '../i18n';
 import { qualityStars } from '../render/icons';
 import { mastery, track, type Payload } from './achievements';
-import { adoptMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
+import { adoptMeta, resetMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
 
 /** One achievement earned, waiting for its card. `level` is the mastery level once it counts (1 to 100). */
 export interface AchievementNotice {
@@ -70,6 +70,21 @@ export class AchievementKeeper {
     });
     this.queue.push(...fresh);
     return fresh;
+  }
+
+  /**
+   * Debug (the console's S.meta.reset, SAVE §4): forgets the Roots. The default record is written at once (resetMeta, which
+   * replaces the stored progress rather than merging it), this tab takes that record over, so its old unlocks and page are
+   * not merged back by the next save, and the notices still queued are cleared. Refused, and nothing changes, in the sandbox
+   * and the lab, on a read-only record, and when the store holds a newer build's record. Returns whether it was reset.
+   */
+  reset(): boolean {
+    if (!this.live || this.record.readOnly) return false;
+    const out = resetMeta(this.record, this.store);
+    if (out.readOnly) return false;
+    adoptMeta(this.record, out);
+    this.queue.length = 0;
+    return true;
   }
 
   /**

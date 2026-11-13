@@ -83,6 +83,8 @@ async function boot() {
     roots: (page: number | null) => game.setRootsPage(page),
     /** The Roots' mastery level the next runs start with (debug, in memory, never saved): S.mastery(36), then S.restart(). */
     mastery: (level: number) => game.setMastery(level),
+    /** Forgets the Roots in the save: page 1, no achievements, no counts; the staircase stays (SAVE §4). Returns false where refused (the sandbox, a newer build's record). */
+    meta: { reset: () => game.forgetRoots() },
     /** Switch language without saving the choice ('en', 'es'). */
     lang: (code: string) => setLocale(code),
     /** The sandbox's console (only with ?sandbox): S.sb.help(). */

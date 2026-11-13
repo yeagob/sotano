@@ -353,6 +353,17 @@ describe('the debug page (S.roots) is an override that never reaches the save', 
   });
 });
 
+describe('a run under way when the save is forgotten (S.meta.reset)', () => {
+  it('walks the whole Roots, then the reset: the run advances nothing, the store is not written', () => {
+    const a = openAt(2);
+    walk(a.keeper, floor0(true), FULL);
+    a.keeper.forget();
+    expect(a.keeper.endRun()).toBeUndefined();
+    expect(a.store.writes).toBe(0);
+    expect(a.record.roots.page).toBe(2);
+  });
+});
+
 // The whole flow of the Roots in one chain. The lab cannot carve the Roots (its rooms are sealed, with no floor plan,
 // and it moves the player by teleport only: docs/architecture/SANDBOX.md §6), so this test is the chain's record.
 describe('the whole flow in one chain: walk, die, the next run on page 2, a reverse lap', () => {

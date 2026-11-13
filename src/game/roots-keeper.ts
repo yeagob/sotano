@@ -64,6 +64,8 @@ export class RootsKeeper {
   /** The page each room's panels were last carved for (what the wall shows). */
   private readonly drawn = new Map<RoomKey, number>();
   private stoneNow: number | null | undefined;
+  /** Set by `forget` (the debug reset): this run was started on progress that was then forgotten, so it advances nothing. */
+  private forgotten = false;
 
   constructor(private readonly o: RootsKeeperOptions) {
     const start = o.startPage ?? o.record.roots.page;
@@ -101,13 +103,21 @@ export class RootsKeeper {
    * undefined. A read-only record (a newer build's) is never written, so nothing it advances persists.
    */
   endRun(): number | undefined {
-    if (this.o.startPage !== undefined) return undefined;
+    if (this.o.startPage !== undefined || this.forgotten) return undefined;
     if (!this.book.endRun()) return undefined;
     if (this.o.record.readOnly) return undefined;
     this.o.record.roots.page = this.book.current;
     const merged = saveMeta(this.o.record, this.o.store);
     if (merged) adoptMeta(this.o.record, merged);
     return this.book.current;
+  }
+
+  /**
+   * The save was forgotten during this run (S.meta.reset): the page this run advanced from is gone, so `endRun` writes
+   * nothing. The walls keep the page they show; the next run starts on the forgotten record's page.
+   */
+  forget(): void {
+    this.forgotten = true;
   }
 
   /**

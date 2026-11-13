@@ -4,6 +4,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AchievementKeeper } from '../src/game/achievement-keeper';
+import type { Payload } from '../src/game/achievements';
 import { adoptMeta, browserStore, defaultMeta, loadMeta, resetMeta, saveMeta, type MetaState, type MetaStore } from '../src/game/meta';
 
 /** An in-memory store that remembers the last string written and counts writes. */
@@ -314,5 +315,85 @@ describe('two tabs never overwrite each other (SAVE §3)', () => {
     const store = memory(raw({ ...defaultMeta(), roots: { page: 6 }, achievements: { 'x.y': 5 }, counts: { 'z': 1 } }));
     resetMeta(loadMeta(store), store);
     expect(loadMeta(store)).toEqual(DEFAULT);
+  });
+});
+
+describe('the debug reset in one tab (S.meta.reset, SAVE §4)', () => {
+  const NOW = 1_700_000_000_000;
+  const BREW: Payload = { potion: 'x', iced: false, contents: 1, x: 0, y: 0, z: 0 };
+  const BOSS: Payload = { boss: 'resistance', floor: 1, how: 'destroyed' };
+  /** A store holding progress: page 4 and one unlock. */
+  const progressed = () => memory(raw({ ...defaultMeta(), roots: { page: 4 }, achievements: { 'brew.first': NOW } }));
+
+  it('resets the tab record and the store to the default, and keeps the staircase and its time', () => {
+    const store = memory(raw(FULL));
+    const record = loadMeta(store);
+    expect(new AchievementKeeper(record, store).reset()).toBe(true);
+    const expected = { v: 2, staircase: true, metAt: 1234, roots: { page: 1 }, achievements: {}, counts: {} };
+    expect(loadMeta(store)).toEqual(expected);
+    expect(record).toEqual(expected);
+  });
+
+  it('the next save by this tab does not merge the old unlocks and page back', () => {
+    const store = progressed();
+    const record = loadMeta(store);
+    new AchievementKeeper(record, store).reset();
+    saveMeta(record, store);
+    expect(loadMeta(store)).toEqual(DEFAULT);
+  });
+
+  it('after the reset an unlock saves only what happened after it', () => {
+    const store = progressed();
+    const record = loadMeta(store);
+    const keeper = new AchievementKeeper(record, store);
+    keeper.reset();
+    const fresh = keeper.track('bossOvercome', BOSS, NOW + 1000);
+    expect(fresh.map(n => n.id)).toEqual(['boss.resistance.destroyed']);
+    const stored = loadMeta(store);
+    expect(stored.achievements).toEqual({ 'boss.resistance.destroyed': NOW + 1000 });
+    expect(stored.roots.page).toBe(1);
+    expect(record.achievements).toEqual(stored.achievements);
+  });
+
+  it('the notices still queued are cleared, so no old card is shown', () => {
+    const store = memory();
+    const keeper = new AchievementKeeper(loadMeta(store), store);
+    keeper.track('brew', BREW, NOW);
+    expect(keeper.pending).toBe(1);
+    keeper.reset();
+    expect(keeper.pending).toBe(0);
+    expect(keeper.showable).toBe(0);
+    expect(keeper.peek()).toBeUndefined();
+  });
+
+  it('the sandbox and the lab refuse: nothing is reset and nothing is written', () => {
+    const store = progressed();
+    const record = loadMeta(store);
+    const keeper = new AchievementKeeper(record, store);
+    keeper.live = false;
+    expect(keeper.reset()).toBe(false);
+    expect(store.writes).toBe(0);
+    expect(record.roots.page).toBe(4);
+    expect(loadMeta(store).roots.page).toBe(4);
+  });
+
+  it('a read-only record (a newer build wrote it) refuses and is never written', () => {
+    const newer = raw({ v: 3, roots: { page: 9 } });
+    const store = memory(newer);
+    const record = loadMeta(store);
+    expect(new AchievementKeeper(record, store).reset()).toBe(false);
+    expect(store.value).toBe(newer);
+    expect(store.writes).toBe(0);
+  });
+
+  it('a store that now holds a newer build\'s record refuses, and this tab keeps its progress', () => {
+    const store = progressed();
+    const record = loadMeta(store);
+    const newer = raw({ v: 3, roots: { page: 9 } });
+    store.value = newer;
+    expect(new AchievementKeeper(record, store).reset()).toBe(false);
+    expect(store.value).toBe(newer);
+    expect(record.roots.page).toBe(4);
+    expect(record.achievements).toEqual({ 'brew.first': NOW });
   });
 });

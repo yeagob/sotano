@@ -810,6 +810,16 @@ export class Game {
     this.debugRootsPage = page === null ? null : Math.max(1, Math.floor(page));
   }
 
+  /**
+   * Debug (the console's S.meta.reset, SAVE §4): forgets the Roots' progress in the save and in this tab. The run under way
+   * advances nothing when it ends. Returns false, and changes nothing, in the sandbox and on a newer build's record.
+   */
+  forgetRoots(): boolean {
+    if (!this.keeper.reset()) return false;
+    this.roots?.forget();
+    return true;
+  }
+
   /** Debug (the console's S.mastery): the mastery level the next runs start with, in memory only; the save is not written. Returns it. */
   setMastery(level: number): number {
     this.debugMastery = clampLevel(level);
