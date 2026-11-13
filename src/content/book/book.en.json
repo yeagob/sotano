@@ -12,7 +12,7 @@
         },
         "roots-step": {
           "north": { "id": "1-step-n", "layout": "lesson", "title": "Good and bad", "text": "Your intentions are good or bad. Good ones heal and make creatures grow; bad ones break blocks and hurt.", "image": "lesson/polarity", "key": "polarity" },
-          "south": { "id": "1-step-s", "layout": "lesson", "title": "Move and jump", "text": "{jump} jumps one block, never two. Break some dirt, walk into it to pick it up, set it by the wall, climb.", "image": "lesson/step", "key": "move" }
+          "south": { "id": "1-step-s", "layout": "lesson", "title": "Move and jump", "text": "Press {jump} to jump one block, never two. Break some dirt, walk into it to pick it up, set it by the wall, climb.", "image": "lesson/step", "key": "move" }
         },
         "roots-dig": {
           "north": { "id": "1-dig-n", "layout": "lesson", "title": "Behind the wall", "text": "Every wall was once built to keep you safe. You can always break one, or build a better one.", "image": "lesson/behind-wall" },
@@ -40,7 +40,7 @@
         },
         "roots-spring": {
           "north": { "id": "1-spring-n", "layout": "lesson", "title": "Fire and lava", "text": "Not in the roots. Deeper down, fire and lava burn. Water puts out fire and turns lava into stone.", "image": "lesson/lava" },
-          "south": { "id": "1-spring-s", "layout": "lesson", "title": "Water", "text": "Wade through the shallows. In deep water, {jump} swims you up.", "image": "lesson/water", "key": "jump" }
+          "south": { "id": "1-spring-s", "layout": "lesson", "title": "Water", "text": "Wade through the shallows. In deep water, press {jump} to swim up.", "image": "lesson/water", "key": "jump" }
         },
         "roots-gift": {
           "north": { "id": "1-gift-n", "layout": "lesson", "title": "The Sanctuary", "text": "The Boundary keeps this chest. Take the quick gift, or sit a short meditation for a better one.", "image": "lesson/sanctuary" },
@@ -317,7 +317,7 @@
     }
   ],
   "easy": {
-    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Move and jump", "text": "{jump} jumps one block, never two. The steps you built are still here; deeper down, build your own.", "key": "move", "image": "lesson/step" } },
+    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Move and jump", "text": "Press {jump} to jump one block, never two. The steps you built are still here; deeper down, build your own.", "key": "move", "image": "lesson/step" } },
     "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "This wall once stood in your way. You broke it, and the way stays open. Bad intentions break; good ones mend.", "key": "cast", "image": "lesson/dig" } },
     "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "The way out", "text": "You built your way out of here once, and the roots kept your steps. Deeper down: carry a block, set it, step up.", "key": "place", "image": "lesson/pit" } },
     "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Your bridge", "text": "Your bridge still stands. Deeper down, stand at the edge, place a block in front of you, step on, and again.", "key": "place", "image": "lesson/bridge" } },

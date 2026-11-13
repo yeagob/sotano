@@ -711,7 +711,7 @@ const messages = {
 
   // ── the achievement card (ACHIEVEMENTS §4) ──
   'achievement.card.kicker': 'Achievement',
-  'achievement.card.gain': 'Next time you wake in the Roots: {gain}',
+  'achievement.card.gain': 'On your next waking. {gain}',
   'achievement.card.mastery': 'Mastery of the Roots: {level} of 100',
 
   // ── the mastery steps (REWARDS §7): what the new level brings ──

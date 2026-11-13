@@ -12,7 +12,7 @@
         },
         "roots-step": {
           "north": { "id": "1-step-n", "layout": "lesson", "title": "Buenas y malas", "text": "Tus intenciones son buenas o malas. Las buenas curan y hacen crecer a las criaturas; las malas rompen y hieren.", "image": "lesson/polarity", "key": "polarity" },
-          "south": { "id": "1-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "{jump}: saltas un bloque, nunca dos. Rompe tierra, camina hacia ella para cogerla, ponla junto al muro y sube.", "image": "lesson/step", "key": "move" }
+          "south": { "id": "1-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "Pulsa {jump} para saltar un bloque, nunca dos. Rompe tierra, acércate para cogerla, ponla junto al muro y sube.", "image": "lesson/step", "key": "move" }
         },
         "roots-dig": {
           "north": { "id": "1-dig-n", "layout": "lesson", "title": "Tras el muro", "text": "Cada muro se levantó un día para protegerte. Siempre puedes romper uno, o construir uno mejor.", "image": "lesson/behind-wall" },
@@ -40,7 +40,7 @@
         },
         "roots-spring": {
           "north": { "id": "1-spring-n", "layout": "lesson", "title": "Fuego y lava", "text": "En las raíces no hay. Más abajo, el fuego y la lava queman. El agua apaga el fuego y vuelve piedra la lava.", "image": "lesson/lava" },
-          "south": { "id": "1-spring-s", "layout": "lesson", "title": "Agua", "text": "Cruza andando lo poco hondo. En agua honda, {jump} te hace subir a nado.", "image": "lesson/water", "key": "jump" }
+          "south": { "id": "1-spring-s", "layout": "lesson", "title": "Agua", "text": "Cruza andando lo poco hondo. En agua honda, pulsa {jump} para subir a nado.", "image": "lesson/water", "key": "jump" }
         },
         "roots-gift": {
           "north": { "id": "1-gift-n", "layout": "lesson", "title": "El Santuario", "text": "El Límite guarda este cofre. Toma el regalo rápido, o haz una meditación breve y recibe uno mejor.", "image": "lesson/sanctuary" },
@@ -317,7 +317,7 @@
     }
   ],
   "easy": {
-    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "{jump}: saltas un bloque, nunca dos. Tus escalones siguen aquí; más abajo, constrúyete los tuyos.", "key": "move", "image": "lesson/step" } },
+    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "Pulsa {jump} para saltar un bloque, nunca dos. Tus escalones siguen aquí; más abajo, constrúyete los tuyos.", "key": "move", "image": "lesson/step" } },
     "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Paso abierto", "text": "Este muro te cortaba el paso. Lo rompiste, y el paso sigue abierto. Las intenciones malas rompen; las buenas reparan.", "key": "cast", "image": "lesson/dig" } },
     "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "La salida", "text": "Una vez saliste de aquí construyendo, y las raíces guardaron tus pasos. Más abajo: lleva un bloque, ponlo y súbete.", "key": "place", "image": "lesson/pit" } },
     "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Tu puente", "text": "Tu puente sigue en pie. Más abajo, ponte en el borde, coloca un bloque delante, súbete y vuelve a empezar.", "key": "place", "image": "lesson/bridge" } },

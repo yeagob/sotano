@@ -32,6 +32,13 @@ function ownPanels(book: Book, page: number): Panel[] {
   return out;
 }
 
+/** The remembered panels of the easy layout (EASY-LAYOUT §4), in book order: the easy-* ids. */
+function rememberedPanels(book: Book): Panel[] {
+  const out: Panel[] = [];
+  for (const slot of Object.values(book.easy ?? {})) for (const p of Object.values(slot ?? {})) if (p) out.push(p);
+  return out;
+}
+
 function carved(panel: Panel, page: number, voice: PanelVoice): { canvas: HTMLCanvasElement; report: PanelReport } {
   const c = document.createElement('canvas');
   c.width = PANEL_W; c.height = PANEL_H;
@@ -61,6 +68,7 @@ export async function bookGallery(kit: GalleryKit, params: URLSearchParams) {
   const books = Object.fromEntries(LANGS.map(l => [l, loadBook(l)])) as Record<Lang, Book>;
   const ids = new Set<string>();
   for (const l of LANGS) for (let page = 1; page <= pageCount(books[l]); page++) for (const p of ownPanels(books[l], page)) for (const id of panelImageIds(p)) ids.add(id);
+  for (const l of LANGS) for (const p of rememberedPanels(books[l])) for (const id of panelImageIds(p)) ids.add(id);
   await panelImages.preload(ids);
 
   const summary = document.createElement('pre');
@@ -71,11 +79,18 @@ export async function bookGallery(kit: GalleryKit, params: URLSearchParams) {
   const overflow: string[] = [], missing = new Map<string, Set<string>>();
   if (!roomOnly) for (const lang of langs) {
     const book = books[lang];
+    const sections: { title: string; page: number; panels: Panel[] }[] = [];
     for (let page = 1; page <= pageCount(book); page++) {
       if (pageOnly !== undefined && page !== pageOnly) continue;
-      const panels = ownPanels(book, page).filter(p => !idOnly || p.id === idOnly);
+      sections.push({ title: `${lang.toUpperCase()} · page ${page} (${book.pages[page - 1].id}, ${book.pages[page - 1].kind})`, page, panels: ownPanels(book, page) });
+    }
+    // the remembered panels (easy-*): the easy layout's slots, carved as page 1 (they carry no page number)
+    if (pageOnly === undefined) sections.push({ title: `${lang.toUpperCase()} · remembered panels (easy layout, easy-*)`, page: 1, panels: rememberedPanels(book) });
+    for (const sec of sections) {
+      const page = sec.page;
+      const panels = sec.panels.filter(p => !idOnly || p.id === idOnly);
       if (panels.length === 0) continue;
-      kit.head(`${lang.toUpperCase()} · page ${page} (${book.pages[page - 1].id}, ${book.pages[page - 1].kind})`);
+      kit.head(sec.title);
       const r = kit.row();
       for (const panel of panels) {
         for (const device of byDevice(panel) ? devices : [devices[0] ?? 'keyboard']) {
