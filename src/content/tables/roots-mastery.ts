@@ -76,7 +76,8 @@ const SANCTUARY_AT = 100;
 
 /** Clamps a level to the table's range. Not a number reads as 0; a fraction is floored. */
 export function clampLevel(level: number): number {
-  return Number.isNaN(level) ? 0 : Math.min(MASTERY_MAX, Math.max(0, Math.floor(level)));
+  const n = Number(level);
+  return Number.isNaN(n) ? 0 : Math.min(MASTERY_MAX, Math.max(0, Math.floor(n)));
 }
 
 const round2 = (x: number) => Math.round(x * 100) / 100;

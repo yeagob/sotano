@@ -341,6 +341,19 @@ describe('the roots: a fixed tutorial (owner, 2026-10-28)', () => {
   });
 });
 
+describe('the giant tree takes only whole story numbers', () => {
+  it('a NaN or fractional story is ignored: nothing grows and no table entry is read (tree.ts range)', async () => {
+    const { GiantTree, TREE_STORIES } = await import('../src/world/tree');
+    const { VoxelWorld } = await import('../src/world/world');
+    const { WORLD_SIZE } = await import('../src/world/floor');
+    const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
+    const t = new GiantTree(w, SURFACE_Y, i => new Rng(9 + i));
+    for (const bad of [Number.NaN, 0.5, -1, TREE_STORIES.length, Number.POSITIVE_INFINITY]) expect(() => t.grow(bad)).not.toThrow();
+    expect(t.voxels).toBe(0);
+    for (let i = 0; i < TREE_STORIES.length; i++) expect(t.isGrown(i)).toBe(false);
+  });
+});
+
 describe('rooms you build your way through', () => {
   it('on every floor at least half of the rooms that fight need building (by weight)', async () => {
     const { needsBuilding } = await import('../src/content/rooms');

@@ -220,6 +220,8 @@ describe('bounded (REWARDS §6)', () => {
     expect(clampLevel(Number.NaN)).toBe(0);
     expect(clampLevel(Number.POSITIVE_INFINITY)).toBe(100);
     expect(clampLevel(7.9)).toBe(7);
+    // the console's S.mastery() with no number: 0, never a NaN that would ride into the next run
+    expect(clampLevel(undefined as unknown as number)).toBe(0);
     expect(rootsRewards(-5)).toEqual(rootsRewards(0));
     expect(rootsRewards(250)).toEqual(rootsRewards(100));
   });

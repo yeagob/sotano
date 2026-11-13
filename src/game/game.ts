@@ -3576,7 +3576,7 @@ export class Game {
 
   private stream() {
     const s = this.storyOf(this.player.eye.y);
-    if (s === this.story) return;
+    if (!Number.isFinite(s) || s === this.story) return;
     this.story = s;
     for (const n of [s - 1, s, s + 1]) {
       const i = -n - 1;
