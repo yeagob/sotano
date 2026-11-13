@@ -569,7 +569,10 @@ interface Slot {
   readonly texture: THREE.CanvasTexture;
   readonly room: RoomKey;
   readonly side: Side;
+  /** The panel on the wall now (what `shownAt` reports). */
   shown?: Shown;
+  /** The last panel asked for, possibly still waiting for its images: what a redraw carves (`redraw`). */
+  requested?: Shown;
   /** Bumped by every show: a load that finishes after a newer show is dropped. */
   token: number;
 }
@@ -627,17 +630,22 @@ export class Tablets {
     if (!slot) throw new Error(`Tablets.show: ${room} is not mounted`);
     const token = ++slot.token;
     const ids = panelImageIds(panel);
+    slot.requested = { panel, page };
     const carve = () => this.carveInto(slot, { panel, page }, voice);
     if (this.images.settled(ids)) return Promise.resolve(carve());
     return this.images.preload(ids).then(() => (token === slot.token && !this.disposed ? carve() : { id: panel.id, overflow: [], missing: [] }));
   }
 
-  /** The language or the device changed: carve every slot again (the same panel ids, from that language's book). */
+  /**
+   * The language or the device changed: every slot carves its last REQUESTED panel again (the same panel id, from that
+   * language's book). Not the one on the wall: a panel still waiting for its image was requested, and the keeper has
+   * already recorded its page as drawn, so a redraw must carry it on, never drop it (the wall would stay on the old page).
+   */
   redraw() {
     const voice = currentVoice();
     let book: Book | undefined;
     for (const slot of this.slots.values()) {
-      const s = slot.shown;
+      const s = slot.requested;
       if (!s) continue;
       book ??= loadBook(voice.lang);
       void this.show(slot.room, slot.side, panelById(book, s.panel.id) ?? s.panel, s.page, voice);
