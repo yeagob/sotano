@@ -43,6 +43,12 @@ export class AchievementKeeper {
   get pending(): number { return this.queue.length; }
 
   /**
+   * The notices that can be shown from this session: none while the keeper is not live (the sandbox and the lab show no
+   * card), so a notice a real run queued never holds back a toll in a sandbox (ACHIEVEMENTS §4).
+   */
+  get showable(): number { return this.live && !this.record.readOnly ? this.queue.length : 0; }
+
+  /**
    * Feeds one event to the catalogue. Counts and unlocks are saved at once when they change. Every achievement that
    * unlocks is queued as one notice, in catalogue order, with the level it brings. Returns the new notices.
    */
@@ -91,9 +97,10 @@ export function gainText(gains: readonly GainLine[], tr: (key: MessageKey, param
 }
 
 /**
- * Whether the toll window may open now. It waits while an achievement card is queued or on screen, so the card is read
- * first (ACHIEVEMENTS §4). Pure, so the rule is tested without the game.
+ * Whether the toll window may open now. It waits while an achievement card that can be shown is queued or on screen, so
+ * the card is read first (ACHIEVEMENTS §4). `showableCards` is the keeper's `showable`, never `pending`: a card no
+ * session can show must not block. Pure, so the rule is tested without the game.
  */
-export function tollMayOpen(pendingCards: number, cardOpen: boolean): boolean {
-  return pendingCards === 0 && !cardOpen;
+export function tollMayOpen(showableCards: number, cardOpen: boolean): boolean {
+  return showableCards === 0 && !cardOpen;
 }

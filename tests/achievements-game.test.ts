@@ -249,9 +249,20 @@ describe('the toll waits for an open card (ACHIEVEMENTS §4)', () => {
     const { record, store } = fresh();
     const k = session(record, store);
     k.track('bossOvercome', BOSS_DOWN, NOW);
-    expect(tollMayOpen(k.pending, false)).toBe(false);
+    expect(tollMayOpen(k.showable, false)).toBe(false);
     k.take();
-    expect(tollMayOpen(k.pending, false)).toBe(true);
+    expect(tollMayOpen(k.showable, false)).toBe(true);
+  });
+
+  it('a card queued by a real run does not hold a toll in a sandbox or a lab, which show no card', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    k.track('bossOvercome', BOSS_DOWN, NOW);
+    expect(k.pending).toBe(1);
+    // the same session now plays a sandbox: its keeper is not live, and the queued card can never be shown there
+    k.live = false;
+    expect(k.showable).toBe(0);
+    expect(tollMayOpen(k.showable, false)).toBe(true);
   });
 });
 

@@ -3688,7 +3688,7 @@ export class Game {
     if (tollOf(k)) {
       if (!this.standsOnHole(hole)) st.asked = false;
       // the toll waits for an open achievement card (ACHIEVEMENTS §4): it is asked once the card is read
-      else if (!st.asked && tollMayOpen(this.keeper.pending, this.hud.bannerOpen)) { st.asked = true; this.hud.openToll(this, k); }
+      else if (!st.asked && tollMayOpen(this.keeper.showable, this.hud.bannerOpen)) { st.asked = true; this.hud.openToll(this, k); }
       return;
     }
     if (this.standsOnHole(hole)) {
