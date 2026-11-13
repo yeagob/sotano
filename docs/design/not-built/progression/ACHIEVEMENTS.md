@@ -105,13 +105,13 @@ The catalogue is data, in `src/content/achievements.ts`:
 ```ts
 interface AchievementDef {
   id: string;                                    // stable, `^[a-z0-9.-]+$`
-  on: keyof GameEvents;                          // the event that may unlock it
+  on: AchievementEvent;                          // one of ACHIEVEMENT_EVENTS: the event that may unlock it
   where?: Readonly<Record<string, string | number | boolean | readonly (string | number)[]>>;  // payload fields that must match; a list means any of them
   times?: number;                                // matching events needed across runs (default 1)
 }
 ```
 
-The 40 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. One tracker in the game listens to every event the catalogue names, matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for (then the event is added like any event: emit site, synergy-matrix sample, contract list).
+The 40 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
 New events the 40 need (`src/game/events.ts`):
 
@@ -125,9 +125,9 @@ New events the 40 need (`src/game/events.ts`):
 Rules the tracker keeps:
 
 - An unlocked id is never unlocked again; its counter stops.
-- An entry whose `on` is not an event, or whose `where` names a field the payload does not have, fails the catalogue test (the entries are checked against the event samples of the synergy matrix).
+- An entry whose `on` is not in `ACHIEVEMENT_EVENTS` fails `catalogueErrors` (`src/game/achievements.ts`); an entry whose `where` names a field the event's payload does not have fails the synergy-matrix check, against the event's sample.
 - The sandbox and the lab never unlock achievements and never write the save.
-- The catalogue test checks every id is unique, every id has its two message keys in every language, and the total never exceeds 100.
+- `catalogueErrors` checks every id is shaped and unique, every `on` is in `ACHIEVEMENT_EVENTS`, every `times` is a whole number from 1, every `where` value is a string, number, boolean or a list of them, and the total never exceeds the cap (100). `tests/achievements.test.ts` checks every id has its two message keys in English and in Spanish.
 
 ## 3. Saved
 
@@ -143,7 +143,7 @@ When an achievement is earned the player reads, in one window: its name, its des
   2. `achievement.card.gain`: "Next time you wake in the Roots: {gain}" / "La próxima vez que despiertes en las raíces: {gain}", where `{gain}` is the step line of the new level ([REWARDS §7](../levels/roots/REWARDS.md#7-what-each-step-says)).
   3. `achievement.card.mastery`: "Mastery of the Roots: {level} of 100" / "Maestría de las raíces: {level} de 100".
 - **Kicker:** `achievement.card.kicker`: "Achievement" / "Logro".
-- **When it shows.** The unlock is saved at once; the card waits for a calm moment: no other blocking window open (item banner, presence card or offer, toll, menu, death screen, Sanctuary), and the player not in a sealed room with live projections. After a boss is overcome the room is cleared, so the card shows at once, before the way down cracks open; the toll window waits until the card is closed. Pending cards are kept in order and shown one at a time; the HUD never stacks them. Built in D2 (`game/achievement-keeper.ts`, `game.ts` `showAchievement`): the queue is kept across runs, not dropped at a run's end. This departs from the first draft's default, because a page achievement (`book.page.7`) is earned by the run's end itself and its card would otherwise never show; the owner should confirm it (open question below).
+- **When it shows.** The unlock is saved at once; the card waits for a calm moment: no other blocking window open (item banner, presence card or offer, toll, menu, death screen, Sanctuary), and the player not in a sealed room with live projections. After a boss is overcome the room is cleared, so the card shows at once, before the way down cracks open; the toll window waits until the card is closed, and only for a card a session can show (a sandbox or the lab shows none, so a queued card never holds its toll). Pending cards are kept in order and shown one at a time; the HUD never stacks them. A card leaves the queue only when the player confirms it. A card cut off before that (a restart, a death, another banner, a jump to a floor's spawn) stays first in the queue and is shown again at the next calm moment, so no unlock is lost. Built in D2 (`game/achievement-keeper.ts`, `game.ts` `showAchievement`): the queue is kept across runs, not dropped at a run's end. This departs from the first draft's default, because a page achievement (`book.page.7`) is earned by the run's end itself and its card would otherwise never show; the owner should confirm it (open question below).
 - **Juice.** A burst of gold motes around the player, a soft rising chime (a new short WebAudio cue, gentle, no repetition), no screen shake. The card is redrawn on a language change like the item banner (`Hud.relocalize`).
 - **Cap.** At level 100 the gain line names no step if none is left; the mastery line still shows 100 of 100.
 
