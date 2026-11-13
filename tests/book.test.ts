@@ -13,6 +13,9 @@ import { BOSS_BY_ID } from '../src/content/bosses';
 import { CREATURE_BY_ID } from '../src/content/creatures';
 import { ENEMY_BY_ID } from '../src/content/enemies';
 import { PRESENCE_BY_ID } from '../src/content/presences';
+import boundary from '../src/content/presences/boundary';
+import { DEITIES } from '../src/sky/creatures/deities';
+import { MINIONS } from '../src/sky/creatures/minions';
 import { LESSON_CONTROLS } from '../src/input/labels';
 
 // The shipped files as typed books. The 'real files pass' test proves them; the loader itself is
@@ -70,6 +73,54 @@ describe('the shipped book', () => {
     }
     expect(images.size).toBeGreaterThan(0);
     for (const id of images) expect(resolveImage(id), id).toBeDefined();
+  });
+});
+
+describe('which pages fill which slots (owner, 2026-11-13)', () => {
+  /** The slots a page of a book fills, as `room side`. */
+  const filled = (book: Book, page: number) => Object.entries(book.pages[page - 1].panels)
+    .flatMap(([room, slot]) => Object.keys(slot ?? {}).map(side => `${room} ${side}`));
+
+  it('pages 3 to 6 each fill all 22 slots, in both languages', () => {
+    for (const lang of ['en', 'es'] as const) {
+      for (let page = 3; page <= 6; page++) {
+        for (const [room, side] of ROOM_KEYS.flatMap(r => SIDES.map(s => [r, s] as const))) {
+          expect(shipped(lang).pages[page - 1].panels[room]?.[side], `${lang} page ${page} ${room} ${side}`).toBeDefined();
+        }
+        expect(filled(shipped(lang), page).length, `${lang} page ${page}`).toBe(22);
+      }
+    }
+  });
+
+  it('on pages 3 to 6 no slot shows a panel of an earlier page, in either layout', () => {
+    for (const lang of ['en', 'es'] as const) {
+      for (let page = 3; page <= 6; page++) {
+        for (const room of ROOM_KEYS) {
+          for (const side of SIDES) {
+            for (const layout of ['teaching', 'easy'] as const) {
+              expect(panelAt(shipped(lang), page, room, side, layout).id, `${lang} page ${page} ${room} ${side} ${layout}`).toBe(panelIdOf(page, room, side));
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it('page 2 keeps its nine plate walls, as the owner likes it', () => {
+    expect(filled(shipped('en'), 2).sort()).toEqual([
+      'roots-bridge south', 'roots-crates north', 'roots-dig north', 'roots-hall south', 'roots-mend south',
+      'roots-pit south', 'roots-seal north', 'roots-spring north', 'roots-step south',
+    ]);
+  });
+
+  it('no two panels of pages 3 to 6 say the same thing: every title on a page is different', () => {
+    for (const lang of ['en', 'es'] as const) {
+      for (let page = 3; page <= 6; page++) {
+        const titles = Object.values(shipped(lang).pages[page - 1].panels)
+          .flatMap(slot => Object.values(slot ?? {}).map(panel => (panel as { title: string }).title));
+        expect(new Set(titles).size, `${lang} page ${page}`).toBe(22);
+      }
+    }
   });
 });
 
@@ -338,16 +389,20 @@ describe('validation rules (BOOK-DATA §6), one broken copy each', () => {
 });
 
 describe('the image manifest (images.ts)', () => {
-  it('lists thirty-three lesson captures and nineteen portraits, each once', () => {
-    expect(LESSON_IMAGES.length).toBe(33);
-    expect(new Set(LESSON_IMAGES).size).toBe(33);
-    expect(BESTIARY_PORTRAITS.length).toBe(19);
-    expect(new Set(BESTIARY_PORTRAITS).size).toBe(19);
+  it('lists thirty-nine lesson captures and forty-five portraits, each once', () => {
+    expect(LESSON_IMAGES.length).toBe(39);
+    expect(new Set(LESSON_IMAGES).size).toBe(39);
+    expect(BESTIARY_PORTRAITS.length).toBe(45);
+    expect(new Set(BESTIARY_PORTRAITS).size).toBe(45);
   });
 
-  it('every portrait is an entity of the game', () => {
+  it('every portrait is an entity of the game: a projection, creature, boss or presence, the Boundary, or a sky guardian or herd', () => {
+    const sky = (id: string) => {
+      const [role, animal] = id.split(/-(.*)/s);
+      return (role === 'guardian' && animal in DEITIES) || (role === 'herd' && animal in MINIONS);
+    };
     for (const id of BESTIARY_PORTRAITS) {
-      const known = ENEMY_BY_ID.has(id) || CREATURE_BY_ID.has(id) || BOSS_BY_ID.has(id) || PRESENCE_BY_ID.has(id);
+      const known = ENEMY_BY_ID.has(id) || CREATURE_BY_ID.has(id) || BOSS_BY_ID.has(id) || PRESENCE_BY_ID.has(id) || id === boundary.id || sky(id);
       expect(known, id).toBe(true);
     }
   });
@@ -710,12 +765,19 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
     }
   });
 
-  it('the easy layout shows the remembered panel of the four lesson walls on every page', () => {
+  it('the easy layout shows the remembered panel of the four lesson walls on every page that leaves the slot out', () => {
     for (let page = 1; page <= pages; page++) {
-      expect(panelAt(book, page, 'roots-dig', 'south', 'easy')).toBe(remembered('roots-dig', 'south'));
-      expect(panelAt(book, page, 'roots-pit', 'north', 'easy')).toBe(remembered('roots-pit', 'north'));
-      expect(panelAt(book, page, 'roots-bridge', 'north', 'easy')).toBe(remembered('roots-bridge', 'north'));
-      expect(panelAt(book, page, 'roots-seal', 'south', 'easy')).toBe(remembered('roots-seal', 'south'));
+      for (const [room, side] of [['roots-dig', 'south'], ['roots-pit', 'north'], ['roots-bridge', 'north'], ['roots-seal', 'south']] as const) {
+        const expected = (page >= 2 && own(page, room, side)) || remembered(room, side);
+        expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(expected);
+      }
+    }
+  });
+
+  it('pages 1, 2 and the book pages leave the four lesson walls to the remembered panels; pages 3 to 6 fill them', () => {
+    for (const [room, side] of [['roots-dig', 'south'], ['roots-pit', 'north'], ['roots-bridge', 'north'], ['roots-seal', 'south']] as const) {
+      for (const page of [1, 2, 7, 8, 9]) expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(remembered(room, side));
+      for (let page = 3; page <= 6; page++) expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(own(page, room, side));
     }
   });
 
@@ -739,8 +801,8 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
     expect(panelAt(book, 1, 'roots-gift', 'north', 'easy')).toBe(pageOne('roots-gift', 'north'));
   });
 
-  it('a remembered slot on page 3 in the teaching layout shows the exercise, as before', () => {
-    expect(panelAt(book, 3, 'roots-dig', 'south', 'teaching')).toBe(pageOne('roots-dig', 'south'));
+  it('a remembered slot on page 2 in the teaching layout shows the exercise, as before', () => {
+    expect(panelAt(book, 2, 'roots-dig', 'south', 'teaching')).toBe(pageOne('roots-dig', 'south'));
   });
 
   it('throws on a layout that does not exist', () => {

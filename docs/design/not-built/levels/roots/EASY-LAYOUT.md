@@ -156,7 +156,7 @@ Which panel a slot shows, for a page *n* and a layout:
 2. Otherwise, in the easy layout, the slot's remembered panel, if it has one.
 3. Otherwise, page 1's panel.
 
-So the remembered layer sits between page 1 and every later page. Pages 2 to 6 never fill the four lesson-wall slots, so those slots show the remembered panel on every page from 2 on. The step room's south slot is a plate-wall slot: pages 2 to 6 fill it with their own panel, and the remembered panel shows there only on book pages (which leave it out) and when browsing back to page 1. In the teaching layout nothing changes: a missing slot shows page 1's panel, as today.
+So the remembered layer sits between page 1 and every later page. Page 2 does not fill the four lesson-wall slots, so they show the remembered panel there; pages 3 to 6 fill all 22 slots (owner, 2026-11-13, [BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)), so on them no remembered panel shows. The step room's south slot is a plate-wall slot: pages 2 to 6 fill it with their own panel. A remembered panel therefore shows only on page 1 browsed back to in the easy rooms, on page 2 (the four lesson walls) and on the book pages (7 on) that leave its slot out. In the teaching layout nothing changes: a missing slot shows page 1's panel, as today.
 
 The remembered slots: `roots-dig` south, `roots-pit` north, `roots-bridge` north, `roots-seal` south (the four lesson walls whose exercise is gone) and `roots-step` south (the page-1 text that tells the player to "set it by the wall, climb"). The step room's lesson wall (north, "Good and bad"), the hall, mend, crates, spring, gift and door lessons all stay true in the easy layout, and stay as they are.
 

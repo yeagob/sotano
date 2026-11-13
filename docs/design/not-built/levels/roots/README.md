@@ -48,6 +48,6 @@ The plan is `TUTORIAL_LAYOUT` (`src/world/floorplan.ts`) with one template per c
 - **Current page**: the page the player has reached; saved between runs.
 - **Shown page**: the page the walls show in this run. It starts as the current page and changes only by browsing.
 - **Slot**: one of the 22 panels (11 rooms × north and south).
-- **Lesson wall**: the wall a player walking forward faces on entering a room. It holds the room's lesson on every tutorial page ([PANELS.md](PANELS.md#7-which-wall-holds-the-lesson)); in the easy layout, a lesson whose exercise is gone is told as a remembered panel ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)).
+- **Lesson wall**: the wall a player walking forward faces on entering a room. It holds the room's lesson on pages 1 and 2 ([PANELS.md](PANELS.md#7-which-wall-holds-the-lesson)); in the easy layout, a lesson whose exercise is gone is told as a remembered panel ([EASY-LAYOUT §4](EASY-LAYOUT.md#4-the-panels-which-wall-says-what-from-page-2)). Pages 3 to 6 fill every slot, the lesson walls included: there it is simply the wall read first ([BOOK-DATA §1b](BOOK-DATA.md#1b-which-pages-fill-which-slots-owner-2026-11-13)).
 - **Teaching layout, easy layout**: the two shapes of the Roots. The teaching layout is carved while the current page is 1, the easy layout for every run that starts on page 2 or later ([EASY-LAYOUT](EASY-LAYOUT.md)).
 - **Mastery level**: the number of achievements unlocked, at most 100 ([MASTERY](../../progression/MASTERY.md)).

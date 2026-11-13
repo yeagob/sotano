@@ -26,11 +26,24 @@ Up: [the Roots as an evolving tutorial](README.md) · Status: decided (owner, is
 
 An optional top-level `easy` object sits beside `pages`: room key → side → panel, for the five **remembered panels** of the easy layout (EASY-LAYOUT §4). It has the same panel schema as a page, its ids are `easy-<room>-<side>`, and it is read only in the easy layout (section 7). Its five slots are the ones whose page-1 panel teaches an exercise the easy rooms no longer hold: `roots-step` south, `roots-dig` south, `roots-pit` north, `roots-bridge` north, `roots-seal` south.
 
+Since pages 3 to 6 fill every slot (section 1b), a remembered panel now shows only where a page leaves its slot out in the easy rooms: on page 1 when the player browses back to it, on page 2 (which fills only its nine plate walls) and on the book pages (7 on), which leave most slots out. They stay in the file for those pages.
+
 ```json
 "easy": {
   "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "…", "key": "cast", "image": "lesson/dig" } }
 }
 ```
+
+## 1b. Which pages fill which slots (owner, 2026-11-13)
+
+| Page | Slots it fills | What a slot it leaves out shows |
+|---|---|---|
+| 1 | all 22 (the validator requires it) | |
+| 2 | the nine plate walls: the south or north wall of every room except `roots-gift` and `roots-door` (the owner likes page 2 as it is) | page 1's panel, or in the easy layout the slot's remembered panel |
+| 3, 4, 5, 6 | **all 22**: no slot shows a panel of an earlier page, so the whole floor reads one theme (owner: "from page 3 on, ALL the panels change") | nothing: they leave no slot out |
+| 7 on (book) | any, usually one or two | page 1's panel, or in the easy layout the remembered panel |
+
+The test `tests/book.test.ts` ("which pages fill which slots") checks that pages 3 to 6 fill all 22 slots in both languages, that no slot of theirs falls back in either layout, and that page 2 keeps its nine. The slot-by-slot content is in [TUTORIAL-PAGES](TUTORIAL-PAGES.md).
 
 ## 2. Fields
 
@@ -42,7 +55,7 @@ An optional top-level `easy` object sits beside `pages`: room key → side → p
 | `easy` | top | object, optional | Room key → side → panel: the remembered panels of the easy layout (section 1). Each panel follows the rules of a tutorial page panel (lesson, plate or prose; no quote); its id is `easy-<room>-<side>` (`easy-dig-s`, `easy-pit-n`) and is unique in the file with the page ids. Only the easy layout reads it |
 | `id` | page | string, `^[a-z0-9-]+$` | Unique in the file; the same id at the same position in every language. Stable: tests and the gallery refer to pages by id |
 | `kind` | page | `"tutorial"` or `"book"` | Page 1 is `tutorial`. Every `tutorial` page comes before every `book` page. The page stone shows a number only on `book` pages |
-| `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel |
+| `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel (or the remembered one, section 1). By the owner's rule pages 3 to 6 leave none out (section 1b; a test checks it, the validator does not) |
 | `id` | panel | string, `<page>-<room>-<side>` | Required on every panel. The page number (its position in `pages`, from 1), the room key without its `roots-` prefix, and `n` for north or `s` for south: `1-hall-n`, `3-pit-s`, `7-gift-n`. It must match the panel's position, be unique in the file, and be identical in both languages. The renderer draws it very small, like a mason's mark ([PANELS §10](PANELS.md#10-the-panel-id-the-masons-mark)); `panelById(book, id)` finds the panel. Renumbering (a page inserted before others) renumbers the ids: the validator names every id that is out of place |
 | `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"` | Decides which other fields are allowed. `quote` only on `book` pages |
 | `title` | lesson, plate | string | Required. A plate's title is the name of what it shows, in that language's established name |
@@ -64,7 +77,7 @@ No other field is allowed. Every panel has an `id` (above). Prose has no title, 
 - A quotation is not the game's own text. In the file whose `language` equals the quote's `lang`, `text` is the quotation exactly as printed. In the other file, `text` is our faithful translation, and the panel adds the note "Our translation" / "Traducción nuestra" by itself (the `book.quote.translated` message key; nothing in the data says it).
 - `author`, `work`, `publisher`, `year` and `lang` are identical in both files.
 - Every quotation's source has its row in `docs/lore/SOURCES.md` before it enters the book (`sotano-lore`).
-- **Where a quote goes: the end of the page.** A page is read along the forward ring: it begins in the start room (the prose on `roots-hall` → `south`) and ends in the treasure room, the last room before the ring closes. The quote slot is **`roots-gift` → `north`**, the plate wall of the treasure room. On tutorial pages that slot keeps the Sanctuary panel; on a book page it may hold a quote, or nothing (then page 1's Sanctuary panel shows). Any book page may carry one quote or none; the validator allows `quote` in any slot of a book page, and the owner's convention is this one.
+- **Where a quote goes: the end of the page.** A page is read along the forward ring: it begins in the start room (the prose on `roots-hall` → `south`) and ends in the treasure room, the last room before the ring closes. The quote slot is **`roots-gift` → `north`**, the plate wall of the treasure room. On pages 1 and 2 that slot shows the Sanctuary panel, and pages 3 to 6 fill it with their own (section 1b); on a book page it may hold a quote, or nothing (then page 1's Sanctuary panel shows). Any book page may carry one quote or none; the validator allows `quote` in any slot of a book page, and the owner's convention is this one.
 
 **Room keys** are the template ids of the eleven rooms: `roots-hall`, `roots-step`, `roots-dig`, `roots-mend`, `roots-pit`, `roots-bridge`, `roots-seal`, `roots-crates`, `roots-spring`, `roots-gift`, `roots-door`. **Sides** are `north` and `south`.
 
@@ -88,22 +101,23 @@ The validator checks that every id resolves: a bestiary id is an entity with a c
 
 | Set | Command | Output | Size and budget |
 |---|---|---|---|
-| Portraits (19) | `npm run bestiary -- --portrait [ids]` (`scripts/bestiary-capture.mjs`) | `public/book/bestiary/<id>.webp` | 512 × 512 WebP at quality 0.9; each under 60 KB (largest about 41 KB) |
-| Lessons (22 taken) | `npm run book:captures [names]` (`scripts/book-captures.mjs`) | `public/book/lesson/<name>.webp` | 960 × 540 WebP; the crops `counters` and `polarity` are 3× their on-screen size; the quality steps down (0.9, 0.8, 0.7, 0.6, 0.5) only until a file is under 60 KB |
+| Portraits (45: 19 taken, 26 pending) | `npm run bestiary -- --portrait [ids]` (`scripts/bestiary-capture.mjs`) | `public/book/bestiary/<id>.webp` | 512 × 512 WebP at quality 0.9; each under 60 KB (largest about 41 KB) |
+| Lessons (39: 22 taken, 17 pending) | `npm run book:captures [names]` (`scripts/book-captures.mjs`) | `public/book/lesson/<name>.webp` | 960 × 540 WebP; the crops `counters` and `polarity` are 3× their on-screen size; the quality steps down (0.9, 0.8, 0.7, 0.6, 0.5) only until a file is under 60 KB |
 
 - **Portrait mode.** No HUD and no held hand. The subject stands on a one-block stone plinth in an 11 × 9 room (a boss stands on the floor in a 21 × 15 room) and turns to face the camera. The camera uses a 40° lens placed so the subject's drawn extent fills 72 per cent of the frame, levelled on its centre. The shell is `palestone`. `overwhelm` is framed from its other side (`PORTRAIT_SIDE`).
 - **Lessons.** Each lesson is one staged room, one lab script when something must be in flight or burn (thrown cubes, bombs, damage, lava and water), one prep step when the game needs a state set by hand (a missile, a warmth, a grown creature, the toll window), and one eye point and target. The HUD and the hand are hidden unless the lesson is about them (`counters`, `polarity`, the toll windows, the Sanctuary). Every capture runs in English. The scenes are inline in the script rather than in `src/sandbox/scenarios/`: a scenario file joins `npm run sandbox -- --check`, which needs a saved report for each file, and these pictures do not need one.
 - **Fixed inputs.** Every capture uses the sandbox's fixed seed and fixed step, so a re-run gives the same pictures.
-- **Pending (11), not faked.** `ring` (a minimap of the whole Roots needs a real run), `drink` (the sandbox hand holds blocks and parts, not potions), `alembic`, `kitchen` and `recipe` (the floor generator places the labs), `paths` and `state` (the sandbox does not open the inventory screen), `white-bomb` (no coloured explosion hook), `boss-room` (the lit pedestal needs a defeated boss), `parts` (no part pickup hook) and `chests` (the keyhole chest is placed by the floor generator). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
+- **Pending (11), not faked.** `ring` (a minimap of the whole Roots needs a real run), `drink` (the sandbox hand holds blocks and parts, not potions), `alembic`, `kitchen` and `recipe` (the floor generator places the labs), `paths` and `state` (the sandbox does not open the inventory screen), `white-bomb` (no coloured explosion hook), `boss-room` (the lit pedestal needs a defeated boss), `parts` (no part pickup hook) and `chests` (the keyhole chest is placed by the floor generator). Six more came with pages 3 to 6 filling every slot and are not captured yet: `sky`, `warm-boss`, `seal`, `omen`, `room-clear`, `mastery` (what each must show is in [the list below](#new-images-for-pages-3-to-6)). `tests/book-images.test.ts` lists the same ids, and a pending id must have no file.
+- **Pending portraits (26).** The portraits the plates of pages 3 to 6 added are not captured yet: `PENDING_PORTRAITS` in `tests/book-images.test.ts` and in `scripts/bestiary-capture.mjs` (the same list; a pending portrait must have no file). Sixteen are sandbox subjects and are in the script's `PORTRAITS`; the ten sky portraits (`guardian-*`, `herd-*`) are in its `SKY_PORTRAITS`, because portrait mode stages the sandbox only and the sky is not in it: they need the sky route (`SKY_SUBJECTS`) taught to portrait mode, or a square crop of the bestiary's own pictures (`docs/design/built/bestiary/img/<id>.png`). A plate whose portrait is missing draws the neutral placeholder and the gallery flags it yellow.
 - **Content gaps seen in the captures.** `resistance`, `inertia`, `insatiable` and `overwhelm` draw as dark husk bodies with eyes; `overwhelm` is built from Doubt's husk palette (`src/content/bosses/overwhelm.ts`). Their portraits are faithful captures of what the game draws today, and the boss models need their own art. The `convert` lesson shows a projection at warmth 0.95 as a red-brown body rather than gold; the warm glow needs checking against the ledger.
 
 ### Every image the nine pages use
 
-Bestiary (19; each entity has a documentation screenshot in PR #181, and each needs a **new portrait capture** in the portrait mode): `doubt`, `critic`, `panic`, `resistance`, `inertia`, `insatiable`, `overwhelm`, `wonder`, `rootling`, `mossling`, `chirper`, `delver`, `bubbler`, `ferryback`, `leafling`, `star-mite`, `inkmite`, `cinderwalker`, `listener`.
+Bestiary (45): the 19 captured, `doubt`, `critic`, `panic`, `resistance`, `inertia`, `insatiable`, `overwhelm`, `wonder`, `rootling`, `mossling`, `chirper`, `delver`, `bubbler`, `ferryback`, `leafling`, `star-mite`, `inkmite`, `cinderwalker`, `listener`; and the 26 pending ones of pages 3 to 6 ([below](#new-images-for-pages-3-to-6)).
 
-Icons (13, existing art, nothing to capture): `icon/potion/plain-tonic`, `restoring-draught`, `spring-tonic`, `clear-infusion`, `questioning-tincture`, `meal-hearty`; `icon/item/grounding`, `gratitude`, `boxbreathing`, `selfcompassion`; `icon/heart/stone`, `star`, `blood`. The flask icons are still placeholders (one bottle, a liquid colour per potion) until the potion art pass; the plates inherit them.
+Icons (26, existing art, nothing to capture): `icon/potion/plain-tonic`, `restoring-draught`, `spring-tonic`, `clear-infusion`, `questioning-tincture`, `meal-hearty`, `footing-tincture`, `patient-draught`, `berserker-draught`; `icon/item/grounding`, `gratitude`, `boxbreathing`, `selfcompassion`, `visualization`, `secondbrain`, `kaizen`, `stoic`, `acceptance`, `drlauncher`; `icon/heart/stone`, `star`, `blood`, `red`, `blue`, `black`, `berserker`. The flask icons are still placeholders (one bottle, a liquid colour per potion) until the potion art pass; the plates inherit them.
 
-Lesson screenshots (33, **all new captures**; 22 are taken, the 11 marked pending below are not, see [how the pictures are taken](#how-the-pictures-are-taken)):
+Lesson screenshots (39, **all new captures**; 22 are taken, the 17 marked pending are not, see [how the pictures are taken](#how-the-pictures-are-taken)). Pages 3 to 6 also reuse `boss-room`, `practice`, `sanctuary`, `way-down` and `ring` where the picture truly fits the new panel:
 
 | Id | What the capture shows | Where to stage it |
 |---|---|---|
@@ -140,6 +154,57 @@ Lesson screenshots (33, **all new captures**; 22 are taken, the 11 marked pendin
 | `chests` | A locked chest with two keyholes next to a brass-trimmed chest | a sandbox room, floor 2 |
 | `toll` | The toll window on floor 3 | a boss room, floor 3 |
 | `grow` | A Rootling at three times its size | `roots-bridge` |
+| `sky` | The sky above the great tree (pending) | the sky deck (`?sky`) |
+| `warm-boss` | A boss almost warmed to the player's side (pending) | a sandbox boss room, floor 1 |
+| `seal` | A sealed room, its doors shut, a projection inside (pending) | a room of floor 1 |
+| `omen` | An omen's cold motes gathering (pending) | a sandbox room, floor 1 |
+| `room-clear` | A cleared room and what it left (pending) | a room of floor 1 |
+| `mastery` | Loose keys, bombs and hearts in a Roots room at a high mastery (pending) | `roots-hall` at a high mastery level |
+
+### New images for pages 3 to 6
+
+One line per image that pages 3 to 6 added, for whoever captures them. Portraits follow the portrait mode (section 4: no HUD, no hand, the subject facing the camera, 72 per cent of the frame, 512 × 512 WebP under 60 KB); lessons follow the lesson rules (960 × 540, the lesson inside the central third, no on-screen text). After a capture: look at it, remove its id from both pending lists.
+
+Portraits, sandbox (16):
+
+- `bestiary/second-guessing`: Second-Guessing standing on its plinth, floor 3.
+- `bestiary/margin`: the Margin, the Critic's second form, on its plinth, floor 3.
+- `bestiary/alarm`: Alarm, Panic's second form, at rest (not swelling), floor 3.
+- `bestiary/hoard`: the Hoard, its whole mound of crates and stones, floor 3.
+- `bestiary/downpour`: the Downpour, the low ceiling of cloud, framed so its two eyes show, floor 3.
+- `bestiary/threshold-guardian`: the Threshold Guardian, the whole gate (both pillars and the lintel), floor 5.
+- `bestiary/verdict`: the Verdict, the long bench with its seven lecterns, floor 6.
+- `bestiary/grudge`: the Grudge, its back of mud and its two eyes, floor 6.
+- `bestiary/old-rule`: the Old Rule, the tall tablet with its two eyes, floor 6.
+- `bestiary/furnace`: the Furnace, its door-mouth and glowing core, floor 7.
+- `bestiary/impostor`: the Impostor, the brass frame with the small figure inside, floor 7.
+- `bestiary/many-faces`: the Many Faces, the cube with its ring of masks, floor 7.
+- `bestiary/shadow`: the Shadow, the dark figure with its pale base line, floor 9 (it needs a light shell behind it to read).
+- `bestiary/drifter`: a Drifter hovering, its pale plate and dome, floor 5.
+- `bestiary/huddler`: a Huddler on the floor, its rim of frost visible, floor 9.
+- `bestiary/boundary`: the Boundary, the tall limestone column, floor 1.
+
+Portraits, sky (10; portrait mode cannot stage them yet, see above):
+
+- `bestiary/guardian-panda`: the giant panda over its bamboo seat, its face to the camera.
+- `bestiary/herd-panda`: one little panda, sitting or walking.
+- `bestiary/guardian-koala`: the koala on its branch over the Fork, its face to the camera.
+- `bestiary/herd-koala`: one koala of the herd, asleep or hanging under a branch.
+- `bestiary/guardian-elephant`: the elephant's head over the Basin, the trunk visible.
+- `bestiary/herd-elephant`: one young elephant.
+- `bestiary/guardian-lion`: the lion on its Sunning Ledge, the mane visible.
+- `bestiary/herd-lion`: one lion of the pride.
+- `bestiary/guardian-horse`: the horse's head, over a paddock fence or on its paddock.
+- `bestiary/herd-horse`: one horse of the herd.
+
+Lessons (6):
+
+- `lesson/sky`: the sky above the great tree from the sky deck, the first sky floor and its guardian's seat in view, no HUD (page 5, "Above and below").
+- `lesson/warm-boss`: a boss (Resistance) in its room with its warmth near full (`e.warmth = 0.95`), seen from about 8 blocks, as `convert` does for a projection (page 6, "Warm a boss").
+- `lesson/seal`: a room of floor 1 just sealed: a doorway shut by its seal, a projection in the room (page 6, "The seal").
+- `lesson/omen`: an omen half-gathered: the cold motes drifting in to a point on the floor, the crack not yet open (page 6, "Omens").
+- `lesson/room-clear`: a room just cleared, its doors open, a heart, a bomb or a key lying where the last projection was (page 6, "Cleared rooms").
+- `lesson/mastery`: a room of the Roots at a high mastery level, loose keys, bombs and hearts on its floor (page 6, "Mastery").
 
 ## 5. Key caps
 
@@ -181,7 +246,7 @@ The book is checked at build time by a test and again when the game loads it. An
   1. page *n*'s own panel, when *n* is 2 or more and page *n* fills the slot;
   2. in the easy layout (`'easy'`), the slot's remembered panel from `easy`, when it has one;
   3. otherwise page 1's panel.
-  The layout is the last argument and defaults to `'teaching'`, where step 2 never applies, so the rule is the same as before: page *n*'s own panel, otherwise page 1's. An unknown page, room, side or layout throws a `RangeError`. The five remembered slots therefore show their remembered panel on page 1 and on every book page in the easy layout, and page *n*'s own panel on pages 2 to 6 for the step room's south slot, which those pages fill.
+  The layout is the last argument and defaults to `'teaching'`, where step 2 never applies, so the rule is the same as before: page *n*'s own panel, otherwise page 1's. An unknown page, room, side or layout throws a `RangeError`. The five remembered slots therefore show their remembered panel on page 1 and on every book page in the easy layout, and the four lesson-wall slots also on page 2; pages 3 to 6 fill every slot (section 1b), so there every slot shows the page's own panel, and pages 2 to 6 fill the step room's south slot.
 - The book of the player's language is used; switching language redraws every panel at once from the other file (the same page, the same slots).
 - The number of pages is the length of `pages`; both files have the same length by rule 9.
 - A panel is found by its id with `panelById(book, id)` (`src/content/book/index.ts`), in either language's book; `panelIdOf(page, room, side)` gives the id a position must carry.

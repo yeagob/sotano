@@ -39,6 +39,13 @@ const PENDING = {
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss, which the sandbox cannot stage',
   parts: 'the four parts of a released projection: parts are rolled on release; the sandbox has no part pickup hook',
   chests: 'the locked chest with keyholes is a model the floor generator places; the sandbox cannot place it',
+  // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet; BOOK-DATA §4 says what each must show
+  sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
+  'warm-boss': 'a boss nearly warmed to your side: not captured yet (a sandbox boss room with its warmth set, like convert)',
+  seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
+  omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
+  'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',
+  mastery: 'loose keys, bombs and hearts the Roots lay out at a high mastery: needs a real run of floor 0 at that level',
 };
 
 // Room helpers: rows are z (north to south), each row is x (west to east). '.' is air.

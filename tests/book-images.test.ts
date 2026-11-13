@@ -28,7 +28,23 @@ const PENDING: Record<string, string> = {
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss',
   parts: 'the four parts of a released projection: the sandbox has no part pickup hook',
   chests: 'the locked chest with keyholes is a model the floor generator places',
+  // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet (BOOK-DATA §4 says what each must show)
+  sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
+  'warm-boss': 'a boss nearly warmed to your side: not captured yet (a sandbox boss room with its warmth set, like convert)',
+  seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
+  omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
+  'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',
+  mastery: 'loose keys, bombs and hearts the Roots lay out at a high mastery: needs a real run of floor 0 at that level',
 };
+
+// The portraits that are not captured yet (scripts/bestiary-capture.mjs, PENDING_PORTRAITS). Each must have no file;
+// a plate using one draws the neutral placeholder until it is captured.
+const PENDING_PORTRAITS: readonly string[] = [
+  'second-guessing', 'margin', 'alarm', 'hoard', 'downpour', 'threshold-guardian', 'verdict', 'grudge',
+  'old-rule', 'furnace', 'impostor', 'many-faces', 'shadow', 'drifter', 'huddler', 'boundary',
+  'guardian-panda', 'herd-panda', 'guardian-koala', 'herd-koala', 'guardian-elephant', 'herd-elephant',
+  'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse',
+];
 
 /** Every `image` id of both book files. */
 function imageIds(book: { pages: { panels: Record<string, Record<string, { image?: string }>> }[] }): string[] {
@@ -72,6 +88,7 @@ describe('the book pictures', () => {
       const ref = resolveImage(id)!;
       const name = id.split('/')[1];
       if (ref.kind === 'lesson' && PENDING[name]) return false;
+      if (ref.kind === 'portrait' && PENDING_PORTRAITS.includes(name)) return false;
       return !existsSync(join(root, 'public', ref.kind === 'portrait' || ref.kind === 'lesson' ? ref.file : ''));
     });
     expect(missing).toEqual([]);
@@ -81,6 +98,12 @@ describe('the book pictures', () => {
     const named = Object.keys(PENDING).filter(name => existsSync(join(publicBook, 'lesson', `${name}.webp`)));
     expect(named).toEqual([]);
     for (const name of Object.keys(PENDING)) expect(LESSON_IMAGES).toContain(name);
+  });
+
+  it('a pending portrait has no file and is in the portrait manifest', () => {
+    const named = PENDING_PORTRAITS.filter(id => existsSync(join(publicBook, 'bestiary', `${id}.webp`)));
+    expect(named).toEqual([]);
+    for (const id of PENDING_PORTRAITS) expect(BESTIARY_PORTRAITS).toContain(id);
   });
 
   it('every file in public/book is used by a book page', () => {

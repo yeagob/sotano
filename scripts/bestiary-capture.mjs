@@ -15,7 +15,7 @@
 // Portrait mode (docs/design/not-built/levels/roots/BOOK-DATA.md §4) makes the square pictures the book's
 // plates show, from the same game, with no HUD and no held hand:
 //
-//   npm run bestiary -- --portrait              the nineteen portraits of the book (BESTIARY_PORTRAITS)
+//   npm run bestiary -- --portrait              the book's sandbox portraits (PORTRAITS; the sky ones are pending)
 //   npm run bestiary -- --portrait doubt rootling   the named portraits only
 //
 // The subject stands on a stone plinth (creatures and projections) in a plain room, the camera is a
@@ -86,17 +86,29 @@ const SKY_SUBJECTS = [
   { id: 'herd-horse', animal: 'horse', floor: 5, role: 'minion', minDist: 2.4, turn: Math.PI / 2 },
 ];
 
-// The nineteen portraits of the book (src/content/book/images.ts, BESTIARY_PORTRAITS); the floor is the one above.
+// The portraits of the book staged in the sandbox (src/content/book/images.ts, BESTIARY_PORTRAITS); the floor is the one above.
 const PORTRAITS = ['doubt', 'critic', 'panic', 'resistance', 'inertia', 'insatiable', 'overwhelm', 'wonder',
   'rootling', 'mossling', 'chirper', 'delver', 'bubbler', 'ferryback', 'leafling', 'star-mite',
-  'inkmite', 'cinderwalker', 'listener'];
+  'inkmite', 'cinderwalker', 'listener',
+  // pages 3 to 6 filling all 22 slots (owner, 2026-11-13)
+  'second-guessing', 'margin', 'alarm', 'hoard', 'downpour', 'threshold-guardian', 'verdict', 'grudge',
+  'old-rule', 'furnace', 'impostor', 'many-faces', 'shadow', 'drifter', 'huddler', 'boundary'];
+// The book's sky portraits (page 5). Portrait mode stages the sandbox only, and the sky is not in it: these are framed
+// from the sky route (SKY_SUBJECTS) once portrait mode learns it, or cropped from the bestiary's own pictures.
+const SKY_PORTRAITS = ['guardian-panda', 'herd-panda', 'guardian-koala', 'herd-koala', 'guardian-elephant',
+  'herd-elephant', 'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse'];
+// The portraits with no file yet: the same list as tests/book-images.test.ts (PENDING_PORTRAITS). A plate that uses one
+// draws the neutral placeholder; capture it, look at it, and remove it from both lists.
+const PENDING_PORTRAITS = [...PORTRAITS.slice(19), ...SKY_PORTRAITS];
 
 const args = process.argv.slice(2);
 const portrait = args.includes('--portrait');
 const only = args.filter(a => a !== '--portrait');
+if (portrait) for (const id of (only.length === 0 ? SKY_PORTRAITS : only.filter(a => SKY_PORTRAITS.includes(a)))) console.log(`- ${id}: pending (portrait mode does not stage the sky yet)`);
+if (portrait) console.log(`bestiary: ${PENDING_PORTRAITS.length} portraits have no file yet`);
 const floorOf = new Map(SUBJECTS.map(([id, floor]) => [id, floor]));
 const jobs = portrait
-  ? (only.length === 0 ? PORTRAITS : only).map(id => [id, floorOf.get(id) ?? 1])
+  ? (only.length === 0 ? PORTRAITS : only.filter(a => !SKY_PORTRAITS.includes(a))).map(id => [id, floorOf.get(id) ?? 1])
   : SUBJECTS.filter(([id]) => only.length === 0 || only.includes(id));
 const skyJobs = portrait ? [] : SKY_SUBJECTS.filter(s => only.length === 0 || only.includes(s.id));
 if (jobs.length + skyJobs.length === 0 || (portrait && jobs.some(([id]) => !floorOf.has(id)))) { console.error('bestiary: no matching ids'); process.exit(2); }

@@ -6,19 +6,28 @@ import { ITEM_BY_ID } from '../items';
 import { POTION_IDS } from '../potions';
 import { HEART_KINDS } from '../heart-art';
 
-/** `lesson/<name>`: the thirty-three mechanic captures, one file each in `public/book/lesson/`. */
+/** `lesson/<name>`: the thirty-nine mechanic captures, one file each in `public/book/lesson/`. */
 export const LESSON_IMAGES = [
   'blocks', 'polarity', 'step', 'behind-wall', 'dig', 'mend', 'pit', 'bridge', 'counters',
   'bomb', 'kick', 'crates', 'lava', 'water', 'sanctuary', 'practice', 'ring', 'way-down',
   'drink', 'alembic', 'kitchen', 'convert', 'parts', 'boss-room', 'paths', 'state', 'recipe',
   'creatures', 'white-bomb', 'throw', 'chests', 'toll', 'grow',
+  // pages 3 to 6 filling all 22 slots (owner, 2026-11-13)
+  'sky', 'warm-boss', 'seal', 'omen', 'room-clear', 'mastery',
 ] as const;
 
-/** `bestiary/<entity id>`: the nineteen portraits the book's plates use, one file each in `public/book/bestiary/`. */
+/** `bestiary/<entity id>`: the forty-five portraits the book's plates use, one file each in `public/book/bestiary/`. */
 export const BESTIARY_PORTRAITS = [
   'doubt', 'critic', 'panic', 'resistance', 'inertia', 'insatiable', 'overwhelm', 'wonder',
   'rootling', 'mossling', 'chirper', 'delver', 'bubbler', 'ferryback', 'leafling', 'star-mite',
   'inkmite', 'cinderwalker', 'listener',
+  // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): the projections' forms and the other bosses (page 3),
+  // the Drifter, the Huddler and the sky (page 5), the Boundary (page 6)
+  'second-guessing', 'margin', 'alarm', 'hoard', 'downpour', 'threshold-guardian', 'verdict', 'grudge',
+  'old-rule', 'furnace', 'impostor', 'many-faces', 'shadow',
+  'drifter', 'huddler', 'guardian-panda', 'herd-panda', 'guardian-koala', 'herd-koala', 'guardian-elephant',
+  'herd-elephant', 'guardian-lion', 'herd-lion', 'guardian-horse', 'herd-horse',
+  'boundary',
 ] as const;
 
 export type IconKind = 'item' | 'potion' | 'heart';

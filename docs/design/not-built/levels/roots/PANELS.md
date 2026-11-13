@@ -135,7 +135,7 @@ A player walking the ring forward faces one wall on entering each room. That wal
 | `roots-gift` | north | south | north |
 | `roots-door` | north (from the start room) | south | north |
 
-On pages 2 to 6, two plate-wall slots stay as page 1 has them because they belong to their room's exercise: the Sanctuary in `roots-gift` and the "come back" panel in `roots-door`. That leaves nine changing slots per tutorial page.
+On page 2, two plate-wall slots stay as page 1 has them because they belong to their room: the Sanctuary in `roots-gift` and the "come back" panel in `roots-door`, which leaves nine changing slots, all on plate walls. Pages 3 to 6 change **all 22** (owner, 2026-11-13): there the lesson wall too holds that page's panel, the order of reading (the lesson wall first, then the other) is the order of the page, and the treasure and way-down rooms keep panels that do not contradict their chest and their way down ([TUTORIAL-PAGES](TUTORIAL-PAGES.md)).
 
 ## 8. Images
 
