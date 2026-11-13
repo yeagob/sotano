@@ -1,4 +1,4 @@
-// The Roots' mastery table (docs/design/not-built/levels/roots/REWARDS.md §2-7): what floor 0 lays out for
+// The Roots' mastery table (docs/design/built/levels/roots/REWARDS.md §2-7): what floor 0 lays out for
 // a mastery level from 0 to 100. A pure function of the level: no RNG, no save, no DOM. Floor 0 reads it
 // when the Roots are carved (package C2), the crate chance reads its factor, and the achievement notice
 // reads the gain lines of the new level (`gainsAt`).
@@ -123,7 +123,7 @@ export function rootsCrateChance(base: number, level: number): number {
 }
 
 /**
- * One line of the notice: the message key (docs/design/not-built/levels/roots/REWARDS.md §7, `mastery.gain.*`)
+ * One line of the notice: the message key (docs/design/built/levels/roots/REWARDS.md §7, `mastery.gain.*`)
  * and its numeric parameters. `stars` is a quality (1 to 4): the caller formats it with `qualityStars`.
  * `lo` and `hi` are percentages.
  */

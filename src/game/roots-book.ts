@@ -1,5 +1,5 @@
 // The Roots' book: which page the walls show, when the page advances, and when a panel may turn.
-// The rules are in docs/design/not-built/levels/roots/PAGES.md. Pure: no DOM, no Three.js. The game
+// The rules are in docs/design/built/levels/roots/PAGES.md. Pure: no DOM, no Three.js. The game
 // feeds it room-enter events, run-end events and a camera test, and reads back the page each room
 // should show now and the number of the page stone.
 

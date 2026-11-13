@@ -1,4 +1,4 @@
-// The pure parts of the Roots' wall panels (docs/design/not-built/levels/roots/PANELS.md): the canvas
+// The pure parts of the Roots' wall panels (docs/design/built/levels/roots/PANELS.md): the canvas
 // geometry, word wrapping and shrink-to-fit against a measure the caller gives, which key cap a device
 // reads, when a quotation carries the translation note, and where each panel hangs in its room (per layout).
 // No DOM and no Three.js here, so every rule is tested in tests/tablets.test.ts; the drawing lives in

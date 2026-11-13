@@ -1,4 +1,4 @@
-// The achievement catalogue (docs/design/not-built/progression/ACHIEVEMENTS.md) and its tracker (MASTERY.md):
+// The achievement catalogue (docs/design/built/progression/ACHIEVEMENTS.md) and its tracker (MASTERY.md):
 // the 40 entries, their ids and message keys, the events they wait for, and the rules of the tracker: unlock
 // once, `times` across runs, no double award, which boss ending counts for which achievement, the mastery count.
 

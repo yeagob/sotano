@@ -1,4 +1,4 @@
-// The images the book may show (docs/design/not-built/levels/roots/BOOK-DATA.md §4). An image is an id
+// The images the book may show (docs/design/built/levels/roots/BOOK-DATA.md §4). An image is an id
 // `namespace/name`, never a path. The lesson and portrait lists below are the manifest the capture
 // scripts and the validator share; the icons are the game's own items, potions and hearts.
 

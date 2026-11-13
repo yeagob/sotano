@@ -1,4 +1,4 @@
-// Captures the lesson images of the book (docs/design/not-built/levels/roots/BOOK-DATA.md §4): one staged
+// Captures the lesson images of the book (docs/design/built/levels/roots/BOOK-DATA.md §4): one staged
 // scene and one camera pose per image, taken from the game itself in the creative sandbox at a fixed seed,
 // written to public/book/lesson/<name>.webp. No HUD and no held hand unless the lesson is about them.
 //

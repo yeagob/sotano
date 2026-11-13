@@ -1,4 +1,4 @@
-// The save record, version 2 (docs/design/not-built/progression/SAVE.md): what the player keeps between
+// The save record, version 2 (docs/design/built/progression/SAVE.md): what the player keeps between
 // runs. The Roots' page, the achievements and their counts, and the staircase unlock the Spiked Entity
 // opens (docs/architecture/SKY.md §10.3). Browser storage, like the language: a private window, blocked
 // storage or cleared data simply read as the default, and no write ever throws.

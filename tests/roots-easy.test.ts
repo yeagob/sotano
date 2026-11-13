@@ -1,4 +1,4 @@
-// The easy layout of the Roots (docs/design/not-built/levels/roots/EASY-LAYOUT.md §9, IMPLEMENTATION-PLAN C3).
+// The easy layout of the Roots (docs/design/built/levels/roots/EASY-LAYOUT.md §9, IMPLEMENTATION-PLAN C3).
 // From page 2 on, six rooms carve their easy templates. A walker with no blocks and no intentions (the real
 // Player's walk and jump, tests/helpers/walker.ts) crosses every room on foot, forward and in reverse, and the
 // same route fails in the teaching layout. With the option off the Roots are byte for byte as before.

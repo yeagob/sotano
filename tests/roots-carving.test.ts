@@ -1,4 +1,4 @@
-// The Roots carved by mastery (docs/design/not-built/levels/roots/REWARDS.md §2–§5, IMPLEMENTATION-PLAN C2).
+// The Roots carved by mastery (docs/design/built/levels/roots/REWARDS.md §2–§5, IMPLEMENTATION-PLAN C2).
 // Floor 0 lays what `rootsRewards(level)` says; every other floor, the sky and the surface are identical at every
 // level for a seed. Counts are compared with the table itself, never with numbers copied from the document.
 

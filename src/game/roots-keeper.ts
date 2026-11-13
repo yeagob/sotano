@@ -1,4 +1,4 @@
-// The Roots' walls in one run (docs/design/not-built/levels/roots/PAGES.md, EASY-LAYOUT.md): the page the run
+// The Roots' walls in one run (docs/design/built/levels/roots/PAGES.md, EASY-LAYOUT.md): the page the run
 // starts on, the layout it is carved in, the panel each room shows now, and the page stone. It holds the book's
 // rules (RootsBook) and the save record (meta.ts), and speaks to the renderer only through WallSink, so the whole
 // of it runs in tests without three.js or the DOM. The game (game.ts) owns one keeper per run, made by `openRoots`.

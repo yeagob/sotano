@@ -12,7 +12,7 @@
 // are framed in the real game, started on the sky deck (?sky) with a fixed seed (SKY_SEED), and the world is paused
 // between the explicit steps of stageSky, so the same build gives the same pictures. The Boundary is a sandbox subject.
 //
-// Portrait mode (docs/design/not-built/levels/roots/BOOK-DATA.md §4) makes the square pictures the book's
+// Portrait mode (docs/design/built/levels/roots/BOOK-DATA.md §4) makes the square pictures the book's
 // plates show, from the same game, with no HUD and no held hand:
 //
 //   npm run bestiary -- --portrait              the book's portraits (PORTRAITS, and the sky's SKY_PORTRAITS)

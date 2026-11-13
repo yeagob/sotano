@@ -1,5 +1,5 @@
 // The Roots' book: two JSON files, one per language, loaded and validated at start
-// (docs/design/not-built/levels/roots/BOOK-DATA.md). The validator is pure: it takes the parsed files
+// (docs/design/built/levels/roots/BOOK-DATA.md). The validator is pure: it takes the parsed files
 // and what they refer to, and lists every problem before it throws. Nothing falls back silently.
 
 import bookEn from './book.en.json';

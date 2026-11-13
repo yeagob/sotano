@@ -1,4 +1,4 @@
-// The book's pictures (docs/design/not-built/levels/roots/BOOK-DATA.md §4): every picture the two book
+// The book's pictures (docs/design/built/levels/roots/BOOK-DATA.md §4): every picture the two book
 // files use that is taken from the game has its file in public/book, every file in public/book is used by
 // a book, and every file is a small WebP. The lesson pictures that the sandbox cannot stage yet are listed
 // here, by id and with the reason, and must have no file; the capture script names the same reasons.

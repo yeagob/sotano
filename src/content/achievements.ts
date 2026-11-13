@@ -1,4 +1,4 @@
-// The achievement catalogue (docs/design/not-built/progression/ACHIEVEMENTS.md §1-2): the 40 that ship with
+// The achievement catalogue (docs/design/built/progression/ACHIEVEMENTS.md §1-2): the 40 that ship with
 // #147, as data (36 plus the 4 book pages). The names and descriptions are message keys (`achievement.<id>.name|desc`,
 // in src/i18n/locales). The tracker that reads this list is src/game/achievements.ts.
 //

@@ -1,4 +1,4 @@
-// The page stone (docs/design/not-built/levels/roots/PAGES.md §4): from the first book page on, the middle block
+// The page stone (docs/design/built/levels/roots/PAGES.md §4): from the first book page on, the middle block
 // of the start room's north wall carries a small square of limestone with the shown page's number cut in the
 // serif of the prose panels, under the gold diamond. It is a decal on the block's face, not a new block. Like a
 // panel, it is carved offscreen and swapped in one step; on tutorial pages it is hidden.

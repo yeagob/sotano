@@ -1,4 +1,4 @@
-// The practices the Roots lay on their pedestals and on the altar (docs/design/not-built/levels/roots/REWARDS.md §4-§5),
+// The practices the Roots lay on their pedestals and on the altar (docs/design/built/levels/roots/REWARDS.md §4-§5),
 // and every other draw floor 0 makes on the Roots' account. Each draw comes from its own fork of the run's seed under
 // `floor/0/roots/…` (docs/architecture/RNG.md), so nothing the mastery level adds moves a shared stream. A Roots draw
 // reads the pool but never marks an item taken (`ItemPools.drawRoots`), so a later floor draws from the same pool at

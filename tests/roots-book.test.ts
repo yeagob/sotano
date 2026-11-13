@@ -1,4 +1,4 @@
-// The Roots' book as a pure state machine (docs/design/not-built/levels/roots/PAGES.md): the page
+// The Roots' book as a pure state machine (docs/design/built/levels/roots/PAGES.md): the page
 // the walls show, when the page advances, laps of the ring, the sight sets, the out-of-sight swap
 // rule and the page stone.
 

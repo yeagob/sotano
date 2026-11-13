@@ -1,4 +1,4 @@
-// The Roots' book in a run (docs/design/not-built/levels/roots/PAGES.md, EASY-LAYOUT.md, package D1): the run's keeper
+// The Roots' book in a run (docs/design/built/levels/roots/PAGES.md, EASY-LAYOUT.md, package D1): the run's keeper
 // reads the save, lays the layout, shows the page, turns the walls out of sight, advances the page once at a run's
 // end and writes the record through its store. The game (game.ts) feeds the keeper from its rooms and its frames;
 // these tests drive the same keeper with the rooms of a carved floor 0, a recording wall and a memory store, since

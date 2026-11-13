@@ -1,4 +1,4 @@
-// The Roots' achievements in one session (docs/design/not-built/progression/ACHIEVEMENTS.md §2-4, MASTERY.md §1,
+// The Roots' achievements in one session (docs/design/built/progression/ACHIEVEMENTS.md §2-4, MASTERY.md §1,
 // SAVE.md §3): the tracker over the save record, the notices queued for the calm moments, and the words each
 // notice shows. Pure: no DOM, no WebGL, no game state. The game (game.ts) makes one keeper for the session, feeds
 // it the events its bus emits, takes one notice at a time when the player is calm, and shows it on the Presence card.

@@ -1,4 +1,4 @@
-// The Roots' mastery table (docs/design/not-built/levels/roots/REWARDS.md): level 0 as written, the at-a-glance
+// The Roots' mastery table (docs/design/built/levels/roots/REWARDS.md): level 0 as written, the at-a-glance
 // rows, the monotonic and bounded rules, the notice lines, and the rule that the table never touches the
 // Sanctuary chest or the way-down pedestal.
 

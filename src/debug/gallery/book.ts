@@ -1,4 +1,4 @@
-// ?gallery=book (docs/design/not-built/levels/roots/PANELS.md §9): every panel of every page of the Roots' book,
+// ?gallery=book (docs/design/built/levels/roots/PANELS.md §9): every panel of every page of the Roots' book,
 // in English and Spanish, for keyboard, gamepad and touch where the panel depends on the device, carved by the
 // game's own renderer (src/render/tablets.ts). A panel whose text runs past its lines or its width is outlined in
 // red and named; a panel whose image file is missing is outlined in yellow (it shows the neutral placeholder).

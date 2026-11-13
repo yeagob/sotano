@@ -1,4 +1,4 @@
-// The save record, version 2 (docs/design/not-built/progression/SAVE.md): a round trip through a store, the
+// The save record, version 2 (docs/design/built/progression/SAVE.md): a round trip through a store, the
 // version 1 migration, each field read on its own, and every bad record reads as the default: never an error.
 // A record from a newer build is read-only: it reads as the default and is never written over.
 

@@ -806,7 +806,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
     ],
   },
-  // ── the easy layout of the Roots (from page 2 on, docs/design/not-built/levels/roots/EASY-LAYOUT.md §2):
+  // ── the easy layout of the Roots (from page 2 on, docs/design/built/levels/roots/EASY-LAYOUT.md §2):
   //    the six rooms that change. Each is carved in its cell's place (rootsRoomKey names it by its teaching twin). No weight: floor 0 is a fixed plan,
   //    and the half-need-building rule counts these as they are carved (ROOMS.md). Only cells a, b, d, e, f, g
   //    name them (TUTORIAL_CELLS.easy); the other five rooms are the same in both layouts. ──

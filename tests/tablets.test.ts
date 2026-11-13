@@ -1,4 +1,4 @@
-// The pure parts of the Roots' wall panels (docs/design/not-built/levels/roots/PANELS.md): wrapping, shrink-to-fit
+// The pure parts of the Roots' wall panels (docs/design/built/levels/roots/PANELS.md): wrapping, shrink-to-fit
 // against a fake measure, the mounts per layout variant, which key cap a device reads, the translation note rule,
 // the control placeholders, and the images a page needs. The drawing itself is checked in ?gallery=book.
 

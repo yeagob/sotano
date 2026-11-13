@@ -1,4 +1,4 @@
-// The book's loader and validator (docs/design/not-built/levels/roots/BOOK-DATA.md §6): the real files pass,
+// The book's loader and validator (docs/design/built/levels/roots/BOOK-DATA.md §6): the real files pass,
 // every rule fails on a broken copy, the page-1 fallback, and the image manifest.
 
 import { describe, expect, it } from 'vitest';

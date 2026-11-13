@@ -1,4 +1,4 @@
-// The Roots' achievements in the game (docs/design/not-built/progression/ACHIEVEMENTS.md §2-4, MASTERY.md, REWARDS.md
+// The Roots' achievements in the game (docs/design/built/progression/ACHIEVEMENTS.md §2-4, MASTERY.md, REWARDS.md
 // §3-§6): what the session keeper does with the events the game emits, the notice's words in both languages, the toll's
 // wait for an open card, the Roots' practices drawn at run start, and the crate chance of floor 0. The Game itself needs
 // WebGL, so its wiring is checked in the browser; the rules it calls are checked here.
