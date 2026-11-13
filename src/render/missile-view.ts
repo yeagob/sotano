@@ -1,11 +1,11 @@
 // The missile of Dr. Launcher (docs/design/not-built/practices/ROCKET-LAUNCHER.md, art: DECISIONS
 // §7.7). A missile is a bomb taken from the counter, so it is the same seed model as the pickup and
-// the placed breakthrough (seed-model.ts), turned to fly tip first along the aim, with a plume of the
+// the placed bomb (seed-model.ts), turned to fly tip first along the aim, with a plume of the
 // player's light behind it (a comet tail of five fog-exempt puffs, longest once the run-up is done). Polarity is read from the light, never from a new shape:
-//   positive: the body is the white seed (DECISIONS §7.8), its seams light.core, and the plume is
+//   positive: the body is the white bomb (DECISIONS §7.8), its seams light.core, and the plume is
 //   light.core in a light.gold halo (mending);
 //   negative: the seams are banked to ember and the plume is light.ember fading to light.dusk at
-//   0.75 of the positive strength (the breakthrough), as the negative intention (DECISIONS §14.1).
+//   0.75 of the positive strength (the bomb), as the negative intention (DECISIONS §14.1).
 // A thin ring of the Miracles hue rides the plume's tail: the practice's path, as on an intention's
 // trail (≤ 40 %, §7.1). Unlit and baked, palette tokens only, nothing alternates faster than 3 Hz.
 
@@ -30,7 +30,7 @@ export const MISSILE_TRAIL: Record<Polarity, PalToken[]> = {
  */
 export const LOVE_BLAST: PalToken[] = ['light.gold', 'light.core', 'path.milagros.glow'];
 
-/** The seed's height in world units: the same size as the placed breakthrough (DebrisView). */
+/** The seed's height in world units: the same size as the placed bomb (DebrisView). */
 const SCALE = DEBRIS_SIZE / (SEED_H * SEED_VOXEL);
 const HALF = (SEED_H * SEED_VOXEL) / 2;
 /** Seconds the plume takes to reach full length (the run-up of the flight). */
@@ -83,8 +83,8 @@ export class MissileView {
 
   private build(polarity: Polarity): Missile {
     const look = LOOK[polarity];
-    // a positive missile is the white seed (§7.8), a negative one the black breakthrough
-    const seed = buildSeed(polarity === 'positive' ? 'love' : 'breakthrough');
+    // a positive missile is the white bomb (§7.8), a negative one the black bomb
+    const seed = buildSeed(polarity === 'positive' ? 'love' : 'bomb');
     // centre the seed on the root so it turns about its middle, tip leading
     seed.body.position.y = -HALF;
     if (look.seams) seed.cracks.color.setHex(pal(look.seams));

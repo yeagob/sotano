@@ -15,6 +15,9 @@ type Reply = MeshData & { key: string; version: number; layer: Layer; groups: [n
 
 /** Fire frames per second (DECISIONS §3.8: 4 frames at 8 fps, shape change only). */
 const FIRE_FPS = 8;
+/** How far round the viewer the formula ground outside the stored world (the surface and its
+ *  mountains) is meshed, in blocks: a little past the camera's far plane at the surface's fog. */
+export const OUTER_VIEW = 176;
 
 /**
  * Whether a dirty chunk can be dropped without meshing (docs/architecture/SKY.md §3.1, the ghost
@@ -34,6 +37,9 @@ export class ChunkRenderer {
   private elemMaterials: THREE.MeshBasicMaterial[];
   private tex = elementTextures();
   private rows: [number, number] | null = null;
+  /** The formula ground's chunks meshed round the viewer, and the chunk column the viewer was in. */
+  private outerKeys = new Set<string>();
+  private outerAt = '';
 
   constructor(private world: VoxelSpace, private scene: THREE.Object3D, atlas: THREE.Texture, private perFrame = 4, private elemPerFrame = 3) {
     this.material = new THREE.MeshBasicMaterial({ map: atlas, vertexColors: true });
@@ -122,6 +128,26 @@ export class ChunkRenderer {
     for (const t of Object.values(this.tex)) t.dispose();
   }
 
+  /** Streams the formula ground outside the stored world round (x, z): the chunks within
+   *  OUTER_VIEW are queued nearest first, the ones left behind lose their meshes. Cheap when the
+   *  viewer stays in the same chunk column. */
+  streamOuter(x: number, z: number) {
+    if (!this.world.outerChunksNear) return;
+    const at = `${Math.floor(x / CHUNK)},${Math.floor(z / CHUNK)}`;
+    if (at === this.outerAt) return;
+    this.outerAt = at;
+    const next = new Set(this.world.outerChunksNear(x, z, OUTER_VIEW).map(([cx, cy, cz]) => chunkKey(cx, cy, cz)));
+    for (const key of this.outerKeys) {
+      if (next.has(key)) continue;
+      for (const layer of ['blocks', 'elem'] as Layer[]) {
+        const m = this.meshes[layer].get(key);
+        if (m) { m.geometry.dispose(); this.scene.remove(m); this.meshes[layer].delete(key); }
+      }
+    }
+    for (const key of next) if (!this.outerKeys.has(key)) this.world.dirty.add(key);
+    this.outerKeys = next;
+  }
+
   setLoadedRange(y0: number, y1: number) {
     const r0 = Math.max(0, Math.floor(y0 / CHUNK)), r1 = Math.min(this.world.ncy - 1, Math.floor(y1 / CHUNK));
     const old = this.rows;
@@ -141,9 +167,11 @@ export class ChunkRenderer {
   }
 
   private loaded(key: string) {
-    if (!this.rows) return true;
     const [cx, cy, cz] = parseChunkKey(key);
-    return (cy >= this.rows[0] && cy <= this.rows[1]) || !!this.world.outerChunk?.(cx, cz);
+    // the formula ground outside the stored world is loaded only round the viewer
+    if (this.world.outerChunk?.(cx, cz)) return this.outerKeys.has(key);
+    if (!this.rows) return true;
+    return cy >= this.rows[0] && cy <= this.rows[1];
   }
 
   /** Only draw chunks whose rows overlap [y0, y1] (floors far above or below stay hidden). `outer`:

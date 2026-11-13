@@ -15,6 +15,10 @@ A run is kept nowhere today. Death ends it, and a new run begins with nothing fr
   - From that point onward, in every subsequent run, **floor 0, the roots, contains an upward staircase** allowing the player to ascend directly to the surface and the Giant Tree, bypassing the descent if they choose.
   - The flag must last between runs. Provisional (owner, 2026-11-03): it is kept in the browser's local storage (proposed key `the-roots:stairs-unlocked`), and the only way to forget it is a console command. See open question 1.
 
+## Designed for issue #147
+
+The page of the Roots' hidden book, achievements and the Roots' mastery level are kept between runs: see [progression](../progression/README.md).
+
 ## The ideas (Other meta-progression)
 
 - **Knowledge, not power.** Between runs you do not get stronger; you learn. The design's principle is persistent knowledge, not persistent power ([DESIGN, section 9](../levels/HIDDEN-LAYER.md)).

@@ -48,8 +48,11 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | place | press | play | right click | LT | a tap on the block (aims at the tap) |
 | throw | press | play | Q | B | the flying block |
 | drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
-| bomb | press | play | E | RB | the seed |
+| bomb | press | play | E | RB | the bomb |
 | polarity | press | play | F | LB | a half turn of the phone |
+| previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
+| next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
+| pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |

@@ -25,6 +25,10 @@ Keep out of its field, and watch the effect change as its health falls. Good int
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 6%.
+
 ## Status
 
 Partial. The built part is the monolith and the field whose effect follows its health. Its rules to break (jumping, carrying, standing still) and its changing of rule are in [GAPS](../../not-built/projections/GAPS.md).

@@ -28,6 +28,10 @@ Its speed grows with time, so do not let the fight run long. The spent period is
 - **Fire:** it crosses fire without harm.
 - **Lava:** it keeps out of lava.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, bomb 8%.
+
 ## Status
 
 Partial. The built part is the running, the spent period and the speed. Its burning floor, its doubled damage while spent and its release are in [GAPS](../../not-built/projections/GAPS.md).

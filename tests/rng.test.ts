@@ -6,7 +6,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ENEMY_BUDGET } from '../src/content/enemies';
 import { ITEMS } from '../src/content/items';
-import { ROOM_TEMPLATES, validateTemplate } from '../src/content/rooms';
+import { ROOM_TEMPLATES, TUTORIAL_CELLS, validateTemplate } from '../src/content/rooms';
 import { ALL_TABLES } from '../src/content/tables';
 import { ROOM_CLEAR } from '../src/content/tables/rewards';
 import { hashPath, Rng, RunRandom } from '../src/core/rng';
@@ -145,7 +145,9 @@ describe('variety', () => {
     // one-cell boss rooms below the tutorial wait for a boss with the small-room flag (#131)
     const smallBossRoom = (q: typeof ROOM_TEMPLATES[number]) => q.types.length === 1 && q.types[0] === 'boss' && templateCells(q) === 1 && q.floors?.[0] !== 0;
     const smallBosses = BOSSES.some(b => b.smallRoom);
-    for (const t of ROOM_TEMPLATES.filter(q => (!q.floors || q.floors[0] <= 1) && (smallBosses || !smallBossRoom(q)))) expect(templates.get(t.id) ?? 0, `template ${t.id} never used`).toBeGreaterThan(0);
+    // the easy Roots' rooms are carved only from page 2 on (EASY-LAYOUT §7): the default layout never draws them
+    const easyOnly = new Set(Object.values(TUTORIAL_CELLS).map(c => c.easy).filter(Boolean));
+    for (const t of ROOM_TEMPLATES.filter(q => (!q.floors || q.floors[0] <= 1) && (smallBosses || !smallBossRoom(q)) && !easyOnly.has(q.id))) expect(templates.get(t.id) ?? 0, `template ${t.id} never used`).toBeGreaterThan(0);
     for (const m of ['sparse', 'normal', 'cluttered']) expect(moods.get(m) ?? 0).toBeGreaterThan(0);
     // no single item dominates the pedestals
     const total = [...items.values()].reduce((a, b) => a + b, 0);
@@ -223,7 +225,7 @@ describe('golden seed', () => {
     });
     let h = 0x811c9dc5;
     for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
-    expect([GEN_VERSION, h.toString(16)]).toEqual([27, GOLDEN]);
+    expect([GEN_VERSION, h.toString(16)]).toEqual([28, GOLDEN]);
   });
 });
 // adding a practice to the catalogue changes reservations too: that also changes every seed

@@ -4,6 +4,7 @@
 // When a new event is added to GameEvents, TypeScript forces a sample payload here.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ACHIEVEMENTS } from '../src/content/achievements';
 import { ITEMS } from '../src/content/items';
 import { SYNERGIES } from '../src/content/synergies';
 import { Rng } from '../src/core/rng';
@@ -50,8 +51,12 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, floor: 2, type: 'normal', template: 'test', firstVisit: true }),
   floorEnter: () => ({ depth: 2 }),
+  pageReached: () => ({ page: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
+  bossOvercome: () => ({ boss: 'resistance', floor: 1, how: 'destroyed' }),
+  meditationComplete: () => ({ meditation: 'ground', source: 'roots' }),
+  cook: () => ({ meal: 'meal-small', part: 'flesh' }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
@@ -175,5 +180,18 @@ describe('synergy matrix', () => {
     s.add({ stat: 'damage', layer: 'mul', value: NaN, source: 'bad' });
     expect(s.get('damage')).toBe(3.5);
     expect(errors).toHaveBeenCalled();
+  });
+});
+
+// The achievement catalogue listens to events; every field its `where` names must be in that event's sample above,
+// so the tracker can match it (ACHIEVEMENTS §2). The samples live here, with the events they stand for.
+describe('the achievement catalogue against the event samples', () => {
+  it('every where field of every entry is a field of its event\'s sample payload', () => {
+    for (const d of ACHIEVEMENTS) {
+      const sample = (SAMPLES as Record<string, () => object>)[d.on]();
+      for (const field of Object.keys(d.where ?? {})) {
+        expect(sample, `${d.id} waits on ${field}`).toHaveProperty(field);
+      }
+    }
   });
 });

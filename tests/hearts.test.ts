@@ -1,8 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { HEART } from '../src/entities/actors';
-import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, HEALTH_UNIT, berserk, heartCount, landHit, stoneHalve, tickBlood, type HeartLayer } from '../src/entities/hearts';
+import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, HEALTH_UNIT, berserk, hasHeartRoom, heartCount, isLayer, landHit, stoneHalve, tickBlood, type BloodRegen, type HeartLayer } from '../src/entities/hearts';
 import { floorHeartChances, HEART_CHANCE, RARE_HEARTS, rollHeart } from '../src/content/tables/hearts';
 import { Rng, RunRandom } from '../src/core/rng';
+import { StatSheet } from '../src/core/stats';
+import { createBus } from '../src/game/events';
+import { Game } from '../src/game/game';
+import { Player } from '../src/entities/player';
+import { LOCALES } from '../src/i18n/locales';
+
+// The game module reads the browser's pointer query once at load; Node has no matchMedia.
+vi.hoisted(() => {
+  const g = globalThis as { matchMedia?: unknown };
+  g.matchMedia ??= () => ({ matches: false, addEventListener: () => undefined, removeEventListener: () => undefined });
+});
+// Sounds are recorded, not played: the game's audio needs a browser.
+const sfx = vi.hoisted(() => ({ played: [] as string[] }));
+vi.mock('../src/audio/sfx', async (importOriginal) => {
+  const real = await importOriginal<typeof import('../src/audio/sfx')>();
+  return { ...real, sfxHeart: new Proxy({}, { get: (_target, name) => () => { sfx.played.push(String(name)); } }) as typeof real.sfxHeart };
+});
 
 const u = (n: number) => n * HEALTH_UNIT;
 
@@ -54,6 +71,109 @@ describe('layers', () => {
   });
 });
 
+describe('black heart', () => {
+  it('is an extra heart like the blue one: a layer, one full heart, taken before the red health', () => {
+    expect(isLayer('black')).toBe(true);
+    const layers: HeartLayer[] = [];
+    layers.push({ kind: 'black', hp: HEART });
+    expect(heartCount(HEART * 2, layers)).toBe(3);
+    const r = landHit(layers, u(60));
+    expect(r.rest).toBe(0);
+    expect(layers).toEqual([{ kind: 'black', hp: u(40) }]);
+  });
+
+  it('is spent before the blue heart under it, and is lost for good', () => {
+    const layers: HeartLayer[] = [{ kind: 'blue', hp: HEART }, { kind: 'black', hp: HEART }];
+    const r = landHit(layers, u(140));
+    expect(r.lost).toEqual(['black']);
+    expect(layers.map(l => l.kind)).toEqual(['blue']);
+    expect(layers[0].hp).toBeCloseTo(u(60));
+    expect(r.rest).toBe(0);
+    expect(berserk(layers)).toBe(false);
+  });
+
+  it('is never halved (only the stone heart halves) and never a berserker heart', () => {
+    const layers: HeartLayer[] = [{ kind: 'black', hp: HEART }];
+    const r = landHit(layers, u(60));
+    expect(r.halved).toBe(false);
+    expect(r.dealt).toBeCloseTo(u(60));
+    expect(berserk(layers)).toBe(false);
+  });
+
+  it('counts against the room for hearts: containers and extra hearts are at most twelve', () => {
+    expect(hasHeartRoom(8, [])).toBe(true);
+    expect(hasHeartRoom(10, [{ kind: 'blue', hp: HEART }])).toBe(true);
+    expect(hasHeartRoom(10, [{ kind: 'blue', hp: HEART }, { kind: 'black', hp: HEART }])).toBe(false);
+  });
+
+  it('is rare: 1 to 2 % of heart drops, below the blue and stone hearts', () => {
+    expect(HEART_CHANCE.black).toEqual([0.01, 0.02]);
+    expect(HEART_CHANCE.black[1]).toBeLessThan(HEART_CHANCE.blue[0]);
+    expect(RARE_HEARTS).toContain('black');
+    const chances = floorHeartChances(new RunRandom(3), 4), rng = new Rng(9), n = 40000;
+    let black = 0;
+    for (let i = 0; i < n; i++) if (rollHeart(rng, chances, 4) === 'black') black++;
+    // a binomial estimate: within five standard errors of the chance drawn for this floor
+    const se = Math.sqrt(chances.black * (1 - chances.black) / n);
+    expect(Math.abs(black / n - chances.black)).toBeLessThan(5 * se);
+  });
+
+  describe('in the game (Game.collectHeart and heartLost, on a stub of the game)', () => {
+    // The real methods run on a plain object with the systems they touch; the renderer is not needed.
+    type GameMethods = { collectHeart(kind: string): boolean; heartLost(kind: string): void };
+    const methods = Game.prototype as unknown as GameMethods;
+    const stub = (player: Player, maxHearts = 2) => {
+      const toasts: string[] = [];
+      const bus = { emit: (name: string, payload?: { amount?: number }) => ({ cancelled: false, amount: name === 'pickupCollect' ? payload?.amount ?? 0 : 0 }) };
+      const game = {
+        player, maxHp: HEART * maxHearts,
+        stats: { get: (key: string) => (key === 'maxHearts' ? maxHearts : 0) },
+        bus, hud: { toast: (key: string) => { toasts.push(key); } },
+        particles: { burst: () => undefined }, heal: () => undefined, collect: () => true,
+      };
+      return { game, toasts };
+    };
+
+    it('adds one full black heart at full health, without touching the red health, and toasts it', () => {
+      const player = new Player();
+      player.hp = HEART * 2;
+      const { game, toasts } = stub(player);
+      sfx.played.length = 0;
+      expect(methods.collectHeart.call(game, 'black')).toBe(true);
+      expect(player.layers).toEqual([{ kind: 'black', hp: HEART }]);
+      expect(player.hp).toBe(HEART * 2);
+      expect(toasts).toEqual(['heart.black']);
+      expect(sfx.played).toContain('black');
+    });
+
+    it('stays on the floor when the room for hearts is full', () => {
+      const player = new Player();
+      player.hp = HEART * 2;
+      player.layers = Array.from({ length: 10 }, () => ({ kind: 'blue' as const, hp: HEART }));
+      const { game, toasts } = stub(player);
+      expect(methods.collectHeart.call(game, 'black')).toBe(false);
+      expect(player.layers).toHaveLength(10);
+      expect(toasts).toEqual([]);
+    });
+
+    it('toasts its own line and plays the lost sound when a black heart is spent', () => {
+      const player = new Player();
+      const { game, toasts } = stub(player);
+      sfx.played.length = 0;
+      methods.heartLost.call(game, 'black');
+      expect(toasts).toEqual(['heart.blackLost']);
+      expect(sfx.played).toContain('layerLost');
+    });
+
+    it('has its pickup and lost lines in both shipped languages', () => {
+      for (const locale of LOCALES) {
+        expect(locale.messages['heart.black']).toBeTruthy();
+        expect(locale.messages['heart.blackLost']).toBeTruthy();
+      }
+    });
+  });
+});
+
 describe('blood heart', () => {
   it('heals 3 per second, up to 200 in all, for at most two minutes', () => {
     const r = { left: BLOOD_BUDGET, t: BLOOD_SECONDS };
@@ -80,6 +200,86 @@ describe('blood heart', () => {
     let hp = 0;
     for (let i = 0; i < 130; i++) { const s = tickBlood(r, 1, hp, HEART * 100); hp += s.heal; if (s.done) break; }
     expect(hp).toBeLessThanOrEqual(BLOOD_BUDGET + 1e-9);
+  });
+});
+
+describe('blood heart at full health (#146)', () => {
+  const slot = (stats: StatSheet) => stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: BLOOD_SLOT_SOURCE });
+
+  it('each blood heart taken at full health adds one heart container, and the run clears them', () => {
+    const stats = new StatSheet();
+    expect(stats.get('maxHearts')).toBe(3);
+    slot(stats);
+    slot(stats);
+    expect(stats.get('maxHearts')).toBe(5);
+    stats.removeSource(BLOOD_SLOT_SOURCE);
+    expect(stats.get('maxHearts')).toBe(3);
+  });
+
+  it('never opens past the twelve heart slots shared with blue, stone and berserker hearts', () => {
+    const stats = new StatSheet();
+    for (let i = 0; i < 20; i++) slot(stats);
+    expect(stats.get('maxHearts')).toBe(12);
+    expect(hasHeartRoom(stats.get('maxHearts'), [])).toBe(false);
+    expect(hasHeartRoom(10, [{ kind: 'blue', hp: HEART }])).toBe(true);
+    expect(hasHeartRoom(11, [{ kind: 'blue', hp: HEART }])).toBe(false);
+    expect(hasHeartRoom(3, [])).toBe(true);
+  });
+});
+
+describe('collecting a blood heart (#146)', () => {
+  // The real Game.collectHeart on a stand-in object (Object.create(Game.prototype)) that holds only
+  // what it reads: the stat sheet, the player, the bus, the HUD toast and the particles.
+  let Game: typeof import('../src/game/game').Game;
+  beforeAll(async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    try {
+      ({ Game } = await import('../src/game/game'));
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }, 120000);
+
+  // `extra` heart containers beyond the three the player starts with; hp is set from the resulting maximum.
+  function rig(extra: number, hpOf: (maxHp: number) => number) {
+    const stats = new StatSheet();
+    for (let i = 0; i < extra; i++) stats.add({ stat: 'maxHearts', layer: 'add', value: 1, source: 'test' });
+    const maxHp = Math.floor(stats.get('maxHearts')) * HEART;
+    const player = { hp: hpOf(maxHp), layers: [] as HeartLayer[], blood: null as BloodRegen | null, body: { x: 0, y: 0, z: 0 } };
+    const toast = vi.fn();
+    const g = Object.assign(Object.create(Game.prototype), {
+      player, stats, bus: createBus(), hud: { toast }, particles: { burst: () => {} },
+    }) as Game;
+    return { g, player, stats, toast };
+  }
+
+  it('at full health it opens one heart container and fills it to the new maximum', () => {
+    const { g, player, stats, toast } = rig(0, max => max);
+    expect(g.collectHeart('blood')).toBe(true);
+    expect(stats.get('maxHearts')).toBe(4);
+    expect(player.hp).toBe(4 * HEART);
+    expect(player.blood).toBeNull();
+    expect(toast).toHaveBeenCalledWith('heart.bloodSlot');
+  });
+
+  it('below full health it still starts the slow healing and opens no container', () => {
+    const { g, player, stats, toast } = rig(0, () => HEART);
+    expect(g.collectHeart('blood')).toBe(true);
+    expect(stats.get('maxHearts')).toBe(3);
+    expect(player.hp).toBe(HEART);
+    expect(player.blood).toEqual({ left: BLOOD_BUDGET, t: BLOOD_SECONDS });
+    expect(toast).toHaveBeenCalledWith('heart.blood');
+  });
+
+  it('at the twelve-slot cap it is refused at full health and stays on the floor', () => {
+    const { g, player, stats, toast } = rig(9, max => max);
+    expect(stats.get('maxHearts')).toBe(12);
+    const hp = player.hp;
+    expect(g.collectHeart('blood')).toBe(false);
+    expect(stats.get('maxHearts')).toBe(12);
+    expect(player.hp).toBe(hp);
+    expect(player.blood).toBeNull();
+    expect(toast).not.toHaveBeenCalled();
   });
 });
 

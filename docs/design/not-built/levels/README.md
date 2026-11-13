@@ -6,6 +6,7 @@ The built levels are in [built/levels](../../built/levels/README.md). This folde
 
 | Document | Status | Contents |
 |---|---|---|
+| [roots/](roots/README.md) | open | What is not built of the Roots' book (issue #147): the hidden book's pages 7 to 9, the open questions, the pictures and achievements still pending. The built parts are in [built/levels/roots](../../built/levels/roots/README.md) |
 | [TREE-PATHS.md](TREE-PATHS.md) | proposal | Seeded variation: which corridors of the Tree are open, locked or hidden |
 | [FLOOR-KINDS.md](FLOOR-KINDS.md) | proposal, open | The trunk, branches and leaves as maps of rooms, and the contradiction with seven stories |
 | [ROUTE-FROM-ROOTS.md](ROUTE-FROM-ROOTS.md) | decided, not built | The climb from the roots to the surface, however you can |
@@ -16,4 +17,4 @@ The built levels are in [built/levels](../../built/levels/README.md). This folde
 | [TOTALITY.md](TOTALITY.md) | decided (mechanics & ascent), proposal (layout) | Level 6 going up: high-altitude platforming across tiny platforms into space using the triple jump |
 | [UNITY.md](UNITY.md) | decided (setting: The Sun), proposal (experience) | Level 7 going up: the apex of the climb taking place in the Sun |
 | [CAVERN-SCENERY.md](CAVERN-SCENERY.md) | proposal (three owner decisions made) | Cavern scenery in the spirit of the cover art, for floors 1 to 5 and the great pit |
-| [WORLD-STORAGE.md](WORLD-STORAGE.md) | proposal, awaiting the owner | The tree, the surface and the floors as a formula with stored exceptions: the formulas, the exception and save format, runs, the memory argument and the tests (issue #11) |
+| [WORLD-STORAGE.md](WORLD-STORAGE.md) | accepted; the surface built (issue #10), the tree and the floors not | The tree, the surface and the floors as a formula with stored exceptions: the formulas, the exception and save format, runs, the memory argument and the tests (issue #11) |

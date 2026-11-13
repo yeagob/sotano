@@ -91,7 +91,7 @@
     #crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
     #crosshair::after { top: 8px; left: 0; height: 2px; width: 18px; }
 
-    /* Isaac corner: hearts, breakthroughs (seeds), keys, practices */
+    /* Isaac corner: hearts, bombs, keys, practices */
     #status { position: fixed; top: 10px; left: 12px; pointer-events: none; }
     .hearts-row { display: flex; align-items: center; gap: calc(5 * var(--u)); margin-bottom: 6px; }
     .hearts-box { position: relative; display: flex; }
@@ -119,6 +119,7 @@
     #hearts.low > .heart:last-child { animation: beat .9s ease-in-out infinite; }
     .heart.layer { background-image: none; }
     .heart.full.k-blue { background-image: var(--ico-heartBlue); }
+    .heart.full.k-black { background-image: var(--ico-heartBlack); }
     .heart.full.k-stone { background-image: var(--ico-heartStone); }
     .heart.full.k-berserker { background-image: var(--ico-heartBerserker); }
     #hearts.star > .heart { outline: 1px solid var(--star-glow); filter: drop-shadow(0 0 3px var(--star-glow)); }
@@ -148,8 +149,11 @@
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
-    .slot.top { box-shadow: inset 0 0 0 2px var(--ui-text); }
+    .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
     .slot img { width: 100%; height: 100%; display: block; }
+    #inventory .hand-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    #inventory .hand-row .slot { cursor: pointer; }
+    #inventory .hand-row .slot.sel { outline: 2px solid var(--ui-text); outline-offset: 2px; }
 
     /* minimap top-right (the right hand used to cover it), floor label underneath */
     #corner { position: fixed; right: 12px; top: 10px; text-align: right; pointer-events: none; }
@@ -164,6 +168,9 @@
       100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
     @media (prefers-reduced-motion: reduce) { #banner.show { animation: none; opacity: 1; transform: translate(-50%, 0); } }
     #banner .dismiss { margin: 8px 0 0; font-size: 14px; color: var(--ui-faded); text-align: right; }
+    /* the kicker of an achievement card: a short line above the name, with a gold diamond (ACHIEVEMENTS §4) */
+    #banner .kicker { display: block; font-style: normal; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, var(--c)); }
+    #banner .kicker::before { content: '\25C6  '; }
     #banner .ribbon { display: flex; gap: 14px; align-items: flex-start; padding: calc(6 * var(--u)); border-left: calc(2 * var(--u)) solid var(--c); }
     #banner .ribbon img { width: 70px; height: 70px; flex: none; filter: drop-shadow(0 0 8px var(--c)); }
     #banner b { display: block; font-size: 28px; letter-spacing: 1px; }
@@ -285,6 +292,7 @@
     #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
     #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); }
     #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
+    #inventory .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory .tile img { width: 42px; height: 42px; }
     #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: normal; hyphens: auto; font-size: 14px; line-height: 1.3; color: var(--ui-text); }
     #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
@@ -340,13 +348,22 @@
     .tb.on { background-color: color-mix(in srgb, var(--ui-text) 25%, var(--ui-panel)); transform: scale(.94); }
     .tb.off { opacity: .4; }
     .tb span { position: absolute; right: 6%; bottom: 6%; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
-    .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 6px var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
+    .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 calc(6px * (1 + var(--power, 0))) var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line), 0 0 calc(4vmin * var(--power, 0)) calc(1vmin * var(--power, 0)) var(--pol, var(--ui-gold)); }
+    /* the ring thickens (6 → 12 px) and a glow of the same token widens with the loaded intention's damage (#111) */
     .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--ui-line) 92%, transparent); }
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
+    /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
+    .tb[hidden] { display: none; }
+    .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41.5vmin); width: 13vmin; height: 13vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
     .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
     .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
+    /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
+    #fullscreen { --glyph: none; right: calc(12px + 130px + 8px + 11vmin + 8px + env(safe-area-inset-right)); z-index: 61;
+      display: flex; align-items: center; justify-content: center; color: var(--ui-text); }
+    #fullscreen[hidden] { display: none; }
+    #fullscreen svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: square; }
     #death .go { font: inherit; font-weight: bold; color: var(--ui-gold); background: var(--ui-line); border: 0; padding: 8px 18px; margin-top: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #inventory header .close { margin-left: 10px; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }

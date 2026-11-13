@@ -35,6 +35,8 @@ main.ts ──► Game (game/game.ts) ── owns everything, runs one frame at 
 - `carve(k)` — carves floor *k* one floor ahead of the player (per-floor RNG; pedestal items drawn now). `activate(k)` — adds its doors, pedestals and keys ("the next floor loads"), on entering the boss room above or digging into its band.
 - `trackPlace()` — derives `depth` from the player's height; going deeper than `maxDepth` activates that floor, carves the next one, clears deferred chain reactions and emits `floorEnter`. Entering a boss room schedules its hole to open.
 - See [ENTITIES.md §1](ENTITIES.md#1-stacked-floors-worldfloorts).
+- **The save and the Roots' walls** (#147 D1). `main.ts` reads the save record once (`loadMeta(browserStore)`) and passes it with the browser store to `new Game(canvas, seed, { meta, store })`; without it the game plays on a record in memory that is never written. `begin()` ends the previous run first (`endRoots`: the page advances at most once, is saved at once and emits `pageReached`), then makes the run's `RootsKeeper` (`game/roots-keeper.ts`, none in the sandbox). The keeper reads the page once, sets the layout (`easyRoots` from page 2 on, passed to `carve(0)`), and drives the walls through `WallSink`: `hangRoots` mounts the eleven rooms and the page stone and shows the shown page, `updateRoots` runs every frame and carves a room's panels only where `RootsBook` turns them (out of sight and outside the camera frustum). Rooms are named by `rootsRoomKey(gx, gz)`, never by `RoomInfo.template`.
+- **Achievements and the Roots' mastery** (#147 D2). `begin()` reads the mastery level once (`achievements.mastery(meta)`, or the console's `S.mastery` in memory; the sandbox is level 0) and carves floor 0 with it. Each run's bus gets listeners for the five catalogue events (`bossOvercome`, `meditationComplete`, `brew`, `cook`, `pageReached`) that call `AchievementKeeper.track` (`game/achievement-keeper.ts`): an unlock or a count change is saved at once, and every unlock queues one notice. `frame()` shows the next notice on the Presence card with its kicker, only when the player is calm (`showAchievement`), and the toll waits while a card is queued or open. The queue is kept across runs, so a page achievement earned at a run's end shows in the next run. The Roots' practices are drawn at run start after the reservation (`game/roots-draws.ts`); the free chests draw from `ChestSpec.draws`; hearts, crates and the star chance read their band (`heartChancesOnBand`, `crateChanceInBand`). The sandbox and the lab track nothing (`keeper.live` is false).
 
 ## Frame order (`Game.frame` → `simulate`)
 
@@ -85,12 +87,12 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 ## World (`world/`)
 
-- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters, and `terrain`: the read-only ground outside the array (the mountains).
+- `VoxelWorld` — `Uint8Array` of materials, an element layer `elem` (water, lava, fire; [ELEMENTS.md](ELEMENTS.md) §9), sparse `damaged` HP, dirty 16³ chunks (blocks and elements apart), `version` and `elemVersion` counters, and `terrain`: the read-only ground outside the array (the surface and its mountains).
 - `elements.ts` — the element simulation (active cells, 10 Hz, budgeted; [ELEMENTS.md](ELEMENTS.md) §10).
 - `elem-mesher.ts` — water and lava surfaces sloped from their levels, fire quads; runs in the meshing worker.
 - `floorplan.ts` — Isaac-style plans from any start cell, with a fallback. See [ROOMS.md](ROOMS.md).
 - `floor.ts` — the stacked dungeon: `createDungeonWorld`, `carveFloor`, `openHole`, `floorY`, `bandOf`, `roomOrigin`, `cellOf`.
-- `mountains.ts` — `Mountains`: the ring of mountains round the surface, a seeded heightmap read for every cell outside the dungeon array ([LEVELS.md](LEVELS.md) §13).
+- `mountains.ts` — `Mountains`: the surface round the tree and its ring of mountains, a formula of the seed with exceptions, materialised per chunk into the sky's `ChunkCache` and read for every cell outside the dungeon array ([LEVELS.md](LEVELS.md) §13).
 - `mesher.ts` / `mesher.worker.ts` — visible faces, per-vertex AO and face shade baked into vertex colours, in a worker.
 
 ## Physics (`physics/`)

@@ -4,6 +4,8 @@
 //
 //   ?gallery                 every section
 //   ?gallery=materials|items|parts|enemies|pickups|missiles|bombs|chests|hud|palette|spirit
+//   ?gallery=book            the Roots' wall panels, every page, both languages, every device (gallery/book.ts;
+//                            only by name: it is not part of `all`)
 //   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
 //                            totality, entity, hindrances-core|ground|hold|flow
 //   &filter=grey|deutan|protan|tritan|silhouette
@@ -24,6 +26,7 @@ import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook }
 import { buildChest } from '../render/chest-model';
 import { applyPaletteCss, hudIconUrl, iconCanvas } from '../render/icons';
 import { bombsGallery } from './gallery/bombs';
+import { bookGallery } from './gallery/book';
 import { skyBlocksGallery } from './gallery/sky-blocks';
 import { skyElephantGallery } from './gallery/sky-elephant';
 import { skyEntityGallery } from './gallery/sky-entity';
@@ -228,7 +231,7 @@ export function runGallery(params: URLSearchParams) {
   }
 
   if (show('pickups')) {
-    head('Pickups: key (an insight), seed (a breakthrough), heart');
+    head('Pickups: key (an insight), seed (a bomb), heart');
     const r = row();
     for (const k of ['key', 'bomb', 'heart'] as const) {
       const c = three(scene => { const o = pickupMesh(k); scene.add(o); return o; }, 180, 180, 1.4, 0.2, 'rock.f1.base');
@@ -264,7 +267,7 @@ export function runGallery(params: URLSearchParams) {
       new MissileView(scene).update([s]);
       return new THREE.Object3D();
     };
-    head('Dr. Launcher missiles: positive (love) and negative (breakthrough), at launch (0.1 s) and in flight (1 s)');
+    head('Dr. Launcher missiles: positive (love) and negative (bomb), at launch (0.1 s) and in flight (1 s)');
     const r = row();
     for (const polarity of ['positive', 'negative'] as Polarity[]) for (const age of [0.1, 1]) for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
       fig(r, three(missile(polarity, age), 260, 200, 2.6, 0.4, bg), `${polarity} · ${age} s · ${bg}`);
@@ -382,6 +385,7 @@ export function runGallery(params: URLSearchParams) {
   for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
   if (show('bombs')) bombsGallery(kit);
   if (show('spirit')) spiritGallery(kit);
+  if (section === 'book') void bookGallery(kit, params);
 }
 
 function filterCss(f: string): string {

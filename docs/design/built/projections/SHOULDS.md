@@ -26,6 +26,10 @@ Stay off its axis, or put a block between you. Good intentions do half damage an
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 6%, bomb 6%.
+
 ## Status
 
 Partial. The built part is the stationary shooter. Its place in a wall, its pairs, and the freeing and release are in [GAPS](../../not-built/projections/GAPS.md).

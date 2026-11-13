@@ -11,7 +11,7 @@ export function forDevice(base: string, device: Device): MessageKey {
   return (device === 'keyboard' ? base : `${base}.${SUFFIX[device]}`) as MessageKey;
 }
 
-export const LESSON_CONTROLS = ['move', 'look', 'jump', 'cast', 'place', 'throw', 'bomb', 'inventory', 'pause', 'polarity', 'navigate', 'confirm', 'back', 'launch', 'skip', 'mute', 'calm'] as const;
+export const LESSON_CONTROLS = ['move', 'look', 'jump', 'cast', 'place', 'throw', 'bomb', 'drink', 'inventory', 'pause', 'polarity', 'navigate', 'confirm', 'back', 'launch', 'skip', 'mute', 'calm'] as const;
 
 export function controlParams(device: Device): Params {
   return Object.fromEntries(LESSON_CONTROLS.map(a => [a, inline(t(controlKey(a, device)))]));

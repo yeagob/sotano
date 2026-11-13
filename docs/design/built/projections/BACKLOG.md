@@ -26,6 +26,11 @@ Keep out of the crates' arc, and use blocks as cover. Good intentions do half da
 
 None.
 
+## Numbers
+
+- **Pickups on release:** bomb 20%, key 10%, heart 10%.
+- **Health:** 120.
+
 ## Status
 
 Partial. The built part is the walk and the throw. The growing stack and the crates it leaves on the floor are in [GAPS](../../not-built/projections/GAPS.md).

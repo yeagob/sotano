@@ -26,6 +26,11 @@ Step off a mark: the mark slows you while you stand in it. It stands still, so i
 
 - **Water:** keeps out of water when it can.
 
+## Numbers
+
+- **Pickups on release:** heart 8%, key 5%.
+- **Form:** the third form is [Tribunal](TRIBUNAL.md).
+
 ## Status
 
 Built. Its card's three-marks line and the washing away of its marks in water are open questions ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

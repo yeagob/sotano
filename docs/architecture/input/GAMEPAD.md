@@ -16,6 +16,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | drink | X |
 | bomb | RB |
 | polarity | LB |
+| choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |

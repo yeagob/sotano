@@ -23,7 +23,7 @@ Think of it as *Minecraft* and *The Binding of Isaac* had a child: a world made 
 
 ## What it is
 
-You go down into the layers of your own mind. The roots are the first floor, a peaceful place with every door open and a lesson on every wall. Below them, nine circles are waiting, each darker, older and more complex than the one above, until the frozen bottom, and then silence. Above the roots a giant tree rises into the sky, and its branches reach towards a sky full of stars.
+You go down into the layers of your own mind. The roots are the first floor, a peaceful place with every door open and a book on every wall. Below them, nine circles are waiting, each darker, older and more complex than the one above, until the frozen bottom, and then silence. Above the roots a giant tree rises into the sky, and its branches reach towards a sky full of stars.
 
 Every wall is something you built to stay safe, and it now keeps you small. Every enemy is a **projection**: a pattern that blocks you from going after what you want, given a body of the same cubes as the walls. Every creature is something that stayed alive in you anyway. Every item is a **practice**: something people have used to grow, and picking it up changes not only what you can do, but **who you are**.
 
@@ -61,7 +61,7 @@ Enemies are the patterns that stop you, in bodies of the room's own matter. They
 - **The Inner Critic** keeps its distance and lobs judgements in arcs. Dangerous when you stand still.
 - **Panic** rushes you, swells, and **bursts**, breaking the blocks around it. Destructive, and it also opens paths.
 
-Rooms work like *The Binding of Isaac*: the doors stand open while a room holds no projections. When you enter one that does, they seal, and the projections rise from the room's own matter, each one announced first. They open again on their own when the room is clear. A breakthrough destroys a door for good.
+Rooms work like *The Binding of Isaac*: the doors stand open while a room holds no projections. When you enter one that does, they seal, and the projections rise from the room's own matter, each one announced first. They open again on their own when the room is clear. A bomb destroys a door for good.
 
 ### Creatures and presences
 
@@ -96,11 +96,12 @@ Three complete schemes; the game follows whichever device you used last (details
 | Switch between good and bad intentions: good ones heal and turn projections into allies; bad ones break and destroy, and harm your allies too | **F** | **LB** | A half turn of the phone (180 degrees), like a steering wheel |
 | Pick up a block or a part | Walk over it with room in your hand | same | same |
 | Kick a block or a bomb | Walk into it (blocks: with your hand full) | same | same |
-| Place the top block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
-| Throw the top block or part | **Q** | **B** | The flying block |
-| Drop a bomb | **E** | **RB** | The seed |
+| Place the active block or part (throws it if there's nowhere to place it) | **Right click** | **LT** | The block with an arrow |
+| Throw the active block or part | **Q** | **B** | The flying block |
+| Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap a slot of your hand (or an item in the inventory) |
+| Drop a bomb | **E** | **RB** | The bomb |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
-| Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a breakthrough destroys any door | same | same |
+| Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a bomb destroys any door | same | same |
 | Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |
@@ -162,7 +163,7 @@ The full list is in [docs/architecture/OVERVIEW.md](docs/architecture/OVERVIEW.m
 
 ## What's in the game today
 
-- **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a fixed plan: three doors from the start, a treasure room that teaches the practices, a way down, and a ring of lessons that comes back to the treasure room. You can skip it. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Rooms can spread into the empty space around them (long galleries, stepped wells, caverns) while the map keeps one cell per room, under vaults of many shapes, and every floor is built from its own materials. Beating a boss reveals its practice and cracks a hole in the floor. The way down asks a toll (a heart, a key, a bomb, a block from your hand; from the sixth floor practices, more on every floor), and you choose what to give in a window: then you fall into the next one. A minimap fills in as you go.
+- **A stacked dungeon of ten floors.** The roots (floor 0) are a friend with every door open and a fixed plan: three doors from the start, a treasure room that teaches the practices, a way down, and a ring of rooms with the book on their walls, which comes back to the treasure room. Its pages turn as you walk the ring, the rooms change once you have read past the first page, and the Roots grow richer as you unlock achievements. You can skip it. Then nine circles, each built from hand-made room templates and laid out Isaac-style: start, normal rooms, treasure, boss and sometimes a locked vault. Rooms can spread into the empty space around them (long galleries, stepped wells, caverns) while the map keeps one cell per room, under vaults of many shapes, and every floor is built from its own materials. Beating a boss reveals its practice and cracks a hole in the floor. The way down asks a toll (a heart, a key, a bomb, a block from your hand; from the sixth floor practices, more on every floor), and you choose what to give in a window: then you fall into the next one. A minimap fills in as you go.
 - **Forty projections** that seal the room and fight you, from Doubt and the Inner Critic to Panic and What-if, each with its own attack and its own reaction to the elements.
 - **The giant tree above.** Built in stories, each a hall of its own joined by spiral stairs, loaded only as you come near.
 - **Creatures** of the depths that never seal a room and never die: a good intention heals them, a bad one sends them into the blocks.
@@ -207,7 +208,8 @@ The full index is [docs/README.md](docs/README.md). By block:
 - [Design document](docs/design/README.md): the design as a folder tree in two branches: [built](docs/design/built/README.md) (what exists and can be checked in the code) and [not-built](docs/design/not-built/README.md) (decided or proposed). Each part of the game is a folder with its own README.
 - [Story and metaphor](docs/design/built/story/README.md): premise, mechanics as metaphor, states of being, enemies as projections, naming rules.
 - [Projections](docs/design/built/projections/README.md): the patterns that block intention, built; their design cards are in [not-built/projections](docs/design/not-built/projections/README.md). Bosses, creatures and presences are in their own folders of both branches.
-- [Levels](docs/design/built/levels/README.md): the thirteen floors, rooms with height and element rooms *(built)*; the rest is in [not-built/levels](docs/design/not-built/levels/README.md).
+- [Levels](docs/design/built/levels/README.md): the thirteen floors, rooms with height and element rooms *(built)*; the Roots' book and layouts are in [built/levels/roots](docs/design/built/levels/roots/README.md); the rest is in [not-built/levels](docs/design/not-built/levels/README.md).
+- [Progression](docs/design/built/progression/README.md): the Roots' page, the 40 achievements, the mastery level and the save record *(built)*; the other achievements are pending in [not-built/levels/roots](docs/design/not-built/levels/roots/PENDING.md).
 - [Elements](docs/design/built/elements/README.md): fire, water and lava *(built)*; mud, electricity, furnaces, chests *(planned, in [not-built/elements](docs/design/not-built/elements/README.md))*.
 - [Stations, props and zones](docs/design/not-built/stations/README.md): kitchen, forge, laboratory, garden and how they help you climb *(ideas)*.
 

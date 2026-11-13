@@ -26,6 +26,10 @@ The ring is announced by its lead. Stay out of its path or let it pass over you;
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 8%, key 5%.
+
 ## Status
 
 Built.

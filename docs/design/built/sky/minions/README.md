@@ -2,6 +2,8 @@
 
 Up: [The sky (built)](../README.md) · the animals of each floor, embodied as smaller creatures, as they run in the code now.
 
+Pictures and a catalogue entry for each herd are in the [bestiary](../../bestiary/README.md).
+
 The minions are built and tested headless: their engine (spawning, gaits, turning, helping, the stuck guard) and the five herds, each with its own rules, helps and model. Each guardian floor spawns its herd while the player is on it, so a player in the sky meets them. The shared design, its open questions and the rest of each herd's targets are in [not-built minions](../../../not-built/sky/minions/README.md) and in each guardian's B5.
 
 ## What every minion does

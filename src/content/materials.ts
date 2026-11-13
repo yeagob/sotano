@@ -70,8 +70,8 @@ const DEFS: Def[] = [
   { id: 11, key: 'goldframe', name: 'Brass frame', tier: 2, hp: 30, armor: 1.5, ramp: 'brass', pattern: 'frame', concept: 'a threshold to something kept' },
   { id: 12, key: 'bossframe', name: 'Obsidian frame', tier: 2, hp: 30, armor: 1.5, ramp: 'obsidian', accent: 'captive.ember', pattern: 'frame', concept: 'the oldest pattern, holding its light' },
   { id: 13, key: 'pedestal', name: 'Pedestal', tier: 3, hp: 60, armor: 3, ramp: 'limestone', pattern: 'pedestal', concept: 'where a practice waits' },
-  // a bomb ('breakthrough' in the story): only ever exists as a loose cube with a fuse
-  { id: 14, key: 'bomb', name: 'Breakthrough', tier: 0, hp: 1, armor: 0, ramp: 'seed', accent: 'light.ember', pattern: 'seed', concept: 'a breakthrough waiting to happen' },
+  // a bomb: only ever exists as a loose cube with a fuse
+  { id: 14, key: 'bomb', name: 'Bomb', tier: 0, hp: 1, armor: 0, ramp: 'seed', accent: 'light.ember', pattern: 'seed', concept: 'a bomb waiting to happen' },
   // chests: unbreakable (nothing digs, burns or blasts them); only keys, or just walking up, open them
   { id: 15, key: 'chest', name: 'Chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'brass.base', pattern: 'chest', model: true, concept: 'what you keep shut until you are ready' },
   { id: 16, key: 'chestopen', name: 'Open chest', tier: Infinity, hp: Infinity, armor: 0, ramp: 'crate', accent: 'light.gold', pattern: 'chestopen', model: true, concept: 'what was kept, given' },

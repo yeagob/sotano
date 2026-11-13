@@ -26,6 +26,10 @@ It stands still, so it is a fixed target. Keep out of the lines of its bolts, an
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 8%, key 6%.
+
 ## Status
 
 Partial. The built part is one body that fires three bolts. Its three mirrors and the bouncing shots are in [GAPS](../../not-built/projections/GAPS.md).
