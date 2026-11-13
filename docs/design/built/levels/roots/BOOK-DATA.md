@@ -52,25 +52,26 @@ The test `tests/book.test.ts` ("which pages fill which slots") checks that pages
 | `version` | top | integer | The schema version. `1`. A reader refuses any other value |
 | `language` | top | `"en"` or `"es"` | Must match the file name (`book.<language>.json`) |
 | `pages` | top | array, at least 1 | The page number is the position: the first entry is page 1 |
-| `easy` | top | object, optional | Room key → side → panel: the remembered panels of the easy layout (section 1). Each panel follows the rules of a tutorial page panel (lesson, plate or prose; no quote); its id is `easy-<room>-<side>` (`easy-dig-s`, `easy-pit-n`) and is unique in the file with the page ids. Only the easy layout reads it |
+| `easy` | top | object, optional | Room key → side → panel: the remembered panels of the easy layout (section 1). Each panel follows the rules of a tutorial page panel (lesson, plate, prose or image; no quote); its id is `easy-<room>-<side>` (`easy-dig-s`, `easy-pit-n`) and is unique in the file with the page ids. Only the easy layout reads it |
 | `id` | page | string, `^[a-z0-9-]+$` | Unique in the file; the same id at the same position in every language. Stable: tests and the gallery refer to pages by id |
 | `kind` | page | `"tutorial"` or `"book"` | Page 1 is `tutorial`. Every `tutorial` page comes before every `book` page. The page stone shows a number only on `book` pages |
 | `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel (or the remembered one, section 1). By the owner's rule pages 3 to 6 leave none out (section 1b; a test checks it, the validator does not) |
 | `id` | panel | string, `<page>-<room>-<side>` | Required on every panel. The page number (its position in `pages`, from 1), the room key without its `roots-` prefix, and `n` for north or `s` for south: `1-hall-n`, `3-pit-s`, `7-gift-n`. It must match the panel's position, be unique in the file, and be identical in both languages. The renderer draws it very small, like a mason's mark ([PANELS §10](PANELS.md#10-the-panel-id-the-masons-mark)); `panelById(book, id)` finds the panel. Renumbering (a page inserted before others) renumbers the ids: the validator names every id that is out of place |
-| `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"` | Decides which other fields are allowed. `quote` only on `book` pages |
+| `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"`, `"image"` | Decides which other fields are allowed. `quote` only on `book` pages; `image` has only `id`, `image` and `caption` (PANELS §4c) |
 | `title` | lesson, plate | string | Required. A plate's title is the name of what it shows, in that language's established name |
 | `subtitle` | plate | string | Required. What kind of thing it is ("A projection", "A boss · floors 1–2") |
 | `text` | lesson, plate, prose, quote | string | Required. May hold `{action}` placeholders (lesson and plate only). In a quote: the quotation (section 2b) |
-| `image` | lesson, plate | image id | Required (section 4) |
+| `image` | lesson, plate, image | image id | Required (section 4) |
 | `key` | lesson | action | Optional. Draws that control as a key cap with its verb (section 5) |
 | `note` | plate | string | Optional. One line under the text: a number, a drop, a hint |
+| `caption` | image | string | Optional. One line centred under the picture, 60 characters at most (PANELS §4c). Plain words: no placeholders. The other file has the other language's words, like any text |
 | `author` | quote | string | Required. The author's name as printed |
 | `work` | quote | string | Required. The title of the work, in its original language |
 | `publisher` | quote | string | Optional |
 | `year` | quote | integer | Optional. The year of the edition quoted |
 | `lang` | quote | `"en"` or `"es"` | Required. The quotation's original language |
 
-No other field is allowed. Every panel has an `id` (above). Prose has no title, image or key, and never draws its own page number. A quote has no title, image, key or page number.
+No other field is allowed. Every panel has an `id` (above). Prose has no title, image or key, and never draws its own page number. A quote has no title, image, key or page number. An image panel has no title, text, key or note: a picture alone, with its optional caption.
 
 ## 2b. Quotations
 
@@ -235,7 +236,7 @@ The book is checked at build time by a test and again when the game loads it. An
 5. Every string is non-empty (a quote's `author` and `work` included), has no markup (`<`, `>`), no leading or trailing space and no double space.
 6. Every `{placeholder}` names an allowed action, and appears only in `text` of a lesson or plate.
 7. Every `image` resolves (section 4). Every `key` is an allowed action. A `quote` sits only on a `book` page; its `lang` is a shipped language; its `year`, if given, is an integer from 1000 to the current year.
-8. Every field is within its character budget ([PANELS §5](PANELS.md#5-character-budgets)), counting each placeholder at its longest label in that language. A quote's source line ("Work · Publisher, Year", as drawn) is within 60 characters, and the translation note `book.quote.translated` exists in both languages within 24.
+8. Every field is within its character budget ([PANELS §5](PANELS.md#5-character-budgets)), counting each placeholder at its longest label in that language. A quote's source line ("Work · Publisher, Year", as drawn) is within 60 characters, the translation note `book.quote.translated` exists in both languages within 24, and an image panel's `caption` is within 60.
 9. **The languages match**: the same number of pages; at each position the same `id` and `kind`; the same slots; in each slot the same `layout`, `id`, `image`, `key` and the same set of fields, and for a quote the same `author`, `work`, `publisher`, `year` and `lang`. Only the words differ.
 10. The two key-cap labels and the verb exist for every action used, in every language (the i18n test covers the message keys).
 11. **The remembered panels** (section 1, `easy`), when present: an object of known rooms and sides, each panel passing rules 4 to 8 as a tutorial panel does (a quote is refused, since the easy layout is not a book page); each id is `easy-<room>-<side>` for its position and unique in the file; the two languages hold the same slots with the same facts, as rule 9 requires. A file without `easy` passes.

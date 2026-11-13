@@ -15,7 +15,7 @@ Every panel is short, warm and concrete, and true to what the room holds.
 | [PAGES.md](PAGES.md) | The current page, when it advances, browsing by laps of the ring, the rule that keeps a change out of sight, the page stone |
 | [TUTORIAL-PAGES.md](TUTORIAL-PAGES.md) | The six tutorial pages, slot by slot, and the fact in the code each one rests on |
 | [EASY-LAYOUT.md](EASY-LAYOUT.md) | The easy layout from page 2 on: the six changed templates, the remembered panels, the panel mounts, how the layout is chosen |
-| [PANELS.md](PANELS.md) | The four layouts (lesson, plate, prose, quote) on the 896 × 512 slab: geometry, character budgets, key caps, where each panel hangs |
+| [PANELS.md](PANELS.md) | The five layouts (lesson, plate, prose, quote, image) on the 896 × 512 slab: geometry, character budgets, key caps, where each panel hangs |
 | [BOOK-DATA.md](BOOK-DATA.md) | The two JSON files, every field, the validation rules, the image namespaces and the key caps |
 | [REWARDS.md](REWARDS.md) | What the Roots lay at each mastery level, 0 to 100, and what stays the same everywhere else |
 

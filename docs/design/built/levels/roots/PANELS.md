@@ -1,8 +1,8 @@
-# Panels: four layouts on one limestone slab
+# Panels: five layouts on one limestone slab
 
-Up: [the Roots](README.md) · Status: built (issue #147). Panels stay on the walls, about the same size, never an overlay. Four layouts share one limestone slab: lesson, plate, prose and quote. Code: `src/render/tablets.ts` (the renderer), `src/render/panel-layout.ts` (the geometry and the mounts), `src/render/page-stone.ts`; the game reads the book through `src/game/roots-keeper.ts`. The gallery `?gallery=book` draws every panel of every page in both languages on three devices and flags overflow (`src/debug/gallery/book.ts`). The art as built is recorded in [ART-GUIDE §15](../../../../art/ART-GUIDE.md#15-as-built-art-pass-2026-10-26). Where the build changed the first geometry, the section says so and why.
+Up: [the Roots](README.md) · Status: built (issue #147). Panels stay on the walls, about the same size, never an overlay. Five layouts share one limestone slab: lesson, plate, prose, quote and image. Code: `src/render/tablets.ts` (the renderer), `src/render/panel-layout.ts` (the geometry and the mounts), `src/render/page-stone.ts`; the game reads the book through `src/game/roots-keeper.ts`. The gallery `?gallery=book` draws every panel of every page in both languages on three devices and flags overflow (`src/debug/gallery/book.ts`). The art as built is recorded in [ART-GUIDE §15](../../../../art/ART-GUIDE.md#15-as-built-art-pass-2026-10-26). Where the build changed the first geometry, the section says so and why.
 
-Every panel is a stone tablet on a wall of a room of the Roots. The canvas is **896 × 512**, the two panels of a room can differ, and a panel has one of four layouts. The tablet's size in the world is **3.7 × 2.1 blocks**.
+Every panel is a stone tablet on a wall of a room of the Roots. The canvas is **896 × 512**, the two panels of a room can differ, and a panel has one of five layouts. The tablet's size in the world is **3.7 × 2.1 blocks**.
 
 ## 1. The slab (shared by every layout)
 
@@ -81,6 +81,20 @@ At 28 px a line holds about 54 characters, and nine lines hold about 440 after w
 
 **Every quotation's source is recorded** in `docs/lore/SOURCES.md` (id, author, work, publisher, year, naming status, what the game quotes and where), per `sotano-lore`, in the same change that adds it to the book.
 
+## 4c. `image`: a picture alone
+
+A picture with nothing else on the slab but an optional caption: one line under it. It takes any image id (`lesson/`, `bestiary/` or `icon/`, [BOOK-DATA §4](BOOK-DATA.md#4-images)). It is allowed on every page and among the remembered panels. No page of the book uses it yet; the gallery shows it in a samples group.
+
+| Element | Geometry | Style |
+|---|---|---|
+| Picture area | 40, 40, 816, 416 (down to y 456); with a caption, 40, 40, 816, 372 (down to y 412) | none: the picture never leaves it |
+| Frame | the picture fitted inside the area less 4 px on every side, the frame 4 px round it | 4 px `ink.line` border, as the other layouts' frames; the picture inside, whole |
+| Caption (if `caption`) | centred on x 448, top 424, width 816, one line | bold sans 24 px, shrinks down to 20 px, `ink.line` |
+
+**The fit.** The picture keeps its ratio, is as large as the area allows (the height or the width, whichever comes first), is centred, and is never cropped or stretched. So a square portrait is 408 px square without a caption and 364 px with one, and a 16:9 lesson capture fits to the height. A picture whose size is not known (an icon, a file not loaded yet) is fitted as a square. A missing image draws the same hatched placeholder with its empty diamond as the other layouts. The mason's mark (§10) stays in its corner under the area, beside the caption band, so the picture never covers it.
+
+The rule is pure maths in `src/render/panel-layout.ts` (`imageFrame`, `fitRect`, `pictureSize`), tested in `tests/tablets.test.ts`. As built, the gallery's samples (a square and a 16:9 capture, each with and without a caption) show it in both languages, with no overflow and no flag.
+
 ## 5. Character budgets
 
 Every text in both languages must fit its budget. A budget counts characters after each `{placeholder}` is replaced by the **longest** label that control has on any device in that language. The book test enforces the budgets ([BOOK-DATA](BOOK-DATA.md#6-validation)); the gallery check in the browser enforces the real fit (no text past its last line).
@@ -100,6 +114,7 @@ Every text in both languages must fit its budget. A budget counts characters aft
 | quote | `publisher` | 32 | 1 |
 | quote | source line ("Work · Publisher, Year" as drawn) | 60 | 1 |
 | quote | `book.quote.translated` (message key) | 24 | 1 |
+| image | `caption` | 60 | 1 |
 | key cap | `keycap.<action>.<device>` | 14 | 1 |
 | key cap | `keycap.<action>.verb` | 14 | 1 |
 
@@ -143,7 +158,7 @@ Images are ids, never paths ([BOOK-DATA](BOOK-DATA.md#4-images)). The renderer d
 
 ## 9. The art gate
 
-The look of the four layouts, the key cap, the verb and the page stone is new art, made under `sotano-art` (`sotano-art` §0; the as-built record is [ART-GUIDE §15](../../../../art/ART-GUIDE.md#15-as-built-art-pass-2026-10-26)). The `?gallery=book` section draws every panel of every page in both languages and on every device, and flags any text that does not fit. A panel is judged in colour, in greyscale and at distance in its room before a new look ships (`sotano-art`).
+The look of the five layouts, the key cap, the verb and the page stone is new art, made under `sotano-art` (`sotano-art` §0; the as-built record is [ART-GUIDE §15](../../../../art/ART-GUIDE.md#15-as-built-art-pass-2026-10-26)). The `?gallery=book` section draws every panel of every page in both languages and on every device, and flags any text that does not fit. A panel is judged in colour, in greyscale and at distance in its room before a new look ships (`sotano-art`).
 
 ## 10. The panel id: the mason's mark
 
