@@ -24,13 +24,11 @@ const PENDING: Record<string, string> = {
   recipe: 'the alembic and the potion it made: the alembic is placed by the floor generator',
   paths: 'the practices tab of the inventory screen: the sandbox does not open the inventory yet',
   state: 'the banner of a state of being: shown only after three practices of one path',
-  'white-bomb': 'a white bomb over lava needs a polarity-coloured explosion the sandbox cannot drop',
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss',
   parts: 'the four parts of a released projection: the sandbox has no part pickup hook',
   chests: 'the locked chest with keyholes is a model the floor generator places',
   // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet (BOOK-DATA §4 says what each must show)
   sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
-  'warm-boss': 'a boss nearly warmed to your side: not captured yet (a sandbox boss room with its warmth set, like convert)',
   seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
   omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
   'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',

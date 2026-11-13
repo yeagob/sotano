@@ -35,13 +35,11 @@ const PENDING = {
   recipe: 'the alembic and the potion it made: the alembic is placed by the floor generator (floors 2, 4, 6, 8)',
   paths: 'the practices tab of the inventory screen: the sandbox does not open the inventory yet',
   state: 'the banner of a state of being: shown only after three practices of one path, not in the sandbox',
-  'white-bomb': 'a white bomb over lava needs a polarity-coloured explosion the sandbox cannot drop yet',
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss, which the sandbox cannot stage',
   parts: 'the four parts of a released projection: parts are rolled on release; the sandbox has no part pickup hook',
   chests: 'the locked chest with keyholes is a model the floor generator places; the sandbox cannot place it',
   // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet; BOOK-DATA §4 says what each must show
   sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
-  'warm-boss': 'a boss nearly warmed to your side: not captured yet (a sandbox boss room with its warmth set, like convert)',
   seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
   omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
   'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',
@@ -121,6 +119,15 @@ g.missiles.launch(...W(4.5, 1.4, 6.5), gx, gy, gz, 'positive'); g.missiles.launc
   { name: 'way-down', floor: 0, rows: grid(9, 9), place: [C(3, -3, 2, 5, -1, 6)], eye: [4.5, 2.2, 8], at: [4.5, -1, 4] },
   // the toll window with its words hidden (hideText): the keys to give, not the English around them
   { name: 'toll', floor: 3, rows: grid(9, 9), toll: 3, keep: ['toll'], hideText: '#toll', eye: [4.5, 1.62, 7.5], at: [4.5, 1, 4] },
+  // a boss warmed almost to your side (warmth 0.95, as convert does for a projection), seen from about eight blocks
+  { name: 'warm-boss', floor: 1, rows: grid(21, 15), enemies: [{ def: 'resistance', at: [10, 0, 6] }],
+    prep: `const e = g.enemies.list.find(x => x.def === 'resistance' && x.alive); e.warmth = 0.95; S.sb.step(1);`,
+    eye: [10.5, 1.62, 11], at: [10, 1.3, 6] },
+  // a positive missile over lava: the white bomb's light bursts where it lands (the lava is the lesson's water and lava)
+  { name: 'white-bomb', floor: 3, rows: grid(11, 9), place: [E('lava', 0, 0, 3, 6, 0, 7)],
+    prep: `const n = (x, y, z) => { const l = Math.hypot(x, y, z); return [x / l, y / l, z / l]; };
+const [dx, dy, dz] = n(-1, -0.9, -3); g.missiles.launch(...W(5.5, 1.4, 7.5), dx, dy, dz, 'positive'); S.sb.step(24);`,
+    eye: [5.5, 1.62, 8.4], at: [4.5, 0.4, 4] },
 ];
 
 const WEBP_QUALITY = [0.9, 0.8, 0.7, 0.6, 0.5];
