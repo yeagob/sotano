@@ -45,7 +45,7 @@ Reading and writing never throw: blocked storage, a private window or a full quo
   
   The tab takes the merged record over (`adoptMeta`), so its later unlocks see what the store holds. A stored record of a newer build still makes the write refuse, and a read-only record is never written.
 - The sandbox and the lab use an in-memory record that is never written.
-- **The debug page is not saved.** `S.roots(n)` (the console) sets an in-memory override of the page the next run starts on (`startPage`, roots-keeper.ts). The record is never changed by it, and a run started on it advances nothing, so no debug page reaches the store.
+- **The debug page is not saved.** `S.roots(n)` (the console) sets an in-memory override of the page the next run starts on (`startPage`, roots-keeper.ts); a value that is not a finite number (no argument, a string) clears it, as `null` does (`debugRootsPage`, tested in `tests/roots-book-game.test.ts`). The record is never changed by it, and a run started on it advances nothing, so no debug page reaches the store.
 
 ## 4. Reset
 

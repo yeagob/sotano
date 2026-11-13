@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { loadBook, pageCount, panelAt, type Book, type BookLayout, type Panel, type RoomKey, type Side } from '../src/content/book';
 import { AchievementKeeper } from '../src/game/achievement-keeper';
 import { loadMeta, type MetaStore } from '../src/game/meta';
-import { openRoots, roomKeyOf, RootsKeeper, type RootsCell, type WallImages, type WallSink } from '../src/game/roots-keeper';
+import { debugRootsPage, openRoots, roomKeyOf, RootsKeeper, type RootsCell, type WallImages, type WallSink } from '../src/game/roots-keeper';
 import { LAP_STEPS } from '../src/game/roots-book';
 import type { RoomInfo } from '../src/world/floor';
 import { buildRun } from './helpers';
@@ -350,6 +350,25 @@ describe('the debug page (S.roots) is an override that never reaches the save', 
     expect(a.store.writes).toBe(1);
     expect(loadMeta(a.store).roots.page).toBe(1);
     expect(Object.keys(loadMeta(a.store).achievements)).toContain('brew.first');
+  });
+});
+
+describe('the debug page value (S.roots) is a whole page, or null', () => {
+  it('a whole page of at least 1 is kept; a fraction is floored; below 1 is 1', () => {
+    expect(debugRootsPage(3)).toBe(3);
+    expect(debugRootsPage(2.9)).toBe(2);
+    expect(debugRootsPage(0)).toBe(1);
+    expect(debugRootsPage(-4)).toBe(1);
+  });
+
+  it('null clears the override, and so does anything that is not a finite number', () => {
+    expect(debugRootsPage(null)).toBeNull();
+    expect(debugRootsPage(undefined)).toBeNull();
+    expect(debugRootsPage(NaN)).toBeNull();
+    expect(debugRootsPage(Infinity)).toBeNull();
+    expect(debugRootsPage(-Infinity)).toBeNull();
+    expect(debugRootsPage('3')).toBeNull();
+    expect(debugRootsPage('abc')).toBeNull();
   });
 });
 

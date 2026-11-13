@@ -40,6 +40,14 @@ export interface RootsKeeperOptions {
   readonly startPage?: number;
 }
 
+/**
+ * The debug page the console sets (S.roots): a whole page of at least 1. Anything that is not a finite number (no argument,
+ * a string, NaN) is null, which clears the override and reads the save; a NaN here would break the next run's start.
+ */
+export function debugRootsPage(page: unknown): number | null {
+  return typeof page === 'number' && Number.isFinite(page) ? Math.max(1, Math.floor(page)) : null;
+}
+
 /** A Roots room by its plan cell: its column and row (`RoomInfo.gx`, `gz`). */
 export interface RootsCell { readonly gx: number; readonly gz: number }
 

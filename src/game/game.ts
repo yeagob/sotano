@@ -25,7 +25,7 @@ import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { heartTollPlan, tollIndex } from './toll';
 import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
-import { openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
+import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { mastery as achievedMastery, type Payload } from './achievements';
 import { AchievementKeeper, gainText, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
 import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSites, type RootsSite } from './roots-draws';
@@ -807,7 +807,7 @@ export class Game {
    * override, not the save: the record is never changed, and a run started on it advances nothing (roots-keeper.ts).
    */
   setRootsPage(page: number | null) {
-    this.debugRootsPage = page === null ? null : Math.max(1, Math.floor(page));
+    this.debugRootsPage = debugRootsPage(page);
   }
 
   /**
