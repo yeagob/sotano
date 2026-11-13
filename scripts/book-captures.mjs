@@ -36,7 +36,7 @@ const PENDING = {
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss, which the sandbox cannot stage',
   chests: 'the locked chest with keyholes is a model the floor generator places; the sandbox cannot place it',
   // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet; BOOK-DATA §4 says what each must show
-  sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
+  sky: 'the sky above the great tree: the real game on the sky seed puts the camera inside the trunk in every view tried; no clear view of the sky yet',
   seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
   omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
   'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',
@@ -271,7 +271,7 @@ async function captureReal(browser, url, l) {
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   try {
-    await page.goto(`${url}?seed=${l.seed}`);
+    await page.goto(`${url}?seed=${l.seed}${l.sky ? '&sky' : ''}`);
     await page.waitForFunction(() => window.S && window.S.game && window.S.game.player, null, { timeout: 120000, polling: 200 });
     // the game simulates (floors stream and carve as the player goes down) only when it is unlocked, as in the sandbox
     await page.evaluate(() => { window.S.game.simulateUnlocked = true; });

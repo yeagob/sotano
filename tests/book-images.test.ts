@@ -25,7 +25,7 @@ const PENDING: Record<string, string> = {
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss',
   chests: 'the locked chest with keyholes is a model the floor generator places',
   // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet (BOOK-DATA §4 says what each must show)
-  sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
+  sky: 'the sky above the great tree: the real game on the sky seed puts the camera inside the trunk in every view tried; no clear view of the sky yet',
   seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
   omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
   'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',
