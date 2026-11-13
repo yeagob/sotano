@@ -1675,12 +1675,6 @@ function standLevels(t: RoomTemplate, col: number, row: number): number[] {
 }
 
 /**
- * Which parts of a room can reach each other on foot (docs/architecture/LEVELS.md §5.2): steps of up
- * to one block, any drop, and jumps over gaps of up to two tiles to the same height or lower. Fire
- * and lava block; water is swum. Returns the part id of every key tile (door approaches, the
- * centre, markers); a room **needs building** when they are not all in one part.
- */
-/**
  * The walk rules (LEVELS §5.2) from one standing state: the states one step or jump away on foot. A step
  * goes up one block at most and down any height; a jump clears one tile (or two, the second as a step)
  * to the same level or lower, over nothing taller than a step. Ordered: the first move of each direction first.
@@ -1710,6 +1704,12 @@ function walkEdges(t: RoomTemplate): { levels: number[][][]; next: (c: number, r
   return { levels, next };
 }
 
+/**
+ * Which parts of a room can reach each other on foot (docs/architecture/LEVELS.md §5.2): steps of up
+ * to one block, any drop, and jumps over gaps of up to two tiles to the same height or lower. Fire
+ * and lava block; water is swum. Returns the part id of every key tile (door approaches, the
+ * centre, markers); a room **needs building** when they are not all in one part.
+ */
 export function walkParts(t: RoomTemplate): Map<string, number> {
   const [W, D] = [t.rows[0].length, t.rows.length];
   const { levels, next } = walkEdges(t);
