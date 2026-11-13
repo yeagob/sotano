@@ -30,20 +30,16 @@ catch { ({ chromium } = await import('playwright').catch(() => { console.error('
 const PENDING = {
   ring: 'the minimap of the whole Roots needs a real run of floor 0; the sandbox is one room',
   drink: 'a flask on top of the hand: the sandbox hand carries blocks and parts, not potions',
-  alembic: 'the alembic is placed by the floor generator on floors 2, 4, 6 and 8; the sandbox cannot place it',
-  kitchen: 'the kitchen is placed by the floor generator on floors 1, 3, 5 and 7; the sandbox cannot place it',
   recipe: 'the alembic and the potion it made: the alembic is placed by the floor generator (floors 2, 4, 6, 8)',
   paths: 'the practices tab of the inventory screen: the sandbox does not open the inventory yet',
   state: 'the banner of a state of being: shown only after three practices of one path, not in the sandbox',
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss, which the sandbox cannot stage',
-  parts: 'the four parts of a released projection: parts are rolled on release; the sandbox has no part pickup hook',
   chests: 'the locked chest with keyholes is a model the floor generator places; the sandbox cannot place it',
   // pages 3 to 6 filling all 22 slots (owner, 2026-11-13): not captured yet; BOOK-DATA §4 says what each must show
   sky: 'the sky above the great tree: the sandbox does not build the sky; it needs the real game started on the sky deck (?sky)',
   seal: 'a room sealed with a projection in it: the sandbox room has no doors to shut',
   omen: 'the cold motes of an omen gathering: not captured yet (an omen must be started and paused mid-gather)',
   'room-clear': 'a cleared room with what it left: not captured yet (the clear drop must be rolled and paused)',
-  mastery: 'loose keys, bombs and hearts the Roots lay out at a high mastery: needs a real run of floor 0 at that level',
 };
 
 // Room helpers: rows are z (north to south), each row is x (west to east). '.' is air.
@@ -119,6 +115,13 @@ g.missiles.launch(...W(4.5, 1.4, 6.5), gx, gy, gz, 'positive'); g.missiles.launc
   { name: 'way-down', floor: 0, rows: grid(9, 9), place: [C(3, -3, 2, 5, -1, 6)], eye: [4.5, 2.2, 8], at: [4.5, -1, 4] },
   // the toll window with its words hidden (hideText): the keys to give, not the English around them
   { name: 'toll', floor: 3, rows: grid(9, 9), toll: 3, keep: ['toll'], hideText: '#toll', eye: [4.5, 1.62, 7.5], at: [4.5, 1, 4] },
+  // the four parts a projection can leave, one of each kind, lying together: the game's own part pickups, as a release drops them
+  { name: 'parts', floor: 1, rows: grid(9, 9),
+    prep: `const { PARTS } = await import('/src/content/parts.ts');
+const at = [[4.1, 3.4], [4.6, 3.0], [5.2, 3.6], [5.7, 3.2]];
+['flesh', 'heart', 'mind', 'essence'].forEach((kind, i) => g.pickups.add('part', ...W(at[i][0], 0, at[i][1]), g.room, null, 0, PARTS.find(p => p.kind === kind)));
+S.sb.step(3);`,
+    eye: [4.6, 0.9, 6.0], at: [4.7, 0.2, 3.6] },
   // a boss warmed almost to your side (warmth 0.95, as convert does for a projection), seen from about eight blocks
   { name: 'warm-boss', floor: 1, rows: grid(21, 15), enemies: [{ def: 'resistance', at: [10, 0, 6] }],
     prep: `const e = g.enemies.list.find(x => x.def === 'resistance' && x.alive); e.warmth = 0.95; S.sb.step(1);`,
@@ -130,15 +133,64 @@ const [dx, dy, dz] = n(-1, -0.9, -3); g.missiles.launch(...W(5.5, 1.4, 7.5), dx,
     eye: [5.5, 1.62, 8.4], at: [4.5, 0.4, 4] },
 ];
 
+// Real-game lessons: the real game at a fixed seed, driven from its own console (S.floor, S.mastery, S.restart), with the
+// camera at a place the game itself made (a laboratory or kitchen tile, the loose loot of the Roots, the rooms' minimap).
+// `setup` runs first (async, with S and g), `pose` returns { eye, at } (room-free world coordinates) and optionally
+// `only` (the DOM ids to keep, the game canvas hidden) and `clip` (the ids to crop to). No HUD unless the lesson is one.
+const SEED = 'ROOTSBOOK';
+// the player is set down in the room of the floor's station (the floor streams in around it, as on the way down)
+const TO_ROOM = (floor, kind) => `const F = g.floors.get(${floor}), L = F.${kind}; if (!L) throw new Error('no ${kind} on floor ${floor}');
+const rr = F.rooms.find(r => r.id === L.room) ?? F.rooms[0];
+g.player.spawnAt((rr.x0 + rr.x1 + 1) / 2, rr.y0, (rr.z0 + rr.z1 + 1) / 2);`;
+const TO_FLOOR = n => `const F = g.floors.get(${n}); if (!F) throw new Error('no floor ${n}'); const rr = F.rooms[0]; g.player.spawnAt((rr.x0 + rr.x1 + 1) / 2, rr.y0, (rr.z0 + rr.z1 + 1) / 2);`;
+// waits in the page until the game has carved floor k (the next floor is carved as the player enters the one above)
+const WAIT_FLOOR = k => `await new Promise(r => { const t = setInterval(() => { if (g.floors.get(${k})) { clearInterval(t); r(); } }, 100); setTimeout(() => { clearInterval(t); r(); }, 90000); });`;
+const STATION = (kind, floor) => `const F = g.floors.get(${floor}); const L = F.${kind}; if (!L) throw new Error('no ${kind} on floor ${floor}');
+const solid = (x, y, z) => g.world.solid(Math.floor(x), Math.floor(y), Math.floor(z));
+let best = null;
+for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+  let n = 0;
+  for (let k = 1; k <= 4; k++) { if (solid(L.x + 0.5 + dx * k, L.y + 1, L.z + 0.5 + dz * k) || solid(L.x + 0.5 + dx * k, L.y + 2, L.z + 0.5 + dz * k)) break; n = k; }
+  if (!best || n > best.n) best = { dx, dz, n };
+}
+return { eye: [L.x + 0.5 + best.dx * 2.6, L.y + 2.62, L.z + 0.5 + best.dz * 2.6], at: [L.x + 0.5, L.y + 1.0, L.z + 0.5] };`;
+const REAL = [
+  // the laboratory of floor 2 and the kitchen of floor 1: the floor's own tile, seen from 2.6 blocks
+  { name: 'alembic', real: true, seed: SEED, setup: [[TO_ROOM(1, 'kitchen'), 1000], [WAIT_FLOOR(2), 2000], [TO_ROOM(2, 'laboratory'), 5000]], pose: STATION('laboratory', 2) },
+  { name: 'kitchen', real: true, seed: SEED, setup: TO_ROOM(1, 'kitchen'), pose: STATION('kitchen', 1) },
+  // the Roots at mastery 100: the loose keys, bombs and hearts the start room lays out
+  { name: 'mastery', real: true, seed: SEED, settle: 4000, setup: `S.mastery(100); S.restart('${SEED}');`, pose: `
+const F = g.floors.get(g.depth);
+const P = g.pickups.list.filter(p => !p.taken && ['key', 'bomb', 'heart'].includes(p.type));
+if (!P.length) throw new Error('no loose keys, bombs or hearts in the Roots');
+const byRoom = new Map();
+for (const p of P) byRoom.set(p.room, [...(byRoom.get(p.room) ?? []), p]);
+const [roomId, list] = [...byRoom.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+const rr = F.rooms.find(r => r.id === roomId) ?? { z0: 0, z1: 0 };
+const cx = list.reduce((a, p) => a + p.x, 0) / list.length, cy = list.reduce((a, p) => a + p.y, 0) / list.length, cz = list.reduce((a, p) => a + p.z, 0) / list.length;
+const zSide = cz - rr.z0 > rr.z1 - cz ? -1 : 1;
+g.player.spawnAt(cx, cy, cz + zSide * 3.6);
+// the wall panels of the Roots are text in one language: they are hidden from this picture
+if (g.tablets) g.tablets.group.visible = false;
+return { eye: [cx, cy + 1.6, cz + zSide * 3.6], at: [cx, cy + 0.3, cz] };` },
+  // the rooms of the Roots' ring, each walked once so the minimap shows them: the minimap alone, no 3D view
+  { name: 'ring', real: true, seed: SEED, dpr: 3, only: ['minimap'], clip: ['#minimap'], setup: `
+const F = g.floors.get(g.depth);
+for (const rr of F.rooms) { g.player.spawnAt((rr.x0 + rr.x1 + 1) / 2, rr.y0, (rr.z0 + rr.z1 + 1) / 2); for (let i = 0; i < 3; i++) g.step(); }
+const r0 = F.rooms[0];
+g.player.spawnAt((r0.x0 + r0.x1 + 1) / 2, r0.y0, (r0.z0 + r0.z1 + 1) / 2);
+for (let i = 0; i < 10; i++) g.step();`, pose: 'return { eye: [0, 0, 0], at: [0, 0, -1] };' },
+];
+
 const WEBP_QUALITY = [0.9, 0.8, 0.7, 0.6, 0.5];
 const MAX_BYTES = 60 * 1024;
 const OUT = [960, 540];
 const FOV = 60;
 
 const only = process.argv.slice(2);
-const names = LESSONS.map(l => l.name);
+const names = [...LESSONS, ...REAL].map(l => l.name);
 for (const a of only) if (!names.includes(a) && !(a in PENDING)) { console.error(`book-captures: unknown image "${a}"`); process.exit(2); }
-const jobs = LESSONS.filter(l => only.length === 0 || only.includes(l.name));
+const jobs = [...LESSONS, ...REAL].filter(l => only.length === 0 || only.includes(l.name));
 if (jobs.length === 0) { console.error('book-captures: no matching images'); process.exit(2); }
 for (const [name, why] of Object.entries(PENDING)) if (only.length === 0 || only.includes(name)) console.log(`- ${name}: pending (${why})`);
 mkdirSync(outDir, { recursive: true });
@@ -156,7 +208,7 @@ const scenarioOf = l => ({
 });
 
 // Runs in the page: the room's origin, the lab script, the prep, the camera, and the HUD and hand flags.
-const setScene = job => {
+const setScene = async job => {
   const S = window.S, g = S.game;
   S.lang('en');
   g.simulateUnlocked = true;
@@ -165,7 +217,7 @@ const setScene = job => {
   const rr = g.floors.get(g.depth).rooms[0];
   const o = [rr.x0, rr.y0, rr.z0];
   const W = (x, h, z) => [o[0] + x, o[1] + h, o[2] + z];
-  if (job.prep) new Function('S', 'W', 'g', job.prep)(S, W, g);
+  if (job.prep) await new (async () => {}).constructor('S', 'W', 'g', job.prep)(S, W, g);
   if (job.toll) g.hud.openToll(g, job.toll);
   if (job.hideText) { const st = document.createElement('style'); st.textContent = `${job.hideText}, ${job.hideText} * { color: transparent !important; text-shadow: none !important; }`; document.head.appendChild(st); }
   if (job.sanctuary) g.openSanctuary(() => {});
@@ -213,6 +265,74 @@ async function encodeWebp(page, png, out) {
   }
 }
 
+/** A real-game lesson: the game at its seed, set up and posed from the console, then shot with no HUD unless it keeps one. */
+async function captureReal(browser, url, l) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: l.dpr ?? 1 });
+  const errors = [];
+  page.on('pageerror', e => errors.push(String(e)));
+  try {
+    await page.goto(`${url}?seed=${l.seed}`);
+    await page.waitForFunction(() => window.S && window.S.game && window.S.game.player, null, { timeout: 120000, polling: 200 });
+    // the game simulates (floors stream and carve as the player goes down) only when it is unlocked, as in the sandbox
+    await page.evaluate(() => { window.S.game.simulateUnlocked = true; });
+    // each setup step runs in the page, then the game streams for its wait
+    const steps = typeof l.setup === 'string' ? [[l.setup, l.wait ?? 2500]] : l.setup;
+    for (const [code, wait] of steps) {
+      await page.evaluate(async code => { const AF = (async () => {}).constructor; await new AF('S', 'g', code)(window.S, window.S.game); }, code);
+      await page.waitForTimeout(wait);
+    }
+    const clip = await page.evaluate(async ({ pose, only, clips }) => {
+      const S = window.S, g = S.game;
+      g.simulateUnlocked = true;
+      const AF = (async () => {}).constructor;
+      const r = await new AF('S', 'g', pose)(S, g);
+      g.paused = true;
+      const [ex, ey, ez] = r.eye, [ax, ay, az] = r.at;
+      const dx = ax - ex, dy = ay - ey, dz = az - ez, horiz = Math.hypot(dx, dz) || 1;
+      g.player.spawnAt(ex, ey - 1.62, ez);
+      g.player.yaw = Math.atan2(-dx, -dz);
+      g.player.pitch = Math.atan2(dy, horiz);
+      g.camera.fov = 60; g.camera.updateProjectionMatrix();
+      g.hands.scene.children.forEach(c => { c.visible = false; });
+      if (only) {
+        // only these ids show: the body is hidden, and their chain of parents shows with every other child of it hidden
+        document.body.style.visibility = 'hidden';
+        document.body.style.background = '#000';
+        for (const id of only) {
+          const chain = [];
+          for (let el = document.getElementById(id); el && el !== document.body; el = el.parentElement) chain.push(el);
+          for (const el of chain) {
+            el.style.visibility = 'visible';
+            for (const c of el.parentElement.children) if (!chain.includes(c)) c.style.visibility = 'hidden';
+          }
+        }
+      } else {
+        for (const el of [...document.body.children]) if (el.tagName !== 'SCRIPT' && el.id !== 'game') el.style.display = 'none';
+      }
+      if (!clips) return null;
+      const rs = clips.map(sel => document.querySelector(sel)?.getBoundingClientRect()).filter(Boolean);
+      const x0 = Math.min(...rs.map(q => q.left)) - 8, y0 = Math.min(...rs.map(q => q.top)) - 8;
+      const x1 = Math.max(...rs.map(q => q.right)) + 8, y1 = Math.max(...rs.map(q => q.bottom)) + 8;
+      return { x: Math.max(0, x0), y: Math.max(0, y0), width: x1 - x0, height: y1 - y0 };
+    }, { pose: l.pose, only: l.only, clips: l.clip });
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await page.waitForTimeout(l.settle ?? 1500);
+    const png = await page.screenshot({ type: 'png', ...(clip ? { clip } : {}) });
+    const dpr = l.dpr ?? 1;
+    const out = clip ? [Math.round(clip.width * dpr), Math.round(clip.height * dpr)] : OUT;
+    const { bytes, q } = await encodeWebp(page, png, out);
+    writeFileSync(join(outDir, `${l.name}.webp`), bytes);
+    console.log(`+ ${l.name}  ${out[0]}x${out[1]}  ${(bytes.length / 1024).toFixed(1)} KB (quality ${q})${errors.length ? `  (page errors: ${errors.length})` : ''}`);
+    if (errors.length) { console.log(errors.slice(0, 3).join('\n')); return 1; }
+    return 0;
+  } catch (e) {
+    console.log(`✗ ${l.name}: ${String(e).split('\n')[0]}\n${errors.slice(0, 3).join('\n')}`);
+    return 1;
+  } finally {
+    await page.close();
+  }
+}
+
 const server = await createServer({ root, logLevel: 'error', server: { port: 0 } });
 await server.listen();
 const url = server.resolvedUrls.local[0];
@@ -220,6 +340,7 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 let failed = 0;
 try {
   for (const l of jobs) {
+    if (l.real) { failed += await captureReal(browser, url, l); continue; }
     const job = { ...l, scenario: scenarioOf(l) };
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: l.dpr ?? 1 });
     const errors = [];
