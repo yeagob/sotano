@@ -4,6 +4,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+## 0.2.4.f1 · 2026-11-14
+
 ### Added
 - Six achievements: Into the Crown (enter the great tree's canopy), Down to the Roots (die on the Roots' floor), Root to Crown (dig up from the Roots to the great tree), Mind Crafter (place 1000 blocks after your first pact with the Listener), Turning Back (turn the tutorial book back a page) and The Unbreakable Floor (touch bedrock on any side) (#179).
 
