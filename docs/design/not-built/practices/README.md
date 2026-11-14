@@ -13,6 +13,7 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 | [MENTAL-TRANSMUTATION.md](MENTAL-TRANSMUTATION.md) | Status: idea | Practices that move a state along its own pole (fear toward courage) instead of removing it |
 | [RIDING-THE-PENDULUM.md](RIDING-THE-PENDULUM.md) | Status: idea | Rhythms in rooms or projections that reward timing over reaction |
 | [EARLY-SKETCHES.md](EARLY-SKETCHES.md) | Status: idea (superseded) | The first ten item sketches of the design, with provisional names; most are not built |
+| [Issue #194](https://github.com/yeagob/sotano/issues/194) | Status: idea | Integrating indigenous Mesoamerican practices — "por todas mis relaciones", the temazcal and the búsqueda de visión — into lore and the Body path |
 
 ## Decided design rule
 
