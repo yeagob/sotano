@@ -102,7 +102,7 @@ The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages
 
 | Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
 |---|---|---|---|---|---|
-| `death.roots` | `playerDied` with `floor` 0 (the Roots' band; the surface is -1) | Down to the Roots | Hasta la raíz | Die on the Roots' floor, in the blast of a bomb. | Muere en el piso de las raíces, en la explosión de una bomba. |
+| `death.roots` | `playerDied` with `floor` 0 (the Roots' band; the surface is -1) | Down to the Roots | Hasta la raíz | Die on the Roots' floor. | Muere en el piso de las raíces. |
 | `climb.surface` | `surfaceEnter` from the Roots (`from` 0) | Root to Crown | De la raíz a la copa | Dig up from the Roots and reach the great tree above the surface. | Excava hacia arriba desde las raíces y llega al gran árbol sobre la superficie. |
 | `mind.crafter` | `blockPlaced` with `afterPact` true, **1000 times across runs** | Mind Crafter | Mente de creador | Place 1000 blocks after your first pact with the Listener. | Coloca 1000 bloques después de tu primer pacto con la Escucha. |
 | `book.back` | `bookBack`: the shown page of the tutorial book (pages 1 to 6) turned back one page | Turning Back | Volver la página | Turn the tutorial book back one page. | Pasa hacia atrás una página del libro del tutorial. |

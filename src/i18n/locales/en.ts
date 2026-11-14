@@ -681,7 +681,7 @@ const messages = {
   'achievement.book.page.100.name': 'Still Reading',
   'achievement.book.page.100.desc': 'Reach page 100 of the Roots\' book.',
   'achievement.death.roots.name': 'Down to the Roots',
-  'achievement.death.roots.desc': 'Die on the Roots\' floor, in the blast of a bomb.',
+  'achievement.death.roots.desc': 'Die on the Roots\' floor.',
   'achievement.climb.surface.name': 'Root to Crown',
   'achievement.climb.surface.desc': 'Dig up from the Roots and reach the great tree above the surface.',
   'achievement.mind.crafter.name': 'Mind Crafter',

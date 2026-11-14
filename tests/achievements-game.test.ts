@@ -10,7 +10,7 @@ import { CRATE_DROP_MIN, crateChanceInBand } from '../src/content/tables/crates'
 import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
 import { AchievementKeeper, cardKeys, gainParams, gainText, noticeKeys, noticeMillis, NOTICE_LONG_CHARS, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
 import { mastery, type Payload } from '../src/game/achievements';
-import { defaultMeta, loadMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
+import { defaultMeta, loadMeta, mergeMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
 import { drawRootsItems, spotKey } from '../src/game/roots-draws';
 import { EN, type MessageKey } from '../src/i18n/locales/en';
 import { ES } from '../src/i18n/locales/es';
@@ -269,6 +269,13 @@ describe('the Roots and the way up, the Listener, the book and bedrock (ACHIEVEM
     off.recordPact();
     expect(lab.store.writes).toBe(0);
     expect(lab.record.pact).toBeUndefined();
+  });
+
+  it('two tabs keep the pact: the merge is an OR, and a stored pact is never lost', () => {
+    const base = defaultMeta();
+    expect(mergeMeta(base, { ...base, pact: true }).pact).toBe(true);
+    expect(mergeMeta({ ...base, pact: true }, base).pact).toBe(true);
+    expect(mergeMeta(base, base).pact).toBeUndefined();
   });
 
   it('the pact is kept in the save as an optional field, and a record without it reads as not made', () => {

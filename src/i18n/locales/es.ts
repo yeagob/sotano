@@ -677,7 +677,7 @@ export const ES: Catalog = {
     'achievement.book.page.100.name': 'Sigues leyendo',
     'achievement.book.page.100.desc': 'Llega a la página 100 del libro de las raíces.',
     'achievement.death.roots.name': 'Hasta la raíz',
-    'achievement.death.roots.desc': 'Muere en el piso de las raíces, en la explosión de una bomba.',
+    'achievement.death.roots.desc': 'Muere en el piso de las raíces.',
     'achievement.climb.surface.name': 'De la raíz a la copa',
     'achievement.climb.surface.desc': 'Excava hacia arriba desde las raíces y llega al gran árbol sobre la superficie.',
     'achievement.mind.crafter.name': 'Mente de creador',

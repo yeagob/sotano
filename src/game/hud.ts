@@ -78,7 +78,8 @@ export class Hud {
   /** The achievement notice's own element (sotano-popups §2): a corner panel, not the banner. */
   private achievementEl = $('achievement');
   private lastAchievement: { keys: CardKeys; level: number } | null = null;
-  private achievementT = 0;
+  /** Time the achievement notice has left on screen, in ms. It runs on game time (`update`), so a pause holds it. */
+  private achievementLeft = 0;
   private achievementDone: (() => void) | undefined;
   private toastEl = $('toast');
   private bossEl = $('boss');
@@ -288,6 +289,7 @@ export class Hud {
 
   update(g: Game, running: boolean, dt: number) {
     this.shakeT = Math.max(0, this.shakeT - dt);
+    if (running) this.tickAchievement(dt);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
     this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
@@ -671,11 +673,17 @@ export class Hud {
     void this.achievementEl.offsetWidth;
     this.achievementEl.classList.add('show');
     this.achievementDone = onDone;
-    this.achievementT = window.setTimeout(() => {
-      const done = this.achievementDone;
-      this.hideAchievement();
-      done?.();
-    }, ms);
+    this.achievementLeft = ms;
+  }
+
+  /** Counts the notice down on game time: a paused game (the menu, a window) holds it, and so does a background tab. */
+  private tickAchievement(dt: number) {
+    if (!this.lastAchievement) return;
+    this.achievementLeft -= dt * 1000;
+    if (this.achievementLeft > 0) return;
+    const done = this.achievementDone;
+    this.hideAchievement();
+    done?.();
   }
 
   private renderAchievement(a: { keys: CardKeys; level: number }) {
@@ -691,7 +699,6 @@ export class Hud {
    */
   private hideAchievement() {
     if (!this.lastAchievement) return;
-    window.clearTimeout(this.achievementT);
     this.achievementDone = undefined;
     this.lastAchievement = null;
     this.achievementEl.classList.remove('show');
