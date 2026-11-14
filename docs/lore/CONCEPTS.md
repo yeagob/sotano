@@ -53,3 +53,4 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Ascent in leaps** (the triple jump, 1x, 2x and 8x) | — (our own) | Decided, not built: the reward of the Horse, the way through Totality ([TOTALITY.md](../design/not-built/levels/TOTALITY.md)) |
 | **Unity in the Sun** (the last sky floor, where the solar relic is given) | — (our own) | Decided setting, not built: silence below, the Sun above ([UNITY.md](../design/not-built/levels/UNITY.md)) |
 | **Strength while held** (the Berserker heart) | — (our own) | Built: one more heart of 100 health that keeps the player a berserker for as long as it is held ([BERSERKER.md](../design/built/player/hearts/BERSERKER.md)) |
+| **All beings are kin** (interconnection) | `camino-rojo`, `constellations` | Proposed: "Por Todas Mis Relaciones" practice — effects extend to allies and weaken projections ([issue #194](https://github.com/yeagob/sotano/issues/194)) |
