@@ -13,5 +13,6 @@ Every document here is undecided or an idea. The owner decides the open ones; th
 | [PROTAGONIST.md](PROTAGONIST.md) | Status: open question (story question 1) | Who the player is, and whether the person is ever shown |
 | [MENTAL-HEALTH-LINK.md](MENTAL-HEALTH-LINK.md) | Status: open question (story question 4) | Whether the game links to real mental-health resources, and how |
 | [META-PROGRESSION.md](META-PROGRESSION.md) | Status: idea (story question 3) | What a run leaves for the next one, and the hidden pockets and side biomes |
+| [Issue #193](https://github.com/yeagob/sotano/issues/193) | Status: idea | When a path completes (three practices), alternative routes, special missions and a boss-rush wave challenge open; completing them advances the root floor |
 
 The owner's decisions on the thirteen floors are in the levels documents, and the cosmology these questions rest on is in [COSMOLOGY](../../../lore/COSMOLOGY.md).
