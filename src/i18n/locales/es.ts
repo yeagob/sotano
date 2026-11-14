@@ -682,7 +682,6 @@ export const ES: Catalog = {
 
     // ── the achievement card (ACHIEVEMENTS §4) ──
     'achievement.card.kicker': 'Logro',
-    'achievement.card.gain': 'En tu próximo despertar. {gain}',
     'achievement.card.mastery': 'Maestría de las raíces: {level} de 100',
 
     // ── the mastery steps (REWARDS §7): what the new level brings ──

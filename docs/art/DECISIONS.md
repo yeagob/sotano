@@ -783,11 +783,13 @@ The lantern grows +0.5 m per state; the HUD shows states with glyphs (§10.2).
 
 ### 10.2 HUD and UI
 
-**Pixelify Sans: approved by the owner (2026-11-06), not yet added to the repo.** The decision is made; the OFL font file is not self-hosted yet, so every face that names it (the spirit number, §10.7) falls back to the system sans until it is added. Atkinson Hyperlegible Next is still the open part of OWNER Q2.
+**Pixelify Sans: approved by the owner (2026-11-06), added 2026-11-14** (`public/fonts/pixelify-sans-latin-400.woff2`, Latin subset of `@fontsource/pixelify-sans` 5.3.0, SIL OFL 1.1, licence beside it). It sets the achievement notice (kicker 20 px, name 28 px) and the spirit number (§10.7), at the approved sizes only. Atkinson Hyperlegible Next is still the open part of OWNER Q2.
 
 **Fonts (Ply; OWNER Q2 because they are binary OFL files, ~80 KB):** **Pixelify Sans** for display and numbers, only at 20 / 28 / 40 px, `tabular-nums`; **Atkinson Hyperlegible Next** for body text. Fallback if refused: a generated 5 × 7 pixel font for numerals and titles, system UI sans for body. Never system monospace. Sizes at 1366 × 768: minimum 14 px anywhere, body 16, effect line 15, counters 20, item name 28, titles 40; line height 1.4. All in-game text goes through i18n.
 
 **Scale unit:** `--u: clamp(2px, round(100vh / 384), 5px)` (2 px at 768, 3 at 1080, 4 at 1440); UI scale setting 100 / 125 / 150 %.
+
+**The achievement notice (issue #191, 2026-11-14)** is a corner panel of its own, not a banner: the cellar slate in the top right (26 % from the top), a 2 `--u` gold accent bar, a 10 × 10 gold medal glyph (`hud-icons.ts` `achievement`: `light.gold` disc, `light.core` glint, `light.dusk` shade, `ink.void` outline), the kicker in gold, the name in Pixelify Sans 28 px, the description and the mastery count. It slides in on six pixel steps, never blinks, takes no input, and leaves after 3 s (5 s for a long description). The owner's words: the notice is not a panel one must click.
 
 **Panel style, "the cellar slate":** `ink.panel` at α 0.95; 1 px `ink.void` outline; 2 px inner bevel (`inset 2px 2px 0 ink.bevel, inset -2px -2px 0 ink.void`); **chamfered corners** of 2 `--u` via `clip-path` (no border-radius anywhere); padding 6 `--u`; a 2 `--u` accent bar on the left in the context colour (item or path). No gradients except the banner glow; no blur.
 

@@ -27,7 +27,7 @@ import { heartTollPlan, tollIndex } from './toll';
 import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { mastery as achievedMastery, type Payload } from './achievements';
-import { AchievementKeeper, gainText, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
+import { AchievementKeeper, cardKeys, noticeMillis, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
 import { HeightWatch } from './height-watch';
 import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSites, type RootsSite } from './roots-draws';
 import { offerPedestal, rollChestContents } from './chest-draws';
@@ -853,7 +853,7 @@ export class Game {
    * the walls and the passage settled (ACHIEVEMENTS §4). One card at a time; the next waits for the player to confirm it.
    */
   private showAchievement(ctx: string) {
-    if (ctx !== 'play' || this.keeper.pending === 0 || !this.keeper.live) return;
+    if (ctx !== 'play' || this.keeper.pending === 0 || !this.keeper.live || this.hud.achievementOpen) return;
     if (this.transitioning || this.gate.busy || this.restartT > 0 || this.revealT >= 0) return;
     const rs = this.roomState.get(this.room);
     if (rs?.sealed && !rs.cleared) return;
@@ -862,15 +862,10 @@ export class Game {
   }
 
   private presentAchievement(n: AchievementNotice) {
-    const gain = n.gains.length ? ['achievement.card.gain' as MessageKey] : [];
-    this.hud.presenceCard(
-      `achievement.${n.id}.name` as MessageKey,
-      [`achievement.${n.id}.desc` as MessageKey, ...gain, 'achievement.card.mastery'],
-      { level: n.level, gain: () => gainText(n.gains, t) },
-      'achievement.card.kicker',
-      // the notice leaves the queue only when the player confirms the card; a card cut off stays queued (ACHIEVEMENTS §4)
-      () => this.keeper.confirm(n),
-    );
+    const c = cardKeys(n);
+    // the notice is not blocking: it leaves by its timer (3 s, 5 s for a long text), and only then leaves the queue;
+    // a notice cut off by another window stays queued (ACHIEVEMENTS §4)
+    this.hud.achievementNotice(c, n.level, noticeMillis(t(c.desc)), () => this.keeper.confirm(n));
     const b = this.player.body;
     this.particles.burst(b.x, b.y + 1.6, b.z, pal('light.gold'), 28, 2.6, 0.06);
     sfx3.achievement();

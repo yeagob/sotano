@@ -4,6 +4,9 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ## Unreleased
 
+### Changed
+- The achievement notice is a small corner panel in pixel art. It leaves by itself after 3 seconds (5 for a long description) and no longer shows what the Roots gain; the description still says what the achievement does (#191).
+
 ## 0.2.4 · 2026-11-13
 
 ### Added

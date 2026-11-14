@@ -8,7 +8,7 @@ import { ACHIEVEMENTS } from '../src/content/achievements';
 import { ITEM_BY_ID } from '../src/content/items';
 import { CRATE_DROP_MIN, crateChanceInBand } from '../src/content/tables/crates';
 import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
-import { AchievementKeeper, gainParams, gainText, noticeKeys, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
+import { AchievementKeeper, cardKeys, gainParams, gainText, noticeKeys, noticeMillis, NOTICE_LONG_CHARS, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
 import { mastery, type Payload } from '../src/game/achievements';
 import { defaultMeta, loadMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
 import { drawRootsItems, spotKey } from '../src/game/roots-draws';
@@ -224,6 +224,24 @@ describe('the notice (ACHIEVEMENTS §4)', () => {
     }
     return keys;
   }
+
+  it('the card shows the name, what the achievement does, the kicker and the mastery count, and no gain line (issue #191)', () => {
+    for (const d of ACHIEVEMENTS) for (const level of [1, 36, 100]) {
+      const c = cardKeys({ id: d.id, level, gains: gainsAt(level) });
+      expect(c).toEqual({ name: `achievement.${d.id}.name`, desc: `achievement.${d.id}.desc`, kicker: 'achievement.card.kicker', mastery: 'achievement.card.mastery' });
+      expect(Object.values(c)).not.toContain('achievement.card.gain');
+    }
+  });
+
+  it('stays on screen 3 s, or 5 s when its description is long (issue #191)', () => {
+    expect(noticeMillis('Short.')).toBe(3000);
+    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS))).toBe(3000);
+    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS + 1))).toBe(5000);
+    setLocale('en');
+    const lengths = ACHIEVEMENTS.map(d => t(`achievement.${d.id}.desc` as MessageKey).length);
+    expect(lengths.some(n => n > NOTICE_LONG_CHARS)).toBe(true);
+    expect(lengths.some(n => n <= NOTICE_LONG_CHARS)).toBe(true);
+  });
 
   it('every word of every notice exists in English and in Spanish', () => {
     for (const key of everyKey()) {

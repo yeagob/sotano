@@ -31,6 +31,7 @@ import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
+import type { CardKeys } from './achievement-keeper';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -74,6 +75,11 @@ export class Hud {
   private debugEl = $('debug');
   private overlay = $('overlay');
   private bannerEl = $('banner');
+  /** The achievement notice's own element (sotano-popups §2): a corner panel, not the banner. */
+  private achievementEl = $('achievement');
+  private lastAchievement: { keys: CardKeys; level: number } | null = null;
+  private achievementT = 0;
+  private achievementDone: (() => void) | undefined;
   private toastEl = $('toast');
   private bossEl = $('boss');
   private bossFill = $('bossfill');
@@ -194,7 +200,8 @@ export class Hud {
     this.renderLanguages();
     this.renderControls();
     this.renderGraphics();
-    if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    if (this.lastAchievement) this.renderAchievement(this.lastAchievement);
+    else if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
     else if (this.bannerOpen && this.lastCard) this.renderCard(this.lastCard);
     else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
@@ -520,6 +527,7 @@ export class Hud {
    * `onRead` runs only when the player confirms this card (`confirmBanner`), never when it is cut off.
    */
   presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: CardParams, kicker?: MessageKey, onRead?: () => void) {
+    this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = { nameKey, lineKeys, params, kicker, onRead };
     this.clearPresenceOfferState();
@@ -542,6 +550,7 @@ export class Hud {
   }
 
   presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+    this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
     this.lastPresenceOffer = { nameKey, carried };
@@ -597,6 +606,7 @@ export class Hud {
   }
 
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
+    this.hideAchievement();
     this.lastBanner = [def, changes, synergies];
     this.lastCard = null;
     this.clearPresenceOfferState();
@@ -628,19 +638,63 @@ export class Hud {
   dismissBanner() {
     this.lastCard = null;
     this.clearPresenceOfferState();
+    this.hideAchievement();
     this.bannerOpen = false;
     this.bannerEl.classList.remove('show');
   }
 
   /**
-   * The player confirmed the banner on screen: it closes, and a Presence card's `onRead` runs once (the achievement card
-   * leaves its queue only here, ACHIEVEMENTS §4). Any other close (a restart, another banner) is `dismissBanner`, which
-   * runs no `onRead`.
+   * The player confirmed the window on screen: it closes, and the Presence card's `onRead` runs once (the achievement
+   * notice takes no confirmation: it leaves by its timer). Any other close (a restart, another window) is `dismissBanner`,
+   * which runs no `onRead`.
    */
   confirmBanner() {
     const read = this.lastCard?.onRead;
     this.dismissBanner();
     read?.();
+  }
+
+  /** Whether an achievement notice is on screen (the game shows the next one only when none is). */
+  get achievementOpen() { return this.lastAchievement !== null; }
+
+  /**
+   * The achievement notice (sotano-popups §2, "Achievement notice"): a slate medal strip in the top-right corner with its
+   * kicker, the achievement's name, what it does, and the mastery count. It is not blocking and takes no input: it leaves
+   * by itself after `ms` (3 s, or 5 s for a long text), and then `onDone` runs once. A window that arrives first cuts it
+   * off: `onDone` does not run, and the notice stays queued. One at a time.
+   */
+  achievementNotice(keys: CardKeys, level: number, ms: number, onDone: () => void) {
+    this.hideAchievement();
+    this.lastAchievement = { keys, level };
+    this.renderAchievement(this.lastAchievement);
+    this.achievementEl.classList.remove('show');
+    void this.achievementEl.offsetWidth;
+    this.achievementEl.classList.add('show');
+    this.achievementDone = onDone;
+    this.achievementT = window.setTimeout(() => {
+      const done = this.achievementDone;
+      this.hideAchievement();
+      done?.();
+    }, ms);
+  }
+
+  private renderAchievement(a: { keys: CardKeys; level: number }) {
+    this.achievementEl.innerHTML =
+      `<div class="slate ach"><i class="ach-medal" aria-hidden="true"></i><div class="ach-text">` +
+      `<em class="ach-kicker">${th(a.keys.kicker)}</em><b class="ach-name">${th(a.keys.name)}</b>` +
+      `<span class="ach-desc">${th(a.keys.desc)}</span><small class="ach-mastery">${th(a.keys.mastery, { level: a.level })}</small></div></div>`;
+  }
+
+  /**
+   * Closes the achievement notice without its answer: a restart, a death or another window cuts it off. `onRead` does not
+   * run, so the notice stays queued for the next calm moment.
+   */
+  private hideAchievement() {
+    if (!this.lastAchievement) return;
+    window.clearTimeout(this.achievementT);
+    this.achievementDone = undefined;
+    this.lastAchievement = null;
+    this.achievementEl.classList.remove('show');
   }
 
   flash(color: number) {

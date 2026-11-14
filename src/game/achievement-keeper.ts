@@ -1,7 +1,7 @@
 // The Roots' achievements in one session (docs/design/built/progression/ACHIEVEMENTS.md §2-4, MASTERY.md §1,
 // SAVE.md §3): the tracker over the save record, the notices queued for the calm moments, and the words each
 // notice shows. Pure: no DOM, no WebGL, no game state. The game (game.ts) makes one keeper for the session, feeds
-// it the events its bus emits, takes one notice at a time when the player is calm, and shows it on the Presence card.
+// it the events its bus emits, takes one notice at a time when the player is calm, and shows it in the corner notice (hud.ts).
 //
 // An unlock is written to the record and the store at once (through saveMeta), so a closed tab never loses it.
 // Notices are queued in order and kept across runs: a page achievement is earned at a run's end, and its card waits
@@ -88,30 +88,56 @@ export class AchievementKeeper {
   }
 
   /**
-   * The notice to show next, still queued: it leaves the queue only when the player confirms its card (`confirm`). A card
-   * cut off before that (a restart, a death, another banner) is the same notice at the next calm moment. Undefined when
-   * none waits.
+   * The notice to show next, still queued: it leaves the queue only when its time on screen ends (`confirm`). A notice cut
+   * off before that (a restart, a death, another window) is the same notice at the next calm moment. Undefined when none
+   * waits.
    */
   peek(): AchievementNotice | undefined {
     return this.queue[0];
   }
 
   /**
-   * The player read the card of `notice`: it leaves the queue. Only the head of the queue can leave, so a card's late
-   * confirmation never removes another notice.
+   * The notice `notice` has been on screen for its time: it leaves the queue. Only the head of the queue can leave, so a
+   * late call never removes another notice.
    */
   confirm(notice: AchievementNotice): void {
     if (this.queue[0] === notice) this.queue.shift();
   }
 }
 
-/** The message keys a notice's card uses: its name, description, kicker, the gain line(s), and the mastery line. */
+/** The words the notice's card shows (issue #191): the kicker, the name, what the achievement does, and the mastery count. */
+export interface CardKeys {
+  readonly name: MessageKey;
+  readonly desc: MessageKey;
+  readonly kicker: MessageKey;
+  readonly mastery: MessageKey;
+}
+
+/**
+ * The card's keys. The gain lines (what the level brings in the Roots) are NOT on the card: the owner keeps them off the
+ * unlock panel (issue #191). The notice still carries them (`gains`) for a later place that shows them.
+ */
+export function cardKeys(n: AchievementNotice): CardKeys {
+  return {
+    name: `achievement.${n.id}.name` as MessageKey,
+    desc: `achievement.${n.id}.desc` as MessageKey,
+    kicker: 'achievement.card.kicker',
+    mastery: 'achievement.card.mastery',
+  };
+}
+
+/** A description longer than this many characters keeps the notice on screen for five seconds, not three (issue #191). */
+export const NOTICE_LONG_CHARS = 70;
+
+/** How long the notice stays on screen: 3 s, or 5 s when its description is long (the longest runs to about 77 characters). */
+export function noticeMillis(desc: string): number {
+  return desc.length > NOTICE_LONG_CHARS ? 5000 : 3000;
+}
+
+/** Every message key a notice can use: its card's keys and the step lines its data carries. */
 export function noticeKeys(n: AchievementNotice): MessageKey[] {
-  const keys: MessageKey[] = [`achievement.${n.id}.name` as MessageKey, `achievement.${n.id}.desc` as MessageKey, 'achievement.card.kicker'];
-  if (n.gains.length) keys.push('achievement.card.gain');
-  keys.push('achievement.card.mastery');
-  for (const g of n.gains) keys.push(g.key as MessageKey);
-  return keys;
+  const c = cardKeys(n);
+  return [c.name, c.desc, c.kicker, c.mastery, ...n.gains.map(g => g.key as MessageKey)];
 }
 
 /** The gain line parameters with the star counts drawn with `qualityStars` (the same stars the item banner shows). */
