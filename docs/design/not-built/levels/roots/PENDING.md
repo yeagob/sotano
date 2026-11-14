@@ -24,7 +24,7 @@ The pictures for pages 3 to 6 that are still missing (`sky`, `seal`, `omen`, `ro
 
 ## Achievements still to define
 
-The catalogue has 40 achievements ([ACHIEVEMENTS](../../../built/progression/ACHIEVEMENTS.md)). The other **60** (the issue said 78; with two achievements per boss and four for pages of the book, 40 ship and 60 remain) are in GitHub issue **#179**. They enter the catalogue only when the owner defines them, one by one, with their criterion. No placeholder is added to fill the slots. The data model takes them without a change ([ACHIEVEMENTS §2](../../../built/progression/ACHIEVEMENTS.md)).
+The catalogue has 46 achievements ([ACHIEVEMENTS](../../../built/progression/ACHIEVEMENTS.md)). The other **54** (the issue said 78; with two achievements per boss, four for pages of the book and six from #179, 46 ship and 54 remain) are in GitHub issue **#179**. They enter the catalogue only when the owner defines them, one by one, with their criterion. No placeholder is added to fill the slots. The data model takes them without a change ([ACHIEVEMENTS §2](../../../built/progression/ACHIEVEMENTS.md)).
 
 The two other issues that touch progress are out of this folder: the completion percentage (#180) and the unlockables (#113).
 

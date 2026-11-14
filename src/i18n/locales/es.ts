@@ -676,13 +676,24 @@ export const ES: Catalog = {
     'achievement.book.page.69.desc': 'Llega a la página 69 del libro de las raíces.',
     'achievement.book.page.100.name': 'Sigues leyendo',
     'achievement.book.page.100.desc': 'Llega a la página 100 del libro de las raíces.',
+    'achievement.death.roots.name': 'Hasta la raíz',
+    'achievement.death.roots.desc': 'Muere en el piso de las raíces.',
+    'achievement.climb.surface.name': 'De la raíz a la copa',
+    'achievement.climb.surface.desc': 'Excava hacia arriba desde las raíces y llega al gran árbol sobre la superficie.',
+    'achievement.mind.crafter.name': 'Mente de creador',
+    'achievement.mind.crafter.desc': 'Coloca 1000 bloques después de tu primer pacto con la Escucha.',
+    'achievement.book.back.name': 'Volver la página',
+    'achievement.book.back.desc': 'Pasa hacia atrás una página del libro del tutorial.',
+    'achievement.climb.crown.name': 'Hasta la copa',
+    'achievement.climb.crown.desc': 'Sube el gran árbol hasta su copa, el dosel de hojas.',
+    'achievement.bedrock.touch.name': 'El suelo que no cede',
+    'achievement.bedrock.touch.desc': 'Excava hasta tocar el lecho de roca, desde cualquier lado.',
 
     // ── the hidden book: a quotation's translation note (PANELS §4b) ──
     'book.quote.translated': 'Traducción nuestra',
 
     // ── the achievement card (ACHIEVEMENTS §4) ──
     'achievement.card.kicker': 'Logro',
-    'achievement.card.gain': 'En tu próximo despertar. {gain}',
     'achievement.card.mastery': 'Maestría de las raíces: {level} de 100',
 
     // ── the mastery steps (REWARDS §7): what the new level brings ──

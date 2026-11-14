@@ -71,6 +71,9 @@
   }
   </script>
   <style>
+    /* Pixelify Sans (SIL OFL 1.1, public/fonts/PIXELIFY-SANS-OFL.txt): the approved display face, sizes 20 / 28 / 40 px only
+       (docs/art/DECISIONS.md §10.2). Latin subset, self-hosted. */
+    @font-face { font-family: "Pixelify Sans"; src: url("fonts/pixelify-sans-latin-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
     /* Vessel Light UI (docs/art/DECISIONS.md §10.2). Every colour is a palette token written by
        applyPaletteCss() (src/render/icons.ts) as a CSS variable: no hex in this file. */
     :root { --u: clamp(2px, calc(100vh / 384), 5px); }
@@ -195,6 +198,21 @@
     #banner .offer-actions button:hover { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     #banner .offer-actions button:focus-visible { outline: 2px solid var(--ui-text); outline-offset: 2px; }
     #banner .offer-controls { display: block; margin-top: 8px; font-size: 14px; line-height: 1.4; color: var(--ui-faded); }
+    /* the achievement notice (sotano-popups §2, "Achievement notice"): its own element, a slate strip in the top-right
+       corner with a gold medal and a gold accent bar. It slides in on pixel steps, never blinks, and never blurs. */
+    #achievement { position: fixed; right: calc(6 * var(--u)); top: 26%; width: min(360px, calc(100vw - 24px)); pointer-events: none;
+      opacity: 0; transform: translateX(calc(100% + 12 * var(--u))); transition: transform .36s steps(6, end), opacity .2s; }
+    #achievement.show { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { #achievement { transition: none; } }
+    #achievement .ach { display: flex; align-items: center; gap: calc(4 * var(--u)); padding: calc(4 * var(--u)) calc(6 * var(--u)) calc(4 * var(--u)) calc(5 * var(--u));
+      border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #achievement .ach-medal { flex: none; width: calc(10 * var(--u)); height: calc(10 * var(--u)); background: no-repeat center/contain var(--ico-achievement); image-rendering: pixelated; }
+    #achievement .ach-text { min-width: 0; }
+    #achievement .ach-kicker { display: block; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-gold); }
+    #achievement .ach-kicker::before { content: '\25C6  '; }
+    #achievement .ach-name { display: block; margin-top: 4px; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #achievement .ach-desc { display: block; margin-top: 4px; font-size: 16px; line-height: 1.4; color: var(--ui-text-2); }
+    #achievement .ach-mastery { display: block; margin-top: 4px; font-size: 14px; color: var(--ui-faded); }
 
     /* screen effects, gentle (§10.4): item flash peak .45 over .5 s; hurt vignette life.dark peak .35 over .4 s */
     #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 45%, var(--c) 0%, transparent 70%); }
@@ -543,6 +561,7 @@
   <div id="corner"><canvas id="minimap" class="slate"></canvas><div id="depth"></div></div>
   <div id="debug"></div>
   <div id="banner"></div>
+  <div id="achievement" aria-live="polite"></div>
   <div id="toast" class="slate"></div>
   <div id="boss" hidden><span id="bossname"></span><div><i id="bossfill"></i></div></div>
   <div id="toll"></div>

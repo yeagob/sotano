@@ -101,8 +101,9 @@ export class RootsKeeper {
   get start(): RoomKey { return this.book.layout.start as RoomKey; }
 
   /** A room was entered: a Roots room by its cell, or `undefined` for any room outside the Roots. */
-  enterRoom(cell?: RootsCell): void {
+  enterRoom(cell?: RootsCell): { from: number; page: number } | undefined {
     this.book.enterRoom(cell ? roomKeyOf(cell) : OUTSIDE);
+    return this.book.turn;
   }
 
   /**

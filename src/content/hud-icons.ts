@@ -237,4 +237,20 @@ export const HUD_ICONS = {
     ],
     palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', k: 'ink.ash' },
   },
+  /** The achievement medal: a gold disc with a light.core glint (the achievement notice's mark, issue #191). Gold is the light and the repair. */
+  achievement: {
+    rows: [
+      '..oooooo..',
+      '.ogggggggo',
+      'oggggggggo',
+      'oghgggggdo',
+      'oghggggggo',
+      'ogggggggdo',
+      'ogggggggdo',
+      'oggggggddo',
+      '.ogggddo..',
+      '..oooooo..',
+    ],
+    palette: { o: 'ink.void', g: 'light.gold', h: 'light.core', d: 'light.dusk' },
+  },
 } satisfies Record<string, HudIcon>;

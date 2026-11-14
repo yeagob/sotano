@@ -222,6 +222,7 @@ describe('contract', () => {
     blockLoot: 0, bombPlace: 0, missileLaunch: 0, actorDamage: 0, contact: 0, actorDeath: 0, factionChange: 0, heal: 0, death: 0, enemySpawn: 0, roomClear: 0,
     ignite: 0, materialReact: 0, elementEnter: 0, elementLeave: 0, doorBreak: 0, polarityChange: 0, intentHit: 0,
     brew: 0, drink: 0, heartLost: 0, berserkChange: 0, bossOvercome: 0, meditationComplete: 0, cook: 0,
+    playerDied: 0, surfaceEnter: 0, blockPlaced: 0, bookBack: 0, bedrockTouch: 0, treeStory: 0,
   } satisfies Record<keyof GameEvents, 0>);
 
   it('no content sets keepTags (cube chains would outlive their cause; see ACTORS.md §1)', () => {

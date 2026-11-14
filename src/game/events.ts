@@ -148,6 +148,21 @@ export interface GameEvents {
   meditationComplete: { meditation: string; source: 'roots' | 'vault' };
   /** A kitchen cooked a part into a meal (game/kitchen.ts). React only. */
   cook: { meal: string; part: string };
+  /** The player died on the band `floor` (0 is the Roots, -1 the surface). Emitted only once the death stands: no hook
+   *  cancelled `death`. React only (ACHIEVEMENTS §1). */
+  playerDied: { floor: number; source: string };
+  /** The player's body went from the Roots up into the surface band, where the giant tree begins (ACHIEVEMENTS §1). React only. */
+  surfaceEnter: { from: number };
+  /** A block was placed from the hand. `afterPact` is true once the player has made the Listener's pact (saved). React only. */
+  blockPlaced: { afterPact: boolean };
+  /** The tutorial book's shown page turned back one page: `from` was a tutorial page (1 to 6), now it is `page`. React only. */
+  bookBack: { from: number; page: number };
+  /** The player's body touches bedrock on one side: `side` is above, below, north, south, east or west. Emitted once when a
+   *  side starts to touch it. React only. */
+  bedrockTouch: { side: string };
+  /** The body, above the surface, entered a new story of the giant tree (`story` is its key: roots, rings, galleries,
+   *  hollows, branches, canopy or stars). The canopy is the crown (ACHIEVEMENTS §1). React only. */
+  treeStory: { story: string };
 }
 
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */
@@ -178,5 +193,5 @@ export interface IntentSpec {
 export type GameBus = EventBus<GameEvents>;
 /** Emitted only by the core loop (depth 0). `death` is emitted right after `actorDamage`
  *  returns, at the same depth, so a hit that passed the depth cap also reaches `death`. */
-export const ROOT_EVENTS = ['death', 'doorOpen', 'enemySpawn', 'roomClear', 'floorEnter'] as const satisfies readonly (keyof GameEvents)[];
+export const ROOT_EVENTS = ['death', 'doorOpen', 'enemySpawn', 'roomClear', 'floorEnter', 'playerDied', 'surfaceEnter', 'bookBack', 'bedrockTouch', 'treeStory'] as const satisfies readonly (keyof GameEvents)[];
 export const createBus = (): GameBus => new EventBus<GameEvents>(ROOT_EVENTS);

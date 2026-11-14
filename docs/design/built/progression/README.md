@@ -7,7 +7,7 @@ The game keeps three things between runs: the **page** the Roots have reached (t
 | Document | Contents |
 |---|---|
 | [MASTERY.md](MASTERY.md) | The Roots' mastery level: what it counts, its cap, when it applies, where it is shown |
-| [ACHIEVEMENTS.md](ACHIEVEMENTS.md) | The 40 achievements that ship (each boss destroyed and turned to your side, six meditations, the first brew, the first meal, four pages of the book) with ids, names and rules in English and Spanish; the data model; the notice |
+| [ACHIEVEMENTS.md](ACHIEVEMENTS.md) | The 46 achievements that ship (the 40 of #147 and six from #179 (the Roots, the way up, the crown, the pact, the book, bedrock); each boss destroyed and turned to your side, six meditations, the first brew, the first meal, four pages of the book) with ids, names and rules in English and Spanish; the data model; the notice |
 | [SAVE.md](SAVE.md) | The save record, version 2: its fields, the migration from version 1, reading and writing, the merge of two tabs, the reset |
 
 What all three share:

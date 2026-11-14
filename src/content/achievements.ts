@@ -1,5 +1,5 @@
 // The achievement catalogue (docs/design/built/progression/ACHIEVEMENTS.md §1-2): the 40 that ship with
-// #147, as data (36 plus the 4 book pages). The names and descriptions are message keys (`achievement.<id>.name|desc`,
+// #147, as data (36 plus the 4 book pages), and the 6 of #179 (the Roots, the way up, the crown, the Listener's pact, the book, bedrock). The names and descriptions are message keys (`achievement.<id>.name|desc`,
 // in src/i18n/locales). The tracker that reads this list is src/game/achievements.ts.
 //
 // An entry says which event may unlock it (`on`), the payload fields that must match (`where`; a list means any
@@ -8,9 +8,10 @@
 
 /**
  * The events the catalogue listens to, all declared in GameEvents (game/events.ts): `pageReached` (the current page of the
- * Roots' book at a run's end, emitted by `Game.endRoots`), `bossOvercome`, `meditationComplete`, `cook`, `brew`.
+ * Roots' book at a run's end, emitted by `Game.endRoots`), `bossOvercome`, `meditationComplete`, `cook`, `brew`, and the
+ * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -84,6 +85,18 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'book.page.54', on: 'pageReached', where: { page: 54 } },
   { id: 'book.page.69', on: 'pageReached', where: { page: 69 } },
   { id: 'book.page.100', on: 'pageReached', where: { page: 100 } },
+
+  // The Roots and the way up: a death on the Roots' band (0), a climb from the Roots into the surface, into the crown (3).
+  { id: 'death.roots', on: 'playerDied', where: { floor: 0 } },
+  { id: 'climb.surface', on: 'surfaceEnter', where: { from: 0 } },
+  { id: 'climb.crown', on: 'treeStory', where: { story: 'canopy' } },
+
+  // Mind Crafter: 1000 blocks placed after the first pact with the Listener, counted across runs (1).
+  { id: 'mind.crafter', on: 'blockPlaced', where: { afterPact: true }, times: 1000 },
+
+  // The tutorial book turned back a page, and bedrock touched on any side (2).
+  { id: 'book.back', on: 'bookBack' },
+  { id: 'bedrock.touch', on: 'bedrockTouch' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

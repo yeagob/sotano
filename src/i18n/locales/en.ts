@@ -680,13 +680,24 @@ const messages = {
   'achievement.book.page.69.desc': 'Reach page 69 of the Roots\' book.',
   'achievement.book.page.100.name': 'Still Reading',
   'achievement.book.page.100.desc': 'Reach page 100 of the Roots\' book.',
+  'achievement.death.roots.name': 'Down to the Roots',
+  'achievement.death.roots.desc': 'Die on the Roots\' floor.',
+  'achievement.climb.surface.name': 'Root to Crown',
+  'achievement.climb.surface.desc': 'Dig up from the Roots and reach the great tree above the surface.',
+  'achievement.mind.crafter.name': 'Mind Crafter',
+  'achievement.mind.crafter.desc': 'Place 1000 blocks after your first pact with the Listener.',
+  'achievement.book.back.name': 'Turning Back',
+  'achievement.book.back.desc': 'Turn the tutorial book back one page.',
+  'achievement.climb.crown.name': 'Into the Crown',
+  'achievement.climb.crown.desc': 'Climb the great tree into its crown, the canopy of leaves.',
+  'achievement.bedrock.touch.name': 'The Unbreakable Floor',
+  'achievement.bedrock.touch.desc': 'Dig until you touch bedrock, from any side.',
 
   // ── the hidden book: a quotation's translation note (PANELS §4b) ──
   'book.quote.translated': 'Our translation',
 
   // ── the achievement card (ACHIEVEMENTS §4) ──
   'achievement.card.kicker': 'Achievement',
-  'achievement.card.gain': 'On your next waking. {gain}',
   'achievement.card.mastery': 'Mastery of the Roots: {level} of 100',
 
   // ── the mastery steps (REWARDS §7): what the new level brings ──
