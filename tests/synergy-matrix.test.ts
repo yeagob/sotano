@@ -62,6 +62,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   blockPlaced: () => ({ afterPact: true }),
   bookBack: () => ({ from: 2, page: 1 }),
   bedrockTouch: () => ({ side: 'below' }),
+  treeStory: () => ({ story: 'canopy' }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),

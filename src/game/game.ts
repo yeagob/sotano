@@ -239,6 +239,8 @@ export class Game {
   depth = 1;
   /** The raw band of the body last frame (`bandOf`: 0 the Roots, -1 the surface), for the way up (ACHIEVEMENTS §1). */
   private rawBand: number | undefined;
+  /** The giant tree's story the body was in last frame (for `treeStory`, emitted when it changes). */
+  private treeStoryNow: string | undefined;
   /** The sides of the player's body that touched bedrock last frame, so each side emits once when it starts (`bedrockTouches`). */
   private bedrockSides = new Set<string>();
   maxDepth = FIRST_FLOOR;
@@ -851,6 +853,7 @@ export class Game {
     this.bus.on('blockPlaced', { priority: 300, source, fn: p => this.achieved('blockPlaced', p) });
     this.bus.on('bookBack', { priority: 300, source, fn: p => this.achieved('bookBack', p) });
     this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
+    this.bus.on('treeStory', { priority: 300, source, fn: p => this.achieved('treeStory', p) });
   }
 
   /** One event to the tracker: an unlock is saved at once and queued as its card (achievement-keeper.ts). */
@@ -3094,6 +3097,8 @@ export class Game {
    * sees a wall or a ceiling as well as a floor, unlike `touchBlock` (a wall in the way of a walk) and `headBump`.
    */
   private bedrockTouches() {
+    // once the achievement is in the save it cannot count again: the per-frame check stops (no cost once earned)
+    if (this.keeper?.unlocked('bedrock.touch')) return;
     const b = this.player.body, hw = b.hw, bedrock = MAT.bedrock;
     const x0 = Math.floor(b.x - hw + 1e-3), x1 = Math.floor(b.x + hw - 1e-3);
     const z0 = Math.floor(b.z - hw + 1e-3), z1 = Math.floor(b.z + hw - 1e-3);
@@ -3667,6 +3672,11 @@ export class Game {
     const raw = bandOf(b.y);
     if (raw === SURFACE && this.rawBand === FIRST_FLOOR) this.bus.emit('surfaceEnter', { from: FIRST_FLOOR });
     this.rawBand = raw;
+    // the story of the giant tree the body is in, above the surface: its canopy is the crown (ACHIEVEMENTS §1)
+    if (raw === SURFACE && this.tree) {
+      const story = TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].key;
+      if (story !== this.treeStoryNow) { this.treeStoryNow = story; this.bus.emit('treeStory', { story }); }
+    }
     if (band > this.maxDepth) {
       this.maxDepth = band;
       this.activate(band);

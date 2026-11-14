@@ -688,6 +688,8 @@ const messages = {
   'achievement.mind.crafter.desc': 'Place 1000 blocks after your first pact with the Listener.',
   'achievement.book.back.name': 'Turning Back',
   'achievement.book.back.desc': 'Turn the tutorial book back one page.',
+  'achievement.climb.crown.name': 'Into the Crown',
+  'achievement.climb.crown.desc': 'Climb the great tree into its crown, the canopy of leaves.',
   'achievement.bedrock.touch.name': 'The Unbreakable Floor',
   'achievement.bedrock.touch.desc': 'Dig until you touch bedrock, from any side.',
 

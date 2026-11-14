@@ -160,6 +160,9 @@ export interface GameEvents {
   /** The player's body touches bedrock on one side: `side` is above, below, north, south, east or west. Emitted once when a
    *  side starts to touch it. React only. */
   bedrockTouch: { side: string };
+  /** The body, above the surface, entered a new story of the giant tree (`story` is its key: roots, rings, galleries,
+   *  hollows, branches, canopy or stars). The canopy is the crown (ACHIEVEMENTS §1). React only. */
+  treeStory: { story: string };
 }
 
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */
@@ -190,5 +193,5 @@ export interface IntentSpec {
 export type GameBus = EventBus<GameEvents>;
 /** Emitted only by the core loop (depth 0). `death` is emitted right after `actorDamage`
  *  returns, at the same depth, so a hit that passed the depth cap also reaches `death`. */
-export const ROOT_EVENTS = ['death', 'doorOpen', 'enemySpawn', 'roomClear', 'floorEnter', 'playerDied', 'surfaceEnter', 'bookBack', 'bedrockTouch'] as const satisfies readonly (keyof GameEvents)[];
+export const ROOT_EVENTS = ['death', 'doorOpen', 'enemySpawn', 'roomClear', 'floorEnter', 'playerDied', 'surfaceEnter', 'bookBack', 'bedrockTouch', 'treeStory'] as const satisfies readonly (keyof GameEvents)[];
 export const createBus = (): GameBus => new EventBus<GameEvents>(ROOT_EVENTS);

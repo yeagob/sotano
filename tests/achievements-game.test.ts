@@ -233,6 +233,23 @@ describe('the Roots and the way up, the Listener, the book and bedrock (ACHIEVEM
     expect(ids(k.track('surfaceEnter', { from: 0 }, NOW + 1))).toEqual([]);
   });
 
+  it('Into the Crown: entering the canopy story unlocks it; the trunk and the branches do not', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('treeStory', { story: 'roots' }, NOW))).toEqual([]);
+    expect(ids(k.track('treeStory', { story: 'branches' }, NOW))).toEqual([]);
+    expect(ids(k.track('treeStory', { story: 'canopy' }, NOW))).toEqual(['climb.crown']);
+    expect(ids(k.track('treeStory', { story: 'canopy' }, NOW + 1))).toEqual([]);
+  });
+
+  it('once a bedrock achievement is in the save, the check can stop: unlocked() says so', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(k.unlocked('bedrock.touch')).toBe(false);
+    k.track('bedrockTouch', { side: 'below' }, NOW);
+    expect(k.unlocked('bedrock.touch')).toBe(true);
+  });
+
   it('The Unbreakable Floor and Turning Back unlock on their one event', () => {
     const { record, store } = fresh();
     const k = session(record, store);

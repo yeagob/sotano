@@ -684,6 +684,8 @@ export const ES: Catalog = {
     'achievement.mind.crafter.desc': 'Coloca 1000 bloques después de tu primer pacto con la Escucha.',
     'achievement.book.back.name': 'Volver la página',
     'achievement.book.back.desc': 'Pasa hacia atrás una página del libro del tutorial.',
+    'achievement.climb.crown.name': 'Hasta la copa',
+    'achievement.climb.crown.desc': 'Sube el gran árbol hasta su copa, el dosel de hojas.',
     'achievement.bedrock.touch.name': 'El suelo que no cede',
     'achievement.bedrock.touch.desc': 'Excava hasta tocar el lecho de roca, desde cualquier lado.',
 

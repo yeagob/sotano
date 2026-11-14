@@ -13,7 +13,7 @@ import { gainsAt, type GainLine } from '../content/tables/roots-mastery';
 import type { MessageKey } from '../i18n';
 import type { Params } from '../i18n';
 import { qualityStars } from '../render/icons';
-import { mastery, track, type Payload } from './achievements';
+import { isUnlocked, mastery, track, type Payload } from './achievements';
 import { adoptMeta, resetMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
 
 /** One achievement earned, waiting for its card. `level` is the mastery level once it counts (1 to 100). */
@@ -89,6 +89,9 @@ export class AchievementKeeper {
 
   /** Whether the player has made the Listener's pact in any run (the save's `pact`). False in the sandbox and the lab. */
   get pact(): boolean { return this.record.pact === true; }
+
+  /** Whether the achievement `id` is unlocked in the save (any run). Lets a per-frame check stop once it cannot count again. */
+  unlocked(id: string): boolean { return isUnlocked(this.record, id); }
 
   /**
    * The player made the Listener's pact (accepted its offer). The first time is saved at once, so the "Mind Crafter"

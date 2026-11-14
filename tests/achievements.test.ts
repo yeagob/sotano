@@ -27,8 +27,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 45 achievements: the 40 of #147 (36 plus the 4 book pages) and the 5 of #179 (Down to the Roots, Root to Crown, Mind Crafter, Turning Back, The Unbreakable Floor), and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(45);
+  it('holds the 46 achievements: the 40 of #147 (36 plus the 4 book pages) and the 6 of #179 (Down to the Roots, Root to Crown, Into the Crown, Mind Crafter, Turning Back, The Unbreakable Floor), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(46);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -256,11 +256,11 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 45 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 46 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(45);
+    expect(mastery({ achievements: all })).toBe(46);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {
