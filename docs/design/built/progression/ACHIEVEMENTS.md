@@ -172,6 +172,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 ## Not decided
 
+- **Touching the top of the tree** (owner, 2026-11-14): a sixth achievement, apart from the crown. Its criterion is open: the tree's highest block is not reachable on foot (the last star pad leads up into the sky), so the owner must say what "touching the top" means before it is built. Never invented.
 - The names (both languages) await the owner, except "Lucky Number" and "Nice", which are the owner's ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 - Cards pending when a run ends show at the start of the next run: built so, because the page achievements are earned at a run's end (see §4). The owner may decide otherwise ([open question 6](../../not-built/levels/roots/OPEN-QUESTIONS.md)).
 - The Shadow's stillness ending counts as conversion: tagged on its enemy (`STILLNESS_TAG` in `src/content/bosses/shadow.ts`), reported as `how: 'stillness'` when it dies ([open question 13](../../not-built/levels/roots/OPEN-QUESTIONS.md)).
