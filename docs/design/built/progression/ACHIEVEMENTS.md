@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 40 entries are in `src/content/achievements.ts`. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 45 entries are in `src/content/achievements.ts`. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -98,7 +98,19 @@ The current page reaching a number at a run's end ([PAGES §1](../levels/roots/P
 
 The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages (the wink is English in Spanish too). Page 7 names what the player finds; page 100 says that a hundred pages in, the reading goes on.
 
-## 2. The data model (takes the other 60 without code changes)
+### The Roots, the way up, the Listener, the book and bedrock (5, issue #179)
+
+| Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `death.roots` | `playerDied` with `floor` 0 (the Roots' band; the surface is -1) | Down to the Roots | Hasta la raíz | Die on the Roots' floor, in the blast of a bomb. | Muere en el piso de las raíces, en la explosión de una bomba. |
+| `climb.surface` | `surfaceEnter` from the Roots (`from` 0) | Root to Crown | De la raíz a la copa | Dig up from the Roots and reach the great tree above the surface. | Excava hacia arriba desde las raíces y llega al gran árbol sobre la superficie. |
+| `mind.crafter` | `blockPlaced` with `afterPact` true, **1000 times across runs** | Mind Crafter | Mente de creador | Place 1000 blocks after your first pact with the Listener. | Coloca 1000 bloques después de tu primer pacto con la Escucha. |
+| `book.back` | `bookBack`: the shown page of the tutorial book (pages 1 to 6) turned back one page | Turning Back | Volver la página | Turn the tutorial book back one page. | Pasa hacia atrás una página del libro del tutorial. |
+| `bedrock.touch` | `bedrockTouch`: the body touches bedrock on any side | The Unbreakable Floor | El suelo que no cede | Dig until you touch bedrock, from any side. | Excava hasta tocar el lecho de roca, desde cualquier lado. |
+
+The names are proposals, for the owner to change, as the others are. `mind.crafter` counts only after the **first pact with the Listener**, which is accepting its heart offer (`resolvePresenceOffer`); the pact is saved in the record as `pact` (SAVE.md), so the count holds in later runs. A reset of the Roots forgets it, like the other unlocks.
+
+## 2. The data model (takes the other 55 without code changes)
 
 The catalogue is data, in `src/content/achievements.ts`:
 
@@ -111,15 +123,20 @@ interface AchievementDef {
 }
 ```
 
-The 40 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 45 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
-New events the 40 need (`src/game/events.ts`):
+New events the 45 need (`src/game/events.ts`):
 
 | Event | Payload | Emitted |
 |---|---|---|
 | `bossOvercome` | `{ boss: string; floor: number; how: 'destroyed' \| 'converted' \| 'stillness' }` | In `bossDown`, once per boss room, with the floor's boss id and how it ended: `converted` from `convert`, `stillness` when the Shadow's stillness rule ends it (its behaviour marks that end), `destroyed` for every other death |
 | `meditationComplete` | `{ meditation: string; source: 'roots' \| 'vault' }` | When the Sanctuary ends with `complete`, from the Roots' chest or a vault's Boundary |
 | `pageReached` | `{ page: number }` | When a run's end advances the current page, once, with the new page (`RootsBook`, D1) |
+| `playerDied` | `{ floor: number; source: string }` | When the player dies and the death stands (no hook cancelled `death`); `floor` is the band of the body (0 the Roots, -1 the surface) |
+| `surfaceEnter` | `{ from: number }` | When the body goes from the Roots' band into the surface band (`from` 0) |
+| `blockPlaced` | `{ afterPact: boolean }` | When a block is placed from the hand; `afterPact` is the saved pact |
+| `bookBack` | `{ from: number; page: number }` | When the tutorial book's shown page turns back (`from` 1 to 6) |
+| `bedrockTouch` | `{ side: string }` | Once when a side of the body starts to touch bedrock (above, below, north, south, east, west) |
 | `cook` | `{ meal: 'meal-small' \| 'meal-hearty'; part: string }` | When a kitchen turns a part into a meal (`src/game/kitchen.ts`) |
 
 Rules the tracker keeps:
@@ -150,7 +167,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 40 defined ones; the other 60 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 45 defined ones; the other 55 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 

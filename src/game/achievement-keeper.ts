@@ -87,6 +87,20 @@ export class AchievementKeeper {
     return true;
   }
 
+  /** Whether the player has made the Listener's pact in any run (the save's `pact`). False in the sandbox and the lab. */
+  get pact(): boolean { return this.record.pact === true; }
+
+  /**
+   * The player made the Listener's pact (accepted its offer). The first time is saved at once, so the "Mind Crafter"
+   * blocks count from then on, in any later run. Nothing is written in the sandbox, the lab or a read-only record.
+   */
+  recordPact(): void {
+    if (!this.live || this.record.readOnly || this.record.pact) return;
+    this.record.pact = true;
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+  }
+
   /**
    * The notice to show next, still queued: it leaves the queue only when its time on screen ends (`confirm`). A notice cut
    * off before that (a restart, a death, another window) is the same notice at the next calm moment. Undefined when none

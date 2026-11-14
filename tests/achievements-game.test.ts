@@ -215,6 +215,68 @@ describe('the sandbox and the lab (ACHIEVEMENTS §2)', () => {
   });
 });
 
+describe('the Roots and the way up, the Listener, the book and bedrock (ACHIEVEMENTS §1, issue #179)', () => {
+  it('Down to the Roots: a death on the Roots\' band unlocks it, a death on the surface or deeper does not', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('playerDied', { floor: -1, source: 'fall' }, NOW))).toEqual([]);
+    expect(ids(k.track('playerDied', { floor: 1, source: 'bomb' }, NOW))).toEqual([]);
+    expect(ids(k.track('playerDied', { floor: 0, source: 'bomb' }, NOW))).toEqual(['death.roots']);
+    expect(ids(k.track('playerDied', { floor: 0, source: 'bomb' }, NOW + 1))).toEqual([]);
+  });
+
+  it('Root to Crown: a climb from the Roots into the surface unlocks it once', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('surfaceEnter', { from: 1 }, NOW))).toEqual([]);
+    expect(ids(k.track('surfaceEnter', { from: 0 }, NOW))).toEqual(['climb.surface']);
+    expect(ids(k.track('surfaceEnter', { from: 0 }, NOW + 1))).toEqual([]);
+  });
+
+  it('The Unbreakable Floor and Turning Back unlock on their one event', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('bedrockTouch', { side: 'west' }, NOW))).toEqual(['bedrock.touch']);
+    expect(ids(k.track('bookBack', { from: 2, page: 1 }, NOW))).toEqual(['book.back']);
+  });
+
+  it('Mind Crafter counts only blocks placed after the first pact, and unlocks at the 1000th', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    for (let i = 0; i < 1500; i++) k.track('blockPlaced', { afterPact: false }, NOW);
+    expect(record.counts['mind.crafter']).toBeUndefined();
+    k.recordPact();
+    expect(loadMeta(store).pact).toBe(true);
+    for (let i = 0; i < 999; i++) k.track('blockPlaced', { afterPact: true }, NOW);
+    expect(record.counts['mind.crafter']).toBe(999);
+    expect(ids(k.track('blockPlaced', { afterPact: true }, NOW + 1))).toEqual(['mind.crafter']);
+    expect(record.achievements['mind.crafter']).toBe(NOW + 1);
+    expect(record.counts['mind.crafter']).toBeUndefined();
+  });
+
+  it('the first pact is saved once, and a later pact writes nothing; the sandbox saves no pact', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(k.pact).toBe(false);
+    k.recordPact();
+    const writes = store.writes;
+    k.recordPact();
+    expect(store.writes).toBe(writes);
+    expect(k.pact).toBe(true);
+    const lab = fresh();
+    const off = session(lab.record, lab.store);
+    off.live = false;
+    off.recordPact();
+    expect(lab.store.writes).toBe(0);
+    expect(lab.record.pact).toBeUndefined();
+  });
+
+  it('the pact is kept in the save as an optional field, and a record without it reads as not made', () => {
+    expect(loadMeta(memory(JSON.stringify({ v: 2, staircase: false, roots: { page: 1 }, achievements: {}, counts: {}, pact: true }))).pact).toBe(true);
+    expect(loadMeta(memory(JSON.stringify({ v: 2, staircase: false, roots: { page: 1 }, achievements: {}, counts: {} }))).pact).toBeUndefined();
+  });
+});
+
 describe('the notice (ACHIEVEMENTS §4)', () => {
   /** Every key a notice of any achievement, at any level from 1 to 100, can use. */
   function everyKey(): Set<MessageKey> {

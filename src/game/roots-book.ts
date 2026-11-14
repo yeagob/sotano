@@ -129,6 +129,10 @@ export class RootsBook {
   private readonly index: Map<string, number>;
   private savedCurrent: number;
   private shownPage = 1;
+  /** Set by the last `enterRoom` when the shown page turned back one page (cleared by every entry). */
+  private turnedBack: { from: number; page: number } | undefined;
+  /** The page the last room entry turned back from and to, or undefined when the shown page did not go back. */
+  get turn(): { from: number; page: number } | undefined { return this.turnedBack; }
   private painted = new Map<string, number>();
   private visited = new Set<string>();
   private last: string | undefined;
@@ -162,6 +166,7 @@ export class RootsBook {
 
   /** A room was entered (the game's room-enter moment). Rooms outside the Roots only move the player out. */
   enterRoom(room: string): void {
+    this.turnedBack = undefined;
     const ringAt = this.index.get(room);
     if (ringAt === undefined && room !== this.layout.door) {
       this.here = undefined;
@@ -189,7 +194,10 @@ export class RootsBook {
       if (this.shownPage < this.top()) this.shownPage += 1;
     } else if (this.steps <= -LAP_STEPS) {
       this.steps = 0;
-      if (this.shownPage > 1) this.shownPage -= 1;
+      if (this.shownPage > 1) {
+        this.turnedBack = { from: this.shownPage, page: this.shownPage - 1 };
+        this.shownPage -= 1;
+      }
     }
   }
 

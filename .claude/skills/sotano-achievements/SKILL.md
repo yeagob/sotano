@@ -7,12 +7,12 @@ description: Achievement discipline for The Roots. Use it EVERY time an achievem
 
 An **achievement** is a moment the game remembers between runs: a boss overcome, a meditation sat to the end, a first potion, a page of the Roots' book. **Each achievement is one level of the Roots' mastery**, and the mastery level decides what floor 0 lays out for the next run. The catalogue is data; the tracker is pure; the game only feeds it events and shows a card.
 
-Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVEMENTS.md) (the 40, the data model, the notice), [MASTERY](../../../docs/design/built/progression/MASTERY.md), [SAVE](../../../docs/design/built/progression/SAVE.md), [REWARDS](../../../docs/design/built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
+Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVEMENTS.md) (the 45, the data model, the notice), [MASTERY](../../../docs/design/built/progression/MASTERY.md), [SAVE](../../../docs/design/built/progression/SAVE.md), [REWARDS](../../../docs/design/built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
 
 ## 1. The owner's rules (binding)
 
 - **One achievement is one mastery level**, earned in any order, kept between runs. The level is the count of unlocked catalogue ids, **capped at 100**.
-- **40 exist. The other 60 are pending in GitHub issue #179** and enter only when the owner defines them. **Never invent criteria**, never add a placeholder entry "to fill the slot". If an idea comes up, write it in #179 and ask.
+- **45 exist. The other 55 are pending in GitHub issue #179** and enter only when the owner defines them. **Never invent criteria**, never add a placeholder entry "to fill the slot". If an idea comes up, write it in #179 and ask.
 - **Every first time counts**, several in one run too.
 - **A boss has two achievements: destroyed and turned to your side.** A player who only converts gets only the conversion one. The Shadow's own ending (stillness) counts as conversion.
 - **A meditation counts when completed** (never the quick reward, never a cancel), **three times per meditation, counted across runs**, and only from a Sanctuary a Boundary opened (the Roots' chest or a vault's).

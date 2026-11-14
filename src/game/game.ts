@@ -26,6 +26,7 @@ import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../cont
 import { heartTollPlan, tollIndex } from './toll';
 import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
+import { FIRST_BOOK_PAGE } from './roots-book';
 import { mastery as achievedMastery, type Payload } from './achievements';
 import { AchievementKeeper, cardKeys, noticeMillis, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
 import { HeightWatch } from './height-watch';
@@ -236,6 +237,10 @@ export class Game {
   seedCode = '';
   /** Floor the player is on now (by height), and the deepest one reached. */
   depth = 1;
+  /** The raw band of the body last frame (`bandOf`: 0 the Roots, -1 the surface), for the way up (ACHIEVEMENTS §1). */
+  private rawBand: number | undefined;
+  /** The sides of the player's body that touched bedrock last frame, so each side emits once when it starts (`bedrockTouches`). */
+  private bedrockSides = new Set<string>();
   maxDepth = FIRST_FLOOR;
   /** The active world (docs/architecture/SKY.md §2.1): the dungeon's for now, the sky's once realms swap. */
   world!: VoxelSpace;
@@ -841,6 +846,11 @@ export class Game {
     this.bus.on('brew', { priority: 300, source, fn: p => this.achieved('brew', p) });
     this.bus.on('cook', { priority: 300, source, fn: p => this.achieved('cook', p) });
     this.bus.on('pageReached', { priority: 300, source, fn: p => this.achieved('pageReached', p) });
+    this.bus.on('playerDied', { priority: 300, source, fn: p => this.achieved('playerDied', p) });
+    this.bus.on('surfaceEnter', { priority: 300, source, fn: p => this.achieved('surfaceEnter', p) });
+    this.bus.on('blockPlaced', { priority: 300, source, fn: p => this.achieved('blockPlaced', p) });
+    this.bus.on('bookBack', { priority: 300, source, fn: p => this.achieved('bookBack', p) });
+    this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
   }
 
   /** One event to the tracker: an unlock is saved at once and queued as its card (achievement-keeper.ts). */
@@ -1470,6 +1480,7 @@ export class Game {
       if (d.cancelled) { p.hp = Math.max(1, p.hp); return true; }
       p.hp = 0;
       p.dead = true;
+      this.bus.emit('playerDied', { floor: bandOf(p.body.y), source });
       this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
       sfx3.death();
       this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
@@ -2967,6 +2978,7 @@ export class Game {
     this.nudge(push!);
     p.takeActive();
     this.bus.emit('drop', { material: top, how: 'place' });
+    this.bus.emit('blockPlaced', { afterPact: this.keeper?.pact === true });
     this.hands.placed();
     sfx.place();
   }
@@ -3074,6 +3086,38 @@ export class Game {
     this.hud.shake(0.12);
     sfx.headbutt();
     return speed * 0.45;
+  }
+
+  /**
+   * The sides of the player's body that touch bedrock now (ACHIEVEMENTS "The Unbreakable Floor"): above the head, below
+   * the feet, and the four walls. Each side emits `bedrockTouch` once, when it starts to touch. Checked every frame, so it
+   * sees a wall or a ceiling as well as a floor, unlike `touchBlock` (a wall in the way of a walk) and `headBump`.
+   */
+  private bedrockTouches() {
+    const b = this.player.body, hw = b.hw, bedrock = MAT.bedrock;
+    const x0 = Math.floor(b.x - hw + 1e-3), x1 = Math.floor(b.x + hw - 1e-3);
+    const z0 = Math.floor(b.z - hw + 1e-3), z1 = Math.floor(b.z + hw - 1e-3);
+    const y0 = Math.floor(b.y + 1e-3), y1 = Math.floor(b.y + b.h - 1e-3);
+    const is = (x: number, y: number, z: number) => this.world.get(x, y, z) === bedrock;
+    const touching = new Set<string>();
+    for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) {
+      if (is(x, Math.floor(b.y - 0.02), z)) touching.add('below');
+      if (is(x, Math.floor(b.y + b.h + 0.02), z)) touching.add('above');
+    }
+    const west = Math.floor(b.x - hw - 0.02), east = Math.floor(b.x + hw + 0.02);
+    const north = Math.floor(b.z - hw - 0.02), south = Math.floor(b.z + hw + 0.02);
+    for (let y = y0; y <= y1; y++) {
+      for (let z = z0; z <= z1; z++) {
+        if (is(west, y, z)) touching.add('west');
+        if (is(east, y, z)) touching.add('east');
+      }
+      for (let x = x0; x <= x1; x++) {
+        if (is(x, y, north)) touching.add('north');
+        if (is(x, y, south)) touching.add('south');
+      }
+    }
+    for (const side of touching) if (!this.bedrockSides.has(side)) this.bus.emit('bedrockTouch', { side });
+    this.bedrockSides = touching;
   }
 
   // ───────────────────────── dungeon ─────────────────────────
@@ -3474,6 +3518,8 @@ export class Game {
     this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
     const talk = PRESENCE_TALK[pending.id];
     e.tags.add('met');
+    // the Listener's pact: the first one is saved, and the Mind Crafter blocks count from it (ACHIEVEMENTS §1)
+    if (pending.id === 'listener') this.keeper.recordPact();
     if (talk.drops) this.dropListenerReward(e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     if (leavesAfterOffer(pending.id)) this.releaseListener(e);
@@ -3617,6 +3663,10 @@ export class Game {
     const b = this.player.body;
     const band = depthOf(b.y);
     this.depth = band;
+    // the way up: the first step from the Roots' band into the surface band, where the giant tree begins (ACHIEVEMENTS §1)
+    const raw = bandOf(b.y);
+    if (raw === SURFACE && this.rawBand === FIRST_FLOOR) this.bus.emit('surfaceEnter', { from: FIRST_FLOOR });
+    this.rawBand = raw;
     if (band > this.maxDepth) {
       this.maxDepth = band;
       this.activate(band);
@@ -3635,7 +3685,9 @@ export class Game {
       const first = !this.visited.has(r.id);
       this.visited.add(r.id);
       this.bus.emit('roomEnter', { room: r.id, floor: r.floor, type: r.type, template: r.template, firstVisit: first });
-      this.roots?.enterRoom(r.floor === FIRST_FLOOR ? r : undefined);
+      // the tutorial book turned back a page (its pages 1 to 6): ACHIEVEMENTS "Turning Back"
+      const turn = this.roots?.enterRoom(r.floor === FIRST_FLOOR ? r : undefined);
+      if (turn && turn.from < FIRST_BOOK_PAGE) this.bus.emit('bookBack', turn);
       this.hud.setRoom(this.floors.get(r.floor)!, r.id, this.visited, this.clearedRooms());
       if (r.type === 'boss' && !this.bossRooms.has(r.floor)) {
         this.activate(r.floor + 1);
@@ -3947,6 +3999,7 @@ export class Game {
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
+    this.bedrockTouches();
     this.syncWeapon();
     this.tapMissile();
     if (this.weapon) this.weapon.update(dt);
