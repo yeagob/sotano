@@ -128,6 +128,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `cook` | — (react) | a kitchen cooked a part into a meal (`meal`, the potion id; `part`, the part's kind) |
 | `brew` | — (react) | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
 | `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |
+| `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` | — (react) | the achievements' events: a death (`floor`, `source`), the climb into the surface (`from`), a block placed (`afterPact`), the tutorial book turned back (`from`, `page`), bedrock touched (`side`) |
 
 **Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).
 

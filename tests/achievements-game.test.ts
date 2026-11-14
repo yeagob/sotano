@@ -8,9 +8,9 @@ import { ACHIEVEMENTS } from '../src/content/achievements';
 import { ITEM_BY_ID } from '../src/content/items';
 import { CRATE_DROP_MIN, crateChanceInBand } from '../src/content/tables/crates';
 import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
-import { AchievementKeeper, gainParams, gainText, noticeKeys, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
+import { AchievementKeeper, cardKeys, gainParams, gainText, noticeKeys, noticeMillis, NOTICE_LONG_CHARS, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
 import { mastery, type Payload } from '../src/game/achievements';
-import { defaultMeta, loadMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
+import { defaultMeta, loadMeta, mergeMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
 import { drawRootsItems, spotKey } from '../src/game/roots-draws';
 import { EN, type MessageKey } from '../src/i18n/locales/en';
 import { ES } from '../src/i18n/locales/es';
@@ -215,6 +215,92 @@ describe('the sandbox and the lab (ACHIEVEMENTS §2)', () => {
   });
 });
 
+describe('the Roots and the way up, the Listener, the book and bedrock (ACHIEVEMENTS §1, issue #179)', () => {
+  it('Down to the Roots: a death on the Roots\' band unlocks it, a death on the surface or deeper does not', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('playerDied', { floor: -1, source: 'fall' }, NOW))).toEqual([]);
+    expect(ids(k.track('playerDied', { floor: 1, source: 'bomb' }, NOW))).toEqual([]);
+    expect(ids(k.track('playerDied', { floor: 0, source: 'bomb' }, NOW))).toEqual(['death.roots']);
+    expect(ids(k.track('playerDied', { floor: 0, source: 'bomb' }, NOW + 1))).toEqual([]);
+  });
+
+  it('Root to Crown: a climb from the Roots into the surface unlocks it once', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('surfaceEnter', { from: 1 }, NOW))).toEqual([]);
+    expect(ids(k.track('surfaceEnter', { from: 0 }, NOW))).toEqual(['climb.surface']);
+    expect(ids(k.track('surfaceEnter', { from: 0 }, NOW + 1))).toEqual([]);
+  });
+
+  it('Into the Crown: entering the canopy story unlocks it; the trunk and the branches do not', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('treeStory', { story: 'roots' }, NOW))).toEqual([]);
+    expect(ids(k.track('treeStory', { story: 'branches' }, NOW))).toEqual([]);
+    expect(ids(k.track('treeStory', { story: 'canopy' }, NOW))).toEqual(['climb.crown']);
+    expect(ids(k.track('treeStory', { story: 'canopy' }, NOW + 1))).toEqual([]);
+  });
+
+  it('once a bedrock achievement is in the save, the check can stop: unlocked() says so', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(k.unlocked('bedrock.touch')).toBe(false);
+    k.track('bedrockTouch', { side: 'below' }, NOW);
+    expect(k.unlocked('bedrock.touch')).toBe(true);
+  });
+
+  it('The Unbreakable Floor and Turning Back unlock on their one event', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('bedrockTouch', { side: 'west' }, NOW))).toEqual(['bedrock.touch']);
+    expect(ids(k.track('bookBack', { from: 2, page: 1 }, NOW))).toEqual(['book.back']);
+  });
+
+  it('Mind Crafter counts only blocks placed after the first pact, and unlocks at the 1000th', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    for (let i = 0; i < 1500; i++) k.track('blockPlaced', { afterPact: false }, NOW);
+    expect(record.counts['mind.crafter']).toBeUndefined();
+    k.recordPact();
+    expect(loadMeta(store).pact).toBe(true);
+    for (let i = 0; i < 999; i++) k.track('blockPlaced', { afterPact: true }, NOW);
+    expect(record.counts['mind.crafter']).toBe(999);
+    expect(ids(k.track('blockPlaced', { afterPact: true }, NOW + 1))).toEqual(['mind.crafter']);
+    expect(record.achievements['mind.crafter']).toBe(NOW + 1);
+    expect(record.counts['mind.crafter']).toBeUndefined();
+  });
+
+  it('the first pact is saved once, and a later pact writes nothing; the sandbox saves no pact', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(k.pact).toBe(false);
+    k.recordPact();
+    const writes = store.writes;
+    k.recordPact();
+    expect(store.writes).toBe(writes);
+    expect(k.pact).toBe(true);
+    const lab = fresh();
+    const off = session(lab.record, lab.store);
+    off.live = false;
+    off.recordPact();
+    expect(lab.store.writes).toBe(0);
+    expect(lab.record.pact).toBeUndefined();
+  });
+
+  it('two tabs keep the pact: the merge is an OR, and a stored pact is never lost', () => {
+    const base = defaultMeta();
+    expect(mergeMeta(base, { ...base, pact: true }).pact).toBe(true);
+    expect(mergeMeta({ ...base, pact: true }, base).pact).toBe(true);
+    expect(mergeMeta(base, base).pact).toBeUndefined();
+  });
+
+  it('the pact is kept in the save as an optional field, and a record without it reads as not made', () => {
+    expect(loadMeta(memory(JSON.stringify({ v: 2, staircase: false, roots: { page: 1 }, achievements: {}, counts: {}, pact: true }))).pact).toBe(true);
+    expect(loadMeta(memory(JSON.stringify({ v: 2, staircase: false, roots: { page: 1 }, achievements: {}, counts: {} }))).pact).toBeUndefined();
+  });
+});
+
 describe('the notice (ACHIEVEMENTS §4)', () => {
   /** Every key a notice of any achievement, at any level from 1 to 100, can use. */
   function everyKey(): Set<MessageKey> {
@@ -224,6 +310,24 @@ describe('the notice (ACHIEVEMENTS §4)', () => {
     }
     return keys;
   }
+
+  it('the card shows the name, what the achievement does, the kicker and the mastery count, and no gain line (issue #191)', () => {
+    for (const d of ACHIEVEMENTS) for (const level of [1, 36, 100]) {
+      const c = cardKeys({ id: d.id, level, gains: gainsAt(level) });
+      expect(c).toEqual({ name: `achievement.${d.id}.name`, desc: `achievement.${d.id}.desc`, kicker: 'achievement.card.kicker', mastery: 'achievement.card.mastery' });
+      expect(Object.values(c)).not.toContain('achievement.card.gain');
+    }
+  });
+
+  it('stays on screen 5 s, or 7 s when its description is long (issue #191)', () => {
+    expect(noticeMillis('Short.')).toBe(5000);
+    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS))).toBe(5000);
+    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS + 1))).toBe(7000);
+    setLocale('en');
+    const lengths = ACHIEVEMENTS.map(d => t(`achievement.${d.id}.desc` as MessageKey).length);
+    expect(lengths.some(n => n > NOTICE_LONG_CHARS)).toBe(true);
+    expect(lengths.some(n => n <= NOTICE_LONG_CHARS)).toBe(true);
+  });
 
   it('every word of every notice exists in English and in Spanish', () => {
     for (const key of everyKey()) {

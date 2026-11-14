@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 40 entries are in `src/content/achievements.ts`. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 46 entries are in `src/content/achievements.ts`. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -98,7 +98,20 @@ The current page reaching a number at a run's end ([PAGES §1](../levels/roots/P
 
 The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages (the wink is English in Spanish too). Page 7 names what the player finds; page 100 says that a hundred pages in, the reading goes on.
 
-## 2. The data model (takes the other 60 without code changes)
+### The Roots, the way up, the crown, the Listener, the book and bedrock (6, issue #179)
+
+| Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `death.roots` | `playerDied` with `floor` 0 (the Roots' band; the surface is -1) | Down to the Roots | Hasta la raíz | Die on the Roots' floor. | Muere en el piso de las raíces. |
+| `climb.surface` | `surfaceEnter` from the Roots (`from` 0) | Root to Crown | De la raíz a la copa | Dig up from the Roots and reach the great tree above the surface. | Excava hacia arriba desde las raíces y llega al gran árbol sobre la superficie. |
+| `mind.crafter` | `blockPlaced` with `afterPact` true, **1000 times across runs** | Mind Crafter | Mente de creador | Place 1000 blocks after your first pact with the Listener. | Coloca 1000 bloques después de tu primer pacto con la Escucha. |
+| `book.back` | `bookBack`: the shown page of the tutorial book (pages 1 to 6) turned back one page | Turning Back | Volver la página | Turn the tutorial book back one page. | Pasa hacia atrás una página del libro del tutorial. |
+| `climb.crown` | `treeStory` with `story` `canopy`: the body, above the surface, enters the giant tree's canopy (the crown) | Into the Crown | Hasta la copa | Climb the great tree into its crown, the canopy of leaves. | Sube el gran árbol hasta su copa, el dosel de hojas. |
+| `bedrock.touch` | `bedrockTouch`: the body touches bedrock on any side | The Unbreakable Floor | El suelo que no cede | Dig until you touch bedrock, from any side. | Excava hasta tocar el lecho de roca, desde cualquier lado. |
+
+The names are proposals, for the owner to change, as the others are. `mind.crafter` counts only after the **first pact with the Listener**, which is accepting its heart offer (`resolvePresenceOffer`); the pact is saved in the record as `pact` (SAVE.md), so the count holds in later runs. A reset of the Roots forgets it, like the other unlocks.
+
+## 2. The data model (takes the other 54 without code changes)
 
 The catalogue is data, in `src/content/achievements.ts`:
 
@@ -111,15 +124,20 @@ interface AchievementDef {
 }
 ```
 
-The 40 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 45 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
-New events the 40 need (`src/game/events.ts`):
+New events the 46 need (`src/game/events.ts`):
 
 | Event | Payload | Emitted |
 |---|---|---|
 | `bossOvercome` | `{ boss: string; floor: number; how: 'destroyed' \| 'converted' \| 'stillness' }` | In `bossDown`, once per boss room, with the floor's boss id and how it ended: `converted` from `convert`, `stillness` when the Shadow's stillness rule ends it (its behaviour marks that end), `destroyed` for every other death |
 | `meditationComplete` | `{ meditation: string; source: 'roots' \| 'vault' }` | When the Sanctuary ends with `complete`, from the Roots' chest or a vault's Boundary |
 | `pageReached` | `{ page: number }` | When a run's end advances the current page, once, with the new page (`RootsBook`, D1) |
+| `playerDied` | `{ floor: number; source: string }` | When the player dies and the death stands (no hook cancelled `death`); `floor` is the band of the body (0 the Roots, -1 the surface) |
+| `surfaceEnter` | `{ from: number }` | When the body goes from the Roots' band into the surface band (`from` 0) |
+| `blockPlaced` | `{ afterPact: boolean }` | When a block is placed from the hand; `afterPact` is the saved pact |
+| `bookBack` | `{ from: number; page: number }` | When the tutorial book's shown page turns back (`from` 1 to 6) |
+| `bedrockTouch` | `{ side: string }` | Once when a side of the body starts to touch bedrock (above, below, north, south, east, west) |
 | `cook` | `{ meal: 'meal-small' \| 'meal-hearty'; part: string }` | When a kitchen turns a part into a meal (`src/game/kitchen.ts`) |
 
 Rules the tracker keeps:
@@ -135,15 +153,14 @@ Rules the tracker keeps:
 
 ## 4. The notice
 
-When an achievement is earned the player reads, in one window: its name, its description, what the Roots gained, and the new mastery level.
+When an achievement is earned the player sees, in one corner notice: its name, its description (what the achievement does) and the new mastery level. The notice does not say what the Roots gain: the owner keeps the reward off the unlock panel (issue #191, 2026-11-14). The step lines stay in the data (`noticeKeys`, `gainText`) for a place that shows them later; the owner has not chosen that place yet.
 
-- **Type: the Presence card** (`#banner`, `presenceCard`), the read-only blocking card that stays until the player confirms it (`sotano-popups` §2). It fits: a name and a few lines, read once, confirmed on keyboard, mouse, gamepad and touch like every banner. It gets one new option instead of a new type: a **kicker**, a short line above the name ("Achievement" / "Logro") with the gold diamond, so the card reads as an achievement and not as a presence speaking. The skill's registry row for the Presence card gains that option in the same change. A toast was rejected: it vanishes in 2.5 seconds, a new toast replaces it, and the boss-down toast fires in the same moment.
+- **Type: the Achievement notice** (`#achievement`, `achievementNotice`), a corner panel of its own (`sotano-popups` §2). It is not the Presence card: the owner asked for a notice that is not a panel one must confirm. It is **not blocking and takes no input**: it stays 5 seconds, or 7 seconds when its description is long (`noticeMillis`, over 70 characters), then leaves by itself; a window that arrives first cuts it off, and it stays queued. Its look is the cellar slate with a gold accent bar and the gold medal glyph (`hud-icons.ts` `achievement`), set in Pixelify Sans, inspired by the corner notice of the Florencia project (reference only, nothing copied). A toast was rejected: a new toast replaces the current one, and the boss-down toast fires in the same moment.
 - **Lines**, in order:
   1. `achievement.<id>.desc`
-  2. `achievement.card.gain`: "Next time you wake in the Roots: {gain}" / "La próxima vez que despiertes en las raíces: {gain}", where `{gain}` is the step line of the new level ([REWARDS §7](../levels/roots/REWARDS.md#7-what-each-step-says)).
-  3. `achievement.card.mastery`: "Mastery of the Roots: {level} of 100" / "Maestría de las raíces: {level} de 100".
+  2. `achievement.card.mastery`: "Mastery of the Roots: {level} of 100" / "Maestría de las raíces: {level} de 100".
 - **Kicker:** `achievement.card.kicker`: "Achievement" / "Logro".
-- **When it shows.** The unlock is saved at once; the card waits for a calm moment: no other blocking window open (item banner, presence card or offer, toll, menu, death screen, Sanctuary), and the player not in a sealed room with live projections. After a boss is overcome the room is cleared, so the card shows at once, before the way down cracks open; the toll window waits until the card is closed, and only for a card a session can show (a sandbox or the lab shows none, so a queued card never holds its toll). Pending cards are kept in order and shown one at a time; the HUD never stacks them. A card leaves the queue only when the player confirms it. A card cut off before that (a restart, a death, another banner, a jump to a floor's spawn) stays first in the queue and is shown again at the next calm moment, so no unlock is lost. Built in D2 (`game/achievement-keeper.ts`, `game.ts` `showAchievement`): the queue is kept across runs, not dropped at a run's end. This departs from the first draft's default, because a page achievement (`book.page.7`) is earned by the run's end itself and its card would otherwise never show; the owner should confirm it (open question below).
+- **When it shows.** The unlock is saved at once; the notice waits for a calm moment: no other window open (item banner, presence card or offer, toll, menu, death screen, Sanctuary), and the player not in a sealed room with live projections. After a boss is overcome the room is cleared, so the card shows at once, before the way down cracks open; the toll window waits until the card is closed, and only for a card a session can show (a sandbox or the lab shows none, so a queued card never holds its toll). Pending cards are kept in order and shown one at a time; the HUD never stacks them. A notice leaves the queue when its time on screen ends. A notice cut off before that (a restart, a death, another banner, a jump to a floor's spawn) stays first in the queue and is shown again at the next calm moment, so no unlock is lost. Built in D2 (`game/achievement-keeper.ts`, `game.ts` `showAchievement`): the queue is kept across runs, not dropped at a run's end. This departs from the first draft's default, because a page achievement (`book.page.7`) is earned by the run's end itself and its card would otherwise never show; the owner should confirm it (open question below).
 - **Juice.** A burst of gold motes around the player, a soft rising chime (a new short WebAudio cue, gentle, no repetition), no screen shake. The card is redrawn on a language change like the item banner (`Hud.relocalize`).
 - **Cap.** At level 100 the gain line names no step if none is left; the mastery line still shows 100 of 100.
 
@@ -151,10 +168,11 @@ When an achievement is earned the player reads, in one window: its name, its des
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 40 defined ones; the other 60 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 46 defined ones; the other 54 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 
+- **Touching the top of the tree** (owner, 2026-11-14): a sixth achievement, apart from the crown. Its criterion is open: the tree's highest block is not reachable on foot (the last star pad leads up into the sky), so the owner must say what "touching the top" means before it is built. Never invented.
 - The names (both languages) await the owner, except "Lucky Number" and "Nice", which are the owner's ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 - Cards pending when a run ends show at the start of the next run: built so, because the page achievements are earned at a run's end (see §4). The owner may decide otherwise ([open question 6](../../not-built/levels/roots/OPEN-QUESTIONS.md)).
 - The Shadow's stillness ending counts as conversion: tagged on its enemy (`STILLNESS_TAG` in `src/content/bosses/shadow.ts`), reported as `how: 'stillness'` when it dies ([open question 13](../../not-built/levels/roots/OPEN-QUESTIONS.md)).

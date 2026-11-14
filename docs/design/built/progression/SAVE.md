@@ -11,6 +11,7 @@ interface MetaState {
   v: 2;
   staircase: boolean;                 // as version 1
   metAt?: number;                     // as version 1
+  pact?: true;                        // the Listener's pact has been made once (ACHIEVEMENTS, Mind Crafter); absent until then
   roots: { page: number };            // the current page, an integer ≥ 1
   achievements: Record<string, number>;  // unlocked id → unlock time (ms since the epoch)
   counts: Record<string, number>;     // achievement id → matching events so far (only while locked, only for `times` > 1)

@@ -19,6 +19,8 @@ export interface MetaState {
   roots: { page: number };
   achievements: Record<string, number>;
   counts: Record<string, number>;
+  /** The player has made the Listener's pact at least once (the first pact, ACHIEVEMENTS "Mind Crafter"). Optional: absent means not yet. */
+  pact?: true;
 }
 
 /** What loadMeta returns. readOnly is set for a newer build's record: the game plays, earns nothing persistent and never writes. Never stored. */
@@ -41,6 +43,7 @@ function clean(input: unknown): MetaState {
   const s = defaultMeta();
   s.staircase = o.staircase === true;
   if (typeof o.metAt === 'number' && Number.isFinite(o.metAt)) s.metAt = o.metAt;
+  if (o.pact === true) s.pact = true;
   const roots = isObj(o.roots) ? o.roots : {};
   const page = roots.page;
   if (typeof page === 'number' && Number.isInteger(page) && page >= 1) s.roots.page = page;
@@ -114,6 +117,7 @@ export function mergeMeta(stored: MetaState, mine: MetaState): MetaState {
     achievements,
     counts,
   };
+  if (stored.pact || mine.pact) out.pact = true;
   const times = [stored.metAt, mine.metAt].filter((t): t is number => t !== undefined);
   if (times.length) out.metAt = Math.min(...times);
   return out;
@@ -145,6 +149,7 @@ export function adoptMeta(target: LoadedMeta, from: MetaState): void {
   target.roots = { page: from.roots.page };
   target.achievements = { ...from.achievements };
   target.counts = { ...from.counts };
+  if (from.pact) target.pact = true; else delete target.pact;
 }
 
 /**
