@@ -233,10 +233,10 @@ describe('the notice (ACHIEVEMENTS §4)', () => {
     }
   });
 
-  it('stays on screen 3 s, or 5 s when its description is long (issue #191)', () => {
-    expect(noticeMillis('Short.')).toBe(3000);
-    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS))).toBe(3000);
-    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS + 1))).toBe(5000);
+  it('stays on screen 5 s, or 7 s when its description is long (issue #191)', () => {
+    expect(noticeMillis('Short.')).toBe(5000);
+    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS))).toBe(5000);
+    expect(noticeMillis('x'.repeat(NOTICE_LONG_CHARS + 1))).toBe(7000);
     setLocale('en');
     const lengths = ACHIEVEMENTS.map(d => t(`achievement.${d.id}.desc` as MessageKey).length);
     expect(lengths.some(n => n > NOTICE_LONG_CHARS)).toBe(true);

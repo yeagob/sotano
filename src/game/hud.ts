@@ -660,7 +660,7 @@ export class Hud {
   /**
    * The achievement notice (sotano-popups §2, "Achievement notice"): a slate medal strip in the top-right corner with its
    * kicker, the achievement's name, what it does, and the mastery count. It is not blocking and takes no input: it leaves
-   * by itself after `ms` (3 s, or 5 s for a long text), and then `onDone` runs once. A window that arrives first cuts it
+   * by itself after `ms` (5 s, or 7 s for a long text), and then `onDone` runs once. A window that arrives first cuts it
    * off: `onDone` does not run, and the notice stays queued. One at a time.
    */
   achievementNotice(keys: CardKeys, level: number, ms: number, onDone: () => void) {

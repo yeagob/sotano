@@ -129,9 +129,9 @@ export function cardKeys(n: AchievementNotice): CardKeys {
 /** A description longer than this many characters keeps the notice on screen for five seconds, not three (issue #191). */
 export const NOTICE_LONG_CHARS = 70;
 
-/** How long the notice stays on screen: 3 s, or 5 s when its description is long (the longest runs to about 77 characters). */
+/** How long the notice stays on screen: 5 s, or 7 s when its description is long (the longest runs to about 77 characters). */
 export function noticeMillis(desc: string): number {
-  return desc.length > NOTICE_LONG_CHARS ? 5000 : 3000;
+  return desc.length > NOTICE_LONG_CHARS ? 7000 : 5000;
 }
 
 /** Every message key a notice can use: its card's keys and the step lines its data carries. */

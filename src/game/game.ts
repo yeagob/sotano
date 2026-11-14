@@ -863,7 +863,7 @@ export class Game {
 
   private presentAchievement(n: AchievementNotice) {
     const c = cardKeys(n);
-    // the notice is not blocking: it leaves by its timer (3 s, 5 s for a long text), and only then leaves the queue;
+    // the notice is not blocking: it leaves by its timer (5 s, 7 s for a long text), and only then leaves the queue;
     // a notice cut off by another window stays queued (ACHIEVEMENTS §4)
     this.hud.achievementNotice(c, n.level, noticeMillis(t(c.desc)), () => this.keeper.confirm(n));
     const b = this.player.body;
