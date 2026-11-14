@@ -63,7 +63,7 @@ Only one the owner defined (issue #179). In one change:
    - the event row in ACHIEVEMENTS §2 and, if items may use it, `docs/architecture/ITEMS.md` (`sotano-items`).
 3. **The entry** in `ACHIEVEMENTS`, in its group, with a comment line if it opens a new group.
 4. **Two message keys in both languages** (`sotano-i18n`): `achievement.<id>.name` and `achievement.<id>.desc` in `src/i18n/locales/en.ts` and `es.ts`, beside the others. The description says plainly what to do ("Destroy Resistance: bring its health to zero."); the name says what it means (section 7).
-5. **Tests.** Raise the count in `tests/achievements.test.ts` ("holds the 40 achievements…"), and add one test that feeds the event and unlocks exactly this id and no other. A `times` entry: test that it needs that many events and keeps its count. A new boss or meditation in `src/content` breaks the tests that check `ACHIEVEMENT_BOSSES` and `ACHIEVEMENT_MEDITATIONS` against the game: add both boss entries (destroyed and converted) or the meditation entry with `times: 3`.
+5. **Tests.** Raise the count in `tests/achievements.test.ts` ("holds the 46 achievements…"), and add one test that feeds the event and unlocks exactly this id and no other. A `times` entry: test that it needs that many events and keeps its count. A new boss or meditation in `src/content` breaks the tests that check `ACHIEVEMENT_BOSSES` and `ACHIEVEMENT_MEDITATIONS` against the game: add both boss entries (destroyed and converted) or the meditation entry with `times: 3`.
 6. **The mastery step** of the new level, if the catalogue grows past the levels the table names (section 6).
 7. **Docs** (`sotano-docs`, `sotano-design`): the row in ACHIEVEMENTS §1, the count where it is stated, and #179 updated.
 

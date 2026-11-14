@@ -1,5 +1,5 @@
 // The achievement catalogue (docs/design/built/progression/ACHIEVEMENTS.md §1-2): the 40 that ship with
-// #147, as data (36 plus the 4 book pages), and the 5 of #179 (the Roots, the way up, the Listener's pact, the book, bedrock). The names and descriptions are message keys (`achievement.<id>.name|desc`,
+// #147, as data (36 plus the 4 book pages), and the 6 of #179 (the Roots, the way up, the crown, the Listener's pact, the book, bedrock). The names and descriptions are message keys (`achievement.<id>.name|desc`,
 // in src/i18n/locales). The tracker that reads this list is src/game/achievements.ts.
 //
 // An entry says which event may unlock it (`on`), the payload fields that must match (`where`; a list means any

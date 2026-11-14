@@ -19,7 +19,7 @@ The Roots read one number when a run starts: the mastery level, 0 to 100. Everyt
 
 ## 2. The table
 
-Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (40 achievements exist). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
+Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (46 achievements exist). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
 
 | Level | What the Roots gain | Keys | Bombs | Hearts lying loose | Free chests | Crate factor | Extra practices |
 |---|---|---|---|---|---|---|---|
