@@ -77,7 +77,26 @@ export interface ImagePanel {
   readonly caption?: string;
 }
 
-export type Panel = LessonPanel | PlatePanel | ProsePanel | QuotePanel | ImagePanel;
+/** The book's title, alone on its slab: a book page's title page (`book-title`). Text only, a budget of 40. */
+export interface TitlePanel {
+  readonly id: string;
+  readonly layout: 'title';
+  readonly text: string;
+}
+
+/**
+ * An empty slab: plain stone, the frame and the mason's mark, no words. Never in a file: `panelAt` returns it for a
+ * slot a `blank` page leaves out (PROLOGUE: a blank page shows empty slabs, not the page 1 panels).
+ */
+export interface BlankPanel {
+  readonly id: string;
+  readonly layout: 'blank';
+}
+
+export type Panel = LessonPanel | PlatePanel | ProsePanel | QuotePanel | ImagePanel | TitlePanel | BlankPanel;
+
+/** The layouts a file may hold: every panel layout except `blank`, which only `panelAt` makes. */
+export type FileLayout = Exclude<Panel['layout'], 'blank'>;
 
 export type Slot = Partial<Record<Side, Panel>>;
 
@@ -91,6 +110,8 @@ const BOOK_LAYOUTS: readonly BookLayout[] = ['teaching', 'easy'];
 export interface BookPage {
   readonly id: string;
   readonly kind: 'tutorial' | 'book';
+  /** A book page whose slots it leaves out show empty slabs, not the page 1 panels (book-title, book-epigraph...). */
+  readonly blank?: true;
   readonly panels: Partial<Record<RoomKey, Slot>>;
 }
 
@@ -138,7 +159,7 @@ export function bookRefs(): BookRefs {
 
 // ── the layouts and their budgets (BOOK-DATA §2, PANELS §5) ──
 
-type Layout = Panel['layout'];
+type Layout = FileLayout;
 
 const LAYOUTS: Record<Layout, { required: readonly string[]; optional: readonly string[] }> = {
   lesson: { required: ['id', 'title', 'text', 'image'], optional: ['key'] },
@@ -146,6 +167,7 @@ const LAYOUTS: Record<Layout, { required: readonly string[]; optional: readonly 
   prose: { required: ['id', 'text'], optional: [] },
   quote: { required: ['id', 'text', 'author', 'work', 'lang'], optional: ['publisher', 'year'] },
   image: { required: ['id', 'image'], optional: ['caption'] },
+  title: { required: ['id', 'text'], optional: [] },
 };
 
 /**
@@ -154,6 +176,9 @@ const LAYOUTS: Record<Layout, { required: readonly string[]; optional: readonly 
  */
 export const IMAGE_CAPTION_BUDGET = 60;
 
+/** The book's title on its title page, drawn large on the slab (PROLOGUE script: one field, 40 characters). */
+export const TITLE_BUDGET = 40;
+
 /** Characters per text field, counted with each placeholder at its longest label. */
 const BUDGET: Record<Layout, Partial<Record<string, number>>> = {
   lesson: { title: 22, text: 120 },
@@ -161,6 +186,7 @@ const BUDGET: Record<Layout, Partial<Record<string, number>>> = {
   prose: { text: 320 },
   quote: { text: 440, author: 40, work: 48, publisher: 32 },
   image: { caption: IMAGE_CAPTION_BUDGET },
+  title: { text: TITLE_BUDGET },
 };
 
 /** The source line of a quote as drawn ("Work · Publisher, Year", PANELS §4b). */
@@ -174,7 +200,7 @@ const QUOTE_YEAR_FROM = 1000;
 const KEYCAP_BUDGET = 14;
 const KEYCAP_PARTS = ['key', 'pad', 'touch', 'verb'] as const;
 const DEVICE_PARTS = ['key', 'pad', 'touch'] as const;
-const PAGE_FIELDS: readonly string[] = ['id', 'kind', 'panels'];
+const PAGE_FIELDS: readonly string[] = ['id', 'kind', 'blank', 'panels'];
 const TOP_FIELDS: readonly string[] = ['version', 'language', 'pages', 'easy'];
 const PAGE_ID = /^[a-z0-9-]+$/;
 const ROOM_SET: ReadonlySet<string> = new Set<string>(ROOM_KEYS);
@@ -182,7 +208,7 @@ const SIDE_SET: ReadonlySet<string> = new Set<string>(SIDES);
 const LANGS: readonly Lang[] = ['en', 'es'];
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-const isLayout = (v: unknown): v is Layout => typeof v === 'string' && v in LAYOUTS;
+const isLayout = (v: unknown): v is Layout => typeof v === 'string' && Object.hasOwn(LAYOUTS, v);
 const isKeyAction = (v: unknown): v is KeyAction => typeof v === 'string' && (KEY_ACTIONS as readonly string[]).includes(v);
 const isPlaceholder = (v: string): v is PlaceholderAction => (PLACEHOLDER_ACTIONS as readonly string[]).includes(v);
 const isLang = (v: unknown): v is Lang => typeof v === 'string' && (LANGS as readonly string[]).includes(v);
@@ -400,6 +426,9 @@ function checkPage(
   if (index === 0 && page.kind !== 'tutorial') problems.push(`${where}: page 1 must be a tutorial page`);
   if (page.kind === 'tutorial' && state.seenBook) problems.push(`${where}: a tutorial page follows a book page`);
   if (page.kind === 'book') state.seenBook = true;
+  if (page.blank !== undefined && (page.blank !== true || page.kind !== 'book')) {
+    problems.push(`${where}: blank must be true, and only on a book page`);
+  }
   if (!isRecord(page.panels)) { problems.push(`${where}: panels must be an object`); return; }
   const panels = page.panels;
   for (const room of Object.keys(panels)) {
@@ -445,6 +474,7 @@ function checkShape(en: unknown, es: unknown, problems: string[]) {
     const head = `page ${index + 1}`;
     if (a.id !== b.id) problems.push(`${head}: id is ${show(a.id)} in en and ${show(b.id)} in es`);
     if (a.kind !== b.kind) problems.push(`${head}: kind is ${show(a.kind)} in en and ${show(b.kind)} in es`);
+    if (a.blank !== b.blank) problems.push(`${head}: blank is ${show(a.blank)} in en and ${show(b.blank)} in es`);
     const panelsA = isRecord(a.panels) ? a.panels : {};
     const panelsB = isRecord(b.panels) ? b.panels : {};
     for (const room of ROOM_KEYS) {
@@ -546,6 +576,8 @@ export function panelAt(book: Book, page: number, room: RoomKey, side: Side, lay
     const own = book.pages[page - 1].panels[room]?.[side];
     if (own) return own;
   }
+  // a blank page leaves its empty slots empty: no remembered panel, no page 1 panel
+  if (book.pages[page - 1].blank) return { id: panelIdOf(page, room, side), layout: 'blank' };
   if (layout === 'easy') {
     const remembered = book.easy?.[room]?.[side];
     if (remembered) return remembered;

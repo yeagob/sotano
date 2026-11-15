@@ -9,7 +9,7 @@
 //   &view=room   only the room view and the page stone; &view=panels only the panels
 
 import * as THREE from 'three';
-import { loadBook, pageCount, type Book, type Lang, type Panel } from '../../content/book';
+import { ROOM_KEYS, SIDES, loadBook, pageCount, panelAt, type Book, type Lang, type Panel } from '../../content/book';
 import { MATERIALS } from '../../content/materials';
 import { pal, palCss } from '../../content/palette';
 import type { Device } from '../../input/bindings';
@@ -25,9 +25,17 @@ const DEVICES: Device[] = ['keyboard', 'gamepad', 'touch'];
 /** A panel changes with the device only when it draws a key cap or fills a control placeholder. */
 const byDevice = (p: Panel) => (p.layout === 'lesson' && p.key !== undefined) || ((p.layout === 'lesson' || p.layout === 'plate') && p.text.includes('{'));
 
-/** The panels a page carries itself (the slots it leaves out show page 1's), in book order. */
+/**
+ * The panels a page carries itself, in book order. A blank page shows all its 22 slots: its own panels, and an empty
+ * slab (the `blank` layout, from panelAt) for each slot it leaves out. Other pages show their own panels only; the
+ * slots they leave out show page 1's panel or a remembered one.
+ */
 function ownPanels(book: Book, page: number): Panel[] {
   const out: Panel[] = [];
+  if (book.pages[page - 1].blank) {
+    for (const room of ROOM_KEYS) for (const side of SIDES) out.push(panelAt(book, page, room, side));
+    return out;
+  }
   for (const slot of Object.values(book.pages[page - 1].panels)) for (const p of Object.values(slot ?? {})) if (p) out.push(p);
   return out;
 }
@@ -97,7 +105,7 @@ export async function bookGallery(kit: GalleryKit, params: URLSearchParams) {
     const sections: { title: string; page: number; panels: Panel[] }[] = [];
     for (let page = 1; page <= pageCount(book); page++) {
       if (pageOnly !== undefined && page !== pageOnly) continue;
-      sections.push({ title: `${lang.toUpperCase()} · page ${page} (${book.pages[page - 1].id}, ${book.pages[page - 1].kind})`, page, panels: ownPanels(book, page) });
+      sections.push({ title: `${lang.toUpperCase()} · page ${page} (${book.pages[page - 1].id}, ${book.pages[page - 1].kind}${book.pages[page - 1].blank ? ', blank' : ''})`, page, panels: ownPanels(book, page) });
     }
     // the remembered panels (easy-*): the easy layout's slots, carved as page 1 (they carry no page number)
     if (pageOnly === undefined) sections.push({ title: `${lang.toUpperCase()} · remembered panels (easy layout, easy-*)`, page: 1, panels: rememberedPanels(book) });

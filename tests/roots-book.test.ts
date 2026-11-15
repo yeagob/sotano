@@ -394,11 +394,12 @@ describe('the walls: sight sets and the out-of-sight swap', () => {
 
 describe('the page stone', () => {
   it('shows nothing on a tutorial page and the page number from the first book page on', () => {
-    expect(FIRST_BOOK_PAGE).toBe(7);
-    expect(makeBook(6, 9).pageStone()).toBeNull();
+    expect(FIRST_BOOK_PAGE).toBe(6);
+    expect(makeBook(5, 9).pageStone()).toBeNull();
+    expect(makeBook(6, 9).pageStone()).toBe(6);
     expect(makeBook(7, 9).pageStone()).toBe(7);
     expect(makeBook(8, 9).pageStone()).toBe(8);
-    expect(makeBook(6, 6).pageStone()).toBeNull();
+    expect(makeBook(5, 5).pageStone()).toBeNull();
   });
 
   it('changes under the start room rule: it keeps its number while the player is in sight, and turns after', () => {
@@ -413,10 +414,10 @@ describe('the page stone', () => {
   });
 
   it('the stone goes blank when the walls turn to a tutorial page', () => {
-    const book = makeBook(7, 9);
+    const book = makeBook(6, 9);
     reverseLapFrom(book, 0);
-    expect(book.shown).toBe(6);
-    expect(book.pageStone()).toBe(7);
+    expect(book.shown).toBe(5);
+    expect(book.pageStone()).toBe(6);
     book.enterRoom(SPRING);
     expect(book.pageStone()).toBeNull();
   });

@@ -501,6 +501,14 @@ function carveImage(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'im
   }
 }
 
+/**
+ * The title layout: the book's title alone on an otherwise empty slab, centred and large, the serif of the prose.
+ * It carries no page number and no frame of its own: the slab is the frame.
+ */
+function carveTitle(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'title' }>, over: string[]) {
+  oneLine(g, 'text', p.text, 448, 236, 744, { from: 84, to: 36 }, 'bold', SERIF, 'ink.line', over, 'center');
+}
+
 function carveQuote(g: CanvasRenderingContext2D, p: Extract<Panel, { layout: 'quote' }>, voice: PanelVoice, over: string[]) {
   // the inset page: paler, set into the face, its border in the bevel ink and a shadow along its top and left
   // (34 to 458, a little higher and shorter than PANELS §4b's first proposal, so the mason's mark fits under it)
@@ -540,6 +548,8 @@ export function carvePanel(g: CanvasRenderingContext2D, panel: Panel, page: numb
   else if (panel.layout === 'plate') carvePlate(g, panel, voice, images, over, missing);
   else if (panel.layout === 'prose') carveProse(g, panel, page, over);
   else if (panel.layout === 'image') carveImage(g, panel, images, over, missing);
+  else if (panel.layout === 'title') carveTitle(g, panel, over);
+  else if (panel.layout === 'blank') { /* an empty slab: the stone, the frame and the mason's mark only */ }
   else carveQuote(g, panel, voice, over);
   masonMark(g, panel.id);
   g.restore();

@@ -12,7 +12,7 @@
         },
         "roots-step": {
           "north": { "id": "1-step-n", "layout": "lesson", "title": "Buenas y malas", "text": "Tus intenciones son buenas o malas. Las buenas curan y hacen crecer a las criaturas; las malas rompen y hieren.", "image": "lesson/polarity", "key": "polarity" },
-          "south": { "id": "1-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "Pulsa {jump} para saltar un bloque, nunca dos. Rompe tierra, acércate para cogerla, ponla junto al muro y sube.", "image": "lesson/step", "key": "move" }
+          "south": { "id": "1-step-s", "layout": "lesson", "title": "Coge, pon y salta", "text": "Coge un bloque tocándolo. {place} lo pone donde apuntas. Salta uno, nunca dos.", "image": "lesson/step", "key": "jump" }
         },
         "roots-dig": {
           "north": { "id": "1-dig-n", "layout": "lesson", "title": "Tras el muro", "text": "Cada muro se levantó un día para protegerte. Siempre puedes romper uno, o construir uno mejor.", "image": "lesson/behind-wall" },
@@ -57,31 +57,40 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "south": { "id": "2-hall-s", "layout": "lesson", "title": "Pociones", "text": "Lo que dejan las proyecciones liberadas puede volverse poción. Con un frasco encima de la mano, bébelo.", "image": "lesson/drink", "key": "drink" }
+          "north": { "id": "2-hall-n", "layout": "plate", "title": "Tónico sencillo", "subtitle": "Sin receta", "text": "Lo que sale del alambique cuando ninguna receta encaja. Sencillo, pero nunca nada.", "note": "Devuelve medio corazón.", "image": "icon/potion/plain-tonic" },
+          "south": { "id": "2-hall-s", "layout": "lesson", "title": "Ingredientes", "text": "Una proyección liberada deja a veces una parte: carne, mente, corazón o esencia. Los bloques también sirven.", "image": "lesson/parts" }
         },
         "roots-step": {
+          "north": { "id": "2-step-n", "layout": "plate", "title": "Comida contundente", "subtitle": "En la cocina", "text": "Una parte de carne: comida ligera, medio corazón. Corazón, mente o esencia: comida contundente, un corazón.", "image": "icon/potion/meal-hearty" },
           "south": { "id": "2-step-s", "layout": "lesson", "title": "El alambique", "text": "En los pisos 2, 4, 6 y 8. Échale hasta tres partes o bloques y tócalo con una intención buena.", "image": "lesson/alembic", "key": "place" }
         },
         "roots-dig": {
           "north": { "id": "2-dig-n", "layout": "lesson", "title": "La cocina", "text": "En los pisos 1, 3, 5 y 7. Dale una parte y te cocina una comida. Tres comidas y se apaga su fuego.", "image": "lesson/kitchen", "key": "place" }
         },
         "roots-mend": {
-          "south": { "id": "2-mend-s", "layout": "plate", "title": "Tónico sencillo", "subtitle": "Una poción", "text": "Lo que sale del alambique cuando ninguna receta encaja. Sencillo, pero nunca nada.", "image": "icon/potion/plain-tonic", "note": "Devuelve medio corazón." }
+          "south": { "id": "2-mend-s", "layout": "lesson", "title": "Pociones", "text": "Lo que dejan las proyecciones liberadas puede volverse poción. Con un frasco encima de la mano, bébelo.", "image": "lesson/drink", "key": "drink" }
         },
         "roots-pit": {
-          "south": { "id": "2-pit-s", "layout": "plate", "title": "Brebaje restaurador", "subtitle": "Una poción", "text": "Un respiro hondo en un frasco, para cuando faltan corazones.", "image": "icon/potion/restoring-draught", "note": "Devuelve un corazón." }
+          "south": { "id": "2-pit-s", "layout": "plate", "title": "Brebaje restaurador", "subtitle": "Receta", "text": "Dos partes de carne.", "image": "icon/potion/restoring-draught" }
         },
         "roots-bridge": {
-          "south": { "id": "2-bridge-s", "layout": "plate", "title": "Tónico de muelle", "subtitle": "Una poción", "text": "Tus piernas recuerdan cómo se salta. Dura hasta el siguiente piso.", "image": "icon/potion/spring-tonic", "note": "Fuerza de salto ×1,4" }
+          "south": { "id": "2-bridge-s", "layout": "plate", "title": "Tintura de aplomo", "subtitle": "Receta", "text": "Una parte de carne del camino del cuerpo y un bloque de piedra honda u obsidiana.", "image": "icon/potion/footing-tincture" }
         },
         "roots-seal": {
-          "north": { "id": "2-seal-n", "layout": "plate", "title": "Infusión clara", "subtitle": "Una poción", "text": "La mente se aclara: las intenciones vuelan más lejos y más rápido durante tres salas selladas.", "image": "icon/potion/clear-infusion", "note": "Distancia ×1,3 · disparo ×1,2" }
+          "north": { "id": "2-seal-n", "layout": "plate", "title": "Tónico de muelle", "subtitle": "Receta", "text": "Una parte de corazón del camino del cuerpo.", "image": "icon/potion/spring-tonic" }
         },
         "roots-crates": {
-          "north": { "id": "2-crates-n", "layout": "plate", "title": "Tintura de la pregunta", "subtitle": "Una poción", "text": "Una pregunta afloja un cerrojo: la siguiente puerta o cofre cerrado pide una llave menos.", "image": "icon/potion/questioning-tincture", "note": "Nunca el peaje." }
+          "north": { "id": "2-crates-n", "layout": "plate", "title": "Infusión clara", "subtitle": "Receta", "text": "Dos partes de mente de dos proyecciones distintas.", "image": "icon/potion/clear-infusion" }
         },
         "roots-spring": {
-          "north": { "id": "2-spring-n", "layout": "plate", "title": "Comida contundente", "subtitle": "Una comida", "text": "Se cocina con una parte de corazón, mente o esencia. Con una de carne sale una Comida ligera.", "image": "icon/potion/meal-hearty", "note": "Devuelve un corazón." }
+          "north": { "id": "2-spring-n", "layout": "plate", "title": "Tintura de la pregunta", "subtitle": "Receta", "text": "Una parte de mente de la familia de la duda y un bloque de mineral de hierro.", "image": "icon/potion/questioning-tincture" }
+        },
+        "roots-gift": {
+          "south": { "id": "2-gift-s", "layout": "plate", "title": "Tónico de brasa", "subtitle": "Receta", "text": "Una parte de corazón del camino de la voluntad.", "image": "icon/potion/ember-tonic" }
+        },
+        "roots-door": {
+          "north": { "id": "2-door-n", "layout": "plate", "title": "Brebaje paciente", "subtitle": "Receta", "text": "Un corazón y una mente de la misma proyección, del camino de la voluntad.", "image": "icon/potion/patient-draught" },
+          "south": { "id": "2-door-s", "layout": "plate", "title": "Brebaje berserker", "subtitle": "Receta", "text": "Dos partes de corazón del camino de la voluntad y un bloque de obsidiana.", "image": "icon/potion/berserker-draught" }
         }
       }
     },
@@ -94,44 +103,44 @@
           "south": { "id": "3-hall-s", "layout": "lesson", "title": "Proyecciones", "text": "Las intenciones malas liberan a una proyección. Las buenas la templan hasta que se pone de tu lado.", "image": "lesson/convert", "key": "polarity" }
         },
         "roots-step": {
-          "north": { "id": "3-step-n", "layout": "plate", "title": "Segunda duda", "subtitle": "Una proyección · pisos 3–7", "text": "Va a por ti, se para en seco como si no estuviera segura, y luego se lanza.", "image": "bestiary/second-guessing", "note": "La Duda, más honda." },
-          "south": { "id": "3-step-s", "layout": "lesson", "title": "Partes", "text": "Una proyección liberada puede dejar una parte: carne, corazón, mente o esencia. Se lleva en la mano.", "image": "lesson/parts" }
+          "north": { "id": "3-step-n", "layout": "lesson", "title": "Partes", "text": "Una proyección liberada puede dejar una parte: carne, corazón, mente o esencia. Se lleva en la mano.", "image": "lesson/parts" },
+          "south": { "id": "3-step-s", "layout": "lesson", "title": "Golpes duros", "text": "Un bloque lanzado hiere según su dureza. La tierra apenas roza; la obsidiana pega como dos o tres intenciones.", "image": "lesson/throw", "key": "throw" }
         },
         "roots-dig": {
-          "north": { "id": "3-dig-n", "layout": "plate", "title": "Crítico interior", "subtitle": "Una proyección", "text": "Guarda las distancias y te lanza juicios a la cabeza. Un bloque colocado los detiene.", "image": "bestiary/critic", "note": "Puede dejar corazón o llave." },
-          "south": { "id": "3-dig-s", "layout": "plate", "title": "El margen", "subtitle": "Una proyección · pisos 3–6", "text": "Nunca se mueve. Marca el suelo donde pisas, que te frena, y te dispara.", "image": "bestiary/margin", "note": "El Crítico, más hondo." }
+          "north": { "id": "3-dig-n", "layout": "lesson", "title": "Cofres", "text": "Los ojos del candado dicen cuántas llaves pide un cofre. Si tiene adornos de latón, guarda una práctica.", "image": "lesson/chests" },
+          "south": { "id": "3-dig-s", "layout": "lesson", "title": "El sello", "text": "Entra en una sala con proyecciones y sus puertas se cierran hasta que no quede ninguna. Las raíces nunca se sellan.", "image": "lesson/seal" }
         },
         "roots-mend": {
-          "north": { "id": "3-mend-n", "layout": "plate", "title": "Alarma", "subtitle": "Una proyección · pisos 3–6", "text": "Como el Pánico, corre hacia ti, se hincha y estalla. Y hace saltar a toda Alarma o Pánico cercanos.", "image": "bestiary/alarm", "note": "El agua la calma un momento." },
-          "south": { "id": "3-mend-s", "layout": "plate", "title": "Pánico", "subtitle": "Una proyección", "text": "Corre hacia ti y se hincha antes de estallar. Apártate mientras se hincha.", "image": "bestiary/panic", "note": "Puede dejar una bomba." }
+          "north": { "id": "3-mend-n", "layout": "lesson", "title": "Templar a un jefe", "text": "A los jefes también se les templa. Llénalo de intenciones buenas hasta que se ponga de tu lado: también así se supera.", "image": "lesson/warm-boss", "key": "polarity" },
+          "south": { "id": "3-mend-s", "layout": "lesson", "title": "Bombas blancas", "text": "Suelta una bomba con intenciones buenas: estalla en luz, repara bloques y convierte la lava en agua.", "image": "lesson/white-bomb", "key": "bomb" }
         },
         "roots-pit": {
-          "north": { "id": "3-pit-n", "layout": "plate", "title": "Resistencia", "subtitle": "Un jefe · pisos 1–2", "text": "Una puerta que camina. Viene a por ti y embiste, y lo que embiste se rompe.", "image": "bestiary/resistance", "note": "Deja una práctica." },
-          "south": { "id": "3-pit-s", "layout": "plate", "title": "Inercia", "subtitle": "Un jefe · pisos 1–2", "text": "Una bola de tierra prensada, dormida. Un empujón la despierta; después rueda y rebota en los muros.", "image": "bestiary/inertia", "note": "Deja una práctica." }
+          "north": { "id": "3-pit-n", "layout": "lesson", "title": "Arriba y abajo", "text": "Sobre el gran árbol, el cielo tiene cinco pisos, con un guardián y una manada cada uno. Aquí conviven con los de abajo.", "image": "lesson/sky" },
+          "south": { "id": "3-pit-s", "layout": "lesson", "title": "Criaturas", "text": "Las criaturas no son patrones, y nunca mueren. Si hieres a una, se esconde hasta que se despeja su sala.", "image": "lesson/creatures" }
         },
         "roots-bridge": {
-          "north": { "id": "3-bridge-n", "layout": "plate", "title": "El Insaciable", "subtitle": "Un jefe · pisos 1–2", "text": "Una copa de piedra gigante que nunca camina. Atrae la sala hacia su boca y la escupe.", "image": "bestiary/insatiable", "note": "Deja una práctica." },
-          "south": { "id": "3-bridge-s", "layout": "plate", "title": "Desbordar", "subtitle": "Un jefe · pisos 3–4", "text": "Una marea con cara de espuma. Se te echa encima, y sus olas son tan bajas que se pueden saltar.", "image": "bestiary/overwhelm", "note": "Deja una práctica." }
+          "north": { "id": "3-bridge-n", "layout": "plate", "title": "La Escucha", "subtitle": "Presencia · pisos 1–5", "text": "Ofrécele la parte de corazón de un patrón liberado, y te devolverá algo.", "image": "bestiary/listener", "note": "Solo escucha." },
+          "south": { "id": "3-bridge-s", "layout": "plate", "title": "El Límite", "subtitle": "Presencia", "text": "Una columna alta y serena de caliza que guarda un cofre. Acércate y se abre su Santuario.", "image": "bestiary/boundary", "note": "Uno por cámara desde el piso 1" }
         },
         "roots-seal": {
-          "north": { "id": "3-seal-n", "layout": "plate", "title": "El Aguacero", "subtitle": "Un jefe · pisos 3–4", "text": "Un techo bajo de nubes. Llueve donde vas a pisar, y baja más cuanto más se debilita.", "image": "bestiary/downpour", "note": "Deja una práctica." },
-          "south": { "id": "3-seal-s", "layout": "plate", "title": "El Acaparador", "subtitle": "Un jefe · pisos 3–4", "text": "Un montón de todo lo que guardó. Te echa pesos rodando, lo atrae todo a su pila y al final revienta.", "image": "bestiary/hoard", "note": "Deja una práctica." }
+          "north": { "id": "3-seal-n", "layout": "lesson", "title": "El peaje", "text": "Cada bajada pide más: una cosa más en cada piso hasta el quinto; después, prácticas.", "image": "lesson/toll" },
+          "south": { "id": "3-seal-s", "layout": "lesson", "title": "Pagar con corazones", "text": "Un corazón dado al peaje es un pago, no un golpe. Nunca te mata, y nunca se lleva tu último corazón.", "image": "lesson/way-down" }
         },
         "roots-crates": {
-          "north": { "id": "3-crates-n", "layout": "plate", "title": "El Veredicto", "subtitle": "Un jefe · piso 6", "text": "Un largo estrado con siete atriles. Lanza tres acusaciones a la vez y luego marca el suelo para frenarte.", "image": "bestiary/verdict", "note": "Deja una práctica." },
-          "south": { "id": "3-crates-s", "layout": "plate", "title": "El Guardián del Umbral", "subtitle": "Un jefe · piso 5", "text": "Una alta puerta de piedra. Sus barras de fuerza cruzan la sala donde estás; al final embiste y cae sobre ti.", "image": "bestiary/threshold-guardian", "note": "Siempre el jefe del piso 5." }
+          "north": { "id": "3-crates-n", "layout": "plate", "title": "Corazones raros", "subtitle": "Azul, negro, piedra…", "text": "Azul, negro, de piedra, estrella, berserker y sangre. Cada uno ayuda a su manera; ya lo verás al encontrarlo.", "image": "icon/heart/blue" },
+          "south": { "id": "3-crates-s", "layout": "lesson", "title": "Presagios", "text": "Antes de que aparezca una proyección, unas motas frías se juntan donde va a estar. Mientras sigas tan cerca, espera.", "image": "lesson/omen" }
         },
         "roots-spring": {
-          "north": { "id": "3-spring-n", "layout": "plate", "title": "La Vieja Regla", "subtitle": "Un jefe · piso 6", "text": "Una alta tabla de piedra. En los círculos que dicta no puedes lanzar, y cerca de ella vas más lento.", "image": "bestiary/old-rule", "note": "Deja una práctica." },
-          "south": { "id": "3-spring-s", "layout": "plate", "title": "El Rencor", "subtitle": "Un jefe · piso 6", "text": "Un lomo de barro y dos ojos. Se hunde y asoma en otro sitio, con un anillo que hace daño.", "image": "bestiary/grudge", "note": "Deja una práctica." }
+          "north": { "id": "3-spring-n", "layout": "lesson", "title": "Crecer", "text": "Las intenciones buenas hacen crecer a una criatura, hasta el triple. La primera vez, una crecida puede dejar un corazón.", "image": "lesson/grow", "key": "cast" },
+          "south": { "id": "3-spring-s", "layout": "lesson", "title": "Salas despejadas", "text": "Al irse la última proyección, la sala deja un corazón, una bomba o una llave la mitad de las veces. La suerte ayuda.", "image": "lesson/room-clear" }
         },
         "roots-gift": {
-          "north": { "id": "3-gift-n", "layout": "plate", "title": "El Impostor", "subtitle": "Un jefe · pisos 7–8", "text": "Un marco de latón con una sonrisa demasiado ancha. Llama a la Duda, al Crítico y al Pánico a luchar por él.", "image": "bestiary/impostor", "note": "Deja una práctica." },
-          "south": { "id": "3-gift-s", "layout": "plate", "title": "El Horno", "subtitle": "Un jefe · pisos 7–8", "text": "Un gran horno con una boca por puerta. Te arrastra hacia él, y luego el suelo se prende.", "image": "bestiary/furnace", "note": "Deja una práctica." }
+          "north": { "id": "3-gift-n", "layout": "lesson", "title": "Ahora no", "text": "Cierra el Santuario y no pierdes nada: el cofre sigue cerrado y el Límite vuelve a preguntarte cuando regresas.", "image": "lesson/sanctuary" },
+          "south": { "id": "3-gift-s", "layout": "lesson", "title": "Seis sesiones", "text": "El Santuario guarda seis meditaciones, cada una de una práctica. Termina una y el cofre te da una práctica mayor.", "image": "lesson/sanctuary" }
         },
         "roots-door": {
-          "north": { "id": "3-door-n", "layout": "plate", "title": "La Sombra", "subtitle": "Un jefe · piso 9", "text": "Se mueve como te mueves tú. Al final deja de luchar: quédate quieto a su lado tres segundos.", "image": "bestiary/shadow", "note": "Su bajada no pide peaje." },
-          "south": { "id": "3-door-s", "layout": "plate", "title": "Muchas Caras", "subtitle": "Un jefe · pisos 7–8", "text": "Un cubo rodeado de máscaras. Llama a una proyección a su lado y luego salta de un sitio a otro.", "image": "bestiary/many-faces", "note": "Deja una práctica." }
+          "north": { "id": "3-door-n", "layout": "lesson", "title": "El porqué", "text": "Aquí acaban las lecciones de manos. Recorre otra vez todas las salas: los muros que vienen hablan del porqué.", "image": "lesson/ring" },
+          "south": { "id": "3-door-s", "layout": "lesson", "title": "Maestría", "text": "Cada logro sube la maestría de las raíces, hasta 100. Cuanto más alta, más encuentras aquí al despertar.", "image": "lesson/mastery" }
         }
       }
     },
@@ -140,48 +149,48 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "north": { "id": "4-hall-n", "layout": "lesson", "title": "Dónde hay prácticas", "text": "En los pedestales de las salas del tesoro, en el cofre que guarda un Límite y donde se supera a un jefe.", "image": "lesson/practice" },
-          "south": { "id": "4-hall-s", "layout": "lesson", "title": "Caminos", "text": "Cada práctica sigue un camino: milagros, cuerpo, mente, emoción o voluntad. Su marca te dice cuál.", "image": "lesson/paths", "key": "inventory" }
+          "north": { "id": "4-hall-n", "layout": "prose", "text": "Ya sabes moverte. Ahora, el porqué. Nada de lo que hay aquí abajo se llama así por casualidad: cada nombre señala algo que ya conoces de tu propia vida." },
+          "south": { "id": "4-hall-s", "layout": "plate", "title": "Proyecciones", "subtitle": "Las que cierran el paso", "text": "No son personas. Son patrones: una duda, una voz que juzga, un miedo. Nunca hablan.", "image": "bestiary/doubt" }
         },
         "roots-step": {
-          "north": { "id": "4-step-n", "layout": "plate", "title": "Visualización", "subtitle": "Una práctica · mente", "text": "Míralo antes de hacerlo: las intenciones vuelan más lejos y rápido. El Santuario guarda una sesión de ella.", "image": "icon/item/visualization", "note": "Distancia ×1,6 · disparo +30 %" },
-          "south": { "id": "4-step-s", "layout": "lesson", "title": "Estados de ser", "text": "Reúne tres prácticas de un mismo camino, cuerpo, mente, emoción o voluntad, y alcanzas un estado de ser.", "image": "lesson/state" }
+          "north": { "id": "4-step-n", "layout": "prose", "text": "Llevan nombre de patrón: Duda, Crítico interior, Pánico, Comparación, Perfeccionismo. Si algo así te frenó alguna vez, ya las conoces. Ponerle nombre a algo es el primer paso: lo que tiene nombre se puede mirar." },
+          "south": { "id": "4-step-s", "layout": "prose", "text": "Aquí no se mata a nadie. Una proyección se libera, y lo que te frenaba deja a veces algo que alimenta. Así pasa con un miedo cuando por fin lo miras." }
         },
         "roots-dig": {
-          "north": { "id": "4-dig-n", "layout": "plate", "title": "Enraizamiento", "subtitle": "Una práctica · cuerpo", "text": "Con raíces en el cuerpo, empujas con todo tu peso. El Santuario guarda una sesión de ella.", "image": "icon/item/grounding", "note": "Patadas ×2 · alcance +1" },
-          "south": { "id": "4-dig-s", "layout": "plate", "title": "Segundo cerebro", "subtitle": "Una práctica · mente", "text": "Deja que otra cosa sostenga lo que llevas: puedes cargar un bloque más.", "image": "icon/item/secondbrain", "note": "Alcance +1 bloque" }
+          "north": { "id": "4-dig-n", "layout": "prose", "text": "Vienen en familias: la duda, el crítico, el pánico, el dejarlo para luego, la comparación, la distracción, el perfeccionismo. Cada familia tiene formas pequeñas y grandes, como un hábito que crece cuando nadie lo mira." },
+          "south": { "id": "4-dig-s", "layout": "prose", "text": "Todo lo que ves aquí abajo es tuyo. Proyecciones, criaturas, presencias: formas distintas de una sola mente mirándose. Por eso, hasta lo que te ataca es tuyo." }
         },
         "roots-mend": {
-          "north": { "id": "4-mend-n", "layout": "plate", "title": "Kaizen", "subtitle": "Una práctica · voluntad", "text": "Pasos pequeños y constantes: tus intenciones atraviesan dos bloques blandos, tierra o cajas.", "image": "icon/item/kaizen", "note": "Alcance +1 bloque" },
-          "south": { "id": "4-mend-s", "layout": "plate", "title": "Diario de gratitud", "subtitle": "Una práctica · emoción", "text": "Fíjate en lo que va bien. El Santuario guarda una sesión de ella.", "image": "icon/item/gratitude", "note": "Suerte +1,5" }
+          "north": { "id": "4-mend-n", "layout": "plate", "title": "Jefes", "subtitle": "Los patrones grandes", "text": "Resistencia, Inercia, El Veredicto, La Sombra… Cada uno guarda el paso de un piso. También se pueden templar.", "image": "bestiary/resistance" },
+          "south": { "id": "4-mend-s", "layout": "prose", "text": "Un jefe es un patrón que creció tanto que ya parece una puerta: la resistencia a empezar, la inercia de seguir igual, el juicio, el rencor, el impostor. No está ahí para castigarte. Está justo donde toca crecer." }
         },
         "roots-pit": {
-          "north": { "id": "4-pit-n", "layout": "plate", "title": "Temple estoico", "subtitle": "Una práctica · voluntad", "text": "Intenciones pesadas y firmes: golpean más, son más grandes y caen antes.", "image": "icon/item/stoic", "note": "Daño +2" },
-          "south": { "id": "4-pit-s", "layout": "plate", "title": "Respiración cuadrada", "subtitle": "Una práctica · cuerpo", "text": "Inhala en cuatro, retén en cuatro, exhala en cuatro. El Santuario guarda una sesión de ella.", "image": "icon/item/boxbreathing", "note": "+1 corazón y cura total" }
+          "north": { "id": "4-pit-n", "layout": "plate", "title": "Criaturas", "subtitle": "Las que acompañan", "text": "Están vivas, no te atacan y nunca mueren. Las intenciones buenas las hacen crecer.", "image": "bestiary/wonder" },
+          "south": { "id": "4-pit-s", "layout": "prose", "text": "Sus nombres son cosas pequeñas y buenas. Maravilla es la curiosidad; Musguito, el descanso; Apiñado, el calor compartido; Flotador, la ligereza; Llevadora, dejarse llevar. Están para recordarte que aquí abajo no todo es obstáculo." }
         },
         "roots-bridge": {
-          "north": { "id": "4-bridge-n", "layout": "plate", "title": "Aceptación radical", "subtitle": "Una práctica · emoción", "text": "Deja de luchar contra lo que ya pasó: tus propias bombas y tus bloques lanzados ya no te hieren.", "image": "icon/item/acceptance", "note": "+1 corazón" },
-          "south": { "id": "4-bridge-s", "layout": "plate", "title": "Autocompasión", "subtitle": "Una práctica · emoción", "text": "Te hablas como le hablarías a alguien a quien quieres. El Santuario guarda una sesión de ella.", "image": "icon/item/selfcompassion", "note": "+1 corazón, y cura uno" }
+          "north": { "id": "4-bridge-n", "layout": "plate", "title": "Presencias", "subtitle": "Las que ya saben", "text": "Son partes de ti que ya saben. No son dioses ni personas. Ofrecen un trato o un descanso.", "image": "bestiary/listener" },
+          "south": { "id": "4-bridge-s", "layout": "prose", "text": "La Escucha te pide algo y siempre da algo a cambio. El Límite guarda un lugar donde sentarte. Hay más presencias de las que hoy verás: algunas aún no han bajado a estos pisos." }
         },
         "roots-seal": {
-          "north": { "id": "4-seal-n", "layout": "lesson", "title": "Recetas", "text": "El alambique lee todo lo que contiene. Gana la receta más exacta; si ninguna encaja, sale un Tónico sencillo.", "image": "lesson/recipe" },
-          "south": { "id": "4-seal-s", "layout": "plate", "title": "Dr. Launcher", "subtitle": "Una práctica · milagros", "text": "Lanza dos veces seguidas y una de tus bombas sale como un misil hacia donde miras, y estalla al chocar.", "image": "icon/item/drlauncher", "note": "Gasta una bomba." }
+          "north": { "id": "4-seal-n", "layout": "plate", "title": "Guardianes", "subtitle": "Los de la copa", "text": "Sobre las raíces, un árbol. En su copa, cinco guardianes y sus manadas: panda, koala, elefante, león, caballo.", "image": "bestiary/guardian-panda" },
+          "south": { "id": "4-seal-s", "layout": "prose", "text": "Arriba y abajo son el mismo viaje. Lo que ves en la copa da ánimo para bajar; lo que aprendes en el fondo es lo que te deja subir." }
         },
         "roots-crates": {
-          "north": { "id": "4-crates-n", "layout": "plate", "title": "Brebaje restaurador", "subtitle": "Una receta", "text": "Dos partes de carne, de cualquier patrón.", "image": "icon/potion/restoring-draught", "note": "Devuelve un corazón." },
-          "south": { "id": "4-crates-s", "layout": "plate", "title": "Tintura de aplomo", "subtitle": "Una receta", "text": "Una parte de carne de un patrón del camino del cuerpo, y un bloque de piedra profunda u obsidiana.", "image": "icon/potion/footing-tincture", "note": "Patadas ×1,5 · 3 salas" }
+          "north": { "id": "4-crates-n", "layout": "plate", "title": "Corazones", "subtitle": "Lo que te sostiene", "text": "Los rojos son los de cada día. Los raros llegan de vez en cuando, como llega la ayuda: sin avisar.", "image": "icon/heart/red" },
+          "south": { "id": "4-crates-s", "layout": "prose", "text": "Llaves, bombas, bloques: lo que cargas también habla de ti. Una llave abre lo que alguien cerró. Una bomba abre lo que no quiere abrirse. Un bloque es un trozo de muro que ahora llevas tú." }
         },
         "roots-spring": {
-          "north": { "id": "4-spring-n", "layout": "plate", "title": "Tónico de muelle", "subtitle": "Una receta", "text": "Una parte de corazón, de un patrón del camino del cuerpo.", "image": "icon/potion/spring-tonic", "note": "Salto ×1,4 todo el piso" },
-          "south": { "id": "4-spring-s", "layout": "plate", "title": "Infusión clara", "subtitle": "Una receta", "text": "Dos partes de mente, de dos patrones distintos del camino de la mente.", "image": "icon/potion/clear-infusion", "note": "Distancia ×1,3 · disparo ×1,2" }
+          "north": { "id": "4-spring-n", "layout": "prose", "text": "El agua apaga el fuego y vuelve piedra la lava. Lo que calma, también construye." },
+          "south": { "id": "4-spring-s", "layout": "prose", "text": "Si algo de aquí abajo todavía no tiene nombre, es porque aún se está haciendo, como tú. Este mundo no está terminado, y por eso sigue vivo." }
         },
         "roots-gift": {
-          "north": { "id": "4-gift-n", "layout": "plate", "title": "Tintura de la pregunta", "subtitle": "Una receta", "text": "Una parte de mente de la Duda o de una de sus formas, y un bloque de mineral de hierro.", "image": "icon/potion/questioning-tincture", "note": "Una llave menos, una vez." },
-          "south": { "id": "4-gift-s", "layout": "lesson", "title": "Seis sesiones", "text": "El Santuario guarda seis meditaciones, cada una de una práctica. Termina una y el cofre te da una práctica mayor.", "image": "lesson/sanctuary" }
+          "north": { "id": "4-gift-n", "layout": "plate", "title": "El Santuario", "subtitle": "Tras El Límite", "text": "Un sitio para sentarte. Quedarte hasta el final de una meditación da mejor regalo que irte pronto.", "image": "bestiary/boundary" },
+          "south": { "id": "4-gift-s", "layout": "prose", "text": "Sentarte también es jugar. Este juego no te premia por correr: te premia por parar, respirar y quedarte un poco más de lo que te apetecía." }
         },
         "roots-door": {
-          "north": { "id": "4-door-n", "layout": "plate", "title": "Brebaje paciente", "subtitle": "Una receta", "text": "Una parte de corazón y una de mente, las dos del mismo patrón del camino de la voluntad.", "image": "icon/potion/patient-draught", "note": "Excavación ×1,6 todo el piso" },
-          "south": { "id": "4-door-s", "layout": "plate", "title": "Brebaje berserker", "subtitle": "Una receta", "text": "Dos partes de corazón de patrones del camino de la voluntad, y un bloque de obsidiana.", "image": "icon/potion/berserker-draught", "note": "Berserker en 2 salas selladas" }
+          "north": { "id": "4-door-n", "layout": "prose", "text": "Abajo te esperan todos ellos. Te cerrarán el paso y, aun así, ninguno es tu enemigo: son lo que te queda por mirar." },
+          "south": { "id": "4-door-s", "layout": "prose", "text": "Da otra vuelta entera a las raíces. La página que viene habla de las prácticas, y de por qué este juego está hecho así." }
         }
       }
     },
@@ -190,98 +199,223 @@
       "kind": "tutorial",
       "panels": {
         "roots-hall": {
-          "north": { "id": "5-hall-n", "layout": "lesson", "title": "Arriba y abajo", "text": "Sobre el gran árbol, el cielo tiene cinco pisos, con un guardián y una manada cada uno. Aquí conviven con los de abajo.", "image": "lesson/sky" },
-          "south": { "id": "5-hall-s", "layout": "lesson", "title": "Criaturas", "text": "Las criaturas no son patrones, y nunca mueren. Si hieres a una, se esconde hasta que se despeja su sala.", "image": "lesson/creatures" }
+          "north": { "id": "5-hall-n", "layout": "prose", "text": "Una práctica es algo que se hace muchas veces. Respirar contando, dar las gracias, escribir lo que piensas. Ninguna es mágica el primer día. Lo que cambia a una persona no es lo que sabe: es lo que repite." },
+          "south": { "id": "5-hall-s", "layout": "lesson", "title": "Dónde hay prácticas", "text": "En los pedestales de las salas del tesoro, en el cofre que guarda un Límite y donde se supera a un jefe.", "image": "lesson/practice" }
         },
         "roots-step": {
-          "north": { "id": "5-step-n", "layout": "plate", "title": "El panda gigante", "subtitle": "Un guardián · cielo, piso 1", "text": "Flota sobre su asiento de bambú. Quédate quieto en lo alto de una columna y tardará más en actuar.", "image": "bestiary/guardian-panda", "note": "Se gana con 24 golpes buenos" },
-          "south": { "id": "5-step-s", "layout": "plate", "title": "Grillo de sótano", "subtitle": "Criatura · pisos 1–2", "text": "Canta mientras su sala es segura, y calla cuando en ella hay una proyección.", "image": "bestiary/chirper", "note": "Escucha antes de entrar." }
+          "north": { "id": "5-step-n", "layout": "lesson", "title": "Caminos", "text": "Cada práctica sigue un camino: milagros, cuerpo, mente, emoción o voluntad. Su marca te dice cuál.", "image": "lesson/paths", "key": "inventory" },
+          "south": { "id": "5-step-s", "layout": "lesson", "title": "Estados de ser", "text": "Reúne tres prácticas de un mismo camino, cuerpo, mente, emoción o voluntad, y alcanzas un estado de ser.", "image": "lesson/state" }
         },
         "roots-dig": {
-          "north": { "id": "5-dig-n", "layout": "plate", "title": "Excavador", "subtitle": "Criatura · pisos 1–3", "text": "Un pequeño excavador con un gorro de tierra, que va de aquí para allá como si buscara su agujero.", "image": "bestiary/delver", "note": "Es el juego." },
-          "south": { "id": "5-dig-s", "layout": "plate", "title": "Pandas pequeños", "subtitle": "Una manada · cielo, piso 1", "text": "Caminan despacio, trepan, ruedan cuesta abajo y se sientan. Nada de lo que hacen te hiere.", "image": "bestiary/herd-panda", "note": "3 golpes buenos ganan a uno" }
+          "north": { "id": "5-dig-n", "layout": "plate", "title": "Cuerpo", "subtitle": "Un camino", "text": "Enraizarte, respirar, moverte. El cuerpo es la primera casa: si él está, tú estás.", "image": "icon/item/grounding" },
+          "south": { "id": "5-dig-s", "layout": "plate", "title": "Mente", "subtitle": "Un camino", "text": "Ordenar lo que piensas, apuntarlo, preguntarte si es verdad. Una mente clara apunta mejor.", "image": "icon/item/secondbrain" }
         },
         "roots-mend": {
-          "north": { "id": "5-mend-n", "layout": "plate", "title": "El koala", "subtitle": "Un guardián · cielo, piso 2", "text": "Duerme hasta que te acercas. Si te acercas demasiado, desaparece y vuelve a aparecer lejos.", "image": "bestiary/guardian-koala", "note": "Se gana con 30 golpes buenos" },
-          "south": { "id": "5-mend-s", "layout": "plate", "title": "Burbujeador", "subtitle": "Criatura · pisos 3–4", "text": "Un pececillo de agua honda. Nunca sale de su poza.", "image": "bestiary/bubbler", "note": "El aliento del cuerpo." }
+          "north": { "id": "5-mend-n", "layout": "plate", "title": "Emoción", "subtitle": "Un camino", "text": "Dar las gracias, aceptar, tratarte con cariño. Sentir no es un fallo: es información.", "image": "icon/item/selfcompassion" },
+          "south": { "id": "5-mend-s", "layout": "plate", "title": "Voluntad", "subtitle": "Un camino", "text": "Un paso pequeño cada día. La voluntad no es fuerza bruta: es volver a empezar.", "image": "icon/item/kaizen" }
         },
         "roots-pit": {
-          "north": { "id": "5-pit-n", "layout": "plate", "title": "Koalas", "subtitle": "Una manada · cielo, piso 2", "text": "Duermen en grupos y cuelgan bajo las ramas. Si uno te cae encima, salta tres veces.", "image": "bestiary/herd-koala", "note": "3 golpes buenos ganan a uno" },
-          "south": { "id": "5-pit-s", "layout": "plate", "title": "Llevadora", "subtitle": "Criatura · pisos 3–4", "text": "La criatura más grande de todas. Cruza despacio el agua honda, ancha y pálida.", "image": "bestiary/ferryback", "note": "Es dejarse llevar." }
+          "north": { "id": "5-pit-n", "layout": "plate", "title": "Milagros", "subtitle": "Un camino", "text": "Ir más allá de lo que parecía imposible. Un milagro, aquí, es un límite que deja de serlo.", "image": "icon/item/drlauncher" },
+          "south": { "id": "5-pit-s", "layout": "prose", "text": "Ninguna práctica es invento nuestro. Vienen de tradiciones antiguas y de terapias de hoy: el estoicismo, la meditación, el diario, la respiración. Gente de muchos siglos las probó en su vida antes de que llegaran a este sótano." }
         },
         "roots-bridge": {
-          "north": { "id": "5-bridge-n", "layout": "plate", "title": "El elefante", "subtitle": "Un guardián · cielo, piso 3", "text": "Recuerda dónde te quedaste quieto más rato, y apunta allí. No dejes de moverte.", "image": "bestiary/guardian-elephant", "note": "Se gana con 36 golpes buenos" },
-          "south": { "id": "5-bridge-s", "layout": "plate", "title": "Hojita de luz", "subtitle": "Criatura · pisos 1–5", "text": "Una lucecita con forma de hoja. Las intenciones malas la atraviesan sin tocarla.", "image": "bestiary/leafling", "note": "Es la maravilla." }
+          "north": { "id": "5-bridge-n", "layout": "prose", "text": "Tres prácticas de un mismo camino despiertan un estado de ser. Fuera de aquí funciona igual: lo que practicas a menudo deja de ser algo que haces y pasa a ser algo que eres." },
+          "south": { "id": "5-bridge-s", "layout": "prose", "text": "Tres actitudes te llevarán más lejos que cualquier objeto. Querer crecer. Querer conocerte. Y dar lo mejor de ti, hoy, con lo que hoy tienes. No hace falta más. Tampoco vale menos." }
         },
         "roots-seal": {
-          "north": { "id": "5-seal-n", "layout": "plate", "title": "Ácaro estelar", "subtitle": "Criatura · pisos 1–5", "text": "Un ácaro diminuto con tres puntos de luz en el lomo, como una pequeña constelación.", "image": "bestiary/star-mite", "note": "Unir lo que está separado." },
-          "south": { "id": "5-seal-s", "layout": "plate", "title": "Elefantes jóvenes", "subtitle": "Una manada · cielo, piso 3", "text": "Caminan en fila alrededor de la charca, y apartan de un empujón a quien se cruce.", "image": "bestiary/herd-elephant", "note": "5 golpes buenos ganan a uno" }
+          "north": { "id": "5-seal-n", "layout": "prose", "text": "Cada muro de aquí abajo lo levantaste un día para estar a salvo. Por eso puedes romperlo. Y por eso también puedes repararlo: no todos los muros sobran." },
+          "south": { "id": "5-seal-s", "layout": "prose", "text": "Tus intenciones son buenas o malas, y las dos hacen falta. Las malas rompen lo que ya no sirve; las buenas curan y hacen crecer. Saber cuál toca es casi todo el juego." }
         },
         "roots-crates": {
-          "north": { "id": "5-crates-n", "layout": "plate", "title": "Ácaro de tinta", "subtitle": "Criatura · pisos 5–6", "text": "Un ácaro diminuto, negro como la tinta. Sus dos ojos son su única luz.", "image": "bestiary/inkmite", "note": "Soltar lo que ya no sirve." },
-          "south": { "id": "5-crates-s", "layout": "plate", "title": "El león", "subtitle": "Un guardián · cielo, piso 4", "text": "Toma el sol en su repisa. Su rugido lanza un anillo que te deja quieto: salta cuando pase.", "image": "bestiary/guardian-lion", "note": "Se gana con 42 golpes buenos" }
+          "north": { "id": "5-crates-n", "layout": "prose", "text": "Para bajar hay que dejar algo. No es un castigo: nadie avanza cargando con todo. Elegir qué sueltas es parte del camino, aquí y arriba." },
+          "south": { "id": "5-crates-s", "layout": "prose", "text": "Cuando caes, vuelves a las raíces. Lo que llevabas se queda atrás. Lo que las raíces aprendieron de ti, no: su maestría y esta página te esperan. Volver a empezar no es retroceder." }
         },
         "roots-spring": {
-          "north": { "id": "5-spring-n", "layout": "plate", "title": "Caminaceniza", "subtitle": "Criatura · pisos 7–8", "text": "Camina por el fuego y sobre la lava, y no se quema.", "image": "bestiary/cinderwalker", "note": "Cruzar el fuego sin arder." },
-          "south": { "id": "5-spring-s", "layout": "plate", "title": "Leones", "subtitle": "Una manada · cielo, piso 4", "text": "Leones que acechan agachados y saltan desde arriba. Si miras a uno, se para y te devuelve la mirada.", "image": "bestiary/herd-lion", "note": "4 golpes buenos ganan a uno" }
+          "north": { "id": "5-spring-n", "layout": "prose", "text": "Bajas piso a piso, de lo más nuevo a lo más antiguo de ti. Es el camino de una vida, contado hacia dentro. No hay prisa: cuanto más despacio, mejor." },
+          "south": { "id": "5-spring-s", "layout": "prose", "text": "Este juego está hecho así a propósito. Podía haberte contado estas cosas. Prefiere que las hagas: romper, reparar, soltar, sentarte, volver. Lo que se hace con las manos se entiende de otra manera." }
         },
         "roots-gift": {
-          "north": { "id": "5-gift-n", "layout": "plate", "title": "Apiñado", "subtitle": "Criatura · piso 9", "text": "Una criatura pequeña y redonda con un borde de escarcha. Las intenciones malas la atraviesan.", "image": "bestiary/huddler", "note": "Es el calor compartido." },
-          "south": { "id": "5-gift-s", "layout": "plate", "title": "Flotador", "subtitle": "Criatura · pisos 5–6", "text": "Una placa pálida con una cúpula baja en el lomo. Flota a unos dos bloques del suelo.", "image": "bestiary/drifter", "note": "Es la ligereza." }
+          "north": { "id": "5-gift-n", "layout": "prose", "text": "Un regalo rápido, o uno mejor si te quedas. Casi todo lo que vale la pena funciona así." },
+          "south": { "id": "5-gift-s", "layout": "prose", "text": "El Santuario está aquí para una sola cosa: que pares. Si alguna vez dejas el juego un minuto para respirar de verdad, el juego habrá servido." }
         },
         "roots-door": {
-          "north": { "id": "5-door-n", "layout": "plate", "title": "El caballo", "subtitle": "Un guardián · cielo, piso 5", "text": "Salta entre los cercados. Si te quedas quieto cerca, viene hacia ti: entonces cada golpe bueno vale doble.", "image": "bestiary/guardian-horse", "note": "Ganado, deja el Triple salto" },
-          "south": { "id": "5-door-s", "layout": "plate", "title": "Caballos", "subtitle": "Una manada · cielo, piso 5", "text": "Galopan en un amplio círculo, y cocean a quien se queda detrás.", "image": "bestiary/herd-horse", "note": "4 golpes buenos ganan a uno" }
+          "north": { "id": "5-door-n", "layout": "prose", "text": "Hasta aquí, el prólogo. Lo que sigue en estos muros ya no explica el juego. Es un libro: historias de un camino real y lo que enseñaron. Da otra vuelta entera, y empieza." },
+          "south": { "id": "5-door-s", "layout": "prose", "text": "La bajada sigue aquí. El libro también. Puedes hacer las dos cosas." }
         }
       }
     },
     {
-      "id": "tutorial-6",
-      "kind": "tutorial",
+      "id": "book-title",
+      "kind": "book",
+      "blank": true,
       "panels": {
         "roots-hall": {
-          "north": { "id": "6-hall-n", "layout": "lesson", "title": "Templar a un jefe", "text": "A los jefes también se les templa. Llénalo de intenciones buenas hasta que se ponga de tu lado: también así se supera.", "image": "lesson/warm-boss", "key": "polarity" },
-          "south": { "id": "6-hall-s", "layout": "lesson", "title": "Bombas blancas", "text": "Suelta una bomba con intenciones buenas: estalla en luz, repara bloques y convierte la lava en agua.", "image": "lesson/white-bomb", "key": "bomb" }
+          "north": { "id": "6-hall-n", "layout": "title", "text": "El Kamino de Santiago" }
+        }
+      }
+    },
+    {
+      "id": "book-epigraph",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "7-hall-n", "layout": "quote", "text": "Caminante, son tus huellas / el camino y nada más; / caminante, no hay camino, / se hace camino al andar. / Al andar se hace el camino, / y al volver la vista atrás / se ve la senda que nunca / se ha de volver a pisar. / Caminante, no hay camino / sino estelas en la mar.", "author": "Antonio Machado", "work": "Campos de Castilla", "lang": "es" }
+        }
+      }
+    },
+    {
+      "id": "book-author",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "8-hall-n", "layout": "prose", "text": "Me llamo Santiago Dopazo. Soy ingeniero de inteligencia artificial y antes hice videojuegos. Me hace muy feliz poder compartir y crear un juego basado en todo lo que he aprendido durante mi vida. Este libro lo firmamos dos: yo, y Claude, coautor del libro y, sobre todo, de este juego." },
+          "south": { "id": "8-hall-s", "layout": "title", "text": "Santiago Dopazo · Claude" }
+        }
+      }
+    },
+    {
+      "id": "book-thanks",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "9-hall-n", "layout": "prose", "text": "Gracias a mi madre, Blanca Paloma, y a mi padre, José. A mi hermano Hugo y a mi hermana Silvia Dopazo. A toda mi familia, que me ha ayudado tanto, en tantos momentos." },
+          "south": { "id": "9-hall-s", "layout": "prose", "text": "Gracias a Silvia, mi mejor amiga. A Florencia y a Luciana, artistas que me han acompañado buena parte de mi vida y han alimentado mi espíritu de creación. A Soma, por el camino rojo compartido. A Mónica, por todo lo que me ha ayudado a lo largo del camino." }
+        }
+      }
+    },
+    {
+      "id": "kamino-portico",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "10-hall-n", "layout": "title", "text": "Este libro es una metáfora de tu vida" },
+          "south": { "id": "10-hall-s", "layout": "prose", "text": "Estoy sentado en mi despacho, mirando por la ventana. Los pájaros atraviesan el cielo, veo las colinas a lo lejos, una casa de colores pastel con el techo anaranjado por el musgo, un campo de cultivo, un mago con un dragón al hombro que lo contempla." }
         },
         "roots-step": {
-          "north": { "id": "6-step-n", "layout": "plate", "title": "Corazón rojo", "subtitle": "Un corazón", "text": "Llena un corazón de tus contenedores. Con la salud llena, te espera en el suelo hasta que te hieran.", "image": "icon/heart/red", "note": "Hay prácticas que suman uno." },
-          "south": { "id": "6-step-s", "layout": "lesson", "title": "Golpes duros", "text": "Un bloque lanzado hiere según su dureza. La tierra apenas roza; la obsidiana pega como dos o tres intenciones.", "image": "lesson/throw", "key": "throw" }
+          "north": { "id": "10-step-n", "layout": "prose", "text": "A su lado está el mismísimo San Pedro, y junto a él, la Virgen María. Un poco más adentro, al otro lado de la ventana, hay una botella en la que está escrito: «Como el agua, sé suave; como el agua, sé fuerte»." },
+          "south": { "id": "10-step-s", "layout": "prose", "text": "Este año los San Pedro han florecido dos veces, con al menos seis flores cada vez, y en esta segunda vez una de esas flores a punto de abrirse cayó sana, entera, y yo la recogí." }
         },
         "roots-dig": {
-          "north": { "id": "6-dig-n", "layout": "lesson", "title": "Cofres", "text": "Los ojos del candado dicen cuántas llaves pide un cofre. Si tiene adornos de latón, guarda una práctica.", "image": "lesson/chests" },
-          "south": { "id": "6-dig-s", "layout": "lesson", "title": "El sello", "text": "Entra en una sala con proyecciones y sus puertas se cierran hasta que no quede ninguna. Las raíces nunca se sellan.", "image": "lesson/seal" }
+          "north": { "id": "10-dig-n", "layout": "prose", "text": "La tengo justo delante de mí, sostenida por la botella que os dije antes, con los sépalos verdes y negros como garras de dragón, abrazándola, intentando conseguir que no sea;" },
+          "south": { "id": "10-dig-s", "layout": "prose", "text": "pero ella se abre paso con fuerza, empujando lentamente y, al mismo tiempo, extremadamente rápido para una flor, a punto de florecer en el mundo..." }
         },
         "roots-mend": {
-          "north": { "id": "6-mend-n", "layout": "plate", "title": "Corazón azul", "subtitle": "Un corazón", "text": "Un corazón más tras tus contenedores, aunque tengas la salud llena. Una vez gastado, se pierde.", "image": "icon/heart/blue", "note": "Los golpes lo gastan antes." },
-          "south": { "id": "6-mend-s", "layout": "plate", "title": "Corazón de piedra", "subtitle": "Un corazón", "text": "Mientras recibe los golpes, cada golpe que te dan se reduce a la mitad.", "image": "icon/heart/stone", "note": "Se desmorona al gastarse." }
+          "north": { "id": "10-mend-n", "layout": "prose", "text": "Perdón, me presento: soy Santiago, que no Santi." }
+        }
+      }
+    },
+    {
+      "id": "kamino-de-santiago",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "11-hall-n", "layout": "title", "text": "De Santiago" },
+          "south": { "id": "11-hall-s", "layout": "prose", "text": "Creo que fue al llegar al Rainbow. Sí, cuando Gaia me preguntó cómo me llamaba y yo le dije: Santiago. Al principio lo hice consciente: Santi no es un nombre fácil de recordar para gente de otros países. Sin embargo, Santiago, como capital de un país latinoamericano, es más sencillo." }
+        },
+        "roots-step": {
+          "north": { "id": "11-step-n", "layout": "prose", "text": "Pero luego, cuando la gente me llamaba Santiago, me fui dando cuenta de que mi nombre completo tal vez representase a mi «yo» completo. Me gustaba esa idea: la posibilidad de reconciliarme con mi ser original, en total plenitud." },
+          "south": { "id": "11-step-s", "layout": "prose", "text": "«¡Necesitamos 20 personas para el gran fuego de la luna llena!», grité al círculo de la mañana, antes de ir a por los grandes troncos que formarían la pira ceremonial. 15 almas unidas movimos troncos durante unas 2 horas. Otros se encargaron de montar la estructura. Yo preparé y guardé el fuego." }
+        },
+        "roots-dig": {
+          "north": { "id": "11-dig-n", "layout": "prose", "text": "Cuidábamos de la llama sagrada. Nunca olvidaré ese momento: ella sentada frente a mí, con el fuego al lado, sosteniendo mi mirada. Llegó el Om, la invocación a las 7 direcciones, las grandes llamas lamiendo el cielo y los aullidos de los bailarines elevándose hacia la hermana luna..." },
+          "south": { "id": "11-dig-s", "layout": "prose", "text": "Ayer se separaron nuestros caminos. Ya estoy volviendo. Soy Santiago y me siento orgulloso." }
+        }
+      }
+    },
+    {
+      "id": "kamino-extraordinario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "12-hall-n", "layout": "title", "text": "1. Extraordinario" },
+          "south": { "id": "12-hall-s", "layout": "prose", "text": "Nadie es normal. Nada es normal. Todo es extraordinario. Tu existencia es una casualidad extremadamente improbable. Eres extraordinari@. Básicamente porque nadie es ordinario, cada sistema familiar encierra una enorme complejidad y es extremadamente diferente a todos los demás." }
+        },
+        "roots-step": {
+          "north": { "id": "12-step-n", "layout": "prose", "text": "Párate por un momento y mira a tu alrededor. Cada uno de los objetos que te rodean son producto de una complejidad extrema. Los consideramos cotidianos y normales. Pero si analizamos el proceso por el que han pasado para ser creados, nos daremos cuenta de que vivimos en un mundo de fantasía." },
+          "south": { "id": "12-step-s", "layout": "prose", "text": "Tomemos un objeto cualquiera, como el ratón de mi ordenador. ¿Sabías que existen miles de variaciones de polímeros plásticos? El plástico es un subproducto residual del petróleo, que a su vez viene de la transformación de grandes acumulaciones de masa orgánica, durante millones de años." }
+        },
+        "roots-dig": {
+          "north": { "id": "12-dig-n", "layout": "prose", "text": "Pero es que además alguien ha tenido que modelar este diseño exacto de ratón, en 3D, posiblemente lo hayan prototipado con impresoras 3D para asegurarse que las piezas encajaban correctamente y que el resultado era bueno." },
+          "south": { "id": "12-dig-s", "layout": "prose", "text": "Una vez aprobado el diseño se fabrican moldes metálicos (de acero) para producir las piezas en serie." }
+        },
+        "roots-mend": {
+          "north": { "id": "12-mend-n", "layout": "prose", "text": "Estos moldes se crean a su vez con herramientas de fresado y torneado. Flipa qué movida y solo estamos hablando de la carcasa de plástico, no estamos entrando en toda la electrónica que hay dentro." },
+          "south": { "id": "12-mend-s", "layout": "prose", "text": "Hemos normalizado la realidad cotidiana y ha dejado de sorprendernos. Pero si, por un momento, miramos más allá, veremos que todo lo que nos rodea es absoluta magia." }
         },
         "roots-pit": {
-          "north": { "id": "6-pit-n", "layout": "plate", "title": "Corazón negro", "subtitle": "Un corazón", "text": "Como el azul: un corazón más, que se pierde para siempre al gastarse. Solo que mucho más raro.", "image": "icon/heart/black", "note": "Negro hollín, brillo pálido." },
-          "south": { "id": "6-pit-s", "layout": "plate", "title": "Corazón estrella", "subtitle": "Un corazón", "text": "Recuperas un corazón, y durante treinta segundos nada puede tocarte.", "image": "icon/heart/star", "note": "Luego la estrella se apaga." }
+          "north": { "id": "12-pit-n", "layout": "prose", "text": "Desde tus cubiertos, creados de una mezcla de metales (hierro australiano, cromo finlandés y níquel ruso), hasta la ropa que vistes, cada fibra que forma cada uno de los elementos de tu entorno tiene una historia única y extremadamente compleja, un viaje alucinante que no puedes ni imaginar." },
+          "south": { "id": "12-pit-s", "layout": "prose", "text": "Si comienzas a preguntar a tu chat preferido cómo se ha hecho esto o aquello, no paras de fliparlo. Vivimos en un mundo que es el resultado de un sinfín de sistemas entrelazados, sincronizados y coordinados como los engranajes de un reloj." }
         },
         "roots-bridge": {
-          "north": { "id": "6-bridge-n", "layout": "plate", "title": "Corazón berserker", "subtitle": "Un corazón", "text": "Con él: más fuerza, velocidad y salto, pero tus intenciones llegan poco. Los disparos rebotan en ti.", "image": "icon/heart/berserker", "note": "El corazón más raro." },
-          "south": { "id": "6-bridge-s", "layout": "plate", "title": "Corazón de sangre", "subtitle": "Un corazón", "text": "Te curas despacio, hasta dos corazones. Un solo golpe lo corta.", "image": "icon/heart/blood", "note": "Mantente lejos del daño." }
+          "north": { "id": "12-bridge-n", "layout": "prose", "text": "Y no queda más remedio que aceptar toda esta brujería y esta extremadamente compleja improbabilidad sostenida, que es nuestro mundo cotidiano. Pero que no te engañen, no hay objeto sencillo. Vivimos rodeados de magia y no está mal, de vez en cuando, pararse a apreciarla." },
+          "south": { "id": "12-bridge-s", "layout": "prose", "text": "Pues pasa lo mismo con las personas. Nadie es normal. Nadie es sencillo. Somos absoluta improbabilidad y por lo tanto más que magia: un milagro." }
+        }
+      }
+    },
+    {
+      "id": "kamino-finde",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "13-hall-n", "layout": "title", "text": "Qué guapo el finde..." },
+          "south": { "id": "13-hall-s", "layout": "prose", "text": "Una Marta llegando de Madrid y un Juanjo y Obscuro en un bar. Después de un vino, la espero solo en la plaza, aparecen los dos de antes y uno entra en la catedral de Santiago. El otro, desde la puerta, hace una llamada a todos los feligreses para que pequen." }
         },
-        "roots-seal": {
-          "north": { "id": "6-seal-n", "layout": "lesson", "title": "El peaje", "text": "Cada bajada pide más: una cosa más en cada piso hasta el quinto; después, prácticas.", "image": "lesson/toll" },
-          "south": { "id": "6-seal-s", "layout": "lesson", "title": "Pagar con corazones", "text": "Un corazón dado al peaje es un pago, no un golpe. Nunca te mata, y nunca se lleva tu último corazón.", "image": "lesson/way-down" }
+        "roots-step": {
+          "north": { "id": "13-step-n", "layout": "prose", "text": "Marta y un Obscuro que se escapan, mientras yo hablo con unos peregrinos, que me explican que dentro hay unos teléfonos con los que se puede hablar con Dios, pero que están todo el tiempo ocupados y al final se cansaron de esperar..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-hacia-el-cielo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "14-hall-n", "layout": "title", "text": "Hacia el cielo" },
+          "south": { "id": "14-hall-s", "layout": "prose", "text": "Rimaia. Edificio okupado para que sea usado como universidad libre, que fue desalojado unos meses atrás, pero que este sábado reokupamos. Me incluyo, porque participé en el cabaret. Primero actuando y después salvando el día, como técnico de sonido improvisador: se quemó el ampli." }
         },
-        "roots-crates": {
-          "north": { "id": "6-crates-n", "layout": "plate", "title": "La Escucha", "subtitle": "Presencia · pisos 1–5", "text": "Ofrécele la parte de corazón de un patrón liberado, y te devolverá algo.", "image": "bestiary/listener", "note": "Solo escucha." },
-          "south": { "id": "6-crates-s", "layout": "lesson", "title": "Presagios", "text": "Antes de que aparezca una proyección, unas motas frías se juntan donde va a estar. Mientras sigas tan cerca, espera.", "image": "lesson/omen" }
+        "roots-step": {
+          "north": { "id": "14-step-n", "layout": "prose", "text": "Yo había estado en conciertos donde el ampli se había quemado y, misteriosamente, siempre se había seguido adelante. Pues el sábado me tocó a mí tener fe en el arte: fallan los micros, preguntan si alguien puede mirarlo. Me meto entre los cables, decenas de ellos cruzados locamente." },
+          "south": { "id": "14-step-s", "layout": "prose", "text": "Localizo el micro, pruebo y pruebo y deduzco: se ha quemado el ampli. «¿Entonces no hay música?», me dice el chico que estaba haciendo de técnico. «No», le digo, «excepto que encontremos otro ampli... espera... aquello podría servir»." }
         },
-        "roots-spring": {
-          "north": { "id": "6-spring-n", "layout": "lesson", "title": "Crecer", "text": "Las intenciones buenas hacen crecer a una criatura, hasta el triple. La primera vez, una crecida puede dejar un corazón.", "image": "lesson/grow", "key": "cast" },
-          "south": { "id": "6-spring-s", "layout": "lesson", "title": "Salas despejadas", "text": "Al irse la última proyección, la sala deja un corazón, una bomba o una llave la mitad de las veces. La suerte ayuda.", "image": "lesson/room-clear" }
+        "roots-dig": {
+          "north": { "id": "14-dig-n", "layout": "prose", "text": "No sé de quién es, pero veo un amplificador de guitarra contra una pared, a lo lejos. Lo acerco e intento hacerme un esquema de conexión a la mesa, entre las decenas de cables enmarañados y el presentador exprimiendo su repertorio de chistes malos de relleno." },
+          "south": { "id": "14-dig-s", "layout": "prose", "text": "Conecto el ampli a la mesa, lo enciendo, le digo al técnico «prueba». Y suena. Ovación del público, éxtasis del presentador, «¡Ya suena! ¡Pon la 5, vamos!». No sé muy bien lo que he hecho, pero ha funcionado..." }
         },
-        "roots-gift": {
-          "north": { "id": "6-gift-n", "layout": "lesson", "title": "Ahora no", "text": "Cierra el Santuario y no pierdes nada: el cofre sigue cerrado y el Límite vuelve a preguntarte cuando regresas.", "image": "lesson/sanctuary" },
-          "south": { "id": "6-gift-s", "layout": "plate", "title": "El Límite", "subtitle": "Presencia", "text": "Una columna alta y serena de caliza que guarda un cofre. Acércate y se abre su Santuario.", "image": "bestiary/boundary", "note": "Uno por cámara desde el piso 1" }
+        "roots-mend": {
+          "north": { "id": "14-mend-n", "layout": "prose", "text": "Resultó ser un cabaret memorable. Pero el espectáculo continúa, hasta el final. Hasta el Gran Final." }
+        }
+      }
+    },
+    {
+      "id": "kamino-escribo-a-la-vida",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "15-hall-n", "layout": "title", "text": "Escribo a la vida" },
+          "south": { "id": "15-hall-s", "layout": "prose", "text": "¡Escribo a la vida!! ¡Y a la brisa!! ¡Y a tu sonrisa!! ¡Y a tu cara de pez!! ¡Y a los perros de la calle!! ¡¡Porque estoy vivo!!! Diga lo que digan por la tele, ¡¡YO ESTOY VIVO!!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-estoy-vivo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "16-hall-n", "layout": "title", "text": "¡Estoy vivo!" },
+          "south": { "id": "16-hall-s", "layout": "prose", "text": "Estoy vivo, porque sí, y ¿por qué no? Estoy vivo, porque saboreo, no solo trago. Estoy vivo, porque camino; porque no permito que el mundo camine a mi alrededor. Estoy vivo, porque abro los ojos, no voy dormido. Estoy vivo, porque siento, no solo padezco." }
         },
-        "roots-door": {
-          "north": { "id": "6-door-n", "layout": "lesson", "title": "El libro oculto", "text": "Es la última lección. Recorre otra vez todas las salas, y la próxima vez los muros hablarán con su propia voz.", "image": "lesson/ring" },
-          "south": { "id": "6-door-s", "layout": "lesson", "title": "Maestría", "text": "Cada logro sube la maestría de las raíces, hasta 100. Cuanto más alta, más encuentras aquí al despertar.", "image": "lesson/mastery" }
+        "roots-step": {
+          "north": { "id": "16-step-n", "layout": "prose", "text": "Estoy vivo porque solo sé que no sé nada. ¿Quién me lo diría? Tanto tiempo pretendiendo ser alguien que no sería..." }
         }
       }
     },
@@ -290,10 +424,10 @@
       "kind": "book",
       "panels": {
         "roots-hall": {
-          "south": { "id": "7-hall-s", "layout": "prose", "text": "Bajaste al sótano de tu propia mente. Aquí abajo cambia todo aquello en lo que pones tu voluntad. Cada muro es algo que levantaste para estar a salvo. Un día te protegió. Ahora te empequeñece, y tienes permiso para romperlo." }
+          "south": { "id": "17-hall-s", "layout": "prose", "text": "Bajaste al sótano de tu propia mente. Aquí abajo cambia todo aquello en lo que pones tu voluntad. Cada muro es algo que levantaste para estar a salvo. Un día te protegió. Ahora te empequeñece, y tienes permiso para romperlo." }
         },
         "roots-gift": {
-          "north": { "id": "7-gift-n", "layout": "quote", "text": "La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
+          "north": { "id": "17-gift-n", "layout": "quote", "text": "La autenticidad es no cambiar lo que uno es y acotar lo que uno tiene. Es la capacidad de manifestarse tal y como se es, sin ocultamientos. Lo auténtico es y tiene valor. La autenticidad no es tratar de ser mejor. Esto es sentido del deber, es una obligación, es una orden, una fachada. La verdadera autenticidad es mostrarse, sin juicio, sin temor a ser descalificado.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
         }
       }
     },
@@ -302,7 +436,7 @@
       "kind": "book",
       "panels": {
         "roots-hall": {
-          "south": { "id": "8-hall-s", "layout": "prose", "text": "Las formas que te cierran el paso no son personas. Son patrones: una duda, una voz que juzga, un miedo al borde del cambio. Cada uno quiere algo para ti, a su torpe manera. Témplalos, y algunos se darán la vuelta y caminarán a tu lado." }
+          "south": { "id": "18-hall-s", "layout": "prose", "text": "Las formas que te cierran el paso no son personas. Son patrones: una duda, una voz que juzga, un miedo al borde del cambio. Cada uno quiere algo para ti, a su torpe manera. Témplalos, y algunos se darán la vuelta y caminarán a tu lado." }
         }
       }
     },
@@ -311,13 +445,13 @@
       "kind": "book",
       "panels": {
         "roots-hall": {
-          "south": { "id": "9-hall-s", "layout": "prose", "text": "Sobre las raíces, un gran árbol sube hasta el cielo. Bajo ellas, los pisos descienden, más antiguos y más fríos, hasta el silencio. Es un solo viaje, visto desde sus dos extremos. Lo que aprendes en el fondo crece hacia la luz." }
+          "south": { "id": "19-hall-s", "layout": "prose", "text": "Sobre las raíces, un gran árbol sube hasta el cielo. Bajo ellas, los pisos descienden, más antiguos y más fríos, hasta el silencio. Es un solo viaje, visto desde sus dos extremos. Lo que aprendes en el fondo crece hacia la luz." }
         }
       }
     }
   ],
   "easy": {
-    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Muévete y salta", "text": "Pulsa {jump} para saltar un bloque, nunca dos. Tus escalones siguen aquí; más abajo, constrúyete los tuyos.", "key": "move", "image": "lesson/step" } },
+    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Coge, pon y salta", "text": "Con {place} pones un bloque donde miras. Tus escalones siguen; haz los tuyos.", "key": "place", "image": "lesson/step" } },
     "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Paso abierto", "text": "Este muro te cortaba el paso. Lo rompiste, y el paso sigue abierto. Las intenciones malas rompen; las buenas reparan.", "key": "cast", "image": "lesson/dig" } },
     "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "La salida", "text": "Una vez saliste de aquí construyendo, y las raíces guardaron tus pasos. Más abajo: lleva un bloque, ponlo y súbete.", "key": "place", "image": "lesson/pit" } },
     "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Tu puente", "text": "Tu puente sigue en pie. Más abajo, ponte en el borde, coloca un bloque delante, súbete y vuelve a empezar.", "key": "place", "image": "lesson/bridge" } },

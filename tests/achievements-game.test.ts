@@ -173,17 +173,17 @@ describe('stations and pages (ACHIEVEMENTS §1)', () => {
     expect(ids(session(record, store).track('cook', { meal: 'meal-small', part: 'flesh' }, NOW))).toEqual(['cook.first']);
   });
 
-  it('reaching page 7 unlocks book.page.7, and no other page', () => {
+  it('reaching page 6 (the title page, the first page of the book) unlocks book.page.7, and page 5 does not', () => {
     const { record, store } = fresh();
     const k = session(record, store);
-    expect(k.track('pageReached', { page: 6 }, NOW)).toEqual([]);
-    expect(ids(k.track('pageReached', { page: 7 }, NOW))).toEqual(['book.page.7']);
+    expect(k.track('pageReached', { page: 5 }, NOW)).toEqual([]);
+    expect(ids(k.track('pageReached', { page: 6 }, NOW))).toEqual(['book.page.7']);
   });
 
   it('a notice for the page reached at a run\'s end waits in the queue for the next run', () => {
     const { record, store } = fresh();
     const endOfRun = session(record, store);
-    endOfRun.track('pageReached', { page: 7 }, NOW);
+    endOfRun.track('pageReached', { page: 6 }, NOW);
     expect(endOfRun.pending).toBe(1);
     // the queue is the session's, not the run's: the next run's keeper is the same one
     const card = endOfRun.peek();

@@ -91,7 +91,7 @@ The current page reaching a number at a run's end ([PAGES §1](../levels/roots/P
 
 | Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
 |---|---|---|---|---|---|
-| `book.page.7` | `pageReached` with page 7 | The Hidden Book | El libro escondido | Reach page 7: the first page of the hidden book. | Llega a la página 7: la primera del libro escondido. |
+| `book.page.7` | `pageReached` with page 6 (the title page, the first page of the book; the id is kept) | The First Page | La primera página | Reach page 6: the first page of the book. | Llega a la página 6: la primera página del libro. |
 | `book.page.54` | `pageReached` with page 54 | Lucky Number | Número de la suerte | Reach page 54 of the Roots' book. | Llega a la página 54 del libro de las raíces. |
 | `book.page.69` | `pageReached` with page 69 | Nice | Nice | Reach page 69 of the Roots' book. | Llega a la página 69 del libro de las raíces. |
 | `book.page.100` | `pageReached` with page 100 | Still Reading | Sigues leyendo | Reach page 100 of the Roots' book. | Llega a la página 100 del libro de las raíces. |
@@ -105,7 +105,7 @@ The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages
 | `death.roots` | `playerDied` with `floor` 0 (the Roots' band; the surface is -1) | Down to the Roots | Hasta la raíz | Die on the Roots' floor. | Muere en el piso de las raíces. |
 | `climb.surface` | `surfaceEnter` from the Roots (`from` 0) | Root to Crown | De la raíz a la copa | Dig up from the Roots and reach the great tree above the surface. | Excava hacia arriba desde las raíces y llega al gran árbol sobre la superficie. |
 | `mind.crafter` | `blockPlaced` with `afterPact` true, **1000 times across runs** | Mind Crafter | Mente de creador | Place 1000 blocks after your first pact with the Listener. | Coloca 1000 bloques después de tu primer pacto con la Escucha. |
-| `book.back` | `bookBack`: the shown page of the tutorial book (pages 1 to 6) turned back one page | Turning Back | Volver la página | Turn the tutorial book back one page. | Pasa hacia atrás una página del libro del tutorial. |
+| `book.back` | `bookBack`: the shown page of the tutorial book (pages 1 to 5) turned back one page | Turning Back | Volver la página | Turn the tutorial book back one page. | Pasa hacia atrás una página del libro del tutorial. |
 | `climb.crown` | `treeStory` with `story` `canopy`: the body, above the surface, enters the giant tree's canopy (the crown) | Into the Crown | Hasta la copa | Climb the great tree into its crown, the canopy of leaves. | Sube el gran árbol hasta su copa, el dosel de hojas. |
 | `bedrock.touch` | `bedrockTouch`: the body touches bedrock on any side | The Unbreakable Floor | El suelo que no cede | Dig until you touch bedrock, from any side. | Excava hasta tocar el lecho de roca, desde cualquier lado. |
 

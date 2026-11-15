@@ -129,9 +129,19 @@ describe('quotes', () => {
     expect(showsTranslationNote('es', { lang: 'en' })).toBe(true);
   });
 
-  it('page 7’s quote is noted in English and not in Spanish', () => {
-    const en = panelAt(loadBook('en'), 7, 'roots-gift', 'north') as QuotePanel;
-    const es = panelAt(loadBook('es'), 7, 'roots-gift', 'north') as QuotePanel;
+  it('page 7’s epigraph (Machado, in Spanish) is noted in English and not in Spanish', () => {
+    const en = panelAt(loadBook('en'), 7, 'roots-hall', 'north') as QuotePanel;
+    const es = panelAt(loadBook('es'), 7, 'roots-hall', 'north') as QuotePanel;
+    expect(en.layout).toBe('quote');
+    expect(en.year).toBeUndefined();
+    expect(showsTranslationNote('en', en)).toBe(true);
+    expect(showsTranslationNote('es', es)).toBe(false);
+    expect(authorLine(en.author)).toBe('— Antonio Machado');
+  });
+
+  it('the Borja quote on page 17 is noted in English and not in Spanish', () => {
+    const en = panelAt(loadBook('en'), 17, 'roots-gift', 'north') as QuotePanel;
+    const es = panelAt(loadBook('es'), 17, 'roots-gift', 'north') as QuotePanel;
     expect(en.layout).toBe('quote');
     expect(showsTranslationNote('en', en)).toBe(true);
     expect(showsTranslationNote('es', es)).toBe(false);
@@ -225,7 +235,7 @@ describe('images', () => {
         for (const id of panelImageIds(panelAt(book, page, room, side))) expect(ids).toContain(id);
       }
     }
-    expect(PanelImages.pageIds(book, 7)).toContain('lesson/blocks'); // page 7 keeps page 1's lessons
+    expect(PanelImages.pageIds(book, 17)).toContain('lesson/blocks'); // the old book-1 keeps page 1's lessons where it leaves a slot out
   });
 
   it('icons are always ready and an unknown id never blocks a panel', () => {

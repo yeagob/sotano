@@ -7,7 +7,7 @@ import { TUTORIAL_CELLS } from '../content/rooms';
 import { TUTORIAL_LAYOUT, tutorialPlan, type PlanRoom, type Side } from '../world/floorplan';
 
 /** The first page of the hidden book. Pages before it are tutorial pages (PAGES §4). */
-export const FIRST_BOOK_PAGE = 7;
+export const FIRST_BOOK_PAGE = 6;
 
 /** Net steps around the ring that make one lap (PAGES §2). */
 export const LAP_STEPS = 10;
