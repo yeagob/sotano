@@ -558,12 +558,53 @@ export function pageCount(book: Book): number {
 }
 
 /**
+ * Map a room key to the slot key used in book pages (page 6+).
+ *
+ * The ring direction was inverted so that walking forward leads toward the Sanctuary
+ * (HALL → GIFT → SPRING → CRATES → SEAL → BRIDGE → PIT → MEND → DIG → STEP).
+ * But the book page panels were written for the old ring order
+ * (HALL → STEP → DIG → MEND → PIT → BRIDGE → SEAL → CRATES → SPRING → GIFT).
+ *
+ * This mapping lets the player read book pages in the correct text order by walking
+ * forward: the panel stored under the old slot key is shown in the new room position.
+ *
+ * New index → Old slot key:
+ *   0: HALL → HALL
+ *   1: GIFT → STEP
+ *   2: SPRING → DIG
+ *   3: CRATES → MEND
+ *   4: SEAL → PIT
+ *   5: BRIDGE → BRIDGE
+ *   6: PIT → SEAL
+ *   7: MEND → CRATES
+ *   8: DIG → SPRING
+ *   9: STEP → GIFT
+ *  10: DOOR → DOOR
+ */
+export const BOOK_SLOT_MAP: Record<RoomKey, RoomKey> = {
+  'roots-hall': 'roots-hall',
+  'roots-step': 'roots-gift',
+  'roots-dig': 'roots-spring',
+  'roots-mend': 'roots-crates',
+  'roots-pit': 'roots-seal',
+  'roots-bridge': 'roots-bridge',
+  'roots-seal': 'roots-pit',
+  'roots-crates': 'roots-mend',
+  'roots-spring': 'roots-dig',
+  'roots-gift': 'roots-step',
+  'roots-door': 'roots-door',
+};
+
+/**
  * The panel a slot shows on page `page` (1-based) in `layout` (EASY-LAYOUT §4), in this order:
  * 1. page `page`'s own panel, when `page` is 2 or more and the page fills the slot;
  * 2. in the easy layout, the slot's remembered panel, when it has one;
  * 3. page 1's panel.
  * The layout is optional and defaults to the teaching layout, which is today's rule. Throws on a page, room,
  * side or layout that does not exist; a validated book always has page 1's panel.
+ *
+ * For book pages (kind === 'book'), the room key is remapped through BOOK_SLOT_MAP so that text
+ * flows in reading order when the player walks the ring forward toward the Sanctuary.
  */
 export function panelAt(book: Book, page: number, room: RoomKey, side: Side, layout: BookLayout = 'teaching'): Panel {
   if (!Number.isInteger(page) || page < 1 || page > book.pages.length) {
@@ -572,12 +613,17 @@ export function panelAt(book: Book, page: number, room: RoomKey, side: Side, lay
   if (!ROOM_SET.has(room)) throw new RangeError(`unknown room "${room}"`);
   if (!SIDE_SET.has(side)) throw new RangeError(`unknown side "${side}"`);
   if (!(BOOK_LAYOUTS as readonly string[]).includes(layout)) throw new RangeError(`unknown layout "${layout}"`);
+
+  // For book pages, remap the room so text reads in order when walking forward.
+  const pageObj = book.pages[page - 1];
+  const slotRoom = pageObj.kind === 'book' ? BOOK_SLOT_MAP[room] : room;
+
   if (page >= 2) {
-    const own = book.pages[page - 1].panels[room]?.[side];
+    const own = book.pages[page - 1].panels[slotRoom]?.[side];
     if (own) return own;
   }
   // a blank page leaves its empty slots empty: no remembered panel, no page 1 panel
-  if (book.pages[page - 1].blank) return { id: panelIdOf(page, room, side), layout: 'blank' };
+  if (pageObj.blank) return { id: panelIdOf(page, room, side), layout: 'blank' };
   if (layout === 'easy') {
     const remembered = book.easy?.[room]?.[side];
     if (remembered) return remembered;

@@ -381,7 +381,7 @@ describe('the walls: sight sets and the out-of-sight swap', () => {
     expect(book.wallPage(STEP)).toBe(8);
   });
 
-  it('a forward lap ending in the start room turns the far rooms at once and the near rooms after the player walks out', () => {
+  it('a forward lap ending in the start room turns the current room and far rooms at once; near rooms turn after the player walks out', () => {
     const book = makeBook(9);
     // The game asks every frame: one wall() after each room entered.
     const frame = (room: string): Record<string, number> => {
@@ -393,14 +393,16 @@ describe('the walls: sight sets and the out-of-sight swap', () => {
     for (const room of [GIFT, SPRING, CRATES, SEAL, BRIDGE]) frame(room);
     expect(book.wallPage(GIFT)).toBe(8);
     for (const room of [PIT, MEND, DIG, STEP]) frame(room);
-    // In the start room the start room itself is in sight, so it keeps the old page too.
+    // The forward lap advances the page. The current room (HALL) is painted with the
+    // new page immediately, and rooms out of sight follow (issue #212).
+    // Rooms in sight of HALL (GIFT, STEP, DOOR) keep the old page until the player leaves.
     expect(frame(HALL)).toEqual({
-      [HALL]: 8, [GIFT]: 8, [SPRING]: 9, [CRATES]: 9, [SEAL]: 9, [BRIDGE]: 9,
+      [HALL]: 9, [GIFT]: 8, [SPRING]: 9, [CRATES]: 9, [SEAL]: 9, [BRIDGE]: 9,
       [PIT]: 9, [MEND]: 9, [DIG]: 9, [STEP]: 8, [DOOR]: 8,
     });
     expect(book.shown).toBe(9);
 
-    // Walking out of the start room's sight: the start room, the gift room, the step room and the way down turn.
+    // Walking out of the start room's sight: the gift room, the step room and the way down turn.
     expect(frame(GIFT)[DOOR]).toBe(9);
     expect(frame(GIFT)[STEP]).toBe(8);
     expect(frame(SPRING)[STEP]).toBe(9);

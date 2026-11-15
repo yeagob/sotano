@@ -7,6 +7,7 @@ import bookEs from '../src/content/book/book.es.json';
 import {
   type Book, BookValidationError, PLACEHOLDER_ACTIONS, type RoomKey, type Side, bookMessage, bookRefs, loadBook, pageCount, panelAt,
   panelById, panelIdOf, easyPanelIdOf, quoteSource, validateBook, type BookRefs, ROOM_KEYS, SIDES, IMAGE_CAPTION_BUDGET,
+  BOOK_SLOT_MAP,
 } from '../src/content/book';
 import { BESTIARY_PORTRAITS, LESSON_IMAGES, knownImageIds, resolveImage } from '../src/content/book/images';
 import { BOSS_BY_ID } from '../src/content/bosses';
@@ -773,7 +774,12 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
   const book = shipped('en');
   const pages = pageCount(book);
   const pageOne = (room: RoomKey, side: Side) => book.pages[0].panels[room]?.[side];
-  const own = (page: number, room: RoomKey, side: Side) => book.pages[page - 1].panels[room]?.[side];
+  // For book pages, use the slot map so the test matches panelAt behavior.
+  const own = (page: number, room: RoomKey, side: Side) => {
+    const pageObj = book.pages[page - 1];
+    const slotRoom = pageObj.kind === 'book' ? BOOK_SLOT_MAP[room] : room;
+    return pageObj.panels[slotRoom]?.[side];
+  };
   const remembered = (room: RoomKey, side: Side) => book.easy?.[room]?.[side];
 
   /** A blank page's empty slab, as panelAt makes it. */

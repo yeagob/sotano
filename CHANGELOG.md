@@ -6,6 +6,12 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.5.f1 · 2026-11-15
+
+### Fixed
+- The book page now advances before the player reaches the main room, so no text is missed when completing a lap (#212).
+- Book page text panels now appear in the correct reading order when walking toward the Sanctuary (#214).
+
 ## 0.2.5 · 2026-11-15
 
 ### Changed

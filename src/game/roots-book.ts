@@ -191,7 +191,13 @@ export class RootsBook {
 
     if (this.steps >= LAP_STEPS) {
       this.steps = 0;
-      if (this.shownPage < this.pages) this.shownPage += 1;
+      if (this.shownPage < this.pages) {
+        this.shownPage += 1;
+        // Paint the current room with the new page immediately, so the player
+        // sees the new page as they walk in (issue #212).
+        this.painted.set(room, this.shownPage);
+        this.flushOutOfSight();
+      }
     } else if (this.steps <= -LAP_STEPS) {
       this.steps = 0;
       if (this.shownPage > 1) {
@@ -232,6 +238,20 @@ export class RootsBook {
     this.ended = false;
     this.here = undefined;
     this.enterRoom(this.layout.start);
+  }
+
+  /**
+   * Update painted pages for all rooms that are out of sight from the current location.
+   * This ensures panels are ready when the player walks into those rooms after a page turn.
+   */
+  private flushOutOfSight(): void {
+    const shown = this.shownPage;
+    const sight = this.here !== undefined ? this.layout.sight[this.here] : [];
+    for (const room of this.layout.rooms) {
+      if (this.painted.get(room) !== shown && !sight.includes(room) && !this.inView(room)) {
+        this.painted.set(room, shown);
+      }
+    }
   }
 
   /**

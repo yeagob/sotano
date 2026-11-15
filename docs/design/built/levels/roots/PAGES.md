@@ -27,6 +27,32 @@ The current page also decides the shape of the rooms: page 1 is carved in the te
 - Browsing changes only the panels and the page stone. It never changes rewards or the layout of the rooms, and it is not saved: the next run starts on the current page again. A player on page 3 who browses back to page 1 reads page 1 in the easy rooms, with the remembered panels where page 1's lessons would describe an exercise the room no longer holds ([EASY-LAYOUT §6](EASY-LAYOUT.md#6-browsing-in-the-easy-layout)).
 - **Browsing forward is not capped at the current page.** A player can walk the ring forward and reach any page up to the last one in the book files, without needing to die or press R. This lets the player read the entire book in one session by walking the ring.
 
+### Book page panel mapping (issue #214)
+
+The ring direction was inverted so that walking forward leads toward the Sanctuary
+(HALL → GIFT → SPRING → CRATES → SEAL → BRIDGE → PIT → MEND → DIG → STEP).
+But the book page panels in the JSON files were written for the old ring order
+(HALL → STEP → DIG → MEND → PIT → BRIDGE → SEAL → CRATES → SPRING → GIFT).
+
+To keep text reading in order without rewriting 72 pages of JSON, `panelAt` remaps
+the room key for book pages (`kind: "book"`) using `BOOK_SLOT_MAP`:
+
+| Room (new ring order) | Reads panel from (JSON slot) |
+|---|---|
+| roots-hall | roots-hall |
+| roots-gift | roots-step |
+| roots-spring | roots-dig |
+| roots-crates | roots-mend |
+| roots-seal | roots-pit |
+| roots-bridge | roots-bridge |
+| roots-pit | roots-seal |
+| roots-mend | roots-crates |
+| roots-dig | roots-spring |
+| roots-step | roots-gift |
+| roots-door | roots-door |
+
+Tutorial pages (1–5) are not remapped; they were written for the current ring direction.
+
 ### What a lap is (the rule a test can check)
 
 The game keeps two numbers for the run: `last`, the last ring room the player entered, and `steps`, a signed count.
@@ -68,7 +94,7 @@ The sight sets of the Roots, from the plan:
 
 The sets are computed from the plan, not written by hand, so a test checks them against this table. They are the same in both layouts: the plan and its doors do not change, and the sets assume every line of doors open. A hole the player digs through a wall is not part of the rule; a second guard covers it: a panel is also never re-carved while it lies inside the camera's view frustum.
 
-What the player sees after a forward lap that ends in the start room: the rooms out of sight of the start room (dig, mend, pit, bridge, seal, crates, spring) turn at once; the step room, the treasure room and the way down turn as soon as the player has walked out of their sight. The page turns behind the player, never in front of them.
+What the player sees after a forward lap that ends in the start room: the start room itself turns immediately to the new page, and the rooms out of sight (dig, mend, pit, bridge, seal, crates, spring) turn at once; the step room, the treasure room and the way down turn as soon as the player has walked out of their sight. This ensures the new page is visible when the player walks into the room where the lap completes, rather than after leaving it (issue #212).
 
 ## 4. The page stone
 
