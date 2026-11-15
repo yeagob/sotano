@@ -6,6 +6,7 @@ export default defineItem({
   name: 'Grounding',
   description: 'Rooted in the body, you push with your whole weight: kick twice as hard.',
   effect: 'Kicks are twice as strong. Reach +1 block.',
+  teaching: 'Feel the ground beneath your feet. When you are rooted, every action carries your full weight.',
   inspiredBy: 'Somatic grounding techniques',
   pools: { treasure: 1 },
   tags: ['body', 'contact'],

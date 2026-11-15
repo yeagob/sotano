@@ -510,6 +510,9 @@ const messages = {
   'inv.synergies': 'Synergies and states of being',
   'inv.noSynergies': 'None discovered yet.',
   'inv.state': 'State',
+  'inv.teaching': 'Life Lesson',
+  'inv.object': 'What it does',
+  'inv.stats': 'Statistics',
 
   // ── paths (item tags) ──
   'path.body': 'body',

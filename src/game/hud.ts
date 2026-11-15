@@ -1078,10 +1078,21 @@ export class Hud {
     }).join('');
     const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${pathColor(p)}">${PATH_GLYPH[p as PathName]} ${esc(pathName(p))}</em>`).join('');
     const tx = itemText(d);
+    const teachingText = d.teaching ?? tx.description;
+
+    // Block 1: Teaching / Life Lesson
+    const teachingBlock = `<div class="teaching-block"><em class="block-label">${th('inv.teaching')}</em><p class="teaching-text">${esc(teachingText)}</p>${tx.inspiredBy ? `<small class="inspired-by">${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</div>`;
+
+    // Block 2: Object Description
+    const objectBlock = `<div class="object-block"><em class="block-label">${th('inv.object')}</em><p class="effect">${esc(tx.effect)}</p></div>`;
+
+    // Block 3: Statistics
+    const statsBlock = `<div class="stats-block"><em class="block-label">${th('inv.stats')}</em><div class="fx">${fx}</div></div>`;
+
     return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
       `<div><b>${esc(tx.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
-      `<p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}` +
-      `<div class="fx">${fx}</div></div></div>`;
+      teachingBlock + objectBlock + statsBlock +
+      `</div></div>`;
   }
 
   private reqLabel(r: Req, g: Game) {

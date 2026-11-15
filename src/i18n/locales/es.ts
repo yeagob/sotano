@@ -509,6 +509,9 @@ export const ES: Catalog = {
     'inv.synergies': 'Sinergias y estados de ser',
     'inv.noSynergies': 'Ninguna descubierta todavía.',
     'inv.state': 'Estado',
+    'inv.teaching': 'Enseñanza',
+    'inv.object': 'Qué hace',
+    'inv.stats': 'Estadísticas',
 
     'path.body': 'cuerpo',
     'path.mind': 'mente',
