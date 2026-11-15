@@ -58,10 +58,27 @@ describe('the shipped book', () => {
     expect(loadBook('es').pages.map(p => p.id)).toEqual(shipped('en').pages.map(p => p.id));
   });
 
-  it('has nine pages: six tutorial pages, then three book pages', () => {
+  it('has nineteen pages: five tutorial pages, then the front matter, the seven Kamino pages and three book pages', () => {
     const book = shipped('en');
-    expect(pageCount(book)).toBe(9);
-    expect(book.pages.map(p => p.kind)).toEqual(['tutorial', 'tutorial', 'tutorial', 'tutorial', 'tutorial', 'tutorial', 'book', 'book', 'book']);
+    expect(pageCount(book)).toBe(19);
+    expect(book.pages.map(p => p.kind)).toEqual([
+      'tutorial', 'tutorial', 'tutorial', 'tutorial', 'tutorial',
+      'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book',
+    ]);
+    expect(book.pages.map(p => p.id)).toEqual([
+      'tutorial-1', 'tutorial-2', 'tutorial-3', 'tutorial-4', 'tutorial-5',
+      'book-title', 'book-epigraph', 'book-author', 'book-thanks',
+      'kamino-portico', 'kamino-de-santiago', 'kamino-extraordinario', 'kamino-finde', 'kamino-hacia-el-cielo', 'kamino-escribo-a-la-vida', 'kamino-estoy-vivo',
+      'book-1', 'book-2', 'book-3',
+    ]);
+  });
+
+  it('the front matter and the Kamino pages are blank pages; the tutorial and the old book pages are not', () => {
+    const book = shipped('en');
+    book.pages.forEach((page, i) => {
+      const blank = i >= 5 && i <= 15;
+      expect(page.blank === true, page.id).toBe(blank);
+    });
   });
 
   it('every image of the shipped files resolves to the manifest', () => {
@@ -81,9 +98,9 @@ describe('which pages fill which slots (owner, 2026-11-13)', () => {
   const filled = (book: Book, page: number) => Object.entries(book.pages[page - 1].panels)
     .flatMap(([room, slot]) => Object.keys(slot ?? {}).map(side => `${room} ${side}`));
 
-  it('pages 3 to 6 each fill all 22 slots, in both languages', () => {
+  it('pages 3 to 5 each fill all 22 slots, in both languages', () => {
     for (const lang of ['en', 'es'] as const) {
-      for (let page = 3; page <= 6; page++) {
+      for (let page = 3; page <= 5; page++) {
         for (const [room, side] of ROOM_KEYS.flatMap(r => SIDES.map(s => [r, s] as const))) {
           expect(shipped(lang).pages[page - 1].panels[room]?.[side], `${lang} page ${page} ${room} ${side}`).toBeDefined();
         }
@@ -92,9 +109,9 @@ describe('which pages fill which slots (owner, 2026-11-13)', () => {
     }
   });
 
-  it('on pages 3 to 6 no slot shows a panel of an earlier page, in either layout', () => {
+  it('on pages 3 to 5 no slot shows a panel of an earlier page, in either layout', () => {
     for (const lang of ['en', 'es'] as const) {
-      for (let page = 3; page <= 6; page++) {
+      for (let page = 3; page <= 5; page++) {
         for (const room of ROOM_KEYS) {
           for (const side of SIDES) {
             for (const layout of ['teaching', 'easy'] as const) {
@@ -106,19 +123,20 @@ describe('which pages fill which slots (owner, 2026-11-13)', () => {
     }
   });
 
-  it('page 2 keeps its nine plate walls, as the owner likes it', () => {
-    expect(filled(shipped('en'), 2).sort()).toEqual([
-      'roots-bridge south', 'roots-crates north', 'roots-dig north', 'roots-hall south', 'roots-mend south',
-      'roots-pit south', 'roots-seal north', 'roots-spring north', 'roots-step south',
-    ]);
+  it('page 2 fills fourteen slots: the ingredients, the alembic, the kitchen, the drink and the recipes', () => {
+    expect(filled(shipped('en'), 2).length).toBe(14);
+    expect(filled(shipped('es'), 2).sort()).toEqual(filled(shipped('en'), 2).sort());
   });
 
-  it('no two panels of pages 3 to 6 say the same thing: every title on a page is different', () => {
+  it('no two panels of pages 3 to 5 say the same thing: every title on a page is different', () => {
     for (const lang of ['en', 'es'] as const) {
-      for (let page = 3; page <= 6; page++) {
+      for (let page = 3; page <= 5; page++) {
+        // the prose panels have no title: every panel that has one must have its own
         const titles = Object.values(shipped(lang).pages[page - 1].panels)
-          .flatMap(slot => Object.values(slot ?? {}).map(panel => (panel as { title: string }).title));
-        expect(new Set(titles).size, `${lang} page ${page}`).toBe(22);
+          .flatMap(slot => Object.values(slot ?? {}).map(panel => (panel as { title?: string }).title))
+          .filter((title): title is string => title !== undefined);
+        expect(titles.length, `${lang} page ${page}`).toBeGreaterThan(0);
+        expect(new Set(titles).size, `${lang} page ${page}`).toBe(titles.length);
       }
     }
   });
@@ -131,17 +149,25 @@ describe('panelAt', () => {
     expect(panelAt(book, 9, 'roots-hall', 'south')).toEqual(book.pages[8].panels['roots-hall']?.south);
   });
 
-  it('falls back to page 1 for a slot the page does not fill', () => {
+  it('falls back to page 1 for a slot a book page does not fill', () => {
     const book = shipped('en');
-    expect(book.pages[1].panels['roots-hall']?.north).toBeUndefined();
-    expect(panelAt(book, 2, 'roots-hall', 'north')).toEqual(book.pages[0].panels['roots-hall']?.north);
-    expect(panelAt(book, 9, 'roots-hall', 'north')).toEqual(book.pages[0].panels['roots-hall']?.north);
+    // book-1 (page 17) fills two slots: its hall north is page 1's panel
+    expect(book.pages[16].panels['roots-hall']?.north).toBeUndefined();
+    expect(panelAt(book, 17, 'roots-hall', 'north')).toEqual(book.pages[0].panels['roots-hall']?.north);
+  });
+
+  it('a blank page shows an empty slab for a slot it does not fill, never page 1\'s panel', () => {
+    const book = shipped('en');
+    expect(book.pages[5].blank).toBe(true);
+    expect(panelAt(book, 6, 'roots-hall', 'south')).toEqual({ id: '6-hall-s', layout: 'blank' });
+    expect(panelAt(book, 6, 'roots-hall', 'north')).toEqual(book.pages[5].panels['roots-hall']?.north);
+    expect(panelAt(book, 6, 'roots-hall', 'south', 'easy')).toEqual({ id: '6-hall-s', layout: 'blank' });
   });
 
   it('throws on a page, room or side that does not exist', () => {
     const book = shipped('en');
     expect(() => panelAt(book, 0, 'roots-hall', 'north')).toThrow(RangeError);
-    expect(() => panelAt(book, 10, 'roots-hall', 'north')).toThrow(RangeError);
+    expect(() => panelAt(book, 20, 'roots-hall', 'north')).toThrow(RangeError);
     expect(() => panelAt(book, 1.5, 'roots-hall', 'north')).toThrow(RangeError);
     expect(() => panelAt(book, 1, 'roots-moon' as never, 'north')).toThrow(RangeError);
     expect(() => panelAt(book, 1, 'roots-hall', 'east' as never)).toThrow(RangeError);
@@ -231,7 +257,7 @@ describe('validation rules (BOOK-DATA §6), one broken copy each', () => {
 
   it('rule 4: a field the layout does not allow is refused', () => {
     const en = copyEn();
-    slot(en, 3, 'roots-dig', 'north').key = 'move';
+    slot(en, 3, 'roots-crates', 'north').key = 'move';
     expectProblem(problemsOf(en, copyEs()), '"key" is not a field of a plate panel');
   });
 
@@ -275,7 +301,7 @@ describe('validation rules (BOOK-DATA §6), one broken copy each', () => {
 
   it('rule 6: a placeholder is only in lesson and plate text', () => {
     const en = copyEn();
-    slot(en, 7, 'roots-hall', 'south').text = 'Press {jump} to begin.';
+    slot(en, 10, 'roots-hall', 'south').text = 'Press {jump} to begin.';
     expectProblem(problemsOf(en, copyEs()), 'placeholders are only allowed in lesson and plate text');
   });
 
@@ -307,7 +333,7 @@ describe('validation rules (BOOK-DATA §6), one broken copy each', () => {
 
   it('rule 8: a prose text is within its budget of 320 characters', () => {
     const en = copyEn();
-    slot(en, 7, 'roots-hall', 'south').text = 'a'.repeat(321);
+    slot(en, 10, 'roots-hall', 'south').text = 'a'.repeat(321);
     expectProblem(problemsOf(en, copyEs()), 'the budget is 320');
   });
 
@@ -350,8 +376,8 @@ describe('validation rules (BOOK-DATA §6), one broken copy each', () => {
 
   it('rule 9: the same layout, image and key in each slot', () => {
     const es = copyEs();
-    slot(es, 1, 'roots-step', 'south').key = 'jump';
-    expectProblem(problemsOf(copyEn(), es), 'key is "move" in en and "jump" in es');
+    slot(es, 1, 'roots-step', 'north').key = 'move';
+    expectProblem(problemsOf(copyEn(), es), 'key is "polarity" in en and "move" in es');
   });
 
   it('rule 9: the same set of fields in each slot', () => {
@@ -389,11 +415,11 @@ describe('validation rules (BOOK-DATA §6), one broken copy each', () => {
 });
 
 describe('the image manifest (images.ts)', () => {
-  it('lists thirty-nine lesson captures and forty-five portraits, each once', () => {
-    expect(LESSON_IMAGES.length).toBe(39);
-    expect(new Set(LESSON_IMAGES).size).toBe(39);
-    expect(BESTIARY_PORTRAITS.length).toBe(45);
-    expect(new Set(BESTIARY_PORTRAITS).size).toBe(45);
+  it('lists thirty-eight lesson captures and eight portraits, each once', () => {
+    expect(LESSON_IMAGES.length).toBe(38);
+    expect(new Set(LESSON_IMAGES).size).toBe(38);
+    expect(BESTIARY_PORTRAITS.length).toBe(8);
+    expect(new Set(BESTIARY_PORTRAITS).size).toBe(8);
   });
 
   it('every portrait is an entity of the game: a projection, creature, boss or presence, the Boundary, or a sky guardian or herd', () => {
@@ -528,9 +554,9 @@ describe('quotations (BOOK-DATA §2b, PANELS §4b): the quote layout', () => {
     expect(quoteSource({ work: 'W' })).toBe('W');
   });
 
-  it('page 7 quotes the same source in both files, in Spanish, as the owner gave it', () => {
-    const en = panelById(shipped('en'), '7-gift-n');
-    const es = panelById(shipped('es'), '7-gift-n');
+  it('page 17 quotes the same source in both files, in Spanish, as the owner gave it', () => {
+    const en = panelById(shipped('en'), '17-gift-n');
+    const es = panelById(shipped('es'), '17-gift-n');
     expect(en).toMatchObject({ layout: 'quote', author: 'Guillermo Borja', work: 'La locura lo cura (extractos)', publisher: 'Editorial La Llave', year: 1995, lang: 'es' });
     expect(es).toMatchObject({ layout: 'quote', author: 'Guillermo Borja', work: 'La locura lo cura (extractos)', publisher: 'Editorial La Llave', year: 1995, lang: 'es' });
     expect(quoteSource(es as { work: string; publisher: string; year: number })).toBe('La locura lo cura (extractos) · Editorial La Llave, 1995');
@@ -549,10 +575,10 @@ describe('panel ids (BOOK-DATA §2): page, room and side, unique, the same in bo
     });
   });
 
-  it('the ids read as the examples: 1-hall-n, 3-pit-s, 7-gift-n', () => {
+  it('the ids read as the examples: 1-hall-n, 3-pit-s, 17-gift-n', () => {
     expect(panelIdOf(1, 'roots-hall', 'north')).toBe('1-hall-n');
     expect(panelIdOf(3, 'roots-pit', 'south')).toBe('3-pit-s');
-    expect(panelIdOf(7, 'roots-gift', 'north')).toBe('7-gift-n');
+    expect(panelIdOf(17, 'roots-gift', 'north')).toBe('17-gift-n');
   });
 
   it('an id that does not match its page, room and side fails', () => {
@@ -583,7 +609,7 @@ describe('panel ids (BOOK-DATA §2): page, room and side, unique, the same in bo
     const en = shipped('en');
     expect(panelById(en, '1-hall-n')).toEqual(en.pages[0].panels['roots-hall']?.north);
     expect(panelById(shipped('es'), '1-hall-n')).toEqual(shipped('es').pages[0].panels['roots-hall']?.north);
-    expect(panelById(en, '9-hall-n')).toBeUndefined();
+    expect(panelById(en, '19-hall-n')).toBeUndefined();
   });
 });
 
@@ -731,19 +757,22 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
   const own = (page: number, room: RoomKey, side: Side) => book.pages[page - 1].panels[room]?.[side];
   const remembered = (room: RoomKey, side: Side) => book.easy?.[room]?.[side];
 
+  /** A blank page's empty slab, as panelAt makes it. */
+  const blankSlab = (page: number, room: RoomKey, side: Side) => ({ id: panelIdOf(page, room, side), layout: 'blank' });
+
   it('the layout defaults to the teaching layout', () => {
     for (let page = 1; page <= pages; page++) {
       for (const [room, side] of EVERY_SLOT) {
-        expect(panelAt(book, page, room, side), `page ${page} ${room} ${side}`).toBe(panelAt(book, page, room, side, 'teaching'));
+        expect(panelAt(book, page, room, side), `page ${page} ${room} ${side}`).toEqual(panelAt(book, page, room, side, 'teaching'));
       }
     }
   });
 
-  it('the teaching layout is today\'s rule on every page and every slot', () => {
+  it('the teaching layout is today\'s rule on every page and every slot; a blank page shows empty slabs', () => {
     for (let page = 1; page <= pages; page++) {
       for (const [room, side] of EVERY_SLOT) {
-        const expected = (page >= 2 && own(page, room, side)) || pageOne(room, side);
-        expect(panelAt(book, page, room, side, 'teaching'), `page ${page} ${room} ${side}`).toBe(expected);
+        const expected = (page >= 2 && own(page, room, side)) || (book.pages[page - 1].blank ? blankSlab(page, room, side) : pageOne(room, side));
+        expect(panelAt(book, page, room, side, 'teaching'), `page ${page} ${room} ${side}`).toEqual(expected);
       }
     }
   });
@@ -756,8 +785,9 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
     }
   });
 
-  it('the easy layout equals the teaching layout in every slot the easy layer does not remember', () => {
+  it('the easy layout equals the teaching layout in every slot the easy layer does not remember, on the pages that are not blank', () => {
     for (let page = 1; page <= pages; page++) {
+      if (book.pages[page - 1].blank) continue;
       for (const [room, side] of EVERY_SLOT) {
         if (isRemembered(room, side)) continue;
         expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(panelAt(book, page, room, side, 'teaching'));
@@ -768,27 +798,31 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
   it('the easy layout shows the remembered panel of the four lesson walls on every page that leaves the slot out', () => {
     for (let page = 1; page <= pages; page++) {
       for (const [room, side] of [['roots-dig', 'south'], ['roots-pit', 'north'], ['roots-bridge', 'north'], ['roots-seal', 'south']] as const) {
-        const expected = (page >= 2 && own(page, room, side)) || remembered(room, side);
-        expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(expected);
+        const expected = (page >= 2 && own(page, room, side)) || (book.pages[page - 1].blank ? blankSlab(page, room, side) : remembered(room, side) ?? pageOne(room, side));
+        expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toEqual(expected);
       }
     }
   });
 
-  it('pages 1, 2 and the book pages leave the four lesson walls to the remembered panels; pages 3 to 6 fill them', () => {
+  it('pages 1, 2 and the old book pages (17 to 19) leave the four lesson walls to the remembered panels; pages 3 to 5 fill them; blank pages show empty slabs', () => {
     for (const [room, side] of [['roots-dig', 'south'], ['roots-pit', 'north'], ['roots-bridge', 'north'], ['roots-seal', 'south']] as const) {
-      for (const page of [1, 2, 7, 8, 9]) expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(remembered(room, side));
-      for (let page = 3; page <= 6; page++) expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(own(page, room, side));
+      for (const page of [1, 2, 17, 18, 19]) expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(remembered(room, side));
+      for (let page = 3; page <= 5; page++) expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toBe(own(page, room, side));
+      for (let page = 6; page <= 16; page++) {
+        const own16 = own(page, room, side);
+        expect(panelAt(book, page, room, side, 'easy'), `page ${page} ${room} ${side}`).toEqual(own16 ?? blankSlab(page, room, side));
+      }
     }
   });
 
-  it('the easy layout shows the step room\'s remembered panel on page 1 and on the book pages (7 to 9)', () => {
-    for (const page of [1, 7, 8, 9]) {
+  it('the easy layout shows the step room\'s remembered panel on page 1 and on the old book pages (17 to 19)', () => {
+    for (const page of [1, 17, 18, 19]) {
       expect(panelAt(book, page, 'roots-step', 'south', 'easy')).toBe(remembered('roots-step', 'south'));
     }
   });
 
-  it('the easy layout shows page n\'s own panel where page n fills the step room\'s south slot (pages 2 to 6)', () => {
-    for (let page = 2; page <= 6; page++) {
+  it('the easy layout shows page n\'s own panel where page n fills the step room\'s south slot (pages 2 to 5)', () => {
+    for (let page = 2; page <= 5; page++) {
       expect(own(page, 'roots-step', 'south')).toBeDefined();
       expect(panelAt(book, page, 'roots-step', 'south', 'easy')).toBe(own(page, 'roots-step', 'south'));
     }

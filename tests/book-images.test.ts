@@ -19,7 +19,6 @@ const MAX_BYTES = 60 * 1024;
 const PENDING: Record<string, string> = {
   ring: 'the minimap of the whole Roots needs a real run of floor 0; the sandbox is one room',
   drink: 'a flask on top of the hand: the sandbox hand carries blocks and parts, not potions',
-  recipe: 'the alembic and the potion it made: the alembic is placed by the floor generator',
   paths: 'the practices tab of the inventory screen: the sandbox does not open the inventory yet',
   state: 'the banner of a state of being: shown only after three practices of one path',
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss',

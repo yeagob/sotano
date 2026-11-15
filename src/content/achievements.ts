@@ -81,7 +81,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'cook.first', on: 'cook' },
 
   // Book pages: the Roots' book reached at a page number (4). Pages 54, 69 and 100 need that many pages in the book.
-  { id: 'book.page.7', on: 'pageReached', where: { page: 7 } },
+  { id: 'book.page.7', on: 'pageReached', where: { page: 6 } }, // FIRST_BOOK_PAGE (the title page of the book); the id is kept, saves hold it
   { id: 'book.page.54', on: 'pageReached', where: { page: 54 } },
   { id: 'book.page.69', on: 'pageReached', where: { page: 69 } },
   { id: 'book.page.100', on: 'pageReached', where: { page: 100 } },

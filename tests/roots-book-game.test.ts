@@ -104,11 +104,14 @@ describe('a run starts on the saved page', () => {
     }
   });
 
-  it('draws the page stone from page 7 on, and hides it on the tutorial pages', () => {
+  it('draws the page stone from page 6 on, and hides it on the tutorial pages', () => {
     const late = openAt(7);
     late.keeper.update(late.wall.sink);
     expect(late.wall.stones.at(-1)).toBe(7);
-    const tutorial = openAt(6);
+    const title = openAt(6);
+    title.keeper.update(title.wall.sink);
+    expect(title.wall.stones.at(-1)).toBe(6);
+    const tutorial = openAt(5);
     tutorial.keeper.update(tutorial.wall.sink);
     expect(tutorial.wall.stones.at(-1)).toBe(null);
   });
@@ -304,13 +307,13 @@ describe('the page stone', () => {
   });
 
   it('goes blank when the walls turn to a tutorial page', () => {
-    const a = openAt(7);
+    const a = openAt(6);
     const rooms = floor0(true);
     a.keeper.update(a.wall.sink);
     walk(a.keeper, rooms, LAP_BACK);
     walk(a.keeper, rooms, [DIG]);
     a.keeper.update(a.wall.sink);
-    expect(a.keeper.shown).toBe(6);
+    expect(a.keeper.shown).toBe(5);
     expect(a.wall.stones.at(-1)).toBe(null);
   });
 });
