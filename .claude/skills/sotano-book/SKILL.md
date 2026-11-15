@@ -5,25 +5,25 @@ description: The Roots' book and its wall panels. Use it EVERY time a wall panel
 
 # The Roots book skill
 
-The eleven rooms of the Roots (floor 0) carry **22 stone panels**, a north and a south one per room. Together they are a book: pages 1 to 6 teach the game, and from page 7 the walls show the **hidden book**, the game's own voice. Everything a panel says is data in two JSON files, checked by a validator; the renderer carves it into the stone.
+The eleven rooms of the Roots (floor 0) carry **22 stone panels**, a north and a south one per room. Together they are a book: pages 1 to 5 are the **prologue** (the tutorial, from the technical to the meaning); from page 6 the walls show the book: its title page, the epigraph, the author's page, the thanks, the author's part one (pages 10 to 16) and the **hidden book**, the game's own voice (pages 17 to 19). The plan is in [TUTORIAL-PAGES](../../../docs/design/built/levels/roots/TUTORIAL-PAGES.md). Everything a panel says is data in two JSON files, checked by a validator; the renderer carves it into the stone.
 
 Design, for depth (built in `docs/design/built/levels/roots/`; what is still open in `docs/design/not-built/levels/roots/`): [BOOK-DATA](../../../docs/design/built/levels/roots/BOOK-DATA.md) (the files, fields, images, key caps, validation), [PANELS](../../../docs/design/built/levels/roots/PANELS.md) (the look, §5 budgets), [PAGES](../../../docs/design/built/levels/roots/PAGES.md) (advance, laps, out of sight, the page stone), [TUTORIAL-PAGES](../../../docs/design/built/levels/roots/TUTORIAL-PAGES.md), [HIDDEN-BOOK](../../../docs/design/not-built/levels/roots/HIDDEN-BOOK.md), [EASY-LAYOUT](../../../docs/design/built/levels/roots/EASY-LAYOUT.md).
 
 ## 1. How the book works for the player
 
 - **The current page** is saved between runs (`roots.page` in the save, `src/game/meta.ts`). A run's end (death, R, a new run, a new seed) **advances it by one when every room of the Roots was entered in that run** and it is below the last page of the files. Once per run, saved at once (`RootsBook.endRun`, `RootsKeeper.endRun`).
-- **Pages 1 to 6 are tutorial pages; page 7 is the first page of the book** (`FIRST_BOOK_PAGE` in `src/game/roots-book.ts`). Reaching page 7 is an achievement (`sotano-achievements`).
+- **Pages 1 to 5 are tutorial pages; page 6 is the first page of the book**, its title page (`FIRST_BOOK_PAGE` in `src/game/roots-book.ts`). The achievement `book.page.7` (its id is kept) unlocks there (`sotano-achievements`).
 - **Browsing by laps.** A run starts showing the current page. Ten net steps forward around the ring of ten rooms (`LAP_STEPS`; forward is from the start room east into the step room) turn the walls one page on, never past the current page; ten back turn one page back, never below 1. A step to a room that is not a ring neighbour resets the count.
 - **Panels never change in sight.** A room keeps the page it shows while the player is in it or in a room joined to it by a straight line of open doors, or while the camera sees it (`RootsBook.wallPage`).
 - **Two layouts.** With the current page at 1 the Roots are carved in the **teaching** layout (each room holds its exercise: a wall to dig, a pit, a bridge…). From current page 2 on they are carved in the **easy** layout, fixed for the whole run. So **every panel of page 2 and later is only ever seen in the easy rooms**. In the easy layout five slots whose page-1 lesson names an exercise the easy room no longer holds show a **remembered panel** where a page leaves the slot out (the `easy` object of the files, ids `easy-<room>-<n|s>`): `roots-step` south, `roots-dig` south, `roots-pit` north, `roots-bridge` north, `roots-seal` south. Since pages 3 to 6 fill every slot, a remembered panel now shows only on page 1 browsed back to, on page 2 and on the book pages.
-- **The page stone** in the start room shows the page number on book pages (7 on) and is hidden on tutorial pages (`RootsBook.pageStone`, drawn by `src/render/page-stone.ts`).
+- **The page stone** in the start room shows the page number on book pages (6 on) and is hidden on tutorial pages (`RootsBook.pageStone`, drawn by `src/render/page-stone.ts`).
 
 ### Which pages fill which slots (owner's rule)
 
 - **Page 1** fills all 22 slots (the validator requires it).
-- **Page 2** changes the nine plate walls: the south or north wall of every room except `roots-gift` (the Sanctuary) and `roots-door`, which belong to their room. The owner likes page 2 as it is.
-- **Pages 3 to 6 fill every one of the 22 slots**, so no panel repeats from an earlier page (owner, 2026-11-13). Each page reads in ring order, the wall faced first in each room, then the other: it opens in the hall and closes by the way down; the treasure room keeps making sense with its Sanctuary chest and the way-down room with its way down. Slot by slot, with the code each fact rests on: TUTORIAL-PAGES. `tests/book.test.ts` checks the rule in both languages. A change to one of these pages keeps all 22 slots filled.
-- **A book page (7 on) may fill any slots** and usually fills one or two.
+- **Page 2** fills 14 slots: the ingredients, the alembic, the kitchen, the drinking lesson and one panel per recipe. Its other slots fall back as any page does. (The owner's old rule that page 2 "changes the nine plate walls" no longer holds: the prologue of 2026-11-15 replaced it.)
+- **Pages 3 to 5 fill every one of the 22 slots**, so no panel repeats from an earlier page (owner, 2026-11-13). Each page reads in ring order, the wall faced first in each room, then the other: it opens in the hall and closes by the way down; the treasure room keeps making sense with its Sanctuary chest and the way-down room with its way down. Slot by slot, with the code each fact rests on: TUTORIAL-PAGES. `tests/book.test.ts` checks the rule in both languages. A change to one of these pages keeps all 22 slots filled.
+- **A book page (6 on) may fill any slots.** A **`blank`** book page (`"blank": true`) shows an **empty slab** for each slot it leaves out, never page 1's panel or a remembered one: the title page, the epigraph, the author's page, the thanks and the Kamino pages are blank. Today's three hidden-book pages (17 to 19) are not blank and fall back.
 - **The fallback** is what the code does for a slot a page leaves out (`panelAt` in `src/content/book/index.ts`): (1) the page's own panel, from page 2 on; (2) in the easy layout, the slot's remembered panel; (3) page 1's panel. A page 3 to 6 that fills every slot never falls back; a book page falls back on every slot it leaves out.
 
 ## 2. The two files
@@ -68,6 +68,10 @@ Budgets are **characters, in both languages**, enforced by the validator (`BUDGE
 The picture is fitted in the area (x 40 to 856, y 40 down to 456, or to 412 with a caption), as large as it goes, keeping its ratio and never cropped, centred, inside the same 4 px ink frame as the other layouts. A square is fitted as a square, a 16:9 capture to the height. An icon, or a missing file, is fitted as a square. The caption is centred under it. The mason's mark stays at the bottom right, beside the picture (`fitRect`, `imageFrame` in `src/render/panel-layout.ts`).
 
 Every string: not empty, no `<` or `>`, no leading, trailing or double space. A budget fits the validator, not always the stone: wide letters can still overflow, so the gallery check (section 8) is the real fit.
+
+**`title`**: the book's title, or a title page's line, drawn large and centred on an otherwise empty slab. Fields `id` and `text` (40 characters); the text may differ between the two files, the layout and the id may not. Used on `book-title` (the book's title, the same in both languages) and on the author's signature.
+
+**`blank`** is not written in a file: `panelAt` makes it for a slot a `blank` page leaves out (the page flag `"blank": true`, a book page only). It is an empty slab: the stone, the frame and the mason's mark, no words and no image.
 
 ## 5. Placeholders and key caps
 
@@ -115,6 +119,7 @@ An image is an **id**, never a path (`src/content/book/images.ts`, `resolveImage
 - **Spanish must read as native Spanish**, written for a Spanish reader, not translated word by word. Same facts, same numbers.
 - **An image shows the lesson, not the HUD**, unless the lesson is about the HUD. Avoid captures with on-screen text in one language (they would be wrong in the other); captures run in English, so frame text out.
 - Names follow `sotano-lore`; a quotation is credited (section 6).
+- **The changelog never spoils the tutorial or the book** (owner, 2026-11-15). The changelog line for a change to a panel, a tutorial page or a book page names only the action ("The tutorial was changed.", "The book was extended."), never what was added: no content, no quotation, no page number, no title, no author, no count of pages. The same for the pull request title and the release notes. The rule is in [GITFLOW](../../../docs/process/GITFLOW.md#changelog).
 
 ## 10. Recipes
 
@@ -139,6 +144,7 @@ An image is an **id**, never a path (`src/content/book/images.ts`, `resolveImage
 - [ ] Spanish reads as native Spanish.
 - [ ] Images: id in the manifest, WebP ≤ 60 KB, looked at, lesson inside the centre crop, no one-language text; pending ids in both lists with no file.
 - [ ] A quotation: original and translation, `lang`, source row in `docs/lore/SOURCES.md`.
-- [ ] Pages 3 to 6 fill all 22 slots; no quote on a tutorial page.
+- [ ] Pages 3 to 5 fill all 22 slots; no quote on a tutorial page.
 - [ ] Docs updated (TUTORIAL-PAGES, HIDDEN-BOOK or BOOK-DATA's image list) (`sotano-docs`, `sotano-design`).
+- [ ] The changelog line names only the action (changed or extended), with no detail of the tutorial or the book.
 - [ ] `npm run typecheck && npm test`.

@@ -68,7 +68,8 @@ describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
   it('has the four book-page achievements, each on pageReached with its page number', () => {
     const pages = ACHIEVEMENTS.filter(d => d.on === 'pageReached');
     expect(pages.map(d => d.id)).toEqual(['book.page.7', 'book.page.54', 'book.page.69', 'book.page.100']);
-    for (const d of pages) expect(d.where).toEqual({ page: Number(d.id.slice('book.page.'.length)) });
+    // book.page.7 is the first page of the book, the title page (page 6); the id stays (saves hold it)
+    for (const d of pages) expect(d.where).toEqual({ page: d.id === 'book.page.7' ? 6 : Number(d.id.slice('book.page.'.length)) });
   });
 
   it('the Shadow\'s converted entry also takes the stillness ending, and its destroyed entry does not', () => {
@@ -148,9 +149,8 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
   });
 
   it('each book-page achievement unlocks on pageReached with its own page, and on no other', () => {
-    for (const page of [7, 54, 69, 100]) {
-      const id = `book.page.${page}`;
-      for (const other of [1, 6, 8, 53, 55, 99]) {
+    for (const [id, page] of [['book.page.7', 6], ['book.page.54', 54], ['book.page.69', 69], ['book.page.100', 100]] as const) {
+      for (const other of [1, 5, 7, 53, 55, 99]) {
         expect(run(EMPTY, 'pageReached', { page: other }).unlocked.map(d => d.id), `page ${other}`).not.toContain(id);
       }
       const reached = run(EMPTY, 'pageReached', { page });

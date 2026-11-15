@@ -510,6 +510,9 @@ const messages = {
   'inv.synergies': 'Synergies and states of being',
   'inv.noSynergies': 'None discovered yet.',
   'inv.state': 'State',
+  'inv.teaching': 'Life Lesson',
+  'inv.object': 'What it does',
+  'inv.stats': 'Statistics',
 
   // ── paths (item tags) ──
   'path.body': 'body',
@@ -672,8 +675,8 @@ const messages = {
   'achievement.brew.first.desc': 'Brew a potion in an alembic for the first time.',
   'achievement.cook.first.name': 'A Warm Meal',
   'achievement.cook.first.desc': 'Cook a meal in a kitchen for the first time.',
-  'achievement.book.page.7.name': 'The Hidden Book',
-  'achievement.book.page.7.desc': 'Reach page 7: the first page of the hidden book.',
+  'achievement.book.page.7.name': 'The First Page',
+  'achievement.book.page.7.desc': 'Reach page 6: the first page of the book.',
   'achievement.book.page.54.name': 'Lucky Number',
   'achievement.book.page.54.desc': 'Reach page 54 of the Roots\' book.',
   'achievement.book.page.69.name': 'Nice',

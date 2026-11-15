@@ -30,7 +30,6 @@ catch { ({ chromium } = await import('playwright').catch(() => { console.error('
 const PENDING = {
   ring: 'the minimap of the whole Roots needs a real run of floor 0; the sandbox is one room',
   drink: 'a flask on top of the hand: the sandbox hand carries blocks and parts, not potions',
-  recipe: 'the alembic and the potion it made: the alembic is placed by the floor generator (floors 2, 4, 6, 8)',
   paths: 'the practices tab of the inventory screen: the sandbox does not open the inventory yet',
   state: 'the banner of a state of being: shown only after three practices of one path, not in the sandbox',
   'boss-room': 'a boss room after its fight: the lit pedestal needs a defeated boss, which the sandbox cannot stage',

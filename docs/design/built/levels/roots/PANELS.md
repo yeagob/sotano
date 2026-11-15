@@ -118,7 +118,7 @@ Every text in both languages must fit its budget. A budget counts characters aft
 | key cap | `keycap.<action>.<device>` | 14 | 1 |
 | key cap | `keycap.<action>.verb` | 14 | 1 |
 
-The six tutorial pages and the book pages are inside every budget in both languages (longest Spanish lesson text: 120; plate text: 106; note: 30; prose: 235).
+The five tutorial pages and the book pages are inside every budget in both languages (longest Spanish lesson text: 120; plate text: 106; note: 30; prose: 235).
 
 ## 6. Where each panel hangs
 

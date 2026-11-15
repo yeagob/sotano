@@ -315,12 +315,48 @@
     #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: normal; hyphens: auto; font-size: 14px; line-height: 1.3; color: var(--ui-text); }
     #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
     #inventory .detail { display: flex; gap: 14px; margin-top: 12px; padding: 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--c); }
-    #inventory .detail img { width: 84px; height: 84px; flex: none; }
-    #inventory .detail b { font-size: 20px; }
+    #inventory .detail img { width: 84px; height: 84px; flex: none; image-rendering: pixelated; }
+    #inventory .detail b { font-size: 20px; font-family: 'Pixelify Sans', monospace; }
     #inventory .detail p { margin: 6px 0 4px; }
     #inventory .detail small { color: var(--ui-faded); font-size: 14px; }
     #inventory .fx { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
     #inventory .fx i { font-style: normal; color: var(--ui-up); font-size: 14px; }
+
+    /* Three-block detail layout: teaching, object, stats */
+    #inventory .detail .teaching-block,
+    #inventory .detail .object-block,
+    #inventory .detail .stats-block {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--ui-line);
+    }
+    #inventory .detail .block-label {
+      font-family: 'Pixelify Sans', monospace;
+      font-style: normal;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ui-text-2);
+      display: block;
+      margin-bottom: 4px;
+    }
+    #inventory .detail .teaching-text {
+      margin: 4px 0;
+      font-style: italic;
+      color: var(--ui-text);
+      line-height: 1.5;
+    }
+    #inventory .detail .inspired-by {
+      display: block;
+      margin-top: 4px;
+    }
+    #inventory .detail .object-block .effect {
+      margin: 4px 0;
+      color: var(--ui-text);
+    }
+    #inventory .detail .stats-block .fx {
+      margin-top: 4px;
+    }
     .path { font-style: normal; font-size: 14px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); margin-left: 4px; }
     #inventory .syns { list-style: none; margin: 0; padding: 0; }
     #inventory .syns li { padding: 5px 8px; margin: 4px 0; background: var(--ui-line); }

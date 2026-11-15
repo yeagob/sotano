@@ -1,4 +1,21 @@
-# The hidden book: pages 7 to 9
+# The book: the front matter, the author's part one, and the hidden book
+
+Up: [the Roots: what is still open](README.md) · Status: the front matter and the author's part one are **built** (the book's pages 6 to 16, 2026-11-15); the three hidden-book pages below are still a **proposal, awaiting the owner**.
+
+After the tutorial's five pages the walls start the book (pages 6 to 16, all blank pages: an empty slab for each slot a page leaves out, [BOOK-DATA](../../../built/levels/roots/BOOK-DATA.md#2-fields)):
+
+- **Page 6, the title page**: the book's title alone on the slab, drawn large (the `title` layout).
+- **Page 7, the epigraph**: a quotation in Spanish from a public-domain poem, with our English translation (`lang: "es"`). Its source is in [SOURCES](../../../../lore/SOURCES.md) (the Machado row).
+- **Page 8, the author**: a short note on the author, and the signature of the two co-authors.
+- **Page 9, the thanks**: a short page of acknowledgements, in two slabs.
+- **Pages 10 to 16, the author's book, part one: threshold and chapter 1.** Seven pages, written by the owner: a threshold page and the first chapter in its own pages. Each page opens with its title on the hall's north slab, then its prose panels in ring reading order (hall south, step north, step south and so on). Their texts are the owner's and are not quoted here; they live in the book files only, as written (both languages, copied from the owner's pipeline file).
+- **Pages 17 to 19**: the three hidden-book pages described below, renumbered from 7 to 9.
+
+The rest of the owner's book will be written by hand in the same way ([BOOK-DATA §8](../../../built/levels/roots/BOOK-DATA.md#8-writing-a-new-page-by-hand-for-the-owner)).
+
+## The hidden-book proposal (pages 17 to 19, formerly 7 to 9)
+
+
 
 Up: [the Roots: what is still open](README.md) · Status: **proposal, awaiting the owner.** These three pages are a first draft for the owner to keep, change or replace; the owner will write the rest of the book by hand ([BOOK-DATA §8](../../../built/levels/roots/BOOK-DATA.md#8-writing-a-new-page-by-hand-for-the-owner)). The pages are in the book files already; the mechanism that shows them is built ([PAGES](../../../built/levels/roots/PAGES.md)).
 
@@ -6,7 +23,7 @@ After the six tutorial pages the walls start a book. A book page is a single `pr
 
 The three pages draw only on the documented story: the premise ([PREMISE](../../../built/story/PREMISE.md)), the naming rule that projections are patterns and never people ([NAMING](../../../built/story/NAMING.md)), what a projection wants ("need" in the bestiary documents) and the shape of the world, the roots between the tree above and the silence below ([COSMOLOGY](../../../../lore/COSMOLOGY.md)). They name no tradition, author or therapy, promise nothing and diagnose nothing. They are written for a child and an adult at once, in the second person, gender-neutral in Spanish.
 
-## Page 7 (`book-1`): the basement
+## Page 17 (`book-1`, formerly 7): the basement
 
 > You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it.
 
@@ -62,7 +79,7 @@ The page-7 entry, as package B6 wrote it in place of `book-1` in each file, with
 
 Its source row for `docs/lore/SOURCES.md` (package B6): id `la-locura-lo-cura`, *La locura lo cura* (extractos), Guillermo Borja, Editorial La Llave, 1995, kind book, naming status **Credit** (a modern work: quoted with attribution, never used as a name), key idea: authenticity as showing oneself without a façade, not as trying to be better; in the game: the quotation on page 7 of the Roots' book.
 
-## Page 8 (`book-2`): the patterns
+## Page 18 (`book-2`, formerly 8): the patterns
 
 > The shapes that block your way are not people. They are patterns: a doubt, a judging voice, a fear at the edge of change. Each one wants something for you, in its own clumsy way. Warm them, and some will turn and walk beside you.
 
@@ -70,7 +87,7 @@ Its source row for `docs/lore/SOURCES.md` (package B6): id `la-locura-lo-cura`, 
 
 From the naming rule (patterns, never people), the needs in the bestiary (Doubt wants you not to fail; the Inner Critic wants you accepted; the Threshold Guardian keeps you safe from the unknown) and polarity (good intentions warm a projection until it turns to your side).
 
-## Page 9 (`book-3`): one journey
+## Page 19 (`book-3`, formerly 9): one journey
 
 > Above the roots, a great tree climbs into the sky. Below them, the floors go down, older and colder, to the silence. It is one journey, seen from both ends. What you learn at the bottom grows toward the light.
 
