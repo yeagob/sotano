@@ -22,9 +22,10 @@ The current page also decides the shape of the rooms: page 1 is carved in the te
 ## 2. Browsing: laps of the ring
 
 - At the start of a run, the shown page is the current page.
-- **A full lap forward shows the next page**, if the shown page is lower than the current page; at the current page a forward lap does nothing.
+- **A full lap forward shows the next page**, up to the last page of the book files. At the last page a forward lap does nothing. Forward is the direction leading toward the Sanctuary (from the start room west into the gift room).
 - **A full lap in reverse shows the previous page**, down to page 1; on page 1 it does nothing.
 - Browsing changes only the panels and the page stone. It never changes rewards or the layout of the rooms, and it is not saved: the next run starts on the current page again. A player on page 3 who browses back to page 1 reads page 1 in the easy rooms, with the remembered panels where page 1's lessons would describe an exercise the room no longer holds ([EASY-LAYOUT §6](EASY-LAYOUT.md#6-browsing-in-the-easy-layout)).
+- **Browsing forward is not capped at the current page.** A player can walk the ring forward and reach any page up to the last one in the book files, without needing to die or press R. This lets the player read the entire book in one session by walking the ring.
 
 ### What a lap is (the rule a test can check)
 
