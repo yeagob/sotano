@@ -39,11 +39,12 @@ Since pages 3 to 6 fill every slot (section 1b), a remembered panel shows only w
 | Page | Slots it fills | What a slot it leaves out shows |
 |---|---|---|
 | 1 | all 22 (the validator requires it) | |
-| 2 | the nine plate walls: the south or north wall of every room except `roots-gift` and `roots-door` (the owner likes page 2 as it is) | page 1's panel, or in the easy layout the slot's remembered panel |
-| 3, 4, 5, 6 | **all 22**: no slot shows a panel of an earlier page, so the whole floor reads one theme (owner: "from page 3 on, ALL the panels change") | nothing: they leave no slot out |
-| 7 on (book) | any, usually one or two | page 1's panel, or in the easy layout the remembered panel |
+| 2 | 14: the ingredients, the alembic, the kitchen, the drink, the recipes and the potions without one | page 1's panel, or in the easy layout the slot's remembered panel |
+| 3, 4, 5 | **all 22**: no slot shows a panel of an earlier page, so the whole floor reads one theme (owner: "from page 3 on, ALL the panels change") | nothing: they leave no slot out |
+| 6 to 16 (book) | the title page (6), the epigraph (7), the author (8), the thanks (9) and the seven Kamino pages (10 to 16) fill what they need | **`blank: true`**: an empty slab (plate stone, frame, mason's mark, no words), never page 1's panel and never a remembered one |
+| 17 to 19 (book) | any, usually one or two (today's three book pages) | page 1's panel, or in the easy layout the remembered panel |
 
-The test `tests/book.test.ts` ("which pages fill which slots") checks that pages 3 to 6 fill all 22 slots in both languages, that no slot of theirs falls back in either layout, and that page 2 keeps its nine. The slot-by-slot content is in [TUTORIAL-PAGES](TUTORIAL-PAGES.md).
+The test `tests/book.test.ts` ("which pages fill which slots") checks that pages 3 to 5 fill all 22 slots in both languages, that no slot of theirs falls back in either layout, that page 2 fills fourteen, and that the blank pages are exactly 6 to 16. The slot-by-slot content is in [TUTORIAL-PAGES](TUTORIAL-PAGES.md).
 
 ## 2. Fields
 
@@ -57,7 +58,8 @@ The test `tests/book.test.ts` ("which pages fill which slots") checks that pages
 | `kind` | page | `"tutorial"` or `"book"` | Page 1 is `tutorial`. Every `tutorial` page comes before every `book` page. The page stone shows a number only on `book` pages |
 | `panels` | page | object | Keys are room keys (below); each value has `north`, `south` or both. Page 1 must fill all 22 slots. A later page may leave any slot out: that slot shows page 1's panel (or the remembered one, section 1). By the owner's rule pages 3 to 6 leave none out (section 1b; a test checks it, the validator does not) |
 | `id` | panel | string, `<page>-<room>-<side>` | Required on every panel. The page number (its position in `pages`, from 1), the room key without its `roots-` prefix, and `n` for north or `s` for south: `1-hall-n`, `3-pit-s`, `7-gift-n`. It must match the panel's position, be unique in the file, and be identical in both languages. The renderer draws it very small, like a mason's mark ([PANELS §10](PANELS.md#10-the-panel-id-the-masons-mark)); `panelById(book, id)` finds the panel. Renumbering (a page inserted before others) renumbers the ids: the validator names every id that is out of place |
-| `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"`, `"image"` | Decides which other fields are allowed. `quote` only on `book` pages; `image` has only `id`, `image` and `caption` (PANELS §4c) |
+| `layout` | panel | `"lesson"`, `"plate"`, `"prose"`, `"quote"`, `"image"`, `"title"` | Decides which other fields are allowed. `quote` only on `book` pages; `image` has only `id`, `image` and `caption` (PANELS §4c); `title` has only `id` and `text` (40 characters): the book's title or a title page's line, drawn large and centred on an otherwise empty slab. The `blank` layout is never written in a file: `panelAt` makes it (below) |
+| `blank` | page | `true`, optional | Only on a `book` page. Every slot the page leaves out shows an **empty slab** (no words, no image, the mason's mark kept) instead of page 1's panel or a remembered one. The title page, the epigraph, the author's page and the thanks are blank; the Kamino pages too |
 | `title` | lesson, plate | string | Required. A plate's title is the name of what it shows, in that language's established name |
 | `subtitle` | plate | string | Required. What kind of thing it is ("A projection", "A boss · floors 1–2") |
 | `text` | lesson, plate, prose, quote | string | Required. May hold `{action}` placeholders (lesson and plate only). In a quote: the quotation (section 2b) |
@@ -112,7 +114,7 @@ The validator checks that every id resolves: a bestiary id is an entity with a c
 - **Portraits, all taken (45).** The pending list of the lessons and of pages 3 to 6 is in [PENDING](../../../not-built/levels/roots/PENDING.md). The sandbox portraits (`PORTRAITS` in the script) come from the sandbox; the ten sky portraits (`SKY_PORTRAITS`: the five guardians and one member of each herd) come from the sky route of the same mode: the real game on the fixed sky seed, paused, at rest, framed the same way (`SKY_SUBJECTS`). The horse's paddock fence hides its body from every side tried, so `guardian-horse` shows its head over the fence. `PENDING_PORTRAITS` is empty in `tests/book-images.test.ts` and in `scripts/bestiary-capture.mjs`: a portrait added later goes there until it has a file. A plate whose portrait is missing draws the neutral placeholder and the gallery flags it yellow.
 - **Content gaps seen in the captures.** `resistance`, `inertia`, `insatiable` and `overwhelm` draw as dark husk bodies with eyes; `overwhelm` is built from Doubt's husk palette (`src/content/bosses/overwhelm.ts`). Their portraits are faithful captures of what the game draws now, and the boss models need their own art. The `convert` lesson shows a projection at warmth 0.95 as a red-brown body rather than gold; the warm glow needs checking against the ledger.
 
-### Every image the nine pages use
+### Every image the pages use (after the prologue)
 
 Bestiary (45): the 19 captured, `doubt`, `critic`, `panic`, `resistance`, `inertia`, `insatiable`, `overwhelm`, `wonder`, `rootling`, `mossling`, `chirper`, `delver`, `bubbler`, `ferryback`, `leafling`, `star-mite`, `inkmite`, `cinderwalker`, `listener`; and the 26 pending ones of pages 3 to 6 ([below](#new-images-for-pages-3-to-6)).
 
@@ -245,8 +247,9 @@ The book is checked at build time by a test and again when the game loads it. An
 
 - `panelAt(book, page, room, side, layout = 'teaching')` gives the panel a slot shows on page *n* in a layout (EASY-LAYOUT §4), in this order:
   1. page *n*'s own panel, when *n* is 2 or more and page *n* fills the slot;
-  2. in the easy layout (`'easy'`), the slot's remembered panel from `easy`, when it has one;
-  3. otherwise page 1's panel.
+  2. on a `blank` page, an empty `blank` panel (`{ id, layout: 'blank' }`, never written in a file);
+  3. in the easy layout (`'easy'`), the slot's remembered panel from `easy`, when it has one;
+  4. otherwise page 1's panel.
   The layout is the last argument and defaults to `'teaching'`, where step 2 never applies, so the rule is the same as before: page *n*'s own panel, otherwise page 1's. An unknown page, room, side or layout throws a `RangeError`. The five remembered slots therefore show their remembered panel on page 1 and on every book page in the easy layout, and the four lesson-wall slots also on page 2; pages 3 to 6 fill every slot (section 1b), so there every slot shows the page's own panel, and pages 2 to 6 fill the step room's south slot.
 - The book of the player's language is used; switching language redraws every panel at once from the other file (the same page, the same slots).
 - The number of pages is the length of `pages`; both files have the same length by rule 9.

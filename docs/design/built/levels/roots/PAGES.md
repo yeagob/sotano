@@ -71,7 +71,7 @@ What the player sees after a forward lap that ends in the start room: the rooms 
 
 ## 4. The page stone
 
-From page 7 on, one block in the start room shows the shown page's number.
+From page 6 on (the title page, the first book page), one block in the start room shows the shown page's number.
 
 - **Where:** the wall block in the middle of the start room's north wall (column 6 of `roots-hall`, the first block of the wall, at height `y0 + 2`), on its face toward the room. The start room has no north door, so this block is always wall.
 - **What:** a square of limestone set in the block's face, the number cut in ink in the serif of the prose panels, with the gold diamond above it (the palette of [PANELS](PANELS.md)). It is a decal on the block's face, not a new block: the geometry does not change.
