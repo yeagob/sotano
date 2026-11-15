@@ -2,6 +2,8 @@
 
 What changed in each version of THE ROOTS, for players and testers. Every pull request that merges into `develop` adds its line under the `Unreleased` heading below; a release turns that section into the version's heading and publishes it with the tag. The process is in [docs/process/GITFLOW.md](docs/process/GITFLOW.md#changelog).
 
+Changes to the tutorial and to the book are listed without their content, so nothing is spoiled: a line says only that the tutorial or the book was changed or extended.
+
 ## Unreleased
 
 ### Added
@@ -9,6 +11,8 @@ What changed in each version of THE ROOTS, for players and testers. Every pull r
 
 ### Changed
 - The achievement notice is a small corner panel in pixel art. It leaves by itself after 5 seconds (7 for a long description) and no longer shows what the Roots gain; the description still says what the achievement does (#191).
+- The tutorial was changed.
+- The book was extended.
 
 ## 0.2.4 · 2026-11-13
 
