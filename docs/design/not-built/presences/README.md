@@ -28,3 +28,21 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 | [CODEX.md](CODEX.md) | The codex in the inventory window | System | proposal |
 
 The places some of these presences live in, the Tree and the Silence below floor 9, are not built either. The Tree's bosses are in [not-built/bosses](../bosses/README.md).
+
+## Roster status (2026-11-19, issue #149)
+
+What is still open, and what blocks each one. A presence moves to [built/presences](../../built/presences/README.md) only when its text is in the code.
+
+| Presence or system | Blocked by | Done in this pass |
+|---|---|---|
+| The Gardener | The owner's ruling (2026-10-29): no presence on the tutorial floor, and its agreement asks for a real-world action. Its room is open | Stays unplaced; the owner decides where it waits |
+| The Wanderer | Its wall walk and its hand-tied line | Decisions and weights written; built as a messenger with a consent gift |
+| The Child | The build-three-blocks check (a placement counter over every placing path) and the path rule for a build | Not built |
+| The Elder | The path system (Body, Mind, Emotion, Will) and the Lesson | Not built |
+| The Witness | The Silence below floor 9 and the hexagram source check | Not built |
+| The Mender | A released projection that comes back (dissolve is final today) and the one vault rule | Not built |
+| The Cartographer | The Tree floors and the star map | Not built |
+| The Boatman | Deep water in Zone II, a pocket that is unreachable otherwise, and a levels ruling | Not built |
+| The Star-reader | The Leaves of the Tree and the star map | Not built |
+| Requests, the idle window, dialogue, the codex | Their own systems (not designed for the build) | Not built |
+| Covenant and agreements beyond the two built ones | The owner's ruling on the four pieces and their costs | Not built |
