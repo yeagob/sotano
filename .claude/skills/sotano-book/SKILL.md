@@ -127,7 +127,7 @@ An image is an **id**, never a path (`src/content/book/images.ts`, `resolveImage
 
 **Add a panel to a book page**: in both files, under that page's `panels`, add the room and side with a panel whose id is its position (`8-mend-n`). Any slot may be used; prose, or a quote with its source. Run the tests, check the gallery.
 
-**Add a book page**: append a page to `pages` in both files with the same `id` (`book-4`), `kind: "book"` and one or more panels; its number is its position (page 10). Ids `10-<room>-<n|s>`. **In the same change, every work the page names or quotes gets a row in `docs/lore/SOURCES.md`** (the "Works named on the book's pages" table lists it with its page and whether it is quoted or mentioned; a quotation also gets its full row, section 6). Work mentioned only in passing gets a row too, with its naming status. Players reach it from page 9 with a run that enters every room of the Roots, and the page stone will show 10. Page achievements at 54, 69 and 100 become earnable once the book has that many pages.
+**Add a book page**: append a page to `pages` in both files with the same `id` (`book-4`), `kind: "book"` and one or more panels; its number is its position (page 10). Ids `10-<room>-<n|s>`. Players reach it from page 9 with a run that enters every room of the Roots, and the page stone will show 10. Page achievements at 54, 69 and 100 become earnable once the book has that many pages.
 
 **Add a quotation**: section 6, on a book page; the original in its language's file, our translation in the other, `lang` the original; the SOURCES.md row in the same commit.
 
@@ -144,7 +144,6 @@ An image is an **id**, never a path (`src/content/book/images.ts`, `resolveImage
 - [ ] Spanish reads as native Spanish.
 - [ ] Images: id in the manifest, WebP ≤ 60 KB, looked at, lesson inside the centre crop, no one-language text; pending ids in both lists with no file.
 - [ ] A quotation: original and translation, `lang`, source row in `docs/lore/SOURCES.md`.
-- [ ] Every work named on a changed page (quoted or only mentioned) has a row in `docs/lore/SOURCES.md` and in its "Works named on the book's pages" table, with its page.
 - [ ] Pages 3 to 5 fill all 22 slots; no quote on a tutorial page.
 - [ ] Docs updated (TUTORIAL-PAGES, HIDDEN-BOOK or BOOK-DATA's image list) (`sotano-docs`, `sotano-design`).
 - [ ] The changelog line names only the action (changed or extended), with no detail of the tutorial or the book.

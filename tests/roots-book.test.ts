@@ -11,7 +11,7 @@ const GIFT = 'roots-gift', DOOR = 'roots-door';
 const OUT = 'floor-1-room';
 
 /** The ring in forward order, starting at the start room (index 0). */
-const RING = [HALL, STEP, DIG, MEND, PIT, BRIDGE, SEAL, CRATES, SPRING, GIFT];
+const RING = [HALL, GIFT, SPRING, CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP];
 /** The whole route of a run: every ring room and the way down. */
 const FULL = [STEP, DIG, MEND, PIT, BRIDGE, SEAL, CRATES, SPRING, GIFT, HALL, DOOR];
 
@@ -131,17 +131,21 @@ describe('laps of the ring', () => {
     }
   });
 
-  it('a lap on the current page does nothing, and page 1 does not go lower', () => {
+  it('a forward lap can go beyond the current page up to the last page, and page 1 does not go lower', () => {
     const atCurrent = makeBook(3);
     forwardLapFrom(atCurrent, 0);
-    expect(atCurrent.shown).toBe(3);
+    expect(atCurrent.shown).toBe(4);
+    // At the last page, a forward lap stops
+    const atLast = makeBook(9, 9);
+    forwardLapFrom(atLast, 0);
+    expect(atLast.shown).toBe(9);
 
     const first = makeBook(1);
     reverseLapFrom(first, 0);
     expect(first.shown).toBe(1);
   });
 
-  it('browsing never goes beyond the current page nor below page 1', () => {
+  it('browsing can go beyond the current page up to the last page, and never below page 1', () => {
     const book = makeBook(3);
     reverseLapFrom(book, 0);
     expect(book.shown).toBe(2);
@@ -153,8 +157,23 @@ describe('laps of the ring', () => {
     expect(book.shown).toBe(2);
     forwardLapFrom(book, 0);
     expect(book.shown).toBe(3);
+    // Forward lap beyond current page (3) goes to 4
     forwardLapFrom(book, 0);
-    expect(book.shown).toBe(3);
+    expect(book.shown).toBe(4);
+    // Keep going forward until the last page (9)
+    forwardLapFrom(book, 0);
+    expect(book.shown).toBe(5);
+    forwardLapFrom(book, 0);
+    expect(book.shown).toBe(6);
+    forwardLapFrom(book, 0);
+    expect(book.shown).toBe(7);
+    forwardLapFrom(book, 0);
+    expect(book.shown).toBe(8);
+    forwardLapFrom(book, 0);
+    expect(book.shown).toBe(9);
+    // At the last page, forward lap stops
+    forwardLapFrom(book, 0);
+    expect(book.shown).toBe(9);
   });
 
   it('a partial lap does nothing', () => {
@@ -174,11 +193,12 @@ describe('laps of the ring', () => {
   it('a jump between rooms that are not neighbours starts the count again', () => {
     const book = makeBook(9);
     reverseLapFrom(book, 0);
-    walk(book, [STEP, DIG, MEND, PIT]);
-    book.enterRoom(CRATES);
-    walk(book, moves(7, 1, LAP_STEPS - 1));
+    walk(book, [GIFT, SPRING, CRATES, SEAL]);
+    book.enterRoom(PIT);
+    // PIT is at index 6 in the new RING: [HALL, GIFT, SPRING, CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP]
+    walk(book, moves(6, 1, LAP_STEPS - 1));
     expect(book.shown).toBe(8);
-    book.enterRoom(CRATES);
+    book.enterRoom(PIT);
     expect(book.shown).toBe(9);
   });
 
@@ -186,8 +206,8 @@ describe('laps of the ring', () => {
     const book = makeBook(9);
     reverseLapFrom(book, 0);
     book.enterRoom(DOOR);
-    book.enterRoom(STEP);
-    walk(book, [DIG, MEND, PIT, BRIDGE, SEAL, CRATES, SPRING, GIFT]);
+    book.enterRoom(GIFT);
+    walk(book, [SPRING, CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP]);
     expect(book.shown).toBe(8);
     book.enterRoom(HALL);
     expect(book.shown).toBe(9);
@@ -197,7 +217,7 @@ describe('laps of the ring', () => {
     const book = makeBook(9);
     reverseLapFrom(book, 0);
     book.enterRoom(SPRING);
-    walk(book, [GIFT, HALL, DOOR, OUT, DOOR, HALL, STEP, DIG, MEND, PIT, BRIDGE, SEAL, CRATES]);
+    walk(book, [CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP, HALL, DOOR, OUT, DOOR, HALL, GIFT]);
     expect(book.shown).toBe(8);
     book.enterRoom(SPRING);
     expect(book.shown).toBe(9);
@@ -260,15 +280,33 @@ describe('when the page advances', () => {
     expect(book.current).toBe(2);
   });
 
-  it('the advance is one page from the current page, even after browsing back', () => {
+  it('the advance is one page from the current page, and shown follows immediately', () => {
     const book = makeBook(3);
     reverseLapFrom(book, 0);
     expect(book.shown).toBe(2);
     walk(book, [DOOR]);
     expect(book.endRun()).toBe(true);
     expect(book.current).toBe(4);
-    expect(book.shown).toBe(2);
-    book.startRun();
+    expect(book.shown).toBe(4);
+  });
+
+  it('can browse forward to the new page immediately after endRun without restarting', () => {
+    const book = makeBook(3, 9);
+    walk(book, FULL);
+    expect(book.endRun()).toBe(true);
+    expect(book.current).toBe(4);
+    expect(book.shown).toBe(4);
+    // After endRun the player is in DOOR (off the ring). Enter a ring room to start counting.
+    book.enterRoom(HALL);
+    // Browse forward to page 5 without restarting
+    walk(book, moves(0, 1, LAP_STEPS));
+    expect(book.shown).toBe(5);
+    walk(book, moves(0, 1, LAP_STEPS));
+    expect(book.shown).toBe(6);
+    // Browse back
+    walk(book, moves(0, -1, LAP_STEPS));
+    expect(book.shown).toBe(5);
+    walk(book, moves(0, -1, LAP_STEPS));
     expect(book.shown).toBe(4);
   });
 
@@ -295,10 +333,16 @@ describe('when the page advances', () => {
     walk(book, FULL);
     expect(book.endRun()).toBe(false);
     expect(book.current).toBe(7);
+    // Start a fresh run so the lap counter is clean.
+    book.startRun();
+    expect(book.shown).toBe(3);
+    // Reverse lap from page 3 goes to page 2
     reverseLapFrom(book, 0);
     expect(book.shown).toBe(2);
+    // Forward lap from page 2 goes to page 3
     forwardLapFrom(book, 0);
     expect(book.shown).toBe(3);
+    // Forward lap at page 3 (last page) stays at 3
     forwardLapFrom(book, 0);
     expect(book.shown).toBe(3);
   });
@@ -318,27 +362,26 @@ describe('the walls: sight sets and the out-of-sight swap', () => {
 
     // In the start room: the far rooms turn at once, the rooms in sight of the start room wait.
     expect(wall(book)).toEqual({
-      [HALL]: 9, [STEP]: 9, [DIG]: 8, [MEND]: 8, [PIT]: 8, [BRIDGE]: 8, [SEAL]: 8,
-      [CRATES]: 8, [SPRING]: 8, [GIFT]: 9, [DOOR]: 9,
+      [HALL]: 9, [GIFT]: 9, [SPRING]: 8, [CRATES]: 8, [SEAL]: 8, [BRIDGE]: 8,
+      [PIT]: 8, [MEND]: 8, [DIG]: 8, [STEP]: 9, [DOOR]: 9,
     });
 
-    // Step room: the start room is still in sight, the way down is not.
-    book.enterRoom(STEP);
+    // Gift room: the start room is still in sight, the way down is not.
+    book.enterRoom(GIFT);
     expect(book.wallPage(HALL)).toBe(9);
-    expect(book.wallPage(GIFT)).toBe(9);
+    expect(book.wallPage(STEP)).toBe(9);
     expect(book.wallPage(DOOR)).toBe(8);
 
-    // Bridge: the step room, the start room and the treasure room are out of sight now.
-    book.enterRoom(DIG);
-    book.enterRoom(MEND);
-    book.enterRoom(PIT);
+    // Bridge: the gift room, the start room and the step room are out of sight now.
+    book.enterRoom(CRATES);
+    book.enterRoom(SEAL);
     book.enterRoom(BRIDGE);
-    expect(book.wallPage(STEP)).toBe(8);
-    expect(book.wallPage(HALL)).toBe(8);
     expect(book.wallPage(GIFT)).toBe(8);
+    expect(book.wallPage(HALL)).toBe(8);
+    expect(book.wallPage(STEP)).toBe(8);
   });
 
-  it('a forward lap ending in the start room turns the far rooms at once and the near rooms after the player walks out', () => {
+  it('a forward lap ending in the start room turns the current room and far rooms at once; near rooms turn after the player walks out', () => {
     const book = makeBook(9);
     // The game asks every frame: one wall() after each room entered.
     const frame = (room: string): Record<string, number> => {
@@ -347,22 +390,25 @@ describe('the walls: sight sets and the out-of-sight swap', () => {
     };
     reverseLapFrom(book, 0);
     wall(book);
-    for (const room of [STEP, DIG, MEND, PIT, BRIDGE]) frame(room);
-    expect(book.wallPage(STEP)).toBe(8);
-    for (const room of [SEAL, CRATES, SPRING, GIFT]) frame(room);
-    // In the start room the start room itself is in sight, so it keeps the old page too.
+    for (const room of [GIFT, SPRING, CRATES, SEAL, BRIDGE]) frame(room);
+    expect(book.wallPage(GIFT)).toBe(8);
+    for (const room of [PIT, MEND, DIG, STEP]) frame(room);
+    // The forward lap advances the page. The current room (HALL) is painted with the
+    // new page immediately, and rooms out of sight follow (issue #212).
+    // Rooms in sight of HALL (GIFT, STEP, DOOR) keep the old page until the player leaves.
     expect(frame(HALL)).toEqual({
-      [HALL]: 8, [STEP]: 8, [DIG]: 9, [MEND]: 9, [PIT]: 9, [BRIDGE]: 9, [SEAL]: 9,
-      [CRATES]: 9, [SPRING]: 9, [GIFT]: 8, [DOOR]: 8,
+      [HALL]: 9, [GIFT]: 8, [SPRING]: 9, [CRATES]: 9, [SEAL]: 9, [BRIDGE]: 9,
+      [PIT]: 9, [MEND]: 9, [DIG]: 9, [STEP]: 8, [DOOR]: 8,
     });
     expect(book.shown).toBe(9);
 
-    // Walking out of the start room's sight: the start room, the step room, the treasure room and the way down turn.
-    expect(frame(STEP)[DOOR]).toBe(9);
-    expect(frame(STEP)[GIFT]).toBe(8);
-    expect(frame(DIG)[GIFT]).toBe(9);
-    expect(frame(DIG)[STEP]).toBe(8);
-    expect(frame(BRIDGE)[STEP]).toBe(9);
+    // Walking out of the start room's sight: the gift room, the step room and the way down turn.
+    expect(frame(GIFT)[DOOR]).toBe(9);
+    expect(frame(GIFT)[STEP]).toBe(8);
+    expect(frame(SPRING)[STEP]).toBe(9);
+    expect(frame(SPRING)[GIFT]).toBe(8);
+    // From CRATES, GIFT is still in sight (via SEAL->CRATES->GIFT line), so it stays at 8
+    expect(frame(CRATES)[GIFT]).toBe(8);
   });
 
   it('the camera guard keeps a room in view on its page until the view moves away', () => {
