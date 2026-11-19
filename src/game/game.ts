@@ -92,6 +92,7 @@ import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
+import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
 import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
@@ -290,6 +291,8 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
+  /** The idle windows of the requesting presences that have had their exchange, in seconds left (idle.ts). */
+  private idle = new IdleTimer();
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
   /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
@@ -576,6 +579,7 @@ export class Game {
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
+    this.idle.clear();
     this.pendingPresenceOffer = null;
     this.input.modal = false;
     setMasterTarget(0.35);
@@ -3592,6 +3596,7 @@ export class Game {
     if (pending.id === 'echo') this.keeper.clearFade();
     if (talk.drops) this.dropPresenceReward(pending.id, e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.startIdle(e, pending.id);
     if (leavesAfterOffer(pending.id)) this.releasePresence(e);
     this.hud.presenceCard(talk.name, talk.lines, pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
   }
@@ -3705,6 +3710,7 @@ export class Game {
     this.player.removeAt(index);
     this.hands.placed();
     e.tags.add('met');
+    this.startIdle(e, 'boatman');
     if (landing) this.player.carry(landing, BOATMAN_FERRY_S);
     this.dropPresenceReward('boatman', e, landing ?? undefined);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
@@ -3752,6 +3758,19 @@ export class Game {
     this.presenceReplies.delete(e.id);
   }
 
+  /** A requesting presence stays for its idle window after the exchange, then leaves (idle.ts, pending owner ruling). */
+  private startIdle(e: Enemy, id: PresenceId) {
+    if (IDLE_PRESENCES.has(id)) this.idle.start(e.id, idleWindowOf(this.rng, id));
+  }
+
+  /** Counts the idle windows down on game time; a presence whose window ran out leaves in that frame. */
+  private updateIdle(dt: number) {
+    for (const key of this.idle.tick(dt)) {
+      const e = this.enemies.list.find(enemy => enemy.id === key && enemy.alive);
+      if (e) this.releasePresence(e);
+    }
+  }
+
   private pushPresences() {
     const b = this.player.body;
     for (const e of this.enemies.list) {
@@ -3789,6 +3808,7 @@ export class Game {
     tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
+    this.updateIdle(dt);
     this.touchGuards();
     this.pushPresences();
     this.updateBoundaries();

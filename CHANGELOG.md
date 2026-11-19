@@ -7,6 +7,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- The idle window: after you give The Gardener or The Boatman what they asked for, it stays in its room for a seeded 30 to 60 seconds, then leaves. The length is fixed by the run's seed (#149).
 - Requests from the depths: The Gardener asks you to breathe slowly, and The Boatman asks you to stand and move before the crossing. The card names the request and an always-offered alternative; Give or Keep decides, and keeping costs nothing (#149).
 - The Mender, a dweller that comes to the first vault you open on floor 3, 4 or 5 (once the vault's guardian has left). It asks for one part you carry, on a Give or Keep card; Give gives a practice of quality three, or a special heart, and it stays (#149).
 - The Star-reader, a dweller in a quiet room of one floor of the Tree (floors 1 to 5). It asks for a yes to its light, on a Take or Decline card: a practice of quality one or two, or a special heart. Decline keeps everything, and it stays (#149).

@@ -6,7 +6,7 @@ Built. A dweller of care: it waits in one quiet room of one seeded floor per run
 
 - **Pattern:** care, patience, cultivation.
 - **Health:** one point, which nothing removes (as every presence).
-- **Kind:** a dweller. It keeps its place for the floor; it does not leave when its part is taken.
+- **Kind:** a dweller. It keeps its place after its part is taken for its idle window, a seeded 30 to 60 seconds, then leaves (pending owner ruling: the built version kept its place for the floor; see [REQUESTS.md](../../not-built/presences/REQUESTS.md)).
 - **Request (proposed, pending owner ruling):** the consent card also asks the player to breathe slowly for a moment, seated if they like, with the alternative of saying nothing. Shared mechanism: `src/content/presences/requests.ts`; Give or Keep decides, as before.
 
 ## Where it is
