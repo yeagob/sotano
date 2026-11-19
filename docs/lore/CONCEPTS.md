@@ -5,6 +5,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | Concept | Sources | In the game |
 |---|---|---|
 | **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |
+| **Looking is the way through** | `eye-contact`, `dowsing` | Steering: Eye Contact curves intentions toward what you fear; Dowsing toward what lies hidden |
 | **Insight is electric** | `insight`, `kindling` | Electricity: a sudden flash that runs from one thought to the next (Aha Moment, Resonance, Rapport, Discharge) |
 | **Many views, one truth** | `dual-process`, `chunking` | Several intentions at once (Dual Process, Triangulation); a whole broken into pieces (Chunking) |
 | **As above, so below** | `emerald-tablet`, `kybalion` (correspondence) | The depth and the surface mirror each other and connect in the endgame ([COSMOLOGY.md](COSMOLOGY.md)) |

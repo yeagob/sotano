@@ -6,7 +6,7 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
-This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 46 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The two steering practices that exclude each other (Dowsing and Eye Contact) and Affirmation's copy are explained together in [the aim pair](AIM-PRACTICES.md). The catalogue is the code (`src/content/items/`, 46 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
@@ -14,9 +14,9 @@ This folder has one document per practice, in a folder for its path. The catalog
 |---|---|---|---|
 | [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
 | [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
-| [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
+| [Mind](mind/README.md) | Clarity, focus, belief | 17 | Lucid |
 | [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 13 | Open-hearted |
-| [Will](will/README.md) | Consistency, discipline, small steps compounding | 10 | Resolute |
+| [Will](will/README.md) | Consistency, discipline, small steps compounding | 11 | Resolute |
 
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
 
@@ -47,6 +47,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Thinking, Waiting, Fasting](mind/THINKING-WAITING-FASTING.md) | Mind | 2 | treasure rooms |
 | [Thought Stopping](mind/THOUGHT-STOPPING.md) | Mind | 3 | treasure rooms |
 | [Triangulation](mind/TRIANGULATION.md) | Mind | 4 | treasure rooms, vault rooms |
+| [Dowsing](mind/DOWSING.md) | Mind | 2 | treasure rooms |
 | [Visualization](mind/VISUALIZATION.md) | Mind | 1 | treasure rooms, boss rewards |
 | [Affirmation](emotion/AFFIRMATION.md) | Emotion | 3 | treasure rooms |
 | [Art Therapy](emotion/ART-THERAPY.md) | Emotion | 2 | treasure rooms |
@@ -68,6 +69,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Meditations](will/MEDITATIONS.md) | Will | 4 | treasure rooms, vault rooms |
 | [Remember Breathing](will/REMEMBER-BREATHING.md) | Will | 4 | boss rewards |
 | [Self-Efficacy](will/SELF-EFFICACY.md) | Will | 3 | treasure rooms |
+| [Eye Contact](will/EYE-CONTACT.md) | Will | 3 | treasure rooms |
 | [Self-Reliance](will/SELF-RELIANCE.md) | Will | 4 | treasure rooms, vault rooms |
 | [Stoic Resolve](will/STOIC-RESOLVE.md) | Will | 2 | treasure rooms, boss rewards |
 

@@ -1,0 +1,15 @@
+{
+  "note": "Eye Contact: an intention curves toward the nearest projection within 8 blocks (a doubt off its line), and not toward a block in reach",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "place": [{ "at": [5, 0, 6], "block": "stone" }],
+  "enemies": [{ "def": "doubt", "at": [7, 0, 0] }],
+  "items": ["eyecontact"],
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 240,
+  "report": [0, 30, 60, 240],
+  "actions": [
+    { "t": 0, "do": "look", "at": [8, 1, 3] },
+    { "t": 1, "do": "fire", "ticks": 1 }
+  ]
+}

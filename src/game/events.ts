@@ -190,6 +190,8 @@ export interface IntentSpec {
   volley: number;
   bounces: number;
   homing: number;
+  /** What homing steers toward: the nearest block, or the nearest projection (Eye Contact). */
+  homingTarget: 'block' | 'projection';
 }
 
 export type GameBus = EventBus<GameEvents>;

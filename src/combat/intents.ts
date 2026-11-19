@@ -24,6 +24,7 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
     volley: 1,
     bounces: 0,
     homing: 0,
+    homingTarget: 'block',
     // the shell; items may tint it. A negative intention is your light charred: an ash shell (never
     // cold, which is the projections'); its core and halo dim in draw() (docs/art/DECISIONS.md §7.1)
     color: polarity === 'negative' ? pal('ink.ash') : pal('light.gold'),
@@ -35,6 +36,8 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
 const PHASE_NUDGE = 1e-3;
 const AIM_EVERY = 0.15;
 const AIM_RANGE = 6;
+/** Homing toward a projection reaches further than toward a block (Eye Contact). */
+const AIM_RANGE_PROJECTION = 8;
 const BOUNCE_KEEP = 0.75;
 export const VOLLEY_SHARE = 0.6;
 const VOLLEY_SPREAD = 0.12;
@@ -132,6 +135,8 @@ export interface IntentHooks {
   quenched?(p: THREE.Vector3): void;
   hit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, spec: IntentSpec): void;
   nearestBlock(p: THREE.Vector3, r: number): THREE.Vector3 | null;
+  /** The nearest projection this polarity meets within `r` (a negative intention: hostile ones only), or null. */
+  nearestEnemy(p: THREE.Vector3, r: number, polarity: Polarity): THREE.Vector3 | null;
 }
 
 export class Intents {
@@ -198,7 +203,12 @@ export class Intents {
 
   private steer(t: Intent, dt: number) {
     t.aimT -= dt;
-    if (t.aimT <= 0) { t.aimT = AIM_EVERY; t.aim = this.hooks.nearestBlock(t.pos, AIM_RANGE); }
+    if (t.aimT <= 0) {
+      t.aimT = AIM_EVERY;
+      t.aim = t.spec.homingTarget === 'projection'
+        ? this.hooks.nearestEnemy(t.pos, AIM_RANGE_PROJECTION, t.spec.polarity)
+        : this.hooks.nearestBlock(t.pos, AIM_RANGE);
+    }
     if (!t.aim) return;
     const want = t.aim.clone().sub(t.pos);
     if (want.lengthSq() < 1e-6) return;

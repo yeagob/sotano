@@ -827,6 +827,10 @@ const messages = {
   'teach.triple-jump.lesson': 'Break a big goal into three stages, each built on the one before. Finish the first before you worry about the third. Momentum carries you further than a single effort.',
   'teach.menders-thread.quote': 'Where it broke, it holds.',
   'teach.menders-thread.lesson': 'A repair does not have to hide the break. What you mended can be the strongest part of you, and the seam is the honest record of it.',
+  'teach.dowsing.quote': 'Trust the quiet pull, and look where it leads you.',
+  'teach.dowsing.lesson': 'Some answers come when you stop forcing them and notice where your attention keeps returning. Follow that pull gently, check it against what you know, and dig there with patience.',
+  'teach.eyecontact.quote': 'Look at what frightens you, and let it be only what it is.',
+  'teach.eyecontact.lesson': 'Avoiding a fear keeps it large. In a moment where you feel safe, look at what you have been avoiding for a few seconds and breathe. Doing this with a therapist or a trusted person is often wiser.',
   'teach.visualization.quote': 'See it clearly first, and your body knows the way.',
   'teach.visualization.lesson': 'Before something important, close your eyes and rehearse it in detail: the place, the steps, how it feels to do it well. Include what might go wrong and how you would answer. Then go and do it.',
 

@@ -26,6 +26,7 @@ The folder holds the practices whose first path tag is mind. Practices that also
 | [Resonance](RESONANCE.md) | 3 | none | treasure rooms |
 | [Thought Stopping](THOUGHT-STOPPING.md) | 3 | none | treasure rooms |
 | [Triangulation](TRIANGULATION.md) | 4 | none | treasure rooms, vault rooms |
+| [Dowsing](DOWSING.md) | 2 | none | treasure rooms |
 
 ## Also on this path (first path tag elsewhere)
 

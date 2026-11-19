@@ -17,7 +17,7 @@ import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
-import { AIR, MAT, mat, MATERIALS } from '../content/materials';
+import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
 import {
   DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
@@ -528,6 +528,7 @@ export class Game {
       quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
       hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
       nearestBlock: (p, r) => this.nearestSolid(p, r),
+      nearestEnemy: (p, r, polarity) => this.nearestMeetable(p, r, polarity),
     });
     this.api = this.makeApi();
     this.weaponHost = this.makeWeaponHost();
@@ -1433,6 +1434,7 @@ export class Game {
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
+      placeBlock: (x, y, z, m, src) => this.placeItemBlock(x, y, z, m, src),
     };
   }
 
@@ -2498,6 +2500,35 @@ export class Game {
     // a routed creature (a sky deity) was touched through the router; no listener knows its id (SKY.md §5.7)
     if (kind === 'actor' && this.router.owns(target)) return;
     this.bus.emit('intentHit', { kind, target, x: p.x, y: p.y, z: p.z, nx: n.x, ny: n.y, nz: n.z, vx: v.x, vy: v.y, vz: v.z, intent });
+  }
+
+  /** An item places one copy of a block (Affirmation) into an empty cell of the player's room. Only interior
+   *  room space (never a wall, a door or a doorway), no body in the cell, no element on it, and only materials
+   *  isPlaceable allows. It writes the world as the player's placement does, but emits no blockPlace or blockPlaced. */
+  private placeItemBlock(x: number, y: number, z: number, m: number, _source: string): boolean {
+    if (!this.below || !isPlaceable(m) || !this.world.inside(x, y, z)) return false;
+    if (this.world.get(x, y, z) !== AIR || this.solid(x, y, z) || this.elementAt(x, y, z)) return false;
+    const r = this.roomAt(x, y, z);
+    if (!r || r.id !== this.room || !inRoomSpace(r, x, z) || y < r.y0 || y >= r.y0 + r.height) return false;
+    if (this.doors.inDoorway(x, y, z)) return false;
+    for (const a of this.actors.all()) if (a.body && cellOverlap(a.body, x, y, z)) return false;
+    this.world.set(x, y, z, m);
+    this.debris.clearCell(x, y, z);
+    return true;
+  }
+
+  /** The nearest projection a negative or positive intention meets within r: hostile ones only for a negative
+   *  one, the same rule enemyAt uses. Null when none is in range. */
+  private nearestMeetable(p: THREE.Vector3, r: number, polarity: Polarity): THREE.Vector3 | null {
+    let best: THREE.Vector3 | null = null, bd = r * r;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || e.hidden || e.tags.has('shut') || !this.meets(e, polarity)) continue;
+      if (polarity === 'negative' && e.faction !== 'projection') continue;
+      const c = new THREE.Vector3(e.body.x, e.body.y + e.body.h / 2, e.body.z);
+      const d = c.distanceToSquared(p);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return best;
   }
 
   private nearestSolid(p: THREE.Vector3, r: number): THREE.Vector3 | null {
