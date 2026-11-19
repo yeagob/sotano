@@ -53,12 +53,13 @@ const shape = (f: FloorResult) => JSON.stringify({
   practices: f.practices, altar: f.altar, hole: f.hole, spawn: f.spawn, doors: f.doors,
 });
 
-/** Recorded from the code before the easy layout existed: seed/mastery → hashes of floor 0, its band, the world, floors 1–9. */
+/** Recorded from the code before the easy layout existed: seed/mastery → hashes of floor 0, its band, the world, floors 1–9.
+ *  Floors 1–9 re-recorded at GEN_VERSION 30: the Wanderer's room (WANDERER.md) changes the floors that meet one. */
 const BASELINE: Record<string, { shape: number; band: number; world: number; floors1to9: number }> = {
-  '1/0': { shape: 3137437004, band: 2497052508, world: 607469066, floors1to9: 1543951415 },
-  '1/22': { shape: 358658551, band: 3647524814, world: 3251868360, floors1to9: 1543951415 },
-  '48879/0': { shape: 383656768, band: 1383084198, world: 1967347489, floors1to9: 3615441267 },
-  '48879/22': { shape: 2069991609, band: 492285628, world: 3775088875, floors1to9: 3615441267 },
+  '1/0': { shape: 3137437004, band: 2497052508, world: 607469066, floors1to9: 3954220364 },
+  '1/22': { shape: 358658551, band: 3647524814, world: 3251868360, floors1to9: 3954220364 },
+  '48879/0': { shape: 383656768, band: 1383084198, world: 1967347489, floors1to9: 3908649719 },
+  '48879/22': { shape: 2069991609, band: 492285628, world: 3775088875, floors1to9: 3908649719 },
 };
 
 // ── the walker's routes: door middles and room centres, in the frame each room is carved in ──

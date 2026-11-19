@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
 import {
-  PRESENCE_OFFER_QUESTION, PRESENCE_TALK, TRICKSTER_FIRST_FLOOR, leavesAfterOffer, placeMessengers, placePresences,
-  tricksterFloorOf, unlocksPresence, type PlacedRoom,
+  GIFT_OFFER, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, TRICKSTER_FIRST_FLOOR, findPresenceOffer, leavesAfterOffer, leavesOnDecline,
+  placeMessengers, placePresences, tricksterFloorOf, unlocksPresence, wandererFloorsOf, type PlacedRoom,
 } from '../src/content/presences';
 import { LAST_FLOOR } from '../src/content/levels';
-import { ECHO_GIFT_TABLE, TRICKSTER_DEAL_TABLE, rollEchoGift, rollTricksterPractice } from '../src/content/tables/heart-gifts';
+import { GIFT_HEART_KINDS } from '../src/content/tables/heart-gifts';
+import { ECHO_GIFT_TABLE, TRICKSTER_DEAL_TABLE, WANDERER_GIFT_TABLE, rollEchoGift, rollTricksterPractice, rollWandererGift } from '../src/content/tables/heart-gifts';
 import { PARTS } from '../src/content/parts';
 import { POTION_IDS } from '../src/content/potions';
 import { adoptMeta, defaultMeta, loadMeta, resetMeta, saveMeta, type MetaStore } from '../src/game/meta';
@@ -117,8 +118,8 @@ describe('the Trickster and the Echo: what they take and give', () => {
   });
 
   it('the Trickster has a laugh for a declined trade, and every presence line exists in its talk record', () => {
-    expect(PRESENCE_TALK.trickster.laugh).toBe('presence.trickster.laugh');
-    expect(PRESENCE_TALK.echo.laugh).toBeUndefined();
+    expect(PRESENCE_TALK.trickster.farewell).toBe('presence.trickster.laugh');
+    expect(PRESENCE_TALK.echo.farewell).toBeUndefined();
     expect(PRESENCE_OFFER_QUESTION.trickster).toBe('presence.offer.trade.question');
     expect(PRESENCE_OFFER_QUESTION.echo).toBe('presence.offer.echo.question');
     expect(PRESENCE_OFFER_QUESTION.listener).toBeUndefined();
@@ -173,5 +174,92 @@ describe('the Echo remembers where the last run faded (save record)', () => {
     expect(target.fade).toBeUndefined();
     const kept = resetMeta({ ...defaultMeta(), fade: { floor: 2 } }, memory());
     expect(kept.fade).toEqual({ floor: 2 });
+  });
+});
+
+describe('the Wanderer: where it is (WANDERER.md)', () => {
+  it('a run draws one or two floors from floor 1 to the last floor, the same from the same root', () => {
+    const counts = new Map<number, number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const floors = wandererFloorsOf(new RunRandom(seed));
+      counts.set(floors.length, (counts.get(floors.length) ?? 0) + 1);
+      expect(floors.length === 1 || floors.length === 2).toBe(true);
+      for (const k of floors) { expect(k).toBeGreaterThanOrEqual(1); expect(k).toBeLessThanOrEqual(LAST_FLOOR); }
+      expect(new Set(floors).size).toBe(floors.length);
+      expect(wandererFloorsOf(new RunRandom(seed))).toEqual(floors);
+    }
+    expect(counts.get(1)).toBeGreaterThan(counts.get(2) ?? 0);
+    expect(counts.get(2)).toBeGreaterThan(0);
+  });
+
+  it('the Wanderer waits in a quiet normal room of its floor, never the start room or another presence', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const set = rooms(['start', 'normal', 'normal', 'treasure'], [[], ['doubt'], [], []], [1]);
+      placeMessengers(set.rooms, 5, new RunRandom(seed).fork('floor', 5, 'messenger'), {
+        deadEnds: set.deadEnds, tricksterFloor: 9, wandererFloors: [5],
+      });
+      const placed = set.rooms.filter(r => r.presence === 'wanderer');
+      expect(placed).toHaveLength(1);
+      expect(placed[0].type).toBe('normal');
+      expect(placed[0].enemies).toEqual([]);
+      expect(set.rooms[0].presence).toBeUndefined();
+    }
+  });
+
+  it('the Wanderer waits only on its own floors, and never on floor 0', () => {
+    const set = rooms(['normal', 'normal'], [[], []], [0, 1]);
+    placeMessengers(set.rooms, 6, new RunRandom(4).fork('floor', 6, 'messenger'), {
+      deadEnds: set.deadEnds, tricksterFloor: 9, wandererFloors: [2, 3],
+    });
+    expect(set.rooms.some(r => r.presence)).toBe(false);
+    const tutorial = rooms(['normal', 'normal'], [[], []]);
+    placeMessengers(tutorial.rooms, 0, new RunRandom(4).fork('floor', 0, 'messenger'), {
+      deadEnds: tutorial.deadEnds, tricksterFloor: 0, wandererFloors: [0],
+    });
+    expect(tutorial.rooms.some(r => r.presence)).toBe(false);
+  });
+});
+
+describe('the Wanderer: what it asks and gives', () => {
+  it('asks for no part: its offer needs an empty hand, and a carried part never unlocks it', () => {
+    expect(unlocksPresence('wanderer', undefined)).toBe(true);
+    expect(unlocksPresence('wanderer', PARTS.find(p => p.kind === 'heart')!)).toBe(false);
+    expect(findPresenceOffer('wanderer', [])).toEqual({ index: -1 });
+    expect(findPresenceOffer('wanderer', [PARTS[0]])).toEqual({ index: -1 });
+  });
+
+  it('is a gift, so its consent card says Take and Decline, and it walks on when declined', () => {
+    expect(GIFT_OFFER.has('wanderer')).toBe(true);
+    expect(GIFT_OFFER.has('trickster')).toBe(false);
+    expect(leavesAfterOffer('wanderer')).toBe(true);
+    expect(leavesOnDecline('wanderer')).toBe(true);
+    expect(PRESENCE_TALK.wanderer.farewell).toBe('presence.wanderer.walk');
+    expect(PRESENCE_OFFER_QUESTION.wanderer).toBe('presence.offer.wanderer.question');
+  });
+
+  it('only the Trickster and the Wanderer leave on a refusal', () => {
+    expect(leavesOnDecline('trickster')).toBe(true);
+    expect(leavesOnDecline('echo')).toBe(false);
+    expect(leavesOnDecline('listener')).toBe(false);
+    expect(leavesOnDecline('gardener')).toBe(false);
+  });
+
+  it('its gift is a practice of quality one (weight 3) or one special heart (weight 1), and both come up', () => {
+    expect(WANDERER_GIFT_TABLE.entries.map(e => [e.value, e.weight])).toEqual([['practice', 3], ['heart', 1]]);
+    const rng = new RunRandom(21).fork('wanderer-test');
+    let practices = 0;
+    for (let i = 0; i < 2000; i++) {
+      const gift = rollWandererGift(rng);
+      if (gift.kind === 'item') { practices++; expect(gift.item.quality).toBe(1); }
+      else expect(GIFT_HEART_KINDS).toContain(gift.heart);
+    }
+    expect(practices / 2000).toBeGreaterThan(0.68);
+    expect(practices / 2000).toBeLessThan(0.82);
+  });
+
+  it('the same seed gives the same gift', () => {
+    const a = [1, 2, 3].map(() => rollWandererGift(new RunRandom(88).fork('same')));
+    const b = [1, 2, 3].map(() => rollWandererGift(new RunRandom(88).fork('same')));
+    expect(a).toEqual(b);
   });
 });

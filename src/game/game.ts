@@ -90,13 +90,13 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
@@ -285,7 +285,8 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
-  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried: Carried } | null = null;
+  /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
+  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -3494,7 +3495,7 @@ export class Game {
         return;
       }
       this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried };
-      this.hud.presenceOfferCard(talk.name, offer.carried, PRESENCE_OFFER_QUESTION[id]);
+      this.hud.presenceOfferCard(talk.name, offer.carried, PRESENCE_OFFER_QUESTION[id], GIFT_OFFER.has(id));
       this.input.modal = true;
       this.input.unlockFor();
       return;
@@ -3511,16 +3512,17 @@ export class Game {
     this.input.resume();
 
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
-    const carried = this.player.hand[pending.index];
+    const carried = pending.index < 0 ? undefined : this.player.hand[pending.index];
     if (!e?.alive || !e.tags.has('presence') || e.tags.has('met') || carried !== pending.carried || !unlocksPresence(pending.id, carried)) {
       this.hud.toast('presence.offer.stale');
       return;
     }
     if (!accept) {
       sfx.denied();
-      // the Trickster laughs and is gone; the others keep their place and ask again after the player steps away
-      if (pending.id === 'trickster') {
-        this.hud.presenceCard(PRESENCE_TALK.trickster.name, [PRESENCE_TALK.trickster.laugh!]);
+      // the Trickster laughs and the Wanderer walks on: both leave with nothing taken; the others keep their place and
+      // ask again after the player steps away
+      if (leavesOnDecline(pending.id)) {
+        this.hud.presenceCard(PRESENCE_TALK[pending.id].name, [PRESENCE_TALK[pending.id].farewell!]);
         this.releasePresence(e);
         return;
       }
@@ -3528,8 +3530,11 @@ export class Game {
       return;
     }
 
-    this.player.removeAt(pending.index);
-    this.hands.placed();
+    // a gift asks for no part: nothing leaves the hand
+    if (pending.index >= 0) {
+      this.player.removeAt(pending.index);
+      this.hands.placed();
+    }
     const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
     const eye = this.player.eye, fwd = this.player.forward;
     this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
@@ -3553,6 +3558,10 @@ export class Game {
     if (id === 'listener') return this.dropListenerReward(e);
     if (id === 'trickster') this.launchGiftPickups(e, [{ type: 'item', item: rollTricksterPractice(rng) }]);
     else if (id === 'echo') this.launchGiftPickups(e, [{ type: rollEchoGift(rng) }]);
+    else if (id === 'wanderer') {
+      const gift = rollWandererGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    }
     sfx3.reveal();
   }
 

@@ -125,7 +125,7 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried; questionKey?: MessageKey } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
@@ -553,11 +553,12 @@ export class Hud {
 
   /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
    *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
-  presenceOfferCard(nameKey: MessageKey, carried: Carried, questionKey?: MessageKey) {
+  /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | undefined, questionKey?: MessageKey, gift = false) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried, questionKey };
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -574,16 +575,19 @@ export class Hud {
   private renderPresenceOffer() {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
-    const item = typeof offer.carried === 'number'
-      ? materialName(offer.carried)
-      : isFlask(offer.carried)
-        ? t(POTIONS[offer.carried.potion].name)
-        : partText(offer.carried).name;
+    const carried = offer.carried;
+    const item = carried === undefined
+      ? ''
+      : typeof carried === 'number'
+        ? materialName(carried)
+        : isFlask(carried)
+          ? t(POTIONS[carried.potion].name)
+          : partText(carried).name;
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
       `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
-      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
-      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.gift ? 'presence.offer.take' : 'presence.offer.accept')}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.gift ? 'presence.offer.leave' : 'presence.offer.decline')}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
     this.renderPresenceOfferControls();
     this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
@@ -591,7 +595,9 @@ export class Hud {
 
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
-    if (el) el.textContent = t(forDevice('presence.offer.controls', activeDevice()), controlParams(activeDevice()));
+    if (!el) return;
+    const base = this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
+    el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
   closePresenceOffer() {

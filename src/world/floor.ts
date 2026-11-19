@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { placeMessengers, placePresences, tricksterFloorOf, type RoomPresence } from '../content/presences';
+import { placeMessengers, placePresences, tricksterFloorOf, wandererFloorsOf, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -466,11 +466,13 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   placePresences(rooms, k, rr.fork('floor', k, 'presence'));
-  // the Trickster (a dead end of its seeded floor) and the Echo (where the last run faded, from the save), after the Listener
+  // the Trickster (a dead end of its seeded floor), the Echo (where the last run faded, from the save) and the Wanderer
+  // (one or two seeded floors), after the Listener
   placeMessengers(rooms, k, rr.fork('floor', k, 'messenger'), {
     deadEnds: plan.rooms.map(pr => Object.keys(pr.links).length === 1),
     tricksterFloor: tricksterFloorOf(rr),
     echoFloor: opt.echoFloor,
+    wandererFloors: wandererFloorsOf(rr),
   });
 
   // 2. doorways between linked rooms (each pair once: only east and south links)

@@ -75,6 +75,21 @@ export const ECHO_GIFT_TABLE = table<'key' | 'bomb'>('echo-gift', 'runtime', [
   { value: 'bomb', weight: 1 },
 ]);
 
+// The Wanderer's gift (docs/design/not-built/presences/WANDERER.md, proposed pending the owner's ruling): a tier 1 gift.
+// Three draws in four give a practice of quality one; one in four gives one special heart (an even draw of the five kinds).
+type WandererKind = 'practice' | 'heart';
+export const WANDERER_GIFT_TABLE = table<WandererKind>('wanderer-gift', 'runtime', [
+  { value: 'practice', weight: 3 },
+  { value: 'heart', weight: 1 },
+]);
+const QUALITY_ONE = ITEMS.filter(item => item.quality === 1);
+export const WANDERER_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('wanderer-practice', 'runtime',
+  QUALITY_ONE.map(item => ({ value: item, weight: 1 })),
+);
+export const WANDERER_HEART_TABLE = table<RareHeart>('wanderer-heart', 'runtime',
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
+);
+
 export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   LISTENER_GIFT_TABLE,
   HEALTH_PRACTICE_TABLE,
@@ -86,6 +101,9 @@ export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   TRICKSTER_HEALTH_TABLE,
   TRICKSTER_PRACTICE_TABLE,
   ECHO_GIFT_TABLE,
+  WANDERER_GIFT_TABLE,
+  WANDERER_PRACTICE_TABLE,
+  WANDERER_HEART_TABLE,
 ];
 
 function roll<T>(source: Table<T>, rng: Rng): T {
@@ -114,6 +132,12 @@ export function rollTricksterPractice(rng: Rng): (typeof ITEMS)[number] {
 /** The key or bomb the Echo gives (ECHO_GIFT_TABLE). */
 export function rollEchoGift(rng: Rng): 'key' | 'bomb' {
   return roll(ECHO_GIFT_TABLE, rng);
+}
+
+/** The Wanderer's gift (WANDERER_GIFT_TABLE): a practice of quality one, or one special heart. */
+export function rollWandererGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
+  if (roll(WANDERER_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(WANDERER_PRACTICE_TABLE, rng) };
+  return { kind: 'heart', heart: roll(WANDERER_HEART_TABLE, rng) };
 }
 
 export function rollCreatureGrowthHeart(rng: Rng): HeartKind | null {
