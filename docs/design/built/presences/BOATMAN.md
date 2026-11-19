@@ -19,6 +19,7 @@ Built, in part. A dweller of letting go to move on. It waits by the deep water o
 - **Give.** One block leaves the hand. The Boatman carries the player across the deep water to the island (the `K` tile, read through the room's flips) in about 1.6 seconds, and the gift lies there, next to the player.
 - **The gift.** Rolled from the drops stream when the ferry starts: three in four a practice of quality two, one in four one special heart (an even draw of the five heart kinds). It is the tier 2 gift of the design.
 - **Keep.** Nothing changes; the Boatman asks again after the player steps away and returns. The player keeps the block.
+- **Request (proposed, pending owner ruling):** the card also asks the player to stand, roll the shoulders and cross to the water and back, with the alternative of lifting the shoulders once while seated. Give or Keep decides, as before.
 - **Staying.** The Boatman stays on the shore and does not offer again: it has met the player.
 
 ## Owed (not checked)

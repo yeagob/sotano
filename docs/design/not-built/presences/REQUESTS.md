@@ -2,7 +2,7 @@
 
 # Requests from the depths
 
-Status: **decided** (the owner approved requests, not orders, and the five allowed requests, on 2026-10-27). None of this is built. The Boundary's request card, the first build of this design, was replaced on 2026-11-09 by its meditation app (see [built/presences/MEDITATION-APP.md](../../built/presences/MEDITATION-APP.md)), which keeps the safety rules below except rule 8, by the owner's decision. The idle window, the trust meter and the requests of the other presences are still to build. The readings of the idle window and the reward table are still to be confirmed.
+Status: **decided** (the owner approved requests, not orders, and the five allowed requests, on 2026-10-27). None of this is built. The Boundary's request card, the first build of this design, was replaced on 2026-11-09 by its meditation app (see [built/presences/MEDITATION-APP.md](../../built/presences/MEDITATION-APP.md)), which keeps the safety rules below except rule 8, by the owner's decision. Built so far: the request line and its alternative on the consent card (`src/content/presences/requests.ts`), for the Gardener (breathe) and the Boatman (move); the exchange still completes only on Give. Still to build: the idle window (a timer, see below), the trust meter and the requests of the other presences (the Child draws, the Elder stands still and writes). The readings of the idle window and the reward table are still to be confirmed.
 
 Some presences ask for something in the real world, in a line of story, and then let the player go on. The game is a game: nothing here is a therapy, a cure or a test of the player.
 

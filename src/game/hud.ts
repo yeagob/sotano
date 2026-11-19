@@ -61,6 +61,9 @@ const MAP = {
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
 
+/** A presence's request as the consent card shows it: what it asks, and the alternative (requests.ts, REQUESTS.md). */
+export interface PresenceRequestText { ask: MessageKey; alt: MessageKey }
+
 /** "Floor 3 · The rain": the number and the circle's image (docs/design/LEVELS.md). */
 export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
@@ -125,7 +128,7 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
   /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
    *  navigate action has reached; a tap or the confirm action picks one. */
   private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number } | null = null;
@@ -560,11 +563,11 @@ export class Hud {
   /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
    *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
   /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
-  presenceOfferCard(nameKey: MessageKey, carried: Carried | undefined, questionKey?: MessageKey, gift = false) {
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried, questionKey, gift };
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -592,6 +595,7 @@ export class Hud {
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
       `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      (offer.request ? `<span class="offer-request">${th(offer.request.ask)}<small>${th(offer.request.alt)}</small></span>` : '') +
       `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.gift ? 'presence.offer.take' : 'presence.offer.accept')}</button>` +
       `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.gift ? 'presence.offer.leave' : 'presence.offer.decline')}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
