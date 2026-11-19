@@ -32,7 +32,7 @@ Going down asks a price. The toll window lists what you carry (keys, bombs, hear
 
 Esc, or Tab, and the touch tab button open one screen with two tabs:
 
-- **Menu.** The pause card: resume, the controls, the language choice, the graphics settings and the seed.
+- **Menu.** The pause card: resume, the controls, the language choice, the graphics settings and the seed. It has the pixel finish of the achievement notice (issue #223): a gold bar down the card's left, the tabs, buttons, headings and the field of view in Pixelify Sans at 20 px, and chamfered, bevelled buttons.
 - **Practices.** The inventory: every practice you hold as a tile, and the carried items in your hand above them (the same slots as the HUD's hand). The chosen practice opens below in three blocks, always in this order (issue #202): **the teaching** (a phrase that carries the practice into everyday life, two or three lines on how to live it, and its credit), **in the game** (its description and its effect, with the numbers) and **the stats** it changes (▲ up in gold, ▼ down in cold). Every practice has its teaching, in every language. The tab has the pixel finish of the achievement notice: the name in Pixelify Sans at 28 px, the title at 40 px, the block headings at 20 px. The pause card shows no inventory of its own; the inventory is one tap away on the same screen.
 
 Opening the screen pauses the world on every device. Clicking outside it on touch resumes the game.

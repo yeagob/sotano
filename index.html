@@ -558,6 +558,32 @@
       #banner .offer-actions button { width: 100%; }
     }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
+    /* ── the pause card's pixel pass (issue #223): the achievement notice's finish, kept in this one block. Pixelify Sans
+       only at 20 px here (tabs, buttons, headings, the field of view); chamfered (--cut) and bevelled controls; a 2 u
+       gold accent bar on the card's left like the notice's; palette tokens only (DECISIONS §10.2). ── */
+    #overlay > .card { border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #overlay .tabs button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; padding: 8px 16px 9px;
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay .tabs button[aria-selected="true"] { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #overlay .tabs button:hover, #overlay .tabs button:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #overlay .cover { border-bottom: var(--u) solid var(--ui-line); }
+    #overlay .actions button { font: 20px/1.1 "Pixelify Sans", system-ui, sans-serif; padding: 10px 14px; box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay #play { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #overlay .actions button:hover, #overlay .actions button:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #overlay h2 { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-gold); margin: 0 0 8px; }
+    #overlay .panel-menu h2::before { content: '\25C6  '; }
+    #overlay #lang button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; padding: 5px 8px 6px; box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay #lang button:hover, #overlay #lang button:focus-visible, #overlay #lang button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #graphics output { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    #overlay #graphics button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; }
+    #overlay #controls td:first-child { color: var(--ui-gold); }
+    #overlay #controls tr + tr td { border-top: 1px solid var(--ui-line); }
+    #overlay .credits .coffee, #overlay .credits .bug { box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay .seed { font-variant-numeric: tabular-nums; }
+    /* a phone held sideways: the two-column controls wrap their key names instead of running off the card */
+    body.dev-touch #controls tbody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    body.dev-touch #overlay #controls td:first-child { white-space: normal; }
+    body.dev-touch #overlay .actions button { padding: 12px 14px; }
   </style>
 </head>
 <body>
