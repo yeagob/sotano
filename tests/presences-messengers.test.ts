@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
 import {
-  GIFT_OFFER, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, TRICKSTER_FIRST_FLOOR, findPresenceOffer, leavesAfterOffer, leavesOnDecline,
+  GIFT_OFFER, PRESENCE_KEY, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, TRICKSTER_FIRST_FLOOR, gardenerFloorOf, findPresenceOffer, leavesAfterOffer, leavesOnDecline,
   placeMessengers, placePresences, tricksterFloorOf, unlocksPresence, wandererFloorsOf, type PlacedRoom,
 } from '../src/content/presences';
 import { LAST_FLOOR } from '../src/content/levels';
@@ -261,5 +261,46 @@ describe('the Wanderer: what it asks and gives', () => {
     const a = [1, 2, 3].map(() => rollWandererGift(new RunRandom(88).fork('same')));
     const b = [1, 2, 3].map(() => rollWandererGift(new RunRandom(88).fork('same')));
     expect(a).toEqual(b);
+  });
+});
+
+describe('the Gardener: where it waits and what it asks (GARDENER.md)', () => {
+  it('a run draws one floor from floor 1 to the last, the same from the same root, never the tutorial', () => {
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const k = gardenerFloorOf(new RunRandom(seed));
+      expect(k).toBeGreaterThanOrEqual(1);
+      expect(k).toBeLessThanOrEqual(LAST_FLOOR);
+      expect(gardenerFloorOf(new RunRandom(seed))).toBe(k);
+      seen.add(k);
+    }
+    expect(seen.size).toBeGreaterThan(3);
+  });
+
+  it('the Gardener waits in a quiet normal room of its floor, and only there', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const set = rooms(['start', 'normal', 'normal'], [[], ['doubt'], []]);
+      placeMessengers(set.rooms, 3, new RunRandom(seed).fork('floor', 3, 'messenger'), {
+        deadEnds: set.deadEnds, tricksterFloor: 9, gardenerFloor: 3,
+      });
+      const placed = set.rooms.filter(r => r.presence === 'gardener');
+      expect(placed).toHaveLength(1);
+      expect(placed[0].enemies).toEqual([]);
+      expect(set.rooms[0].presence).toBeUndefined();
+      const elsewhere = rooms(['normal', 'normal'], [[], []]);
+      placeMessengers(elsewhere.rooms, 4, new RunRandom(seed).fork('floor', 4, 'messenger'), {
+        deadEnds: elsewhere.deadEnds, tricksterFloor: 9, gardenerFloor: 3,
+      });
+      expect(elsewhere.rooms.some(r => r.presence)).toBe(false);
+    }
+  });
+
+  it('asks for a flesh part, gives nothing, and stays: a dweller, not a messenger', () => {
+    expect(PRESENCE_KEY.gardener).toBe('flesh');
+    expect(unlocksPresence('gardener', PARTS.find(p => p.kind === 'flesh')!)).toBe(true);
+    expect(unlocksPresence('gardener', PARTS.find(p => p.kind === 'heart')!)).toBe(false);
+    expect(leavesAfterOffer('gardener')).toBe(false);
+    expect(leavesOnDecline('gardener')).toBe(false);
+    expect(PRESENCE_OFFER_QUESTION.gardener).toBe('presence.offer.gardener.question');
   });
 });

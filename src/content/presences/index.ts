@@ -49,6 +49,7 @@ export const PRESENCE_OFFER_QUESTION: Partial<Record<PresenceId, MessageKey>> = 
   trickster: 'presence.offer.trade.question',
   echo: 'presence.offer.echo.question',
   wanderer: 'presence.offer.wanderer.question',
+  gardener: 'presence.offer.gardener.question',
 };
 
 /** The presences whose offer is a gift to take, not a part to give: the card says Take and Decline, not Give and Keep. */
@@ -138,6 +139,13 @@ export function wandererFloorsOf(run: RunRandom): number[] {
   return out.sort((a, b) => a - b);
 }
 
+/** The Gardener's floor: one seeded floor from floor 1 to the last floor (GARDENER.md, proposed). Never the tutorial. */
+export function gardenerFloorOf(run: RunRandom): number {
+  const floors: number[] = [];
+  for (let k = 1; k <= LAST_FLOOR; k++) floors.push(k);
+  return run.fork('presence', 'gardener').pick(floors);
+}
+
 export interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 
 export interface MessengerPlan {
@@ -149,6 +157,8 @@ export interface MessengerPlan {
   echoFloor?: number;
   /** The floors on which this run's Wanderer waits (wandererFloorsOf); none when absent. */
   wandererFloors?: readonly number[];
+  /** The floor on which this run's Gardener waits (gardenerFloorOf); none when absent. */
+  gardenerFloor?: number;
 }
 
 /** One Listener per Tree floor, in a quiet normal room. */
@@ -193,6 +203,17 @@ export function placeMessengers(rooms: PlacedRoom[], floor: number, rng: Rng, pl
       const room = rooms[rng.pick(pool)];
       room.enemies = [];
       room.presence = 'wanderer';
+    }
+  }
+  // the Gardener last, in a quiet normal room that holds no other presence (GARDENER.md)
+  if (plan.gardenerFloor === floor) {
+    const left = rooms.map((_, i) => i).filter(i => rooms[i].type === 'normal' && rooms[i].presence === undefined);
+    const quiet = left.filter(i => rooms[i].enemies.length === 0);
+    const pool = quiet.length ? quiet : left;
+    if (pool.length) {
+      const room = rooms[rng.pick(pool)];
+      room.enemies = [];
+      room.presence = 'gardener';
     }
   }
 }

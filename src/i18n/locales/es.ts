@@ -204,6 +204,7 @@ export const ES: Catalog = {
     'presence.wanderer.walk': 'Entonces sigue. Estaré en otro camino.',
     'presence.wanderer.silent': 'Eso no me alcanza. Dime algo más amable.',
     'presence.wanderer.hint': 'Camina conmigo un momento, y toma lo que te ofrezco.',
+    'presence.offer.gardener.question': '¿Entregar {item} a {presence}? Las raíces guardarán lo que sostenía.',
     'presence.offer.wanderer.question': 'Cada camino se recorre un paso a la vez. ¿Tomas el regalo que te ofrezco para el siguiente?',
     'presence.offer.question': '¿Entregar {item} a {presence}?',
     'presence.offer.accept': 'Entregar',

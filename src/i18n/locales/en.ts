@@ -230,6 +230,7 @@ const messages = {
   'presence.wanderer.walk': 'Then walk on. I will be on another road.',
   'presence.wanderer.silent': 'That does not reach me. Say something kinder.',
   'presence.wanderer.hint': 'Walk with me a moment, and take what I hold out to you.',
+  'presence.offer.gardener.question': 'Give {item} to {presence}? The roots will keep what it held.',
   'presence.offer.wanderer.question': 'Every road is walked one step at a time. Take the gift I hold out for the next one?',
   'presence.offer.question': 'Offer {item} to {presence}?',
   'presence.offer.accept': 'Give',
