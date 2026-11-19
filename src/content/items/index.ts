@@ -51,6 +51,10 @@ import thoughtstopping from './thoughtstopping';
 import triangulation from './triangulation';
 import tripleJump from './triple-jump';
 import mendersThread from './menders-thread';
+import pressurevalve from './pressurevalve';
+import controlledburn from './controlledburn';
+import boltfromtheblue from './boltfromtheblue';
+import serendipity from './serendipity';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -61,6 +65,7 @@ export const ITEMS: readonly ItemDef[] = [
   lionsmane, occamsrazor, kiai,
   ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
   drlauncher, tripleJump, mendersThread,
+  pressurevalve, controlledburn, boltfromtheblue, serendipity,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

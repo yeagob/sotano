@@ -1,0 +1,19 @@
+{
+  "note": "All four bomb practices held together: three bombs and an explosion among crates, two projections in reach; no loop, every blast settles",
+  "rows": [".............", "....ccccc....", "....crrrc....", "....cr.rc....", "....crrrc....", "....ccccc....", "............."],
+  "items": ["pressurevalve", "controlledburn", "boltfromtheblue", "serendipity"],
+  "player": [0, 0, 0],
+  "god": true,
+  "enemies": [
+    { "def": "doubt", "at": [9, 0, 3] },
+    { "def": "doubt", "at": [3, 0, 6] }
+  ],
+  "ticks": 600,
+  "report": [0, 300, 600],
+  "actions": [
+    { "t": 0, "do": "bomb", "at": [6, 0, 3], "fuse": 1.8 },
+    { "t": 120, "do": "bomb", "at": [5, 0, 2], "fuse": 1.8 },
+    { "t": 240, "do": "bomb", "at": [7, 0, 4], "fuse": 1.8 },
+    { "t": 360, "do": "explode", "at": [6, 0, 5], "radius": 2.6, "damage": 40 }
+  ]
+}

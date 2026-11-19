@@ -54,6 +54,11 @@ export interface GameEvents {
    *  `damage` is for blocks, `actorDamage` (points) for every actor in range.
    *  Explosions are queued and run a few per frame; `cause` says which chain this one belongs to. */
   explosion: { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause };
+  /** One of the player's own bombs or missiles went off (`source` 'bomb' or 'missile'), either polarity:
+   *  a negative blast after it hit its blocks and actors, a love explosion (positive) after it mended them.
+   *  `radius` is the blast's real radius. Never a volatile cube or another item's explosion. `acted` holds
+   *  the ids of the practices that already acted on this blast: a practice held twice acts once per blast. */
+  bombBlast: { x: number; y: number; z: number; radius: number; polarity: Polarity; source: string; acted: Set<string> };
   /** Loot rolled for a broken block (after the break). Hooks may add, remove or replace drops. */
   blockLoot: { x: number; y: number; z: number; material: number; source: string; drops: PickupKind[] };
 

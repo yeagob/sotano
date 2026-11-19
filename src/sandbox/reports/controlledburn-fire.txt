@@ -1,0 +1,37 @@
+# controlledburn-fire — Controlled Burn, mortal: a bomb blast ignites the crates around it and burns a projection; the player stands two blocks away in the fire's reach and is not hurt by the fire of the blast
+floor 1 · seed 1 · room 13×6×5 · 360 ticks (6.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 2.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices controlledburn · synergies —
+  doubt#2 hp 24.0/24 · projection · at 7.5 0.0 3.5
+  blocks crate 20
+  elements —
+  cubes — · pickups 0
+
+t 150 (2.5 s)
+  player hp 24/24 · at 2.5 0.0 3.5 · hand [crate brick] · bombs 99 · keys 99
+  practices controlledburn · synergies —
+  blocks crate 5
+  elements —
+  cubes brick 9 · crate 14 · pickups 11
+  rewards red-heart
+  events actorDamage:doubt<explosion 1 · actorDamage:doubt<item 1 · actorDamage:doubt<kick 4 · actorDeath:doubt 1 · blockBreak:brick 10 · blockBreak:crate 15 · blockDamage:brick 10 · blockDamage:crate 126 · blockLoot:brick 10 · blockLoot:crate 15 · bombBlast 1 · explosion 1 · roomEnter 1 · touchCube:brick 1 · touchCube:crate 1
+
+t 360 (6.0 s)
+  player hp 24/24 · at 2.5 0.0 3.5 · hand [crate brick] · bombs 99 · keys 99
+  practices controlledburn · synergies —
+  blocks crate 5
+  elements —
+  cubes brick 9 · crate 14 · pickups 11
+  rewards red-heart
+
+map t 360 · h 0
+  .............
+  .......cc....
+  ........c....
+  ........c....
+  ........c....
+  .............
+
+legend c crate

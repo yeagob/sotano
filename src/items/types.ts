@@ -55,6 +55,8 @@ export interface ItemApi {
   freeze(id: ActorId, seconds: number): void;
   frighten(id: ActorId, seconds: number): void;
   igniteArea(x: number, y: number, z: number, radius: number): void;
+  /** For `seconds`, fire never hurts you within `radius` of (x, y, z): the fire of a blast of yours (Controlled Burn). */
+  shieldFire(x: number, y: number, z: number, radius: number, seconds: number): void;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
   tagCube(cube: number, tag: string): void;

@@ -829,6 +829,14 @@ const messages = {
   'teach.menders-thread.lesson': 'A repair does not have to hide the break. What you mended can be the strongest part of you, and the seam is the honest record of it.',
   'teach.visualization.quote': 'See it clearly first, and your body knows the way.',
   'teach.visualization.lesson': 'Before something important, close your eyes and rehearse it in detail: the place, the steps, how it feels to do it well. Include what might go wrong and how you would answer. Then go and do it.',
+  'teach.pressurevalve.quote': 'What you let out on purpose does not have to burst.',
+  'teach.pressurevalve.lesson': 'When anger or pressure builds, find a safe outlet before it finds one for you: walk, write it down, say it to someone you trust. Naming the feeling lowers its heat. Pressure released in time does not need to explode.',
+  'teach.controlledburn.quote': 'A small fire you light yourself keeps the big one away.',
+  'teach.controlledburn.lesson': 'Deal with small stresses on purpose, in doses you can handle: a hard conversation you plan, a task you finish before it piles up. Let the pressure out a little at a time, while you can see it. Waiting until everything burns at once is the dangerous path.',
+  'teach.boltfromtheblue.quote': 'Insight arrives all at once, and lights up what is around it.',
+  'teach.boltfromtheblue.lesson': 'Stay with a problem you cannot solve yet, then let it rest. When the answer comes as a flash, write it down at once, while the picture is still bright. Then test it step by step: the flash shows the direction, the work shows the way.',
+  'teach.serendipity.quote': 'Stay open, and what you were not looking for may find you.',
+  'teach.serendipity.lesson': 'Make room for chance: try new things, talk to people outside your usual circle, take a detour now and then. Notice the small surprises and keep the ones that help. Luck favours the mind that is ready to notice it.',
 
   // ── paths (item tags) ──
   'path.body': 'body',
