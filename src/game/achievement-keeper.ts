@@ -14,7 +14,8 @@ import type { MessageKey } from '../i18n';
 import type { Params } from '../i18n';
 import { qualityStars } from '../render/icons';
 import { isUnlocked, mastery, track, type Payload } from './achievements';
-import { adoptMeta, resetMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
+import { completion, type Completion } from './completion';
+import { adoptMeta, emptyFirsts, resetMeta, saveMeta, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 
 /** One achievement earned, waiting for its card. `level` is the mastery level once it counts (1 to 100). */
 export interface AchievementNotice {
@@ -102,6 +103,23 @@ export class AchievementKeeper {
     this.record.pact = true;
     const merged = saveMeta(this.record, this.store);
     if (merged) adoptMeta(this.record, merged);
+  }
+
+  /** The completion percentage now (completion.ts): the achievements, the page and the first-time records of this record. */
+  get completion(): Completion { return completion(this.record); }
+
+  /**
+   * Records a first time for the completion percentage (COMPLETION.md): the id is kept once, saved at once like an unlock.
+   * Returns whether it was new. Nothing is written in the sandbox, the lab or a read-only record.
+   */
+  recordFirst(kind: FirstKind, id: string): boolean {
+    if (!this.live || this.record.readOnly) return false;
+    const have = this.record.firsts?.[kind] ?? [];
+    if (have.includes(id)) return false;
+    this.record.firsts = { ...emptyFirsts(), ...this.record.firsts, [kind]: [...have, id] };
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+    return true;
   }
 
   /**

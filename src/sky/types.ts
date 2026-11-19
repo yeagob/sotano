@@ -836,6 +836,8 @@ export interface SkyHost {
   bar(b: { name: MessageKey; ratio: number } | null): void;
   /** The HUD's place label. */
   place(key: MessageKey): void;
+  /** The player first stands on a guardian floor (1 to 5): its deity and herd are met (COMPLETION.md). React only. */
+  meetFloor(animal: Animal): void;
   /** A pickup in the sky's Pickups. */
   gift(itemId: string, x: number, y: number, z: number): void;
   travel(t: Travel): void;
