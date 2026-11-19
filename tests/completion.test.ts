@@ -133,7 +133,9 @@ describe('the completion percentage', () => {
     expect(shipped.floors.slice(0, LEVELS.length)).toEqual(LEVELS.map(l => String(l.floor)));
     expect(shipped.floors).toEqual(expect.arrayContaining(['tree.roots', 'tree.canopy', 'tree.stars', 'sky.panda', 'sky.horse']));
     // every projection, creature, presence, guardian and herd the player can meet (the Spiked Entity is not wired yet)
-    expect(shipped.bestiary).toHaveLength(66);
+    expect(shipped.bestiary).toHaveLength(76);
+    // every presence of #149 counts once met (placed or come), with the Boundary
+    for (const id of ['gardener', 'listener', 'trickster', 'echo', 'wanderer', 'elder', 'cartographer', 'child', 'witness', 'boatman', 'mender', 'star-reader', 'boundary']) expect(shipped.bestiary).toContain(id);
     expect(shipped.bestiary).toEqual(expect.arrayContaining(['gardener', 'listener', 'boundary', 'guardian-panda', 'herd-horse', 'wonder', 'procrastination-c']));
     expect(shipped.practices).toHaveLength(ITEMS.length);
     expect(shipped.recipes).toEqual([...POTION_IDS]);

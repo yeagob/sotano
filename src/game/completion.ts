@@ -26,7 +26,7 @@ export const PART_WEIGHT: Readonly<Record<Part, number>> = {
 /**
  * The ids the percentage counts, read from the content (or given, in tests). Three routes make the floors: the descent
  * (`LEVELS`, by number), the giant tree (`TREE_STORIES`, `tree.<story>`) and the sky (`DEITIES`, `sky.<animal>`).
- * The bestiary holds every projection and creature that is spawned, the three Presences (the Boundary included) and the
+ * The bestiary holds every projection and creature that is spawned, every Presence (the Boundary included) and the
  * sky's guardians and herds (`guardian-<animal>`, `herd-<animal>`). The Spiked Entity is not counted: it is not wired in
  * the game yet (COMPLETION.md §2).
  */

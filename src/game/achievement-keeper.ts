@@ -105,6 +105,39 @@ export class AchievementKeeper {
     if (merged) adoptMeta(this.record, merged);
   }
 
+  /** How many requests the player has answered "yes" to, in any run (the save's `requests`). */
+  get requests(): number { return this.record.requests ?? 0; }
+
+  /** A request was answered "yes" (REQUESTS.md): the count goes up by one and is saved at once. It is the only request
+   *  data kept. Nothing is written in the sandbox, the lab or a read-only record. */
+  recordRequest(): void {
+    if (!this.live || this.record.readOnly) return;
+    this.record.requests = (this.record.requests ?? 0) + 1;
+    this.save();
+  }
+
+  /** The depth the last run faded on, for the Echo (the save's `fade`), or undefined when no Echo waits. */
+  get fade(): number | undefined { return this.record.fade?.floor; }
+
+  /** The run ended by a death on `floor` (ECHO.md). Only dungeon floors count, and only in a live run; the save is written at once. */
+  recordFade(floor: number): void {
+    if (!this.live || this.record.readOnly || floor < 1) return;
+    this.record.fade = { floor };
+    this.save();
+  }
+
+  /** The Echo was met: its place is forgotten, so it waits only once. Nothing is written in the sandbox or a read-only record. */
+  clearFade(): void {
+    if (!this.live || this.record.readOnly || this.record.fade === undefined) return;
+    delete this.record.fade;
+    this.save();
+  }
+
+  private save(): void {
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+  }
+
   /** The completion percentage now (completion.ts): the achievements, the page and the first-time records of this record. */
   get completion(): Completion { return completion(this.record); }
 

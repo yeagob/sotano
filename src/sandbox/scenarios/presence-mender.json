@@ -1,0 +1,21 @@
+{
+  "note": "The Mender asks two parts of different kinds on one card for a gift of quality three or a special heart, and its Thread; Give takes both parts, Keep changes nothing (MENDER.md, #228 D10 and D11)",
+  "floor": 1,
+  "seed": 4182,
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [3, 0, 3],
+  "hand": ["doubt.flesh", "doubt.heart"],
+  "enemies": [
+    { "def": "mender", "at": [5, 0, 3] }
+  ],
+  "ticks": 60,
+  "report": [0, 1, 30, 60]
+}

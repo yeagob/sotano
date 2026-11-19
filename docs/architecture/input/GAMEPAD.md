@@ -18,6 +18,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | polarity | LB |
 | choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
+| star map | View (in play or on the screen): opens the star map tab; View again or B closes it. On the pause card View stays New run |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
 | book | X, on the pause card or the death screen (download the book at 100%) |

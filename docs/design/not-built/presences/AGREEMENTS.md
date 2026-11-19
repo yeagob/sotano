@@ -2,7 +2,7 @@
 
 # Agreements: things you bring
 
-Status: **proposal** (design text, bestiary section 8.6). The owner has not confirmed the agreement readings k to o (design section 13).
+Status: **partly built** (issue #149; multi-part cards built for #228, D11, issue #233). The Trickster and the Echo take a part on a consent card, the Boatman one block, and the Mender two parts of different kinds on one multi-part card; the other agreements are proposals, and the owner has not confirmed the readings k to o (design section 13). The agreements not built are listed below, with the reason.
 
 Some presences make an agreement instead of asking for an action: "bring me this". They ask for objects from the world: hard, valuable materials, or parts of projections. The player delivers them in person, in the presence's room. Handing the item over closes the agreement and gives its gift. Every delivery is opt-in: the presence names all requested objects and asks before taking any of them. Declining costs nothing and leaves the agreement open.
 
@@ -32,10 +32,37 @@ Some presences make an agreement instead of asking for an action: "bring me this
 
 ## What is built under it
 
-Parts exist in the build: a released projection can leave one of its parts as a pickup (see the projections' documents). No presence asks for one yet, and no agreement is tracked.
+Parts exist in the build: a released projection can leave one of its parts as a pickup (see the projections' documents). Two presences ask for one, each with a consent card that names the exact part and keeps everything on a refusal: the Trickster (a heart, for a practice of quality three) and the Echo (any one part in hand, for a key or a bomb). Both are in [built/presences](../../built/presences/README.md), with their proposed defaults. The other agreements in the table are not built.
+
+**Multi-part cards (built; owner, #228, D11).** One consent card may name up to three objects. The card names every object of the exchange in one sentence ("A and B", "A, B and C", one message per count in each language). Nothing is given before a confirmed yes: on Give, every named object must still be in its slot, or the card is stale and nothing is taken. Declining keeps everything. The Mender is the first: two parts of different kinds, read from the interaction item down. Code: `PRESENCE_PARTS` and `findPresenceOffer` in `src/content/presences/index.ts`, `offerList` in `src/game/hud.ts`, `resolvePresenceOffer` in `src/game/game.ts`. Tested in `tests/presences-mender-starreader.test.ts` and `tests/presences-trust.test.ts`.
 
 ## Open questions
 
 - **The readings.** The owner has not confirmed the agreement readings (design section 13, k to o).
 - **Parts.** Parts are built as pickups with names taken from the projection. Agreements need the parts' names and kinds to match the design's table of four (flesh, heart, mind, essence).
 - **The deep.** "From the deep" needs a rule for which floors count as deep.
+
+## Moved, not built (issue #149)
+
+Each of these is a proposal. None is built, and the reason is what the build lacks today.
+
+| Presence | Agreement in the design | Why it is not built |
+|---|---|---|
+| The Child | Three loose cubes of different materials | The Child's build is built (three blocks, any shape). Its agreement needs three materials in hand; the consent card names one thing at a time |
+| The Wanderer | The mind of the first pattern met | It gives a gift and asks for nothing; the agreement would be a new request kind, which is not decided |
+| The Listener | A heart of a pattern released | The Listener's heart is built as its reward input (LISTENER.md). Its agreement is the Lesson, not built (see COVENANT.md) |
+| The Cartographer | One ore from every zone crossed | The ores are built (README D13); the Cartographer charts the floor for the ore of its own zone (D13g). The ore of every zone crossed needs a multi-part card and a count of zones crossed, which is not tracked |
+| The Elder | A page of ledger stone and the essence of a rule | Ledger stone is not a material, and the Ledger Halls are not built (ELDER.md). The Elder gives the Page of the Covenant instead, on its choice card |
+| The Mender | Three shards of different essences | Built as a multi-part card of two parts of different kinds (floors 3 to 5). Three shards wait for a Mender below floor 5 |
+| The Witness | One part of each pattern released | Needs the Silence below floor 9 and the parts of every pattern (not built) |
+
+## Decided by agent for #149 (pending owner ruling)
+
+- **Multi-part cards.** Built by the owner's ruling (README D11, #228).
+- **Materials.** Ruled by the owner on 2026-11-19 (README D13): the root, the moss and the zone ores are built. The Gardener's agreement is built, one card per object (D13f); the Cartographer's is built for the ore of its own zone (D13g).
+- **The readings k to o.** Accepted as built (README D6).
+
+## Owed to the owner
+
+- **Multi-part cards for the Child and the Witness.** The card exists (D11); the Child's three cubes need materials in hand on the card, and the Witness's set needs the Silence. Their agreements are not built.
+- **The readings k to o.** Still open (design section 13).

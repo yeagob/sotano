@@ -11,6 +11,7 @@ import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { grownScale, setScale, shrunkScale } from './growth';
+import { MENDED_TAG } from '../content/presences/mended';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
@@ -79,6 +80,8 @@ export interface View {
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
 const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
+/** A mended ally (the Mender's integration, mended.ts) glows with repair's gold instead of the ally's ember (DECISIONS.md §14.4). */
+const MENDED_GLOW = new THREE.Color(pal('light.gold')).multiplyScalar(0.25);
 /** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
  *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest
  *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
@@ -683,7 +686,7 @@ export class Enemies {
     // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
       if (e.flash > 0) m.emissive.copy(HURT_FLASH);
-      else if (e.faction === 'self') m.emissive.copy(ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
+      else if (e.faction === 'self') m.emissive.copy(e.tags.has(MENDED_TAG) ? MENDED_GLOW : ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
       else if (e.warmth > 0) m.emissive.copy(WARM_GLOW).multiplyScalar(e.warmth);
       else m.emissive.setRGB(0, 0, 0);
     }

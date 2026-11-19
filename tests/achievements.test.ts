@@ -27,7 +27,7 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 48 achievements: the 40 of #147 (36 plus the 4 book pages), the 6 of #179 (Down to the Roots, Root to Crown, Into the Crown, Mind Crafter, Turning Back, The Unbreakable Floor), the final one (Made Whole, completion reaches 100%) and the hour of meditation (An Hour of Stillness), and is well formed', () => {
+  it('holds the 48 achievements: the 40 of #147 (36 plus the 4 book pages), the 6 of #179 (Down to the Roots, Root to Crown, Into the Crown, Mind Crafter, Turning Back, The Unbreakable Floor), the final one (Made Omh, completion reaches 100%) and the hour of meditation (An Hour of Stillness), and is well formed', () => {
     expect(ACHIEVEMENTS).toHaveLength(48);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });

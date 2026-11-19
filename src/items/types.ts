@@ -102,8 +102,9 @@ export interface Effect {
   weapon?: { id: WeaponId; priority: number };
 }
 
-/** 'sky' is the sky realm's gift pool: no pool draws from it at random (ItemPools leaves its items out). */
-export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky';
+/** 'sky' is the sky realm's gift pool and 'covenant' the Covenant's (the Mender's Thread, COVENANT.md): no pool draws from
+ *  either at random (ItemPools leaves their items out); each item is handed out by id by its one source. */
+export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant';
 
 export interface ItemDef extends Effect {
   id: string;
@@ -113,6 +114,9 @@ export interface ItemDef extends Effect {
   /** What it does in the game, plainly and with numbers ("Damage ×3, then +2"). Always shown
    *  next to the description so the player knows exactly what they got. */
   effect: string;
+  /** A life lesson or quote that carries the practice into everyday life (2–3 lines).
+   *  Shown as the first block in the inventory detail. Falls back to `description` if absent. */
+  teaching?: string;
   /** The book, course, technique or therapy that inspired it (credited, never used as the name). */
   inspiredBy?: string;
   /** Pools it can drop from, with a weight in each. */

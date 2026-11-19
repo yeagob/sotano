@@ -242,7 +242,7 @@ describe('the Roots and the way up, the Listener, the book and bedrock (ACHIEVEM
     expect(ids(k.track('treeStory', { story: 'canopy' }, NOW + 1))).toEqual([]);
   });
 
-  it('Made Whole: the completion reaching 100% unlocks the final achievement once, and nothing else', () => {
+  it('Made Omh: the completion reaching 100% unlocks the final achievement once, and nothing else', () => {
     const { record, store } = fresh();
     const k = session(record, store);
     expect(ids(k.track('completionFull', { percent: 100 }, NOW))).toEqual(['completion.full']);

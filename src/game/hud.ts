@@ -15,6 +15,7 @@ import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Param
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
+import { isPromised } from '../items/pool';
 import type { Polarity } from '../combat/polarity';
 import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
@@ -35,6 +36,9 @@ import type { CardKeys } from './achievement-keeper';
 import { PARTS, type Completion } from './completion';
 import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
+import { PRESENCE_TALK, type PresenceId } from '../content/presences';
+import { COVENANT_PIECES } from '../content/presences/covenant';
+import { mapKeyOutcome, starMapHtml } from './star-map';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -63,13 +67,24 @@ const MAP = {
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
 
+/** A presence's request as the consent card shows it: what it asks, and the alternative (requests.ts, REQUESTS.md). */
+export interface PresenceRequestText { ask: MessageKey; alt: MessageKey }
+
 /** "Floor 3 · The rain": the number and the circle's image (docs/design/LEVELS.md). */
 export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
 }
 
-/** The two tabs of the screen: the menu (pause, controls, language) and the practices. */
-export type ScreenTab = 'menu' | 'items';
+/** The tabs of the screen: the menu (pause, controls, language), the practices, and the star map (D15 of #149). */
+export type ScreenTab = 'menu' | 'items' | 'map';
+
+/** The objects of one exchange in one phrase, in the player's language: "A", "A and B" or "A, B and C" (one message per
+ *  count, so the word order can change). A card names at most three (MAX_OFFER_PARTS), so a fourth is never asked for. */
+export function offerList(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  if (names.length === 2) return t('presence.offer.two', { a: names[0], b: names[1] });
+  return t('presence.offer.three', { a: names[0], b: names[1], c: names[2] });
+}
 
 export class Hud {
   private hand = $('hand');
@@ -101,6 +116,7 @@ export class Hud {
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
+  private mapEl = $('starmap');
   private tollEl = $('toll');
   tollOpen = false;
   private tollFloor = 0;
@@ -127,7 +143,12 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
+  /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
+   *  navigate action has reached; a tap or the confirm action picks one. */
+  private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
+  /** The presences met in this run, in the order met: the codex (CODEX.md). */
+  private codexIds: readonly PresenceId[] = [];
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   /** The completion percentage shown on the pause card and the death screen (COMPLETION.md). */
   private completionView: Completion | null = null;
@@ -138,6 +159,8 @@ export class Hud {
   private shownTab: ScreenTab | null = null;
   bannerOpen = false;
   get presenceOfferOpen() { return this.lastPresenceOffer !== null; }
+  get presenceChoiceOpen() { return this.lastPresenceChoice !== null; }
+  get choiceSelected() { return this.lastPresenceChoice?.selected ?? -1; }
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
@@ -208,6 +231,7 @@ export class Hud {
     this.renderGraphics();
     if (this.lastAchievement) this.renderAchievement(this.lastAchievement);
     else if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastPresenceChoice) this.renderPresenceChoice();
     else if (this.bannerOpen && this.lastCard) this.renderCard(this.lastCard);
     else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
@@ -237,13 +261,33 @@ export class Hud {
     const nr = document.getElementById('newrun');
     if (nr) nr.textContent = t('pause.newRun');
     for (const b of document.querySelectorAll<HTMLElement>('#overlay .tabs button')) {
-      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : 'tab.menu');
+      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : b.dataset.tab === 'map' ? 'tab.map' : 'tab.menu');
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
+    this.renderCodex();
+  }
+
+  /** The codex (CODEX.md): the presences met this run, with what each asks and what it gives. Text only, in the language on screen. */
+  setCodex(ids: readonly PresenceId[]) {
+    this.codexIds = [...ids];
+    this.renderCodex();
+  }
+
+  private renderCodex() {
+    const list = document.querySelector<HTMLElement>('#codex ul');
+    if (!list) return;
+    list.innerHTML = this.codexIds.length
+      ? this.codexIds.map(id => `<li><b>${th(PRESENCE_TALK[id].name)}</b>` +
+        `<span><em>${th('codex.asks')}</em> ${th(`codex.${id}.asks` as MessageKey)}</span>` +
+        `<span><em>${th('codex.gives')}</em> ${th(`codex.${id}.gives` as MessageKey)}</span></li>`).join('')
+      : `<li class="none">${th('codex.empty')}</li>`;
   }
 
   get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }
+
+  /** The star map is the tab on screen (D15): navigate and pick do nothing there. */
+  get mapShown() { return this.screenOpen && this.screenTab === 'map'; }
 
   setFov(fov: number) {
     this.fovShown = fov;
@@ -556,11 +600,14 @@ export class Hud {
       `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
   }
 
-  presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+  /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
+   *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
+  /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried };
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -577,16 +624,20 @@ export class Hud {
   private renderPresenceOffer() {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
-    const item = typeof offer.carried === 'number'
-      ? materialName(offer.carried)
-      : isFlask(offer.carried)
-        ? t(POTIONS[offer.carried.potion].name)
-        : partText(offer.carried).name;
+    const carried = offer.carried;
+    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? t(POTIONS[c.potion].name) : partText(c).name;
+    // a multi-part agreement names every object in one sentence (AGREEMENTS.md; owner, #228, D11)
+    const item = carried === undefined
+      ? ''
+      : Array.isArray(carried)
+        ? offerList((carried as readonly Carried[]).map(nameOf))
+        : nameOf(carried as Carried);
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
-      `<span class="offer-question" id="presence-offer-question">${th('presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
-      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
-      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
+      `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      (offer.request ? `<span class="offer-request">${th(offer.request.ask)}<small>${th(offer.request.alt)}</small></span>` : '') +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.gift ? 'presence.offer.take' : 'presence.offer.accept')}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.gift ? 'presence.offer.leave' : 'presence.offer.decline')}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
     this.renderPresenceOfferControls();
     this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
@@ -594,7 +645,9 @@ export class Hud {
 
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
-    if (el) el.textContent = t(forDevice('presence.offer.controls', activeDevice()), controlParams(activeDevice()));
+    if (!el) return;
+    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
+    el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
   closePresenceOffer() {
@@ -603,8 +656,53 @@ export class Hud {
     this.bannerEl.classList.remove('show');
   }
 
+  /** The choice card (see `lastPresenceChoice`): the presence asks, and the player picks one of its answers or declines. */
+  presenceChoiceCard(nameKey: MessageKey, questionKey: MessageKey, options: readonly MessageKey[], request?: PresenceRequestText) {
+    this.hideAchievement();
+    this.lastBanner = null;
+    this.lastCard = null;
+    this.clearPresenceOfferState();
+    this.lastPresenceChoice = { nameKey, questionKey, options, selected: 0, request };
+    this.bannerEl.dataset.offer = 'true';
+    this.bannerEl.setAttribute('role', 'dialog');
+    this.bannerEl.setAttribute('aria-modal', 'true');
+    this.bannerEl.setAttribute('aria-labelledby', 'presence-offer-title');
+    this.bannerEl.setAttribute('aria-describedby', 'presence-offer-question');
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.renderPresenceChoice();
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  /** Moves the selected answer by one (navigate); wraps at the ends. */
+  moveChoice(dx: number) {
+    const c = this.lastPresenceChoice;
+    if (!c || dx === 0) return;
+    c.selected = (c.selected + Math.sign(dx) + c.options.length) % c.options.length;
+    this.renderPresenceChoice();
+  }
+
+  private renderPresenceChoice() {
+    const c = this.lastPresenceChoice;
+    if (!c) return;
+    const answers = c.options.map((key, i) =>
+      `<button type="button" class="${i === c.selected ? 'on' : ''}" aria-pressed="${i === c.selected}" data-act="presence-choice-${i}">${th(key)}</button>`).join('');
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b id="presence-offer-title">${th(c.nameKey)}</b>` +
+      `<span class="offer-question" id="presence-offer-question">${th(c.questionKey)}</span>` +
+      (c.request ? `<span class="offer-request">${th(c.request.ask)}<small>${th(c.request.alt)}</small></span>` : '') +
+      `<div class="offer-actions choices">${answers}` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.choice.decline')}</button></div>` +
+      `<small class="offer-controls"></small></div></div>`;
+    this.renderPresenceOfferControls();
+    this.bannerEl.querySelector<HTMLButtonElement>('.offer-actions button.on')?.focus({ preventScroll: true });
+  }
+
   private clearPresenceOfferState() {
     this.lastPresenceOffer = null;
+    this.lastPresenceChoice = null;
     delete this.bannerEl.dataset.offer;
     this.bannerEl.removeAttribute('role');
     this.bannerEl.removeAttribute('aria-modal');
@@ -879,9 +977,16 @@ export class Hud {
     else this.openScreen(g, touchTab ? 'menu' : 'items');
   }
 
+  /** M, View and the map tab (D15): the screen on the star map, or closed when the map is what it shows. */
+  mapKey(g: Game) {
+    if (mapKeyOutcome(this.screenOpen, this.screenTab) === 'close') this.closeScreen(g);
+    else this.openScreen(g, 'map');
+  }
+
   private renderScreen(g: Game) {
     this.showTab(this.screenTab);
     if (this.screenTab === 'items') this.renderInventory(g);
+    if (this.screenTab === 'map') this.mapEl.innerHTML = starMapHtml(g.starMap(), activeDevice());
   }
 
   /** The active carried item changed (the game calls this): an open screen redraws its outline. */
@@ -945,7 +1050,8 @@ export class Hud {
     const toll = tollOf(this.tollFloor);
     const p = g.player;
     const ids: string[] = [];
-    if (toll?.practices) g.inventory.items.forEach((_, i) => ids.push(`item:${i}`));
+    // a promised piece (the Mender's Thread) is never offered to a toll (GIFTS.md, the promised trait)
+    if (toll?.practices) g.inventory.items.forEach((it, i) => { if (!isPromised(it.def)) ids.push(`item:${i}`); });
     else if (toll) {
       ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
@@ -994,7 +1100,7 @@ export class Hud {
       : isFlask(m)
         ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), t(POTIONS[m.potion].name))
         : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
-    const items = g.inventory.items.map((it, i) => tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
+    const items = g.inventory.items.map((it, i) => isPromised(it.def) ? '' : tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
       ? section('toll.sec.item', items)
       : section('toll.sec.hand', hands) + section('toll.sec.key', keys) + section('toll.sec.bomb', bombs) + section('toll.sec.heart', hearts);
@@ -1070,12 +1176,20 @@ export class Hud {
         : `<li class="off"><b>✧ ???</b><small>${reqs} (${met}/${sy.requires.length})</small></li>`;
     }).join('');
 
+    // the Covenant (COVENANT.md): each piece held is a labelled tile with its gold seam and "promised"; nothing shows before
+    // the first piece, so the set is never announced before it is begun
+    const pieces = g.covenantPieces;
+    const covenant = pieces.length
+      ? `<h3>${th('covenant.title')} <small>${pieces.length}/${COVENANT_PIECES.length}</small></h3><ul class="covenant">` + pieces.map(p =>
+        `<li class="piece"><b>${th(`covenant.piece.${p}` as MessageKey)}</b><span>${th(`covenant.from.${p}` as MessageKey)}</span><small>${th('covenant.promised')}</small></li>`).join('') + '</ul>'
+      : '';
+
     const stats = STAT_ORDER.map(n => `<tr><td>${esc(statLabel(n))}</td><td>${esc(fmtStat(n, s[n]))}</td></tr>`).join('');
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
       `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
-      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
+      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul>${covenant}</section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
     // the carried items are the HUD's own hand slots, chosen by a click or a tap

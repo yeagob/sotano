@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { placePresences, type RoomPresence } from '../content/presences';
+import { boatmanFloorOf, dwellerFloorOf, gardenerFloorOf, placeMessengers, placePresences, starReaderFloorOf, tricksterFloorOf, wandererFloorsOf, WITNESS_FLOOR, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -296,6 +296,9 @@ export interface CarveOptions {
   /** The player's mastery level (0 to 100), read by floor 0 only (REWARDS). Default 0. Generation never reads the save:
    *  the game passes the level it read at run start. */
   mastery?: number;
+  /** The depth the last run faded on (the save's `fade`, read at run start by the game): the Echo waits on that floor.
+   *  Undefined when no Echo waits. It only picks which floor holds the Echo; the room is still chosen by the seed. */
+  echoFloor?: number;
   /** Floor 0 only (EASY-LAYOUT §7): carve the easy layout of the Roots, which the game asks for from page 2 on.
    *  Default false: the teaching layout, byte for byte as before. Read at run start; no random decision depends on it. */
   easyRoots?: boolean;
@@ -383,7 +386,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       const s = CELL_STACK[ch];
       if (s) {
         // built pieces take the floor's palette: '#' and a plug's upper wall are walls, the rest trim
-        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : m);
+        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : zoned(m, k));
         const harden = (m: number) => (mood === 'reinforced' ? hardened(m) : m);
         const m = harden(built(s.m, ch === '#'));
         // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
@@ -399,7 +402,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
         const ls = CELL_STACK[lc];
         if (ls) {
-          const m = ls.m === MAT.brick ? pal.trim : ls.m;
+          const m = ls.m === MAT.brick ? pal.trim : zoned(ls.m, k);
           w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(m) : m;
         }
         else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
@@ -407,7 +410,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (DECOR_CHARS.has(ch)) {
         // decor slot: rolled in row order from the room's own layout fork
         const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-        if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+        if (key) w.data[w.idx(x, y0, z)] = zoned(MAT[key], k);
       }
       if (ch === 'P') spawn = [x + 0.5, y0, z + 0.5];
       if (ch === 'T') {
@@ -463,6 +466,21 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   placePresences(rooms, k, rr.fork('floor', k, 'presence'));
+  // the Trickster (a dead end of its seeded floor), the Echo (where the last run faded, from the save) and the Wanderer
+  // (one or two seeded floors), after the Listener
+  placeMessengers(rooms, k, rr.fork('floor', k, 'messenger'), {
+    deadEnds: plan.rooms.map(pr => Object.keys(pr.links).length === 1),
+    tricksterFloor: tricksterFloorOf(rr),
+    echoFloor: opt.echoFloor,
+    wandererFloors: wandererFloorsOf(rr),
+    gardenerFloor: gardenerFloorOf(rr),
+    elderFloor: dwellerFloorOf(rr, 'elder'),
+    cartographerFloor: dwellerFloorOf(rr, 'cartographer'),
+    childFloor: dwellerFloorOf(rr, 'child'),
+    boatmanFloor: boatmanFloorOf(rr),
+    witnessFloor: WITNESS_FLOOR,
+    starReaderFloor: starReaderFloorOf(rr),
+  });
 
   // 2. doorways between linked rooms (each pair once: only east and south links)
   for (const pr of plan.rooms) {
@@ -662,7 +680,7 @@ export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: nu
     for (let y = y1 + 1; y <= top; y++) w.data[w.idx(x, y, z)] = AIR;
     const s = CELL_STACK[ch];
     if (s) {
-      const m = mood === 'reinforced' ? hardened(s.m) : s.m;
+      const m = mood === 'reinforced' ? hardened(zoned(s.m, k)) : zoned(s.m, k);
       // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
       const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
       for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
@@ -675,13 +693,13 @@ export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: nu
     for (const layer of t.layers ?? []) {
       const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
       const ls = CELL_STACK[lc];
-      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(ls.m) : ls.m;
+      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(zoned(ls.m, k)) : zoned(ls.m, k);
       else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
     }
     if (DECOR_CHARS.has(ch)) {
       // decor slot: rolled in row order from the room's own layout fork
       const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-      if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+      if (key) w.data[w.idx(x, y0, z)] = zoned(MAT[key], k);
     }
     if ('PTKH'.includes(ch)) markers.push({ ch, x, z });
   }
@@ -886,6 +904,11 @@ export function pickTemplate(templates: readonly RoomTemplate[], type: RoomType,
   return options[options.length - 1];
 }
 
+/** A room's ore is the ore of its floor's zone (levels.ts ZONES): iron on the roots and Zone I, lead at the bottom. */
+export function zoned(m: number, floor: number): number {
+  return m === MAT.ore ? MAT[level(floor).ore] : m;
+}
+
 /** "reinforced" rooms: soft obstacles become harder materials (interior only). */
 function hardened(m: number): number {
   for (const [from, to] of Object.entries(REINFORCE)) if (m === MAT[from]) return MAT[to];
@@ -914,7 +937,15 @@ function fillRock(w: VoxelWorld, layers: [number, number], themes: RockTheme[]) 
       const s = level(band).strata, t = themes[band];
       const obs = s.obsidian + t.hard * 0.1, deep = obs + s.deep + t.hard * 0.4, dirt = deep + s.pockets + t.pockets * (1 - s.deep);
       m = v < obs ? MAT.obsidian : v < deep ? MAT.deepstone : v < dirt ? MAT.dirt : MAT.stone;
-      if (v > 1 - (s.ore + t.ore) / 2) m = MAT.ore;
+      const lv = level(band);
+      if (v > 1 - (s.ore + t.ore) / 2) m = MAT[lv.ore];
+      else {
+        // the Gardener's root (strands two blocks tall) and tufts of cave moss, from the same hash layer at its own grain:
+        // no new draw, so the rest of the rock is unchanged (GARDENER.md, README D13)
+        const g = n(x, y >> 1, z, 0);
+        if (g < lv.garden.root) m = MAT.root;
+        else if (g > 1 - lv.garden.moss) m = MAT.cavemoss;
+      }
     }
     if (y < SURFACE_Y && (x === 0 || z === 0 || x === w.sx - 1 || z === w.sz - 1)) m = MAT.bedrock;
     w.data[w.idx(x, y, z)] = m;

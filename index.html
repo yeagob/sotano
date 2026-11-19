@@ -187,8 +187,10 @@
     .q { font-style: normal; letter-spacing: 1px; font-size: 15px; color: var(--ui-gold); }
     .q4 { text-shadow: 0 0 6px var(--ui-gold); }
     #banner[data-offer="true"] { width: min(440px, calc(100vw - 24px)); max-width: min(440px, calc(100vw - 24px)); pointer-events: auto; }
-    #banner .offer-question, #banner .offer-controls { visibility: hidden; }
-    #banner[data-offer="true"] .offer-question, #banner[data-offer="true"] .offer-controls { visibility: visible; }
+    #banner .offer-question, #banner .offer-request, #banner .offer-controls { visibility: hidden; }
+    #banner[data-offer="true"] .offer-question, #banner[data-offer="true"] .offer-request, #banner[data-offer="true"] .offer-controls { visibility: visible; }
+    #banner .offer-request { display: block; margin: 8px 0 0; font-style: normal; font-size: 15px; line-height: 1.4; color: var(--ui-text-2); }
+    #banner .offer-request small { font-size: 14px; color: var(--ui-faded); }
     #banner .offer-question { margin: 0; font-size: 16px; line-height: 1.4; color: var(--ui-text); }
     #banner .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; visibility: hidden; pointer-events: none; }
     #banner[data-offer="true"] .offer-actions { visibility: visible; pointer-events: auto; }
@@ -197,6 +199,7 @@
       box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #banner[data-offer="true"] .offer-actions button { pointer-events: auto; }
     #banner .offer-actions .offer-accept { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #banner .offer-actions.choices button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     #banner .offer-actions button:hover { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     #banner .offer-actions button:focus-visible { outline: 2px solid var(--ui-text); outline-offset: 2px; }
     #banner .offer-controls { display: block; margin-top: 8px; font-size: 14px; line-height: 1.4; color: var(--ui-faded); }
@@ -256,6 +259,12 @@
     #overlay .actions button:hover, #overlay .actions button:focus-visible { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); outline: none; }
     #overlay h2 { margin: 0 0 4px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
     #overlay table { border-collapse: collapse; }
+    #codex ul.codex { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    #codex li { padding: 6px 8px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #codex li b { display: block; color: var(--ui-gold); }
+    #codex li span { display: block; margin-top: 3px; font-size: 15px; line-height: 1.4; color: var(--ui-text); }
+    #codex li em { font-style: normal; color: var(--ui-faded); }
+    #codex li.none { color: var(--ui-faded); background: none; box-shadow: none; }
     #overlay td { padding: 2px 10px 2px 0; vertical-align: top; }
     #overlay td:first-child { color: var(--ui-gold); white-space: nowrap; }
     #lang { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 0; font-size: 14px; }
@@ -307,6 +316,23 @@
     #inventory { display: none; }
     #overlay[data-tab="items"] #inventory { display: block; }
     #overlay[data-tab="items"] .panel-menu { display: none; }
+    /* the star map (D15 of #149, DECISIONS §14.3): the practices tab's card, a pixel map at an integer scale, a legend
+       of glyphs with their words */
+    #starmap { display: none; }
+    #overlay[data-tab="map"] #starmap { display: block; }
+    #overlay[data-tab="map"] .panel-menu { display: none; }
+    #overlay #starmap .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
+    #starmap .card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 12px; }
+    #starmap .card > header small { flex: 1 1 14em; color: var(--ui-text-2); font-size: 14px; }
+    #starmap h2 { margin: 0; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #starmap header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; clip-path: var(--cut); }
+    #starmap header .close:hover, #starmap header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    body.dev-touch #starmap header .close { width: 44px; height: 44px; }
+    #starmap .view { display: flex; justify-content: center; padding: calc(2 * var(--u)); background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #starmap .view svg { display: block; max-width: 100%; height: auto; image-rendering: pixelated; }
+    #starmap .legend { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+    #starmap .legend li { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--ui-line); font-size: 15px; color: var(--ui-text-2); }
+    #starmap .legend svg { flex: none; display: block; min-width: 15px; image-rendering: pixelated; }
     #overlay #inventory .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
     /* the practices tab (issue #202): the achievement notice's pixel finish (DECISIONS §10.2). Pixelify Sans only at
        20 / 28 / 40 px, chamfered tiles and blocks (--cut), palette tokens only. A practice reads in three blocks,
@@ -354,6 +380,11 @@
     #inventory .syns li.none { background: none; box-shadow: none; padding: 0; }
     #inventory .syns b { font: 20px/1.2 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
     #inventory .syns li.on b { color: var(--ui-gold); } #inventory .syns li.off { opacity: .6; }
+    #inventory .covenant { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    #inventory .covenant li { position: relative; flex: 1 1 120px; padding: 5px 8px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #inventory .covenant li::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: linear-gradient(100deg, transparent 8%, var(--ui-gold) 30%, transparent 46%, var(--ui-gold) 62%, transparent 92%); opacity: .8; pointer-events: none; }
+    #inventory .covenant b { display: block; color: var(--ui-gold); } #inventory .covenant span { display: block; font-size: 14px; }
+    #inventory .covenant small { display: block; font-size: 12px; color: var(--ui-faded); } #inventory h3 small { color: var(--ui-faded); font-weight: normal; }
     #inventory .syns span { display: block; font-size: 14px; } #inventory .syns small { display: block; font-size: 14px; color: var(--ui-faded); }
     #inventory .right { align-self: start; padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(4 * var(--u)); background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
     #inventory .right h3 { margin-top: 0; }
@@ -648,6 +679,7 @@
       <nav class="tabs">
         <button type="button" data-act="tab-menu" data-tab="menu" aria-selected="true"></button>
         <button type="button" data-act="tab-items" data-tab="items" aria-selected="false"></button>
+        <button type="button" data-act="tab-map" data-tab="map" aria-selected="false"></button>
       </nav>
       <div class="panel-menu">
       <h1 class="cover"><img src="/the-roots-cover.jpg" alt="THE ROOTS" width="1663" height="640" /></h1>
@@ -675,6 +707,10 @@
           <table id="controls"></table>
         </section>
       </div>
+      <section id="codex">
+        <h2 data-i18n="codex.title">Presences met</h2>
+        <ul class="codex"></ul>
+      </section>
       <footer class="credits">
         <p><span data-i18n="intro.openSource">This game is open source and open to collaboration: if you love video games and want to help, you are welcome here.</span> <a href="https://github.com/yeagob/sotano" target="_blank" rel="noopener" data-i18n="intro.repo">Repository</a></p>
         <span id="version"></span>
@@ -683,6 +719,7 @@
       </footer>
       </div>
       <div id="inventory"></div>
+      <div id="starmap"></div>
     </div>
   </div>
   <div id="rotate" data-i18n="touch.rotate">Turn your device sideways to play</div>

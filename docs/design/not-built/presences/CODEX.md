@@ -2,7 +2,7 @@
 
 # The codex
 
-Status: **proposal** (design text, bestiary section 9).
+Status: **partly built**: the presences part is in the menu ([built/presences/CODEX.md](../../built/presences/CODEX.md)). The rest of this document is proposal (bestiary section 9).
 
 The inventory window gains a codex, filled by playing. Learning a pattern is learning to see it.
 
@@ -17,5 +17,5 @@ The inventory window gains a codex, filled by playing. Learning a pattern is lea
 
 - **Counts.** The counts of releases live in the profile, which is not built (see [Memory](MEMORY.md)).
 - **Rooted projections.** The rooted variant is built in part (its spawn roll, health and part roll), and its mark is not. The codex entry waits on it.
-- **Interface.** The codex is a tab of the inventory window. The inventory has no tabs yet.
+- **Interface.** Built in the menu, under the controls (not a tab of the inventory window, which has no tabs). A tab of its own is still open.
 - **Text.** Every codex line is text, through the translations.

@@ -1,4 +1,6 @@
 import { AIR, MAT } from '../content/materials';
+import { CELL_STACK, ROCK, ROOM_D, ROOM_H, ROOM_W, ceilingAt } from '../content/rooms';
+import { CROWN_PALETTE, LEAVES_OCULUS, LEAVES_ROOM } from '../content/crown';
 import { hash3, type Rng } from '../core/rng';
 import type { VoxelWorld } from './world';
 
@@ -44,11 +46,77 @@ const STAIR_HEAD = 3;
 /** `up`: the last star of the last constellation; stepping on it leaves the built tree upward (SKY.md §2.4). */
 export interface StarPad { x: number; y: number; z: number; to: number; up?: boolean }
 
+/** The centre of the spiral stair that climbs from story `i` into story `i + 1`, for a tree centred on (cx, cz). */
+export function stairCentre(i: number, cx: number, cz: number): [number, number] {
+  const s = TREE_STORIES[i];
+  const a = i * 2.4 + Math.PI / 4, d = s.r > 0 ? Math.max(0, s.r - WALL - STAIR_R - 2) : 10;
+  return [cx + Math.round(Math.cos(a) * d), cz + Math.round(Math.sin(a) * d)];
+}
+
+/** The steps of stair `i` that a cell (dx, dz) from the stair's centre carries, one per turn (1 is the lowest step). */
+function stepsAt(i: number, dx: number, dz: number, steps: number): number[] {
+  let t = Math.atan2(dz, dx) - i * 1.3;
+  t = ((t % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  const out: number[] = [];
+  for (let m = 0; ; m++) {
+    const j = Math.floor((t + m * Math.PI * 2) / STAIR_DA) + 1;
+    if (j > steps) return out;
+    out.push(j);
+  }
+}
+
+/** The Leaves (owner decision D14, docs/design/built/levels/giant-tree/LEAVES.md): the room of the crown, by the
+ *  stair from the canopy to the stars. `x0, y0, z0` is the interior's corner (y0 the first block of air over the
+ *  floor, as a floor's rooms); the doorway is the west one, three wide, onto the step of the stair at that height. */
+export interface LeavesRoom {
+  x0: number; y0: number; z0: number;
+  w: number; d: number; height: number;
+  /** The doorway's cells between the stair and the room (x from x0 − 3 to x0 − 1, the template's west rows 2–4). */
+  door: { x0: number; x1: number; z0: number; z1: number };
+  /** The stair step the doorway opens onto (1 is the stair's lowest step). */
+  step: number;
+}
+
+/** The canopy story's index, and the stair that climbs out of it to the stars, which the Leaves hang beside. */
+const CANOPY = TREE_STORIES.findIndex(s => s.key === 'canopy');
+/** How far east of the stair's centre the room's interior begins: the stair's tread ends at 6.5, the doorway is
+ *  three blocks (one over the gap, two through the shell of leaves). */
+const LEAVES_OFFSET = 10;
+/** The highest the Leaves may reach: the stair step it opens onto is the one nearest this height over the canopy's floor. */
+const LEAVES_LIFT = 18;
+
+/** Where the Leaves stand for a tree centred on (cx, cz) whose base is `base` (surface + 1): east of the canopy's
+ *  stair, on the step of that stair whose tread points east, the highest that keeps the room inside its band. */
+export function leavesRoomAt(cx: number, cz: number, base: number): LeavesRoom {
+  const s = TREE_STORIES[CANOPY], next = TREE_STORIES[CANOPY + 1];
+  const [sx, sz] = stairCentre(CANOPY, cx, cz);
+  const fy = base + s.y0 + 2, steps = next.y0 + 2 - (s.y0 + 2);
+  const height = LEAVES_ROOM.height ?? ROOM_H;
+  // the step whose tread runs east of the stair's centre (the row dz = 0), standing at fy + j
+  const fits = (j: number) => leavesBandOk(fy + j, height, base);
+  const choices = stepsAt(CANOPY, 6, 0, steps).filter(fits);
+  const step = choices.reduce((a, b) => (Math.abs(b - LEAVES_LIFT) < Math.abs(a - LEAVES_LIFT) ? b : a), choices[0] ?? 1);
+  const x0 = sx + LEAVES_OFFSET, z0 = sz - 3, y0 = fy + step;
+  return { x0, y0, z0, w: ROOM_W, d: ROOM_D, height, door: { x0: x0 - 3, x1: x0 - 1, z0: z0 + 2, z1: z0 + 4 }, step };
+}
+
+/** The Leaves' band (sotano-levels §3 for the tree): the canopy story's rows, with the room's floor and its two
+ *  blocks of shell over the canopy's own floor, and at least `LEAVES_CLEAR` rows between its ceiling's shell and the
+ *  story above (the stars), as a floor keeps three layers of rock between bands. */
+export const LEAVES_CLEAR = 3;
+export function leavesBandOk(y0: number, height: number, base: number): boolean {
+  const s = TREE_STORIES[CANOPY];
+  const bottom = base + s.y0, top = base + s.y0 + s.h - 1;
+  return y0 - 2 > bottom + 1 && y0 + height + 1 <= top - LEAVES_CLEAR;
+}
+
 export class GiantTree {
   readonly cx: number; readonly cz: number;
   readonly base: number;
   readonly top: number;
   readonly pads: StarPad[] = [];
+  /** The room of the crown (D14): fixed by the tree's place, never by the seed, so it is known before it is grown. */
+  readonly leaves: LeavesRoom;
   voxels = 0;
   private grown = new Set<number>();
   /** The run's salt for the bark and leaf patches: the same seed grows the same bark. */
@@ -58,6 +126,7 @@ export class GiantTree {
     this.cx = w.sx >> 1; this.cz = w.sz >> 1; this.base = surfaceY + 1;
     this.salt = fork(TREE_STORIES.length).u32() & 0x7fffffff;
     this.top = Math.min(w.sy - 1, this.base + TREE_STORIES[TREE_STORIES.length - 1].y0 + TREE_STORIES[TREE_STORIES.length - 1].h - 1);
+    this.leaves = leavesRoomAt(this.cx, this.cz, this.base);
   }
 
   range(i: number): [number, number] {
@@ -122,9 +191,7 @@ export class GiantTree {
   }
 
   stairAt(i: number): [number, number] {
-    const s = TREE_STORIES[i];
-    const a = i * 2.4 + Math.PI / 4, d = s.r > 0 ? Math.max(0, s.r - WALL - STAIR_R - 2) : 10;
-    return [this.cx + Math.round(Math.cos(a) * d), this.cz + Math.round(Math.sin(a) * d)];
+    return stairCentre(i, this.cx, this.cz);
   }
 
   private inStair(i: number, x: number, z: number, margin = 1) {
@@ -333,6 +400,43 @@ export class GiantTree {
         if (this.nearStairs(i, x, z, 2)) continue;
         for (let ox = 0; ox <= 1; ox++) for (let oz = 0; oz <= 1; oz++) put(x + ox, y, z + oz, MAT.bough);
       }
+    }
+    this.carveLeaves(put, ceil);
+  }
+
+  /** The Leaves (D14): the crown's room carved from its template (src/content/crown.ts) as a floor carves its rooms,
+   *  in the crown's palette: a shell of leaves two blocks thick, a floor of bough, the template's pieces, an open eye in
+   *  the dome up to the top of the story, and the west doorway onto the stair's step. Carved last in the canopy, so a
+   *  limb or the crown's shell that reaches into it gives way to the room. */
+  private carveLeaves(put: Put, ceil: number) {
+    const L = this.leaves, t = LEAVES_ROOM, h = L.height, W = L.w, D = L.d;
+    const leaf = (x: number, y: number, z: number) => put(x, y, z, this.leafAt(x, y, z));
+    const at = (c: number, r: number) => (c >= 0 && r >= 0 && c < W && r < D ? t.rows[r][c] : ROCK);
+    const open = (c: number, r: number) => at(c, r) !== ROCK;
+    const floor = MAT[CROWN_PALETTE.floor], trim = MAT[CROWN_PALETTE.trim], ring = MAT[CROWN_PALETTE.ring];
+    for (let r = -2; r < D + 2; r++) for (let c = -2; c < W + 2; c++) {
+      if (open(c, r)) continue;
+      let near = false;
+      for (let dz = -2; dz <= 2 && !near; dz++) for (let dx = -2; dx <= 2 && !near; dx++) near = open(c + dx, r + dz);
+      if (near) for (let y = L.y0 - 2; y <= L.y0 + h + 1; y++) leaf(L.x0 + c, y, L.z0 + r);
+    }
+    for (let r = 0; r < D; r++) for (let c = 0; c < W; c++) {
+      const ch = at(c, r), x = L.x0 + c, z = L.z0 + r;
+      const top = L.y0 + ROOM_H - 1 + ceilingAt(t.ceiling ?? 'flat', h - ROOM_H, c, r, W, D);
+      put(x, L.y0 - 2, z, floor); put(x, L.y0 - 1, z, floor);
+      for (let y = L.y0; y <= top; y++) put(x, y, z, AIR);
+      const eye = Math.abs(c - 6) <= LEAVES_OCULUS && Math.abs(r - 3) <= LEAVES_OCULUS;
+      for (let y = top + 1; y <= (eye ? ceil : L.y0 + h + 1); y++) put(x, y, z, eye ? AIR : this.leafAt(x, y, z));
+      const s = CELL_STACK[ch];
+      if (!s) continue;
+      const m = ch === 'o' ? ring : ch === '#' ? this.leafAt(x, L.y0, z) : trim;
+      const n = ch === '#' ? top - L.y0 + 1 : s.h;
+      for (let k = 0; k < n; k++) put(x, L.y0 + k, z, m);
+    }
+    // the doorway: through the shell and over the gap to the stair's tread, a floor of bough and three blocks of air
+    for (let z = L.door.z0; z <= L.door.z1; z++) for (let x = L.door.x0; x <= L.door.x1; x++) {
+      put(x, L.y0 - 2, z, floor); put(x, L.y0 - 1, z, floor);
+      for (let y = L.y0; y < L.y0 + 3; y++) put(x, y, z, AIR);
     }
   }
 

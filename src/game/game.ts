@@ -3,6 +3,7 @@
 // anything an item might want to change reads a stat or emits an event (docs/architecture/ITEMS.md §3).
 
 import * as THREE from 'three';
+import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
 import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
@@ -20,7 +21,7 @@ import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
   DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
-import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
+import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { heartTollPlan, tollIndex } from './toll';
@@ -61,7 +62,7 @@ import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { FullscreenButton } from '../input/fullscreen-button';
 import { Inventory } from '../items/inventory';
-import { ItemPools } from '../items/pool';
+import { ItemPools, isPromised } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
@@ -88,9 +89,19 @@ import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { inLeaves } from '../world/crown';
+import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { requestOf } from '../content/presences/requests';
+import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
+import { ChoiceGuard, boatmanCrossing, choiceOutcome, offerOutcome } from '../content/presences/consent';
+import { LISTENER_LESSON_CHOICE, crownGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
+import { MENDERS_THREAD, gainKeepsThread, menderDropsThread } from '../content/presences/thread';
+import { DONE_CHOICE, StillWatch, TRUST_START, answerDone, doneGift } from '../content/presences/trust';
+import { MENDED_SEAM_S, MENDED_TAG, ReleaseLog, countsAsRelease, projectionToMend } from '../content/presences/mended';
+import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
+import { type OfferPick, PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, findCartographerOre, gardenerWants, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { COMPLETION_ACHIEVEMENT } from '../content/achievements';
 import { downloadRootsBook } from './book-download';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
@@ -98,7 +109,7 @@ import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/ro
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift, rollWitnessGift, rollBoatmanGift, rollMenderGift, rollStarReaderGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, TOXIC_DAMAGE, TOXIC_MOTE_EVERY, TOXIC_PERIOD, TOXIC_RADIUS, toxic, toxicHits, type LayerKind, type ToxicCandidate } from '../entities/hearts';
@@ -107,7 +118,7 @@ import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './se
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
-import { Hud } from './hud';
+import { Hud, floorLabel } from './hud';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
@@ -120,6 +131,10 @@ import type { Rng } from '../core/rng';
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
 // safety layer 1 at startup: report catalogue problems, and keep invalid items out of the pools
+/** How near the player must be, in blocks, for a presence to ask "Have you done it?" when its idle window closes. */
+const DONE_REACH = 6;
+/** One reward a presence or a creature launches (launchGiftPickups). */
+type GiftReward = { type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind } | { type: 'key' | 'bomb' };
 const CATALOGUE_ERRORS = validateCatalogue(ITEMS, SYNERGIES);
 for (const e of CATALOGUE_ERRORS) console.error('[items]', e);
 const PLAYABLE_ITEMS = ITEMS.filter(i => validateItem(i).length === 0);
@@ -155,6 +170,9 @@ function makeStars(): THREE.Points {
 }
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
+
+/** The seconds the Boatman's ferry takes to carry the player to the island (BOATMAN.md, proposed). */
+const BOATMAN_FERRY_S = 1.6;
 const PART_DROP_DELAY = 0.6;
 const COUNTER_CAP = 99;
 /** The sandbox's fixed step (seconds). */
@@ -287,7 +305,40 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
-  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried: Carried } | null = null;
+  /** The idle windows of the requesting presences that have had their exchange, in seconds left (idle.ts). */
+  private idle = new IdleTimer();
+  /** The presences met this run, in the order met: the codex (CODEX.md). */
+  private codex: PresenceId[] = [];
+  /** The Covenant's pieces held in this run, in the order given (COVENANT.md). Kept for the run only. */
+  private covenant: Covenant = NO_COVENANT;
+  /** Whether this run has heard a Listener's Lesson (a path answered): the crown then gives the Light (reachCrown). */
+  private heardLesson = false;
+  /** Whether the Mender has dropped its Thread in this run (thread.ts): it drops it once. */
+  private threadDropped = false;
+  /** The projections released in this run, by floor, for the Mender's integration (mended.ts). */
+  private releases = new ReleaseLog();
+  /** Seconds to the next gold mote of each mended ally's seam (mended.ts, DECISIONS.md §14.4). */
+  private seamT = 0;
+  /** Set when the Mender's exchange brought a projection back, for the line on its card. */
+  private mendedNow = false;
+  /** The trust meter's hidden step, kept for the run only and never shown (trust.ts, REQUESTS.md). */
+  private trust = TRUST_START;
+  /** The longest still stretch inside each running idle window (trust.ts). */
+  private still = new StillWatch();
+  /** The Covenant's pieces held, for the inventory's labels (read only). */
+  get covenantPieces(): Covenant { return this.covenant; }
+  /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
+  private childBuilds = new Map<number, number>();
+  /** The Gardener's agreement: the materials it already holds, by its enemy id (GARDENER.md: a root and a tuft of moss). */
+  private gardenGiven = new Map<number, number[]>();
+  /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
+  private menderCame = false;
+  /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
+  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried; rest?: OfferPick[] } | null = null;
+  /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
+  private pendingPresenceChoice: { id: PresenceId; enemyId: number; done?: true; still?: number } | null = null;
+  /** The choice card's grace: a confirm right after it opens is ignored (consent.ts). */
+  private choiceGuard = new ChoiceGuard();
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -362,6 +413,11 @@ export class Game {
   private story = NaN;
   /** The loop (L4): silence once visited opens the sky's top; seconds standing still in it. */
   private silenceSeen = false;
+  /** The Leaves (D14) were entered this run: their name is said once. */
+  private leavesSeen = false;
+  /** What the star map shows beyond what you walked (D15): the Cartographer's marks, the Star-reader's room and reading. */
+  private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss'; also?: number }>; starReader: StarMarks['starReader']; read: boolean } =
+    { cartographer: new Map(), starReader: null, read: false };
   private stillT = 0;
   /** The star pad you arrived on (re-armed once you step off it). */
   private padLock = -1;
@@ -376,6 +432,8 @@ export class Game {
   private readonly metaStore: MetaStore;
   /** The achievements of the session (achievement-keeper.ts): they track on the run's bus, and their cards queue here. */
   private readonly keeper: AchievementKeeper;
+  /** The blocks placed in this run, fed from `blockPlaced` (build-count.ts): the Child's build reads it. */
+  builds = new BuildCount();
   /** Warns once a run when the player's height is not a finite number (height-watch.ts). */
   private readonly heightWatch = new HeightWatch();
   /** The Roots' mastery level this run started with (REWARDS §6): read once at run start, never during the run. */
@@ -562,7 +620,18 @@ export class Game {
     const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
-    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
+    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
+    this.idle.clear();
+    this.codex = [];
+    this.covenant = NO_COVENANT;
+    this.heardLesson = false;
+    this.threadDropped = false;
+    this.releases.clear();
+    this.trust = TRUST_START;
+    this.still.clear();
+    this.hud.setCodex(this.codex);
     this.pendingPresenceOffer = null;
     this.input.modal = false;
     setMasterTarget(0.35);
@@ -721,6 +790,8 @@ export class Game {
       bossSmallRoom: !!(boss && BOSS_BY_ID.get(boss)?.smallRoom),
       // the Roots' layout, read once at run start (EASY-LAYOUT §7); only floor 0 reads it
       easyRoots: k === FIRST_FLOOR && (this.roots?.easyRoots ?? false),
+      // the depth the last run faded on, read at run start from the save (ECHO.md); undefined when no Echo waits
+      echoFloor: this.keeper.fade,
       // the Roots' mastery level, read once at run start (REWARDS §4-§6); only floor 0 reads it
       mastery: this.runMastery,
     });
@@ -855,6 +926,7 @@ export class Game {
     this.bus.on('playerDied', { priority: 300, source, fn: p => this.achieved('playerDied', p) });
     this.bus.on('surfaceEnter', { priority: 300, source, fn: p => this.achieved('surfaceEnter', p) });
     this.bus.on('blockPlaced', { priority: 300, source, fn: p => this.achieved('blockPlaced', p) });
+    this.bus.on('blockPlaced', { priority: 300, source, fn: () => this.builds.record() });
     this.bus.on('bookBack', { priority: 300, source, fn: p => this.achieved('bookBack', p) });
     this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
     this.bus.on('treeStory', { priority: 300, source, fn: p => this.achieved('treeStory', p) });
@@ -863,6 +935,8 @@ export class Game {
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
     this.bus.on('itemGained', { priority: 300, source: first, fn: p => this.firstTime('practices', p.id) });
+    // the Mender's Thread is the Covenant's Thread once the Thread the Mender dropped is picked up (thread.ts)
+    this.bus.on('itemGained', { priority: 300, source: 'covenant', fn: p => { if (gainKeepsThread(p.id, this.threadDropped)) this.keepCovenantPiece('mender'); } });
     this.bus.on('enemySpawn', { priority: 300, source: first, fn: p => this.firstTime('bestiary', p.def) });
     this.bus.on('brew', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.potion) });
     this.bus.on('cook', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.meal) });
@@ -1223,7 +1297,8 @@ export class Game {
 
   /** A capture takes one practice the player holds, at random, for the rest of the run (SKY.md §19, provisional). */
   private takePractice(): string | null {
-    const held = this.inventory.items;
+    // a promised piece (the Mender's Thread) is never taken (GIFTS.md, the promised trait); the draw is over the others
+    const held = this.inventory.items.filter(it => !isPromised(it.def));
     if (!held.length) return null;
     const id = held[this.rng.fork('sky', 'capture', this.captures++).int(0, held.length - 1)].def.id;
     this.inventory.lose(id);
@@ -1527,6 +1602,8 @@ export class Game {
       sfx3.death();
       this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
       this.endRoots();
+      // the Echo remembers where this run faded (ECHO.md): the deepest floor reached
+      this.keeper.recordFade(this.maxDepth);
     }
     return true;
   }
@@ -1917,15 +1994,17 @@ export class Game {
     this.launchGiftPickups(e, [{ type: 'heart', heart }]);
   }
 
-  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind })[]) {
-    const b = e.body, player = this.player.body;
+  private launchGiftPickups(e: Enemy, rewards: GiftReward[], at?: { x: number; y: number; z: number }) {
+    const b = at ?? e.body, player = this.player.body;
     const base = Math.atan2(b.z - player.z, b.x - player.x);
     rewards.forEach((reward, i) => {
       const angle = base + (i - (rewards.length - 1) / 2) * 0.6;
       const x = b.x + Math.cos(angle) * 0.45, z = b.z + Math.sin(angle) * 0.45;
       const pickup = reward.type === 'item'
         ? this.pickups.add('item', x, b.y + 1.02, z, e.room, reward.item, 0.3)
-        : this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart);
+        : reward.type === 'heart'
+          ? this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart)
+          : this.pickups.add(reward.type, x, b.y + 1.02, z, e.room, null, 0.3);
       this.ejectReward(pickup, 1.5, 3);
     });
   }
@@ -2048,6 +2127,8 @@ export class Game {
     const floor = this.rooms.get(e.room)?.floor;
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
+    // a release the Mender may bring back on this floor (mended.ts)
+    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def);
     // the Shadow's stillness ending is a turning to your side, not a destruction (ACHIEVEMENTS §1)
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor, e.tags.has(STILLNESS_TAG) ? 'stillness' : 'destroyed');
     if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
@@ -3404,6 +3485,7 @@ export class Game {
       this.enemies.dissolve(e);
       this.bus.off(null, `actor:${e.id}`);
       this.actors.remove(e.id);
+      this.summonMender(room, { x: e.body.x, y: e.body.y, z: e.body.z });
       this.contacts.forget(e.id);
       this.boundaryRing.delete(e.id);
     }
@@ -3539,17 +3621,54 @@ export class Game {
   }
 
   private updatePresences() {
-    if (this.pendingPresenceOffer) return;
+    if (this.pendingPresenceOffer || this.pendingPresenceChoice) return;
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
-      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
+      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); e.tags.delete('ore-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      // the Child, once the player agreed to build: it asks for its gift when the blocks are placed, and only tells how
+      // many are left until then (one card per approach)
+      if (id === 'child' && this.childBuilds.has(e.id)) {
+        const mark = this.childBuilds.get(e.id)!;
+        if (this.builds.reached(mark)) {
+          this.pendingPresenceOffer = { id, enemyId: e.id, index: -1 };
+          this.hud.presenceOfferCard(talk.name, undefined, 'presence.offer.child.gift', true);
+          this.input.modal = true;
+          this.input.unlockFor();
+          return;
+        }
+        if (e.tags.has('answering')) continue;
+        e.tags.add('answering');
+        this.hud.presenceCard(talk.name, ['presence.child.more'], { n: CHILD_BUILD_BLOCKS - this.builds.since(mark) });
+        return;
+      }
+      // the Cartographer's chart: with the ore of its zone in hand, it asks for it first, and charts the whole floor with
+      // it; Keep takes nothing and opens the free choice card instead (CARTOGRAPHER.md, README D13)
+      if (id === 'cartographer' && !e.tags.has('ore-declined')) {
+        const ore = findCartographerOre(this.rooms.get(e.room)?.floor ?? 0, this.player.hand);
+        if (ore) {
+          this.pendingPresenceOffer = { id, enemyId: e.id, index: ore.index, carried: ore.carried };
+          this.hud.presenceOfferCard(talk.name, ore.carried, 'presence.offer.cartographer.ore', false, requestOf(id));
+          this.input.modal = true;
+          this.input.unlockFor();
+          return;
+        }
+      }
+      if (PRESENCE_CHOICE[id]) {
+        const choice = PRESENCE_CHOICE[id];
+        this.pendingPresenceChoice = { id, enemyId: e.id };
+        this.choiceGuard.open();
+        this.hud.presenceChoiceCard(talk.name, choice.question, choice.options, requestOf(id));
+        this.input.modal = true;
+        this.input.unlockFor();
+        return;
+      }
       // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
       const top = this.player.active;
-      const offer = findPresenceOffer(id, this.player.hand);
+      const offer = findPresenceOffer(id, this.player.hand, this.gardenGiven.get(e.id));
       if (!offer) {
         if (e.tags.has('answering')) continue;
         const now = performance.now();
@@ -3567,8 +3686,10 @@ export class Game {
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
         return;
       }
-      this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried };
-      this.hud.presenceOfferCard(talk.name, offer.carried);
+      this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried, rest: offer.rest };
+      // a multi-part agreement names every object of the exchange on the one card (AGREEMENTS.md; owner, #228, D11)
+      const named = offer.rest ? [offer.carried!, ...offer.rest.map(r => r.carried)] : offer.carried;
+      this.hud.presenceOfferCard(talk.name, named, PRESENCE_OFFER_QUESTION[id], GIFT_OFFER.has(id), requestOf(id));
       this.input.modal = true;
       this.input.unlockFor();
       return;
@@ -3585,30 +3706,363 @@ export class Game {
     this.input.resume();
 
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
-    const carried = this.player.hand[pending.index];
-    if (!e?.alive || !e.tags.has('presence') || e.tags.has('met') || carried !== pending.carried || !unlocksPresence(pending.id, carried)) {
+    const carried = pending.index < 0 ? undefined : this.player.hand[pending.index];
+    // every object the card named must still be in its slot: nothing is taken unless the whole exchange still holds.
+    // The Cartographer's ore is not its key (it asks on a choice card): the offer holds while the same ore is in hand
+    const rest = pending.rest ?? [];
+    const unlocks = pending.id === 'cartographer' ? carried !== undefined && carried === pending.carried
+      : unlocksPresence(pending.id, carried) && rest.every(r => unlocksPresence(pending.id, r.carried));
+    const outcome = offerOutcome(pending.id, accept, {
+      present: !!e?.alive && e.tags.has('presence'), met: !!e?.tags.has('met'),
+      sameCarried: carried === pending.carried && rest.every(r => this.player.hand[r.index] === r.carried),
+      unlocks,
+    });
+    if (outcome === 'stale' || !e) {
       this.hud.toast('presence.offer.stale');
       return;
     }
-    if (!accept) {
-      e.tags.add('offer-declined');
+    if (outcome !== 'accept') {
       sfx.denied();
+      // the Trickster laughs and the Wanderer walks on: both leave with nothing taken; the others keep their place and
+      // ask again after the player steps away
+      if (outcome === 'leave') {
+        this.hud.presenceCard(PRESENCE_TALK[pending.id].name, [PRESENCE_TALK[pending.id].farewell!]);
+        this.releasePresence(e);
+        return;
+      }
+      // Keep with the Cartographer's ore: its free choice card opens next, and the ore is not asked for again until the
+      // player steps away
+      if (pending.id === 'cartographer') { e.tags.add('ore-declined'); return; }
+      e.tags.add('offer-declined');
       return;
     }
 
-    this.player.removeAt(pending.index);
-    this.hands.placed();
+    // the Cartographer's chart: the ore is taken, and both places are marked on one card
+    if (pending.id === 'cartographer') { this.acceptCartographerOre(e, pending.index); return; }
+    // the Gardener's agreement: a root and a tuft of moss, one card each; it plants once it holds both
+    if (pending.id === 'gardener' && typeof carried === 'number') {
+      const given = [...(this.gardenGiven.get(e.id) ?? []), carried];
+      this.gardenGiven.set(e.id, given);
+      const left = gardenerWants(given);
+      if (left.length) {
+        this.player.removeAt(pending.index);
+        this.hands.placed();
+        this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('mat.grass.base'), 6, 1, 0.05);
+        // the next card waits until the player steps away and comes back with the other half
+        e.tags.add('offer-declined');
+        this.hud.presenceCard(PRESENCE_TALK.gardener.name, ['presence.gardener.more'], { item: materialName(left[0]) });
+        return;
+      }
+    }
+
+    // the Child's two answers: the consent to build, and later the gift (acceptChild)
+    if (pending.id === 'child') { this.acceptChild(e); return; }
+    // the Boatman's toll: one block left on the shore, then the ferry and its gift (acceptBoatman)
+    if (pending.id === 'boatman') { this.acceptBoatman(e, pending.index); return; }
+
+    // a gift asks for no part: nothing leaves the hand; a multi-part agreement takes every named part, last slot first
+    if (pending.index >= 0) {
+      for (const i of [pending.index, ...rest.map(r => r.index)].sort((a, b) => b - a)) this.player.removeAt(i);
+      this.hands.placed();
+    }
     const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
     const eye = this.player.eye, fwd = this.player.forward;
     this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
     const talk = PRESENCE_TALK[pending.id];
-    e.tags.add('met');
+    // the Echo's place is read before the record forgets it, so its line can name the floor it faded on
+    const faded = this.keeper.fade ?? this.maxDepth;
+    this.meet(e);
     // the Listener's pact: the first one is saved, and the Mind Crafter blocks count from it (ACHIEVEMENTS §1)
     if (pending.id === 'listener') this.keeper.recordPact();
-    if (talk.drops) this.dropListenerReward(e);
+    if (pending.id === 'echo') this.keeper.clearFade();
+    if (talk.drops) this.dropPresenceReward(pending.id, e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-    if (leavesAfterOffer(pending.id)) this.releaseListener(e);
-    this.hud.presenceCard(talk.name, talk.lines);
+    this.startIdle(e, pending.id);
+    if (leavesAfterOffer(pending.id)) this.releasePresence(e);
+    // the Listener's Lesson: once it has left, its choice card asks which path weighs (lesson.ts)
+    if (pending.id === 'listener') { this.askLesson(); return; }
+    const mended = this.mendedNow;
+    this.mendedNow = false;
+    const lines: readonly MessageKey[] = mended ? [...talk.lines, 'presence.mender.return'] : talk.lines;
+    this.hud.presenceCard(talk.name, this.exchangeLines(lines), pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
+  }
+
+  /** A choice card's answer (index into the presence's options) or a decline (-1). The Elder gives a lesson of the path
+   *  chosen and reads it back; the Cartographer marks the nearest vault or boss on the floor, in words. Both keep their
+   *  place (DWELLERS). A decline takes nothing, and the presence asks again only after the player steps away. */
+  private resolvePresenceChoice(index: number) {
+    const pending = this.pendingPresenceChoice;
+    if (!pending) return;
+    this.pendingPresenceChoice = null;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+    // the Listener has already left with its reward: its Lesson needs no body
+    if (pending.id === 'listener') { this.answerLesson(index); return; }
+    // the question at the end of an idle window (trust.ts): its own answer, before the choice rules of a first meeting
+    if (pending.done) { this.answerDone(this.enemies.list.find(enemy => enemy.id === pending.enemyId), index, pending.still ?? 0); return; }
+    const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
+    const outcome = choiceOutcome(index, PRESENCE_CHOICE[pending.id]?.options.length ?? 0, { present: !!e?.alive && !!e?.tags.has('presence'), met: !!e?.tags.has('met') });
+    if (outcome === 'stale' || !e) { this.hud.toast('presence.offer.stale'); return; }
+    if (outcome === 'wait') {
+      sfx.denied();
+      e.tags.add('offer-declined');
+      return;
+    }
+    const talk = PRESENCE_TALK[pending.id];
+    this.meet(e);
+    if (pending.id === 'elder') {
+      const path = ['body', 'mind', 'emotion', 'will'][index];
+      this.launchGiftPickups(e, [{ type: 'item', item: rollElderLesson(this.rng.stream('drops'), path) }]);
+      this.keepCovenantPiece('elder');
+      sfx3.reveal();
+      this.hud.presenceCard(talk.name, ['presence.elder.reading', talk.lines[1]], { path: t(`path.${path}` as MessageKey) });
+    } else if (pending.id === 'cartographer') {
+      const want = index === 0 ? 'vault' : 'boss';
+      const dir = this.directionToNearest(e, want);
+      // the mark goes on the star map too (D15): the room itself, on its floor
+      const marked = this.nearestRoom(e, want);
+      if (marked) this.starMarks.cartographer.set(marked.floor, { room: marked.id, want });
+      const key = (dir === null ? 'presence.cartographer.mark.none' : `presence.cartographer.mark.${want}`) as MessageKey;
+      this.hud.presenceCard(talk.name, [key, talk.lines[1]], dir === null ? undefined : { dir: t(`dir.${dir}` as MessageKey) });
+    }
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+  }
+
+  /** The Listener's Lesson (LISTENER.md, decided by agent): after its reward, the choice card asks which path weighs on the
+   *  player. It opens the same card as the Elder's, with "Not now" to leave it. */
+  private askLesson() {
+    this.pendingPresenceChoice = { id: 'listener', enemyId: -1 };
+    this.choiceGuard.open();
+    this.hud.presenceChoiceCard(PRESENCE_TALK.listener.name, LISTENER_LESSON_CHOICE.question, LISTENER_LESSON_CHOICE.options);
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The Lesson's answer: a path gives its Lesson in words, and the run has heard a Lesson, so the crown of the tree will
+   *  give the Covenant's Light (reachCrown). "Not now" gives no Lesson, and never takes back the reward that already
+   *  dropped. Draws no randomness. */
+  private answerLesson(index: number) {
+    const talk = PRESENCE_TALK.listener;
+    const path = lessonPathOf(index);
+    if (path === null) { this.hud.presenceCard(talk.name, this.exchangeLines([talk.lines[1]])); return; }
+    this.heardLesson = true;
+    const eye = this.player.eye;
+    this.particles.burst(eye.x, eye.y - 0.4, eye.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, this.exchangeLines([lessonLine(path), talk.lines[1], 'presence.listener.crown']));
+  }
+
+  /** The Light's one trigger (COVENANT.md; owner, #228, D4): the body enters a story of the giant tree. In the crown, in a
+   *  run that has heard a Listener's Lesson, the Covenant's Light is kept, once. The crown's layout is the tree's; this only
+   *  reads the story the body is in. */
+  private reachCrown(story: string) {
+    if (!crownGivesLight(story, this.heardLesson) || this.covenant.includes('light')) return;
+    this.keepCovenantPiece('crown');
+    const b = this.player.body;
+    this.particles.burst(b.x, b.y + 1.6, b.z, pal('light.gold'), 16, 1.6, 0.05);
+    sfx3.reveal();
+    this.hud.toast('covenant.light.crown');
+  }
+
+  /** The Cartographer's chart (CARTOGRAPHER.md): the ore of its zone is taken, and the nearest vault and the nearest boss
+   *  of the floor are both marked in words. It keeps its place, as after a single mark. */
+  private acceptCartographerOre(e: Enemy, index: number) {
+    const talk = PRESENCE_TALK.cartographer;
+    this.player.removeAt(index);
+    this.hands.placed();
+    this.meet(e);
+    const vault = this.directionToNearest(e, 'vault'), boss = this.directionToNearest(e, 'boss');
+    // both places go on the star map too (D15): the vault, and the boss beside it
+    const vr = this.nearestRoom(e, 'vault'), br = this.nearestRoom(e, 'boss');
+    const first = vr ?? br;
+    if (first) this.starMarks.cartographer.set(first.floor, { room: first.id, want: vr ? 'vault' : 'boss', ...(vr && br ? { also: br.id } : {}) });
+    const lines: MessageKey[] = [
+      vault === null ? 'presence.cartographer.chart.novault' : 'presence.cartographer.chart.vault',
+      boss === null ? 'presence.cartographer.chart.noboss' : 'presence.cartographer.chart.boss',
+      'presence.cartographer.chart.done',
+    ];
+    sfx3.reveal();
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, lines, {
+      vault: vault === null ? '' : t(`dir.${vault}` as MessageKey), boss: boss === null ? '' : t(`dir.${boss}` as MessageKey),
+    });
+  }
+
+  /** The direction of the nearest room of a type on the enemy's floor, read from the map's cells; null when none. */
+  private directionToNearest(e: Enemy, type: RoomInfo['type']): ReturnType<typeof directionOf> | null {
+    const from = this.rooms.get(e.room), best = this.nearestRoom(e, type);
+    return from && best ? directionOf(best.gx - from.gx, best.gz - from.gz) : null;
+  }
+
+  /** The nearest room of a type on the enemy's floor, by the map's cells; null when none. */
+  private nearestRoom(e: Enemy, type: RoomInfo['type']): RoomInfo | null {
+    const from = this.rooms.get(e.room);
+    if (!from) return null;
+    let best: RoomInfo | null = null;
+    for (const r of this.rooms.values()) {
+      if (r.floor !== from.floor || r.type !== type) continue;
+      if (!best || Math.hypot(r.gx - from.gx, r.gz - from.gz) < Math.hypot(best.gx - from.gx, best.gz - from.gz)) best = r;
+    }
+    return best;
+  }
+
+  /** The star map's view (D15): the floor you stand on under the ground, the crown above it. Read when the tab opens. */
+  starMap(): StarMap {
+    const b = this.player.body;
+    const floor = this.floors.get(this.depth);
+    if (this.realm === 'dungeon' && bandOf(b.y) !== SURFACE && floor) return floorStarMap(floor, this.depth, this.visited, this.room, this.starMarks);
+    const t = this.tree, L = t.leaves;
+    return {
+      kind: 'crown', sx: this.dw.sx, sz: this.dw.sz, centre: [t.cx, t.cz], trunk: TREE_STORIES[0].r, crown: [54, t.cz - 2],
+      leaves: { x0: L.x0, z0: L.z0, w: L.w, d: L.d }, stair: t.stairAt(TREE_STORIES.length - 2),
+      pads: t.pads.map(p => ({ x: p.x, z: p.z, to: p.to, up: p.up === true })), read: this.starMarks.read,
+      here: this.realm === 'dungeon' ? [Math.floor(b.x), Math.floor(b.z)] : null,
+    };
+  }
+
+  /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
+   *  15/75/10 table is unchanged (LISTENER.md); the Trickster's and the Echo's are seeded weighted tables (their docs). */
+  private dropPresenceReward(id: PresenceId, e: Enemy, at?: { x: number; y: number; z: number }) {
+    // the Mender's piece is an item, kept when it is picked up (thread.ts); the others are kept on the exchange
+    if (id !== 'mender') this.keepCovenantPiece(id);
+    const rng = this.rng.stream('drops');
+    if (id === 'listener') return this.dropListenerReward(e);
+    if (id === 'trickster') this.launchGiftPickups(e, [{ type: 'item', item: rollTricksterPractice(rng) }]);
+    else if (id === 'echo') this.launchGiftPickups(e, [{ type: rollEchoGift(rng) }]);
+    else if (id === 'wanderer') {
+      const gift = rollWandererGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'child') {
+      const gift = rollChildGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'witness') {
+      const gift = rollWitnessGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'boatman') {
+      // the gift lies on the island the Boatman ferried the player to (at), not by the shore
+      const gift = rollBoatmanGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }], at);
+    } else if (id === 'mender') {
+      const gift = rollMenderGift(rng);
+      const rewards: GiftReward[] = [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }];
+      // the Covenant's Thread, dropped once beside the gift, as an item (owner, #228, D10); it draws no randomness
+      const thread = ITEM_BY_ID.get(MENDERS_THREAD);
+      if (thread && menderDropsThread(this.covenant, this.threadDropped, this.inventory.has(MENDERS_THREAD))) {
+        this.threadDropped = true;
+        rewards.push({ type: 'item', item: thread });
+      }
+      this.launchGiftPickups(e, rewards);
+      this.mendReleased(e);
+    } else if (id === 'star-reader') {
+      // the Star-reader reads the stars for you (D15): its room and the crown's chain go on the star map
+      const r = this.rooms.get(e.room);
+      if (r) this.starMarks.starReader = { floor: r.floor, room: r.id };
+      this.starMarks.read = true;
+      const gift = rollStarReaderGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    }
+    sfx3.reveal();
+  }
+
+  /** The Mender's integration (MENDER.md; owner, #228, D9): the last projection released on the Mender's floor comes back
+   *  beside it as an ally (part of the self), once, with the gold seam of what was mended. Nothing comes back when nothing
+   *  was released there. It draws no randomness. */
+  private mendReleased(mender: Enemy) {
+    const r = this.rooms.get(mender.room);
+    const id = r ? projectionToMend(this.releases.on(r.floor)) : null;
+    const def = id ? ENEMY_BY_ID.get(id) : undefined;
+    if (!r || !def) return;
+    const b = mender.body, player = this.player.body;
+    // beside the Mender, on the side away from the player, so it does not stand in the player's way
+    const a = Math.atan2(b.z - player.z, b.x - player.x);
+    const x = b.x + Math.cos(a) * 1.2, z = b.z + Math.sin(a) * 1.2;
+    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, def.hp, def.speed, def.contactDamage, new Set([MENDED_TAG]));
+    e.spawning = 0;
+    this.actors.add(e);
+    this.setFaction(e, 'self', 'mender');
+    this.particles.burst(x, b.y + 1, z, pal('light.gold'), 16, 1.6, 0.05);
+    this.mendedNow = true;
+  }
+
+  /** The gold seam of each mended ally (DECISIONS.md §14.4): one gold mote rises from its body every 0.6 s, under 2 Hz. */
+  private updateSeams(dt: number) {
+    this.seamT -= dt;
+    if (this.seamT > 0) return;
+    this.seamT = MENDED_SEAM_S;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.faction !== 'self' || !e.tags.has(MENDED_TAG)) continue;
+      const b = e.body;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 1, 0.4, 0.04);
+    }
+  }
+
+  /** The Mender comes to the first vault the player opens on its floor (MENDER.md, proposed): once that vault's Boundary
+   *  has left, the Mender stands where the Boundary stood. It comes once per run. The floor is read from the run's root. */
+  private summonMender(room: number, at: { x: number; y: number; z: number }) {
+    const r = this.rooms.get(room);
+    if (!r || !menderComesTo(this.rng, r.floor, this.menderCame)) return;
+    this.menderCame = true;
+    const def = PRESENCE_BY_ID.get('mender')!;
+    const e = this.enemies.spawn(def, this.actors.newId(), room, at.x, at.y, at.z, def.hp, def.speed, 0, new Set(['presence']));
+    e.faction = 'neutral';
+    e.spawning = 0;
+    this.actors.add(e);
+    // the Mender is not placed with the floor, so its bestiary first time is recorded when it comes (COMPLETION.md)
+    this.firstTime('bestiary', def.id);
+    this.particles.burst(at.x, at.y + 1.2, at.z, pal('light.gold'), 12, 1.6, 0.05);
+  }
+
+  /** The island of a room's template: its 'K' tile, read through the room's flips, on the floor's height. Null when the
+   *  template has none (the Boatman's nave has one, BOATMAN.md). */
+  private landingOf(room: RoomInfo): { x: number; y: number; z: number } | null {
+    const t = ROOM_TEMPLATES.find(tp => tp.id === room.template);
+    if (!t) return null;
+    for (let r = 0; r < t.rows.length; r++) for (let c = 0; c < t.rows[r].length; c++) {
+      if (cellAt(t, c, r, room.flipX, room.flipZ) === 'K') return { x: room.x0 + c + 0.5, y: room.y0 + 1, z: room.z0 + r + 0.5 };
+    }
+    return null;
+  }
+
+  /** The Boatman's exchange (BOATMAN.md, proposed): one block is left on the shore, the Boatman ferries the player across
+   *  the deep water to the island, and the gift lies there. It stays (a dweller). */
+  private acceptBoatman(e: Enemy, index: number) {
+    const room = this.rooms.get(e.room);
+    const landing = room ? this.landingOf(room) : null;
+    // the toll is taken only when the ferry lands: no island, no crossing, and the block stays in hand
+    if (boatmanCrossing(landing) === 'no-crossing' || !landing) {
+      e.tags.add('offer-declined');
+      this.hud.presenceCard(PRESENCE_TALK.boatman.name, ['presence.boatman.nocross']);
+      return;
+    }
+    this.player.removeAt(index);
+    this.hands.placed();
+    this.meet(e);
+    this.startIdle(e, 'boatman');
+    this.player.carry(landing, BOATMAN_FERRY_S);
+    this.dropPresenceReward('boatman', e, landing);
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(PRESENCE_TALK.boatman.name, this.exchangeLines(PRESENCE_TALK.boatman.lines));
+  }
+
+  /** The Child's two answers. The first is the consent: from this count of placed blocks on, the Child watches the player
+   *  build (CHILD_BUILD_BLOCKS). The second, once that many came, is the exchange: its gift, and it stays (a dweller). */
+  private acceptChild(e: Enemy) {
+    const talk = PRESENCE_TALK.child;
+    const mark = this.childBuilds.get(e.id);
+    if (mark === undefined) {
+      this.childBuilds.set(e.id, this.builds.mark());
+      // this card is the answer for this approach: the progress card waits until the player steps away and back
+      e.tags.add('answering');
+      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      this.hud.presenceCard(talk.name, ['presence.child.start']);
+      return;
+    }
+    this.childBuilds.delete(e.id);
+    this.meet(e);
+    this.dropPresenceReward('child', e);
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines));
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
@@ -3621,15 +4075,88 @@ export class Game {
     sfx3.reveal();
   }
 
-  /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it
-   *  (owner decision on #65: the room returns to normal). */
-  private releaseListener(e: Enemy) {
+  /** A presence that gives its reward (or the Trickster, once declined) leaves: it is removed from the world, so its
+   *  silence leaves with it (owner decision on #65: the room returns to normal). */
+  private releasePresence(e: Enemy) {
     this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('bone.paper'), 14, 1.6, 0.06);
     this.enemies.dissolve(e);
     this.bus.off(null, `actor:${e.id}`);
     this.actors.remove(e.id);
     this.contacts.forget(e.id);
     this.presenceReplies.delete(e.id);
+  }
+
+  /** A requesting presence stays for its idle window after the exchange, then leaves (idle.ts, pending owner ruling). */
+  private startIdle(e: Enemy, id: PresenceId) {
+    if (!IDLE_PRESENCES.has(id)) return;
+    this.idle.start(e.id, idleWindowOf(this.rng, id));
+    this.still.start(e.id);
+  }
+
+  /** The Covenant (COVENANT.md): the piece a presence gives, if it gives one, and the toast when the set is whole. */
+  private keepCovenantPiece(id: CovenantSource) {
+    const before = covenantComplete(this.covenant);
+    this.covenant = keepPiece(this.covenant, id);
+    if (!before && covenantComplete(this.covenant)) this.hud.toast('covenant.complete');
+  }
+
+  /** The lines of a card that closes an exchange: the presence's own, and once the Covenant is whole, its memory of the
+   *  player (COVENANT.md, the set effect). */
+  private exchangeLines(lines: readonly MessageKey[]): readonly MessageKey[] {
+    return remembersInRun(this.covenant) ? [...lines, 'covenant.remembers'] : lines;
+  }
+
+  /** A presence is met: its tag, and its place in this run's codex the first time it is met (CODEX.md). */
+  private meet(e: Enemy) {
+    e.tags.add('met');
+    const id = e.def as PresenceId;
+    if (this.codex.includes(id)) return;
+    this.codex.push(id);
+    this.hud.setCodex(this.codex);
+  }
+
+  /** Counts the idle windows down on game time; a presence whose window ran out leaves in that frame. */
+  private updateIdle(dt: number) {
+    this.still.tick(dt, this.input.active);
+    for (const key of this.idle.tick(dt)) {
+      const e = this.enemies.list.find(enemy => enemy.id === key && enemy.alive);
+      const still = this.still.take(key);
+      if (!e) continue;
+      // the window closed: with the player near and no card open, the presence asks "Have you done it?" (trust.ts)
+      const b = this.player.body;
+      const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= DONE_REACH && Math.abs(e.body.y - b.y) <= 3;
+      if (near && !this.pendingPresenceOffer && !this.pendingPresenceChoice && !this.player.dead) this.askDone(e, still);
+      else this.releasePresence(e);
+    }
+  }
+
+  /** The question at the end of a request's idle window (REQUESTS.md, trust.ts): the choice card with "Yes" and "Not now". */
+  private askDone(e: Enemy, still: number) {
+    const id = e.def as PresenceId;
+    this.pendingPresenceChoice = { id, enemyId: e.id, done: true, still };
+    this.choiceGuard.open();
+    this.hud.presenceChoiceCard(PRESENCE_TALK[id].name, DONE_CHOICE.question, DONE_CHOICE.options);
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The answer to "Have you done it?": a yes moves the hidden step (honest completion up, early yes down) and gives the
+   *  gift of the step after it, never nothing, with the same words either way; the count of requests answered is saved.
+   *  "Not now" gives nothing and changes nothing. The presence leaves after either answer: its window is over. */
+  private answerDone(e: Enemy | undefined, index: number, still: number) {
+    if (!e || !e.alive) return;
+    const talk = PRESENCE_TALK[e.def as PresenceId];
+    if (index === 0) {
+      this.trust = answerDone(this.trust, still);
+      this.launchGiftPickups(e, [doneGift(this.trust)]);
+      this.keeper.recordRequest();
+      sfx3.reveal();
+      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      this.hud.presenceCard(talk.name, this.exchangeLines(['request.done.thanks']));
+    } else {
+      this.hud.presenceCard(talk.name, ['request.done.later']);
+    }
+    this.releasePresence(e);
   }
 
   private pushPresences() {
@@ -3669,6 +4196,8 @@ export class Game {
     tickLabs(this.labs.values(), dt);
     this.updateRest(dt);
     this.updatePresences();
+    this.updateIdle(dt);
+    this.updateSeams(dt);
     this.touchGuards();
     this.pushPresences();
     this.updateBoundaries();
@@ -3705,6 +4234,8 @@ export class Game {
       this.teleport(to.x + 0.5, to.y, to.z + 0.5);
       sfx2.charged();
     }
+    // the Leaves (D14): their name, the first time you stand in them this run
+    if (!this.leavesSeen && this.realm === 'dungeon' && inLeaves(b.x, b.y, b.z)) { this.leavesSeen = true; this.hud.toast('toast.leaves'); }
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
     const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {
@@ -3755,7 +4286,7 @@ export class Game {
     // the story of the giant tree the body is in, above the surface: its canopy is the crown (ACHIEVEMENTS §1)
     if (raw === SURFACE && this.tree) {
       const story = TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].key;
-      if (story !== this.treeStoryNow) { this.treeStoryNow = story; this.bus.emit('treeStory', { story }); }
+      if (story !== this.treeStoryNow) { this.treeStoryNow = story; this.bus.emit('treeStory', { story }); this.reachCrown(story); }
     }
     if (band > this.maxDepth) {
       this.maxDepth = band;
@@ -3878,7 +4409,7 @@ export class Game {
       else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
       else if (kind === 'heart') base.push(i);
       else if (kind === 'layer') bonus.push(i);
-      else if (kind === 'item') { const held = this.inventory.items[i]; if (!held) return false; items.push(held.def.id); }
+      else if (kind === 'item') { const held = this.inventory.items[i]; if (!held || isPromised(held.def)) return false; items.push(held.def.id); }
       else return false;
     }
     // every heart is checked before anything is taken: a refused payment spends nothing
@@ -3974,7 +4505,15 @@ export class Game {
     }
     this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
-    if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
+    if (ctx === 'prompt' && this.hud.presenceChoiceOpen) {
+      // the choice card: navigate moves between the answers, confirm picks the selected one, back declines
+      const n = inp.navigate();
+      if (n.x || n.y) this.hud.moveChoice(n.x || n.y);
+      this.choiceGuard.tick(dt);
+      const confirmedBy = inp.hitBy('confirm');
+      if (confirmedBy && confirmedBy !== 'touch' && this.choiceGuard.ready) this.resolvePresenceChoice(this.hud.choiceSelected);
+      else if (inp.hit('back')) this.resolvePresenceChoice(-1);
+    } else if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
       const confirmedBy = inp.hitBy('confirm');
       if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceOffer(true);
       else if (inp.hit('back')) this.resolvePresenceOffer(false);
@@ -3985,6 +4524,8 @@ export class Game {
     if (ctx === 'play' || ctx === 'paused' || ctx === 'inventory') {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
+      // the star map (D15): M or View opens the screen on it, and closes it when it is the tab on screen
+      else if (inp.hit('map')) this.hud.mapKey(this);
     }
     // the book download (COMPLETION §8): X on the pause card or the death screen; `act` ignores it below 100%
     if ((ctx === 'paused' || ctx === 'dead') && inp.hit('book')) this.act('book-download');
@@ -3997,10 +4538,10 @@ export class Game {
       else {
         const n = inp.navigate();
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
-        else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
+        else if (!this.hud.mapShown && (n.x || n.y)) this.hud.moveSelection(n.x, n.y);
       }
-      // a number key picks its slot; Enter or A picks the highlighted carried item
-      if (inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
+      // a number key picks its slot; Enter or A picks the highlighted carried item (not on the star map)
+      if (!this.hud.mapShown && inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -4154,7 +4695,8 @@ export class Game {
   act(act: string) {
     if (act === 'book-download') { if (this.keeper.completion.percent >= 100) downloadRootsBook(); return; }
     if (act === 'presence-offer-accept') this.resolvePresenceOffer(true);
-    else if (act === 'presence-offer-decline') this.resolvePresenceOffer(false);
+    else if (act === 'presence-offer-decline') { if (this.pendingPresenceChoice) this.resolvePresenceChoice(-1); else this.resolvePresenceOffer(false); }
+    else if (act.startsWith('presence-choice-')) this.resolvePresenceChoice(Number(act.slice('presence-choice-'.length)));
     else if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
     else if (act === 'resume' && !this.player.dead) {
       if (this.hud.screenOpen) this.hud.closeScreen(this);
@@ -4163,6 +4705,7 @@ export class Game {
     else if (act === 'inventory' && this.hud.screenOpen) this.hud.closeScreen(this);
     else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
     else if (act === 'tab-items') this.hud.openScreen(this, 'items');
+    else if (act === 'tab-map') this.hud.openScreen(this, 'map');
     else if (act === 'fov-down' || act === 'fov-up') this.setFov(stepFov(this.fovNow, act === 'fov-up' ? 1 : -1));
   }
 
