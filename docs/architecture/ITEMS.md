@@ -56,6 +56,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `placeBlock` | Place one copy of an ordinary block in an empty cell of the player's room (Affirmation). Only interior room space, no body, no element, no door or doorway, never a material that may not be copied. Writes the world like the player's placement but emits no `blockPlace` or `blockPlaced`. Returns whether it placed |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
+| `time()`, `memory()` | Game time in seconds (paused with the game); scratch numbers per practice for timers and per-room caps, shared by its copies, dropped with the last copy, never saved |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
 | `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (`heal`/`damagePlayer` take half-hearts; `counts()` gives points) and counters, through `heal`, `actorDamage` and `pickupCollect` |
 | `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
@@ -113,6 +114,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
 | `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's roll of a key, heart or bomb, at its floor's chance of 10% to 30%) | after a block breaks |
+| `burst` *(react only)* | nothing: `source` names the item whose pulse went off (Kindling, Stolen Fire) | a pulse (`ItemApi.pulse`) goes off: damage to the projections in a sphere |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `missileLaunch` | `speed` (steady, blocks/s), `range` (blocks), `polarity` (negative: a bomb blast; positive: a love explosion), or cancel (no bomb is spent) | a quick double tap of the fire control with the `missile` stat, a bomb in the counter and room to arm |
 | `pickupCollect` | `amount`, or cancel (`heart` names the kind of a heart other than red; a red heart has none) | collecting a key, bomb or heart |

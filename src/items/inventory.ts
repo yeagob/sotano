@@ -45,6 +45,16 @@ export class Inventory {
     return r;
   }
 
+  /** Scratch memory per practice or synergy id, shared by its copies (ItemApi.memory). Dropped in `rebuild`
+   *  once no installed effect owns it. */
+  private memories = new Map<string, Record<string, number>>();
+
+  private memoryOf(owner: string): Record<string, number> {
+    let m = this.memories.get(owner);
+    if (!m) { m = {}; this.memories.set(owner, m); }
+    return m;
+  }
+
   get items(): readonly ItemInstance[] { return this.held; }
   get synergiesActive(): readonly SynergyDef[] { return this.active; }
   /** How the player casts now: resolved on every rebuild (docs/architecture/WEAPONS.md §1). */
@@ -112,6 +122,9 @@ export class Inventory {
       this.install(`item:${it.uid}`, it.def.id, it.def, suppressed, this.itemRng(it.def.id, copy));
     }
     for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed, this.itemRng(`syn:${s.id}`, 0));
+    // scratch memory lives while any copy (or synergy) that owns it is held
+    const owners = new Set([...this.held.map(h => h.def.id), ...this.active.map(s => s.id)]);
+    for (const k of [...this.memories.keys()]) if (!owners.has(k)) this.memories.delete(k);
 
     // the active weapon: highest priority wins, ties go to the latest gained (synergies come last)
     let best: { id: WeaponId; priority: number } | null = null;
@@ -132,6 +145,7 @@ export class Inventory {
       defer: fn => bus.defer(fn, source),
       rng: () => rng,
       consumeSelf: () => bus.defer(() => consumeCopy(owner.id), source),
+      memory: () => this.memoryOf(owner.id),
     };
   }
 

@@ -847,6 +847,12 @@ const messages = {
   'teach.boltfromtheblue.lesson': 'Stay with a problem you cannot solve yet, then let it rest. When the answer comes as a flash, write it down at once, while the picture is still bright. Then test it step by step: the flash shows the direction, the work shows the way.',
   'teach.serendipity.quote': 'Stay open, and what you were not looking for may find you.',
   'teach.serendipity.lesson': 'Make room for chance: try new things, talk to people outside your usual circle, take a detour now and then. Notice the small surprises and keep the ones that help. Luck favours the mind that is ready to notice it.',
+  'teach.tummo.quote': 'Heat kindled from within keeps the cold from winning.',
+  'teach.tummo.lesson': 'Warmth can be made, not only waited for. When you feel cold or discouraged, bring your attention to your belly and your breath, and let the heat gather there for a few minutes. Then carry that steadiness into what you were about to do.',
+  'teach.firewalking.quote': 'What you fear most may not burn you.',
+  'teach.firewalking.lesson': 'Fear often grows larger than the thing it points at. Before a hard step, name the fear, then take the step anyway, slowly, one foot after the other. Each step you take teaches the body that it can walk through.',
+  'teach.prometheus.quote': 'A flame shared is not a flame lost.',
+  'teach.prometheus.lesson': 'Knowledge, kindness and courage do not run out when you give them away. Share what helped you with someone who needs it, and notice that you keep it too.',
 
   // ── paths (item tags) ──
   'path.body': 'body',

@@ -66,6 +66,9 @@ export interface GameEvents {
   bombBlast: { x: number; y: number; z: number; radius: number; polarity: Polarity; source: string; acted: Set<string> };
   /** Loot rolled for a broken block (after the break). Hooks may add, remove or replace drops. */
   blockLoot: { x: number; y: number; z: number; material: number; source: string; drops: PickupKind[] };
+  /** A pulse went off: damage to the projections in a sphere, from an item's burst (`source` is the item's id).
+   *  React only. Kindling and Stolen Fire burst this way; Hearth listens for it. */
+  burst: { x: number; y: number; z: number; radius: number; damage: number; source: string };
 
   // ── elements (docs/architecture/ELEMENTS.md §9) ──
   /** Fire or lava is about to set a flammable block alight (the block burns away into a flame).

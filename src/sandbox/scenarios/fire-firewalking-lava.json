@@ -1,0 +1,9 @@
+{
+  "note": "Firewalking beside lava: fire is harmless, but lava still burns the player; the run ends if the player dies",
+  "rows": [".............", ".............", ".............", "....LLL......", "....LLL......", "....LLL......", "............."],
+  "player": [5, 0, 4],
+  "god": false,
+  "items": ["firewalking"],
+  "ticks": 120,
+  "report": [0, 30, 60, 120]
+}

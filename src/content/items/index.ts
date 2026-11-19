@@ -60,6 +60,9 @@ import pressurevalve from './pressurevalve';
 import controlledburn from './controlledburn';
 import boltfromtheblue from './boltfromtheblue';
 import serendipity from './serendipity';
+import tummo from './tummo';
+import firewalking from './firewalking';
+import prometheus from './prometheus';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -74,6 +77,7 @@ export const ITEMS: readonly ItemDef[] = [
   dialectic, reframing,
   waymark,
   pressurevalve, controlledburn, boltfromtheblue, serendipity,
+  tummo, firewalking, prometheus,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

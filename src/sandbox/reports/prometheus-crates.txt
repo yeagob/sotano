@@ -1,0 +1,36 @@
+# prometheus-crates — Stolen Fire: one negative intention in five is a fire seed; a seed that hits a crate bursts (1.6 blocks, 5 damage) and sets the crates within 1.5 blocks on fire
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices prometheus · synergies —
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices prometheus · synergies —
+  blocks —
+  elements —
+  cubes crate 1 · pickups 1
+  events blockBreak:crate 3 · blockDamage:crate 2 · blockLoot:crate 1 · burst 1 · fire 2 · ignite:crate 2 · intentHit 2 · polarityChange 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices prometheus · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 1
+  events blockDamage:brick 3 · fire 4 · intentHit 4
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

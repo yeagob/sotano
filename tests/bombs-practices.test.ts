@@ -85,6 +85,8 @@ function host(projections: Proj[] = []) {
     launch: () => {},
     intentsHere: () => 0,
     tagCube: () => {},
+    time: () => 0, memory: () => ({}), placeBlock: () => false, consumeCopy: () => {}, playerFeet: () => ({ x: 0, y: 0, z: 0 }),
+    checkpoint: () => null, setCheckpoint: () => {}, teleportPlayer: () => {}, invulnerable: () => {}, burst: () => {}, chime: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
   return { bus, stats, inv, calls };

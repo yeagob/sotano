@@ -1,0 +1,36 @@
+# fire-firewalking-fire — Firewalking: the player stands in a patch of fire for four seconds; the fire never hurts (each touch is cancelled). The heal is checked in tests/fire-practices.test.ts
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements fire 9 (9 src)
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 5.5 0.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements fire 9 (9 src)
+  cubes — · pickups 0
+  events actorDamage:player<fire! 60 · elementEnter:player:fire 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 5.5 0.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements fire 9 (9 src)
+  cubes — · pickups 0
+  events actorDamage:player<fire! 180
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  ....FFF......
+  ....FFF......
+  ....FFF......
+  .............
+
+legend F fire source

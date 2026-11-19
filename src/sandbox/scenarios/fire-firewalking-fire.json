@@ -1,0 +1,9 @@
+{
+  "note": "Firewalking: the player stands in a patch of fire for four seconds; the fire never hurts (each touch is cancelled). The heal is checked in tests/fire-practices.test.ts",
+  "rows": [".............", ".............", ".............", "....fff......", "....fff......", "....fff......", "............."],
+  "player": [5, 0, 4],
+  "god": false,
+  "items": ["firewalking"],
+  "ticks": 240,
+  "report": [0, 60, 240]
+}

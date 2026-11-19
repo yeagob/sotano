@@ -25,6 +25,7 @@ When a projection hurts you, fire bursts out of you: 2.5 blocks, 4 points to pro
 ## Synergies and states of being
 
 - [Resolute](../states-of-being/RESOLUTE.md) (counts the will tag)
+- [Hearth](../FIRE.md#hearth-synergy) (its flare is a fire burst, which warms you)
 
 ## Open questions
 
