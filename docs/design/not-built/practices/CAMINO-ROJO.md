@@ -64,4 +64,4 @@ Proposed: a practice that trades short-term power for long-term gain. The player
 
 ## Flagged in the book (for the owner, not decided)
 
-The book's pages (page 10) mention San Pedro cacti, a plant used in ceremony, and pages 11 mention a ceremonial fire and the calling of the seven directions. These are the author's own accounts, not named works, and they are not sourced here. Whether the San Pedro cactus stays out of the game falls under open question 7.
+The book's pages (page 10) mention San Pedro cacti, a plant used in ceremony, and page 11 mentions a ceremonial fire and the calling of the seven directions. These are the author's own accounts, not named works, and they are not sourced here. Whether the San Pedro cactus stays out of the game falls under open question 7.
