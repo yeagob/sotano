@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Changed
+- The lore was extended with new references and a tradition (#194, #201, #204).
+
 ### Fixed
 - Symbolic Act no longer explodes blocks that were kicked: a block that falls on you while your hands are full, or a thrown block you kick later, loses its charge and does not burst (#198).
 
