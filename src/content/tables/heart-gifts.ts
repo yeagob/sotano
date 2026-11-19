@@ -90,6 +90,21 @@ export const WANDERER_HEART_TABLE = table<RareHeart>('wanderer-heart', 'runtime'
   GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
 );
 
+// The Child's gift (docs/design/built/presences/CHILD.md, proposed pending the owner's ruling): what it made from the
+// player's blocks. Three draws in four give a practice of quality one; one in four gives one special heart (an even draw
+// of the five kinds). The Listener's table is unchanged.
+type ChildKind = 'practice' | 'heart';
+export const CHILD_GIFT_TABLE = table<ChildKind>('child-gift', 'runtime', [
+  { value: 'practice', weight: 3 },
+  { value: 'heart', weight: 1 },
+]);
+export const CHILD_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('child-practice', 'runtime',
+  QUALITY_ONE.map(item => ({ value: item, weight: 1 })),
+);
+export const CHILD_HEART_TABLE = table<RareHeart>('child-heart', 'runtime',
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
+);
+
 export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   LISTENER_GIFT_TABLE,
   HEALTH_PRACTICE_TABLE,
@@ -104,6 +119,9 @@ export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   WANDERER_GIFT_TABLE,
   WANDERER_PRACTICE_TABLE,
   WANDERER_HEART_TABLE,
+  CHILD_GIFT_TABLE,
+  CHILD_PRACTICE_TABLE,
+  CHILD_HEART_TABLE,
 ];
 
 function roll<T>(source: Table<T>, rng: Rng): T {
@@ -138,6 +156,12 @@ export function rollEchoGift(rng: Rng): 'key' | 'bomb' {
 export function rollWandererGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
   if (roll(WANDERER_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(WANDERER_PRACTICE_TABLE, rng) };
   return { kind: 'heart', heart: roll(WANDERER_HEART_TABLE, rng) };
+}
+
+/** The Child's gift (CHILD_GIFT_TABLE): a practice of quality one, or one special heart. */
+export function rollChildGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
+  if (roll(CHILD_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(CHILD_PRACTICE_TABLE, rng) };
+  return { kind: 'heart', heart: roll(CHILD_HEART_TABLE, rng) };
 }
 
 // The Elder's lesson (docs/design/built/presences/ELDER.md, proposed pending owner ruling): the path the player chose

@@ -12,12 +12,13 @@ import trickster from './trickster';
 import wanderer from './wanderer';
 import elder from './elder';
 import cartographer from './cartographer';
+import child from './child';
 
-export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer';
+export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer' | 'child';
 
 export type RoomPresence = PresenceId | 'boundary';
 
-export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer];
+export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer, child];
 export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.map(p => [p.id, p]));
 
 /** What a presence takes: one kind of monster part, any part (the Echo asks for any part in hand), or nothing (the
@@ -25,7 +26,7 @@ export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.m
 export type PresenceKey = PartKind | 'any' | 'none';
 
 export const PRESENCE_KEY: Record<PresenceId, PresenceKey> = {
-  gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none',
+  gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none',
 };
 
 /** The presences that ask a question on a choice card instead of an offer of a part: the card's options and its question. */
@@ -58,10 +59,11 @@ export const PRESENCE_OFFER_QUESTION: Partial<Record<PresenceId, MessageKey>> = 
   echo: 'presence.offer.echo.question',
   wanderer: 'presence.offer.wanderer.question',
   gardener: 'presence.offer.gardener.question',
+  child: 'presence.offer.child.build',
 };
 
 /** The presences whose offer is a gift to take, not a part to give: the card says Take and Decline, not Give and Keep. */
-export const GIFT_OFFER: ReadonlySet<PresenceId> = new Set<PresenceId>(['wanderer']);
+export const GIFT_OFFER: ReadonlySet<PresenceId> = new Set<PresenceId>(['wanderer', 'child']);
 
 export interface PresenceTalk {
   name: MessageKey;
@@ -83,6 +85,10 @@ export const PRESENCE_TALK: Record<PresenceId, PresenceTalk> = {
   },
   echo: { name: 'presence.echo.name', lines: ['presence.echo.1', 'presence.echo.2'], silent: 'presence.echo.silent', hint: 'presence.echo.hint', drops: true },
   elder: { name: 'presence.elder.name', lines: ['presence.elder.1', 'presence.elder.2'], silent: 'presence.elder.silent', hint: 'presence.elder.hint', drops: true },
+  child: {
+    name: 'presence.child.name', lines: ['presence.child.1', 'presence.child.2'], silent: 'presence.child.silent',
+    hint: 'presence.child.hint', drops: true,
+  },
   cartographer: { name: 'presence.cartographer.name', lines: ['presence.cartographer.1', 'presence.cartographer.2'], silent: 'presence.cartographer.silent', hint: 'presence.cartographer.hint', drops: false },
   wanderer: {
     name: 'presence.wanderer.name', lines: ['presence.wanderer.1', 'presence.wanderer.2'], silent: 'presence.wanderer.silent',
@@ -102,7 +108,7 @@ export function leavesAfterOffer(id: PresenceId): boolean {
 }
 
 /** Presences that keep their place after their reward (the Gardener, the Elder, the Cartographer). */
-export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer']);
+export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer', 'child']);
 
 export const TALK_REACH = 2.2;
 
@@ -159,9 +165,10 @@ export function gardenerFloorOf(run: RunRandom): number {
   return run.fork('presence', 'gardener').pick(floors);
 }
 
-/** The Elder's floor and the Cartographer's floor: one seeded floor each from floor 1 to the last (ELDER.md and
- *  CARTOGRAPHER.md, proposed: the Ledger Halls and the Tree are not built). Never the tutorial. */
-export function dwellerFloorOf(run: RunRandom, id: 'elder' | 'cartographer'): number {
+/** The Elder's, the Cartographer's and the Child's floor: one seeded floor each from floor 1 to the last (ELDER.md,
+ *  CARTOGRAPHER.md and CHILD.md, proposed: the Ledger Halls, the Tree and the Cellar of Habits are not built). Never the
+ *  tutorial. */
+export function dwellerFloorOf(run: RunRandom, id: 'elder' | 'cartographer' | 'child'): number {
   const floors: number[] = [];
   for (let k = 1; k <= LAST_FLOOR; k++) floors.push(k);
   return run.fork('presence', id).pick(floors);
@@ -190,6 +197,8 @@ export interface MessengerPlan {
   /** The floors on which this run's Elder and Cartographer wait (elderFloorOf, cartographerFloorOf); none when absent. */
   elderFloor?: number;
   cartographerFloor?: number;
+  /** The floor on which this run's Child waits (dwellerFloorOf 'child'); none when absent. */
+  childFloor?: number;
 }
 
 /** One Listener per Tree floor, in a quiet normal room. */
@@ -247,8 +256,8 @@ export function placeMessengers(rooms: PlacedRoom[], floor: number, rng: Rng, pl
       room.presence = 'gardener';
     }
   }
-  // the Elder and the Cartographer last, each in a quiet normal room that holds no other presence
-  for (const [id, at] of [['elder', plan.elderFloor], ['cartographer', plan.cartographerFloor]] as const) {
+  // the Elder, the Cartographer and the Child last, each in a quiet normal room that holds no other presence
+  for (const [id, at] of [['elder', plan.elderFloor], ['cartographer', plan.cartographerFloor], ['child', plan.childFloor]] as const) {
     if (at !== floor) continue;
     const left = rooms.map((_, i) => i).filter(i => rooms[i].type === 'normal' && rooms[i].presence === undefined);
     const quiet = left.filter(i => rooms[i].enemies.length === 0);

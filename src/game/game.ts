@@ -3,7 +3,7 @@
 // anything an item might want to change reads a stat or emits an event (docs/architecture/ITEMS.md §3).
 
 import * as THREE from 'three';
-import { BuildCount } from './build-count';
+import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
 import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
@@ -97,7 +97,7 @@ import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/ro
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
@@ -286,6 +286,8 @@ export class Game {
   /** Sandbox: the world only moves through `step()` (the console steps it). */
   paused = false;
   private presenceReplies = new Map<number, number>();
+  /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
+  private childBuilds = new Map<number, number>();
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
@@ -379,7 +381,7 @@ export class Game {
   /** The achievements of the session (achievement-keeper.ts): they track on the run's bus, and their cards queue here. */
   private readonly keeper: AchievementKeeper;
   /** The blocks placed in this run, fed from `blockPlaced` (build-count.ts): the Child's build reads it. */
-  readonly builds = new BuildCount();
+  builds = new BuildCount();
   /** Warns once a run when the player's height is not a finite number (height-watch.ts). */
   private readonly heightWatch = new HeightWatch();
   /** The Roots' mastery level this run started with (REWARDS §6): read once at run start, never during the run. */
@@ -567,6 +569,7 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.childBuilds.clear(); this.builds = new BuildCount();
     this.pendingPresenceOffer = null;
     this.input.modal = false;
     setMasterTarget(0.35);
@@ -3480,6 +3483,22 @@ export class Game {
       if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      // the Child, once the player agreed to build: it asks for its gift when the blocks are placed, and only tells how
+      // many are left until then (one card per approach)
+      if (id === 'child' && this.childBuilds.has(e.id)) {
+        const mark = this.childBuilds.get(e.id)!;
+        if (this.builds.reached(mark)) {
+          this.pendingPresenceOffer = { id, enemyId: e.id, index: -1 };
+          this.hud.presenceOfferCard(talk.name, undefined, 'presence.offer.child.gift', true);
+          this.input.modal = true;
+          this.input.unlockFor();
+          return;
+        }
+        if (e.tags.has('answering')) continue;
+        e.tags.add('answering');
+        this.hud.presenceCard(talk.name, ['presence.child.more'], { n: CHILD_BUILD_BLOCKS - this.builds.since(mark) });
+        return;
+      }
       if (PRESENCE_CHOICE[id]) {
         const choice = PRESENCE_CHOICE[id];
         this.pendingPresenceChoice = { id, enemyId: e.id };
@@ -3543,6 +3562,9 @@ export class Game {
       e.tags.add('offer-declined');
       return;
     }
+
+    // the Child's two answers: the consent to build, and later the gift (acceptChild)
+    if (pending.id === 'child') { this.acceptChild(e); return; }
 
     // a gift asks for no part: nothing leaves the hand
     if (pending.index >= 0) {
@@ -3621,8 +3643,31 @@ export class Game {
     else if (id === 'wanderer') {
       const gift = rollWandererGift(rng);
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'child') {
+      const gift = rollChildGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
     }
     sfx3.reveal();
+  }
+
+  /** The Child's two answers. The first is the consent: from this count of placed blocks on, the Child watches the player
+   *  build (CHILD_BUILD_BLOCKS). The second, once that many came, is the exchange: its gift, and it stays (a dweller). */
+  private acceptChild(e: Enemy) {
+    const talk = PRESENCE_TALK.child;
+    const mark = this.childBuilds.get(e.id);
+    if (mark === undefined) {
+      this.childBuilds.set(e.id, this.builds.mark());
+      // this card is the answer for this approach: the progress card waits until the player steps away and back
+      e.tags.add('answering');
+      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      this.hud.presenceCard(talk.name, ['presence.child.start']);
+      return;
+    }
+    this.childBuilds.delete(e.id);
+    e.tags.add('met');
+    this.dropPresenceReward('child', e);
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, talk.lines);
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */

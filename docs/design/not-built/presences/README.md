@@ -13,7 +13,7 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 | [GARDENER.md](GARDENER.md) | The Gardener, on one seeded floor from 1 | Dweller | partly built |
 | [WITNESS.md](WITNESS.md) | The Witness, the last conversation below floor 9 | Dweller | proposal |
 | [ELDER.md](ELDER.md) | The Elder, on one seeded floor from 1 (the Ledger Halls are not built) | Dweller | partly built |
-| [CHILD.md](CHILD.md) | The Child, in the Cellar of Habits | Dweller | decided |
+| [CHILD.md](CHILD.md) | The Child, on one seeded floor from 1 (the Cellar of Habits is not built) | Dweller | partly built |
 | [COVENANT.md](COVENANT.md) | The closed set of four gifts | System | proposal |
 | [CARTOGRAPHER.md](CARTOGRAPHER.md) | The Cartographer, on one seeded floor from 1 (the Tree is not built) | Dweller | partly built |
 | [BOATMAN.md](BOATMAN.md) | The Boatman, by the deepest water of Zone II | Dweller | proposal |
@@ -37,7 +37,7 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 |---|---|---|
 | The Gardener | Its memory and its root-and-moss agreement | Placed on one seeded floor from 1 (never the tutorial); asks for a flesh part; the rest stays in its document |
 | The Wanderer | Its wall walk, its hand-tied line and the corridor | Built as a messenger with a consent gift; the rest stays in its document |
-| The Child | Its room in the Cellar of Habits, its lines and the path rule for a build (the placement counter is built) | Counter built (`src/game/build-count.ts`); the presence is not built |
+| The Child | The Cellar of Habits, the path rule for a build, the Lesson, the Request and the Agreement | Built on one seeded floor from 1: the consent to build three blocks, then one gift; the rest stays in its document |
 | The Elder | The Ledger Halls, the page of ledger stone and the Covenant's Page | Built on one seeded floor from 1: a path choice on the choice card and a lesson of that path; the rest stays in its document |
 | The Witness | The Silence below floor 9 and the hexagram source check | Not built |
 | The Mender | A released projection that comes back (dissolve is final today) and the one vault rule | Not built |

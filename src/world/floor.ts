@@ -476,6 +476,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     gardenerFloor: gardenerFloorOf(rr),
     elderFloor: dwellerFloorOf(rr, 'elder'),
     cartographerFloor: dwellerFloorOf(rr, 'cartographer'),
+    childFloor: dwellerFloorOf(rr, 'child'),
   });
 
   // 2. doorways between linked rooms (each pair once: only east and south links)

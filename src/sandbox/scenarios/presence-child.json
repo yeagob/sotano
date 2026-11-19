@@ -1,0 +1,37 @@
+{
+  "note": "The Child asks for three blocks; after the consent, the blocks placed after it are counted, and the gift follows (CHILD.md)",
+  "floor": 1,
+  "seed": 4182,
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    3,
+    0,
+    3
+  ],
+  "hand": [],
+  "ticks": 60,
+  "report": [
+    0,
+    1,
+    30,
+    60
+  ],
+  "enemies": [
+    {
+      "def": "child",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    }
+  ]
+}
