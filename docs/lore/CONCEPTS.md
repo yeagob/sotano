@@ -28,6 +28,11 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
 | **Parts of a projection** (flesh, heart, mind, essence) | — | What a released projection leaves behind, named after its pattern (the Doubt's pause, the Lectern's margin note); collected, never practices ([BESTIARY §5.7](../design/built/projections/PARTS.md)) |
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
+| **Turning the light around** (attention withdrawn inward) | `golden-flower` | Not built: a practice whose intention turns back onto the player, reflecting inward instead of outward ([SOURCES](SOURCES.md)) |
+| **The golden flower** (the self that blooms when consciousness turns inward) | `golden-flower`, `jung` | Not built: an endgame symbol, what blooms at the deepest point ([COSMOLOGY.md §3](COSMOLOGY.md#3-the-endgame-connection)) |
+| **All beings are kin** ("for all my relations") | `camino-rojo`, `constellations` | Not built: "Por todas mis relaciones", a practice whose effects reach allies and weaken nearby projections ([CAMINO-ROJO.md](../design/not-built/practices/CAMINO-ROJO.md)) |
+| **Choice creates the moment** | `conversations-with-god` | Not built: a mechanic in which the player's choices shape the run's environment |
+| **Inner voices as guides** (signal, not noise) | `voices-beyond` (unverified) | Not built, and held until the source is verified: a practice about listening to inner voices |
 | **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/built/bosses/README.md)) |
 | **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/built/intentions/POLARITY.md)) |
 | **Keeping your word** (agreements, promises) | `four-agreements` | Presences make agreements; the gifts are *promised* and cannot be lost ([BESTIARY §8.6–§8.7](../design/not-built/presences/AGREEMENTS.md)) |

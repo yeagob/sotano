@@ -31,6 +31,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `tao-te-ching` | *Tao Te Ching* (Lao Tzu) | Taoist classic | PD | Softness overcomes hardness; water; non-action (wu wei) | **Tao Te Ching** (piercing intentions) |
 | `zen` | Zen Buddhism | Tradition | Concept | Satori (sudden awakening); beginner's mind; the ensō circle | **Satori** (a little more of everything) |
 | `siddhartha` | *Siddhartha* (Hermann Hesse, 1922) | Novel | Credit (PD in the US since 2018, not in the EU until 2033) *(verify)* | The river that teaches by listening; "I can think, I can wait, I can fast"; wisdom can't be taught, only lived | **Thinking, Waiting, Fasting**; the river as a future place in the depths |
+| `golden-flower` | *The Secret of the Golden Flower* (Chinese Taoist text on inner cultivation; German translation and commentary by Richard Wilhelm, with commentary by C. G. Jung, 1929; English translation by Cary F. Baynes, 1931) | Commentary and translation | Credit for Jung's commentary (Jung died 1961: protected in the EU until 2031) and for the English 1931 edition; PD for the Chinese text and Wilhelm's translation (Wilhelm died 1930) *(verify)*. The title is not used as an in-game name | Turning the light around (Hsuan Tzu): attention withdrawn inward to find the centre; the golden flower as the awakened light that blooms when consciousness turns inward; guarding the centre in stillness; consciousness and the unconscious as forces to unite | Ideas only, not built: a practice that turns an intention back onto the player; the golden flower as an endgame symbol ([COSMOLOGY.md §3](COSMOLOGY.md#3-the-endgame-connection)); a stillness practice. Concepts: *Turning the light around*, *The golden flower* in [CONCEPTS.md](CONCEPTS.md) |
 
 ### Stoics and classics
 
@@ -52,6 +53,19 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | `the-alchemist` | *The Alchemist* (Paulo Coelho, 1988) | Novel | Credit | Personal legend; omens; the treasure was where you started; alchemy as inner transformation | **Follow the Omens**; furnaces (alchemy) in ELEMENTS; the endgame idea that the treasure is at the start ([COSMOLOGY.md §3](COSMOLOGY.md#3-the-endgame-connection)) |
 | `la-locura-lo-cura` | *La locura lo cura* (extractos) (Guillermo Borja, Editorial La Llave, 1995) | Book (Spanish) | Credit (a modern work: quoted with attribution, never used as a name) | Authenticity is showing oneself as one is, without a façade, and without judgement; it is not trying to be better, which is a duty | The quotation on page 17 of the Roots' book (the first of the old book pages, after the author's part one) (the treasure room's north wall, [BOOK-DATA §2b](../design/built/levels/roots/BOOK-DATA.md#2b-quotations)); the English is our translation |
 | `campos-de-castilla` | *Campos de Castilla* (Antonio Machado, 1912), section "Proverbios y cantares", proverb XXIX, "Caminante, no hay camino" | Poetry (Spanish) | PD (Machado died in 1939; the book is public domain). The year is the book's 1912 edition; the first printing of the proverb itself is *(verify)* | The road is made by walking; the path you will never tread again; "there is no road, only wakes upon the sea" | The epigraph on page 7 of the Roots' book, in Spanish, with our English translation (`lang: "es"`); no year is given for the proverb |
+| `conversations-with-god` | *Conversations with God: An Uncommon Dialogue*, Book 1 (Neale Donald Walsch, Hampton Roads, 1995; later books follow) | Spiritual dialogue | Caution (the title is likely a trademark, and the book is copyrighted) *(verify)*. Never quoted at length, never used as a name | Creation through choice: each moment is a choice that shapes experience; fear and love as the two basic states; the soul's purpose is to experience itself; forgiveness as release, not as excuse | Ideas only, not built: a choice mechanic in which the player's decisions shape a run's environment; an extension of the good and bad polarity ([COSMOLOGY.md §2](COSMOLOGY.md#2-the-seven-principles-as-systems)); a complement to **Forgiveness**. Concept: *Choice creates the moment* in [CONCEPTS.md](CONCEPTS.md) |
+| `voices-beyond` | *The Voices Beyond* (*Las voces del desierto* as given in issue #201). **Unverified**: author, publisher, year and the Spanish title could not be confirmed | Spiritual work (unverified) | **Unverified**. No status can be given yet. Do not use its title or any phrase from it in the game until it is verified | Ideas from the issue, not checked against the text: silence and the desert as inner space; inner voices as guides, told apart from projections (noise) by their guidance (signal); silence as attention | Ideas only, not built: a practice about listening to inner voices; a silent place in the depths ([COSMOLOGY.md §4b](COSMOLOGY.md#4-other-maps-of-the-same-world)). Concept: *Inner voices as guides* in [CONCEPTS.md](CONCEPTS.md), held until the source is verified |
+| `el-kamino-de-santiago` | *El Kamino de Santiago*: the owner's own book, written in Spanish with an AI co-author (credited in the book), told on the Roots' walls (the hidden book, pages 6 to 19) | Owner's book | Owner's own (credited, usable as a name) | Stories from a real road and what they taught; the book's own voice, and a reflection on a life made of small extraordinary things | The Roots' book ([BOOK-DATA](../design/built/levels/roots/BOOK-DATA.md)); the title is not an item name |
+
+### Indigenous traditions
+
+Living traditions of indigenous nations of the Americas are presented as traditions of several nations, never as one community's property. Sacred medicines (peyote, ayahuasca and other plants used in ceremony) are **out of scope** unless the owner decides otherwise (see [Issue #194](https://github.com/yeagob/sotano/issues/194) and [CAMINO-ROJO](../design/not-built/practices/CAMINO-ROJO.md)).
+
+| Id | Source | Kind | Status | Key ideas | In the game |
+|---|---|---|---|---|---|
+| `camino-rojo` | Camino Rojo (Red Road): a modern path of self-knowledge that draws on Mesoamerican and wider indigenous Abya Yala traditions; it is taught by practitioners in Mexico, Spain and elsewhere. Its origin is not verified: one academic source describes it as a neo-shamanic movement that reworks several indigenous traditions, with some Lakota influence | Living spiritual tradition (modern movement) | Concept for the traditions and practices; the name "Camino Rojo" is a movement name, credited and not used in-game *(verify origin)* | The Earth as a living being; all beings are kin ("for all my relations"); discipline and self-observation; ceremonies as channels of release and vision | Ideas only, not built: [CAMINO-ROJO.md](../design/not-built/practices/CAMINO-ROJO.md) (interconnection, temazcal, vision quest). Concept: *All beings are kin* in [CONCEPTS.md](CONCEPTS.md) |
+| `temazcal` | Temazcal (sweat lodge): a Mesoamerican purification ceremony in a sealed space of heated stones, steam, song and prayer, practised by many communities | Ceremony | Concept (cultural heritage shared across communities; not owned by one group) | Heat, steam, song and release as preparation for deeper work | Ideas only, not built: [CAMINO-ROJO.md](../design/not-built/practices/CAMINO-ROJO.md) §2 |
+| `vision-quest` | Búsqueda de visión (vision quest): solitude, fasting and silence on a mountain, a practice of several Plains nations, also taken up in Camino Rojo groups | Ceremony | Concept (the practice; the term is common) | Solitude, silence and fasting as a way to hear inner clarity; the aim is learning to listen, not enduring hunger | Ideas only, not built: [CAMINO-ROJO.md](../design/not-built/practices/CAMINO-ROJO.md) §3 |
 
 ### Therapies and techniques
 
@@ -100,7 +114,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 
 | Id | Source | Status | In the game |
 |---|---|---|---|
-| `jung` | C. G. Jung: the shadow, the descent into the unconscious, *The Red Book* | Credit (concepts generic) | The descent into the basement; the boss **The Shadow** (planned) |
+| `jung` | C. G. Jung: the shadow, the descent into the unconscious, *The Red Book* | Credit (concepts generic) | The descent into the basement; the boss **The Shadow** (planned). His commentary on *The Secret of the Golden Flower* is in `golden-flower` |
 | `monomyth` | Joseph Campbell, *The Hero with a Thousand Faces* (1949) | Credit (concept generic) | Descent and return as the shape of a run; the threshold guardian (boss of floor 5, [BESTIARY](../design/built/projections/README.md)) |
 | `dante` | Dante Alighieri, *Inferno* (*Divine Comedy*, c. 1308–1321) | PD (structure and images only; never his figures, never punishment of people) | The nine circles as floors 1–9 ([LEVELS](../design/built/levels/floors/CIRCLES.md)); each zone's image (winds, rain, weights, marsh, tombs, burning sand, ditches, ice) shapes its projections and bosses ([BESTIARY §4](../design/not-built/projections/ZONES.md)) |
 
@@ -115,6 +129,18 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 | Id | Source | Status | In the game |
 |---|---|---|---|
 | `dr-stone` | *Dr. Stone* (Riichi, illustrated by Boichi, anime and manga, 2017–) *(verify)* | Credit (copyrighted; cited in the lore notes only) | Nothing in the game. Dr. Launcher's lore credit is the citation "Let's go to the moon" ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)); its names, characters, art and quotes are never used in the game |
+
+### Works named on the book's pages
+
+Checked on 2026-11-19 against every shipped page of `book.en.json` and `book.es.json` (tutorial pages and book pages, both languages). Only the rows below are works. Every work named on a book page must have a row here or above, added in the same change as the page ([sotano-book](../../.claude/skills/sotano-book/SKILL.md) §10).
+
+| Work | Creator | Type | Page | Quoted or mentioned | Row |
+|---|---|---|---|---|---|
+| *Campos de Castilla* (1912) | Antonio Machado | Poetry | 7, the epigraph (`7-hall-n`) | Quoted | `campos-de-castilla` |
+| *La locura lo cura* (1995) | Guillermo Borja | Book | 17 (`17-gift-n`) | Quoted | `la-locura-lo-cura` |
+| *El Kamino de Santiago* | The owner (credited) | Book (the book on the walls) | 6, the title (`6-hall-n`) | The book itself | `el-kamino-de-santiago` |
+
+Not listed, because they are not works: the saints and the Virgin in the scene of page 10, the Rainbow and the people named in the pages, the San Pedro cacti of page 10 (flagged in CAMINO-ROJO for the owner), and the bottled line "Like water, be gentle; like water, be strong" (page 10, unattributed: no creator is named in the text, so it has no row until the owner says whom to credit).
 
 ### Games
 

@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Changed
+- The lore was extended with new references and a tradition (#194, #201, #204).
+
 ## 0.2.4.f1 · 2026-11-14
 
 ### Added
