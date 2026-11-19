@@ -1,8 +1,13 @@
+import { isPromised } from '../../items/pool';
 import { table, type Table } from '../../core/tables';
 import type { Rng } from '../../core/rng';
 import type { HeartKind } from '../heart-art';
 import { ITEMS } from '../items';
 import type { RareHeart } from './hearts';
+
+/** Every item a presence's table may give: all but the promised pieces of the Covenant (the Mender's Thread), which only
+ *  their one source hands out (COVENANT.md). The tables are as they were before the Thread existed. */
+const GIVEN = ITEMS.filter(item => !isPromised(item));
 
 /**
  * The kinds a friendly creature's growth gift and The Listener's special heart can give: the five
@@ -30,7 +35,7 @@ export const CREATURE_GIFT_TABLE = table<CreatureGiftKind>('creature-max-growth-
   ...GIFT_HEART_KINDS.map(heart => ({ value: heart as CreatureGiftKind, weight: 15 / GIFT_HEART_KINDS.length })),
 ]);
 
-const HEALTH_PRACTICES = ITEMS.filter(item => item.stats?.some(stat => stat.stat === 'maxHearts'));
+const HEALTH_PRACTICES = GIVEN.filter(item => item.stats?.some(stat => stat.stat === 'maxHearts'));
 export const HEALTH_PRACTICE_TABLE = table<(typeof HEALTH_PRACTICES)[number]>('listener-heart-practice', 'runtime',
   HEALTH_PRACTICES.map(item => ({ value: item, weight: 1 })),
 );
@@ -59,7 +64,7 @@ export const TRICKSTER_DEAL_TABLE = table<TricksterKind>('trickster-deal', 'runt
   { value: 'practice', weight: 4 },
   { value: 'health', weight: 1 },
 ]);
-const QUALITY_THREE = ITEMS.filter(item => item.quality === 3);
+const QUALITY_THREE = GIVEN.filter(item => item.quality === 3);
 const TRICKSTER_HEALTH = QUALITY_THREE.filter(item => item.stats?.some(stat => stat.stat === 'maxHearts'));
 const TRICKSTER_PRACTICE = QUALITY_THREE.filter(item => !TRICKSTER_HEALTH.includes(item));
 export const TRICKSTER_HEALTH_TABLE = table<(typeof ITEMS)[number]>('trickster-health-practice', 'runtime',
@@ -82,7 +87,7 @@ export const WANDERER_GIFT_TABLE = table<WandererKind>('wanderer-gift', 'runtime
   { value: 'practice', weight: 3 },
   { value: 'heart', weight: 1 },
 ]);
-const QUALITY_ONE = ITEMS.filter(item => item.quality === 1);
+const QUALITY_ONE = GIVEN.filter(item => item.quality === 1);
 export const WANDERER_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('wanderer-practice', 'runtime',
   QUALITY_ONE.map(item => ({ value: item, weight: 1 })),
 );
@@ -113,7 +118,7 @@ export const WITNESS_GIFT_TABLE = table<TierTwoKind>('witness-gift', 'runtime', 
   { value: 'practice', weight: 3 },
   { value: 'heart', weight: 1 },
 ]);
-const QUALITY_TWO = ITEMS.filter(item => item.quality === 2);
+const QUALITY_TWO = GIVEN.filter(item => item.quality === 2);
 export const WITNESS_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('witness-practice', 'runtime',
   QUALITY_TWO.map(item => ({ value: item, weight: 1 })),
 );
@@ -273,7 +278,7 @@ export const ELDER_LESSON_TABLE = table<1 | 2>('elder-lesson-quality', 'runtime'
 ]);
 
 export function rollElderLesson(rng: Rng, path: string): (typeof ITEMS)[number] {
-  const pool = (quality: 1 | 2) => ITEMS.filter(item => item.quality === quality && item.tags?.includes(path));
+  const pool = (quality: 1 | 2) => GIVEN.filter(item => item.quality === quality && item.tags?.includes(path));
   let quality = roll(ELDER_LESSON_TABLE, rng);
   if (pool(quality).length === 0) quality = quality === 1 ? 2 : 1;
   return rng.pick(pool(quality));

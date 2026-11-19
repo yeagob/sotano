@@ -105,6 +105,17 @@ export class AchievementKeeper {
     if (merged) adoptMeta(this.record, merged);
   }
 
+  /** How many requests the player has answered "yes" to, in any run (the save's `requests`). */
+  get requests(): number { return this.record.requests ?? 0; }
+
+  /** A request was answered "yes" (REQUESTS.md): the count goes up by one and is saved at once. It is the only request
+   *  data kept. Nothing is written in the sandbox, the lab or a read-only record. */
+  recordRequest(): void {
+    if (!this.live || this.record.readOnly) return;
+    this.record.requests = (this.record.requests ?? 0) + 1;
+    this.save();
+  }
+
   /** The depth the last run faded on, for the Echo (the save's `fade`), or undefined when no Echo waits. */
   get fade(): number | undefined { return this.record.fade?.floor; }
 

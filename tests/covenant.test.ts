@@ -4,8 +4,8 @@ import { EN } from '../src/i18n/locales/en';
 import { ES } from '../src/i18n/locales/es';
 
 describe('the Covenant (COVENANT.md): a closed set of four pieces, one presence each', () => {
-  it('the closed set: the Mender (Thread), the Elder (Page), the Witness (Seal) and the Listener last Lesson (Light), one source each', () => {
-    expect(PIECE_SOURCE).toEqual({ mender: 'thread', elder: 'page', witness: 'seal', 'last-lesson': 'light' });
+  it('the closed set: the Mender (Thread), the Elder (Page), the Witness (Seal) and the crown after a Lesson (Light), one source each', () => {
+    expect(PIECE_SOURCE).toEqual({ mender: 'thread', elder: 'page', witness: 'seal', crown: 'light' });
     expect(Object.isFrozen(PIECE_SOURCE)).toBe(true);
     // every piece has exactly one source, and no source gives a piece outside the set
     for (const piece of COVENANT_PIECES) expect(Object.values(PIECE_SOURCE).filter(p => p === piece)).toHaveLength(1);
@@ -40,18 +40,18 @@ describe('the Covenant (COVENANT.md): a closed set of four pieces, one presence 
     for (const id of ['witness', 'mender', 'elder'] as const) record = keepPiece(record, id);
     expect(covenantComplete(record)).toBe(false);
     expect(remembersInRun(record)).toBe(false);
-    // the Light comes only from the Listener's last Lesson, never from its plain exchange
+    // the Light comes only from the crown after a Lesson, never from the Listener's plain exchange
     expect(keepPiece(record, 'listener')).toBe(record);
-    const whole = keepPiece(record, 'last-lesson');
+    const whole = keepPiece(record, 'crown');
     expect(covenantComplete(whole)).toBe(true);
     expect(remembersInRun(whole)).toBe(true);
   });
 
   it('a complete record is closed: no source changes it again', () => {
     let record = NO_COVENANT;
-    for (const id of ['last-lesson', 'witness', 'mender', 'elder'] as const) record = keepPiece(record, id);
+    for (const id of ['crown', 'witness', 'mender', 'elder'] as const) record = keepPiece(record, id);
     expect(covenantComplete(record)).toBe(true);
-    for (const id of ['last-lesson', 'witness', 'mender', 'elder', 'listener', 'trickster'] as const) expect(keepPiece(record, id)).toBe(record);
+    for (const id of ['crown', 'witness', 'mender', 'elder', 'listener', 'trickster'] as const) expect(keepPiece(record, id)).toBe(record);
   });
 
   it('the new lines exist in English and Spanish', () => {

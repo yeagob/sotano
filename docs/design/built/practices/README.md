@@ -6,7 +6,7 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
-This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 45 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 46 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
@@ -15,7 +15,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 | [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
 | [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
 | [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
-| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 12 | Open-hearted |
+| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 13 | Open-hearted |
 | [Will](will/README.md) | Consistency, discipline, small steps compounding | 10 | Resolute |
 
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
@@ -57,6 +57,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Radical Acceptance](emotion/RADICAL-ACCEPTANCE.md) | Emotion | 2 | treasure rooms |
 | [Rapport](emotion/RAPPORT.md) | Emotion | 2 | treasure rooms |
 | [Self-Compassion](emotion/SELF-COMPASSION.md) | Emotion | 2 | treasure rooms |
+| [Mender's Thread](emotion/MENDERS-THREAD.md) | Emotion | 3 | the Mender only, once a run (promised) |
 | [Symbolic Act](emotion/SYMBOLIC-ACT.md) | Emotion | 3 | treasure rooms |
 | [Systemic Constellation](emotion/SYSTEMIC-CONSTELLATION.md) | Emotion | 3 | treasure rooms |
 | [Bounce Back](will/BOUNCE-BACK.md) | Will | 2 | treasure rooms |

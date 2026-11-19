@@ -201,7 +201,7 @@ on gain / lose / restore / new floor:
 - **Definitions** are code (TypeScript modules), versioned with the game.
 - **A player's items** are ids in acquisition order: `inventory.serialize() → ['kaizen', 'deepfocus']`, `restore(ids)` rebuilds everything (and warns about unknown ids).
 - **Weapons**: an item or synergy may declare `weapon: { id, priority }` to replace the intention (Cut Ties with Toxic Relationships → blade, Remember Breathing → beam, One Clear Cut → great cut). The inventory resolves the active weapon on every rebuild; see [WEAPONS.md](WEAPONS.md).
-- **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault`, the boss room's pedestal from `boss` (both falling back to `treasure`). Every pedestal, boss rooms included, is reserved at run start (`pedestalSlots` in `world/floor.ts`).
+- **Pools** (`ItemPools`) are per run: weighted draws without replacement from the `loot` RNG stream. Treasure rooms draw from `treasure`, the locked vault from `vault`, the boss room's pedestal from `boss` (both falling back to `treasure`). Every pedestal, boss rooms included, is reserved at run start (`pedestalSlots` in `world/floor.ts`). Two pools are never drawn: `sky` (the sky realm's gifts, handed out by id) and `covenant` (the Covenant's pieces held as items, today the Mender's Thread). A `covenant` item is **promised** (`isPromised` in `items/pool.ts`): no toll offers or accepts it, a sky capture never takes it, and no presence table lists it. Either pool must be an item's only pool (the validator refuses a mix).
 
 ## 8. Debugging an interaction
 

@@ -1,5 +1,4 @@
 import type { MessageKey } from '../../i18n';
-import { LAST_FLOOR, level } from '../levels';
 
 /** The Listener's Lesson (docs/design/built/presences/LISTENER.md, decided by agent, pending owner ruling). Once its heart
  *  is accepted and its 15/75/10 reward has dropped (unchanged), the Listener asks on the choice card which path weighs on
@@ -25,21 +24,13 @@ export function lessonLine(path: LessonPath): MessageKey {
   return `presence.listener.lesson.${path}` as MessageKey;
 }
 
-/** The floor of the Listener's last Lesson: the deepest floor of the Tree, where the last Listener of a run waits (floor 5
- *  today). Read from the level table, so it follows the Tree if the levels change. */
-export const LAST_LESSON_FLOOR: number = (() => {
-  let last = 0;
-  for (let k = 1; k <= LAST_FLOOR; k++) if (level(k).kind === 'tree') last = k;
-  return last;
-})();
+/** The story of the giant tree where the Light waits: its canopy, the crown of the tree above the surface (owner, #228, D4:
+ *  "la copa del árbol"). The crown's layout belongs to the tree; the Light only reads the story the body enters. */
+export const LIGHT_STORY = 'canopy';
 
-/** Whether a Lesson given on this floor is the Listener's last one, which gives the Covenant's Light (COVENANT.md). A Lesson
- *  declined ("Not now") gives nothing, so only an answered Lesson on the last floor reaches this. */
-export function lessonGivesLight(floor: number): boolean {
-  return floor === LAST_LESSON_FLOOR;
+/** The one rule of the Light (COVENANT.md): the Covenant's Light is kept when the body enters the crown of the giant tree in a
+ *  run that has heard a Listener's Lesson (any path, on any floor). A Lesson declined ("Not now") is not heard. The Light is
+ *  what was heard, carried up to the crown. Pure, and it draws no randomness. */
+export function crownGivesLight(story: string, heardLesson: boolean): boolean {
+  return heardLesson && story === LIGHT_STORY;
 }
-
-/** The Child's Lesson (docs/design/built/presences/CHILD.md, decided by agent, pending owner ruling): one line after its
- *  gift, of no path. The design left the path of a build (Body or Emotion) to the owner, so the Lesson names none, gives no
- *  item and draws no randomness: the gift's table is unchanged. */
-export const CHILD_LESSON: MessageKey = 'presence.child.lesson';
