@@ -947,7 +947,7 @@ export const ES: Catalog = {
     'achievement.book.page.69.name': 'Nice',
     'achievement.book.page.69.desc': 'Llega a la página 69 del libro de las raíces.',
     'achievement.book.page.100.name': 'Sigues leyendo',
-    'achievement.completion.full.name': 'Hecho entero',
+    'achievement.completion.full.name': 'Made Omh',
     'achievement.completion.full.desc': 'Llega al 100% de progreso: cada parte del juego, hecha al menos una vez.',
     'achievement.book.page.100.desc': 'Llega a la página 100 del libro de las raíces.',
     'achievement.death.roots.name': 'Hasta la raíz',

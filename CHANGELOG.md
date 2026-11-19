@@ -6,6 +6,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.6-alpha · 2026-11-19
+
 ### Added
 - The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
 - The Child now adds one Lesson in words to its card after its gift (#149).
