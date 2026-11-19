@@ -47,6 +47,13 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: s
   return e;
 }
 
+/** A switch's state by shape, not colour (docs/art/DECISIONS.md §10.8): a filled dot when the thing it names is on, a ring when off. */
+function lamp(on: boolean): HTMLElement {
+  const e = el('i', on ? 'lamp on' : 'lamp');
+  e.setAttribute('aria-hidden', 'true');
+  return e;
+}
+
 export class MeditationView {
   app: MeditationApp | null = null;
   private root: HTMLElement | null = null;
@@ -283,7 +290,8 @@ export class MeditationView {
       ['calm', 'sanctuary.calm.on', 'sanctuary.calm.off', app.prefs.calm],
       ['voice', 'sanctuary.voice.on', 'sanctuary.voice.off', app.prefs.voice],
     ] as const) {
-      const b = el('button', `sw${state ? ' set' : ''}`, t(state ? on : off));
+      const b = el('button', `sw${state ? ' set' : ''}`);
+      b.append(lamp(id === 'mute' ? !state : state), t(state ? on : off));
       b.type = 'button';
       b.dataset.id = id;
       b.tabIndex = -1;
@@ -335,10 +343,10 @@ export class MeditationView {
       ctl.append(
         this.tile('pause', 'ctl', app, t(app.paused ? 'sanctuary.resume' : 'sanctuary.pause')),
         this.tile('skip', 'ctl', app, t('sanctuary.skip')),
-        this.tile('extend', 'ctl', app, t(app.canExtend ? 'sanctuary.extend' : 'sanctuary.extend.max', { s: EXTEND_SEC })),
-        this.tile('mute', 'ctl', app, t(app.prefs.mute ? 'sanctuary.sound.off' : 'sanctuary.sound.on')),
-        this.tile('calm', 'ctl', app, t(app.prefs.calm ? 'sanctuary.calm.on' : 'sanctuary.calm.off')),
-        this.tile('voice', 'ctl', app, t(app.prefs.voice ? 'sanctuary.voice.on' : 'sanctuary.voice.off')),
+        this.tile('extend', app.canExtend ? 'ctl' : 'ctl spent', app, t(app.canExtend ? 'sanctuary.extend' : 'sanctuary.extend.max', { s: EXTEND_SEC })),
+        this.tile('mute', 'ctl', app, lamp(!app.prefs.mute), t(app.prefs.mute ? 'sanctuary.sound.off' : 'sanctuary.sound.on')),
+        this.tile('calm', 'ctl', app, lamp(app.prefs.calm), t(app.prefs.calm ? 'sanctuary.calm.on' : 'sanctuary.calm.off')),
+        this.tile('voice', 'ctl', app, lamp(app.prefs.voice), t(app.prefs.voice ? 'sanctuary.voice.on' : 'sanctuary.voice.off')),
         this.tile('leave', 'ctl', app, t('sanctuary.leave')),
       );
       ui.append(top, guide, ctl);
@@ -352,7 +360,7 @@ export class MeditationView {
       sheet.append(el('div', 'clock'), el('h2', '', t('sanctuary.leave.title')), el('p', 'lead', t(earned ? 'sanctuary.leave.body.earned' : 'sanctuary.leave.body')), row, hint('sanctuary.hint'));
       ui.append(sheet);
     } else {
-      const row = el('div', 'choices');
+      const row = el('div', 'choices three');
       row.append(
         this.tile('receive', 'choice', app, el('b', '', t('sanctuary.receive'))),
         this.tile('repeat', 'choice', app, el('b', '', t('sanctuary.repeat'))),

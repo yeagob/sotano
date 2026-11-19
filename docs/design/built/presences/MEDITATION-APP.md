@@ -290,7 +290,7 @@ Decided by the owner for issue #203. The first plan for this used Gemini's text-
 
 ## 8. Settings inside the app
 
-Three switches, on the Home screen and on the session bar, remembered between visits:
+Three switches, on the Home screen and on the session bar, remembered between visits. Each says its state in words ("Voice: on") and with a small lamp before them, a filled dot when the thing named is on and an empty ring when it is off, so the state never rests on colour (docs/art/DECISIONS.md §10.8):
 
 - **Sound** on or off.
 - **Voice** on or off: the spoken guidance (§7a). Off at first.
