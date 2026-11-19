@@ -92,7 +92,8 @@ import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
-import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant } from '../content/presences/covenant';
+import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
+import { LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
 import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
@@ -305,7 +306,7 @@ export class Game {
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
-  private pendingPresenceChoice: { id: PresenceId; enemyId: number } | null = null;
+  private pendingPresenceChoice: { id: PresenceId; enemyId: number; floor?: number } | null = null;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -3605,7 +3606,10 @@ export class Game {
     if (talk.drops) this.dropPresenceReward(pending.id, e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     this.startIdle(e, pending.id);
+    // the Listener's Lesson: its floor is read before it leaves, then its choice card asks which path weighs (lesson.ts)
+    const floor = this.rooms.get(e.room)?.floor ?? 0;
     if (leavesAfterOffer(pending.id)) this.releasePresence(e);
+    if (pending.id === 'listener') { this.askLesson(floor); return; }
     this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines), pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
   }
 
@@ -3620,6 +3624,8 @@ export class Game {
     this.input.modal = false;
     this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
     this.input.resume();
+    // the Listener has already left with its reward: its Lesson needs no body, only the floor it was heard on
+    if (pending.id === 'listener') { this.answerLesson(index, pending.floor ?? 0); return; }
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
     if (!e?.alive || !e.tags.has('presence') || e.tags.has('met')) { this.hud.toast('presence.offer.stale'); return; }
     if (index < 0 || index >= (PRESENCE_CHOICE[pending.id]?.options.length ?? 0)) {
@@ -3642,6 +3648,31 @@ export class Game {
       this.hud.presenceCard(talk.name, [key, talk.lines[1]], dir === null ? undefined : { dir: t(`dir.${dir}` as MessageKey) });
     }
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+  }
+
+  /** The Listener's Lesson (LISTENER.md, decided by agent): after its reward, the choice card asks which path weighs on the
+   *  player. It opens the same card as the Elder's, with "Not now" to leave it. */
+  private askLesson(floor: number) {
+    this.pendingPresenceChoice = { id: 'listener', enemyId: -1, floor };
+    this.hud.presenceChoiceCard(PRESENCE_TALK.listener.name, LISTENER_LESSON_CHOICE.question, LISTENER_LESSON_CHOICE.options);
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The Lesson's answer: a path gives its Lesson in words, and on the last Lesson floor the Covenant's Light. "Not now"
+   *  gives no Lesson and no Light, and never takes back the reward that already dropped. Draws no randomness. */
+  private answerLesson(index: number, floor: number) {
+    const talk = PRESENCE_TALK.listener;
+    const path = lessonPathOf(index);
+    if (path === null) { this.hud.presenceCard(talk.name, this.exchangeLines([talk.lines[1]])); return; }
+    const lines: MessageKey[] = [lessonLine(path), talk.lines[1]];
+    if (lessonGivesLight(floor)) {
+      this.keepCovenantPiece('last-lesson');
+      lines.push('presence.listener.light');
+    }
+    const eye = this.player.eye;
+    this.particles.burst(eye.x, eye.y - 0.4, eye.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, this.exchangeLines(lines));
   }
 
   /** The direction of the nearest room of a type on the enemy's floor, read from the map's cells; null when none. */
@@ -3774,7 +3805,7 @@ export class Game {
   }
 
   /** The Covenant (COVENANT.md): the piece a presence gives, if it gives one, and the toast when the set is whole. */
-  private keepCovenantPiece(id: PresenceId) {
+  private keepCovenantPiece(id: CovenantSource) {
     const before = covenantComplete(this.covenant);
     this.covenant = keepPiece(this.covenant, id);
     if (!before && covenantComplete(this.covenant)) this.hud.toast('covenant.complete');

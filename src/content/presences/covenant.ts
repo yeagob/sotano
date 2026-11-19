@@ -8,22 +8,28 @@ import type { PresenceId } from './index';
 export const COVENANT_PIECES = ['thread', 'page', 'seal', 'light'] as const;
 export type CovenantPiece = typeof COVENANT_PIECES[number];
 
-/** The presence that gives each piece. The Light has no source yet: it is given after the Listener's last Lesson, and the
- *  Lesson is not built (see docs/design/not-built/presences/COVENANT.md). A piece is never given by a presence not listed. */
-export const PIECE_SOURCE: Partial<Record<PresenceId, CovenantPiece>> = {
+/** The source of a piece: a presence, or the Listener's last Lesson (lesson.ts), which is the only way to the Light. */
+export type CovenantSource = PresenceId | 'last-lesson';
+
+/** The closed set (COVENANT.md, the reading of the owner's "cierre", decided by agent, pending owner ruling): exactly four
+ *  pieces, each with exactly one source, given once and never taken back. No shop, drop, other presence, sandbox or save
+ *  gives a piece. The Listener's plain exchange gives none: only its last Lesson gives the Light. Frozen, so no rule can add
+ *  a source at run time. */
+export const PIECE_SOURCE: Readonly<Partial<Record<CovenantSource, CovenantPiece>>> = Object.freeze({
   mender: 'thread',
   elder: 'page',
   witness: 'seal',
-};
+  'last-lesson': 'light',
+});
 
 /** The record of the Covenant in a run: the pieces held, in the order they were given. */
 export type Covenant = readonly CovenantPiece[];
 
 export const NO_COVENANT: Covenant = [];
 
-/** The record after `from` gives its piece. A presence that gives no piece, or a piece already held, changes nothing. Pure:
- *  returns the same array when nothing changes, a new one otherwise. */
-export function keepPiece(record: Covenant, from: PresenceId): Covenant {
+/** The record after `from` gives its piece. A source that gives no piece, or a piece already held, changes nothing, and a
+ *  complete record is closed: nothing changes it. Pure: returns the same array when nothing changes, a new one otherwise. */
+export function keepPiece(record: Covenant, from: CovenantSource): Covenant {
   const piece = PIECE_SOURCE[from];
   if (piece === undefined || record.includes(piece)) return record;
   return [...record, piece];
