@@ -21,7 +21,7 @@ Built. A dweller of knowing where you stand: it waits in one quiet room of one s
 - **No such place.** A floor with no vault, or no boss, gets: *I have no mark for that on this floor.*
 - **Not now.** Nothing is marked. The Cartographer asks again only after the player steps away and returns.
 
-The mark is words on the card, not a map: the star map is not built.
+The mark is also drawn on the star map: four brass corners round the marked room, on its floor, even before a door to it has been seen ([STAR-MAP](../levels/giant-tree/STAR-MAP.md)). A chart for the zone's ore draws both rooms, the vault and the boss.
 
 ## Owed (not checked in a browser)
 

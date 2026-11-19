@@ -1,15 +1,15 @@
-# presence-mender — The Mender asks one part in hand for a gift of quality three or a special heart; Give takes the part, Keep changes nothing (MENDER.md)
+# presence-mender — The Mender asks two parts of different kinds on one card for a gift of quality three or a special heart, and its Thread; Give takes both parts, Keep changes nothing (MENDER.md, #228 D10 and D11)
 floor 1 · seed 4182 · room 13×7×5 · 60 ticks (1.0 s)
 
 t 0 (0.0 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.flesh doubt.heart] · bombs 99 · keys 99
   mender#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
   cubes — · pickups 0
 
 t 1 (0.0 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.flesh doubt.heart] · bombs 99 · keys 99
   mender#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
@@ -17,14 +17,14 @@ t 1 (0.0 s)
   events roomEnter 1
 
 t 30 (0.5 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.flesh doubt.heart] · bombs 99 · keys 99
   mender#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —
   cubes — · pickups 0
 
 t 60 (1.0 s)
-  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.heart] · bombs 99 · keys 99
+  player hp 24/24 · at 3.5 0.0 3.5 · hand [doubt.flesh doubt.heart] · bombs 99 · keys 99
   mender#2 hp 1.0/1 · neutral · at 5.5 0.0 3.5
   blocks —
   elements —

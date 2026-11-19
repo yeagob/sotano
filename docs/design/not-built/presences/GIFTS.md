@@ -34,6 +34,8 @@ Decided by agent for #149 (README D6): the tables above are accepted as built, p
 
 Every gift bears a thin gold seam, the mark of kintsugi: what was mended is stronger. A promised item cannot be dropped, destroyed or stolen (Scarcity cannot take it), and it stays in the pack when the rest is thrown away. Its label says "promised" in small type. The mark belongs only to gifts, so a seam means "given".
 
+Built for one gift (#228, D10): the Mender's Thread is an item in the 'covenant' pool, promised in code (`isPromised`): the toll card neither offers nor accepts it and a sky capture never takes it. Its effect line says "Promised". The gold seam on its inventory tile is still the Covenant's tile (DECISIONS.md §14.2); a seam drawn on the item's own slot is owed. See [built/presences/MENDER.md](../../built/presences/MENDER.md).
+
 ## Inventory labels
 
 Every inventory slot shows a small label with the item's name, always visible, in the player's language. This covers practices, blocks, parts, gifts and the Covenant. Labels exist only in the inventory: the world never writes names over the items. The labels are text, so they go through the translations.

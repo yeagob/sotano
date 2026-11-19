@@ -15,6 +15,7 @@ import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Param
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
+import { isPromised } from '../items/pool';
 import type { Polarity } from '../combat/polarity';
 import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
@@ -37,6 +38,7 @@ import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 import { COVENANT_PIECES } from '../content/presences/covenant';
+import { mapKeyOutcome, starMapHtml } from './star-map';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -73,8 +75,16 @@ export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
 }
 
-/** The two tabs of the screen: the menu (pause, controls, language) and the practices. */
-export type ScreenTab = 'menu' | 'items';
+/** The tabs of the screen: the menu (pause, controls, language), the practices, and the star map (D15 of #149). */
+export type ScreenTab = 'menu' | 'items' | 'map';
+
+/** The objects of one exchange in one phrase, in the player's language: "A", "A and B" or "A, B and C" (one message per
+ *  count, so the word order can change). A card names at most three (MAX_OFFER_PARTS), so a fourth is never asked for. */
+export function offerList(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  if (names.length === 2) return t('presence.offer.two', { a: names[0], b: names[1] });
+  return t('presence.offer.three', { a: names[0], b: names[1], c: names[2] });
+}
 
 export class Hud {
   private hand = $('hand');
@@ -106,6 +116,7 @@ export class Hud {
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
+  private mapEl = $('starmap');
   private tollEl = $('toll');
   tollOpen = false;
   private tollFloor = 0;
@@ -132,7 +143,7 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
   /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
    *  navigate action has reached; a tap or the confirm action picks one. */
   private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
@@ -250,7 +261,7 @@ export class Hud {
     const nr = document.getElementById('newrun');
     if (nr) nr.textContent = t('pause.newRun');
     for (const b of document.querySelectorAll<HTMLElement>('#overlay .tabs button')) {
-      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : 'tab.menu');
+      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : b.dataset.tab === 'map' ? 'tab.map' : 'tab.menu');
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
@@ -274,6 +285,9 @@ export class Hud {
   }
 
   get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }
+
+  /** The star map is the tab on screen (D15): navigate and pick do nothing there. */
+  get mapShown() { return this.screenOpen && this.screenTab === 'map'; }
 
   setFov(fov: number) {
     this.fovShown = fov;
@@ -589,7 +603,7 @@ export class Hud {
   /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
    *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
   /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
-  presenceOfferCard(nameKey: MessageKey, carried: Carried | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
@@ -611,13 +625,13 @@ export class Hud {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
     const carried = offer.carried;
+    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? t(POTIONS[c.potion].name) : partText(c).name;
+    // a multi-part agreement names every object in one sentence (AGREEMENTS.md; owner, #228, D11)
     const item = carried === undefined
       ? ''
-      : typeof carried === 'number'
-        ? materialName(carried)
-        : isFlask(carried)
-          ? t(POTIONS[carried.potion].name)
-          : partText(carried).name;
+      : Array.isArray(carried)
+        ? offerList((carried as readonly Carried[]).map(nameOf))
+        : nameOf(carried as Carried);
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
       `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
@@ -963,9 +977,16 @@ export class Hud {
     else this.openScreen(g, touchTab ? 'menu' : 'items');
   }
 
+  /** M, View and the map tab (D15): the screen on the star map, or closed when the map is what it shows. */
+  mapKey(g: Game) {
+    if (mapKeyOutcome(this.screenOpen, this.screenTab) === 'close') this.closeScreen(g);
+    else this.openScreen(g, 'map');
+  }
+
   private renderScreen(g: Game) {
     this.showTab(this.screenTab);
     if (this.screenTab === 'items') this.renderInventory(g);
+    if (this.screenTab === 'map') this.mapEl.innerHTML = starMapHtml(g.starMap(), activeDevice());
   }
 
   /** The active carried item changed (the game calls this): an open screen redraws its outline. */
@@ -1029,7 +1050,8 @@ export class Hud {
     const toll = tollOf(this.tollFloor);
     const p = g.player;
     const ids: string[] = [];
-    if (toll?.practices) g.inventory.items.forEach((_, i) => ids.push(`item:${i}`));
+    // a promised piece (the Mender's Thread) is never offered to a toll (GIFTS.md, the promised trait)
+    if (toll?.practices) g.inventory.items.forEach((it, i) => { if (!isPromised(it.def)) ids.push(`item:${i}`); });
     else if (toll) {
       ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
@@ -1078,7 +1100,7 @@ export class Hud {
       : isFlask(m)
         ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), t(POTIONS[m.potion].name))
         : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
-    const items = g.inventory.items.map((it, i) => tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
+    const items = g.inventory.items.map((it, i) => isPromised(it.def) ? '' : tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
       ? section('toll.sec.item', items)
       : section('toll.sec.hand', hands) + section('toll.sec.key', keys) + section('toll.sec.bomb', bombs) + section('toll.sec.heart', hearts);

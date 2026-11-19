@@ -28,7 +28,7 @@ Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`,
 - **`main` carries the released version**, `0.2.0` today. Each release is an annotated tag `v0.2.0` on that commit.
 - **`develop` carries the next version with a `-dev` suffix**, `0.2.1-dev` today: the next release is a patch of 0.2.0 until the owner decides otherwise, so fixes and small changes after a release are patches, not a new minor. The suffix ends when the release branch is cut.
 - **`main` and `develop` hold the same code**, except for the version number in `package.json`.
-- **Tester builds** are the tagged releases on `main`. `0.1.0` is the first one: the first stable version and the first one given to testers. A pre-release tag such as `v0.2.0-beta.1` can be cut from a `release/0.2.0` branch when testers need to try something before the stable tag.
+- **Tester builds** are the tagged releases on `main`. `0.1.0` is the first one: the first stable version and the first one given to testers. A pre-release tag such as `v0.2.0-beta.1` can be cut from a `release/0.2.0` branch when testers need to try something before the stable tag. The owner's testing builds of the `0.2.x` line may carry the `alpha` label: `0.2.6-alpha`, tagged `v0.2.6-alpha` on `main`, with a GitHub release marked as a pre-release. The label is part of the package version, so `release/0.2.6-alpha` sets `package.json` to `0.2.6-alpha` and `develop` returns to the next dev version (`0.2.7-dev`) after the back-merge.
 
 Which part of the version changes:
 
@@ -52,7 +52,7 @@ Players and testers report through the [issue templates](../../.github/ISSUE_TEM
 
 A release is cut when `develop` has enough for a version, or on a steady rhythm, whichever comes first.
 
-1. Create `release/<version>` from `develop`. Set `package.json` to the release version without the suffix (`npm version 0.2.0 --no-git-tag-version`). Fix only what the release needs.
+1. Create `release/<version>` from `develop`. Set `package.json` to the release version without the dev suffix (`npm version 0.2.0 --no-git-tag-version`). An alpha keeps its label (`npm version 0.2.6-alpha --no-git-tag-version`). Fix only what the release needs.
 2. Open a PR from `release/<version>` into **`main`**. CI must be green. Merge with a merge commit.
 3. Tag the merge commit on `main`: `git tag -a v0.2.0 -m "THE ROOTS 0.2.0"`, then push the tag. Publish the changelog section of the version as the GitHub release notes.
 4. Merge `main` back into `develop` (a `chore/back-merge-<version>` branch from `develop`, merged into `develop` by PR), and set `develop` to the next patch with the suffix (`0.2.1-dev` after 0.2.0). The owner decides when a MINOR comes next, not the release itself.

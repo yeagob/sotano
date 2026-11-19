@@ -17,6 +17,8 @@ function L(n: number) {
 const tokenOf = new Map<number, string>(Object.entries(PALETTE).map(([t, h]) => [parseInt(h.slice(1), 16), t]));
 /** Items whose concept is light itself may use the light ramp in their icon (§10.1). */
 const LIGHT_CONCEPT = new Set(['satori', 'occamsrazor', 'kiai']);
+/** Items whose concept is repair (the kintsugi seam) may use `light.gold`, and only it: gold's other reserved use (DECISIONS.md §14.4). */
+const REPAIR_CONCEPT = new Set(['menders-thread']);
 
 describe('materials', () => {
   it('every ramp goes dark to light: outline < dark < base < hi (L*)', () => {
@@ -62,7 +64,8 @@ describe('item icons (§10.1)', () => {
         const t = tokenOf.get(c);
         expect(t, `${d.id}: colour ${c.toString(16)} is not a palette token`).toBeDefined();
         expect(t!.startsWith('life.') || t!.startsWith('cold.'), `${d.id}: ${t}`).toBe(false);
-        if (!LIGHT_CONCEPT.has(d.id)) expect(t!.startsWith('light.'), `${d.id}: ${t}`).toBe(false);
+        if (REPAIR_CONCEPT.has(d.id) && t!.startsWith('light.')) expect(t, `${d.id}: repair is gold only`).toBe('light.gold');
+        else if (!LIGHT_CONCEPT.has(d.id)) expect(t!.startsWith('light.'), `${d.id}: ${t}`).toBe(false);
       }
     }
   });

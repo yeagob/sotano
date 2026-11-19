@@ -18,6 +18,7 @@ The desktop scheme. Part of [Input](README.md).
 | polarity | F |
 | choose the active carried item (the next place, throw, drink or feed uses it) | mouse wheel up (previous) and down (next); the number keys 1 to 9 pick a slot; in the inventory, Enter picks the highlighted item |
 | inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |
+| star map | M: opens the star map tab of the screen (in play, on the pause card or on another tab); M again or Esc closes it; a click on the Star map tab opens it too |
 | pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
 | field of view (on the menu) | the left and right arrows, or the mouse on the bar or on − and + |
 | restart | R, while playing or dead |

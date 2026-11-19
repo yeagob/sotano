@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
 import {
-  DWELLERS, GIFT_OFFER, MENDER_FLOORS, PRESENCE_KEY, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, findPresenceOffer, leavesAfterOffer,
+  DWELLERS, GIFT_OFFER, MENDER_FLOORS, PRESENCE_KEY, PRESENCE_PARTS, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, findPresenceOffer, leavesAfterOffer,
   leavesOnDecline, menderComesTo, menderFloorOf, placeMessengers, starReaderFloorOf, unlocksPresence, type PlacedRoom,
 } from '../src/content/presences';
 import { level, LAST_FLOOR } from '../src/content/levels';
@@ -31,13 +31,21 @@ describe('the Mender: the first vault the player opens on its floor (MENDER.md, 
     for (const other of [1, 2, 3, 4, 5].filter(f => f !== k)) expect(menderComesTo(run, other, false)).toBe(false);
   });
 
-  it('asks one part from the hand (the Echo\'s rule): any part unlocks it, a material or a flask does not', () => {
+  it('asks for two parts of different kinds on one card (multi-part agreement, #228 D11); a material or a flask does not count', () => {
     expect(PRESENCE_KEY.mender).toBe('any');
+    expect(PRESENCE_PARTS.mender).toBe(2);
     expect(unlocksPresence('mender', PARTS[0])).toBe(true);
     expect(unlocksPresence('mender', 3)).toBe(false);
     expect(unlocksPresence('mender', undefined)).toBe(false);
-    expect(findPresenceOffer('mender', [3, PARTS[0]])).toEqual({ index: 1, carried: PARTS[0] });
+    const a = PARTS[0], b = PARTS.find(p => p.kind !== a.kind)!, same = PARTS.find(p => p !== a && p.kind === a.kind)!;
+    // one part, or two of the same kind, is no offer: nothing is named
+    expect(findPresenceOffer('mender', [3, a])).toBeUndefined();
+    expect(findPresenceOffer('mender', [a, same])).toBeUndefined();
+    // the two named parts are read from the interaction item down, each of a new kind
+    expect(findPresenceOffer('mender', [b, 3, same, a])).toEqual({ index: 3, carried: a, rest: [{ index: 0, carried: b }] });
     expect(findPresenceOffer('mender', [3])).toBeUndefined();
+    // a one-part presence keeps its one-object card
+    expect(findPresenceOffer('echo', [3, a])).toEqual({ index: 1, carried: a });
   });
 
   it('is a Give or Keep card (not a gift), with its own question, and it stays after the exchange (a dweller)', () => {

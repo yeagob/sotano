@@ -33,7 +33,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | `prompt` | Information banners dismiss with confirm; a Presence offer pauses the world until confirm accepts or back declines |
 | `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
-| `inventory` | The screen is open on its menu or practices tab (it pauses the world) |
+| `inventory` | The screen is open on its menu, practices or star map tab (it pauses the world) |
 | `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c) |
 | `meditation` | The Sanctuary, the Boundary's meditation app, over the paused world: navigate moves between the choices of its screen, confirm chooses (and pauses or resumes a sitting), skip moves to the next part, mute and calm are its two switches, back goes one screen back (not now on its first screen, the leave sheet in a sitting). A click on it never captures the mouse (`Input.modal`) ([MEDITATION-APP.md](../../design/built/presences/MEDITATION-APP.md)) |
 
@@ -54,6 +54,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
+| map | press | play, paused, inventory (gamepad: play, inventory; touch: paused, inventory) | M | View | the Star map tab of the screen |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
 | book | press | paused, dead | B | X | the "Download the book" button, at 100% completion (COMPLETION §8) |
@@ -84,3 +85,5 @@ Every prompt has a version per device (`intro.play`, `banner.continue`, `death.r
 ## 6. Later
 
 Remapping (DECISIONS §10.4 asks for remappable input): `BINDINGS` is the default layout a settings page would copy and edit. Gyro aiming on phones.
+
+**The star map (D15 of #149).** `map` opens the screen on its star map tab, and closes the screen when that tab is the one on screen (`mapKeyOutcome`); back (Esc, B) and the card's ✕ close it as any tab. On the map tab `navigate` and `pick` do nothing. References: Minecraft (the map is held up and read; the screen keeps one view per tab), Noita (M opens the map of what you have seen), Isaac (Tab, or Select on a pad, shows the floor's map). The design is [STAR-MAP.md](../../design/built/levels/giant-tree/STAR-MAP.md).

@@ -16,7 +16,7 @@ Built. A dweller of care: it waits in one quiet room of one seeded floor per run
 
 ## What the player meets
 
-- **What it asks for.** A living root and a tuft of cave moss, two blocks found in the rock of every floor, more near the surface (see [floors](../levels/floors/README.md#rock-by-depth)). One card names one of them (D11), in either order.
+- **What it asks for.** A living root and a tuft of cave moss, two blocks found in the rock of every floor, more near the surface (see [floors](../levels/floors/README.md#rock-by-depth)). One card names one of them, in either order (presences README D13f).
 - **The offer.** Within about two blocks, with a root or a moss carried that it does not hold yet, its card asks: *Give {item} to The Gardener? It will be planted where you were.* The hand is searched from the top down, and the first one is offered. Give takes that block only; Keep takes nothing, and the Gardener asks again only after the player steps away and returns.
 - **Half of it.** After the first of the two, it says *The roots have it. Now bring me {item}.*, naming the other, and asks again after the player steps away and returns.
 - **Both.** Once it holds the root and the moss, the Gardener's two lines show on the card: *Walk slowly. The roots remember where you have been.* and *Nothing here has to be finished today.* It stays where it is, and it answers positive intentions as the other dwellers do.
