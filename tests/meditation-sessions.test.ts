@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { MeditationApp } from '../src/game/meditation-app';
-import { EXTEND_SEC, MAX_EXTENSIONS, MAX_LENGTH_SEC, MIN_LENGTH_SEC, SEQUENCE, SEQUENCE_IDS, extendPlan, momentAt, planSitting, type SequenceId } from '../src/content/presences/meditations';
+import { EXTEND_STEPS_SEC, MAX_LENGTH_SEC, MAX_SITTING_SEC, MIN_LENGTH_SEC, SEQUENCE, SEQUENCE_IDS, extendPlan, extensionSec, momentAt, planSitting, type SequenceId } from '../src/content/presences/meditations';
 import { BINDING } from '../src/input/bindings';
 
 const S = 1000;
@@ -25,13 +25,28 @@ function runTo(app: MeditationApp, ms: number, from = 0) {
   app.tick(ms);
 }
 
+describe('the time meditated in a visit', () => {
+  it('counts every finished sitting at its full length, added time included, and never a sitting left early', () => {
+    const app = sitting('night', 20);
+    app.act('extend', 0); // 20 s -> 50 s
+    runTo(app, 50 * S);
+    expect(app.screen).toBe('end');
+    expect(app.meditatedMs).toBe(50 * S);
+    app.act('repeat', 50 * S);
+    runTo(app, 60 * S, 50 * S); // the second sitting is 20 s: only 10 s of it run
+    expect(app.meditatedMs).toBe(50 * S);
+    app.back(60 * S);
+    expect(app.act('quick', 60 * S)).toBe('complete'); // the reward of the first sitting is kept
+  });
+});
+
 describe('adding time', () => {
   it('lengthens the sitting by the step, and the timer keeps the time already run', () => {
     const app = sitting('night', 20);
     runTo(app, 5 * S);
     expect(app.act('extend', 5 * S)).toBeNull();
-    expect(app.plan!.totalMs).toBe((20 + EXTEND_SEC) * S);
-    expect(app.seconds).toBe(20 + EXTEND_SEC);
+    expect(app.plan!.totalMs).toBe((20 + EXTEND_STEPS_SEC[0]) * S);
+    expect(app.seconds).toBe(20 + EXTEND_STEPS_SEC[0]);
     expect(app.extensions).toBe(1);
     expect(app.elapsed).toBeCloseTo(5 * S, -1);
     expect(app.screen).toBe('session');
@@ -55,36 +70,51 @@ describe('adding time', () => {
     expect(last.bounds.at(-1)).toBe(40 * S);
   });
 
-  it('is limited to MAX_EXTENSIONS in one sitting, and the label says so', () => {
+  it('adds 30 seconds, then 1 minute, 5 minutes and 10 minutes, and then 10 minutes at a time', () => {
     const app = sitting('box', 20);
-    for (let i = 0; i < MAX_EXTENSIONS; i++) {
-      expect(app.canExtend).toBe(true);
-      app.act('extend', 0);
-    }
-    expect(app.canExtend).toBe(false);
+    const steps: number[] = [];
+    for (let i = 0; i < 6; i++) { steps.push(app.nextExtendSec); app.act('extend', 0); }
+    expect(steps).toEqual([30, 60, 300, 600, 600, 600]);
+    expect(app.seconds).toBe(20 + 30 + 60 + 300 + 600 + 600 + 600);
+  });
+
+  it('stops at one hour: the last press is cut short so the sitting ends on the hour, and the label says so', () => {
+    const app = sitting('box', 20);
+    let presses = 0;
+    while (app.canExtend) { app.act('extend', 0); presses++; }
+    expect(presses).toBe(9);
+    expect(app.seconds).toBe(MAX_SITTING_SEC);
+    expect(app.plan!.totalMs).toBe(MAX_SITTING_SEC * S);
+    expect(app.nextExtendSec).toBe(0);
     const before = app.seconds;
     app.act('extend', 0);
     expect(app.seconds).toBe(before);
-    expect(app.extensions).toBe(MAX_EXTENSIONS);
+  });
+
+  it('extensionSec gives the next step, cut to the hour', () => {
+    expect(extensionSec(0, 20)).toBe(30);
+    expect(extensionSec(3, 1000)).toBe(600);
+    expect(extensionSec(9, 3410)).toBe(190);
+    expect(extensionSec(0, MAX_SITTING_SEC)).toBe(0);
   });
 
   it('a sitting finishes at its new length, and the reward is the same band', () => {
     const app = sitting('warm', 20);
-    app.act('extend', 0);
-    runTo(app, 20 * S);
+    app.act('extend', 0); // 20 s + 30 s
+    runTo(app, 30 * S);
     expect(app.screen).toBe('session');
-    runTo(app, 40 * S, 20 * S);
+    runTo(app, 50 * S, 30 * S);
     expect(app.screen).toBe('end');
-    expect(app.act('receive', 40 * S)).toBe('complete');
+    expect(app.act('receive', 50 * S)).toBe('complete');
   });
 
   it('a new sitting starts with no additions', () => {
     const app = sitting('dusk', 20);
     app.act('extend', 0);
-    app.act('extend', 0);
-    runTo(app, 60 * S);
+    app.act('extend', 0); // 20 s + 30 s + 60 s
+    runTo(app, 110 * S);
     expect(app.screen).toBe('end');
-    app.act('repeat', 60 * S);
+    app.act('repeat', 110 * S);
     expect(app.extensions).toBe(0);
     expect(app.seconds).toBe(20);
     expect(app.plan!.totalMs).toBe(20 * S);
@@ -227,7 +257,7 @@ describe('pause and reload', () => {
     const app = sitting('warm', 20);
     app.act('pause', 0);
     app.act('extend', 0);
-    expect(app.plan!.totalMs).toBe((20 + EXTEND_SEC) * S);
+    expect(app.plan!.totalMs).toBe((20 + EXTEND_STEPS_SEC[0]) * S);
     app.act('pause', 0);
     expect(app.paused).toBe(false);
   });

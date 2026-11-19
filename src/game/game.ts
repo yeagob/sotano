@@ -3289,7 +3289,7 @@ export class Game {
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
       if (s.meditation) {
         c.refused = true;
-        this.openSanctuary((outcome, meditation) => this.answerTutorialChest(c, outcome, meditation), 1, () => this.rootsGuard(c.spec).next());
+        this.openSanctuary((outcome, meditation, seconds) => this.answerTutorialChest(c, outcome, meditation, seconds), 1, () => this.rootsGuard(c.spec).next());
         continue;
       }
       this.openKeyedChest(c);
@@ -3313,14 +3313,14 @@ export class Game {
     this.openChest(c, cost);
   }
 
-  private answerTutorialChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId) {
+  private answerTutorialChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId, seconds: number) {
     if (c.opened) return;
     if (outcome === 'cancel') {
       c.refused = true;
       this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const sitting = sittingPayload(outcome, meditation, 'roots');
+    const sitting = sittingPayload(outcome, meditation, 'roots', seconds);
     if (sitting) this.bus.emit('meditationComplete', sitting);
     this.openSanctuaryChest(c, outcome);
     this.releaseBoundary(c.spec.room);
@@ -3340,22 +3340,22 @@ export class Game {
       if (!c) continue;
       if (dist > 3) c.refused = false;
       if (c.refused || !near) continue;
-      this.openSanctuary((outcome, meditation) => this.answerGuard(c, outcome, meditation));
+      this.openSanctuary((outcome, meditation, seconds) => this.answerGuard(c, outcome, meditation, seconds));
       return;
     }
   }
 
   /** Opens the Sanctuary over the paused world and hands the mouse back to play when it closes. `rate` speeds
    *  its clock for the debug console only. */
-  openSanctuary(done: (outcome: Outcome, meditation: SequenceId) => void, rate = 1, guard: () => number = () => this.rng.stream('guard').next()) {
+  openSanctuary(done: (outcome: Outcome, meditation: SequenceId, seconds: number) => void, rate = 1, guard: () => number = () => this.rng.stream('guard').next()) {
     if (this.hud.sanctuaryOpen) return;
     this.input.modal = true;
     this.input.unlockFor();
-    this.hud.sanctuary.show((outcome, meditation) => {
+    this.hud.sanctuary.show((outcome, meditation, seconds) => {
       this.input.modal = false;
       if (this.input.device === 'keyboard') { this.input.release(); this.input.lock(); }
       else this.input.resume();
-      done(outcome, meditation);
+      done(outcome, meditation, seconds);
     }, rate, guard);
   }
 
@@ -3371,14 +3371,14 @@ export class Game {
    *  4 one: the reward spawns from the chest and the Boundary leaves. Not now gives nothing: the chest stays
    *  locked, and the Boundary opens the Sanctuary again once the player has stepped away (more than three
    *  blocks) and come back. An opened chest ignores a second answer, so the reward is given once. */
-  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId) {
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId, seconds: number) {
     if (c.opened) return;
     if (outcome === 'cancel') {
       c.refused = true;
       this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const sitting = sittingPayload(outcome, meditation, 'vault');
+    const sitting = sittingPayload(outcome, meditation, 'vault', seconds);
     if (sitting) this.bus.emit('meditationComplete', sitting);
     this.openSanctuaryChest(c, outcome);
     this.releaseBoundary(c.spec.room);

@@ -2,7 +2,7 @@
 
 # The Sanctuary: the Boundary's meditation app
 
-Up: [presences](README.md) · Status: built (owner, 2026-11-09, issue #35: the Boundary's real-world request cards are replaced by one meditation app hidden inside the game; owner update, 2026-11-10: each sitting lasts a random 20–40 seconds; issue #160, 2026-11-19: sit again, choose another, Add time and one reward per visit; issue #203, 2026-11-19: optional spoken guidance, §7a, made with Chatterbox). Code: `src/content/presences/meditations.ts` (the six meditations, a sitting's time, the reward), `src/game/meditation-app.ts` (the screens, the clock, the outcome), `src/game/meditation-view.ts` (the layer on the page), `src/render/meditation-scenes.ts` (the scenes), `src/audio/meditation.ts` (the music and the cues), `src/audio/meditation-voice.ts` (the spoken guidance), `scripts/meditation-voice/generate.py` (its clips, made offline), `public/audio/meditation/` (the clips), `src/game/game.ts` (`touchGuards`, `touchChests`, `openSanctuary`, `answerGuard`, `answerTutorialChest`), `src/content/palette/meditation.ts` (its colours). Tests: `tests/meditation.test.ts`, `tests/meditation-app.test.ts`, `tests/meditation-sessions.test.ts`, `tests/meditation-voice.test.ts`, `tests/controls.test.ts`. In the debug console, `S.sanctuary()` opens it without a Boundary.
+Up: [presences](README.md) · Status: built (owner, 2026-11-09, issue #35: the Boundary's real-world request cards are replaced by one meditation app hidden inside the game; owner update, 2026-11-10: each sitting lasts a random 20–40 seconds; issue #160, 2026-11-19: sit again, choose another, Add time and one reward per visit; issue #203, 2026-11-19: optional spoken guidance, §7a, made with Chatterbox; owner, 2026-11-19: Add time in steps up to one hour, and the hour of meditation). Code: `src/content/presences/meditations.ts` (the six meditations, a sitting's time, the reward), `src/game/meditation-app.ts` (the screens, the clock, the outcome), `src/game/meditation-view.ts` (the layer on the page), `src/render/meditation-scenes.ts` (the scenes), `src/audio/meditation.ts` (the music and the cues), `src/audio/meditation-voice.ts` (the spoken guidance), `scripts/meditation-voice/generate.py` (its clips, made offline), `public/audio/meditation/` (the clips), `src/game/game.ts` (`touchGuards`, `touchChests`, `openSanctuary`, `answerGuard`, `answerTutorialChest`), `src/content/palette/meditation.ts` (its colours). Tests: `tests/meditation.test.ts`, `tests/meditation-app.test.ts`, `tests/meditation-sessions.test.ts`, `tests/meditation-voice.test.ts`, `tests/controls.test.ts`. In the debug console, `S.sanctuary()` opens it without a Boundary.
 
 The Boundary keeps the centre chest of its vault. In the Roots' tutorial, the same Boundary stands above the unlocked treasure chest. Walking up to either opens the Sanctuary: a full-screen meditation app with its own look, sound and motion, unlike anything else in the game. The player takes a quick reward at once, or chooses a meditation whose duration is randomly set to a whole number from 20 through 40 seconds.
 
@@ -20,7 +20,7 @@ The Boundary keeps the centre chest of its vault. In the Roots' tutorial, the sa
 | 1 | Approach | Within about two blocks of a Boundary that still keeps its chest, the world fades and the app opens. The world is paused underneath. | Home |
 | 2 | Home (choose the reward) | The app's name, one line on what it is, and two choices: **Meditate** (the better reward, selected first) and **Take the quick reward**; once a sitting is finished in this visit, the second reads **Take your reward**. A note: one reward per visit. A small note: stopping is always fine. A close ✕ means "not now". | Library, or out |
 | 3 | Library | Six meditations as cards: name, one line, tier mark, a live swatch of its colours. Choosing one begins a randomly timed sitting of 20–40 seconds. | Session, or back to Home |
-| 4 | Session | The scene of the meditation, a timer counting down, the part's name, one sampled instruction for up to six seconds, the breath cue, and a control bar that hides after six seconds without input. The bar holds Pause, Next part, **Add 20 seconds**, Sound, Calm visuals, Voice and Leave. | End, or the leave sheet |
+| 4 | Session | The scene of the meditation, a timer counting down, the part's name, one sampled instruction for up to six seconds, the breath cue, and a control bar that hides after six seconds without input. The bar holds Pause, Next part, **Add time** (its label names the next step: 30 seconds, 1 minute, 5 minutes, 10 minutes, then 10 minutes at a time, up to one hour), Sound, Calm visuals, Voice and Leave. | End, or the leave sheet |
 | 5 | Leave sheet | Opened by Leave. The clock stops. **Stay** (selected first) or **Leave with the quick reward**; once a sitting is finished in this visit, **Leave with your reward**. The text says what leaving gives. | Session, or out |
 | 6 | End | When the timer reaches zero: the shared ending, and three choices: **Receive** (the better reward, selected first), **Sit again** (the same meditation, a new random length) and **Choose another meditation** (the library). | Out (Receive), or Session, or Library |
 
@@ -174,8 +174,9 @@ Every meditation ends the same way, in the app's own colours (night blue, a pale
 
 ## 5b. Add time, sit again, choose another
 
-- **Add time** (the bar's *Add 20 seconds*, in a sitting, running or paused). The sitting grows by 20 seconds. The part in course keeps its end, so the time it has left does not change; the added time is shared by the parts that follow, by their shares. In the last part it goes to that part. At most three times in one sitting; then the choice reads *No more time to add* and does nothing. A new sitting starts with none.
+- **Add time** (the bar's *Add 30 seconds*, *Add 1 minute*, *Add 5 minutes* or *Add 10 minutes*, in a sitting, running or paused). Each press adds the next step of the list: 30 seconds, 1 minute, 5 minutes, 10 minutes; after that every press adds 10 minutes. The last press is cut short so the sitting ends on one hour and never past it. Once the sitting is an hour long the choice reads *No more time to add* and does nothing. The part in course keeps its end, so the time it has left does not change; the added time is shared by the parts that follow, by their shares. In the last part it goes to that part. A new sitting starts with none.
 - **Sit again** (the End screen). A new sitting of the same meditation, with a new random length from 20 through 40 seconds and its own clock from zero. The visit's reward is unchanged.
+- **Time meditated.** Every sitting finished in a visit adds its full length to the visit's total, added time included (a sitting left early adds nothing). The total is sent with the visit's outcome to the Roots' achievements, where the hour of meditation adds it across runs ([ACHIEVEMENTS](../progression/ACHIEVEMENTS.md)).
 - **Choose another meditation** (the End screen). The library, on the same visit. Choosing a meditation begins a sitting as usual.
 - Each sitting is a finished meditation or it is not: only the timer reaching zero finishes it, so a sitting left early is never counted.
 
@@ -303,7 +304,7 @@ One context, `meditation`. Every action on the three devices:
 | Action | What it does | Keyboard and mouse | Gamepad | Touch |
 |---|---|---|---|---|
 | `navigate` | Moves the selection between the choices on screen | Arrow keys; the mouse hovers | D-pad | Tap the choice |
-| `confirm` | Chooses: the reward, the meditation (this begins), Pause or Resume, Add 20 seconds, Stay, Receive, Sit again, Choose another | Enter, or a click | A | Tap |
+| `confirm` | Chooses: the reward, the meditation (this begins), Pause or Resume, Add time, Stay, Receive, Sit again, Choose another | Enter, or a click | A | Tap |
 | `skip` | Next part, in a session | N | RB | The Next button on the bar |
 | `mute` | Sound on or off | M | X | The Sound button |
 | `calm` | Calm visuals on or off | C | Y | The Calm button |
@@ -354,7 +355,7 @@ One context, `meditation`. Every action on the three devices:
 | Calm visuals removes particles and scene motion and keeps the timer and the instruction | `tests/meditation-app.test.ts` |
 | Particle caps hold | `tests/meditation-app.test.ts` |
 | A finished sitting earns the better reward once, however many follow; leaving after it keeps it and gives no quick reward | `tests/meditation-sessions.test.ts` |
-| Add time lengthens a sitting by 20 seconds, at most three times, keeps the part in course and the bounds ascending | `tests/meditation-sessions.test.ts` |
+| Add time lengthens a sitting by 30 seconds, 1 minute, 5 minutes, then 10 minutes, stops at one hour exactly, keeps the part in course and the bounds ascending; a visit's finished sittings add up | `tests/meditation-sessions.test.ts` |
 | Sit again starts a fresh sitting of the same meditation; Choose another keeps the visit; a reload begins a new one; pause keeps the clock and the added time | `tests/meditation-sessions.test.ts` |
 | Narration never overlaps, plays in order, keeps only the newest waiting line, holds while paused, stops on stop, and skips a missing clip | `tests/meditation-voice.test.ts` |
 | Every guidance line has its words in both languages and, once generated, a clip in each language; no breath clip | `tests/meditation-voice.test.ts` |
@@ -377,6 +378,6 @@ One context, `meditation`. Every action on the three devices:
 - **"Almost impossible to leave."** Read here as: it is hard to want to leave, never hard to leave. Leaving takes two presses (Leave, then confirm), and Stay is selected first. Owner to confirm that no stronger friction is wanted.
 - **Does length matter?** Every length earns the same band today.
 - **The not-therapy note.** The first screen carries one plain line. The owner's own text and a help line are still open ([REQUESTS.md](../../not-built/presences/REQUESTS.md)).
-- **Add time.** Read here as 20 seconds at a time, up to three times in one sitting (issue #160). Owner to confirm the step and the limit.
+- **Add time.** Read here as the steps of 30 seconds, 1 minute, 5 minutes and 10 minutes, up to one hour in one sitting (owner, 2026-11-19). The owner to confirm the steps once the sittings are played.
 - **A reload.** Read here as ending the visit without a reward, since the app is not saved. Owner to confirm, or to ask for the earned reward to be kept across a reload.
 - **More meditations.** Radical Acceptance and Sleep Hygiene are tier 2 practices that would fit.

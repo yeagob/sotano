@@ -136,26 +136,26 @@ describe('bosses: destroyed and turned to your side (ACHIEVEMENTS §1)', () => {
 
 describe('meditations: three completed sittings, across runs (ACHIEVEMENTS §1)', () => {
   it('three completed sittings of one meditation unlock it; a quick reward and a cancel do not count', () => {
-    expect(sittingPayload('quick', 'ground', 'roots')).toBeNull();
-    expect(sittingPayload('cancel', 'ground', 'roots')).toBeNull();
-    const done = sittingPayload('complete', 'ground', 'roots');
-    expect(done).toEqual({ meditation: 'ground', source: 'roots' });
+    expect(sittingPayload('quick', 'ground', 'roots', 20)).toBeNull();
+    expect(sittingPayload('cancel', 'ground', 'roots', 20)).toBeNull();
+    const done = sittingPayload('complete', 'ground', 'roots', 20);
+    expect(done).toEqual({ meditation: 'ground', source: 'roots', seconds: 20 });
 
     const { record, store } = fresh();
     const k = session(record, store);
     k.track('meditationComplete', done!, NOW);
-    k.track('meditationComplete', sittingPayload('complete', 'ground', 'vault')!, NOW + 1);
+    k.track('meditationComplete', sittingPayload('complete', 'ground', 'vault', 20)!, NOW + 1);
     expect(k.pending).toBe(0);
-    expect(record.counts).toEqual({ 'meditation.ground': 2 });
+    expect(record.counts).toEqual({ 'meditation.ground': 2, 'meditation.hour': 40 });
     const third = k.track('meditationComplete', done!, NOW + 2);
     expect(ids(third)).toEqual(['meditation.ground']);
-    expect(record.counts).toEqual({});
+    expect(record.counts).toEqual({ 'meditation.hour': 60 });
   });
 
   it('a count is kept in the save while the achievement is locked', () => {
     const { record, store } = fresh();
-    session(record, store).track('meditationComplete', { meditation: 'box', source: 'roots' }, NOW);
-    expect(loadMeta(store).counts).toEqual({ 'meditation.box': 1 });
+    session(record, store).track('meditationComplete', { meditation: 'box', source: 'roots', seconds: 20 }, NOW);
+    expect(loadMeta(store).counts).toEqual({ 'meditation.box': 1, 'meditation.hour': 20 });
     expect(mastery(record)).toBe(0);
   });
 });

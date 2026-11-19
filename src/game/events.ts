@@ -144,8 +144,9 @@ export interface GameEvents {
   /** A boss of a floor was overcome, once per boss room (ACHIEVEMENTS §1): its health reached zero (`destroyed`), it turned
    *  to the player's side (`converted`), or the Shadow's own ending was reached by standing still beside it (`stillness`). React only. */
   bossOvercome: { boss: string; floor: number; how: 'destroyed' | 'converted' | 'stillness' };
-  /** A Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (ACHIEVEMENTS §1). React only. */
-  meditationComplete: { meditation: string; source: 'roots' | 'vault' };
+  /** A Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (ACHIEVEMENTS §1). `seconds` is
+   *  the time of every sitting finished in that visit, each at its full length (the hour achievement adds them up). React only. */
+  meditationComplete: { meditation: string; source: 'roots' | 'vault'; seconds: number };
   /** A kitchen cooked a part into a meal (game/kitchen.ts). React only. */
   cook: { meal: string; part: string };
   /** The player died on the band `floor` (0 is the Roots, -1 the surface). Emitted only once the death stands: no hook
