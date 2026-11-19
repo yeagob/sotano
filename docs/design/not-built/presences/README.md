@@ -25,7 +25,7 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 | [AGREEMENTS.md](AGREEMENTS.md) | Things the player brings to a presence | System | proposal |
 | [GIFTS.md](GIFTS.md) | The gifts of the depths and the promised trait | System | proposal |
 | [MEMORY.md](MEMORY.md) | What dwellers remember across runs (one memory is built: the Echo's place) | System | decided |
-| [CODEX.md](CODEX.md) | The codex in the inventory window | System | proposal |
+| [CODEX.md](CODEX.md) | The codex: the presences part is built in the menu; projections, creatures and bosses are not | System | partly built |
 
 The places some of these presences live in, the Tree and the Silence below floor 9, are not built either. The Tree's bosses are in [not-built/bosses](../bosses/README.md).
 
@@ -44,5 +44,5 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 | The Cartographer | The Tree's crossroads, the star map and the hidden pocket | Built on one seeded floor from 1, with the vault and boss marks in words; the rest stays in its document |
 | The Boatman | A pocket that is unreachable otherwise, and a levels ruling | Built by the drowned nave of floor 3 or 4: a block as toll, a ferry to the island, a tier 2 gift; the key and bomb tolls are not built |
 | The Star-reader | The Leaves of the Tree (a room a presence can stand in), the star map and the doors | Built in a quiet room of one Tree floor, a Take or Decline gift; the reading in words only, the rest stays in its document |
-| Requests, the idle window, dialogue, the codex | Their own systems (not designed for the build) | Not built; the choice card (a question with answers) is built and is the first piece of dialogue |
+| Requests, the idle window, dialogue, the codex | The owner's ruling on the requesters' leave rule and on the trust meter | Requests (the Gardener, the Boatman) and the idle window (30 to 60 seconds) are built, pending a ruling; the codex lists the presences met; the choice card is built and is the first piece of dialogue; the trust meter and the other requests are not built |
 | Covenant and agreements beyond the two built ones | The owner's ruling on the four pieces and their costs | Not built |

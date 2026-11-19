@@ -35,3 +35,8 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 - **Idle detection.** The game sees only input, not whether the player stepped away. The card must say so, and the game must not pretend otherwise.
 - **Readings.** Confirm the thirty-to-sixty-second window and the reward table (readings k and t of the design's section 13).
 - **Settings note.** The not-therapy note and the help line need the owner's text and the translations.
+
+## Checked in the browser (issue #149)
+
+- Headless Chromium, the real consent card of the Gardener (breathe) and the Boatman (move): the request line and its alternative show, Give and Keep are there, the card is 19 to 356 px wide at 375 px, no horizontal scroll. The card at 375 px was measured, not seen clearly: the menu stayed over it in the screenshot.
+- Not checked: the exchange played in the game itself (Give on the card, the idle window ending and the presence leaving), the gamepad and the touch paths on the card, and the request card in the sandbox lab (the lab prints text only).
