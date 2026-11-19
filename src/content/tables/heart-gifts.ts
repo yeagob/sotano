@@ -134,6 +134,38 @@ export const BOATMAN_HEART_TABLE = table<RareHeart>('boatman-heart', 'runtime',
   GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
 );
 
+// The Mender's gift (docs/design/built/presences/MENDER.md, proposed pending the owner's ruling): the tier 3 gift, mended
+// from the part it was given. Three draws in four give a practice of quality three; one in four one special heart.
+export const MENDER_GIFT_TABLE = table<TierTwoKind>('mender-gift', 'runtime', [
+  { value: 'practice', weight: 3 },
+  { value: 'heart', weight: 1 },
+]);
+export const MENDER_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('mender-practice', 'runtime',
+  QUALITY_THREE.map(item => ({ value: item, weight: 1 })),
+);
+export const MENDER_HEART_TABLE = table<RareHeart>('mender-heart', 'runtime',
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
+);
+
+// The Star-reader's gift (docs/design/built/presences/STAR-READER.md, proposed pending the owner's ruling): a light
+// given back for the shape it read. Two draws in four give a practice of quality one, one in four a practice of quality
+// two, one in four a special heart (an even draw of the five kinds).
+type StarKind = 'quality-one' | 'quality-two' | 'heart';
+export const STAR_READER_GIFT_TABLE = table<StarKind>('star-reader-gift', 'runtime', [
+  { value: 'quality-one', weight: 2 },
+  { value: 'quality-two', weight: 1 },
+  { value: 'heart', weight: 1 },
+]);
+export const STAR_READER_PRACTICE_ONE_TABLE = table<(typeof ITEMS)[number]>('star-reader-practice-one', 'runtime',
+  QUALITY_ONE.map(item => ({ value: item, weight: 1 })),
+);
+export const STAR_READER_PRACTICE_TWO_TABLE = table<(typeof ITEMS)[number]>('star-reader-practice-two', 'runtime',
+  QUALITY_TWO.map(item => ({ value: item, weight: 1 })),
+);
+export const STAR_READER_HEART_TABLE = table<RareHeart>('star-reader-heart', 'runtime',
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
+);
+
 export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   LISTENER_GIFT_TABLE,
   HEALTH_PRACTICE_TABLE,
@@ -157,6 +189,13 @@ export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   BOATMAN_GIFT_TABLE,
   BOATMAN_PRACTICE_TABLE,
   BOATMAN_HEART_TABLE,
+  MENDER_GIFT_TABLE,
+  MENDER_PRACTICE_TABLE,
+  MENDER_HEART_TABLE,
+  STAR_READER_GIFT_TABLE,
+  STAR_READER_PRACTICE_ONE_TABLE,
+  STAR_READER_PRACTICE_TWO_TABLE,
+  STAR_READER_HEART_TABLE,
 ];
 
 function roll<T>(source: Table<T>, rng: Rng): T {
@@ -209,6 +248,20 @@ export function rollWitnessGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[
 export function rollBoatmanGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
   if (roll(BOATMAN_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(BOATMAN_PRACTICE_TABLE, rng) };
   return { kind: 'heart', heart: roll(BOATMAN_HEART_TABLE, rng) };
+}
+
+/** The Mender's gift (MENDER_GIFT_TABLE): a practice of quality three, or a special heart. */
+export function rollMenderGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
+  if (roll(MENDER_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(MENDER_PRACTICE_TABLE, rng) };
+  return { kind: 'heart', heart: roll(MENDER_HEART_TABLE, rng) };
+}
+
+/** The Star-reader's gift (STAR_READER_GIFT_TABLE): a practice of quality one or two, or a special heart. */
+export function rollStarReaderGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
+  const kind = roll(STAR_READER_GIFT_TABLE, rng);
+  if (kind === 'quality-one') return { kind: 'item', item: roll(STAR_READER_PRACTICE_ONE_TABLE, rng) };
+  if (kind === 'quality-two') return { kind: 'item', item: roll(STAR_READER_PRACTICE_TWO_TABLE, rng) };
+  return { kind: 'heart', heart: roll(STAR_READER_HEART_TABLE, rng) };
 }
 
 // The Elder's lesson (docs/design/built/presences/ELDER.md, proposed pending owner ruling): the path the player chose

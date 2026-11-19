@@ -7,6 +7,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- The Mender, a dweller that comes to the first vault you open on floor 3, 4 or 5 (once the vault's guardian has left). It asks for one part you carry, on a Give or Keep card; Give gives a practice of quality three, or a special heart, and it stays (#149).
+- The Star-reader, a dweller in a quiet room of one floor of the Tree (floors 1 to 5). It asks for a yes to its light, on a Take or Decline card: a practice of quality one or two, or a special heart. Decline keeps everything, and it stays (#149).
 - The Witness, a messenger that waits in a quiet room of the ninth floor. It offers one gift: a practice of quality two, or a special heart. Take gives it and it leaves; decline keeps everything (#149).
 - The Boatman, a dweller by the drowned nave of floor 3 or 4. For one block you leave on the shore, it ferries you across the deep water to the island, where its gift lies: a practice of quality two, or a special heart. It stays (#149).
 - The Child, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks you to place three blocks while it watches; Take starts the build and Decline costs nothing. When three blocks are placed it gives one gift: a practice of quality one, or a special heart. It stays (#149).

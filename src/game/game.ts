@@ -91,13 +91,13 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift, rollWitnessGift, rollBoatmanGift } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift, rollWitnessGift, rollBoatmanGift, rollMenderGift, rollStarReaderGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
@@ -291,6 +291,8 @@ export class Game {
   private presenceReplies = new Map<number, number>();
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
+  /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
+  private menderCame = false;
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
@@ -572,7 +574,7 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
-    this.childBuilds.clear(); this.builds = new BuildCount();
+    this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.pendingPresenceOffer = null;
     this.input.modal = false;
     setMasterTarget(0.35);
@@ -3343,6 +3345,7 @@ export class Game {
       this.enemies.dissolve(e);
       this.bus.off(null, `actor:${e.id}`);
       this.actors.remove(e.id);
+      this.summonMender(room, { x: e.body.x, y: e.body.y, z: e.body.z });
       this.contacts.forget(e.id);
       this.boundaryRing.delete(e.id);
     }
@@ -3658,8 +3661,28 @@ export class Game {
       // the gift lies on the island the Boatman ferried the player to (at), not by the shore
       const gift = rollBoatmanGift(rng);
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }], at);
+    } else if (id === 'mender') {
+      const gift = rollMenderGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'star-reader') {
+      const gift = rollStarReaderGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
     }
     sfx3.reveal();
+  }
+
+  /** The Mender comes to the first vault the player opens on its floor (MENDER.md, proposed): once that vault's Boundary
+   *  has left, the Mender stands where the Boundary stood. It comes once per run. The floor is read from the run's root. */
+  private summonMender(room: number, at: { x: number; y: number; z: number }) {
+    const r = this.rooms.get(room);
+    if (!r || !menderComesTo(this.rng, r.floor, this.menderCame)) return;
+    this.menderCame = true;
+    const def = PRESENCE_BY_ID.get('mender')!;
+    const e = this.enemies.spawn(def, this.actors.newId(), room, at.x, at.y, at.z, def.hp, def.speed, 0, new Set(['presence']));
+    e.faction = 'neutral';
+    e.spawning = 0;
+    this.actors.add(e);
+    this.particles.burst(at.x, at.y + 1.2, at.z, pal('light.gold'), 12, 1.6, 0.05);
   }
 
   /** The island of a room's template: its 'K' tile, read through the room's flips, on the floor's height. Null when the

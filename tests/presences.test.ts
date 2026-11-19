@@ -78,7 +78,7 @@ describe('presences: the part each one takes', () => {
   });
 
   it('each Presence takes one kind of monster part, and no other thing (the Echo takes any part)', () => {
-    expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none', witness: 'none', boatman: 'block' });
+    expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none', witness: 'none', boatman: 'block', mender: 'any', 'star-reader': 'none' });
     for (const id of ['gardener', 'listener', 'trickster', 'echo'] as const) {
       for (const kind of PART_KINDS) {
         const part = PARTS.find(p => p.kind === kind)!;

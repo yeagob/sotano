@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { boatmanFloorOf, dwellerFloorOf, gardenerFloorOf, placeMessengers, placePresences, tricksterFloorOf, wandererFloorsOf, WITNESS_FLOOR, type RoomPresence } from '../content/presences';
+import { boatmanFloorOf, dwellerFloorOf, gardenerFloorOf, placeMessengers, placePresences, starReaderFloorOf, tricksterFloorOf, wandererFloorsOf, WITNESS_FLOOR, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -479,6 +479,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     childFloor: dwellerFloorOf(rr, 'child'),
     boatmanFloor: boatmanFloorOf(rr),
     witnessFloor: WITNESS_FLOOR,
+    starReaderFloor: starReaderFloorOf(rr),
   });
 
   // 2. doorways between linked rooms (each pair once: only east and south links)

@@ -15,12 +15,14 @@ import cartographer from './cartographer';
 import child from './child';
 import witness from './witness';
 import boatman from './boatman';
+import mender from './mender';
+import starReader from './star-reader';
 
-export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer' | 'child' | 'witness' | 'boatman';
+export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer' | 'child' | 'witness' | 'boatman' | 'mender' | 'star-reader';
 
 export type RoomPresence = PresenceId | 'boundary';
 
-export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer, child, witness, boatman];
+export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer, child, witness, boatman, mender, starReader];
 export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.map(p => [p.id, p]));
 
 /** What a presence takes: one kind of monster part, any part (the Echo asks for any part in hand), or nothing (the
@@ -29,7 +31,7 @@ export type PresenceKey = PartKind | 'any' | 'none' | 'block';
 
 export const PRESENCE_KEY: Record<PresenceId, PresenceKey> = {
   gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none',
-  witness: 'none', boatman: 'block',
+  witness: 'none', boatman: 'block', mender: 'any', 'star-reader': 'none',
 };
 
 /** The presences that ask a question on a choice card instead of an offer of a part: the card's options and its question. */
@@ -67,10 +69,12 @@ export const PRESENCE_OFFER_QUESTION: Partial<Record<PresenceId, MessageKey>> = 
   child: 'presence.offer.child.build',
   witness: 'presence.offer.witness.question',
   boatman: 'presence.offer.boatman.toll',
+  mender: 'presence.offer.mender.question',
+  'star-reader': 'presence.offer.starreader.question',
 };
 
 /** The presences whose offer is a gift to take, not a part to give: the card says Take and Decline, not Give and Keep. */
-export const GIFT_OFFER: ReadonlySet<PresenceId> = new Set<PresenceId>(['wanderer', 'child', 'witness']);
+export const GIFT_OFFER: ReadonlySet<PresenceId> = new Set<PresenceId>(['wanderer', 'child', 'witness', 'star-reader']);
 
 export interface PresenceTalk {
   name: MessageKey;
@@ -109,6 +113,14 @@ export const PRESENCE_TALK: Record<PresenceId, PresenceTalk> = {
     name: 'presence.wanderer.name', lines: ['presence.wanderer.1', 'presence.wanderer.2'], silent: 'presence.wanderer.silent',
     hint: 'presence.wanderer.hint', drops: true, farewell: 'presence.wanderer.walk',
   },
+  mender: {
+    name: 'presence.mender.name', lines: ['presence.mender.1', 'presence.mender.2'], silent: 'presence.mender.silent',
+    hint: 'presence.mender.hint', drops: true,
+  },
+  'star-reader': {
+    name: 'presence.starreader.name', lines: ['presence.starreader.1', 'presence.starreader.2'], silent: 'presence.starreader.silent',
+    hint: 'presence.starreader.hint', drops: true,
+  },
 };
 
 /** Whether a presence leaves when the player declines its offer (the Trickster and the Wanderer do; the others wait). */
@@ -123,7 +135,7 @@ export function leavesAfterOffer(id: PresenceId): boolean {
 }
 
 /** Presences that keep their place after their reward (the Gardener, the Elder, the Cartographer). */
-export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer', 'child', 'boatman']);
+export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer', 'child', 'boatman', 'mender', 'star-reader']);
 
 export const TALK_REACH = 2.2;
 
@@ -212,6 +224,28 @@ export function boatmanFloorOf(run: RunRandom): number {
   return run.fork('presence', 'boatman').pick([...BOATMAN_FLOORS]);
 }
 
+/** The Mender's floors: the vaults of floors 3 to 5, the last floors that keep a vault (MENDER.md, proposed: the Zone III
+ *  vault rule). The Mender waits on this floor, and comes only once the player has opened a vault there. Read from the
+ *  run's root, never from the player. */
+export const MENDER_FLOORS: readonly number[] = [3, 4, 5];
+
+export function menderFloorOf(run: RunRandom): number {
+  return run.fork('presence', 'mender').pick([...MENDER_FLOORS]);
+}
+
+/** Whether the Mender comes to a vault opened on `floor`: once per run, and only on its seeded floor (MENDER.md). */
+export function menderComesTo(run: RunRandom, floor: number, came: boolean): boolean {
+  return !came && floor === menderFloorOf(run);
+}
+
+/** The Star-reader's floor: one seeded floor of the Tree (the Tree-of-Life floors, levels of kind 'tree', floors 1 to 5),
+ *  read from the run's root (STAR-READER.md, proposed: the Leaves of the giant tree are not a room yet). */
+export function starReaderFloorOf(run: RunRandom): number {
+  const floors: number[] = [];
+  for (let k = 1; k <= LAST_FLOOR; k++) if (level(k).kind === 'tree') floors.push(k);
+  return run.fork('presence', 'star-reader').pick(floors);
+}
+
 export interface MessengerPlan {
   /** Per room, whether it is a dead end of the floor plan (one doorway). Aligned with the rooms. */
   deadEnds: readonly boolean[];
@@ -232,6 +266,8 @@ export interface MessengerPlan {
   boatmanFloor?: number;
   /** Whether the Witness waits on this floor (the last floor, WITNESS_FLOOR). */
   witnessFloor?: number;
+  /** The floor on which this run's Star-reader waits (starReaderFloorOf); none when absent. */
+  starReaderFloor?: number;
 }
 
 /** One Listener per Tree floor, in a quiet normal room. */
@@ -299,6 +335,17 @@ export function placeMessengers(rooms: PlacedRoom[], floor: number, rng: Rng, pl
       const room = rooms[rng.pick(pool)];
       room.enemies = [];
       room.presence = id;
+    }
+  }
+  // the Star-reader on the Tree: a quiet normal room of its floor that holds no other presence (STAR-READER.md)
+  if (plan.starReaderFloor === floor) {
+    const left = rooms.map((_, i) => i).filter(i => rooms[i].type === 'normal' && rooms[i].presence === undefined);
+    const quiet = left.filter(i => rooms[i].enemies.length === 0);
+    const pool = quiet.length ? quiet : left;
+    if (pool.length) {
+      const room = rooms[rng.pick(pool)];
+      room.enemies = [];
+      room.presence = 'star-reader';
     }
   }
   // the Witness in the Silence: a quiet normal room of the last floor that holds no other presence (WITNESS.md)
