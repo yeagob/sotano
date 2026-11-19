@@ -183,9 +183,6 @@ export class Inventory {
     this.installed.add(source);
   }
 
-  /** The game's API with toasts bound to the effect that raises them. `copy` binds `addStack` to
-   *  one held copy; synergies have none, so their `addStack` does nothing. */
-
   private install(source: string, ownerId: string, e: ItemDef | SynergyDef, suppressed: Set<string>, rng: Rng, copy?: ItemInstance) {
     const bus = this.bus();
     const api = this.scoped(e, source, rng, copy);
