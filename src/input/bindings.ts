@@ -5,7 +5,7 @@ export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'tol
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'map' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -127,6 +127,14 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'E / Y opens the inventory', noita: 'Tab / I opens the inventory and pauses', isaac: 'Tab shows the map and your items' },
   },
   {
+    // the star map (D15 of #149): a tab of the same screen, opened and closed by its own key; touch taps its tab
+    action: 'map', kind: 'press', when: ['play', 'paused', 'inventory'],
+    keyboard: { keys: ['KeyM'] },
+    gamepad: { buttons: [PAD.VIEW], when: ['play', 'inventory'] },
+    touch: { control: 'menuButton', when: ['paused', 'inventory'] },
+    refs: { minecraft: 'the map is an item you hold up; the screen keeps one view per tab', noita: 'M opens the map of the world you have seen', isaac: 'Tab (or Select on a pad) shows the whole floor map' },
+  },
+  {
     action: 'pause', kind: 'press', when: ['play', 'paused'],
     keyboard: { keys: ['Escape'] },
     gamepad: { buttons: [PAD.MENU] },
@@ -204,7 +212,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {

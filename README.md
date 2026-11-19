@@ -105,6 +105,7 @@ Three complete schemes; the game follows whichever device you used last (details
 | Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |
+| Star map (the floor you are on, or the crown) | **M** (M or **Esc** closes) | **View** (View or **B** closes) | The tab button (top), the Star map tab |
 | Field of view (on the menu) | **← →**, or drag the bar or click − and + | D-pad **← →** | Drag the bar, or tap − and + |
 | New run | **R** | **View** (paused or dead) | "New run" on the landing and the pause card |
 | Download the book (at 100% completion) | **B** (paused or dead) | **X** (paused or dead) | "Download the book" on the pause card and the death screen |

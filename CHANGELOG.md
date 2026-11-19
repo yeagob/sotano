@@ -9,6 +9,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## 0.2.6-alpha · 2026-11-19
 
 ### Added
+- The Leaves: a room at the top of the giant tree, high in the crown beside the last stair, with a ring of star stone under an open eye in its dome (#149).
+- Seed codes move to v36: the same code grows the giant tree with the Leaves in its crown; the floors are unchanged (#149).
+- The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the place the Cartographer marked and the Star-reader's room, or the crown from above with the Leaves and its stars, whose chain appears once the Star-reader has read it. In English and Spanish (#149).
 - The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
 - The Child now adds one Lesson in words to its card after its gift (#149).
 - The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).

@@ -54,7 +54,7 @@ const shape = (f: FloorResult) => JSON.stringify({
 });
 
 /** Recorded from the code before the easy layout existed: seed/mastery → hashes of floor 0, its band, the world, floors 1–9.
- *  Floors 1–9 re-recorded at GEN_VERSION 30 (the Wanderer's room, WANDERER.md), 31 (the Gardener's room), 32 (the Elder's and the Cartographer's rooms) and 33 (the Child's room, CHILD.md), 34 (the Witness's room on the ninth floor and the Boatman's nave, WITNESS.md and BOATMAN.md), 35 (the Star-reader's room on a Tree floor, STAR-READER.md). */
+ *  Floors 1–9 re-recorded at GEN_VERSION 30 (the Wanderer's room, WANDERER.md), 31 (the Gardener's room), 32 (the Elder's and the Cartographer's rooms) and 33 (the Child's room, CHILD.md), 34 (the Witness's room on the ninth floor and the Boatman's nave, WITNESS.md and BOATMAN.md), 35 (the Star-reader's room on a Tree floor, STAR-READER.md). Checked unchanged at 36 (the Leaves are carved in the tree, which these floors do not hold). */
 const BASELINE: Record<string, { shape: number; band: number; world: number; floors1to9: number }> = {
   '1/0': { shape: 3137437004, band: 2497052508, world: 607469066, floors1to9: 838384565 },
   '1/22': { shape: 358658551, band: 3647524814, world: 3251868360, floors1to9: 838384565 },

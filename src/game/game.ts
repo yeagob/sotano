@@ -89,6 +89,8 @@ import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { inLeaves } from '../world/crown';
+import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
@@ -388,6 +390,11 @@ export class Game {
   private story = NaN;
   /** The loop (L4): silence once visited opens the sky's top; seconds standing still in it. */
   private silenceSeen = false;
+  /** The Leaves (D14) were entered this run: their name is said once. */
+  private leavesSeen = false;
+  /** What the star map shows beyond what you walked (D15): the Cartographer's marks, the Star-reader's room and reading. */
+  private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss' }>; starReader: StarMarks['starReader']; read: boolean } =
+    { cartographer: new Map(), starReader: null, read: false };
   private stillT = 0;
   /** The star pad you arrived on (re-armed once you step off it). */
   private padLock = -1;
@@ -590,7 +597,8 @@ export class Game {
     const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
-    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
+    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];
@@ -3735,6 +3743,9 @@ export class Game {
     } else if (pending.id === 'cartographer') {
       const want = index === 0 ? 'vault' : 'boss';
       const dir = this.directionToNearest(e, want);
+      // the mark goes on the star map too (D15): the room itself, on its floor
+      const marked = this.nearestRoom(e, want);
+      if (marked) this.starMarks.cartographer.set(marked.floor, { room: marked.id, want });
       const key = (dir === null ? 'presence.cartographer.mark.none' : `presence.cartographer.mark.${want}`) as MessageKey;
       this.hud.presenceCard(talk.name, [key, talk.lines[1]], dir === null ? undefined : { dir: t(`dir.${dir}` as MessageKey) });
     }
@@ -3769,6 +3780,12 @@ export class Game {
 
   /** The direction of the nearest room of a type on the enemy's floor, read from the map's cells; null when none. */
   private directionToNearest(e: Enemy, type: RoomInfo['type']): ReturnType<typeof directionOf> | null {
+    const from = this.rooms.get(e.room), best = this.nearestRoom(e, type);
+    return from && best ? directionOf(best.gx - from.gx, best.gz - from.gz) : null;
+  }
+
+  /** The nearest room of a type on the enemy's floor, by the map's cells; null when none. */
+  private nearestRoom(e: Enemy, type: RoomInfo['type']): RoomInfo | null {
     const from = this.rooms.get(e.room);
     if (!from) return null;
     let best: RoomInfo | null = null;
@@ -3776,7 +3793,21 @@ export class Game {
       if (r.floor !== from.floor || r.type !== type) continue;
       if (!best || Math.hypot(r.gx - from.gx, r.gz - from.gz) < Math.hypot(best.gx - from.gx, best.gz - from.gz)) best = r;
     }
-    return best ? directionOf(best.gx - from.gx, best.gz - from.gz) : null;
+    return best;
+  }
+
+  /** The star map's view (D15): the floor you stand on under the ground, the crown above it. Read when the tab opens. */
+  starMap(): StarMap {
+    const b = this.player.body;
+    const floor = this.floors.get(this.depth);
+    if (this.realm === 'dungeon' && bandOf(b.y) !== SURFACE && floor) return floorStarMap(floor, this.depth, this.visited, this.room, this.starMarks);
+    const t = this.tree, L = t.leaves;
+    return {
+      kind: 'crown', sx: this.dw.sx, sz: this.dw.sz, centre: [t.cx, t.cz], trunk: TREE_STORIES[0].r, crown: [54, t.cz - 2],
+      leaves: { x0: L.x0, z0: L.z0, w: L.w, d: L.d }, stair: t.stairAt(TREE_STORIES.length - 2),
+      pads: t.pads.map(p => ({ x: p.x, z: p.z, to: p.to, up: p.up === true })), read: this.starMarks.read,
+      here: this.realm === 'dungeon' ? [Math.floor(b.x), Math.floor(b.z)] : null,
+    };
   }
 
   /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
@@ -3804,6 +3835,10 @@ export class Game {
       const gift = rollMenderGift(rng);
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
     } else if (id === 'star-reader') {
+      // the Star-reader reads the stars for you (D15): its room and the crown's chain go on the star map
+      const r = this.rooms.get(e.room);
+      if (r) this.starMarks.starReader = { floor: r.floor, room: r.id };
+      this.starMarks.read = true;
       const gift = rollStarReaderGift(rng);
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
     }
@@ -4009,6 +4044,8 @@ export class Game {
       this.teleport(to.x + 0.5, to.y, to.z + 0.5);
       sfx2.charged();
     }
+    // the Leaves (D14): their name, the first time you stand in them this run
+    if (!this.leavesSeen && this.realm === 'dungeon' && inLeaves(b.x, b.y, b.z)) { this.leavesSeen = true; this.hud.toast('toast.leaves'); }
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
     const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {
@@ -4297,6 +4334,8 @@ export class Game {
     if (ctx === 'play' || ctx === 'paused' || ctx === 'inventory') {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
+      // the star map (D15): M or View opens the screen on it, and closes it when it is the tab on screen
+      else if (inp.hit('map')) this.hud.mapKey(this);
     }
     // the book download (COMPLETION §8): X on the pause card or the death screen; `act` ignores it below 100%
     if ((ctx === 'paused' || ctx === 'dead') && inp.hit('book')) this.act('book-download');
@@ -4309,10 +4348,10 @@ export class Game {
       else {
         const n = inp.navigate();
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
-        else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
+        else if (!this.hud.mapShown && (n.x || n.y)) this.hud.moveSelection(n.x, n.y);
       }
-      // a number key picks its slot; Enter or A picks the highlighted carried item
-      if (inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
+      // a number key picks its slot; Enter or A picks the highlighted carried item (not on the star map)
+      if (!this.hud.mapShown && inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -4476,6 +4515,7 @@ export class Game {
     else if (act === 'inventory' && this.hud.screenOpen) this.hud.closeScreen(this);
     else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
     else if (act === 'tab-items') this.hud.openScreen(this, 'items');
+    else if (act === 'tab-map') this.hud.openScreen(this, 'map');
     else if (act === 'fov-down' || act === 'fov-up') this.setFov(stepFov(this.fovNow, act === 'fov-up' ? 1 : -1));
   }
 

@@ -37,6 +37,7 @@ import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 import { COVENANT_PIECES } from '../content/presences/covenant';
+import { mapKeyOutcome, starMapHtml } from './star-map';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -73,8 +74,8 @@ export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
 }
 
-/** The two tabs of the screen: the menu (pause, controls, language) and the practices. */
-export type ScreenTab = 'menu' | 'items';
+/** The tabs of the screen: the menu (pause, controls, language), the practices, and the star map (D15 of #149). */
+export type ScreenTab = 'menu' | 'items' | 'map';
 
 export class Hud {
   private hand = $('hand');
@@ -106,6 +107,7 @@ export class Hud {
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
+  private mapEl = $('starmap');
   private tollEl = $('toll');
   tollOpen = false;
   private tollFloor = 0;
@@ -250,7 +252,7 @@ export class Hud {
     const nr = document.getElementById('newrun');
     if (nr) nr.textContent = t('pause.newRun');
     for (const b of document.querySelectorAll<HTMLElement>('#overlay .tabs button')) {
-      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : 'tab.menu');
+      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : b.dataset.tab === 'map' ? 'tab.map' : 'tab.menu');
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
@@ -274,6 +276,9 @@ export class Hud {
   }
 
   get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }
+
+  /** The star map is the tab on screen (D15): navigate and pick do nothing there. */
+  get mapShown() { return this.screenOpen && this.screenTab === 'map'; }
 
   setFov(fov: number) {
     this.fovShown = fov;
@@ -963,9 +968,16 @@ export class Hud {
     else this.openScreen(g, touchTab ? 'menu' : 'items');
   }
 
+  /** M, View and the map tab (D15): the screen on the star map, or closed when the map is what it shows. */
+  mapKey(g: Game) {
+    if (mapKeyOutcome(this.screenOpen, this.screenTab) === 'close') this.closeScreen(g);
+    else this.openScreen(g, 'map');
+  }
+
   private renderScreen(g: Game) {
     this.showTab(this.screenTab);
     if (this.screenTab === 'items') this.renderInventory(g);
+    if (this.screenTab === 'map') this.mapEl.innerHTML = starMapHtml(g.starMap(), activeDevice());
   }
 
   /** The active carried item changed (the game calls this): an open screen redraws its outline. */
