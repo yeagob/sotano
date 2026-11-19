@@ -28,6 +28,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Cartographer, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks whether to mark the vault or the boss, and says in words where it lies from here. It stays. Not now costs nothing (#149).
 - The choice card: a presence's question with up to four answers, chosen with the arrows or the d-pad, a tap, or confirm (#149).
 - The Gardener, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks for one flesh part you carry and gives nothing back; it stays where it is. Declining costs nothing (#149).
+- A completion percentage: the share of the game you have done at least once (floors, bosses, achievements, practices, the bestiary, recipes and the hidden book), with each part's share. It is kept between runs, never goes down, and shows on the pause card and the death screen (#180).
+- At 100% completion a final achievement unlocks, and the book can be downloaded from the pause card and the death screen (#180).
+- The toxic heart now carries a toxic aura: while you hold one, every hostile projection within two blocks of you takes damage once a second, with rising soot around your feet and a soft hiss when it touches. It never breaks blocks and never hurts allies, creatures or presences, and it ends when the heart is spent (#178).
 
 ### Changed
 - The lore was extended with new references and a tradition (#194, #201, #204).

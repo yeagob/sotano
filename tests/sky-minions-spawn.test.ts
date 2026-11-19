@@ -45,7 +45,7 @@ function newRealm() {
     debris: () => debris,
     hazards: () => hazards,
     fork: (...path: (string | number)[]) => new Rng(path.reduce<number>((h, p) => h * 31 + String(p).length + (typeof p === 'number' ? p : 0), 7)),
-    fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
+    fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, meetFloor: noop, gift: noop, travel: noop,
     drainSpirit: noop, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: () => true,
   } as unknown as SkyHost;
   const realm = SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: (world = new SkyWorld(layout)) } as unknown as SkyRealmSet));

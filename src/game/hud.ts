@@ -32,6 +32,8 @@ import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
+import { PARTS, type Completion } from './completion';
+import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 import { COVENANT_PIECES } from '../content/presences/covenant';
@@ -137,6 +139,8 @@ export class Hud {
   /** The presences met in this run, in the order met: the codex (CODEX.md). */
   private codexIds: readonly PresenceId[] = [];
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
+  /** The completion percentage shown on the pause card and the death screen (COMPLETION.md). */
+  private completionView: Completion | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
   screenOpen = false;
@@ -208,6 +212,7 @@ export class Hud {
     this.setItems(this.lastItems);
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
+    this.renderCompletion();
     this.renderPolarity();
     this.renderSpiritLabel();
     this.renderLanguages();
@@ -855,6 +860,36 @@ export class Hud {
     this.toastTimer = performance.now() + 2500;
   }
 
+  /** Gives the HUD the completion percentage to show (COMPLETION.md). Redraws the pause card; the death screen takes it when it shows. */
+  setCompletion(c: Completion) {
+    this.completionView = c;
+    this.renderCompletion();
+  }
+
+  /** Redraws the block; a focused download button keeps its focus across the redraw (a first time changes only the count). */
+  private renderCompletion() {
+    const el = document.getElementById('completion');
+    if (!el) return;
+    const focused = document.activeElement instanceof HTMLElement && document.activeElement.classList.contains('book-download') && el.contains(document.activeElement);
+    el.innerHTML = this.completionHtml();
+    if (focused) el.querySelector<HTMLElement>('.book-download')?.focus();
+  }
+
+  /**
+   * The completion block, one render function for the pause card and the death screen: the percentage, then each part with
+   * its done count and its share of the whole (COMPLETION.md §4). Empty until the game gives a completion.
+   */
+  private completionHtml(): string {
+    const c = this.completionView;
+    if (!c) return '';
+    const rows = PARTS.map(p => {
+      const x = c.parts[p];
+      return `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.count', { done: x.done, total: x.total })}</span>` +
+        `<span>${th('completion.share', { share: x.weight })}</span></li>`;
+    }).join('');
+    return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul>${bookButtonHtml(c.percent)}</section>`;
+  }
+
   private seedText = '';
   private seedListener = false;
 
@@ -893,7 +928,7 @@ export class Hud {
     this.deathEl.innerHTML =
       `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
-      `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
+      `${this.completionHtml()}<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
   }
 
   hideDeath() { this.deathEl.classList.remove('show'); }

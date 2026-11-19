@@ -50,6 +50,18 @@ describe('controls contract', () => {
     expect(contextsFor(BINDING.back, 'touch')).not.toContain('prompt');
   });
 
+  it('the book download is reachable on every device on the pause card and the death screen', () => {
+    const b = BINDING.book;
+    for (const c of ['paused', 'dead'] as const) {
+      expect(contextsFor(b, 'keyboard'), 'keyboard').toContain(c);
+      expect(contextsFor(b, 'gamepad'), 'gamepad').toContain(c);
+      expect(contextsFor(b, 'touch'), 'touch').toContain(c);
+    }
+    expect(inputs(b, 'keyboard')).toEqual(['KeyB']);
+    expect(inputs(b, 'gamepad')).toEqual(['button2']);
+    expect(b.touch.control).toBe('menuButton');
+  });
+
   it('a touch action with no button of its own is reached through another control', () => {
     for (const b of BINDINGS.filter(x => x.touch.control === 'none')) {
       expect(BINDING.inventory.touch.control, b.action).toBe('systemButton');

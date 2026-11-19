@@ -16,8 +16,13 @@ interface MetaState {
   roots: { page: number };            // the current page, an integer ≥ 1
   achievements: Record<string, number>;  // unlocked id → unlock time (ms since the epoch)
   counts: Record<string, number>;     // achievement id → matching events so far (only while locked, only for `times` > 1)
+  firsts?: {                          // first-time records of the completion percentage (COMPLETION.md); absent until one is made
+    floors: string[]; practices: string[]; bestiary: string[]; recipes: string[];
+  };
 }
 ```
+
+- `firsts` is optional and added without a version bump: a version 2 record without it reads as none, and nothing already saved is lost. Its ids are only ever added (a union on merge).
 
 - The **mastery level** is not stored: it is computed from `achievements` ([MASTERY](MASTERY.md)).
 - The **shown page** (browsing) is not stored.

@@ -21,6 +21,7 @@ The desktop scheme. Part of [Input](README.md).
 | pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
 | field of view (on the menu) | the left and right arrows, or the mouse on the bar or on − and + |
 | restart | R, while playing or dead |
+| book | B, on the pause card or the death screen (download the book at 100%) |
 | confirm | any mouse button while captured, or Enter; accepts a Presence offer |
 | back | Esc; declines a Presence offer |
 

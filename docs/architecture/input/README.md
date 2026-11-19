@@ -56,6 +56,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
+| book | press | paused, dead | B | X | the "Download the book" button, at 100% completion (COMPLETION §8) |
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
 | navigate | axis | inventory, toll, paused, meditation, prompt | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
 

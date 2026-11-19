@@ -9,9 +9,10 @@
 /**
  * The events the catalogue listens to, all declared in GameEvents (game/events.ts): `pageReached` (the current page of the
  * Roots' book at a run's end, emitted by `Game.endRoots`), `bossOvercome`, `meditationComplete`, `cook`, `brew`, and the
- * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only).
+ * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only), and
+ * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -34,6 +35,12 @@ export const ACHIEVEMENT_BOSSES = [
 
 /** The meditations of the catalogue: the scene ids of src/content/presences/meditations.ts. */
 export const ACHIEVEMENT_MEDITATIONS = ['ground', 'dusk', 'night', 'box', 'warm', 'river'] as const;
+
+/**
+ * The final achievement's id. The completion percentage (COMPLETION.md) does not count it: it is the reward for reaching
+ * 100, so counting it would make 100 unreachable.
+ */
+export const COMPLETION_ACHIEVEMENT = 'completion.full';
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // Bosses destroyed: their health reaches zero (14).
@@ -97,6 +104,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // The tutorial book turned back a page, and bedrock touched on any side (2).
   { id: 'book.back', on: 'bookBack' },
   { id: 'bedrock.touch', on: 'bedrockTouch' },
+
+  // The whole game: the completion percentage reaches 100 (COMPLETION.md §8). Name and text proposed, pending the owner's name.
+  { id: COMPLETION_ACHIEVEMENT, on: 'completionFull' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */
