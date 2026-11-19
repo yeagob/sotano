@@ -230,6 +230,7 @@ export const ES: Catalog = {
     'presence.boatman.name': 'El Barquero',
     'presence.boatman.1': 'El agua es profunda, y la orilla lejana es para quien suelta esta.',
     'presence.boatman.2': 'Cruza. El regalo te espera en la isla. Yo me quedo aquí.',
+    'presence.boatman.nocross': 'Aquí no hay otra orilla a la que cruzar. Quédate con lo que llevas.',
     'presence.boatman.silent': 'No con ese ruido. El agua solo oye el silencio.',
     'presence.boatman.hint': 'Deja un bloque en la orilla y te llevaré a través del agua profunda.',
     'presence.offer.boatman.toll': '¿Dejas {item} en la orilla para que {presence} te lleve a través del agua profunda?',

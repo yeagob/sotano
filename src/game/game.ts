@@ -93,9 +93,10 @@ import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
 import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
+import { ChoiceGuard, boatmanCrossing, choiceOutcome, offerOutcome } from '../content/presences/consent';
 import { CHILD_LESSON, LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
-import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
@@ -309,6 +310,8 @@ export class Game {
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
   private pendingPresenceChoice: { id: PresenceId; enemyId: number; floor?: number } | null = null;
+  /** The choice card's grace: a confirm right after it opens is ignored (consent.ts). */
+  private choiceGuard = new ChoiceGuard();
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -3524,6 +3527,7 @@ export class Game {
       if (PRESENCE_CHOICE[id]) {
         const choice = PRESENCE_CHOICE[id];
         this.pendingPresenceChoice = { id, enemyId: e.id };
+        this.choiceGuard.open();
         this.hud.presenceChoiceCard(talk.name, choice.question, choice.options, requestOf(id));
         this.input.modal = true;
         this.input.unlockFor();
@@ -3568,15 +3572,19 @@ export class Game {
 
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
     const carried = pending.index < 0 ? undefined : this.player.hand[pending.index];
-    if (!e?.alive || !e.tags.has('presence') || e.tags.has('met') || carried !== pending.carried || !unlocksPresence(pending.id, carried)) {
+    const outcome = offerOutcome(pending.id, accept, {
+      present: !!e?.alive && e.tags.has('presence'), met: !!e?.tags.has('met'),
+      sameCarried: carried === pending.carried, unlocks: unlocksPresence(pending.id, carried),
+    });
+    if (outcome === 'stale' || !e) {
       this.hud.toast('presence.offer.stale');
       return;
     }
-    if (!accept) {
+    if (outcome !== 'accept') {
       sfx.denied();
       // the Trickster laughs and the Wanderer walks on: both leave with nothing taken; the others keep their place and
       // ask again after the player steps away
-      if (leavesOnDecline(pending.id)) {
+      if (outcome === 'leave') {
         this.hud.presenceCard(PRESENCE_TALK[pending.id].name, [PRESENCE_TALK[pending.id].farewell!]);
         this.releasePresence(e);
         return;
@@ -3629,8 +3637,9 @@ export class Game {
     // the Listener has already left with its reward: its Lesson needs no body, only the floor it was heard on
     if (pending.id === 'listener') { this.answerLesson(index, pending.floor ?? 0); return; }
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
-    if (!e?.alive || !e.tags.has('presence') || e.tags.has('met')) { this.hud.toast('presence.offer.stale'); return; }
-    if (index < 0 || index >= (PRESENCE_CHOICE[pending.id]?.options.length ?? 0)) {
+    const outcome = choiceOutcome(index, PRESENCE_CHOICE[pending.id]?.options.length ?? 0, { present: !!e?.alive && !!e?.tags.has('presence'), met: !!e?.tags.has('met') });
+    if (outcome === 'stale' || !e) { this.hud.toast('presence.offer.stale'); return; }
+    if (outcome === 'wait') {
       sfx.denied();
       e.tags.add('offer-declined');
       return;
@@ -3656,6 +3665,7 @@ export class Game {
    *  player. It opens the same card as the Elder's, with "Not now" to leave it. */
   private askLesson(floor: number) {
     this.pendingPresenceChoice = { id: 'listener', enemyId: -1, floor };
+    this.choiceGuard.open();
     this.hud.presenceChoiceCard(PRESENCE_TALK.listener.name, LISTENER_LESSON_CHOICE.question, LISTENER_LESSON_CHOICE.options);
     this.input.modal = true;
     this.input.unlockFor();
@@ -3750,12 +3760,18 @@ export class Game {
   private acceptBoatman(e: Enemy, index: number) {
     const room = this.rooms.get(e.room);
     const landing = room ? this.landingOf(room) : null;
+    // the toll is taken only when the ferry lands: no island, no crossing, and the block stays in hand
+    if (boatmanCrossing(landing) === 'no-crossing' || !landing) {
+      e.tags.add('offer-declined');
+      this.hud.presenceCard(PRESENCE_TALK.boatman.name, ['presence.boatman.nocross']);
+      return;
+    }
     this.player.removeAt(index);
     this.hands.placed();
     this.meet(e);
     this.startIdle(e, 'boatman');
-    if (landing) this.player.carry(landing, BOATMAN_FERRY_S);
-    this.dropPresenceReward('boatman', e, landing ?? undefined);
+    this.player.carry(landing, BOATMAN_FERRY_S);
+    this.dropPresenceReward('boatman', e, landing);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     this.hud.presenceCard(PRESENCE_TALK.boatman.name, this.exchangeLines(PRESENCE_TALK.boatman.lines));
   }
@@ -4184,8 +4200,9 @@ export class Game {
       // the choice card: navigate moves between the answers, confirm picks the selected one, back declines
       const n = inp.navigate();
       if (n.x || n.y) this.hud.moveChoice(n.x || n.y);
+      this.choiceGuard.tick(dt);
       const confirmedBy = inp.hitBy('confirm');
-      if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceChoice(this.hud.choiceSelected);
+      if (confirmedBy && confirmedBy !== 'touch' && this.choiceGuard.ready) this.resolvePresenceChoice(this.hud.choiceSelected);
       else if (inp.hit('back')) this.resolvePresenceChoice(-1);
     } else if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
       const confirmedBy = inp.hitBy('confirm');

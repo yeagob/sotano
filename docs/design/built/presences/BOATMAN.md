@@ -22,6 +22,10 @@ Built, in part. A dweller of letting go to move on. It waits by the deep water o
 - **Request (proposed, pending owner ruling):** the card also asks the player to stand, roll the shoulders and cross to the water and back, with the alternative of lifting the shoulders once while seated. Give or Keep decides, as before.
 - **Staying.** The Boatman stays on the shore for its idle window, a seeded 30 to 60 seconds, then leaves (pending owner ruling: the built version stayed for the floor). It does not offer again: it has met the player.
 
+## No crossing, no toll (PR #225 review)
+
+- The block is taken only when the ferry lands. If the Boatman's room has no island tile, its card says there is no far shore to cross to, nothing is taken and nothing is given, and it asks again after the player steps away. Rule in `boatmanCrossing` (`src/content/presences/consent.ts`), tested in `tests/presences-consent.test.ts`.
+
 ## Owed (not checked)
 
 - Checked in headless Chromium (seed 8, floor 4, a drowned nave): the card opens by the Boatman with the block in hand; Give (Enter) takes the block out of the hand, the player is carried to the island tile (the `K` tile, read through the room's flips, at the room's floor height) and the player lands there.

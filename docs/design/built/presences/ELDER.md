@@ -20,6 +20,10 @@ Built. A dweller of what was taught: it waits in one quiet room of one seeded fl
 - **Not now.** Nothing is taken or given. The Elder asks again only after the player steps away and returns.
 - **Staying.** The Elder keeps its place; its room is ordinary for the rest of the floor except for its presence.
 
+## The choice card's grace (PR #225 review)
+
+- The card opens with the first answer selected, so a confirm key or button pressed within 0.4 s of game time after it opens is ignored (`ChoiceGuard`, `src/content/presences/consent.ts`): a stray double confirm cannot pick a path. A click or tap on a named answer is deliberate and is not delayed. The same card serves the Elder, the Cartographer and the Listener's Lesson. The consent outcomes of every card (yes once, decline keeps everything, stale refuses, the Trickster and the Wanderer leave on decline) are pure rules there, tested in `tests/presences-consent.test.ts`.
+
 ## Owed (not checked in a browser)
 
 - The choice card with a gamepad (navigate on the d-pad, A to choose, B for Not now) and with touch (tap an answer). Only the keyboard path and the unit tests of the lesson were run in this pass; the preview tab of the in-app browser never finished loading.

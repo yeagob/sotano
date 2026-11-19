@@ -256,6 +256,7 @@ const messages = {
   'presence.boatman.name': 'The Boatman',
   'presence.boatman.1': 'The water is deep, and the far shore is for those who let go of this one.',
   'presence.boatman.2': 'Across you go. The gift is waiting on the island. I stay here.',
+  'presence.boatman.nocross': 'There is no far shore here to cross to. Keep what you carry.',
   'presence.boatman.silent': 'Not with that noise. The water hears only the quiet.',
   'presence.boatman.hint': 'Leave one block on the shore, and I will ferry you across the deep water.',
   'presence.offer.boatman.toll': 'Leave {item} on the shore for {presence} to ferry you across the deep water?',
