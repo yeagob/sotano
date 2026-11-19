@@ -14,14 +14,14 @@ Decision (the owner approved the Elder and the Child as presences on 2026-10-27)
 
 ## Defaults taken, proposed, pending owner ruling
 
-- **The room.** One seeded floor from floor 1, in a quiet normal room. The Cellar of Habits is not built; the room stands in for it.
+- **The room.** One seeded floor from floor 1, in a quiet normal room. The Cellar of Habits is that quiet room: no new room type (decided by agent, README D8).
 - **The gift.** A practice of quality one (weight 3) or one special heart (weight 1). Its weights are the Wanderer's, chosen again for the Child.
 - **The lines and the wording.** The English and Spanish lines and the consent card are first drafts, in `src/i18n/locales/`, for the owner's ear.
 - **The path.** No lesson is given: the build gives a gift, not a lesson of the Body or Emotion path. The rule for which path a build belongs to is not decided, so none is taken.
 
 ## What the design asks and is not built
 
-- **Lesson.** The build becoming a Lesson from the player's Body or Emotion path. Making transforms the maker. Not built; needs the owner's rule on the path.
+- **Lesson.** Built as one line in words after the gift, of no path (README, D8). The build becoming a Lesson of the Body or Emotion path still needs the owner's rule on the path.
 - **Request.** In the idle window, it asks the player to draw something, anything, never judged (see [Requests](REQUESTS.md)). Not built; the idle window is not built.
 - **Agreement.** Three loose cubes of different materials, to build a small tower (see [Agreements](AGREEMENTS.md)). Not built.
 - **Covenant.** It gives no piece of the Covenant (the design's four pieces come from other Presences).

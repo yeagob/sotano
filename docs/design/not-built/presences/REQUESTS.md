@@ -30,6 +30,12 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 7. No camera or microphone. Requests run on the player's own word.
 8. No request asks for longer than the idle window.
 
+## Decided by agent for #149 (pending owner ruling)
+
+- **The idle window.** Accepted as built: a seeded 30 to 60 seconds on game time (README D5).
+- **The trust meter.** Out of scope: there is no "Have you done it?" question to feed it (README D7).
+- **The reward table.** Accepted as built (README D6).
+
 ## Open questions
 
 - **Idle detection.** The game sees only input, not whether the player stepped away. The card must say so, and the game must not pretend otherwise.
@@ -44,3 +50,8 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 
 - Headless Chromium, the Elder's choice card opened through the game's own card call with its request: at 375 px the request line and its alternative show above the four paths and "Not now", the card is 323 px wide, and the page has no horizontal scroll. At 1280 px the card is 412 px wide. No page errors. Screenshots were checked by eye.
 - Not checked: choosing a path with the keyboard or a click on the live card, the Child's draw request on the build card, the idle window's end, the gamepad and touch paths, and the Covenant's line on a live exchange card.
+
+## Checked in the browser (issue #149, final pass)
+
+- Headless Chromium (Playwright, a sandbox room, the real game), English and Spanish, 1280 and 375 px: the idle window's end: a Gardener given a one-second window is in the room before and gone after the window runs out on game time. The codex in the menu lists the presences met with what each asks and gives. The Covenant's line on a live exchange card (the Listener's last Lesson with three pieces held) shows after the presence's own lines. No page errors, no horizontal scroll. See [built/presences/COVENANT.md](../../built/presences/COVENANT.md#checked-issue-149).
+- Not checked: the gamepad and touch paths on the cards, the Child's draw request on its build card, and a Give on the Gardener's live card (the window was started through the game's own timer, not by the exchange).

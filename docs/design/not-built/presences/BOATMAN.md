@@ -17,5 +17,5 @@ A dweller of letting go to move on. It lives in Zone II, by the deepest water. I
 
 - **Two ferries.** The Ferryback creature also carries the player across water in the design (see [Water and ferry](../creatures/WATER-AND-FERRY.md)). The Boatman carries in the build; the Ferryback does not.
 - **Toll.** The floor's boss has a toll too (see [Fight flow](../../built/bosses/FIGHT-FLOW.md#8-the-toll)). Two tolls must read as different.
-- **Pocket.** A pocket that the nave's island cannot give. A levels ruling is needed before a room of its own is drawn (the levels skill must be asked).
+- **Pocket.** Decided by agent (README D12): the nave's island stays the pocket, the template is not changed. A pocket that the nave's island cannot give. A levels ruling is needed before a room of its own is drawn (the levels skill must be asked).
 - **Placement.** A run meets the Boatman only when floors 3 and 4 hold a drowned nave (pending a ruling on a fixed Zone II room).

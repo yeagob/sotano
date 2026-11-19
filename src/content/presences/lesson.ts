@@ -38,3 +38,8 @@ export const LAST_LESSON_FLOOR: number = (() => {
 export function lessonGivesLight(floor: number): boolean {
   return floor === LAST_LESSON_FLOOR;
 }
+
+/** The Child's Lesson (docs/design/built/presences/CHILD.md, decided by agent, pending owner ruling): one line after its
+ *  gift, of no path. The design left the path of a build (Body or Emotion) to the owner, so the Lesson names none, gives no
+ *  item and draws no randomness: the gift's table is unchanged. */
+export const CHILD_LESSON: MessageKey = 'presence.child.lesson';

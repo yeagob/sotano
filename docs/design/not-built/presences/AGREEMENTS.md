@@ -55,6 +55,12 @@ Each of these is a proposal. None is built, and the reason is what the build lac
 | The Mender | Three shards of different essences | Built as one part for a quality-three practice or a special heart (proposed default). Three shards need a multi-part card, owed to the owner |
 | The Witness | One part of each pattern released | Needs the Silence below floor 9 and the parts of every pattern (not built) |
 
+## Decided by agent for #149 (pending owner ruling)
+
+- **Multi-part cards.** Not built; every card names one object (README D11).
+- **Materials.** No root, moss or zone ores (README D13).
+- **The readings k to o.** Accepted as built (README D6).
+
 ## Owed to the owner
 
 - **Multi-part cards.** The Child, the Mender and the Witness ask for several objects in the design. The build asks for one at a time. Decide whether a card may name several objects, and how the confirmation lists them.

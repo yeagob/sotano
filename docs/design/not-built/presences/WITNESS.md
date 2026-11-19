@@ -15,7 +15,7 @@ A dweller of seeing without judging. In the design it waits in the silence below
 
 ## Open questions
 
-- **The Silence.** The place below floor 9 is not built. The Witness stands in a quiet room of floor 9 until it is (the loop to heaven is a milestone, L4). Proposed, pending owner ruling; a ruling on the place is needed before the Silence is a floor.
+- **The Silence.** The place below floor 9 is not built. The Witness stands in a quiet room of floor 9 until it is (the loop to heaven is a milestone, L4). Decided by agent (README D2): the Silence is not built in #149 and the vertical layout is not changed; a levels ruling is needed before the Silence is a floor.
 - **The hexagram.** A reading by hexagram needs a source check before any text is written (see the [lore library](../../../lore/README.md)).
 - **Parts.** A part of each pattern is only possible if the player has released that pattern. A run that released none needs a line of its own.
 - **Gift.** The built weights (three practices of quality two to one special heart) and the Seal's place in the Covenant are proposed, pending owner ruling.

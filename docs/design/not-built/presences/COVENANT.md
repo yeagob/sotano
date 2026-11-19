@@ -2,7 +2,7 @@
 
 # The Covenant
 
-Status: **partly built** (issue #149, see [built/presences/COVENANT.md](../../built/presences/COVENANT.md)). The set effect is decided (every Presence remembers the player in the run, owner 2026-10-27). The record, three of the four pieces and the set effect are built. The Light and the closed-set reading are not.
+Status: **built** (issue #149, see [built/presences/COVENANT.md](../../built/presences/COVENANT.md)). The set effect is decided (owner 2026-10-27). The record, the four pieces, the closed-set rule and the set effect are built; the closed-set reading and the Light's floor are decided by agent, pending owner ruling (README, D3 and D4). What remains here is the wording.
 
 The Covenant is a closed set of four pieces, given only by four presences. No other source gives them: no shop, no drop, no other presence. Each piece comes from one presence, and each has a meaning.
 
@@ -11,7 +11,7 @@ The Covenant is a closed set of four pieces, given only by four presences. No ot
 | Thread | The Mender | Repair that holds | built: given on a Give |
 | Page | The Elder | The rule the player chose to keep | built: given with the lesson |
 | Seal | The Witness | Seeing and keeping | built: given on a Take |
-| Light | The Listener, after its last Lesson | What was heard | not built (the Lesson is not built) |
+| Light | The Listener, after its last Lesson | What was heard | built: the Lesson on floor 5 |
 
 Holding all four completes the Covenant. Its set effect: every Presence remembers the player in the run.
 
@@ -24,8 +24,5 @@ Holding all four completes the Covenant. Its set effect: every Presence remember
 
 ## Open questions
 
-- **The Light.** The Listener's Lesson is not built. Until it is, the Covenant cannot be completed in the game, and the set effect is only reachable by a pure record (tests). Owed to the owner: the Lesson's design, then the Light's rule.
-- **Dependencies.** The Mender, the Elder and the Witness are built now; the Listener's Lesson is not.
-- **Closed set.** The owner's word "cierre" is read as a closed set. That reading (the owner's answer l in the design's section 13) is still to be confirmed.
-- **Promise.** Each piece is a gift with the promised trait (see [Gifts](GIFTS.md)). Once shown, a piece must not be lost by any rule.
 - **Wording.** "Every Presence remembers you" is said in one line on each card. The owner has not approved the line's text (en: "You have kept the Covenant. I remember you now."; es: "Has guardado el Pacto. Ahora te recuerdo.").
+- **Closed set and the Light.** Decided by agent, pending owner ruling (README, D3 and D4).

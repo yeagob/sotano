@@ -13,6 +13,11 @@ A dweller of knowing where you stand. In the design it lives in the central eman
 - **The hidden pocket.** The design lets the player mark a hidden pocket too. The build marks a vault or a boss only; the pocket is not built.
 - **Agreement.** One ore from every zone the player crossed, to chart the floor (see [Agreements](AGREEMENTS.md)).
 
+## Decided by agent (pending owner ruling)
+
+- **Materials.** No ores as materials in #149; the Cartographer marks in words (README D13).
+- **The star map.** Built later (README D15).
+
 ## Open questions
 
 - **Dialogue.** The question-for-question exchange grows into the dialogue system (see [Dialogue](DIALOGUE.md)); the build has one question with answers.

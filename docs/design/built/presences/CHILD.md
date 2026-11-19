@@ -6,6 +6,7 @@ Built. A dweller of play: it waits in one quiet room of one seeded floor per run
 
 - **Pattern:** permission to make something badly.
 - **Health:** one point, which nothing removes (as every presence).
+- **Lesson (decided by agent, pending owner ruling).** After its gift, the card adds one line: making something changes the one who makes it. Words only, of no path; the gift's table is unchanged (`CHILD_LESSON` in `src/content/presences/lesson.ts`).
 - **Kind:** a dweller. It keeps its place for the floor, and it is always joyful: its lines and its silence never cry.
 
 ## Where it is

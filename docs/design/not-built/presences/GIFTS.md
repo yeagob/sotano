@@ -20,6 +20,8 @@ The tables of the built presences (all rolled from the `drops` stream when the o
 
 The Trickster's gift is a practice, not the Trickster's Coin of the tier list below; the coin is not built.
 
+Decided by agent for #149 (README D6): the tables above are accepted as built, pending the owner's ear.
+
 ## Tiers
 
 | Tier | Gift names (proposals) | Given by |

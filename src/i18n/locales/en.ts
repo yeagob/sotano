@@ -240,6 +240,7 @@ const messages = {
   'presence.child.name': 'The Child',
   'presence.child.1': 'Look, a tower! One block on top of another.',
   'presence.child.2': 'You made it. Now it is yours, and so is what I made with you.',
+  'presence.child.lesson': 'It does not have to be good. Making something changes the one who makes it.',
   'presence.child.silent': 'Not that one. Build something with me instead.',
   'presence.child.hint': 'Want to build something with me? Place three blocks while I watch.',
   'presence.child.start': 'Yes! Three blocks, any way you like. I am watching.',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LAST_LESSON_FLOOR, LESSON_PATHS, LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../src/content/presences/lesson';
+import { CHILD_LESSON, LAST_LESSON_FLOOR, LESSON_PATHS, LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../src/content/presences/lesson';
 import { NO_COVENANT, keepPiece, holdsPiece } from '../src/content/presences/covenant';
 import { rollListenerGift } from '../src/content/tables/heart-gifts';
 import { RunRandom } from '../src/core/rng';
@@ -42,8 +42,8 @@ describe("the Listener's Lesson and the Covenant's Light (LISTENER.md, decided b
     expect(a).toEqual(b);
   });
 
-  it('every Lesson line and the Light line exist in English and Spanish', () => {
-    for (const key of [...LESSON_PATHS.map(lessonLine), 'presence.listener.light'] as const) {
+  it('every Lesson line, the Light line and the Covenant labels exist in English and Spanish', () => {
+    for (const key of [...LESSON_PATHS.map(lessonLine), 'presence.listener.light', CHILD_LESSON, 'covenant.title', 'covenant.promised', 'covenant.piece.thread', 'covenant.piece.page', 'covenant.piece.seal', 'covenant.piece.light', 'covenant.from.thread', 'covenant.from.page', 'covenant.from.seal', 'covenant.from.light'] as const) {
       expect((EN.messages as Record<string, string>)[key]).toBeTruthy();
       expect((ES.messages as Record<string, string>)[key]).toBeTruthy();
     }

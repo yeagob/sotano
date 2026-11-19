@@ -14,6 +14,7 @@ A dweller of seeing the whole. In the design it lives on the Leaves at the top o
 
 ## Open questions
 
+- **Decided by agent (README D14, D15).** The Leaves are not a room, and the star map is built later.
 - **The Tree.** The Leaves are not built as a place a presence can stand (milestone L3 of the Tree, not built).
 - **The map.** The star map does not exist yet, and neither do the teleport doors.
 - **Constellations.** The shape of a constellation is a view of the items the player holds. Decide whether it is a map or a picture. Art need: an abstract shape of stars for the body and for the view (not drawn; listed for the art agent).

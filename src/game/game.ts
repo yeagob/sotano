@@ -93,7 +93,7 @@ import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
 import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
-import { LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
+import { CHILD_LESSON, LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
 import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
@@ -3777,7 +3777,8 @@ export class Game {
     this.meet(e);
     this.dropPresenceReward('child', e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-    this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines));
+    // the Child's Lesson (CHILD.md, decided by agent): one line in words, of no path, after its gift
+    this.hud.presenceCard(talk.name, this.exchangeLines([...talk.lines, CHILD_LESSON]));
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */

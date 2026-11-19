@@ -7,6 +7,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- The Child now adds one Lesson in words to its card after its gift (#149).
 - The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).
 - The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. Its last Lesson, on floor 5, gives the Covenant's Light, so the Covenant can now be completed in play (#149).
 - The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. The Light comes from The Listener's last Lesson. Once all four are held, every presence remembers you in its card (#149).

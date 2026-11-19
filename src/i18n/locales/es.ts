@@ -214,6 +214,7 @@ export const ES: Catalog = {
     'presence.child.name': 'El Niño',
     'presence.child.1': '¡Mira, una torre! Un bloque encima de otro.',
     'presence.child.2': 'Lo has hecho. Ahora es tuyo, y también lo que hice contigo.',
+    'presence.child.lesson': 'No tiene que quedar bien. Hacer algo cambia a quien lo hace.',
     'presence.child.silent': 'Ese no. Construyamos otra cosa juntos.',
     'presence.child.hint': '¿Quieres construir algo conmigo? Pon tres bloques mientras miro.',
     'presence.child.start': '¡Sí! Tres bloques, como quieras. Estoy mirando.',
