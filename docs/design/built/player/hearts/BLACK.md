@@ -36,7 +36,7 @@ While the player holds at least one black heart, a toxic aura surrounds them.
 
 - Its meaning and story sentence are not settled. The owner should name it and confirm the look (the art ledger, DECISIONS §10.6, lists it as proposed).
 - The chance range is a proposal: 1 % to 2 %, the rarest of the common kinds, rarer than blue and stone.
-- The name stays "black heart" in the code and in the player's text; the owner called it the toxic heart in #178 and should confirm which name the player reads.
+- The player reads it as "toxic heart" (commit 7487160, the owner's word in #178). The code keeps the identifiers "black"; the owner confirms the name.
 - The aura (#178) does not break blocks: a field that eats blocks two blocks around the player would dig the floor out from under them, cut through every wall they walk past, and roll crate loot for free. Mining stays the intention's job. It hurts hostile projections only and never friendly or neutral actors, and its numbers (2 blocks, 3 points a second) are a proposal for the owner to tune.
 
 Code: `src/entities/hearts.ts` (`LayerKind`, `isLayer`, `hasLayerRoom`, `landHit`, the aura's `TOXIC_*`, `toxic`, `toxicHits`), `src/content/tables/hearts.ts` (the chance range and the roll), `src/content/heart-art.ts` (the look and the pickup), `src/content/palette.ts` (`heart.black.*`), `src/content/hud-icons.ts` (`heartBlack`), `src/game/game.ts` (`collectHeart`, `heartLost`, `toxicAura`), `src/audio/sfx.ts` (`sfxHeart.black`, `sfxHeart.blackAura`). Tests: `tests/hearts.test.ts` (`black heart aura (#178)`).

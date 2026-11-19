@@ -190,7 +190,7 @@ const messages = {
   'heart.blue': 'Blue heart: one more heart, lost for good once spent.',
   'heart.blueLost': 'The blue heart is gone.',
   'heart.black': 'Toxic heart: one more heart, lost for good once spent. While you hold it, it hurts projections within two blocks.',
-  'heart.blackLost': 'The black heart is gone.',
+  'heart.blackLost': 'The toxic heart is gone.',
   'heart.stone': 'Stone heart: while it takes the blows, every hit is halved.',
   'heart.stoneLost': 'The stone heart crumbles. Hits land whole again.',
   'heart.blood': 'Blood heart: you heal slowly, up to two hearts. A hit ends it.',
