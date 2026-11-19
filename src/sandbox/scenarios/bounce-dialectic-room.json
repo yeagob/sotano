@@ -1,0 +1,21 @@
+{
+  "note": "Dialectic with Bounce Back in a sealed room of stone walls: one shot makes at most four intentions (three splits) and settles",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [6, 0, 3],
+  "god": true,
+  "items": ["dialectic", "bounceback"],
+  "ticks": 300,
+  "report": [0, 60, 300],
+  "actions": [
+    { "t": 0, "do": "look", "at": [12, 1, 3] },
+    { "t": 0, "do": "fire", "ticks": 30 }
+  ]
+}

@@ -829,6 +829,10 @@ const messages = {
   'teach.menders-thread.lesson': 'A repair does not have to hide the break. What you mended can be the strongest part of you, and the seam is the honest record of it.',
   'teach.visualization.quote': 'See it clearly first, and your body knows the way.',
   'teach.visualization.lesson': 'Before something important, close your eyes and rehearse it in detail: the place, the steps, how it feels to do it well. Include what might go wrong and how you would answer. Then go and do it.',
+  'teach.dialectic.quote': 'Set two ideas against each other, and each one shows you its other side.',
+  'teach.dialectic.lesson': 'When two of your beliefs clash, do not pick a winner at once. Write each one in its strongest form, then look for what both get right. Each side you examine becomes a new idea you can work with.',
+  'teach.reframing.quote': 'A setback looked at again can point the way.',
+  'teach.reframing.lesson': 'When something goes wrong, ask what else it could mean and what it might teach you. Write the explanation you would give a friend, then ask which one helps you act. Choose the view that opens the next step.',
 
   // ── paths (item tags) ──
   'path.body': 'body',

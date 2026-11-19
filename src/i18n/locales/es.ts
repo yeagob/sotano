@@ -827,6 +827,10 @@ export const ES: Catalog = {
     'teach.menders-thread.lesson': 'Una reparación no tiene por qué ocultar la rotura. Lo que reparaste puede ser lo más fuerte de ti, y la costura es su registro honesto.',
     'teach.visualization.quote': 'Míralo claro primero, y tu cuerpo conoce el camino.',
     'teach.visualization.lesson': 'Antes de algo importante, cierra los ojos y ensáyalo con detalle: el lugar, los pasos, cómo se siente hacerlo bien. Incluye lo que podría salir mal y cómo responderías. Luego ve y hazlo.',
+    'teach.dialectic.quote': 'Pon dos ideas frente a frente, y cada una te muestra su otro lado.',
+    'teach.dialectic.lesson': 'Cuando dos de tus creencias chocan, no elijas un ganador de inmediato. Escribe cada una en su forma más fuerte y busca lo que ambas tienen de cierto. Cada lado que examinas se convierte en una idea nueva con la que puedes trabajar.',
+    'teach.reframing.quote': 'Un revés mirado de nuevo puede señalar el camino.',
+    'teach.reframing.lesson': 'Cuando algo sale mal, pregúntate qué más podría significar y qué podría enseñarte. Escribe la explicación que le darías a un amigo y pregúntate cuál te ayuda a actuar. Elige la mirada que abre el siguiente paso.',
 
     'path.body': 'cuerpo',
     'path.mind': 'mente',
@@ -1323,6 +1327,18 @@ export const ES: Catalog = {
         description: 'Míralo antes de hacerlo: las intenciones vuelan más lejos y más rápido.',
         effect: 'Distancia ×1,6: las intenciones vuelan rectas durante más tiempo. Velocidad de disparo +30 %.',
         inspiredBy: 'el ensayo mental en la psicología del deporte',
+      },
+      dialectic: {
+        name: 'Dialéctica',
+        description: 'Cada choque de ideas da a luz a dos nuevas.',
+        effect: 'Las intenciones rebotan una vez más. Cada rebote las divide en dos que van en direcciones opuestas, cada una con la mitad de daño (como máximo dos veces por disparo).',
+        inspiredBy: 'el método dialéctico (Hegel; el diálogo socrático)',
+      },
+      reframing: {
+        name: 'Reencuadre',
+        description: 'Mirado de nuevo, un revés señala lo que importa.',
+        effect: 'Las intenciones rebotan una vez más. Tras cada rebote, una intención gira hacia la proyección más cercana a menos de 8 bloques y hace +25 % de daño.',
+        inspiredBy: 'el reencuadre cognitivo (terapia cognitiva)',
       },
     },
 

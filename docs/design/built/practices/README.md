@@ -26,6 +26,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 |---|---|---|---|
 | [Dr. Launcher](milagros/DR-LAUNCHER.md) | Miracles | 3 | treasure rooms |
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
+| [Dialectic](mind/DIALECTIC.md) | Mind | 3 | treasure rooms |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
 | [Grounding](body/GROUNDING.md) | Body | 1 | treasure rooms |
@@ -40,6 +41,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Dual Process](mind/DUAL-PROCESS.md) | Mind | 2 | treasure rooms |
 | [Follow the Omens](mind/FOLLOW-THE-OMENS.md) | Mind | 2 | treasure rooms |
 | [Growth Mindset](mind/GROWTH-MINDSET.md) | Mind | 1 | treasure rooms, boss rewards |
+| [Reframing](emotion/REFRAMING.md) | Emotion | 3 | treasure rooms |
 | [Resonance](mind/RESONANCE.md) | Mind | 3 | treasure rooms |
 | [Second Brain](mind/SECOND-BRAIN.md) | Mind | 3 | treasure rooms |
 | [Socratic Questioning](mind/SOCRATIC-QUESTIONING.md) | Mind | 1 | treasure rooms |
@@ -74,7 +76,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 ## How a practice is filed
 
 - **Folder.** A practice sits in the folder of the first path tag its code lists. The other path tags are in its document under *Path* and in the folder's table under *Also on*. Satori carries all four paths and sits in body.
-- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 11 at quality 3, 9 at quality 4.
+- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 13 at quality 3, 9 at quality 4.
 - **Found in.** Treasure rooms, boss rewards and the vault room. A vault is a room type with a richer pedestal; the deepest floors keep none (`src/world/floor.ts`).
 - **Credit.** Every practice names its inspiration, as the STORY and SOURCES documents do. The credit is not the name: the name is a generic technique or concept, or the title of a public-domain work ([NAMING](../story/NAMING.md)).
 
@@ -84,6 +86,7 @@ Like in Isaac, two practices replace the intention. Remember Breathing turns it 
 
 ## Synergies and states of being
 
+- [The Bounce family](BOUNCE.md): Bounce Back, Dialectic and Reframing, the three practices that act when an intention rebounds, and the event they share.
 - [Synergies](synergies/README.md): six combinations of two practices, built in `src/content/synergies.ts`.
 - [States of being](states-of-being/README.md): the four states, reached by holding three practices of one path. They are also synergies in code, with a tag-count requirement.
 

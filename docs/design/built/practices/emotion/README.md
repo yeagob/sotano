@@ -21,6 +21,7 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 | [Affirmation](AFFIRMATION.md) | 3 | none | treasure rooms |
 | [Rapport](RAPPORT.md) | 2 | none | treasure rooms |
 | [Self-Compassion](SELF-COMPASSION.md) | 2 | none | treasure rooms |
+| [Reframing](REFRAMING.md) | 3 | none | treasure rooms |
 | [Mender's Thread](MENDERS-THREAD.md) | 3 | none | the Mender only, once a run (promised) |
 
 ## Also on this path (first path tag elsewhere)

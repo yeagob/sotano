@@ -23,6 +23,7 @@ The folder holds the practices whose first path tag is mind. Practices that also
 | [Aha Moment](AHA-MOMENT.md) | 2 | none | treasure rooms |
 | [Chunking](CHUNKING.md) | 3 | none | treasure rooms |
 | [Dual Process](DUAL-PROCESS.md) | 2 | none | treasure rooms |
+| [Dialectic](DIALECTIC.md) | 3 | none | treasure rooms |
 | [Resonance](RESONANCE.md) | 3 | none | treasure rooms |
 | [Thought Stopping](THOUGHT-STOPPING.md) | 3 | none | treasure rooms |
 | [Triangulation](TRIANGULATION.md) | 4 | none | treasure rooms, vault rooms |

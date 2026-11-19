@@ -121,6 +121,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
 | `roomClear` | `drops` | a room cleared |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
+| `intentBounce` | `vx, vy, vz` (the reflected velocity), `intent` (the spec), `launch` (new intentions) — react or modify, cannot cancel | an intention rebounds off a block: `x, y, z` the bounce point, `nx, ny, nz` the face normal, `bounce` the rebound number (1 for its first). Intentions added to `launch` join after the frame's walk, so launching from here is safe |
 | `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
 | `pageReached` | — (react) | a run's end advanced the Roots' page (`page`, the new current page); once per run, never in the sandbox |
 | `bossOvercome` | — (react) | a floor's boss was overcome, once per boss room (`boss`, `floor`, `how`: `destroyed` when its health reached zero, `converted` when it turned to your side, `stillness` for the Shadow's own ending, which is a turning) |

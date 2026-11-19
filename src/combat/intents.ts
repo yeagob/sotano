@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { BASE_STATS, type Stats } from '../core/stats';
-import type { IntentSpec } from '../game/events';
+import type { IntentBounce, IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import type { Polarity } from './polarity';
 
@@ -44,6 +44,8 @@ const NO_NORMAL = new THREE.Vector3();
 const MIRROR_CALM = 0.25;
 
 interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null;
+  /** Rebounds this intention has made so far (the `bounce` number of `intentBounce`). */
+  rebounds: number;
   /** The look, cached for `lookOf` (the spec it was built from, so a spent pierce, phase or bounce rebuilds it). */
   look: IntentLook; lookSpec: IntentSpec }
 
@@ -132,10 +134,15 @@ export interface IntentHooks {
   quenched?(p: THREE.Vector3): void;
   hit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, spec: IntentSpec): void;
   nearestBlock(p: THREE.Vector3, r: number): THREE.Vector3 | null;
+  /** An intention rebounded off a block. Hooks may change `vx, vy, vz` and the spec; `launch` adds intentions. */
+  bounced?(b: IntentBounce): void;
 }
 
 export class Intents {
   private list: Intent[] = [];
+  /** Intentions launched while `list` is being walked (from a hook): they join after the walk, never inside it. */
+  private launching: { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; rebounds: number }[] = [];
+  private walking = false;
   private mesh: THREE.InstancedMesh;
   /** A bead of light (docs/art/DECISIONS.md §7.1): white-hot core, gold shell, an ember halo. */
   private core: THREE.InstancedMesh;
@@ -171,6 +178,7 @@ export class Intents {
   /** Drops every intention in flight and hides its meshes (a passage between worlds). */
   clear() {
     this.list = [];
+    this.launching = [];
     this.draw();
   }
 
@@ -185,9 +193,29 @@ export class Intents {
   }
 
   private push(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
-    if (this.list.length >= this.max) this.list.shift();
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, look: intentLook(spec), lookSpec: spec });
+    this.enqueue(spec, from.clone(), vel, 0);
+  }
+
+  /** Adds an intention now, or after the walk when a hook launches it during the walk (the list must not change under it). */
+  private enqueue(spec: IntentSpec, pos: THREE.Vector3, vel: THREE.Vector3, rebounds: number) {
+    if (this.walking) this.launching.push({ spec, pos, vel, rebounds });
+    else this.add(spec, pos, vel, rebounds);
+  }
+
+  private add(spec: IntentSpec, pos: THREE.Vector3, vel: THREE.Vector3, rebounds: number) {
+    if (this.list.length >= this.max) this.list.shift();
+    this.list.push({ spec, pos, vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, rebounds, look: intentLook(spec), lookSpec: spec });
+  }
+
+  /** The rebound of an intention: the hooks see it, then its velocity is what they left. */
+  private rebound(t: Intent, p: THREE.Vector3, normal: THREE.Vector3): IntentBounce {
+    const b: IntentBounce = {
+      intent: t.spec, x: p.x, y: p.y, z: p.z, vx: t.vel.x, vy: t.vel.y, vz: t.vel.z,
+      nx: normal.x, ny: normal.y, nz: normal.z, bounce: t.rebounds, launch: [],
+    };
+    this.hooks.bounced?.(b);
+    return b;
   }
 
   within(test: (p: THREE.Vector3) => boolean): number {
@@ -209,6 +237,7 @@ export class Intents {
 
   update(dt: number) {
     const h = this.hooks;
+    this.walking = true;
     for (let i = this.list.length - 1; i >= 0; i--) {
       const t = this.list[i];
       t.age += dt;
@@ -283,13 +312,23 @@ export class Intents {
             const along = t.vel.dot(normal);
             t.vel.addScaledVector(normal, -2 * along).multiplyScalar(BOUNCE_KEEP);
             t.spec = { ...t.spec, bounces: t.spec.bounces - 1 };
+            t.rebounds += 1;
             t.pos.copy(hitPos).addScaledVector(normal, PHASE_NUDGE);
+            const b = this.rebound(t, hitPos, normal);
+            t.vel.set(b.vx, b.vy, b.vz);
+            for (const l of b.launch) {
+              const at = hitPos.clone().addScaledVector(normal, PHASE_NUDGE);
+              this.enqueue(l.spec, at, new THREE.Vector3(l.vx, l.vy, l.vz), l.bounce);
+            }
             break;
           } else dead = true;
         }
       }
       if (dead || t.age > 6) this.list.splice(i, 1);
     }
+    this.walking = false;
+    for (const l of this.launching) this.add(l.spec, l.pos, l.vel, l.rebounds);
+    this.launching = [];
     this.draw();
   }
 

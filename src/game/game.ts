@@ -528,6 +528,7 @@ export class Game {
       quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
       hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
       nearestBlock: (p, r) => this.nearestSolid(p, r),
+      bounced: b => { this.bus.emit('intentBounce', b); },
     });
     this.api = this.makeApi();
     this.weaponHost = this.makeWeaponHost();
