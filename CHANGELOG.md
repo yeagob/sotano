@@ -7,6 +7,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- The Witness, a messenger that waits in a quiet room of the ninth floor. It offers one gift: a practice of quality two, or a special heart. Take gives it and it leaves; decline keeps everything (#149).
+- The Boatman, a dweller by the drowned nave of floor 3 or 4. For one block you leave on the shore, it ferries you across the deep water to the island, where its gift lies: a practice of quality two, or a special heart. It stays (#149).
 - The Child, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks you to place three blocks while it watches; Take starts the build and Decline costs nothing. When three blocks are placed it gives one gift: a practice of quality one, or a special heart. It stays (#149).
 - The Trickster, a messenger that waits on one floor of each run from floor 3 down, in a quiet dead end. It offers a trade: one heart for a practice of quality three. Nothing is taken unless you confirm; declining costs nothing (#149).
 - The Echo: when a run ends in death, the Echo waits on the deepest floor that run reached, in the next run that reaches it, once. It asks for one part you carry and gives back a key or a bomb. Declining costs nothing (#149).

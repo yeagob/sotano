@@ -21,7 +21,7 @@ import { AIR, MAT, mat, MATERIALS } from '../content/materials';
 import {
   DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
-import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
+import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { heartTollPlan, tollIndex } from './toll';
@@ -97,7 +97,7 @@ import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/ro
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift, rollWitnessGift, rollBoatmanGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
@@ -154,6 +154,9 @@ function makeStars(): THREE.Points {
 }
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
+
+/** The seconds the Boatman's ferry takes to carry the player to the island (BOATMAN.md, proposed). */
+const BOATMAN_FERRY_S = 1.6;
 const PART_DROP_DELAY = 0.6;
 const COUNTER_CAP = 99;
 /** The sandbox's fixed step (seconds). */
@@ -1851,8 +1854,8 @@ export class Game {
     this.launchGiftPickups(e, [{ type: 'heart', heart }]);
   }
 
-  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind } | { type: 'key' | 'bomb' })[]) {
-    const b = e.body, player = this.player.body;
+  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind } | { type: 'key' | 'bomb' })[], at?: { x: number; y: number; z: number }) {
+    const b = at ?? e.body, player = this.player.body;
     const base = Math.atan2(b.z - player.z, b.x - player.x);
     rewards.forEach((reward, i) => {
       const angle = base + (i - (rewards.length - 1) / 2) * 0.6;
@@ -3565,6 +3568,8 @@ export class Game {
 
     // the Child's two answers: the consent to build, and later the gift (acceptChild)
     if (pending.id === 'child') { this.acceptChild(e); return; }
+    // the Boatman's toll: one block left on the shore, then the ferry and its gift (acceptBoatman)
+    if (pending.id === 'boatman') { this.acceptBoatman(e, pending.index); return; }
 
     // a gift asks for no part: nothing leaves the hand
     if (pending.index >= 0) {
@@ -3635,7 +3640,7 @@ export class Game {
 
   /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
    *  15/75/10 table is unchanged (LISTENER.md); the Trickster's and the Echo's are seeded weighted tables (their docs). */
-  private dropPresenceReward(id: PresenceId, e: Enemy) {
+  private dropPresenceReward(id: PresenceId, e: Enemy, at?: { x: number; y: number; z: number }) {
     const rng = this.rng.stream('drops');
     if (id === 'listener') return this.dropListenerReward(e);
     if (id === 'trickster') this.launchGiftPickups(e, [{ type: 'item', item: rollTricksterPractice(rng) }]);
@@ -3646,8 +3651,40 @@ export class Game {
     } else if (id === 'child') {
       const gift = rollChildGift(rng);
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'witness') {
+      const gift = rollWitnessGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+    } else if (id === 'boatman') {
+      // the gift lies on the island the Boatman ferried the player to (at), not by the shore
+      const gift = rollBoatmanGift(rng);
+      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }], at);
     }
     sfx3.reveal();
+  }
+
+  /** The island of a room's template: its 'K' tile, read through the room's flips, on the floor's height. Null when the
+   *  template has none (the Boatman's nave has one, BOATMAN.md). */
+  private landingOf(room: RoomInfo): { x: number; y: number; z: number } | null {
+    const t = ROOM_TEMPLATES.find(tp => tp.id === room.template);
+    if (!t) return null;
+    for (let r = 0; r < t.rows.length; r++) for (let c = 0; c < t.rows[r].length; c++) {
+      if (cellAt(t, c, r, room.flipX, room.flipZ) === 'K') return { x: room.x0 + c + 0.5, y: room.y0 + 1, z: room.z0 + r + 0.5 };
+    }
+    return null;
+  }
+
+  /** The Boatman's exchange (BOATMAN.md, proposed): one block is left on the shore, the Boatman ferries the player across
+   *  the deep water to the island, and the gift lies there. It stays (a dweller). */
+  private acceptBoatman(e: Enemy, index: number) {
+    const room = this.rooms.get(e.room);
+    const landing = room ? this.landingOf(room) : null;
+    this.player.removeAt(index);
+    this.hands.placed();
+    e.tags.add('met');
+    if (landing) this.player.carry(landing, BOATMAN_FERRY_S);
+    this.dropPresenceReward('boatman', e, landing ?? undefined);
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(PRESENCE_TALK.boatman.name, PRESENCE_TALK.boatman.lines);
   }
 
   /** The Child's two answers. The first is the consent: from this count of placed blocks on, the Child watches the player

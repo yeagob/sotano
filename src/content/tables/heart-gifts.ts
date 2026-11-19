@@ -105,6 +105,35 @@ export const CHILD_HEART_TABLE = table<RareHeart>('child-heart', 'runtime',
   GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
 );
 
+// The Witness's gift (docs/design/built/presences/WITNESS.md, proposed pending the owner's ruling): the last gift of the
+// depths, tier 2. Three draws in four give a practice of quality two; one in four gives one special heart (an even draw
+// of the five kinds).
+type TierTwoKind = 'practice' | 'heart';
+export const WITNESS_GIFT_TABLE = table<TierTwoKind>('witness-gift', 'runtime', [
+  { value: 'practice', weight: 3 },
+  { value: 'heart', weight: 1 },
+]);
+const QUALITY_TWO = ITEMS.filter(item => item.quality === 2);
+export const WITNESS_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('witness-practice', 'runtime',
+  QUALITY_TWO.map(item => ({ value: item, weight: 1 })),
+);
+export const WITNESS_HEART_TABLE = table<RareHeart>('witness-heart', 'runtime',
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
+);
+
+// The Boatman's gift (docs/design/built/presences/BOATMAN.md, proposed pending the owner's ruling): the tier 2 gift of
+// the far island. The same weights as the Witness's, its own tables.
+export const BOATMAN_GIFT_TABLE = table<TierTwoKind>('boatman-gift', 'runtime', [
+  { value: 'practice', weight: 3 },
+  { value: 'heart', weight: 1 },
+]);
+export const BOATMAN_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('boatman-practice', 'runtime',
+  QUALITY_TWO.map(item => ({ value: item, weight: 1 })),
+);
+export const BOATMAN_HEART_TABLE = table<RareHeart>('boatman-heart', 'runtime',
+  GIFT_HEART_KINDS.map(heart => ({ value: heart, weight: 1 })),
+);
+
 export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   LISTENER_GIFT_TABLE,
   HEALTH_PRACTICE_TABLE,
@@ -122,6 +151,12 @@ export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   CHILD_GIFT_TABLE,
   CHILD_PRACTICE_TABLE,
   CHILD_HEART_TABLE,
+  WITNESS_GIFT_TABLE,
+  WITNESS_PRACTICE_TABLE,
+  WITNESS_HEART_TABLE,
+  BOATMAN_GIFT_TABLE,
+  BOATMAN_PRACTICE_TABLE,
+  BOATMAN_HEART_TABLE,
 ];
 
 function roll<T>(source: Table<T>, rng: Rng): T {
@@ -162,6 +197,18 @@ export function rollWandererGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)
 export function rollChildGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
   if (roll(CHILD_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(CHILD_PRACTICE_TABLE, rng) };
   return { kind: 'heart', heart: roll(CHILD_HEART_TABLE, rng) };
+}
+
+/** The Witness's gift (WITNESS_GIFT_TABLE): a practice of quality two, or one special heart. */
+export function rollWitnessGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
+  if (roll(WITNESS_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(WITNESS_PRACTICE_TABLE, rng) };
+  return { kind: 'heart', heart: roll(WITNESS_HEART_TABLE, rng) };
+}
+
+/** The Boatman's gift (BOATMAN_GIFT_TABLE): a practice of quality two, or one special heart. */
+export function rollBoatmanGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)[number] } | { kind: 'heart'; heart: RareHeart } {
+  if (roll(BOATMAN_GIFT_TABLE, rng) === 'practice') return { kind: 'item', item: roll(BOATMAN_PRACTICE_TABLE, rng) };
+  return { kind: 'heart', heart: roll(BOATMAN_HEART_TABLE, rng) };
 }
 
 // The Elder's lesson (docs/design/built/presences/ELDER.md, proposed pending owner ruling): the path the player chose

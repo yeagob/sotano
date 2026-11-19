@@ -13,20 +13,23 @@ import wanderer from './wanderer';
 import elder from './elder';
 import cartographer from './cartographer';
 import child from './child';
+import witness from './witness';
+import boatman from './boatman';
 
-export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer' | 'child';
+export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer' | 'child' | 'witness' | 'boatman';
 
 export type RoomPresence = PresenceId | 'boundary';
 
-export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer, child];
+export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer, child, witness, boatman];
 export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.map(p => [p.id, p]));
 
 /** What a presence takes: one kind of monster part, any part (the Echo asks for any part in hand), or nothing (the
  *  Wanderer offers a gift, and asks for no part). */
-export type PresenceKey = PartKind | 'any' | 'none';
+export type PresenceKey = PartKind | 'any' | 'none' | 'block';
 
 export const PRESENCE_KEY: Record<PresenceId, PresenceKey> = {
   gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none',
+  witness: 'none', boatman: 'block',
 };
 
 /** The presences that ask a question on a choice card instead of an offer of a part: the card's options and its question. */
@@ -38,6 +41,8 @@ export const PRESENCE_CHOICE: Partial<Record<PresenceId, { question: MessageKey;
 export function unlocksPresence(id: PresenceId, carried: Carried | undefined): boolean {
   const key = PRESENCE_KEY[id];
   if (key === 'none') return carried === undefined;
+  // the Boatman's toll: one block (a material in hand, a number) is left on the shore
+  if (key === 'block') return typeof carried === 'number';
   if (typeof carried !== 'object' || isFlask(carried)) return false;
   return key === 'any' || carried.kind === key;
 }
@@ -60,10 +65,12 @@ export const PRESENCE_OFFER_QUESTION: Partial<Record<PresenceId, MessageKey>> = 
   wanderer: 'presence.offer.wanderer.question',
   gardener: 'presence.offer.gardener.question',
   child: 'presence.offer.child.build',
+  witness: 'presence.offer.witness.question',
+  boatman: 'presence.offer.boatman.toll',
 };
 
 /** The presences whose offer is a gift to take, not a part to give: the card says Take and Decline, not Give and Keep. */
-export const GIFT_OFFER: ReadonlySet<PresenceId> = new Set<PresenceId>(['wanderer', 'child']);
+export const GIFT_OFFER: ReadonlySet<PresenceId> = new Set<PresenceId>(['wanderer', 'child', 'witness']);
 
 export interface PresenceTalk {
   name: MessageKey;
@@ -90,6 +97,14 @@ export const PRESENCE_TALK: Record<PresenceId, PresenceTalk> = {
     hint: 'presence.child.hint', drops: true,
   },
   cartographer: { name: 'presence.cartographer.name', lines: ['presence.cartographer.1', 'presence.cartographer.2'], silent: 'presence.cartographer.silent', hint: 'presence.cartographer.hint', drops: false },
+  witness: {
+    name: 'presence.witness.name', lines: ['presence.witness.1', 'presence.witness.2'], silent: 'presence.witness.silent',
+    hint: 'presence.witness.hint', drops: true,
+  },
+  boatman: {
+    name: 'presence.boatman.name', lines: ['presence.boatman.1', 'presence.boatman.2'], silent: 'presence.boatman.silent',
+    hint: 'presence.boatman.hint', drops: true,
+  },
   wanderer: {
     name: 'presence.wanderer.name', lines: ['presence.wanderer.1', 'presence.wanderer.2'], silent: 'presence.wanderer.silent',
     hint: 'presence.wanderer.hint', drops: true, farewell: 'presence.wanderer.walk',
@@ -108,7 +123,7 @@ export function leavesAfterOffer(id: PresenceId): boolean {
 }
 
 /** Presences that keep their place after their reward (the Gardener, the Elder, the Cartographer). */
-export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer', 'child']);
+export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer', 'child', 'boatman']);
 
 export const TALK_REACH = 2.2;
 
@@ -181,7 +196,21 @@ export function directionOf(dx: number, dz: number): 'here' | 'north' | 'south' 
   return dz > 0 ? 'south' : 'north';
 }
 
-export interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
+export interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence; template?: string }
+
+/** The Witness's place: the last floor, the Silence (WITNESS.md). The Silence below the ninth is not built, so the Witness
+ *  waits in a quiet room of the ninth floor. Fixed, not seeded: it draws nothing. */
+export const WITNESS_FLOOR = LAST_FLOOR;
+
+/** The room template that holds the Boatman's deep water and its island (BOATMAN.md): the drowned nave, on Zone II. */
+export const BOATMAN_TEMPLATE = 'drowned-nave';
+
+/** The Boatman's floor: one seeded floor of Zone II (3 or 4), read from the run's root (BOATMAN.md, proposed). */
+export const BOATMAN_FLOORS: readonly number[] = [3, 4];
+
+export function boatmanFloorOf(run: RunRandom): number {
+  return run.fork('presence', 'boatman').pick([...BOATMAN_FLOORS]);
+}
 
 export interface MessengerPlan {
   /** Per room, whether it is a dead end of the floor plan (one doorway). Aligned with the rooms. */
@@ -199,6 +228,10 @@ export interface MessengerPlan {
   cartographerFloor?: number;
   /** The floor on which this run's Child waits (dwellerFloorOf 'child'); none when absent. */
   childFloor?: number;
+  /** The floor on which this run's Boatman may wait (boatmanFloorOf); it waits only in a drowned nave of that floor. */
+  boatmanFloor?: number;
+  /** Whether the Witness waits on this floor (the last floor, WITNESS_FLOOR). */
+  witnessFloor?: number;
 }
 
 /** One Listener per Tree floor, in a quiet normal room. */
@@ -266,6 +299,29 @@ export function placeMessengers(rooms: PlacedRoom[], floor: number, rng: Rng, pl
       const room = rooms[rng.pick(pool)];
       room.enemies = [];
       room.presence = id;
+    }
+  }
+  // the Witness in the Silence: a quiet normal room of the last floor that holds no other presence (WITNESS.md)
+  if (plan.witnessFloor === floor) {
+    const left = rooms.map((_, i) => i).filter(i => rooms[i].type === 'normal' && rooms[i].presence === undefined);
+    const quiet = left.filter(i => rooms[i].enemies.length === 0);
+    const pool = quiet.length ? quiet : left;
+    if (pool.length) {
+      const room = rooms[rng.pick(pool)];
+      room.enemies = [];
+      room.presence = 'witness';
+    }
+  }
+  // the Boatman by the deep water: a quiet drowned nave of its floor, the only room that holds one (BOATMAN.md). A floor
+  // with no such nave holds no Boatman this run.
+  if (plan.boatmanFloor === floor) {
+    const nave = rooms.map((_, i) => i).filter(i => rooms[i].type === 'normal' && rooms[i].presence === undefined && rooms[i].template === BOATMAN_TEMPLATE);
+    const quiet = nave.filter(i => rooms[i].enemies.length === 0);
+    const pool = quiet.length ? quiet : nave;
+    if (pool.length) {
+      const room = rooms[rng.pick(pool)];
+      room.enemies = [];
+      room.presence = 'boatman';
     }
   }
 }
