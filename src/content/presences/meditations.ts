@@ -215,6 +215,19 @@ export function skipPart(plan: Plan, elapsedMs: number): Plan {
   return { ...plan, bounds: [...plan.bounds.slice(0, i + 1), now, ...share(plan.seq, i + 1, now, plan.totalMs)] };
 }
 
+/** Add time: each press lengthens the sitting by EXTEND_SEC, at most MAX_EXTENSIONS times in one sitting. */
+export const EXTEND_SEC = 20;
+export const MAX_EXTENSIONS = 3;
+
+/** Adds `addMs` to the sitting. The part in course keeps its end, so the time it has left does not change; the
+ *  added time is shared by the parts that follow, by their shares. In the last part it goes to that part. */
+export function extendPlan(plan: Plan, elapsedMs: number, addMs: number): Plan {
+  const totalMs = plan.totalMs + addMs;
+  const i = partAt(plan, elapsedMs);
+  if (i >= plan.seq.parts.length - 1) return { ...plan, totalMs, bounds: [...plan.bounds.slice(0, -1), totalMs] };
+  return { ...plan, totalMs, bounds: [...plan.bounds.slice(0, i + 2), ...share(plan.seq, i + 1, plan.bounds[i + 1], totalMs)] };
+}
+
 export interface Moment {
   part: number;
   /** How far into the part, 0 to 1. */

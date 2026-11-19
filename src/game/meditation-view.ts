@@ -3,13 +3,14 @@
 // drives the sound and passes every press on. The look is its own on purpose (docs/art/DECISIONS.md §10.8):
 // round, soft and slow, with colours from the `med.*` tokens only.
 
-import { onLocaleChange, t, type MessageKey } from '../i18n';
+import { locale, onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss } from '../content/palette';
 import {
-  BREATH_KEY, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
+  BREATH_KEY, EXTEND_SEC, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
   type Moment, type Outcome, type PaletteRole, type SceneId, type SequenceId,
 } from '../content/presences/meditations';
 import { MeditationAudio } from '../audio/meditation';
+import { NarrationQueue, clipUrl, htmlPlayer } from '../audio/meditation-voice';
 import { makeScene, paintEnding, paintHome, type SceneFrame, type ScenePainter } from '../render/meditation-scenes';
 import { activeDevice, type Input } from '../input/input';
 import { controlParams } from '../input/labels';
@@ -26,16 +27,17 @@ const COVER_MS = 900;
 
 export const prefsStore: MetaStore = localStore('the-roots.sanctuary');
 
+/** The voice is off until the player asks for it: it is optional, and its clips are not in every build. */
 export function loadPrefs(store: MetaStore = prefsStore, reduced = false): Prefs {
   try {
     const o = JSON.parse(store.read() ?? 'null');
-    if (o && typeof o === 'object') return { mute: o.mute === true, calm: typeof o.calm === 'boolean' ? o.calm : reduced };
+    if (o && typeof o === 'object') return { mute: o.mute === true, calm: typeof o.calm === 'boolean' ? o.calm : reduced, voice: o.voice === true };
   } catch { /* a broken record reads as the default */ }
-  return { mute: false, calm: reduced };
+  return { mute: false, calm: reduced, voice: false };
 }
 
 export function savePrefs(p: Prefs, store: MetaStore = prefsStore) {
-  store.write(JSON.stringify({ mute: p.mute, calm: p.calm }));
+  store.write(JSON.stringify({ mute: p.mute, calm: p.calm, voice: p.voice }));
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: string): HTMLElementTagNameMap[K] {
@@ -52,6 +54,8 @@ export class MeditationView {
   private c2d!: CanvasRenderingContext2D;
   private ui!: HTMLElement;
   private audio = new MeditationAudio();
+  /** The spoken guidance (docs/design/built/presences/MEDITATION-APP.md §7a): one line at a time, never over another. */
+  private voice = new NarrationQueue(htmlPlayer(), key => clipUrl(import.meta.env.BASE_URL, locale(), key));
   private scenes = new Map<SceneId, ScenePainter>();
   private done: ((o: Outcome, meditation: SequenceId) => void) | null = null;
   private key = '';
@@ -129,20 +133,24 @@ export class MeditationView {
     const app = this.app;
     if (!app) return;
     this.touched();
-    const was = { screen: app.screen, selected: app.selected, paused: app.paused, mute: app.prefs.mute, calm: app.prefs.calm };
+    const was = { screen: app.screen, selected: app.selected, paused: app.paused, seconds: app.seconds, mute: app.prefs.mute, calm: app.prefs.calm, voice: app.prefs.voice };
     const outcome = press(app);
-    if (app.prefs.mute !== was.mute || app.prefs.calm !== was.calm) {
-      this.audio.setMuted(app.prefs.mute);
+    const p = app.prefs;
+    if (p.mute !== was.mute || p.calm !== was.calm || p.voice !== was.voice) {
+      this.audio.setMuted(p.mute);
       this.audio.ui('toggle');
-      savePrefs(app.prefs);
+      savePrefs(p);
     }
-    if (app.paused !== was.paused) { this.audio.pause(app.paused); this.audio.ui('toggle'); }
+    if (p.mute || !p.voice) this.voice.stop();
+    if (app.paused !== was.paused) { this.audio.pause(app.paused); this.voice.pause(app.paused); this.audio.ui('toggle'); }
+    if (app.seconds !== was.seconds) this.audio.ui('pick');
     if (app.screen !== was.screen) {
       const forward: Record<Screen, number> = { home: 0, library: 1, session: 2, leave: 3, end: 4 };
       this.audio.ui(forward[app.screen] > forward[was.screen] ? 'pick' : 'back');
-      if (app.screen === 'session' && was.screen === 'library') this.begin();
-      if (app.screen === 'leave') this.audio.pause(true);
-      if (app.screen === 'session' && was.screen === 'leave') this.audio.pause(app.paused);
+      // a new sitting starts from the library, or again from the end (sit again)
+      if (app.screen === 'session' && (was.screen === 'library' || was.screen === 'end')) this.begin();
+      if (app.screen === 'leave') { this.audio.pause(true); this.voice.pause(true); }
+      if (app.screen === 'session' && was.screen === 'leave') { this.audio.pause(app.paused); this.voice.pause(app.paused); }
     } else if (app.selected !== was.selected) this.audio.ui('move');
     if (outcome) this.close(outcome);
   }
@@ -153,16 +161,18 @@ export class MeditationView {
     this.sceneT = 0;
     this.pShown = 0;
     this.endAt = 0;
+    this.voice.stop();
     this.audio.start(SEQUENCE[app.seq]);
     const nav = navigator as Navigator & { wakeLock?: { request(kind: 'screen'): Promise<{ release(): Promise<void> }> } };
     nav.wakeLock?.request('screen').then(w => { if (this.app) this.wake = w; else void w.release(); }).catch(() => {});
   }
 
   private close(outcome: Outcome) {
-    const root = this.root!, done = this.done, meditation = this.app!.seq;
+    const root = this.root!, done = this.done, meditation = this.app!.rewardSeq;
     this.app = null;
     this.done = null;
     this.audio.stop();
+    this.voice.stop();
     this.audio.ui(outcome === 'cancel' ? 'back' : 'pick');
     void this.wake?.release().catch(() => {});
     this.wake = null;
@@ -191,14 +201,16 @@ export class MeditationView {
     const tick = app.tick(this.clock.now(now));
     const m = app.moment;
     if (app.running) this.sceneT += dt;
-    if (tick.done) { this.endAt = now; this.audio.end(); this.touched(); }
+    if (tick.done) { this.endAt = now; this.audio.end(); this.voice.stop(); this.touched(); }
     else if (m && app.running) {
       if (tick.part) this.audio.part(m.part);
       else if (tick.line) this.audio.line();
       if (tick.beat) this.audio.breath(m.breath, m.beatS);
       this.audio.tick(dt);
+      // the breath is never spoken: only the guidance lines are (their clips are cached per language)
+      if (tick.line && app.prefs.voice && !app.prefs.mute) this.voice.say(lineKey(SEQUENCE[app.seq], m.part, m.line));
     }
-    const key = `${app.screen}|${app.selected}|${app.paused}|${app.prefs.mute}|${app.prefs.calm}|${app.seq}|${activeDevice()}`;
+    const key = `${app.screen}|${app.selected}|${app.paused}|${app.prefs.mute}|${app.prefs.calm}|${app.prefs.voice}|${app.seq}|${app.seconds}|${app.extensions}|${app.earned}|${app.canExtend}|${activeDevice()}`;
     if (key !== this.key) { this.key = key; this.render(app); }
     if (m && (app.screen === 'session' || app.screen === 'leave')) this.words(app, m);
     this.root.classList.toggle('idle', app.screen === 'session' && app.running && now - this.lastInput > BAR_IDLE_MS);
@@ -266,7 +278,11 @@ export class MeditationView {
 
   private switches(app: MeditationApp): HTMLElement {
     const row = el('div', 'switches');
-    for (const [id, on, off, state] of [['mute', 'sanctuary.sound.off', 'sanctuary.sound.on', app.prefs.mute], ['calm', 'sanctuary.calm.on', 'sanctuary.calm.off', app.prefs.calm]] as const) {
+    for (const [id, on, off, state] of [
+      ['mute', 'sanctuary.sound.off', 'sanctuary.sound.on', app.prefs.mute],
+      ['calm', 'sanctuary.calm.on', 'sanctuary.calm.off', app.prefs.calm],
+      ['voice', 'sanctuary.voice.on', 'sanctuary.voice.off', app.prefs.voice],
+    ] as const) {
       const b = el('button', `sw${state ? ' set' : ''}`, t(state ? on : off));
       b.type = 'button';
       b.dataset.id = id;
@@ -287,12 +303,13 @@ export class MeditationView {
     const hint = (key: MessageKey) => el('p', 'hint', t(key, params));
     if (app.screen === 'home') {
       const choices = el('div', 'choices');
+      const earned = app.earned !== null;
       choices.append(
         this.tile('meditate', 'choice', app, el('b', '', t('sanctuary.meditate')), el('span', '', t('sanctuary.meditate.sub'))),
-        this.tile('quick', 'choice', app, el('b', '', t('sanctuary.quick')), el('span', '', t('sanctuary.quick.sub'))),
+        this.tile('quick', 'choice', app, el('b', '', t(earned ? 'sanctuary.earned' : 'sanctuary.quick')), el('span', '', t(earned ? 'sanctuary.earned.sub' : 'sanctuary.quick.sub'))),
       );
       ui.append(this.closeButton('sanctuary.close'), el('i', 'mark'), el('h1', '', t('sanctuary.name')), el('p', 'lead', t('sanctuary.lead')), choices,
-        el('p', 'note', t('sanctuary.note')), this.switches(app), hint('sanctuary.hint'), hint('sanctuary.hint.switches'));
+        el('p', 'note', t('sanctuary.once')), el('p', 'note', t('sanctuary.note')), this.switches(app), hint('sanctuary.hint'), hint('sanctuary.hint.switches'));
     } else if (app.screen === 'library') {
       const grid = el('div', 'library');
       for (const s of SEQUENCES) {
@@ -318,20 +335,30 @@ export class MeditationView {
       ctl.append(
         this.tile('pause', 'ctl', app, t(app.paused ? 'sanctuary.resume' : 'sanctuary.pause')),
         this.tile('skip', 'ctl', app, t('sanctuary.skip')),
+        this.tile('extend', 'ctl', app, t(app.canExtend ? 'sanctuary.extend' : 'sanctuary.extend.max', { s: EXTEND_SEC })),
         this.tile('mute', 'ctl', app, t(app.prefs.mute ? 'sanctuary.sound.off' : 'sanctuary.sound.on')),
         this.tile('calm', 'ctl', app, t(app.prefs.calm ? 'sanctuary.calm.on' : 'sanctuary.calm.off')),
+        this.tile('voice', 'ctl', app, t(app.prefs.voice ? 'sanctuary.voice.on' : 'sanctuary.voice.off')),
         this.tile('leave', 'ctl', app, t('sanctuary.leave')),
       );
       ui.append(top, guide, ctl);
     } else if (app.screen === 'leave') {
       const sheet = el('div', 'sheet'), row = el('div', 'choices');
-      row.append(this.tile('stay', 'choice', app, el('b', '', t('sanctuary.stay'))), this.tile('quick', 'choice', app, el('b', '', t('sanctuary.leave.quick'))));
-      sheet.append(el('div', 'clock'), el('h2', '', t('sanctuary.leave.title')), el('p', 'lead', t('sanctuary.leave.body')), row, hint('sanctuary.hint'));
+      const earned = app.earned !== null;
+      row.append(
+        this.tile('stay', 'choice', app, el('b', '', t('sanctuary.stay'))),
+        this.tile('quick', 'choice', app, el('b', '', t(earned ? 'sanctuary.leave.earned' : 'sanctuary.leave.quick'))),
+      );
+      sheet.append(el('div', 'clock'), el('h2', '', t('sanctuary.leave.title')), el('p', 'lead', t(earned ? 'sanctuary.leave.body.earned' : 'sanctuary.leave.body')), row, hint('sanctuary.hint'));
       ui.append(sheet);
     } else {
       const row = el('div', 'choices');
-      row.append(this.tile('receive', 'choice', app, el('b', '', t('sanctuary.receive'))));
-      ui.append(el('h2', '', t('sanctuary.end.title')), el('p', 'lead', t('sanctuary.end.body')), row);
+      row.append(
+        this.tile('receive', 'choice', app, el('b', '', t('sanctuary.receive'))),
+        this.tile('repeat', 'choice', app, el('b', '', t('sanctuary.repeat'))),
+        this.tile('another', 'choice', app, el('b', '', t('sanctuary.another'))),
+      );
+      ui.append(el('h2', '', t('sanctuary.end.title')), el('p', 'lead', t('sanctuary.end.body')), row, hint('sanctuary.hint'));
     }
   }
 

@@ -62,6 +62,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | skip | press | meditation | N | RB | the Next part button |
 | mute | press | meditation | M | X | the Sound button |
 | calm | press | meditation | C | Y | the Calm visuals button |
+| voice | press | meditation | V | LB | the Voice button (the Sanctuary's spoken guidance) |
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
 

@@ -6,6 +6,14 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Added
+- In the Sanctuary, a finished meditation shows three choices: Receive, Sit again (the same meditation, a new length) and Choose another meditation. Sitting again does not give a second reward (#160).
+- In a sitting, Add 20 seconds lengthens it, up to three times. The part you are in keeps its end (#160).
+- Optional spoken guidance in the Sanctuary, in English and Spanish: the guidance lines are read aloud and never overlap. Breath cues are not spoken. Turn it on with the Voice switch (V, LB or the Voice button); it is off at first (#203).
+
+### Changed
+- The Sanctuary's reward is one per visit. Once a sitting is finished, leaving never gives the quick reward and never takes the earned one back. Leaving early still gives the quick reward when nothing is finished yet (#160).
+
 ## 0.2.4.f1 · 2026-11-14
 
 ### Added
