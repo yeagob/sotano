@@ -9,7 +9,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## 0.2.6-alpha · 2026-11-19
 
 ### Added
-- The Covenant's Light is kept in the crown of the great tree, the first time you reach it after hearing a Listener's Lesson, with a gold burst and a toast (#228).
+- The Covenant's Light can now be given in play, after hearing a Listener's Lesson, with a gold burst and a toast (#228).
 - The Mender's Thread: a promised practice (+1 heart container, a little more invulnerability after each hit) that The Mender drops once a run beside its gift; picking it up keeps the Covenant's Thread, and no toll or capture can take it (#228).
 - The Mender now asks for two parts of different kinds on one card that names both; nothing is taken unless you say Give and both are still in your hand (#228, #233).
 - The Mender brings back the last projection you released on its floor as an ally with a gold glow and slow gold motes (#228, #232).
@@ -19,8 +19,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the place the Cartographer marked and the Star-reader's room, or the crown from above with the Leaves and its stars, whose chain appears once the Star-reader has read it. In English and Spanish (#149).
 - The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
 - The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).
-- The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. Hearing a Lesson lets the crown of the great tree give the Covenant's Light, so the Covenant can now be completed in play (#149, #228).
-- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. The Light waits in the crown of the great tree, for a run that heard The Listener's Lesson. Once all four are held, every presence remembers you in its card (#149).
+- The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. A heard Lesson opens the way to the Covenant's Light, so the Covenant can now be completed in play (#149, #228).
+- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. Once all four are held, every presence remembers you in its card (#149).
 - The Child asks you to draw something small on its build card, and The Elder asks you to be still on its choice card, each with an alternative that needs no hands (#149).
 - The codex: the menu lists the presences you met in this run, with what each asks and what it gives, in English and Spanish (#149).
 - The idle window: after you give The Gardener or The Boatman what they asked for, it stays in its room for a seeded 30 to 60 seconds, then leaves. The length is fixed by the run's seed (#149).
