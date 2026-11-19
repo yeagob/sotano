@@ -56,6 +56,6 @@ Built in the issue: the codex, the idle window, the requests (the Gardener, the 
 
 Decided but not built: the Covenant's Light (after the Listener's Lesson); the Elder's Reading and the Ledger Halls; the Child's Cellar of Habits; the Cartographer's star map and the Tree's crossroads; the Star-reader's Leaves (a room a presence can stand in, which the levels rules must allow).
 
-Owed to the owner, not changed in this pass: the Silence below floor 9 (the Witness waits on the ninth floor until it is built); the levels ruling for vaults below floor 5 (the Mender waits on floors 3 to 5 only); the Boatman's pocket that is reachable only by the toll; whether covenant pieces show in the inventory, with their labels and seams; the multi-part agreement cards; the readings of the idle window and the reward tables; the Listener's Lesson; the closed-set reading; the not-therapy note and help line.
+Owed to the owner, not changed in this pass: the Silence below floor 9 (the Witness waits on the ninth floor until it is built); the levels ruling for vaults below floor 5 (the Mender waits on floors 3 to 5 only); the Boatman's pocket that is reachable only by the toll; whether covenant pieces show in the inventory, with their labels and seams; the multi-part agreement cards; the readings of the idle window and the reward tables; the Listener's Lesson; the closed-set reading.
 
 Issue #149 is **not complete** while the items above are open.

@@ -25,7 +25,7 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 2. Every physical request has an alternative: seated or lying down, no hands, a quiet room, write it in the head, say it aloud.
 3. Gentle, never urgent: no red timers, no startling sounds, no screen effects.
 4. No judgement, no insults, no quoting failure back.
-5. No therapy claims. A short note in the settings says the game is not therapy and where to find help.
+5. No therapy claims; no word about the player's life, past or feelings.
 6. Private: writing and drawing are never saved, sent, read or judged. The game stores only the hidden number and the request count.
 7. No camera or microphone. Requests run on the player's own word.
 8. No request asks for longer than the idle window.
@@ -34,7 +34,6 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 
 - **Idle detection.** The game sees only input, not whether the player stepped away. The card must say so, and the game must not pretend otherwise.
 - **Readings.** Confirm the thirty-to-sixty-second window and the reward table (readings k and t of the design's section 13).
-- **Settings note.** The not-therapy note and the help line need the owner's text and the translations.
 
 ## Checked in the browser (issue #149)
 

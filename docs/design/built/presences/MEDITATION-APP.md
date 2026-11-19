@@ -10,7 +10,7 @@ The Boundary keeps the centre chest of its vault. In the Roots' tutorial, the sa
 
 - **Concept:** `Boundaries` ([CONCEPTS.md](../../../lore/CONCEPTS.md)). The Boundary guards a sanctuary: a ring it keeps whole. A boundary is what keeps a space for you. The app is that space, kept for as long as the player chooses to stay. Its name comes from the Boundary's own ring.
 - **Why it breaks the game's look.** The depths are dark, cold and made of cubes. The Sanctuary is outside them: round, soft, slow, in colour. The break is the meaning: inside the boundary, nothing of the depths gets in.
-- **A game, not a therapy.** The app guides attention and breath in plain words. It promises nothing, measures nothing and says nothing about the player's life. The first screen says that stopping is always fine.
+- **Plain words.** The app guides attention and breath in plain words. It promises nothing, measures nothing and says nothing about the player's life. The first screen says that stopping is always fine.
 - **The practices are the game's own.** Each of the six meditations is a tier 1 or tier 2 practice of the game, with its source in the library ([SOURCES.md](../../../lore/SOURCES.md)). No practice is invented for the app, and no tradition, figure or sacred symbol appears in it.
 
 ## 2. Flow
@@ -340,5 +340,4 @@ One context, `meditation`. Every action on the three devices:
 - **"Tier 1 and 2 meditations."** Read here as: the meditations are the game's tier 1 and tier 2 practices. Owner to confirm.
 - **"Almost impossible to leave."** Read here as: it is hard to want to leave, never hard to leave. Leaving takes two presses (Leave, then confirm), and Stay is selected first. Owner to confirm that no stronger friction is wanted.
 - **Does length matter?** Every length earns the same band today.
-- **The not-therapy note.** The first screen carries one plain line. The owner's own text and a help line are still open ([REQUESTS.md](../../not-built/presences/REQUESTS.md)).
 - **More meditations.** Radical Acceptance and Sleep Hygiene are tier 2 practices that would fit.

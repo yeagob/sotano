@@ -332,7 +332,7 @@ export const ES: Catalog = {
     'sanctuary.meditate.sub': 'Una sesión guiada de 20 a 40 segundos. La mejor recompensa.',
     'sanctuary.quick': 'Tomar la recompensa rápida',
     'sanctuary.quick.sub': 'El cofre se abre ahora, con una práctica más sencilla.',
-    'sanctuary.note': 'Esto es un juego, no una terapia. Parar siempre está bien.',
+    'sanctuary.note': 'Parar siempre está bien.',
     'sanctuary.close': 'Ahora no',
     'sanctuary.backLabel': 'Volver',
     'sanctuary.cancelled': 'El cofre permanece cerrado. Puedes volver cuando quieras.',

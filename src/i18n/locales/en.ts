@@ -358,7 +358,7 @@ const messages = {
   'sanctuary.meditate.sub': 'A guided sitting of 20 to 40 seconds. The better reward.',
   'sanctuary.quick': 'Take the quick reward',
   'sanctuary.quick.sub': 'The chest opens now, with a simpler practice.',
-  'sanctuary.note': 'This is a game, not a therapy. Stopping is always fine.',
+  'sanctuary.note': 'Stopping is always fine.',
   'sanctuary.close': 'Not now',
   'sanctuary.backLabel': 'Back',
   'sanctuary.cancelled': 'The chest stays closed. You can return when you are ready.',
