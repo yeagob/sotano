@@ -21,6 +21,6 @@ Built, in part. A dweller of seeing without judging. It waits in one quiet room 
 
 ## Owed (not checked)
 
-- Not reached in a browser in this pass (see the report of the pass): the consent card and the gift were checked by the unit tests of the rule, the consent and the gift only.
-- The consent card with a gamepad and with touch.
+- Checked in headless Chromium (Playwright, the real game on seed 1, the Witness on floor 9): the card opens near the Witness with Take and Decline; Take (Enter) releases the Witness and it leaves; Decline (Escape) keeps everything and it stays.
+- Not checked: the gift's pickup itself (the reward is launched; its look was not captured), the gamepad and touch paths of the card, and the card's layout at 375 px (a capture was taken mid-fade; the text was not readable in it, so it needs a settled capture).
 - The body uses the Listener's model until it has its own art (an art need: a shape that is not a human figure).

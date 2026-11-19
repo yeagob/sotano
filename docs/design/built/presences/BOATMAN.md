@@ -23,6 +23,6 @@ Built, in part. A dweller of letting go to move on. It waits by the deep water o
 
 ## Owed (not checked)
 
-- The ferry and the gift were checked in a browser only as far as the pass reports (see the report of the pass). The landing height (`y0 + 1`) and the gift's place on the island are checked there.
-- The consent card with a gamepad and with touch.
+- Checked in headless Chromium (seed 8, floor 4, a drowned nave): the card opens by the Boatman with the block in hand; Give (Enter) takes the block out of the hand, the player is carried to the island tile (the `K` tile, read through the room's flips, at the room's floor height) and the player lands there.
+- Not checked: the gift's pickup on the island (six pickups appear after the ferry; which of them is the gift was not confirmed visually), the Keep path in a browser, the gamepad and touch paths, and the card at 375 px.
 - The body uses the Listener's model until it has its own art (an art need: a boat or a ferryman that is not a human figure).
