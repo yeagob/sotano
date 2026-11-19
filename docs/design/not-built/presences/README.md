@@ -10,7 +10,7 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 
 | Document | Presence or system | Kind | Status |
 |---|---|---|---|
-| [GARDENER.md](GARDENER.md) | The Gardener (defined, not placed) | Dweller | decided |
+| [GARDENER.md](GARDENER.md) | The Gardener, on one seeded floor from 1 | Dweller | partly built |
 | [WITNESS.md](WITNESS.md) | The Witness, the last conversation below floor 9 | Dweller | proposal |
 | [ELDER.md](ELDER.md) | The Elder, in a quiet vault of the Ledger Halls | Dweller | decided |
 | [CHILD.md](CHILD.md) | The Child, in the Cellar of Habits | Dweller | decided |
@@ -35,7 +35,7 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 
 | Presence or system | Blocked by | Done in this pass |
 |---|---|---|
-| The Gardener | The owner's ruling (2026-10-29): no presence on the tutorial floor, and its agreement asks for a real-world action. Its room is open | Stays unplaced; the owner decides where it waits |
+| The Gardener | Its memory and its root-and-moss agreement | Placed on one seeded floor from 1 (never the tutorial); asks for a flesh part; the rest stays in its document |
 | The Wanderer | Its wall walk, its hand-tied line and the corridor | Built as a messenger with a consent gift; the rest stays in its document |
 | The Child | The build-three-blocks check (a placement counter over every placing path) and the path rule for a build | Not built |
 | The Elder | The path system (Body, Mind, Emotion, Will) and the Lesson | Not built |
