@@ -36,6 +36,9 @@ export default defineItem({
   hooks: [
     // mark the cube; the explosion is a separate hook so synergies can reuse the tag
     hook('throw', e => { e.tags.add(VOLATILE); }, { id: 'arm' }),
+    // a kicked block (or one that falls on you and is kicked) keeps no throw charge. It runs before
+    // the synergies' kick hooks, so Somatic Release can still arm kicks at the default priority.
+    hook('kick', e => { e.tags.delete(VOLATILE); }, { id: 'disarm-kicks', priority: 10 }),
     hook('debrisImpact', (e, api) => {
       if (e.tags.has(VOLATILE)) api.explode(e.x, e.y, e.z, 1.8, 14, 'volatile');
     }, { id: 'explode' }),
