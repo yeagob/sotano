@@ -1,0 +1,10 @@
+{
+  "note": "Controlled Burn, mortal: a bomb blast ignites the crates around it and burns a projection; the player stands two blocks away in the fire's reach and is not hurt by the fire of the blast",
+  "rows": [".............", "....ccccc....", "....ccccc....", "....ccccc....", "....ccccc....", "............."],
+  "items": ["controlledburn"],
+  "player": [2, 0, 3],
+  "enemies": [{ "def": "doubt", "at": [7, 0, 3] }],
+  "ticks": 360,
+  "report": [0, 150, 360],
+  "actions": [{ "t": 0, "do": "bomb", "at": [5, 0, 3], "fuse": 1.8 }]
+}

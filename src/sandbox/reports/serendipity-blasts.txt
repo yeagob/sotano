@@ -1,0 +1,37 @@
+# serendipity-blasts — Serendipity, luck 1: five bomb blasts in turn; each one may leave a key, a bomb or a heart at its centre (25% chance per blast)
+floor 1 · seed 1 · room 13×6×5 · 600 ticks (10.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  practices serendipity · synergies —
+  blocks crate 20
+  elements —
+  cubes — · pickups 0
+
+t 300 (5.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  practices serendipity · synergies —
+  blocks crate 1
+  elements —
+  cubes bomb 1 · brick 22 · crate 19 · pickups 10
+  rewards red-heart
+  events blockBreak:brick 22 · blockBreak:crate 19 · blockDamage:brick 22 · blockDamage:crate 19 · blockLoot:brick 22 · blockLoot:crate 19 · bombBlast 2 · explosion 2 · roomEnter 1
+
+t 600 (10.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [crate] · bombs 99 · keys 99
+  practices serendipity · synergies —
+  blocks —
+  elements —
+  cubes brick 60 · crate 19 · stone 1 · pickups 13
+  rewards red-heart
+  events blockBreak:brick 38 · blockBreak:crate 1 · blockBreak:stone 1 · blockDamage:brick 38 · blockDamage:crate 1 · blockDamage:stone 1 · blockLoot:brick 38 · blockLoot:crate 1 · blockLoot:stone 1 · bombBlast 3 · explosion 3 · touchCube:crate 1
+
+map t 600 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

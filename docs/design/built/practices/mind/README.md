@@ -14,6 +14,7 @@ The folder holds the practices whose first path tag is mind. Practices that also
 | [Second Brain](SECOND-BRAIN.md) | 3 | none | treasure rooms |
 | [Growth Mindset](GROWTH-MINDSET.md) | 1 | none | treasure rooms, boss rewards |
 | [Visualization](VISUALIZATION.md) | 1 | none | treasure rooms, boss rewards |
+| [Bolt from the Blue](../BOMBS.md#3-bolt-from-the-blue-boltfromtheblue) | 3 | none | treasure rooms |
 | [Tao Te Ching](TAO-TE-CHING.md) | 4 | Emotion | treasure rooms, vault rooms |
 | [As a Man Thinketh](AS-A-MAN-THINKETH.md) | 4 | none | treasure rooms, vault rooms |
 | [Socratic Questioning](SOCRATIC-QUESTIONING.md) | 1 | none | treasure rooms |

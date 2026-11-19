@@ -50,6 +50,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `stats()`, `held()` | Read current stats and the blocks in your hand |
 | `has(id)`, `hasTag(tag)` | Ask about other held items |
 | `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
+| `shieldFire` | Fire never hurts you within `radius` of a point for `seconds` (Controlled Burn: the fire of your own blasts) |
 | `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
 | `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
 | `placeBlock` | Place one copy of an ordinary block in an empty cell of the player's room (Affirmation). Only interior room space, no body, no element, no door or doorway, never a material that may not be copied. Writes the world like the player's placement but emits no `blockPlace` or `blockPlaced`. Returns whether it placed |
@@ -85,7 +86,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
 | `bombRadius`, `bombDamage` | Your bombs (and the blast of a missile, love or not) |
 | `missile` | 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does nothing); `game.ts` `tapMissile`, rules in `combat/missiles.ts` |
-| `luck` | Chance of a reward when a room is cleared (more uses to come: chests) |
+| `luck` | Chance of a reward when a room is cleared (chests to come; Serendipity finds in bomb blasts) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
 
@@ -101,6 +102,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `strike` | `damage`, `mining`, `reach`, `tags`, `color`, or cancel; `polarity` is read-only (every hit of the stroke follows it) | a weapon that replaces the intention acts (once per swing, beam or sweep; [WEAPONS.md](WEAPONS.md)) |
 | `headBump` | `breaks` (break it or not) | the player's head hits a solid block while jumping (once per block above) |
 | `explosion` | `radius`, `damage`, or cancel | anything explodes |
+| `bombBlast` *(react only)* | nothing: `polarity` says a bomb or missile of yours went off negative (a blast) or positive (a love explosion); `acted` lists the practices that already acted on it | one of the player's own bombs or missiles went off, after its blast (never a volatile cube or another item's explosion) |
 | `touchCube` | `action`: `'pickup'`, `'kick'` or `'ignore'` | walking into a loose cube (pre-filled from `carry`) |
 | `kick` | `speed`, `lift`, `tags`, or cancel | kicking a cube |
 | `throw` | `speed`, `lift`, `tags`, or cancel | Q, or right click with nowhere to place |

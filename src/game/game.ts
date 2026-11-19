@@ -394,6 +394,8 @@ export class Game {
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Fire shields (Controlled Burn): where fire never hurts you, and until when (game time). */
+  private fireShields: { x: number; y: number; z: number; r: number; until: number }[] = [];
   /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
   private missiles = new Missiles();
   private missileView: MissileView;
@@ -646,7 +648,7 @@ export class Game {
     this.playerIn.clear(); this.drownT = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
-    this.blasts.clear(); this.bombCause.clear();
+    this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
@@ -1213,7 +1215,7 @@ export class Game {
       const chain = this.bombCause.get(i);
       this.bombCause.delete(i);
       // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
-      if (love) { this.loveBlast(x, y, z); return; }
+      if (love) { this.loveBlast(x, y, z, 'bomb'); return; }
       this.blasts.current = chain ?? null;
       this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
       this.blasts.current = null;
@@ -1438,6 +1440,7 @@ export class Game {
       freeze: (id, s) => this.affectProjection(id, 'frozen', s),
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
+      shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
@@ -2504,6 +2507,8 @@ export class Game {
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
+    // one of the player's own bombs or missiles (not a volatile cube, an enemy's burst or an item's blast)
+    if (owner === this.player.id && (source === 'bomb' || source === 'missile')) this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'negative', source, acted: new Set() });
     // a bomb: white-hot core, ember sparks, ash (docs/art/DECISIONS.md §7.4)
     this.particles.burst(x, y, z, pal('light.ember'), 40, 8, 0.15);
     this.particles.burst(x, y, z, pal('light.core'), 20, 5, 0.1);
@@ -2655,11 +2660,25 @@ export class Game {
   }
 
   private igniteArea(x: number, y: number, z: number, r: number) {
-    for (let dz = -r; dz <= r; dz++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    const ri = Math.ceil(r);
+    for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       if (dx * dx + dy * dy + dz * dz > r * r) continue;
       const id = this.world.get(x + dx, y + dy, z + dz);
       if (id !== AIR && mat(id).flammable) this.ignite(x + dx, y + dy, z + dz, id, 'fire');
     }
+  }
+
+  /** Fire never hurts the player within `r` of (x, y, z) for `seconds` (Controlled Burn: the fire of a blast of yours).
+   *  Only the last eight shields are kept; they end by time, and a new run clears them. */
+  private shieldFire(x: number, y: number, z: number, r: number, seconds: number) {
+    if (![x, y, z, r, seconds].every(Number.isFinite)) return;
+    this.fireShields.push({ x, y, z, r: Math.min(20, Math.max(0, r)), until: this.time + Math.min(30, Math.max(0, seconds)) });
+    if (this.fireShields.length > 8) this.fireShields.shift();
+  }
+
+  /** Whether a point is inside a live fire shield. */
+  private fireShielded(x: number, y: number, z: number): boolean {
+    return this.fireShields.some(s => this.time < s.until && Math.hypot(x - s.x, y - s.y, z - s.z) <= s.r);
   }
 
   private tagCube(cube: number, tag: string) {
@@ -2876,7 +2895,7 @@ export class Game {
       this.particles.burst(m.x - m.dx * 0.3, m.y - m.dy * 0.3, m.z - m.dz * 0.3, pal(trail[Math.floor(m.age * 20) % trail.length]), 2, 0.6, 0.06);
     }
     for (const e of ends) {
-      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z);
+      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z, 'missile');
       else this.explode(e.x, e.y, e.z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'missile', this.player.id);
     }
   }
@@ -2899,7 +2918,7 @@ export class Game {
    * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
    * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
    */
-  private loveBlast(x: number, y: number, z: number) {
+  private loveBlast(x: number, y: number, z: number, source: 'bomb' | 'missile') {
     const r = this.stats.get('bombRadius'), damage = this.stats.get('bombDamage'), ri = Math.ceil(r);
     for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
@@ -2914,6 +2933,7 @@ export class Game {
       if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
     }
     this.hearPresences(x, z, 'positive');
+    this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'positive', source, acted: new Set() });
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -2979,7 +2999,9 @@ export class Game {
     this.playerMedium = { ...m, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
-    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0).sort((a, c) => c.harm - a.harm)[0];
+    // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
+    const shielded = this.fireShielded(b.x, b.y + b.h / 2, b.z);
+    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire')).sort((a, c) => c.harm - a.harm)[0];
     if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
     // breath: drains with your head under water, refills fast at the surface
     const max = this.stats.get('breath');

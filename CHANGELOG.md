@@ -17,6 +17,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - Dowsing and Eye Contact: two practices that steer intentions, one toward blocks and one toward projections. The one you gained last guides; the other is set aside, with a toast (#68).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
 - Two practices of the bounce, in English and Spanish: Dialectic (a rebound splits the intention in two, each at half damage, at most twice per shot) and Reframing (after a rebound the intention turns toward a projection within 8 blocks and deals 25% more). They stack with Bounce Back (#110).
+- Four bomb practices, in English and Spanish: Pressure Valve (bomb radius and damage, two bombs), Controlled Burn (your blasts light the dry blocks around them, and their fire spares you close by), Bolt from the Blue (lightning from your blasts to the nearest projections) and Serendipity (luck, and a chance that a blast leaves a key, a bomb or a heart) (#110).
 
 ### Changed
 - Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
