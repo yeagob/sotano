@@ -35,5 +35,5 @@ export function projectionToMend(released: readonly string[]): string | null {
   return released.length ? released[released.length - 1] : null;
 }
 
-/** Seconds between the gold motes of a mended ally's seam: under 2 Hz, inside the 3 Hz rule (DECISIONS.md §14.3). */
+/** Seconds between the gold motes of a mended ally's seam: under 2 Hz, inside the 3 Hz rule (DECISIONS.md §14.4). */
 export const MENDED_SEAM_S = 0.6;

@@ -5,7 +5,7 @@ import { defineItem } from '../../items/types';
 // Mender after a Give and picked up like any practice. Its only pool is 'covenant', which ItemPools never draws from, and
 // it is promised (items/pool.ts `isPromised`): no capture, toll or other rule takes it. It has no recipe: a recipe would
 // be a second source, and the Covenant's pieces have one source each. Its gold thread is repair, gold's reserved use
-// (DECISIONS.md §14.3), the only light token in an icon whose concept is not light itself. Name and effect proposed by agent, pending the owner.
+// (DECISIONS.md §14.4), the only light token in an icon whose concept is not light itself. Name and effect proposed by agent, pending the owner.
 export default defineItem({
   id: 'menders-thread',
   name: "Mender's Thread",

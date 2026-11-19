@@ -9,14 +9,14 @@ A dweller of knowing where you stand. In the design it lives in the central eman
 ## What is not built
 
 - **The Tree.** Its floors (L1 to L5) are not built; the Cartographer waits in a quiet room of a seeded floor.
-- **The map.** The star map does not exist; the marks are words on the card.
+- **The map.** Built: its mark goes on the star map, as four brass corners round the marked room ([STAR-MAP](../../built/levels/giant-tree/STAR-MAP.md)). The words on the card stay.
 - **The hidden pocket.** The design lets the player mark a hidden pocket too. The build marks a vault or a boss only; the pocket is not built.
 - **Agreement.** One ore from every zone the player crossed, to chart the floor (see [Agreements](AGREEMENTS.md)).
 
 ## Decided by agent (pending owner ruling)
 
 - **Materials.** No ores as materials in #149; the Cartographer marks in words (README D13).
-- **The star map.** Built later (README D15).
+- **The star map.** Built after the owner's ruling (README D15).
 
 ## Open questions
 

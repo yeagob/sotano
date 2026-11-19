@@ -17,7 +17,7 @@ function L(n: number) {
 const tokenOf = new Map<number, string>(Object.entries(PALETTE).map(([t, h]) => [parseInt(h.slice(1), 16), t]));
 /** Items whose concept is light itself may use the light ramp in their icon (§10.1). */
 const LIGHT_CONCEPT = new Set(['satori', 'occamsrazor', 'kiai']);
-/** Items whose concept is repair (the kintsugi seam) may use `light.gold`, and only it: gold's other reserved use (DECISIONS.md §14.3). */
+/** Items whose concept is repair (the kintsugi seam) may use `light.gold`, and only it: gold's other reserved use (DECISIONS.md §14.4). */
 const REPAIR_CONCEPT = new Set(['menders-thread']);
 
 describe('materials', () => {

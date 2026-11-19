@@ -134,3 +134,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 ## 6. What rooms are built from
 
 Each level names its building palette (`LevelDef.palette`: wall, floor, trim). The shell's walls and ceiling and every `#` are the wall, the ground under the interior is the floor, `b` and `1`–`4` are the trim. Colours and the per-floor table: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md) §6.5).
+
+## The crown's room
+
+One template lives outside `ROOM_TEMPLATES`: `LEAVES_ROOM` (`src/content/crown.ts`), the Leaves of the giant tree's crown. It passes `validateTemplate` like any room (as a `normal` room, `mirror: false`), and the tree carves it in the crown's palette instead of a floor's ([architecture LEVELS §12](LEVELS.md#12-the-tree-in-stories-and-loading-by-level-2026-10-27-owner), [design](../design/built/levels/giant-tree/LEAVES.md)).

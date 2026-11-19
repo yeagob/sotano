@@ -80,7 +80,7 @@ export interface View {
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
 const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
-/** A mended ally (the Mender's integration, mended.ts) glows with repair's gold instead of the ally's ember (DECISIONS.md §14.3). */
+/** A mended ally (the Mender's integration, mended.ts) glows with repair's gold instead of the ally's ember (DECISIONS.md §14.4). */
 const MENDED_GLOW = new THREE.Color(pal('light.gold')).multiplyScalar(0.25);
 /** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
  *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest

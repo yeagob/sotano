@@ -1236,7 +1236,7 @@ Decided by agent, pending owner ruling.
 | The Boatman | A ferryman's body, by the water | World; the crossing | No skull, no death imagery (§11 red lines) |
 | The Child | Its own body of loose cubes, joyful, never crying | World; play and building | Never a real child's likeness, never distress |
 
-### 14.3 The Mender's Thread, the mended ally and the gold of repair (build agent, 2026-11-19, issue #228 rulings D9, D10, D16; issue #236; OWNER to confirm)
+### 14.4 The Mender's Thread, the mended ally and the gold of repair (build agent, 2026-11-19, issue #228 rulings D9, D10, D16; issue #236; OWNER to confirm)
 
 Decided by agent, pending owner ruling. Nothing here adds a colour: every token is in `palette.ts`.
 
@@ -1244,3 +1244,31 @@ Decided by agent, pending owner ruling. Nothing here adds a colour: every token 
 - **The Mender's Thread icon (12 × 12).** A bone needle on the diagonal (`bone.paper`, its shadow side `bone.faded`), its eye at the top right, and a gold thread (`light.gold`) running beside it and curling off at the bottom left, ending in one `path.emotion.base` texel (the Emotion path). Four colours. The item's colour is `path.emotion.glow`, as every practice's. Reads with no text: a needle and a gold thread, the tool of mending. Red lines: no sacred symbol, no wound, no blood.
 - **The mended ally.** A projection the Mender brings back is part of the self, so it keeps the ally's dim glow, in repair's gold (`light.gold` × 0.25, scaled by its health as the ally's ember is) instead of the ember. One gold mote (`light.gold`) rises from its body every 0.6 s: under 2 Hz, inside the 3 Hz rule, and a single particle, so nothing is added to the flash budget. Meaning: the seam shows (kintsugi). Side: the player's light, on a body that was a projection; gold on a living hostile projection stays forbidden (the warmth ramp of `enemies.ts` never reaches gold), so a gold body always reads as mended and on the player's side. If it relapses (a bad intention at zero), it is a projection again and loses the gold at once.
 - **Gate.** `npm run typecheck && npm test` green, `tests/art-content.test.ts` included (palette tokens, four colours, the silhouette check against every other icon). Not done in this pass: the `?gallery` captures in colour, greyscale and the three colour-blindness filters, and at 20 blocks in fog. Exact checks owed: (1) `?gallery`, the items section: the Thread's icon at 24 px reads as a needle and a thread in greyscale; (2) a mended ally beside a converted (ember) ally in a grey-floored room, 20 blocks away in fog, under deuteranopia, protanopia and tritanopia: the gold glow must still differ from the ember by brightness or the motes, since gold and ember differ mostly by hue (§14.1 amendment).
+### 14.3 The Leaves and the star map (lead agent, Opus 5.5, 2026-11-19, issue #149 decisions D14 and D15; OWNER to confirm)
+
+Decided by agent after the owner's rulings (the Leaves are a room; the star map goes in the crown and Opus designs it). No new colour, no new material and no new texture: every piece is an existing block or a palette token.
+
+**The Leaves (world side).** Meaning: seeing the whole (`concept:` what grows when you rise, the leaves' own). The room is built of the crown's own blocks: walls and a dome of leaves and young leaves (the young share rises with height, as in the crown), a floor and corner terraces of bough, and a ring of seven starstone blocks round the centre, the tree's fixed point (§6, `starstone`: the pads' stone). The dome is open three by three over the ring, up through the crown, so the sky (and at night its stars) is the room's only light from above; no light source is added (§5: unlit, baked). What the intention does to it: leaves break and burn, the bough breaks; the starstone holds (tier 3), as a fixed point should.
+
+**The star map (HUD side).** A tab of the screen in the slate finish of the practices tab (§10.2): title 28 px Pixelify Sans, the line under it 14 px, the ✕ cut by the 1 `--u` chamfer. The map is pixel art at an integer scale (one map pixel = 4 screen pixels; `shape-rendering: crispEdges`), on `ui.night` with a fixed field of faint `bone.faded` points (a hash of the position, never the seed).
+
+| Glyph | Shape (5 × 5 or smaller unless said) | Token |
+|---|---|---|
+| A room you have been in | a four-point star, a 3 × 3 cross core and dim tips | `bone.paper`, tips `bone.dim` |
+| A room whose door you have seen | a 3 × 3 cross | `bone.faded` at 60 % |
+| A room a presence told you of, unseen | one point | `bone.faded` at 60 % |
+| You (floor) | your room's glyph in the light, with a 5 × 1 bar under it | `light.core` / `light.gold` (gold is the player's light, its reserved use) |
+| Start, treasure, vault, boss | the minimap's marks (§10.2): house, hollow ◇, ▭, ▣ | as the minimap |
+| A door seen | a dotted line, one pixel in two | `bone.faded` at 60 % |
+| The Cartographer's mark | four brass corners, 9 × 9 | `brass.hi` |
+| The Star-reader's room | a ring of eight points, 9 × 9 | `bone.paper` at 80 % |
+| The crown, the trunk | a dotted ellipse of leaves, a dotted ring of bough | `mat.leaf.hi`, `mat.bough.base` |
+| The Leaves | a 13 × 7 room of `mat.leaf.dark` framed in `mat.youngleaf.hi`, its 3 × 3 ring at the centre | ring `bone.paper` |
+| The last stair | a 5 × 5 ring | `mat.bough.hi` |
+| A star pad; the last one | a 3 × 3 cross; the cross with a point above it | `bone.paper` |
+| The chain of the stars (after the Star-reader's reading) | dotted lines, one pixel in three | `bone.dim` at 70 % |
+| You (crown) | a 3 × 3 cross with the bar under it | `light.gold` |
+
+Rules kept: shape before colour (every state differs in shape, not only in tone; the player's place carries the bar), no ✗ anywhere (crosses are upright), cold only on the boss's ▣ (a projection's, as on the minimap), gold only on the player, nothing animates. Every glyph is named in a legend under the map with its words.
+
+**Gate.** Captured headless (Chromium) in colour and greyscale: the floor map and the crown map, in English and Spanish, at 1280 × 720 and 812 × 375 (no horizontal scroll), and the Leaves in play (the hall from the doorway, the eye from the ring, the doorway from the stair). In greyscale every state still reads by its shape. Not done: the three colour-blindness filters and a `?gallery` section (the gallery has no HUD or tree section); the exact check owed is the Machado filters on the two maps with every glyph present, and the Leaves at 20 blocks in the night fog.

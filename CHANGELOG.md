@@ -6,12 +6,17 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.6-alpha · 2026-11-19
+
 ### Added
 - The Covenant's Light is kept in the crown of the great tree, the first time you reach it after hearing a Listener's Lesson, with a gold burst and a toast (#228).
 - The Mender's Thread: a promised practice (+1 heart container, a little more invulnerability after each hit) that The Mender drops once a run beside its gift; picking it up keeps the Covenant's Thread, and no toll or capture can take it (#228).
 - The Mender now asks for two parts of different kinds on one card that names both; nothing is taken unless you say Give and both are still in your hand (#228, #233).
 - The Mender brings back the last projection you released on its floor as an ally with a gold glow and slow gold motes (#228, #232).
 - "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
+- The Leaves: a room at the top of the giant tree, high in the crown beside the last stair, with a ring of star stone under an open eye in its dome (#149).
+- Seed codes move to v36: the same code grows the giant tree with the Leaves in its crown; the floors are unchanged (#149).
+- The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the place the Cartographer marked and the Star-reader's room, or the crown from above with the Leaves and its stars, whose chain appears once the Star-reader has read it. In English and Spanish (#149).
 - The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
 - The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).
 - The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. Hearing a Lesson lets the crown of the great tree give the Covenant's Light, so the Covenant can now be completed in play (#149, #228).

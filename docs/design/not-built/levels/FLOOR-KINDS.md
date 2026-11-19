@@ -8,7 +8,7 @@ The design lists three floor kinds for the giant tree, each a different kind of 
 
 - **Trunk (floor L1).** Rooms stacked inside the trunk, joined by climbs and shafts. A vertical map.
 - **Branches (floor L2).** Platforms and hollows joined by branches, in every direction. A three-dimensional map.
-- **Leaves (floor L3).** Constellations as rooms, teleport doors between the stars, views of the cosmos. A star map.
+- **Leaves (floor L3).** Constellations as rooms, teleport doors between the stars, views of the cosmos. A star map. Partly built after the owner's rulings D14 and D15 of #149: the crown holds one room, the Leaves ([LEAVES](../../built/levels/giant-tree/LEAVES.md)), and the star map is a tab of the menu that draws the crown and its stars ([STAR-MAP](../../built/levels/giant-tree/STAR-MAP.md)). The constellations as rooms are not built.
 
 ## What the build does
 
@@ -33,5 +33,5 @@ The owner has also said that two stories are still missing from the tree, totali
 
 1. Are the upper three levels room maps like the floors below, or walkable stories as built?
 2. If room maps: which templates, and does a tree room follow the same house rules as a floor room?
-3. Does the star map keep the teleport doors (the design) or only the pads (the build)?
+3. Does the star map keep the teleport doors (the design) or only the pads (the build)? The built map shows the pads as the doors (D15); a door of its own is not built.
 4. Does the trunk keep its four stories, or fold into three floors as the design text says?
