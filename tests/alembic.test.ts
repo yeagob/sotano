@@ -228,6 +228,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       splash: () => {},
       hit: () => {},
       nearestBlock: () => null,
+      nearestEnemy: () => null,
     });
     const beam = new Beam(new THREE.Scene(), host);
     // One Clear Cut: Remember Breathing with Occam's Razor, the great cut that also replaces the shot

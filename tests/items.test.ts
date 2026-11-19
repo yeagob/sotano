@@ -19,6 +19,7 @@ function setup(catalog: readonly ItemDef[] = ITEMS, synergies: readonly SynergyD
   const api = {
     bus, stats: () => stats.all, defer: (fn: () => void) => bus.defer(fn),
     heal: () => {}, collect: () => true, damagePlayer: () => {}, rng: () => new Rng(1), message: () => {},
+    has: (id: string) => inv.has(id), toast: () => {},
   } as unknown as HostApi;
   const inv = new Inventory(new Map(catalog.map(i => [i.id, i])), synergies, stats, () => bus, () => api);
   return { bus, stats, inv };

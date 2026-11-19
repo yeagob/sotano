@@ -20,6 +20,7 @@ The folder holds the practices whose first path tag is will. Practices that also
 | [Bounce Back](BOUNCE-BACK.md) | 2 | none | treasure rooms |
 | [Kindling](KINDLING.md) | 2 | none | treasure rooms |
 | [Self-Efficacy](SELF-EFFICACY.md) | 3 | none | treasure rooms |
+| [Eye Contact](EYE-CONTACT.md) | 3 | none | treasure rooms |
 
 ## Also on this path (first path tag elsewhere)
 

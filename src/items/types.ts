@@ -58,6 +58,9 @@ export interface ItemApi {
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
   tagCube(cube: number, tag: string): void;
+  /** Places one ordinary block of `material` in an empty cell of the player's current room (Affirmation). Returns false,
+   *  and does nothing, when the cell is not empty room interior, a body is in it, or the material may not be copied. */
+  placeBlock(x: number, y: number, z: number, material: number, source: string): boolean;
 }
 
 /** What the game gives the installer: like `ItemApi`, but a toast names the effect it comes from

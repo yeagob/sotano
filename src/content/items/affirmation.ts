@@ -1,11 +1,14 @@
 import { pal } from '../palette';
 import { defineItem, hook } from '../../items/types';
 
+/** Set on an intention once it has placed its copy: at most one copy per intention. */
+export const COPIED = 'affirmed';
+
 export default defineItem({
   id: 'affirmation',
   name: 'Affirmation',
   description: 'What you affirm you make a little more real, one copy at a time.',
-  effect: 'Intentions curve toward the nearest block within 6 blocks. A positive one that hits a block leaves a loose copy of it beside the block.',
+  effect: 'A positive intention that hits a block places a copy of that block beside it, of the same material (only into empty space inside the room).',
   inspiredBy: 'Autosuggestion and self-talk (Émile Coué, early 1900s)',
   pools: { treasure: 1 },
   tags: ['emotion', 'blocks'],
@@ -29,13 +32,12 @@ export default defineItem({
     palette: { a: pal('path.emotion.dark'), b: pal('path.emotion.base'), c: pal('path.emotion.glow'), d: pal('bone.paper') },
   },
   hooks: [
-    hook('fire', e => { e.intent.homing += 3; }, { id: 'aim', priority: 20 }),
+    // the copy goes into the cell the hit face looks onto; placeBlock refuses anything it must (body, door, wall)
     hook('intentHit', (e, api) => {
-      if (e.kind !== 'block' || e.intent.polarity !== 'positive') return;
+      if (e.kind !== 'block' || e.intent.polarity !== 'positive' || e.intent.tags.has(COPIED)) return;
       const cx = Math.floor(e.x - e.nx * 0.5), cy = Math.floor(e.y - e.ny * 0.5), cz = Math.floor(e.z - e.nz * 0.5);
       const m = api.materialAt(cx, cy, cz);
-      if (!m) return;
-      api.spawnDebris(m, cx + 0.5 + e.nx, cy + 0.5 + e.ny, cz + 0.5 + e.nz, 0, 0, 0);
+      if (m && api.placeBlock(cx + e.nx, cy + e.ny, cz + e.nz, m, 'affirmation')) e.intent.tags.add(COPIED);
     }, { id: 'copy', priority: 200 }),
   ],
 });

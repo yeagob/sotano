@@ -149,3 +149,12 @@ export const ORES: readonly number[] = ['ore', 'copperore', 'tinore', 'quicksilv
 
 /** What the Gardener asks for (GARDENER.md): a root and a tuft of moss. */
 export const GARDEN_MATERIALS: readonly number[] = [MAT.root, MAT.cavemoss];
+
+/** Materials an item may place as a copy of a block it touched (Affirmation). Only ordinary blocks with
+ *  finite health: never the unbreakable ones, the models (chests, alembic, kitchen), the door frames, the
+ *  pedestal or the bomb, which are placed by the world's own rules, never copied. */
+const NOT_COPIED = new Set(['frame', 'goldframe', 'bossframe', 'pedestal', 'bomb']);
+export function isPlaceable(id: number): boolean {
+  const m = MATERIALS[id];
+  return id !== AIR && !!m && isFinite(m.hp) && !m.model && !NOT_COPIED.has(m.key);
+}

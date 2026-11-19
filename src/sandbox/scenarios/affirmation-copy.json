@@ -1,5 +1,5 @@
 {
-  "note": "Affirmation: a positive intention curves toward the nearest block and leaves a copy of it beside it",
+  "note": "Affirmation: a positive intention that hits a crate places a copy of it in the empty cell beside the face it hit",
   "rows": [
     ".............",
     ".............",
@@ -43,7 +43,7 @@
       "do": "look",
       "at": [
         8,
-        1,
+        0,
         3
       ]
     },

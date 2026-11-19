@@ -52,6 +52,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
 | `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
 | `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
+| `placeBlock` | Place one copy of an ordinary block in an empty cell of the player's room (Affirmation). Only interior room space, no body, no element, no door or doorway, never a material that may not be copied. Writes the world like the player's placement but emits no `blockPlace` or `blockPlaced`. Returns whether it placed |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
@@ -136,7 +137,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 
 The owner's list, mapped: the carry limit is `carry` plus `touchCube`; health is `maxHearts` plus `actorDamage`/`heal`; enemies are `enemySpawn`/`actorDamage`/`contact`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
 
-**Intention shape** is carried by fields on `IntentSpec` that items set in a `fire` hook and the core reads: `volley` (how many intentions one shot launches; the extra ones deal 60% damage and mining and fan out), `bounces` (rebounds off blocks it doesn't break), `homing` (how hard it steers toward the nearest block within 6 blocks each second). What an intention does when it hits is an `intentHit` hook.
+**Intention shape** is carried by fields on `IntentSpec` that items set in a `fire` hook and the core reads: `volley` (how many intentions one shot launches; the extra ones deal 60% damage and mining and fan out), `bounces` (rebounds off blocks it doesn't break), `homing` (how hard it steers each second) and `homingTarget` (`'block'`, the default: the nearest block within 6 blocks; `'projection'`: the nearest projection within 8 blocks, through `IntentHooks.nearestEnemy`, a negative intention meeting only hostile ones). Items that write `homingTarget` in a `fire` hook at the same priority run in acquisition order, so the one gained last wins (Dowsing and Eye Contact, see [AIM-PRACTICES](../design/built/practices/AIM-PRACTICES.md)). What an intention does when it hits is an `intentHit` hook.
 
 **Tags on cubes** carry intent across time: a hook on `throw` or `kick` adds a tag, and a hook on `debrisImpact` reacts to it later. The core clears a cube's tags after its impact unless a hook sets `keepTags` (so a volatile cube explodes once, not on every bounce). Items export their tag names as constants.
 

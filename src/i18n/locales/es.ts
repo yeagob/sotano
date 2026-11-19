@@ -825,6 +825,10 @@ export const ES: Catalog = {
     'teach.triple-jump.lesson': 'Divide una meta grande en tres etapas, cada una sobre la anterior. Termina la primera antes de preocuparte por la tercera. El impulso te lleva más lejos que un solo esfuerzo.',
     'teach.menders-thread.quote': 'Donde se rompió, aguanta.',
     'teach.menders-thread.lesson': 'Una reparación no tiene por qué ocultar la rotura. Lo que reparaste puede ser lo más fuerte de ti, y la costura es su registro honesto.',
+    'teach.dowsing.quote': 'Confía en el tirón tranquilo y mira adónde te lleva.',
+    'teach.dowsing.lesson': 'Algunas respuestas llegan cuando dejas de forzarlas y notas adónde vuelve tu atención. Sigue ese tirón con suavidad, compáralo con lo que ya sabes y cava allí con paciencia.',
+    'teach.eyecontact.quote': 'Mira lo que te asusta, y deja que sea solo lo que es.',
+    'teach.eyecontact.lesson': 'Evitar un miedo lo mantiene grande. En un momento en que te sientas a salvo, mira durante unos segundos lo que has estado evitando y respira. Hacerlo con un terapeuta o una persona de confianza suele ser más sabio.',
     'teach.visualization.quote': 'Míralo claro primero, y tu cuerpo conoce el camino.',
     'teach.visualization.lesson': 'Antes de algo importante, cierra los ojos y ensáyalo con detalle: el lugar, los pasos, cómo se siente hacerlo bien. Incluye lo que podría salir mal y cómo responderías. Luego ve y hazlo.',
 
@@ -1098,7 +1102,7 @@ export const ES: Catalog = {
       affirmation: {
         name: 'Afirmación',
         description: 'Lo que afirmas lo haces un poco más real, copia a copia.',
-        effect: 'Las intenciones se curvan hacia el bloque más cercano a menos de 6 bloques. Una positiva que impacta un bloque deja junto a él una copia suelta del mismo.',
+        effect: 'Una intención positiva que impacta un bloque coloca una copia de ese bloque junto a él, del mismo material (solo en espacio vacío dentro de la sala).',
         inspiredBy: 'la autosugestión y el diálogo interior (Émile Coué, principios del siglo XX)',
       },
       thoughtstopping: {
@@ -1323,6 +1327,20 @@ export const ES: Catalog = {
         description: 'Míralo antes de hacerlo: las intenciones vuelan más lejos y más rápido.',
         effect: 'Distancia ×1,6: las intenciones vuelan rectas durante más tiempo. Velocidad de disparo +30 %.',
         inspiredBy: 'el ensayo mental en la psicología del deporte',
+      },
+      dowsing: {
+        name: 'Radiestesia',
+        description: 'Encontrar lo que yace oculto en la tierra confiando en un tirón tranquilo.',
+        effect: 'Las intenciones se curvan hacia el bloque más cercano a menos de 6 bloques. Si también llevas Contacto visual, la que obtuviste al final es la que guía.',
+        inspiredBy: 'la radiestesia, práctica popular para hallar agua y mineral con una varilla',
+        messages: { takesOver: 'Radiestesia ahora guía tus intenciones; Contacto visual queda a un lado.' },
+      },
+      eyecontact: {
+        name: 'Contacto visual',
+        description: 'Mirar lo que temes en lugar de apartar la vista.',
+        effect: 'Las intenciones se curvan hacia la proyección más cercana a menos de 8 bloques. Si también llevas Radiestesia, la que obtuviste al final es la que guía.',
+        inspiredBy: 'el contacto visual en la terapia de exposición y en el entrenamiento asertivo',
+        messages: { takesOver: 'Contacto visual ahora guía tus intenciones; Radiestesia queda a un lado.' },
       },
     },
 

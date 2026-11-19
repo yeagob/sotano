@@ -90,9 +90,11 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | `thought-stopping` | Thought stopping (a cognitive behavioural technique) | Therapy technique | Concept | Interrupting a looping thought before it runs on | **Thought Stopping**: a projection hit freezes |
 | `self-efficacy` | Self-efficacy (Albert Bandura, 1977) | Credit | Credit (psychology concept) | Belief in your own capacity to act changes what you dare | **Self-Efficacy**: a projection hit runs away |
 | `resilience` | Resilience (developmental psychology) | Concept | Concept | Bouncing back from setbacks, and being shaped by them | **Bounce Back**: intentions rebound from blocks |
-| `autosuggestion` | Autosuggestion and self-talk (Émile Coué, early 1900s) | Therapy / practice | PD (Coué died 1926) | Repeated, gentle self-statements shape what we expect | **Affirmation**: intentions aim at blocks and copy them |
+| `autosuggestion` | Autosuggestion and self-talk (Émile Coué, early 1900s) | Therapy / practice | PD (Coué died 1926) | Repeated, gentle self-statements shape what we expect | **Affirmation**: a positive intention that hits a block places a copy of it beside the block |
 | `insight` | Insight learning (Wolfgang Köhler, 1925) | Psychology concept | Credit (the book); Concept (the idea) | The sudden solution that jumps from one thought to the next | **Aha Moment**: arcs between projections |
 | `somatic-discharge` | Somatic discharge (Peter Levine, *Waking the Tiger*, 1997) | Therapy | Credit (the book); Concept (discharge) | Energy held in the body released through movement | **Discharge**: landing sends a shockwave |
+| `dowsing` | Dowsing, the folk practice of finding water and ore with a rod | Folk practice | Concept | Trusting a quiet pull toward what lies hidden | **Dowsing** |
+| `eye-contact` | Eye contact in exposure and assertiveness training | Therapy technique | Concept | Looking at what you fear instead of away from it | **Eye Contact** |
 | `kindling` | Kindling, a growing warmth (a nod to the neuroscience kindling model) | Concept | Concept | Small sparks that grow into a fire | **Kindling**: pain lights a ring of fire |
 | `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance**: the intentions in the room hum into the one you fire |
 

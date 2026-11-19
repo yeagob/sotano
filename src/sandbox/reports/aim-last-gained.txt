@@ -1,0 +1,47 @@
+# aim-last-gained — Dowsing then Eye Contact: the one gained last guides, so the intention curves toward the projection and not the block
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing · synergies —
+  doubt#2 hp 24.0/24 · projection · at 7.5 0.0 0.5
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing eyecontact · synergies —
+  doubt#2 hp 24.0/24 · projection · at 6.8 0.0 0.5
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+  events fire 1 · itemGained:eyecontact 1 · roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing eyecontact · synergies —
+  doubt#2 hp 24.0/24 · projection · at 6.0 0.0 0.5
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+  events intentHit 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing eyecontact · synergies —
+  doubt#2 hp 24.0/24 · projection · at 2.6 0.0 2.4
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .....r.......
+
+legend r stone
