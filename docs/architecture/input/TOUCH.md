@@ -61,4 +61,4 @@ The double tap on the bead came back for one practice only (owner, issue #89): w
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Add 20 seconds, Sound, Calm visuals, Voice and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.
+The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Add time, Sound, Calm visuals, Voice and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.

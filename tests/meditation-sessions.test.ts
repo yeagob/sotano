@@ -41,7 +41,7 @@ describe('the time meditated in a visit', () => {
 });
 
 describe('adding time', () => {
-  it('lengthens the sitting by the step, and the timer keeps the time already run', () => {
+  it('lengthens the sitting by the first step and keeps the clock where it was', () => {
     const app = sitting('night', 20);
     runTo(app, 5 * S);
     expect(app.act('extend', 5 * S)).toBeNull();
