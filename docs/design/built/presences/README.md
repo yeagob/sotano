@@ -8,7 +8,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 
 | Document | Presence | Where it is | What it does |
 |---|---|---|---|
-| [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Takes a monster heart, always drops a 15/75/10 practice or heart reward, and leaves at once |
+| [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Takes a monster heart, always drops a 15/75/10 practice or heart reward, and leaves at once; then asks which path weighs and gives a Lesson in words (the last one, on floor 5, gives the Covenant's Light) |
 | [BOUNDARY.md](BOUNDARY.md) | The Boundary | One per vault of a dungeon floor | Stays still while its sanctuary holds; wakes and throws cubes when the sanctuary is broken |
 | [TRICKSTER.md](TRICKSTER.md) | The Trickster | One seeded floor from 3 down, in a quiet dead end | Offers a trade: one heart for a practice of quality three. Declining costs nothing; it laughs and goes |
 | [ECHO.md](ECHO.md) | The Echo | The floor where the last run faded, once | Asks for one part in hand and gives a key or a bomb. The depth it faded on is kept in the save |
@@ -21,7 +21,7 @@ Presences are the beings of the depths who speak: the parts of the player that a
 | [BOATMAN.md](BOATMAN.md) | The Boatman | A drowned nave of floor 3 or 4 (Zone II), when that floor has one | Asks one block left on the shore, then ferries you to the island and gives a tier 2 gift. It stays on the shore |
 | [MENDER.md](MENDER.md) | The Mender | The first vault opened on floors 3 to 5 (after its Boundary leaves), once per run | Asks one part in hand on a Give or Keep card and gives a tier 3 gift: a practice of quality three, or a special heart. It stays |
 | [STAR-READER.md](STAR-READER.md) | The Star-reader | One seeded Tree floor from 1 to 5, in a quiet room | Asks for a yes to its light on a Take or Decline card, and gives a gift: a practice of quality one or two, or a special heart. It stays |
-| [COVENANT.md](COVENANT.md) | The Covenant | Partly built: the Mender gives the Thread, the Elder the Page and the Witness the Seal; the Light waits on the Listener's Lesson | Keeps the pieces for the run; holding all four adds a line of memory to every presence's exchange card |
+| [COVENANT.md](COVENANT.md) | The Covenant | Built: the Mender gives the Thread, the Elder the Page, the Witness the Seal and the Listener's last Lesson the Light; a closed set, shown in the inventory | Keeps the pieces for the run; holding all four adds a line of memory to every presence's exchange card |
 | [CODEX.md](CODEX.md) | The codex | The menu, under the controls | Lists the presences met this run: name, what each asks and what it gives, in both languages |
 | [MEDITATION-APP.md](MEDITATION-APP.md) | The Sanctuary, the Boundary's meditation app | Opens at the Boundary of each vault, and above the tutorial treasure chest | A quick reward at once (a tier 1–2 practice), or a guided meditation of a random 20–40 seconds for the better one (tier 3–4); six meditations, each with its own scene, music and words |
 
