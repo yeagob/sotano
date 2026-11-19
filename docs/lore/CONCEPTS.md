@@ -32,7 +32,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **The golden flower** (the self that blooms when consciousness turns inward) | `golden-flower`, `jung` | Not built: an endgame symbol, what blooms at the deepest point ([COSMOLOGY.md §3](COSMOLOGY.md#3-the-endgame-connection)) |
 | **All beings are kin** ("for all my relations") | `camino-rojo`, `constellations` | Not built: "Por todas mis relaciones", a practice whose effects reach allies and weaken nearby projections ([CAMINO-ROJO.md](../design/not-built/practices/CAMINO-ROJO.md)) |
 | **Choice creates the moment** | `conversations-with-god` | Not built: a mechanic in which the player's choices shape the run's environment |
-| **Inner voices as guides** (signal, not noise) | `voices-beyond` (unverified) | Not built, and held until the source is verified: a practice about listening to inner voices |
+| **Inner voices as guides** (signal, not noise) | `voices-beyond` (Caution: a book presented as true, later acknowledged as fiction) | Not built: a practice about listening to inner voices. The idea is not attributed to the book |
 | **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/built/bosses/README.md)) |
 | **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/built/intentions/POLARITY.md)) |
 | **Keeping your word** (agreements, promises) | `four-agreements` | Presences make agreements; the gifts are *promised* and cannot be lost ([BESTIARY §8.6–§8.7](../design/not-built/presences/AGREEMENTS.md)) |
