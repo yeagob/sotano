@@ -12,7 +12,7 @@ import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
-import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, synergyText } from '../i18n/content';
+import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
 import type { Polarity } from '../combat/polarity';
@@ -32,7 +32,11 @@ import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
+import { PARTS, type Completion } from './completion';
+import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
+import { PRESENCE_TALK, type PresenceId } from '../content/presences';
+import { COVENANT_PIECES } from '../content/presences/covenant';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -60,6 +64,9 @@ const MAP = {
 };
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
+
+/** A presence's request as the consent card shows it: what it asks, and the alternative (requests.ts, REQUESTS.md). */
+export interface PresenceRequestText { ask: MessageKey; alt: MessageKey }
 
 /** "Floor 3 · The rain": the number and the circle's image (docs/design/LEVELS.md). */
 export function floorLabel(depth: number): string {
@@ -125,8 +132,15 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
+  /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
+   *  navigate action has reached; a tap or the confirm action picks one. */
+  private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
+  /** The presences met in this run, in the order met: the codex (CODEX.md). */
+  private codexIds: readonly PresenceId[] = [];
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
+  /** The completion percentage shown on the pause card and the death screen (COMPLETION.md). */
+  private completionView: Completion | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
   screenOpen = false;
@@ -134,6 +148,8 @@ export class Hud {
   private shownTab: ScreenTab | null = null;
   bannerOpen = false;
   get presenceOfferOpen() { return this.lastPresenceOffer !== null; }
+  get presenceChoiceOpen() { return this.lastPresenceChoice !== null; }
+  get choiceSelected() { return this.lastPresenceChoice?.selected ?? -1; }
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
@@ -196,6 +212,7 @@ export class Hud {
     this.setItems(this.lastItems);
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
+    this.renderCompletion();
     this.renderPolarity();
     this.renderSpiritLabel();
     this.renderLanguages();
@@ -203,6 +220,7 @@ export class Hud {
     this.renderGraphics();
     if (this.lastAchievement) this.renderAchievement(this.lastAchievement);
     else if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastPresenceChoice) this.renderPresenceChoice();
     else if (this.bannerOpen && this.lastCard) this.renderCard(this.lastCard);
     else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
@@ -236,6 +254,23 @@ export class Hud {
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
+    this.renderCodex();
+  }
+
+  /** The codex (CODEX.md): the presences met this run, with what each asks and what it gives. Text only, in the language on screen. */
+  setCodex(ids: readonly PresenceId[]) {
+    this.codexIds = [...ids];
+    this.renderCodex();
+  }
+
+  private renderCodex() {
+    const list = document.querySelector<HTMLElement>('#codex ul');
+    if (!list) return;
+    list.innerHTML = this.codexIds.length
+      ? this.codexIds.map(id => `<li><b>${th(PRESENCE_TALK[id].name)}</b>` +
+        `<span><em>${th('codex.asks')}</em> ${th(`codex.${id}.asks` as MessageKey)}</span>` +
+        `<span><em>${th('codex.gives')}</em> ${th(`codex.${id}.gives` as MessageKey)}</span></li>`).join('')
+      : `<li class="none">${th('codex.empty')}</li>`;
   }
 
   get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }
@@ -551,11 +586,14 @@ export class Hud {
       `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
   }
 
-  presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+  /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
+   *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
+  /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried };
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -572,16 +610,20 @@ export class Hud {
   private renderPresenceOffer() {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
-    const item = typeof offer.carried === 'number'
-      ? materialName(offer.carried)
-      : isFlask(offer.carried)
-        ? t(POTIONS[offer.carried.potion].name)
-        : partText(offer.carried).name;
+    const carried = offer.carried;
+    const item = carried === undefined
+      ? ''
+      : typeof carried === 'number'
+        ? materialName(carried)
+        : isFlask(carried)
+          ? t(POTIONS[carried.potion].name)
+          : partText(carried).name;
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
-      `<span class="offer-question" id="presence-offer-question">${th('presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
-      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
-      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
+      `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      (offer.request ? `<span class="offer-request">${th(offer.request.ask)}<small>${th(offer.request.alt)}</small></span>` : '') +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.gift ? 'presence.offer.take' : 'presence.offer.accept')}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.gift ? 'presence.offer.leave' : 'presence.offer.decline')}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
     this.renderPresenceOfferControls();
     this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
@@ -589,7 +631,9 @@ export class Hud {
 
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
-    if (el) el.textContent = t(forDevice('presence.offer.controls', activeDevice()), controlParams(activeDevice()));
+    if (!el) return;
+    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
+    el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
   closePresenceOffer() {
@@ -598,8 +642,53 @@ export class Hud {
     this.bannerEl.classList.remove('show');
   }
 
+  /** The choice card (see `lastPresenceChoice`): the presence asks, and the player picks one of its answers or declines. */
+  presenceChoiceCard(nameKey: MessageKey, questionKey: MessageKey, options: readonly MessageKey[], request?: PresenceRequestText) {
+    this.hideAchievement();
+    this.lastBanner = null;
+    this.lastCard = null;
+    this.clearPresenceOfferState();
+    this.lastPresenceChoice = { nameKey, questionKey, options, selected: 0, request };
+    this.bannerEl.dataset.offer = 'true';
+    this.bannerEl.setAttribute('role', 'dialog');
+    this.bannerEl.setAttribute('aria-modal', 'true');
+    this.bannerEl.setAttribute('aria-labelledby', 'presence-offer-title');
+    this.bannerEl.setAttribute('aria-describedby', 'presence-offer-question');
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.renderPresenceChoice();
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  /** Moves the selected answer by one (navigate); wraps at the ends. */
+  moveChoice(dx: number) {
+    const c = this.lastPresenceChoice;
+    if (!c || dx === 0) return;
+    c.selected = (c.selected + Math.sign(dx) + c.options.length) % c.options.length;
+    this.renderPresenceChoice();
+  }
+
+  private renderPresenceChoice() {
+    const c = this.lastPresenceChoice;
+    if (!c) return;
+    const answers = c.options.map((key, i) =>
+      `<button type="button" class="${i === c.selected ? 'on' : ''}" aria-pressed="${i === c.selected}" data-act="presence-choice-${i}">${th(key)}</button>`).join('');
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b id="presence-offer-title">${th(c.nameKey)}</b>` +
+      `<span class="offer-question" id="presence-offer-question">${th(c.questionKey)}</span>` +
+      (c.request ? `<span class="offer-request">${th(c.request.ask)}<small>${th(c.request.alt)}</small></span>` : '') +
+      `<div class="offer-actions choices">${answers}` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.choice.decline')}</button></div>` +
+      `<small class="offer-controls"></small></div></div>`;
+    this.renderPresenceOfferControls();
+    this.bannerEl.querySelector<HTMLButtonElement>('.offer-actions button.on')?.focus({ preventScroll: true });
+  }
+
   private clearPresenceOfferState() {
     this.lastPresenceOffer = null;
+    this.lastPresenceChoice = null;
     delete this.bannerEl.dataset.offer;
     this.bannerEl.removeAttribute('role');
     this.bannerEl.removeAttribute('aria-modal');
@@ -771,6 +860,36 @@ export class Hud {
     this.toastTimer = performance.now() + 2500;
   }
 
+  /** Gives the HUD the completion percentage to show (COMPLETION.md). Redraws the pause card; the death screen takes it when it shows. */
+  setCompletion(c: Completion) {
+    this.completionView = c;
+    this.renderCompletion();
+  }
+
+  /** Redraws the block; a focused download button keeps its focus across the redraw (a first time changes only the count). */
+  private renderCompletion() {
+    const el = document.getElementById('completion');
+    if (!el) return;
+    const focused = document.activeElement instanceof HTMLElement && document.activeElement.classList.contains('book-download') && el.contains(document.activeElement);
+    el.innerHTML = this.completionHtml();
+    if (focused) el.querySelector<HTMLElement>('.book-download')?.focus();
+  }
+
+  /**
+   * The completion block, one render function for the pause card and the death screen: the percentage, then each part with
+   * its done count and its share of the whole (COMPLETION.md §4). Empty until the game gives a completion.
+   */
+  private completionHtml(): string {
+    const c = this.completionView;
+    if (!c) return '';
+    const rows = PARTS.map(p => {
+      const x = c.parts[p];
+      return `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.count', { done: x.done, total: x.total })}</span>` +
+        `<span>${th('completion.share', { share: x.weight })}</span></li>`;
+    }).join('');
+    return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul>${bookButtonHtml(c.percent)}</section>`;
+  }
+
   private seedText = '';
   private seedListener = false;
 
@@ -809,7 +928,7 @@ export class Hud {
     this.deathEl.innerHTML =
       `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
-      `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
+      `${this.completionHtml()}<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
   }
 
   hideDeath() { this.deathEl.classList.remove('show'); }
@@ -967,9 +1086,9 @@ export class Hud {
     const device = activeDevice();
     this.tollEl.innerHTML =
       `<div class="card slate"><header><h2>${th('toll.title')}</h2>` +
-      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · ${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</small></header>` +
+      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · <b class="count">${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</b></small></header>` +
       `<p class="hint">${th('toll.hint', controlParams(device))}</p>` +
-      `<p class="hint">${this.tollCost(g)}</p>` +
+      `<p class="hint cost">${this.tollCost(g)}</p>` +
       `<div class="grid">${body || `<p class="none">${th('toll.none')}</p>`}</div>` +
       `<div class="go-row"><button type="button" class="tile go${ready ? '' : ' off'}${cur === 'pay' ? ' cur' : ''}" data-id="pay"><span class="lbl">${th('toll.go')}</span></button>` +
       `<button type="button" class="tile go${cur === 'close' ? ' cur' : ''}" data-id="close"><span class="lbl">${th('toll.stay')}</span></button></div></div>`;
@@ -1035,12 +1154,20 @@ export class Hud {
         : `<li class="off"><b>✧ ???</b><small>${reqs} (${met}/${sy.requires.length})</small></li>`;
     }).join('');
 
+    // the Covenant (COVENANT.md): each piece held is a labelled tile with its gold seam and "promised"; nothing shows before
+    // the first piece, so the set is never announced before it is begun
+    const pieces = g.covenantPieces;
+    const covenant = pieces.length
+      ? `<h3>${th('covenant.title')} <small>${pieces.length}/${COVENANT_PIECES.length}</small></h3><ul class="covenant">` + pieces.map(p =>
+        `<li class="piece"><b>${th(`covenant.piece.${p}` as MessageKey)}</b><span>${th(`covenant.from.${p}` as MessageKey)}</span><small>${th('covenant.promised')}</small></li>`).join('') + '</ul>'
+      : '';
+
     const stats = STAT_ORDER.map(n => `<tr><td>${esc(statLabel(n))}</td><td>${esc(fmtStat(n, s[n]))}</td></tr>`).join('');
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
       `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
-      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
+      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul>${covenant}</section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
     // the carried items are the HUD's own hand slots, chosen by a click or a tap
@@ -1061,7 +1188,8 @@ export class Hud {
   }
 
   private carriedDetail(c: Carried) {
-    return `<div class="detail"><div><b>${esc(this.carriedLabel(c))}</b><p>${th(forDevice('inv.choose', activeDevice()))}</p></div></div>`;
+    return `<div class="detail"><header class="d-head"><div><b class="d-name">${esc(this.carriedLabel(c))}</b></div></header>` +
+      `<section class="d-block"><p>${th(forDevice('inv.choose', activeDevice()))}</p></section></div>`;
   }
 
   private carriedLabel(c: Carried): string {
@@ -1070,29 +1198,25 @@ export class Hud {
     return partText(c).name;
   }
 
+  /**
+   * A practice in three blocks, always in this order (issue #202): the teaching (a phrase that carries the practice into
+   * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
+   */
   private itemDetail(d: ItemDef) {
     const fx = (d.stats ?? []).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
-      return `<i>${esc(statLabel(m.stat))} ${esc(v)}</i>`;
+      const dir = m.layer === 'mul' ? (m.value >= 1 ? 'up' : 'down') : m.layer === 'final' ? 'set' : m.value >= 0 ? 'up' : 'down';
+      return `<li class="${dir}"><span>${esc(statLabel(m.stat))}</span><b>${esc(v)}</b></li>`;
     }).join('');
     const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${pathColor(p)}">${PATH_GLYPH[p as PathName]} ${esc(pathName(p))}</em>`).join('');
-    const tx = itemText(d);
-    const teachingText = d.teaching ?? tx.description;
-
-    // Block 1: Teaching / Life Lesson
-    const teachingBlock = `<div class="teaching-block"><em class="block-label">${th('inv.teaching')}</em><p class="teaching-text">${esc(teachingText)}</p>${tx.inspiredBy ? `<small class="inspired-by">${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</div>`;
-
-    // Block 2: Object Description
-    const objectBlock = `<div class="object-block"><em class="block-label">${th('inv.object')}</em><p class="effect">${esc(tx.effect)}</p></div>`;
-
-    // Block 3: Statistics
-    const statsBlock = `<div class="stats-block"><em class="block-label">${th('inv.stats')}</em><div class="fx">${fx}</div></div>`;
-
-    return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
-      `<div><b>${esc(tx.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
-      teachingBlock + objectBlock + statsBlock +
-      `</div></div>`;
+    const tx = itemText(d), lesson = practiceTeaching(d);
+    return `<div class="detail" style="--c:${hex(d.color)}"><header class="d-head"><img src="${iconDataUrl(d, 6)}" alt="">` +
+      `<div><b class="d-name">${esc(tx.name)}</b><span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}</div></header>` +
+      `<section class="d-block d-teach"><h4>${th('inv.teaching')}</h4><blockquote>${esc(lesson.quote)}</blockquote><p>${esc(lesson.lesson)}</p>` +
+      `${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</section>` +
+      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p></section>` +
+      `<section class="d-block d-stats"><h4>${th('inv.stats')}</h4>${fx ? `<ul class="fx">${fx}</ul>` : `<p class="none">${th('inv.noStats')}</p>`}</section></div>`;
   }
 
   private reqLabel(r: Req, g: Game) {

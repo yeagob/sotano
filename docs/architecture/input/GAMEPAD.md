@@ -20,6 +20,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
+| book | X, on the pause card or the death screen (download the book at 100%) |
 | confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death) |
 | back | B (declines a Presence offer) |
 
@@ -48,4 +49,4 @@ Every screen shake (hurt, blasts, slams) plays a `dual-rumble` scaled to its str
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.
+The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off), LB (the spoken guidance on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.

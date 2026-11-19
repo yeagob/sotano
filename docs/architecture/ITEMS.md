@@ -40,7 +40,7 @@ export default defineItem({
 });
 ```
 
-Then list it in `src/content/items/index.ts`, and translate `name`, `description`, `effect` (and `inspiredBy`, `messages` if any) in every non-English catalog in `src/i18n/locales/` ([LOCALIZATION.md](LOCALIZATION.md) §5; `tests/i18n.test.ts` lists what is missing, and checks the translated `effect` keeps the same numbers). The full checklist is the project skill [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md).
+Then list it in `src/content/items/index.ts`, and translate `name`, `description`, `effect` (and `inspiredBy`, `messages` if any) in every non-English catalog in `src/i18n/locales/`, and write its **teaching** (`teach.<id>.quote` and `teach.<id>.lesson`, issue #202: a phrase that carries the practice into everyday life and two or three lines on how to live it, shown first in the practices tab) in every catalog's `messages` ([LOCALIZATION.md](LOCALIZATION.md) §5; `tests/i18n.test.ts` lists what is missing, and checks the translated `effect` keeps the same numbers). The full checklist is the project skill [`sotano-items`](../../.claude/skills/sotano-items/SKILL.md).
 
 - `hook(event, fn, { id?, priority? })` is typed: the payload type comes from the event name. Give an `id` to every hook that defines the item's identity, so synergies can target it.
 - Hooks get the event context (mutable fields + `cancel()`) and an `ItemApi` facade:

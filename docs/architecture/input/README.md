@@ -56,12 +56,16 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
+| book | press | paused, dead | B | X | the "Download the book" button, at 100% completion (COMPLETION §8) |
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
-| navigate | axis | inventory, toll, paused, meditation | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+| navigate | axis | inventory, toll, paused, meditation, prompt | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+
+**The choice card (prompt).** A presence's question with up to four answers (`Hud.presenceChoiceCard`) reads `navigate` to move the selection (left and right, or up and down, wrap at the ends); confirm picks the selected answer; back, or Not now, answers nothing. A tap on an answer picks it. Owed in a browser: the gamepad and touch paths were not checked (see ELDER.md and CARTOGRAPHER.md).
 | back | press | inventory, toll, meditation; prompt (keyboard/gamepad) | Esc | B | ✕ (in a sitting, the Leave button); offer card buttons |
 | skip | press | meditation | N | RB | the Next part button |
 | mute | press | meditation | M | X | the Sound button |
 | calm | press | meditation | C | Y | the Calm visuals button |
+| voice | press | meditation | V | LB | the Voice button (the Sanctuary's spoken guidance) |
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
 

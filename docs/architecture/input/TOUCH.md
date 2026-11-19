@@ -20,6 +20,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |
+| book | "Download the book" on the pause card or the death screen (at 100%) |
 | confirm | tap a Presence offer button; tap anywhere to dismiss other banners; "Tap to play" on the menu tab |
 | back | no separate binding for offers: tap Keep to decline |
 
@@ -59,4 +60,4 @@ The double tap on the bead came back for one practice only (owner, issue #89): w
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Sound, Calm visuals and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.
+The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Add 20 seconds, Sound, Calm visuals, Voice and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.

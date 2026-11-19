@@ -21,6 +21,31 @@ export interface MetaState {
   counts: Record<string, number>;
   /** The player has made the Listener's pact at least once (the first pact, ACHIEVEMENTS "Mind Crafter"). Optional: absent means not yet. */
   pact?: true;
+  /** The depth the last run faded on (its death), for the Echo (ECHO.md): it waits on that floor in the next run that
+   *  reaches it, once, and the record forgets it when the Echo is met. Optional: absent means no Echo waits. */
+  fade?: { floor: number };
+  /** The first-time records of the completion percentage (COMPLETION.md): ids only, each kept once. Optional: absent means none yet. */
+  firsts?: Firsts;
+}
+
+/** The kinds of first-time record the completion percentage counts (COMPLETION.md). Floors and bestiary need no achievement. */
+export const FIRST_KINDS = ['floors', 'practices', 'bestiary', 'recipes'] as const;
+export type FirstKind = (typeof FIRST_KINDS)[number];
+export type Firsts = Record<FirstKind, string[]>;
+
+export function emptyFirsts(): Firsts {
+  return { floors: [], practices: [], bestiary: [], recipes: [] };
+}
+
+/** The union of two first-time records (a missing one is empty), or undefined when both are empty. */
+export function unionFirsts(a: Partial<Firsts> | undefined, b: Partial<Firsts> | undefined): Firsts | undefined {
+  const out = emptyFirsts();
+  let any = false;
+  for (const k of FIRST_KINDS) {
+    out[k] = [...new Set([...(a?.[k] ?? []), ...(b?.[k] ?? [])])];
+    if (out[k].length) any = true;
+  }
+  return any ? out : undefined;
 }
 
 /** What loadMeta returns. readOnly is set for a newer build's record: the game plays, earns nothing persistent and never writes. Never stored. */
@@ -44,6 +69,8 @@ function clean(input: unknown): MetaState {
   s.staircase = o.staircase === true;
   if (typeof o.metAt === 'number' && Number.isFinite(o.metAt)) s.metAt = o.metAt;
   if (o.pact === true) s.pact = true;
+  const fade = isObj(o.fade) ? o.fade.floor : undefined;
+  if (typeof fade === 'number' && Number.isInteger(fade) && fade >= 1) s.fade = { floor: fade };
   const roots = isObj(o.roots) ? o.roots : {};
   const page = roots.page;
   if (typeof page === 'number' && Number.isInteger(page) && page >= 1) s.roots.page = page;
@@ -56,6 +83,15 @@ function clean(input: unknown): MetaState {
     for (const [id, n] of Object.entries(o.counts)) {
       if (typeof n === 'number' && Number.isInteger(n) && n >= 0) s.counts[id] = n;
     }
+  }
+  if (isObj(o.firsts)) {
+    const f = emptyFirsts();
+    for (const k of FIRST_KINDS) {
+      const list = Array.isArray(o.firsts[k]) ? (o.firsts[k] as unknown[]) : [];
+      f[k] = [...new Set(list.filter((x): x is string => typeof x === 'string'))];
+    }
+    const any = unionFirsts(f, undefined);
+    if (any) s.firsts = any;
   }
   return s;
 }
@@ -118,6 +154,10 @@ export function mergeMeta(stored: MetaState, mine: MetaState): MetaState {
     counts,
   };
   if (stored.pact || mine.pact) out.pact = true;
+  // the Echo's place is the tab's own latest word: a death writes it, meeting the Echo forgets it (ECHO.md)
+  if (mine.fade) out.fade = { floor: mine.fade.floor };
+  const firsts = unionFirsts(stored.firsts, mine.firsts);
+  if (firsts) out.firsts = firsts;
   const times = [stored.metAt, mine.metAt].filter((t): t is number => t !== undefined);
   if (times.length) out.metAt = Math.min(...times);
   return out;
@@ -150,6 +190,8 @@ export function adoptMeta(target: LoadedMeta, from: MetaState): void {
   target.achievements = { ...from.achievements };
   target.counts = { ...from.counts };
   if (from.pact) target.pact = true; else delete target.pact;
+  if (from.fade) target.fade = { floor: from.fade.floor }; else delete target.fade;
+  if (from.firsts) target.firsts = unionFirsts(from.firsts, undefined); else delete target.firsts;
 }
 
 /**
@@ -161,6 +203,8 @@ export function resetMeta(s: LoadedMeta, store: MetaStore = browserStore): Loade
   const out: LoadedMeta = defaultMeta();
   out.staircase = s.staircase;
   if (s.metAt !== undefined) out.metAt = s.metAt;
+  // the Echo's place is a dweller's memory, not the Roots: it is kept (ECHO.md)
+  if (s.fade) out.fade = { floor: s.fade.floor };
   if (s.readOnly || loadMeta(store).readOnly) { out.readOnly = true; return out; }
   try { store.write(JSON.stringify(clean(out))); } catch { /* not remembered */ }
   return out;

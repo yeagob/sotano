@@ -7,8 +7,9 @@ The game keeps three things between runs: the **page** the Roots have reached (t
 | Document | Contents |
 |---|---|
 | [MASTERY.md](MASTERY.md) | The Roots' mastery level: what it counts, its cap, when it applies, where it is shown |
-| [ACHIEVEMENTS.md](ACHIEVEMENTS.md) | The 46 achievements that ship (the 40 of #147 and six from #179 (the Roots, the way up, the crown, the pact, the book, bedrock); each boss destroyed and turned to your side, six meditations, the first brew, the first meal, four pages of the book) with ids, names and rules in English and Spanish; the data model; the notice |
+| [ACHIEVEMENTS.md](ACHIEVEMENTS.md) | The 47 achievements that ship (the 40 of #147, six from #179 (the Roots, the way up, the crown, the pact, the book, bedrock) and "Made Omh" at 100% completion; each boss destroyed and turned to your side, six meditations, the first brew, the first meal, four pages of the book) with ids, names and rules in English and Spanish; the data model; the notice |
 | [SAVE.md](SAVE.md) | The save record, version 2: its fields, the migration from version 1, reading and writing, the merge of two tabs, the reset |
+| [COMPLETION.md](COMPLETION.md) | The completion percentage (#180): seven weighted parts, what counts as a first time, the pure function, the display, and the open questions |
 
 What all three share:
 
@@ -17,4 +18,4 @@ What all three share:
 - **Every word in both languages.** Names, descriptions, the notice and the step lines are message keys in `src/i18n/locales/`.
 - **The sandbox and the lab write nothing** and unlock nothing.
 
-Still to design, and not built: the other 60 achievements ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define), issue #179), the completion percentage (#180), the unlockables (#113). See [not-built/progression](../../not-built/progression/README.md).
+Still to design, and not built: the other 53 achievements ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define), issue #179), the unlockables (#113). The completion percentage (#180) is built, with its open questions pending the owner. See [not-built/progression](../../not-built/progression/README.md).

@@ -26,7 +26,7 @@ What a presence says, how it asks, and what talking gives. Presences ask more th
 
 ## Open questions
 
-- **Choices.** The build has no choices. The design's three choices per line need the card to take a choice, and the input rules (controls) to cover it.
+- **Choices.** Built in part: the choice card takes up to four answers and is reached by the keyboard (arrows, confirm, back), a gamepad (d-pad, A, B), the mouse and touch (tap). The Elder and the Cartographer use it. No other decided line asks a choice yet, so the design's three-choice lines wait for their owner decision.
 - **Lessons.** A Lesson is a change for the run. The run's state must hold it; the item system is the nearest model (see [items](../../../architecture/ITEMS.md)).
 - **Reading and Ally.** Both need run memory and the Mender's integration (see [Memory](MEMORY.md)).
 - **Localisation.** Every line goes through the translations (English and Spanish) before it ships.
