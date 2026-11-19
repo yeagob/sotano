@@ -7,6 +7,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. The Light is not given yet. Once all four are held, every presence remembers you in its card (#149).
+- The Child asks you to draw something small on its build card, and The Elder asks you to be still on its choice card, each with an alternative that needs no hands (#149).
 - The codex: the menu lists the presences you met in this run, with what each asks and what it gives, in English and Spanish (#149).
 - The idle window: after you give The Gardener or The Boatman what they asked for, it stays in its room for a seeded 30 to 60 seconds, then leaves. The length is fixed by the run's seed (#149).
 - Requests from the depths: The Gardener asks you to breathe slowly, and The Boatman asks you to stand and move before the crossing. The card names the request and an always-offered alternative; Give or Keep decides, and keeping costs nothing (#149).

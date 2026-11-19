@@ -2,7 +2,7 @@
 
 # Agreements: things you bring
 
-Status: **proposal** (design text, bestiary section 8.6). The owner has not confirmed the agreement readings k to o (design section 13).
+Status: **partly built** (issue #149). The Trickster and the Echo take a part on a consent card, and the Mender (one part) and the Boatman (one block) do too; the other agreements are proposals, and the owner has not confirmed the readings k to o (design section 13). The agreements not built are listed below, with the reason.
 
 Some presences make an agreement instead of asking for an action: "bring me this". They ask for objects from the world: hard, valuable materials, or parts of projections. The player delivers them in person, in the presence's room. Handing the item over closes the agreement and gives its gift. Every delivery is opt-in: the presence names all requested objects and asks before taking any of them. Declining costs nothing and leaves the agreement open.
 
@@ -39,3 +39,24 @@ Parts exist in the build: a released projection can leave one of its parts as a 
 - **The readings.** The owner has not confirmed the agreement readings (design section 13, k to o).
 - **Parts.** Parts are built as pickups with names taken from the projection. Agreements need the parts' names and kinds to match the design's table of four (flesh, heart, mind, essence).
 - **The deep.** "From the deep" needs a rule for which floors count as deep.
+
+## Moved, not built (issue #149)
+
+Each of these is a proposal. None is built, and the reason is what the build lacks today.
+
+| Presence | Agreement in the design | Why it is not built |
+|---|---|---|
+| The Gardener | A root and a tuft of moss | The Gardener asks for one flesh part and a breath (REQUESTS.md). No root or moss exists as a part or a material, so the agreement waits on the material list |
+| The Child | Three loose cubes of different materials | The Child's build is built (three blocks, any shape). Its agreement needs three materials in hand; the consent card names one thing at a time |
+| The Wanderer | The mind of the first pattern met | It gives a gift and asks for nothing; the agreement would be a new request kind, which is not decided |
+| The Listener | A heart of a pattern released | The Listener's heart is built as its reward input (LISTENER.md). Its agreement is the Lesson, not built (see COVENANT.md) |
+| The Cartographer | One ore from every zone crossed | Needs ores from each zone and a count of zones crossed; neither is tracked |
+| The Elder | A page of ledger stone and the essence of a rule | Ledger stone is not a material, and the Ledger Halls are not built (ELDER.md). The Elder gives the Page of the Covenant instead, on its choice card |
+| The Mender | Three shards of different essences | Built as one part for a quality-three practice or a special heart (proposed default). Three shards need a multi-part card, owed to the owner |
+| The Witness | One part of each pattern released | Needs the Silence below floor 9 and the parts of every pattern (not built) |
+
+## Owed to the owner
+
+- **Multi-part cards.** The Child, the Mender and the Witness ask for several objects in the design. The build asks for one at a time. Decide whether a card may name several objects, and how the confirmation lists them.
+- **Materials for the Gardener and the Cartographer.** Decide whether a root, a moss and the ores of each zone are materials of the run.
+- **The readings k to o.** Still open (design section 13).

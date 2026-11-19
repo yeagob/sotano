@@ -45,4 +45,17 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 | The Boatman | A pocket that is unreachable otherwise, and a levels ruling | Built by the drowned nave of floor 3 or 4: a block as toll, a ferry to the island, a tier 2 gift; the key and bomb tolls are not built |
 | The Star-reader | The Leaves of the Tree (a room a presence can stand in), the star map and the doors | Built in a quiet room of one Tree floor, a Take or Decline gift; the reading in words only, the rest stays in its document |
 | Requests, the idle window, dialogue, the codex | The owner's ruling on the requesters' leave rule and on the trust meter | Requests (the Gardener, the Boatman) and the idle window (30 to 60 seconds) are built, pending a ruling; the codex lists the presences met; the choice card is built and is the first piece of dialogue; the trust meter and the other requests are not built |
-| Covenant and agreements beyond the two built ones | The owner's ruling on the four pieces and their costs | Not built |
+| The Covenant | The Listener's Lesson (the Light), and the owner's ruling on the closed set | Partly built: the record, the Thread, the Page, the Seal and the set effect (the line on each card); the Light is owed |
+| Agreements beyond the built ones | The owner's readings k to o and multi-part cards | Trickster, Echo, Mender and Boatman are built; the rest are moved to [AGREEMENTS.md](AGREEMENTS.md) with the reason |
+| The Thread as an item | The owner's ruling on whether covenant pieces show in the inventory | Not built: the Thread is a record piece, like the others; its inventory label and seam are owed |
+| The Leaves, the star map, the Boatman's pocket, the Silence below floor 9, vaults below floor 5 | Levels ruling (sotano-levels) and the owner | Not built. Not changed in this pass: the levels are owed to the owner |
+
+## Issue #149: status (2026-11-19)
+
+Built in the issue: the codex, the idle window, the requests (the Gardener, the Boatman, the Child and the Elder), the Covenant record with three pieces and its set effect, and the Mender, Star-reader, Witness, Boatman, Wanderer, Child, Trickster and Echo. The Covenant's Light is not built.
+
+Decided but not built: the Covenant's Light (after the Listener's Lesson); the Elder's Reading and the Ledger Halls; the Child's Cellar of Habits; the Cartographer's star map and the Tree's crossroads; the Star-reader's Leaves (a room a presence can stand in, which the levels rules must allow).
+
+Owed to the owner, not changed in this pass: the Silence below floor 9 (the Witness waits on the ninth floor until it is built); the levels ruling for vaults below floor 5 (the Mender waits on floors 3 to 5 only); the Boatman's pocket that is reachable only by the toll; whether covenant pieces show in the inventory, with their labels and seams; the multi-part agreement cards; the readings of the idle window and the reward tables; the Listener's Lesson; the closed-set reading; the not-therapy note and help line.
+
+Issue #149 is **not complete** while the items above are open.
