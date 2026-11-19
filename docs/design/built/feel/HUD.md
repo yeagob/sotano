@@ -26,7 +26,7 @@ A small map in the top right. Cleared rooms show in gold, the current room in th
 
 ## The toll window
 
-Going down asks a price. The toll window lists what you carry (keys, bombs, hearts, blocks from the hand, and from the sixth level on, practices). You choose exactly the number the window asks for. The rule is in [MECHANICS](../story/MECHANICS-AND-METAPHOR.md#notes) and the levels documents.
+Going down asks a price. The toll window lists what you carry (keys, bombs, hearts, blocks from the hand, and from the sixth level on, practices). You choose exactly the number the window asks for. The rule is in [MECHANICS](../story/MECHANICS-AND-METAPHOR.md#notes) and the levels documents. The window ("The way down", *La bajada*) has the pixel finish of the achievement notice (issue #224): a gold bar down its left, the title in Pixelify Sans at 40 px, the section headings, the chosen count, the ✓ marks and the two buttons at 20 px, and chamfered tiles. A picked tile has a gold frame and a ✓; the tile under the cursor has a paper frame inside; Go down turns gold once the count is met. What the picks would cost sits in its own inset line.
 
 ## The screen
 

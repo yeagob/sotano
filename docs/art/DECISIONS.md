@@ -809,6 +809,8 @@ The lantern grows +0.5 m per state; the HUD shows states with glyphs (§10.2).
 
 **Pause card (issue #223, 2026-11-19):** the same finish as the notice and the practices tab: a 2 `--u` `light.gold` accent bar on the card's left (the card carries both tabs); tabs, the action and language buttons, the section headings (`light.gold`, ◆) and the field-of-view value in Pixelify Sans 20 px; every button cut by the 1 `--u` chamfer with the 2 px `ink.bevel` top-left bevel, the chosen one framed in 2 px `light.gold`; the controls rows split by 1 px `ink.void` rules. Its styles live in one block at the end of the stylesheet in `index.html`.
 
+**Toll window, "the way down" (issue #224, 2026-11-19):** the notice's finish: the slate with a 2 `--u` `light.gold` accent bar on the left; the title 40 px and the section headings (◆ in `light.gold`), the chosen count (`light.gold`), the ✓ and the Go down / Stay labels 20 px Pixelify Sans; tiles cut by the 1 `--u` chamfer with the 2 px `ink.bevel` bevel. States read by shape: picked = 2 `--u` `light.gold` frame + ✓; cursor = 2 px `bone.paper` frame; both = the gold frame with a 1 `--u` paper frame inside; Go down framed in gold once the count is met, at 50 % while it is not. The cost line is an inset `ink.void` bar with a 1 `--u` `bone.dim` rule.
+
 **Death screen:** background `ui.night` → `ink.void` (vertical); an **ensō** drawn in `bone.paper` (2 `--u` weight) over 1.2 s that closes *almost* fully; "The intention faded" 40 px; the cause phrased with the pattern as agent: "Panic held you on floor 3" (never "Overcome by"); the run's hexagram small with completed stations lit; "Begin again" on a slate button. No blood red.
 
 ### 10.3 The run's hexagram

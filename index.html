@@ -413,27 +413,38 @@
     #inventory header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer;
       box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
     #inventory header .close:hover, #inventory header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
-    #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
+    /* the toll window, "the way down" (issue #224): the achievement notice's pixel finish. A 2 u gold accent bar, the
+       title at 40 px and the headings, count, marks and buttons at 20 px Pixelify Sans; chamfered, bevelled tiles.
+       Picked = gold frame and ✓; cursor = paper frame inside (shape, not colour alone); a picked tile under the cursor keeps both. */
+    #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
     #toll.show { display: flex; }
-    #toll .card { width: min(640px, 94vw); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
-    #toll header { border-bottom: 2px solid var(--ui-line); margin-bottom: 8px; }
-    #toll h2 { margin: 0 0 6px; letter-spacing: 3px; }
+    #toll .card { width: min(640px, 100%); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)) calc(6 * var(--u)) calc(7 * var(--u));
+      border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #toll header { border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 8px; }
+    #toll h2 { margin: 0 0 6px; font: 40px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
     #toll small { color: var(--ui-text-2); font-size: 14px; }
+    #toll .count { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ui-gold); white-space: nowrap; }
     #toll .hint { margin: 6px 0 0; font-size: 14px; color: var(--ui-faded); }
+    #toll .hint.cost { padding: 6px 10px; background: var(--ui-line); border-left: var(--u) solid var(--ui-text-2); color: var(--ui-text-2); clip-path: var(--cut); }
     #toll .grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    #toll .grid h3 { flex: 0 0 100%; margin: 12px 0 2px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
+    #toll .grid h3 { flex: 0 0 100%; margin: 14px 0 4px; font: 20px/1.15 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-text-2); text-transform: uppercase; }
+    #toll .grid h3::before { content: '\25C6  '; color: var(--ui-gold); }
     #toll .none { color: var(--ui-faded); }
-    #toll .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; font: inherit; color: var(--ui-text); }
-    #toll .tile img { width: 42px; height: 42px; }
+    #toll .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; background: var(--ui-line);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); cursor: pointer; font: inherit; color: var(--ui-text); }
+    #toll .tile img { width: 42px; height: 42px; image-rendering: pixelated; }
     #toll .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; hyphens: auto; font-size: 14px; line-height: 1.3; }
-    #toll .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
-    #toll .tile.on::after { content: "✓"; position: absolute; right: 3px; top: 1px; color: var(--ui-gold); font-size: 14px; }
-    #toll .tile.cur { box-shadow: inset 0 0 0 2px var(--ui-text); }
-    #toll .tile:focus-visible { outline: 2px solid var(--ui-text); }
-    #toll .go-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
-    #toll .tile.go { width: auto; min-width: 120px; padding: 8px 14px; }
+    #toll .tile.on { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--ui-gold), inset 2px 2px 0 var(--ui-bevel-hi); }
+    #toll .tile.on::after { content: "✓"; position: absolute; right: 4px; top: 2px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-gold); text-shadow: 1px 1px 0 var(--ui-line); }
+    #toll .tile.cur { box-shadow: inset 0 0 0 2px var(--ui-text), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #toll .tile.on.cur { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--ui-gold), inset 0 0 0 calc(3 * var(--u)) var(--ui-text); }
+    #toll .tile:focus-visible { outline: 2px solid var(--ui-text); outline-offset: -5px; }
+    #toll .go-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+    #toll .tile.go { width: auto; min-width: 120px; min-height: 44px; justify-content: center; padding: 8px 16px; }
+    #toll .tile.go .lbl { width: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; overflow: visible; }
+    #toll .tile.go[data-id="pay"]:not(.off) { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #toll .tile.go[data-id="pay"]:not(.off).cur { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
     #toll .tile.go.off { opacity: .5; }
-    #toll .tile.go .lbl { width: auto; }
     /* the Sanctuary, the Boundary's meditation app: its own look on purpose (docs/art/DECISIONS.md 10.8):
        round, soft, light type; colours only from the med.* tokens, written as --m-* by the view */
     #sanctuary { position: fixed; inset: 0; z-index: 40; display: none; opacity: 0; transition: opacity .7s ease; color: var(--m-ink);
