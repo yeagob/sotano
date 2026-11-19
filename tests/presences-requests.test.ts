@@ -7,8 +7,10 @@ import { ES } from '../src/i18n/locales/es';
 import { PARTS } from '../src/content/parts';
 
 describe('requests from the depths (REQUESTS.md): one shared mechanism on the consent card', () => {
-  it('only the presences whose designs name a request carry one: the Gardener and the Boatman, built so far', () => {
-    expect(Object.keys(PRESENCE_REQUEST).sort()).toEqual(['boatman', 'gardener']);
+  it('only the presences whose designs name a request carry one: the Gardener, the Boatman, the Child and the Elder', () => {
+    expect(Object.keys(PRESENCE_REQUEST).sort()).toEqual(['boatman', 'child', 'elder', 'gardener']);
+    expect(requestOf('child')?.kind).toBe('draw');
+    expect(requestOf('elder')?.kind).toBe('still');
     expect(requestOf('gardener')?.kind).toBe('breathe');
     expect(requestOf('boatman')?.kind).toBe('move');
     expect(requestOf('listener')).toBeUndefined();

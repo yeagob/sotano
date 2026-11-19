@@ -16,11 +16,13 @@ export interface PresenceRequest {
 }
 
 /** The requests built so far. The Gardener asks to breathe (REQUESTS.md, decided); the Boatman asks to move before the
- *  crossing. The Child (draw) and the Elder (be still, write a line) name requests in their documents too; their cards are
- *  not wired yet (see docs/design/not-built/presences/REQUESTS.md). */
+ *  crossing. The Child asks to draw on its build card, and the Elder asks to be still on its choice card (proposed, pending
+ *  owner ruling: REQUESTS.md says both run in the idle window, which is built for the Gardener and the Boatman only). */
 export const PRESENCE_REQUEST: Partial<Record<PresenceId, PresenceRequest>> = {
   gardener: { kind: 'breathe', ask: 'request.breathe', alt: 'request.breathe.alt' },
   boatman: { kind: 'move', ask: 'request.move', alt: 'request.move.alt' },
+  child: { kind: 'draw', ask: 'request.draw', alt: 'request.draw.alt' },
+  elder: { kind: 'still', ask: 'request.still', alt: 'request.still.alt' },
 };
 
 export function requestOf(id: PresenceId): PresenceRequest | undefined {

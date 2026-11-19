@@ -132,7 +132,7 @@ export class Hud {
   private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
   /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
    *  navigate action has reached; a tap or the confirm action picks one. */
-  private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number } | null = null;
+  private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
   /** The presences met in this run, in the order met: the codex (CODEX.md). */
   private codexIds: readonly PresenceId[] = [];
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
@@ -637,12 +637,12 @@ export class Hud {
   }
 
   /** The choice card (see `lastPresenceChoice`): the presence asks, and the player picks one of its answers or declines. */
-  presenceChoiceCard(nameKey: MessageKey, questionKey: MessageKey, options: readonly MessageKey[]) {
+  presenceChoiceCard(nameKey: MessageKey, questionKey: MessageKey, options: readonly MessageKey[], request?: PresenceRequestText) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
     this.clearPresenceOfferState();
-    this.lastPresenceChoice = { nameKey, questionKey, options, selected: 0 };
+    this.lastPresenceChoice = { nameKey, questionKey, options, selected: 0, request };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -672,6 +672,7 @@ export class Hud {
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(c.nameKey)}</b>` +
       `<span class="offer-question" id="presence-offer-question">${th(c.questionKey)}</span>` +
+      (c.request ? `<span class="offer-request">${th(c.request.ask)}<small>${th(c.request.alt)}</small></span>` : '') +
       `<div class="offer-actions choices">${answers}` +
       `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.choice.decline')}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;

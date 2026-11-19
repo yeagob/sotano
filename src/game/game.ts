@@ -92,6 +92,7 @@ import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
+import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant } from '../content/presences/covenant';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
 import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
@@ -295,6 +296,8 @@ export class Game {
   private idle = new IdleTimer();
   /** The presences met this run, in the order met: the codex (CODEX.md). */
   private codex: PresenceId[] = [];
+  /** The Covenant's pieces held in this run, in the order given (COVENANT.md). Kept for the run only. */
+  private covenant: Covenant = NO_COVENANT;
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
   /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
@@ -583,6 +586,7 @@ export class Game {
     this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];
+    this.covenant = NO_COVENANT;
     this.hud.setCodex(this.codex);
     this.pendingPresenceOffer = null;
     this.input.modal = false;
@@ -3517,7 +3521,7 @@ export class Game {
       if (PRESENCE_CHOICE[id]) {
         const choice = PRESENCE_CHOICE[id];
         this.pendingPresenceChoice = { id, enemyId: e.id };
-        this.hud.presenceChoiceCard(talk.name, choice.question, choice.options);
+        this.hud.presenceChoiceCard(talk.name, choice.question, choice.options, requestOf(id));
         this.input.modal = true;
         this.input.unlockFor();
         return;
@@ -3602,7 +3606,7 @@ export class Game {
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     this.startIdle(e, pending.id);
     if (leavesAfterOffer(pending.id)) this.releasePresence(e);
-    this.hud.presenceCard(talk.name, talk.lines, pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
+    this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines), pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
   }
 
   /** A choice card's answer (index into the presence's options) or a decline (-1). The Elder gives a lesson of the path
@@ -3628,6 +3632,7 @@ export class Game {
     if (pending.id === 'elder') {
       const path = ['body', 'mind', 'emotion', 'will'][index];
       this.launchGiftPickups(e, [{ type: 'item', item: rollElderLesson(this.rng.stream('drops'), path) }]);
+      this.keepCovenantPiece('elder');
       sfx3.reveal();
       this.hud.presenceCard(talk.name, ['presence.elder.reading', talk.lines[1]], { path: t(`path.${path}` as MessageKey) });
     } else if (pending.id === 'cartographer') {
@@ -3654,6 +3659,7 @@ export class Game {
   /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
    *  15/75/10 table is unchanged (LISTENER.md); the Trickster's and the Echo's are seeded weighted tables (their docs). */
   private dropPresenceReward(id: PresenceId, e: Enemy, at?: { x: number; y: number; z: number }) {
+    this.keepCovenantPiece(id);
     const rng = this.rng.stream('drops');
     if (id === 'listener') return this.dropListenerReward(e);
     if (id === 'trickster') this.launchGiftPickups(e, [{ type: 'item', item: rollTricksterPractice(rng) }]);
@@ -3718,7 +3724,7 @@ export class Game {
     if (landing) this.player.carry(landing, BOATMAN_FERRY_S);
     this.dropPresenceReward('boatman', e, landing ?? undefined);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-    this.hud.presenceCard(PRESENCE_TALK.boatman.name, PRESENCE_TALK.boatman.lines);
+    this.hud.presenceCard(PRESENCE_TALK.boatman.name, this.exchangeLines(PRESENCE_TALK.boatman.lines));
   }
 
   /** The Child's two answers. The first is the consent: from this count of placed blocks on, the Child watches the player
@@ -3738,7 +3744,7 @@ export class Game {
     this.meet(e);
     this.dropPresenceReward('child', e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-    this.hud.presenceCard(talk.name, talk.lines);
+    this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines));
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
@@ -3765,6 +3771,19 @@ export class Game {
   /** A requesting presence stays for its idle window after the exchange, then leaves (idle.ts, pending owner ruling). */
   private startIdle(e: Enemy, id: PresenceId) {
     if (IDLE_PRESENCES.has(id)) this.idle.start(e.id, idleWindowOf(this.rng, id));
+  }
+
+  /** The Covenant (COVENANT.md): the piece a presence gives, if it gives one, and the toast when the set is whole. */
+  private keepCovenantPiece(id: PresenceId) {
+    const before = covenantComplete(this.covenant);
+    this.covenant = keepPiece(this.covenant, id);
+    if (!before && covenantComplete(this.covenant)) this.hud.toast('covenant.complete');
+  }
+
+  /** The lines of a card that closes an exchange: the presence's own, and once the Covenant is whole, its memory of the
+   *  player (COVENANT.md, the set effect). */
+  private exchangeLines(lines: readonly MessageKey[]): readonly MessageKey[] {
+    return remembersInRun(this.covenant) ? [...lines, 'covenant.remembers'] : lines;
   }
 
   /** A presence is met: its tag, and its place in this run's codex the first time it is met (CODEX.md). */
