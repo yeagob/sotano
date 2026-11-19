@@ -33,6 +33,7 @@ import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
+import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -132,6 +133,8 @@ export class Hud {
   /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
    *  navigate action has reached; a tap or the confirm action picks one. */
   private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number } | null = null;
+  /** The presences met in this run, in the order met: the codex (CODEX.md). */
+  private codexIds: readonly PresenceId[] = [];
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
@@ -245,6 +248,23 @@ export class Hud {
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
+    this.renderCodex();
+  }
+
+  /** The codex (CODEX.md): the presences met this run, with what each asks and what it gives. Text only, in the language on screen. */
+  setCodex(ids: readonly PresenceId[]) {
+    this.codexIds = [...ids];
+    this.renderCodex();
+  }
+
+  private renderCodex() {
+    const list = document.querySelector<HTMLElement>('#codex ul');
+    if (!list) return;
+    list.innerHTML = this.codexIds.length
+      ? this.codexIds.map(id => `<li><b>${th(PRESENCE_TALK[id].name)}</b>` +
+        `<span><em>${th('codex.asks')}</em> ${th(`codex.${id}.asks` as MessageKey)}</span>` +
+        `<span><em>${th('codex.gives')}</em> ${th(`codex.${id}.gives` as MessageKey)}</span></li>`).join('')
+      : `<li class="none">${th('codex.empty')}</li>`;
   }
 
   get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }

@@ -293,6 +293,8 @@ export class Game {
   private presenceReplies = new Map<number, number>();
   /** The idle windows of the requesting presences that have had their exchange, in seconds left (idle.ts). */
   private idle = new IdleTimer();
+  /** The presences met this run, in the order met: the codex (CODEX.md). */
+  private codex: PresenceId[] = [];
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
   /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
@@ -580,6 +582,8 @@ export class Game {
     this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
+    this.codex = [];
+    this.hud.setCodex(this.codex);
     this.pendingPresenceOffer = null;
     this.input.modal = false;
     setMasterTarget(0.35);
@@ -3590,7 +3594,7 @@ export class Game {
     const talk = PRESENCE_TALK[pending.id];
     // the Echo's place is read before the record forgets it, so its line can name the floor it faded on
     const faded = this.keeper.fade ?? this.maxDepth;
-    e.tags.add('met');
+    this.meet(e);
     // the Listener's pact: the first one is saved, and the Mind Crafter blocks count from it (ACHIEVEMENTS §1)
     if (pending.id === 'listener') this.keeper.recordPact();
     if (pending.id === 'echo') this.keeper.clearFade();
@@ -3620,7 +3624,7 @@ export class Game {
       return;
     }
     const talk = PRESENCE_TALK[pending.id];
-    e.tags.add('met');
+    this.meet(e);
     if (pending.id === 'elder') {
       const path = ['body', 'mind', 'emotion', 'will'][index];
       this.launchGiftPickups(e, [{ type: 'item', item: rollElderLesson(this.rng.stream('drops'), path) }]);
@@ -3709,7 +3713,7 @@ export class Game {
     const landing = room ? this.landingOf(room) : null;
     this.player.removeAt(index);
     this.hands.placed();
-    e.tags.add('met');
+    this.meet(e);
     this.startIdle(e, 'boatman');
     if (landing) this.player.carry(landing, BOATMAN_FERRY_S);
     this.dropPresenceReward('boatman', e, landing ?? undefined);
@@ -3731,7 +3735,7 @@ export class Game {
       return;
     }
     this.childBuilds.delete(e.id);
-    e.tags.add('met');
+    this.meet(e);
     this.dropPresenceReward('child', e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     this.hud.presenceCard(talk.name, talk.lines);
@@ -3761,6 +3765,15 @@ export class Game {
   /** A requesting presence stays for its idle window after the exchange, then leaves (idle.ts, pending owner ruling). */
   private startIdle(e: Enemy, id: PresenceId) {
     if (IDLE_PRESENCES.has(id)) this.idle.start(e.id, idleWindowOf(this.rng, id));
+  }
+
+  /** A presence is met: its tag, and its place in this run's codex the first time it is met (CODEX.md). */
+  private meet(e: Enemy) {
+    e.tags.add('met');
+    const id = e.def as PresenceId;
+    if (this.codex.includes(id)) return;
+    this.codex.push(id);
+    this.hud.setCodex(this.codex);
   }
 
   /** Counts the idle windows down on game time; a presence whose window ran out leaves in that frame. */
