@@ -3,13 +3,17 @@
 // and the content's ids, and returns the percentage with the share of each part. Nothing is stored as a number: it is
 // computed from what the player did for the first time, so adding content changes the totals without a code change.
 
-import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES } from '../content/achievements';
+import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, COMPLETION_ACHIEVEMENT } from '../content/achievements';
 import { CREATURES } from '../content/creatures';
 import { ENEMIES } from '../content/enemies';
 import { loadBook, pageCount } from '../content/book';
 import { ITEMS } from '../content/items';
 import { LEVELS } from '../content/levels';
 import { POTION_IDS } from '../content/potions';
+import { PRESENCES } from '../content/presences';
+import boundary from '../content/presences/boundary';
+import { DEITIES } from '../sky/creatures/deities';
+import { TREE_STORIES } from '../world/tree';
 import type { Firsts } from './meta';
 
 /** The parts of the percentage and their weights (COMPLETION.md §2). The weights add up to 100. */
@@ -19,7 +23,13 @@ export const PART_WEIGHT: Readonly<Record<Part, number>> = {
   floors: 25, bosses: 20, achievements: 20, practices: 15, bestiary: 10, recipes: 5, book: 5,
 };
 
-/** The ids the percentage counts, read from the content (or given, in tests). */
+/**
+ * The ids the percentage counts, read from the content (or given, in tests). Three routes make the floors: the descent
+ * (`LEVELS`, by number), the giant tree (`TREE_STORIES`, `tree.<story>`) and the sky (`DEITIES`, `sky.<animal>`).
+ * The bestiary holds every projection and creature that is spawned, the three Presences (the Boundary included) and the
+ * sky's guardians and herds (`guardian-<animal>`, `herd-<animal>`). The Spiked Entity is not counted: it is not wired in
+ * the game yet (COMPLETION.md §2).
+ */
 export interface ContentIds {
   readonly floors: readonly string[];
   readonly bosses: readonly string[];
@@ -33,12 +43,15 @@ export interface ContentIds {
 
 /** The content as the game ships it. The book is read for its page count only. */
 export function contentIds(bookPages: number = pageCount(loadBook('en'))): ContentIds {
+  const animals = Object.keys(DEITIES);
   return {
-    floors: LEVELS.map(l => String(l.floor)),
+    floors: [...LEVELS.map(l => String(l.floor)), ...TREE_STORIES.map(s => `tree.${s.key}`), ...animals.map(a => `sky.${a}`)],
     bosses: [...ACHIEVEMENT_BOSSES],
-    achievements: ACHIEVEMENTS.map(a => a.id),
+    achievements: ACHIEVEMENTS.map(a => a.id).filter(id => id !== COMPLETION_ACHIEVEMENT),
     practices: ITEMS.map(i => i.id),
-    bestiary: [...ENEMIES, ...CREATURES].map(d => d.id),
+    bestiary: [
+      ...ENEMIES, ...CREATURES, ...PRESENCES, boundary,
+    ].map(d => d.id).concat(animals.flatMap(a => [`guardian-${a}`, `herd-${a}`])),
     recipes: [...POTION_IDS],
     bookPages,
   };

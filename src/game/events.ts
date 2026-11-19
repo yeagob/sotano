@@ -163,6 +163,8 @@ export interface GameEvents {
   /** The body, above the surface, entered a new story of the giant tree (`story` is its key: roots, rings, galleries,
    *  hollows, branches, canopy or stars). The canopy is the crown (ACHIEVEMENTS §1). React only. */
   treeStory: { story: string };
+  /** The completion percentage reached 100: every part is complete (COMPLETION.md §8). Emitted once, by the game. React only. */
+  completionFull: { percent: number };
 }
 
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */

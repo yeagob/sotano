@@ -3,12 +3,14 @@
 // keeper that records them.
 
 import { describe, expect, it } from 'vitest';
-import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES } from '../src/content/achievements';
+import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, COMPLETION_ACHIEVEMENT } from '../src/content/achievements';
+import { loadBook } from '../src/content/book';
 import { ITEMS } from '../src/content/items';
 import { LEVELS } from '../src/content/levels';
 import { POTION_IDS } from '../src/content/potions';
 import { PART_WEIGHT, PARTS, completion, contentIds, type ContentIds, type CompletionSave } from '../src/game/completion';
 import { AchievementKeeper } from '../src/game/achievement-keeper';
+import { BOOK_DOWNLOAD_PERCENT, bookButtonHtml, bookDownloadShown, bookHtml } from '../src/game/book-download';
 import { defaultMeta, loadMeta, mergeMeta, unionFirsts, type LoadedMeta, type MetaStore } from '../src/game/meta';
 
 /** A small content: every count is set, so the expected numbers are plain. */
@@ -122,9 +124,17 @@ describe('the completion percentage', () => {
 
   it('reads the shipped content: 0% at the start of a new save, with the catalogue counts', () => {
     const shipped = contentIds(10);
-    expect(shipped.achievements).toHaveLength(ACHIEVEMENTS.length);
+    // the final achievement is the reward for 100%, so the percentage does not count it (COMPLETION §2)
+    expect(shipped.achievements).toHaveLength(ACHIEVEMENTS.length - 1);
+    expect(shipped.achievements).not.toContain(COMPLETION_ACHIEVEMENT);
     expect(shipped.bosses).toEqual([...ACHIEVEMENT_BOSSES]);
-    expect(shipped.floors).toHaveLength(LEVELS.length);
+    // three routes: the descent's ten floors, the giant tree's seven stories and the sky's five guardian floors (COMPLETION §2)
+    expect(shipped.floors).toHaveLength(22);
+    expect(shipped.floors.slice(0, LEVELS.length)).toEqual(LEVELS.map(l => String(l.floor)));
+    expect(shipped.floors).toEqual(expect.arrayContaining(['tree.roots', 'tree.canopy', 'tree.stars', 'sky.panda', 'sky.horse']));
+    // every projection, creature, presence, guardian and herd the player can meet (the Spiked Entity is not wired yet)
+    expect(shipped.bestiary).toHaveLength(66);
+    expect(shipped.bestiary).toEqual(expect.arrayContaining(['gardener', 'listener', 'boundary', 'guardian-panda', 'herd-horse', 'wonder', 'procrastination-c']));
     expect(shipped.practices).toHaveLength(ITEMS.length);
     expect(shipped.recipes).toEqual([...POTION_IDS]);
     expect(completion(defaultMeta(), shipped).percent).toBe(0);
@@ -169,5 +179,33 @@ describe('the first-time records in the save (SAVE §1, §3)', () => {
     sandbox.live = false;
     expect(sandbox.recordFirst('recipes', 'plain-tonic')).toBe(false);
     expect(loadMeta(store).firsts?.recipes ?? []).toEqual([]);
+  });
+});
+
+describe('the book download at 100% (COMPLETION §8)', () => {
+  it('is hidden below 100% and shown at 100%', () => {
+    expect(BOOK_DOWNLOAD_PERCENT).toBe(100);
+    expect(bookDownloadShown(99)).toBe(false);
+    expect(bookButtonHtml(99)).toBe('');
+    expect(bookDownloadShown(100)).toBe(true);
+    expect(bookButtonHtml(100)).toContain('data-act="book-download"');
+  });
+
+  it('is offered when the completion of a full save reaches 100', () => {
+    expect(bookButtonHtml(completion(full(), CONTENT).percent)).not.toBe('');
+    expect(bookButtonHtml(completion(EMPTY, CONTENT).percent)).toBe('');
+  });
+
+  it('writes the book as one self-contained page of text: no script, no network, no unreplaced placeholder', () => {
+    for (const lang of ['en', 'es'] as const) {
+      const html = bookHtml(loadBook(lang), lang);
+      expect(html.startsWith('<!doctype html>')).toBe(true);
+      expect(html).toContain(`<html lang="${lang}">`);
+      expect(html).not.toMatch(/<script|https?:\/\/|<img|<link/i);
+      expect(html).not.toMatch(/\{[a-z]+\}/);
+      // every book page (kind 'book') is in it, and only those
+      const pages = loadBook(lang).pages.filter(p => p.kind === 'book').length;
+      expect(html.match(/<section class="page">/g)).toHaveLength(pages);
+    }
   });
 });

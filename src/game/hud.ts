@@ -33,6 +33,7 @@ import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
 import { PARTS, type Completion } from './completion';
+import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -798,7 +799,7 @@ export class Hud {
       return `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.count', { done: x.done, total: x.total })}</span>` +
         `<span>${th('completion.share', { share: x.weight })}</span></li>`;
     }).join('');
-    return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul></section>`;
+    return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul>${bookButtonHtml(c.percent)}</section>`;
   }
 
   private seedText = '';

@@ -50,7 +50,7 @@ function rig(seed = 1) {
   const host = {
     time: () => now, player: () => player, actors: () => actors, world: () => world!, debris: () => debris, hazards: () => hazards,
     fork: forkOf(seed), fx: () => {}, cue: () => {}, enterUnity: () => {}, toast: (k: string) => { log.toasts.push(k); },
-    card: () => {}, bar: () => {}, place: () => {}, gift: () => {}, travel: () => {},
+    card: () => {}, bar: () => {}, place: () => {}, meetFloor: () => {}, gift: () => {}, travel: () => {},
     drainSpirit: (n: number) => { spirit -= n; log.drains++; }, spirit: () => spirit,
     refillSpirit: () => { spirit = SPIRIT_MAX; log.refills++; },
     takeRandomPractice: () => null, sendUnderground: () => { spirit = SPIRIT_MAX; return true; },
