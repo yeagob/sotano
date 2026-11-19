@@ -2,7 +2,9 @@
 
 # The Child
 
-Status: **decided** (the owner approved the Elder and the Child as presences on 2026-10-27; names and lines are still open).
+Status: **decided** (the owner approved the Elder and the Child as presences on 2026-10-27; names and lines are still open). Built so far: the placement counter (`src/game/build-count.ts`, fed from the `blockPlaced` event that every placing path emits; a build is done at three blocks after a mark). The Child itself, its room and its lines are not built.
+
+Decision, proposed, pending owner ruling: the placement counter counts every material block the player places in the run, and it is not persisted (a new run starts at zero).
 
 A dweller of play, and of permission to make something badly. It waits in the Cellar of Habits, in a room of loose cubes and unfinished things. Its shape is a loose cluster of cubes that moves like a small animal. It is always joyful; it never cries (the art guide's red line).
 

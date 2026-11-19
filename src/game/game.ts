@@ -3,6 +3,7 @@
 // anything an item might want to change reads a stat or emits an event (docs/architecture/ITEMS.md §3).
 
 import * as THREE from 'three';
+import { BuildCount } from './build-count';
 import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
@@ -377,6 +378,8 @@ export class Game {
   private readonly metaStore: MetaStore;
   /** The achievements of the session (achievement-keeper.ts): they track on the run's bus, and their cards queue here. */
   private readonly keeper: AchievementKeeper;
+  /** The blocks placed in this run, fed from `blockPlaced` (build-count.ts): the Child's build reads it. */
+  readonly builds = new BuildCount();
   /** Warns once a run when the player's height is not a finite number (height-watch.ts). */
   private readonly heightWatch = new HeightWatch();
   /** The Roots' mastery level this run started with (REWARDS §6): read once at run start, never during the run. */
@@ -856,6 +859,7 @@ export class Game {
     this.bus.on('playerDied', { priority: 300, source, fn: p => this.achieved('playerDied', p) });
     this.bus.on('surfaceEnter', { priority: 300, source, fn: p => this.achieved('surfaceEnter', p) });
     this.bus.on('blockPlaced', { priority: 300, source, fn: p => this.achieved('blockPlaced', p) });
+    this.bus.on('blockPlaced', { priority: 300, source, fn: () => this.builds.record() });
     this.bus.on('bookBack', { priority: 300, source, fn: p => this.achieved('bookBack', p) });
     this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
     this.bus.on('treeStory', { priority: 300, source, fn: p => this.achieved('treeStory', p) });

@@ -37,7 +37,7 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 |---|---|---|
 | The Gardener | Its memory and its root-and-moss agreement | Placed on one seeded floor from 1 (never the tutorial); asks for a flesh part; the rest stays in its document |
 | The Wanderer | Its wall walk, its hand-tied line and the corridor | Built as a messenger with a consent gift; the rest stays in its document |
-| The Child | The build-three-blocks check (a placement counter over every placing path) and the path rule for a build | Not built |
+| The Child | Its room in the Cellar of Habits, its lines and the path rule for a build (the placement counter is built) | Counter built (`src/game/build-count.ts`); the presence is not built |
 | The Elder | The Ledger Halls, the page of ledger stone and the Covenant's Page | Built on one seeded floor from 1: a path choice on the choice card and a lesson of that path; the rest stays in its document |
 | The Witness | The Silence below floor 9 and the hexagram source check | Not built |
 | The Mender | A released projection that comes back (dissolve is final today) and the one vault rule | Not built |
