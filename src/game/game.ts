@@ -119,6 +119,8 @@ import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, 
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
+import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
+import { CheckpointMark } from './checkpoint-mark';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
@@ -359,6 +361,9 @@ export class Game {
   private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
+  /** The run's checkpoint (game/checkpoint.ts), set by Waymark; null until one is picked up. */
+  private respawn: Spot | null = null;
+  private checkpointMark!: CheckpointMark;
   private bossUsed = new Set<string>();
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -645,6 +650,8 @@ export class Game {
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
+    this.checkpointMark = new CheckpointMark(this.dungeonRoot);
+    this.respawn = null;
     // a random heart's kind reads the chances of its band: floor 0 halves the star heart, the surface keeps its numbers (REWARDS §3)
     // a heart's kind on floor 0 takes its own fork, so the Roots' crates never move the hearts stream the floors below read
     this.pickups.heartKind = y => rollHeart(
@@ -703,7 +710,7 @@ export class Game {
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(k)!, k);
-    this.bus.emit('floorEnter', { depth: k });
+    this.bus.emit('floorEnter', { depth: k, arrival: arrivalOf(this.floors.get(k)!.spawn) });
     if (this.roots) this.hangRoots(this.roots);
     if (box && sandbox) this.furnish(box, sandbox);
   }
@@ -1303,8 +1310,7 @@ export class Game {
     const held = this.inventory.items.filter(it => !isPromised(it.def));
     if (!held.length) return null;
     const id = held[this.rng.fork('sky', 'capture', this.captures++).int(0, held.length - 1)].def.id;
-    this.inventory.lose(id);
-    this.hud.setItems(this.inventory.items.map(i => i.def));
+    this.loseItem(id);
     return id;
   }
 
@@ -1436,7 +1442,50 @@ export class Game {
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
       placeBlock: (x, y, z, m, src) => this.placeItemBlock(x, y, z, m, src),
+      consumeCopy: id => this.loseItem(id),
+      playerFeet: () => ({ x: this.player.body.x, y: this.player.body.y, z: this.player.body.z }),
+      checkpoint: () => this.respawn ? { ...this.respawn } : null,
+      setCheckpoint: (x, y, z) => this.setRespawn({ x, y, z }),
+      teleportPlayer: (x, y, z) => this.teleportPlayer(x, y, z),
+      invulnerable: s => { this.player.invulnT = Math.max(this.player.invulnT, s); },
+      burst: (x, y, z, color, n) => this.particles.burst(x, y, z, color, n, 2.2, 0.07),
+      chime: () => sfx3.reveal(),
     };
+  }
+
+  /** Loses one copy of a practice. A checkpoint lasts while an item that carries the checkpoint tag is held. */
+  loseItem(id: string): boolean {
+    if (!this.inventory.lose(id)) return false;
+    if (this.respawn && !this.inventory.hasTag(CHECKPOINT_TAG)) this.setRespawn(null);
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    return true;
+  }
+
+  /** Sets the run's checkpoint to the free standing cell nearest the feet `at`, or clears it (null). */
+  private setRespawn(at: Spot | null) {
+    this.respawn = at ? standingSpot((x, y, z) => this.solid(x, y, z), at.x, at.y, at.z) ?? at : null;
+    this.checkpointMark.place(this.respawn);
+  }
+
+  /**
+   * Moves the player to the free cell nearest the feet (x, y, z) and opens every door that would keep them out of a
+   * room they just left: a room sealed by its projections, a challenge in progress, a boss room still standing. The
+   * room keeps its state, so entering it again seals it again; no door the player can't get back through stays shut.
+   */
+  private teleportPlayer(x: number, y: number, z: number) {
+    const at = standingSpot((a, b, c) => this.solid(a, b, c), x, y, z) ?? { x, y, z };
+    this.teleport(at.x, at.y, at.z);
+    const here = this.below ? this.roomAt(at.x, at.y + 0.1, at.z)?.id ?? null : null;
+    const live = new Set<number>();
+    for (const [id, st] of this.roomState) if (st.sealed && !st.cleared) live.add(id);
+    for (const [id, c] of this.challenges) if (c.active) live.add(id);
+    for (const b of this.bossRooms.values()) if (b.spawned && !b.defeated) live.add(b.room);
+    for (const id of releasedRooms([...live], here)) {
+      this.doors.seal(id, false);
+      const st = this.roomState.get(id);
+      if (st) st.sealed = false;
+    }
+    if (here !== null && live.has(here)) this.doors.seal(here, true);
   }
 
   /** What weapons may do: everything through the shared damage pipeline (docs/architecture/WEAPONS.md). */
@@ -4326,7 +4375,7 @@ export class Game {
       this.carve(band + 1);
       this.bus.clearDeferred();
       this.potionsEnded(this.potions.floorEntered());
-        this.bus.emit('floorEnter', { depth: band });
+        this.bus.emit('floorEnter', { depth: band, arrival: arrivalOf(this.floors.get(band)!.spawn) });
       this.hud.setFloor(this.floors.get(band)!, band);
       this.hud.toast('toast.floor', { n: band });
       this.visited = new Set();
@@ -4450,8 +4499,7 @@ export class Game {
     for (const i of hands.sort((a, b) => b - a)) p.removeAt(i);
     p.keys -= keys;
     p.bombs -= bombs;
-    for (const id of items) this.inventory.lose(id);
-    if (items.length) this.hud.setItems(this.inventory.items.map(i => i.def));
+    for (const id of items) this.loseItem(id);
     // a base heart takes its capacity and the health it holds; a bonus heart goes whole and leaves base health alone
     if (base.length) this.stats.add({ stat: 'maxHearts', layer: 'add', value: -base.length, source: 'toll' });
     p.hp = plan.hp;
@@ -4706,6 +4754,7 @@ export class Game {
       this.sky!.update(dt);
     }
     this.pickups.update(dt, solid);
+    this.checkpointMark.update(dt);
     if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);

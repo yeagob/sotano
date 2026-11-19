@@ -59,6 +59,7 @@ function rig(items: string[], solid: Solid, projections: number[][] = []): Rig {
     splash: () => {},
     hit: () => {},
     nearestBlock: () => null,
+    nearestEnemy: () => null,
     bounced: b => { bus.emit('intentBounce', b); },
   };
   const intents = new Intents(new THREE.Scene(), hooks);

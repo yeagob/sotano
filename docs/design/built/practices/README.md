@@ -72,6 +72,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Remember Breathing](will/REMEMBER-BREATHING.md) | Will | 4 | boss rewards |
 | [Self-Efficacy](will/SELF-EFFICACY.md) | Will | 3 | treasure rooms |
 | [Eye Contact](will/EYE-CONTACT.md) | Will | 3 | treasure rooms |
+| [Waymark](will/WAYMARK.md) | Will | 3 | vault rooms, boss rewards |
 | [Self-Reliance](will/SELF-RELIANCE.md) | Will | 4 | treasure rooms, vault rooms |
 | [Stoic Resolve](will/STOIC-RESOLVE.md) | Will | 2 | treasure rooms, boss rewards |
 

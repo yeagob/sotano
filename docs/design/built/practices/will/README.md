@@ -21,6 +21,7 @@ The folder holds the practices whose first path tag is will. Practices that also
 | [Kindling](KINDLING.md) | 2 | none | treasure rooms |
 | [Self-Efficacy](SELF-EFFICACY.md) | 3 | none | treasure rooms |
 | [Eye Contact](EYE-CONTACT.md) | 3 | none | treasure rooms |
+| [Waymark](WAYMARK.md) | 3 | none | vault rooms, boss rewards |
 
 ## Also on this path (first path tag elsewhere)
 

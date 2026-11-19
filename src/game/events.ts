@@ -140,7 +140,8 @@ export interface GameEvents {
   roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
-  floorEnter: { depth: number };
+  /** The player entered a floor; `arrival` is that floor's arrival point (its feet position). */
+  floorEnter: { depth: number; arrival: { x: number; y: number; z: number } };
   /** A run's end advanced the Roots' page (PAGES §1): the new current page, once per run. React only. */
   pageReached: { page: number };
 

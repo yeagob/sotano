@@ -831,6 +831,8 @@ const messages = {
   'teach.dowsing.lesson': 'Some answers come when you stop forcing them and notice where your attention keeps returning. Follow that pull gently, check it against what you know, and dig there with patience.',
   'teach.eyecontact.quote': 'Look at what frightens you, and let it be only what it is.',
   'teach.eyecontact.lesson': 'Avoiding a fear keeps it large. In a moment where you feel safe, look at what you have been avoiding for a few seconds and breathe. Doing this with a therapist or a trusted person is often wiser.',
+  'teach.waymark.quote': 'Wherever you last knew yourself, the way back is open.',
+  'teach.waymark.lesson': 'Mark the place where you last knew yourself. A stone on a long path is not a sign that you were lost: it tells the next walker, and you, that the way is known. Return to it whenever the path turns hard.',
   'teach.visualization.quote': 'See it clearly first, and your body knows the way.',
   'teach.visualization.lesson': 'Before something important, close your eyes and rehearse it in detail: the place, the steps, how it feels to do it well. Include what might go wrong and how you would answer. Then go and do it.',
   'teach.dialectic.quote': 'Set two ideas against each other, and each one shows you its other side.',

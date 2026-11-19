@@ -829,6 +829,8 @@ export const ES: Catalog = {
     'teach.dowsing.lesson': 'Algunas respuestas llegan cuando dejas de forzarlas y notas adónde vuelve tu atención. Sigue ese tirón con suavidad, compáralo con lo que ya sabes y cava allí con paciencia.',
     'teach.eyecontact.quote': 'Mira lo que te asusta, y deja que sea solo lo que es.',
     'teach.eyecontact.lesson': 'Evitar un miedo lo mantiene grande. En un momento en que te sientas a salvo, mira durante unos segundos lo que has estado evitando y respira. Hacerlo con un terapeuta o una persona de confianza suele ser más sabio.',
+    'teach.waymark.quote': 'Donde te reconociste por última vez, el camino de vuelta está abierto.',
+    'teach.waymark.lesson': 'Marca el lugar donde te reconociste por última vez. Una piedra en un camino largo no es señal de que te perdiste: le dice al siguiente caminante, y a ti, que el camino es conocido. Vuelve a ella cuando el camino se ponga difícil.',
     'teach.visualization.quote': 'Míralo claro primero, y tu cuerpo conoce el camino.',
     'teach.visualization.lesson': 'Antes de algo importante, cierra los ojos y ensáyalo con detalle: el lugar, los pasos, cómo se siente hacerlo bien. Incluye lo que podría salir mal y cómo responderías. Luego ve y hazlo.',
     'teach.dialectic.quote': 'Pon dos ideas frente a frente, y cada una te muestra su otro lado.',
@@ -1245,6 +1247,13 @@ export const ES: Catalog = {
         description: 'Lo que se rompió se reparó con oro, y la costura se ve. Es más fuerte donde se rompió.',
         effect: '+1 contenedor de corazón, y 0,25 s más de invulnerabilidad tras cada golpe. Prometido: ninguna captura, peaje ni regla puede quitártelo.',
         inspiredBy: 'Kintsugi (el arte japonés de reparar la cerámica con oro)',
+      },
+      waymark: {
+        name: 'Hito del camino',
+        description: 'Un montón de piedras en el camino, apiladas por alguien que pasó antes. Adonde te reconociste por última vez, siempre puedes volver.',
+        effect: 'Marca dónde estás y el inicio de cada nuevo piso. Cuando fueras a morir, vuelves allí con corazones llenos, 2,5 s de invulnerabilidad y todo lo que llevas. Se gasta cuando te salva: una copia, una vida extra.',
+        inspiredBy: 'Montones de piedra e hitos en las rutas de peregrinos',
+        messages: { revived: 'El hito te trae de vuelta.' },
       },
       'triple-jump': {
         name: 'Triple salto',

@@ -55,6 +55,7 @@ import dowsing from './dowsing';
 import eyecontact from './eyecontact';
 import dialectic from './dialectic';
 import reframing from './reframing';
+import waymark from './waymark';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -67,6 +68,7 @@ export const ITEMS: readonly ItemDef[] = [
   drlauncher, tripleJump, mendersThread,
   dowsing, eyecontact,
   dialectic, reframing,
+  waymark,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

@@ -64,7 +64,7 @@ export class Inventory {
     this.held.push(instance);
     this.rebuild();
     const copy = this.held.filter(h => h.def.id === id).length - 1;
-    def.onGain?.({ ...this.bound(def), defer: fn => this.bus().defer(fn, `item:${instance.uid}`), rng: () => this.itemRng(id, copy) });
+    def.onGain?.(this.scoped(def, `item:${instance.uid}`, this.itemRng(id, copy)));
     return {
       instance,
       changes: diffStats(before, this.stats.all),
@@ -121,15 +121,23 @@ export class Inventory {
     this.activeWeapon = best?.id ?? 'intent';
   }
 
-  /** The game's API with toasts bound to the effect that raises them. */
-  private bound(owner: ItemDef | SynergyDef): ItemApi {
-    const { message, ...host } = this.api();
-    return { ...host, toast: (id, params) => message(owner, id, params) };
+  /** The API one held copy (or a synergy) sees: its toasts name it, its deferred calls belong to its source, and
+   *  `consumeSelf` removes one copy of its item once the current event has finished (never inside the emit). */
+  private scoped(owner: ItemDef | SynergyDef, source: string, rng: Rng): ItemApi {
+    const bus = this.bus();
+    const { message, consumeCopy, ...host } = this.api();
+    return {
+      ...host,
+      toast: (id, params) => message(owner, id, params),
+      defer: fn => bus.defer(fn, source),
+      rng: () => rng,
+      consumeSelf: () => bus.defer(() => consumeCopy(owner.id), source),
+    };
   }
 
   private install(source: string, ownerId: string, e: ItemDef | SynergyDef, suppressed: Set<string>, rng: Rng) {
     const bus = this.bus();
-    const api: ItemApi = { ...this.bound(e), defer: fn => bus.defer(fn, source), rng: () => rng };
+    const api = this.scoped(e, source, rng);
     for (const m of e.stats ?? []) this.stats.add({ ...m, source });
     for (const h of e.hooks ?? []) {
       if (h.id && suppressed.has(`${ownerId}.${h.id}`)) continue;
