@@ -20,6 +20,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
+| book | X, on the pause card or the death screen (download the book at 100%) |
 | confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death) |
 | back | B (declines a Presence offer) |
 

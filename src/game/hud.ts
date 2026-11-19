@@ -782,9 +782,13 @@ export class Hud {
     this.renderCompletion();
   }
 
+  /** Redraws the block; a focused download button keeps its focus across the redraw (a first time changes only the count). */
   private renderCompletion() {
     const el = document.getElementById('completion');
-    if (el) el.innerHTML = this.completionHtml();
+    if (!el) return;
+    const focused = document.activeElement instanceof HTMLElement && document.activeElement.classList.contains('book-download') && el.contains(document.activeElement);
+    el.innerHTML = this.completionHtml();
+    if (focused) el.querySelector<HTMLElement>('.book-download')?.focus();
   }
 
   /**

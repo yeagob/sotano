@@ -3945,6 +3945,8 @@ export class Game {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
     }
+    // the book download (COMPLETION §8): X on the pause card or the death screen; `act` ignores it below 100%
+    if ((ctx === 'paused' || ctx === 'dead') && inp.hit('book')) this.act('book-download');
     if (ctx === 'paused') {
       const n = inp.navigate();
       if (n.x) this.setFov(stepFov(this.fovNow, n.x));
