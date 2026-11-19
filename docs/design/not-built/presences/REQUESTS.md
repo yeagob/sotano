@@ -40,3 +40,8 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 
 - Headless Chromium, the real consent card of the Gardener (breathe) and the Boatman (move): the request line and its alternative show, Give and Keep are there, the card is 19 to 356 px wide at 375 px, no horizontal scroll. The card at 375 px was measured, not seen clearly: the menu stayed over it in the screenshot.
 - Not checked: the exchange played in the game itself (Give on the card, the idle window ending and the presence leaving), the gamepad and the touch paths on the card, and the request card in the sandbox lab (the lab prints text only).
+
+## Checked in the browser (issue #149, second pass)
+
+- Headless Chromium, the Elder's choice card opened through the game's own card call with its request: at 375 px the request line and its alternative show above the four paths and "Not now", the card is 323 px wide, and the page has no horizontal scroll. At 1280 px the card is 412 px wide. No page errors. Screenshots were checked by eye.
+- Not checked: choosing a path with the keyboard or a click on the live card, the Child's draw request on the build card, the idle window's end, the gamepad and touch paths, and the Covenant's line on a live exchange card.
