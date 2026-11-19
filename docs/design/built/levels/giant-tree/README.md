@@ -2,7 +2,7 @@
 
 Up: [levels](../README.md) · the tree that rises above the surface, built as seven stories you climb, and the sky that opens above it.
 
-The giant tree stands at the centre of the surface and rises through the open sky. It is made of ordinary blocks: three barks for the trunk that change with height, boughs for the limbs, old and young leaves for the canopy, and starstone pads for the stars. Its height reaches the top of the sky. It is built as seven stories, each one a hall or a level you can walk through, joined by spiral stairs of living wood. Each story is generated the first time you come near it, so the tree costs nothing until you climb. The owner's words for the tree: a real, giant tree of thousands of cubes that you climb, with a trunk you move through as a vertical map, branches as a 3D map, and leaves as a star map. The first three are built as stories; the design's upper three floors are discussed in [not-built/levels/FLOOR-KINDS](../../../not-built/levels/FLOOR-KINDS.md).
+The giant tree stands at the centre of the surface and rises through the open sky. It is made of ordinary blocks: three barks for the trunk that change with height, boughs for the limbs, old and young leaves for the canopy, and starstone pads for the stars. Its height reaches the top of the sky. It is built as seven stories, each one a hall or a level you can walk through, joined by spiral stairs of living wood. Each story is generated the first time you come near it, so the tree costs nothing until you climb. The owner's words for the tree: a real, giant tree of thousands of cubes that you climb, with a trunk you move through as a vertical map, branches as a 3D map, and leaves as a star map. The first three are built as stories; the design's upper three floors are discussed in [not-built/levels/FLOOR-KINDS](../../../not-built/levels/FLOOR-KINDS.md). The crown holds the tree's one room, the Leaves (owner decision D14), and the star map belongs to it (D15).
 
 ## The seven stories
 
@@ -43,7 +43,9 @@ Above the surface, the open sky is 260 blocks high, up to the top of the world. 
 | [TRUNK.md](TRUNK.md) | The four trunk stories: the roots, the rings, the galleries and the hollows; the spiral stairs between them |
 | [BRANCHES.md](BRANCHES.md) | The branch story: the limbs that leave the trunk and carry the climb out and up |
 | [CANOPY.md](CANOPY.md) | The leaves: the crown, its limbs and the floor under it |
+| [LEAVES.md](LEAVES.md) | The Leaves: the room of the crown, by the last stair, its band and the crown's place |
+| [STAR-MAP.md](STAR-MAP.md) | The star map: the menu's map tab, the floor as a constellation and the crown from above |
 | [STARS.md](STARS.md) | Heaven: the disc, the pads and the constellations, and the night |
 | [BARK.md](BARK.md) | The bark by height, the boughs and the old and young leaves: what the tree is made of, story by story |
 
-Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (the barks, boughs, leaves, starstone).
+Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads, the Leaves), `src/world/crown.ts` (the crown's place), `src/game/star-map.ts` (the star map), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (the barks, boughs, leaves, starstone).
