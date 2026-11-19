@@ -952,7 +952,7 @@ const messages = {
   'achievement.book.page.69.name': 'Nice',
   'achievement.book.page.69.desc': 'Reach page 69 of the Roots\' book.',
   'achievement.book.page.100.name': 'Still Reading',
-  'achievement.completion.full.name': 'Made Whole',
+  'achievement.completion.full.name': 'Made Omh',
   'achievement.completion.full.desc': 'Reach 100% completion: every part of the game done at least once.',
   'achievement.book.page.100.desc': 'Reach page 100 of the Roots\' book.',
   'achievement.death.roots.name': 'Down to the Roots',

@@ -12,7 +12,7 @@ Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVE
 ## 1. The owner's rules (binding)
 
 - **One achievement is one mastery level**, earned in any order, kept between runs. The level is the count of unlocked catalogue ids, **capped at 100**.
-- **47 exist (the 46 of #147 and #179, and "Made Whole", the final one of issue #180, which the completion percentage unlocks at 100%). The other 53 are pending in GitHub issue #179** and enter only when the owner defines them. **Never invent criteria**, never add a placeholder entry "to fill the slot". If an idea comes up, write it in #179 and ask.
+- **47 exist (the 46 of #147 and #179, and "Made Omh", the final one of issue #180, which the completion percentage unlocks at 100%). The other 53 are pending in GitHub issue #179** and enter only when the owner defines them. **Never invent criteria**, never add a placeholder entry "to fill the slot". If an idea comes up, write it in #179 and ask.
 - **Every first time counts**, several in one run too.
 - **A boss has two achievements: destroyed and turned to your side.** A player who only converts gets only the conversion one. The Shadow's own ending (stillness) counts as conversion.
 - **A meditation counts when completed** (never the quick reward, never a cancel), **three times per meditation, counted across runs**, and only from a Sanctuary a Boundary opened (the Roots' chest or a vault's).
