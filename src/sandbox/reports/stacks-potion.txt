@@ -1,0 +1,39 @@
+# stacks-potion — Stacks, potion family: Tea Ceremony and Herbal Lore grow by one stack per potion drunk, capped at six; a meal in the hand is not drunk as a potion stack
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.plain-tonic flask.meal-small flask.plain-tonic flask.plain-tonic flask.plain-tonic flask.plain-tonic] · bombs 99 · keys 99
+  practices teaceremony×1 herbalism×1 · synergies —
+  stats move speed 1.1 · damage 3.9 · jump 1.0 · fire rate 2.7
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.plain-tonic flask.meal-small flask.plain-tonic flask.plain-tonic] · bombs 99 · keys 99
+  practices teaceremony×3 herbalism×3 · synergies —
+  stats move speed 1.1 · damage 4.5 · jump 1.0 · fire rate 2.7
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events drink 2 · heal 2 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices teaceremony×6 herbalism×6 · synergies —
+  stats move speed 1.3 · damage 5.6 · jump 1.0 · fire rate 2.7
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events drink 5 · heal 5
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

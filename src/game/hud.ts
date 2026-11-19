@@ -1161,7 +1161,7 @@ export class Hud {
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
     const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="hand-row"></div>` : '';
 
-    const detail = sel ? this.itemDetail(sel)
+    const detail = sel ? this.itemDetail(sel, g.inventory.items.filter(i => i.def.id === sel.id).map(i => i.stacks))
       : handSel ? this.carriedDetail(handSel)
       : `<p class="none">${th('inv.empty')}</p>`;
 
@@ -1224,7 +1224,7 @@ export class Hud {
    * A practice in three blocks, always in this order (issue #202): the teaching (a phrase that carries the practice into
    * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
    */
-  private itemDetail(d: ItemDef) {
+  private itemDetail(d: ItemDef, copies: readonly number[] = []) {
     const fx = (d.stats ?? []).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
@@ -1237,7 +1237,8 @@ export class Hud {
       `<div><b class="d-name">${esc(tx.name)}</b><span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}</div></header>` +
       `<section class="d-block d-teach"><h4>${th('inv.teaching')}</h4><blockquote>${esc(lesson.quote)}</blockquote><p>${esc(lesson.lesson)}</p>` +
       `${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</section>` +
-      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p></section>` +
+      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>` +
+      `${d.stack && copies.length ? `<p class="stacks">${copies.map(n => th('inv.stacks', { n, max: d.stack!.max })).join(' · ')}</p>` : ''}</section>` +
       `<section class="d-block d-stats"><h4>${th('inv.stats')}</h4>${fx ? `<ul class="fx">${fx}</ul>` : `<p class="none">${th('inv.noStats')}</p>`}</section></div>`;
   }
 

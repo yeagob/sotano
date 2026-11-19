@@ -63,6 +63,15 @@ import serendipity from './serendipity';
 import tummo from './tummo';
 import firewalking from './firewalking';
 import prometheus from './prometheus';
+import teaceremony from './teaceremony';
+import herbalism from './herbalism';
+import distillation from './distillation';
+import spagyric from './spagyric';
+import mindfuleating from './mindfuleating';
+import breakingbread from './breakingbread';
+import harahachibu from './harahachibu';
+import grace from './grace';
+import nourishment from './nourishment';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -78,6 +87,7 @@ export const ITEMS: readonly ItemDef[] = [
   waymark,
   pressurevalve, controlledburn, boltfromtheblue, serendipity,
   tummo, firewalking, prometheus,
+  teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

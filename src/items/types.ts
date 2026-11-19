@@ -38,6 +38,9 @@ export interface ItemApi {
   toast(messageId: string, params?: Params): void;
   /** Run `fn` at the end of the frame (chain reactions). Owned by the item: dropped if it is lost. */
   defer(fn: () => void): void;
+  /** Add stacks to THIS held copy of the item (its `stack`), clamped to `max`. Updates only the
+   *  stat sheet, so it is safe inside an event. Returns the new count (0 when the item has no stacks). */
+  addStack(n?: number): number;
   /** Heal the player by half-hearts (through the `heal` event). */
   heal(halfHearts: number, source?: string): void;
   /** Hurt the player by half-hearts (through `actorDamage`, owned by the player). */
@@ -88,8 +91,8 @@ export interface ItemApi {
 }
 
 /** What the game gives the installer: like `ItemApi`, but a toast names the effect it comes from
- *  (the inventory binds it, so items only pass a message id), and `consumeSelf` is bound to the copy's id. */
-export type HostApi = Omit<ItemApi, 'toast' | 'consumeSelf'> & {
+ *  (the inventory binds it, so items only pass a message id), and `consumeSelf` is bound to the copy's id, and `addStack` to the copy. */
+export type HostApi = Omit<ItemApi, 'toast' | 'consumeSelf' | 'addStack'> & {
   message(owner: ItemDef | SynergyDef, messageId: string, params?: Params): void;
   /** Removes one copy of an item by id (the inventory binds it to `consumeSelf`, deferred). */
   consumeCopy(itemId: string): void;
@@ -165,6 +168,9 @@ export interface ItemDef extends Effect {
   quality: 0 | 1 | 2 | 3 | 4;
   /** 12×12 pixel-art icon: rows of palette keys ('.' = transparent). */
   icon: ItemIcon;
+  /** Stacks (docs/design/built/practices/STACKING.md): each held copy counts its own stacks; every
+   *  stack adds `stats` once more (an `add` layer, times the stacks). Installed by the inventory. */
+  stack?: { max: number; stats: StatModSpec[] };
   /** One-shot effect when picked up (heal, spawn something…). Never re-run by rebuilds or restores. */
   onGain?(api: ItemApi): void;
 }
@@ -186,8 +192,9 @@ export interface SynergyDef extends Effect {
   requires: Req[];
 }
 
-/** One held copy of an item. `uid` is stable for the life of the copy (sources, logs). */
-export interface ItemInstance { uid: number; def: ItemDef }
+/** One held copy of an item. `uid` is stable for the life of the copy (sources, logs). `stacks` is
+ *  how many stacks this copy has built up (always 0 for items without `stack`). */
+export interface ItemInstance { uid: number; def: ItemDef; stacks: number }
 
 export const defineItem = (d: ItemDef) => d;
 export const defineSynergy = (d: SynergyDef) => d;

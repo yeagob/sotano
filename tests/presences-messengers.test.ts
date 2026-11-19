@@ -328,8 +328,8 @@ describe('the choice card: the Elder and the Cartographer (ELDER.md, CARTOGRAPHE
         expect(item.tags).toContain(path);
         if (item.quality === 2) twos++;
       }
-      if (path === 'will') expect(twos).toBe(1000); // no quality-one practice of the Will: every lesson is quality two
-      else { expect(twos / 1000).toBeGreaterThan(0.1); expect(twos / 1000).toBeLessThan(0.4); }
+      // the Will has quality-one practices too (Spagyric Art, STACKING.md): the weights hold on every path
+      expect(twos / 1000).toBeGreaterThan(0.1); expect(twos / 1000).toBeLessThan(0.4);
     }
   });
 

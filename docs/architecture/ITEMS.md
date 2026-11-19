@@ -65,6 +65,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `playerFeet()`, `teleportPlayer(x, y, z)` | The feet position; moves the player to the free cell nearest the feet, zeroes velocity and opens the doors of any room the player is sent out of (Waymark's revive) |
 | `checkpoint()`, `setCheckpoint(x, y, z)` | The run's checkpoint (`src/game/checkpoint.ts`): set to the free cell nearest the feet, kept across inventory rebuilds, cleared when no held item carries the `checkpoint` tag |
 | `invulnerable(seconds)`, `burst(x, y, z, color, count)`, `chime()` | Invulnerability for seconds (never shorter than the window running); a coloured particle burst; the reveal chime |
+| `addStack(n = 1)` | Add stacks to this held copy of a practice with a `stack` (clamped to its max; only its stat sheet changes, safe inside an event); returns the new count. Synergies get 0. See [STACKING](../design/built/practices/STACKING.md) |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
 

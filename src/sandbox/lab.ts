@@ -58,8 +58,13 @@ export function runLab(game: Game, s: Scenario): LabResult {
       const p = game.player, b = p.body;
       out.push('', `t ${t} (${num(t / TPS)} s)`);
       out.push(`  player hp ${p.hp}/${game.maxHp} · at ${rel(b.x, b.y, b.z)} · hand [${p.hand.map(c => typeof c === 'number' ? MATERIALS[c].key : carriedDef(c).id).join(' ')}] · bombs ${p.bombs} · keys ${p.keys}${p.dead ? ' · DEAD' : ''}`);
-      const items = game.inventory.items.map(i => i.def.id);
+      const items = game.inventory.items.map(i => (i.stacks > 0 ? `${i.def.id}×${i.stacks}` : i.def.id));
       if (items.length) out.push(`  practices ${items.join(' ')} · synergies ${game.inventory.synergiesActive.map(x => x.id).join(' ') || '—'}`);
+      // stacks only ever show when a practice has one, so reports without stacks are unchanged
+      if (game.inventory.items.some(i => i.stacks > 0)) {
+        const s = game.stats.all;
+        out.push(`  stats move speed ${num(s.moveSpeed)} · damage ${num(s.damage)} · jump ${num(s.jump)} · fire rate ${num(s.fireRate)}`);
+      }
       for (const e of game.enemies.list) out.push(`  ${e.def}#${e.id} ${e.alive ? `hp ${num(e.hp)}/${e.maxHp}` : 'gone'}${e.tags.has('creature') ? ` · size ${num(e.scale)}` : ''} · ${e.faction} · at ${rel(e.body.x, e.body.y, e.body.z)}`);
       out.push(`  blocks ${blockCounts(game.dw, r)}`);
       out.push(`  elements ${elementCounts(game.dw, r)}`);
