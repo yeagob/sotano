@@ -12,10 +12,10 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 |---|---|---|---|
 | [GARDENER.md](GARDENER.md) | The Gardener, on one seeded floor from 1 | Dweller | partly built |
 | [WITNESS.md](WITNESS.md) | The Witness, the last conversation below floor 9 | Dweller | proposal |
-| [ELDER.md](ELDER.md) | The Elder, in a quiet vault of the Ledger Halls | Dweller | decided |
+| [ELDER.md](ELDER.md) | The Elder, on one seeded floor from 1 (the Ledger Halls are not built) | Dweller | partly built |
 | [CHILD.md](CHILD.md) | The Child, in the Cellar of Habits | Dweller | decided |
 | [COVENANT.md](COVENANT.md) | The closed set of four gifts | System | proposal |
-| [CARTOGRAPHER.md](CARTOGRAPHER.md) | The Cartographer, on the Tree | Dweller | proposal |
+| [CARTOGRAPHER.md](CARTOGRAPHER.md) | The Cartographer, on one seeded floor from 1 (the Tree is not built) | Dweller | partly built |
 | [BOATMAN.md](BOATMAN.md) | The Boatman, by the deepest water of Zone II | Dweller | proposal |
 | [MENDER.md](MENDER.md) | The Mender, in the vaults of Zones III and IV | Dweller | proposal |
 | [STAR-READER.md](STAR-READER.md) | The Star-reader, on the Tree | Dweller | proposal |
@@ -38,11 +38,11 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 | The Gardener | Its memory and its root-and-moss agreement | Placed on one seeded floor from 1 (never the tutorial); asks for a flesh part; the rest stays in its document |
 | The Wanderer | Its wall walk, its hand-tied line and the corridor | Built as a messenger with a consent gift; the rest stays in its document |
 | The Child | The build-three-blocks check (a placement counter over every placing path) and the path rule for a build | Not built |
-| The Elder | The path system (Body, Mind, Emotion, Will) and the Lesson | Not built |
+| The Elder | The Ledger Halls, the page of ledger stone and the Covenant's Page | Built on one seeded floor from 1: a path choice on the choice card and a lesson of that path; the rest stays in its document |
 | The Witness | The Silence below floor 9 and the hexagram source check | Not built |
 | The Mender | A released projection that comes back (dissolve is final today) and the one vault rule | Not built |
-| The Cartographer | The Tree floors and the star map | Not built |
+| The Cartographer | The Tree's crossroads, the star map and the hidden pocket | Built on one seeded floor from 1, with the vault and boss marks in words; the rest stays in its document |
 | The Boatman | Deep water in Zone II, a pocket that is unreachable otherwise, and a levels ruling | Not built |
 | The Star-reader | The Leaves of the Tree and the star map | Not built |
-| Requests, the idle window, dialogue, the codex | Their own systems (not designed for the build) | Not built |
+| Requests, the idle window, dialogue, the codex | Their own systems (not designed for the build) | Not built; the choice card (a question with answers) is built and is the first piece of dialogue |
 | Covenant and agreements beyond the two built ones | The owner's ruling on the four pieces and their costs | Not built |

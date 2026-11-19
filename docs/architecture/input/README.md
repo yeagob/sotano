@@ -57,7 +57,9 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
-| navigate | axis | inventory, toll, paused, meditation | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+| navigate | axis | inventory, toll, paused, meditation, prompt | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+
+**The choice card (prompt).** A presence's question with up to four answers (`Hud.presenceChoiceCard`) reads `navigate` to move the selection (left and right, or up and down, wrap at the ends); confirm picks the selected answer; back, or Not now, answers nothing. A tap on an answer picks it. Owed in a browser: the gamepad and touch paths were not checked (see ELDER.md and CARTOGRAPHER.md).
 | back | press | inventory, toll, meditation; prompt (keyboard/gamepad) | Esc | B | ✕ (in a sitting, the Leave button); offer card buttons |
 | skip | press | meditation | N | RB | the Next part button |
 | mute | press | meditation | M | X | the Sound button |
