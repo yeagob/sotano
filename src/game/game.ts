@@ -99,7 +99,7 @@ import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tab
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, TOXIC_DAMAGE, TOXIC_MOTE_EVERY, TOXIC_PERIOD, TOXIC_RADIUS, toxic, toxicHits, type LayerKind, type ToxicCandidate } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -1580,6 +1580,47 @@ export class Game {
     const on = (berserk(p.layers) || this.potions.active.some(a => POTIONS[a.potion].berserk)) && !p.dead;
     if (on !== this.berserkOn) this.setBerserk(on);
     if (on) this.berserkTread();
+    this.toxicAura(dt);
+  }
+
+  /** Seconds into the black heart's current pulse, and until its next soot motes. */
+  private toxicT = 0;
+  private toxicMoteT = 0;
+  private toxicMotes = 0;
+
+  /**
+   * The black heart's toxic aura (#178, docs/design/built/player/hearts/BLACK.md): while a black
+   * heart is held, soot motes rise on a ring of TOXIC_RADIUS at the player's feet, and once every
+   * TOXIC_PERIOD every hostile projection inside it takes TOXIC_DAMAGE, with no knockback. Blocks,
+   * allies, creatures and presences are never touched (`toxicHits`). Looks: DECISIONS §10.6.
+   */
+  private toxicAura(dt: number) {
+    const p = this.player, b = p.body;
+    if (!toxic(p.layers) || p.dead) { this.toxicT = 0; this.toxicMoteT = 0; return; }
+    const cx = b.x, cy = b.y + b.h / 2, cz = b.z;
+    this.toxicMoteT -= dt;
+    if (this.toxicMoteT <= 0) {
+      this.toxicMoteT = TOXIC_MOTE_EVERY;
+      for (let k = 0; k < 2; k++) {
+        const a = fx.random() * Math.PI * 2;
+        // three soot motes to one paper glint: the heart's own look, and the glint reads on dark floors
+        const tone = this.toxicMotes++ % 4 === 3 ? 'bone.paper' : 'heart.black.base';
+        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, b.y + 0.15, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.25, 0.06, true);
+      }
+    }
+    this.toxicT += dt;
+    if (this.toxicT < TOXIC_PERIOD) return;
+    this.toxicT = Math.min(this.toxicT - TOXIC_PERIOD, TOXIC_PERIOD);
+    let hit = 0;
+    for (const a of [...this.actors.all()]) {
+      if (!toxicHits(a as unknown as ToxicCandidate, cx, cy, cz)) continue;
+      if (!this.damageActor(a, TOXIC_DAMAGE, 'item', 'blackHeart', p.id)) continue;
+      hit++;
+      const ab = a.body;
+      this.particles.burst(ab.x, ab.y + ab.h / 2, ab.z, pal('heart.black.base'), 6, 1.2, 0.07, true);
+      this.particles.burst(ab.x, ab.y + ab.h / 2, ab.z, pal('bone.paper'), 2, 1.2, 0.05, true);
+    }
+    if (hit > 0) sfxHeart.blackAura();
   }
 
   private berserkTread() {

@@ -189,7 +189,7 @@ const messages = {
   'toast.roomClear': 'Room clear',
   'heart.blue': 'Blue heart: one more heart, lost for good once spent.',
   'heart.blueLost': 'The blue heart is gone.',
-  'heart.black': 'Black heart: one more heart, lost for good once spent.',
+  'heart.black': 'Black heart: one more heart, lost for good once spent. While you hold it, it hurts projections within two blocks.',
   'heart.blackLost': 'The black heart is gone.',
   'heart.stone': 'Stone heart: while it takes the blows, every hit is halved.',
   'heart.stoneLost': 'The stone heart crumbles. Hits land whole again.',
