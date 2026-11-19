@@ -13,6 +13,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ### Changed
 - The Sanctuary's reward is one per visit. Once a sitting is finished, leaving never gives the quick reward and never takes the earned one back. Leaving early still gives the quick reward when nothing is finished yet (#160).
+- The lore was extended with new references and a tradition (#194, #201, #204).
 
 ### Fixed
 - Symbolic Act no longer explodes blocks that were kicked: a block that falls on you while your hands are full, or a thrown block you kick later, loses its charge and does not burst (#198).
