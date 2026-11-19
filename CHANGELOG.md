@@ -15,6 +15,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Leaves: a new room of the giant tree, with a ring of star stone under an open eye in its dome (#149).
 - Dowsing and Eye Contact: two practices that steer intentions, one toward blocks and one toward projections. The one you gained last guides; the other is set aside, with a toast (#68).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
+- Two practices of the bounce, in English and Spanish: Dialectic (a rebound splits the intention in two, each at half damage, at most twice per shot) and Reframing (after a rebound the intention turns toward a projection within 8 blocks and deals 25% more). They stack with Bounce Back (#110).
 
 ### Changed
 - Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
@@ -25,6 +26,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Child no longer adds a Lesson in words after its gift (#149).
 - The Questioning Tincture takes any ore, not only iron ore (#228).
 - Seed codes move to v37: the same code grows the giant tree with the Leaves and lays the new blocks in the rock; the rooms are unchanged (#149, #228).
+- Seed codes move to v38: the two new bounce practices join the treasure pool, so the same code reserves different practices on its pedestals; the rooms and the rock are unchanged (#110).
 
 ## 0.2.6-alpha · 2026-11-19
 

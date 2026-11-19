@@ -35,6 +35,11 @@ export interface GameEvents {
   /** `polarity` is the loaded intention's: every hit of the stroke follows it (combat/polarity.ts). */
   strike: { weapon: WeaponId; damage: number; mining: number; reach: number; color: number; tags: Set<string>; polarity: Polarity };
   intentHit: { kind: 'actor' | 'cube' | 'block'; target: number; x: number; y: number; z: number; nx: number; ny: number; nz: number; vx: number; vy: number; vz: number; intent: IntentSpec };
+  /** An intention rebounded off a block (`bounce` is 1 for its first rebound, 2… after). `x, y, z` is the bounce point,
+   *  `nx, ny, nz` the face normal and `vx, vy, vz` the reflected velocity: hooks may change the velocity and the spec.
+   *  New intentions born at the bounce point go in `launch`; the core adds them after the frame's loop, so it is safe
+   *  to launch from here. React or modify only: it cannot be cancelled. */
+  intentBounce: IntentBounce;
 
   // ── blocks in the world ──
   /** Before damage is applied to a block. `amount` already accounts for the material's armor. */
@@ -165,6 +170,17 @@ export interface GameEvents {
   treeStory: { story: string };
   /** The completion percentage reached 100: every part is complete (COMPLETION.md §8). Emitted once, by the game. React only. */
   completionFull: { percent: number };
+}
+
+/** A rebound of an intention, as the `intentBounce` event carries it. */
+export interface IntentBounce {
+  intent: IntentSpec;
+  x: number; y: number; z: number;
+  vx: number; vy: number; vz: number;
+  nx: number; ny: number; nz: number;
+  bounce: number;
+  /** Intentions launched at the bounce point, added by hooks: `bounce` is the rebound count they start with. */
+  launch: { spec: IntentSpec; vx: number; vy: number; vz: number; bounce: number }[];
 }
 
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */

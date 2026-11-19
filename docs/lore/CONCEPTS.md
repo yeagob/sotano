@@ -8,6 +8,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Looking is the way through** | `eye-contact`, `dowsing` | Steering: Eye Contact curves intentions toward what you fear; Dowsing toward what lies hidden |
 | **Insight is electric** | `insight`, `kindling` | Electricity: a sudden flash that runs from one thought to the next (Aha Moment, Resonance, Rapport, Discharge) |
 | **Many views, one truth** | `dual-process`, `chunking` | Several intentions at once (Dual Process, Triangulation); a whole broken into pieces (Chunking) |
+| **A setback points somewhere** | `resilience`, `cbt`, `dialectic` | The Bounce family ([BOUNCE](../design/built/practices/BOUNCE.md)): intentions rebound (Bounce Back), split into two opposed views (Dialectic), and turn toward what matters (Reframing) |
 | **As above, so below** | `emerald-tablet`, `kybalion` (correspondence) | The depth and the surface mirror each other and connect in the endgame ([COSMOLOGY.md](COSMOLOGY.md)) |
 | **The obstacle is the way** | `meditations` | Broken blocks become material you carry and build with |
 | **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, rising from the room's own matter (announced by omens), never through the doors ([BESTIARY §2](../design/built/encounters/SEAL-AND-OMENS.md)) |

@@ -20,6 +20,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   fire: () => ({ intent: intent() }),
   polarityChange: () => ({ from: 'positive', to: 'negative' }),
   intentHit: () => ({ kind: 'actor', target: 2, x: 1, y: 1, z: 1, nx: 0, ny: 0, nz: 0, vx: 8, vy: 0, vz: 0, intent: intent() }),
+  intentBounce: () => ({ intent: intent(), x: 1, y: 1, z: 1, vx: 4, vy: 0, vz: 1, nx: -1, ny: 0, nz: 0, bounce: 1, launch: [] }),
   strike: () => ({ weapon: 'blade', damage: 10, mining: 3, reach: 2.5, color: 0, tags: new Set(), polarity: 'positive' }),
   blockDamage: () => ({ x: 1, y: 1, z: 1, material: 4, amount: 3, kind: 'intent', source: 'intent' }),
   blockBreak: () => ({ x: 1, y: 1, z: 1, material: 4, kind: 'intent', source: 'intent', spawnDebris: true }),

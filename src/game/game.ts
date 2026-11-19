@@ -529,6 +529,7 @@ export class Game {
       hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
       nearestBlock: (p, r) => this.nearestSolid(p, r),
       nearestEnemy: (p, r, polarity) => this.nearestMeetable(p, r, polarity),
+      bounced: b => { this.bus.emit('intentBounce', b); },
     });
     this.api = this.makeApi();
     this.weaponHost = this.makeWeaponHost();
