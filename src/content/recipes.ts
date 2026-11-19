@@ -1,5 +1,5 @@
 import type { Carried } from '../entities/player';
-import { MAT } from './materials';
+import { MAT, ORES } from './materials';
 import type { PathName } from './palette';
 import type { PartKind } from './parts';
 import { lineageOf, pathOf } from './patterns';
@@ -23,7 +23,7 @@ export const RECIPES: readonly Recipe[] = [
   { potion: 'footing-tincture', slots: [{ part: 'flesh', path: 'body' }, { materials: [MAT.deepstone, MAT.obsidian] }] },
   { potion: 'spring-tonic', slots: [{ part: 'heart', path: 'body' }] },
   { potion: 'clear-infusion', slots: [{ part: 'mind', path: 'mind' }, { part: 'mind', path: 'mind' }], patterns: 'distinct' },
-  { potion: 'questioning-tincture', slots: [{ part: 'mind', lineage: 'doubt' }, { materials: [MAT.ore] }] },
+  { potion: 'questioning-tincture', slots: [{ part: 'mind', lineage: 'doubt' }, { materials: ORES }] },
   { potion: 'ember-tonic', slots: [{ part: 'heart', path: 'will' }] },
   { potion: 'berserker-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'heart', path: 'will' }, { materials: [MAT.obsidian] }] },
   { potion: 'patient-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'mind', path: 'will' }], patterns: 'same' },

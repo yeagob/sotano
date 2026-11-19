@@ -4,16 +4,17 @@ import { MAT } from './materials';
 
 export const TILE_PX = 16;
 export const ATLAS_COLS = 8;
-export const ATLAS_ROWS = 8;
+export const ATLAS_ROWS = 16;
 
-/** Tiles 0..47 are materials (tile = material id); the special tiles follow the material range. */
-export const MATERIAL_TILES = 48;
-export const TILE_GRASS_TOP = 48;
-export const TILE_LOG_TOP = 49;
+/** Tiles 0..63 are materials (tile = material id); the special tiles follow the material range. The atlas grew from
+ *  8 rows to 16 (still a power of two) when the presences' materials took ids 47 to 52. */
+export const MATERIAL_TILES = 64;
+export const TILE_GRASS_TOP = 64;
+export const TILE_LOG_TOP = 65;
 /** End grain of sky wood and the open culms of bamboo (docs/art/sky/blocks.md). */
-export const TILE_SKYWOOD_TOP = 50;
-export const TILE_BAMBOO_TOP = 51;
-export const TILE_CRACK0 = 52; // 4 crack stages: 52..55
+export const TILE_SKYWOOD_TOP = 66;
+export const TILE_BAMBOO_TOP = 67;
+export const TILE_CRACK0 = 68; // 4 crack stages: 68..71
 export const CRACK_STAGES = 4;
 
 /** Faces in the mesher's FACES order: +X, -X, +Y, -Y, +Z, -Z. */

@@ -14,8 +14,9 @@ import type { RoomType } from '../world/floorplan';
 
 /** What the Cartographer and the Star-reader marked, per floor: room ids (RoomInfo.id). */
 export interface StarMarks {
-  /** The room the Cartographer marked on each floor, with what was asked for. */
-  cartographer: ReadonlyMap<number, { room: number; want: 'vault' | 'boss' }>;
+  /** The room the Cartographer marked on each floor, with what was asked for; a chart for the zone's ore (presences
+   *  README D13g) marks the vault in `room` and the boss in `also`. */
+  cartographer: ReadonlyMap<number, { room: number; want: 'vault' | 'boss'; also?: number }>;
   /** The Star-reader's room once met, on its floor. */
   starReader: { floor: number; room: number } | null;
   /** The Star-reader read the stars for you (its gift was taken): the crown's chain of pads is drawn. */
@@ -66,7 +67,8 @@ export interface FloorInput {
  *  presences told you of. A room the Cartographer marked is drawn even if no door to it has been seen. */
 export function floorStarMap(floor: FloorInput, depth: number, visited: ReadonlySet<number>, current: number, marks: StarMarks): FloorStarMap {
   const known = new Set<number>(), lines: [number, number][] = [];
-  const carto = marks.cartographer.get(depth)?.room ?? -1;
+  const mark = marks.cartographer.get(depth);
+  const cartoRooms = new Set<number>(mark ? [mark.room, ...(mark.also !== undefined ? [mark.also] : [])] : []);
   const reader = marks.starReader?.floor === depth ? marks.starReader.room : -1;
   floor.rooms.forEach((r, i) => {
     if (!visited.has(r.id)) return;
@@ -80,10 +82,10 @@ export function floorStarMap(floor: FloorInput, depth: number, visited: Readonly
   });
   const stars: MapStar[] = [];
   for (const r of floor.rooms) {
-    const told = r.id === carto || r.id === reader;
+    const told = cartoRooms.has(r.id) || r.id === reader;
     if (!known.has(r.id) && !told) continue;
     const state = r.id === current ? 'here' : visited.has(r.id) ? 'visited' : known.has(r.id) ? 'known' : 'told';
-    stars.push({ id: r.id, gx: r.gx, gz: r.gz, type: r.type, state, cartographer: r.id === carto, starReader: r.id === reader });
+    stars.push({ id: r.id, gx: r.gx, gz: r.gz, type: r.type, state, cartographer: cartoRooms.has(r.id), starReader: r.id === reader });
   }
   return { kind: 'floor', depth, w: floor.plan.w, h: floor.plan.h, stars, lines };
 }

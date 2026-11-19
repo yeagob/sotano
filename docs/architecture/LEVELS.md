@@ -44,6 +44,7 @@ Everything that today reads "floor k of 4" reads the table instead: plans, rock 
 - World height ≈ 8 + 10 × 16 + 100 ≈ 270 (≈ 2.5 M voxels × 2 bytes ≈ 5 MB). The rock column is filled once per run, as today.
 - Room ids `(floor + 1) × ROOM_ID_STRIDE + index` so they stay positive when tree floors (−1…−3) arrive.
 - `MAX_ROOM_H` / `MAX_PIT` and the rock-between-bands test hold for every pair of the ten bands.
+- Roots, moss and the zones' ores in the rock (`LevelDef.garden`, `LevelDef.ore`, `ZONES` in `content/levels.ts`; `fillRock` and `zoned` in `world/floor.ts`): a living root (strands two blocks tall) and cave moss take a share of the rock of every floor from the rock's existing hash at their own grain, and a floor's ore veins and every ore block its rooms place are the ore of its zone. No new draw, no room or band change; the blocks differ for the same seed, so GEN_VERSION 37. Design: [floors](../design/built/levels/floors/README.md#ores-by-zone).
 - Lava in the rock between floors 5 to 9 (`LevelDef.lava`, `carveLavaBelow`): one row of patches five blocks under each floor and two rows of pockets, every cell sealed by rock or lava and two blocks clear of the hole. Its own fork `fork('floor', k, 'lava')` (GEN_VERSION 25); the design is in [LAVA-BELOW](../design/built/levels/floors/LAVA-BELOW.md).
 
 ### 2.3 Runs

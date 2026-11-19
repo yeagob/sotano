@@ -48,11 +48,10 @@ Each of these is a proposal. None is built, and the reason is what the build lac
 
 | Presence | Agreement in the design | Why it is not built |
 |---|---|---|
-| The Gardener | A root and a tuft of moss | The Gardener asks for one flesh part and a breath (REQUESTS.md). No root or moss exists as a part or a material, so the agreement waits on the material list |
 | The Child | Three loose cubes of different materials | The Child's build is built (three blocks, any shape). Its agreement needs three materials in hand; the consent card names one thing at a time |
 | The Wanderer | The mind of the first pattern met | It gives a gift and asks for nothing; the agreement would be a new request kind, which is not decided |
 | The Listener | A heart of a pattern released | The Listener's heart is built as its reward input (LISTENER.md). Its agreement is the Lesson, not built (see COVENANT.md) |
-| The Cartographer | One ore from every zone crossed | Needs ores from each zone and a count of zones crossed; neither is tracked |
+| The Cartographer | One ore from every zone crossed | The ores are built (README D13); the Cartographer charts the floor for the ore of its own zone (D13g). The ore of every zone crossed needs a multi-part card and a count of zones crossed, which is not tracked |
 | The Elder | A page of ledger stone and the essence of a rule | Ledger stone is not a material, and the Ledger Halls are not built (ELDER.md). The Elder gives the Page of the Covenant instead, on its choice card |
 | The Mender | Three shards of different essences | Built as a multi-part card of two parts of different kinds (floors 3 to 5). Three shards wait for a Mender below floor 5 |
 | The Witness | One part of each pattern released | Needs the Silence below floor 9 and the parts of every pattern (not built) |
@@ -60,11 +59,10 @@ Each of these is a proposal. None is built, and the reason is what the build lac
 ## Decided by agent for #149 (pending owner ruling)
 
 - **Multi-part cards.** Built by the owner's ruling (README D11, #228).
-- **Materials.** No root, moss or zone ores (README D13).
+- **Materials.** Ruled by the owner on 2026-11-19 (README D13): the root, the moss and the zone ores are built. The Gardener's agreement is built, one card per object (D13f); the Cartographer's is built for the ore of its own zone (D13g).
 - **The readings k to o.** Accepted as built (README D6).
 
 ## Owed to the owner
 
 - **Multi-part cards for the Child and the Witness.** The card exists (D11); the Child's three cubes need materials in hand on the card, and the Witness's set needs the Silence. Their agreements are not built.
-- **Materials for the Gardener and the Cartographer.** Decide whether a root, a moss and the ores of each zone are materials of the run.
 - **The readings k to o.** Still open (design section 13).

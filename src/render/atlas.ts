@@ -557,6 +557,134 @@ function paintTektite(px: Px, r: Ramp) {
   for (const [x, y] of [[3, 1], [11, 9]]) { px(x, y, r.h); px(x + 1, y, r.h); }
 }
 
+// ───────────────────── the presences' materials (DECISIONS §6.7, D13) ─────────────────────
+
+/** Living root strands: [x0, phase, amplitude, waves]; each wanders across the tile top to bottom (seamless),
+ *  wide enough that two of them cross, and at its own rhythm, so the tile reads as a tangle, never as boards
+ *  or a net. */
+const ROOT_STRANDS: [number, number, number, number][] = [[3, 0.2, 3.4, 1], [9, 2.3, 1.3, 2], [13, 4.4, 2.2, 1]];
+/** Rootlets running across: [y0, x from, length, phase]; each tapers into a hair. */
+const ROOTLETS: [number, number, number, number][] = [[5, 5, 6, 0.9], [12, 10, 7, 3.1]];
+
+/** Living root: pale fibrous strands over dark soil. Three strands, 2 px, lit on their left, a 1 px shadow
+ *  on the soil to their right; two thin rootlets across them; root hairs (2 px ticks) off every strand.
+ *  Pale on dark, where root bark is dark ridges on darker crevices. */
+function paintRoots(px: Px, r: Ramp) {
+  const w = wrap(px);
+  const kind = new Uint8Array(T * T); // 0 soil, 1 strand, 2 shadow
+  const at = (x: number, y: number) => (((y % T) + T) % T) * T + (((x % T) + T) % T);
+  // the soil: dark, with a few outline crumbs in 2 px pairs
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) w(x, y, r.d);
+  for (const [x, y] of [[6, 1], [1, 8], [11, 9], [7, 14], [14, 3]]) { w(x, y, r.o); w(x + 1, y, r.o); }
+  // rootlets first: 1 px base fibres that lie across, lit on top, ending in a hair
+  for (const [y0, x0, len, ph] of ROOTLETS) for (let k = 0; k < len; k++) {
+    const x = x0 + k, y = y0 + Math.round(Math.sin(k / len * Math.PI + ph) * 1.2);
+    w(x, y, k < len - 2 ? r.b : r.h); kind[at(x, y)] = 1;
+    if (k < len - 2) { w(x, y + 1, r.o); kind[at(x, y + 1)] = 2; }
+  }
+  // the strands over them
+  const strandX = ([x0, ph, amp, k]: [number, number, number, number], y: number) => x0 + Math.round(Math.sin((y / T) * Math.PI * 2 * k + ph) * amp);
+  for (const st of ROOT_STRANDS) for (let y = 0; y < T; y++) {
+    const x = strandX(st, y);
+    w(x, y, r.h); w(x + 1, y, r.b); kind[at(x, y)] = 1; kind[at(x + 1, y)] = 1;
+    if (kind[at(x + 2, y)] !== 1) { w(x + 2, y, r.o); kind[at(x + 2, y)] = 2; }
+  }
+  // root hairs: 2 px diagonal ticks reaching out from a strand into the soil, never onto another strand
+  const hairs: [number, number, number][] = [[0, 3, -1], [0, 10, -1], [1, 6, 1], [1, 14, -1], [2, 1, 1], [2, 9, 1]];
+  for (const [s, y, side] of hairs) {
+    const x = strandX(ROOT_STRANDS[s], y) + (side < 0 ? -1 : 3);
+    for (let k = 0; k < 2; k++) {
+      const hx = x + side * k, hy = y + k;
+      if (kind[at(hx, hy)] === 1) break;
+      w(hx, hy, r.b);
+    }
+  }
+}
+
+/** Cave moss mats: [x0, y0, width]; low and lying flat (found matter is horizontal). */
+const CAVE_MATS: [number, number, number][] = [[0, 1, 11], [7, 6, 12], [3, 11, 10]];
+/** Each mat's ragged top: 1 where a 2 px tuft rises a row above the mat. */
+const CAVE_TUFTS = [1, 1, 0, 0, 1, 1, 0, 1, 1, 0];
+
+/** Cave moss: damp stone (the stone ramp, a step darker) under three low mats of moss lying flat, each
+ *  with a ragged top of small tufts lit on the left, a dark underside, and a fringe that hangs and drips:
+ *  low, wet and dark, where the sky's moss is a dense dry cushion of round domes. */
+function paintCaveMoss(px: Px, r: Ramp, rng: Rng) {
+  const w = wrap(px);
+  const stone: Ramp = { o: palCss('mat.stone.outline'), d: palCss('mat.stone.dark'), b: palCss('mat.stone.dark'), h: palCss('mat.stone.base') };
+  plates(px, rng, 5, stone, [stone.d, stone.d, stone.o]);
+  CAVE_MATS.forEach(([x0, y0, wd], i) => {
+    for (let k = 0; k < wd; k++) {
+      const x = x0 + k, tuft = CAVE_TUFTS[(k + i * 3) % CAVE_TUFTS.length] === 1 && k > 0 && k < wd - 1;
+      const top = y0 - (tuft ? 1 : 0);
+      for (let y = top; y < y0 + 3; y++) {
+        const ly = y - top;
+        const c = k === 0 ? (ly === 0 ? r.h : r.b) : k === wd - 1 ? r.d : ly === 0 ? r.h : y === y0 + 2 ? r.d : r.b;
+        w(x, y, c);
+      }
+      // the fringe: every third column hangs a strand of 1–2 px with a drop of shade under it
+      if ((k + i) % 3 === 1 && k < wd - 1) { const len = 1 + ((k + i) % 2); for (let d = 0; d < len; d++) w(x, y0 + 3 + d, r.d); w(x, y0 + 3 + len, r.o); }
+      else w(x, y0 + 3, r.o);
+    }
+  });
+}
+
+type Vein = Ramp;
+
+/** Sprites for the ore veins: v/V/W = vein dark/base/hi, g = a glint (`bone.paper`), c/C/k = copper
+ *  dark/base/hi, o = the stone outline (shadow), '.' leaves the stone. */
+function sprite(px: Px, x0: number, y0: number, rows: string[], v: Vein, extra: Record<string, string> = {}) {
+  const map: Record<string, string> = { v: v.d, V: v.b, W: v.h, o: v.o, ...extra };
+  rows.forEach((row, dy) => [...row].forEach((ch, dx) => { if (ch !== '.') px(x0 + dx, y0 + dy, map[ch]); }));
+}
+
+/** Copper: rounded copper lumps crusted green on top, and the green run down below them where the water
+ *  reached it (a 2–3 px drip under each lump). */
+const VERDIGRIS_LUMP = ['.WWW.', 'WWVVk', 'VVCCc', 'oVCco', '.ovo.', '..v..', '..o..'];
+const VERDIGRIS_SMALL = ['WW.', 'VCc', 'ovo', '.v.'];
+/** Tin: cut prisms standing upright side by side, a lit left face, a dark right face, a pointed top. */
+const TIN_PRISM = (h: number) => ['.W.', 'WWV', ...Array.from({ length: h - 3 }, () => 'WVv'), 'ooo'];
+/** Quicksilver: round beads, dark-rimmed below, lit above, one glint each. */
+const QS_BIG = ['.WWV.', 'WgWVv', 'WVVVv', 'VVVvv', '.vvvo', '..oo.'];
+const QS_MID = ['.WV.', 'WgVv', 'VVvv', '.vvo'];
+const QS_SMALL = ['Wg.', 'VVv', '.vo'];
+/** Lead: square galena cubes, framed in the outline so they stand off the stone's own plates: a lit top face
+ *  (2 rows) over a dark body, a darker right side, stepped like cleavage. */
+const LEAD_CUBE = (s: number) => ['o'.repeat(s + 2), 'o' + 'W'.repeat(s) + 'o', 'o' + 'W'.repeat(s - 1) + 'V' + 'o',
+  ...Array.from({ length: s - 3 }, () => 'o' + 'V'.repeat(s - 1) + 'v' + 'o'), 'o' + 'v'.repeat(s) + 'o', 'o'.repeat(s + 2)];
+
+function paintVein(px: Px, shape: NonNullable<MaterialDef['veinShape']>, v: Vein, rng: Rng) {
+  const w = wrap(px);
+  const copper = { c: palCss('copper.dark'), C: palCss('copper.base'), k: palCss('copper.hi') };
+  switch (shape) {
+    case 'nuggets':
+      for (let i = 0; i < 5; i++) bevel(px, rng.int(1, T - 4), rng.int(1, T - 3), rng.next() < 0.5 ? 2 : 3, 2, v);
+      break;
+    case 'verdigris':
+      sprite(w, 1, 1, VERDIGRIS_LUMP, v, copper);
+      sprite(w, 9, 6, VERDIGRIS_LUMP, v, copper);
+      sprite(w, 3, 10, VERDIGRIS_SMALL, v, copper);
+      sprite(w, 13, 12, VERDIGRIS_SMALL, v, copper);
+      break;
+    case 'crystals':
+      // one cluster of three, tallest in the middle, and one lone prism: orderly, upright, cut
+      sprite(w, 2, 6, TIN_PRISM(7), v); sprite(w, 5, 3, TIN_PRISM(10), v); sprite(w, 8, 7, TIN_PRISM(6), v);
+      sprite(w, 12, 0, TIN_PRISM(5), v);
+      break;
+    case 'beads': {
+      const glint = { g: palCss('bone.paper') };
+      sprite(w, 1, 2, QS_BIG, v, glint); sprite(w, 10, 1, QS_MID, v, glint); sprite(w, 7, 8, QS_SMALL, v, glint);
+      sprite(w, 11, 10, QS_BIG, v, glint); sprite(w, 2, 11, QS_SMALL, v, glint);
+      break;
+    }
+    case 'cubes':
+      // two stepped pairs: a big cube with a smaller one grown on its lower right
+      sprite(w, 0, 0, LEAD_CUBE(6), v); sprite(w, 6, 5, LEAD_CUBE(4), v);
+      sprite(w, 9, 9, LEAD_CUBE(5), v);
+      break;
+  }
+}
+
 function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: MaterialDef, rng: Rng) {
   const r = rampOf(m);
   const px: Px = (x, y, c) => { g.fillStyle = c; g.fillRect(ox + x, oy + y, 1, 1); };
@@ -604,11 +732,13 @@ function paintTile(g: CanvasRenderingContext2D, ox: number, oy: number, m: Mater
       break;
     case 'nuggets': {
       plates(px, rng, 5, r, [r.b, r.b, r.d]);
-      // bevelled copper nuggets
-      const c = { o: r.o, d: palCss('copper.dark'), b: palCss('copper.base'), h: palCss('copper.hi') };
-      for (let i = 0; i < 5; i++) bevel(px, rng.int(1, T - 4), rng.int(1, T - 3), rng.next() < 0.5 ? 2 : 3, 2, c);
+      // iron ore: bevelled copper nuggets (unchanged); the other ores: their own vein and shape (§6.7)
+      const [vd, vb, vh] = (m.vein ?? ['copper.dark', 'copper.base', 'copper.hi']).map(palCss);
+      paintVein(px, m.veinShape ?? 'nuggets', { o: r.o, d: vd, b: vb, h: vh }, rng);
       break;
     }
+    case 'roots': paintRoots(px, r); break;
+    case 'cavemoss': paintCaveMoss(px, r, rng); break;
     case 'strata':
       paintDeepstone(px, r, rng);
       break;

@@ -101,7 +101,7 @@ import { MENDERS_THREAD, gainKeepsThread, menderDropsThread } from '../content/p
 import { DONE_CHOICE, StillWatch, TRUST_START, answerDone, doneGift } from '../content/presences/trust';
 import { MENDED_SEAM_S, MENDED_TAG, ReleaseLog, countsAsRelease, projectionToMend } from '../content/presences/mended';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
-import { type OfferPick, PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
+import { type OfferPick, PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, findCartographerOre, gardenerWants, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { COMPLETION_ACHIEVEMENT } from '../content/achievements';
 import { downloadRootsBook } from './book-download';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
@@ -329,6 +329,8 @@ export class Game {
   get covenantPieces(): Covenant { return this.covenant; }
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
+  /** The Gardener's agreement: the materials it already holds, by its enemy id (GARDENER.md: a root and a tuft of moss). */
+  private gardenGiven = new Map<number, number[]>();
   /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
   private menderCame = false;
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
@@ -414,7 +416,7 @@ export class Game {
   /** The Leaves (D14) were entered this run: their name is said once. */
   private leavesSeen = false;
   /** What the star map shows beyond what you walked (D15): the Cartographer's marks, the Star-reader's room and reading. */
-  private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss' }>; starReader: StarMarks['starReader']; read: boolean } =
+  private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss'; also?: number }>; starReader: StarMarks['starReader']; read: boolean } =
     { cartographer: new Map(), starReader: null, read: false };
   private stillT = 0;
   /** The star pad you arrived on (re-armed once you step off it). */
@@ -620,7 +622,7 @@ export class Game {
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
     this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
-    this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
+    this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];
     this.covenant = NO_COVENANT;
@@ -3624,7 +3626,7 @@ export class Game {
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
-      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
+      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); e.tags.delete('ore-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
       // the Child, once the player agreed to build: it asks for its gift when the blocks are placed, and only tells how
@@ -3643,6 +3645,18 @@ export class Game {
         this.hud.presenceCard(talk.name, ['presence.child.more'], { n: CHILD_BUILD_BLOCKS - this.builds.since(mark) });
         return;
       }
+      // the Cartographer's chart: with the ore of its zone in hand, it asks for it first, and charts the whole floor with
+      // it; Keep takes nothing and opens the free choice card instead (CARTOGRAPHER.md, README D13)
+      if (id === 'cartographer' && !e.tags.has('ore-declined')) {
+        const ore = findCartographerOre(this.rooms.get(e.room)?.floor ?? 0, this.player.hand);
+        if (ore) {
+          this.pendingPresenceOffer = { id, enemyId: e.id, index: ore.index, carried: ore.carried };
+          this.hud.presenceOfferCard(talk.name, ore.carried, 'presence.offer.cartographer.ore', false, requestOf(id));
+          this.input.modal = true;
+          this.input.unlockFor();
+          return;
+        }
+      }
       if (PRESENCE_CHOICE[id]) {
         const choice = PRESENCE_CHOICE[id];
         this.pendingPresenceChoice = { id, enemyId: e.id };
@@ -3654,7 +3668,7 @@ export class Game {
       }
       // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
       const top = this.player.active;
-      const offer = findPresenceOffer(id, this.player.hand);
+      const offer = findPresenceOffer(id, this.player.hand, this.gardenGiven.get(e.id));
       if (!offer) {
         if (e.tags.has('answering')) continue;
         const now = performance.now();
@@ -3693,12 +3707,15 @@ export class Game {
 
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
     const carried = pending.index < 0 ? undefined : this.player.hand[pending.index];
-    // every object the card named must still be in its slot: nothing is taken unless the whole exchange still holds
+    // every object the card named must still be in its slot: nothing is taken unless the whole exchange still holds.
+    // The Cartographer's ore is not its key (it asks on a choice card): the offer holds while the same ore is in hand
     const rest = pending.rest ?? [];
+    const unlocks = pending.id === 'cartographer' ? carried !== undefined && carried === pending.carried
+      : unlocksPresence(pending.id, carried) && rest.every(r => unlocksPresence(pending.id, r.carried));
     const outcome = offerOutcome(pending.id, accept, {
       present: !!e?.alive && e.tags.has('presence'), met: !!e?.tags.has('met'),
       sameCarried: carried === pending.carried && rest.every(r => this.player.hand[r.index] === r.carried),
-      unlocks: unlocksPresence(pending.id, carried) && rest.every(r => unlocksPresence(pending.id, r.carried)),
+      unlocks,
     });
     if (outcome === 'stale' || !e) {
       this.hud.toast('presence.offer.stale');
@@ -3713,8 +3730,29 @@ export class Game {
         this.releasePresence(e);
         return;
       }
+      // Keep with the Cartographer's ore: its free choice card opens next, and the ore is not asked for again until the
+      // player steps away
+      if (pending.id === 'cartographer') { e.tags.add('ore-declined'); return; }
       e.tags.add('offer-declined');
       return;
+    }
+
+    // the Cartographer's chart: the ore is taken, and both places are marked on one card
+    if (pending.id === 'cartographer') { this.acceptCartographerOre(e, pending.index); return; }
+    // the Gardener's agreement: a root and a tuft of moss, one card each; it plants once it holds both
+    if (pending.id === 'gardener' && typeof carried === 'number') {
+      const given = [...(this.gardenGiven.get(e.id) ?? []), carried];
+      this.gardenGiven.set(e.id, given);
+      const left = gardenerWants(given);
+      if (left.length) {
+        this.player.removeAt(pending.index);
+        this.hands.placed();
+        this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('mat.grass.base'), 6, 1, 0.05);
+        // the next card waits until the player steps away and comes back with the other half
+        e.tags.add('offer-declined');
+        this.hud.presenceCard(PRESENCE_TALK.gardener.name, ['presence.gardener.more'], { item: materialName(left[0]) });
+        return;
+      }
     }
 
     // the Child's two answers: the consent to build, and later the gift (acceptChild)
@@ -3825,6 +3863,30 @@ export class Game {
     this.particles.burst(b.x, b.y + 1.6, b.z, pal('light.gold'), 16, 1.6, 0.05);
     sfx3.reveal();
     this.hud.toast('covenant.light.crown');
+  }
+
+  /** The Cartographer's chart (CARTOGRAPHER.md): the ore of its zone is taken, and the nearest vault and the nearest boss
+   *  of the floor are both marked in words. It keeps its place, as after a single mark. */
+  private acceptCartographerOre(e: Enemy, index: number) {
+    const talk = PRESENCE_TALK.cartographer;
+    this.player.removeAt(index);
+    this.hands.placed();
+    this.meet(e);
+    const vault = this.directionToNearest(e, 'vault'), boss = this.directionToNearest(e, 'boss');
+    // both places go on the star map too (D15): the vault, and the boss beside it
+    const vr = this.nearestRoom(e, 'vault'), br = this.nearestRoom(e, 'boss');
+    const first = vr ?? br;
+    if (first) this.starMarks.cartographer.set(first.floor, { room: first.id, want: vr ? 'vault' : 'boss', ...(vr && br ? { also: br.id } : {}) });
+    const lines: MessageKey[] = [
+      vault === null ? 'presence.cartographer.chart.novault' : 'presence.cartographer.chart.vault',
+      boss === null ? 'presence.cartographer.chart.noboss' : 'presence.cartographer.chart.boss',
+      'presence.cartographer.chart.done',
+    ];
+    sfx3.reveal();
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, lines, {
+      vault: vault === null ? '' : t(`dir.${vault}` as MessageKey), boss: boss === null ? '' : t(`dir.${boss}` as MessageKey),
+    });
   }
 
   /** The direction of the nearest room of a type on the enemy's floor, read from the map's cells; null when none. */

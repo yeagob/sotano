@@ -23,7 +23,13 @@ export interface MaterialDef {
   /** Shape grammar of its 16×16 tile (src/render/atlas.ts): shapes, never noise. */
   pattern: 'clumps' | 'grass' | 'leaves' | 'brick' | 'plates' | 'strata' | 'planks' | 'bark' | 'rootbark' | 'platebark' | 'facets' | 'cobble' | 'earth' | 'rubble' | 'ashlar' | 'slate' | 'nuggets' | 'frame' | 'pedestal' | 'seed' | 'chest' | 'chestopen'
     // the sky's own (docs/art/sky/blocks.md)
-    | 'cloud' | 'mist' | 'heartwood' | 'branch' | 'skyleaf' | 'bamboo' | 'moss' | 'fence' | 'resin' | 'tektite' | 'glass' | 'seal';
+    | 'cloud' | 'mist' | 'heartwood' | 'branch' | 'skyleaf' | 'bamboo' | 'moss' | 'fence' | 'resin' | 'tektite' | 'glass' | 'seal'
+    // the presences' materials (DECISIONS §6.7)
+    | 'roots' | 'cavemoss';
+  /** An ore's vein on its stone ('nuggets' only): [dark, base, hi]. Left out, iron ore's copper nuggets. */
+  vein?: [PalToken, PalToken, PalToken];
+  /** The vein's shape ('nuggets' only), so the ores part by shape as well as colour (DECISIONS §6.7). */
+  veinShape?: 'nuggets' | 'verdigris' | 'crystals' | 'beads' | 'cubes';
   /** What it stands for (the art's meaning test). */
   concept?: string;
   model?: boolean;
@@ -46,6 +52,8 @@ const RAMPS: Record<string, [PalToken, PalToken, PalToken, PalToken]> = {
   bamboo: R('mat.bamboo'), moss: R('mat.moss'), palestone: R('mat.palestone'), fencewood: R('mat.fencewood'),
   mist: R('mat.mist'), starresin: R('mat.starresin'), meteorglass: R('mat.meteorglass'), solarglass: R('mat.solarglass'),
   sunseal: R('mat.sunseal'),
+  // the presences' materials (palette part deep-matter)
+  root: R('mat.root'), cavemoss: R('mat.cavemoss'),
   brass: ['ink.line', 'brass.dark', 'brass.base', 'brass.hi'],
   limestone: ['ink.ash', 'limestone.dark', 'limestone.base', 'limestone.hi'],
   seed: ['ink.void', 'mat.seed.dark', 'mat.seed.base', 'mat.seed.hi'],
@@ -113,6 +121,15 @@ const DEFS: Def[] = [
   { id: 44, key: 'rootbark', name: 'Root bark', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'rootbark', accent: 'mat.grass.dark', pattern: 'rootbark', concept: 'what holds on below, where it all began' },
   { id: 45, key: 'oldbark', name: 'Old bark', tier: 1, hp: 14, armor: 0.5, flammable: true, ramp: 'oldbark', accent: 'limestone.base', pattern: 'platebark', concept: 'what the years weathered and did not break' },
   { id: 46, key: 'youngleaf', name: 'Young leaves', tier: 0, hp: 2, armor: 0, flammable: true, ramp: 'youngleaf', pattern: 'leaves', concept: 'what is new in you, still soft' },
+  // the presences' materials (docs/design/not-built/presences/README.md D13, owner ruling 2026-11-19): what the Gardener
+  // asks for (a root and a tuft of moss, in the rock of every floor) and the ore of each zone the Cartographer charts
+  // with (iron for Zone I; copper, tin, quicksilver and lead below), the planetary metals of the old alchemists
+  { id: 47, key: 'root', name: 'Living root', tier: 0, hp: 4, armor: 0, flammable: true, ramp: 'root', pattern: 'roots', concept: 'what holds on below and still feeds you' },
+  { id: 48, key: 'cavemoss', name: 'Cave moss', tier: 0, hp: 2, armor: 0, ramp: 'cavemoss', pattern: 'cavemoss', concept: 'what grows quietly in the dark, where nobody looks' },
+  { id: 49, key: 'copperore', name: 'Copper ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.verdigris.base', pattern: 'nuggets', vein: ['ore.verdigris.dark', 'ore.verdigris.base', 'ore.verdigris.hi'], veinShape: 'verdigris', concept: 'what carries a feeling, turned green where the water reached it' },
+  { id: 50, key: 'tinore', name: 'Tin ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.tin.base', pattern: 'nuggets', vein: ['ore.tin.dark', 'ore.tin.base', 'ore.tin.hi'], veinShape: 'crystals', concept: 'the measure the old rules were weighed with' },
+  { id: 51, key: 'quicksilverore', name: 'Quicksilver ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.quicksilver.base', pattern: 'nuggets', vein: ['ore.quicksilver.dark', 'ore.quicksilver.base', 'ore.quicksilver.hi'], veinShape: 'beads', concept: 'what takes every shape the heat gives it' },
+  { id: 52, key: 'leadore', name: 'Lead ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.lead.base', pattern: 'nuggets', vein: ['ore.lead.dark', 'ore.lead.base', 'ore.lead.hi'], veinShape: 'cubes', concept: 'the weight that sank to the bottom, waiting to be turned' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {
@@ -125,3 +142,10 @@ export const MAT: Record<string, number> = Object.fromEntries(MATERIALS.map(m =>
 export const MODEL_DRAWN = Uint8Array.from({ length: 256 }, (_, i) => (MATERIALS[i]?.model ? 1 : 0));
 
 export function mat(id: number): MaterialDef { return MATERIALS[id]; }
+
+/** The ores of the zones, top to bottom (iron for the roots and Zone I): every one counts as an ore wherever an ore is
+ *  asked for (a recipe slot, the Cartographer's chart). */
+export const ORES: readonly number[] = ['ore', 'copperore', 'tinore', 'quicksilverore', 'leadore'].map(k => MAT[k]);
+
+/** What the Gardener asks for (GARDENER.md): a root and a tuft of moss. */
+export const GARDEN_MATERIALS: readonly number[] = [MAT.root, MAT.cavemoss];

@@ -2,7 +2,8 @@ import type { EnemyDef } from '../../enemies/types';
 import type { Rng, RunRandom } from '../../core/rng';
 import type { MessageKey } from '../../i18n';
 import type { Carried } from '../../entities/player';
-import { LAST_FLOOR, level } from '../levels';
+import { LAST_FLOOR, level, oreOf } from '../levels';
+import { GARDEN_MATERIALS, MAT } from '../materials';
 import type { PartKind } from '../parts';
 import { isFlask } from '../potions';
 import echo from './echo';
@@ -27,12 +28,30 @@ export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.m
 
 /** What a presence takes: one kind of monster part, any part (the Echo asks for any part in hand), or nothing (the
  *  Wanderer offers a gift, and asks for no part). */
-export type PresenceKey = PartKind | 'any' | 'none' | 'block';
+export type PresenceKey = PartKind | 'any' | 'none' | 'block' | 'garden';
 
 export const PRESENCE_KEY: Record<PresenceId, PresenceKey> = {
-  gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none',
+  gardener: 'garden', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none',
   witness: 'none', boatman: 'block', mender: 'any', 'star-reader': 'none',
 };
+
+/** What the Gardener still asks for, once it holds the materials in `given` (GARDEN_MATERIALS, in order). */
+export function gardenerWants(given: readonly number[]): number[] {
+  return GARDEN_MATERIALS.filter(m => !given.includes(m));
+}
+
+/** The ore the Cartographer charts with: the ore of the zone of the floor it waits on (levels.ts ZONES). One object per
+ *  card (README D11): the ore of every zone crossed waits on multi-part cards. */
+export function cartographerOre(floor: number): number {
+  return MAT[oreOf(floor)];
+}
+
+/** The offer of the Cartographer's ore: the hand slot that holds its zone's ore, from the top down, or none. */
+export function findCartographerOre(floor: number, hand: readonly Carried[]): { index: number; carried: number } | undefined {
+  const ore = cartographerOre(floor);
+  for (let index = hand.length - 1; index >= 0; index--) if (hand[index] === ore) return { index, carried: ore };
+  return undefined;
+}
 
 /** The presences that ask a question on a choice card instead of an offer of a part: the card's options and its question. */
 export const PRESENCE_CHOICE: Partial<Record<PresenceId, { question: MessageKey; options: readonly MessageKey[] }>> = {
@@ -45,6 +64,8 @@ export function unlocksPresence(id: PresenceId, carried: Carried | undefined): b
   if (key === 'none') return carried === undefined;
   // the Boatman's toll: one block (a material in hand, a number) is left on the shore
   if (key === 'block') return typeof carried === 'number';
+  // the Gardener's agreement: a living root and a tuft of cave moss, one card each (GARDENER.md, README D13)
+  if (key === 'garden') return typeof carried === 'number' && GARDEN_MATERIALS.includes(carried);
   if (typeof carried !== 'object' || isFlask(carried)) return false;
   return key === 'any' || carried.kind === key;
 }
@@ -63,13 +84,15 @@ export interface OfferPick { index: number; carried: Carried }
 /** The offer of a presence: the hand slot it takes and the part, or no slot (index -1) for a presence that takes nothing.
  *  A multi-part agreement (PRESENCE_PARTS) also names the other parts in `rest`, each of a kind not yet named, read from
  *  the interaction item down; with too few kinds in hand there is no offer, and nothing is named. */
-export function findPresenceOffer(id: PresenceId, hand: readonly Carried[]): { index: number; carried?: Carried; rest?: OfferPick[] } | undefined {
+export function findPresenceOffer(id: PresenceId, hand: readonly Carried[], given: readonly number[] = []): { index: number; carried?: Carried; rest?: OfferPick[] } | undefined {
   if (PRESENCE_KEY[id] === 'none') return { index: -1 };
   const want = Math.min(MAX_OFFER_PARTS, PRESENCE_PARTS[id] ?? 1);
   const picks: OfferPick[] = [];
   const kinds = new Set<string>();
   for (let index = hand.length - 1; index >= 0 && picks.length < want; index--) {
     const carried = hand[index];
+    // the Gardener asks only for what it does not have yet
+    if (typeof carried === 'number' && given.includes(carried)) continue;
     if (carried === undefined || !unlocksPresence(id, carried)) continue;
     if (want > 1) {
       const kind = typeof carried === 'object' && !isFlask(carried) ? carried.kind : String(carried);
