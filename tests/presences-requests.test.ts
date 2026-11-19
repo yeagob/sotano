@@ -1,3 +1,4 @@
+import { MAT } from '../src/content/materials';
 import { describe, expect, it } from 'vitest';
 import { PRESENCE_REQUEST, requestOf } from '../src/content/presences/requests';
 import { findPresenceOffer, unlocksPresence } from '../src/content/presences';
@@ -27,10 +28,10 @@ describe('requests from the depths (REQUESTS.md): one shared mechanism on the co
   });
 
   it('a request asks for nothing more: the exchange is the same offer, and the part the card names is still the one taken', () => {
-    const hand = [3, PARTS[0]];
+    const hand = [MAT.stone, MAT.root, PARTS[0]];
     const offer = findPresenceOffer('gardener', hand);
-    expect(offer?.index).toBe(1);
-    expect(unlocksPresence('gardener', PARTS[0])).toBe(PARTS[0].kind === 'flesh');
+    expect(offer).toEqual({ index: 1, carried: MAT.root });
+    expect(unlocksPresence('gardener', PARTS[0])).toBe(false);
   });
 
   it('the requests are fixed content: no seed, and the same text on every read', () => {

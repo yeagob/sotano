@@ -32,6 +32,25 @@ describe('materials', () => {
     const bedrock = MATERIALS.find(m => m.key === 'bedrock')!;
     expect(bedrock.accent).toBeUndefined();
   });
+
+  it('the zones\' ores are one family told apart by shape and colour (§6.7)', () => {
+    const ores = ['ore', 'copperore', 'tinore', 'quicksilverore', 'leadore'].map(k => MATERIALS.find(m => m.key === k)!);
+    const iron = ores[0];
+    // iron ore stays exactly as it was: copper nuggets, no vein of its own
+    expect([iron.vein, iron.veinShape, iron.accent]).toEqual([undefined, undefined, 'copper.base']);
+    for (const m of ores) {
+      expect([m.pattern, m.ramp.join()], m.key).toEqual(['nuggets', iron.ramp.join()]);
+      for (const t of m.vein ?? []) expect(t.startsWith('ore.'), `${m.key}: ${t}`).toBe(true);
+    }
+    const shapes = ores.map(m => m.veinShape ?? 'nuggets');
+    expect(new Set(shapes).size).toBe(ores.length);
+    // every vein hue keeps ΔL* ≥ 8 from the stone's base, so the vein reads in greyscale
+    const stone = L(pal(iron.ramp[2]));
+    for (const m of ores.slice(1)) {
+      const [, base, hi] = m.vein!;
+      expect(Math.max(Math.abs(L(pal(base)) - stone), Math.abs(L(pal(hi)) - stone)), m.key).toBeGreaterThanOrEqual(8);
+    }
+  });
 });
 
 describe('item icons (§10.1)', () => {

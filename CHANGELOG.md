@@ -7,6 +7,10 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- New blocks in the rock: living root and cave moss on every floor, and an ore of its own in each zone below the first: copper ore, tin ore, quicksilver ore and lead ore (#228).
+- The Gardener now asks for a living root and a tuft of cave moss, one card each, instead of a flesh part (#228).
+- The Cartographer charts the whole floor, the vault and the boss, for the ore of its zone. Without it, its single mark is unchanged (#228).
+- The Questioning Tincture takes the ore of any zone, not only iron ore (#228).
 - The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
 - The Child now adds one Lesson in words to its card after its gift (#149).
 - The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).

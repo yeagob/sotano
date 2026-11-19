@@ -54,12 +54,13 @@ const shape = (f: FloorResult) => JSON.stringify({
 });
 
 /** Recorded from the code before the easy layout existed: seed/mastery → hashes of floor 0, its band, the world, floors 1–9.
- *  Floors 1–9 re-recorded at GEN_VERSION 30 (the Wanderer's room, WANDERER.md), 31 (the Gardener's room), 32 (the Elder's and the Cartographer's rooms) and 33 (the Child's room, CHILD.md), 34 (the Witness's room on the ninth floor and the Boatman's nave, WITNESS.md and BOATMAN.md), 35 (the Star-reader's room on a Tree floor, STAR-READER.md). */
+ *  Floors 1–9 re-recorded at GEN_VERSION 30 (the Wanderer's room, WANDERER.md), 31 (the Gardener's room), 32 (the Elder's and the Cartographer's rooms) and 33 (the Child's room, CHILD.md), 34 (the Witness's room on the ninth floor and the Boatman's nave, WITNESS.md and BOATMAN.md), 35 (the Star-reader's room on a Tree floor, STAR-READER.md). The band and the world re-recorded at GEN_VERSION 36 (the
+ *  Gardener's root and moss in the rock, and the ore of each zone, presences README D13): the rooms and floors 1 to 9 are unchanged. */
 const BASELINE: Record<string, { shape: number; band: number; world: number; floors1to9: number }> = {
-  '1/0': { shape: 3137437004, band: 2497052508, world: 607469066, floors1to9: 838384565 },
-  '1/22': { shape: 358658551, band: 3647524814, world: 3251868360, floors1to9: 838384565 },
-  '48879/0': { shape: 383656768, band: 1383084198, world: 1967347489, floors1to9: 2351200195 },
-  '48879/22': { shape: 2069991609, band: 492285628, world: 3775088875, floors1to9: 2351200195 },
+  '1/0': { shape: 3137437004, band: 1591722983, world: 730638468, floors1to9: 838384565 },
+  '1/22': { shape: 358658551, band: 1081796789, world: 3744161958, floors1to9: 838384565 },
+  '48879/0': { shape: 383656768, band: 2222142443, world: 3172422413, floors1to9: 2351200195 },
+  '48879/22': { shape: 2069991609, band: 4268051601, world: 434000359, floors1to9: 2351200195 },
 };
 
 // ── the walker's routes: door middles and room centres, in the frame each room is carved in ──

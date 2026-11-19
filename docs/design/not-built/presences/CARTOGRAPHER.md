@@ -11,11 +11,11 @@ A dweller of knowing where you stand. In the design it lives in the central eman
 - **The Tree.** Its floors (L1 to L5) are not built; the Cartographer waits in a quiet room of a seeded floor.
 - **The map.** The star map does not exist; the marks are words on the card.
 - **The hidden pocket.** The design lets the player mark a hidden pocket too. The build marks a vault or a boss only; the pocket is not built.
-- **Agreement.** One ore from every zone the player crossed, to chart the floor (see [Agreements](AGREEMENTS.md)).
+- **Agreement.** One ore from every zone the player crossed, to chart the floor (see [Agreements](AGREEMENTS.md)). The build asks for one ore, of the zone it waits in, and charts the floor with it (README D13g); the ore of every zone crossed needs multi-part cards (D11) and a count of zones crossed.
 
 ## Decided by agent (pending owner ruling)
 
-- **Materials.** No ores as materials in #149; the Cartographer marks in words (README D13).
+- **Materials.** Owner ruling D13 (2026-11-19): the ores of the zones are built. The Cartographer charts the floor for the ore of its zone (README D13g).
 - **The star map.** Built later (README D15).
 
 ## Open questions

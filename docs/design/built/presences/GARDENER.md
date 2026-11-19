@@ -2,7 +2,7 @@
 
 # The Gardener
 
-Built. A dweller of care: it waits in one quiet room of one seeded floor per run, from floor 1 down, and asks for one flesh part. It gives nothing back and stays where it is. Code: `src/content/presences/gardener.ts` (its identity and body), `src/content/presences/index.ts` (the floor, the placement, its lines and its offer question), `src/game/game.ts` (the offer). The placement and the part are **proposed, pending owner ruling** (see [the not-built part](../../not-built/presences/GARDENER.md)).
+Built. A dweller of care: it waits in one quiet room of one seeded floor per run, from floor 1 down, and asks for a living root and a tuft of cave moss, its agreement. It gives nothing back and stays where it is. Code: `src/content/presences/gardener.ts` (its identity and body), `src/content/presences/index.ts` (the floor, the placement, its lines and its offer question), `src/game/game.ts` (the offer). The placement is **proposed, pending owner ruling**; the root and the moss are the owner's ruling D13 of 2026-11-19, built as the presences README D13f says (see [the not-built part](../../not-built/presences/GARDENER.md)).
 
 - **Pattern:** care, patience, cultivation.
 - **Health:** one point, which nothing removes (as every presence).
@@ -16,10 +16,12 @@ Built. A dweller of care: it waits in one quiet room of one seeded floor per run
 
 ## What the player meets
 
-- **The offer.** Within about two blocks, with a flesh part carried, its card asks: *Give {item} to The Gardener? The roots will keep what it held.* The hand is searched from the top down, and the first flesh part is offered. Give takes that part only; Keep takes nothing, and the Gardener asks again only after the player steps away and returns.
-- **Give.** The part is taken, the Gardener's two lines show on the card: *Walk slowly. The roots remember where you have been.* and *Nothing here has to be finished today.* It stays where it is, and it answers positive intentions as the other dwellers do.
-- **No part, or the wrong part.** Within about two blocks, with no flesh part, it gives its hint and then answers each approach with the name of what the player holds, once every four seconds, as the other presences do.
+- **What it asks for.** A living root and a tuft of cave moss, two blocks found in the rock of every floor, more near the surface (see [floors](../levels/floors/README.md#rock-by-depth)). One card names one of them (D11), in either order.
+- **The offer.** Within about two blocks, with a root or a moss carried that it does not hold yet, its card asks: *Give {item} to The Gardener? It will be planted where you were.* The hand is searched from the top down, and the first one is offered. Give takes that block only; Keep takes nothing, and the Gardener asks again only after the player steps away and returns.
+- **Half of it.** After the first of the two, it says *The roots have it. Now bring me {item}.*, naming the other, and asks again after the player steps away and returns.
+- **Both.** Once it holds the root and the moss, the Gardener's two lines show on the card: *Walk slowly. The roots remember where you have been.* and *Nothing here has to be finished today.* It stays where it is, and it answers positive intentions as the other dwellers do.
+- **Nothing it wants.** Within about two blocks, with neither a root nor a moss, it gives its hint (*Roots and moss grow in the rock, more of them near the surface. Bring me a root and a tuft of moss, and I will plant something where you were.*) and then answers each approach with the name of what the player holds, once every four seconds, as the other presences do.
 
 ## Not built yet
 
-The teaching on floor 0 (ruled out), the memory of how far the player went, and the agreement for a root and a tuft of moss are in [not-built](../../not-built/presences/GARDENER.md). The Gardener uses its own body (defined in the code, with its bone tones and living hands); it has no new art.
+The teaching on floor 0 (ruled out), the memory of how far the player went, and a gift for the agreement (open question) are in [not-built](../../not-built/presences/GARDENER.md). The Gardener uses its own body (defined in the code, with its bone tones and living hands); it has no new art.

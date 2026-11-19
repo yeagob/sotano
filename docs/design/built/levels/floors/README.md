@@ -53,6 +53,25 @@ The rock of a floor's band is mostly plain stone, with more of the hard kinds th
 | 8 | 0.90 | 0.22 | 0 | 0.12 |
 | 9 | 0.90 | 0.30 | 0 | 0.12 |
 
+## Ores by zone
+
+The ore of a floor is the ore of its zone: its veins in the rock, and every ore block its rooms place (the `i` tile and the `~` and `!` decor slots), are that ore. The share of veins per floor is in the table above. Code: `ZONES`, `oreOf` in `src/content/levels.ts`; `fillRock` and `zoned` in `src/world/floor.ts`. Owner ruling D13 (2026-11-19); the choice of metals is the build's ([presences README](../../../not-built/presences/README.md#d13-the-presences-materials-owner-ruling-2026-11-19-built)).
+
+| Zone | Floors | Ore | What it stands for |
+|---|---|---|---|
+| (the roots) | 0 | Iron ore | value hidden in the rock |
+| I, the Cellar of Habits | 1 to 2 | Iron ore | value hidden in the rock |
+| II, the Flooded Rooms | 3 to 4 | Copper ore | what carries a feeling, turned green where the water reached it |
+| III, the Ledger Halls | 5 to 6 | Tin ore | the measure the old rules were weighed with |
+| IV, the Furnace | 7 to 8 | Quicksilver ore | what takes every shape the heat gives it |
+| V, the Frozen Bottom | 9 | Lead ore | the weight that sank to the bottom, waiting to be turned |
+
+The Cartographer charts its floor for the ore of its zone ([CARTOGRAPHER](../../presences/CARTOGRAPHER.md)).
+
+## Roots and moss in the rock
+
+The rock of every floor holds a living root (strands two blocks tall) and tufts of cave moss, what the Gardener asks for ([GARDENER](../../presences/GARDENER.md)). Each is a share of the rock that is not ore: 3 % on the roots, 2 % on floors 1 and 2, 1.5 % on 3 and 4, 1 % on 5 and 6, 0.8 % on 7 to 9 (`garden` in `src/content/levels.ts`). They come from the rock's own hash, not a new draw, so the rooms and plans are unchanged. No room template holds them.
+
 Bigger rooms become more likely as you go down: the weight of templates that spread over more than one cell grows from 1 on the roots to 4 on floors 8 and 9 (see [rooms/MULTI-CELL](../rooms/MULTI-CELL.md)).
 
 ## Ambient creatures
