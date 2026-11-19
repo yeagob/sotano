@@ -12,7 +12,7 @@ import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
-import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, synergyText } from '../i18n/content';
+import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
 import type { Polarity } from '../combat/polarity';
@@ -32,6 +32,8 @@ import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
+import { PARTS, type Completion } from './completion';
+import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -127,6 +129,8 @@ export class Hud {
   private lastCard: CardSpec | null = null;
   private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
+  /** The completion percentage shown on the pause card and the death screen (COMPLETION.md). */
+  private completionView: Completion | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
   screenOpen = false;
@@ -196,6 +200,7 @@ export class Hud {
     this.setItems(this.lastItems);
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
+    this.renderCompletion();
     this.renderPolarity();
     this.renderSpiritLabel();
     this.renderLanguages();
@@ -771,6 +776,36 @@ export class Hud {
     this.toastTimer = performance.now() + 2500;
   }
 
+  /** Gives the HUD the completion percentage to show (COMPLETION.md). Redraws the pause card; the death screen takes it when it shows. */
+  setCompletion(c: Completion) {
+    this.completionView = c;
+    this.renderCompletion();
+  }
+
+  /** Redraws the block; a focused download button keeps its focus across the redraw (a first time changes only the count). */
+  private renderCompletion() {
+    const el = document.getElementById('completion');
+    if (!el) return;
+    const focused = document.activeElement instanceof HTMLElement && document.activeElement.classList.contains('book-download') && el.contains(document.activeElement);
+    el.innerHTML = this.completionHtml();
+    if (focused) el.querySelector<HTMLElement>('.book-download')?.focus();
+  }
+
+  /**
+   * The completion block, one render function for the pause card and the death screen: the percentage, then each part with
+   * its done count and its share of the whole (COMPLETION.md §4). Empty until the game gives a completion.
+   */
+  private completionHtml(): string {
+    const c = this.completionView;
+    if (!c) return '';
+    const rows = PARTS.map(p => {
+      const x = c.parts[p];
+      return `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.count', { done: x.done, total: x.total })}</span>` +
+        `<span>${th('completion.share', { share: x.weight })}</span></li>`;
+    }).join('');
+    return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul>${bookButtonHtml(c.percent)}</section>`;
+  }
+
   private seedText = '';
   private seedListener = false;
 
@@ -809,7 +844,7 @@ export class Hud {
     this.deathEl.innerHTML =
       `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
-      `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
+      `${this.completionHtml()}<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
   }
 
   hideDeath() { this.deathEl.classList.remove('show'); }
@@ -967,9 +1002,9 @@ export class Hud {
     const device = activeDevice();
     this.tollEl.innerHTML =
       `<div class="card slate"><header><h2>${th('toll.title')}</h2>` +
-      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · ${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</small></header>` +
+      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · <b class="count">${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</b></small></header>` +
       `<p class="hint">${th('toll.hint', controlParams(device))}</p>` +
-      `<p class="hint">${this.tollCost(g)}</p>` +
+      `<p class="hint cost">${this.tollCost(g)}</p>` +
       `<div class="grid">${body || `<p class="none">${th('toll.none')}</p>`}</div>` +
       `<div class="go-row"><button type="button" class="tile go${ready ? '' : ' off'}${cur === 'pay' ? ' cur' : ''}" data-id="pay"><span class="lbl">${th('toll.go')}</span></button>` +
       `<button type="button" class="tile go${cur === 'close' ? ' cur' : ''}" data-id="close"><span class="lbl">${th('toll.stay')}</span></button></div></div>`;
@@ -1061,7 +1096,8 @@ export class Hud {
   }
 
   private carriedDetail(c: Carried) {
-    return `<div class="detail"><div><b>${esc(this.carriedLabel(c))}</b><p>${th(forDevice('inv.choose', activeDevice()))}</p></div></div>`;
+    return `<div class="detail"><header class="d-head"><div><b class="d-name">${esc(this.carriedLabel(c))}</b></div></header>` +
+      `<section class="d-block"><p>${th(forDevice('inv.choose', activeDevice()))}</p></section></div>`;
   }
 
   private carriedLabel(c: Carried): string {
@@ -1070,18 +1106,25 @@ export class Hud {
     return partText(c).name;
   }
 
+  /**
+   * A practice in three blocks, always in this order (issue #202): the teaching (a phrase that carries the practice into
+   * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
+   */
   private itemDetail(d: ItemDef) {
     const fx = (d.stats ?? []).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
-      return `<i>${esc(statLabel(m.stat))} ${esc(v)}</i>`;
+      const dir = m.layer === 'mul' ? (m.value >= 1 ? 'up' : 'down') : m.layer === 'final' ? 'set' : m.value >= 0 ? 'up' : 'down';
+      return `<li class="${dir}"><span>${esc(statLabel(m.stat))}</span><b>${esc(v)}</b></li>`;
     }).join('');
     const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${pathColor(p)}">${PATH_GLYPH[p as PathName]} ${esc(pathName(p))}</em>`).join('');
-    const tx = itemText(d);
-    return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
-      `<div><b>${esc(tx.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
-      `<p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}` +
-      `<div class="fx">${fx}</div></div></div>`;
+    const tx = itemText(d), lesson = practiceTeaching(d);
+    return `<div class="detail" style="--c:${hex(d.color)}"><header class="d-head"><img src="${iconDataUrl(d, 6)}" alt="">` +
+      `<div><b class="d-name">${esc(tx.name)}</b><span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}</div></header>` +
+      `<section class="d-block d-teach"><h4>${th('inv.teaching')}</h4><blockquote>${esc(lesson.quote)}</blockquote><p>${esc(lesson.lesson)}</p>` +
+      `${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</section>` +
+      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p></section>` +
+      `<section class="d-block d-stats"><h4>${th('inv.stats')}</h4>${fx ? `<ul class="fx">${fx}</ul>` : `<p class="none">${th('inv.noStats')}</p>`}</section></div>`;
   }
 
   private reqLabel(r: Req, g: Game) {

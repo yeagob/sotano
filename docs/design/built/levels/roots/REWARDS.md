@@ -59,7 +59,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 33 | Free chests give one thing more | | | | (2 to 4 draws each) | | |
 | 34 | Crates give more | | | | | 1.3 | |
 | 35 | A sixth free chest | | | | 6 | | |
-| 36 | A black heart | | | + black | | | |
+| 36 | A toxic heart | | | + black | | | |
 | 37 | A sixth key | 6 | | | | | |
 | 38 | A fifth bomb | | 5 | | | | |
 | 39 | A second stone heart | | | + stone | | | |
@@ -131,7 +131,7 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 | `mastery.gain.heart.stone` | A stone heart lies in the Roots. | Un corazón de piedra te espera en las raíces. |
 | `mastery.gain.heart.blood` | A blood heart lies in the Roots. | Un corazón de sangre te espera en las raíces. |
 | `mastery.gain.heart.star` | A star heart lies in the Roots. | Un corazón estrella te espera en las raíces. |
-| `mastery.gain.heart.black` | A black heart lies in the Roots. | Un corazón negro te espera en las raíces. |
+| `mastery.gain.heart.black` | A toxic heart lies in the Roots. | Un corazón tóxico te espera en las raíces. |
 | `mastery.gain.heartAgain.red` | One more red heart lies in the Roots. | Un corazón rojo más te espera en las raíces. |
 | `mastery.gain.heartAgain.blue` | One more blue heart lies in the Roots. | Un corazón azul más te espera en las raíces. |
 | `mastery.gain.heartAgain.stone` | One more stone heart lies in the Roots. | Un corazón de piedra más te espera en las raíces. |

@@ -5,7 +5,7 @@ export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'tol
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -139,6 +139,14 @@ export const BINDINGS: readonly Binding[] = [
     gamepad: { buttons: [PAD.VIEW], when: ['paused', 'dead'] },
     touch: { control: 'menuButton', when: ['paused', 'dead'] },
     refs: { minecraft: 'respawn from the death screen', noita: 'new game from the pause menu', isaac: 'hold R to restart; on a pad, restart from the pause menu' },
+  },
+  {
+    // the book download at 100% (COMPLETION.md §8): on the pause card and the death screen; the game does nothing below 100%
+    action: 'book', kind: 'press', when: ['paused', 'dead'],
+    keyboard: { keys: ['KeyB'] },
+    gamepad: { buttons: [PAD.X] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'the menu opens its own pages with a button of the screen', noita: 'the notes are a window of the pause menu', isaac: 'the map and the items each have their own button in the pause' },
   },
   {
     action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll', 'meditation'],

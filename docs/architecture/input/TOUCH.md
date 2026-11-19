@@ -20,6 +20,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |
+| book | "Download the book" on the pause card or the death screen (at 100%) |
 | confirm | tap a Presence offer button; tap anywhere to dismiss other banners; "Tap to play" on the menu tab |
 | back | no separate binding for offers: tap Keep to decline |
 

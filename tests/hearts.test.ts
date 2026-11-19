@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { HEART } from '../src/entities/actors';
-import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, HEALTH_UNIT, berserk, hasHeartRoom, heartCount, isLayer, landHit, stoneHalve, tickBlood, type BloodRegen, type HeartLayer } from '../src/entities/hearts';
+import { BLOOD_BUDGET, BLOOD_RATE, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, HEALTH_UNIT, berserk, hasHeartRoom, heartCount, isLayer, landHit, stoneHalve, tickBlood, TOXIC_DAMAGE, TOXIC_PERIOD, TOXIC_RADIUS, toxic, toxicHits, type BloodRegen, type HeartLayer, type ToxicCandidate } from '../src/entities/hearts';
 import { floorHeartChances, HEART_CHANCE, RARE_HEARTS, rollHeart } from '../src/content/tables/hearts';
 import { Rng, RunRandom } from '../src/core/rng';
 import { StatSheet } from '../src/core/stats';
@@ -170,6 +170,103 @@ describe('black heart', () => {
         expect(locale.messages['heart.black']).toBeTruthy();
         expect(locale.messages['heart.blackLost']).toBeTruthy();
       }
+    });
+  });
+});
+
+describe('black heart aura (#178)', () => {
+  // the player's body centre is at (0, 1, 0); a projection 1 tall stands on the floor at y = 0.5 so its centre is level with it
+  const at = (x: number, z: number, over: Partial<ToxicCandidate> = {}): ToxicCandidate => ({
+    kind: 'projection', faction: 'projection', alive: true, spawning: 0,
+    body: { x, y: 0.5, z, h: 1, hw: 0.3 }, spec: { kind: 'projection' }, ...over,
+  });
+
+  it('is two blocks around the player, measured to the edge of the projection', () => {
+    expect(TOXIC_RADIUS).toBe(2);
+    expect(toxicHits(at(1, 0), 0, 1, 0)).toBe(true);
+    expect(toxicHits(at(2.3, 0), 0, 1, 0)).toBe(true);
+    expect(toxicHits(at(1.6, 1.6), 0, 1, 0)).toBe(true);
+    expect(toxicHits(at(2.4, 0), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(0, 4), 0, 1, 0)).toBe(false);
+    // above or below the player by more than the radius is out of reach
+    expect(toxicHits({ ...at(0, 0), body: { x: 0, y: 4, z: 0, h: 1, hw: 0.3 } }, 0, 1, 0)).toBe(false);
+  });
+
+  it('hurts hostile projections and bosses, never allies, creatures, presences, the player or the materialising', () => {
+    expect(toxicHits(at(1, 0, { spec: { kind: 'boss' } }), 0, 1, 0)).toBe(true);
+    expect(toxicHits(at(1, 0, { faction: 'self' }), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(1, 0, { faction: 'neutral', spec: { kind: 'creature' } }), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(1, 0, { spec: { kind: 'creature' } }), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(1, 0, { faction: 'neutral', spec: { kind: 'presence' } }), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(0, 0, { kind: 'player', faction: 'self', spec: undefined }), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(1, 0, { spawning: 0.5 }), 0, 1, 0)).toBe(false);
+    expect(toxicHits(at(1, 0, { alive: false }), 0, 1, 0)).toBe(false);
+  });
+
+  it('is on while any black heart is held, once however many', () => {
+    expect(toxic([])).toBe(false);
+    expect(toxic([{ kind: 'blue', hp: HEART }])).toBe(false);
+    expect(toxic([{ kind: 'blue', hp: HEART }, { kind: 'black', hp: 1 }])).toBe(true);
+  });
+
+  describe('in the game (Game.toxicAura on a stub of the game)', () => {
+    type AuraGame = { toxicAura(dt: number): void };
+    const aura = (Game.prototype as unknown as AuraGame).toxicAura;
+    const stub = (player: Player, actors: ToxicCandidate[]) => {
+      const hits: { target: ToxicCandidate; amount: number; kind: string; kx: number; kz: number }[] = [];
+      const blocks: unknown[] = [];
+      const game = {
+        player, toxicT: 0, toxicMoteT: 0, toxicMotes: 0,
+        actors: { all: () => actors },
+        damageActor: (target: ToxicCandidate, amount: number, kind: string, _source: string, _owner: number, kx = 0, kz = 0) => { hits.push({ target, amount, kind, kx, kz }); return true; },
+        damageBlock: (...a: unknown[]) => { blocks.push(a); return false; },
+        breakBlock: (...a: unknown[]) => { blocks.push(a); return false; },
+        particles: { burst: () => undefined },
+      };
+      return { game, hits, blocks };
+    };
+    const holding = () => {
+      const player = new Player();
+      player.body.x = 0; player.body.y = 0.1; player.body.z = 0;
+      player.layers = [{ kind: 'black', hp: HEART }];
+      return player;
+    };
+
+    it('touches each projection in reach once a second for its damage, with no knockback, and no blocks', () => {
+      const near = at(1.5, 0), far = at(5, 0), ally = at(-1, 0, { faction: 'self' });
+      const { game, hits, blocks } = stub(holding(), [near, far, ally]);
+      sfx.played.length = 0;
+      aura.call(game, TOXIC_PERIOD * 0.5);
+      expect(hits).toHaveLength(0);
+      aura.call(game, TOXIC_PERIOD * 0.5);
+      expect(hits).toEqual([{ target: near, amount: TOXIC_DAMAGE, kind: 'item', kx: 0, kz: 0 }]);
+      expect(sfx.played).toContain('blackAura');
+      for (let i = 0; i < 4; i++) aura.call(game, TOXIC_PERIOD);
+      expect(hits).toHaveLength(5);
+      expect(blocks).toEqual([]);
+    });
+
+    it('is silent when nothing is in reach', () => {
+      const { game, hits } = stub(holding(), [at(6, 0)]);
+      sfx.played.length = 0;
+      aura.call(game, TOXIC_PERIOD);
+      expect(hits).toHaveLength(0);
+      expect(sfx.played).not.toContain('blackAura');
+    });
+
+    it('stops when the black heart is spent, and when the player is dead', () => {
+      const player = holding();
+      const { game, hits } = stub(player, [at(1, 0)]);
+      aura.call(game, TOXIC_PERIOD);
+      expect(hits).toHaveLength(1);
+      landHit(player.layers, HEART);
+      expect(player.layers).toEqual([]);
+      for (let i = 0; i < 3; i++) aura.call(game, TOXIC_PERIOD);
+      expect(hits).toHaveLength(1);
+      player.layers = [{ kind: 'black', hp: HEART }];
+      player.dead = true;
+      aura.call(game, TOXIC_PERIOD);
+      expect(hits).toHaveLength(1);
     });
   });
 });

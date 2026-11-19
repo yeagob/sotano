@@ -24,7 +24,7 @@ import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { heartTollPlan, tollIndex } from './toll';
-import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
+import { defaultMeta, noStore, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { FIRST_BOOK_PAGE } from './roots-book';
 import { mastery as achievedMastery, type Payload } from './achievements';
@@ -91,6 +91,8 @@ import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { COMPLETION_ACHIEVEMENT } from '../content/achievements';
+import { downloadRootsBook } from './book-download';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
@@ -99,7 +101,7 @@ import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tab
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, TOXIC_DAMAGE, TOXIC_MOTE_EVERY, TOXIC_PERIOD, TOXIC_RADIUS, toxic, toxicHits, type LayerKind, type ToxicCandidate } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -587,6 +589,7 @@ export class Game {
     this.bus = createBus();
     attachDevlog(this.bus);
     this.listenAchievements();
+    this.showCompletion();
     this.inventory.restore([]);
     this.stats.removeSource('toll');
     this.syncWeapon();
@@ -828,6 +831,7 @@ export class Game {
   forgetRoots(): boolean {
     if (!this.keeper.reset()) return false;
     this.roots?.forget();
+    this.showCompletion();
     return true;
   }
 
@@ -854,11 +858,41 @@ export class Game {
     this.bus.on('bookBack', { priority: 300, source, fn: p => this.achieved('bookBack', p) });
     this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
     this.bus.on('treeStory', { priority: 300, source, fn: p => this.achieved('treeStory', p) });
+    this.bus.on('completionFull', { priority: 300, source, fn: p => this.achieved('completionFull', p) });
+    // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
+    const first = 'completion';
+    this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
+    this.bus.on('itemGained', { priority: 300, source: first, fn: p => this.firstTime('practices', p.id) });
+    this.bus.on('enemySpawn', { priority: 300, source: first, fn: p => this.firstTime('bestiary', p.def) });
+    this.bus.on('brew', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.potion) });
+    this.bus.on('cook', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.meal) });
+    this.bus.on('treeStory', { priority: 300, source: first, fn: p => this.firstTime('floors', `tree.${p.story}`) });
   }
 
   /** One event to the tracker: an unlock is saved at once and queued as its card (achievement-keeper.ts). */
   private achieved(event: string, payload: object) {
     this.keeper.track(event, { ...payload } as Payload, Date.now());
+    this.showCompletion();
+  }
+
+  /** A first time for the completion percentage: kept once in the save (achievement-keeper.ts), then shown (COMPLETION.md). */
+  private firstTime(kind: FirstKind, id: string) {
+    if (this.keeper.recordFirst(kind, id)) this.showCompletion();
+  }
+
+  /** The sky's guardian floor `animal` is first stood on: its floor, its deity and its herd are met (COMPLETION.md). */
+  private meetSkyFloor(animal: string) {
+    this.firstTime('floors', `sky.${animal}`);
+    this.firstTime('bestiary', `guardian-${animal}`);
+    this.firstTime('bestiary', `herd-${animal}`);
+  }
+
+  /** Gives the HUD the completion now: the pause card and the death screen show it (hud.ts setCompletion). The final
+   *  achievement is emitted here, once, when every part is complete (COMPLETION.md §8). */
+  private showCompletion() {
+    const c = this.keeper.completion;
+    this.hud.setCompletion(c);
+    if (c.percent >= 100 && this.keeper.live && !this.keeper.unlocked(COMPLETION_ACHIEVEMENT)) this.bus.emit('completionFull', { percent: c.percent });
   }
 
   /**
@@ -900,6 +934,7 @@ export class Game {
         e.faction = 'neutral';
         e.spawning = 0;
         this.actors.add(e);
+        this.firstTime('bestiary', boundaryDef.id);
       }
     }
     for (const kp of f.keys) this.pickups.add('key', kp.x + 0.5, kp.y + 0.5, kp.z + 0.5, kp.room);
@@ -914,6 +949,7 @@ export class Game {
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
+      this.firstTime('bestiary', def.id);
     }
     for (const r of this.sandbox ? [] : f.rooms) {
       if (!r.presence) continue;
@@ -922,6 +958,7 @@ export class Game {
         e.faction = 'neutral';
         e.spawning = 0;
         this.actors.add(e);
+        this.firstTime('bestiary', boundaryDef.id);
         const ring: [number, number, number][] = [];
         for (let dz = -SANCTUARY_RADIUS; dz <= SANCTUARY_RADIUS; dz++) for (let dx = -SANCTUARY_RADIUS; dx <= SANCTUARY_RADIUS; dx++) {
           const x = r.x0 + 6 + dx, z = r.z0 + 3 + dz;
@@ -935,6 +972,7 @@ export class Game {
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
+      this.firstTime('bestiary', def.id);
     }
   }
 
@@ -1147,6 +1185,7 @@ export class Game {
       card: (name, lines) => this.hud.presenceCard(name, lines),
       bar: b => this.hud.bossBar(b ? { name: t(b.name), ratio: b.ratio } : null),
       place: key => this.hud.placeLabel(key),
+      meetFloor: animal => this.meetSkyFloor(animal),
       gift: (itemId, x, y, z) => { this.ejectReward(this.pickups.add('item', x, y, z, this.room, ITEM_BY_ID.get(itemId) ?? null), 1.5, 3); },
       travel: tr => this.gate.start(tr),
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
@@ -1580,6 +1619,47 @@ export class Game {
     const on = (berserk(p.layers) || this.potions.active.some(a => POTIONS[a.potion].berserk)) && !p.dead;
     if (on !== this.berserkOn) this.setBerserk(on);
     if (on) this.berserkTread();
+    this.toxicAura(dt);
+  }
+
+  /** Seconds into the black heart's current pulse, and until its next soot motes. */
+  private toxicT = 0;
+  private toxicMoteT = 0;
+  private toxicMotes = 0;
+
+  /**
+   * The black heart's toxic aura (#178, docs/design/built/player/hearts/BLACK.md): while a black
+   * heart is held, soot motes rise on a ring of TOXIC_RADIUS at the player's feet, and once every
+   * TOXIC_PERIOD every hostile projection inside it takes TOXIC_DAMAGE, with no knockback. Blocks,
+   * allies, creatures and presences are never touched (`toxicHits`). Looks: DECISIONS §10.6.
+   */
+  private toxicAura(dt: number) {
+    const p = this.player, b = p.body;
+    if (!toxic(p.layers) || p.dead) { this.toxicT = 0; this.toxicMoteT = 0; return; }
+    const cx = b.x, cy = b.y + b.h / 2, cz = b.z;
+    this.toxicMoteT -= dt;
+    if (this.toxicMoteT <= 0) {
+      this.toxicMoteT = TOXIC_MOTE_EVERY;
+      for (let k = 0; k < 2; k++) {
+        const a = fx.random() * Math.PI * 2;
+        // three soot motes to one paper glint: the heart's own look, and the glint reads on dark floors
+        const tone = this.toxicMotes++ % 4 === 3 ? 'bone.paper' : 'heart.black.base';
+        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, b.y + 0.15, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.25, 0.06, true);
+      }
+    }
+    this.toxicT += dt;
+    if (this.toxicT < TOXIC_PERIOD) return;
+    this.toxicT = Math.min(this.toxicT - TOXIC_PERIOD, TOXIC_PERIOD);
+    let hit = 0;
+    for (const a of [...this.actors.all()]) {
+      if (!toxicHits(a as unknown as ToxicCandidate, cx, cy, cz)) continue;
+      if (!this.damageActor(a, TOXIC_DAMAGE, 'item', 'blackHeart', p.id)) continue;
+      hit++;
+      const ab = a.body;
+      this.particles.burst(ab.x, ab.y + ab.h / 2, ab.z, pal('heart.black.base'), 6, 1.2, 0.07, true);
+      this.particles.burst(ab.x, ab.y + ab.h / 2, ab.z, pal('bone.paper'), 2, 1.2, 0.05, true);
+    }
+    if (hit > 0) sfxHeart.blackAura();
   }
 
   private berserkTread() {
@@ -3906,6 +3986,8 @@ export class Game {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
     }
+    // the book download (COMPLETION §8): X on the pause card or the death screen; `act` ignores it below 100%
+    if ((ctx === 'paused' || ctx === 'dead') && inp.hit('book')) this.act('book-download');
     if (ctx === 'paused') {
       const n = inp.navigate();
       if (n.x) this.setFov(stepFov(this.fovNow, n.x));
@@ -4070,6 +4152,7 @@ export class Game {
   }
 
   act(act: string) {
+    if (act === 'book-download') { if (this.keeper.completion.percent >= 100) downloadRootsBook(); return; }
     if (act === 'presence-offer-accept') this.resolvePresenceOffer(true);
     else if (act === 'presence-offer-decline') this.resolvePresenceOffer(false);
     else if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();

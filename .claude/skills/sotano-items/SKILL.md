@@ -65,7 +65,7 @@ When you add an **event**, add a sample payload to `SAMPLES` in the synergy matr
 - [ ] File + index entry; passes `validateItem`.
 - [ ] Name/credit follow STORY.md §5 and the source is in `docs/lore/SOURCES.md` (sotano-lore skill); ask the owner if the practice or its meaning is unclear.
 - [ ] `effect` line is clear, complete and has the real numbers.
-- [ ] Translated in every catalog in `src/i18n/locales/` (name, description, effect, `inspiredBy`, `messages`), with the same numbers; text it shows uses `messages` + `api.toast(id)`, own damage labels go in `causes` (`sotano-i18n` skill).
+- [ ] Translated in every catalog in `src/i18n/locales/` (name, description, effect, `inspiredBy`, `messages`), with the same numbers, and its teaching written in every catalog (`teach.<id>.quote`, `teach.<id>.lesson`: an original phrase or a short paraphrase of a public-domain idea, never a quote put in a real person's mouth; issue #202); text it shows uses `messages` + `api.toast(id)`, own damage labels go in `causes` (`sotano-i18n` skill).
 - [ ] Uses stats where possible; hooks have ids and correct priorities.
 - [ ] Icon reviewed in the browser (pedestal, banner, inventory window).
 - [ ] `npm test` green (matrix included). If it interacts with another item in a special way, add a synergy and a test for it.
