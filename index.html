@@ -334,6 +334,11 @@
     #inventory .syns { list-style: none; margin: 0; padding: 0; }
     #inventory .syns li { padding: 5px 8px; margin: 4px 0; background: var(--ui-line); }
     #inventory .syns li.on b { color: var(--ui-gold); } #inventory .syns li.off { opacity: .6; }
+    #inventory .covenant { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    #inventory .covenant li { position: relative; flex: 1 1 120px; padding: 5px 8px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #inventory .covenant li::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: linear-gradient(100deg, transparent 8%, var(--ui-gold) 30%, transparent 46%, var(--ui-gold) 62%, transparent 92%); opacity: .8; pointer-events: none; }
+    #inventory .covenant b { display: block; color: var(--ui-gold); } #inventory .covenant span { display: block; font-size: 14px; }
+    #inventory .covenant small { display: block; font-size: 12px; color: var(--ui-faded); } #inventory h3 small { color: var(--ui-faded); font-weight: normal; }
     #inventory .syns span { display: block; font-size: 14px; } #inventory .syns small { display: block; font-size: 14px; color: var(--ui-faded); }
     #inventory table { width: 100%; border-collapse: collapse; }
     #inventory td { padding: 2px 0; border-bottom: 1px solid var(--ui-line); color: var(--ui-text-2); } #inventory td:last-child { text-align: right; color: var(--ui-text); }

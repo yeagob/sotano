@@ -1193,3 +1193,22 @@ Set by the dedicated art agent (Opus 5.5) for [BESTIARY §1.1](../design/built/i
 Not verified by capture: an intention in flight (the pane does not take pointer lock, and `?gallery` has no intention section), the warming tint, the ally glow, and CVD captures. Values come from the palette and the Machado script.
 
 **Amendment (owner, issue #105, 2026-11-08): no green or red for intentions.** The phone fire button shows its polarity with the same two colours as the intention: `light.gold` for positive, `light.ember` for negative (`castPolarityToken` in `src/input/touch.ts`). The issue's original green and red are withdrawn; no new token is added, and the intention colours, the projection, the halo, the HUD mark and the polarity hint are unchanged. For visibility on a phone the ring is 6 px (was 3 px) and the button panel is 92 % opaque (was 70 % positive and 85 % negative), so the ring holds against any scene behind the button. Measured (WCAG 2.x, against six backdrops: void, grey floor, grass, day sky, albedo sky, dawn): positive gold 9.2 to 11.1 : 1, negative ember 7.9 to 9.3 : 1; before, 4.4 to 11.3 and 6.5 to 9.3. **Open:** gold and ember differ by hue, not brightness (1.25 : 1 against each other), so on the button alone a colour-blind player may not tell them apart; the brightness and shape cues of §14.1 are on the intention itself, not on the button. Any extra cue there needs its own ruling.
+
+### 14.2 The Covenant's labels and seams, and the presences' owed bodies (art agent, Opus 5.5, 2026-11-19, issue #149; OWNER to confirm)
+
+Decided by agent, pending owner ruling.
+
+- **The Covenant in the inventory.** Each piece held is a text tile in the inventory's left column, under the synergies, titled "The Covenant n/4". Name in `--ui-gold`, the presence it came from in `--ui-text`, "promised" in `--ui-faded` (GIFTS.md: the label says "promised" in small type). Nothing shows before the first piece. No icon: a piece is a record, not an item, so it gets no voxel icon of its own.
+- **The seam.** A 1 px broken gold line (`--ui-gold`, two dashes, 80 % opacity) along the tile's bottom edge, never across the text. Meaning: kintsugi, what was mended is stronger (`concept:` repair); side: the player's light; gold here is repair, its reserved use (§1 of the skill). The seam is still, so it adds nothing to the flash budget.
+- **Gate.** Captured headless (Chromium) in colour and greyscale at 1280 and 375 px, English and Spanish: the labels read in greyscale (the seam is the only gold not carried by text weight, and the names stay bold). Not done: the three colour-blindness filters and a `?gallery` section (the gallery has no HUD section). Exact check owed: open the inventory with four pieces held, apply the Machado deuteranopia, protanopia and tritanopia filters, and confirm the name stays readable against `--ui-line` (it is text, so the contrast is the gold token's, already measured for the HUD).
+
+**Owed bodies (not drawn in this pass; each needs the gate of the skill §3 and a `?gallery` capture).** The built presences that borrow the Listener's model (the Elder and others) keep it until their own body passes the gate. The needs, with the meaning each must carry:
+
+| Presence | Need | Side and meaning | Exact check owed |
+|---|---|---|---|
+| Every presence | A small portrait for the codex list | World; who the player met | A 32 px icon per presence from its model, captured in colour, greyscale and CVD; the codex is text-only until then |
+| The Mender | Gold seams on its body | Repair (gold's reserved use) | Seams on a pale bone body, readable at 20 blocks in fog |
+| The Star-reader | An abstract star-shaped body | World; what the sky shows | Not a person, not a sacred symbol (ART-GUIDE §11) |
+| The Witness | A non-human shape | World; seeing and keeping | Must not read as a human, a god or an eye of judgement |
+| The Boatman | A ferryman's body, by the water | World; the crossing | No skull, no death imagery (§11 red lines) |
+| The Child | Its own body of loose cubes, joyful, never crying | World; play and building | Never a real child's likeness, never distress |

@@ -34,6 +34,7 @@ import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels'
 import type { CardKeys } from './achievement-keeper';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
+import { COVENANT_PIECES } from '../content/presences/covenant';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -1118,12 +1119,20 @@ export class Hud {
         : `<li class="off"><b>✧ ???</b><small>${reqs} (${met}/${sy.requires.length})</small></li>`;
     }).join('');
 
+    // the Covenant (COVENANT.md): each piece held is a labelled tile with its gold seam and "promised"; nothing shows before
+    // the first piece, so the set is never announced before it is begun
+    const pieces = g.covenantPieces;
+    const covenant = pieces.length
+      ? `<h3>${th('covenant.title')} <small>${pieces.length}/${COVENANT_PIECES.length}</small></h3><ul class="covenant">` + pieces.map(p =>
+        `<li class="piece"><b>${th(`covenant.piece.${p}` as MessageKey)}</b><span>${th(`covenant.from.${p}` as MessageKey)}</span><small>${th('covenant.promised')}</small></li>`).join('') + '</ul>'
+      : '';
+
     const stats = STAT_ORDER.map(n => `<tr><td>${esc(statLabel(n))}</td><td>${esc(fmtStat(n, s[n]))}</td></tr>`).join('');
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
       `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
-      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
+      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul>${covenant}</section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
     // the carried items are the HUD's own hand slots, chosen by a click or a tap

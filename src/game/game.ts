@@ -299,6 +299,8 @@ export class Game {
   private codex: PresenceId[] = [];
   /** The Covenant's pieces held in this run, in the order given (COVENANT.md). Kept for the run only. */
   private covenant: Covenant = NO_COVENANT;
+  /** The Covenant's pieces held, for the inventory's labels (read only). */
+  get covenantPieces(): Covenant { return this.covenant; }
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
   /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
