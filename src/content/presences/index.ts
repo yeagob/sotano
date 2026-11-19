@@ -49,14 +49,38 @@ export function unlocksPresence(id: PresenceId, carried: Carried | undefined): b
   return key === 'any' || carried.kind === key;
 }
 
-/** The offer of a presence: the hand slot it takes and the part, or no slot (index -1) for a presence that takes nothing. */
-export function findPresenceOffer(id: PresenceId, hand: readonly Carried[]): { index: number; carried?: Carried } | undefined {
+/** The presences whose agreement names several parts on one card (AGREEMENTS.md, multi-part cards; owner, #228, D11): how
+ *  many parts, each of a different kind. The Mender asks for two shards of different kinds, to mend a vessel (the design's
+ *  three shards scaled to floors 3 to 5, where an agreement asks for two things). The others ask for one. */
+export const PRESENCE_PARTS: Partial<Record<PresenceId, number>> = { mender: 2 };
+
+/** The most objects one card may name (the design's largest agreement: three shards). */
+export const MAX_OFFER_PARTS = 3;
+
+/** One object a card names: its hand slot and what is in it. */
+export interface OfferPick { index: number; carried: Carried }
+
+/** The offer of a presence: the hand slot it takes and the part, or no slot (index -1) for a presence that takes nothing.
+ *  A multi-part agreement (PRESENCE_PARTS) also names the other parts in `rest`, each of a kind not yet named, read from
+ *  the interaction item down; with too few kinds in hand there is no offer, and nothing is named. */
+export function findPresenceOffer(id: PresenceId, hand: readonly Carried[]): { index: number; carried?: Carried; rest?: OfferPick[] } | undefined {
   if (PRESENCE_KEY[id] === 'none') return { index: -1 };
-  for (let index = hand.length - 1; index >= 0; index--) {
+  const want = Math.min(MAX_OFFER_PARTS, PRESENCE_PARTS[id] ?? 1);
+  const picks: OfferPick[] = [];
+  const kinds = new Set<string>();
+  for (let index = hand.length - 1; index >= 0 && picks.length < want; index--) {
     const carried = hand[index];
-    if (carried !== undefined && unlocksPresence(id, carried)) return { index, carried };
+    if (carried === undefined || !unlocksPresence(id, carried)) continue;
+    if (want > 1) {
+      const kind = typeof carried === 'object' && !isFlask(carried) ? carried.kind : String(carried);
+      if (kinds.has(kind)) continue;
+      kinds.add(kind);
+    }
+    picks.push({ index, carried });
   }
-  return undefined;
+  if (picks.length < want) return undefined;
+  const [first, ...rest] = picks;
+  return rest.length ? { ...first, rest } : first;
 }
 
 /** The question of an offer's card, where the presence says plainly what it gives back. Presences not listed ask the

@@ -72,6 +72,7 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | Id | Source | Kind | Status | Key ideas | In the game |
 |---|---|---|---|---|---|
 | `constellations` | Family and systemic constellations (Bert Hellinger and later systemic practitioners) | Therapeutic method | Concept ("family constellations", "systemic constellations"); avoid founder-branded terms | Orders of love: belonging, order, balance of giving and taking; seeing the whole system; representatives | **Systemic Constellation** (seeing the whole system weakens the projections); future: rooms as systems, ancestors in the depths |
+| `kintsugi` | Kintsugi: the Japanese craft of mending broken pottery with gold lacquer | Craft and principle | Concept | What was broken and mended is not hidden: the seam shows, and the piece is stronger and more itself where it broke | The gold seam of the presences' gifts; the **Mender's Thread** (the Covenant's Thread as an item); the Mender's mended ally |
 | `art-therapy` | Art therapy; the idea that making art transforms people | Therapy / principle | Concept | Creating gives form to what can't be said; the maker is changed by the making | **Art Therapy** (building heals you); placing blocks as creation |
 | `cbt` | Cognitive behavioural therapy | Therapy | Concept | Exposure; Socratic questioning; reframing | **Exposure**, **Socratic Questioning** |
 | `dbt` | Dialectical behaviour therapy | Therapy | Concept | Radical acceptance | **Radical Acceptance** |

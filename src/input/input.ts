@@ -111,6 +111,13 @@ export class Input {
 
   get device() { return current; }
 
+  /** Whether any input moved this frame: a key, a mouse button, the look, a pad button or stick, or a touch control. The
+   *  trust meter's stillness reads it (content/presences/trust.ts); it says nothing about the player beyond the input. */
+  get active(): boolean {
+    return this.keys.size > 0 || this.mouse.size > 0 || this.lookDX !== 0 || this.lookDY !== 0 || this.padHeld.size > 0
+      || this.padMove.x !== 0 || this.padMove.y !== 0 || this.touchHeld.size > 0 || this.touchMove.x !== 0 || this.touchMove.y !== 0;
+  }
+
   get portrait() { return current === 'touch' && innerHeight > innerWidth; }
 
   get playing() { return this.locked || (this.engaged && !this.portrait); }

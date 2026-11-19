@@ -26,6 +26,9 @@ export interface MetaState {
   fade?: { floor: number };
   /** The first-time records of the completion percentage (COMPLETION.md): ids only, each kept once. Optional: absent means none yet. */
   firsts?: Firsts;
+  /** How many requests the player has answered "yes" to (REQUESTS.md, safety rule 6: the only request data kept). Never
+   *  what was done, never the trust meter's step (that is kept for the run only). Optional: absent means none yet. */
+  requests?: number;
 }
 
 /** The kinds of first-time record the completion percentage counts (COMPLETION.md). Floors and bestiary need no achievement. */
@@ -69,6 +72,7 @@ function clean(input: unknown): MetaState {
   s.staircase = o.staircase === true;
   if (typeof o.metAt === 'number' && Number.isFinite(o.metAt)) s.metAt = o.metAt;
   if (o.pact === true) s.pact = true;
+  if (typeof o.requests === 'number' && Number.isInteger(o.requests) && o.requests > 0) s.requests = o.requests;
   const fade = isObj(o.fade) ? o.fade.floor : undefined;
   if (typeof fade === 'number' && Number.isInteger(fade) && fade >= 1) s.fade = { floor: fade };
   const roots = isObj(o.roots) ? o.roots : {};
@@ -154,6 +158,8 @@ export function mergeMeta(stored: MetaState, mine: MetaState): MetaState {
     counts,
   };
   if (stored.pact || mine.pact) out.pact = true;
+  const requests = Math.max(stored.requests ?? 0, mine.requests ?? 0);
+  if (requests > 0) out.requests = requests;
   // the Echo's place is the tab's own latest word: a death writes it, meeting the Echo forgets it (ECHO.md)
   if (mine.fade) out.fade = { floor: mine.fade.floor };
   const firsts = unionFirsts(stored.firsts, mine.firsts);
@@ -190,6 +196,7 @@ export function adoptMeta(target: LoadedMeta, from: MetaState): void {
   target.achievements = { ...from.achievements };
   target.counts = { ...from.counts };
   if (from.pact) target.pact = true; else delete target.pact;
+  if (from.requests) target.requests = from.requests; else delete target.requests;
   if (from.fade) target.fade = { floor: from.fade.floor }; else delete target.fade;
   if (from.firsts) target.firsts = unionFirsts(from.firsts, undefined); else delete target.firsts;
 }

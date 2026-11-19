@@ -3,23 +3,26 @@ import type { PresenceId } from './index';
 /** The Covenant (COVENANT.md, proposal; the set effect is decided): a closed set of four pieces, each given by one presence.
  *  No other source gives them: no shop, no drop, no other presence. The record is kept for the run, never in the profile,
  *  and it holds no randomness: a piece is given by an exchange that is already complete, so the record moves nothing else.
- *  The pieces are not items, so no drop, destruction or theft can take one (the promise of GIFTS.md holds by construction). */
+ *  The Page, the Seal and the Light are a record, so nothing can take one. The Thread is held as an inventory item, the
+ *  Mender's Thread (owner, #228, D10), kept in the record when it is picked up; it is promised (thread.ts): no capture, toll
+ *  or other rule takes it, so the record never has to give a piece back (the promise of GIFTS.md). */
 
 export const COVENANT_PIECES = ['thread', 'page', 'seal', 'light'] as const;
 export type CovenantPiece = typeof COVENANT_PIECES[number];
 
-/** The source of a piece: a presence, or the Listener's last Lesson (lesson.ts), which is the only way to the Light. */
-export type CovenantSource = PresenceId | 'last-lesson';
+/** The source of a piece: a presence, or the crown of the giant tree reached after a Listener's Lesson (lesson.ts,
+ *  `crownGivesLight`), which is the only way to the Light. */
+export type CovenantSource = PresenceId | 'crown';
 
 /** The closed set (COVENANT.md, the reading of the owner's "cierre", decided by agent, pending owner ruling): exactly four
  *  pieces, each with exactly one source, given once and never taken back. No shop, drop, other presence, sandbox or save
- *  gives a piece. The Listener's plain exchange gives none: only its last Lesson gives the Light. Frozen, so no rule can add
+ *  gives a piece. The Listener's plain exchange gives none: only the crown, after a Lesson, gives the Light. Frozen, so no rule can add
  *  a source at run time. */
 export const PIECE_SOURCE: Readonly<Partial<Record<CovenantSource, CovenantPiece>>> = Object.freeze({
   mender: 'thread',
   elder: 'page',
   witness: 'seal',
-  'last-lesson': 'light',
+  crown: 'light',
 });
 
 /** The record of the Covenant in a run: the pieces held, in the order they were given. */

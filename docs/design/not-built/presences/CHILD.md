@@ -14,14 +14,14 @@ Decision (the owner approved the Elder and the Child as presences on 2026-10-27)
 
 ## Defaults taken, proposed, pending owner ruling
 
-- **The room.** One seeded floor from floor 1, in a quiet normal room. The Cellar of Habits is that quiet room: no new room type (decided by agent, README D8).
+- **The room.** One seeded floor from floor 1, in a quiet normal room. The Cellar of Habits is that quiet room: no new room type (README D8, kept by the owner's ruling on #228).
 - **The gift.** A practice of quality one (weight 3) or one special heart (weight 1). Its weights are the Wanderer's, chosen again for the Child.
 - **The lines and the wording.** The English and Spanish lines and the consent card are first drafts, in `src/i18n/locales/`, for the owner's ear.
 - **The path.** No lesson is given: the build gives a gift, not a lesson of the Body or Emotion path. The rule for which path a build belongs to is not decided, so none is taken.
 
 ## What the design asks and is not built
 
-- **Lesson.** Built as one line in words after the gift, of no path (README, D8). The build becoming a Lesson of the Body or Emotion path still needs the owner's rule on the path.
+- **Lesson.** Discarded by the owner (#228, D8: "descártalo"). The one-line Lesson after the gift was removed from the code; the Child gives its gift and its own lines, and no Lesson of any path is planned.
 - **Request.** In the idle window, it asks the player to draw something, anything, never judged (see [Requests](REQUESTS.md)). Not built; the idle window is not built.
 - **Agreement.** Three loose cubes of different materials, to build a small tower (see [Agreements](AGREEMENTS.md)). Not built.
 - **Covenant.** It gives no piece of the Covenant (the design's four pieces come from other Presences).
@@ -29,6 +29,6 @@ Decision (the owner approved the Elder and the Child as presences on 2026-10-27)
 
 ## Open questions
 
-- **The path.** Whether a build is from the Body or the Emotion path, and the rule that decides it.
+- **The path.** Whether a build is from the Body or the Emotion path, and the rule that decides it (the Lesson is discarded; the path would only matter for a future gift).
 - **Names and lines.** Open for the owner's ear (the drafts are built).
 - **Joy.** A build that fails must still feel like play. The lines in the code never cry; check them when the owner reads them.

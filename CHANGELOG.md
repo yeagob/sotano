@@ -9,19 +9,23 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## 0.2.6-alpha · 2026-11-19
 
 ### Added
+- The Covenant's Light can now be given in play, after hearing a Listener's Lesson, with a gold burst and a toast (#228).
+- The Mender's Thread: a promised practice (+1 heart container, a little more invulnerability after each hit) that The Mender drops once a run beside its gift; picking it up keeps the Covenant's Thread, and no toll or capture can take it (#228).
+- The Mender now asks for two parts of different kinds on one card that names both; nothing is taken unless you say Give and both are still in your hand (#228, #233).
+- The Mender brings back the last projection you released on its floor as an ally with a gold glow and slow gold motes (#228, #232).
+- "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
 - The Leaves: a room at the top of the giant tree, high in the crown beside the last stair, with a ring of star stone under an open eye in its dome (#149).
 - Seed codes move to v36: the same code grows the giant tree with the Leaves in its crown; the floors are unchanged (#149).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the place the Cartographer marked and the Star-reader's room, or the crown from above with the Leaves and its stars, whose chain appears once the Star-reader has read it. In English and Spanish (#149).
 - The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
-- The Child now adds one Lesson in words to its card after its gift (#149).
 - The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).
-- The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. Its last Lesson, on floor 5, gives the Covenant's Light, so the Covenant can now be completed in play (#149).
-- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. The Light comes from The Listener's last Lesson. Once all four are held, every presence remembers you in its card (#149).
+- The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. A heard Lesson opens the way to the Covenant's Light, so the Covenant can now be completed in play (#149, #228).
+- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. Once all four are held, every presence remembers you in its card (#149).
 - The Child asks you to draw something small on its build card, and The Elder asks you to be still on its choice card, each with an alternative that needs no hands (#149).
 - The codex: the menu lists the presences you met in this run, with what each asks and what it gives, in English and Spanish (#149).
 - The idle window: after you give The Gardener or The Boatman what they asked for, it stays in its room for a seeded 30 to 60 seconds, then leaves. The length is fixed by the run's seed (#149).
 - Requests from the depths: The Gardener asks you to breathe slowly, and The Boatman asks you to stand and move before the crossing. The card names the request and an always-offered alternative; Give or Keep decides, and keeping costs nothing (#149).
-- The Mender, a dweller that comes to the first vault you open on floor 3, 4 or 5 (once the vault's guardian has left). It asks for one part you carry, on a Give or Keep card; Give gives a practice of quality three, or a special heart, and it stays (#149).
+- The Mender, a dweller that comes to the first vault you open on floor 3, 4 or 5 (once the vault's guardian has left). It asks for parts you carry, on a Give or Keep card; Give gives a practice of quality three, or a special heart, and it stays (#149).
 - The Star-reader, a dweller in a quiet room of one floor of the Tree (floors 1 to 5). It asks for a yes to its light, on a Take or Decline card: a practice of quality one or two, or a special heart. Decline keeps everything, and it stays (#149).
 - The Witness, a messenger that waits in a quiet room of the ninth floor. It offers one gift: a practice of quality two, or a special heart. Take gives it and it leaves; decline keeps everything (#149).
 - The Boatman, a dweller by the drowned nave of floor 3 or 4. For one block you leave on the shore, it ferries you across the deep water to the island, where its gift lies: a practice of quality two, or a special heart. It stays (#149).
