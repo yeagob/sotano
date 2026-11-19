@@ -45,6 +45,16 @@ export class Inventory {
     return r;
   }
 
+  /** Scratch memory per practice or synergy id, shared by its copies (ItemApi.memory). Dropped in `rebuild`
+   *  once no installed effect owns it. */
+  private memories = new Map<string, Record<string, number>>();
+
+  private memoryOf(owner: string): Record<string, number> {
+    let m = this.memories.get(owner);
+    if (!m) { m = {}; this.memories.set(owner, m); }
+    return m;
+  }
+
   get items(): readonly ItemInstance[] { return this.held; }
   get synergiesActive(): readonly SynergyDef[] { return this.active; }
   /** How the player casts now: resolved on every rebuild (docs/architecture/WEAPONS.md §1). */
@@ -64,7 +74,7 @@ export class Inventory {
     this.held.push(instance);
     this.rebuild();
     const copy = this.held.filter(h => h.def.id === id).length - 1;
-    def.onGain?.({ ...this.bound(def), defer: fn => this.bus().defer(fn, `item:${instance.uid}`), rng: () => this.itemRng(id, copy) });
+    def.onGain?.({ ...this.bound(def), defer: fn => this.bus().defer(fn, `item:${instance.uid}`), rng: () => this.itemRng(id, copy), memory: () => this.memoryOf(id) });
     return {
       instance,
       changes: diffStats(before, this.stats.all),
@@ -112,6 +122,9 @@ export class Inventory {
       this.install(`item:${it.uid}`, it.def.id, it.def, suppressed, this.itemRng(it.def.id, copy));
     }
     for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed, this.itemRng(`syn:${s.id}`, 0));
+    // scratch memory lives while any copy (or synergy) that owns it is held
+    const owners = new Set([...this.held.map(h => h.def.id), ...this.active.map(s => s.id)]);
+    for (const k of [...this.memories.keys()]) if (!owners.has(k)) this.memories.delete(k);
 
     // the active weapon: highest priority wins, ties go to the latest gained (synergies come last)
     let best: { id: WeaponId; priority: number } | null = null;
@@ -129,7 +142,7 @@ export class Inventory {
 
   private install(source: string, ownerId: string, e: ItemDef | SynergyDef, suppressed: Set<string>, rng: Rng) {
     const bus = this.bus();
-    const api: ItemApi = { ...this.bound(e), defer: fn => bus.defer(fn, source), rng: () => rng };
+    const api: ItemApi = { ...this.bound(e), defer: fn => bus.defer(fn, source), rng: () => rng, memory: () => this.memoryOf(ownerId) };
     for (const m of e.stats ?? []) this.stats.add({ ...m, source });
     for (const h of e.hooks ?? []) {
       if (h.id && suppressed.has(`${ownerId}.${h.id}`)) continue;

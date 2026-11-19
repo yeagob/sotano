@@ -13,10 +13,10 @@ This folder has one document per practice, in a folder for its path. The catalog
 | Folder | Path develops | Practices | State of being at three |
 |---|---|---|---|
 | [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
-| [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
+| [Body](body/README.md) | Presence, energy, nervous-system regulation | 8 | Embodied |
 | [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
-| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 13 | Open-hearted |
-| [Will](will/README.md) | Consistency, discipline, small steps compounding | 10 | Resolute |
+| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 14 | Open-hearted |
+| [Will](will/README.md) | Consistency, discipline, small steps compounding | 11 | Resolute |
 
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
 
@@ -29,6 +29,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
 | [Grounding](body/GROUNDING.md) | Body | 1 | treasure rooms |
+| [Inner Fire](FIRE.md) | Body | 2 | treasure rooms |
 | [Lion's Mane](body/LIONS-MANE.md) | Body | 2 | treasure rooms, boss rewards |
 | [Satori](body/SATORI.md) | Body | 4 | treasure rooms, vault rooms |
 | [Sleep Hygiene](body/SLEEP-HYGIENE.md) | Body | 2 | treasure rooms |
@@ -59,8 +60,10 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Self-Compassion](emotion/SELF-COMPASSION.md) | Emotion | 2 | treasure rooms |
 | [Mender's Thread](emotion/MENDERS-THREAD.md) | Emotion | 3 | the Mender only, once a run (promised) |
 | [Symbolic Act](emotion/SYMBOLIC-ACT.md) | Emotion | 3 | treasure rooms |
+| [Stolen Fire](FIRE.md) | Emotion | 3 | treasure rooms |
 | [Systemic Constellation](emotion/SYSTEMIC-CONSTELLATION.md) | Emotion | 3 | treasure rooms |
 | [Bounce Back](will/BOUNCE-BACK.md) | Will | 2 | treasure rooms |
+| [Firewalking](FIRE.md) | Will | 2 | treasure rooms |
 | [Habit Stacking](will/HABIT-STACKING.md) | Will | 3 | treasure rooms |
 | [Kaizen](will/KAIZEN.md) | Will | 2 | treasure rooms |
 | [Kindling](will/KINDLING.md) | Will | 2 | treasure rooms |
@@ -74,7 +77,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 ## How a practice is filed
 
 - **Folder.** A practice sits in the folder of the first path tag its code lists. The other path tags are in its document under *Path* and in the folder's table under *Also on*. Satori carries all four paths and sits in body.
-- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 11 at quality 3, 9 at quality 4.
+- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 23 at quality 2, 12 at quality 3, 9 at quality 4.
 - **Found in.** Treasure rooms, boss rewards and the vault room. A vault is a room type with a richer pedestal; the deepest floors keep none (`src/world/floor.ts`).
 - **Credit.** Every practice names its inspiration, as the STORY and SOURCES documents do. The credit is not the name: the name is a generic technique or concept, or the title of a public-domain work ([NAMING](../story/NAMING.md)).
 

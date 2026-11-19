@@ -8,6 +8,9 @@ import { defineSynergy, hook, type SynergyDef } from '../items/types';
 import { CHAIN_SOURCE, NEIGHBOURS } from './items/habitstack';
 import { VOLATILE } from './items/catharsis';
 
+/** The item ids whose bursts are fire bursts (Hearth warms you when one goes off). */
+const FIRE_BURSTS: ReadonlySet<string> = new Set(['kindling', 'prometheus']);
+
 export const SYNERGIES: readonly SynergyDef[] = [
   defineSynergy({
     id: 'one_clear_cut',
@@ -64,6 +67,24 @@ export const SYNERGIES: readonly SynergyDef[] = [
           });
         }
       }, { id: 'shatter', priority: 200 }),
+    ],
+  }),
+
+  defineSynergy({
+    id: 'hearth',
+    name: 'Hearth',
+    description: 'Three fires keep one warm place. Where a fire bursts from you, you warm yourself a little.',
+    requires: [{ tag: 'fire', count: 3 }],
+    stats: [{ stat: 'damage', layer: 'add', value: 1 }, { stat: 'fireRate', layer: 'mul', value: 1.1 }],
+    hooks: [
+      // a fire practice's burst (Kindling's flare, Stolen Fire's burst) warms you, at most every 4 s
+      hook('burst', (e, api) => {
+        if (!FIRE_BURSTS.has(e.source)) return;
+        const m = api.memory(), t = api.time(), c = api.counts();
+        if (c.hp >= c.maxHp || t < (m.next ?? 0)) return;
+        m.next = t + 4;
+        api.heal(0.5);
+      }, { id: 'warmth', priority: 200 }),
     ],
   }),
 

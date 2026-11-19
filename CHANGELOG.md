@@ -13,6 +13,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Mender brings back the last projection you released on its floor as an ally with a gold glow and slow gold motes (#228, #232).
 - "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
 - The Leaves: a new room of the giant tree, with a ring of star stone under an open eye in its dome (#149).
+- Seed codes move to v38: the fire practices join the treasure rooms' draw, so the same code lays some treasures differently (#110).
+- Three fire practices: Inner Fire (negative intentions burn, and fire hurts you half as much), Firewalking (fire never hurts you, and standing in it heals a little), and Stolen Fire (one intention in five is a fire seed that bursts). Holding three fire practices gives Hearth, which warms you when a fire bursts. In English and Spanish (#110).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
 
 ### Changed

@@ -1409,6 +1409,8 @@ export class Game {
       hasTag: tag => this.inventory.hasTag(tag),
       held: () => this.player.hand.filter((c): c is number => typeof c === 'number'),
       rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
+      time: () => this.time,
+      memory: () => ({}), // replaced per practice by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
       explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, this.player.id),
@@ -2526,6 +2528,7 @@ export class Game {
     this.particles.burst(x, y, z, color, 24, radius * 2, 0.07);
     spatial.cue('ring', x, y, z);
     this.hud.shake(0.1);
+    this.bus.emit('burst', { x, y, z, radius, damage, source });
   }
 
   private arc(x: number, y: number, z: number, to: number, damage: number, source: string, polarity: Polarity) {
@@ -2573,8 +2576,11 @@ export class Game {
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
   }
 
+  /** Sets alight every flammable block whose cell lies within `r` blocks of (x, y, z). Offsets are whole cells, so a
+   *  fractional radius (1.5) reaches the cells inside it, not fractions of them. */
   private igniteArea(x: number, y: number, z: number, r: number) {
-    for (let dz = -r; dz <= r; dz++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    const k = Math.floor(r);
+    for (let dz = -k; dz <= k; dz++) for (let dy = -k; dy <= k; dy++) for (let dx = -k; dx <= k; dx++) {
       if (dx * dx + dy * dy + dz * dz > r * r) continue;
       const id = this.world.get(x + dx, y + dy, z + dz);
       if (id !== AIR && mat(id).flammable) this.ignite(x + dx, y + dy, z + dz, id, 'fire');

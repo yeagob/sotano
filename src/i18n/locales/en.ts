@@ -829,6 +829,12 @@ const messages = {
   'teach.menders-thread.lesson': 'A repair does not have to hide the break. What you mended can be the strongest part of you, and the seam is the honest record of it.',
   'teach.visualization.quote': 'See it clearly first, and your body knows the way.',
   'teach.visualization.lesson': 'Before something important, close your eyes and rehearse it in detail: the place, the steps, how it feels to do it well. Include what might go wrong and how you would answer. Then go and do it.',
+  'teach.tummo.quote': 'Heat kindled from within keeps the cold from winning.',
+  'teach.tummo.lesson': 'Warmth can be made, not only waited for. When you feel cold or discouraged, bring your attention to your belly and your breath, and let the heat gather there for a few minutes. Then carry that steadiness into what you were about to do.',
+  'teach.firewalking.quote': 'What you fear most may not burn you.',
+  'teach.firewalking.lesson': 'Fear often grows larger than the thing it points at. Before a hard step, name the fear, then take the step anyway, slowly, one foot after the other. Each step you take teaches the body that it can walk through.',
+  'teach.prometheus.quote': 'A flame shared is not a flame lost.',
+  'teach.prometheus.lesson': 'Knowledge, kindness and courage do not run out when you give them away. Share what helped you with someone who needs it, and notice that you keep it too.',
 
   // ── paths (item tags) ──
   'path.body': 'body',

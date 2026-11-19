@@ -16,7 +16,7 @@ t 60 (1.0 s)
   blocks crate 8
   elements —
   cubes — · pickups 0
-  events actorDamage:doubt<item 1 · actorDamage:player<contact 1 · blockBreak:crate 2 · contact 1 · ignite:crate 2 · roomEnter 1
+  events actorDamage:doubt<item 1 · actorDamage:player<contact 1 · blockBreak:crate 2 · burst 1 · contact 1 · ignite:crate 2 · roomEnter 1
 
 t 120 (2.0 s)
   player hp 20/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
@@ -33,7 +33,7 @@ t 240 (4.0 s)
   blocks crate 8
   elements —
   cubes — · pickups 0
-  events actorDamage:doubt<item 2 · actorDamage:player<contact 2 · contact 2
+  events actorDamage:doubt<item 2 · actorDamage:player<contact 2 · burst 2 · contact 2
 
 map t 240 · h 0
   .............

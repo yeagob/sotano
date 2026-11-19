@@ -1,0 +1,15 @@
+{
+  "note": "Inner Fire: a negative intention that hits a crate sets it and the crates within one block on fire",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [5, 0, 3],
+  "god": true,
+  "items": ["tummo"],
+  "place": [{ "at": [3, 0, 2, 3, 0, 4], "block": "crate" }],
+  "ticks": 180,
+  "report": [0, 30, 180],
+  "actions": [
+    { "t": 0, "do": "key", "code": "KeyF" },
+    { "t": 5, "do": "look", "at": [3, 0, 3] },
+    { "t": 10, "do": "fire", "ticks": 1 }
+  ]
+}

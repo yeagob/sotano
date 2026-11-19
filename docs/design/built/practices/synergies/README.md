@@ -2,7 +2,7 @@
 
 Up: [practices](../README.md) · [built design](../../README.md)
 
-A synergy is a rule that switches on while a set of practices is held together. The code keeps them in one file, `src/content/synergies.ts`, and re-evaluates them every time the list of practices changes. A synergy can add stats or event hooks, replace a practice's weapon, or switch off one hook of a practice while it is held. Six are built, one per combination below. Each has its own document.
+A synergy is a rule that switches on while a set of practices is held together. The code keeps them in one file, `src/content/synergies.ts`, and re-evaluates them every time the list of practices changes. A synergy can add stats or event hooks, replace a practice's weapon, or switch off one hook of a practice while it is held. Seven are built, one per combination below. Each has its own document.
 
 | Synergy | Requires | Effect as built |
 |---|---|---|
@@ -11,6 +11,7 @@ A synergy is a rule that switches on while a set of practices is held together. 
 | [Choir](CHOIR.md) | Remember Breathing + Triangulation | The beam's strike damage and mining are multiplied by 2.2. Triangulation cannot reach a beam, so the voices are added here. |
 | [Somatic Release](SOMATIC-RELEASE.md) | Symbolic Act + Grounding | Blocks you kick become volatile: they burst on impact, like thrown blocks under Symbolic Act. |
 | [Compound Effect](COMPOUND-EFFECT.md) | Kaizen + Deep Focus | Intentions pierce stone and brick as well: the pierce tier is at least 1. |
+| [Hearth](../FIRE.md#hearth-synergy) | Three practices with the fire tag (Kindling counts) | Damage +1 and fire rate ×1.1. A fire burst (Kindling's flare, Stolen Fire's burst) warms you a quarter heart, at most every 4 s, while you are hurt. |
 | [Flooding](FLOODING.md) | Exposure + Habit Stacking | Habit Stacking's neighbour rule is switched off while Flooding is held. In its place, every block break (except the chain of a break that came from this rule) shatters the same-material neighbours outright. |
 
 The four states of being are also synergies in code, with a count of practices that share a path tag. They have their own folder: [states of being](../states-of-being/README.md).

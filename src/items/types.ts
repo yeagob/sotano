@@ -25,6 +25,11 @@ export interface ItemApi {
   held(): readonly number[];
   /** Deterministic randomness for item effects (its own stream: never shifts loot or combat). */
   rng(): Rng;
+  /** Game time in seconds (advances only while the game runs; the sandbox steps it too). */
+  time(): number;
+  /** Scratch numbers kept per practice (or synergy) for the whole run: shared by its copies, dropped
+   *  when the last copy is lost. For timers and per-room caps. Never saved. */
+  memory(): Record<string, number>;
   materialAt(x: number, y: number, z: number): number;
   damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string): boolean;
   explode(x: number, y: number, z: number, radius: number, damage: number, source: string): void;
