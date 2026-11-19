@@ -10,12 +10,14 @@ const SEED_SIZE = 1.4;
 const BURST_RADIUS = 1.6;
 const BURST_DAMAGE = 5;
 const BURST_FIRE_RADIUS = 1.5;
+/** A positive seed gives its warmth back: a quarter heart (half of a half-heart), at most this often. */
+const WARMTH_EVERY = 5;
 
 export default defineItem({
   id: 'prometheus',
   name: 'Stolen Fire',
   description: 'Fire carried to others is never lost by the one who gives it.',
-  effect: 'One intention in five (20%) is a fire seed. A negative seed bursts on impact (1.6 blocks, 5 damage) and sets flammable blocks within 1.5 blocks on fire. The burst never hurts you.',
+  effect: 'One intention in five (20%) is a fire seed. A negative seed bursts on impact (1.6 blocks, 5 damage) and sets flammable blocks within 1.5 blocks on fire. The burst never hurts you. A positive seed warms you instead: a quarter heart, at most every 5 seconds.',
   inspiredBy: 'The myth of Prometheus (Hesiod, Aeschylus)',
   pools: { treasure: 1 },
   tags: ['emotion', 'fire', 'intent'],
@@ -46,9 +48,17 @@ export default defineItem({
       }
     }, { id: 'seed', priority: 30 }),
     // The burst is damage to projections and fire on blocks only: the player is never in its reach.
-    // A positive seed stays a seed (positive intentions only mend, so it does not burst).
+    // A positive seed does not burst (positive intentions only mend): the fire you give comes back
+    // as warmth instead, a quarter heart at most every WARMTH_EVERY seconds (rule 15).
     hook('intentHit', (e, api) => {
-      if (!e.intent.tags.has(FIRE_SEED) || e.intent.polarity !== 'negative') return;
+      if (!e.intent.tags.has(FIRE_SEED)) return;
+      if (e.intent.polarity !== 'negative') {
+        const mem = api.memory(), now = api.time();
+        if (now - (mem.warmedAt ?? -Infinity) < WARMTH_EVERY) return;
+        mem.warmedAt = now;
+        api.heal(0.5, 'prometheus');
+        return;
+      }
       if (e.kind === 'block') {
         const x = Math.floor(e.x - 0.5 * e.nx), y = Math.floor(e.y - 0.5 * e.ny), z = Math.floor(e.z - 0.5 * e.nz);
         api.igniteArea(x, y, z, BURST_FIRE_RADIUS);

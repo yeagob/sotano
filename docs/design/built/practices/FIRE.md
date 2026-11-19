@@ -77,7 +77,7 @@ Both verbs are in [ITEMS.md](../../../architecture/ITEMS.md) §2 and the event i
 ## Decisions taken for the owner (open for review)
 
 1. **Positive intentions do not burn.** Inner Fire's burn and Stolen Fire's burst apply only to negative intentions. Positive intentions only mend (BESTIARY polarity), and a positive shot that set blocks alight or pulsed 1.5 damage would contradict that. The effect text says "negative", which is a change of the brief's wording (its "Intentions burn" and "A seed bursts").
-2. **A positive fire seed has no outcome beyond its look.** Its burst is off, so a positive seed is only a bigger intention. The rule 15 outcome for positive seeds is open: a positive seed could mend the blocks it passes, or give the player warmth. Owner to decide.
+2. **A positive fire seed warms you.** Its burst is off (positive intentions only mend), so on impact it heals the player a quarter heart, at most once every 5 seconds (orchestrator decision for rule 15: the fire you give comes back as warmth). Owner may prefer another outcome, such as mending the blocks it passes.
 3. **The fire seed is 1.4 times bigger in hit size as well as look.** `intent.radius` drives both, so seeds are also easier to hit. Owner to confirm.
 4. **The extra damage is kind `item`.** A pulse deals its damage as an item's, with the practice's id as its source (`tummo`, `prometheus`). The death screen names the practice through `causes` if it is ever needed; projections have no fire-cause damage of their own.
 5. **Heal allowance resets on each room entry**, so leaving and coming back to a room gives a new heart. Owner to confirm that a room visit, not a room, is the unit.

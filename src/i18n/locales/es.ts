@@ -1284,7 +1284,7 @@ export const ES: Catalog = {
       prometheus: {
         name: 'Fuego robado',
         description: 'El fuego que se lleva a otros nunca se pierde para quien lo da.',
-        effect: 'Una intención de cada cinco (20%) es una semilla de fuego. Una semilla negativa estalla al impactar (1.6 bloques, 5 de daño) y prende fuego a los bloques inflamables a menos de 1.5 bloques. La explosión nunca te hace daño.',
+        effect: 'Una intención de cada cinco (20%) es una semilla de fuego. Una semilla negativa estalla al impactar (1.6 bloques, 5 de daño) y prende fuego a los bloques inflamables a menos de 1.5 bloques. La explosión nunca te hace daño. Una semilla positiva te da calor: un cuarto de corazón, como mucho cada 5 segundos.',
         inspiredBy: 'El mito de Prometeo (Hesíodo, Esquilo)',
       },
       'triple-jump': {
