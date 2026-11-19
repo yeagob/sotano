@@ -9,6 +9,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 ### Added
 - The toxic heart now carries a toxic aura: while you hold one, every hostile projection within two blocks of you takes damage once a second, with rising soot around your feet and a soft hiss when it touches. It never breaks blocks and never hurts allies, creatures or presences, and it ends when the heart is spent (#178).
 
+### Changed
+- The lore was extended with new references and a tradition (#194, #201, #204).
+
 ### Fixed
 - Symbolic Act no longer explodes blocks that were kicked: a block that falls on you while your hands are full, or a thrown block you kick later, loses its charge and does not burst (#198).
 
