@@ -124,3 +124,7 @@ At run start every treasure, vault and boss room of every floor gets its practic
 - Golden hashes of fixed seeds once content freezes (the first public build), not before.
 - A daily seed; marking runs started from a typed seed once meta-progression exists.
 - Enemy decisions on `stream('ai')` when behaviours gain randomness.
+
+## 10. Offline tools
+
+The Sanctuary's voice clips (`scripts/meditation-voice/generate.py`, `public/audio/meditation/`) are made once, offline, with Chatterbox. Each clip has a fixed seed (`SEED + index` in sorted key order). This is build tooling, not game randomness: no game path draws from it, and the game plays the committed clips.

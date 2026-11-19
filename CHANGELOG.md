@@ -10,8 +10,12 @@ Changes to the tutorial and to the book are listed without their content, so not
 - A completion percentage: the share of the game you have done at least once (floors, bosses, achievements, practices, the bestiary, recipes and the hidden book), with each part's share. It is kept between runs, never goes down, and shows on the pause card and the death screen (#180).
 - At 100% completion a final achievement unlocks, and the book can be downloaded from the pause card and the death screen (#180).
 - The toxic heart now carries a toxic aura: while you hold one, every hostile projection within two blocks of you takes damage once a second, with rising soot around your feet and a soft hiss when it touches. It never breaks blocks and never hurts allies, creatures or presences, and it ends when the heart is spent (#178).
+- In the Sanctuary, a finished meditation shows three choices: Receive, Sit again (the same meditation, a new length) and Choose another meditation. Sitting again does not give a second reward (#160).
+- In a sitting, Add 20 seconds lengthens it, up to three times. The part you are in keeps its end (#160).
+- Optional spoken guidance in the Sanctuary, in English and Spanish: the guidance lines are read aloud and never overlap. Breath cues are not spoken. Turn it on with the Voice switch (V, LB or the Voice button); it is off at first (#203).
 
 ### Changed
+- The Sanctuary's reward is one per visit. Once a sitting is finished, leaving never gives the quick reward and never takes the earned one back. Leaving early still gives the quick reward when nothing is finished yet (#160).
 - The practices tab, the pause card and the way-down window share the pixel art look of the achievement notice. Each practice now opens in three blocks: a teaching that carries it into everyday life, what it does in the game, and the stats it changes; every practice has its teaching in English and Spanish (#202, #223, #224).
 - The lore was extended with new references and a tradition (#194, #201, #204).
 

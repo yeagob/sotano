@@ -487,6 +487,11 @@
     #sanctuary .sw { min-height: 40px; padding: 6px 18px; border-radius: 999px; font-size: 14px; letter-spacing: .04em;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-ink) 26%, transparent); }
     #sanctuary .sw.set { box-shadow: inset 0 0 0 1px var(--m-accent); color: var(--m-accent); }
+    #sanctuary .lamp { display: inline-block; width: 8px; height: 8px; margin-right: 8px; vertical-align: 1px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; }
+    #sanctuary .lamp.on { background: currentColor; }
+    #sanctuary .choices.three .choice { width: min(248px, 86vw); }
+    #sanctuary .ctl.spent { color: var(--m-dim); }
+    #sanctuary .ctl.spent:not(.cur) { background: none; }
     #sanctuary .library { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(940px, 100%); }
     #sanctuary .card { display: grid; grid-template-columns: 46px 1fr; grid-template-areas: "s b" "s t" "s e"; column-gap: 14px; align-items: center; text-align: left; padding: 14px 18px; min-height: 96px; }
     #sanctuary .card .swatch { grid-area: s; width: 46px; height: 46px; border-radius: 50%;
