@@ -76,7 +76,9 @@
     @font-face { font-family: "Pixelify Sans"; src: url("fonts/pixelify-sans-latin-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
     /* Vessel Light UI (docs/art/DECISIONS.md §10.2). Every colour is a palette token written by
        applyPaletteCss() (src/render/icons.ts) as a CSS variable: no hex in this file. */
-    :root { --u: clamp(2px, calc(100vh / 384), 5px); }
+    :root { --u: clamp(2px, calc(100vh / 384), 5px);
+      /* a 1 u pixel chamfer for tiles, buttons and blocks inside a slate (the slate itself cuts 2 u) */
+      --cut: polygon(var(--u) 0, calc(100% - var(--u)) 0, 100% var(--u), 100% calc(100% - var(--u)), calc(100% - var(--u)) 100%, var(--u) 100%, 0 calc(100% - var(--u)), 0 var(--u)); }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--pal-ink-void); overflow: hidden; color: var(--ui-text);
       font: 15px/1.4 system-ui, "Segoe UI", Roboto, sans-serif; user-select: none; }
@@ -306,33 +308,58 @@
     #overlay[data-tab="items"] #inventory { display: block; }
     #overlay[data-tab="items"] .panel-menu { display: none; }
     #overlay #inventory .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
-    #inventory header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--ui-line); margin-bottom: 10px; }
-    #inventory h2 { margin: 0 0 6px; letter-spacing: 3px; }
-    #inventory h3 { margin: 14px 0 6px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
-    #inventory .cols { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
+    /* the practices tab (issue #202): the achievement notice's pixel finish (DECISIONS §10.2). Pixelify Sans only at
+       20 / 28 / 40 px, chamfered tiles and blocks (--cut), palette tokens only. A practice reads in three blocks,
+       always in this order: the teaching, what it does in the game, the stats it changes. */
+    #inventory .card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 12px; }
+    #inventory .card > header small { flex: 1 1 14em; color: var(--ui-text-2); font-size: 14px; }
+    #inventory h2 { margin: 0; font: 40px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #inventory h3 { margin: 16px 0 8px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-gold); }
+    #inventory h3::before, #inventory h4::before { content: '\25C6  '; color: var(--ui-gold); }
+    #inventory .cols { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 18px; }
     #inventory .grid { display: flex; flex-wrap: wrap; gap: 6px; }
     /* 72 px tiles: the icon at an integer ×3 (42 px) and a name label under it (every item names itself, BESTIARY §8.7) */
-    #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
-    #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); }
-    #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
-    #inventory .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
-    #inventory .tile img { width: 42px; height: 42px; }
+    #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; font: inherit; color: var(--ui-text);
+      border: 0; background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); cursor: pointer; }
+    #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); outline-offset: -5px; }
+    #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--c), inset 0 0 0 calc(3 * var(--u)) var(--ui-text); }
+    #inventory .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 2px 2px 0 var(--ui-bevel-hi); }
+    #inventory .tile img { width: 42px; height: 42px; image-rendering: pixelated; }
     #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: normal; hyphens: auto; font-size: 14px; line-height: 1.3; color: var(--ui-text); }
-    #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
-    #inventory .detail { display: flex; gap: 14px; margin-top: 12px; padding: 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--c); }
-    #inventory .detail img { width: 84px; height: 84px; flex: none; }
-    #inventory .detail b { font-size: 20px; }
-    #inventory .detail p { margin: 6px 0 4px; }
-    #inventory .detail small { color: var(--ui-faded); font-size: 14px; }
-    #inventory .fx { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
-    #inventory .fx i { font-style: normal; color: var(--ui-up); font-size: 14px; }
-    .path { font-style: normal; font-size: 14px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); margin-left: 4px; }
+    #inventory .tile i { position: absolute; right: 4px; top: 3px; font: normal 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-gold); text-shadow: 1px 1px 0 var(--ui-line); }
+    /* the detail: the item's colour on the left bar (like the notice's gold bar), the name at 28 px, three bevelled blocks */
+    #inventory .detail { margin-top: 12px; padding: calc(4 * var(--u)) calc(5 * var(--u)) calc(5 * var(--u)); background: var(--ui-line);
+      border-left: calc(2 * var(--u)) solid var(--c, var(--ui-gold)); clip-path: var(--cut); }
+    #inventory .d-head { display: flex; align-items: center; gap: calc(4 * var(--u)); }
+    #inventory .d-head img { width: 72px; height: 72px; flex: none; image-rendering: pixelated; }
+    #inventory .d-head > div { min-width: 0; }
+    #inventory .d-name { display: block; margin-bottom: 4px; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); overflow-wrap: anywhere; }
+    #inventory .d-head .q { margin-right: 2px; }
+    #inventory .d-block { margin-top: calc(3 * var(--u)); padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(4 * var(--u)); background: var(--ui-panel);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory h4 { margin: 0 0 6px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-text-2); }
+    #inventory .d-block p { margin: 4px 0 0; font-size: 16px; line-height: 1.4; color: var(--ui-text-2); }
+    #inventory .d-block small { display: block; margin-top: 6px; color: var(--ui-faded); font-size: 14px; }
+    #inventory .d-teach blockquote { margin: 0; padding-left: calc(3 * var(--u)); border-left: var(--u) solid var(--ui-gold); font: 20px/1.3 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #inventory .d-game p:first-of-type { font-style: italic; }
+    #inventory .d-game .effect { margin-top: 8px; }
+    #inventory .fx { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px; }
+    #inventory .fx li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 4px 8px; background: var(--ui-line); font-size: 15px; color: var(--ui-text-2); }
+    #inventory .fx li b { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ui-text); }
+    #inventory .fx li.up b { color: var(--ui-up); } #inventory .fx li.up b::before { content: '\25B2 '; }
+    #inventory .fx li.down b { color: var(--ui-down); } #inventory .fx li.down b::before { content: '\25BC '; }
+    .path { display: inline-block; white-space: nowrap; font-style: normal; font-size: 14px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); margin-left: 4px; }
     #inventory .syns { list-style: none; margin: 0; padding: 0; }
-    #inventory .syns li { padding: 5px 8px; margin: 4px 0; background: var(--ui-line); }
+    #inventory .syns li { padding: 6px 10px; margin: 4px 0; background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory .syns li.none { background: none; box-shadow: none; padding: 0; }
+    #inventory .syns b { font: 20px/1.2 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
     #inventory .syns li.on b { color: var(--ui-gold); } #inventory .syns li.off { opacity: .6; }
     #inventory .syns span { display: block; font-size: 14px; } #inventory .syns small { display: block; font-size: 14px; color: var(--ui-faded); }
+    #inventory .right { align-self: start; padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(4 * var(--u)); background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory .right h3 { margin-top: 0; }
     #inventory table { width: 100%; border-collapse: collapse; }
-    #inventory td { padding: 2px 0; border-bottom: 1px solid var(--ui-line); color: var(--ui-text-2); } #inventory td:last-child { text-align: right; color: var(--ui-text); }
+    #inventory td { padding: 2px 0; border-bottom: 1px solid var(--ui-panel); color: var(--ui-text-2); }
+    #inventory td:last-child { text-align: right; font: 20px/1.2 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ui-text); }
     .none { color: var(--ui-faded); }
 
     /* death is rest: night to ink, an ensō that almost closes, no blood red */
@@ -388,28 +415,41 @@
     #fullscreen[hidden] { display: none; }
     #fullscreen svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: square; }
     #death .go { font: inherit; font-weight: bold; color: var(--ui-gold); background: var(--ui-line); border: 0; padding: 8px 18px; margin-top: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
-    #inventory header .close { margin-left: 10px; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
-    #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
+    #inventory header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer;
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory header .close:hover, #inventory header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    /* the toll window, "the way down" (issue #224): the achievement notice's pixel finish. A 2 u gold accent bar, the
+       title at 40 px and the headings, count, marks and buttons at 20 px Pixelify Sans; chamfered, bevelled tiles.
+       Picked = gold frame and ✓; cursor = paper frame inside (shape, not colour alone); a picked tile under the cursor keeps both. */
+    #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
     #toll.show { display: flex; }
-    #toll .card { width: min(640px, 94vw); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
-    #toll header { border-bottom: 2px solid var(--ui-line); margin-bottom: 8px; }
-    #toll h2 { margin: 0 0 6px; letter-spacing: 3px; }
+    #toll .card { width: min(640px, 100%); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)) calc(6 * var(--u)) calc(7 * var(--u));
+      border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #toll header { border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 8px; }
+    #toll h2 { margin: 0 0 6px; font: 40px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
     #toll small { color: var(--ui-text-2); font-size: 14px; }
+    #toll .count { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ui-gold); white-space: nowrap; }
     #toll .hint { margin: 6px 0 0; font-size: 14px; color: var(--ui-faded); }
+    #toll .hint.cost { padding: 6px 10px; background: var(--ui-line); border-left: var(--u) solid var(--ui-text-2); color: var(--ui-text-2); clip-path: var(--cut); }
     #toll .grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    #toll .grid h3 { flex: 0 0 100%; margin: 12px 0 2px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
+    #toll .grid h3 { flex: 0 0 100%; margin: 14px 0 4px; font: 20px/1.15 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-text-2); text-transform: uppercase; }
+    #toll .grid h3::before { content: '\25C6  '; color: var(--ui-gold); }
     #toll .none { color: var(--ui-faded); }
-    #toll .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; font: inherit; color: var(--ui-text); }
-    #toll .tile img { width: 42px; height: 42px; }
+    #toll .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; background: var(--ui-line);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); cursor: pointer; font: inherit; color: var(--ui-text); }
+    #toll .tile img { width: 42px; height: 42px; image-rendering: pixelated; }
     #toll .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; hyphens: auto; font-size: 14px; line-height: 1.3; }
-    #toll .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
-    #toll .tile.on::after { content: "✓"; position: absolute; right: 3px; top: 1px; color: var(--ui-gold); font-size: 14px; }
-    #toll .tile.cur { box-shadow: inset 0 0 0 2px var(--ui-text); }
-    #toll .tile:focus-visible { outline: 2px solid var(--ui-text); }
-    #toll .go-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
-    #toll .tile.go { width: auto; min-width: 120px; padding: 8px 14px; }
+    #toll .tile.on { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--ui-gold), inset 2px 2px 0 var(--ui-bevel-hi); }
+    #toll .tile.on::after { content: "✓"; position: absolute; right: 4px; top: 2px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-gold); text-shadow: 1px 1px 0 var(--ui-line); }
+    #toll .tile.cur { box-shadow: inset 0 0 0 2px var(--ui-text), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #toll .tile.on.cur { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--ui-gold), inset 0 0 0 calc(3 * var(--u)) var(--ui-text); }
+    #toll .tile:focus-visible { outline: 2px solid var(--ui-text); outline-offset: -5px; }
+    #toll .go-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+    #toll .tile.go { width: auto; min-width: 120px; min-height: 44px; justify-content: center; padding: 8px 16px; }
+    #toll .tile.go .lbl { width: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; overflow: visible; }
+    #toll .tile.go[data-id="pay"]:not(.off) { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #toll .tile.go[data-id="pay"]:not(.off).cur { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
     #toll .tile.go.off { opacity: .5; }
-    #toll .tile.go .lbl { width: auto; }
     /* the Sanctuary, the Boundary's meditation app: its own look on purpose (docs/art/DECISIONS.md 10.8):
        round, soft, light type; colours only from the med.* tokens, written as --m-* by the view */
     #sanctuary { position: fixed; inset: 0; z-index: 40; display: none; opacity: 0; transition: opacity .7s ease; color: var(--m-ink);
@@ -534,6 +574,32 @@
       #banner .offer-actions button { width: 100%; }
     }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
+    /* ── the pause card's pixel pass (issue #223): the achievement notice's finish, kept in this one block. Pixelify Sans
+       only at 20 px here (tabs, buttons, headings, the field of view); chamfered (--cut) and bevelled controls; a 2 u
+       gold accent bar on the card's left like the notice's; palette tokens only (DECISIONS §10.2). ── */
+    #overlay > .card { border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #overlay .tabs button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; padding: 8px 16px 9px;
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay .tabs button[aria-selected="true"] { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #overlay .tabs button:hover, #overlay .tabs button:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #overlay .cover { border-bottom: var(--u) solid var(--ui-line); }
+    #overlay .actions button { font: 20px/1.1 "Pixelify Sans", system-ui, sans-serif; padding: 10px 14px; box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay #play { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #overlay .actions button:hover, #overlay .actions button:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #overlay h2 { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-gold); margin: 0 0 8px; }
+    #overlay .panel-menu h2::before { content: '\25C6  '; }
+    #overlay #lang button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; padding: 5px 8px 6px; box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay #lang button:hover, #overlay #lang button:focus-visible, #overlay #lang button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #graphics output { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    #overlay #graphics button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; }
+    #overlay #controls td:first-child { color: var(--ui-gold); }
+    #overlay #controls tr + tr td { border-top: 1px solid var(--ui-line); }
+    #overlay .credits .coffee, #overlay .credits .bug { box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay .seed { font-variant-numeric: tabular-nums; }
+    /* a phone held sideways: the two-column controls wrap their key names instead of running off the card */
+    body.dev-touch #controls tbody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    body.dev-touch #overlay #controls td:first-child { white-space: normal; }
+    body.dev-touch #overlay .actions button { padding: 12px 14px; }
   </style>
 </head>
 <body>

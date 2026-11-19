@@ -12,6 +12,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The toxic heart now carries a toxic aura: while you hold one, every hostile projection within two blocks of you takes damage once a second, with rising soot around your feet and a soft hiss when it touches. It never breaks blocks and never hurts allies, creatures or presences, and it ends when the heart is spent (#178).
 
 ### Changed
+- The practices tab, the pause card and the way-down window share the pixel art look of the achievement notice. Each practice now opens in three blocks: a teaching that carries it into everyday life, what it does in the game, and the stats it changes; every practice has its teaching in English and Spanish (#202, #223, #224).
 - The lore was extended with new references and a tradition (#194, #201, #204).
 
 ### Fixed
