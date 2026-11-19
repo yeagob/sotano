@@ -124,7 +124,8 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     }
     case 'spawn': { const [x, y, z] = w(a.at); if (!game.sandboxSpawn(a.def, x + 0.5, y, z + 0.5, a.faction)) errors.push(`t ${a.t}: could not spawn ${a.def}`); break; }
     case 'give': game.grant(a.item); break;
-    case 'lose': game.inventory.lose(a.item); game.hud.setItems(game.inventory.items.map(i => i.def)); break;
+    case 'lose': game.loseItem(a.item); break;
+    case 'hurt': game.damagePlayer(a.amount, 'item', 'lab', game.player.id); break;
     case 'tp': { const [x, y, z] = w(a.at); p.spawnAt(x + 0.5, y, z + 0.5); break; }
     case 'look': {
       const [x, y, z] = w(a.at), e = p.eye;

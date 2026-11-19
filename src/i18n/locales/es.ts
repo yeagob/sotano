@@ -825,6 +825,8 @@ export const ES: Catalog = {
     'teach.triple-jump.lesson': 'Divide una meta grande en tres etapas, cada una sobre la anterior. Termina la primera antes de preocuparte por la tercera. El impulso te lleva más lejos que un solo esfuerzo.',
     'teach.menders-thread.quote': 'Donde se rompió, aguanta.',
     'teach.menders-thread.lesson': 'Una reparación no tiene por qué ocultar la rotura. Lo que reparaste puede ser lo más fuerte de ti, y la costura es su registro honesto.',
+    'teach.waymark.quote': 'Donde te reconociste por última vez, el camino de vuelta está abierto.',
+    'teach.waymark.lesson': 'Marca el lugar donde te reconociste por última vez. Una piedra en un camino largo no es señal de que te perdiste: le dice al siguiente caminante, y a ti, que el camino es conocido. Vuelve a ella cuando el camino se ponga difícil.',
     'teach.visualization.quote': 'Míralo claro primero, y tu cuerpo conoce el camino.',
     'teach.visualization.lesson': 'Antes de algo importante, cierra los ojos y ensáyalo con detalle: el lugar, los pasos, cómo se siente hacerlo bien. Incluye lo que podría salir mal y cómo responderías. Luego ve y hazlo.',
 
@@ -1237,6 +1239,13 @@ export const ES: Catalog = {
         description: 'Lo que se rompió se reparó con oro, y la costura se ve. Es más fuerte donde se rompió.',
         effect: '+1 contenedor de corazón, y 0,25 s más de invulnerabilidad tras cada golpe. Prometido: ninguna captura, peaje ni regla puede quitártelo.',
         inspiredBy: 'Kintsugi (el arte japonés de reparar la cerámica con oro)',
+      },
+      waymark: {
+        name: 'Hito del camino',
+        description: 'Un montón de piedras en el camino, apiladas por alguien que pasó antes. Adonde te reconociste por última vez, siempre puedes volver.',
+        effect: 'Marca dónde estás y el inicio de cada nuevo piso. Cuando fueras a morir, vuelves allí con corazones llenos, 2,5 s de invulnerabilidad y todo lo que llevas. Se gasta cuando te salva: una copia, una vida extra.',
+        inspiredBy: 'Montones de piedra e hitos en las rutas de peregrinos',
+        messages: { revived: 'El hito te trae de vuelta.' },
       },
       'triple-jump': {
         name: 'Triple salto',

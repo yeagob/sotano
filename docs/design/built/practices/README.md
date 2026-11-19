@@ -16,7 +16,7 @@ This folder has one document per practice, in a folder for its path. The catalog
 | [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
 | [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
 | [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 13 | Open-hearted |
-| [Will](will/README.md) | Consistency, discipline, small steps compounding | 10 | Resolute |
+| [Will](will/README.md) | Consistency, discipline, small steps compounding | 11 | Resolute |
 
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
 
@@ -68,13 +68,14 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Meditations](will/MEDITATIONS.md) | Will | 4 | treasure rooms, vault rooms |
 | [Remember Breathing](will/REMEMBER-BREATHING.md) | Will | 4 | boss rewards |
 | [Self-Efficacy](will/SELF-EFFICACY.md) | Will | 3 | treasure rooms |
+| [Waymark](will/WAYMARK.md) | Will | 3 | vault rooms, boss rewards |
 | [Self-Reliance](will/SELF-RELIANCE.md) | Will | 4 | treasure rooms, vault rooms |
 | [Stoic Resolve](will/STOIC-RESOLVE.md) | Will | 2 | treasure rooms, boss rewards |
 
 ## How a practice is filed
 
 - **Folder.** A practice sits in the folder of the first path tag its code lists. The other path tags are in its document under *Path* and in the folder's table under *Also on*. Satori carries all four paths and sits in body.
-- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 11 at quality 3, 9 at quality 4.
+- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 12 at quality 3, 9 at quality 4.
 - **Found in.** Treasure rooms, boss rewards and the vault room. A vault is a room type with a richer pedestal; the deepest floors keep none (`src/world/floor.ts`).
 - **Credit.** Every practice names its inspiration, as the STORY and SOURCES documents do. The credit is not the name: the name is a generic technique or concept, or the title of a public-domain work ([NAMING](../story/NAMING.md)).
 

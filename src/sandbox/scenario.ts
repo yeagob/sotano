@@ -42,6 +42,7 @@ export type Action = { t: number } & (
   | { do: 'give'; item: string }
   | { do: 'lose'; item: string }
   | { do: 'tp'; at: Vec3 }
+  | { do: 'hurt'; amount: number }
   | { do: 'look'; at: Vec3 }
   | { do: 'fire'; ticks?: number }
   | { do: 'key'; code: string }

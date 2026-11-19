@@ -58,6 +58,10 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (`heal`/`damagePlayer` take half-hearts; `counts()` gives points) and counters, through `heal`, `actorDamage` and `pickupCollect` |
 | `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
 | `toast(messageId, params?)`, `bus` | Show one of the item's own `messages` (by id, in the player's language; never a literal); raw access to the event bus |
+| `consumeSelf()` | Removes this copy of the item once the current event has finished (deferred: never rebuilds the inventory inside an emit); Waymark spends a copy this way |
+| `playerFeet()`, `teleportPlayer(x, y, z)` | The feet position; moves the player to the free cell nearest the feet, zeroes velocity and opens the doors of any room the player is sent out of (Waymark's revive) |
+| `checkpoint()`, `setCheckpoint(x, y, z)` | The run's checkpoint (`src/game/checkpoint.ts`): set to the free cell nearest the feet, kept across inventory rebuilds, cleared when no held item carries the `checkpoint` tag |
+| `invulnerable(seconds)`, `burst(x, y, z, color, count)`, `chime()` | Invulnerability for seconds (never shorter than the window running); a coloured particle burst; the reveal chime |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
 
@@ -114,14 +118,15 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |
-| `death` | cancel (survive) | the player reaching 0 hearts |
+| `death` | cancel (survive; Waymark cancels it at priority 150 and spends a copy) | the player reaching 0 hearts |
 | `actorDeath` *(target required)* | `drops` (react otherwise) | an actor is gone |
 | `factionChange` | — (react) | an actor changed side (e.g. a projection became an ally, through polarity or a charm) |
 | `polarityChange` | — (react) | the player switched the loaded intention between positive and negative with **F** |
 | `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
 | `roomClear` | `drops` | a room cleared |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
-| `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
+| `itemGained`, `roomEnter` | — (react) | as named |
+| `floorEnter` *(react)* | nothing: `depth` is the floor entered, `arrival` its arrival point (feet position, the floor's spawn); Waymark moves its checkpoint there |
 | `pageReached` | — (react) | a run's end advanced the Roots' page (`page`, the new current page); once per run, never in the sandbox |
 | `bossOvercome` | — (react) | a floor's boss was overcome, once per boss room (`boss`, `floor`, `how`: `destroyed` when its health reached zero, `converted` when it turned to your side, `stillness` for the Shadow's own ending, which is a turning) |
 | `meditationComplete` | — (react) | a Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (`meditation`, the sitting's id; `source`: `roots` or `vault`); never a quick reward, a cancel or the debug console's Sanctuary |

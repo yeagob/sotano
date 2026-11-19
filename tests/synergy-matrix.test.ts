@@ -50,7 +50,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   pickupCollect: () => ({ kind: 'key', amount: 1 }),
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, floor: 2, type: 'normal', template: 'test', firstVisit: true }),
-  floorEnter: () => ({ depth: 2 }),
+  floorEnter: () => ({ depth: 2, arrival: { x: 0, y: 0, z: 0 } }),
   pageReached: () => ({ page: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
@@ -108,6 +108,14 @@ function sandbox() {
     launch: () => {},
     intentsHere: () => 0,
     tagCube: () => {},
+    consumeCopy: () => {},
+    playerFeet: () => ({ x: 0, y: 0, z: 0 }),
+    checkpoint: () => null,
+    setCheckpoint: () => {},
+    teleportPlayer: () => {},
+    invulnerable: () => {},
+    burst: () => {},
+    chime: () => {},
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
   return { bus, stats, inv, calls };

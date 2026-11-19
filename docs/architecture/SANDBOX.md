@@ -55,6 +55,7 @@ Each action has a tick `t` and runs right after that tick's report, before the t
 | `spawn` | `def`, `at`, `faction`? | A projection, creature, or presence, out at once. The Boundary too, placed as a vault places it but without its ring (a sandbox has no chest) |
 | `give`, `lose` | `item` | Gain (quietly) or lose a practice |
 | `tp`, `look` | `at` | Stand on a tile; aim at a cell's centre |
+| `hurt` | `amount` | Hurt the player by half-hearts (8 = one heart, the `damagePlayer` path): a large amount is a death, which a Waymark can cancel |
 | `fire` | `ticks`? (1) | Hold the fire button that many ticks (the intention, or the active weapon); each hold starts with a press, so two short `fire`s within 18 ticks are a double tap (Dr. Launcher) |
 | `key` | `code` | Press a key for one tick: `KeyE` bomb, `KeyQ` throw, `KeyF` polarity |
 | `use` | | Right click: place the top block where you look |

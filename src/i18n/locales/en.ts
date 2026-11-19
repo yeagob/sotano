@@ -827,6 +827,8 @@ const messages = {
   'teach.triple-jump.lesson': 'Break a big goal into three stages, each built on the one before. Finish the first before you worry about the third. Momentum carries you further than a single effort.',
   'teach.menders-thread.quote': 'Where it broke, it holds.',
   'teach.menders-thread.lesson': 'A repair does not have to hide the break. What you mended can be the strongest part of you, and the seam is the honest record of it.',
+  'teach.waymark.quote': 'Wherever you last knew yourself, the way back is open.',
+  'teach.waymark.lesson': 'Mark the place where you last knew yourself. A stone on a long path is not a sign that you were lost: it tells the next walker, and you, that the way is known. Return to it whenever the path turns hard.',
   'teach.visualization.quote': 'See it clearly first, and your body knows the way.',
   'teach.visualization.lesson': 'Before something important, close your eyes and rehearse it in detail: the place, the steps, how it feels to do it well. Include what might go wrong and how you would answer. Then go and do it.',
 

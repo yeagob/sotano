@@ -58,12 +58,31 @@ export interface ItemApi {
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
   tagCube(cube: number, tag: string): void;
+  /** Remove this copy of the item (the most recent one of its kind), once the current event has finished. */
+  consumeSelf(): void;
+  /** The player's feet. */
+  playerFeet(): { x: number; y: number; z: number };
+  /** The run's checkpoint (game/checkpoint.ts): where the player last knew themselves, or null. */
+  checkpoint(): { x: number; y: number; z: number } | null;
+  /** Sets the checkpoint to the free standing cell nearest to the feet position (x, y, z). */
+  setCheckpoint(x: number, y: number, z: number): void;
+  /** Moves the player to the free standing cell nearest to the feet position (x, y, z); velocity is zeroed and
+   *  a door that would shut a room the player has just left is opened. */
+  teleportPlayer(x: number, y: number, z: number): void;
+  /** Invulnerable for `seconds` from now (never shorter than the window already running). */
+  invulnerable(seconds: number): void;
+  /** A burst of `count` coloured particles at a point. */
+  burst(x: number, y: number, z: number, color: number, count: number): void;
+  /** The soft chime of a reveal. */
+  chime(): void;
 }
 
 /** What the game gives the installer: like `ItemApi`, but a toast names the effect it comes from
- *  (the inventory binds it, so items only pass a message id). */
-export type HostApi = Omit<ItemApi, 'toast'> & {
+ *  (the inventory binds it, so items only pass a message id), and `consumeSelf` is bound to the copy's id. */
+export type HostApi = Omit<ItemApi, 'toast' | 'consumeSelf'> & {
   message(owner: ItemDef | SynergyDef, messageId: string, params?: Params): void;
+  /** Removes one copy of an item by id (the inventory binds it to `consumeSelf`, deferred). */
+  consumeCopy(itemId: string): void;
 };
 
 export type StatModSpec = { stat: StatName; layer: StatLayer; value: number };
