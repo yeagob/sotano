@@ -456,6 +456,17 @@ export const ES: Catalog = {
     'hud.polarity.negative': 'Mala intención (F para cambiar)',
 
     'death.title': 'La intención se apagó',
+    // progreso del juego (COMPLETION.md): la pausa y la pantalla de muerte
+    'completion.title': 'Progreso {percent}%',
+    'completion.part.floors': 'Pisos',
+    'completion.part.bosses': 'Jefes',
+    'completion.part.achievements': 'Logros',
+    'completion.part.practices': 'Prácticas',
+    'completion.part.bestiary': 'Bestiario',
+    'completion.part.recipes': 'Recetas',
+    'completion.part.book': 'El libro oculto',
+    'completion.count': '{done} de {total}',
+    'completion.share': '{share}% del total',
     'death.cause': 'En el piso {n}, {cause} te retuvo.',
     'death.restart': 'Pulsa R para empezar de nuevo',
     'cause.unknown': 'la profundidad',

@@ -483,6 +483,17 @@ const messages = {
 
   // ── death screen ──
   'death.title': 'The intention faded',
+  // completion percentage (COMPLETION.md): the pause card and the death screen
+  'completion.title': 'Completion {percent}%',
+  'completion.part.floors': 'Floors',
+  'completion.part.bosses': 'Bosses',
+  'completion.part.achievements': 'Achievements',
+  'completion.part.practices': 'Practices',
+  'completion.part.bestiary': 'Bestiary',
+  'completion.part.recipes': 'Recipes',
+  'completion.part.book': 'The hidden book',
+  'completion.count': '{done} of {total}',
+  'completion.share': '{share}% of the whole',
   'death.cause': 'On floor {n}, {cause} held you.',
   'death.restart': 'Press R to begin again',
   'cause.unknown': 'the depths',

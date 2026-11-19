@@ -24,7 +24,7 @@ import { ROOM_H, ROOM_TEMPLATES } from '../content/rooms';
 import { rollParts } from '../content/parts';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
 import { heartTollPlan, tollIndex } from './toll';
-import { defaultMeta, noStore, type LoadedMeta, type MetaStore } from './meta';
+import { defaultMeta, noStore, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
 import { FIRST_BOOK_PAGE } from './roots-book';
 import { mastery as achievedMastery, type Payload } from './achievements';
@@ -587,6 +587,7 @@ export class Game {
     this.bus = createBus();
     attachDevlog(this.bus);
     this.listenAchievements();
+    this.showCompletion();
     this.inventory.restore([]);
     this.stats.removeSource('toll');
     this.syncWeapon();
@@ -828,6 +829,7 @@ export class Game {
   forgetRoots(): boolean {
     if (!this.keeper.reset()) return false;
     this.roots?.forget();
+    this.showCompletion();
     return true;
   }
 
@@ -854,11 +856,29 @@ export class Game {
     this.bus.on('bookBack', { priority: 300, source, fn: p => this.achieved('bookBack', p) });
     this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
     this.bus.on('treeStory', { priority: 300, source, fn: p => this.achieved('treeStory', p) });
+    // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
+    const first = 'completion';
+    this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
+    this.bus.on('itemGained', { priority: 300, source: first, fn: p => this.firstTime('practices', p.id) });
+    this.bus.on('enemySpawn', { priority: 300, source: first, fn: p => this.firstTime('bestiary', p.def) });
+    this.bus.on('brew', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.potion) });
+    this.bus.on('cook', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.meal) });
   }
 
   /** One event to the tracker: an unlock is saved at once and queued as its card (achievement-keeper.ts). */
   private achieved(event: string, payload: object) {
     this.keeper.track(event, { ...payload } as Payload, Date.now());
+    this.showCompletion();
+  }
+
+  /** A first time for the completion percentage: kept once in the save (achievement-keeper.ts), then shown (COMPLETION.md). */
+  private firstTime(kind: FirstKind, id: string) {
+    if (this.keeper.recordFirst(kind, id)) this.showCompletion();
+  }
+
+  /** Gives the HUD the completion now: the pause card and the death screen show it (hud.ts setCompletion). */
+  private showCompletion() {
+    this.hud.setCompletion(this.keeper.completion);
   }
 
   /**
@@ -914,6 +934,7 @@ export class Game {
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
+      this.firstTime('bestiary', def.id);
     }
     for (const r of this.sandbox ? [] : f.rooms) {
       if (!r.presence) continue;
