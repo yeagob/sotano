@@ -10,6 +10,16 @@ The presences give gifts: objects with a name, a line of text and a plain effect
 
 Every Presence reward is selected from a seeded probability distribution with outcomes of different value, from a lesser result to a better one. The roll belongs to the run's deterministic seeded sequence, so the same seed and preceding sequence of events reproduce the same result. Each Presence has its own table and weights; the exact tables remain open until that Presence is designed. The built Listener's guaranteed reward and its existing 15/75/10 table are not changed by this future rule.
 
+The tables of the built presences (all rolled from the `drops` stream when the offer is accepted):
+
+| Presence | Table (`heart-gifts.ts`) | Outcomes and weights | Status |
+|---|---|---|---|
+| The Listener | `listener-heart-gift` | practice with maximum-health 15; special hearts 75 (one heart 90%, two different 10%); two red hearts 10 | built, unchanged |
+| The Trickster | `trickster-deal` | quality-three practice 4; quality-three health practice 1 | built, proposed pending owner ruling |
+| The Echo | `echo-gift` | key 1; bomb 1 | built, proposed pending owner ruling |
+
+The Trickster's gift is a practice, not the Trickster's Coin of the tier list below; the coin is not built.
+
 ## Tiers
 
 | Tier | Gift names (proposals) | Given by |

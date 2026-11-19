@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { placePresences, type RoomPresence } from '../content/presences';
+import { placeMessengers, placePresences, tricksterFloorOf, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -296,6 +296,9 @@ export interface CarveOptions {
   /** The player's mastery level (0 to 100), read by floor 0 only (REWARDS). Default 0. Generation never reads the save:
    *  the game passes the level it read at run start. */
   mastery?: number;
+  /** The depth the last run faded on (the save's `fade`, read at run start by the game): the Echo waits on that floor.
+   *  Undefined when no Echo waits. It only picks which floor holds the Echo; the room is still chosen by the seed. */
+  echoFloor?: number;
   /** Floor 0 only (EASY-LAYOUT §7): carve the easy layout of the Roots, which the game asks for from page 2 on.
    *  Default false: the teaching layout, byte for byte as before. Read at run start; no random decision depends on it. */
   easyRoots?: boolean;
@@ -463,6 +466,12 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   placePresences(rooms, k, rr.fork('floor', k, 'presence'));
+  // the Trickster (a dead end of its seeded floor) and the Echo (where the last run faded, from the save), after the Listener
+  placeMessengers(rooms, k, rr.fork('floor', k, 'messenger'), {
+    deadEnds: plan.rooms.map(pr => Object.keys(pr.links).length === 1),
+    tricksterFloor: tricksterFloorOf(rr),
+    echoFloor: opt.echoFloor,
+  });
 
   // 2. doorways between linked rooms (each pair once: only east and south links)
   for (const pr of plan.rooms) {

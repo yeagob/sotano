@@ -4,12 +4,14 @@
 
 Pictures and a catalogue entry for each presence are in the [bestiary](../bestiary/README.md). The detail of each presence is in its document below.
 
-Presences are the beings of the depths who speak: the parts of the player that already know. They are archetypes, never gods, saints or real people, and they never give orders. They are immortal: they have no health and take no damage, and a negative intention silences them rather than hurting them. Two are in the game: the Listener, on floors 1 to 5, and the Boundary, a calm guardian of the vaults. The Listener is the reference implementation for a part-for-reward Presence: it searches the carried hand and asks before taking the first matching part. The Gardener is defined in the code but not placed. Everything else in the design is in [not-built/presences](../../not-built/presences/README.md).
+Presences are the beings of the depths who speak: the parts of the player that already know. They are archetypes, never gods, saints or real people, and they never give orders. They are immortal: they have no health and take no damage, and a negative intention silences them rather than hurting them. Four are in the game: the Listener, on floors 1 to 5; the Boundary, a calm guardian of the vaults; the Trickster, a messenger on one seeded floor from floor 3; and the Echo, a messenger that waits where the last run faded. The Listener is the reference implementation for a part-for-reward Presence: it searches the carried hand and asks before taking the first matching part. The Trickster and the Echo ask the same way, on the same consent card, and decline costs nothing. The Gardener is defined in the code but not placed. Everything else in the design is in [not-built/presences](../../not-built/presences/README.md).
 
 | Document | Presence | Where it is | What it does |
 |---|---|---|---|
 | [LISTENER.md](LISTENER.md) | The Listener | One per floor from 1 to 5, in a quiet room | Takes a monster heart, always drops a 15/75/10 practice or heart reward, and leaves at once |
 | [BOUNDARY.md](BOUNDARY.md) | The Boundary | One per vault of a dungeon floor | Stays still while its sanctuary holds; wakes and throws cubes when the sanctuary is broken |
+| [TRICKSTER.md](TRICKSTER.md) | The Trickster | One seeded floor from 3 down, in a quiet dead end | Offers a trade: one heart for a practice of quality three. Declining costs nothing; it laughs and goes |
+| [ECHO.md](ECHO.md) | The Echo | The floor where the last run faded, once | Asks for one part in hand and gives a key or a bomb. The depth it faded on is kept in the save |
 | [MEDITATION-APP.md](MEDITATION-APP.md) | The Sanctuary, the Boundary's meditation app | Opens at the Boundary of each vault, and above the tutorial treasure chest | A quick reward at once (a tier 1–2 practice), or a guided meditation of a random 20–40 seconds for the better one (tier 3–4); six meditations, each with its own scene, music and words |
 
 ## What they share (built)
@@ -26,4 +28,5 @@ Presences are the beings of the depths who speak: the parts of the player that a
 
 - **Sanctuary.** The design gives each presence a sanctuary: projections never enter its room, and none spawn in its ring. The build does not enforce this beyond the empty room.
 - **Kind.** The Boundary is a projection in the code and a creature in the design (see its document). The shared rules above assume a presence is neither.
-- **Naming.** The design's roster names eleven presences; the build has two placed and one defined. The rest are in [not-built/presences](../../not-built/presences/README.md).
+- **Naming.** The design's roster names eleven presences; the build has four placed (the Listener, the Boundary, the Trickster, the Echo) and one defined (the Gardener). The rest are in [not-built/presences](../../not-built/presences/README.md).
+- **Consent.** Every delivery shows the exact part, takes it only on confirmation and keeps everything on a refusal. The Trickster and the Echo's defaults (their costs, weights and places) are proposed, pending owner ruling; see each document.

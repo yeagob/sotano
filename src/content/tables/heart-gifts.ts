@@ -51,6 +51,30 @@ export const SPECIAL_COUNT_TABLE = table<number>('listener-special-heart-count',
 ]);
 const GIFT_CONTEXT = { floor: 0 };
 
+// The Trickster's trade (docs/design/built/presences/TRICKSTER.md): one heart for one practice of quality three. Four
+// draws in five give a practice of quality three that is not a health practice; one in five gives the health practice
+// of quality three (the only one with a maximum-health stat today). Weights are proposed, pending the owner's ruling.
+type TricksterKind = 'health' | 'practice';
+export const TRICKSTER_DEAL_TABLE = table<TricksterKind>('trickster-deal', 'runtime', [
+  { value: 'practice', weight: 4 },
+  { value: 'health', weight: 1 },
+]);
+const QUALITY_THREE = ITEMS.filter(item => item.quality === 3);
+const TRICKSTER_HEALTH = QUALITY_THREE.filter(item => item.stats?.some(stat => stat.stat === 'maxHearts'));
+const TRICKSTER_PRACTICE = QUALITY_THREE.filter(item => !TRICKSTER_HEALTH.includes(item));
+export const TRICKSTER_HEALTH_TABLE = table<(typeof ITEMS)[number]>('trickster-health-practice', 'runtime',
+  TRICKSTER_HEALTH.map(item => ({ value: item, weight: 1 })),
+);
+export const TRICKSTER_PRACTICE_TABLE = table<(typeof ITEMS)[number]>('trickster-practice', 'runtime',
+  TRICKSTER_PRACTICE.map(item => ({ value: item, weight: 1 })),
+);
+
+// The Echo's gift (docs/design/built/presences/ECHO.md): one key or one bomb, an even draw (proposed, pending the owner's ruling).
+export const ECHO_GIFT_TABLE = table<'key' | 'bomb'>('echo-gift', 'runtime', [
+  { value: 'key', weight: 1 },
+  { value: 'bomb', weight: 1 },
+]);
+
 export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   LISTENER_GIFT_TABLE,
   HEALTH_PRACTICE_TABLE,
@@ -58,6 +82,10 @@ export const HEART_GIFT_TABLES: readonly Table<unknown>[] = [
   ...Object.values(SPECIAL_ALTERNATIVES),
   SPECIAL_COUNT_TABLE,
   CREATURE_GIFT_TABLE,
+  TRICKSTER_DEAL_TABLE,
+  TRICKSTER_HEALTH_TABLE,
+  TRICKSTER_PRACTICE_TABLE,
+  ECHO_GIFT_TABLE,
 ];
 
 function roll<T>(source: Table<T>, rng: Rng): T {
@@ -76,6 +104,16 @@ export function rollListenerGift(rng: Rng): HeartGift {
   const hearts: HeartKind[] = [first];
   if (count === 2) hearts.push(roll(SPECIAL_ALTERNATIVES[first], rng));
   return { kind: 'hearts', hearts };
+}
+
+/** The practice the Trickster gives for a heart (TRICKSTER_DEAL_TABLE, then the practice pool of that outcome). */
+export function rollTricksterPractice(rng: Rng): (typeof ITEMS)[number] {
+  return roll(roll(TRICKSTER_DEAL_TABLE, rng) === 'health' ? TRICKSTER_HEALTH_TABLE : TRICKSTER_PRACTICE_TABLE, rng);
+}
+
+/** The key or bomb the Echo gives (ECHO_GIFT_TABLE). */
+export function rollEchoGift(rng: Rng): 'key' | 'bomb' {
+  return roll(ECHO_GIFT_TABLE, rng);
 }
 
 export function rollCreatureGrowthHeart(rng: Rng): HeartKind | null {

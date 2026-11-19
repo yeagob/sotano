@@ -32,7 +32,7 @@ Some presences make an agreement instead of asking for an action: "bring me this
 
 ## What is built under it
 
-Parts exist in the build: a released projection can leave one of its parts as a pickup (see the projections' documents). No presence asks for one yet, and no agreement is tracked.
+Parts exist in the build: a released projection can leave one of its parts as a pickup (see the projections' documents). Two presences ask for one, each with a consent card that names the exact part and keeps everything on a refusal: the Trickster (a heart, for a practice of quality three) and the Echo (any one part in hand, for a key or a bomb). Both are in [built/presences](../../built/presences/README.md), with their proposed defaults. The other agreements in the table are not built, and no agreement asks for more than one part yet.
 
 ## Open questions
 

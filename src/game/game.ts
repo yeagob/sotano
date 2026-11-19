@@ -90,13 +90,13 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollListenerGift } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
@@ -105,7 +105,7 @@ import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './se
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
-import { Hud } from './hud';
+import { Hud, floorLabel } from './hud';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
@@ -718,6 +718,8 @@ export class Game {
       bossSmallRoom: !!(boss && BOSS_BY_ID.get(boss)?.smallRoom),
       // the Roots' layout, read once at run start (EASY-LAYOUT §7); only floor 0 reads it
       easyRoots: k === FIRST_FLOOR && (this.roots?.easyRoots ?? false),
+      // the depth the last run faded on, read at run start from the save (ECHO.md); undefined when no Echo waits
+      echoFloor: this.keeper.fade,
       // the Roots' mastery level, read once at run start (REWARDS §4-§6); only floor 0 reads it
       mastery: this.runMastery,
     });
@@ -1488,6 +1490,8 @@ export class Game {
       sfx3.death();
       this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
       this.endRoots();
+      // the Echo remembers where this run faded (ECHO.md): the deepest floor reached
+      this.keeper.recordFade(this.maxDepth);
     }
     return true;
   }
@@ -1837,7 +1841,7 @@ export class Game {
     this.launchGiftPickups(e, [{ type: 'heart', heart }]);
   }
 
-  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind })[]) {
+  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind } | { type: 'key' | 'bomb' })[]) {
     const b = e.body, player = this.player.body;
     const base = Math.atan2(b.z - player.z, b.x - player.x);
     rewards.forEach((reward, i) => {
@@ -1845,7 +1849,9 @@ export class Game {
       const x = b.x + Math.cos(angle) * 0.45, z = b.z + Math.sin(angle) * 0.45;
       const pickup = reward.type === 'item'
         ? this.pickups.add('item', x, b.y + 1.02, z, e.room, reward.item, 0.3)
-        : this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart);
+        : reward.type === 'heart'
+          ? this.pickups.add('heart', x, b.y + 1.02, z, e.room, null, 0.3, null, reward.heart)
+          : this.pickups.add(reward.type, x, b.y + 1.02, z, e.room, null, 0.3);
       this.ejectReward(pickup, 1.5, 3);
     });
   }
@@ -3488,7 +3494,7 @@ export class Game {
         return;
       }
       this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried };
-      this.hud.presenceOfferCard(talk.name, offer.carried);
+      this.hud.presenceOfferCard(talk.name, offer.carried, PRESENCE_OFFER_QUESTION[id]);
       this.input.modal = true;
       this.input.unlockFor();
       return;
@@ -3511,8 +3517,14 @@ export class Game {
       return;
     }
     if (!accept) {
-      e.tags.add('offer-declined');
       sfx.denied();
+      // the Trickster laughs and is gone; the others keep their place and ask again after the player steps away
+      if (pending.id === 'trickster') {
+        this.hud.presenceCard(PRESENCE_TALK.trickster.name, [PRESENCE_TALK.trickster.laugh!]);
+        this.releasePresence(e);
+        return;
+      }
+      e.tags.add('offer-declined');
       return;
     }
 
@@ -3522,13 +3534,26 @@ export class Game {
     const eye = this.player.eye, fwd = this.player.forward;
     this.particles.burst(eye.x + fwd.x * 0.6, eye.y - 0.4, eye.z + fwd.z * 0.6, color, 10, 1.2, 0.05);
     const talk = PRESENCE_TALK[pending.id];
+    // the Echo's place is read before the record forgets it, so its line can name the floor it faded on
+    const faded = this.keeper.fade ?? this.maxDepth;
     e.tags.add('met');
     // the Listener's pact: the first one is saved, and the Mind Crafter blocks count from it (ACHIEVEMENTS §1)
     if (pending.id === 'listener') this.keeper.recordPact();
-    if (talk.drops) this.dropListenerReward(e);
+    if (pending.id === 'echo') this.keeper.clearFade();
+    if (talk.drops) this.dropPresenceReward(pending.id, e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-    if (leavesAfterOffer(pending.id)) this.releaseListener(e);
-    this.hud.presenceCard(talk.name, talk.lines);
+    if (leavesAfterOffer(pending.id)) this.releasePresence(e);
+    this.hud.presenceCard(talk.name, talk.lines, pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
+  }
+
+  /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
+   *  15/75/10 table is unchanged (LISTENER.md); the Trickster's and the Echo's are seeded weighted tables (their docs). */
+  private dropPresenceReward(id: PresenceId, e: Enemy) {
+    const rng = this.rng.stream('drops');
+    if (id === 'listener') return this.dropListenerReward(e);
+    if (id === 'trickster') this.launchGiftPickups(e, [{ type: 'item', item: rollTricksterPractice(rng) }]);
+    else if (id === 'echo') this.launchGiftPickups(e, [{ type: rollEchoGift(rng) }]);
+    sfx3.reveal();
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
@@ -3541,9 +3566,9 @@ export class Game {
     sfx3.reveal();
   }
 
-  /** A Listener leaves once it has dropped its reward. It is removed from the world, so its silence leaves with it
-   *  (owner decision on #65: the room returns to normal). */
-  private releaseListener(e: Enemy) {
+  /** A presence that gives its reward (or the Trickster, once declined) leaves: it is removed from the world, so its
+   *  silence leaves with it (owner decision on #65: the room returns to normal). */
+  private releasePresence(e: Enemy) {
     this.particles.burst(e.body.x, e.body.y + 1.5, e.body.z, pal('bone.paper'), 14, 1.6, 0.06);
     this.enemies.dissolve(e);
     this.bus.off(null, `actor:${e.id}`);

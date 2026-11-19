@@ -125,7 +125,7 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried; questionKey?: MessageKey } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
@@ -551,11 +551,13 @@ export class Hud {
       `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
   }
 
-  presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+  /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
+   *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
+  presenceOfferCard(nameKey: MessageKey, carried: Carried, questionKey?: MessageKey) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried };
+    this.lastPresenceOffer = { nameKey, carried, questionKey };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -579,7 +581,7 @@ export class Hud {
         : partText(offer.carried).name;
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
-      `<span class="offer-question" id="presence-offer-question">${th('presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
       `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
       `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
