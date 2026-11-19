@@ -49,4 +49,4 @@ Every screen shake (hurt, blasts, slams) plays a `dual-rumble` scaled to its str
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.
+The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off), LB (the spoken guidance on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.

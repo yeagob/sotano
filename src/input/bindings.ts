@@ -5,7 +5,7 @@ export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'tol
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm';
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -189,6 +189,13 @@ export const BINDINGS: readonly Binding[] = [
     gamepad: { buttons: [PAD.Y] },
     touch: { control: 'menuButton' },
     refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'screen shake is a switch in the options', isaac: 'Y opens what the screen offers beside the main choice' },
+  },
+  {
+    action: 'voice', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyV'] },
+    gamepad: { buttons: [PAD.LB] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'subtitles are a switch in the options', isaac: 'one switch, one button: each toggle has its own' },
   },
 ];
 
