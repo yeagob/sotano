@@ -113,6 +113,9 @@ export interface ItemDef extends Effect {
   /** What it does in the game, plainly and with numbers ("Damage ×3, then +2"). Always shown
    *  next to the description so the player knows exactly what they got. */
   effect: string;
+  /** A life lesson or quote that carries the practice into everyday life (2–3 lines).
+   *  Shown as the first block in the inventory detail. Falls back to `description` if absent. */
+  teaching?: string;
   /** The book, course, technique or therapy that inspired it (credited, never used as the name). */
   inspiredBy?: string;
   /** Pools it can drop from, with a weight in each. */

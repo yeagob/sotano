@@ -67,12 +67,12 @@ function buildLayout(): RootsLayout {
     if (ringNeighbours(r).length !== 2) throw new Error(`roots-book: ring room ${nameOf(r)} must join two ring rooms`);
   }
 
-  // Forward is the way the start room's east neighbour leads (PAGES §2: from the start room east into the step room).
-  const east = start.links.E;
-  if (east === undefined) throw new Error('roots-book: the start room has no east neighbour to walk forward into');
+  // Forward is the way the start room's west neighbour leads (PAGES §2: toward the Sanctuary, from the start room west into the gift room).
+  const west = start.links.W;
+  if (west === undefined) throw new Error('roots-book: the start room has no west neighbour to walk forward into');
   const order: PlanRoom[] = [start];
   let prev = start;
-  let cur = rooms[east];
+  let cur = rooms[west];
   while (cur !== start) {
     order.push(cur);
     const next = ringNeighbours(cur).find(n => n !== prev);
@@ -191,7 +191,13 @@ export class RootsBook {
 
     if (this.steps >= LAP_STEPS) {
       this.steps = 0;
-      if (this.shownPage < this.top()) this.shownPage += 1;
+      if (this.shownPage < this.pages) {
+        this.shownPage += 1;
+        // Paint the current room with the new page immediately, so the player
+        // sees the new page as they walk in (issue #212).
+        this.painted.set(room, this.shownPage);
+        this.flushOutOfSight();
+      }
     } else if (this.steps <= -LAP_STEPS) {
       this.steps = 0;
       if (this.shownPage > 1) {
@@ -204,7 +210,8 @@ export class RootsBook {
   /**
    * The run ends (the death screen opens, or a new run replaces it). The decision is taken once per
    * run: the current page advances by one if every room of the Roots was entered in this run and the
-   * current page is below the last page. Returns true when the current page advanced.
+   * current page is below the last page. When it advances, the shown page follows so the player can
+   * browse the new page immediately. Returns true when the current page advanced.
    */
   endRun(): boolean {
     if (this.ended) return false;
@@ -212,6 +219,7 @@ export class RootsBook {
     if (this.visited.size < this.layout.rooms.length) return false;
     if (this.savedCurrent >= this.pages) return false;
     this.savedCurrent += 1;
+    this.shownPage = this.savedCurrent;
     return true;
   }
 
@@ -230,6 +238,20 @@ export class RootsBook {
     this.ended = false;
     this.here = undefined;
     this.enterRoom(this.layout.start);
+  }
+
+  /**
+   * Update painted pages for all rooms that are out of sight from the current location.
+   * This ensures panels are ready when the player walks into those rooms after a page turn.
+   */
+  private flushOutOfSight(): void {
+    const shown = this.shownPage;
+    const sight = this.here !== undefined ? this.layout.sight[this.here] : [];
+    for (const room of this.layout.rooms) {
+      if (this.painted.get(room) !== shown && !sight.includes(room) && !this.inView(room)) {
+        this.painted.set(room, shown);
+      }
+    }
   }
 
   /**

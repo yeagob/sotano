@@ -140,8 +140,10 @@ describe('quotes', () => {
   });
 
   it('the Borja quote on page 17 is noted in English and not in Spanish', () => {
-    const en = panelAt(loadBook('en'), 17, 'roots-gift', 'north') as QuotePanel;
-    const es = panelAt(loadBook('es'), 17, 'roots-gift', 'north') as QuotePanel;
+    // The quote is stored under roots-gift in the JSON. With BOOK_SLOT_MAP,
+    // roots-step maps to roots-gift, so panelAt reads the quote at roots-step.
+    const en = panelAt(loadBook('en'), 17, 'roots-step', 'north') as QuotePanel;
+    const es = panelAt(loadBook('es'), 17, 'roots-step', 'north') as QuotePanel;
     expect(en.layout).toBe('quote');
     expect(showsTranslationNote('en', en)).toBe(true);
     expect(showsTranslationNote('es', es)).toBe(false);

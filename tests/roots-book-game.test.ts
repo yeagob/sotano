@@ -18,11 +18,11 @@ const BRIDGE = 'roots-bridge', SEAL = 'roots-seal', CRATES = 'roots-crates', SPR
 const GIFT = 'roots-gift', DOOR = 'roots-door';
 
 /** The whole route of a run: every ring room in forward order from the start room, then the way down. */
-const FULL = [STEP, DIG, MEND, PIT, BRIDGE, SEAL, CRATES, SPRING, GIFT, HALL, DOOR];
+const FULL = [GIFT, SPRING, CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP, HALL, DOOR];
 /** One forward lap from the start room: the ring in forward order, back to the start. */
-const LAP_FORWARD = [STEP, DIG, MEND, PIT, BRIDGE, SEAL, CRATES, SPRING, GIFT, HALL];
+const LAP_FORWARD = [GIFT, SPRING, CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP, HALL];
 /** One reverse lap from the start room. */
-const LAP_BACK = [GIFT, SPRING, CRATES, SEAL, BRIDGE, PIT, MEND, DIG, STEP, HALL];
+const LAP_BACK = [STEP, DIG, MEND, PIT, BRIDGE, SEAL, CRATES, SPRING, GIFT, HALL];
 
 const book: Book = loadBook('en');
 const ROOT = 1;
