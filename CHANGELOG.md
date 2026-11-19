@@ -10,6 +10,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 - A completion percentage: the share of the game you have done at least once (floors, bosses, achievements, practices, the bestiary, recipes and the hidden book), with each part's share. It is kept between runs, never goes down, and shows on the pause card and the death screen (#180).
 - At 100% completion a final achievement unlocks, and the book can be downloaded from the pause card and the death screen (#180).
 
+### Fixed
+- Symbolic Act no longer explodes blocks that were kicked: a block that falls on you while your hands are full, or a thrown block you kick later, loses its charge and does not burst (#198).
+
 ## 0.2.4.f1 · 2026-11-14
 
 ### Added
