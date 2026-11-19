@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 47 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, and the final one of #180, "Made Whole", §1). The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 47 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, and the final one of #180, "Made Omh", §1). The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -108,7 +108,7 @@ The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages
 | `book.back` | `bookBack`: the shown page of the tutorial book (pages 1 to 5) turned back one page | Turning Back | Volver la página | Turn the tutorial book back one page. | Pasa hacia atrás una página del libro del tutorial. |
 | `climb.crown` | `treeStory` with `story` `canopy`: the body, above the surface, enters the giant tree's canopy (the crown) | Into the Crown | Hasta la copa | Climb the great tree into its crown, the canopy of leaves. | Sube el gran árbol hasta su copa, el dosel de hojas. |
 | `bedrock.touch` | `bedrockTouch`: the body touches bedrock on any side | The Unbreakable Floor | El suelo que no cede | Dig until you touch bedrock, from any side. | Excava hasta tocar el lecho de roca, desde cualquier lado. |
-| `completion.full` | `completionFull`: the completion percentage reaches 100 (COMPLETION.md §8), emitted once; the final achievement, its criterion is data, not a count of the others | Made Whole | Hecho entero | Reach 100% completion: every part of the game done at least once. | Llega al 100% de progreso: cada parte del juego, hecha al menos una vez. |
+| `completion.full` | `completionFull`: the completion percentage reaches 100 (COMPLETION.md §8), emitted once; the final achievement, its criterion is data, not a count of the others | Made Omh | Made Omh | Reach 100% completion: every part of the game done at least once. | Llega al 100% de progreso: cada parte del juego, hecha al menos una vez. |
 
 The names are proposals, for the owner to change, as the others are. `mind.crafter` counts only after the **first pact with the Listener**, which is accepting its heart offer (`resolvePresenceOffer`); the pact is saved in the record as `pact` (SAVE.md), so the count holds in later runs. A reset of the Roots forgets it, like the other unlocks.
 
@@ -170,7 +170,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 47 defined ones (the 46, and "Made Whole", the final one that the completion percentage unlocks at 100%); the other 53 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 47 defined ones (the 46, and "Made Omh", the final one that the completion percentage unlocks at 100%); the other 53 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 
