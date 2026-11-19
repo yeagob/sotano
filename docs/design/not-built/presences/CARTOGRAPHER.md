@@ -2,19 +2,23 @@
 
 # The Cartographer
 
-Status: **proposal**.
+Status: **partly built**. The Cartographer waits on one seeded floor from floor 1 and marks the nearest vault or boss in words, on a choice card ([built/presences/CARTOGRAPHER.md](../../built/presences/CARTOGRAPHER.md)). The parts below are not built.
 
-A dweller of knowing where you stand. It lives in the central emanation of each Tree floor, the crossroads of the paths. It answers the player's question with a question. If the player answers, it marks the map: the vault, the hidden pocket, or the boss.
+A dweller of knowing where you stand. In the design it lives in the central emanation of each Tree floor, and its marks go on a star map.
 
-## What the design asks
+## What is not built
 
-- **Question.** It answers a question with a question.
-- **Choice.** The player's answer is a choice, and the map is marked from it.
-- **Insight.** The marked place (a vault, a hidden pocket or a boss) appears on the map.
+- **The Tree.** Its floors (L1 to L5) are not built; the Cartographer waits in a quiet room of a seeded floor.
+- **The map.** The star map does not exist; the marks are words on the card.
+- **The hidden pocket.** The design lets the player mark a hidden pocket too. The build marks a vault or a boss only; the pocket is not built.
 - **Agreement.** One ore from every zone the player crossed, to chart the floor (see [Agreements](AGREEMENTS.md)).
+
+## Decided by agent (pending owner ruling)
+
+- **Materials.** No ores as materials in #149; the Cartographer marks in words (README D13).
+- **The star map.** Built later (README D15).
 
 ## Open questions
 
-- **The Tree.** Its floors (L1 to L5) are not built.
-- **The map.** The star map is not built; the Cartographer's marks have nowhere to go yet.
-- **Dialogue.** The question-for-question exchange needs the dialogue system (see [Dialogue](DIALOGUE.md)).
+- **Dialogue.** The question-for-question exchange grows into the dialogue system (see [Dialogue](DIALOGUE.md)); the build has one question with answers.
+- **The Tree's floor.** Which floor does the Cartographer belong to once the Tree is built?

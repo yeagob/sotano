@@ -105,6 +105,28 @@ export class AchievementKeeper {
     if (merged) adoptMeta(this.record, merged);
   }
 
+  /** The depth the last run faded on, for the Echo (the save's `fade`), or undefined when no Echo waits. */
+  get fade(): number | undefined { return this.record.fade?.floor; }
+
+  /** The run ended by a death on `floor` (ECHO.md). Only dungeon floors count, and only in a live run; the save is written at once. */
+  recordFade(floor: number): void {
+    if (!this.live || this.record.readOnly || floor < 1) return;
+    this.record.fade = { floor };
+    this.save();
+  }
+
+  /** The Echo was met: its place is forgotten, so it waits only once. Nothing is written in the sandbox or a read-only record. */
+  clearFade(): void {
+    if (!this.live || this.record.readOnly || this.record.fade === undefined) return;
+    delete this.record.fade;
+    this.save();
+  }
+
+  private save(): void {
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+  }
+
   /** The completion percentage now (completion.ts): the achievements, the page and the first-time records of this record. */
   get completion(): Completion { return completion(this.record); }
 

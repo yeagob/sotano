@@ -60,7 +60,7 @@ describe('presences: where they live', () => {
 
 describe('presences: what they are', () => {
   it('a Presence never takes damage, only answers positive intentions, and is never in a roster', () => {
-    for (const id of ['gardener', 'listener'] as const) {
+    for (const id of ['gardener', 'listener', 'trickster', 'echo'] as const) {
       const def = PRESENCE_BY_ID.get(id)!;
       expect(def.kind).toBe('creature');
       expect(def.responds).toBe('positive');
@@ -77,12 +77,12 @@ describe('presences: the part each one takes', () => {
     expect(PRESENCE_TALK.listener.hint).toBe('presence.listener.hint');
   });
 
-  it('each Presence takes one kind of monster part, and no other thing', () => {
-    expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart' });
-    for (const id of ['gardener', 'listener'] as const) {
+  it('each Presence takes one kind of monster part, and no other thing (the Echo takes any part)', () => {
+    expect(PRESENCE_KEY).toEqual({ gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none', child: 'none', witness: 'none', boatman: 'block', mender: 'any', 'star-reader': 'none' });
+    for (const id of ['gardener', 'listener', 'trickster', 'echo'] as const) {
       for (const kind of PART_KINDS) {
         const part = PARTS.find(p => p.kind === kind)!;
-        expect(unlocksPresence(id, part), `${id} and ${kind}`).toBe(kind === PRESENCE_KEY[id]);
+        expect(unlocksPresence(id, part), `${id} and ${kind}`).toBe(PRESENCE_KEY[id] === 'any' || kind === PRESENCE_KEY[id]);
       }
       expect(unlocksPresence(id, 3)).toBe(false);
       expect(unlocksPresence(id, undefined)).toBe(false);

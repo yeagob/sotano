@@ -21,7 +21,7 @@ The weights are the proposal of issue #180, unchanged (they add up to 100). The 
 | Bosses | 20 | the boss was destroyed or turned to your side (either achievement unlocked) | 14 | `ACHIEVEMENT_BOSSES` |
 | Achievements | 20 | the achievement is unlocked | 46 | `ACHIEVEMENTS`, without `completion.full` (§8) |
 | Practices | 15 | the practice was held at least once | 46 | `ITEMS` |
-| Bestiary | 10 | the projection, creature, presence or sky creature was met | 66 | see below |
+| Bestiary | 10 | the projection, creature, presence or sky creature was met | 76 | see below |
 | Recipes | 5 | the potion or meal was made at least once | 11 | `POTION_IDS` (nine potions and two meals) |
 | The hidden book | 5 | the page was reached | 19 pages | the Roots' book; reached = the Roots' current page |
 
@@ -32,7 +32,7 @@ The weights are the proposal of issue #180, unchanged (they add up to 100). The 
 
 **The bestiary** holds every projection and creature the player can meet:
 - the 40 projections of `ENEMIES` (the procrastination's two later forms included) and the 13 creatures of `CREATURES`. The bosses are not here: they are the bosses part;
-- the three Presences: the Gardener, the Listener and the Boundary (`boundary`, the Sanctuary's presence, counted when it is placed in a room);
+- the thirteen Presences: the Gardener, the Listener, the Trickster, the Echo, the Wanderer, the Elder, the Cartographer, the Child, the Witness, the Boatman, the Mender, the Star-reader (issue #149) and the Boundary (`boundary`, the Sanctuary's presence). Each counts when it is placed in a room; the Mender, which is not placed with the floor, counts when it comes to an opened vault. Every one is reachable over runs (the Echo after a death, the Boatman on a floor with a drowned nave, the Mender after a vault on its floor). Decided at the merge of #222 into #149, pending owner ruling: the presences count like the other beings met, as the design's row says;
 - the sky's guardians (`guardian-<animal>`, the deity of each guardian floor) and its herds (`herd-<animal>`, the minions of each floor), counted with their floor.
 
 Not counted, on purpose:
@@ -68,13 +68,13 @@ Four first-time lists in the save record, optional (see [SAVE](SAVE.md) §1): `f
 
 ## 6. Tests
 
-`tests/completion.test.ts`: 0% on an empty save, a partial state with each part worked out by hand, 100% when complete (and 99 at one page short), the bosses by either ending, the book past its last page, a part with no content, the totals growing with content, the monotone steps, the shipped content reading 0% (22 floors across the three routes, 66 bestiary ids, the final achievement not counted), the migration of an older record without the lists, the union on merge, the keeper recording each first time once and nothing in the sandbox, the book download hidden below 100% and shown at 100%, and the book's page self-contained. `tests/achievements-game.test.ts` checks that `completionFull` unlocks `completion.full` once and nothing else.
+`tests/completion.test.ts`: 0% on an empty save, a partial state with each part worked out by hand, 100% when complete (and 99 at one page short), the bosses by either ending, the book past its last page, a part with no content, the totals growing with content, the monotone steps, the shipped content reading 0% (22 floors across the three routes, 76 bestiary ids, the final achievement not counted), the migration of an older record without the lists, the union on merge, the keeper recording each first time once and nothing in the sandbox, the book download hidden below 100% and shown at 100%, and the book's page self-contained. `tests/achievements-game.test.ts` checks that `completionFull` unlocks `completion.full` once and nothing else.
 
 ## 7. Decisions, pending owner ruling
 
 1. **Floors count as "entered", not "cleared".** The game has no floor-clear event; `floorEnter` (descent), `treeStory` (tree) and the sky's floor are the first events that say a floor was reached. A clear event would be a new emit site. Pending owner ruling. (The original proposal said "cleared".)
 2. **The routes.** Round two of the owner's review: all three routes count (the descent, the tree, the sky), so 22 floors. The sky's deck and Totality do not count (Totality is not built). Pending owner ruling on Totality once it is built.
-3. **Bestiary counts projections, creatures, the three Presences and the sky's guardians and herds.** The owner asked for every creature the player meets; the Spiked Entity and the item `boundaries` are left out because they are not reachable or registered (§2).
+3. **Bestiary counts projections, creatures, the Presences and the sky's guardians and herds.** The owner asked for every creature the player meets; the Spiked Entity and the item `boundaries` are left out because they are not reachable or registered (§2).
 4. **Bosses and achievements overlap.** Each boss has two achievements, so a boss's two achievements count toward both parts. Kept as proposed. Pending owner ruling.
 5. **Recipes include meals.** Cooking a meal counts as a recipe, as brewing a potion does.
 6. **The percentage unlocks one thing: the final achievement.** At 100% "Made Whole" unlocks (§8; its name and text are proposed, pending the owner's name). The percentage unlocks nothing else (no title, no change in the Roots).

@@ -7,6 +7,27 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
+- The Child now adds one Lesson in words to its card after its gift (#149).
+- The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).
+- The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. Its last Lesson, on floor 5, gives the Covenant's Light, so the Covenant can now be completed in play (#149).
+- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. The Light comes from The Listener's last Lesson. Once all four are held, every presence remembers you in its card (#149).
+- The Child asks you to draw something small on its build card, and The Elder asks you to be still on its choice card, each with an alternative that needs no hands (#149).
+- The codex: the menu lists the presences you met in this run, with what each asks and what it gives, in English and Spanish (#149).
+- The idle window: after you give The Gardener or The Boatman what they asked for, it stays in its room for a seeded 30 to 60 seconds, then leaves. The length is fixed by the run's seed (#149).
+- Requests from the depths: The Gardener asks you to breathe slowly, and The Boatman asks you to stand and move before the crossing. The card names the request and an always-offered alternative; Give or Keep decides, and keeping costs nothing (#149).
+- The Mender, a dweller that comes to the first vault you open on floor 3, 4 or 5 (once the vault's guardian has left). It asks for one part you carry, on a Give or Keep card; Give gives a practice of quality three, or a special heart, and it stays (#149).
+- The Star-reader, a dweller in a quiet room of one floor of the Tree (floors 1 to 5). It asks for a yes to its light, on a Take or Decline card: a practice of quality one or two, or a special heart. Decline keeps everything, and it stays (#149).
+- The Witness, a messenger that waits in a quiet room of the ninth floor. It offers one gift: a practice of quality two, or a special heart. Take gives it and it leaves; decline keeps everything (#149).
+- The Boatman, a dweller by the drowned nave of floor 3 or 4. For one block you leave on the shore, it ferries you across the deep water to the island, where its gift lies: a practice of quality two, or a special heart. It stays (#149).
+- The Child, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks you to place three blocks while it watches; Take starts the build and Decline costs nothing. When three blocks are placed it gives one gift: a practice of quality one, or a special heart. It stays (#149).
+- The Trickster, a messenger that waits on one floor of each run from floor 3 down, in a quiet dead end. It offers a trade: one heart for a practice of quality three. Nothing is taken unless you confirm; declining costs nothing (#149).
+- The Echo: when a run ends in death, the Echo waits on the deepest floor that run reached, in the next run that reaches it, once. It asks for one part you carry and gives back a key or a bomb. Declining costs nothing (#149).
+- The Wanderer, a messenger that waits on one or two floors of each run from floor 1, in a quiet room. It offers a gift: a practice of quality one, or a special heart. Nothing is taken unless you take it; declining costs nothing and it walks on (#149).
+- The Elder, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks which of four paths still holds, on a choice card; it gives a practice of that path and stays. Not now costs nothing (#149).
+- The Cartographer, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks whether to mark the vault or the boss, and says in words where it lies from here. It stays. Not now costs nothing (#149).
+- The choice card: a presence's question with up to four answers, chosen with the arrows or the d-pad, a tap, or confirm (#149).
+- The Gardener, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks for one flesh part you carry and gives nothing back; it stays where it is. Declining costs nothing (#149).
 - A completion percentage: the share of the game you have done at least once (floors, bosses, achievements, practices, the bestiary, recipes and the hidden book), with each part's share. It is kept between runs, never goes down, and shows on the pause card and the death screen (#180).
 - At 100% completion a final achievement unlocks, and the book can be downloaded from the pause card and the death screen (#180).
 - The toxic heart now carries a toxic aura: while you hold one, every hostile projection within two blocks of you takes damage once a second, with rising soot around your feet and a soft hiss when it touches. It never breaks blocks and never hurts allies, creatures or presences, and it ends when the heart is spent (#178).
