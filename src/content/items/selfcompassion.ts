@@ -6,6 +6,7 @@ export default defineItem({
   name: 'Self-Compassion',
   description: 'You speak to yourself the way you would to a friend, and a little more room opens in you.',
   effect: '+1 heart container, and it heals one heart when you take it.',
+  teaching: 'Treat yourself as you would a friend. Kindness to yourself creates space for growth and healing.',
   inspiredBy: 'Self-compassion (Kristin Neff, Self-Compassion, 2011)',
   pools: { treasure: 1 },
   tags: ['emotion'],

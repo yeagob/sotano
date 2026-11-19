@@ -45,6 +45,20 @@ Changes to the tutorial and to the book are listed without their content, so not
 ### Fixed
 - Symbolic Act no longer explodes blocks that were kicked: a block that falls on you while your hands are full, or a thrown block you kick later, loses its charge and does not burst (#198).
 
+## 0.2.5.f1 · 2026-11-15
+
+### Fixed
+- The book page now advances before the player reaches the main room, so no text is missed when completing a lap (#212).
+- Book page text panels now appear in the correct reading order when walking toward the Sanctuary (#214).
+
+## 0.2.5 · 2026-11-15
+
+### Changed
+- The tutorial direction was reversed: walking forward now leads toward the Sanctuary, matching player intuition.
+- The book was extended with 62 new pages covering more chapters from the author's book.
+- Browsing forward through the book is no longer capped: players can walk the ring continuously to read all pages without dying or restarting.
+- New teaching items added: Box Breathing, Gratitude, Grounding, Self-Compassion and Visualization.
+
 ## 0.2.4.f1 · 2026-11-14
 
 ### Added

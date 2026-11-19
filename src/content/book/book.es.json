@@ -448,6 +448,800 @@
           "south": { "id": "19-hall-s", "layout": "prose", "text": "Sobre las raíces, un gran árbol sube hasta el cielo. Bajo ellas, los pisos descienden, más antiguos y más fríos, hasta el silencio. Es un solo viaje, visto desde sus dos extremos. Lo que aprendes en el fondo crece hacia la luz." }
         }
       }
+    },
+    {
+      "id": "kamino-flexible",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "20-hall-n", "layout": "title", "text": "Flexible, como el bambú" },
+          "south": { "id": "20-hall-s", "layout": "prose", "text": "A mí me gusta ser flexible, como el bambú, que se dobla antes que partirse... Pero sigue siendo recto el resto del tiempo. Es decir, el exceso de flexibilidad es tan contraproducente como el exceso de rectitud." }
+        }
+      }
+    },
+    {
+      "id": "kamino-soltandome",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "21-hall-n", "layout": "title", "text": "Soltándome de todo..." },
+          "south": { "id": "21-hall-s", "layout": "prose", "text": "Suelto el trabajo... Suelto el piso... Suelto las relaciones... Y me dejo llevar a donde quiera que me lleve el flujo universal del amor creciente, palpitante y sintiente. Como si estuviera de viaje, turista del mundo, consciente de que todo termina, tarde o temprano, sin prisas..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pais-vasco",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "22-hall-n", "layout": "title", "text": "País Vasco" },
+          "south": { "id": "22-hall-s", "layout": "prose", "text": "Hubo un tiempo en el que estuve enamorado de ella y tengo que confesar que aún me siento un poco nervioso cuando pienso en verla. Pero es distinto, ya no la deseo, nuestra relación ha evolucionado muchísimo y me ha enseñado a Amar sin poseer lo más mínimo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-cuidar-corazon",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "23-hall-n", "layout": "title", "text": "Cuidar el corazón" },
+          "south": { "id": "23-hall-s", "layout": "prose", "text": "Mi corazón es un corazón que le gusta estar en contacto con otros corazones. Por eso, cuando veo a gente que hace tiempo que no veía, pero a la que llevo en mi corazón, parece como si los hubiera visto el día anterior. Es como si esa gente estuviera contigo todo el tiempo, formase parte de ti." }
+        },
+        "roots-step": {
+          "north": { "id": "23-step-n", "layout": "prose", "text": "Tengo la teoría de los gajos de naranja: No somos medias naranjas de nadie. No somos medias nadas, somos completos. Somos gajos completos, que si nos juntamos, hacemos algo mucho más guay: una naranja. Cada persona necesita en su vida otras personas que la complementen, pero no una, sino muchas." }
+        }
+      }
+    },
+    {
+      "id": "kamino-querido-diario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "24-hall-n", "layout": "title", "text": "Querido diario..." },
+          "south": { "id": "24-hall-s", "layout": "prose", "text": "Elena dice que no hay medias naranjas, que ya somos naranjas completas. Que para ella el amor era «esto», refiriéndose a ese momento tan agradable, todos juntos. Yo creo que somos como gajos. Ya completos y perfectos, pero que todos juntos podemos hacer una naranja, algo aún más perfecto que un gajo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-atrevete",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "25-hall-n", "layout": "title", "text": "Atrévete a ver" },
+          "south": { "id": "25-hall-s", "layout": "prose", "text": "Dios se esconde en los detalles. La Visión Verdadera es comenzar a ver todas las cosas, sin rechazar ninguna. Cuando dejas de juzgar, la visión deja de enfocarse en un punto. Nuestro enfoque se abre y toda la imagen entra en nuestra mente, de una sola a la vez. Somos este Instante Perfecto." }
+        }
+      }
+    },
+    {
+      "id": "kamino-saber",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "26-hall-n", "layout": "title", "text": "Saber lo que quieres" },
+          "south": { "id": "26-hall-s", "layout": "prose", "text": "Pues no, tal vez mañana, la intención se quedó en ducha y siesta. Pero muy reconfortante, he aclarado muchas ideas en esa siesta. Porque cuanto más doy lo mejor de mí mismo más fácil se vuelve y, cada vez, cuesta menos. Y de pronto es natural y hacemos las cosas lo mejor posible todo el tiempo, sin ningún esfuerzo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ligarte",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "27-hall-n", "layout": "title", "text": "Cómo ligarte a «esa» chica en 2 pasos" },
+          "south": { "id": "27-hall-s", "layout": "prose", "text": "Paso 1. Acércate a ella y dile: «¿Bailas?». ¿Qué? —Responderá ella, o algo similar. ¿Qué si vas a bailar a alguna vez a algún sitio? Sí, ¿Por qué? —Probablemente te diga. Porque me gusta saber de sitios nuevos para ir a bailar. —Le dices tú. ¿Te gusta bailar? —Te preguntará. Paso 2. Aprende a bailar." }
+        }
+      }
+    },
+    {
+      "id": "kamino-instante",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "28-hall-n", "layout": "title", "text": "Un instante auténtico..." },
+          "south": { "id": "28-hall-s", "layout": "prose", "text": "Un Instante Auténtico es un Trago de Cielo, en el Bar del Tiempo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ideas",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "29-hall-n", "layout": "title", "text": "Ideas..." },
+          "south": { "id": "29-hall-s", "layout": "prose", "text": "Las ideas son seres que viven en nosotros y se alimentan de nuestros sueños. No somos sus dueños, es una simbiosis. Las cuidamos o las dejamos marchar. Algunas vuelven más tarde, otras simplemente se van. Simplificar es ganar. Demasiadas ideas, muchos problemas." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pausa",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "30-hall-n", "layout": "title", "text": "La pausa sagrada" },
+          "south": { "id": "30-hall-s", "layout": "prose", "text": "En el viaje a Madrid me di cuenta que una parte muy importante del arte de la victoria es la pausa sagrada. Ese instante antes de la victoria que es el desencadenante de la misma. Ese momento de no acción tras varios momentos de acción máxima. Ese silencio antes del éxtasis. Hay que aprender a parar, en seco." }
+        }
+      }
+    },
+    {
+      "id": "kamino-movimiento",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "31-hall-n", "layout": "title", "text": "Movimiento" },
+          "south": { "id": "31-hall-s", "layout": "prose", "text": "El movimiento es continuo. La sangre nunca se detiene. Nuestra respiración nos mantiene, todo el tiempo, bailando con el universo. Átomos de soles lejanos que forman parte de nuestro cuerpo, mañana vibrarán por lejanas galaxias. Muerte y nacimiento son dos instantes de cada segundo en movimiento." }
+        },
+        "roots-step": {
+          "north": { "id": "31-step-n", "layout": "prose", "text": "Ondas modulables vibran llenando el aire a nuestro alrededor. Las energías, sin crearse ni destruirse, lo llenan todo. Quedarse parado, en el cero absoluto, solo es tan solo una efímera pausa teatral. Sentir la armonía de todo este caos en movimiento continuo, es como escuchar la Voz de Dios cantarnos al oído..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-he-comprendido",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "32-hall-n", "layout": "title", "text": "He comprendido..." },
+          "south": { "id": "32-hall-s", "layout": "prose", "text": "Desde que te conocí, temí perderte. He sufrido por creer que estabas lejos... Pero ahora me doy cuenta de que nunca hemos estado separados. Lo que amo de ti es que me completas, eres una parte de mí mismo que creí que me faltaba. Pero esa parte también está en mí. Siempre ha estado en mí." }
+        },
+        "roots-step": {
+          "north": { "id": "32-step-n", "layout": "prose", "text": "Mientras pensaba que no te tenía, estaba alimentando la idea de la separación. Pero ahora sé que siempre has estado en mí, que no puedo perderte, que nunca hemos estado lejos. Hoy estoy contento porque sé que yo también soy ella. Y ahora sé que yo también soy tú. Y eso me llena de Amor." }
+        }
+      }
+    },
+    {
+      "id": "kamino-amor-verdadero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "33-hall-n", "layout": "title", "text": "Amor verdadero" },
+          "south": { "id": "33-hall-s", "layout": "prose", "text": "Me he dado cuenta de que querer a alguien es quererl@ de verdad. Sin límites, sin compromisos que puedan acabar con el amor. Alguien a quien quieres de verdad no puede hacer nada que te pueda hacer daño. ¿L@ amas? entonces ya se lo has perdonado todo. Si no es así, no es Amor, lo siento, es otra cosa." }
+        },
+        "roots-step": {
+          "north": { "id": "33-step-n", "layout": "prose", "text": "Ese Amor es perfecto: Nata y Chocolate. A la nata no le importa que el chocolate se vaya con el helado. Y al chocolate no le importa que cubra tu cuerpo de nata. Es Amor verdadero. La nata y el chocolate se aman de verdad, porque cuando están juntos son perfectos, pero cuando están separados ¡también!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-conclusiones",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "34-hall-n", "layout": "title", "text": "Conclusiones del camino" },
+          "south": { "id": "34-hall-s", "layout": "prose", "text": "Tras 35 días caminando los casi 800 km del camino del norte, por fin, mañana llegaré a mi destino. Me paro y me doy cuenta de algunas cosas: No es camino para viejos. No hay desafío demasiado grande. Hay que caminar siguiendo las señales... Lo más importante del camino son los encuentros." }
+        },
+        "roots-step": {
+          "north": { "id": "34-step-n", "layout": "prose", "text": "Cada persona tiene su ritmo. Tanto en la vida como en el camino, cada uno tiene que aprender a escucharlo y seguirlo. Si corres mucho te rompes y si vas muy despacio te cae la noche encima. El camino te cambia, te aclara las ideas y te hace más consciente." }
+        }
+      }
+    },
+    {
+      "id": "kamino-paseando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "35-hall-n", "layout": "title", "text": "Paseando" },
+          "south": { "id": "35-hall-s", "layout": "prose", "text": "Voy con mi perro por el parque de Galeras. El mar se extiende ante mí, ahí abajo, tras el acantilado. El verdor me rodea y el viento trae olor a vida. No hay ruido del tráfico, solo el sonido de las hojas al rozar una con otras. Camino por un paseo de madera humedecido por el rocío." }
+        },
+        "roots-step": {
+          "north": { "id": "35-step-n", "layout": "prose", "text": "Los árboles tapan mi cabeza y las ardillas trepan por ellos. Veo las olas chocar contra las rocas, veo también un castillo sobre una isla y el sol se cuela entre las ramas de los árboles creando maravillosas texturas. Paseo por el cielo cada día, con mi perro." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ego",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "36-hall-n", "layout": "title", "text": "El ego soy yo" },
+          "south": { "id": "36-hall-s", "layout": "prose", "text": "¡Sonando en el presente en vuestras mentes!! Soy el puente entre tú mismo y quien tú eres. Lo he cogido por los huevos y le he dicho: «cuidadito si te metes con los míos, porque ahora... ¡¡El ego soy yo!!» Tener que querer tener que quererte, es temer al Amor antes de matarte. ¡¡El Ego eres Tú!!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-ahora",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "37-hall-n", "layout": "title", "text": "Ahora" },
+          "south": { "id": "37-hall-s", "layout": "prose", "text": "Para mí el dinero es un medio, no un fin. Mirar hacia adentro significa escucharme mucho, estar en mi propia compañía. He descubierto que soy buena compañía. No siempre, claro. Por lo general soy sereno y escucho. Muerdo una magdalena. La mastico. Lo peor es la culpa. Ojalá pudiésemos desprendernos de ella." }
+        },
+        "roots-step": {
+          "north": { "id": "37-step-n", "layout": "prose", "text": "Vamos a desprendernos de la culpa, haciendo que forme parte del pasado. Con decisión: ¡Estás exiliada! Toma tus cosas y márchate, ya no te necesito. Estoy agradecido por todo lo que me has enseñado, pero quiero lo mejor para mí, así que, se acabó. ¡Soy inocente!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-pararse",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "38-hall-n", "layout": "title", "text": "Pararse a mirar" },
+          "south": { "id": "38-hall-s", "layout": "prose", "text": "Me ha dado el toque Nuria y con razón. Estaba viviendo en el paraíso, a costa de que otros lo mantuviesen. He estado muy disperso, entre la compañía y las amantes, que me requerían mucha energía. Me he dado cuenta: quiero volver a la informática. Ahora sí, lo tengo claro." }
+        }
+      }
+    },
+    {
+      "id": "kamino-aceptar",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "39-hall-n", "layout": "title", "text": "Aceptar lo que venga" },
+          "south": { "id": "39-hall-s", "layout": "prose", "text": "Hoy he tenido lo que creo que la mayor parte de la gente denominaría: un mal día. He pensado en poner una nota, pero no tenía boli, así que he puesto mi fe. No ha servido de mucho y ha ocurrido lo que tenía que ocurrir. Ya lo tenía aceptado de antemano y como solo han sido 12€, pues nada, los he pagado y listo." }
+        },
+        "roots-step": {
+          "north": { "id": "39-step-n", "layout": "prose", "text": "Me acerqué a la oficina a devolver el coche y me quedé loco al ver que habían cerrado. Respiro, acepto. He dejado las llaves en el buzón y he llamado a un taxi. Listo. Supongo que la suerte se ha tomado el día libre... Acepto, respiro y sigo..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-tiempo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "40-hall-n", "layout": "title", "text": "El tiempo está de tu lado" },
+          "south": { "id": "40-hall-s", "layout": "prose", "text": "El tiempo juega a nuestro favor, nos permite colocar cualquier cosa que imaginemos dentro de lo posible. Solo necesita: tiempo. La idea del tiempo se ha introducido hasta lo más íntimo de nuestras vidas: vivimos al segundo. Nos hemos hermanado tanto con esta idea, que ahora resulta inconcebible un mundo sin relojes." }
+        },
+        "roots-step": {
+          "north": { "id": "40-step-n", "layout": "prose", "text": "Seguidores del tiempo, nos hemos esforzado en subdividirlo hasta encontrar su expresión más pequeña: la prisa. ¡Acudamos a las cajas de ahorro del tiempo, a que nos den todo el tiempo que nos han ahorrado! Es el momento de recoger lo que es nuestro y empezar a disfrutarlo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-silencio",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "41-hall-n", "layout": "title", "text": "Seguro que algo se me ocurre" },
+          "south": { "id": "41-hall-s", "layout": "prose", "text": "Siempre hay algo que decir... aunque todo signifique lo mismo, siempre habrá algo que contar, que comentar, que explicar. El mundo parece un gallinero, todo el mundo bla bla bla, po! poo! pooo!! Somos adictos a las palabras, nos masturbamos con ellas a diario... blaaaaa, blaaaaaaaa, blaaaaaaaaaaaaaaaaa!!!" }
+        },
+        "roots-step": {
+          "north": { "id": "41-step-n", "layout": "prose", "text": "Excelente forma de emplear el tiempo, de matarlo, por no matarnos a nosotros mismos. Sin embargo, muchos de los mejores recuerdos son de silencio, sin decir nada. Escenas hermosas en el marco del silencio, tan sólo disfrutando de la existencia silenciosaaaa... La música y el silencio son lo mismo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-soltero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "42-hall-n", "layout": "title", "text": "Vida de soltero" },
+          "south": { "id": "42-hall-s", "layout": "prose", "text": "Disfruto de mi vida de soltero como un niño con un juguete guardado en el fondo del armario. Lo hago de la forma más básica: cocino, trabajo, descanso y disfruto para mí. He empezado a escuchar «Cómo crear abundancia» de Deepak Chopra. Elegí crear abundancia en lugar de escuchar como crearla." }
+        }
+      }
+    },
+    {
+      "id": "kamino-cortando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "43-hall-n", "layout": "title", "text": "Cortando el plástico" },
+          "south": { "id": "43-hall-s", "layout": "prose", "text": "A la gente que graba vinilos se les conoce como cutters. Grabar vinilos es un hermoso arte, ver como se dibuja la música sobre el vinilo, cortada por el diamante. Una vez pensé que nosotros somos como agujas que grabamos la música que Dios toca, sobre este soporte llamado mundo." }
+        },
+        "roots-step": {
+          "north": { "id": "43-step-n", "layout": "prose", "text": "Cuanto más perfecto es el material de la aguja, mejor es la calidad. Los diamantes graban mejor que cualquier otra cosa. Ser diamantes significa ser estructuras perfectas para llevar a cabo, con calidad de sonido y buen volumen, nuestra función en este mundo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-manifiest",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "44-hall-n", "layout": "title", "text": "Manifiest: cómo manifiesto mis sueños" },
+          "south": { "id": "44-hall-s", "layout": "prose", "text": "Comprendí la profundidad del proceso que estoy viviendo. Estaba trabajando en Manifiest porque esperaba conseguir algo a cambio. Entonces, me vi ante unas líneas de código bien escritas. Me sentí muy a gusto y lo comprendí: hay que disfrutar del proceso, de cada paso." }
+        },
+        "roots-step": {
+          "north": { "id": "44-step-n", "layout": "prose", "text": "Cuando me centro en el resultado, dejo de disfrutar del camino. Entonces me saturo y me bloqueo. Solo hace falta que una persona crea en mí: yo mismo. Voy a seguir disfrutando del camino que se manifieste ante mí, esperando pacientemente por la oportunidad que me lleve al siguiente nivel." }
+        }
+      }
+    },
+    {
+      "id": "kamino-luna-llena",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "45-hall-n", "layout": "title", "text": "Luna llena" },
+          "south": { "id": "45-hall-s", "layout": "prose", "text": "Luna llena, me lanzo a escribir, como si lo hiciera a la piscina. Suspendido en el aire, sabes que ya no hay vuelta atrás. Recuerdo el salto de fe que hice en México, el momento del salto, en el aire, y de pronto... Hecho una bolita, sano y salvo, seguro en el vientre de la madre tierra." }
+        },
+        "roots-step": {
+          "north": { "id": "45-step-n", "layout": "prose", "text": "El dinero llega a cuentagotas, no consigo trabajo, han tenido que prestarme dinero. Siempre tan cumplidor, nunca pedir ayuda. Pero ahora sí, estoy perdido y necesito ayuda. La pido con la voz y con el corazón. Porque para encontrarnos primero tenemos que perdernos, pero es difícil hacerlo solos..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-gran-juego",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "46-hall-n", "layout": "title", "text": "El gran juego de la vida" },
+          "south": { "id": "46-hall-s", "layout": "prose", "text": "Jugué a ser un cuerpo en un festival. Dormiría sobre el duro suelo, pasaría hambre y frío, pero sería compensado con 3 días de conciertos. Jugué a bailar durante horas, a chocar contra otras personas, a responder con sonrisas a codazos y pisotones." }
+        },
+        "roots-step": {
+          "north": { "id": "46-step-n", "layout": "prose", "text": "Jugué a saltar, a gritar y a perder cualquier tipo de identidad, sumergiéndome en un mar de cuerpos. Jugué a no tener miedo, a caminar sin luces, sólo entre gritos y hogueras. Jugué a llevar el cuerpo al límite. ¿Y sabes qué? Que gané." }
+        }
+      }
+    },
+    {
+      "id": "kamino-bailar",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "47-hall-n", "layout": "title", "text": "Bailar con la vida" },
+          "south": { "id": "47-hall-s", "layout": "prose", "text": "Ahora atravieso Barcelona, motorizado, por su superficie. Nunca antes me había dado cuenta de la cantidad de motos que hay, pero ahora soy una de ellas. Conecto mi centro a su centro y exploro como le afectan mis movimientos. Las variaciones de mi eje me permiten oscilar suavemente sobre la carretera." }
+        }
+      }
+    },
+    {
+      "id": "kamino-caos",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "48-hall-n", "layout": "title", "text": "Caos ordenado" },
+          "south": { "id": "48-hall-s", "layout": "prose", "text": "Me decían: «Estoy encantada de haber encontrado el equilibrio dentro de mi caos». Leo un libro sobre la tendencia al orden en sucesos caóticos del universo. Me doy cuenta de que el universo, cuando se trata de modelos caóticos que tienden al orden, es como mosquitos que rondan una bombilla, sin tocarla." }
+        },
+        "roots-step": {
+          "north": { "id": "48-step-n", "layout": "prose", "text": "El mosquito tiende a la luz, pero sin trazar una trayectoria definida. Se aleja y se acerca, siempre tendiendo a la luz. A veces se aleja demasiado y vuelve a deambular en la oscuridad, perdido. El orden en la vida es estar cerca de la bombilla; el caos, estar más lejos, perdido en la oscuridad." }
+        }
+      }
+    },
+    {
+      "id": "kamino-tres-cosillas",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "49-hall-n", "layout": "title", "text": "Tres cosillas" },
+          "south": { "id": "49-hall-s", "layout": "prose", "text": "«Mi padre decía que en este mundo estamos milésimas de segundo». Y la ley de Trufi: «Si algo puede salir bien, seguro que saldrá bien». Murphi es agua pasada. ¡Larga vida a Trufi!! En cuatro elementos se sostiene mi vida: el trabajo, la danza, el curso y el amor." }
+        }
+      }
+    },
+    {
+      "id": "kamino-insaciable",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "50-hall-n", "layout": "title", "text": "Insaciable" },
+          "south": { "id": "50-hall-s", "layout": "prose", "text": "Insaciable... La comida sólo me da más hambre, las bebidas me provocan sed. Nada me sacia hoy. Interesante... no sé si estoy saciado, pero al menos ha desaparecido esa apremiante necesidad de saciarme. Ahora me acepto con mis insatisfacciones y trato de remediarlas." }
+        }
+      }
+    },
+    {
+      "id": "kamino-perdon",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "51-hall-n", "layout": "title", "text": "Perdón" },
+          "south": { "id": "51-hall-s", "layout": "prose", "text": "Hoy he contemplado a la persona a la que menos soporto hablarme 10 minutos. Hace meses le hubiese destruido dialécticamente. Hoy llené mi mente de luz y me repetía: «estoy ante el santo Hijo de Dios», «todo lo que él dice y opina realmente lo digo y opino yo, pues yo he creado todo esto»." }
+        },
+        "roots-step": {
+          "north": { "id": "51-step-n", "layout": "prose", "text": "Mi mente se llenaba de amor y de luz. Pero aun así era capaz de insinuar que le escuchaba, aunque lo que realmente hacía era llevar mis rencores ante Dios mismo. Un rato más tarde, empecé a pensar en Jesús y sentí con fuerza que me daba las gracias, jajajaja, ¡a mí!, jajaja." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ayudame",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "52-hall-n", "layout": "title", "text": "Ayúdame... ¡Please!" },
+          "south": { "id": "52-hall-s", "layout": "prose", "text": "Solo hay dos tipos de pensamientos: pensamientos de amor y peticiones de ayuda. Toda sensación de malestar es una petición de ayuda. Estamos perdidos en el mundo y respondemos con agresividad. Pero si reconocemos que estamos perdidos, serenamente, nos daremos cuenta de que lo que necesitamos es ayuda." }
+        },
+        "roots-step": {
+          "north": { "id": "52-step-n", "layout": "prose", "text": "Este mundo es un gran grito de ayuda, si se sabe ver como tal. Aunque tiene sus voces de amor resonando por todas partes, haciendo soportable, lo que de otra manera sería un verdadero infierno. ¿Me ayudas a ayudarme?" }
+        }
+      }
+    },
+    {
+      "id": "kamino-caminando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "53-hall-n", "layout": "title", "text": "Caminando ando..." },
+          "south": { "id": "53-hall-s", "layout": "prose", "text": "El mundo se volvió verde. Gipuzcoa es aún más verde que Galicia. Mi único objetivo es encontrar la siguiente flecha amarilla, acercarme un paso más a Santiago. A veces los carteles parecen putearte: 787 km a Santiago. Como si fueras en coche, pero aquí la velocidad es de 4 km/h." }
+        },
+        "roots-step": {
+          "north": { "id": "53-step-n", "layout": "prose", "text": "Muuuuy lento, tan lento, que los paisajes de mares y montañas te penetran profuuuuuundamente, ummmmm!! A ser felices en los caminos de cada uno!!!!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-2",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "54-hall-n", "layout": "title", "text": "Camino a Santiago, segunda parte" },
+          "south": { "id": "54-hall-s", "layout": "prose", "text": "Después de 30km, de trepar hasta 400m, de 8 horas de caminata, llegué al monasterio de Zenarruza... Un monje nos acogió, nos dió de cenar puré, tortilla y natillas. Por la mañana tostadas y café. TODO GRATIS. Flipé, el sitio era super guapo y nos trataron como peregrinos VIP." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-3",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "55-hall-n", "layout": "title", "text": "Camino a Santiago. Tercera parte." },
+          "south": { "id": "55-hall-s", "layout": "prose", "text": "Pasé una tarde maravillosa en la playa con buen vino, quesos, buena música. Una alemana y un húngaro me caminaron a mi lado durante 3 días. Llegando a Güemes, pasamos por San Miguel el día del santo, así que nos invitaron a entrar en un bar del que casi no conseguimos salir: «¡Ponles otra birra a los peregrinos!!»" }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-4",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "56-hall-n", "layout": "title", "text": "Camino a Santiago, cuarta parte" },
+          "south": { "id": "56-hall-s", "layout": "prose", "text": "Hace 18 días que empecé a caminar. ¿Cuántos días me ha cogido la lluvia? Dos. Ya no tengo miedo. Llevo tantos días bajo el sol o disfrutando de los cambios de luz que regala un día nublado, que he aprendido a saborear la belleza de las cosas tal y como vengan." }
+        },
+        "roots-step": {
+          "north": { "id": "56-step-n", "layout": "prose", "text": "También he aprendido que todo lo que podemos necesitar cabe dentro de una mochila. No me falta de nada. Hace una semana me regalaron un camping gas con una olla y una taza. Fue un level up. Desde entonces he cocinado varios arroces y pastas en lugares insólitos." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-5",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "57-hall-n", "layout": "title", "text": "Camino a Santiago, quinta parte" },
+          "south": { "id": "57-hall-s", "layout": "prose", "text": "No podía ser el típico peregrino que caminase sin más. Llevo mi palo de fuego entrenando de 2 a 5 horas al día. Hace unos días se me ocurrió darle con la navaja hasta que salió algo parecido a una espada. Tantas horas caminando, dan para mucho." }
+        },
+        "roots-step": {
+          "north": { "id": "57-step-n", "layout": "prose", "text": "Me despierto cada mañana en un lugar distinto y camino por un paisaje desconocido. Comparto horas con personas que no volveré a ver, pero que extraño cuando se marchan por la mañana. Creo que serían necesarios años, para experimentar todas las emociones que se desatan aquí en unas semanas." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-solitario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "58-hall-n", "layout": "title", "text": "El camino que camino en solitario" },
+          "south": { "id": "58-hall-s", "layout": "prose", "text": "El camino que camino lo camino en solitario si tú quieres me acompañas y compartimos un tramo. Nos echamos unos bailes y pasamos un buen rato. Solo un rato. Que este gato tiene plan en los tejados. No vengas tú con cuentos, de me debes o te debo. Somos libres si respetas mi respeto." }
+        },
+        "roots-step": {
+          "north": { "id": "58-step-n", "layout": "prose", "text": "¡El camino que camino en solitario lo camino a tu lado si puedes sentir mi mano a través del silencio!!!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-opcion",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "59-hall-n", "layout": "title", "text": "La opción menos explorada" },
+          "south": { "id": "59-hall-s", "layout": "prose", "text": "En la plaza de George Orwell, la más vigilada de Barcelona, suena Radiohead en mis cascos. Siento que todo está en su lugar, hasta que escucho: «¿No sabe que está prohibido beber en la calle?». Tengo una cerveza en la mano y me sale responder: «Sí, pero no me acordaba»." }
+        },
+        "roots-step": {
+          "north": { "id": "59-step-n", "layout": "prose", "text": "Le tiendo mi DNI. Me dejo caer al suelo en la postura del loto y comienzo a meditar. Trato de unificar mi mente, intento perdonar la situación. «Santiago», me dice la agente. Levanto la cabeza, «perdóneme», me dice. Mi mano va hacia mi frente y se despide. Doy media vuelta y me voy..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-futuro",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "60-hall-n", "layout": "title", "text": "El futuro, el pasado" },
+          "south": { "id": "60-hall-s", "layout": "prose", "text": "Maestro de Dios, esa es mi nueva pretensión. Me imagino caminando con mi abrigo de cuero por calles oscuras. Me veo saltando y bailando, hablando a todas esas mentes, liberándolas. Abriendo los corazones de la gente, repartiendo amor, siendo el modelo de muchos otros." }
+        },
+        "roots-step": {
+          "north": { "id": "60-step-n", "layout": "prose", "text": "Tengo tanto miedo. ¿Y si algún colega me ve hablando de Dios? ¿Qué pensará de mí? ¿Qué vergüenza? ufff, qué peso me quito al escribir esto, antes no me atrevía, eran verdades veladas." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pregunta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "61-hall-n", "layout": "title", "text": "¡Atención... pregunta!" },
+          "south": { "id": "61-hall-s", "layout": "prose", "text": "Estás en la ducha sintiendo como el agua calentita te relaja. De repente sale más fría. ¿Qué haces? a) Gritas en quienquiera que haya abierto un grifo. b) Entiendes que es una lección de perdón, cierras los ojos e invocas tu luz. Y aprovechas para aclararte con agua fría. ¿Cuál es la opción?" }
+        }
+      }
+    },
+    {
+      "id": "kamino-vida-soltero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "62-hall-n", "layout": "title", "text": "Primera entrada: Ecstatic Dance" },
+          "south": { "id": "62-hall-s", "layout": "prose", "text": "Primer día de junio de 2015, el año en el que nacerás. Tienes cerca de tres meses. Me asusté cuando nos reunieron en la sala de baile y comenzó a sonar música electrónica distorsionada a todo volumen. Intenté cubrir la barriga de tu mamá con las manos, pero estoy seguro de que tuviste que asustarte un montón." }
+        }
+      }
+    },
+    {
+      "id": "kamino-letra",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "63-hall-n", "layout": "title", "text": "La letra con sangre entra" },
+          "south": { "id": "63-hall-s", "layout": "prose", "text": "Elena lee: «El dolor nos recuerda nuestra condición elevada». «Creo que me vendrá bien recordarla mientras me hacen el tatuaje». Más tarde, en un lugar de paredes blancas, olor a incienso y música tranquila, Rosa me dice: «Te voy a clavar 14 agujas al mismo tiempo, si te interesa saberlo»." }
+        },
+        "roots-step": {
+          "north": { "id": "63-step-n", "layout": "prose", "text": "Durante la hora y media, juego a enfocar de distintas maneras el dolor. Me concentro en las agujas y trato de perdonarlas. Luego buceo hasta los orígenes más abstractos del dolor. Juego a entregarlo al universo. Y me identifico con el dolor: yo soy dolor y el dolor ya no es dolor, es tan sólo una extensión de mi ser." }
+        }
+      }
+    },
+    {
+      "id": "kamino-sucede",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "64-hall-n", "layout": "title", "text": "Sucede" },
+          "south": { "id": "64-hall-s", "layout": "prose", "text": "Bailo en la plaza Pontevedra al ritmo de guitarras y baterías. Me dejo llevar, conecto con la danza sin miedo y me siento bien... Pienso en Sara e Irene, me gustaría tanto que vinieran a verme y bailar con ellas en la noche del Orzán, algo más que en sueños como sucede últimamente..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-df",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "65-hall-n", "layout": "title", "text": "DF" },
+          "south": { "id": "65-hall-s", "layout": "prose", "text": "Me sorprendí pidiendo perdón a una chica a la que rocé en las escaleras mecánicas del metro, ella no dijo nada. En Barcelona evitamos el contacto a toda costa y si tocamos a una persona le pedimos perdón. En DF, roces y choques no eran respondidos con «perdón» o «lo siento»." }
+        },
+        "roots-step": {
+          "north": { "id": "65-step-n", "layout": "prose", "text": "En Barcelona hemos llegado a la obsesión por no molestar al otro. Pero ahora estoy en México, cada vez más fuerte, caminando con seguridad, ya no tengo miedo. Siento a la gente, sé que somos hermanos, por eso no tengo miedo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-creer",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "66-hall-n", "layout": "title", "text": "Creer que se puede" },
+          "south": { "id": "66-hall-s", "layout": "prose", "text": "Estuve en una manifestación pacífica. Ante 30 anti-disturbios solté: «Las ratas han ocupado el congreso y os obligan a defenderles. Un día jurasteis proteger al pueblo y ese somos nosotros»." }
+        },
+        "roots-step": {
+          "north": { "id": "66-step-n", "layout": "prose", "text": "Le pedí a Álvaro que pinchase a Ambito Kinitoh, pero dijo que no tenía cable. Sentí que no le apetecía. Dije: «Pues nada, pon otra cosa». Pero me acordé que, según la física cuántica, existía un universo donde sí pinchaba la música. Así que añadí: «o inténtalo de nuevo»." }
+        }
+      }
+    },
+    {
+      "id": "kamino-individualidad",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "67-hall-n", "layout": "title", "text": "Individualidad" },
+          "south": { "id": "67-hall-s", "layout": "prose", "text": "Hago Bit Box en mi cabeza. Marco un ritmo, imagino la música y la siento en todo el cuerpo. Muevo la cabeza levemente. Una señora me mira, busca mis cascos. Necesita explicar mi comportamiento, pero no puede. Tuerce el gesto con extrañeza: «está loco, que desagradablemente raro es»." }
+        }
+      }
+    },
+    {
+      "id": "kamino-enemigos",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "68-hall-n", "layout": "title", "text": "Enemigos" },
+          "south": { "id": "68-hall-s", "layout": "prose", "text": "Mi mirada se cruza con la de una persona mayor; la aparto rápidamente. ¿Por qué? En el metro, una chica rubia escribe en un cuaderno. Siento curiosidad, la miro y ella se mueve nerviosa. Me pide en silencio que deje de mirarla." }
+        },
+        "roots-step": {
+          "north": { "id": "68-step-n", "layout": "prose", "text": "Cada día me cruzo con cientos de personas, con las que comparto espacios muy cercanos, de muy pocos metros. A veces nuestros cuerpos se tocan, pero como un resorte se apartan bruscamente. A veces las miradas se cruzan y rápidamente se apartan, incómodas. Mirando a la gente a los ojos no hay lugar a dudas." }
+        }
+      }
+    },
+    {
+      "id": "kamino-molesta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "69-hall-n", "layout": "title", "text": "¿Le molesta? No, pero está prohibido." },
+          "south": { "id": "69-hall-s", "layout": "prose", "text": "De vuelta del trabajo, bajo del metro. Una marabunta de gente inunda las escaleras mecánicas y se atasca, como un exceso de agua que satura un embudo. Saco una pegatina de música libre y la pego junto a un monigote que corre hacia la salida de emergencia." }
+        },
+        "roots-step": {
+          "north": { "id": "69-step-n", "layout": "prose", "text": "Una voz dice: —No puedes hacer eso. Me giro, un hombre de 60 años con la cara surcada en arrugas. Le respondo: —¿Le molesta? —No puedes hacer eso, está prohibido. Mientras me doy la vuelta respondo: —Muchas cosas están prohibidas. Y me marcho y el viejo deja de existir en mi mundo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-playa",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "70-hall-n", "layout": "title", "text": "Un día en la playa" },
+          "south": { "id": "70-hall-s", "layout": "prose", "text": "Llego 20 minutos antes y salgo a bailar con un palo de bambú. La gente me mira, pero yo soy feliz. Viajamos con música, hasta que una chica empieza a cantar como los ángeles y apago la música para escucharla. Estamos gritando «¡Otra!, ¡otra!»." }
+        },
+        "roots-step": {
+          "north": { "id": "70-step-n", "layout": "prose", "text": "Veo como Elena derrama arena en la comida. Se lo digo, pero no me escucha. Ella come sin que ningún grano entre en su boca. Le digo que tenga cuidado, y me responde: «Para mí no existía arena dentro del tupper. Fuiste tú el que fabricó la escena, ¿por qué?»" }
+        }
+      }
+    },
+    {
+      "id": "kamino-ego-soy-yo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "71-hall-n", "layout": "title", "text": "A veces me creo especial" },
+          "south": { "id": "71-hall-s", "layout": "prose", "text": "Algunas veces me creo especial por mi espíritu de búsqueda, por los momentos en los que conecto con el alma del mundo. Pero no somos especiales, no somos preciosos copos de nieve distintos. Somos la encarnación de pensamientos, de una sóla mente, no puedo ser más especial que otro, porque el otro y yo somos lo mismo." }
+        },
+        "roots-step": {
+          "north": { "id": "71-step-n", "layout": "prose", "text": "Mientras tanto, me quedo con los colores de unas medias, la luz de un coche deslizándose sobre el suelo, una fachada con un arco de piedra, un baile sobre un círculo de luz, hojas secas caídas por el suelo, miradas, sonrisas, mi compañera recién levantada y la serena certeza de que todo acabará bien." }
+        }
+      }
+    },
+    {
+      "id": "kamino-uno-se-pregunta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "72-hall-n", "layout": "title", "text": "Uno se pregunta: ¿¿Qué será lo próximo??" },
+          "south": { "id": "72-hall-s", "layout": "prose", "text": "Algo no quiere que siga, la sombra se proyecta en el techo y me quiere convencer de que ahí no hay nada, de que no mire por la ventana, ahí no hay nada (susurra tarareante), sólo dolor en tus ojos, la ceguera, vuelve a la sombra que es tu amiga, es segura, ¿no te acuerdas?" }
+        },
+        "roots-step": {
+          "north": { "id": "72-step-n", "layout": "prose", "text": "¡Camina por la acera, siéntate con la espalda recta, plancha tus camisas, haz dieta, ponte los calcetines iguales, siente vergüenza, ten miedo y ráscate la espalda! No es tan difícil, lo hiciste ayer. ¡Deja de mirar por la ventana!! Ahí fuera no hay nada, sólo la prohibida libertad. ¡Mira! ¡una sombra nueva!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "73-hall-n", "layout": "title", "text": "Om Mani Padme Hum..." },
+          "south": { "id": "73-hall-s", "layout": "prose", "text": "Pensé en relataros mi experiencia de iluminación. Llevaba un símbolo Om en la nuca. Con ese símbolo grabado, invité a mi hermanita de 16 años a un viaje de alucinógenos en Ortigueira, el festival que reúne un universo paralelo de 12.000 tiendas de campaña." }
+        },
+        "roots-step": {
+          "north": { "id": "73-step-n", "layout": "prose", "text": "En la primera noche, frente a una hoguera, tomamos una buena dosis de hongos de mi cosecha personal. El viaje empezó precioso, a mi hermana fue a la última a la que le subió, pero cuando comenzó, no podía creérselo. Seguí un seguro y habitual camino del fuego." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-2",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "74-hall-n", "layout": "prose", "text": "La arena parecía agua, del cielo llovían estrellas y el mar nos dedicaba su canción. Me sentía seguro y sin límite. Ejecuté alguna acrobacia de capoeira, decepcionándome por lo sencillo que resultó. Pero en ese estado, sentí el habitual desasosiego en mis aproximaciones a los límites de la existencia." }
+        },
+        "roots-step": {
+          "north": { "id": "74-step-n", "layout": "prose", "text": "Algo dentro de mí me volvía a empujar: «Aprovecha, ahora, busca la verdad en ti.» Les convencí de volver al campamento. Pero algo pasaba, ya no estaba todo bajo control, me sentía perdido. Encendí el fuego. Pero cerca, un grupo de borrachos gritaba para nuestra percepción expandida." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-3",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "75-hall-n", "layout": "prose", "text": "Nuestras realidades se fundieron en una sóla mente. Sus frases se mezclaban con nuestra conversación. Necesitaba moverme, algo me empujaba y me levanté. Me alejé, me sumergí en la belleza de la última luz que alumbra el mundo, antes de que la sombra haga presencia y entonces no haya nada..." }
+        },
+        "roots-step": {
+          "north": { "id": "75-step-n", "layout": "prose", "text": "Escuché que uno de los borrachos respondía a mis pensamientos. Me giré, me empecé a reír y les dije: «jajaja, no existís, os ha creado mi mente». Se quedaron confusos, yo percibía como ellos sentían la totalidad de mi mente. Pero sentí miedo. Eran al menos 6, se iban de malos y subieron el tono de voz. Sentí más miedo." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-4",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "76-hall-n", "layout": "prose", "text": "Comenzó la pesadilla. Mi mente correcta me decía que mi hermana estaba a salvo. Pero el miedo me hacía oír la conversación del otro grupo. En mi mente, mi hermana aceptaba su propuesta y decidía ir con ellos. Me asomé, superé un poco el miedo, y miré: sólo tinieblas, la hoguera apagada, gritos, risas y poco más." }
+        },
+        "roots-step": {
+          "north": { "id": "76-step-n", "layout": "prose", "text": "Temía preguntar y que mi hermana no estuviera en su tienda, así que elegí la fe de la cordura. Pasaron dos chicas cerca diciendo: «Hola chicos, queréis que nos enrollemos». Aproveché para preguntar, con el corazón en un puño: «¿habéis oído eso?». Respondieron: «sí tío, estoy flipando mucho»." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-5",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "77-hall-n", "layout": "prose", "text": "Tenía la certeza de que todo había sido irreal. Mi mente se expandió y de repente Yo era Ortigueira. Se hizo el silencio más absoluto. Pensé: «si yo soy Ortigueira, voy a provocar un Grito». El grito es un efecto maravilloso del festival: alguien empieza a gritar y a su alrededor lo imitan." }
+        },
+        "roots-step": {
+          "north": { "id": "77-step-n", "layout": "prose", "text": "El grito comenzó... ¡Yo era el grito!, me sentí correr entre las miles de gargantas del festival... las miles de almas eran yo y mi mente eran ellos... pensé: «estoy dentro de todas las mentes, ¿podéis oír lo que pienso?». Y escuché: «síiiii, te oímos». La gente murmuraba asombrada." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-6",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "78-hall-n", "layout": "prose", "text": "¡Veía, sentía, oía!!!, pero no me lo creía del todo. Pensé: «Si podéis oírme decid ¡Hola!!», y escuché media docena de voces diciendo «¡Hooolaaa!». Volvió el miedo. Temí no ser lo bastante bueno. Ser Ortigueira era una gran responsabilidad. Llegó otra mente y tomó el relevo." }
+        },
+        "roots-step": {
+          "north": { "id": "78-step-n", "layout": "prose", "text": "Ya no era Ortigueira, pero mi mente estaba muy expandida y comencé a viajar entre existencias. Había un número limitado de mentes creando otras existencias. Se presentaban como cabezas sin cuerpo y cuando entraba, descubría inmensos universos. Yo era la mente de esos universos, pero luego me echaban." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-7",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "79-hall-n", "layout": "prose", "text": "Seguí viajando hasta que encontré un mundo de sufrimiento del que nadie me echaba. Sentí como recibía una paliza, pero yo sólo era espectador. Retorné a la noche de San Juan y sentí que aún estaba allí, que en aquel viaje había soñado todo. Mi mente comenzó a ser caos, el miedo volvió con más fuerza." }
+        },
+        "roots-step": {
+          "north": { "id": "79-step-n", "layout": "prose", "text": "Atrapado en un torbellino, miles de imágenes circulaban ante mí, me estaba volviendo loco, sintiendo como si nunca más fuese a existir fuera de ese torbellino de caos y miedo. No quería estar toda la vida así. Pensé: «Ya está: ¡Suicídate!». Mis manos se acercaron a mi garganta. Entonces paró." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-8",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "80-hall-n", "layout": "prose", "text": "«Todo pasa, esto pasará», pensé, y comencé a calmarme... A lo lejos escuché Chambao... «déjate llevar... por las sensaciones...», la música era deliciosa, me llenaba de alegría. Sabía que era mi mente la que lo había hecho sonar. Ya no había nada que temer. Me relajé y dejé que la música me transportase." }
+        },
+        "roots-step": {
+          "north": { "id": "80-step-n", "layout": "prose", "text": "Como mecido por un coro de ángeles, sentí que me llevaban... de pronto una música infinitamente más bella comenzaba a sonar... como campanas... infinitos coros con una belleza infinita, creando la más hermosa armonía jamás escuchada. Me sentía elevándome en un éxtasis de luz... sentí que llegaba a alguna parte..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-9",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "81-hall-n", "layout": "prose", "text": "Eran seres como animales de peluche, había demasiada luz, pero se desprendía una sensación de infinita luz, amistad y amor. Fueron testigos de mi decisión: «quiero ir hasta el final». Sentí como asentían. Entonces. Lo sentí. Era Yo. El Sonido del Silencio. Sentí como Era... Y como volvía a Ser." }
+        },
+        "roots-step": {
+          "north": { "id": "81-step-n", "layout": "prose", "text": "Como latidos del Ser, sentía como cada instante infinito Era. En medio del silencio, lo sentía todo. Estaban, Eran. Absolutos cada uno, sin más definición, Era. Fui devuelto a mi cuerpo. Al día siguiente se lo conté. No se sorprendió, simplemente me dijo: «Claro, es por el símbolo que llevas grabado en tu nuca»" }
+        }
+      }
     }
   ],
   "easy": {
