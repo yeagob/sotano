@@ -58,6 +58,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (`heal`/`damagePlayer` take half-hearts; `counts()` gives points) and counters, through `heal`, `actorDamage` and `pickupCollect` |
 | `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
 | `toast(messageId, params?)`, `bus` | Show one of the item's own `messages` (by id, in the player's language; never a literal); raw access to the event bus |
+| `addStack(n = 1)` | Add stacks to this held copy of a practice with a `stack` (clamped to its max; only its stat sheet changes, safe inside an event); returns the new count. Synergies get 0. See [STACKING](../design/built/practices/STACKING.md) |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
 

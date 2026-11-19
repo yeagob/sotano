@@ -40,6 +40,16 @@ export function validateItem(d: ItemDef): string[] {
     if (!Number.isFinite(m.value)) e.push(`${at}: non-finite value for ${m.stat}`);
     if (m.layer === 'mul' && m.value <= 0) e.push(`${at}: multiplier for ${m.stat} must be > 0`);
   }
+  if (d.stack) {
+    if (!(Number.isInteger(d.stack.max) && d.stack.max >= 1 && d.stack.max <= 99)) e.push(`${at}: stack max must be an integer 1..99`);
+    if (!d.stack.stats?.length) e.push(`${at}: a stack needs at least one stat modifier`);
+    for (const m of d.stack.stats ?? []) {
+      if (!STATS.has(m.stat)) e.push(`${at}: unknown stack stat "${m.stat}"`);
+      if (!Number.isFinite(m.value)) e.push(`${at}: non-finite stack value for ${m.stat}`);
+      if (!(m.value !== 0)) e.push(`${at}: stack value for ${m.stat} must not be 0`);
+      if (m.layer !== 'add') e.push(`${at}: stack modifiers are additive (layer 'add') so they stack by multiplying the value`);
+    }
+  }
   const ids = new Set<string>();
   for (const h of d.hooks ?? []) {
     if (h.id && ids.has(h.id)) e.push(`${at}: duplicate hook id "${h.id}"`);

@@ -7,6 +7,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- Nine practices of the drink family, which grow with every potion or meal you drink, up to six (Nourishment, up to eight), each with its own stacks in the inventory (#110).
 - New blocks: living root, cave moss, copper ore, tin ore, quicksilver ore and lead ore, in English and Spanish (#228).
 - The Covenant's Light can now be given in play, after hearing a Listener's Lesson, with a gold burst and a toast (#228).
 - The Mender's Thread: a promised practice (+1 heart container, a little more invulnerability after each hit) that The Mender drops once a run beside its gift; picking it up keeps the Covenant's Thread, and no toll or capture can take it (#228).
