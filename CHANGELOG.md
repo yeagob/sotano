@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Changed
+- The practices tab, the pause card and the way-down window share the pixel art look of the achievement notice. Each practice now opens in three blocks: a teaching that carries it into everyday life, what it does in the game, and the stats it changes; every practice has its teaching in English and Spanish (#202, #223, #224).
+
 ## 0.2.4.f1 · 2026-11-14
 
 ### Added
