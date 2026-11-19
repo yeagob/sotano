@@ -12,7 +12,7 @@ import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
-import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, synergyText } from '../i18n/content';
+import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
 import type { Polarity } from '../combat/polarity';
@@ -1061,7 +1061,8 @@ export class Hud {
   }
 
   private carriedDetail(c: Carried) {
-    return `<div class="detail"><div><b>${esc(this.carriedLabel(c))}</b><p>${th(forDevice('inv.choose', activeDevice()))}</p></div></div>`;
+    return `<div class="detail"><header class="d-head"><div><b class="d-name">${esc(this.carriedLabel(c))}</b></div></header>` +
+      `<section class="d-block"><p>${th(forDevice('inv.choose', activeDevice()))}</p></section></div>`;
   }
 
   private carriedLabel(c: Carried): string {
@@ -1070,18 +1071,25 @@ export class Hud {
     return partText(c).name;
   }
 
+  /**
+   * A practice in three blocks, always in this order (issue #202): the teaching (a phrase that carries the practice into
+   * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
+   */
   private itemDetail(d: ItemDef) {
     const fx = (d.stats ?? []).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
-      return `<i>${esc(statLabel(m.stat))} ${esc(v)}</i>`;
+      const dir = m.layer === 'mul' ? (m.value >= 1 ? 'up' : 'down') : m.layer === 'final' ? 'set' : m.value >= 0 ? 'up' : 'down';
+      return `<li class="${dir}"><span>${esc(statLabel(m.stat))}</span><b>${esc(v)}</b></li>`;
     }).join('');
     const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${pathColor(p)}">${PATH_GLYPH[p as PathName]} ${esc(pathName(p))}</em>`).join('');
-    const tx = itemText(d);
-    return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
-      `<div><b>${esc(tx.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
-      `<p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}` +
-      `<div class="fx">${fx}</div></div></div>`;
+    const tx = itemText(d), lesson = practiceTeaching(d);
+    return `<div class="detail" style="--c:${hex(d.color)}"><header class="d-head"><img src="${iconDataUrl(d, 6)}" alt="">` +
+      `<div><b class="d-name">${esc(tx.name)}</b><span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}</div></header>` +
+      `<section class="d-block d-teach"><h4>${th('inv.teaching')}</h4><blockquote>${esc(lesson.quote)}</blockquote><p>${esc(lesson.lesson)}</p>` +
+      `${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</section>` +
+      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p></section>` +
+      `<section class="d-block d-stats"><h4>${th('inv.stats')}</h4>${fx ? `<ul class="fx">${fx}</ul>` : `<p class="none">${th('inv.noStats')}</p>`}</section></div>`;
   }
 
   private reqLabel(r: Req, g: Game) {

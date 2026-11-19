@@ -24,6 +24,12 @@ export function itemText(d: ItemDef) {
   };
 }
 
+/** A practice's teaching (issue #202): a phrase that carries it into everyday life and two or three lines on how to live
+ *  it. Message keys `teach.<id>.quote` and `teach.<id>.lesson`, in every catalog (tests/i18n.test.ts). */
+export function practiceTeaching(d: ItemDef) {
+  return { quote: t(`teach.${d.id}.quote` as MessageKey), lesson: t(`teach.${d.id}.lesson` as MessageKey) };
+}
+
 /** A message an item or synergy shows (`messages`, raised with `api.toast(id)`), in the current
  *  language, falling back to the definition's English; null if the effect has no such message. */
 export function effectMessage(owner: ItemDef | SynergyDef, id: string, params?: Params): string | null {
