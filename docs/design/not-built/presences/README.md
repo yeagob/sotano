@@ -4,7 +4,7 @@
 
 Status: **mixed**: decided, proposal and idea, as each document's line says.
 
-Presences are the beings of the depths who speak: the parts of the player that already know. The built ones, the Listener, the Boundary, the Trickster and the Echo, are in [built/presences](../../built/presences/README.md). This folder holds every other presence in the design, and the systems they depend on: dialogue, requests, agreements, gifts, memory across runs, the codex and the Covenant. Presences are archetypes, never gods, saints or real people; they never give orders, never diagnose and never promise a cure. The Gardener is defined in the code, and it is listed here because it is not placed.
+Presences are the beings of the depths who speak: the parts of the player that already know. The built ones, the Listener, the Boundary, the Trickster, the Echo and the Wanderer, are in [built/presences](../../built/presences/README.md). This folder holds every other presence in the design, and the systems they depend on: dialogue, requests, agreements, gifts, memory across runs, the codex and the Covenant. Presences are archetypes, never gods, saints or real people; they never give orders, never diagnose and never promise a cure. The Gardener is defined in the code, and it is listed here because it is not placed.
 
 Dwellers keep one place in the depths and remember the player across runs (see [Memory](MEMORY.md)). Messengers come once: they appear on the way, say what they came to say, and vanish.
 
@@ -19,7 +19,7 @@ Dwellers keep one place in the depths and remember the player across runs (see [
 | [BOATMAN.md](BOATMAN.md) | The Boatman, by the deepest water of Zone II | Dweller | proposal |
 | [MENDER.md](MENDER.md) | The Mender, in the vaults of Zones III and IV | Dweller | proposal |
 | [STAR-READER.md](STAR-READER.md) | The Star-reader, on the Tree | Dweller | proposal |
-| [WANDERER.md](WANDERER.md) | The Wanderer, anywhere from floor 1 | Messenger | proposal |
+| [WANDERER.md](WANDERER.md) | The Wanderer, on one or two seeded floors from 1 | Messenger | partly built |
 | [DIALOGUE.md](DIALOGUE.md) | The dialogue card and its lines | System | proposal |
 | [REQUESTS.md](REQUESTS.md) | Requests from the depths, the idle window and the secret trust meter | System | decided |
 | [AGREEMENTS.md](AGREEMENTS.md) | Things the player brings to a presence | System | proposal |
@@ -36,7 +36,7 @@ What is still open, and what blocks each one. A presence moves to [built/presenc
 | Presence or system | Blocked by | Done in this pass |
 |---|---|---|
 | The Gardener | The owner's ruling (2026-10-29): no presence on the tutorial floor, and its agreement asks for a real-world action. Its room is open | Stays unplaced; the owner decides where it waits |
-| The Wanderer | Its wall walk and its hand-tied line | Decisions and weights written; built as a messenger with a consent gift |
+| The Wanderer | Its wall walk, its hand-tied line and the corridor | Built as a messenger with a consent gift; the rest stays in its document |
 | The Child | The build-three-blocks check (a placement counter over every placing path) and the path rule for a build | Not built |
 | The Elder | The path system (Body, Mind, Emotion, Will) and the Lesson | Not built |
 | The Witness | The Silence below floor 9 and the hexagram source check | Not built |
