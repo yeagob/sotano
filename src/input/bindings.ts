@@ -148,7 +148,7 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'click / A accepts', noita: 'click / A continues', isaac: 'any shot key / A dismisses and continues' },
   },
   {
-    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused', 'meditation'],
+    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused', 'meditation', 'prompt'],
     keyboard: { keys: Object.values(NAV_KEYS).flat() },
     gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },

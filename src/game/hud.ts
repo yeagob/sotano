@@ -126,6 +126,9 @@ export class Hud {
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
   private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | undefined; questionKey?: MessageKey; gift: boolean } | null = null;
+  /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
+   *  navigate action has reached; a tap or the confirm action picks one. */
+  private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number } | null = null;
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
@@ -134,6 +137,8 @@ export class Hud {
   private shownTab: ScreenTab | null = null;
   bannerOpen = false;
   get presenceOfferOpen() { return this.lastPresenceOffer !== null; }
+  get presenceChoiceOpen() { return this.lastPresenceChoice !== null; }
+  get choiceSelected() { return this.lastPresenceChoice?.selected ?? -1; }
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
@@ -203,6 +208,7 @@ export class Hud {
     this.renderGraphics();
     if (this.lastAchievement) this.renderAchievement(this.lastAchievement);
     else if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastPresenceChoice) this.renderPresenceChoice();
     else if (this.bannerOpen && this.lastCard) this.renderCard(this.lastCard);
     else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
@@ -596,7 +602,7 @@ export class Hud {
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
     if (!el) return;
-    const base = this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
+    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
     el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
@@ -606,8 +612,52 @@ export class Hud {
     this.bannerEl.classList.remove('show');
   }
 
+  /** The choice card (see `lastPresenceChoice`): the presence asks, and the player picks one of its answers or declines. */
+  presenceChoiceCard(nameKey: MessageKey, questionKey: MessageKey, options: readonly MessageKey[]) {
+    this.hideAchievement();
+    this.lastBanner = null;
+    this.lastCard = null;
+    this.clearPresenceOfferState();
+    this.lastPresenceChoice = { nameKey, questionKey, options, selected: 0 };
+    this.bannerEl.dataset.offer = 'true';
+    this.bannerEl.setAttribute('role', 'dialog');
+    this.bannerEl.setAttribute('aria-modal', 'true');
+    this.bannerEl.setAttribute('aria-labelledby', 'presence-offer-title');
+    this.bannerEl.setAttribute('aria-describedby', 'presence-offer-question');
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.renderPresenceChoice();
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  /** Moves the selected answer by one (navigate); wraps at the ends. */
+  moveChoice(dx: number) {
+    const c = this.lastPresenceChoice;
+    if (!c || dx === 0) return;
+    c.selected = (c.selected + Math.sign(dx) + c.options.length) % c.options.length;
+    this.renderPresenceChoice();
+  }
+
+  private renderPresenceChoice() {
+    const c = this.lastPresenceChoice;
+    if (!c) return;
+    const answers = c.options.map((key, i) =>
+      `<button type="button" class="${i === c.selected ? 'on' : ''}" aria-pressed="${i === c.selected}" data-act="presence-choice-${i}">${th(key)}</button>`).join('');
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b id="presence-offer-title">${th(c.nameKey)}</b>` +
+      `<span class="offer-question" id="presence-offer-question">${th(c.questionKey)}</span>` +
+      `<div class="offer-actions choices">${answers}` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.choice.decline')}</button></div>` +
+      `<small class="offer-controls"></small></div></div>`;
+    this.renderPresenceOfferControls();
+    this.bannerEl.querySelector<HTMLButtonElement>('.offer-actions button.on')?.focus({ preventScroll: true });
+  }
+
   private clearPresenceOfferState() {
     this.lastPresenceOffer = null;
+    this.lastPresenceChoice = null;
     delete this.bannerEl.dataset.offer;
     this.bannerEl.removeAttribute('role');
     this.bannerEl.removeAttribute('aria-modal');

@@ -10,12 +10,14 @@ import gardener from './gardener';
 import listener from './listener';
 import trickster from './trickster';
 import wanderer from './wanderer';
+import elder from './elder';
+import cartographer from './cartographer';
 
-export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer';
+export type PresenceId = 'gardener' | 'listener' | 'trickster' | 'echo' | 'wanderer' | 'elder' | 'cartographer';
 
 export type RoomPresence = PresenceId | 'boundary';
 
-export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer];
+export const PRESENCES: readonly EnemyDef[] = [gardener, listener, trickster, echo, wanderer, elder, cartographer];
 export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.map(p => [p.id, p]));
 
 /** What a presence takes: one kind of monster part, any part (the Echo asks for any part in hand), or nothing (the
@@ -23,7 +25,13 @@ export const PRESENCE_BY_ID: ReadonlyMap<string, EnemyDef> = new Map(PRESENCES.m
 export type PresenceKey = PartKind | 'any' | 'none';
 
 export const PRESENCE_KEY: Record<PresenceId, PresenceKey> = {
-  gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none',
+  gardener: 'flesh', listener: 'heart', trickster: 'heart', echo: 'any', wanderer: 'none', elder: 'none', cartographer: 'none',
+};
+
+/** The presences that ask a question on a choice card instead of an offer of a part: the card's options and its question. */
+export const PRESENCE_CHOICE: Partial<Record<PresenceId, { question: MessageKey; options: readonly MessageKey[] }>> = {
+  elder: { question: 'presence.elder.question', options: ['path.body', 'path.mind', 'path.emotion', 'path.will'] },
+  cartographer: { question: 'presence.cartographer.question', options: ['presence.cartographer.opt.vault', 'presence.cartographer.opt.boss'] },
 };
 
 export function unlocksPresence(id: PresenceId, carried: Carried | undefined): boolean {
@@ -74,6 +82,8 @@ export const PRESENCE_TALK: Record<PresenceId, PresenceTalk> = {
     hint: 'presence.trickster.hint', drops: true, farewell: 'presence.trickster.laugh',
   },
   echo: { name: 'presence.echo.name', lines: ['presence.echo.1', 'presence.echo.2'], silent: 'presence.echo.silent', hint: 'presence.echo.hint', drops: true },
+  elder: { name: 'presence.elder.name', lines: ['presence.elder.1', 'presence.elder.2'], silent: 'presence.elder.silent', hint: 'presence.elder.hint', drops: true },
+  cartographer: { name: 'presence.cartographer.name', lines: ['presence.cartographer.1', 'presence.cartographer.2'], silent: 'presence.cartographer.silent', hint: 'presence.cartographer.hint', drops: false },
   wanderer: {
     name: 'presence.wanderer.name', lines: ['presence.wanderer.1', 'presence.wanderer.2'], silent: 'presence.wanderer.silent',
     hint: 'presence.wanderer.hint', drops: true, farewell: 'presence.wanderer.walk',
@@ -88,8 +98,11 @@ export function leavesOnDecline(id: PresenceId): boolean {
 /** A presence that gives its reward leaves at once, in the frame the reward appears: its room is ordinary again, and its
  *  silence goes with it (docs/design/built/presences/LISTENER.md). The Trickster also leaves when its trade is declined. */
 export function leavesAfterOffer(id: PresenceId): boolean {
-  return PRESENCE_TALK[id].drops;
+  return PRESENCE_TALK[id].drops && !DWELLERS.has(id);
 }
+
+/** Presences that keep their place after their reward (the Gardener, the Elder, the Cartographer). */
+export const DWELLERS: ReadonlySet<PresenceId> = new Set<PresenceId>(['gardener', 'elder', 'cartographer']);
 
 export const TALK_REACH = 2.2;
 
@@ -146,6 +159,21 @@ export function gardenerFloorOf(run: RunRandom): number {
   return run.fork('presence', 'gardener').pick(floors);
 }
 
+/** The Elder's floor and the Cartographer's floor: one seeded floor each from floor 1 to the last (ELDER.md and
+ *  CARTOGRAPHER.md, proposed: the Ledger Halls and the Tree are not built). Never the tutorial. */
+export function dwellerFloorOf(run: RunRandom, id: 'elder' | 'cartographer'): number {
+  const floors: number[] = [];
+  for (let k = 1; k <= LAST_FLOOR; k++) floors.push(k);
+  return run.fork('presence', id).pick(floors);
+}
+
+/** The direction of a room from another, read from the map's cells (dx east, dz south): the word the Cartographer says. */
+export function directionOf(dx: number, dz: number): 'here' | 'north' | 'south' | 'east' | 'west' {
+  if (dx === 0 && dz === 0) return 'here';
+  if (Math.abs(dx) >= Math.abs(dz)) return dx > 0 ? 'east' : 'west';
+  return dz > 0 ? 'south' : 'north';
+}
+
 export interface PlacedRoom { type: string; enemies: string[]; presence?: RoomPresence }
 
 export interface MessengerPlan {
@@ -159,6 +187,9 @@ export interface MessengerPlan {
   wandererFloors?: readonly number[];
   /** The floor on which this run's Gardener waits (gardenerFloorOf); none when absent. */
   gardenerFloor?: number;
+  /** The floors on which this run's Elder and Cartographer wait (elderFloorOf, cartographerFloorOf); none when absent. */
+  elderFloor?: number;
+  cartographerFloor?: number;
 }
 
 /** One Listener per Tree floor, in a quiet normal room. */
@@ -214,6 +245,18 @@ export function placeMessengers(rooms: PlacedRoom[], floor: number, rng: Rng, pl
       const room = rooms[rng.pick(pool)];
       room.enemies = [];
       room.presence = 'gardener';
+    }
+  }
+  // the Elder and the Cartographer last, each in a quiet normal room that holds no other presence
+  for (const [id, at] of [['elder', plan.elderFloor], ['cartographer', plan.cartographerFloor]] as const) {
+    if (at !== floor) continue;
+    const left = rooms.map((_, i) => i).filter(i => rooms[i].type === 'normal' && rooms[i].presence === undefined);
+    const quiet = left.filter(i => rooms[i].enemies.length === 0);
+    const pool = quiet.length ? quiet : left;
+    if (pool.length) {
+      const room = rooms[rng.pick(pool)];
+      room.enemies = [];
+      room.presence = id;
     }
   }
 }

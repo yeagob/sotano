@@ -90,13 +90,13 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
-import { PRESENCE_BY_ID, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
+import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, leavesOnDecline, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, type PresenceId } from '../content/presences';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
 import boundaryDef, { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { crateChanceInBand, floorCrateChance, rollCrate } from '../content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tables/hearts';
-import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift } from '../content/tables/heart-gifts';
+import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
 import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, type LayerKind } from '../entities/hearts';
@@ -287,6 +287,8 @@ export class Game {
   private presenceReplies = new Map<number, number>();
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
+  /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
+  private pendingPresenceChoice: { id: PresenceId; enemyId: number } | null = null;
 
   private activated = new Set<number>();
   private roomState = new Map<number, RoomState>();
@@ -3466,7 +3468,7 @@ export class Game {
   }
 
   private updatePresences() {
-    if (this.pendingPresenceOffer) return;
+    if (this.pendingPresenceOffer || this.pendingPresenceChoice) return;
     const b = this.player.body;
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
@@ -3474,6 +3476,14 @@ export class Game {
       if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
+      if (PRESENCE_CHOICE[id]) {
+        const choice = PRESENCE_CHOICE[id];
+        this.pendingPresenceChoice = { id, enemyId: e.id };
+        this.hud.presenceChoiceCard(talk.name, choice.question, choice.options);
+        this.input.modal = true;
+        this.input.unlockFor();
+        return;
+      }
       // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
       const top = this.player.active;
       const offer = findPresenceOffer(id, this.player.hand);
@@ -3549,6 +3559,52 @@ export class Game {
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     if (leavesAfterOffer(pending.id)) this.releasePresence(e);
     this.hud.presenceCard(talk.name, talk.lines, pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
+  }
+
+  /** A choice card's answer (index into the presence's options) or a decline (-1). The Elder gives a lesson of the path
+   *  chosen and reads it back; the Cartographer marks the nearest vault or boss on the floor, in words. Both keep their
+   *  place (DWELLERS). A decline takes nothing, and the presence asks again only after the player steps away. */
+  private resolvePresenceChoice(index: number) {
+    const pending = this.pendingPresenceChoice;
+    if (!pending) return;
+    this.pendingPresenceChoice = null;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+    const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
+    if (!e?.alive || !e.tags.has('presence') || e.tags.has('met')) { this.hud.toast('presence.offer.stale'); return; }
+    if (index < 0 || index >= (PRESENCE_CHOICE[pending.id]?.options.length ?? 0)) {
+      sfx.denied();
+      e.tags.add('offer-declined');
+      return;
+    }
+    const talk = PRESENCE_TALK[pending.id];
+    e.tags.add('met');
+    if (pending.id === 'elder') {
+      const path = ['body', 'mind', 'emotion', 'will'][index];
+      this.launchGiftPickups(e, [{ type: 'item', item: rollElderLesson(this.rng.stream('drops'), path) }]);
+      sfx3.reveal();
+      this.hud.presenceCard(talk.name, ['presence.elder.reading', talk.lines[1]], { path: t(`path.${path}` as MessageKey) });
+    } else if (pending.id === 'cartographer') {
+      const want = index === 0 ? 'vault' : 'boss';
+      const dir = this.directionToNearest(e, want);
+      const key = (dir === null ? 'presence.cartographer.mark.none' : `presence.cartographer.mark.${want}`) as MessageKey;
+      this.hud.presenceCard(talk.name, [key, talk.lines[1]], dir === null ? undefined : { dir: t(`dir.${dir}` as MessageKey) });
+    }
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+  }
+
+  /** The direction of the nearest room of a type on the enemy's floor, read from the map's cells; null when none. */
+  private directionToNearest(e: Enemy, type: RoomInfo['type']): ReturnType<typeof directionOf> | null {
+    const from = this.rooms.get(e.room);
+    if (!from) return null;
+    let best: RoomInfo | null = null;
+    for (const r of this.rooms.values()) {
+      if (r.floor !== from.floor || r.type !== type) continue;
+      if (!best || Math.hypot(r.gx - from.gx, r.gz - from.gz) < Math.hypot(best.gx - from.gx, best.gz - from.gz)) best = r;
+    }
+    return best ? directionOf(best.gx - from.gx, best.gz - from.gz) : null;
   }
 
   /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
@@ -3928,7 +3984,14 @@ export class Game {
     }
     this.gate.update(dt);
     // an information banner stays until clicked; that click only dismisses it
-    if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
+    if (ctx === 'prompt' && this.hud.presenceChoiceOpen) {
+      // the choice card: navigate moves between the answers, confirm picks the selected one, back declines
+      const n = inp.navigate();
+      if (n.x || n.y) this.hud.moveChoice(n.x || n.y);
+      const confirmedBy = inp.hitBy('confirm');
+      if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceChoice(this.hud.choiceSelected);
+      else if (inp.hit('back')) this.resolvePresenceChoice(-1);
+    } else if (ctx === 'prompt' && this.hud.presenceOfferOpen) {
       const confirmedBy = inp.hitBy('confirm');
       if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceOffer(true);
       else if (inp.hit('back')) this.resolvePresenceOffer(false);
@@ -4105,7 +4168,8 @@ export class Game {
 
   act(act: string) {
     if (act === 'presence-offer-accept') this.resolvePresenceOffer(true);
-    else if (act === 'presence-offer-decline') this.resolvePresenceOffer(false);
+    else if (act === 'presence-offer-decline') { if (this.pendingPresenceChoice) this.resolvePresenceChoice(-1); else this.resolvePresenceOffer(false); }
+    else if (act.startsWith('presence-choice-')) this.resolvePresenceChoice(Number(act.slice('presence-choice-'.length)));
     else if (act === 'restart' && (this.player.dead || !this.input.playing || this.hud.screenOpen)) this.requestRestart();
     else if (act === 'resume' && !this.player.dead) {
       if (this.hud.screenOpen) this.hud.closeScreen(this);

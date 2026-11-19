@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
 import {
-  GIFT_OFFER, PRESENCE_KEY, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, TRICKSTER_FIRST_FLOOR, gardenerFloorOf, findPresenceOffer, leavesAfterOffer, leavesOnDecline,
+  DWELLERS, PRESENCE_CHOICE, directionOf, dwellerFloorOf, GIFT_OFFER, PRESENCE_KEY, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, TRICKSTER_FIRST_FLOOR, gardenerFloorOf, findPresenceOffer, leavesAfterOffer, leavesOnDecline,
   placeMessengers, placePresences, tricksterFloorOf, unlocksPresence, wandererFloorsOf, type PlacedRoom,
 } from '../src/content/presences';
 import { LAST_FLOOR } from '../src/content/levels';
-import { GIFT_HEART_KINDS } from '../src/content/tables/heart-gifts';
+import { GIFT_HEART_KINDS, ELDER_LESSON_TABLE, rollElderLesson } from '../src/content/tables/heart-gifts';
+import { ITEMS } from '../src/content/items';
 import { ECHO_GIFT_TABLE, TRICKSTER_DEAL_TABLE, WANDERER_GIFT_TABLE, rollEchoGift, rollTricksterPractice, rollWandererGift } from '../src/content/tables/heart-gifts';
 import { PARTS } from '../src/content/parts';
 import { POTION_IDS } from '../src/content/potions';
@@ -302,5 +303,67 @@ describe('the Gardener: where it waits and what it asks (GARDENER.md)', () => {
     expect(leavesAfterOffer('gardener')).toBe(false);
     expect(leavesOnDecline('gardener')).toBe(false);
     expect(PRESENCE_OFFER_QUESTION.gardener).toBe('presence.offer.gardener.question');
+  });
+});
+
+describe('the choice card: the Elder and the Cartographer (ELDER.md, CARTOGRAPHER.md)', () => {
+  it('the Elder asks which of four paths still holds; the Cartographer asks for a vault or a boss', () => {
+    expect(PRESENCE_CHOICE.elder!.options).toEqual(['path.body', 'path.mind', 'path.emotion', 'path.will']);
+    expect(PRESENCE_CHOICE.cartographer!.options).toEqual(['presence.cartographer.opt.vault', 'presence.cartographer.opt.boss']);
+    for (const id of ['elder', 'cartographer'] as const) expect(PRESENCE_CHOICE[id]!.options.length).toBeLessThanOrEqual(4);
+    expect(PRESENCE_CHOICE.listener).toBeUndefined();
+  });
+
+  it('the Elder gives a practice carrying the chosen path, of quality one (weight 3) or two (weight 1)', () => {
+    expect(ELDER_LESSON_TABLE.entries.map(e => [e.value, e.weight])).toEqual([[1, 3], [2, 1]]);
+    for (const path of ['body', 'mind', 'emotion', 'will']) {
+      expect(ITEMS.some(item => item.quality !== undefined && [1, 2].includes(item.quality) && item.tags?.includes(path))).toBe(true);
+      const rng = new RunRandom(31).fork('elder-test', path);
+      let twos = 0;
+      for (let i = 0; i < 1000; i++) {
+        const item = rollElderLesson(rng, path);
+        expect(item.tags).toContain(path);
+        if (item.quality === 2) twos++;
+      }
+      if (path === 'will') expect(twos).toBe(1000); // no quality-one practice of the Will: every lesson is quality two
+      else { expect(twos / 1000).toBeGreaterThan(0.1); expect(twos / 1000).toBeLessThan(0.4); }
+    }
+  });
+
+  it('the Cartographer names a direction from the map: the larger axis, or in this room', () => {
+    expect(directionOf(0, 0)).toBe('here');
+    expect(directionOf(3, 1)).toBe('east');
+    expect(directionOf(-3, 1)).toBe('west');
+    expect(directionOf(1, 3)).toBe('south');
+    expect(directionOf(1, -3)).toBe('north');
+    expect(directionOf(2, 2)).toBe('east');
+  });
+
+  it('the Elder and the Cartographer keep their place after their answer (dwellers), and each gets its own floor', () => {
+    expect(DWELLERS.has('elder')).toBe(true);
+    expect(DWELLERS.has('cartographer')).toBe(true);
+    expect(leavesAfterOffer('elder')).toBe(false);
+    expect(leavesAfterOffer('cartographer')).toBe(false);
+    expect(leavesAfterOffer('listener')).toBe(true);
+    for (let seed = 1; seed <= 50; seed++) {
+      for (const id of ['elder', 'cartographer'] as const) {
+        const k = dwellerFloorOf(new RunRandom(seed), id);
+        expect(k).toBeGreaterThanOrEqual(1);
+        expect(k).toBeLessThanOrEqual(LAST_FLOOR);
+      }
+    }
+  });
+
+  it('a dweller waits in a quiet normal room of its floor, and only there', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const set = rooms(['start', 'normal', 'normal'], [[], ['doubt'], []]);
+      placeMessengers(set.rooms, 2, new RunRandom(seed).fork('floor', 2, 'messenger'), {
+        deadEnds: set.deadEnds, tricksterFloor: 9, elderFloor: 2, cartographerFloor: 2,
+      });
+      expect(set.rooms.filter(r => r.presence === 'elder')).toHaveLength(1);
+      expect(set.rooms.filter(r => r.presence === 'cartographer')).toHaveLength(1);
+      expect(set.rooms[0].presence).toBeUndefined();
+      expect(set.rooms.filter(r => r.presence === 'elder' || r.presence === 'cartographer').every(r => r.enemies.length === 0)).toBe(true);
+    }
   });
 });

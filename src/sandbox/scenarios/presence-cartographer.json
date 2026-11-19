@@ -1,0 +1,37 @@
+{
+  "note": "The Cartographer asks for a vault or a boss and marks its direction in words (no vault on this one-room floor: none)",
+  "floor": 1,
+  "seed": 4182,
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    3,
+    0,
+    3
+  ],
+  "hand": [],
+  "ticks": 60,
+  "report": [
+    0,
+    1,
+    30,
+    60
+  ],
+  "enemies": [
+    {
+      "def": "cartographer",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    }
+  ]
+}

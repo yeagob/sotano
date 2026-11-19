@@ -140,6 +140,21 @@ export function rollWandererGift(rng: Rng): { kind: 'item'; item: (typeof ITEMS)
   return { kind: 'heart', heart: roll(WANDERER_HEART_TABLE, rng) };
 }
 
+// The Elder's lesson (docs/design/built/presences/ELDER.md, proposed pending owner ruling): the path the player chose
+// gives one practice that carries that path's tag. Three draws in four are of quality one, one in four of quality two;
+// a quality with no practice of that path falls back to the other one (the Will has no quality-one practice today).
+export const ELDER_LESSON_TABLE = table<1 | 2>('elder-lesson-quality', 'runtime', [
+  { value: 1, weight: 3 },
+  { value: 2, weight: 1 },
+]);
+
+export function rollElderLesson(rng: Rng, path: string): (typeof ITEMS)[number] {
+  const pool = (quality: 1 | 2) => ITEMS.filter(item => item.quality === quality && item.tags?.includes(path));
+  let quality = roll(ELDER_LESSON_TABLE, rng);
+  if (pool(quality).length === 0) quality = quality === 1 ? 2 : 1;
+  return rng.pick(pool(quality));
+}
+
 export function rollCreatureGrowthHeart(rng: Rng): HeartKind | null {
   const result = roll(CREATURE_GIFT_TABLE, rng);
   return result === 'none' ? null : result;
