@@ -16,4 +16,4 @@ The folder holds the practices whose first path tag is `milagros`. The path is c
 
 ## Open questions
 
-- The state of being of Miracles: the path now has three practices (Dr. Launcher, Lucid Dream, Kairos), so it can have one. Its name and its effect are the owner's to decide; none is built.
+- The state of being of Miracles is built as Transcendent (see [states of being](../states-of-being/README.md)). Its name is provisional: the owner may rename it.
