@@ -31,6 +31,7 @@
 import { TUTORIAL_LAYOUT, type RoomType } from '../world/floorplan';
 import { hash3 } from '../core/rng';
 import { MAT } from './materials';
+import { LAYOUTS_115 } from './room-layouts';
 
 export const ROOM_W = 13;
 export const ROOM_D = 7;
@@ -127,34 +128,34 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     id: 'pillars', types: ['normal'], floors: [1, 4], rows: [
       '.............',
-      '..R.......R..',
+      '.....R.R.....',
       '.............',
-      '.....r.r.....',
+      '..R..r.r..R..',
       '.............',
-      '..R.......R..',
+      '.....R.R.....',
       '.............',
     ],
   },
   {
     id: 'crates', types: ['normal'], floors: [1, 4], rows: [
-      'cc.........cc',
-      'c...........c',
-      '.....ddd.....',
+      '...cc...cc...',
+      '...c.....c...',
+      '......d......',
       '....d.K.d....',
-      '.....ddd.....',
-      'c...........c',
-      'cc.........cc',
+      '......d......',
+      '...c.....c...',
+      '...cc...cc...',
     ],
   },
   {
     id: 'quarry', types: ['normal'], floors: [1, 4], rows: [
-      '.............',
-      '.ii.......oo.',
-      '.iRR.....Roo.',
+      '...ii...oo...',
+      '...i.....o...',
+      '.....r.r.....',
       '..R...K...R..',
-      '.dRR.....RRd.',
-      '.dd.......dd.',
-      '.............',
+      '.....r.r.....',
+      '...d.....d...',
+      '...dd...dd...',
     ],
   },
   {
@@ -172,78 +173,78 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     id: 'storeroom', types: ['normal'], floors: [1, 4], rows: [
       '.............',
-      '.c.c.c.c.c.c.',
+      '...c.c.c.c...',
       '.............',
       '.C....K....C.',
       '.............',
-      '.c.c.c.c.c.c.',
+      '...c.c.c.c...',
       '.............',
     ],
   },
   {
     id: 'garden', types: ['normal'], floors: [1, 4], rows: [
-      '.?.~.....~.?.',
-      '..~?.....?~..',
+      '.............',
+      '...~?...?~...',
       '.....!.!.....',
       '.~....K....~.',
       '.....!.!.....',
-      '..~?.....?~..',
-      '.?.~.....~.?.',
+      '...~?...?~...',
+      '.............',
     ],
   },
   {
     id: 'rubble', types: ['normal'], floors: [1, 4], rows: [
-      '??.~.....~.??',
-      '?~~.......~~?',
-      '.~..R...R..~.',
+      '.............',
+      '...?~...~?...',
+      '.~...r.r...~.',
       '...?.....?...',
-      '.~..R...R..~.',
-      '?~~.......~~?',
-      '??.~.....~.??',
+      '.~...r.r...~.',
+      '...?~...~?...',
+      '.............',
     ],
   },
   {
     id: 'veins', types: ['normal'], floors: [1, 4], rows: [
-      '!...........!',
-      '.!!.~...~.!!.',
-      '...~.....~...',
-      '.#.........#.',
-      '...~.....~...',
-      '.!!.~...~.!!.',
-      '!...........!',
+      '.............',
+      '...!.....!...',
+      '....!...!....',
+      '.~.........~.',
+      '....!...!....',
+      '...!.....!...',
+      '.............',
     ],
   },
   {
     id: 'checker', types: ['normal'], floors: [1, 4], rows: [
-      '.?.?.....?.?.',
-      '?.?.?.?.?.?.?',
-      '.?.?.?.?.?.?.',
-      '..?.?...?.?..',
-      '.?.?.?.?.?.?.',
-      '?.?.?.?.?.?.?',
-      '.?.?.....?.?.',
+      '.............',
+      '...?.?.?.?...',
+      '.............',
+      '...?.?K?.?...',
+      '.............',
+      '...?.?.?.?...',
+      '.............',
     ],
   },
   {
     id: 'ring', types: ['normal'], floors: [1, 4], rows: [
       '.............',
-      '..~~~~.~~~~..',
-      '.~.........~.',
-      '.~...R.R...~.',
-      '.~.........~.',
-      '..~~~~.~~~~..',
+      '...~~~.~~~...',
+      '..~.......~..',
+      '..~..r.r..~..',
+      '..~.......~..',
+      '...~~~.~~~...',
       '.............',
     ],
   },
   {
     id: 'colonnade', types: ['normal'], floors: [1, 4], rows: [
-      '.#.?.....?.#.',
-      '.#.........#.',
-      '...C.....C...',
-      '..!...K...!..',
-      '...C.....C...',
-      '.#.........#.',
-      '.#.?.....?.#.',
+      '...?.....?...',
+      '.............',
+      '.............',
+      '..#.#.K.#.#..',
+      '.............',
+      '.............',
+      '...?.....?...',
     ],
   },
   // ── treasure ──
@@ -284,23 +285,23 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     id: 'arena', types: ['boss'], rows: [
       '.............',
-      '.R....T....R.',
+      '...r..T..r...',
       '.............',
-      '......H......',
+      '..R...H...R..',
       '.............',
-      '.R.........R.',
+      '...r.....r...',
       '.............',
     ],
   },
   {
     id: 'pit', types: ['boss'], rows: [
-      '.?.........?.',
-      '..R...T...R..',
-      '..r.......r..',
-      '......H......',
-      '..r.......r..',
-      '..R.......R..',
-      '.?.........?.',
+      '.............',
+      '.__...T...__.',
+      '.__.......__.',
+      '...R..H..R...',
+      '.__.......__.',
+      '.__.......__.',
+      '.............',
     ],
   },
   // ── vault ──
@@ -341,16 +342,16 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     }],
   },
   {
-    // a hall of eternal flames in rows: the way through is between them; crates wait in the
-    // corners, close enough to kick into the fire
+    // a hall of eternal flames in rows: the way through is between them; crates wait along the
+    // north and south walls, close enough to kick into the fire
     id: 'hearth', floors: [2, 9], types: ['normal'], height: 6, ceiling: 'vault-z', rows: [
-      'C...........C',
+      '...C.....C...',
       '..f.f...f.f..',
       '.............',
       '..f..r.r..f..',
       '.............',
       '..f.f...f.f..',
-      'C...........C',
+      '...C.....C...',
     ],
   },
   {
@@ -403,18 +404,18 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     }],
   },
   {
-    // a cross of shallow water under a dome, braziers burning on four pillars
+    // a cross of shallow water under a dome, braziers burning on four low plinths
     id: 'font', floors: [1, 5], types: ['normal'], height: 8, ceiling: 'dome', rows: [
       '.............',
-      '..2...w...2..',
+      '..1...w...1..',
       '......w......',
       '.wwww...wwww.',
       '......w......',
-      '..2...w...2..',
+      '..1...w...1..',
       '.............',
     ],
     layers: [{
-      y: 2, rows: [
+      y: 1, rows: [
         '.............',
         '..f.......f..',
         '.............',
@@ -451,34 +452,34 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     id: 'sluice', floors: [1, 4], types: ['normal'], height: 6, rows: [
-      '.c===.......?',
-      '.c===........',
       '..===........',
-      '..===........',
-      '..===........',
+      '..===....?...',
       '.c===........',
       '.c===........',
+      '.c===........',
+      '..===....?...',
+      '..===........',
     ],
   },
   {
     id: 'balcony', floors: [2, 5], types: ['normal'], weight: 2, height: 6, ceiling: 'vault-z', rows: [
-      '.3.........3.',
+      '3...........3',
       '.............',
       '.............',
       '.............',
       '.............',
       '.............',
-      '.3.........3.',
+      '3...........3',
     ],
     layers: [{
       y: 3, rows: [
-        '.bbbbbbbbbbb.',
+        'bbbbbbbbbbbbb',
         '.............',
         '.............',
         '.............',
         '.............',
         '.............',
-        '.bbbbbbbbbbb.',
+        'bbbbbbbbbbbbb',
       ],
     }],
   },
@@ -490,7 +491,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '...ll........',
       '...llc.......',
       '...ll........',
-      '...ll.....?..',
+      '...ll....?...',
     ],
     layers: [{
       y: 1, rows: [
@@ -518,11 +519,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     id: 'warren', floors: [2, 5], types: ['normal'], height: 7, ceiling: 'cave', rows: [
       '.............',
-      '.X.X.X.X.X.X.',
+      '.....X.X.....',
       '.............',
-      '..i.......i..',
+      '.i.X..K..X.i.',
       '.............',
-      '.X.X.X.X.X.X.',
+      '.....X.X.....',
       '.............',
     ],
   },
@@ -539,23 +540,23 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     id: 'crate-stacks', floors: [1, 3], types: ['normal'], weight: 2, height: 6, ceiling: 'stepped', rows: [
-      '.C.........C.',
+      '....C...C....',
       '.............',
       '..cc.....cc..',
       '.............',
       '..cc.....cc..',
       '.............',
-      '.C.........C.',
+      '....C...C....',
     ],
   },
   {
     id: 'roofed-garden', floors: [2, 5], types: ['normal'], height: 6, ceiling: 'vault-z', rows: [
       '3...........3',
-      '.dd.......dd.',
+      '...dd...dd...',
       '.............',
       '.............',
       '.............',
-      '.dd.......dd.',
+      '...dd...dd...',
       '3...........3',
     ],
     layers: [{
@@ -583,23 +584,23 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   },
   {
     id: 'ore-vein', floors: [1, 5], types: ['normal'], height: 6, rows: [
-      '.i.........i.',
-      '..i.......i..',
+      '.............',
       '...i.....i...',
       '....i...i....',
-      '...i.....i...',
       '..i.......i..',
-      '.i.........i.',
+      '....i...i....',
+      '...i.....i...',
+      '.............',
     ],
   },
   {
     id: 'obsidian-maze', floors: [4, 5], types: ['normal'], height: 8, ceiling: 'pointed-x', rows: [
       '.............',
-      '.XXXXX.XXXXX.',
+      '...oo...oo...',
       '.............',
-      '.XXXXX.XXXXX.',
+      '..XXX.K.XXX..',
       '.............',
-      '.XXXXXEXXXXX.',
+      '...oo...oo...',
       '.............',
     ],
   },
@@ -880,25 +881,25 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // two dry trenches cut the path: east and west are islands until you bridge them
     id: 'path-trench', types: ['path', 'normal'], floors: [1, 9], weight: 3, rows: [
+      '..===...===..',
+      '..===...===..',
       '.d===...===d.',
-      '..===...===..',
-      '..===...===..',
       '..===.K.===..',
-      '..===...===..',
-      '..===...===..',
       '.d===...===d.',
+      '..===...===..',
+      '..===...===..',
     ],
   },
   {
     // obsidian walls shut the north and south doors off: over them, or through them with a bomb
     id: 'path-wall', types: ['path', 'normal'], floors: [1, 9], weight: 3, height: 7, rows: [
-      '.d.........d.',
-      'XXXXXEEEXXXXX',
-      '.............',
-      '......K......',
       '.............',
       'XXXXXEEEXXXXX',
-      '.d.........d.',
+      '.............',
+      '...d..K..d...',
+      '.............',
+      'XXXXXEEEXXXXX',
+      '.............',
     ],
   },
   {
@@ -941,39 +942,39 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // brick bulwarks three high at either side: build a step to get over, or dig through
     id: 'bulwarks', types: ['normal'], floors: [1, 4], weight: 3, height: 6, rows: [
-      '.d.3.....3.d.',
       '...3.....3...',
       '...3.....3...',
-      '...3..K..3...',
+      '...3.....3...',
+      '.dd3..K..3dd.',
       '...3.....3...',
       '...3.....3...',
-      '.d.3.....3.d.',
+      '...3.....3...',
     ],
   },
   {
     // a sunken nave: the middle lies two blocks down; the north and south doors stand on ledges
     // you reach only by building back up
     id: 'nave', types: ['normal', 'path'], floors: [1, 5], weight: 3, height: 7, ceiling: 'vault-z', rows: [
-      '.r.........r.',
+      '...r.....r...',
       '#===========#',
       '.===========.',
       '......K......',
       '.===========.',
       '#===========#',
-      '.r.........r.',
+      '...r.....r...',
     ],
   },
   {
     // the gates of the walled city: obsidian walls shut the north and south away, a trench the east;
     // only the west is open, so every other way out is built
     id: 'gates', types: ['normal'], floors: [4, 9], weight: 3, height: 7, ceiling: 'vault-x', rows: [
-      '.r.........rd',
+      '.............',
       'XXXXXEEEXXXXX',
-      '........===..',
+      '..r.....===..',
       '......K.===..',
-      '........===..',
+      '..r.....===..',
       'XXXXXEEEXXXXX',
-      '.r.........r.',
+      '.............',
     ],
   },
   // ── big rooms (L3): footprints of two cells; their doors are those of their first cell ──
@@ -982,20 +983,20 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // middle opens a 4×4 shaft into the next layer of the world
     id: 'abyss', types: ['boss'], floors: [5, 5], size: [2, 1], mirror: false, height: 8, ceiling: 'vault-x', rows: [
       '...............WW.........WW',
-      '.r.........r...W...2...2...W',
+      '...r.......r...W....2.2....W',
       '............................',
       '......H.............T.......',
       '............................',
-      '.r.........r...W...2...2...W',
+      '...r.......r...W....2.2....W',
       '...............WW.........WW',
     ],
     layers: [{ y: 2, rows: [
       '............................',
-      '...................f...f....',
+      '....................f.f.....',
       '............................',
       '............................',
       '............................',
-      '...................f...f....',
+      '....................f.f.....',
       '............................',
     ] }],
   },
@@ -1003,24 +1004,24 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // an antechamber split by a river of lava: the doors are walled off north and south, and the
     // key may wait across the river
     id: 'antechamber', types: ['normal'], floors: [6, 9], size: [2, 1], mirror: false, weight: 3, height: 7, rows: [
-      '.r.........r.LLL..d......d..',
+      '.............LLL..d.....d...',
       'XXXXXXXXXXXXXLLL............',
       '.............LLL....rr......',
       '......K......LLL.....K......',
       '.............LLL....rr......',
       'XXXXXXXXXXXXXLLL............',
-      '.r.........r.LLL..d......d..',
+      '.............LLL..d.....d...',
     ],
   },
   {
     // the giants' well: trenches cut the west and east doors off, and below an obsidian wall a ring
     // of pits guards whatever lies at the bottom
     id: 'giants-well', types: ['normal'], floors: [7, 9], size: [1, 2], mirror: false, weight: 3, height: 8, ceiling: 'dome', rows: [
+      '..===...===..',
+      '..===...===..',
       '.d===...===d.',
-      '..===...===..',
-      '..===...===..',
       '..===.K.===..',
-      '..===...===..',
+      '.d===...===d.',
       '..===...===..',
       '.............',
       'XXXXXEEEXXXXX',
@@ -1030,7 +1031,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '...=..K...=..',
       '...=......=..',
       '...========..',
-      '.r.........r.',
+      '...r.....r...',
       '.............',
     ],
   },
@@ -1039,46 +1040,46 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // a long gallery under a pointed vault: its far half is a plateau three high, riddled with holes five
     // deep; pillars to jump across, and the key at the bottom of a well (jump down, build your way out)
     id: 'long-gallery', types: ['normal', 'path'], floors: [1, 3], size: [2, 1], weight: 2, height: 8, ceiling: 'pointed-x', rows: [
-      'd...........d..1233333333333',
+      '...............1233333333333',
       '...............123=3=3=3====',
-      '...#.....#.....123==========',
-      '...............1233=3=3==K==',
-      '...#.....#.....123==========',
+      '.d..........d..123==========',
+      '...#.....#.....1233=3=3==K==',
+      '.d..........d..123==========',
       '...............123=3=3=3====',
-      'd...........d..1233333333333',
+      '...............1233333333333',
     ],
   },
   {
     // limbo's cloister: a walk around a sunken garth two blocks down, under crossing vaults; the doors
     // open onto the walk, the garth is a trap you build out of
     id: 'cloister', types: ['normal', 'path'], floors: [1, 2], weight: 2, height: 7, ceiling: 'cross', rows: [
-      '.............',
-      '.d#=======#d.',
+      '....d...d....',
+      '..=========..',
       '..=========..',
       '.............',
       '..=========..',
-      '.d#=======#d.',
-      '.............',
+      '..=========..',
+      '....d...d....',
     ],
   },
   {
     // the winds: a hall two cells long cut by three obsidian walls, each with a plug where a door would be;
     // a high walk of trim runs over them, reached by a stair, for whoever builds up to it
     id: 'wind-hall', types: ['normal', 'path'], floors: [2, 3], size: [2, 1], weight: 2, height: 8, ceiling: 'cross', rows: [
-      '.d.........dX.....X.....X..4',
+      '...d.......dX.....X.....X..4',
       '............X.....X.....X..3',
       '............E.....E..K..X..2',
       '............E.....E.....X..1',
-      '............E.....E.....X...',
+      '............E.....E.....Xd..',
       '............X.....X.....X...',
-      '.d.........dX...d.X.....X..d',
+      '...d.......dX..d..X.....X...',
     ],
   },
   {
     // a stepped well: the room drops south into a second cell where terraces climb in a spiral around a
     // pit five deep; the key waits on the floor of the pit
     id: 'stepped-well', types: ['normal', 'path'], floors: [2, 4], size: [1, 2], weight: 2, height: 8, ceiling: 'stepped', rows: [
-      '.d.........d.',
+      '...d.....d...',
       '.............',
       '.............',
       '.............',
@@ -1100,13 +1101,13 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // the rain: the room opens east into a drowned nave, deep water from wall to wall with a line of
     // stepping stones; galleries along the walls, the key on an island at the far end
     id: 'drowned-nave', types: ['normal', 'path'], floors: [3, 4], size: [2, 1], weight: 2, height: 8, ceiling: 'vault-x', rows: [
-      '.c.........c...2WWWWWWWWWWW2',
+      '...c.......c...2WWWWWWWWWWW2',
       '...............WWWWWWWWWWWWW',
       '...w.....w.....W.WWrWWrWWWWW',
       '.................WWWWWWWW.K.',
       '...w.....w.....W.WWrWWrWWWWW',
       '...............WWWWWWWWWWWWW',
-      '.c.........c...2WWWWWWWWWWW2',
+      '...c.......c...2WWWWWWWWWWW2',
     ],
     layers: [
       { y: 2, rows: [
@@ -1121,16 +1122,16 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     ],
   },
   {
-    // the weights: a strongroom that runs on into a second cell of great blocks two high, packed with
-    // narrow aisles; the key lies in the middle of them, and every aisle is shut by another block
+    // the weights: a strongroom that runs on into a second cell packed solid with great blocks two high;
+    // the key waits in a chamber at their heart: break or climb your way in
     id: 'strongroom', types: ['normal', 'path'], floors: [4, 5], size: [2, 1], weight: 2, height: 7, ceiling: 'stepped', rows: [
-      '.R.........R...XXXXXXXXXXXXX',
-      '................2.2.2.2.2.2X',
-      '...R.....R......2X2X2X2X2.2X',
-      '..................2.2.2X2KXX',
-      '...R.....R......2X2X2X2X2.2X',
-      '................2.2.2.2.2.2X',
-      '.R.........R...XXXXXXXXXXXXX',
+      '....R...R......XXXXXXXXXXXXX',
+      '................22222222222X',
+      '................22222222...X',
+      '...R.....R......22222222.K.X',
+      '................22222222...X',
+      '................22222222222X',
+      '....R...R......XXXXXXXXXXXXX',
     ],
   },
   {
@@ -1151,11 +1152,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // practice on a dais at the far end
     id: 'crown-hall', types: ['boss'], floors: [1, 4], size: [2, 1], weight: 2, height: 8, ceiling: 'dome', rows: [
       '............................',
-      '..r.......r.......2.....2...',
+      '...r.....r........2.........',
       '......................1.....',
-      '......H..............1T.....',
+      '......H..............1T..2..',
       '......................1.....',
-      '..r.......r.......2.....2...',
+      '...r.....r........2.........',
       '............................',
     ],
   },
@@ -1164,11 +1165,11 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // the way down and the boss's practice at the far end between lava pools and braziers on pillars
     id: 'caldera-hall', types: ['boss'], floors: [6, 9], size: [2, 1], height: 8, ceiling: 'dome', rows: [
       '...............LLL.......LLL',
-      '..r.......r....LL.2.....2.LL',
+      '...r......r....LL.2.....2.LL',
       '............................',
       '......H...............T.....',
       '............................',
-      '..r.......r....LL.2.....2.LL',
+      '...r......r....LL.2.....2.LL',
       '...............LLL.......LLL',
     ],
     layers: [{ y: 2, rows: [
@@ -1185,7 +1186,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // a chasm: the room's second cell is a plateau of trim broken by holes five deep, joined by a bridge
     // of single blocks with gaps you jump; the key at the bottom of the deepest hole
     id: 'chasm', types: ['normal', 'path'], floors: [6, 9], size: [1, 2], weight: 3, height: 8, ceiling: 'cave', rows: [
-      '.d.........d.',
+      '...d.....d...',
       '.............',
       '.............',
       '......K......',
@@ -1207,13 +1208,13 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // the walls of Dis: a hall in two cells, a ditch of lava between them and graves of flame beyond;
     // the key lies among the graves
     id: 'dis-hall', types: ['normal', 'path'], floors: [6, 7], size: [2, 1], weight: 2, height: 7, ceiling: 'pointed-x', rows: [
-      '.r.........r.LLL.f.f.f.f.f..',
+      '...r.....r...LLL.f.f.f.f.f..',
       '.............LLL............',
       '.............LLL.f.f.f.f.f..',
       '.............LLL.......K....',
       '.............LLL.f.f.f.f.f..',
       '.............LLL............',
-      '.r.........r.LLL.f.f.f.f.f..',
+      '...r.....r...LLL.f.f.f.f.f..',
     ],
   },
   {
@@ -1234,49 +1235,49 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
     // an open ring with four low walls to hide behind
     id: 'gauntlet', types: ['challenge'], floors: [1, 9], height: 6, ceiling: 'dome', rows: [
       '.............',
-      '..R.......R..',
-      '....r...r....',
-      '......K......',
-      '....r...r....',
-      '..R.......R..',
+      '...rr...rr...',
+      '.............',
+      '....R.K.R....',
+      '.............',
+      '...rr...rr...',
       '.............',
     ],
   },
   {
     // a pit in the middle: projections that fall in come back out; you can too, with a block
     id: 'colosseum', types: ['challenge'], floors: [1, 9], height: 7, ceiling: 'vault-x', rows: [
-      '.r.........r.',
+      '...r.....r...',
       '....=====....',
       '...==...==...',
       '...=..K..=...',
       '...==...==...',
       '....=====....',
-      '.r.........r.',
+      '...r.....r...',
     ],
   },
   // ── the circles (floors 1–9): themed rooms that ask to be built across ──
   {
     // limbo: grey ledges over dry trenches, nothing to hurt you, nowhere to stand still
     id: 'limbo', types: ['normal'], floors: [1, 2], weight: 3, height: 6, rows: [
-      '.r===...===r.',
-      '..===.r.===..',
       '..===...===..',
+      '..===.r.===..',
+      '.r===...===..',
       '..===.K.===..',
-      '..===...===..',
+      '..===...===r.',
       '..===.r.===..',
-      '.r===...===r.',
+      '..===...===..',
     ],
   },
   {
     // the winds: walls tall as the room, a gallery high above; the way across is up there
     id: 'gale', types: ['normal'], floors: [2, 3], weight: 3, height: 8, ceiling: 'vault-x', rows: [
-      '.d.X.....X.d.',
+      '...X.....X...',
       '...X.....X...',
       '...E.....E...',
-      '...E..K..E...',
+      '..dE..K..Ed..',
       '...E.....E...',
       '...X.....X...',
-      '.d.X.....X.d.',
+      '...X.....X...',
     ],
     layers: [{
       y: 4, rows: [
@@ -1305,13 +1306,13 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // the weights: heavy walls quarter the room; every way out goes over them
     id: 'weights', types: ['normal'], floors: [4, 5], weight: 3, height: 7, rows: [
-      '.d.........d.',
+      '.............',
       'XXXXXEEEXXXXX',
       '..X.......X..',
-      '..X...K...X..',
+      '..X.d.K.d.X..',
       '..X.......X..',
       'XXXXXEEEXXXXX',
-      '.d.........d.',
+      '.............',
     ],
   },
   {
@@ -1330,25 +1331,25 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // the tombs: rows of open graves of flame, and tomb walls between you and the north and south doors
     id: 'tombs', types: ['normal'], floors: [6, 7], weight: 3, height: 6, ceiling: 'vault-z', rows: [
-      '.r.........r.',
+      '.............',
       'XXXXXEEEXXXXX',
       '.f.f.f.f.f.f.',
-      '......K......',
+      '..r...K...r..',
       '.f.f.f.f.f.f.',
       'XXXXXEEEXXXXX',
-      '.r.........r.',
+      '.............',
     ],
   },
   {
     // the river: two bands of lava from wall to wall; bridge them
     id: 'river', types: ['normal'], floors: [7, 8], weight: 3, height: 7, rows: [
-      '.rLLL...LLLr.',
       '..LLL...LLL..',
       '..LLL...LLL..',
+      '.rLLL...LLL..',
       '..LLL.K.LLL..',
+      '..LLL...LLLr.',
       '..LLL...LLL..',
       '..LLL...LLL..',
-      '.rLLL...LLLr.',
     ],
   },
   {
@@ -1366,7 +1367,7 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
   {
     // the cold bottom: deep, still water walled in by obsidian (ice comes later)
     id: 'cocytus', types: ['normal'], floors: [9, 9], weight: 3, height: 8, ceiling: 'dome', rows: [
-      'WWr.......rWW',
+      'WW.........WW',
       'XXXXXEEEXXXXX',
       '.WWWW...WWWW.',
       '.WWW..K..WWW.',
@@ -1387,6 +1388,8 @@ export const ROOM_TEMPLATES: RoomTemplate[] = [
       '.............',
     ],
   },
+  // ── the layouts of issue #115 (src/content/room-layouts.ts) ──
+  ...LAYOUTS_115,
 ];
 
 /** The Roots' plan cells: the teaching template of each, and (for the six rooms that change from page 2) the
@@ -1748,6 +1751,102 @@ export function walkParts(t: RoomTemplate): Map<string, number> {
 /** True when walking alone can't join every key tile of the room: you have to break and place. */
 export function needsBuilding(t: RoomTemplate): boolean {
   return new Set(walkParts(t).values()).size > 1;
+}
+
+// ───────────────────────── open corners: where projections spawn (issue #115) ─────────────────────────
+
+/** Tiles from a cell's side walls (columns) and from its north and south walls (rows) that make a corner zone. */
+export const CORNER_COLS = 3;
+export const CORNER_ROWS = 2;
+/** How far into a tall block a line of sight must pass to be hidden (a graze shows most of the body). */
+const GRAZE = 0.2;
+/** Loose blocks and decor slots: never in a corner zone. Terraces, walls, elements, pits and rock may fill one. */
+const CORNER_CLUTTER = /[rRcCdio?~!]/;
+
+/** Room types where projections spawn on the floor: their corners must stay open (docs/design/built/levels/rooms/LAYOUT-RULES.md). */
+const SPAWN_TYPES: readonly RoomType[] = ['normal', 'path', 'challenge', 'boss'];
+
+/**
+ * Where a template hides projections or snags the player (LAYOUT-RULES §2). Projections spawn on any open floor tile
+ * of the room away from its doors and the player (`pickSpawnCell`), which in practice means its corners. Three rules:
+ *
+ * 1. **No notch**: no open floor tile is closed on three or four sides by blocks, decor slots, the pedestal, rock or
+ *    walls, at least one of them a block, slot or pedestal (a dead-end pocket a projection spawns into and a player
+ *    snags on). Walls alone make the end of a corridor, which is in plain sight along it.
+ * 2. **Corners in sight**: every open floor tile in a corner zone of a cell (CORNER_COLS × CORNER_ROWS at each of its
+ *    corners) that can be walked to from that cell's centre is in line of sight of the centre over anything lower
+ *    than two blocks. Tiles behind a wall you must build through (a compartment) only answer to rule 1.
+ *
+ * Returns one message per broken tile; empty when the room is clean. Floor 0 (the Roots) holds no projections.
+ */
+export function spawnPockets(t: RoomTemplate): string[] {
+  if (!t.types.some(ty => SPAWN_TYPES.includes(ty))) return [];
+  const errs: string[] = [];
+  const [W, D] = templateDims(t);
+  const at = (c: number, r: number) => t.rows[r]?.[c];
+  const open = (ch: string | undefined) => ch !== undefined && MARKERS.has(ch) && ch !== 'T';
+  const solid = (ch: string | undefined) => ch === undefined || ch === ROCK || ch === 'T' || !!CELL_STACK[ch] || DECOR_CHARS.has(ch);
+  // the doorway itself is open: a door approach tile is not closed on its door side
+  const doorSide = new Map<string, string>();
+  for (const [side, tiles] of Object.entries(doorApproach(t))) for (const [c, r] of tiles!) doorSide.set(`${c},${r}`, side);
+  const OUT: Record<string, [number, number]> = { N: [0, -1], S: [0, 1], W: [-1, 0], E: [1, 0] };
+  for (let r = 0; r < D; r++) for (let c = 0; c < W; c++) {
+    if (!open(at(c, r))) continue;
+    const ds = doorSide.get(`${c},${r}`);
+    const sides = Object.entries(OUT).filter(([s]) => s !== ds).map(([, [dc, dr]]) => at(c + dc, r + dr));
+    const closed = sides.filter(solid).length;
+    // walls alone (the room's, a '#' or 'X' wall, rock) make a corridor's end, not a pocket: a block makes the notch
+    if (closed >= 3 && sides.some(ch => solid(ch) && ch !== undefined && ch !== ROCK && !'#XDE'.includes(ch))) errs.push(`${t.id}: a notch at ${c},${r} (closed on ${closed} sides): projections spawn hidden there`);
+  }
+  // tall enough to hide a projection from the middle of the room
+  const hides = (ch: string | undefined) => ch === undefined || ch === ROCK || '#XDE'.includes(ch) || (CELL_STACK[ch]?.h ?? 0) >= 2;
+  const sees = (ax: number, az: number, bc: number, br: number) => {
+    const bx = bc + 0.5, bz = br + 0.5, n = Math.ceil(Math.hypot(bx - ax, bz - az) * 6);
+    for (let i = 1; i < n; i++) {
+      const x = ax + (bx - ax) * i / n, z = az + (bz - az) * i / n, c = Math.floor(x), r = Math.floor(z);
+      if ((c === bc && r === br) || !hides(at(c, r))) continue;
+      // a line that only grazes a block's edge still shows most of a projection's body
+      if (Math.min(x - c, c + 1 - x, z - r, r + 1 - z) < GRAZE) continue;
+      return false;
+    }
+    return true;
+  };
+  const { levels, next } = walkEdges(t);
+  // the four corners of the room's space, each seen from the centre of the cell it lies in
+  for (const [right, bottom] of [[false, false], [true, false], [false, true], [true, true]]) {
+    const cols = [...Array(CORNER_COLS).keys()].map(i => (right ? W - 1 - i : i));
+    const rows = [...Array(CORNER_ROWS).keys()].map(i => (bottom ? D - 1 - i : i));
+    const cc = (right ? W - ROOM_W : 0) + 6, cr = (bottom ? D - ROOM_D : 0) + 3;
+    for (const r of rows) for (const c of cols) {
+      const ch = at(c, r)!;
+      // a run of blocks from wall to wall is a wall (the crate walls of the rain), not clutter
+      const wall = [...t.rows[r]].every(x => x === ROCK || solid(x)) || t.rows.every(row => row[c] === ROCK || solid(row[c]));
+      if (CORNER_CLUTTER.test(ch) && !wall) errs.push(`${t.id}: "${ch}" at ${c},${r} clutters a corner (loose blocks and decor slots stay out of the corners)`);
+    }
+    if (!levels[cr]?.[cc]?.length) continue;
+    // the floor tiles walked to from the cell's centre and back (steps, drops and short jumps): a ledge you can only
+    // drop onto is a place of its own, like a compartment behind a wall
+    const flood = (from: [number, number, number]) => {
+      const seen = new Set<string>([from.join()]);
+      const q = [from];
+      while (q.length) {
+        const [x, y, k] = q.pop()!;
+        for (const st of next(x, y, k)) if (!seen.has(st.join())) { seen.add(st.join()); q.push(st); }
+      }
+      return seen;
+    };
+    const home: [number, number, number] = [cc, cr, levels[cr][cc].indexOf(Math.min(...levels[cr][cc]))];
+    const out = flood(home);
+    const roundTrip = (c: number, r: number) => {
+      const k = levels[r]?.[c]?.indexOf(0) ?? -1;
+      return k >= 0 && out.has(`${c},${r},${k}`) && flood([c, r, k]).has(home.join());
+    };
+    for (const r of rows) for (const c of cols) {
+      if (!open(at(c, r)) || !roundTrip(c, r)) continue;
+      if (!sees(cc + 0.5, cr + 0.5, c, r)) errs.push(`${t.id}: corner tile ${c},${r} is hidden from the centre ${cc},${cr} by something two blocks high`);
+    }
+  }
+  return [...new Set(errs)];
 }
 
 /** A template as carved with these flips (rows and layers mirrored), for checks on real rooms. */

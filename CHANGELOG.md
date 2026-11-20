@@ -22,6 +22,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - Two practices of the bounce, in English and Spanish: Dialectic (a rebound splits the intention in two, each at half damage, at most twice per shot) and Reframing (after a rebound the intention turns toward a projection within 8 blocks and deals 25% more). They stack with Bounce Back (#110).
 - Four bomb practices, in English and Spanish: Pressure Valve (bomb radius and damage, two bombs), Controlled Burn (your blasts light the dry blocks around them, and their fire spares you close by), Bolt from the Blue (lightning from your blasts to the nearest projections) and Serendipity (luck, and a chance that a blast leaves a key, a bomb or a heart) (#110).
 - New practice: Irimi, a body practice that dashes 4.5 blocks in the direction you double-tap, flick or swipe. Untouchable while it lasts, one dash in the air, cooldown 0.8 s; looking up while you dash rises (#157).
+- 62 new room layouts: arenas with low rings and benches, galleries and towers to fight from, piers and broken bridges over dry docks, canals, flooded cloisters, canal locks you open by breaking a plug, lava lakes and forges, a pool that turns lava to stone when you break its wall, crypts and catacombs in the deep circles, four new challenge rooms, two starts, three treasure rooms, two vaults and two bosses' halls. Every band of floors has at least twice as many layouts as before (#115).
 
 ### Changed
 - Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
@@ -33,6 +34,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Questioning Tincture takes any ore, not only iron ore (#228).
 - Seed codes move to v37: the same code grows the giant tree with the Leaves and lays the new blocks in the rock; the rooms are unchanged (#149, #228).
 - Seed codes move to v38: the two new bounce practices join the treasure pool, so the same code reserves different practices on its pedestals; the rooms and the rock are unchanged (#110).
+- 48 room layouts redrawn so their corners stay clear: no more cubes in or beside the corners where projections rise unseen or where you snag while chasing them; pillars stand on the room's cross instead (#115).
+- Seed codes move to v38: the same code lays out its rooms with the new and redrawn layouts (#115).
 
 ## 0.2.6-alpha · 2026-11-19
 
