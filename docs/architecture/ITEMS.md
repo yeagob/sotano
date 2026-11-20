@@ -139,7 +139,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `bossOvercome` | — (react) | a floor's boss was overcome, once per boss room (`boss`, `floor`, `how`: `destroyed` when its health reached zero, `converted` when it turned to your side, `stillness` for the Shadow's own ending, which is a turning) |
 | `meditationComplete` | — (react) | a Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (`meditation`, the sitting's id; `source`: `roots` or `vault`); never a quick reward, a cancel or the debug console's Sanctuary |
 | `cook` | — (react) | a kitchen cooked a part into a meal (`meal`, the potion id; `part`, the part's kind) |
-| `brew` | — (react) | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
+| `brew` | `iced` (set true to ice the flask: Apprenticeship; the alembic reads it back) · else react | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
 | `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |
 | `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` | — (react) | the achievements' events: a death (`floor`, `source`), the climb into the surface (`from`), a block placed (`afterPact`), the tutorial book turned back (`from`, `page`), bedrock touched (`side`) |
 

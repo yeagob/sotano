@@ -7,7 +7,7 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
 This folder has one document per practice, in a folder for its path. The two steering practices that exclude each other (Dowsing and Eye Contact) and Affirmation's copy are explained together in [the aim pair](AIM-PRACTICES.md). The catalogue is the code (`src/content/items/`, 46 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
-This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 50 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 53 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
@@ -30,6 +30,9 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
 | [Dialectic](mind/DIALECTIC.md) | Mind | 3 | treasure rooms |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
+| [Furoshiki](HAND-LIFE-ALLIES-TABLES.md) | Body | 2 | treasure rooms |
+| [Kinship](HAND-LIFE-ALLIES-TABLES.md) | Emotion | 2 | treasure rooms |
+| [Apprenticeship](HAND-LIFE-ALLIES-TABLES.md) | Mind | 2 | treasure rooms |
 | [Stacking practices](STACKING.md) | Potion and meal | 1–2 | treasure rooms (nine: Tea Ceremony, Herbal Lore, Distillation, Spagyric Art, Mindful Eating, Breaking Bread, Hara Hachi Bu, Grace Before Meals, Nourishment) |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
 | [Grounding](body/GROUNDING.md) | Body | 1 | treasure rooms |

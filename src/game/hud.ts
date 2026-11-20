@@ -10,7 +10,7 @@ import { heartQuarters, HEART } from '../entities/actors';
 import { heartCount } from '../entities/hearts';
 import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
-import { fmtStat, statLabel, type StatName } from '../core/stats';
+import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
@@ -406,7 +406,8 @@ export class Hud {
     if (key !== this.handKey) {
       this.handKey = key;
       this.hand.innerHTML = '';
-      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active));
+      // slots past the base carry (Furoshiki) are drawn dimmer
+      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active, i >= BASE_STATS.carry));
     }
 
     if (--this.debugTimer <= 0 && this.showDebug) {
@@ -429,9 +430,9 @@ export class Hud {
   }
 
   /** One carry slot: the item in it, or an empty well; outlined in gold when it is the active item. */
-  private handSlot(c: Carried | undefined, active: boolean) {
+  private handSlot(c: Carried | undefined, active: boolean, extra = false) {
     const slot = document.createElement('div');
-    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '');
+    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '') + (extra ? ' extra' : '');
     if (c) {
       const img = document.createElement('img');
       if (typeof c === 'number') {

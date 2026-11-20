@@ -5,15 +5,18 @@
 
 import type { ItemDef } from '../../items/types';
 import acceptance from './acceptance';
+import apprenticeship from './apprenticeship';
 import arttherapy from './arttherapy';
 import boxbreathing from './boxbreathing';
 import catharsis from './catharsis';
 import constellation from './constellation';
 import deepfocus from './deepfocus';
+import furoshiki from './furoshiki';
 import exposure from './exposure';
 import flow from './flow';
 import forgiveness from './forgiveness';
 import gratitude from './gratitude';
+import kinship from './kinship';
 import grounding from './grounding';
 import habitstack from './habitstack';
 import kaizen from './kaizen';
@@ -90,6 +93,7 @@ export const ITEMS: readonly ItemDef[] = [
   tummo, firewalking, prometheus,
   teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
   irimi,
+  furoshiki, kinship, apprenticeship,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));
