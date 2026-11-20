@@ -6,16 +6,16 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
-This folder has one document per practice, in a folder for its path. The two steering practices that exclude each other (Dowsing and Eye Contact) and Affirmation's copy are explained together in [the aim pair](AIM-PRACTICES.md); the iteration's other sets have one document each (stacking, bounce, fire, bombs, dash, miracles, run and crouch, hand, life, allies and tables). The catalogue is the code (`src/content/items/`, 76 practices; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The two steering practices that exclude each other (Dowsing and Eye Contact) and Affirmation's copy are explained together in [the aim pair](AIM-PRACTICES.md); the iteration's other sets have one document each (stacking, bounce, fire, bombs, dash, miracles, run and crouch, hand, life, allies and tables). The catalogue is the code (`src/content/items/`, 78 practices; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
 | Folder | Path develops | Practices | State of being at three |
 |---|---|---|---|
-| [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 3 | none yet (three practices now: the owner names it) |
+| [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 4 | none yet (four practices now: the owner names it) |
 | [Body](body/README.md) | Presence, energy, nervous-system regulation | 17 | Embodied |
 | [Mind](mind/README.md) | Clarity, focus, belief | 22 | Lucid |
-| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 19 | Open-hearted |
+| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 20 | Open-hearted |
 | [Will](will/README.md) | Consistency, discipline, small steps compounding | 15 | Resolute |
 
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
@@ -28,6 +28,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Irimi](DASH.md) | Body (movement) | 3 | treasure rooms |
 | [Fartlek](RUN-AND-CROUCH.md) | Body (movement) | 2 | treasure rooms |
 | [Child's Pose](RUN-AND-CROUCH.md) | Body (movement) | 2 | treasure rooms |
+| [Solve et Coagula](milagros/SOLVE-ET-COAGULA.md) | Miracles | 3 | treasure rooms, vault rooms |
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
 | [Dialectic](mind/DIALECTIC.md) | Mind | 3 | treasure rooms |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
@@ -67,6 +68,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Forgiveness](emotion/FORGIVENESS.md) | Emotion | 3 | treasure rooms |
 | [Gratitude Journal](emotion/GRATITUDE-JOURNAL.md) | Emotion | 1 | treasure rooms |
 | [Nothing Personal](emotion/NOTHING-PERSONAL.md) | Emotion | 2 | treasure rooms |
+| [Post-Traumatic Growth](emotion/POST-TRAUMATIC-GROWTH.md) | Emotion | 2 | treasure rooms |
 | [Radical Acceptance](emotion/RADICAL-ACCEPTANCE.md) | Emotion | 2 | treasure rooms |
 | [Rapport](emotion/RAPPORT.md) | Emotion | 2 | treasure rooms |
 | [Self-Compassion](emotion/SELF-COMPASSION.md) | Emotion | 2 | treasure rooms |
@@ -95,7 +97,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 ## How a practice is filed
 
 - **Folder.** A practice sits in the folder of the first path tag its code lists. The other path tags are in its document under *Path* and in the folder's table under *Also on*. Satori carries all four paths and sits in body.
-- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 13 at quality 1, 32 at quality 2, 20 at quality 3, 11 at quality 4.
+- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 13 at quality 1, 33 at quality 2, 21 at quality 3, 11 at quality 4.
 - **Found in.** Treasure rooms, boss rewards and the vault room. A vault is a room type with a richer pedestal; the deepest floors keep none (`src/world/floor.ts`).
 - **Credit.** Every practice names its inspiration, as the STORY and SOURCES documents do. The credit is not the name: the name is a generic technique or concept, or the title of a public-domain work ([NAMING](../story/NAMING.md)).
 

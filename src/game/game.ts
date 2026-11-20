@@ -19,7 +19,7 @@ import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GA
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
 import {
-  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
+  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemByte, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
@@ -185,6 +185,8 @@ const COUNTER_CAP = 99;
 /** The sandbox's fixed step (seconds). */
 export const SANDBOX_DT = 1 / 60;
 const SPAWN_GAP = 0.45;
+/** The six face neighbours of a voxel (fluid sections spread over these). */
+const FACES: [number, number, number][] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 /** Seconds after entering a boss room until the boss counts as overcome (no bosses yet). */
 const HOLE_DELAY = 1.5;
 const BOSS_WAKE = 1.2;
@@ -391,6 +393,9 @@ export class Game {
   private intents: Intents;
   private api: HostApi;
   private time = 0;
+  /** Simulation frames run so far, and the frame of the last fluid conversion (one per frame: `convertFluid`). */
+  private simFrame = 0;
+  private fluidFrame = -1;
   /** Every actor of the run (the player and projections), one id space. */
   readonly actors = new ActorRegistry();
   private contacts = new ContactGate();
@@ -547,6 +552,7 @@ export class Game {
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
       elementAt: (x, y, z) => this.elementAt(x, y, z)?.key ?? null,
       quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
+      entered: (spec, x, y, z, element) => { this.bus.emit('intentElement', { intent: spec, x, y, z, element }); },
       hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
       nearestBlock: (p, r) => this.nearestSolid(p, r),
       nearestEnemy: (p, r, polarity) => this.nearestMeetable(p, r, polarity),
@@ -1471,6 +1477,7 @@ export class Game {
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
+      convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
@@ -3068,16 +3075,72 @@ export class Game {
     return { feet: this.elementAt(b.x, b.y + 0.1, b.z), mid: this.elementAt(b.x, b.y + b.h * 0.5, b.z), head: this.elementAt(b.x, b.y + eye, b.z) };
   }
 
+  /** lavaWalk (posttraumatic): a lava cell with air above it is ground for a body whose feet were above its surface at the
+   *  start of the frame. Gravity and walking then stop on it, and a body already in the lava is not held by it. */
+  private lavaSurface(x: number, y: number, z: number, feet: number): boolean {
+    const c = this.world.elemAt(x, y, z);
+    if (elemKind(c) !== EL_LAVA || elemKind(this.world.elemAt(x, y + 1, z)) === EL_LAVA) return false;
+    return feet >= y + fluidHeight(c) - 1e-6;
+  }
+
+  /** Does the player's body touch one of these cells (the cell under its feet included)? */
+  private bodyTouches(cells: readonly (readonly [number, number, number])[]): boolean {
+    const b = this.player.body;
+    const hit = new Set(cells.map(([x, y, z]) => `${x},${y},${z}`));
+    const x0 = Math.floor(b.x - b.hw), x1 = Math.floor(b.x + b.hw);
+    const z0 = Math.floor(b.z - b.hw), z1 = Math.floor(b.z + b.hw);
+    const y0 = Math.floor(b.y - 0.05), y1 = Math.floor(b.y + b.h - 1e-6);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) if (hit.has(`${x},${y},${z}`)) return true;
+    return false;
+  }
+
+  /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
+   *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
+   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
+  private convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
+    if (this.fluidFrame === this.simFrame) return 0;
+    const kindFrom = from === 'water' ? EL_WATER : EL_LAVA, kindTo = to === 'water' ? EL_WATER : EL_LAVA;
+    const w = this.world;
+    if (elemKind(w.elemAt(x, y, z)) !== kindFrom) return 0;
+    const room = this.roomAt(x, y, z);
+    if (!room) return 0;
+    const section: [number, number, number][] = [[x, y, z]];
+    const seen = new Set<number>([w.idx(x, y, z)]);
+    for (let i = 0; i < section.length && section.length < cap; i++) {
+      const [cx, cy, cz] = section[i];
+      for (const [dx, dy, dz] of FACES) {
+        if (section.length >= cap) break;
+        const nx = cx + dx, ny = cy + dy, nz = cz + dz;
+        if (!w.inside(nx, ny, nz) || seen.has(w.idx(nx, ny, nz))) continue;
+        seen.add(w.idx(nx, ny, nz));
+        if (elemKind(w.elemAt(nx, ny, nz)) !== kindFrom || this.roomAt(nx, ny, nz)?.id !== room.id) continue;
+        section.push([nx, ny, nz]);
+      }
+    }
+    if (kindTo === EL_LAVA && this.stats.get('lavaWalk') < 1 && this.bodyTouches(section)) return -1;
+    for (const [cx, cy, cz] of section) {
+      const b = w.elemAt(cx, cy, cz);
+      w.setElemByte(cx, cy, cz, elemByte(kindTo, elemLevel(b), isFalling(b)));
+      this.elements.wakeAround(cx, cy, cz);
+    }
+    this.elementFx(kindTo === EL_LAVA ? 'catch' : 'steam', x, y, z);
+    this.fluidFrame = this.simFrame;
+    return section.length;
+  }
+
   /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
     const m = this.bodyMedium(b, p.eyeHeight);
-    this.playerMedium = { ...m, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
+    // lavaWalk (posttraumatic): lava does not hurt you, and you wade through it at full speed (the 0.4 wade becomes 1)
+    const walk = this.stats.get('lavaWalk') >= 1;
+    const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
+    this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
     // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
     const shielded = this.fireShielded(b.x, b.y + b.h / 2, b.z);
-    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire')).sort((a, c) => c.harm - a.harm)[0];
+    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire') && !(walk && d.key === 'lava')).sort((a, c) => c.harm - a.harm)[0];
     if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
     // breath: drains with your head under water, refills fast at the surface
     const max = this.stats.get('breath');
@@ -5033,11 +5096,16 @@ export class Game {
     if (this.kairos.stopped) { this.stopTime(dt); return; }
     if (this.input.hit('miracle') && this.startKairos()) return;
     this.time += dt;
+    this.simFrame++;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
     const inp = this.input;
     this.tickStatuses(dt);
-    const solid = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
+    const solidHere = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
+    // lavaWalk: a lava surface is ground. The feet are read as they were at the start of the frame, so a body that
+    // falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
+    const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
+    const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },

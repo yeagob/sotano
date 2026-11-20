@@ -818,6 +818,10 @@ const messages = {
   'teach.kiai.lesson': 'Several times a day, stop and take one full, conscious breath: in through the nose, deep into the belly, and out slowly. Notice how you feel before and after. The breath is always with you.',
   'teach.kindling.quote': 'From the ashes of pain, a small fire can warm you.',
   'teach.kindling.lesson': 'When something hurts, ask what it could teach you or move you to do. Turn some of the pain into one caring act, for yourself or for others. Warmth given back grows.',
+  'teach.solvecoagula.quote': 'What has hardened can soften, and what has softened can take a shape.',
+  'teach.solvecoagula.lesson': 'When a belief has set like stone, or a feeling has flooded everything, ask what it would take to melt it or to give it form. Change is the same motion run in both directions. Start with one small thing you can soften or shape today.',
+  'teach.posttraumatic.quote': 'Some of what hurt you becomes ground you can stand on.',
+  'teach.posttraumatic.lesson': 'After a hard experience, growth can show up slowly: more care for others, a clearer sense of what matters, a new strength you did not expect. You do not have to be grateful for the pain to notice it. Name one thing it taught you, and let it stay where you can stand on it.',
   'teach.lionsmane.quote': 'The ceiling you see is not always the ceiling you have.',
   'teach.lionsmane.lesson': 'Care for the body that carries you: food, rest, movement. A rested, well-fed mind sees further. Then look again at a limit you took for granted.',
   'teach.manthinketh.quote': 'As you think, so you become.',
@@ -953,6 +957,7 @@ const messages = {
   'stat.dash': 'Dash',
   'stat.run': 'Running',
   'stat.crouch': 'Crouching',
+  'stat.lavaWalk': 'Lava walking',
   'stat.bombRadius': 'Bomb radius',
   'stat.bombDamage': 'Bomb power',
   'unit.times': '×{n}',
@@ -976,6 +981,7 @@ const messages = {
   'unit.dashOn': 'double tap',
   'unit.runOn': 'hold to run',
   'unit.crouchOn': 'hold to crouch',
+  'unit.lavaWalkOn': 'on',
 
   // ── key caps: the label and verb of a control in the Roots' book (BOOK-DATA §5, 14 characters at most) ──
   'keycap.move.key': 'WASD',

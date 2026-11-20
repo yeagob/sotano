@@ -54,7 +54,9 @@ interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age
   /** The look, cached for `lookOf` (the spec it was built from, so a spent pierce, phase or bounce rebuilds it). */
   look: IntentLook; lookSpec: IntentSpec;
   /** Projections an aura touched, and the age until it may touch each again. */
-  aura?: Map<number, number> }
+  aura?: Map<number, number>;
+  /** The element of the cell it was in last frame (`entered` fires when it changes). */
+  inEl: 'water' | 'lava' | 'fire' | null }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -142,6 +144,8 @@ export interface IntentHooks {
   elementAt?(x: number, y: number, z: number): 'water' | 'lava' | 'fire' | null;
   /** An intention went out in lava (effects only). */
   quenched?(p: THREE.Vector3): void;
+  /** An intention entered a water or lava cell (once per entry). Hooks may change the cell; the element is read again after. */
+  entered?(spec: IntentSpec, x: number, y: number, z: number, element: 'water' | 'lava'): void;
   hit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, spec: IntentSpec): void;
   nearestBlock(p: THREE.Vector3, r: number): THREE.Vector3 | null;
   /** The nearest projection this polarity meets within `r` (a negative intention: hostile ones only), or null. */
@@ -217,7 +221,7 @@ export class Intents {
 
   private add(spec: IntentSpec, pos: THREE.Vector3, vel: THREE.Vector3, rebounds: number) {
     if (this.list.length >= this.max) this.list.shift();
-    this.list.push({ spec, pos, vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, rebounds, look: intentLook(spec), lookSpec: spec });
+    this.list.push({ spec, pos, vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, rebounds, look: intentLook(spec), lookSpec: spec, inEl: null });
   }
 
   /** The rebound of an intention: the hooks see it, then its velocity is what they left. */
@@ -260,8 +264,16 @@ export class Intents {
       t.age += dt;
       if (t.age > t.spec.flight) t.vel.y -= t.spec.gravity * dt;
       if (t.spec.homing > 0) this.steer(t, dt);
+      // an entry into water or lava: a practice may change the cell at once, and the element is read again
+      let el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
+      if (el !== t.inEl) {
+        if ((el === 'water' || el === 'lava') && h.entered) {
+          h.entered(t.spec, t.pos.x, t.pos.y, t.pos.z, el);
+          el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
+        }
+        t.inEl = el;
+      }
       // water drags an intention (it keeps going, slower); lava puts it out
-      const el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
       if (el === 'water') t.vel.multiplyScalar(Math.exp(-2.5 * dt));
       else if (el === 'lava') { h.quenched?.(t.pos); this.list.splice(i, 1); continue; }
       const step = t.vel.clone().multiplyScalar(dt);

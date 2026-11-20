@@ -13,6 +13,7 @@ The folder holds the practices whose first path tag is `milagros`. The path is c
 | [Dr. Launcher](DR-LAUNCHER.md) | 3 | none | treasure rooms |
 | [Lucid Dream](../MIRACLES.md#lucid-dream) | 4 | none | vault rooms, boss rewards |
 | [Kairos](../MIRACLES.md#kairos) | 4 | none | vault rooms, boss rewards |
+| [Solve et Coagula](SOLVE-ET-COAGULA.md) | 3 | Intention, element | treasure rooms, vault rooms |
 
 ## Open questions
 

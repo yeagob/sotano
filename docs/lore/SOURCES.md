@@ -82,6 +82,8 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | `cbt` | Cognitive behavioural therapy | Therapy | Concept | Exposure; Socratic questioning; reframing | **Exposure**, **Socratic Questioning** |
 | `dbt` | Dialectical behaviour therapy | Therapy | Concept | Radical acceptance | **Radical Acceptance** |
 | `psychodrama` | Psychodrama (J. L. Moreno) | Therapy | Concept | Catharsis through enactment | **Symbolic Act** |
+| `posttraumatic-growth` | Post-traumatic growth (Richard Tedeschi and Lawrence Calhoun, 1996) | Psychological concept | Concept | Growth can follow a hard experience: deeper care for others, clearer priorities, new strength | **Post-Traumatic Growth** |
+| `solve-et-coagula` | The alchemical formula *solve et coagula* (medieval alchemy) | Alchemy | PD | Dissolve and coagulate: one work, run in both directions | **Solve et Coagula** |
 | `positive-psychology` | Gratitude journaling | Practice | Concept | Noticing what goes well | **Gratitude Journal** |
 | `breathwork` | Box breathing (paced breathing) | Practice | Concept | Regulating the nervous system | **Box Breathing** |
 | `somatic` | Somatic grounding | Practice | Concept | Coming back to the body | **Grounding** |

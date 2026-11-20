@@ -54,6 +54,7 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
 | `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
 | `placeBlock` | Place one copy of an ordinary block in an empty cell of the player's room (Affirmation). Only interior room space, no body, no element, no door or doorway, never a material that may not be copied. Writes the world like the player's placement but emits no `blockPlace` or `blockPlaced`. Returns whether it placed |
+| `convertFluid` | Turn the connected cells of one fluid into another (`water` ↔ `lava`), nearest first, up to a cap; once per frame. Returns the cells converted, 0 when nothing was, -1 when a negative conversion into lava is refused (the player's body touches the section and `lavaWalk` is below 1) |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
 | `time()`, `memory()` | Game time in seconds (paused with the game); scratch numbers per practice for timers and per-room caps, shared by its copies, dropped with the last copy, never saved |
@@ -93,6 +94,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `dash` | 1 = a double tap of a direction, a double flick of the left stick or a swipe dashes 4.5 blocks that way (0 = no dash); `Player.startDash`, the gestures in `src/input/gestures.ts`, rules in [DASH](../design/built/practices/DASH.md) |
 | `run` | 1 = holding the run control walks 1.45 times as fast (0 = no running; crouching wins over it); `Player.walk`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
 | `crouch` | 1 = holding the crouch control makes the body a block shorter, its eye lower, the walk 0.45 times as fast, keeps it off ledges and halves projection contact (0 = no crouch); `Player.setStance`, `src/entities/stance.ts`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
+| `lavaWalk` | 1 = lava does not hurt the player (lava is left out of the damage check), its surface is ground (`Game.lavaSurface`, read by the solid test of the frame), and wading in it is full speed (the 0.4 wade becomes 1); intentions are still put out by it (posttraumatic, [practices](../design/built/practices/emotion/POST-TRAUMATIC-GROWTH.md)) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
 
@@ -134,6 +136,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `polarityChange` | — (react) | the player switched the loaded intention between positive and negative with **F** |
 | `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
 | `roomClear` | `drops` | a room cleared |
+| `intentElement` | — (react; hooks change the world, not the payload) | an intention enters a water or lava cell, once per entry (`intent`, `x, y, z`, `element`); emitted through `Intents` `entered` (IntentHooks). The element is read again after the hooks: lava a hook made at the intention's cell puts it out. Solve et Coagula converts the connected fluid with `convertFluid` |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
 | `intentBounce` | `vx, vy, vz` (the reflected velocity), `intent` (the spec), `launch` (new intentions) — react or modify, cannot cancel | an intention rebounds off a block: `x, y, z` the bounce point, `nx, ny, nz` the face normal, `bounce` the rebound number (1 for its first). Intentions added to `launch` join after the frame's walk, so launching from here is safe |
 | `itemGained`, `roomEnter` | — (react) | as named |
