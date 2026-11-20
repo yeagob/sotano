@@ -111,6 +111,14 @@ export const SYNERGIES: readonly SynergyDef[] = [
     stats: [{ stat: 'luck', layer: 'add', value: 2 }],
   }),
   defineSynergy({
+    id: 'transcendent',
+    name: 'Transcendent',
+    description: 'State of being: the limits give way. Your positive intentions take the blocks around them and hit harder for each one.',
+    requires: [{ tag: 'milagros', count: 3 }],
+    // a positive intention gets an aura three times its own size (Intents.absorb); negative ones are not changed
+    hooks: [hook('fire', e => { if (e.intent.polarity === 'positive') e.intent.absorb = 3; }, { id: 'aura', priority: 30 })],
+  }),
+  defineSynergy({
     id: 'resolute',
     name: 'Resolute',
     description: 'State of being: steady will. More damage, and blocks give way sooner.',

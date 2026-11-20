@@ -41,6 +41,8 @@ const AIM_RANGE_PROJECTION = 8;
 const BOUNCE_KEEP = 0.75;
 export const VOLLEY_SHARE = 0.6;
 const VOLLEY_SPREAD = 0.12;
+/** Seconds before an aura (the Transcendent state) touches the same projection again. */
+const AURA_CALM = 0.5;
 const UP = new THREE.Vector3(0, 1, 0);
 const NO_NORMAL = new THREE.Vector3();
 
@@ -50,7 +52,9 @@ interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age
   /** Rebounds this intention has made so far (the `bounce` number of `intentBounce`). */
   rebounds: number;
   /** The look, cached for `lookOf` (the spec it was built from, so a spent pierce, phase or bounce rebuilds it). */
-  look: IntentLook; lookSpec: IntentSpec }
+  look: IntentLook; lookSpec: IntentSpec;
+  /** Projections an aura touched, and the age until it may touch each again. */
+  aura?: Map<number, number> }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -94,7 +98,7 @@ export function intentLook(spec: IntentSpec, baseDamage = BASE_STATS.damage): In
   const power = Math.min(POWER_MAX, Math.max(POWER_MIN, Math.log2(ratio)));
   const effects = Math.min(EFFECTS_MAX,
     (spec.pierce > 0 ? 1 : 0) + (spec.phase > 0 ? 1 : 0) + (spec.bounces > 0 ? 1 : 0)
-    + (spec.homing > 0 ? 1 : 0) + (spec.volley > 1 ? 1 : 0) + spec.tags.size);
+    + (spec.homing > 0 ? 1 : 0) + (spec.volley > 1 ? 1 : 0) + (spec.absorb ? 1 : 0) + spec.tags.size);
   return {
     power,
     effects,
@@ -119,6 +123,9 @@ export interface IntentHooks {
   hitBlock(hit: VoxelHit, intent: IntentSpec): boolean;
   /** Tier of the block (pierce only works up to `pierceTier`). */
   tier(x: number, y: number, z: number): number;
+  /** Positive aura (IntentSpec.absorb): removes every destructible block with a cell within `r` of (x, y, z) and returns
+   *  the sum of their armor. Optional: without it an aura takes nothing. */
+  absorbAt?(x: number, y: number, z: number, r: number): number;
   /** Index of a loose cube touching this sphere, or -1. */
   debrisAt(x: number, y: number, z: number, r: number): number;
   /** Something hit a loose cube with this velocity. */
@@ -279,6 +286,8 @@ export class Intents {
         this.list.splice(i, 1);
         continue;
       }
+      // the Transcendent aura: a positive intention that did not hit a projection takes what is around it
+      if (t.spec.absorb && t.spec.polarity === 'positive') this.absorb(t);
       const cube = h.debrisAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius);
       if (cube >= 0) {
         h.hitDebris(cube, t.vel, t.spec);
@@ -340,6 +349,21 @@ export class Intents {
     for (const l of this.launching) this.add(l.spec, l.pos, l.vel, l.rebounds);
     this.launching = [];
     this.draw();
+  }
+
+  /** The aura of a positive intention (IntentSpec.absorb): it takes the destructible blocks in its sphere, and their
+   *  armor adds to its damage; it also warms the nearest projection in the sphere, once per AURA_CALM. */
+  private absorb(t: Intent) {
+    const h = this.hooks;
+    const r = t.spec.radius * (t.spec.absorb ?? 0);
+    const armor = h.absorbAt?.(t.pos.x, t.pos.y, t.pos.z, r) ?? 0;
+    if (armor > 0) t.spec = { ...t.spec, damage: t.spec.damage + armor };
+    const foe = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, r, 'positive');
+    if (foe < 0) return;
+    t.aura ??= new Map();
+    if ((t.aura.get(foe) ?? -Infinity) > t.age) return;
+    t.aura.set(foe, t.age + AURA_CALM);
+    h.hitEnemy(foe, t.vel, t.spec);
   }
 
   /** The look of every intention in flight, in the order drawn (for tests and the gallery). */

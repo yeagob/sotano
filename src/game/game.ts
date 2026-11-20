@@ -528,6 +528,7 @@ export class Game {
       solid: (x, y, z) => this.solid(x, y, z),
       tier: (x, y, z) => mat(this.world.get(x, y, z)).tier,
       hitBlock: (hit, t) => this.intentHitsBlock(hit, t.mining, t.polarity),
+      absorbAt: (x, y, z, r) => this.absorbBlocksAt(x, y, z, r),
       debrisAt: (x, y, z, r) => this.debrisAt(x, y, z, r),
       hitDebris: (i, v, t) => {
         const k = t.knock * 6 / Math.max(1, v.length());
@@ -2574,6 +2575,25 @@ export class Game {
     const broke = this.damageBlock(hit.x, hit.y, hit.z, mining, 'intent', 'intent');
     if (!broke) sfx.hit(Math.min(3, isFinite(mat(id).tier) ? mat(id).tier : 3));
     return broke;
+  }
+
+  /** The Transcendent aura (IntentSpec.absorb): removes every destructible block with a cell within `r` of (x, y, z),
+   *  without debris, and returns the sum of their armor. Unbreakable blocks, frames, pedestals and the lab and kitchen stay. */
+  private absorbBlocksAt(x: number, y: number, z: number, r: number): number {
+    const keep = new Set<number>([MAT.kitchen, MAT.alembic, MAT.pedestal, MAT.frame, MAT.goldframe, MAT.bossframe]);
+    let armor = 0;
+    for (let a = Math.floor(x - r); a <= Math.floor(x + r); a++)
+      for (let b = Math.floor(y - r); b <= Math.floor(y + r); b++)
+        for (let c = Math.floor(z - r); c <= Math.floor(z + r); c++) {
+          const id = this.world.get(a, b, c);
+          if (id === AIR || keep.has(id) || !Number.isFinite(mat(id).hp)) continue;
+          // the nearest point of the cell to the aura's centre must be inside the aura
+          const dx = x - Math.min(Math.max(x, a), a + 1), dy = y - Math.min(Math.max(y, b), b + 1), dz = z - Math.min(Math.max(z, c), c + 1);
+          if (dx * dx + dy * dy + dz * dz > r * r) continue;
+          const a0 = mat(id).armor;
+          if (this.damageBlock(a, b, c, 1e6, 'intent', 'transcendent', false)) armor += a0;
+        }
+    return armor;
   }
 
   private strokeHit(id: number, kx: number, kz: number, intent: IntentSpec) {

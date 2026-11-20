@@ -1418,8 +1418,8 @@ export const ES: Catalog = {
       },
       drlauncher: {
         name: 'Dr. Launcher',
-        description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. La bomba que llevas ya no cae bajo su propio peso; mantiene su línea y vuela hacia donde miras.',
-        effect: 'Un doble toque rápido del control de disparo (en 0,3 s) lanza una bomba como misil en lugar de una intención: vuela recto, acelera hasta 24 bloques/s y explota contra lo primero que encuentra, o a los 40 bloques, con la explosión de tu bomba. Negativo: una explosión de bomba, que también puede herirte. Positivo: una explosión de amor que repara bloques, cura a los aliados, acerca a las proyecciones a tu lado y hace crecer a las criaturas. Se rechaza, sin gastar bomba, si hay un bloque a menos de 2 bloques.',
+        description: 'No hay nada imposible: un límite es solo el borde de lo que has intentado. La bomba que llevas vuela hacia donde miras.',
+        effect: 'Doble toque de disparo (en 0,3 s) lanza una bomba como misil: recto, hasta 24 bloques/s, explota en lo primero que toca o a los 40 bloques. Negativo: explosión de bomba, que puede herirte. Positivo: explosión de amor que repara bloques. Se rechaza, sin gastar bomba, si hay un bloque a 2.',
         inspiredBy: 'Trascender los límites (Santiago Dopazo)',
       },
       'menders-thread': {
@@ -1627,6 +1627,7 @@ export const ES: Catalog = {
       lucid: { name: 'Lúcido', description: 'Estado de ser: una mente clara. Las intenciones llegan más lejos y tú alcanzas más.' },
       open_hearted: { name: 'Corazón abierto', description: 'Estado de ser: sentir en vez de evitar. La fortuna te sonríe.' },
       resolute: { name: 'Resuelto', description: 'Estado de ser: voluntad firme. Más daño, y los bloques ceden antes.' },
+      transcendent: { name: 'Trascendente', description: 'Estado de ser: los límites ceden. Tus intenciones positivas absorben los bloques de alrededor y pegan más fuerte por cada uno.' },
     },
 
     enemies: {

@@ -217,6 +217,9 @@ export interface IntentSpec {
   homing: number;
   /** What homing steers toward: the nearest block, or the nearest projection (Eye Contact). */
   homingTarget: 'block' | 'projection';
+  /** Positive only (the Transcendent state): an aura of `absorb` times its radius. It takes every destructible block it
+   *  touches, adds their armor to its damage, and warms each projection it touches. 0 or absent: no aura. */
+  absorb?: number;
 }
 
 export type GameBus = EventBus<GameEvents>;
