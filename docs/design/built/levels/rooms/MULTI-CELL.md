@@ -6,7 +6,7 @@ A room is one cell on the map, but its space may spread into the empty cells bes
 
 ## The footprint
 
-A template declares its size in cells, east and south, from one to two each way. Each cell is thirteen blocks by seven. So a room two cells wide is 28 blocks by 7; two cells deep is 13 by 16; two by two would be 28 by 16. The build authors thirteen templates: ten two-cell-wide rooms and three two-cell-deep rooms. None is two by two yet, though the validator allows it.
+A template declares its size in cells, east and south, from one to two each way. Each cell is thirteen blocks by seven. So a room two cells wide is 28 blocks by 7; two cells deep is 13 by 16; two by two would be 28 by 16. The build authors twenty-two templates: seventeen two-cell-wide rooms and five two-cell-deep rooms. None is two by two yet, though the validator allows it.
 
 | Footprint | Template | Floors | Kind |
 |---|---|---|---|
@@ -14,7 +14,7 @@ A template declares its size in cells, east and south, from one to two each way.
 | 2×1 | wind-hall | 2–3 | normal or path (cross ceiling, walls with dirt plugs) |
 | 1×2 | stepped-well | 2–4 | normal or path (stepped ceiling, a pit five deep) |
 | 2×1 | drowned-nave | 3–4 | normal or path (water wall to wall) |
-| 2×1 | strongroom | 4–5 | normal or path (blocks packed with aisles) |
+| 2×1 | strongroom | 4–5 | normal or path (a mass of great blocks round the key's chamber) |
 | 2×1 | styx-cavern | 5–6 | normal or path (cave roof, a deep pool) |
 | 2×1 | crown-hall | 1–4 | boss (the crown, a long dome) |
 | 2×1 | abyss | 5 | boss (the great pit) |
@@ -23,6 +23,15 @@ A template declares its size in cells, east and south, from one to two each way.
 | 2×1 | dis-hall | 6–7 | normal or path (a ditch of lava) |
 | 1×2 | chasm | 6–9 | normal or path (a plateau of holes, a bridge of pillars) |
 | 1×2 | giants-well | 7–9 | normal (trenches and a ring of pits) |
+| 2×1 | aqueduct | 1–5 | normal or path (a flooded hall crossed by a bridge) |
+| 2×1 | twin-courts | 2–9 | normal or path (an obsidian wall with a plug, a pool with an island) |
+| 2×1 | hypostyle | 2–6 | normal or path (a long hall of columns) |
+| 2×1 | throne-hall | 2–4 | boss (a dais between braziers) |
+| 2×1 | cistern-hall | 3–5 | normal or path (deep channels along the walls) |
+| 1×2 | lake-hall | 3–5 | normal or path (a cavern lake with an island) |
+| 2×1 | ember-hall | 5–9 | normal or path (a floor of lava, the key on an island) |
+| 1×2 | catacombs | 6–9 | normal (an obsidian wall, crypt cells with flames) |
+| 2×1 | ember-throne | 6–9 | boss (lava pools round the boss's practice) |
 
 ## The home cell
 
@@ -38,7 +47,7 @@ On floor 0 and every floor below it, a boss room is always a template of two cel
 
 - On the random floors (6 to 9), the boss is the farthest dead end that has an empty cell east or west of it (`wideBoss` in `generatePlan`). On the Tree floors the crown always has empty cells on both sides.
 - The boss room claims those cells before any other room (`allotSpace`).
-- Only templates of two cells or more are chosen for it (`pickTemplate` with `large`); if none fits, generation fails loudly instead of falling back to a small room. Every floor from 1 to 9 has one: `crown-hall` (1–4), `abyss` (5), `caldera-hall` (6–9).
+- Only templates of two cells or more are chosen for it (`pickTemplate` with `large`); if none fits, generation fails loudly instead of falling back to a small room. Every floor from 1 to 9 has one: `crown-hall` (1–4) and `throne-hall` (2–4), `abyss` (5), `caldera-hall` and `ember-throne` (6–9).
 
 The roots' last room (floor 0) is the way down, not a boss room, and keeps its fixed one-cell template.
 

@@ -1,0 +1,32 @@
+# rebirth-draught — Rebirth Draught (#52): the flask on top of the hand; drinking it in the sandbox does nothing and says so, and the flask stays in hand (a new run is never started here)
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.rebirth-draught] · bombs 99 · keys 99
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.rebirth-draught] · bombs 99 · keys 99
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.rebirth-draught] · bombs 99 · keys 99
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+map t 120 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

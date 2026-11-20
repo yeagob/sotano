@@ -1,0 +1,22 @@
+{
+  "note": "Waymark: two copies save the player twice, each death spends one copy; the third death is the real one",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [1, 0, 3],
+  "god": false,
+  "items": ["waymark", "waymark"],
+  "ticks": 600,
+  "report": [0, 2, 60, 200, 240, 480, 600],
+  "actions": [
+    { "t": 60, "do": "hurt", "amount": 99 },
+    { "t": 240, "do": "hurt", "amount": 99 },
+    { "t": 480, "do": "hurt", "amount": 99 }
+  ]
+}

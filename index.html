@@ -148,13 +148,44 @@
     #polarity { width: 14px; height: 14px; margin: 4px 0 2px 3px; border-radius: 50%; border: 2px solid var(--pol); background: var(--pol);
       box-shadow: 0 0 0 1px var(--ui-line); }
     #polarity[data-polarity="negative"] { background: var(--ui-line); }
+    /* Kairos (#123): three pips for the charge, a dimmed page while time is stopped, numbered marks on the world */
+    #kairos { display: flex; align-items: center; gap: 4px; margin: 4px 0 2px 3px; }
+    #kairos[hidden] { display: none; }
+    #kairos i { width: 8px; height: 8px; border: 2px solid var(--ui-line); transform: rotate(45deg); display: inline-block; }
+    #kairos i.on { background: var(--kairos); border-color: var(--kairos); }
+    #kairos em { font-style: normal; font-size: 12px; margin-left: 4px; }
+    #kairos-marks { position: fixed; inset: 0; pointer-events: none; }
+    #kairos-marks b { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid var(--kairos);
+      border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--kairos); background: rgba(0, 0, 0, 0.35); }
+    #kairos-marks b[hidden] { display: none; }
+    body.kairos-stop #game { filter: saturate(0.25) brightness(0.9); }
+    .tb-miracle { background: conic-gradient(var(--kairos) calc(var(--charge, 0) * 360deg), transparent 0); }
     #items { display: flex; flex-wrap: wrap; gap: 3px; max-width: 220px; margin-top: 8px; }
+    /* Status timer (sotano-popups: persistent status): the practice icon and the seconds left, a slate pill; in the last
+       second the outline turns to the ember token. The tint is a soft wash over the screen that lets the walls read thin. */
+    #phase { display: flex; align-items: center; gap: 4px; margin-top: 6px; padding: 2px 6px; width: max-content;
+      font-variant-numeric: tabular-nums; color: var(--ui-text); text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
+    #phase[hidden] { display: none; }
+    #phase img { width: 24px; height: 24px; image-rendering: pixelated; }
+    #phase.warn { outline: 2px solid var(--ui-warn, var(--ui-text)); }
+    #phase-tint { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s ease; z-index: 1;
+      background: radial-gradient(ellipse at center, transparent 40%, color-mix(in srgb, var(--phase-tint, #888) 30%, transparent) 100%); }
+    #phase-tint.on { opacity: 1; }
     #items img { width: 28px; height: 28px; }
 
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
+    /* the held-item label: the flask or meal in hand, named above the hand (sotano-popups: persistent status) */
+    #held { position: fixed; left: 50%; bottom: calc(18px + 24 * var(--u) + 10px); transform: translateX(-50%); pointer-events: none;
+      display: none; flex-direction: column; align-items: center; gap: 2px; max-width: min(92vw, 420px); padding: 4px 10px; text-align: center;
+      color: var(--ui-text); font-size: calc(11 * var(--u)); }
+    #held.show { display: flex; }
+    #held b { font-weight: 600; }
+    #held span { opacity: 0.85; }
+    body.dev-touch #held { bottom: calc(8px + 16 * var(--u) + 10px); }
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
     .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    .slot.extra { opacity: 0.55; }
     .slot img { width: 100%; height: 100%; display: block; }
     #inventory .hand-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
     #inventory .hand-row .slot { cursor: pointer; }
@@ -662,9 +693,14 @@
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
     <div id="polarity" data-polarity="positive"></div>
+    <div id="kairos" hidden><span><i></i><i></i><i></i></span><em></em></div>
+    <div id="kairos-marks"></div>
+    <div id="phase" class="slate" hidden role="status"></div>
     <div id="items"></div>
+    <div id="phase-tint" aria-hidden="true"></div>
   </div>
   <div id="hand"></div>
+  <div id="held" aria-live="polite"></div>
   <div id="corner"><canvas id="minimap" class="slate"></canvas><div id="depth"></div></div>
   <div id="debug"></div>
   <div id="banner"></div>

@@ -74,6 +74,7 @@ function intentRig() {
     splash: () => {},
     hit: () => {},
     nearestBlock: () => null,
+    nearestEnemy: () => null,
   };
   const scene = new THREE.Scene();
   const intents = new Intents(scene, hooks);

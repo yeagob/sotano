@@ -10,7 +10,7 @@ The design gives seven practices that would change how the player meets the elem
 |---|---|---|
 | Breathwork | Longer breath under water | No. The breath is 8 seconds for everyone |
 | Swimming lessons | "Flow" variants of swimming: move better in water | No. The item called Flow raises movement speed and fire rate, not swimming |
-| Fire walking | Immune to fire | No. Fire hurts everyone |
+| Fire walking | Immune to fire | Built as Firewalking (fire never hurts you, lava still does): [FIRE](../../built/practices/FIRE.md) |
 | Cold exposure | Extinguishes what the player touches | No |
 | Alchemy | Better furnace results | No furnace exists |
 | Insight | Electric intentions (a charge from the player's shot) | No electricity exists |

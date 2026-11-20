@@ -6,8 +6,9 @@
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import type { Stats } from '../core/stats';
-import type { WeaponId } from '../game/events';
+import type { Formation, IntentSpec, WeaponId } from '../game/events';
 import { raycastVoxels } from '../physics/raycast';
+import { orbitOffset, strandOrbit, VOLLEY_SHARE, VOLLEY_SPREAD, HELIX_SHARE, TRIAD_SHARE } from './intents';
 
 export interface WeaponTarget { id: number; x: number; y: number; z: number; hw: number; h: number }
 
@@ -18,8 +19,14 @@ export interface WeaponHost {
   forward(): THREE.Vector3;
   /** Left button held, and nothing else (an item being held up) blocks casting. */
   casting(): boolean;
-  /** Emits `strike`; null if a hook cancelled it. */
-  strike(weapon: WeaponId, damage: number, mining: number, reach: number): { damage: number; mining: number; reach: number; tags: Set<string> } | null;
+  /** The shot a beam is cast with: emits `fire` (intentFromStats) and returns its spec; null if a hook cancelled it. */
+  shot(): IntentSpec | null;
+  /** The hand the next cast leaves from (+1 right, -1 left); always +1 without Bilateral Stimulation. Optional. */
+  castHand?(): number;
+  /** Emits `strike`; null if a hook cancelled it. `intent` is the shot the stroke carries (its tags, volley and shape). */
+  strike(weapon: WeaponId, damage: number, mining: number, reach: number, intent?: IntentSpec): { damage: number; mining: number; reach: number; tags: Set<string> } | null;
+  /** The nearest solid block within `range` of the point (its centre), or null. */
+  nearestBlock(x: number, y: number, z: number, range: number): { x: number; y: number; z: number } | null;
   solid(x: number, y: number, z: number): boolean;
   /** A world block that weapons can break (not air, not unbreakable). */
   breakable(x: number, y: number, z: number): boolean;
@@ -181,7 +188,93 @@ class Charge {
 
 const BEAM_TIME = 1;
 const BEAM_TICK = 0.1;
+const BEAM_TICKS = Math.round(BEAM_TIME / BEAM_TICK);
 const BEAM_REACH = 24;
+/** Most rays of one hand's cast: a fan of beams, each three strands when it has a formation. */
+export const BEAM_MAX_RAYS = 24;
+/** Homing: a projection within this many blocks of a ray, inside a cone of BEAM_CONE; a block within BEAM_BLOCK_RANGE. */
+const BEAM_PROJECTION_RANGE = 8;
+const BEAM_CONE = (25 * Math.PI) / 180;
+const BEAM_BLOCK_RANGE = 6;
+/** A beam leaves a hand a little below the eye, BEAM_HAND_SIDE blocks to its side (the left hand is mirrored). */
+const BEAM_HAND_SIDE = 0.18;
+const BEAM_HAND_DROP = 0.12;
+const BEAM_WIDTH = 0.09;
+/** Strands (Rule of Three, Spiral Growth) are thinner than the beam; the halo is wider than the core. */
+const STRAND_WIDTH = 0.6;
+const HALO_WIDTH = 1.9;
+/** A ray hits a projection whose body lies within its half-width plus this many blocks. */
+const BEAM_PAD = 0.35;
+/** A spiral strand (Spiral Growth alone) circles its beam at this radius, one turn per block. */
+const BEAM_HELIX_R = 0.3;
+
+/** One cast ray: where it starts, where it points (before homing), and the share of the shot it carries. */
+export interface BeamRay { origin: THREE.Vector3; dir: THREE.Vector3; share: number }
+/** What a beam takes from its shot at release (frozen): the fan, the strands, the homing and the hands. */
+export interface BeamShape {
+  readonly volley: number;
+  readonly formation?: Formation;
+  readonly homing: number;
+  readonly homingTarget: 'block' | 'projection';
+  readonly twin: boolean;
+}
+
+/**
+ * The rays of one hand's cast `elapsed` seconds after release. The hand at `side` (±1) starts a little below and to
+ * its side of the eye and aims at `end`, where the eye's own ray ends (both hands meet at the crosshair). Fan: beam
+ * k > 0 turns around up by ±ceil(k/2) × VOLLEY_SPREAD at VOLLEY_SHARE. Formation: each beam becomes three strands on
+ * their orbits (age = elapsed). Pure: the same inputs give the same rays.
+ */
+export function beamRays(shape: BeamShape, eye: THREE.Vector3, forward: THREE.Vector3, end: THREE.Vector3, elapsed: number, side: number): BeamRay[] {
+  const right = new THREE.Vector3().crossVectors(forward, UP).normalize();
+  const origin = eye.clone().addScaledVector(right, BEAM_HAND_SIDE * side).addScaledVector(UP, -BEAM_HAND_DROP);
+  const aim = end.clone().sub(origin).normalize();
+  const f = shape.formation, per = f ? 3 : 1;
+  const beams = Math.min(Math.max(1, Math.round(shape.volley)), Math.floor(BEAM_MAX_RAYS / per));
+  const out: BeamRay[] = [];
+  for (let k = 0; k < beams; k++) {
+    const turn = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * VOLLEY_SPREAD;
+    const dir = k === 0 ? aim : aim.clone().applyAxisAngle(UP, turn);
+    const beam = k === 0 ? 1 : VOLLEY_SHARE;
+    if (!f) { out.push({ origin: origin.clone(), dir, share: beam }); continue; }
+    for (let j = 0; j < 3; j++) {
+      const strand = (f.triad ? TRIAD_SHARE : 1) * (f.spiral && j > 0 ? HELIX_SHARE : 1);
+      const off = new THREE.Vector3();
+      orbitOffset(strandOrbit(f, BEAM_TIME, j), dir, elapsed, off);
+      out.push({ origin: origin.clone().add(off), dir: dir.clone(), share: beam * strand });
+    }
+  }
+  return out;
+}
+
+/** A ray as drawn: from `from` along `dir` for `len` blocks. A helix strand is drawn as the shared helix. */
+interface Seg { from: THREE.Vector3; dir: THREE.Vector3; len: number; strand: boolean; helix: { phase: number; spin: number } | null }
+/** A pool slot: the core and halo of one ray. A helix strand shows the shared helix (clipped per ray) instead of a tube. */
+interface Slot { core: THREE.Mesh; halo: THREE.Mesh; coreHelix: THREE.BufferGeometry; haloHelix: THREE.BufferGeometry }
+
+/** The helix a spiral strand traces: BEAM_HELIX_R around +z, one turn per block, from 0 to BEAM_REACH. */
+class Helix extends THREE.Curve<THREE.Vector3> {
+  constructor() { super(); }
+  getPoint(t: number, out: THREE.Vector3 = new THREE.Vector3()) {
+    const a = t * BEAM_REACH * Math.PI * 2;
+    return out.set(BEAM_HELIX_R * Math.cos(a), BEAM_HELIX_R * Math.sin(a), t * BEAM_REACH);
+  }
+}
+
+function helixGeometry(radius: number): THREE.TubeGeometry {
+  return new THREE.TubeGeometry(new Helix(), BEAM_REACH * 16, radius, 6, false);
+}
+
+/** A geometry with the buffers of `src` (shared, not copied) and a draw range of its own. */
+function sharedView(src: THREE.BufferGeometry): THREE.BufferGeometry {
+  const g = new THREE.BufferGeometry();
+  for (const name of Object.keys(src.attributes)) g.setAttribute(name, src.getAttribute(name) as THREE.BufferAttribute);
+  g.setIndex(src.getIndex());
+  return g;
+}
+
+/** Both hands, at most BEAM_MAX_RAYS rays each. */
+const BEAM_SLOTS = BEAM_MAX_RAYS * 2;
 
 export class Beam implements Weapon {
   readonly id = 'beam' as const;
@@ -189,18 +282,34 @@ export class Beam implements Weapon {
   private firing = 0;
   private tick = 0;
   private ticksLeft = 0;
+  /** The hand that casts the first tick (+1 right, -1 left). */
+  private hand = 1;
   private spec = { damage: 0, mining: 0, reach: BEAM_REACH };
-  private core: THREE.Mesh;
-  private halo: THREE.Mesh;
-  private end = new THREE.Vector3();
+  private shape: BeamShape = { volley: 1, homing: 0, homingTarget: 'block', twin: false };
+  /** What each hand's last tick cast: index 0 the right hand (or the only hand), 1 the left. */
+  private segs: Seg[][] = [[], []];
+  private slots: Slot[] = [];
+  private cylinder: THREE.CylinderGeometry;
+  private helixSrc: THREE.TubeGeometry[];
+  private coreMat: THREE.MeshBasicMaterial;
+  private haloMat: THREE.MeshBasicMaterial;
+  private tmp = new THREE.Vector3();
 
   constructor(private scene: THREE.Scene, private host: WeaponHost) {
     this.charge = new Charge(host);
-    const geo = new THREE.CylinderGeometry(1, 1, 1, 10, 1, true).rotateX(Math.PI / 2).translate(0, 0, 0.5);
-    this.core = new THREE.Mesh(geo, glowMaterial(pal('light.core'), 0.95));
-    this.halo = new THREE.Mesh(geo, glowMaterial(pal('path.will.glow'), 0.35));
-    this.core.visible = this.halo.visible = false;
-    scene.add(this.core, this.halo);
+    this.cylinder = new THREE.CylinderGeometry(1, 1, 1, 10, 1, true).rotateX(Math.PI / 2).translate(0, 0, 0.5);
+    this.coreMat = glowMaterial(pal('light.core'), 0.95);
+    this.haloMat = glowMaterial(pal('path.will.glow'), 0.35);
+    const strandR = BEAM_WIDTH * STRAND_WIDTH;
+    const coreSrc = helixGeometry(strandR), haloSrc = helixGeometry(strandR * HALO_WIDTH);
+    this.helixSrc = [coreSrc, haloSrc];
+    for (let i = 0; i < BEAM_SLOTS; i++) {
+      const core = new THREE.Mesh(this.cylinder, this.coreMat), halo = new THREE.Mesh(this.cylinder, this.haloMat);
+      core.frustumCulled = halo.frustumCulled = false;
+      core.visible = halo.visible = false;
+      scene.add(core, halo);
+      this.slots.push({ core, halo, coreHelix: sharedView(coreSrc), haloHelix: sharedView(haloSrc) });
+    }
   }
 
   update(dt: number) {
@@ -208,63 +317,163 @@ export class Beam implements Weapon {
     if (this.firing <= 0) return;
     this.firing -= dt;
     this.tick -= dt;
-    // a fixed accumulator: exactly BEAM_TIME / BEAM_TICK ticks per beam, whatever the frame rate
-    while (this.tick <= 0 && this.ticksLeft > 0) { this.tick += BEAM_TICK; this.ticksLeft--; this.doTick(); }
+    // a fixed accumulator: exactly BEAM_TICKS ticks per beam, whatever the frame rate
+    while (this.tick <= 0 && this.ticksLeft > 0) {
+      this.tick += BEAM_TICK;
+      const i = BEAM_TICKS - this.ticksLeft;
+      this.ticksLeft--;
+      this.doTick(i);
+    }
     if (this.ticksLeft <= 0 && this.firing < 0) this.firing = 0;
-    this.draw();
-    if (this.firing <= 0) this.core.visible = this.halo.visible = false;
+    if (this.firing <= 0) this.hideAll(); else this.draw();
   }
 
+  /** The shot becomes a beam: `fire` first (a cancelled shot gives the charge back), then `strike`. */
   private release() {
+    const shot = this.host.shot();
+    if (!shot) { this.charge.refund(); return; }
     const s = this.host.stats();
-    const ev = this.host.strike('beam', s.damage, s.mining * 2, BEAM_REACH);
+    const ev = this.host.strike('beam', shot.damage, shot.mining * 2, BEAM_REACH, shot);
     if (!ev) { this.charge.refund(); return; }
-    this.spec = ev;
+    this.spec = { damage: ev.damage, mining: ev.mining, reach: ev.reach };
+    this.shape = Object.freeze({
+      volley: shot.volley, formation: shot.formation, homing: shot.homing, homingTarget: shot.homingTarget, twin: s.twinCast >= 1,
+    });
+    this.hand = this.host.castHand?.() ?? 1;
     this.firing = BEAM_TIME;
     this.tick = 0;
-    this.ticksLeft = Math.round(BEAM_TIME / BEAM_TICK);
+    this.ticksLeft = BEAM_TICKS;
+    this.segs = [[], []];
     this.host.swingHands();
     this.host.sound('beam');
   }
 
-  /** One tick: the beam reaches the first solid block, burns it, and hits everything on its way. */
-  private doTick() {
+  /**
+   * One tick: the hand of this tick (the two hands alternate with Bilateral Stimulation) casts its rays. Each ray is
+   * homed, raycast, burns or answers the block it reaches, hits what its strip crosses and clears what it crosses.
+   */
+  private doTick(i: number) {
     const eye = this.host.eye(), f = this.host.forward();
-    const hit = raycastVoxels((x, y, z) => this.host.solid(x, y, z), eye.x, eye.y, eye.z, f.x, f.y, f.z, this.spec.reach);
-    const len = hit ? hit.t : this.spec.reach;
-    this.end.copy(eye).addScaledVector(f, len);
-    if (hit && this.host.breakable(hit.x, hit.y, hit.z)) this.host.burn(hit.x, hit.y, hit.z, this.spec.mining, 'beam');
-    else if (hit) this.host.answer(hit.x, hit.y, hit.z);
-    for (const t of this.host.targets()) {
-      if (segDist(new THREE.Vector3(t.x, t.y + t.h / 2, t.z), eye, this.end) > t.hw + 0.35) continue;
-      this.host.hit(t.id, this.spec.damage, f.x, f.z, 'beam');
+    const elapsed = i * BEAM_TICK;
+    const side = this.shape.twin ? (i % 2 ? -this.hand : this.hand) : 1;
+    const crosshair = raycastVoxels((x, y, z) => this.host.solid(x, y, z), eye.x, eye.y, eye.z, f.x, f.y, f.z, BEAM_REACH);
+    const aim = eye.clone().addScaledVector(f, crosshair ? crosshair.t : BEAM_REACH);
+    const targets = this.host.targets();
+    const rays = beamRays(this.shape, eye, f, aim, elapsed, side);
+    const segs: Seg[] = [];
+    let tip: THREE.Vector3 | null = null;
+    const formation = this.shape.formation;
+    for (let r = 0; r < rays.length; r++) {
+      const ray = rays[r];
+      const dir = this.homed(ray.origin, ray.dir, targets);
+      const hit = raycastVoxels((x, y, z) => this.host.solid(x, y, z), ray.origin.x, ray.origin.y, ray.origin.z, dir.x, dir.y, dir.z, this.spec.reach);
+      const len = hit ? hit.t : this.spec.reach;
+      const end = ray.origin.clone().addScaledVector(dir, len);
+      if (hit) {
+        if (this.host.breakable(hit.x, hit.y, hit.z)) this.host.burn(hit.x, hit.y, hit.z, this.spec.mining * ray.share, 'beam');
+        else this.host.answer(hit.x, hit.y, hit.z);
+      }
+      for (const t of targets) {
+        if (segDist(new THREE.Vector3(t.x, t.y + t.h / 2, t.z), ray.origin, end) > t.hw + BEAM_PAD) continue;
+        this.host.hit(t.id, this.spec.damage * ray.share, dir.x, dir.z, 'beam');
+      }
+      this.host.clearProjectiles((x, y, z) => segDist(new THREE.Vector3(x, y, z), ray.origin, end) < 0.5);
+      this.host.clearCubes((x, y, z) => segDist(new THREE.Vector3(x, y, z), ray.origin, end) < 0.6);
+      // a spiral strand's helix is centred on its beam: the strand's offset at this tick is taken back out
+      let from = ray.origin, helix: Seg['helix'] = null;
+      if (formation && formation.spiral && !formation.triad) {
+        const o = strandOrbit(formation, BEAM_TIME, r % 3), off = new THREE.Vector3();
+        orbitOffset(o, ray.dir, elapsed, off);
+        from = ray.origin.clone().sub(off);
+        helix = { phase: o.phase, spin: o.spin };
+      }
+      segs.push({ from, dir, len, strand: !!formation, helix });
+      tip ??= end;
     }
-    this.host.clearProjectiles((x, y, z) => segDist(new THREE.Vector3(x, y, z), eye, this.end) < 0.5);
-    this.host.clearCubes((x, y, z) => segDist(new THREE.Vector3(x, y, z), eye, this.end) < 0.6);
-    this.host.particles(this.end.x, this.end.y, this.end.z, pal('light.hot'), 5, 3, 0.08);
+    const hand = side > 0 ? 0 : 1;
+    this.segs[hand] = segs;
+    if (tip) this.host.particles(tip.x, tip.y, tip.z, pal('light.hot'), 5, 3, 0.08);
     this.host.shake(0.06);
   }
 
+  /**
+   * Homing (Eye Contact toward a projection, Dowsing toward a block): the ray turns by 1 - e^(-homing × tick) toward
+   * its target. Stateless: each tick turns the base direction afresh, so the result depends on the tick alone.
+   */
+  private homed(origin: THREE.Vector3, dir: THREE.Vector3, targets: WeaponTarget[]): THREE.Vector3 {
+    const h = this.shape.homing;
+    if (!(h > 0)) return dir;
+    let want: THREE.Vector3 | null = null;
+    if (this.shape.homingTarget === 'projection') {
+      let bd = Infinity, bid = Infinity;
+      const cos = Math.cos(BEAM_CONE);
+      for (const t of targets) {
+        const p = new THREE.Vector3(t.x, t.y + t.h / 2, t.z), v = p.clone().sub(origin), d = v.length();
+        if (d < 1e-6 || d > BEAM_PROJECTION_RANGE || v.dot(dir) / d < cos) continue;
+        if (d < bd || (d === bd && t.id < bid)) { bd = d; bid = t.id; want = p; }
+      }
+    } else {
+      const b = this.host.nearestBlock(origin.x, origin.y, origin.z, BEAM_BLOCK_RANGE);
+      if (b) want = new THREE.Vector3(b.x, b.y, b.z);
+    }
+    if (!want) return dir;
+    const to = want.sub(origin).normalize();
+    return dir.clone().lerp(to, 1 - Math.exp(-h * BEAM_TICK)).normalize();
+  }
+
+  /** Draws the rays of both hands at constant brightness: only the width breathes. */
   private draw() {
-    const eye = this.host.eye(), f = this.host.forward();
-    // from the right hand, a little below the eye, to where the beam ends
-    const right = new THREE.Vector3().crossVectors(f, UP).normalize();
-    const from = eye.clone().addScaledVector(right, 0.2).addScaledVector(UP, -0.2).addScaledVector(f, 0.7);
-    const len = Math.max(0.1, from.distanceTo(this.end));
-    // the width breathes; the light never flickers
-    const w = 0.09 + Math.sin((BEAM_TIME - this.firing) * 9) * 0.015;
-    for (const [m, k] of [[this.core, 1], [this.halo, 1.9]] as const) {
-      m.position.copy(from);
-      m.lookAt(this.end);
-      m.scale.set(w * k, w * k, len);
+    const t = BEAM_TIME - this.firing;
+    const w = BEAM_WIDTH + Math.sin(t * 9) * 0.015;
+    let n = 0;
+    for (const list of this.segs) for (const seg of list) {
+      if (n >= this.slots.length) break;
+      this.place(this.slots[n++], seg, t, w);
+    }
+    for (; n < this.slots.length; n++) this.hide(this.slots[n]);
+  }
+
+  private place(slot: Slot, seg: Seg, elapsed: number, w: number) {
+    const width = seg.strand ? w * STRAND_WIDTH : w;
+    const ahead = this.tmp.copy(seg.from).add(seg.dir);
+    const meshes: [THREE.Mesh, number, THREE.BufferGeometry][] = [[slot.core, 1, slot.coreHelix], [slot.halo, HALO_WIDTH, slot.haloHelix]];
+    for (const [m, k, view] of meshes) {
+      m.position.copy(seg.from);
+      m.lookAt(ahead);
+      if (seg.helix) {
+        m.geometry = view;
+        m.scale.set(1, 1, 1);
+        m.rotateZ(seg.helix.phase + seg.helix.spin * elapsed);
+        // the helix is clipped where the ray ends
+        const count = view.index ? view.index.count : 0;
+        const used = Math.floor((count * Math.min(1, seg.len / BEAM_REACH)) / 3) * 3;
+        view.setDrawRange(0, used);
+      } else {
+        m.geometry = this.cylinder;
+        m.scale.set(width * k, width * k, seg.len);
+      }
       m.visible = true;
     }
   }
 
+  private hide(slot: Slot) { slot.core.visible = slot.halo.visible = false; }
+
+  private hideAll() {
+    for (const s of this.slots) this.hide(s);
+  }
+
   dispose() {
     this.host.chargeHands(0);
-    this.scene.remove(this.core, this.halo);
-    this.core.geometry.dispose();
+    for (const s of this.slots) {
+      this.scene.remove(s.core, s.halo);
+      s.coreHelix.dispose();
+      s.haloHelix.dispose();
+    }
+    for (const g of this.helixSrc) g.dispose();
+    this.cylinder.dispose();
+    this.coreMat.dispose();
+    this.haloMat.dispose();
+    this.slots = [];
   }
 }
 

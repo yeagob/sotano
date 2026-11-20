@@ -74,10 +74,16 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 |---|---|---|---|---|---|
 | `constellations` | Family and systemic constellations (Bert Hellinger and later systemic practitioners) | Therapeutic method | Concept ("family constellations", "systemic constellations"); avoid founder-branded terms | Orders of love: belonging, order, balance of giving and taking; seeing the whole system; representatives | **Systemic Constellation** (seeing the whole system weakens the projections); future: rooms as systems, ancestors in the depths |
 | `kintsugi` | Kintsugi: the Japanese craft of mending broken pottery with gold lacquer | Craft and principle | Concept | What was broken and mended is not hidden: the seam shows, and the piece is stronger and more itself where it broke | The gold seam of the presences' gifts; the **Mender's Thread** (the Covenant's Thread as an item); the Mender's mended ally |
+| `pressure-cooker` | The "pressure cooker" model of anger and emotional release (the idea that pressure let out in time does not explode) | Psychological model | Concept ("pressure cooker model", "emotional release") | Pressure Valve: what you let out on purpose does not burst on its own |
+| `controlled-burn` | Controlled (prescribed) burns in forest management: a small fire set on purpose removes the fuel for a large one | Land practice | Concept | A little fire that you light yourself keeps the big one away | Controlled Burn |
+| `gestalt-insight` | The Gestalt "aha" of sudden insight (Max Wertheimer, Wolfgang Köhler) | Psychology concept | Concept ("the aha moment", "insight") | Insight arrives all at once as a whole, not step by step | Bolt from the Blue |
+| `serendipity` | The word coined by Horace Walpole (letter of 1754, after "The Three Princes of Serendip") | Word | Public domain (the word) | Finding what you were not looking for, by staying open to it | Serendipity |
 | `art-therapy` | Art therapy; the idea that making art transforms people | Therapy / principle | Concept | Creating gives form to what can't be said; the maker is changed by the making | **Art Therapy** (building heals you); placing blocks as creation |
 | `cbt` | Cognitive behavioural therapy | Therapy | Concept | Exposure; Socratic questioning; reframing | **Exposure**, **Socratic Questioning** |
 | `dbt` | Dialectical behaviour therapy | Therapy | Concept | Radical acceptance | **Radical Acceptance** |
 | `psychodrama` | Psychodrama (J. L. Moreno) | Therapy | Concept | Catharsis through enactment | **Symbolic Act** |
+| `posttraumatic-growth` | Post-traumatic growth (Richard Tedeschi and Lawrence Calhoun, 1996) | Psychological concept | Concept | Growth can follow a hard experience: deeper care for others, clearer priorities, new strength | **Post-Traumatic Growth** |
+| `solve-et-coagula` | The alchemical formula *solve et coagula* (medieval alchemy) | Alchemy | PD | Dissolve and coagulate: one work, run in both directions | **Solve et Coagula** |
 | `positive-psychology` | Gratitude journaling | Practice | Concept | Noticing what goes well | **Gratitude Journal** |
 | `breathwork` | Box breathing (paced breathing) | Practice | Concept | Regulating the nervous system | **Box Breathing** |
 | `somatic` | Somatic grounding | Practice | Concept | Coming back to the body | **Grounding** |
@@ -90,9 +96,17 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | `thought-stopping` | Thought stopping (a cognitive behavioural technique) | Therapy technique | Concept | Interrupting a looping thought before it runs on | **Thought Stopping**: a projection hit freezes |
 | `self-efficacy` | Self-efficacy (Albert Bandura, 1977) | Credit | Credit (psychology concept) | Belief in your own capacity to act changes what you dare | **Self-Efficacy**: a projection hit runs away |
 | `resilience` | Resilience (developmental psychology) | Concept | Concept | Bouncing back from setbacks, and being shaped by them | **Bounce Back**: intentions rebound from blocks |
-| `autosuggestion` | Autosuggestion and self-talk (Émile Coué, early 1900s) | Therapy / practice | PD (Coué died 1926) | Repeated, gentle self-statements shape what we expect | **Affirmation**: intentions aim at blocks and copy them |
+| `autosuggestion` | Autosuggestion and self-talk (Émile Coué, early 1900s) | Therapy / practice | PD (Coué died 1926) | Repeated, gentle self-statements shape what we expect | **Affirmation**: a positive intention that hits a block places a copy of it beside the block |
+| `dialectic` | The dialectical method (Hegel; Socratic dialogue) | Philosophical method | PD (classical Socratic dialogue; Hegel died 1831) | A clash of opposed ideas gives a new view, and each side has its other side | **Dialectic**: a rebound splits an intention in two |
+| `reframing` | Cognitive reframing (cognitive therapy) | Therapy technique | Concept | The same setback, looked at from another frame, points at what matters | **Reframing**: after a rebound an intention turns to the nearest projection |
 | `insight` | Insight learning (Wolfgang Köhler, 1925) | Psychology concept | Credit (the book); Concept (the idea) | The sudden solution that jumps from one thought to the next | **Aha Moment**: arcs between projections |
 | `somatic-discharge` | Somatic discharge (Peter Levine, *Waking the Tiger*, 1997) | Therapy | Credit (the book); Concept (discharge) | Energy held in the body released through movement | **Discharge**: landing sends a shockwave |
+| `dowsing` | Dowsing, the folk practice of finding water and ore with a rod | Folk practice | Concept | Trusting a quiet pull toward what lies hidden | **Dowsing** |
+| `eye-contact` | Eye contact in exposure and assertiveness training | Therapy technique | Concept | Looking at what you fear instead of away from it | **Eye Contact** |
+| `lucid-dream` | Lucid dreaming (Frederik van Eeden, 1913) | Psychology concept | PD (van Eeden died 1932); Concept (the idea) | In a dream you know it is a dream, and the walls are yours to pass | **Lucid Dream**: pass through blocks after a bomb, key or heart |
+| `tummo` | Tummo: the Tibetan inner-heat meditation (a practice of generating warmth with breath and attention) | Meditation practice | Concept | Heat made from within, enough to dry wet cloth in the snow | **Inner Fire** (negative intentions burn) |
+| `firewalking` | Firewalking rituals (for example the Anastenaria of Greece and Bulgaria; sensitive: a living religious and folk tradition, used only as a structural image of walking through fear, never as a sacred practice or a joke) | Ritual tradition | Concept (sensitive) | Walking the coals is walking through fear: the fire was never the thing you were afraid of | **Firewalking** (fire never hurts you) |
+| `prometheus-myth` | The myth of Prometheus (Hesiod, *Theogony* and *Works and Days*; Aeschylus, *Prometheus Bound*) | Myth | PD | Fire carried to others is not lost by the one who gives it | **Stolen Fire** (one intention in five is a fire seed) |
 | `kindling` | Kindling, a growing warmth (a nod to the neuroscience kindling model) | Concept | Concept | Small sparks that grow into a fire | **Kindling**: pain lights a ring of fire |
 | `attunement` | Attunement and the working alliance (Carl Rogers, 1961) | Therapy concept | Concept (rapport); credit (the book) | Two people in tune pass the current on | **Rapport**: charged cubes discharge; **Resonance**: the intentions in the room hum into the one you fire |
 
@@ -111,6 +125,9 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | `boundaries` | *Boundaries* (Henry Cloud and John Townsend, 1992) | Credit | **Boundaries** |
 | `self-compassion` | *Self-Compassion* (Kristin Neff, 2011) | Credit | **Self-Compassion** |
 | `sleep-hygiene` | Sleep hygiene (cognitive behavioural therapy for insomnia) | Concept | **Sleep Hygiene** |
+| `bilateral-stimulation` | Bilateral stimulation, alternating left and right, as used in EMDR (Francine Shapiro, 1989). The EMDR name itself is a Credit (*verify*), used only in `inspiredBy` | Concept | **Bilateral Stimulation**: the hands take turns |
+| `rule-of-three` | The rule of three: a proportion from three known terms (classical arithmetic) | PD | **Rule of Three**: each intention flies as three strands |
+| `spiral-growth` | The spiral of growth: the turning spirals of shells, leaves and seed heads (phyllotaxis) | Concept | **Spiral Growth**: each intention flies as three strands on a helix; **Double Helix** with Bilateral Stimulation |
 
 ### Depth psychology and myth
 

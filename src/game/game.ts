@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
-import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
+import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
@@ -17,9 +17,9 @@ import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
-import { AIR, MAT, mat, MATERIALS } from '../content/materials';
+import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
 import {
-  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
+  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemByte, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
@@ -54,19 +54,23 @@ import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
-import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
+import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
+import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
+/** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
+const DASH_FOV_KICK = 4;
 import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { FullscreenButton } from '../input/fullscreen-button';
-import { Inventory } from '../items/inventory';
+import { Inventory, type SavedItem } from '../items/inventory';
 import { ItemPools, isPromised } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import { Kairos, KAIROS_CHARGES, KAIROS_HOMING, KAIROS_INTENTIONS, KAIROS_REACH, dealMarks, type KairosMark } from './kairos';
 import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
@@ -119,6 +123,9 @@ import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, 
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
+import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
+import { CheckpointMark } from './checkpoint-mark';
+import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
@@ -178,6 +185,8 @@ const COUNTER_CAP = 99;
 /** The sandbox's fixed step (seconds). */
 export const SANDBOX_DT = 1 / 60;
 const SPAWN_GAP = 0.45;
+/** The six face neighbours of a voxel (fluid sections spread over these). */
+const FACES: [number, number, number][] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 /** Seconds after entering a boss room until the boss counts as overcome (no bosses yet). */
 const HOLE_DELAY = 1.5;
 const BOSS_WAKE = 1.2;
@@ -335,6 +344,10 @@ export class Game {
   private menderCame = false;
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried; rest?: OfferPick[] } | null = null;
+  /** The Rebirth Draught's confirm card is open (it shares the offer card; see `askRebirth`). */
+  private pendingRebirth = false;
+  /** The practices a Rebirth Draught keeps, read by the next new run (null for any other new run). */
+  private rebirthKeep: SavedItem[] | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
   private pendingPresenceChoice: { id: PresenceId; enemyId: number; done?: true; still?: number } | null = null;
   /** The choice card's grace: a confirm right after it opens is ignored (consent.ts). */
@@ -359,6 +372,13 @@ export class Game {
   private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
+  /** The run's checkpoint (game/checkpoint.ts), set by Waymark; null until one is picked up. */
+  private respawn: Spot | null = null;
+  /** Player status timers (seconds left by id: 'phase' is Lucid Dream). Cleared with a run. */
+  private statuses = new Map<string, number>();
+  /** The cells a phased body may be in (the room's box with its walls), and the room it started in. */
+  private phase: { box: CellBox; room: RoomInfo | null; interior: CellBox } | null = null;
+  private checkpointMark!: CheckpointMark;
   private bossUsed = new Set<string>();
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -373,6 +393,9 @@ export class Game {
   private intents: Intents;
   private api: HostApi;
   private time = 0;
+  /** Simulation frames run so far, and the frame of the last fluid conversion (one per frame: `convertFluid`). */
+  private simFrame = 0;
+  private fluidFrame = -1;
   /** Every actor of the run (the player and projections), one id space. */
   readonly actors = new ActorRegistry();
   private contacts = new ContactGate();
@@ -389,6 +412,8 @@ export class Game {
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Fire shields (Controlled Burn): where fire never hurts you, and until when (game time). */
+  private fireShields: { x: number; y: number; z: number; r: number; until: number }[] = [];
   /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
   private missiles = new Missiles();
   private missileView: MissileView;
@@ -508,6 +533,7 @@ export class Game {
       solid: (x, y, z) => this.solid(x, y, z),
       tier: (x, y, z) => mat(this.world.get(x, y, z)).tier,
       hitBlock: (hit, t) => this.intentHitsBlock(hit, t.mining, t.polarity),
+      absorbAt: (x, y, z, r) => this.absorbBlocksAt(x, y, z, r),
       debrisAt: (x, y, z, r) => this.debrisAt(x, y, z, r),
       hitDebris: (i, v, t) => {
         const k = t.knock * 6 / Math.max(1, v.length());
@@ -526,8 +552,11 @@ export class Game {
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
       elementAt: (x, y, z) => this.elementAt(x, y, z)?.key ?? null,
       quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
+      entered: (spec, x, y, z, element) => { this.bus.emit('intentElement', { intent: spec, x, y, z, element }); },
       hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
       nearestBlock: (p, r) => this.nearestSolid(p, r),
+      nearestEnemy: (p, r, polarity) => this.nearestMeetable(p, r, polarity),
+      bounced: b => { this.bus.emit('intentBounce', b); },
     });
     this.api = this.makeApi();
     this.weaponHost = this.makeWeaponHost();
@@ -556,11 +585,19 @@ export class Game {
    * `seed`: a seed code ("ABCD-EFGH"), a numeric root (tests), or nothing for a fresh random run.
    * Everything structural (all floor plans, rock themes, pedestal items) is decided here.
    */
-  newRun(seed?: string | number) {
+  newRun(seed?: string | number, keep?: readonly SavedItem[]) {
+    this.cancelKairos();
     let root: number | null = typeof seed === 'number' ? seed >>> 0 : typeof seed === 'string' ? decodeSeed(seed) : null;
     const invalid = typeof seed === 'string' && root === null;
     root ??= randomRoot();
     this.begin(root, null);
+    // a Rebirth Draught keeps the practices (with their stacks) and nothing else: the restore installs their effects
+    if (keep) {
+      this.inventory.restore(keep);
+      this.hud.setItems(this.inventory.items.map(i => i.def));
+      this.syncWeapon();
+      this.player.hp = this.maxHp;
+    }
     this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
   }
 
@@ -570,6 +607,7 @@ export class Game {
    * unchanged. Cosmetic randomness is seeded too, so the same scenario stepped the same way replays.
    */
   newSandbox(s: Scenario) {
+    this.cancelKairos();
     this.begin((s.seed ?? 1) >>> 0, s);
   }
 
@@ -639,10 +677,12 @@ export class Game {
     this.playerIn.clear(); this.drownT = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
-    this.blasts.clear(); this.bombCause.clear();
+    this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
+    this.checkpointMark = new CheckpointMark(this.dungeonRoot);
+    this.respawn = null;
     // a random heart's kind reads the chances of its band: floor 0 halves the star heart, the surface keeps its numbers (REWARDS §3)
     // a heart's kind on floor 0 takes its own fork, so the Roots' crates never move the hearts stream the floors below read
     this.pickups.heartKind = y => rollHeart(
@@ -665,6 +705,8 @@ export class Game {
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     p.clearStates();
+    this.statuses.clear();
+    this.phase = null;
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -701,7 +743,7 @@ export class Game {
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(k)!, k);
-    this.bus.emit('floorEnter', { depth: k });
+    this.bus.emit('floorEnter', { depth: k, arrival: arrivalOf(this.floors.get(k)!.spawn) });
     if (this.roots) this.hangRoots(this.roots);
     if (box && sandbox) this.furnish(box, sandbox);
   }
@@ -1143,6 +1185,9 @@ export class Game {
   /** True in the dungeon's world, below the crown. Every dungeon-only rule is guarded by it (SKY.md §2.5a). */
   private get below() { return this.realm === 'dungeon'; }
 
+  /** Seconds left of the phase (Lucid Dream), 0 when none runs. Read by the sandbox report and the tests. */
+  get phaseLeft(): number { return this.statuses.get(PHASE_STATUS) ?? 0; }
+
   /** The swap's view of the game's fields (SKY.md §2.1). */
   private realmHost(): RealmHost {
     return {
@@ -1204,7 +1249,7 @@ export class Game {
       const chain = this.bombCause.get(i);
       this.bombCause.delete(i);
       // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
-      if (love) { this.loveBlast(x, y, z); return; }
+      if (love) { this.loveBlast(x, y, z, 'bomb'); return; }
       this.blasts.current = chain ?? null;
       this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
       this.blasts.current = null;
@@ -1301,8 +1346,7 @@ export class Game {
     const held = this.inventory.items.filter(it => !isPromised(it.def));
     if (!held.length) return null;
     const id = held[this.rng.fork('sky', 'capture', this.captures++).int(0, held.length - 1)].def.id;
-    this.inventory.lose(id);
-    this.hud.setItems(this.inventory.items.map(i => i.def));
+    this.loseItem(id);
     return id;
   }
 
@@ -1409,6 +1453,8 @@ export class Game {
       hasTag: tag => this.inventory.hasTag(tag),
       held: () => this.player.hand.filter((c): c is number => typeof c === 'number'),
       rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
+      time: () => this.time,
+      memory: () => ({}), // replaced per practice by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
       explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, this.player.id),
@@ -1430,10 +1476,57 @@ export class Game {
       freeze: (id, s) => this.affectProjection(id, 'frozen', s),
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
+      shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
+      convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
+      placeBlock: (x, y, z, m, src) => this.placeItemBlock(x, y, z, m, src),
+      consumeCopy: id => this.loseItem(id),
+      playerFeet: () => ({ x: this.player.body.x, y: this.player.body.y, z: this.player.body.z }),
+      checkpoint: () => this.respawn ? { ...this.respawn } : null,
+      setCheckpoint: (x, y, z) => this.setRespawn({ x, y, z }),
+      teleportPlayer: (x, y, z) => this.teleportPlayer(x, y, z),
+      invulnerable: s => { this.player.invulnT = Math.max(this.player.invulnT, s); },
+      grantStatus: (id, s, o) => this.grantStatus(id, s, o),
+      burst: (x, y, z, color, n) => this.particles.burst(x, y, z, color, n, 2.2, 0.07),
+      chime: () => sfx3.reveal(),
     };
+  }
+
+  /** Loses one copy of a practice. A checkpoint lasts while an item that carries the checkpoint tag is held. */
+  loseItem(id: string): boolean {
+    if (!this.inventory.lose(id)) return false;
+    if (this.respawn && !this.inventory.hasTag(CHECKPOINT_TAG)) this.setRespawn(null);
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    return true;
+  }
+
+  /** Sets the run's checkpoint to the free standing cell nearest the feet `at`, or clears it (null). */
+  private setRespawn(at: Spot | null) {
+    this.respawn = at ? standingSpot((x, y, z) => this.solid(x, y, z), at.x, at.y, at.z) ?? at : null;
+    this.checkpointMark.place(this.respawn);
+  }
+
+  /**
+   * Moves the player to the free cell nearest the feet (x, y, z) and opens every door that would keep them out of a
+   * room they just left: a room sealed by its projections, a challenge in progress, a boss room still standing. The
+   * room keeps its state, so entering it again seals it again; no door the player can't get back through stays shut.
+   */
+  private teleportPlayer(x: number, y: number, z: number) {
+    const at = standingSpot((a, b, c) => this.solid(a, b, c), x, y, z) ?? { x, y, z };
+    this.teleport(at.x, at.y, at.z);
+    const here = this.below ? this.roomAt(at.x, at.y + 0.1, at.z)?.id ?? null : null;
+    const live = new Set<number>();
+    for (const [id, st] of this.roomState) if (st.sealed && !st.cleared) live.add(id);
+    for (const [id, c] of this.challenges) if (c.active) live.add(id);
+    for (const b of this.bossRooms.values()) if (b.spawned && !b.defeated) live.add(b.room);
+    for (const id of releasedRooms([...live], here)) {
+      this.doors.seal(id, false);
+      const st = this.roomState.get(id);
+      if (st) st.sealed = false;
+    }
+    if (here !== null && live.has(here)) this.doors.seal(here, true);
   }
 
   /** What weapons may do: everything through the shared damage pipeline (docs/architecture/WEAPONS.md). */
@@ -1444,13 +1537,25 @@ export class Game {
       eye: () => p.eye,
       forward: () => p.forward,
       casting: () => this.input.held('cast') && !this.hands.holding,
-      strike: (weapon, damage, mining, reach) => {
+      // a beam is a shot first: `fire` runs as for an intention (Dual Process, Eye Contact...), and a cancel gives the charge back
+      shot: () => {
+        const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all, this.polarity) });
+        return ev.cancelled ? null : ev.intent;
+      },
+      castHand: () => this.castHand(),
+      strike: (weapon, damage, mining, reach, shot) => {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
-        const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
+        // the stroke carries the shot's tags, volley and shape; its damage and mining are the strike's
+        const base = shot ?? intentFromStats(this.stats.all, this.polarity);
+        const intent = { ...base, damage: ev.damage, mining: ev.mining, tags: new Set([...base.tags, ...ev.tags]) };
         this.stroke = { polarity: this.polarity, warmed: new Set(), intent, weapon };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
+      },
+      nearestBlock: (x, y, z, range) => {
+        const c = this.nearestSolid(new THREE.Vector3(x, y, z), range);
+        return c ? { x: c.x, y: c.y, z: c.z } : null;
       },
       solid: (x, y, z) => this.solid(x, y, z),
       // a positive stroke only reaches blocks it can mend: the damaged ones
@@ -1495,7 +1600,8 @@ export class Game {
       sliceCubes: (inside, along, across) => this.clearCubesIn(inside, { along, across }),
       particles: (x, y, z, c, n, s, size) => this.particles.burst(x, y, z, c, n, s, size),
       shake: s => this.hud.shake(s),
-      swingHands: () => this.hands.fire(),
+      // a weapon that replaces the shot does not take the turn: it swings from the hand that is next
+      swingHands: () => this.hands.fire(this.castHand()),
       chargeHands: k => this.hands.charge(k),
       sound: name => sfx2[name](),
     };
@@ -1936,7 +2042,9 @@ export class Game {
       attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage, toAttacker: 0,
     });
     if (ev.cancelled) return;
-    if (ev.toTarget > 0) this.damageActor(t, ev.toTarget, 'contact', a.def, a.id);
+    // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
+    const hurt = t === this.player && this.player.crouching ? crouchedContact(ev.toTarget) : ev.toTarget;
+    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id);
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
@@ -2452,6 +2560,8 @@ export class Game {
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
+    // one of the player's own bombs or missiles (not a volatile cube, an enemy's burst or an item's blast)
+    if (owner === this.player.id && (source === 'bomb' || source === 'missile')) this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'negative', source, acted: new Set() });
     // a bomb: white-hot core, ember sparks, ash (docs/art/DECISIONS.md §7.4)
     this.particles.burst(x, y, z, pal('light.ember'), 40, 8, 0.15);
     this.particles.burst(x, y, z, pal('light.core'), 20, 5, 0.1);
@@ -2487,6 +2597,25 @@ export class Game {
     return broke;
   }
 
+  /** The Transcendent aura (IntentSpec.absorb): removes every destructible block with a cell within `r` of (x, y, z),
+   *  without debris, and returns the sum of their armor. Unbreakable blocks, frames, pedestals and the lab and kitchen stay. */
+  private absorbBlocksAt(x: number, y: number, z: number, r: number): number {
+    const keep = new Set<number>([MAT.kitchen, MAT.alembic, MAT.pedestal, MAT.frame, MAT.goldframe, MAT.bossframe]);
+    let armor = 0;
+    for (let a = Math.floor(x - r); a <= Math.floor(x + r); a++)
+      for (let b = Math.floor(y - r); b <= Math.floor(y + r); b++)
+        for (let c = Math.floor(z - r); c <= Math.floor(z + r); c++) {
+          const id = this.world.get(a, b, c);
+          if (id === AIR || keep.has(id) || !Number.isFinite(mat(id).hp)) continue;
+          // the nearest point of the cell to the aura's centre must be inside the aura
+          const dx = x - Math.min(Math.max(x, a), a + 1), dy = y - Math.min(Math.max(y, b), b + 1), dz = z - Math.min(Math.max(z, c), c + 1);
+          if (dx * dx + dy * dy + dz * dz > r * r) continue;
+          const a0 = mat(id).armor;
+          if (this.damageBlock(a, b, c, 1e6, 'intent', 'transcendent', false)) armor += a0;
+        }
+    return armor;
+  }
+
   private strokeHit(id: number, kx: number, kz: number, intent: IntentSpec) {
     const e = this.enemies.get(id);
     if (!e) return;
@@ -2498,6 +2627,35 @@ export class Game {
     // a routed creature (a sky deity) was touched through the router; no listener knows its id (SKY.md §5.7)
     if (kind === 'actor' && this.router.owns(target)) return;
     this.bus.emit('intentHit', { kind, target, x: p.x, y: p.y, z: p.z, nx: n.x, ny: n.y, nz: n.z, vx: v.x, vy: v.y, vz: v.z, intent });
+  }
+
+  /** An item places one copy of a block (Affirmation) into an empty cell of the player's room. Only interior
+   *  room space (never a wall, a door or a doorway), no body in the cell, no element on it, and only materials
+   *  isPlaceable allows. It writes the world as the player's placement does, but emits no blockPlace or blockPlaced. */
+  private placeItemBlock(x: number, y: number, z: number, m: number, _source: string): boolean {
+    if (!this.below || !isPlaceable(m) || !this.world.inside(x, y, z)) return false;
+    if (this.world.get(x, y, z) !== AIR || this.solid(x, y, z) || this.elementAt(x, y, z)) return false;
+    const r = this.roomAt(x, y, z);
+    if (!r || r.id !== this.room || !inRoomSpace(r, x, z) || y < r.y0 || y >= r.y0 + r.height) return false;
+    if (this.doors.inDoorway(x, y, z)) return false;
+    for (const a of this.actors.all()) if (a.body && cellOverlap(a.body, x, y, z)) return false;
+    this.world.set(x, y, z, m);
+    this.debris.clearCell(x, y, z);
+    return true;
+  }
+
+  /** The nearest projection a negative or positive intention meets within r: hostile ones only for a negative
+   *  one, the same rule enemyAt uses. Null when none is in range. */
+  private nearestMeetable(p: THREE.Vector3, r: number, polarity: Polarity): THREE.Vector3 | null {
+    let best: THREE.Vector3 | null = null, bd = r * r;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || e.hidden || e.tags.has('shut') || !this.meets(e, polarity)) continue;
+      if (polarity === 'negative' && e.faction !== 'projection') continue;
+      const c = new THREE.Vector3(e.body.x, e.body.y + e.body.h / 2, e.body.z);
+      const d = c.distanceToSquared(p);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return best;
   }
 
   private nearestSolid(p: THREE.Vector3, r: number): THREE.Vector3 | null {
@@ -2526,6 +2684,7 @@ export class Game {
     this.particles.burst(x, y, z, color, 24, radius * 2, 0.07);
     spatial.cue('ring', x, y, z);
     this.hud.shake(0.1);
+    this.bus.emit('burst', { x, y, z, radius, damage, source });
   }
 
   private arc(x: number, y: number, z: number, to: number, damage: number, source: string, polarity: Polarity) {
@@ -2573,12 +2732,28 @@ export class Game {
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
   }
 
+  /** Sets alight every flammable block whose cell lies within `r` blocks of (x, y, z). Offsets are whole cells, so a
+   *  fractional radius (1.5) reaches the cells inside it, not fractions of them. */
   private igniteArea(x: number, y: number, z: number, r: number) {
-    for (let dz = -r; dz <= r; dz++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    const ri = Math.ceil(r);
+    for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       if (dx * dx + dy * dy + dz * dz > r * r) continue;
       const id = this.world.get(x + dx, y + dy, z + dz);
       if (id !== AIR && mat(id).flammable) this.ignite(x + dx, y + dy, z + dz, id, 'fire');
     }
+  }
+
+  /** Fire never hurts the player within `r` of (x, y, z) for `seconds` (Controlled Burn: the fire of a blast of yours).
+   *  Only the last eight shields are kept; they end by time, and a new run clears them. */
+  private shieldFire(x: number, y: number, z: number, r: number, seconds: number) {
+    if (![x, y, z, r, seconds].every(Number.isFinite)) return;
+    this.fireShields.push({ x, y, z, r: Math.min(20, Math.max(0, r)), until: this.time + Math.min(30, Math.max(0, seconds)) });
+    if (this.fireShields.length > 8) this.fireShields.shift();
+  }
+
+  /** Whether a point is inside a live fire shield. */
+  private fireShielded(x: number, y: number, z: number): boolean {
+    return this.fireShields.some(s => this.time < s.until && Math.hypot(x - s.x, y - s.y, z - s.z) <= s.r);
   }
 
   private tagCube(cube: number, tag: string) {
@@ -2783,6 +2958,27 @@ export class Game {
     sfx3.launch(ev.polarity === 'negative');
   }
 
+  /** Irimi's dash starts: a whoosh and a burst of the practice's light at the feet (DASH.md §4). */
+  private dashFx() {
+    const b = this.player.body;
+    sfx3.dash();
+    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.glow'), 14, 2.4, 0.06);
+  }
+
+  /** The afterimage of a dash: a few motes left behind along the path, each frame it runs. */
+  private dashTrail() {
+    const b = this.player.body;
+    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.base'), 3, 0.5, 0.05, true);
+  }
+
+  /** A slight widening of the view through a dash (DASH.md §4): the field of view plus a few degrees, back at its own value after it. */
+  private kickFov() {
+    const want = this.fovNow + DASH_FOV_KICK * this.player.dashKick;
+    if (Math.abs(this.camera.fov - want) < 1e-3) return;
+    this.camera.fov = want;
+    this.camera.updateProjectionMatrix();
+  }
+
   /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
   private updateMissiles(dt: number) {
     if (!this.missiles.list.length) return;
@@ -2795,7 +2991,7 @@ export class Game {
       this.particles.burst(m.x - m.dx * 0.3, m.y - m.dy * 0.3, m.z - m.dz * 0.3, pal(trail[Math.floor(m.age * 20) % trail.length]), 2, 0.6, 0.06);
     }
     for (const e of ends) {
-      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z);
+      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z, 'missile');
       else this.explode(e.x, e.y, e.z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'missile', this.player.id);
     }
   }
@@ -2818,7 +3014,7 @@ export class Game {
    * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
    * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
    */
-  private loveBlast(x: number, y: number, z: number) {
+  private loveBlast(x: number, y: number, z: number, source: 'bomb' | 'missile') {
     const r = this.stats.get('bombRadius'), damage = this.stats.get('bombDamage'), ri = Math.ceil(r);
     for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
@@ -2833,6 +3029,7 @@ export class Game {
       if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
     }
     this.hearPresences(x, z, 'positive');
+    this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'positive', source, acted: new Set() });
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -2891,14 +3088,72 @@ export class Game {
     return { feet: this.elementAt(b.x, b.y + 0.1, b.z), mid: this.elementAt(b.x, b.y + b.h * 0.5, b.z), head: this.elementAt(b.x, b.y + eye, b.z) };
   }
 
+  /** lavaWalk (posttraumatic): a lava cell with air above it is ground for a body whose feet were above its surface at the
+   *  start of the frame. Gravity and walking then stop on it, and a body already in the lava is not held by it. */
+  private lavaSurface(x: number, y: number, z: number, feet: number): boolean {
+    const c = this.world.elemAt(x, y, z);
+    if (elemKind(c) !== EL_LAVA || elemKind(this.world.elemAt(x, y + 1, z)) === EL_LAVA) return false;
+    return feet >= y + fluidHeight(c) - 1e-6;
+  }
+
+  /** Does the player's body touch one of these cells (the cell under its feet included)? */
+  private bodyTouches(cells: readonly (readonly [number, number, number])[]): boolean {
+    const b = this.player.body;
+    const hit = new Set(cells.map(([x, y, z]) => `${x},${y},${z}`));
+    const x0 = Math.floor(b.x - b.hw), x1 = Math.floor(b.x + b.hw);
+    const z0 = Math.floor(b.z - b.hw), z1 = Math.floor(b.z + b.hw);
+    const y0 = Math.floor(b.y - 0.05), y1 = Math.floor(b.y + b.h - 1e-6);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) if (hit.has(`${x},${y},${z}`)) return true;
+    return false;
+  }
+
+  /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
+   *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
+   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
+  private convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
+    if (this.fluidFrame === this.simFrame) return 0;
+    const kindFrom = from === 'water' ? EL_WATER : EL_LAVA, kindTo = to === 'water' ? EL_WATER : EL_LAVA;
+    const w = this.world;
+    if (elemKind(w.elemAt(x, y, z)) !== kindFrom) return 0;
+    const room = this.roomAt(x, y, z);
+    if (!room) return 0;
+    const section: [number, number, number][] = [[x, y, z]];
+    const seen = new Set<number>([w.idx(x, y, z)]);
+    for (let i = 0; i < section.length && section.length < cap; i++) {
+      const [cx, cy, cz] = section[i];
+      for (const [dx, dy, dz] of FACES) {
+        if (section.length >= cap) break;
+        const nx = cx + dx, ny = cy + dy, nz = cz + dz;
+        if (!w.inside(nx, ny, nz) || seen.has(w.idx(nx, ny, nz))) continue;
+        seen.add(w.idx(nx, ny, nz));
+        if (elemKind(w.elemAt(nx, ny, nz)) !== kindFrom || this.roomAt(nx, ny, nz)?.id !== room.id) continue;
+        section.push([nx, ny, nz]);
+      }
+    }
+    if (kindTo === EL_LAVA && this.stats.get('lavaWalk') < 1 && this.bodyTouches(section)) return -1;
+    for (const [cx, cy, cz] of section) {
+      const b = w.elemAt(cx, cy, cz);
+      w.setElemByte(cx, cy, cz, elemByte(kindTo, elemLevel(b), isFalling(b)));
+      this.elements.wakeAround(cx, cy, cz);
+    }
+    this.elementFx(kindTo === EL_LAVA ? 'catch' : 'steam', x, y, z);
+    this.fluidFrame = this.simFrame;
+    return section.length;
+  }
+
   /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
-    const m = this.bodyMedium(b, EYE);
-    this.playerMedium = { ...m, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
+    const m = this.bodyMedium(b, p.eyeHeight);
+    // lavaWalk (posttraumatic): lava does not hurt you, and you wade through it at full speed (the 0.4 wade becomes 1)
+    const walk = this.stats.get('lavaWalk') >= 1;
+    const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
+    this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
-    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0).sort((a, c) => c.harm - a.harm)[0];
+    // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
+    const shielded = this.fireShielded(b.x, b.y + b.h / 2, b.z);
+    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire') && !(walk && d.key === 'lava')).sort((a, c) => c.harm - a.harm)[0];
     if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
     // breath: drains with your head under water, refills fast at the surface
     const max = this.stats.get('breath');
@@ -2909,7 +3164,7 @@ export class Game {
         if (this.drownT <= 0) {
           this.drownT = DROWN_GAP;
           sfx3.gulp();
-          this.particles.burst(b.x, b.y + EYE, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
+          this.particles.burst(b.x, b.y + p.eyeHeight, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
           this.damageActor(p, HALF_HEART, 'drown', 'drown', 'world');
         }
       }
@@ -2998,6 +3253,118 @@ export class Game {
 
   // ───────────────────────── player actions ─────────────────────────
 
+  // Kairos (#123): the practice that stops time. Its rules are in game/kairos.ts; the stop is one branch in
+  // simulate (stopTime). Docs: docs/design/built/practices/MIRACLES.md (Kairos).
+  private kairos = new Kairos();
+  private kairosBeatT = 0;
+
+  /** The charge of the held Kairos (0 when it is not held). */
+  kairosCharge(): number { return this.inventory.memoryFor('kairos').charge ?? 0; }
+
+  /** A full charge stops time; a short one says how much is charged. Returns true when the press was used. */
+  private startKairos(): boolean {
+    if (!this.inventory.has('kairos')) return false;
+    const charge = this.kairosCharge();
+    if (charge < KAIROS_CHARGES) {
+      sfx.denied();
+      this.inventory.say('kairos', 'notReady', { n: charge, max: KAIROS_CHARGES });
+      return true;
+    }
+    this.kairos.start();
+    document.body.classList.add('kairos-stop');
+    sfxKairos.start();
+    this.kairosBeatT = 0;
+    this.inventory.say('kairos', 'started');
+    return true;
+  }
+
+  /** The stopped frame: the view turns, a cast press marks, the miracle press or the countdown releases. */
+  private stopTime(dt: number) {
+    const inp = this.input;
+    this.player.look(inp);
+    if (inp.hit('cast')) this.markKairos();
+    this.kairosBeatT -= dt;
+    if (this.kairosBeatT <= 0) { sfxKairos.beat(); this.kairosBeatT = 1; }
+    if (inp.hit('miracle') || this.kairos.tick(dt)) this.releaseKairos();
+  }
+
+  /** Marks the point under the crosshair: a projection the ray meets first, else the block, else the far end of the ray. */
+  private markKairos() {
+    const p = this.player, e = p.eye, d = p.forward;
+    const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, KAIROS_REACH);
+    const limit = hit ? hit.t : KAIROS_REACH;
+    let pick: { id: number; x: number; y: number; z: number; t: number } | null = null;
+    for (const en of this.enemies.list) {
+      if (!en.alive || en.spawning > 0) continue;
+      const b = en.body, cy = b.y + b.h / 2;
+      const vx = b.x - e.x, vy = cy - e.y, vz = b.z - e.z;
+      const t = vx * d.x + vy * d.y + vz * d.z;
+      if (t < 0 || t > limit) continue;
+      const r = b.hw + 0.35;
+      if (vx * vx + vy * vy + vz * vz - t * t > r * r) continue;
+      if (!pick || t < pick.t) pick = { id: en.id, x: b.x, y: cy, z: b.z, t };
+    }
+    let mark: KairosMark;
+    if (pick) mark = { kind: 'projection', x: pick.x, y: pick.y, z: pick.z, actor: pick.id };
+    else if (hit) mark = { kind: 'block', x: hit.x + 0.5, y: hit.y + 0.5, z: hit.z + 0.5 };
+    else mark = { kind: 'block', x: e.x + d.x * KAIROS_REACH, y: e.y + d.y * KAIROS_REACH, z: e.z + d.z * KAIROS_REACH };
+    const r = this.kairos.mark(mark);
+    if (r === 'full') { sfx.denied(); this.inventory.say('kairos', 'marksFull'); return; }
+    sfxKairos.mark();
+  }
+
+  /** Where a mark is now: a projection mark follows its projection (it stood still while time was stopped). */
+  private kairosPoint(m: KairosMark): { x: number; y: number; z: number } {
+    const en = m.actor !== undefined ? this.enemies.get(m.actor) : undefined;
+    return en ? { x: en.body.x, y: en.body.y + en.body.h / 2, z: en.body.z } : m;
+  }
+
+  /** Ends the stop and fires one intention per mark (round robin), piercing +1, from the eye as a shot does.
+   *  With no marks all of them go to the crosshair point. The charge empties. */
+  private releaseKairos() {
+    const marks = this.kairos.end();
+    document.body.classList.remove('kairos-stop');
+    const p = this.player, fwd = p.forward;
+    const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+    const from = p.eye.clone().addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(fwd, 0.3);
+    for (const m of dealMarks(KAIROS_INTENTIONS, marks)) {
+      const spec = intentFromStats(this.stats.all, this.polarity);
+      spec.pierce += 1;
+      if (m?.kind === 'projection') { spec.homingTarget = 'projection'; spec.homing = Math.max(spec.homing, KAIROS_HOMING); }
+      const ev = this.bus.emit('fire', { intent: spec });
+      if (ev.cancelled) continue;
+      const to = m ? this.kairosPoint(m) : null;
+      const dir = to ? new THREE.Vector3(to.x - from.x, to.y - from.y, to.z - from.z) : fwd.clone();
+      if (dir.lengthSq() < 1e-6) dir.copy(fwd);
+      this.intents.fire(ev.intent, from, dir.normalize(), new THREE.Vector3());
+    }
+    this.inventory.memoryFor('kairos').charge = 0;
+    this.hands.fire();
+    sfxKairos.release();
+    this.inventory.say('kairos', 'released');
+  }
+
+  /** Ends a stop that cannot go on (a death, a room change, a screen): the intentions are not fired and the charge stays. */
+  private cancelKairos() {
+    if (!this.kairos.stopped) return;
+    this.kairos.end();
+    document.body.classList.remove('kairos-stop');
+  }
+
+  /** The Kairos HUD: the charge pips while the practice is held, the marks while time is stopped. */
+  private kairosHud() {
+    const marks: { x: number; y: number; n: number; on: boolean }[] = [];
+    if (this.kairos.stopped) {
+      const r = this.renderer.domElement.getBoundingClientRect();
+      this.kairos.marks.forEach((m, i) => {
+        const v = new THREE.Vector3(m.x, m.y, m.z).project(this.camera);
+        const on = v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1;
+        marks.push({ x: r.left + (v.x * 0.5 + 0.5) * r.width, y: r.top + (-v.y * 0.5 + 0.5) * r.height, n: i + 1, on });
+      });
+    }
+    this.hud.kairos({ held: this.inventory.has('kairos'), charge: this.kairosCharge(), max: KAIROS_CHARGES, stopped: this.kairos.stopped, marks });
+  }
+
   private fire() {
     const p = this.player;
     if (!this.input.held('cast') || p.fireCooldown > 0 || this.hands.holding || p.muteT > 0) return;
@@ -3005,12 +3372,19 @@ export class Game {
     if (ev.cancelled) return;
     p.fireCooldown = 1 / this.stats.get('fireRate');
     const dir = p.forward;
+    const side = this.castHand();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
-    const from = p.eye.addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
+    const from = p.eye.addScaledVector(right, 0.18 * side).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
     this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
-    this.hands.fire();
+    this.hands.fire(side);
+    if (this.stats.all.twinCast >= 1) p.castSide = nextCastSide(side);
     sfx.shoot();
+  }
+
+  /** The hand that casts now: with `twinCast` the hands take turns; otherwise the right hand always casts. */
+  private castHand(): 1 | -1 {
+    return this.stats.all.twinCast >= 1 ? this.player.castSide : 1;
   }
 
   /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */
@@ -3084,6 +3458,7 @@ export class Game {
   private drink() {
     const p = this.player, top = p.active;
     if (!top || !isFlask(top)) { sfx.denied(); return; }
+    if (POTIONS[top.potion].rebirth) { this.askRebirth(); return; }
     const def = POTIONS[top.potion];
     const rooms = flaskRooms(top);
     p.takeActive();
@@ -3205,7 +3580,8 @@ export class Game {
   private touchBlocks(dt: number) {
     const p = this.player, b = p.body;
     const crush = this.stats.get('crush');
-    if (crush <= 0 || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
+    // a phased body is inside blocks it passes through: it does not wear them down by pressing (Lucid Dream)
+    if (crush <= 0 || this.phase || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
     this.contactT += dt;
     if (this.contactT < CONTACT_TICK) return;
     this.contactT -= CONTACT_TICK;
@@ -3556,6 +3932,88 @@ export class Game {
 
   /** Somewhere new without walking there (a star pad, heaven, silence): find room to stand, then
    *  let the HUD, the fog and the floor bookkeeping catch up (review L4–L6 points 3 and 5). */
+  // ───────────────────────── player statuses (Lucid Dream: docs/design/built/practices/MIRACLES.md) ─────────────────────────
+
+  /** Starts or extends a status timer. A phase that starts takes the box of the room the player stands in. */
+  private grantStatus(id: string, seconds: number, opts?: { add?: boolean; cap?: number }) {
+    const cur = this.statuses.get(id) ?? 0;
+    let next = opts?.add ? cur + seconds : Math.max(cur, seconds);
+    if (opts?.cap !== undefined) next = Math.min(next, opts.cap);
+    if (next <= 0) return;
+    this.statuses.set(id, next);
+    if (id === PHASE_STATUS && cur <= 0) this.startPhase();
+  }
+
+  private startPhase() {
+    const b = this.player.body;
+    const room = this.roomAt(b.x, b.y + 0.1, b.z);
+    if (room) {
+      this.phase = { box: roomBox(room), room, interior: roomInterior(room) };
+    } else {
+      const box = fallbackBox(b.x, b.y, b.z);
+      this.phase = { box, room: null, interior: box };
+    }
+    sfx3.phaseStart();
+  }
+
+  /** Counts every status down; a phase that runs out is ended (and its body moved out of blocks). */
+  private tickStatuses(dt: number) {
+    if (!this.below && this.statuses.size) { this.statuses.clear(); this.phase = null; }
+    let phasing = false;
+    for (const [id, left] of this.statuses) {
+      const next = left - dt;
+      if (next > 0) {
+        if (id === PHASE_STATUS) {
+          if (left > PHASE_WARN_S && next <= PHASE_WARN_S) sfx3.phaseTick();
+          phasing = true;
+        }
+        this.statuses.set(id, next);
+        continue;
+      }
+      this.statuses.delete(id);
+      if (id === PHASE_STATUS) this.endPhase();
+    }
+    // a phased body that has left its box (a fall through the floor, a descent) ends the phase where it is
+    if (this.phase && !phasing) this.endPhase();
+    if (this.phase && !inBox(this.phase.box, this.player.body.x, this.player.body.y, this.player.body.z)) this.endPhase();
+    this.hud.setPhase(this.phase ? this.statuses.get(PHASE_STATUS) ?? 0 : null, this.inventory.items.find(i => i.def.id === 'luciddream')?.def ?? null);
+  }
+
+  /** The solid test of a phased body: a block with finite hp is passable inside the box, everything else as usual. */
+  private phaseSolid(x: number, y: number, z: number): boolean {
+    const ph = this.phase!;
+    return phasedSolid(
+      (a, b, c) => this.solid(a, b, c),
+      (a, b, c) => { const id = this.world.get(a, b, c); return id !== AIR && Number.isFinite(mat(id).hp); },
+      ph.box,
+    )(x, y, z);
+  }
+
+  /** Ends a phase. A body left inside a block moves to the nearest free standing cell in room interiors: the room it
+   *  started in first, then the rooms around it on its floor. */
+  private endPhase() {
+    const ph = this.phase;
+    this.phase = null;
+    this.statuses.delete(PHASE_STATUS);
+    if (!ph) return;
+    const b = this.player.body;
+    if (!boxHits((x, y, z) => this.solid(x, y, z), b.x, b.y, b.z, b.hw, b.h)) return;
+    const areas: RescueArea[] = [];
+    const seen = new Set<number>();
+    const add = (r: RoomInfo | null) => {
+      if (!r || seen.has(r.id)) return;
+      seen.add(r.id);
+      const interior = roomInterior(r);
+      areas.push({ box: interior, open: (x, z) => { const c = x - r.x0, k = z - r.z0; return c >= 0 && k >= 0 && c < r.w && k < r.d && r.open[c + k * r.w] === 1; } });
+    };
+    if (ph.room) add(ph.room);
+    add(this.roomAt(b.x, b.y + 0.1, b.z));
+    if (!areas.length) areas.push({ box: ph.interior });
+    if (this.below) for (const r of this.floors.get(bandOf(b.y))?.rooms ?? []) add(r);
+    const at = rescueSpot((x, y, z) => this.solid(x, y, z), { x: b.x, y: b.y, z: b.z }, areas, b.hw, b.h);
+    if (at) this.teleport(at.x, at.y, at.z);
+  }
+
   private teleport(x: number, y: number, z: number) {
     const fx0 = Math.floor(x), fz0 = Math.floor(z);
     if (!this.below) {
@@ -3696,7 +4154,38 @@ export class Game {
     }
   }
 
+  /**
+   * The Rebirth Draught asks before it is drunk: the offer card (its type, reused) names the potion and asks whether to
+   * begin again. Never in the sandbox. The flask stays in hand until the player says yes.
+   */
+  private askRebirth() {
+    if (this.sandbox) { sfx.denied(); this.hud.toast('potion.rebirth.sandbox'); return; }
+    if (this.transitioning) return;
+    this.pendingRebirth = true;
+    this.hud.presenceOfferCard(POTIONS['rebirth-draught'].name, undefined, 'potion.rebirth.question', false, undefined,
+      { accept: 'potion.rebirth.begin', decline: 'potion.rebirth.stay', controls: 'potion.rebirth.controls' });
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The answer to the Rebirth Draught's card: yes takes the potion out of the hand and starts a new run that keeps the practices. */
+  private resolveRebirth(accept: boolean) {
+    this.pendingRebirth = false;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+    const top = this.player.active;
+    if (!accept) { sfx.denied(); return; }
+    if (!top || !isFlask(top) || top.potion !== 'rebirth-draught' || this.transitioning) return;
+    this.player.takeActive();
+    this.hands.placed();
+    this.rebirthKeep = this.inventory.serialize();
+    this.requestRestart();
+  }
+
   private resolvePresenceOffer(accept: boolean) {
+    if (this.pendingRebirth) { this.resolveRebirth(accept); return; }
     const pending = this.pendingPresenceOffer;
     if (!pending) return;
     this.pendingPresenceOffer = null;
@@ -4294,8 +4783,10 @@ export class Game {
       this.carve(band + 1);
       this.bus.clearDeferred();
       this.potionsEnded(this.potions.floorEntered());
-        this.bus.emit('floorEnter', { depth: band });
-      this.hud.setFloor(this.floors.get(band)!, band);
+      // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
+      const entered = this.floors.get(band);
+      this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
+      if (entered) this.hud.setFloor(entered, band);
       this.hud.toast('toast.floor', { n: band });
       this.visited = new Set();
     }
@@ -4418,8 +4909,7 @@ export class Game {
     for (const i of hands.sort((a, b) => b - a)) p.removeAt(i);
     p.keys -= keys;
     p.bombs -= bombs;
-    for (const id of items) this.inventory.lose(id);
-    if (items.length) this.hud.setItems(this.inventory.items.map(i => i.def));
+    for (const id of items) this.loseItem(id);
     // a base heart takes its capacity and the health it holds; a bonus heart goes whole and leaves base health alone
     if (base.length) this.stats.add({ stat: 'maxHearts', layer: 'add', value: -base.length, source: 'toll' });
     p.hp = plan.hp;
@@ -4497,7 +4987,11 @@ export class Game {
     else if (ctx === 'play' && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
-      if (this.restartT <= 0) { if (this.sandbox) this.newSandbox(this.sandbox); else this.newRun(); this.revealT = 0; }
+      if (this.restartT <= 0) {
+        if (this.sandbox) this.newSandbox(this.sandbox);
+        else { const keep = this.rebirthKeep ?? undefined; this.rebirthKeep = null; this.newRun(undefined, keep); }
+        this.revealT = 0;
+      }
     } else if (this.revealT >= 0) {
       // stay dark until the new world is meshed, so it never pops in
       this.revealT += dt;
@@ -4553,6 +5047,8 @@ export class Game {
     }
     if (ctx === 'meditation') this.hud.sanctuary.input(inp, performance.now());
     this.touch.update(this, ctx);
+    // time stays stopped only while the game is running or paused; any other screen ends it, nothing fired
+    if (this.kairos.stopped && ((ctx !== 'play' && ctx !== 'paused') || this.transitioning || this.player.dead)) this.cancelKairos();
     this.showAchievement(ctx);
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
@@ -4597,6 +5093,7 @@ export class Game {
     this.camera.getWorldDirection(this.camDir);
     spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
     this.updateRoots();
+    this.kickFov();
     // the Sanctuary covers the whole screen: the world under it is not drawn while it does
     if (!this.hud.sanctuary.covering) {
       this.renderer.clear();
@@ -4608,16 +5105,27 @@ export class Game {
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
     if (this.below) this.syncBossBar();
+    this.kairosHud();
     this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }
 
   private simulate(dt: number) {
+    // Kairos (#123): while time is stopped this is the only branch of the world: the view turns, the marks
+    // and the countdown run; the body, intentions, projections, elements, doors and timers do not
+    if (this.kairos.stopped) { this.stopTime(dt); return; }
+    if (this.input.hit('miracle') && this.startKairos()) return;
     this.time += dt;
+    this.simFrame++;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
     const inp = this.input;
-    const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
+    this.tickStatuses(dt);
+    const solidHere = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
+    // lavaWalk: a lava surface is ground. The feet are read as they were at the start of the frame, so a body that
+    // falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
+    const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
+    const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
@@ -4629,6 +5137,8 @@ export class Game {
       bump: speed => this.headBump(speed),
     }, this.playerMedium, below ? {} : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
+    if (this.player.dashStarted) this.dashFx();
+    if (this.player.dashT > 0) this.dashTrail();
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
@@ -4674,6 +5184,7 @@ export class Game {
       this.sky!.update(dt);
     }
     this.pickups.update(dt, solid);
+    this.checkpointMark.update(dt);
     if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);

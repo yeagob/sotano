@@ -1,0 +1,15 @@
+{
+  "note": "Inner Fire: a negative intention that hits a projection takes 1.5 more fire damage in its sphere, and a positive one takes none",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [4, 0, 3],
+  "god": true,
+  "items": ["tummo"],
+  "enemies": [{ "def": "doubt", "at": [7, 0, 3] }],
+  "ticks": 180,
+  "report": [0, 30, 180],
+  "actions": [
+    { "t": 0, "do": "key", "code": "KeyF" },
+    { "t": 5, "do": "look", "at": [7, 0, 3] },
+    { "t": 10, "do": "fire", "ticks": 1 }
+  ]
+}

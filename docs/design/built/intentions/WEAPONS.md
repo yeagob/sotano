@@ -10,7 +10,7 @@ Part of [intentions](README.md).
 - Only one weapon is active at a time. A weapon from a synergy outranks a weapon from a single practice, so the combination always wins. Losing the practice that gave the weapon gives the shot back at once, with nothing to clean up.
 - Charged weapons charge while you hold cast. The hands glow white-gold when the charge is full. Releasing before full does nothing; releasing when full fires.
 - The blade is the exception: its swings come out beside the intentions, and the intentions keep flying.
-- Items that only act on the shot do nothing to the beam or the great cut. Two synergies compensate for the beam: Chorus (with Dual Process) and Choir (with Triangulation) raise its damage and mining.
+- The shot practices that change the fire (volley, strands, homing, both hands) change the beam, which is fired as a shot first. Bounces, pierce and phase do not reach the beam or the great cut.
 
 The weapons that exist are the [blade](BLADE.md), the [beam](BEAM.md) and the [great cut](GREAT-CUT.md). The blade and the beam come from the boss pool at quality four; the great cut is the synergy of those two.
 

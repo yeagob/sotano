@@ -1,0 +1,19 @@
+{
+  "note": "Combo (#110): the four bomb practices with Symbolic Act, Kindling, Firewalking and Inner Fire among crates; thrown volatile cubes and bombs never feed each other into a loop, the fire never hurts the player",
+  "rows": [".............", "....ccccc....", "....crrrc....", "....cr.rc....", "....crrrc....", "....ccccc....", "............."],
+  "items": ["pressurevalve", "controlledburn", "boltfromtheblue", "serendipity", "catharsis", "kindling", "firewalking", "tummo"],
+  "player": [1, 0, 3],
+  "god": false,
+  "hand": ["crate", "crate"],
+  "enemies": [{ "def": "doubt", "at": [10, 0, 3] }, { "def": "doubt", "at": [6, 0, 6] }],
+  "ticks": 600,
+  "report": [0, 200, 400, 600],
+  "actions": [
+    { "t": 0, "do": "look", "at": [6, 0, 3] },
+    { "t": 10, "do": "key", "code": "KeyQ" },
+    { "t": 30, "do": "bomb", "at": [5, 0, 2], "fuse": 1.8 },
+    { "t": 60, "do": "key", "code": "KeyQ" },
+    { "t": 200, "do": "bomb", "at": [7, 0, 4], "fuse": 1.8 },
+    { "t": 300, "do": "tp", "at": [6, 0, 3] }
+  ]
+}

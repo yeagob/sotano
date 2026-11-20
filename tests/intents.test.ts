@@ -18,6 +18,7 @@ function rig(blocks: Set<string>, tier = 0) {
     splash: () => {},
     hit: () => {},
     nearestBlock: () => null,
+    nearestEnemy: () => null,
   };
   const intents = new Intents(new THREE.Scene(), hooks);
   return { intents, state };
@@ -90,6 +91,7 @@ describe('mirrors', () => {
       splash: () => {},
       hit: () => {},
       nearestBlock: () => null,
+      nearestEnemy: () => null,
     };
     const intents = new Intents(new THREE.Scene(), hooks);
     const spec = { ...intentFromStats(BASE_STATS, 'negative'), speed: 20, flight: 5 };

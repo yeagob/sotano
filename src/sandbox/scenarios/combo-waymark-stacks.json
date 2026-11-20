@@ -1,0 +1,17 @@
+{
+  "note": "Combo (#110): Waymark with Nourishment and Tea Ceremony: stacks gained from drinks survive a revive (only the Waymark copy is spent)",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [1, 0, 3],
+  "god": false,
+  "items": ["waymark", "nourishment", "teaceremony"],
+  "hand": ["plain-tonic", "meal-small", "plain-tonic"],
+  "ticks": 300,
+  "report": [0, 100, 200, 300],
+  "actions": [
+    { "t": 20, "do": "key", "code": "KeyG" },
+    { "t": 50, "do": "key", "code": "KeyG" },
+    { "t": 80, "do": "key", "code": "KeyG" },
+    { "t": 120, "do": "tp", "at": [9, 0, 3] },
+    { "t": 150, "do": "hurt", "amount": 99 }
+  ]
+}

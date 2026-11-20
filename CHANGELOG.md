@@ -7,18 +7,42 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- In a sitting, Add time lengthens it in steps of 30 seconds, 1 minute, 5 minutes and then 10 minutes, up to one hour. The part you are in keeps its end (#160).
+- A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
+
+### Changed
+- The completion percentages on the menu show the percentage alone, without the words "of the whole" or "del total" that wrapped onto a second line.
+
+## 0.2.7-alpha · 2026-11-20
+
+### Added
+- Solve et Coagula: a miracle. A positive intention that touches lava turns the connected lava (up to 256 cells) into water; a negative one turns connected water into lava, never the water you stand in.- Post-Traumatic Growth: lava never hurts you. You walk on its surface and wade through it at full speed; your intentions still go out in it.- The Transcendent state of being: with three Miracles practices, your positive intentions take the blocks around them, and hit harder for each one they take.
+- Three practices for the hand, the allies and the tables: Furoshiki (two more things in your hand, the extra slots drawn dimmer), Kinship (a projection turned to your side heals a quarter heart, once per room visit) and Apprenticeship (every brew and cook heals a quarter heart; brews come out iced), in English and Spanish (#52).
+- The Rebirth Draught, a new potion: drinking it asks first, then starts the run again from the first floor and keeps every practice you hold, in English and Spanish (#52).
+- The flask or meal in your hand is named above the hand, with what it does; Tab shows its name, effect and duration at the top of the inventory (#52).
+- Kairos: a practice that stops time. Clear rooms to charge it (it starts charged); when it is full, the miracle button (V, the D-pad up, or the clock ring on a phone) stops the world, and you mark up to five places. Release to fire five piercing intentions at once, one at each mark (#123).
+- Waymark: a practice that is an extra life. A cairn on the path marks where you stand and the start of each new floor; when you would die, you return there with full hearts and everything you carry, and it is used up when it saves you (one copy, one extra life), in English and Spanish.
+- Lucid Dream: a miracle. Picking up a bomb, a key or a heart lets you walk through blocks for a few seconds (more pickups add time, up to a cap), and you always come out in free space. Unbreakable blocks stay solid, in English and Spanish.
+- Nine practices of the drink family, which grow with every potion or meal you drink, up to six (Nourishment, up to eight), each with its own stacks in the inventory (#110).
 - New blocks: living root, cave moss, copper ore, tin ore, quicksilver ore and lead ore, in English and Spanish (#228).
 - The Covenant's Light can now be given in play, after hearing a Listener's Lesson, with a gold burst and a toast (#228).
 - The Mender's Thread: a promised practice (+1 heart container, a little more invulnerability after each hit) that The Mender drops once a run beside its gift; picking it up keeps the Covenant's Thread, and no toll or capture can take it (#228).
 - The Mender brings back the last projection you released on its floor as an ally with a gold glow and slow gold motes (#228, #232).
 - "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
 - The Leaves: a new room of the giant tree, with a ring of star stone under an open eye in its dome (#149).
+- Dowsing and Eye Contact: two practices that steer intentions, one toward blocks and one toward projections. The one you gained last guides; the other is set aside, with a toast (#68).
+- Three fire practices: Inner Fire (negative intentions burn, and fire hurts you half as much), Firewalking (fire never hurts you, and standing in it heals a little), and Stolen Fire (one intention in five is a fire seed that bursts). Holding three fire practices gives Hearth, which warms you when a fire bursts. In English and Spanish (#110).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
-
-- In a sitting, Add time lengthens it in steps of 30 seconds, 1 minute, 5 minutes and then 10 minutes, up to one hour. The part you are in keeps its end (#160).
-- A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
+- Two practices of the bounce, in English and Spanish: Dialectic (a rebound splits the intention in two, each at half damage, at most twice per shot) and Reframing (after a rebound the intention turns toward a projection within 8 blocks and deals 25% more). They stack with Bounce Back (#110).
+- Four bomb practices, in English and Spanish: Pressure Valve (bomb radius and damage, two bombs), Controlled Burn (your blasts light the dry blocks around them, and their fire spares you close by), Bolt from the Blue (lightning from your blasts to the nearest projections) and Serendipity (luck, and a chance that a blast leaves a key, a bomb or a heart) (#110).
+- New practice: Irimi, a body practice that dashes 4.5 blocks in the direction you double-tap, flick or swipe. Untouchable while it lasts, one dash in the air, cooldown 0.8 s; looking up while you dash rises (#157).
+- New practices: Fartlek (hold Shift, L3 or the stick's edge to run 45% faster) and Child's Pose (hold C, R3 or swipe down on the right to crouch: fit through 1-block gaps, never fall off edges, take half contact damage; crouched you move at 45% speed) (#52).
+- 62 new room layouts: arenas with low rings and benches, galleries and towers to fight from, piers and broken bridges over dry docks, canals, flooded cloisters, canal locks you open by breaking a plug, lava lakes and forges, a pool that turns lava to stone when you break its wall, crypts and catacombs in the deep circles, four new challenge rooms, two starts, three treasure rooms, two vaults and two bosses' halls. Every band of floors has at least twice as many layouts as before (#115).
 
 ### Changed
+- Remember Breathing's beam is a shot first: the practices that change your shot change the beam. Dual Process and Triangulation fan it into two or three beams, Rule of Three and Spiral Growth give it strands of light, Eye Contact and Dowsing steer its rays, and Bilateral Stimulation fires one beam from each hand in turn. The Chorus and Choir synergies are removed, since the shot now reaches the beam.
+- Seed codes move to v38: the same code lays out its rooms with the new and redrawn layouts (#115), and the new practices join the treasure, vault and boss draws, so its pedestals hold other practices (#110, #122, #123, #157, #52).
+- Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
 - The Gardener now asks for a living root and a tuft of cave moss, one card each, instead of a flesh part (#228).
 - The Cartographer charts both the vault and the boss for the right ore, on its card and on the star map; without it, its single mark is unchanged (#228).
 - The Mender now asks for two parts of different kinds on one card that names both; nothing is taken unless you say Give and both are still in your hand (#228, #233).
@@ -26,7 +50,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Child no longer adds a Lesson in words after its gift (#149).
 - The Questioning Tincture takes any ore, not only iron ore (#228).
 - Seed codes move to v37: the same code grows the giant tree with the Leaves and lays the new blocks in the rock; the rooms are unchanged (#149, #228).
-- The completion percentages on the menu show the percentage alone, without the words "of the whole" or "del total" that wrapped onto a second line.
+- 48 room layouts redrawn so their corners stay clear: no more cubes in or beside the corners where projections rise unseen or where you snag while chasing them; pillars stand on the room's cross instead (#115).
 
 ## 0.2.6-alpha · 2026-11-19
 

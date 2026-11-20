@@ -58,8 +58,14 @@ export function runLab(game: Game, s: Scenario): LabResult {
       const p = game.player, b = p.body;
       out.push('', `t ${t} (${num(t / TPS)} s)`);
       out.push(`  player hp ${p.hp}/${game.maxHp} · at ${rel(b.x, b.y, b.z)} · hand [${p.hand.map(c => typeof c === 'number' ? MATERIALS[c].key : carriedDef(c).id).join(' ')}] · bombs ${p.bombs} · keys ${p.keys}${p.dead ? ' · DEAD' : ''}`);
-      const items = game.inventory.items.map(i => i.def.id);
+      if (game.phaseLeft > 0) out.push(`  phase ${game.phaseLeft.toFixed(1)} s`);
+      const items = game.inventory.items.map(i => (i.stacks > 0 ? `${i.def.id}×${i.stacks}` : i.def.id));
       if (items.length) out.push(`  practices ${items.join(' ')} · synergies ${game.inventory.synergiesActive.map(x => x.id).join(' ') || '—'}`);
+      // stacks only ever show when a practice has one, so reports without stacks are unchanged
+      if (game.inventory.items.some(i => i.stacks > 0)) {
+        const s = game.stats.all;
+        out.push(`  stats move speed ${num(s.moveSpeed)} · damage ${num(s.damage)} · jump ${num(s.jump)} · fire rate ${num(s.fireRate)}`);
+      }
       for (const e of game.enemies.list) out.push(`  ${e.def}#${e.id} ${e.alive ? `hp ${num(e.hp)}/${e.maxHp}` : 'gone'}${e.tags.has('creature') ? ` · size ${num(e.scale)}` : ''} · ${e.faction} · at ${rel(e.body.x, e.body.y, e.body.z)}`);
       out.push(`  blocks ${blockCounts(game.dw, r)}`);
       out.push(`  elements ${elementCounts(game.dw, r)}`);
@@ -87,10 +93,17 @@ export function runLab(game: Game, s: Scenario): LabResult {
     };
     let fireFor = 0;
     let next = 0;
+    // a key held for a number of ticks (`hold`): released on the tick it ends, so a run or a crouch lasts its script
+    const holds = new Map<string, number>();
     for (let t = 0; t <= ticks; t++) {
       if (at.has(t)) snapshot(t);
       if (mapTicks.has(t)) drawMaps(t);
-      while (next < actions.length && actions[next].t === t) act(game, actions[next++], o, n => { fireFor = n; }, errors);
+      for (const [code, end] of holds) if (t >= end) { game.input.keys.delete(code); holds.delete(code); }
+      while (next < actions.length && actions[next].t === t) {
+        const a = actions[next++];
+        if ('do' in a && a.do === 'hold') { game.input.keys.add(a.code); holds.set(a.code, t + (a.ticks ?? 1)); continue; }
+        act(game, a, o, n => { fireFor = n; }, errors);
+      }
       if (t === ticks) break;
       // a hold starts with a press, as a real one does (the double tap reads presses)
       if (fireFor > 0 && !game.input.touchHeld.has('cast')) game.input.touchPressed.add('cast');
@@ -124,7 +137,9 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     }
     case 'spawn': { const [x, y, z] = w(a.at); if (!game.sandboxSpawn(a.def, x + 0.5, y, z + 0.5, a.faction)) errors.push(`t ${a.t}: could not spawn ${a.def}`); break; }
     case 'give': game.grant(a.item); break;
-    case 'lose': game.inventory.lose(a.item); game.hud.setItems(game.inventory.items.map(i => i.def)); break;
+    case 'lose': game.loseItem(a.item); break;
+    case 'hurt': game.damagePlayer(a.amount, 'item', 'lab', game.player.id); break;
+    case 'collect': game.collect(a.kind, a.kind === 'heart' ? 2 : 1); break;
     case 'tp': { const [x, y, z] = w(a.at); p.spawnAt(x + 0.5, y, z + 0.5); break; }
     case 'look': {
       const [x, y, z] = w(a.at), e = p.eye;
@@ -135,6 +150,9 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     }
     case 'fire': fire(a.ticks ?? 1); break;
     case 'key': game.input.pressed.add(a.code); break;
+    case 'hold': break; // runLab holds the key itself (it needs the tick)
+    // a double tap of a direction, as the input layer reports it (the detector itself is tested in tests/dash.test.ts)
+    case 'dash': game.input.gesture('dash', a.dir, 'keyboard'); break;
     case 'use': game.input.touchPressed.add('place'); break;
     case 'hand': p.hand = a.blocks.map(carriedFromId); break;
   }

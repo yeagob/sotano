@@ -27,6 +27,7 @@ export const RECIPES: readonly Recipe[] = [
   { potion: 'ember-tonic', slots: [{ part: 'heart', path: 'will' }] },
   { potion: 'berserker-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'heart', path: 'will' }, { materials: [MAT.obsidian] }] },
   { potion: 'patient-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'mind', path: 'will' }], patterns: 'same' },
+  { potion: 'rebirth-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'mind', path: 'mind' }, { part: 'flesh', path: 'body' }] },
 ];
 
 export const SLOT_LEVEL = { exact: 3, lineage: 2, path: 1, any: 0 } as const;

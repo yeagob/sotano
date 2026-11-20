@@ -9,7 +9,7 @@ A challenge room is a room you come back to. Every time you walk in, three waves
 - **Which floors.** Any hostile floor, one to nine. Never the roots.
 - **How often.** On a given floor, two plans in five have a challenge room. The draw is made with the floor's plan, so the same seed gives the same room.
 - **Where.** A one-cell normal room, a dead end when the map has one, never next to the start.
-- **Which rooms.** Two templates: a dome-roofed gauntlet and a vault-roofed colosseum with a pit (see [TEMPLATES](TEMPLATES.md)). Its doors wear the boss room's obsidian frame, so the room reads as a place of trial.
+- **Which rooms.** Six templates: a dome-roofed gauntlet, a vault-roofed colosseum with a pit, crossfire (low walls north and south), a pool arena, bunkers of low brick, and from floor 3 a ring of lava (see [TEMPLATES](TEMPLATES.md)). Its doors wear the boss room's obsidian frame, so the room reads as a place of trial.
 
 ## What a visit is
 
@@ -28,4 +28,4 @@ Every visit is harder than the one before, and every wave of a visit is harder t
 
 - The wave composition is drawn from the same roster as the rest of the floor's rooms. The bestiary owns which projections a wave may hold.
 
-Code: `src/game/game.ts` (entering, sealing, the waves, the reward and the end), `src/content/rooms.ts` (the two templates), `src/content/tables/rooms.ts` (the chance of a challenge room), `src/world/floor.ts` (the room's walls), `src/content/tables/rewards.ts` (the clear reward).
+Code: `src/game/game.ts` (entering, sealing, the waves, the reward and the end), `src/content/rooms.ts` and `src/content/room-layouts.ts` (the six templates), `src/content/tables/rooms.ts` (the chance of a challenge room), `src/world/floor.ts` (the room's walls), `src/content/tables/rewards.ts` (the clear reward).

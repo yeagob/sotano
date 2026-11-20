@@ -14,6 +14,7 @@ The folder holds the practices whose first path tag is mind. Practices that also
 | [Second Brain](SECOND-BRAIN.md) | 3 | none | treasure rooms |
 | [Growth Mindset](GROWTH-MINDSET.md) | 1 | none | treasure rooms, boss rewards |
 | [Visualization](VISUALIZATION.md) | 1 | none | treasure rooms, boss rewards |
+| [Bolt from the Blue](../BOMBS.md#3-bolt-from-the-blue-boltfromtheblue) | 3 | none | treasure rooms |
 | [Tao Te Ching](TAO-TE-CHING.md) | 4 | Emotion | treasure rooms, vault rooms |
 | [As a Man Thinketh](AS-A-MAN-THINKETH.md) | 4 | none | treasure rooms, vault rooms |
 | [Socratic Questioning](SOCRATIC-QUESTIONING.md) | 1 | none | treasure rooms |
@@ -23,9 +24,11 @@ The folder holds the practices whose first path tag is mind. Practices that also
 | [Aha Moment](AHA-MOMENT.md) | 2 | none | treasure rooms |
 | [Chunking](CHUNKING.md) | 3 | none | treasure rooms |
 | [Dual Process](DUAL-PROCESS.md) | 2 | none | treasure rooms |
+| [Dialectic](DIALECTIC.md) | 3 | none | treasure rooms |
 | [Resonance](RESONANCE.md) | 3 | none | treasure rooms |
 | [Thought Stopping](THOUGHT-STOPPING.md) | 3 | none | treasure rooms |
 | [Triangulation](TRIANGULATION.md) | 4 | none | treasure rooms, vault rooms |
+| [Dowsing](DOWSING.md) | 2 | none | treasure rooms |
 
 ## Also on this path (first path tag elsewhere)
 

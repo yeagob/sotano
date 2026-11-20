@@ -3,14 +3,30 @@ import { palCss, type PalToken } from '../content/palette';
 import { carriedDef, isFlask, POTIONS, type Flask } from '../content/potions';
 import type { Carried } from '../entities/player';
 import { iconDataUrl } from '../render/icons';
-import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
+import { BINDINGS, STICK_RUN_EDGE, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
 import { intentPowerLevel } from '../combat/intents';
+import { swipeDir } from './gestures';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
+/** A swipe for the dash starts on the left side (up to the middle) and outside the stick's zone (DASH.md §2). */
+const SWIPE_SIDE = 0.5;
+
+/** Whether a touch at `x` may start a dash swipe: the left side of the screen, right of the stick's zone. */
+export function swipeStartsAt(x: number, width: number): boolean {
+  return x < width * SWIPE_SIDE && x >= width * STICK_SPLIT;
+}
+
+/**
+ * Whether a touch may start the crouch swipe (RUN-AND-CROUCH.md): the bottom edge of the right side of the screen,
+ * the last twelfth of the height, right of the middle.
+ */
+export function crouchStartsAt(x: number, y: number, width: number, height: number): boolean {
+  return x >= width * 0.5 && y >= height * (1 - 1 / 12);
+}
 
 export function castPolarityToken(polarity: Polarity): PalToken {
   return polarity === 'positive' ? 'light.gold' : 'light.ember';
@@ -61,8 +77,9 @@ export function halfTurn(last: number | null, raw: number): { side: number | nul
   return { side, flip: last !== null && last !== side };
 }
 
-interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number }
+interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean; crouch?: boolean }
 
+import { KAIROS_CHARGES } from '../game/kairos';
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
 
 export class TouchControls {
@@ -134,8 +151,35 @@ export class TouchControls {
         this.tracks.set(tc.identifier, { kind: 'stick', x, y, ox: x, oy: y, t });
         this.stick.classList.add('on');
         this.placeStick(x, y, 0, 0);
-      } else this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t });
+      } else {
+        // a touch in the left band, outside the stick's zone, may become a swipe (the dash) until its window closes;
+        // a touch at the bottom of the right side may become the crouch swipe (Child's Pose) the same way
+        this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t, swipe: swipeStartsAt(x, innerWidth) || crouchStartsAt(x, y, innerWidth, innerHeight), crouch: crouchStartsAt(x, y, innerWidth, innerHeight) });
+      }
     }
+  }
+
+  /**
+   * A look drag that may be a dash swipe. The look it already turned is taken back on recognition, so a
+   * swipe never turns the view; a drag that is not a swipe keeps the look it made.
+   */
+  private checkSwipe(tr: Track, x: number, y: number) {
+    const dir = swipeDir(x - tr.ox, y - tr.oy, (performance.now() - tr.t) / 1000);
+    if (tr.crouch) {
+      // the crouch swipe is a downward stroke only; it toggles the crouch and takes its look back
+      if (dir === 'back') {
+        this.input.touchLook(-(x - tr.ox), -(y - tr.oy));
+        this.input.toggleCrouch();
+        tr.crouch = false;
+        tr.swipe = false;
+      } else if (performance.now() - tr.t > 250) tr.crouch = false;
+      return;
+    }
+    if (dir) {
+      this.input.touchLook(-(x - tr.ox), -(y - tr.oy));
+      this.input.gesture('dash', dir, 'touch');
+      tr.swipe = false;
+    } else if (performance.now() - tr.t > 250) tr.swipe = false;
   }
 
   private moveTouches(e: TouchEvent) {
@@ -150,11 +194,16 @@ export class TouchControls {
         const l = Math.hypot(dx, dy);
         if (l > r) { tr.ox = x - dx / l * r; tr.oy = y - dy / l * r; dx = dx / l * r; dy = dy / l * r; }
         const m = Math.hypot(dx, dy) / r;
+        // the stick at its edge runs (Fartlek): a held touch on the run, released when the stick comes back in
+        if (m >= STICK_RUN_EDGE) this.input.touchHeld.add('run'); else this.input.touchHeld.delete('run');
         const k = m < STICK_DEAD ? 0 : (m - STICK_DEAD) / (1 - STICK_DEAD) / (m || 1);
         this.input.touchMove.x = dx / r * k;
         this.input.touchMove.y = -dy / r * k;
         this.placeStick(tr.ox, tr.oy, dx, dy);
-      } else if (tr.kind === 'look' || tr.action === 'cast') this.input.touchLook(x - tr.x, y - tr.y);
+      } else if (tr.kind === 'look' || tr.action === 'cast') {
+        this.input.touchLook(x - tr.x, y - tr.y);
+        if (tr.swipe || tr.crouch) this.checkSwipe(tr, x, y);
+      }
       tr.x = x; tr.y = y;
     }
   }
@@ -221,6 +270,7 @@ export class TouchControls {
   private releaseStick() {
     this.stickId = -1;
     this.input.touchMove.x = this.input.touchMove.y = 0;
+    this.input.touchHeld.delete('run');
     this.stick.classList.remove('on');
     this.stick.style.left = this.stick.style.top = '';
     this.knob.style.transform = '';
@@ -256,6 +306,15 @@ export class TouchControls {
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
+    // the miracle button (Kairos, #123) exists only while the practice is held; its ring is the charge
+    const miracle = this.buttons.get('miracle')!;
+    const kairos = g.inventory.has('kairos');
+    miracle.hidden = !kairos;
+    if (!kairos) forgetButtonPress(this.tracks, this.input.touchHeld, 'miracle');
+    else {
+      miracle.style.setProperty('--charge', String(g.kairosCharge() / KAIROS_CHARGES));
+      miracle.style.setProperty('--kairos', palCss('light.gold'));
+    }
     const drink = drinkView(p.active);
     // the loaded intention's power (#111): the ring thickens and glows with every step of damage
     const power = intentPowerLevel(g.stats.get('damage')).toFixed(3);

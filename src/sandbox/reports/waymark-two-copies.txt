@@ -1,0 +1,64 @@
+# waymark-two-copies — Waymark: two copies save the player twice, each death spends one copy; the third death is the real one
+floor 1 · seed 1 · room 13×7×5 · 600 ticks (10.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark waymark · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 2 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark waymark · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark waymark · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 200 (3.3 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:player<item 1 · death! 1 · heal 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 480 (8.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:player<item 1 · death! 1 · heal 1 · roomEnter 1
+
+t 600 (10.0 s)
+  player hp 0/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99 · DEAD
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:player<item 1 · actorDeath:player 1 · death 1 · playerDied 1
+
+map t 600 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

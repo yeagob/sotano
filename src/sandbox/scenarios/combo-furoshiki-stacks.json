@@ -1,0 +1,16 @@
+{
+  "note": "Combo (#52 + #110): Furoshiki carries four flasks; Nourishment, Herbal Lore and Mindful Eating each stack only from their own drinks",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [5, 0, 3],
+  "god": true,
+  "items": ["furoshiki", "nourishment", "herbalism", "mindfuleating"],
+  "hand": ["plain-tonic", "meal-small", "plain-tonic", "meal-hearty"],
+  "ticks": 160,
+  "report": [0, 160],
+  "actions": [
+    { "t": 20, "do": "key", "code": "KeyG" },
+    { "t": 50, "do": "key", "code": "KeyG" },
+    { "t": 80, "do": "key", "code": "KeyG" },
+    { "t": 110, "do": "key", "code": "KeyG" }
+  ]
+}

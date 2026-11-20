@@ -1,0 +1,24 @@
+{
+  "note": "Remember Breathing with Dowsing: the beam bends toward the nearest block, a stone off the line of the look, and breaks it",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "place": [{ "at": [5, 0, 6], "block": "stone" }],
+  "floor": 1,
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 180,
+  "report": [0, 90, 180],
+  "actions": [
+    { "t": 0, "do": "key", "code": "KeyF" },
+    { "t": 0, "do": "look", "at": [8, 1, 3] },
+    { "t": 0, "do": "fire", "ticks": 90 }
+  ],
+  "items": ["kiai", "dowsing"]
+}

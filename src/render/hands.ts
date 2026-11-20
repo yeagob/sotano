@@ -56,6 +56,8 @@ export class Hands {
   private blockMats = new Map<number, THREE.Material>();
   private cardMats = new Map<string, THREE.Material>();
   private swing = 0;
+  /** Which arm the swing belongs to (+1 right, -1 left): a shot leaves from the hand that takes its turn. */
+  private swingSide: 1 | -1 = 1;
   private place = 0;
   private heldNow: Carried | 0 = 0;
   private secondNow: Carried | 0 = 0;
@@ -119,7 +121,8 @@ export class Hands {
 
   get holding() { return this.holdT > 0; }
 
-  fire() { this.swing = 1; }
+  /** A cast: the arm on `side` swings (+1 right, the default; -1 left). */
+  fire(side: 1 | -1 = 1) { this.swing = 1; this.swingSide = side; }
   placed() { this.place = 1; }
 
   /** `held` = top of the hand (left), `second` = the one below it (right), 0 = none. */
@@ -137,14 +140,15 @@ export class Hands {
     this.place = Math.max(0, this.place - dt * 5);
     const bobX = Math.sin(walkPhase * 1.6) * 0.02, bobY = Math.abs(Math.cos(walkPhase * 1.6)) * 0.025;
     const s = Math.sin(this.swing * Math.PI);
-    this.right.position.set(0.42 + bobX, -0.42 - bobY + s * 0.06, -0.62 - s * 0.14);
-    this.right.rotation.x = 0.12 + s * 0.5;
-    // the left hand drops out of view when it holds nothing
-    const showLeft = held !== 0;
+    const sr = this.swingSide > 0 ? s : 0, sl = this.swingSide < 0 ? s : 0;
+    this.right.position.set(0.42 + bobX, -0.42 - bobY + sr * 0.06, -0.62 - sr * 0.14);
+    this.right.rotation.x = 0.12 + sr * 0.5;
+    // the left hand drops out of view when it holds nothing, and rises for a cast of its own
+    const showLeft = held !== 0 || sl > 0;
     const targetY = showLeft ? -0.46 : -1.3;
     this.left.position.y += (targetY - this.place * 0.08 - bobY - this.left.position.y) * Math.min(1, dt * 12);
     this.left.position.x = -0.42 - bobX;
-    this.left.position.z = -0.6 - this.place * 0.2;
+    this.left.position.z = -0.6 - this.place * 0.2 - sl * 0.14;
     // hold-up: both arms swing up to hold the item over your head, then settle back
     const h = this.holdT > 0 ? Math.min(1, (Hands.HOLD_TIME - this.holdT) * 6, this.holdT * 4) : 0;
     if (h > 0) {
@@ -155,7 +159,7 @@ export class Hands {
       this.left.rotation.set(0.15 + h * 0.55, 0.2 + h * 0.35, -0.05);
     } else {
       this.right.rotation.y = -0.18;
-      this.left.rotation.set(0.15, 0.2, -0.05);
+      this.left.rotation.set(0.15 + sl * 0.5, 0.2, -0.05);
     }
     this.holdItem.visible = this.holdGlow.visible = h > 0;
     if (h > 0) {
