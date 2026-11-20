@@ -6,7 +6,10 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.7-alpha · 2026-11-20
+
 ### Added
+- Solve et Coagula: a miracle. A positive intention that touches lava turns the connected lava (up to 256 cells) into water; a negative one turns connected water into lava, never the water you stand in.- Post-Traumatic Growth: lava never hurts you. You walk on its surface and wade through it at full speed; your intentions still go out in it.- The Transcendent state of being: with three Miracles practices, your positive intentions take the blocks around them, and hit harder for each one they take.
 - Three practices for the hand, the allies and the tables: Furoshiki (two more things in your hand, the extra slots drawn dimmer), Kinship (a projection turned to your side heals a quarter heart, once per room visit) and Apprenticeship (every brew and cook heals a quarter heart; brews come out iced), in English and Spanish (#52).
 - The Rebirth Draught, a new potion: drinking it asks first, then starts the run again from the first floor and keeps every practice you hold, in English and Spanish (#52).
 - The flask or meal in your hand is named above the hand, with what it does; Tab shows its name, effect and duration at the top of the inventory (#52).
