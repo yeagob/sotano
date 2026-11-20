@@ -1,0 +1,54 @@
+# waymark-sealed — Waymark in a closed room with projections: the death is cancelled, the projections near the checkpoint are pushed back, and the room is still there to finish (the sandbox room has walls, not doors)
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark · synergies —
+  doubt#2 hp 24.0/24 · projection · at 5.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 2 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark · synergies —
+  doubt#2 hp 24.0/24 · projection · at 5.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 10 (0.2 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark · synergies —
+  doubt#2 hp 24.0/24 · projection · at 5.4 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices waymark · synergies —
+  doubt#2 hp 24.0/24 · projection · at 4.0 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 20/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  doubt#2 hp 24.0/24 · projection · at 1.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:player<contact 1 · actorDamage:player<item 1 · contact 1 · death! 1 · heal 1 · roomEnter 1
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

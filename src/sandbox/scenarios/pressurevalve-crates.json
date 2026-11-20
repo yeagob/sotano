@@ -1,0 +1,10 @@
+{
+  "note": "Pressure Valve: a bomb among crates and stone; the blast is wider (radius +0.8) and hits harder (damage x1.6), and two bombs are gained on the spot",
+  "rows": [".............", "....ccccc....", "....crrrc....", "....cr.rc....", "....crrrc....", "....ccccc....", "............."],
+  "items": ["pressurevalve"],
+  "player": [0, 0, 0],
+  "god": true,
+  "ticks": 240,
+  "report": [0, 110, 240],
+  "actions": [{ "t": 0, "do": "bomb", "at": [6, 0, 3], "fuse": 1.8 }]
+}

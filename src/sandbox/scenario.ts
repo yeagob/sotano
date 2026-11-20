@@ -14,6 +14,7 @@ import type { RoomMood } from '../content/tables/rooms';
 import { ENEMY_BY_ID } from '../content/enemies';
 import { CREATURE_BY_ID } from '../content/creatures';
 import { PART_BY_ID } from '../content/parts';
+import { POTIONS, type PotionId } from '../content/potions';
 import { PRESENCE_BY_ID } from '../content/presences';
 import boundaryDef from '../content/presences/boundary';
 import type { RunRandom } from '../core/rng';
@@ -42,9 +43,13 @@ export type Action = { t: number } & (
   | { do: 'give'; item: string }
   | { do: 'lose'; item: string }
   | { do: 'tp'; at: Vec3 }
+  | { do: 'hurt'; amount: number }
+  | { do: 'collect'; kind: 'bomb' | 'key' | 'heart' }
   | { do: 'look'; at: Vec3 }
   | { do: 'fire'; ticks?: number }
   | { do: 'key'; code: string }
+  | { do: 'hold'; code: string; ticks?: number }
+  | { do: 'dash'; dir: 'forward' | 'back' | 'left' | 'right' }
   | { do: 'use' }
   | { do: 'hand'; blocks: string[] }
 );
@@ -118,12 +123,12 @@ export function validateScenario(s: Scenario): string[] {
   }
   if (s.height !== undefined && (s.height < 3 || s.height > 8)) errs.push(`${s.id}: height ${s.height} outside 3…8`);
   mats(s.shell ? [s.shell] : [], 'shell');
-  for (const id of s.hand ?? []) if (MAT[id] === undefined && !PART_BY_ID.has(id)) errs.push(`${s.id}: unknown hand object "${id}"`);
+  for (const id of s.hand ?? []) if (MAT[id] === undefined && !PART_BY_ID.has(id) && !(id in POTIONS)) errs.push(`${s.id}: unknown hand object "${id}"`);
   const places = [...(s.place ?? []), ...(s.actions ?? []).filter((a): a is Action & Placement => !('do' in a))];
   mats(places.flatMap(p => 'block' in p ? [p.block] : []), 'place');
   for (const a of s.actions ?? []) if ('do' in a) {
     if ((a.do === 'cube') && MAT[a.block] === undefined) errs.push(`${s.id}: unknown block "${a.block}" at t ${a.t}`);
-    if (a.do === 'hand') for (const id of a.blocks) if (MAT[id] === undefined && !PART_BY_ID.has(id)) errs.push(`${s.id}: unknown hand object "${id}" at t ${a.t}`);
+    if (a.do === 'hand') for (const id of a.blocks) if (MAT[id] === undefined && !PART_BY_ID.has(id) && !(id in POTIONS)) errs.push(`${s.id}: unknown hand object "${id}" at t ${a.t}`);
     if ((a.do === 'give' || a.do === 'lose') && !ITEM_BY_ID.has(a.item)) errs.push(`${s.id}: unknown item "${a.item}" at t ${a.t}`);
     if (a.do === 'spawn' && !knownProjection(a.def)) errs.push(`${s.id}: unknown projection "${a.def}" at t ${a.t}`);
   }
@@ -139,6 +144,7 @@ const knownProjection = (id: string) => ENEMY_BY_ID.has(id) || CREATURE_BY_ID.ha
 export function carriedFromId(id: string) {
   const block = MAT[id];
   if (block !== undefined) return block;
+  if (id in POTIONS) return { potion: id as PotionId };
   const part = PART_BY_ID.get(id);
   if (!part) throw new Error(`sandbox: unknown hand object "${id}"`);
   return part;

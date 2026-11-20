@@ -1,0 +1,44 @@
+{
+  "note": "Stacks, meal family: Mindful Eating, Breaking Bread, Hara Hachi Bu and Grace Before Meals grow by one stack per meal eaten, and a potion never stacks them",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    5,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "mindfuleating",
+    "breakingbread",
+    "harahachibu",
+    "grace"
+  ],
+  "hand": [
+    "meal-small",
+    "meal-hearty",
+    "plain-tonic",
+    "meal-small",
+    "meal-hearty"
+  ],
+  "ticks": 200,
+  "report": [
+    0,
+    60,
+    200
+  ],
+  "actions": [
+    { "t": 20, "do": "key", "code": "KeyG" },
+    { "t": 50, "do": "key", "code": "KeyG" },
+    { "t": 80, "do": "key", "code": "KeyG" },
+    { "t": 110, "do": "key", "code": "KeyG" },
+    { "t": 140, "do": "key", "code": "KeyG" }
+  ]
+}

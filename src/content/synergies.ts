@@ -8,6 +8,9 @@ import { defineSynergy, hook, type SynergyDef } from '../items/types';
 import { CHAIN_SOURCE, NEIGHBOURS } from './items/habitstack';
 import { VOLATILE } from './items/catharsis';
 
+/** The item ids whose bursts are fire bursts (Hearth warms you when one goes off). */
+const FIRE_BURSTS: ReadonlySet<string> = new Set(['kindling', 'prometheus']);
+
 export const SYNERGIES: readonly SynergyDef[] = [
   defineSynergy({
     id: 'one_clear_cut',
@@ -16,20 +19,6 @@ export const SYNERGIES: readonly SynergyDef[] = [
     requires: ['occamsrazor', 'kiai'],
     // the combination outranks both items' weapons (docs/architecture/WEAPONS.md §1)
     weapon: { id: 'greatcut', priority: 100 },
-  }),
-  defineSynergy({
-    id: 'chorus',
-    name: 'Chorus',
-    description: 'Breath finds a second voice: the beam hits and digs 1.6 times harder. Dual Process cannot reach a beam, so the voice is added here.',
-    requires: ['kiai', 'dualprocess'],
-    hooks: [hook('strike', e => { e.damage *= 1.6; e.mining *= 1.6; }, { id: 'second-voice', priority: 20 })],
-  }),
-  defineSynergy({
-    id: 'choir',
-    name: 'Choir',
-    description: 'Three voices in one breath: the beam hits and digs 2.2 times harder. Triangulation cannot reach a beam, so the voices are added here.',
-    requires: ['kiai', 'triangulation'],
-    hooks: [hook('strike', e => { e.damage *= 2.2; e.mining *= 2.2; }, { id: 'three-voices', priority: 20 })],
   }),
   defineSynergy({
     id: 'somatic_release',
@@ -67,6 +56,24 @@ export const SYNERGIES: readonly SynergyDef[] = [
     ],
   }),
 
+  defineSynergy({
+    id: 'hearth',
+    name: 'Hearth',
+    description: 'Three fires keep one warm place. Where a fire bursts from you, you warm yourself a little.',
+    requires: [{ tag: 'fire', count: 3 }],
+    stats: [{ stat: 'damage', layer: 'add', value: 1 }, { stat: 'fireRate', layer: 'mul', value: 1.1 }],
+    hooks: [
+      // a fire practice's burst (Kindling's flare, Stolen Fire's burst) warms you, at most every 4 s
+      hook('burst', (e, api) => {
+        if (!FIRE_BURSTS.has(e.source)) return;
+        const m = api.memory(), t = api.time(), c = api.counts();
+        if (c.hp >= c.maxHp || t < (m.next ?? 0)) return;
+        m.next = t + 4;
+        api.heal(0.5);
+      }, { id: 'warmth', priority: 200 }),
+    ],
+  }),
+
   // ── states of being: three practices of the same path (docs/design/STORY.md §3) ──
   defineSynergy({
     id: 'embodied',
@@ -90,10 +97,26 @@ export const SYNERGIES: readonly SynergyDef[] = [
     stats: [{ stat: 'luck', layer: 'add', value: 2 }],
   }),
   defineSynergy({
+    id: 'transcendent',
+    name: 'Transcendent',
+    description: 'State of being: the limits give way. Your positive intentions take the blocks around them and hit harder for each one.',
+    requires: [{ tag: 'milagros', count: 3 }],
+    // a positive intention gets an aura three times its own size (Intents.absorb); negative ones are not changed
+    hooks: [hook('fire', e => { if (e.intent.polarity === 'positive') e.intent.absorb = 3; }, { id: 'aura', priority: 30 })],
+  }),
+  defineSynergy({
     id: 'resolute',
     name: 'Resolute',
     description: 'State of being: steady will. More damage, and blocks give way sooner.',
     requires: [{ tag: 'will', count: 3 }],
     stats: [{ stat: 'damage', layer: 'mul', value: 1.15 }, { stat: 'mining', layer: 'mul', value: 1.2 }],
+  }),
+  defineSynergy({
+    id: 'doublehelix',
+    name: 'Double Helix',
+    description: 'Two spirals in one rhythm: the pair fires at twice the base rate, not four times, and each strike hits 1.25 times harder.',
+    // Bilateral Stimulation and Spiral Growth each double the fire rate; this halves the pair back to ×2
+    requires: ['bilateral', 'spiralgrowth'],
+    stats: [{ stat: 'fireRate', layer: 'mul', value: 0.5 }, { stat: 'damage', layer: 'mul', value: 1.25 }],
   }),
 ];

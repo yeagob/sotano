@@ -7,7 +7,7 @@ Up: [states of being](README.md) · [practices](../README.md) · [built design](
 | Path | Will |
 | Requires | three practices carrying the will tag |
 | Code | `src/content/synergies.ts` |
-| Practices that count (13) | [Stoic Resolve](../will/STOIC-RESOLVE.md), [Deep Focus](../mind/DEEP-FOCUS.md), [Kaizen](../will/KAIZEN.md), [Habit Stacking](../will/HABIT-STACKING.md), [Meditations](../will/MEDITATIONS.md), [Self-Reliance](../will/SELF-RELIANCE.md), [Letters from a Stoic](../will/LETTERS-FROM-A-STOIC.md), [Satori](../body/SATORI.md), [Thinking, Waiting, Fasting](../mind/THINKING-WAITING-FASTING.md), [Remember Breathing](../will/REMEMBER-BREATHING.md), [Bounce Back](../will/BOUNCE-BACK.md), [Kindling](../will/KINDLING.md), [Self-Efficacy](../will/SELF-EFFICACY.md) |
+| Practices that count (14) | [Stoic Resolve](../will/STOIC-RESOLVE.md), [Deep Focus](../mind/DEEP-FOCUS.md), [Kaizen](../will/KAIZEN.md), [Habit Stacking](../will/HABIT-STACKING.md), [Meditations](../will/MEDITATIONS.md), [Self-Reliance](../will/SELF-RELIANCE.md), [Letters from a Stoic](../will/LETTERS-FROM-A-STOIC.md), [Satori](../body/SATORI.md), [Thinking, Waiting, Fasting](../mind/THINKING-WAITING-FASTING.md), [Remember Breathing](../will/REMEMBER-BREATHING.md), [Bounce Back](../will/BOUNCE-BACK.md), [Kindling](../will/KINDLING.md), [Self-Efficacy](../will/SELF-EFFICACY.md), [Eye Contact](../will/EYE-CONTACT.md) |
 
 ## Effect as built
 

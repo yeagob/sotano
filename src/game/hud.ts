@@ -10,7 +10,7 @@ import { heartQuarters, HEART } from '../entities/actors';
 import { heartCount } from '../entities/hearts';
 import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
-import { fmtStat, statLabel, type StatName } from '../core/stats';
+import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
@@ -24,10 +24,11 @@ import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../rende
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
-import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
+import { PHASE_WARN_S } from './phase';
 import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -86,8 +87,13 @@ export function offerList(names: readonly string[]): string {
   return t('presence.offer.three', { a: names[0], b: names[1], c: names[2] });
 }
 
+/** The answers an offer card shows in place of a presence's own (the Rebirth Draught asks on the same card). */
+export interface OfferAnswers { accept: MessageKey; decline: MessageKey; controls: MessageKey }
+
 export class Hud {
   private hand = $('hand');
+  /** The held-item label above the hand (a flask or meal in hand; see `updateHeld`). */
+  private heldEl = $('held');
   private itemsBar = $('items');
   private debugEl = $('debug');
   private overlay = $('overlay');
@@ -113,6 +119,12 @@ export class Hud {
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private polarityEl = $('polarity');
+  private kairosEl = $('kairos');
+  private kairosMarksEl = $('kairos-marks');
+  private kairosTone = '';
+  private phaseEl = $('phase');
+  private phaseTint = $('phase-tint');
+  private phaseShown = '';
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
@@ -143,7 +155,9 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText; answers?: OfferAnswers } | null = null;
+  /** The key of the held-item label last drawn (the flask in hand and its language), so it is not redrawn each frame. */
+  private heldKey = '';
   /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
    *  navigate action has reached; a tap or the confirm action picks one. */
   private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
@@ -314,6 +328,31 @@ export class Hud {
       `<button type="button" data-lang="${l.code}"${l.code === locale() ? ' class="on" aria-pressed="true"' : ''}>${esc(l.name)}</button>`).join('');
   }
 
+  /** Kairos (#123), a persistent status: the charge pips while the practice is held, and while time is stopped the
+   *  marks, each drawn where its point is on screen. A mark that is behind the camera is hidden, not moved. */
+  kairos(k: { held: boolean; charge: number; max: number; stopped: boolean; marks: { x: number; y: number; n: number; on: boolean }[] }) {
+    const el = this.kairosEl;
+    el.hidden = !k.held;
+    if (!this.kairosTone) {
+      this.kairosTone = palCss('light.gold');
+      el.style.setProperty('--kairos', this.kairosTone);
+      this.kairosMarksEl.style.setProperty('--kairos', this.kairosTone);
+    }
+    if (!k.held) { if (this.kairosMarksEl.childElementCount) this.kairosMarksEl.replaceChildren(); return; }
+    el.classList.toggle('stopped', k.stopped);
+    el.title = t('hud.kairos', { n: k.charge, max: k.max });
+    el.querySelectorAll('i').forEach((pip, i) => pip.classList.toggle('on', i < k.charge));
+    el.querySelector('em')!.textContent = k.stopped ? t('hud.kairos.marks', { n: k.marks.length, max: 5 }) : '';
+    this.kairosMarksEl.replaceChildren(...k.marks.map(m => {
+      const b = document.createElement('b');
+      b.textContent = String(m.n);
+      b.style.left = `${m.x}px`;
+      b.style.top = `${m.y}px`;
+      b.hidden = !m.on;
+      return b;
+    }));
+  }
+
   /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
   bossBar(boss: { name: string; ratio: number } | null) {
     this.bossEl.hidden = !boss;
@@ -325,6 +364,23 @@ export class Hud {
   setPolarity(p: Polarity) {
     this.lastPolarity = p;
     this.renderPolarity();
+  }
+
+  /** Lucid Dream's status (the persistent status type of sotano-popups): its practice icon, the seconds left and a soft
+   *  tint over the screen, shown while the phase runs. `left` null hides it. Redraws only when what shows changes. */
+  setPhase(left: number | null, def: ItemDef | null) {
+    const on = left !== null && def !== null;
+    const warn = on && left <= PHASE_WARN_S;
+    const key = on ? `${Math.ceil(left)}:${warn}` : '';
+    if (key === this.phaseShown) return;
+    this.phaseShown = key;
+    this.phaseEl.hidden = !on;
+    this.phaseTint.classList.toggle('on', on);
+    if (!on) return;
+    document.documentElement.style.setProperty('--phase-tint', palCss('path.milagros.glow'));
+    this.phaseEl.classList.toggle('warn', warn);
+    const name = esc(itemText(def).name);
+    this.phaseEl.innerHTML = `<img src="${iconDataUrl(def, 2)}" alt="" title="${name}"><b>${esc(t('hud.phase.left', { n: fmtNum(Math.ceil(left)) }))}</b>`;
   }
 
   private renderPolarity() {
@@ -406,8 +462,10 @@ export class Hud {
     if (key !== this.handKey) {
       this.handKey = key;
       this.hand.innerHTML = '';
-      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active));
+      // slots past the base carry (Furoshiki) are drawn dimmer
+      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active, i >= BASE_STATS.carry));
     }
+    this.updateHeld(g.player.active);
 
     if (--this.debugTimer <= 0 && this.showDebug) {
       this.debugTimer = 15;
@@ -422,6 +480,37 @@ export class Hud {
     this.sanctuary.frame(now);
   }
 
+  /**
+   * The held label: while a flask or a meal is the active carried item, its name and what it does sit above the hand
+   * (sotano-popups: the persistent HUD status type). The recipe is never shown.
+   */
+  private updateHeld(c: Carried | undefined) {
+    const f = c && isFlask(c) ? c : null;
+    const key = f ? `${f.potion}:${f.iced ? 1 : 0}` : '';
+    if (key === this.heldKey) return;
+    this.heldKey = key;
+    if (!f) { this.heldEl.classList.remove('show'); this.heldEl.replaceChildren(); return; }
+    const def = POTIONS[f.potion];
+    const name = document.createElement('b');
+    name.textContent = t(def.name);
+    const effect = document.createElement('span');
+    effect.textContent = t(def.effect, { rooms: flaskRooms(f) });
+    this.heldEl.replaceChildren(name, effect);
+    this.heldEl.classList.add('show');
+  }
+
+  /** How long a flask lasts, in words: at once, for some sealed rooms, or until the next floor. */
+  private potionDuration(f: Flask): string {
+    const d = POTIONS[f.potion].duration;
+    return d.kind === 'instant' ? t('potion.duration.instant') : d.kind === 'floor' ? t('potion.duration.floor') : t('potion.duration.rooms', { rooms: flaskRooms(f) });
+  }
+
+  /** The "In hand" block at the top of the inventory when a flask or meal is the active item: name, effect, duration. */
+  private inHandBlock(f: Flask): string {
+    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(t(POTIONS[f.potion].name))}</b>` +
+      `<p>${esc(t(POTIONS[f.potion].effect, { rooms: flaskRooms(f) }))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
+  }
+
   private slotUrl(m: number) {
     let url = this.slotUrls.get(m);
     if (!url) { url = (materialTexture(m).image as HTMLCanvasElement).toDataURL(); this.slotUrls.set(m, url); }
@@ -429,9 +518,9 @@ export class Hud {
   }
 
   /** One carry slot: the item in it, or an empty well; outlined in gold when it is the active item. */
-  private handSlot(c: Carried | undefined, active: boolean) {
+  private handSlot(c: Carried | undefined, active: boolean, extra = false) {
     const slot = document.createElement('div');
-    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '');
+    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '') + (extra ? ' extra' : '');
     if (c) {
       const img = document.createElement('img');
       if (typeof c === 'number') {
@@ -603,11 +692,11 @@ export class Hud {
   /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
    *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
   /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
-  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText, answers?: OfferAnswers) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request };
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request, answers };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -636,8 +725,8 @@ export class Hud {
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
       `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
       (offer.request ? `<span class="offer-request">${th(offer.request.ask)}<small>${th(offer.request.alt)}</small></span>` : '') +
-      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.gift ? 'presence.offer.take' : 'presence.offer.accept')}</button>` +
-      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.gift ? 'presence.offer.leave' : 'presence.offer.decline')}</button></div>` +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.answers?.accept ?? (offer.gift ? 'presence.offer.take' : 'presence.offer.accept'))}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.answers?.decline ?? (offer.gift ? 'presence.offer.leave' : 'presence.offer.decline'))}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
     this.renderPresenceOfferControls();
     this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
@@ -646,7 +735,7 @@ export class Hud {
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
     if (!el) return;
-    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
+    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.answers?.controls ?? (this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls');
     el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
@@ -1159,9 +1248,11 @@ export class Hud {
       `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
       `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
-    const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="hand-row"></div>` : '';
+    const handBlock = hand.length ? `<h3>${th('inv.hand')}</h3><div class="hand-row"></div>` : '';
+    const top = chosen >= 0 ? hand[chosen] : undefined;
+    const inHand = top && isFlask(top) ? this.inHandBlock(top) : '';
 
-    const detail = sel ? this.itemDetail(sel)
+    const detail = sel ? this.itemDetail(sel, g.inventory.items.filter(i => i.def.id === sel.id).map(i => i.stacks))
       : handSel ? this.carriedDetail(handSel)
       : `<p class="none">${th('inv.empty')}</p>`;
 
@@ -1188,7 +1279,7 @@ export class Hud {
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
-      `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
+      `<div class="cols"><section class="left">${inHand}${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul>${covenant}</section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
@@ -1224,7 +1315,7 @@ export class Hud {
    * A practice in three blocks, always in this order (issue #202): the teaching (a phrase that carries the practice into
    * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
    */
-  private itemDetail(d: ItemDef) {
+  private itemDetail(d: ItemDef, copies: readonly number[] = []) {
     const fx = (d.stats ?? []).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
@@ -1237,7 +1328,8 @@ export class Hud {
       `<div><b class="d-name">${esc(tx.name)}</b><span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}</div></header>` +
       `<section class="d-block d-teach"><h4>${th('inv.teaching')}</h4><blockquote>${esc(lesson.quote)}</blockquote><p>${esc(lesson.lesson)}</p>` +
       `${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</section>` +
-      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p></section>` +
+      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>` +
+      `${d.stack && copies.length ? `<p class="stacks">${copies.map(n => th('inv.stacks', { n, max: d.stack!.max })).join(' · ')}</p>` : ''}</section>` +
       `<section class="d-block d-stats"><h4>${th('inv.stats')}</h4>${fx ? `<ul class="fx">${fx}</ul>` : `<p class="none">${th('inv.noStats')}</p>`}</section></div>`;
   }
 

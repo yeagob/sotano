@@ -1,0 +1,38 @@
+# pressurevalve-crates — Pressure Valve: a bomb among crates and stone; the blast is wider (radius +0.8) and hits harder (damage x1.6), and two bombs are gained on the spot
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  practices pressurevalve · synergies —
+  blocks stone 8 · crate 16
+  elements —
+  cubes — · pickups 0
+
+t 110 (1.8 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  practices pressurevalve · synergies —
+  blocks —
+  elements —
+  cubes brick 62 · cavemoss 1 · crate 16 · deepstone 4 · dirt 3 · stone 9 · pickups 9
+  rewards red-heart
+  events blockBreak:brick 62 · blockBreak:cavemoss 1 · blockBreak:crate 16 · blockBreak:deepstone 4 · blockBreak:dirt 3 · blockBreak:stone 9 · blockDamage:brick 62 · blockDamage:cavemoss 1 · blockDamage:crate 16 · blockDamage:deepstone 4 · blockDamage:dirt 3 · blockDamage:stone 9 · blockLoot:brick 62 · blockLoot:cavemoss 1 · blockLoot:crate 16 · blockLoot:deepstone 4 · blockLoot:dirt 3 · blockLoot:stone 9 · bombBlast 1 · explosion 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 0.5 0.0 0.5 · hand [brick crate] · bombs 99 · keys 99
+  practices pressurevalve · synergies —
+  blocks —
+  elements —
+  cubes brick 61 · cavemoss 1 · crate 15 · deepstone 4 · dirt 3 · stone 9 · pickups 9
+  rewards red-heart
+  events kick:crate 2 · kick:stone 1 · touchCube:brick 1 · touchCube:crate 3 · touchCube:stone 1
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

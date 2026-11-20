@@ -1,0 +1,30 @@
+# combo-furoshiki-stacks — Combo (#52 + #110): Furoshiki carries four flasks; Nourishment, Herbal Lore and Mindful Eating each stack only from their own drinks
+floor 1 · seed 1 · room 13×7×5 · 160 ticks (2.7 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.meal-small flask.plain-tonic flask.meal-hearty] · bombs 99 · keys 99
+  practices furoshiki nourishment×1 herbalism×1 mindfuleating×1 · synergies embodied
+  stats move speed 1.2 · damage 4.0 · jump 1.0 · fire rate 2.8
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 160 (2.7 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices furoshiki nourishment×5 herbalism×3 mindfuleating×3 · synergies embodied
+  stats move speed 1.4 · damage 5.3 · jump 1.1 · fire rate 3.0
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events drink 4 · heal 4 · roomEnter 1
+
+map t 160 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

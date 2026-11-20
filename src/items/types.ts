@@ -25,6 +25,11 @@ export interface ItemApi {
   held(): readonly number[];
   /** Deterministic randomness for item effects (its own stream: never shifts loot or combat). */
   rng(): Rng;
+  /** Game time in seconds (advances only while the game runs; the sandbox steps it too). */
+  time(): number;
+  /** Scratch numbers kept per practice (or synergy) for the whole run: shared by its copies, dropped
+   *  when the last copy is lost. For timers and per-room caps. Never saved. */
+  memory(): Record<string, number>;
   materialAt(x: number, y: number, z: number): number;
   damageBlock(x: number, y: number, z: number, amount: number, kind: DamageKind, source: string): boolean;
   explode(x: number, y: number, z: number, radius: number, damage: number, source: string): void;
@@ -33,6 +38,9 @@ export interface ItemApi {
   toast(messageId: string, params?: Params): void;
   /** Run `fn` at the end of the frame (chain reactions). Owned by the item: dropped if it is lost. */
   defer(fn: () => void): void;
+  /** Add stacks to THIS held copy of the item (its `stack`), clamped to `max`. Updates only the
+   *  stat sheet, so it is safe inside an event. Returns the new count (0 when the item has no stacks). */
+  addStack(n?: number): number;
   /** Heal the player by half-hearts (through the `heal` event). */
   heal(halfHearts: number, source?: string): void;
   /** Hurt the player by half-hearts (through `actorDamage`, owned by the player). */
@@ -55,15 +63,47 @@ export interface ItemApi {
   freeze(id: ActorId, seconds: number): void;
   frighten(id: ActorId, seconds: number): void;
   igniteArea(x: number, y: number, z: number, radius: number): void;
+  /** For `seconds`, fire never hurts you within `radius` of (x, y, z): the fire of a blast of yours (Controlled Burn). */
+  shieldFire(x: number, y: number, z: number, radius: number, seconds: number): void;
+  /** Turn the connected cells of one fluid (`from`) into another (`to`), breadth-first in the room of (x, y, z), nearest
+   *  first, up to `cap` cells. Levels and the falling bit stay; a source stays a source. Returns the cells converted; 0 when
+   *  nothing was (not that fluid there, no room, or already one conversion this frame); -1 when a negative conversion into
+   *  lava is refused because the player's body touches the section and `lavaWalk` is below 1. `source` names the practice. */
+  convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, source: string): number;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
   tagCube(cube: number, tag: string): void;
+  /** Places one ordinary block of `material` in an empty cell of the player's current room (Affirmation). Returns false,
+   *  and does nothing, when the cell is not empty room interior, a body is in it, or the material may not be copied. */
+  placeBlock(x: number, y: number, z: number, material: number, source: string): boolean;
+  /** Remove this copy of the item (the most recent one of its kind), once the current event has finished. */
+  consumeSelf(): void;
+  /** The player's feet. */
+  playerFeet(): { x: number; y: number; z: number };
+  /** The run's checkpoint (game/checkpoint.ts): where the player last knew themselves, or null. */
+  checkpoint(): { x: number; y: number; z: number } | null;
+  /** Sets the checkpoint to the free standing cell nearest to the feet position (x, y, z). */
+  setCheckpoint(x: number, y: number, z: number): void;
+  /** Moves the player to the free standing cell nearest to the feet position (x, y, z); velocity is zeroed and
+   *  a door that would shut a room the player has just left is opened. */
+  teleportPlayer(x: number, y: number, z: number): void;
+  /** Invulnerable for `seconds` from now (never shorter than the window already running). */
+  invulnerable(seconds: number): void;
+  /** Starts a player status timer for `seconds` (a status the game reads: 'phase' is Lucid Dream). With `add`, the
+   *  time is added to what is left; `cap` limits what is left. Shown on the HUD while it runs. */
+  grantStatus(id: string, seconds: number, opts?: { add?: boolean; cap?: number }): void;
+  /** A burst of `count` coloured particles at a point. */
+  burst(x: number, y: number, z: number, color: number, count: number): void;
+  /** The soft chime of a reveal. */
+  chime(): void;
 }
 
 /** What the game gives the installer: like `ItemApi`, but a toast names the effect it comes from
- *  (the inventory binds it, so items only pass a message id). */
-export type HostApi = Omit<ItemApi, 'toast'> & {
+ *  (the inventory binds it, so items only pass a message id), and `consumeSelf` is bound to the copy's id, and `addStack` to the copy. */
+export type HostApi = Omit<ItemApi, 'toast' | 'consumeSelf' | 'addStack'> & {
   message(owner: ItemDef | SynergyDef, messageId: string, params?: Params): void;
+  /** Removes one copy of an item by id (the inventory binds it to `consumeSelf`, deferred). */
+  consumeCopy(itemId: string): void;
 };
 
 export type StatModSpec = { stat: StatName; layer: StatLayer; value: number };
@@ -136,6 +176,9 @@ export interface ItemDef extends Effect {
   quality: 0 | 1 | 2 | 3 | 4;
   /** 12×12 pixel-art icon: rows of palette keys ('.' = transparent). */
   icon: ItemIcon;
+  /** Stacks (docs/design/built/practices/STACKING.md): each held copy counts its own stacks; every
+   *  stack adds `stats` once more (an `add` layer, times the stacks). Installed by the inventory. */
+  stack?: { max: number; stats: StatModSpec[] };
   /** One-shot effect when picked up (heal, spawn something…). Never re-run by rebuilds or restores. */
   onGain?(api: ItemApi): void;
 }
@@ -157,8 +200,9 @@ export interface SynergyDef extends Effect {
   requires: Req[];
 }
 
-/** One held copy of an item. `uid` is stable for the life of the copy (sources, logs). */
-export interface ItemInstance { uid: number; def: ItemDef }
+/** One held copy of an item. `uid` is stable for the life of the copy (sources, logs). `stacks` is
+ *  how many stacks this copy has built up (always 0 for items without `stack`). */
+export interface ItemInstance { uid: number; def: ItemDef; stacks: number }
 
 export const defineItem = (d: ItemDef) => d;
 export const defineSynergy = (d: SynergyDef) => d;

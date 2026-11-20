@@ -1,0 +1,39 @@
+# stacks-nourishment — Stacks, Nourishment: each potion or meal drunk adds one stack to all four stats, to eight stacks; a potion and a meal count alike
+floor 1 · seed 1 · room 13×7×5 · 320 ticks (5.3 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.meal-small flask.plain-tonic flask.meal-hearty flask.plain-tonic flask.meal-small flask.plain-tonic flask.meal-hearty flask.plain-tonic flask.meal-small] · bombs 99 · keys 99
+  practices nourishment×1 · synergies —
+  stats move speed 1.0 · damage 3.6 · jump 1.0 · fire rate 2.8
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 100 (1.7 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [flask.plain-tonic flask.meal-small flask.plain-tonic flask.meal-hearty flask.plain-tonic flask.meal-small flask.plain-tonic] · bombs 99 · keys 99
+  practices nourishment×4 · synergies —
+  stats move speed 1.1 · damage 4.1 · jump 1.1 · fire rate 2.9
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events drink 3 · heal 3 · roomEnter 1
+
+t 320 (5.3 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices nourishment×8 · synergies —
+  stats move speed 1.2 · damage 4.7 · jump 1.2 · fire rate 3.1
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events drink 7 · heal 7
+
+map t 320 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

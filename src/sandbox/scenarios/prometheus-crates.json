@@ -1,0 +1,20 @@
+{
+  "note": "Stolen Fire: one negative intention in five is a fire seed; a seed that hits a crate bursts (1.6 blocks, 5 damage) and sets the crates within 1.5 blocks on fire",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [5, 0, 3],
+  "god": true,
+  "items": ["prometheus"],
+  "place": [{ "at": [3, 0, 2, 3, 0, 4], "block": "crate" }],
+  "ticks": 240,
+  "report": [0, 60, 240],
+  "actions": [
+    { "t": 0, "do": "key", "code": "KeyF" },
+    { "t": 5, "do": "look", "at": [3, 0, 3] },
+    { "t": 10, "do": "fire", "ticks": 1 },
+    { "t": 50, "do": "fire", "ticks": 1 },
+    { "t": 90, "do": "fire", "ticks": 1 },
+    { "t": 130, "do": "fire", "ticks": 1 },
+    { "t": 170, "do": "fire", "ticks": 1 },
+    { "t": 210, "do": "fire", "ticks": 1 }
+  ]
+}

@@ -50,14 +50,24 @@ Then list it in `src/content/items/index.ts`, and translate `name`, `description
 | `stats()`, `held()` | Read current stats and the blocks in your hand |
 | `has(id)`, `hasTag(tag)` | Ask about other held items |
 | `pulse`, `arc`, `igniteArea` | Area effects: damage and shove every projection around a point, a bolt between a point and a projection (through its polarity), fire on flammable blocks |
+| `shieldFire` | Fire never hurts you within `radius` of a point for `seconds` (Controlled Burn: the fire of your own blasts) |
 | `nearestProjection`, `actorAt`, `shove`, `freeze`, `frighten` | Find projections, push one, freeze one for a time (it cannot move, attack or touch), frighten one (it runs away) |
 | `launch`, `intentsHere`, `tagCube` | Fire a new intention, count the intentions in flight in the player's room, tag a loose cube |
+| `placeBlock` | Place one copy of an ordinary block in an empty cell of the player's room (Affirmation). Only interior room space, no body, no element, no door or doorway, never a material that may not be copied. Writes the world like the player's placement but emits no `blockPlace` or `blockPlaced`. Returns whether it placed |
+| `convertFluid` | Turn the connected cells of one fluid into another (`water` ↔ `lava`), nearest first, up to a cap; once per frame. Returns the cells converted, 0 when nothing was, -1 when a negative conversion into lava is refused (the player's body touches the section and `lavaWalk` is below 1) |
 | `materialAt`, `damageBlock`, `explode`, `spawnDebris` | Act on the world through the normal pipelines (so other items react too) |
 | `rng()` | Deterministic randomness on the `items` stream (never `Math.random`) |
+| `time()`, `memory()` | Game time in seconds (paused with the game); scratch numbers per practice for timers and per-room caps, shared by its copies, dropped with the last copy, never saved |
 | `defer(fn)` | Run at the end of the frame (chain reactions); owned by the item |
 | `heal`, `damagePlayer`, `collect(kind, n)`, `counts()`, `spawnPickup` | Health (`heal`/`damagePlayer` take half-hearts; `counts()` gives points) and counters, through `heal`, `actorDamage` and `pickupCollect` |
 | `player()`, `isPlayer(owner)` | The player's actor id; the way to ask "did the player cause this?" (never compare owners with raw ids) |
 | `toast(messageId, params?)`, `bus` | Show one of the item's own `messages` (by id, in the player's language; never a literal); raw access to the event bus |
+| `consumeSelf()` | Removes this copy of the item once the current event has finished (deferred: never rebuilds the inventory inside an emit); Waymark spends a copy this way |
+| `playerFeet()`, `teleportPlayer(x, y, z)` | The feet position; moves the player to the free cell nearest the feet, zeroes velocity and opens the doors of any room the player is sent out of (Waymark's revive) |
+| `checkpoint()`, `setCheckpoint(x, y, z)` | The run's checkpoint (`src/game/checkpoint.ts`): set to the free cell nearest the feet, kept across inventory rebuilds, cleared when no held item carries the `checkpoint` tag |
+| `invulnerable(seconds)`, `burst(x, y, z, color, count)`, `chime()` | Invulnerability for seconds (never shorter than the window running); a coloured particle burst; the reveal chime |
+| `addStack(n = 1)` | Add stacks to this held copy of a practice with a `stack` (clamped to its max; only its stat sheet changes, safe inside an event); returns the new count. Synergies get 0. See [STACKING](../design/built/practices/STACKING.md) |
+| `grantStatus(id, seconds, { add?, cap? })` | Starts or extends a player status timer (`Game`, its `statuses` map): counted down each frame and cleared with a run. `'phase'` is Lucid Dream: the body passes finite blocks inside its room's box and comes out in free space when it ends ([MIRACLES](../design/built/practices/MIRACLES.md#lucid-dream)) |
 
 Items never import `Game`. Anything an item needs goes through `ItemApi`, so the surface stays small and explicit.
 
@@ -80,7 +90,13 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `maxHearts`, `invuln` | Heart containers; seconds of invulnerability after a hit |
 | `bombRadius`, `bombDamage` | Your bombs (and the blast of a missile, love or not) |
 | `missile` | 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does nothing); `game.ts` `tapMissile`, rules in `combat/missiles.ts` |
-| `luck` | Chance of a reward when a room is cleared (more uses to come: chests) |
+| `luck` | Chance of a reward when a room is cleared (chests to come; Serendipity finds in bomb blasts) |
+| `dash` | 1 = a double tap of a direction, a double flick of the left stick or a swipe dashes 4.5 blocks that way (0 = no dash); `Player.startDash`, the gestures in `src/input/gestures.ts`, rules in [DASH](../design/built/practices/DASH.md) |
+| `run` | 1 = holding the run control walks 1.45 times as fast (0 = no running; crouching wins over it); `Player.walk`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
+| `crouch` | 1 = holding the crouch control makes the body a block shorter, its eye lower, the walk 0.45 times as fast, keeps it off ledges and halves projection contact (0 = no crouch); `Player.setStance`, `src/entities/stance.ts`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
+| `lavaWalk` | 1 = lava does not hurt the player (lava is left out of the damage check), its surface is ground (`Game.lavaSurface`, read by the solid test of the frame), and wading in it is full speed (the 0.4 wade becomes 1); intentions are still put out by it (posttraumatic, [practices](../design/built/practices/emotion/POST-TRAUMATIC-GROWTH.md)) |
+| `twinCast` | Flag (0 or 1): the two hands take turns casting. `Player.castSide` flips after each shot and `Game.fire()` starts the shot from that side (`hands.ts` swings that arm); weapons that replace the shot swing from the next hand without taking a turn |
+| `triad`, `spiral` | Flags (0 or 1) that give each intention a formation of three strands (`IntentSpec.formation`, built by `intentFromStats`): a triangle that widens over the flight, and a helix that turns. See [practices](../design/not-built/practices/README.md) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
 
@@ -96,6 +112,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `strike` | `damage`, `mining`, `reach`, `tags`, `color`, or cancel; `polarity` is read-only (every hit of the stroke follows it) | a weapon that replaces the intention acts (once per swing, beam or sweep; [WEAPONS.md](WEAPONS.md)) |
 | `headBump` | `breaks` (break it or not) | the player's head hits a solid block while jumping (once per block above) |
 | `explosion` | `radius`, `damage`, or cancel | anything explodes |
+| `bombBlast` *(react only)* | nothing: `polarity` says a bomb or missile of yours went off negative (a blast) or positive (a love explosion); `acted` lists the practices that already acted on it | one of the player's own bombs or missiles went off, after its blast (never a volatile cube or another item's explosion) |
 | `touchCube` | `action`: `'pickup'`, `'kick'` or `'ignore'` | walking into a loose cube (pre-filled from `carry`) |
 | `kick` | `speed`, `lift`, `tags`, or cancel | kicking a cube |
 | `throw` | `speed`, `lift`, `tags`, or cancel | Q, or right click with nowhere to place |
@@ -106,6 +123,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `doorOpen` | `needsKey`, or cancel | approaching a door |
 | `chestOpen` | `cost` (keys, 0 = free), or cancel | walking up to a closed chest |
 | `blockLoot` | `drops` (blocks drop nothing but themselves, except a crate's roll of a key, heart or bomb, at its floor's chance of 10% to 30%) | after a block breaks |
+| `burst` *(react only)* | nothing: `source` names the item whose pulse went off (Kindling, Stolen Fire) | a pulse (`ItemApi.pulse`) goes off: damage to the projections in a sphere |
 | `bombPlace` | `fuse`, or cancel | pressing E |
 | `missileLaunch` | `speed` (steady, blocks/s), `range` (blocks), `polarity` (negative: a bomb blast; positive: a love explosion), or cancel (no bomb is spent) | a quick double tap of the fire control with the `missile` stat, a bomb in the counter and room to arm |
 | `pickupCollect` | `amount`, or cancel (`heart` names the kind of a heart other than red; a red heart has none) | collecting a key, bomb or heart |
@@ -114,19 +132,22 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |
-| `death` | cancel (survive) | the player reaching 0 hearts |
+| `death` | cancel (survive; Waymark cancels it at priority 150 and spends a copy) | the player reaching 0 hearts |
 | `actorDeath` *(target required)* | `drops` (react otherwise) | an actor is gone |
 | `factionChange` | — (react) | an actor changed side (e.g. a projection became an ally, through polarity or a charm) |
 | `polarityChange` | — (react) | the player switched the loaded intention between positive and negative with **F** |
 | `enemySpawn` | `hp`, `speed`, `contactDamage` (points), `tags`, position, or cancel | a projection materialising |
 | `roomClear` | `drops` | a room cleared |
+| `intentElement` | — (react; hooks change the world, not the payload) | an intention enters a water or lava cell, once per entry (`intent`, `x, y, z`, `element`); emitted through `Intents` `entered` (IntentHooks). The element is read again after the hooks: lava a hook made at the intention's cell puts it out. Solve et Coagula converts the connected fluid with `convertFluid` |
 | `intentHit` | — (react) | an intention hits a projection (`kind: 'actor'`, `target` its id), a loose cube (`'cube'`, its index) or a block (`'block'`, with the face normal `nx, ny, nz`); `intent` is the intention that hit. A beam or great cut stroke emits it once per projection per stroke (its first contact), never a blade cut |
-| `itemGained`, `roomEnter`, `floorEnter` | — (react) | as named |
+| `intentBounce` | `vx, vy, vz` (the reflected velocity), `intent` (the spec), `launch` (new intentions) — react or modify, cannot cancel | an intention rebounds off a block: `x, y, z` the bounce point, `nx, ny, nz` the face normal, `bounce` the rebound number (1 for its first). Intentions added to `launch` join after the frame's walk, so launching from here is safe |
+| `itemGained`, `roomEnter` | — (react) | as named |
+| `floorEnter` *(react)* | nothing: `depth` is the floor entered, `arrival` its arrival point (feet position, the floor's spawn); Waymark moves its checkpoint there |
 | `pageReached` | — (react) | a run's end advanced the Roots' page (`page`, the new current page); once per run, never in the sandbox |
 | `bossOvercome` | — (react) | a floor's boss was overcome, once per boss room (`boss`, `floor`, `how`: `destroyed` when its health reached zero, `converted` when it turned to your side, `stillness` for the Shadow's own ending, which is a turning) |
 | `meditationComplete` | — (react) | a Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (`meditation`, the sitting's id; `source`: `roots` or `vault`); never a quick reward, a cancel or the debug console's Sanctuary |
 | `cook` | — (react) | a kitchen cooked a part into a meal (`meal`, the potion id; `part`, the part's kind) |
-| `brew` | — (react) | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
+| `brew` | `iced` (set true to ice the flask: Apprenticeship; the alembic reads it back) · else react | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
 | `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |
 | `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` | — (react) | the achievements' events: a death (`floor`, `source`), the climb into the surface (`from`), a block placed (`afterPact`), the tutorial book turned back (`from`, `page`), bedrock touched (`side`) |
 
@@ -136,7 +157,9 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 
 The owner's list, mapped: the carry limit is `carry` plus `touchCube`; health is `maxHearts` plus `actorDamage`/`heal`; enemies are `enemySpawn`/`actorDamage`/`contact`; breaking weak blocks on contact is `crush` plus `touchBlock`; what happens when you drop or throw is `throw`, `drop` and `debrisImpact`; jumping and movement are `jump`, `moveSpeed`, `jump`/`land` events.
 
-**Intention shape** is carried by fields on `IntentSpec` that items set in a `fire` hook and the core reads: `volley` (how many intentions one shot launches; the extra ones deal 60% damage and mining and fan out), `bounces` (rebounds off blocks it doesn't break), `homing` (how hard it steers toward the nearest block within 6 blocks each second). What an intention does when it hits is an `intentHit` hook.
+**Intention shape** is carried by fields on `IntentSpec` that items set in a `fire` hook and the core reads: `volley` (how many intentions one shot launches; the extra ones deal 60% damage and mining and fan out), `bounces` (rebounds off blocks it doesn't break), `homing` (how hard it steers each second) and `homingTarget` (`'block'`, the default: the nearest block within 6 blocks; `'projection'`: the nearest projection within 8 blocks, through `IntentHooks.nearestEnemy`, a negative intention meeting only hostile ones). Items that write `homingTarget` in a `fire` hook at the same priority run in acquisition order, so the one gained last wins (Dowsing and Eye Contact, see [AIM-PRACTICES](../design/built/practices/AIM-PRACTICES.md)). What an intention does when it hits is an `intentHit` hook.
+
+**Formations** (`formation`, set from the `triad` and `spiral` stats) make a shot fly as three strands. Each strand is an ordinary intention with a share of the damage and mining (70% for the triangle, 100% and 40% and 40% for a helix; the shares multiply when both apply). A strand carries an `orbit` that keeps it on its circle around the flight line (`Intents.update`), and it lives 3 seconds where a plain intention lives 6, so three strands per direction stay under the cap of 200 intentions. At the cap the oldest intention is dropped; a stress shot (two Bilaterals, a triangle and Triangulation, 10.8 shots a second) is checked in `tests/multishot.test.ts`.
 
 **Tags on cubes** carry intent across time: a hook on `throw` or `kick` adds a tag, and a hook on `debrisImpact` reacts to it later. The core clears a cube's tags after its impact unless a hook sets `keepTags` (so a volatile cube explodes once, not on every bounce). Items export their tag names as constants.
 
@@ -191,7 +214,7 @@ on gain / lose / restore / new floor:
 
 - Every held copy is an `ItemInstance { uid, def }`; the uid is stable for the life of the copy.
 - Only sources the inventory installed are removed. Effects from other sources (a room aura, a curse, a timed buff) on the same stat sheet and bus survive pickups.
-- **Potions** are such a source. A drunk potion's stat modifiers sit on the same stat sheet under `potion:<id>`, one source per potion, installed and removed by `PotionEffects` (`src/game/potion-effects.ts`), never by the inventory. Drinking an active potion again replaces its source and refreshes its count. A potion counted in rooms loses one room per sealed room cleared (never per challenge wave); every potion ends on the next floor entry; a new run clears them all. Potions have no hooks yet: the Questioning Tincture's lock is read by the core at the door and the chest.
+- **Potions** are such a source. A drunk potion's stat modifiers sit on the same stat sheet under `potion:<id>`, one source per potion, installed and removed by `PotionEffects` (`src/game/potion-effects.ts`), never by the inventory. Drinking an active potion again replaces its source and refreshes its count. A potion counted in rooms loses one room per sealed room cleared (never per challenge wave); every potion ends on the next floor entry; a new run clears them all. Potions have no hooks yet: the Questioning Tincture's lock is read by the core at the door and the chest. The Rebirth Draught (`rebirth: true`) is the one potion the core treats apart: drinking it opens the offer card (`Game.askRebirth`), no `drink` event is emitted for it, and a yes starts a new run that keeps the held practices through `Inventory.serialize()`/`restore()`, never through `onGain` (`docs/design/built/practices/potions/IN-HAND-AND-REBIRTH.md`).
 - `onGain` runs once, from `gain()`. Rebuilds and restores never run it again.
 - `gain()` returns the stat diff and the synergies that just switched on; the HUD shows both in the pickup banner.
 - Picking up a duplicate is allowed (two instances, stats stack).

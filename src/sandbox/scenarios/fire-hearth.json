@@ -1,0 +1,10 @@
+{
+  "note": "Hearth (Kindling, Inner Fire, Firewalking): a projection's hit makes Kindling's flare, and the flare warms you at most every 4 s while you are hurt",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [5, 0, 3],
+  "god": false,
+  "items": ["kindling", "tummo", "firewalking"],
+  "enemies": [{ "def": "doubt", "at": [6, 0, 3] }],
+  "ticks": 240,
+  "report": [0, 60, 120, 240]
+}

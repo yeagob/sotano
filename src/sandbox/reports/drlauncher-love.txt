@@ -25,7 +25,7 @@ t 120 (2.0 s)
   blocks crate 3
   elements —
   cubes — · pickups 0
-  events actorDamage:doubt<intent 1 · actorDamage:doubt<item 1 · intentHit 1
+  events actorDamage:doubt<intent 1 · actorDamage:doubt<item 1 · bombBlast 1 · intentHit 1
 
 map t 120 · h 0
   .............

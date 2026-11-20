@@ -101,6 +101,9 @@ Three complete schemes; the game follows whichever device you used last (details
 | Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap a slot of your hand (or an item in the inventory) |
 | Drop a bomb | **E** | **RB** | The bomb |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
+| Dash 4.5 blocks that way (with the practice Irimi) | A double tap of a movement key | A double flick of the left stick | A swipe on the left side of the screen |
+| Run 45% faster (with the practice Fartlek) | Hold Shift | Click L3 (toggles) or push the stick to its edge | Push the left stick to its edge |
+| Crouch: fit through 1-block gaps, never fall off edges (with the practice Child's Pose) | Hold C | Click R3 (toggles) | Swipe down from the bottom of the right side (toggles) |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a bomb destroys any door | same | same |
 | Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |

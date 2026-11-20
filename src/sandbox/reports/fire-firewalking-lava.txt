@@ -1,0 +1,43 @@
+# fire-firewalking-lava — Firewalking beside lava: fire is harmless, but lava still burns the player; the run ends if the player dies
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements lava 18 (18 src)
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 16/24 · at 5.5 -2.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements lava 18 (18 src)
+  cubes — · pickups 0
+  events actorDamage:player<fire 1 · elementEnter:player:lava 1 · roomEnter 1
+
+t 60 (1.0 s)
+  player hp 16/24 · at 5.5 -2.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements lava 18 (18 src)
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 8/24 · at 5.5 -2.0 4.5 · hand [] · bombs 99 · keys 99
+  practices firewalking · synergies —
+  blocks —
+  elements lava 18 (18 src)
+  cubes — · pickups 0
+  events actorDamage:player<fire 1
+
+map t 120 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

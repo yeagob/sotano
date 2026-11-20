@@ -50,6 +50,9 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
 | bomb | press | play | E | RB | the bomb |
 | polarity | press | play | F | LB | a half turn of the phone |
+| dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | swipe on the left side of the screen (a gesture, no button) |
+| run | hold | play | hold Shift (left or right) | L3 (toggles until the left stick returns to centre; the left stick at its edge also runs) | the left stick pushed past 95 % of its radius |
+| crouch | hold | play | hold C | R3 (toggles) | a swipe down from the bottom twelfth of the right side (toggles; no button) |
 | previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
@@ -67,6 +70,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | mute | press | meditation | M | X | the Sound button |
 | calm | press | meditation | C | Y | the Calm visuals button |
 | voice | press | meditation | V | LB | the Voice button (the Sanctuary's spoken guidance) |
+| miracle | press | play | V | D-pad Up | the clock ring, shown only while Kairos is held (its charge fills the ring) |
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
 

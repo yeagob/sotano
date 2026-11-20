@@ -1,0 +1,16 @@
+{
+  "note": "Irimi upward: looking straight up, a forward dash rises 3.5 blocks (the cap); a second dash in the air is refused until landing",
+  "items": ["irimi"],
+  "rows": [".....", ".....", ".....", ".....", "....."],
+  "height": 8,
+  "player": [2, 0, 2],
+  "god": true,
+  "ticks": 240,
+  "report": [0, 12, 40, 240],
+  "actions": [
+    { "t": 0, "do": "look", "at": [2, 8, 2] },
+    { "t": 2, "do": "dash", "dir": "forward" },
+    { "t": 40, "do": "dash", "dir": "forward" },
+    { "t": 150, "do": "dash", "dir": "back" }
+  ]
+}

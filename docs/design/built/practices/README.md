@@ -6,17 +6,17 @@ A practice is something people use to grow: a technique, a therapy, a book's ide
 
 Each practice has two texts, shown on pickup and in the inventory: a **description** (what it means, in the story's voice) and an **effect** (what it does in the game, with numbers). Each one has a 12 by 12 pixel icon.
 
-This folder has one document per practice, in a folder for its path. The catalogue is the code (`src/content/items/`, 46 files; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
+This folder has one document per practice, in a folder for its path. The two steering practices that exclude each other (Dowsing and Eye Contact) and Affirmation's copy are explained together in [the aim pair](AIM-PRACTICES.md); the iteration's other sets have one document each (stacking, bounce, fire, bombs, dash, miracles, run and crouch, hand, life, allies and tables). The catalogue is the code (`src/content/items/`, 78 practices; Boundaries is shelved and not counted); these documents describe what it does. The table below is the index.
 
 ## Folders
 
 | Folder | Path develops | Practices | State of being at three |
 |---|---|---|---|
-| [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 1 | none yet |
-| [Body](body/README.md) | Presence, energy, nervous-system regulation | 7 | Embodied |
-| [Mind](mind/README.md) | Clarity, focus, belief | 16 | Lucid |
-| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 13 | Open-hearted |
-| [Will](will/README.md) | Consistency, discipline, small steps compounding | 10 | Resolute |
+| [Miracles](milagros/README.md) | Transcending limits: what was thought impossible | 4 | none yet (four practices now: the owner names it) |
+| [Body](body/README.md) | Presence, energy, nervous-system regulation | 17 | Embodied |
+| [Mind](mind/README.md) | Clarity, focus, belief | 22 | Lucid |
+| [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 20 | Open-hearted |
+| [Will](will/README.md) | Consistency, discipline, small steps compounding | 15 | Resolute |
 
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
 
@@ -25,10 +25,21 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | Practice | Path folder | Quality | Found in |
 |---|---|---|---|
 | [Dr. Launcher](milagros/DR-LAUNCHER.md) | Miracles | 3 | treasure rooms |
+| [Irimi](DASH.md) | Body (movement) | 3 | treasure rooms |
+| [Fartlek](RUN-AND-CROUCH.md) | Body (movement) | 2 | treasure rooms |
+| [Child's Pose](RUN-AND-CROUCH.md) | Body (movement) | 2 | treasure rooms |
+| [Solve et Coagula](milagros/SOLVE-ET-COAGULA.md) | Miracles | 3 | treasure rooms, vault rooms |
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
+| [Dialectic](mind/DIALECTIC.md) | Mind | 3 | treasure rooms |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
+| [Furoshiki](HAND-LIFE-ALLIES-TABLES.md) | Body | 2 | treasure rooms |
+| [Kinship](HAND-LIFE-ALLIES-TABLES.md) | Emotion | 2 | treasure rooms |
+| [Apprenticeship](HAND-LIFE-ALLIES-TABLES.md) | Mind | 2 | treasure rooms |
+| [Kairos](MIRACLES.md#kairos) | Miracles | 4 | vault rooms, boss rewards |
+| [Stacking practices](STACKING.md) | Potion and meal | 1–2 | treasure rooms (nine: Tea Ceremony, Herbal Lore, Distillation, Spagyric Art, Mindful Eating, Breaking Bread, Hara Hachi Bu, Grace Before Meals, Nourishment) |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
 | [Grounding](body/GROUNDING.md) | Body | 1 | treasure rooms |
+| [Inner Fire](FIRE.md) | Body | 2 | treasure rooms |
 | [Lion's Mane](body/LIONS-MANE.md) | Body | 2 | treasure rooms, boss rewards |
 | [Satori](body/SATORI.md) | Body | 4 | treasure rooms, vault rooms |
 | [Sleep Hygiene](body/SLEEP-HYGIENE.md) | Body | 2 | treasure rooms |
@@ -40,6 +51,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Dual Process](mind/DUAL-PROCESS.md) | Mind | 2 | treasure rooms |
 | [Follow the Omens](mind/FOLLOW-THE-OMENS.md) | Mind | 2 | treasure rooms |
 | [Growth Mindset](mind/GROWTH-MINDSET.md) | Mind | 1 | treasure rooms, boss rewards |
+| [Reframing](emotion/REFRAMING.md) | Emotion | 3 | treasure rooms |
 | [Resonance](mind/RESONANCE.md) | Mind | 3 | treasure rooms |
 | [Second Brain](mind/SECOND-BRAIN.md) | Mind | 3 | treasure rooms |
 | [Socratic Questioning](mind/SOCRATIC-QUESTIONING.md) | Mind | 1 | treasure rooms |
@@ -47,20 +59,27 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Thinking, Waiting, Fasting](mind/THINKING-WAITING-FASTING.md) | Mind | 2 | treasure rooms |
 | [Thought Stopping](mind/THOUGHT-STOPPING.md) | Mind | 3 | treasure rooms |
 | [Triangulation](mind/TRIANGULATION.md) | Mind | 4 | treasure rooms, vault rooms |
+| [Dowsing](mind/DOWSING.md) | Mind | 2 | treasure rooms |
 | [Visualization](mind/VISUALIZATION.md) | Mind | 1 | treasure rooms, boss rewards |
+| [Bolt from the Blue](BOMBS.md#3-bolt-from-the-blue-boltfromtheblue) | Mind | 3 | treasure rooms |
 | [Affirmation](emotion/AFFIRMATION.md) | Emotion | 3 | treasure rooms |
 | [Art Therapy](emotion/ART-THERAPY.md) | Emotion | 2 | treasure rooms |
 | [Exposure](emotion/EXPOSURE.md) | Emotion | 2 | treasure rooms |
 | [Forgiveness](emotion/FORGIVENESS.md) | Emotion | 3 | treasure rooms |
 | [Gratitude Journal](emotion/GRATITUDE-JOURNAL.md) | Emotion | 1 | treasure rooms |
 | [Nothing Personal](emotion/NOTHING-PERSONAL.md) | Emotion | 2 | treasure rooms |
+| [Post-Traumatic Growth](emotion/POST-TRAUMATIC-GROWTH.md) | Emotion | 2 | treasure rooms |
 | [Radical Acceptance](emotion/RADICAL-ACCEPTANCE.md) | Emotion | 2 | treasure rooms |
 | [Rapport](emotion/RAPPORT.md) | Emotion | 2 | treasure rooms |
 | [Self-Compassion](emotion/SELF-COMPASSION.md) | Emotion | 2 | treasure rooms |
 | [Mender's Thread](emotion/MENDERS-THREAD.md) | Emotion | 3 | the Mender only, once a run (promised) |
 | [Symbolic Act](emotion/SYMBOLIC-ACT.md) | Emotion | 3 | treasure rooms |
+| [Stolen Fire](FIRE.md) | Emotion | 3 | treasure rooms |
 | [Systemic Constellation](emotion/SYSTEMIC-CONSTELLATION.md) | Emotion | 3 | treasure rooms |
+| [Pressure Valve](BOMBS.md#1-pressure-valve-pressurevalve) | Emotion | 2 | treasure rooms |
+| [Serendipity](BOMBS.md#4-serendipity-serendipity) | Emotion | 2 | treasure rooms |
 | [Bounce Back](will/BOUNCE-BACK.md) | Will | 2 | treasure rooms |
+| [Firewalking](FIRE.md) | Will | 2 | treasure rooms |
 | [Habit Stacking](will/HABIT-STACKING.md) | Will | 3 | treasure rooms |
 | [Kaizen](will/KAIZEN.md) | Will | 2 | treasure rooms |
 | [Kindling](will/KINDLING.md) | Will | 2 | treasure rooms |
@@ -68,13 +87,17 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Meditations](will/MEDITATIONS.md) | Will | 4 | treasure rooms, vault rooms |
 | [Remember Breathing](will/REMEMBER-BREATHING.md) | Will | 4 | boss rewards |
 | [Self-Efficacy](will/SELF-EFFICACY.md) | Will | 3 | treasure rooms |
+| [Eye Contact](will/EYE-CONTACT.md) | Will | 3 | treasure rooms |
+| [Waymark](will/WAYMARK.md) | Will | 3 | vault rooms, boss rewards |
+| [Lucid Dream](MIRACLES.md#lucid-dream) | Miracles | 4 | vault rooms, boss rewards |
 | [Self-Reliance](will/SELF-RELIANCE.md) | Will | 4 | treasure rooms, vault rooms |
 | [Stoic Resolve](will/STOIC-RESOLVE.md) | Will | 2 | treasure rooms, boss rewards |
+| [Controlled Burn](BOMBS.md#2-controlled-burn-controlledburn) | Will | 2 | treasure rooms |
 
 ## How a practice is filed
 
 - **Folder.** A practice sits in the folder of the first path tag its code lists. The other path tags are in its document under *Path* and in the folder's table under *Also on*. Satori carries all four paths and sits in body.
-- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 5 at quality 1, 21 at quality 2, 11 at quality 3, 9 at quality 4.
+- **Quality.** Isaac-style, 0 to 4 stars. Quality 4 practices are the ones meant to be able to make a run. Built: 13 at quality 1, 33 at quality 2, 21 at quality 3, 11 at quality 4.
 - **Found in.** Treasure rooms, boss rewards and the vault room. A vault is a room type with a richer pedestal; the deepest floors keep none (`src/world/floor.ts`).
 - **Credit.** Every practice names its inspiration, as the STORY and SOURCES documents do. The credit is not the name: the name is a generic technique or concept, or the title of a public-domain work ([NAMING](../story/NAMING.md)).
 
@@ -84,6 +107,7 @@ Like in Isaac, two practices replace the intention. Remember Breathing turns it 
 
 ## Synergies and states of being
 
+- [The Bounce family](BOUNCE.md): Bounce Back, Dialectic and Reframing, the three practices that act when an intention rebounds, and the event they share.
 - [Synergies](synergies/README.md): six combinations of two practices, built in `src/content/synergies.ts`.
 - [States of being](states-of-being/README.md): the four states, reached by holding three practices of one path. They are also synergies in code, with a tag-count requirement.
 

@@ -12,15 +12,19 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 |---|---|---|---|
 | [Exposure](EXPOSURE.md) | 2 | Body | treasure rooms |
 | [Symbolic Act](SYMBOLIC-ACT.md) | 3 | none | treasure rooms |
+| [Post-Traumatic Growth](POST-TRAUMATIC-GROWTH.md) | 2 | Fire | treasure rooms |
 | [Gratitude Journal](GRATITUDE-JOURNAL.md) | 1 | none | treasure rooms |
 | [Radical Acceptance](RADICAL-ACCEPTANCE.md) | 2 | none | treasure rooms |
 | [Forgiveness](FORGIVENESS.md) | 3 | none | treasure rooms |
 | [Nothing Personal](NOTHING-PERSONAL.md) | 2 | Mind | treasure rooms |
 | [Systemic Constellation](SYSTEMIC-CONSTELLATION.md) | 3 | Mind | treasure rooms |
+| [Pressure Valve](../BOMBS.md#1-pressure-valve-pressurevalve) | 2 | none | treasure rooms |
+| [Serendipity](../BOMBS.md#4-serendipity-serendipity) | 2 | none | treasure rooms |
 | [Art Therapy](ART-THERAPY.md) | 2 | Body | treasure rooms |
 | [Affirmation](AFFIRMATION.md) | 3 | none | treasure rooms |
 | [Rapport](RAPPORT.md) | 2 | none | treasure rooms |
 | [Self-Compassion](SELF-COMPASSION.md) | 2 | none | treasure rooms |
+| [Reframing](REFRAMING.md) | 3 | none | treasure rooms |
 | [Mender's Thread](MENDERS-THREAD.md) | 3 | none | the Mender only, once a run (promised) |
 
 ## Also on this path (first path tag elsewhere)
