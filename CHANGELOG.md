@@ -11,7 +11,6 @@ Changes to the tutorial and to the book are listed without their content, so not
 - A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
 
 ### Changed
-- The completion percentages on the menu show the percentage alone, without the words "of the whole" or "del total" that wrapped onto a second line.
 
 ## 0.2.7-alpha · 2026-11-20
 
