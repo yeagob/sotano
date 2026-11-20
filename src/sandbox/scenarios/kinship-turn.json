@@ -1,0 +1,66 @@
+{
+  "note": "Kinship: a projection turned to your side heals a quarter heart, once per room visit",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "kinship"
+  ],
+  "place": [
+    {
+      "at": [
+        8,
+        0,
+        2,
+        8,
+        0,
+        4
+      ],
+      "block": "crate"
+    }
+  ],
+  "ticks": 300,
+  "report": [
+    0,
+    60,
+    300
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "spawn",
+      "def": "doubt",
+      "at": [
+        8,
+        0,
+        4
+      ]
+    },
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        8,
+        0,
+        4
+      ]
+    },
+    {
+      "t": 1,
+      "do": "fire",
+      "ticks": 240
+    }
+  ]
+}

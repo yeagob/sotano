@@ -8,6 +8,7 @@
 // and the boss state are real; the rest of the world, rendering and audio are stand-ins that absorb calls.
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { Kairos } from '../src/game/kairos';
 import { BOSS_BY_ID } from '../src/content/bosses';
 import { AchievementKeeper } from '../src/game/achievement-keeper';
 import { defaultMeta, noStore } from '../src/game/meta';
@@ -54,7 +55,7 @@ function rig(realm: 'dungeon' | 'sky' = 'dungeon'): any {
     shakeAmount: () => 0,
     sanctuary: { covering: false },
     sanctuaryOpen: false, screenOpen: false, tollOpen: false, bannerOpen: false, presenceOfferOpen: false,
-    update() {}, fadeIn() {}, fadeOut() {}, dismissBanner() {}, screenKey() {}, closeScreen() {}, closeToll() {},
+    kairos() {}, update() {}, fadeIn() {}, fadeOut() {}, dismissBanner() {}, screenKey() {}, closeScreen() {}, closeToll() {},
     moveSelection() {}, confirmToll() {}, setFov() {},
   };
   // `restart` is the device that presses R this frame (null: no press)
@@ -70,6 +71,7 @@ function rig(realm: 'dungeon' | 'sky' = 'dungeon'): any {
     realm, depth: 1, maxDepth: 99, room: ROOM,
     floors: new Map(), bossRooms: new Map(), enemies: { list: [] as unknown[] },
     player, hud, input,
+    kairos: new Kairos(), inventory: { has: () => false, memoryFor: () => ({}) },
     simulateUnlocked: false, paused: false, sandbox: undefined,
     restartT: 0, revealT: -1, deadT: 0, fpsAcc: 0, fpsN: 0, fovNow: 0, time: 0,
     world: null, fogColor: anything, camDir: anything, camera: anything, scene: anything, stars: anything,

@@ -29,7 +29,7 @@ A blast that reaches a door blows it apart for good. The door is destroyed; it d
 
 ## Door plugs
 
-A wall that seals a whole room shows where a door would be. The plug is a door-shaped block of dirt, three blocks wide and three high, set in the wall: the softest material in the wall, so a bomb can take it. Some plugs sit behind an obsidian wall and stop two blocks under the ceiling, so the door is hidden on the far side of a hard wall. Twelve templates have plugs.
+A wall that seals a whole room shows where a door would be. The plug is a door-shaped block of dirt, three blocks wide and three high, set in the wall: the softest material in the wall, so a bomb can take it. Some plugs sit behind an obsidian wall and stop two blocks under the ceiling, so the door is hidden on the far side of a hard wall. Seventeen templates have plugs.
 
 ## Rules around doors
 

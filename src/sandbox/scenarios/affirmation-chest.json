@@ -1,0 +1,14 @@
+{
+  "note": "Affirmation: a positive intention that hits a chest places no copy (chests are never copied); the chest is unbroken",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "place": [{ "at": [8, 0, 3], "block": "chest" }],
+  "items": ["affirmation"],
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 180,
+  "report": [0, 30, 180],
+  "actions": [
+    { "t": 0, "do": "look", "at": [8, 0, 3] },
+    { "t": 1, "do": "fire", "ticks": 1 }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "note": "Kairos: a full charge stops time (V); the projection stays where it stood; two casts mark it; V again releases five intentions dealt between the marks, all piercing toward it",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "kairos"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        10,
+        0,
+        3
+      ]
+    }
+  ],
+  "ticks": 150,
+  "report": [
+    0,
+    30,
+    60,
+    150
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        10,
+        1,
+        3
+      ]
+    },
+    {
+      "t": 10,
+      "do": "key",
+      "code": "KeyV"
+    },
+    {
+      "t": 25,
+      "do": "fire"
+    },
+    {
+      "t": 45,
+      "do": "fire"
+    },
+    {
+      "t": 60,
+      "do": "key",
+      "code": "KeyV"
+    }
+  ]
+}

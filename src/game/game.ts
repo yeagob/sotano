@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
-import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
+import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
@@ -17,9 +17,9 @@ import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
-import { AIR, MAT, mat, MATERIALS } from '../content/materials';
+import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
 import {
-  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
+  DEFAULT_AFFINITY, ELEMENTS, EL_FIRE, EL_LAVA, EL_WATER, elemByte, elemDef, elemKind, elemLevel, fluidHeight, isFalling, type ElementDef, type ElementKey,
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
@@ -54,19 +54,23 @@ import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
-import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
+import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
+import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
+/** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
+const DASH_FOV_KICK = 4;
 import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { FullscreenButton } from '../input/fullscreen-button';
-import { Inventory } from '../items/inventory';
-import { ItemPools } from '../items/pool';
+import { Inventory, type SavedItem } from '../items/inventory';
+import { ItemPools, isPromised } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import { Kairos, KAIROS_CHARGES, KAIROS_HOMING, KAIROS_INTENTIONS, KAIROS_REACH, dealMarks, type KairosMark } from './kairos';
 import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
@@ -89,14 +93,19 @@ import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { inLeaves } from '../world/crown';
+import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
 import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
 import { ChoiceGuard, boatmanCrossing, choiceOutcome, offerOutcome } from '../content/presences/consent';
-import { CHILD_LESSON, LISTENER_LESSON_CHOICE, lessonGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
+import { LISTENER_LESSON_CHOICE, crownGivesLight, lessonLine, lessonPathOf } from '../content/presences/lesson';
+import { MENDERS_THREAD, gainKeepsThread, menderDropsThread } from '../content/presences/thread';
+import { DONE_CHOICE, StillWatch, TRUST_START, answerDone, doneGift } from '../content/presences/trust';
+import { MENDED_SEAM_S, MENDED_TAG, ReleaseLog, countsAsRelease, projectionToMend } from '../content/presences/mended';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
-import { PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
+import { type OfferPick, PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, findCartographerOre, gardenerWants, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
 import { COMPLETION_ACHIEVEMENT } from '../content/achievements';
 import { downloadRootsBook } from './book-download';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
@@ -114,6 +123,9 @@ import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, 
 import { createBus, WEAPONS_KEEPING_SHOT, type Cause, type GameBus, type IntentSpec, type Owner, type PickupKind, type WeaponId } from './events';
 import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
+import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
+import { CheckpointMark } from './checkpoint-mark';
+import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
@@ -126,6 +138,10 @@ import type { Rng } from '../core/rng';
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
 // safety layer 1 at startup: report catalogue problems, and keep invalid items out of the pools
+/** How near the player must be, in blocks, for a presence to ask "Have you done it?" when its idle window closes. */
+const DONE_REACH = 6;
+/** One reward a presence or a creature launches (launchGiftPickups). */
+type GiftReward = { type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind } | { type: 'key' | 'bomb' };
 const CATALOGUE_ERRORS = validateCatalogue(ITEMS, SYNERGIES);
 for (const e of CATALOGUE_ERRORS) console.error('[items]', e);
 const PLAYABLE_ITEMS = ITEMS.filter(i => validateItem(i).length === 0);
@@ -169,6 +185,8 @@ const COUNTER_CAP = 99;
 /** The sandbox's fixed step (seconds). */
 export const SANDBOX_DT = 1 / 60;
 const SPAWN_GAP = 0.45;
+/** The six face neighbours of a voxel (fluid sections spread over these). */
+const FACES: [number, number, number][] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 /** Seconds after entering a boss room until the boss counts as overcome (no bosses yet). */
 const HOLE_DELAY = 1.5;
 const BOSS_WAKE = 1.2;
@@ -302,16 +320,36 @@ export class Game {
   private codex: PresenceId[] = [];
   /** The Covenant's pieces held in this run, in the order given (COVENANT.md). Kept for the run only. */
   private covenant: Covenant = NO_COVENANT;
+  /** Whether this run has heard a Listener's Lesson (a path answered): the crown then gives the Light (reachCrown). */
+  private heardLesson = false;
+  /** Whether the Mender has dropped its Thread in this run (thread.ts): it drops it once. */
+  private threadDropped = false;
+  /** The projections released in this run, by floor, for the Mender's integration (mended.ts). */
+  private releases = new ReleaseLog();
+  /** Seconds to the next gold mote of each mended ally's seam (mended.ts, DECISIONS.md §14.4). */
+  private seamT = 0;
+  /** Set when the Mender's exchange brought a projection back, for the line on its card. */
+  private mendedNow = false;
+  /** The trust meter's hidden step, kept for the run only and never shown (trust.ts, REQUESTS.md). */
+  private trust = TRUST_START;
+  /** The longest still stretch inside each running idle window (trust.ts). */
+  private still = new StillWatch();
   /** The Covenant's pieces held, for the inventory's labels (read only). */
   get covenantPieces(): Covenant { return this.covenant; }
   /** The Children the player agreed to build with: each enemy id maps to the placement mark when the build began (CHILD.md). */
   private childBuilds = new Map<number, number>();
+  /** The Gardener's agreement: the materials it already holds, by its enemy id (GARDENER.md: a root and a tuft of moss). */
+  private gardenGiven = new Map<number, number[]>();
   /** Whether the run's Mender has come (MENDER.md): it comes once, to the first vault opened on its floor. */
   private menderCame = false;
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
-  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried } | null = null;
+  private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried; rest?: OfferPick[] } | null = null;
+  /** The Rebirth Draught's confirm card is open (it shares the offer card; see `askRebirth`). */
+  private pendingRebirth = false;
+  /** The practices a Rebirth Draught keeps, read by the next new run (null for any other new run). */
+  private rebirthKeep: SavedItem[] | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
-  private pendingPresenceChoice: { id: PresenceId; enemyId: number; floor?: number } | null = null;
+  private pendingPresenceChoice: { id: PresenceId; enemyId: number; done?: true; still?: number } | null = null;
   /** The choice card's grace: a confirm right after it opens is ignored (consent.ts). */
   private choiceGuard = new ChoiceGuard();
 
@@ -334,6 +372,13 @@ export class Game {
   private iceWalls = new Map<number, [number, number, number][]>();
   private spits: { t: number; run: () => void }[] = [];
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
+  /** The run's checkpoint (game/checkpoint.ts), set by Waymark; null until one is picked up. */
+  private respawn: Spot | null = null;
+  /** Player status timers (seconds left by id: 'phase' is Lucid Dream). Cleared with a run. */
+  private statuses = new Map<string, number>();
+  /** The cells a phased body may be in (the room's box with its walls), and the room it started in. */
+  private phase: { box: CellBox; room: RoomInfo | null; interior: CellBox } | null = null;
+  private checkpointMark!: CheckpointMark;
   private bossUsed = new Set<string>();
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -348,6 +393,9 @@ export class Game {
   private intents: Intents;
   private api: HostApi;
   private time = 0;
+  /** Simulation frames run so far, and the frame of the last fluid conversion (one per frame: `convertFluid`). */
+  private simFrame = 0;
+  private fluidFrame = -1;
   /** Every actor of the run (the player and projections), one id space. */
   readonly actors = new ActorRegistry();
   private contacts = new ContactGate();
@@ -364,6 +412,8 @@ export class Game {
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Fire shields (Controlled Burn): where fire never hurts you, and until when (game time). */
+  private fireShields: { x: number; y: number; z: number; r: number; until: number }[] = [];
   /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
   private missiles = new Missiles();
   private missileView: MissileView;
@@ -388,6 +438,11 @@ export class Game {
   private story = NaN;
   /** The loop (L4): silence once visited opens the sky's top; seconds standing still in it. */
   private silenceSeen = false;
+  /** The Leaves (D14) were entered this run: their name is said once. */
+  private leavesSeen = false;
+  /** What the star map shows beyond what you walked (D15): the Cartographer's marks, the Star-reader's room and reading. */
+  private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss'; also?: number }>; starReader: StarMarks['starReader']; read: boolean } =
+    { cartographer: new Map(), starReader: null, read: false };
   private stillT = 0;
   /** The star pad you arrived on (re-armed once you step off it). */
   private padLock = -1;
@@ -478,6 +533,7 @@ export class Game {
       solid: (x, y, z) => this.solid(x, y, z),
       tier: (x, y, z) => mat(this.world.get(x, y, z)).tier,
       hitBlock: (hit, t) => this.intentHitsBlock(hit, t.mining, t.polarity),
+      absorbAt: (x, y, z, r) => this.absorbBlocksAt(x, y, z, r),
       debrisAt: (x, y, z, r) => this.debrisAt(x, y, z, r),
       hitDebris: (i, v, t) => {
         const k = t.knock * 6 / Math.max(1, v.length());
@@ -496,8 +552,11 @@ export class Game {
       splash: (p, color, big) => this.particles.burst(p.x, p.y, p.z, color, big ? 10 : 5, big ? 3 : 2, 0.06),
       elementAt: (x, y, z) => this.elementAt(x, y, z)?.key ?? null,
       quenched: p => this.elementFx('hiss', Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)),
+      entered: (spec, x, y, z, element) => { this.bus.emit('intentElement', { intent: spec, x, y, z, element }); },
       hit: (kind, target, p, n, v, spec) => this.intentHit(kind, target, p, n, v, spec),
       nearestBlock: (p, r) => this.nearestSolid(p, r),
+      nearestEnemy: (p, r, polarity) => this.nearestMeetable(p, r, polarity),
+      bounced: b => { this.bus.emit('intentBounce', b); },
     });
     this.api = this.makeApi();
     this.weaponHost = this.makeWeaponHost();
@@ -526,11 +585,19 @@ export class Game {
    * `seed`: a seed code ("ABCD-EFGH"), a numeric root (tests), or nothing for a fresh random run.
    * Everything structural (all floor plans, rock themes, pedestal items) is decided here.
    */
-  newRun(seed?: string | number) {
+  newRun(seed?: string | number, keep?: readonly SavedItem[]) {
+    this.cancelKairos();
     let root: number | null = typeof seed === 'number' ? seed >>> 0 : typeof seed === 'string' ? decodeSeed(seed) : null;
     const invalid = typeof seed === 'string' && root === null;
     root ??= randomRoot();
     this.begin(root, null);
+    // a Rebirth Draught keeps the practices (with their stacks) and nothing else: the restore installs their effects
+    if (keep) {
+      this.inventory.restore(keep);
+      this.hud.setItems(this.inventory.items.map(i => i.def));
+      this.syncWeapon();
+      this.player.hp = this.maxHp;
+    }
     this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
   }
 
@@ -540,6 +607,7 @@ export class Game {
    * unchanged. Cosmetic randomness is seeded too, so the same scenario stepped the same way replays.
    */
   newSandbox(s: Scenario) {
+    this.cancelKairos();
     this.begin((s.seed ?? 1) >>> 0, s);
   }
 
@@ -590,11 +658,17 @@ export class Game {
     const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
-    this.story = NaN; this.silenceSeen = false; this.stillT = 0; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
-    this.childBuilds.clear(); this.builds = new BuildCount(); this.menderCame = false;
+    this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
+    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];
     this.covenant = NO_COVENANT;
+    this.heardLesson = false;
+    this.threadDropped = false;
+    this.releases.clear();
+    this.trust = TRUST_START;
+    this.still.clear();
     this.hud.setCodex(this.codex);
     this.pendingPresenceOffer = null;
     this.input.modal = false;
@@ -603,10 +677,12 @@ export class Game {
     this.playerIn.clear(); this.drownT = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
-    this.blasts.clear(); this.bombCause.clear();
+    this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
+    this.checkpointMark = new CheckpointMark(this.dungeonRoot);
+    this.respawn = null;
     // a random heart's kind reads the chances of its band: floor 0 halves the star heart, the surface keeps its numbers (REWARDS §3)
     // a heart's kind on floor 0 takes its own fork, so the Roots' crates never move the hearts stream the floors below read
     this.pickups.heartKind = y => rollHeart(
@@ -629,6 +705,8 @@ export class Game {
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     p.clearStates();
+    this.statuses.clear();
+    this.phase = null;
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -665,7 +743,7 @@ export class Game {
     this.hud.dismissBanner();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.setFloor(this.floors.get(k)!, k);
-    this.bus.emit('floorEnter', { depth: k });
+    this.bus.emit('floorEnter', { depth: k, arrival: arrivalOf(this.floors.get(k)!.spawn) });
     if (this.roots) this.hangRoots(this.roots);
     if (box && sandbox) this.furnish(box, sandbox);
   }
@@ -899,6 +977,8 @@ export class Game {
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
     this.bus.on('itemGained', { priority: 300, source: first, fn: p => this.firstTime('practices', p.id) });
+    // the Mender's Thread is the Covenant's Thread once the Thread the Mender dropped is picked up (thread.ts)
+    this.bus.on('itemGained', { priority: 300, source: 'covenant', fn: p => { if (gainKeepsThread(p.id, this.threadDropped)) this.keepCovenantPiece('mender'); } });
     this.bus.on('enemySpawn', { priority: 300, source: first, fn: p => this.firstTime('bestiary', p.def) });
     this.bus.on('brew', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.potion) });
     this.bus.on('cook', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.meal) });
@@ -1105,6 +1185,9 @@ export class Game {
   /** True in the dungeon's world, below the crown. Every dungeon-only rule is guarded by it (SKY.md §2.5a). */
   private get below() { return this.realm === 'dungeon'; }
 
+  /** Seconds left of the phase (Lucid Dream), 0 when none runs. Read by the sandbox report and the tests. */
+  get phaseLeft(): number { return this.statuses.get(PHASE_STATUS) ?? 0; }
+
   /** The swap's view of the game's fields (SKY.md §2.1). */
   private realmHost(): RealmHost {
     return {
@@ -1166,7 +1249,7 @@ export class Game {
       const chain = this.bombCause.get(i);
       this.bombCause.delete(i);
       // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
-      if (love) { this.loveBlast(x, y, z); return; }
+      if (love) { this.loveBlast(x, y, z, 'bomb'); return; }
       this.blasts.current = chain ?? null;
       this.explode(x, y, z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'bomb', this.player.id);
       this.blasts.current = null;
@@ -1259,11 +1342,11 @@ export class Game {
 
   /** A capture takes one practice the player holds, at random, for the rest of the run (SKY.md §19, provisional). */
   private takePractice(): string | null {
-    const held = this.inventory.items;
+    // a promised piece (the Mender's Thread) is never taken (GIFTS.md, the promised trait); the draw is over the others
+    const held = this.inventory.items.filter(it => !isPromised(it.def));
     if (!held.length) return null;
     const id = held[this.rng.fork('sky', 'capture', this.captures++).int(0, held.length - 1)].def.id;
-    this.inventory.lose(id);
-    this.hud.setItems(this.inventory.items.map(i => i.def));
+    this.loseItem(id);
     return id;
   }
 
@@ -1370,6 +1453,8 @@ export class Game {
       hasTag: tag => this.inventory.hasTag(tag),
       held: () => this.player.hand.filter((c): c is number => typeof c === 'number'),
       rng: () => this.rng.stream('drops'), // replaced per item copy by the inventory
+      time: () => this.time,
+      memory: () => ({}), // replaced per practice by the inventory
       materialAt: (x, y, z) => this.world.get(x, y, z),
       damageBlock: (x, y, z, a, kind, src) => this.damageBlock(x, y, z, a, kind, src),
       explode: (x, y, z, r, d, src) => this.explode(x, y, z, r, d, src, this.player.id),
@@ -1391,10 +1476,57 @@ export class Game {
       freeze: (id, s) => this.affectProjection(id, 'frozen', s),
       frighten: (id, s) => this.affectProjection(id, 'fear', s),
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
+      shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
+      convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
+      placeBlock: (x, y, z, m, src) => this.placeItemBlock(x, y, z, m, src),
+      consumeCopy: id => this.loseItem(id),
+      playerFeet: () => ({ x: this.player.body.x, y: this.player.body.y, z: this.player.body.z }),
+      checkpoint: () => this.respawn ? { ...this.respawn } : null,
+      setCheckpoint: (x, y, z) => this.setRespawn({ x, y, z }),
+      teleportPlayer: (x, y, z) => this.teleportPlayer(x, y, z),
+      invulnerable: s => { this.player.invulnT = Math.max(this.player.invulnT, s); },
+      grantStatus: (id, s, o) => this.grantStatus(id, s, o),
+      burst: (x, y, z, color, n) => this.particles.burst(x, y, z, color, n, 2.2, 0.07),
+      chime: () => sfx3.reveal(),
     };
+  }
+
+  /** Loses one copy of a practice. A checkpoint lasts while an item that carries the checkpoint tag is held. */
+  loseItem(id: string): boolean {
+    if (!this.inventory.lose(id)) return false;
+    if (this.respawn && !this.inventory.hasTag(CHECKPOINT_TAG)) this.setRespawn(null);
+    this.hud.setItems(this.inventory.items.map(i => i.def));
+    return true;
+  }
+
+  /** Sets the run's checkpoint to the free standing cell nearest the feet `at`, or clears it (null). */
+  private setRespawn(at: Spot | null) {
+    this.respawn = at ? standingSpot((x, y, z) => this.solid(x, y, z), at.x, at.y, at.z) ?? at : null;
+    this.checkpointMark.place(this.respawn);
+  }
+
+  /**
+   * Moves the player to the free cell nearest the feet (x, y, z) and opens every door that would keep them out of a
+   * room they just left: a room sealed by its projections, a challenge in progress, a boss room still standing. The
+   * room keeps its state, so entering it again seals it again; no door the player can't get back through stays shut.
+   */
+  private teleportPlayer(x: number, y: number, z: number) {
+    const at = standingSpot((a, b, c) => this.solid(a, b, c), x, y, z) ?? { x, y, z };
+    this.teleport(at.x, at.y, at.z);
+    const here = this.below ? this.roomAt(at.x, at.y + 0.1, at.z)?.id ?? null : null;
+    const live = new Set<number>();
+    for (const [id, st] of this.roomState) if (st.sealed && !st.cleared) live.add(id);
+    for (const [id, c] of this.challenges) if (c.active) live.add(id);
+    for (const b of this.bossRooms.values()) if (b.spawned && !b.defeated) live.add(b.room);
+    for (const id of releasedRooms([...live], here)) {
+      this.doors.seal(id, false);
+      const st = this.roomState.get(id);
+      if (st) st.sealed = false;
+    }
+    if (here !== null && live.has(here)) this.doors.seal(here, true);
   }
 
   /** What weapons may do: everything through the shared damage pipeline (docs/architecture/WEAPONS.md). */
@@ -1405,13 +1537,25 @@ export class Game {
       eye: () => p.eye,
       forward: () => p.forward,
       casting: () => this.input.held('cast') && !this.hands.holding,
-      strike: (weapon, damage, mining, reach) => {
+      // a beam is a shot first: `fire` runs as for an intention (Dual Process, Eye Contact...), and a cancel gives the charge back
+      shot: () => {
+        const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all, this.polarity) });
+        return ev.cancelled ? null : ev.intent;
+      },
+      castHand: () => this.castHand(),
+      strike: (weapon, damage, mining, reach, shot) => {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
-        const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
+        // the stroke carries the shot's tags, volley and shape; its damage and mining are the strike's
+        const base = shot ?? intentFromStats(this.stats.all, this.polarity);
+        const intent = { ...base, damage: ev.damage, mining: ev.mining, tags: new Set([...base.tags, ...ev.tags]) };
         this.stroke = { polarity: this.polarity, warmed: new Set(), intent, weapon };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
+      },
+      nearestBlock: (x, y, z, range) => {
+        const c = this.nearestSolid(new THREE.Vector3(x, y, z), range);
+        return c ? { x: c.x, y: c.y, z: c.z } : null;
       },
       solid: (x, y, z) => this.solid(x, y, z),
       // a positive stroke only reaches blocks it can mend: the damaged ones
@@ -1456,7 +1600,8 @@ export class Game {
       sliceCubes: (inside, along, across) => this.clearCubesIn(inside, { along, across }),
       particles: (x, y, z, c, n, s, size) => this.particles.burst(x, y, z, c, n, s, size),
       shake: s => this.hud.shake(s),
-      swingHands: () => this.hands.fire(),
+      // a weapon that replaces the shot does not take the turn: it swings from the hand that is next
+      swingHands: () => this.hands.fire(this.castHand()),
       chargeHands: k => this.hands.charge(k),
       sound: name => sfx2[name](),
     };
@@ -1897,7 +2042,9 @@ export class Game {
       attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage, toAttacker: 0,
     });
     if (ev.cancelled) return;
-    if (ev.toTarget > 0) this.damageActor(t, ev.toTarget, 'contact', a.def, a.id);
+    // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
+    const hurt = t === this.player && this.player.crouching ? crouchedContact(ev.toTarget) : ev.toTarget;
+    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id);
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
@@ -1955,7 +2102,7 @@ export class Game {
     this.launchGiftPickups(e, [{ type: 'heart', heart }]);
   }
 
-  private launchGiftPickups(e: Enemy, rewards: ({ type: 'item'; item: ItemDef } | { type: 'heart'; heart: HeartKind } | { type: 'key' | 'bomb' })[], at?: { x: number; y: number; z: number }) {
+  private launchGiftPickups(e: Enemy, rewards: GiftReward[], at?: { x: number; y: number; z: number }) {
     const b = at ?? e.body, player = this.player.body;
     const base = Math.atan2(b.z - player.z, b.x - player.x);
     rewards.forEach((reward, i) => {
@@ -2088,6 +2235,8 @@ export class Game {
     const floor = this.rooms.get(e.room)?.floor;
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
+    // a release the Mender may bring back on this floor (mended.ts)
+    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def);
     // the Shadow's stillness ending is a turning to your side, not a destruction (ACHIEVEMENTS §1)
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor, e.tags.has(STILLNESS_TAG) ? 'stillness' : 'destroyed');
     if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
@@ -2411,6 +2560,8 @@ export class Game {
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
       if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
     }
+    // one of the player's own bombs or missiles (not a volatile cube, an enemy's burst or an item's blast)
+    if (owner === this.player.id && (source === 'bomb' || source === 'missile')) this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'negative', source, acted: new Set() });
     // a bomb: white-hot core, ember sparks, ash (docs/art/DECISIONS.md §7.4)
     this.particles.burst(x, y, z, pal('light.ember'), 40, 8, 0.15);
     this.particles.burst(x, y, z, pal('light.core'), 20, 5, 0.1);
@@ -2446,6 +2597,25 @@ export class Game {
     return broke;
   }
 
+  /** The Transcendent aura (IntentSpec.absorb): removes every destructible block with a cell within `r` of (x, y, z),
+   *  without debris, and returns the sum of their armor. Unbreakable blocks, frames, pedestals and the lab and kitchen stay. */
+  private absorbBlocksAt(x: number, y: number, z: number, r: number): number {
+    const keep = new Set<number>([MAT.kitchen, MAT.alembic, MAT.pedestal, MAT.frame, MAT.goldframe, MAT.bossframe]);
+    let armor = 0;
+    for (let a = Math.floor(x - r); a <= Math.floor(x + r); a++)
+      for (let b = Math.floor(y - r); b <= Math.floor(y + r); b++)
+        for (let c = Math.floor(z - r); c <= Math.floor(z + r); c++) {
+          const id = this.world.get(a, b, c);
+          if (id === AIR || keep.has(id) || !Number.isFinite(mat(id).hp)) continue;
+          // the nearest point of the cell to the aura's centre must be inside the aura
+          const dx = x - Math.min(Math.max(x, a), a + 1), dy = y - Math.min(Math.max(y, b), b + 1), dz = z - Math.min(Math.max(z, c), c + 1);
+          if (dx * dx + dy * dy + dz * dz > r * r) continue;
+          const a0 = mat(id).armor;
+          if (this.damageBlock(a, b, c, 1e6, 'intent', 'transcendent', false)) armor += a0;
+        }
+    return armor;
+  }
+
   private strokeHit(id: number, kx: number, kz: number, intent: IntentSpec) {
     const e = this.enemies.get(id);
     if (!e) return;
@@ -2457,6 +2627,35 @@ export class Game {
     // a routed creature (a sky deity) was touched through the router; no listener knows its id (SKY.md §5.7)
     if (kind === 'actor' && this.router.owns(target)) return;
     this.bus.emit('intentHit', { kind, target, x: p.x, y: p.y, z: p.z, nx: n.x, ny: n.y, nz: n.z, vx: v.x, vy: v.y, vz: v.z, intent });
+  }
+
+  /** An item places one copy of a block (Affirmation) into an empty cell of the player's room. Only interior
+   *  room space (never a wall, a door or a doorway), no body in the cell, no element on it, and only materials
+   *  isPlaceable allows. It writes the world as the player's placement does, but emits no blockPlace or blockPlaced. */
+  private placeItemBlock(x: number, y: number, z: number, m: number, _source: string): boolean {
+    if (!this.below || !isPlaceable(m) || !this.world.inside(x, y, z)) return false;
+    if (this.world.get(x, y, z) !== AIR || this.solid(x, y, z) || this.elementAt(x, y, z)) return false;
+    const r = this.roomAt(x, y, z);
+    if (!r || r.id !== this.room || !inRoomSpace(r, x, z) || y < r.y0 || y >= r.y0 + r.height) return false;
+    if (this.doors.inDoorway(x, y, z)) return false;
+    for (const a of this.actors.all()) if (a.body && cellOverlap(a.body, x, y, z)) return false;
+    this.world.set(x, y, z, m);
+    this.debris.clearCell(x, y, z);
+    return true;
+  }
+
+  /** The nearest projection a negative or positive intention meets within r: hostile ones only for a negative
+   *  one, the same rule enemyAt uses. Null when none is in range. */
+  private nearestMeetable(p: THREE.Vector3, r: number, polarity: Polarity): THREE.Vector3 | null {
+    let best: THREE.Vector3 | null = null, bd = r * r;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || e.hidden || e.tags.has('shut') || !this.meets(e, polarity)) continue;
+      if (polarity === 'negative' && e.faction !== 'projection') continue;
+      const c = new THREE.Vector3(e.body.x, e.body.y + e.body.h / 2, e.body.z);
+      const d = c.distanceToSquared(p);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return best;
   }
 
   private nearestSolid(p: THREE.Vector3, r: number): THREE.Vector3 | null {
@@ -2485,6 +2684,7 @@ export class Game {
     this.particles.burst(x, y, z, color, 24, radius * 2, 0.07);
     spatial.cue('ring', x, y, z);
     this.hud.shake(0.1);
+    this.bus.emit('burst', { x, y, z, radius, damage, source });
   }
 
   private arc(x: number, y: number, z: number, to: number, damage: number, source: string, polarity: Polarity) {
@@ -2532,12 +2732,28 @@ export class Game {
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
   }
 
+  /** Sets alight every flammable block whose cell lies within `r` blocks of (x, y, z). Offsets are whole cells, so a
+   *  fractional radius (1.5) reaches the cells inside it, not fractions of them. */
   private igniteArea(x: number, y: number, z: number, r: number) {
-    for (let dz = -r; dz <= r; dz++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    const ri = Math.ceil(r);
+    for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       if (dx * dx + dy * dy + dz * dz > r * r) continue;
       const id = this.world.get(x + dx, y + dy, z + dz);
       if (id !== AIR && mat(id).flammable) this.ignite(x + dx, y + dy, z + dz, id, 'fire');
     }
+  }
+
+  /** Fire never hurts the player within `r` of (x, y, z) for `seconds` (Controlled Burn: the fire of a blast of yours).
+   *  Only the last eight shields are kept; they end by time, and a new run clears them. */
+  private shieldFire(x: number, y: number, z: number, r: number, seconds: number) {
+    if (![x, y, z, r, seconds].every(Number.isFinite)) return;
+    this.fireShields.push({ x, y, z, r: Math.min(20, Math.max(0, r)), until: this.time + Math.min(30, Math.max(0, seconds)) });
+    if (this.fireShields.length > 8) this.fireShields.shift();
+  }
+
+  /** Whether a point is inside a live fire shield. */
+  private fireShielded(x: number, y: number, z: number): boolean {
+    return this.fireShields.some(s => this.time < s.until && Math.hypot(x - s.x, y - s.y, z - s.z) <= s.r);
   }
 
   private tagCube(cube: number, tag: string) {
@@ -2742,6 +2958,27 @@ export class Game {
     sfx3.launch(ev.polarity === 'negative');
   }
 
+  /** Irimi's dash starts: a whoosh and a burst of the practice's light at the feet (DASH.md §4). */
+  private dashFx() {
+    const b = this.player.body;
+    sfx3.dash();
+    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.glow'), 14, 2.4, 0.06);
+  }
+
+  /** The afterimage of a dash: a few motes left behind along the path, each frame it runs. */
+  private dashTrail() {
+    const b = this.player.body;
+    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.base'), 3, 0.5, 0.05, true);
+  }
+
+  /** A slight widening of the view through a dash (DASH.md §4): the field of view plus a few degrees, back at its own value after it. */
+  private kickFov() {
+    const want = this.fovNow + DASH_FOV_KICK * this.player.dashKick;
+    if (Math.abs(this.camera.fov - want) < 1e-3) return;
+    this.camera.fov = want;
+    this.camera.updateProjectionMatrix();
+  }
+
   /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
   private updateMissiles(dt: number) {
     if (!this.missiles.list.length) return;
@@ -2754,7 +2991,7 @@ export class Game {
       this.particles.burst(m.x - m.dx * 0.3, m.y - m.dy * 0.3, m.z - m.dz * 0.3, pal(trail[Math.floor(m.age * 20) % trail.length]), 2, 0.6, 0.06);
     }
     for (const e of ends) {
-      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z);
+      if (e.missile.polarity === 'positive') this.loveBlast(e.x, e.y, e.z, 'missile');
       else this.explode(e.x, e.y, e.z, this.stats.get('bombRadius'), this.stats.get('bombDamage'), 'missile', this.player.id);
     }
   }
@@ -2777,7 +3014,7 @@ export class Game {
    * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
    * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
    */
-  private loveBlast(x: number, y: number, z: number) {
+  private loveBlast(x: number, y: number, z: number, source: 'bomb' | 'missile') {
     const r = this.stats.get('bombRadius'), damage = this.stats.get('bombDamage'), ri = Math.ceil(r);
     for (let dz = -ri; dz <= ri; dz++) for (let dy = -ri; dy <= ri; dy++) for (let dx = -ri; dx <= ri; dx++) {
       const bx = Math.floor(x) + dx, by = Math.floor(y) + dy, bz = Math.floor(z) + dz;
@@ -2792,6 +3029,7 @@ export class Game {
       if (d < r + 0.4) this.intentTouch(a.id, BLAST_ACTOR_DAMAGE, ox / (d || 1), oz / (d || 1), 'item', 'missile', 'positive', true);
     }
     this.hearPresences(x, z, 'positive');
+    this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'positive', source, acted: new Set() });
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -2850,14 +3088,72 @@ export class Game {
     return { feet: this.elementAt(b.x, b.y + 0.1, b.z), mid: this.elementAt(b.x, b.y + b.h * 0.5, b.z), head: this.elementAt(b.x, b.y + eye, b.z) };
   }
 
+  /** lavaWalk (posttraumatic): a lava cell with air above it is ground for a body whose feet were above its surface at the
+   *  start of the frame. Gravity and walking then stop on it, and a body already in the lava is not held by it. */
+  private lavaSurface(x: number, y: number, z: number, feet: number): boolean {
+    const c = this.world.elemAt(x, y, z);
+    if (elemKind(c) !== EL_LAVA || elemKind(this.world.elemAt(x, y + 1, z)) === EL_LAVA) return false;
+    return feet >= y + fluidHeight(c) - 1e-6;
+  }
+
+  /** Does the player's body touch one of these cells (the cell under its feet included)? */
+  private bodyTouches(cells: readonly (readonly [number, number, number])[]): boolean {
+    const b = this.player.body;
+    const hit = new Set(cells.map(([x, y, z]) => `${x},${y},${z}`));
+    const x0 = Math.floor(b.x - b.hw), x1 = Math.floor(b.x + b.hw);
+    const z0 = Math.floor(b.z - b.hw), z1 = Math.floor(b.z + b.hw);
+    const y0 = Math.floor(b.y - 0.05), y1 = Math.floor(b.y + b.h - 1e-6);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) if (hit.has(`${x},${y},${z}`)) return true;
+    return false;
+  }
+
+  /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
+   *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
+   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
+  private convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
+    if (this.fluidFrame === this.simFrame) return 0;
+    const kindFrom = from === 'water' ? EL_WATER : EL_LAVA, kindTo = to === 'water' ? EL_WATER : EL_LAVA;
+    const w = this.world;
+    if (elemKind(w.elemAt(x, y, z)) !== kindFrom) return 0;
+    const room = this.roomAt(x, y, z);
+    if (!room) return 0;
+    const section: [number, number, number][] = [[x, y, z]];
+    const seen = new Set<number>([w.idx(x, y, z)]);
+    for (let i = 0; i < section.length && section.length < cap; i++) {
+      const [cx, cy, cz] = section[i];
+      for (const [dx, dy, dz] of FACES) {
+        if (section.length >= cap) break;
+        const nx = cx + dx, ny = cy + dy, nz = cz + dz;
+        if (!w.inside(nx, ny, nz) || seen.has(w.idx(nx, ny, nz))) continue;
+        seen.add(w.idx(nx, ny, nz));
+        if (elemKind(w.elemAt(nx, ny, nz)) !== kindFrom || this.roomAt(nx, ny, nz)?.id !== room.id) continue;
+        section.push([nx, ny, nz]);
+      }
+    }
+    if (kindTo === EL_LAVA && this.stats.get('lavaWalk') < 1 && this.bodyTouches(section)) return -1;
+    for (const [cx, cy, cz] of section) {
+      const b = w.elemAt(cx, cy, cz);
+      w.setElemByte(cx, cy, cz, elemByte(kindTo, elemLevel(b), isFalling(b)));
+      this.elements.wakeAround(cx, cy, cz);
+    }
+    this.elementFx(kindTo === EL_LAVA ? 'catch' : 'steam', x, y, z);
+    this.fluidFrame = this.simFrame;
+    return section.length;
+  }
+
   /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
-    const m = this.bodyMedium(b, EYE);
-    this.playerMedium = { ...m, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
+    const m = this.bodyMedium(b, p.eyeHeight);
+    // lavaWalk (posttraumatic): lava does not hurt you, and you wade through it at full speed (the 0.4 wade becomes 1)
+    const walk = this.stats.get('lavaWalk') >= 1;
+    const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
+    this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
-    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0).sort((a, c) => c.harm - a.harm)[0];
+    // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
+    const shielded = this.fireShielded(b.x, b.y + b.h / 2, b.z);
+    const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire') && !(walk && d.key === 'lava')).sort((a, c) => c.harm - a.harm)[0];
     if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
     // breath: drains with your head under water, refills fast at the surface
     const max = this.stats.get('breath');
@@ -2868,7 +3164,7 @@ export class Game {
         if (this.drownT <= 0) {
           this.drownT = DROWN_GAP;
           sfx3.gulp();
-          this.particles.burst(b.x, b.y + EYE, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
+          this.particles.burst(b.x, b.y + p.eyeHeight, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
           this.damageActor(p, HALF_HEART, 'drown', 'drown', 'world');
         }
       }
@@ -2957,6 +3253,118 @@ export class Game {
 
   // ───────────────────────── player actions ─────────────────────────
 
+  // Kairos (#123): the practice that stops time. Its rules are in game/kairos.ts; the stop is one branch in
+  // simulate (stopTime). Docs: docs/design/built/practices/MIRACLES.md (Kairos).
+  private kairos = new Kairos();
+  private kairosBeatT = 0;
+
+  /** The charge of the held Kairos (0 when it is not held). */
+  kairosCharge(): number { return this.inventory.memoryFor('kairos').charge ?? 0; }
+
+  /** A full charge stops time; a short one says how much is charged. Returns true when the press was used. */
+  private startKairos(): boolean {
+    if (!this.inventory.has('kairos')) return false;
+    const charge = this.kairosCharge();
+    if (charge < KAIROS_CHARGES) {
+      sfx.denied();
+      this.inventory.say('kairos', 'notReady', { n: charge, max: KAIROS_CHARGES });
+      return true;
+    }
+    this.kairos.start();
+    document.body.classList.add('kairos-stop');
+    sfxKairos.start();
+    this.kairosBeatT = 0;
+    this.inventory.say('kairos', 'started');
+    return true;
+  }
+
+  /** The stopped frame: the view turns, a cast press marks, the miracle press or the countdown releases. */
+  private stopTime(dt: number) {
+    const inp = this.input;
+    this.player.look(inp);
+    if (inp.hit('cast')) this.markKairos();
+    this.kairosBeatT -= dt;
+    if (this.kairosBeatT <= 0) { sfxKairos.beat(); this.kairosBeatT = 1; }
+    if (inp.hit('miracle') || this.kairos.tick(dt)) this.releaseKairos();
+  }
+
+  /** Marks the point under the crosshair: a projection the ray meets first, else the block, else the far end of the ray. */
+  private markKairos() {
+    const p = this.player, e = p.eye, d = p.forward;
+    const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, KAIROS_REACH);
+    const limit = hit ? hit.t : KAIROS_REACH;
+    let pick: { id: number; x: number; y: number; z: number; t: number } | null = null;
+    for (const en of this.enemies.list) {
+      if (!en.alive || en.spawning > 0) continue;
+      const b = en.body, cy = b.y + b.h / 2;
+      const vx = b.x - e.x, vy = cy - e.y, vz = b.z - e.z;
+      const t = vx * d.x + vy * d.y + vz * d.z;
+      if (t < 0 || t > limit) continue;
+      const r = b.hw + 0.35;
+      if (vx * vx + vy * vy + vz * vz - t * t > r * r) continue;
+      if (!pick || t < pick.t) pick = { id: en.id, x: b.x, y: cy, z: b.z, t };
+    }
+    let mark: KairosMark;
+    if (pick) mark = { kind: 'projection', x: pick.x, y: pick.y, z: pick.z, actor: pick.id };
+    else if (hit) mark = { kind: 'block', x: hit.x + 0.5, y: hit.y + 0.5, z: hit.z + 0.5 };
+    else mark = { kind: 'block', x: e.x + d.x * KAIROS_REACH, y: e.y + d.y * KAIROS_REACH, z: e.z + d.z * KAIROS_REACH };
+    const r = this.kairos.mark(mark);
+    if (r === 'full') { sfx.denied(); this.inventory.say('kairos', 'marksFull'); return; }
+    sfxKairos.mark();
+  }
+
+  /** Where a mark is now: a projection mark follows its projection (it stood still while time was stopped). */
+  private kairosPoint(m: KairosMark): { x: number; y: number; z: number } {
+    const en = m.actor !== undefined ? this.enemies.get(m.actor) : undefined;
+    return en ? { x: en.body.x, y: en.body.y + en.body.h / 2, z: en.body.z } : m;
+  }
+
+  /** Ends the stop and fires one intention per mark (round robin), piercing +1, from the eye as a shot does.
+   *  With no marks all of them go to the crosshair point. The charge empties. */
+  private releaseKairos() {
+    const marks = this.kairos.end();
+    document.body.classList.remove('kairos-stop');
+    const p = this.player, fwd = p.forward;
+    const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+    const from = p.eye.clone().addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(fwd, 0.3);
+    for (const m of dealMarks(KAIROS_INTENTIONS, marks)) {
+      const spec = intentFromStats(this.stats.all, this.polarity);
+      spec.pierce += 1;
+      if (m?.kind === 'projection') { spec.homingTarget = 'projection'; spec.homing = Math.max(spec.homing, KAIROS_HOMING); }
+      const ev = this.bus.emit('fire', { intent: spec });
+      if (ev.cancelled) continue;
+      const to = m ? this.kairosPoint(m) : null;
+      const dir = to ? new THREE.Vector3(to.x - from.x, to.y - from.y, to.z - from.z) : fwd.clone();
+      if (dir.lengthSq() < 1e-6) dir.copy(fwd);
+      this.intents.fire(ev.intent, from, dir.normalize(), new THREE.Vector3());
+    }
+    this.inventory.memoryFor('kairos').charge = 0;
+    this.hands.fire();
+    sfxKairos.release();
+    this.inventory.say('kairos', 'released');
+  }
+
+  /** Ends a stop that cannot go on (a death, a room change, a screen): the intentions are not fired and the charge stays. */
+  private cancelKairos() {
+    if (!this.kairos.stopped) return;
+    this.kairos.end();
+    document.body.classList.remove('kairos-stop');
+  }
+
+  /** The Kairos HUD: the charge pips while the practice is held, the marks while time is stopped. */
+  private kairosHud() {
+    const marks: { x: number; y: number; n: number; on: boolean }[] = [];
+    if (this.kairos.stopped) {
+      const r = this.renderer.domElement.getBoundingClientRect();
+      this.kairos.marks.forEach((m, i) => {
+        const v = new THREE.Vector3(m.x, m.y, m.z).project(this.camera);
+        const on = v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1;
+        marks.push({ x: r.left + (v.x * 0.5 + 0.5) * r.width, y: r.top + (-v.y * 0.5 + 0.5) * r.height, n: i + 1, on });
+      });
+    }
+    this.hud.kairos({ held: this.inventory.has('kairos'), charge: this.kairosCharge(), max: KAIROS_CHARGES, stopped: this.kairos.stopped, marks });
+  }
+
   private fire() {
     const p = this.player;
     if (!this.input.held('cast') || p.fireCooldown > 0 || this.hands.holding || p.muteT > 0) return;
@@ -2964,12 +3372,19 @@ export class Game {
     if (ev.cancelled) return;
     p.fireCooldown = 1 / this.stats.get('fireRate');
     const dir = p.forward;
+    const side = this.castHand();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
-    const from = p.eye.addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
+    const from = p.eye.addScaledVector(right, 0.18 * side).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
     this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
-    this.hands.fire();
+    this.hands.fire(side);
+    if (this.stats.all.twinCast >= 1) p.castSide = nextCastSide(side);
     sfx.shoot();
+  }
+
+  /** The hand that casts now: with `twinCast` the hands take turns; otherwise the right hand always casts. */
+  private castHand(): 1 | -1 {
+    return this.stats.all.twinCast >= 1 ? this.player.castSide : 1;
   }
 
   /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */
@@ -3043,6 +3458,7 @@ export class Game {
   private drink() {
     const p = this.player, top = p.active;
     if (!top || !isFlask(top)) { sfx.denied(); return; }
+    if (POTIONS[top.potion].rebirth) { this.askRebirth(); return; }
     const def = POTIONS[top.potion];
     const rooms = flaskRooms(top);
     p.takeActive();
@@ -3164,7 +3580,8 @@ export class Game {
   private touchBlocks(dt: number) {
     const p = this.player, b = p.body;
     const crush = this.stats.get('crush');
-    if (crush <= 0 || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
+    // a phased body is inside blocks it passes through: it does not wear them down by pressing (Lucid Dream)
+    if (crush <= 0 || this.phase || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
     this.contactT += dt;
     if (this.contactT < CONTACT_TICK) return;
     this.contactT -= CONTACT_TICK;
@@ -3515,6 +3932,88 @@ export class Game {
 
   /** Somewhere new without walking there (a star pad, heaven, silence): find room to stand, then
    *  let the HUD, the fog and the floor bookkeeping catch up (review L4–L6 points 3 and 5). */
+  // ───────────────────────── player statuses (Lucid Dream: docs/design/built/practices/MIRACLES.md) ─────────────────────────
+
+  /** Starts or extends a status timer. A phase that starts takes the box of the room the player stands in. */
+  private grantStatus(id: string, seconds: number, opts?: { add?: boolean; cap?: number }) {
+    const cur = this.statuses.get(id) ?? 0;
+    let next = opts?.add ? cur + seconds : Math.max(cur, seconds);
+    if (opts?.cap !== undefined) next = Math.min(next, opts.cap);
+    if (next <= 0) return;
+    this.statuses.set(id, next);
+    if (id === PHASE_STATUS && cur <= 0) this.startPhase();
+  }
+
+  private startPhase() {
+    const b = this.player.body;
+    const room = this.roomAt(b.x, b.y + 0.1, b.z);
+    if (room) {
+      this.phase = { box: roomBox(room), room, interior: roomInterior(room) };
+    } else {
+      const box = fallbackBox(b.x, b.y, b.z);
+      this.phase = { box, room: null, interior: box };
+    }
+    sfx3.phaseStart();
+  }
+
+  /** Counts every status down; a phase that runs out is ended (and its body moved out of blocks). */
+  private tickStatuses(dt: number) {
+    if (!this.below && this.statuses.size) { this.statuses.clear(); this.phase = null; }
+    let phasing = false;
+    for (const [id, left] of this.statuses) {
+      const next = left - dt;
+      if (next > 0) {
+        if (id === PHASE_STATUS) {
+          if (left > PHASE_WARN_S && next <= PHASE_WARN_S) sfx3.phaseTick();
+          phasing = true;
+        }
+        this.statuses.set(id, next);
+        continue;
+      }
+      this.statuses.delete(id);
+      if (id === PHASE_STATUS) this.endPhase();
+    }
+    // a phased body that has left its box (a fall through the floor, a descent) ends the phase where it is
+    if (this.phase && !phasing) this.endPhase();
+    if (this.phase && !inBox(this.phase.box, this.player.body.x, this.player.body.y, this.player.body.z)) this.endPhase();
+    this.hud.setPhase(this.phase ? this.statuses.get(PHASE_STATUS) ?? 0 : null, this.inventory.items.find(i => i.def.id === 'luciddream')?.def ?? null);
+  }
+
+  /** The solid test of a phased body: a block with finite hp is passable inside the box, everything else as usual. */
+  private phaseSolid(x: number, y: number, z: number): boolean {
+    const ph = this.phase!;
+    return phasedSolid(
+      (a, b, c) => this.solid(a, b, c),
+      (a, b, c) => { const id = this.world.get(a, b, c); return id !== AIR && Number.isFinite(mat(id).hp); },
+      ph.box,
+    )(x, y, z);
+  }
+
+  /** Ends a phase. A body left inside a block moves to the nearest free standing cell in room interiors: the room it
+   *  started in first, then the rooms around it on its floor. */
+  private endPhase() {
+    const ph = this.phase;
+    this.phase = null;
+    this.statuses.delete(PHASE_STATUS);
+    if (!ph) return;
+    const b = this.player.body;
+    if (!boxHits((x, y, z) => this.solid(x, y, z), b.x, b.y, b.z, b.hw, b.h)) return;
+    const areas: RescueArea[] = [];
+    const seen = new Set<number>();
+    const add = (r: RoomInfo | null) => {
+      if (!r || seen.has(r.id)) return;
+      seen.add(r.id);
+      const interior = roomInterior(r);
+      areas.push({ box: interior, open: (x, z) => { const c = x - r.x0, k = z - r.z0; return c >= 0 && k >= 0 && c < r.w && k < r.d && r.open[c + k * r.w] === 1; } });
+    };
+    if (ph.room) add(ph.room);
+    add(this.roomAt(b.x, b.y + 0.1, b.z));
+    if (!areas.length) areas.push({ box: ph.interior });
+    if (this.below) for (const r of this.floors.get(bandOf(b.y))?.rooms ?? []) add(r);
+    const at = rescueSpot((x, y, z) => this.solid(x, y, z), { x: b.x, y: b.y, z: b.z }, areas, b.hw, b.h);
+    if (at) this.teleport(at.x, at.y, at.z);
+  }
+
   private teleport(x: number, y: number, z: number) {
     const fx0 = Math.floor(x), fz0 = Math.floor(z);
     if (!this.below) {
@@ -3585,7 +4084,7 @@ export class Game {
     for (const e of this.enemies.list) {
       if (!e.alive || e.hidden || !e.tags.has('presence') || e.tags.has('met') || e.tags.has('silent')) continue;
       const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= TALK_REACH && Math.abs(e.body.y - b.y) <= 2;
-      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); continue; }
+      if (!near) { e.tags.delete('answering'); e.tags.delete('offer-declined'); e.tags.delete('ore-declined'); continue; }
       if (e.tags.has('offer-declined')) continue;
       const id = e.def as PresenceId, talk = PRESENCE_TALK[id];
       // the Child, once the player agreed to build: it asks for its gift when the blocks are placed, and only tells how
@@ -3604,6 +4103,18 @@ export class Game {
         this.hud.presenceCard(talk.name, ['presence.child.more'], { n: CHILD_BUILD_BLOCKS - this.builds.since(mark) });
         return;
       }
+      // the Cartographer's chart: with the ore of its zone in hand, it asks for it first, and charts the whole floor with
+      // it; Keep takes nothing and opens the free choice card instead (CARTOGRAPHER.md, README D13)
+      if (id === 'cartographer' && !e.tags.has('ore-declined')) {
+        const ore = findCartographerOre(this.rooms.get(e.room)?.floor ?? 0, this.player.hand);
+        if (ore) {
+          this.pendingPresenceOffer = { id, enemyId: e.id, index: ore.index, carried: ore.carried };
+          this.hud.presenceOfferCard(talk.name, ore.carried, 'presence.offer.cartographer.ore', false, requestOf(id));
+          this.input.modal = true;
+          this.input.unlockFor();
+          return;
+        }
+      }
       if (PRESENCE_CHOICE[id]) {
         const choice = PRESENCE_CHOICE[id];
         this.pendingPresenceChoice = { id, enemyId: e.id };
@@ -3615,7 +4126,7 @@ export class Game {
       }
       // the offer itself scans the whole hand in order, as the owner's consent rule asks; a refusal names the active item
       const top = this.player.active;
-      const offer = findPresenceOffer(id, this.player.hand);
+      const offer = findPresenceOffer(id, this.player.hand, this.gardenGiven.get(e.id));
       if (!offer) {
         if (e.tags.has('answering')) continue;
         const now = performance.now();
@@ -3633,15 +4144,48 @@ export class Game {
         else this.hud.presenceCard(talk.name, ['presence.wrong'], { item: this.carriedName(top) });
         return;
       }
-      this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried };
-      this.hud.presenceOfferCard(talk.name, offer.carried, PRESENCE_OFFER_QUESTION[id], GIFT_OFFER.has(id), requestOf(id));
+      this.pendingPresenceOffer = { id, enemyId: e.id, index: offer.index, carried: offer.carried, rest: offer.rest };
+      // a multi-part agreement names every object of the exchange on the one card (AGREEMENTS.md; owner, #228, D11)
+      const named = offer.rest ? [offer.carried!, ...offer.rest.map(r => r.carried)] : offer.carried;
+      this.hud.presenceOfferCard(talk.name, named, PRESENCE_OFFER_QUESTION[id], GIFT_OFFER.has(id), requestOf(id));
       this.input.modal = true;
       this.input.unlockFor();
       return;
     }
   }
 
+  /**
+   * The Rebirth Draught asks before it is drunk: the offer card (its type, reused) names the potion and asks whether to
+   * begin again. Never in the sandbox. The flask stays in hand until the player says yes.
+   */
+  private askRebirth() {
+    if (this.sandbox) { sfx.denied(); this.hud.toast('potion.rebirth.sandbox'); return; }
+    if (this.transitioning) return;
+    this.pendingRebirth = true;
+    this.hud.presenceOfferCard(POTIONS['rebirth-draught'].name, undefined, 'potion.rebirth.question', false, undefined,
+      { accept: 'potion.rebirth.begin', decline: 'potion.rebirth.stay', controls: 'potion.rebirth.controls' });
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The answer to the Rebirth Draught's card: yes takes the potion out of the hand and starts a new run that keeps the practices. */
+  private resolveRebirth(accept: boolean) {
+    this.pendingRebirth = false;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+    const top = this.player.active;
+    if (!accept) { sfx.denied(); return; }
+    if (!top || !isFlask(top) || top.potion !== 'rebirth-draught' || this.transitioning) return;
+    this.player.takeActive();
+    this.hands.placed();
+    this.rebirthKeep = this.inventory.serialize();
+    this.requestRestart();
+  }
+
   private resolvePresenceOffer(accept: boolean) {
+    if (this.pendingRebirth) { this.resolveRebirth(accept); return; }
     const pending = this.pendingPresenceOffer;
     if (!pending) return;
     this.pendingPresenceOffer = null;
@@ -3652,9 +4196,15 @@ export class Game {
 
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
     const carried = pending.index < 0 ? undefined : this.player.hand[pending.index];
+    // every object the card named must still be in its slot: nothing is taken unless the whole exchange still holds.
+    // The Cartographer's ore is not its key (it asks on a choice card): the offer holds while the same ore is in hand
+    const rest = pending.rest ?? [];
+    const unlocks = pending.id === 'cartographer' ? carried !== undefined && carried === pending.carried
+      : unlocksPresence(pending.id, carried) && rest.every(r => unlocksPresence(pending.id, r.carried));
     const outcome = offerOutcome(pending.id, accept, {
       present: !!e?.alive && e.tags.has('presence'), met: !!e?.tags.has('met'),
-      sameCarried: carried === pending.carried, unlocks: unlocksPresence(pending.id, carried),
+      sameCarried: carried === pending.carried && rest.every(r => this.player.hand[r.index] === r.carried),
+      unlocks,
     });
     if (outcome === 'stale' || !e) {
       this.hud.toast('presence.offer.stale');
@@ -3669,8 +4219,29 @@ export class Game {
         this.releasePresence(e);
         return;
       }
+      // Keep with the Cartographer's ore: its free choice card opens next, and the ore is not asked for again until the
+      // player steps away
+      if (pending.id === 'cartographer') { e.tags.add('ore-declined'); return; }
       e.tags.add('offer-declined');
       return;
+    }
+
+    // the Cartographer's chart: the ore is taken, and both places are marked on one card
+    if (pending.id === 'cartographer') { this.acceptCartographerOre(e, pending.index); return; }
+    // the Gardener's agreement: a root and a tuft of moss, one card each; it plants once it holds both
+    if (pending.id === 'gardener' && typeof carried === 'number') {
+      const given = [...(this.gardenGiven.get(e.id) ?? []), carried];
+      this.gardenGiven.set(e.id, given);
+      const left = gardenerWants(given);
+      if (left.length) {
+        this.player.removeAt(pending.index);
+        this.hands.placed();
+        this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('mat.grass.base'), 6, 1, 0.05);
+        // the next card waits until the player steps away and comes back with the other half
+        e.tags.add('offer-declined');
+        this.hud.presenceCard(PRESENCE_TALK.gardener.name, ['presence.gardener.more'], { item: materialName(left[0]) });
+        return;
+      }
     }
 
     // the Child's two answers: the consent to build, and later the gift (acceptChild)
@@ -3678,9 +4249,9 @@ export class Game {
     // the Boatman's toll: one block left on the shore, then the ferry and its gift (acceptBoatman)
     if (pending.id === 'boatman') { this.acceptBoatman(e, pending.index); return; }
 
-    // a gift asks for no part: nothing leaves the hand
+    // a gift asks for no part: nothing leaves the hand; a multi-part agreement takes every named part, last slot first
     if (pending.index >= 0) {
-      this.player.removeAt(pending.index);
+      for (const i of [pending.index, ...rest.map(r => r.index)].sort((a, b) => b - a)) this.player.removeAt(i);
       this.hands.placed();
     }
     const color = typeof carried === 'object' && !isFlask(carried) ? carried.color : pal('bone.dim');
@@ -3696,11 +4267,13 @@ export class Game {
     if (talk.drops) this.dropPresenceReward(pending.id, e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
     this.startIdle(e, pending.id);
-    // the Listener's Lesson: its floor is read before it leaves, then its choice card asks which path weighs (lesson.ts)
-    const floor = this.rooms.get(e.room)?.floor ?? 0;
     if (leavesAfterOffer(pending.id)) this.releasePresence(e);
-    if (pending.id === 'listener') { this.askLesson(floor); return; }
-    this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines), pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
+    // the Listener's Lesson: once it has left, its choice card asks which path weighs (lesson.ts)
+    if (pending.id === 'listener') { this.askLesson(); return; }
+    const mended = this.mendedNow;
+    this.mendedNow = false;
+    const lines: readonly MessageKey[] = mended ? [...talk.lines, 'presence.mender.return'] : talk.lines;
+    this.hud.presenceCard(talk.name, this.exchangeLines(lines), pending.id === 'echo' ? { floor: floorLabel(faded) } : undefined);
   }
 
   /** A choice card's answer (index into the presence's options) or a decline (-1). The Elder gives a lesson of the path
@@ -3714,8 +4287,10 @@ export class Game {
     this.input.modal = false;
     this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
     this.input.resume();
-    // the Listener has already left with its reward: its Lesson needs no body, only the floor it was heard on
-    if (pending.id === 'listener') { this.answerLesson(index, pending.floor ?? 0); return; }
+    // the Listener has already left with its reward: its Lesson needs no body
+    if (pending.id === 'listener') { this.answerLesson(index); return; }
+    // the question at the end of an idle window (trust.ts): its own answer, before the choice rules of a first meeting
+    if (pending.done) { this.answerDone(this.enemies.list.find(enemy => enemy.id === pending.enemyId), index, pending.still ?? 0); return; }
     const e = this.enemies.list.find(enemy => enemy.id === pending.enemyId);
     const outcome = choiceOutcome(index, PRESENCE_CHOICE[pending.id]?.options.length ?? 0, { present: !!e?.alive && !!e?.tags.has('presence'), met: !!e?.tags.has('met') });
     if (outcome === 'stale' || !e) { this.hud.toast('presence.offer.stale'); return; }
@@ -3735,6 +4310,9 @@ export class Game {
     } else if (pending.id === 'cartographer') {
       const want = index === 0 ? 'vault' : 'boss';
       const dir = this.directionToNearest(e, want);
+      // the mark goes on the star map too (D15): the room itself, on its floor
+      const marked = this.nearestRoom(e, want);
+      if (marked) this.starMarks.cartographer.set(marked.floor, { room: marked.id, want });
       const key = (dir === null ? 'presence.cartographer.mark.none' : `presence.cartographer.mark.${want}`) as MessageKey;
       this.hud.presenceCard(talk.name, [key, talk.lines[1]], dir === null ? undefined : { dir: t(`dir.${dir}` as MessageKey) });
     }
@@ -3743,32 +4321,71 @@ export class Game {
 
   /** The Listener's Lesson (LISTENER.md, decided by agent): after its reward, the choice card asks which path weighs on the
    *  player. It opens the same card as the Elder's, with "Not now" to leave it. */
-  private askLesson(floor: number) {
-    this.pendingPresenceChoice = { id: 'listener', enemyId: -1, floor };
+  private askLesson() {
+    this.pendingPresenceChoice = { id: 'listener', enemyId: -1 };
     this.choiceGuard.open();
     this.hud.presenceChoiceCard(PRESENCE_TALK.listener.name, LISTENER_LESSON_CHOICE.question, LISTENER_LESSON_CHOICE.options);
     this.input.modal = true;
     this.input.unlockFor();
   }
 
-  /** The Lesson's answer: a path gives its Lesson in words, and on the last Lesson floor the Covenant's Light. "Not now"
-   *  gives no Lesson and no Light, and never takes back the reward that already dropped. Draws no randomness. */
-  private answerLesson(index: number, floor: number) {
+  /** The Lesson's answer: a path gives its Lesson in words, and the run has heard a Lesson, so the crown of the tree will
+   *  give the Covenant's Light (reachCrown). "Not now" gives no Lesson, and never takes back the reward that already
+   *  dropped. Draws no randomness. */
+  private answerLesson(index: number) {
     const talk = PRESENCE_TALK.listener;
     const path = lessonPathOf(index);
     if (path === null) { this.hud.presenceCard(talk.name, this.exchangeLines([talk.lines[1]])); return; }
-    const lines: MessageKey[] = [lessonLine(path), talk.lines[1]];
-    if (lessonGivesLight(floor)) {
-      this.keepCovenantPiece('last-lesson');
-      lines.push('presence.listener.light');
-    }
+    this.heardLesson = true;
     const eye = this.player.eye;
     this.particles.burst(eye.x, eye.y - 0.4, eye.z, pal('light.gold'), 8, 1.2, 0.05);
-    this.hud.presenceCard(talk.name, this.exchangeLines(lines));
+    this.hud.presenceCard(talk.name, this.exchangeLines([lessonLine(path), talk.lines[1], 'presence.listener.crown']));
+  }
+
+  /** The Light's one trigger (COVENANT.md; owner, #228, D4): the body enters a story of the giant tree. In the crown, in a
+   *  run that has heard a Listener's Lesson, the Covenant's Light is kept, once. The crown's layout is the tree's; this only
+   *  reads the story the body is in. */
+  private reachCrown(story: string) {
+    if (!crownGivesLight(story, this.heardLesson) || this.covenant.includes('light')) return;
+    this.keepCovenantPiece('crown');
+    const b = this.player.body;
+    this.particles.burst(b.x, b.y + 1.6, b.z, pal('light.gold'), 16, 1.6, 0.05);
+    sfx3.reveal();
+    this.hud.toast('covenant.light.crown');
+  }
+
+  /** The Cartographer's chart (CARTOGRAPHER.md): the ore of its zone is taken, and the nearest vault and the nearest boss
+   *  of the floor are both marked in words. It keeps its place, as after a single mark. */
+  private acceptCartographerOre(e: Enemy, index: number) {
+    const talk = PRESENCE_TALK.cartographer;
+    this.player.removeAt(index);
+    this.hands.placed();
+    this.meet(e);
+    const vault = this.directionToNearest(e, 'vault'), boss = this.directionToNearest(e, 'boss');
+    // both places go on the star map too (D15): the vault, and the boss beside it
+    const vr = this.nearestRoom(e, 'vault'), br = this.nearestRoom(e, 'boss');
+    const first = vr ?? br;
+    if (first) this.starMarks.cartographer.set(first.floor, { room: first.id, want: vr ? 'vault' : 'boss', ...(vr && br ? { also: br.id } : {}) });
+    const lines: MessageKey[] = [
+      vault === null ? 'presence.cartographer.chart.novault' : 'presence.cartographer.chart.vault',
+      boss === null ? 'presence.cartographer.chart.noboss' : 'presence.cartographer.chart.boss',
+      'presence.cartographer.chart.done',
+    ];
+    sfx3.reveal();
+    this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+    this.hud.presenceCard(talk.name, lines, {
+      vault: vault === null ? '' : t(`dir.${vault}` as MessageKey), boss: boss === null ? '' : t(`dir.${boss}` as MessageKey),
+    });
   }
 
   /** The direction of the nearest room of a type on the enemy's floor, read from the map's cells; null when none. */
   private directionToNearest(e: Enemy, type: RoomInfo['type']): ReturnType<typeof directionOf> | null {
+    const from = this.rooms.get(e.room), best = this.nearestRoom(e, type);
+    return from && best ? directionOf(best.gx - from.gx, best.gz - from.gz) : null;
+  }
+
+  /** The nearest room of a type on the enemy's floor, by the map's cells; null when none. */
+  private nearestRoom(e: Enemy, type: RoomInfo['type']): RoomInfo | null {
     const from = this.rooms.get(e.room);
     if (!from) return null;
     let best: RoomInfo | null = null;
@@ -3776,13 +4393,28 @@ export class Game {
       if (r.floor !== from.floor || r.type !== type) continue;
       if (!best || Math.hypot(r.gx - from.gx, r.gz - from.gz) < Math.hypot(best.gx - from.gx, best.gz - from.gz)) best = r;
     }
-    return best ? directionOf(best.gx - from.gx, best.gz - from.gz) : null;
+    return best;
+  }
+
+  /** The star map's view (D15): the floor you stand on under the ground, the crown above it. Read when the tab opens. */
+  starMap(): StarMap {
+    const b = this.player.body;
+    const floor = this.floors.get(this.depth);
+    if (this.realm === 'dungeon' && bandOf(b.y) !== SURFACE && floor) return floorStarMap(floor, this.depth, this.visited, this.room, this.starMarks);
+    const t = this.tree, L = t.leaves;
+    return {
+      kind: 'crown', sx: this.dw.sx, sz: this.dw.sz, centre: [t.cx, t.cz], trunk: TREE_STORIES[0].r, crown: [54, t.cz - 2],
+      leaves: { x0: L.x0, z0: L.z0, w: L.w, d: L.d }, stair: t.stairAt(TREE_STORIES.length - 2),
+      pads: t.pads.map(p => ({ x: p.x, z: p.z, to: p.to, up: p.up === true })), read: this.starMarks.read,
+      here: this.realm === 'dungeon' ? [Math.floor(b.x), Math.floor(b.z)] : null,
+    };
   }
 
   /** The reward of an accepted offer, rolled when the offer is accepted, not while the floor is built. The Listener's
    *  15/75/10 table is unchanged (LISTENER.md); the Trickster's and the Echo's are seeded weighted tables (their docs). */
   private dropPresenceReward(id: PresenceId, e: Enemy, at?: { x: number; y: number; z: number }) {
-    this.keepCovenantPiece(id);
+    // the Mender's piece is an item, kept when it is picked up (thread.ts); the others are kept on the exchange
+    if (id !== 'mender') this.keepCovenantPiece(id);
     const rng = this.rng.stream('drops');
     if (id === 'listener') return this.dropListenerReward(e);
     if (id === 'trickster') this.launchGiftPickups(e, [{ type: 'item', item: rollTricksterPractice(rng) }]);
@@ -3802,12 +4434,56 @@ export class Game {
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }], at);
     } else if (id === 'mender') {
       const gift = rollMenderGift(rng);
-      this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
+      const rewards: GiftReward[] = [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }];
+      // the Covenant's Thread, dropped once beside the gift, as an item (owner, #228, D10); it draws no randomness
+      const thread = ITEM_BY_ID.get(MENDERS_THREAD);
+      if (thread && menderDropsThread(this.covenant, this.threadDropped, this.inventory.has(MENDERS_THREAD))) {
+        this.threadDropped = true;
+        rewards.push({ type: 'item', item: thread });
+      }
+      this.launchGiftPickups(e, rewards);
+      this.mendReleased(e);
     } else if (id === 'star-reader') {
+      // the Star-reader reads the stars for you (D15): its room and the crown's chain go on the star map
+      const r = this.rooms.get(e.room);
+      if (r) this.starMarks.starReader = { floor: r.floor, room: r.id };
+      this.starMarks.read = true;
       const gift = rollStarReaderGift(rng);
       this.launchGiftPickups(e, [gift.kind === 'item' ? { type: 'item', item: gift.item } : { type: 'heart', heart: gift.heart }]);
     }
     sfx3.reveal();
+  }
+
+  /** The Mender's integration (MENDER.md; owner, #228, D9): the last projection released on the Mender's floor comes back
+   *  beside it as an ally (part of the self), once, with the gold seam of what was mended. Nothing comes back when nothing
+   *  was released there. It draws no randomness. */
+  private mendReleased(mender: Enemy) {
+    const r = this.rooms.get(mender.room);
+    const id = r ? projectionToMend(this.releases.on(r.floor)) : null;
+    const def = id ? ENEMY_BY_ID.get(id) : undefined;
+    if (!r || !def) return;
+    const b = mender.body, player = this.player.body;
+    // beside the Mender, on the side away from the player, so it does not stand in the player's way
+    const a = Math.atan2(b.z - player.z, b.x - player.x);
+    const x = b.x + Math.cos(a) * 1.2, z = b.z + Math.sin(a) * 1.2;
+    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, def.hp, def.speed, def.contactDamage, new Set([MENDED_TAG]));
+    e.spawning = 0;
+    this.actors.add(e);
+    this.setFaction(e, 'self', 'mender');
+    this.particles.burst(x, b.y + 1, z, pal('light.gold'), 16, 1.6, 0.05);
+    this.mendedNow = true;
+  }
+
+  /** The gold seam of each mended ally (DECISIONS.md §14.4): one gold mote rises from its body every 0.6 s, under 2 Hz. */
+  private updateSeams(dt: number) {
+    this.seamT -= dt;
+    if (this.seamT > 0) return;
+    this.seamT = MENDED_SEAM_S;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.faction !== 'self' || !e.tags.has(MENDED_TAG)) continue;
+      const b = e.body;
+      this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('light.gold'), 1, 0.4, 0.04);
+    }
   }
 
   /** The Mender comes to the first vault the player opens on its floor (MENDER.md, proposed): once that vault's Boundary
@@ -3875,8 +4551,7 @@ export class Game {
     this.meet(e);
     this.dropPresenceReward('child', e);
     this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
-    // the Child's Lesson (CHILD.md, decided by agent): one line in words, of no path, after its gift
-    this.hud.presenceCard(talk.name, this.exchangeLines([...talk.lines, CHILD_LESSON]));
+    this.hud.presenceCard(talk.name, this.exchangeLines(talk.lines));
   }
 
   /** The Listener's reward is chosen when its heart is accepted, not while the floor is built. */
@@ -3902,7 +4577,9 @@ export class Game {
 
   /** A requesting presence stays for its idle window after the exchange, then leaves (idle.ts, pending owner ruling). */
   private startIdle(e: Enemy, id: PresenceId) {
-    if (IDLE_PRESENCES.has(id)) this.idle.start(e.id, idleWindowOf(this.rng, id));
+    if (!IDLE_PRESENCES.has(id)) return;
+    this.idle.start(e.id, idleWindowOf(this.rng, id));
+    this.still.start(e.id);
   }
 
   /** The Covenant (COVENANT.md): the piece a presence gives, if it gives one, and the toast when the set is whole. */
@@ -3929,10 +4606,46 @@ export class Game {
 
   /** Counts the idle windows down on game time; a presence whose window ran out leaves in that frame. */
   private updateIdle(dt: number) {
+    this.still.tick(dt, this.input.active);
     for (const key of this.idle.tick(dt)) {
       const e = this.enemies.list.find(enemy => enemy.id === key && enemy.alive);
-      if (e) this.releasePresence(e);
+      const still = this.still.take(key);
+      if (!e) continue;
+      // the window closed: with the player near and no card open, the presence asks "Have you done it?" (trust.ts)
+      const b = this.player.body;
+      const near = Math.hypot(e.body.x - b.x, e.body.z - b.z) <= DONE_REACH && Math.abs(e.body.y - b.y) <= 3;
+      if (near && !this.pendingPresenceOffer && !this.pendingPresenceChoice && !this.player.dead) this.askDone(e, still);
+      else this.releasePresence(e);
     }
+  }
+
+  /** The question at the end of a request's idle window (REQUESTS.md, trust.ts): the choice card with "Yes" and "Not now". */
+  private askDone(e: Enemy, still: number) {
+    const id = e.def as PresenceId;
+    this.pendingPresenceChoice = { id, enemyId: e.id, done: true, still };
+    this.choiceGuard.open();
+    this.hud.presenceChoiceCard(PRESENCE_TALK[id].name, DONE_CHOICE.question, DONE_CHOICE.options);
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The answer to "Have you done it?": a yes moves the hidden step (honest completion up, early yes down) and gives the
+   *  gift of the step after it, never nothing, with the same words either way; the count of requests answered is saved.
+   *  "Not now" gives nothing and changes nothing. The presence leaves after either answer: its window is over. */
+  private answerDone(e: Enemy | undefined, index: number, still: number) {
+    if (!e || !e.alive) return;
+    const talk = PRESENCE_TALK[e.def as PresenceId];
+    if (index === 0) {
+      this.trust = answerDone(this.trust, still);
+      this.launchGiftPickups(e, [doneGift(this.trust)]);
+      this.keeper.recordRequest();
+      sfx3.reveal();
+      this.particles.burst(e.body.x, e.body.y + 1.2, e.body.z, pal('light.gold'), 8, 1.2, 0.05);
+      this.hud.presenceCard(talk.name, this.exchangeLines(['request.done.thanks']));
+    } else {
+      this.hud.presenceCard(talk.name, ['request.done.later']);
+    }
+    this.releasePresence(e);
   }
 
   private pushPresences() {
@@ -3973,6 +4686,7 @@ export class Game {
     this.updateRest(dt);
     this.updatePresences();
     this.updateIdle(dt);
+    this.updateSeams(dt);
     this.touchGuards();
     this.pushPresences();
     this.updateBoundaries();
@@ -4009,6 +4723,8 @@ export class Game {
       this.teleport(to.x + 0.5, to.y, to.z + 0.5);
       sfx2.charged();
     }
+    // the Leaves (D14): their name, the first time you stand in them this run
+    if (!this.leavesSeen && this.realm === 'dungeon' && inLeaves(b.x, b.y, b.z)) { this.leavesSeen = true; this.hud.toast('toast.leaves'); }
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
     const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {
@@ -4059,7 +4775,7 @@ export class Game {
     // the story of the giant tree the body is in, above the surface: its canopy is the crown (ACHIEVEMENTS §1)
     if (raw === SURFACE && this.tree) {
       const story = TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].key;
-      if (story !== this.treeStoryNow) { this.treeStoryNow = story; this.bus.emit('treeStory', { story }); }
+      if (story !== this.treeStoryNow) { this.treeStoryNow = story; this.bus.emit('treeStory', { story }); this.reachCrown(story); }
     }
     if (band > this.maxDepth) {
       this.maxDepth = band;
@@ -4067,8 +4783,10 @@ export class Game {
       this.carve(band + 1);
       this.bus.clearDeferred();
       this.potionsEnded(this.potions.floorEntered());
-        this.bus.emit('floorEnter', { depth: band });
-      this.hud.setFloor(this.floors.get(band)!, band);
+      // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
+      const entered = this.floors.get(band);
+      this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
+      if (entered) this.hud.setFloor(entered, band);
       this.hud.toast('toast.floor', { n: band });
       this.visited = new Set();
     }
@@ -4182,7 +4900,7 @@ export class Game {
       else if (kind === 'bomb') { if (!(i < p.bombs)) return false; bombs++; }
       else if (kind === 'heart') base.push(i);
       else if (kind === 'layer') bonus.push(i);
-      else if (kind === 'item') { const held = this.inventory.items[i]; if (!held) return false; items.push(held.def.id); }
+      else if (kind === 'item') { const held = this.inventory.items[i]; if (!held || isPromised(held.def)) return false; items.push(held.def.id); }
       else return false;
     }
     // every heart is checked before anything is taken: a refused payment spends nothing
@@ -4191,8 +4909,7 @@ export class Game {
     for (const i of hands.sort((a, b) => b - a)) p.removeAt(i);
     p.keys -= keys;
     p.bombs -= bombs;
-    for (const id of items) this.inventory.lose(id);
-    if (items.length) this.hud.setItems(this.inventory.items.map(i => i.def));
+    for (const id of items) this.loseItem(id);
     // a base heart takes its capacity and the health it holds; a bonus heart goes whole and leaves base health alone
     if (base.length) this.stats.add({ stat: 'maxHearts', layer: 'add', value: -base.length, source: 'toll' });
     p.hp = plan.hp;
@@ -4270,7 +4987,11 @@ export class Game {
     else if (ctx === 'play' && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
-      if (this.restartT <= 0) { if (this.sandbox) this.newSandbox(this.sandbox); else this.newRun(); this.revealT = 0; }
+      if (this.restartT <= 0) {
+        if (this.sandbox) this.newSandbox(this.sandbox);
+        else { const keep = this.rebirthKeep ?? undefined; this.rebirthKeep = null; this.newRun(undefined, keep); }
+        this.revealT = 0;
+      }
     } else if (this.revealT >= 0) {
       // stay dark until the new world is meshed, so it never pops in
       this.revealT += dt;
@@ -4297,6 +5018,8 @@ export class Game {
     if (ctx === 'play' || ctx === 'paused' || ctx === 'inventory') {
       const by = inp.hitBy('inventory');
       if (by) this.hud.screenKey(this, by);
+      // the star map (D15): M or View opens the screen on it, and closes it when it is the tab on screen
+      else if (inp.hit('map')) this.hud.mapKey(this);
     }
     // the book download (COMPLETION §8): X on the pause card or the death screen; `act` ignores it below 100%
     if ((ctx === 'paused' || ctx === 'dead') && inp.hit('book')) this.act('book-download');
@@ -4309,10 +5032,10 @@ export class Game {
       else {
         const n = inp.navigate();
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
-        else if (n.x || n.y) this.hud.moveSelection(n.x, n.y);
+        else if (!this.hud.mapShown && (n.x || n.y)) this.hud.moveSelection(n.x, n.y);
       }
-      // a number key picks its slot; Enter or A picks the highlighted carried item
-      if (inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
+      // a number key picks its slot; Enter or A picks the highlighted carried item (not on the star map)
+      if (!this.hud.mapShown && inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -4324,6 +5047,8 @@ export class Game {
     }
     if (ctx === 'meditation') this.hud.sanctuary.input(inp, performance.now());
     this.touch.update(this, ctx);
+    // time stays stopped only while the game is running or paused; any other screen ends it, nothing fired
+    if (this.kairos.stopped && ((ctx !== 'play' && ctx !== 'paused') || this.transitioning || this.player.dead)) this.cancelKairos();
     this.showAchievement(ctx);
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
@@ -4368,6 +5093,7 @@ export class Game {
     this.camera.getWorldDirection(this.camDir);
     spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
     this.updateRoots();
+    this.kickFov();
     // the Sanctuary covers the whole screen: the world under it is not drawn while it does
     if (!this.hud.sanctuary.covering) {
       this.renderer.clear();
@@ -4379,16 +5105,27 @@ export class Game {
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
     if (this.below) this.syncBossBar();
+    this.kairosHud();
     this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }
 
   private simulate(dt: number) {
+    // Kairos (#123): while time is stopped this is the only branch of the world: the view turns, the marks
+    // and the countdown run; the body, intentions, projections, elements, doors and timers do not
+    if (this.kairos.stopped) { this.stopTime(dt); return; }
+    if (this.input.hit('miracle') && this.startKairos()) return;
     this.time += dt;
+    this.simFrame++;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
     const inp = this.input;
-    const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
+    this.tickStatuses(dt);
+    const solidHere = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
+    // lavaWalk: a lava surface is ground. The feet are read as they were at the start of the frame, so a body that
+    // falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
+    const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
+    const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
@@ -4400,6 +5137,8 @@ export class Game {
       bump: speed => this.headBump(speed),
     }, this.playerMedium, below ? {} : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
+    if (this.player.dashStarted) this.dashFx();
+    if (this.player.dashT > 0) this.dashTrail();
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
@@ -4445,6 +5184,7 @@ export class Game {
       this.sky!.update(dt);
     }
     this.pickups.update(dt, solid);
+    this.checkpointMark.update(dt);
     if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt);
     this.debrisView.update(this.debris);
@@ -4476,6 +5216,7 @@ export class Game {
     else if (act === 'inventory' && this.hud.screenOpen) this.hud.closeScreen(this);
     else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
     else if (act === 'tab-items') this.hud.openScreen(this, 'items');
+    else if (act === 'tab-map') this.hud.openScreen(this, 'map');
     else if (act === 'fov-down' || act === 'fov-up') this.setFov(stepFov(this.fovNow, act === 'fov-up' ? 1 : -1));
   }
 

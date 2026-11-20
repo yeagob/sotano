@@ -12,11 +12,12 @@ Built, in part. A dweller of seeing the whole. It waits in one quiet room of one
 
 - **Its floor.** One seeded floor from 1 to 5, the floors whose level is of kind `tree`. It is drawn from the run's root (`fork('presence', 'star-reader')`), before the room is placed.
 - **The room.** A quiet normal room of that floor with no projections, not the start room, not a room that holds another presence (the Listener's room, a messenger's or a dweller's).
-- **Not the Leaves.** The Leaves at the top of the giant tree are a story of the tree, not a room: an enemy needs a room to stand in, so the Star-reader is placed on the Tree floors instead (proposed).
+- **Not the Leaves.** The Leaves are a room of the crown now (owner ruling D14, [LEAVES](../levels/giant-tree/LEAVES.md)), but the Star-reader keeps its quiet room on its Tree floor (decided by agent: the tree holds no presences yet).
 
 ## What the player meets
 
 - **The request.** Within about two blocks, the card says *I only read, and I ask for nothing. Take the light I give back for your shape?* with **Take** and **Decline**. Nothing is carried or given.
+- **The reading.** Taking its light also reads the stars for you: its room is marked on its floor's star map, and the crown's star map draws the chain of the star pads ([STAR-MAP](../levels/giant-tree/STAR-MAP.md)).
 - **Take.** The Star-reader gives one gift, rolled from the run's drops stream: two in four a practice of quality one, one in four a practice of quality two, one in four one special heart (an even draw of the five heart kinds). It says its second line and stays.
 - **Decline.** Nothing changes; nothing is taken. The Star-reader stays and asks again only after the player steps away and returns.
 

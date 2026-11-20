@@ -11,7 +11,7 @@ Back to [not-built](../README.md) · [the design document](../../README.md)
 | [hearts/](hearts/README.md) | What is still open about the kinds of heart: the berserker potion, a heart that explodes, hearts from stations | decided, proposal, idea |
 | [FALLS.md](FALLS.md) | Damage from falling far | idea |
 | [SHOP.md](SHOP.md) | A shop where what the player carries can be traded | idea |
-| [SECOND-CHANCE.md](SECOND-CHANCE.md) | A practice that keeps the player alive once | idea |
+| [SECOND-CHANCE.md](SECOND-CHANCE.md) | A practice that keeps the player alive once: built as Waymark | partly built |
 
 ## Open questions shared by the folder
 

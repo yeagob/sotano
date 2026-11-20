@@ -1,0 +1,35 @@
+# furoshiki-hand — Furoshiki: carry 2 more things; the two extra hand slots are drawn dimmer
+floor 1 · seed 1 · room 13×7×5 · 60 ticks (1.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices furoshiki · synergies —
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [crate crate crate crate] · bombs 99 · keys 99
+  practices furoshiki · synergies —
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [crate crate crate crate] · bombs 99 · keys 99
+  practices furoshiki · synergies —
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+
+map t 60 · h 0
+  .............
+  .............
+  ........c....
+  ........c....
+  ........c....
+  .............
+  .............
+
+legend c crate

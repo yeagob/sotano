@@ -386,7 +386,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       const s = CELL_STACK[ch];
       if (s) {
         // built pieces take the floor's palette: '#' and a plug's upper wall are walls, the rest trim
-        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : m);
+        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : zoned(m, k));
         const harden = (m: number) => (mood === 'reinforced' ? hardened(m) : m);
         const m = harden(built(s.m, ch === '#'));
         // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
@@ -402,7 +402,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
         const ls = CELL_STACK[lc];
         if (ls) {
-          const m = ls.m === MAT.brick ? pal.trim : ls.m;
+          const m = ls.m === MAT.brick ? pal.trim : zoned(ls.m, k);
           w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(m) : m;
         }
         else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
@@ -410,7 +410,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (DECOR_CHARS.has(ch)) {
         // decor slot: rolled in row order from the room's own layout fork
         const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-        if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+        if (key) w.data[w.idx(x, y0, z)] = zoned(MAT[key], k);
       }
       if (ch === 'P') spawn = [x + 0.5, y0, z + 0.5];
       if (ch === 'T') {
@@ -680,7 +680,7 @@ export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: nu
     for (let y = y1 + 1; y <= top; y++) w.data[w.idx(x, y, z)] = AIR;
     const s = CELL_STACK[ch];
     if (s) {
-      const m = mood === 'reinforced' ? hardened(s.m) : s.m;
+      const m = mood === 'reinforced' ? hardened(zoned(s.m, k)) : zoned(s.m, k);
       // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
       const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
       for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
@@ -693,13 +693,13 @@ export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: nu
     for (const layer of t.layers ?? []) {
       const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
       const ls = CELL_STACK[lc];
-      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(ls.m) : ls.m;
+      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(zoned(ls.m, k)) : zoned(ls.m, k);
       else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
     }
     if (DECOR_CHARS.has(ch)) {
       // decor slot: rolled in row order from the room's own layout fork
       const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-      if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+      if (key) w.data[w.idx(x, y0, z)] = zoned(MAT[key], k);
     }
     if ('PTKH'.includes(ch)) markers.push({ ch, x, z });
   }
@@ -904,6 +904,11 @@ export function pickTemplate(templates: readonly RoomTemplate[], type: RoomType,
   return options[options.length - 1];
 }
 
+/** A room's ore is the ore of its floor's zone (levels.ts ZONES): iron on the roots and Zone I, lead at the bottom. */
+export function zoned(m: number, floor: number): number {
+  return m === MAT.ore ? MAT[level(floor).ore] : m;
+}
+
 /** "reinforced" rooms: soft obstacles become harder materials (interior only). */
 function hardened(m: number): number {
   for (const [from, to] of Object.entries(REINFORCE)) if (m === MAT[from]) return MAT[to];
@@ -932,7 +937,15 @@ function fillRock(w: VoxelWorld, layers: [number, number], themes: RockTheme[]) 
       const s = level(band).strata, t = themes[band];
       const obs = s.obsidian + t.hard * 0.1, deep = obs + s.deep + t.hard * 0.4, dirt = deep + s.pockets + t.pockets * (1 - s.deep);
       m = v < obs ? MAT.obsidian : v < deep ? MAT.deepstone : v < dirt ? MAT.dirt : MAT.stone;
-      if (v > 1 - (s.ore + t.ore) / 2) m = MAT.ore;
+      const lv = level(band);
+      if (v > 1 - (s.ore + t.ore) / 2) m = MAT[lv.ore];
+      else {
+        // the Gardener's root (strands two blocks tall) and tufts of cave moss, from the same hash layer at its own grain:
+        // no new draw, so the rest of the rock is unchanged (GARDENER.md, README D13)
+        const g = n(x, y >> 1, z, 0);
+        if (g < lv.garden.root) m = MAT.root;
+        else if (g > 1 - lv.garden.moss) m = MAT.cavemoss;
+      }
     }
     if (y < SURFACE_Y && (x === 0 || z === 0 || x === w.sx - 1 || z === w.sz - 1)) m = MAT.bedrock;
     w.data[w.idx(x, y, z)] = m;

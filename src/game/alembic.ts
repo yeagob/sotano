@@ -65,7 +65,9 @@ export function brew(a: Alembic, polarity: Polarity, bus: GameBus, x: number, y:
   const flask = resolve(a.bulb);
   const result = hit(a, polarity);
   if (result !== 'brew') return { result, flask: null };
-  bus.emit('brew', { potion: flask.potion, iced: !!flask.iced, contents, x, y, z });
+  // an item may ice the flask (Apprenticeship): its hook sets `iced` on the payload
+  const ev = bus.emit('brew', { potion: flask.potion, iced: !!flask.iced, contents, x, y, z });
+  if (ev.iced) flask.iced = true;
   return { result, flask };
 }
 

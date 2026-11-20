@@ -1,0 +1,15 @@
+{
+  "note": "Irimi into a wall: the dash stops at the crate's face and never clips into it; a second dash into the same wall moves nothing",
+  "items": ["irimi"],
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "place": [{ "at": [6, 0, 3], "block": "crate" }],
+  "player": [1, 0, 3],
+  "god": true,
+  "ticks": 120,
+  "report": [0, 30, 120],
+  "actions": [
+    { "t": 0, "do": "look", "at": [12, 0, 3] },
+    { "t": 2, "do": "dash", "dir": "forward" },
+    { "t": 60, "do": "dash", "dir": "forward" }
+  ]
+}

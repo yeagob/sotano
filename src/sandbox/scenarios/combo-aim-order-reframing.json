@@ -1,0 +1,74 @@
+{
+  "note": "Combo (#68 + #110): Dowsing then Eye Contact (Eye Contact guides) with Reframing and Dual Process, negative intentions shot away from a projection: the volley curves to it and rebounds seek it",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    6,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "dowsing",
+    "eyecontact",
+    "reframing",
+    "dualprocess"
+  ],
+  "enemies": [
+    {
+      "def": "doubt",
+      "at": [
+        10,
+        0,
+        1
+      ]
+    }
+  ],
+  "place": [
+    {
+      "at": [
+        0,
+        0,
+        0,
+        0,
+        2,
+        6
+      ],
+      "block": "stone"
+    }
+  ],
+  "ticks": 300,
+  "report": [
+    0,
+    150,
+    300
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "key",
+      "code": "KeyF"
+    },
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        9,
+        1,
+        5
+      ]
+    },
+    {
+      "t": 0,
+      "do": "fire",
+      "ticks": 180
+    }
+  ]
+}

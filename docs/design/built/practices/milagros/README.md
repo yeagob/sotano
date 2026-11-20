@@ -11,7 +11,10 @@ The folder holds the practices whose first path tag is `milagros`. The path is c
 | Practice | Quality | Also on | Found in |
 |---|---|---|---|
 | [Dr. Launcher](DR-LAUNCHER.md) | 3 | none | treasure rooms |
+| [Lucid Dream](../MIRACLES.md#lucid-dream) | 4 | none | vault rooms, boss rewards |
+| [Kairos](../MIRACLES.md#kairos) | 4 | none | vault rooms, boss rewards |
+| [Solve et Coagula](SOLVE-ET-COAGULA.md) | 3 | Intention, element | treasure rooms, vault rooms |
 
 ## Open questions
 
-- The state of being of Miracles, once the path has three practices: its name and its effect are the owner's to decide.
+- The state of being of Miracles is built as Transcendent (see [states of being](../states-of-being/README.md)). Its name is provisional: the owner may rename it.

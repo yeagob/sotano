@@ -1,0 +1,16 @@
+{
+  "note": "Serendipity, luck 1: five bomb blasts in turn; each one may leave a key, a bomb or a heart at its centre (25% chance per blast)",
+  "rows": [".............", "....ccccc....", "....ccccc....", "....ccccc....", "....ccccc....", "............."],
+  "items": ["serendipity"],
+  "player": [0, 0, 0],
+  "god": true,
+  "ticks": 600,
+  "report": [0, 300, 600],
+  "actions": [
+    { "t": 0, "do": "bomb", "at": [6, 0, 2], "fuse": 1.8 },
+    { "t": 100, "do": "bomb", "at": [6, 0, 3], "fuse": 1.8 },
+    { "t": 200, "do": "bomb", "at": [6, 0, 4], "fuse": 1.8 },
+    { "t": 300, "do": "bomb", "at": [5, 0, 2], "fuse": 1.8 },
+    { "t": 400, "do": "bomb", "at": [5, 0, 4], "fuse": 1.8 }
+  ]
+}

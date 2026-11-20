@@ -13,6 +13,13 @@ import type { ItemDef, PoolName } from './types';
 /** A sky gift (its only pool is 'sky', SKY.md §9): handed out by id, never drawn. */
 export const isSkyGift = (item: ItemDef) => (item.pools.sky ?? 0) > 0;
 
+/** A piece of the Covenant held as an item (its only pool is 'covenant', COVENANT.md): handed out by id by its one source,
+ *  never drawn, and promised: no capture, toll or other rule takes it from the player (GIFTS.md, the promised trait). */
+export const isPromised = (item: ItemDef) => (item.pools.covenant ?? 0) > 0;
+
+/** An item no pool draws: a sky gift or a promised piece. */
+export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item);
+
 export class ItemPools {
   private weights = new Map<PoolName, Map<string, number>>();
   private reserved = new Map<string, string>();   // key (e.g. room id) → item id
@@ -22,8 +29,8 @@ export class ItemPools {
   private quality = new Map<string, number>();
 
   constructor(items: readonly ItemDef[]) {
-    // Sky gifts are left out of everything built here, so the fallback to `all` can never hand one out.
-    const drawable = items.filter(i => !isSkyGift(i));
+    // Sky gifts and promised pieces are left out of everything built here, so the fallback to `all` can never hand one out.
+    const drawable = items.filter(i => !isHandedOut(i));
     this.all = drawable.map(i => i.id);
     for (const item of drawable) this.quality.set(item.id, item.quality);
     for (const item of drawable) {

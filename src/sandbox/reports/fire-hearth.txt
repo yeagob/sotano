@@ -1,0 +1,47 @@
+# fire-hearth — Hearth (Kindling, Inner Fire, Firewalking): a projection's hit makes Kindling's flare, and the flare warms you at most every 4 s while you are hurt
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling tummo firewalking · synergies hearth
+  doubt#2 hp 24.0/24 · projection · at 6.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 20/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling tummo firewalking · synergies hearth
+  doubt#2 hp 20.0/24 · projection · at 5.8 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<item 1 · actorDamage:player<contact 1 · burst 1 · contact 1 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 20/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling tummo firewalking · synergies hearth
+  doubt#2 hp 20.0/24 · projection · at 5.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 14/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kindling tummo firewalking · synergies hearth
+  doubt#2 hp 12.0/24 · projection · at 5.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<item 2 · actorDamage:player<contact 2 · burst 2 · contact 2 · heal 1
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

@@ -35,6 +35,11 @@ export interface GameEvents {
   /** `polarity` is the loaded intention's: every hit of the stroke follows it (combat/polarity.ts). */
   strike: { weapon: WeaponId; damage: number; mining: number; reach: number; color: number; tags: Set<string>; polarity: Polarity };
   intentHit: { kind: 'actor' | 'cube' | 'block'; target: number; x: number; y: number; z: number; nx: number; ny: number; nz: number; vx: number; vy: number; vz: number; intent: IntentSpec };
+  /** An intention rebounded off a block (`bounce` is 1 for its first rebound, 2… after). `x, y, z` is the bounce point,
+   *  `nx, ny, nz` the face normal and `vx, vy, vz` the reflected velocity: hooks may change the velocity and the spec.
+   *  New intentions born at the bounce point go in `launch`; the core adds them after the frame's loop, so it is safe
+   *  to launch from here. React or modify only: it cannot be cancelled. */
+  intentBounce: IntentBounce;
 
   // ── blocks in the world ──
   /** Before damage is applied to a block. `amount` already accounts for the material's armor. */
@@ -54,8 +59,16 @@ export interface GameEvents {
    *  `damage` is for blocks, `actorDamage` (points) for every actor in range.
    *  Explosions are queued and run a few per frame; `cause` says which chain this one belongs to. */
   explosion: { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause };
+  /** One of the player's own bombs or missiles went off (`source` 'bomb' or 'missile'), either polarity:
+   *  a negative blast after it hit its blocks and actors, a love explosion (positive) after it mended them.
+   *  `radius` is the blast's real radius. Never a volatile cube or another item's explosion. `acted` holds
+   *  the ids of the practices that already acted on this blast: a practice held twice acts once per blast. */
+  bombBlast: { x: number; y: number; z: number; radius: number; polarity: Polarity; source: string; acted: Set<string> };
   /** Loot rolled for a broken block (after the break). Hooks may add, remove or replace drops. */
   blockLoot: { x: number; y: number; z: number; material: number; source: string; drops: PickupKind[] };
+  /** A pulse went off: damage to the projections in a sphere, from an item's burst (`source` is the item's id).
+   *  React only. Kindling and Stolen Fire burst this way; Hearth listens for it. */
+  burst: { x: number; y: number; z: number; radius: number; damage: number; source: string };
 
   // ── elements (docs/architecture/ELEMENTS.md §9) ──
   /** Fire or lava is about to set a flammable block alight (the block burns away into a flame).
@@ -114,6 +127,10 @@ export interface GameEvents {
   factionChange: { target: ActorId; targetKind: ActorKind; def: string; from: Faction; to: Faction; source: string };
   /** An actor is gone (react only). `drops` can be changed (projections drop them). */
   actorDeath: { target: ActorId; targetKind: ActorKind; def: string; x: number; y: number; z: number; drops: PickupKind[] };
+  /** An intention entered a water or lava cell, once per entry (not again while it stays in that element). Hooks may change
+   *  the world (`ItemApi.convertFluid`), never the intention: the element is read again after the hooks, so lava that a hook
+   *  made where the intention is puts it out, and water that a hook made does not. */
+  intentElement: { intent: IntentSpec; x: number; y: number; z: number; element: 'water' | 'lava' };
 
   // ── projections ──
   /** A projection is about to materialise. Every number here can be changed (`contactDamage` in points). */
@@ -135,7 +152,8 @@ export interface GameEvents {
   roomEnter: { room: number; floor: number; type: string; template: string; firstVisit: boolean };
   /** Every projection of a room is gone; its doors open. `drops` is the room reward. */
   roomClear: { room: number; drops: PickupKind[] };
-  floorEnter: { depth: number };
+  /** The player entered a floor; `arrival` is that floor's arrival point (its feet position). */
+  floorEnter: { depth: number; arrival: { x: number; y: number; z: number } };
   /** A run's end advanced the Roots' page (PAGES §1): the new current page, once per run. React only. */
   pageReached: { page: number };
 
@@ -167,6 +185,17 @@ export interface GameEvents {
   completionFull: { percent: number };
 }
 
+/** A rebound of an intention, as the `intentBounce` event carries it. */
+export interface IntentBounce {
+  intent: IntentSpec;
+  x: number; y: number; z: number;
+  vx: number; vy: number; vz: number;
+  nx: number; ny: number; nz: number;
+  bounce: number;
+  /** Intentions launched at the bounce point, added by hooks: `bounce` is the rebound count they start with. */
+  launch: { spec: IntentSpec; vx: number; vy: number; vz: number; bounce: number }[];
+}
+
 /** An intention. Its three targets take separate, absolute amounts (docs/architecture/ACTORS.md §2). */
 export interface IntentSpec {
   /** Damage to actors (projections). */
@@ -190,7 +219,18 @@ export interface IntentSpec {
   volley: number;
   bounces: number;
   homing: number;
+  /** What homing steers toward: the nearest block, or the nearest projection (Eye Contact). */
+  homingTarget: 'block' | 'projection';
+  /** Positive only (the Transcendent state): an aura of `absorb` times its radius. It takes every destructible block it
+   *  touches, adds their armor to its damage, and warms each projection it touches. 0 or absent: no aura. */
+  absorb?: number;
+  /** How the intention flies as three strands (combat/intents.ts): set from the `triad` and `spiral` stats. */
+  formation?: Formation;
 }
+
+/** The shape of an intention's strands: a triangle that widens over the flight (`triad`, Rule of Three),
+ *  a helix that turns (`spiral`, Spiral Growth), or both (the triangle turns). */
+export interface Formation { triad: boolean; spiral: boolean }
 
 export type GameBus = EventBus<GameEvents>;
 /** Emitted only by the core loop (depth 0). `death` is emitted right after `actorDamage`

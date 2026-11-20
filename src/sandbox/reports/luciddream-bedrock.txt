@@ -1,0 +1,30 @@
+# luciddream-bedrock — Lucid Dream: an unbreakable block stays solid while phased; a body left inside bedrock is moved out when the phase ends
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 90 (1.5 s)
+  player hp 24/24 · at 8.5 0.0 1.5 · hand [] · bombs 99 · keys 99
+  phase 1.5 s
+  practices luciddream · synergies —
+  blocks crate 3 · bedrock 2
+  elements —
+  cubes — · pickups 0
+  events bedrockTouch 4 · pickupCollect 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 8.5 0.0 0.5 · hand [] · bombs 99 · keys 99
+  practices luciddream · synergies —
+  blocks crate 3 · bedrock 2
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+map t 240 · h 0
+  .............
+  ........B....
+  ........B....
+  ........c....
+  ........c....
+  ........c....
+  .............
+
+legend c crate · B bedrock

@@ -1,3 +1,4 @@
+import { MAT } from '../src/content/materials';
 import { describe, expect, it } from 'vitest';
 import { RunRandom } from '../src/core/rng';
 import {
@@ -296,10 +297,12 @@ describe('the Gardener: where it waits and what it asks (GARDENER.md)', () => {
     }
   });
 
-  it('asks for a flesh part, gives nothing, and stays: a dweller, not a messenger', () => {
-    expect(PRESENCE_KEY.gardener).toBe('flesh');
-    expect(unlocksPresence('gardener', PARTS.find(p => p.kind === 'flesh')!)).toBe(true);
-    expect(unlocksPresence('gardener', PARTS.find(p => p.kind === 'heart')!)).toBe(false);
+  it('asks for a root and a tuft of moss, gives nothing, and stays: a dweller, not a messenger', () => {
+    expect(PRESENCE_KEY.gardener).toBe('garden');
+    expect(unlocksPresence('gardener', MAT.root)).toBe(true);
+    expect(unlocksPresence('gardener', MAT.cavemoss)).toBe(true);
+    expect(unlocksPresence('gardener', PARTS.find(p => p.kind === 'flesh')!)).toBe(false);
+    expect(unlocksPresence('gardener', MAT.stone)).toBe(false);
     expect(leavesAfterOffer('gardener')).toBe(false);
     expect(leavesOnDecline('gardener')).toBe(false);
     expect(PRESENCE_OFFER_QUESTION.gardener).toBe('presence.offer.gardener.question');
@@ -325,8 +328,8 @@ describe('the choice card: the Elder and the Cartographer (ELDER.md, CARTOGRAPHE
         expect(item.tags).toContain(path);
         if (item.quality === 2) twos++;
       }
-      if (path === 'will') expect(twos).toBe(1000); // no quality-one practice of the Will: every lesson is quality two
-      else { expect(twos / 1000).toBeGreaterThan(0.1); expect(twos / 1000).toBeLessThan(0.4); }
+      // the Will has quality-one practices too (Spagyric Art, STACKING.md): the weights hold on every path
+      expect(twos / 1000).toBeGreaterThan(0.1); expect(twos / 1000).toBeLessThan(0.4);
     }
   });
 

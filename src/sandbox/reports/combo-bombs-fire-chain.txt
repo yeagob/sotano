@@ -1,0 +1,52 @@
+# combo-bombs-fire-chain — Combo (#110): the four bomb practices with Symbolic Act, Kindling, Firewalking and Inner Fire among crates; thrown volatile cubes and bombs never feed each other into a loop, the fire never hurts the player
+floor 1 · seed 1 · room 13×7×5 · 600 ticks (10.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [crate crate] · bombs 99 · keys 99
+  practices pressurevalve controlledburn boltfromtheblue serendipity catharsis kindling firewalking tummo · synergies hearth open_hearted resolute
+  doubt#2 hp 24.0/24 · projection · at 10.5 0.0 3.5
+  doubt#3 hp 24.0/24 · projection · at 6.5 0.0 6.5
+  blocks stone 8 · crate 16
+  elements —
+  cubes — · pickups 0
+
+t 200 (3.3 s)
+  player hp 16/24 · at 1.5 0.0 3.5 · hand [brick] · bombs 99 · keys 99
+  practices pressurevalve controlledburn boltfromtheblue serendipity catharsis kindling firewalking tummo · synergies hearth open_hearted resolute
+  doubt#2 hp 13.6/24 · projection · at 8.0 0.0 3.5
+  doubt#3 hp 12.2/24 · projection · at 3.6 0.0 6.0
+  blocks crate 2
+  elements —
+  cubes brick 39 · crate 12 · stone 8 · pickups 8
+  rewards red-heart
+  events actorDamage:doubt<item 2 · actorDamage:doubt<kick 3 · actorDamage:player<explosion 1 · blockBreak:brick 40 · blockBreak:crate 14 · blockBreak:stone 8 · blockDamage:brick 45 · blockDamage:crate 26 · blockDamage:stone 11 · blockLoot:brick 40 · blockLoot:crate 10 · blockLoot:stone 8 · bombBlast 1 · burst 2 · debrisImpact:crate 2 · drop 2 · explosion 3 · ignite:crate 4 · roomEnter 1 · throw:crate 2 · touchCube:brick 1
+
+t 400 (6.7 s)
+  player hp 10/24 · at 6.5 -3.0 3.5 · hand [brick stone] · bombs 99 · keys 99
+  practices pressurevalve controlledburn boltfromtheblue serendipity catharsis kindling firewalking tummo · synergies hearth open_hearted resolute
+  doubt#3 hp 2.5/24 · projection · at 4.1 0.0 4.5
+  blocks —
+  elements —
+  cubes brick 87 · crate 14 · deepstone 3 · dirt 4 · stone 8 · pickups 12
+  rewards red-heart
+  events actorDamage:doubt<explosion 1 · actorDamage:doubt<item 3 · actorDamage:doubt<kick 1 · actorDamage:player<explosion 1 · actorDeath:doubt 1 · blockBreak:brick 48 · blockBreak:crate 2 · blockBreak:deepstone 3 · blockBreak:dirt 4 · blockBreak:stone 1 · blockDamage:brick 48 · blockDamage:crate 2 · blockDamage:deepstone 3 · blockDamage:dirt 4 · blockDamage:obsidian 2 · blockDamage:stone 1 · blockLoot:brick 48 · blockLoot:crate 2 · blockLoot:deepstone 3 · blockLoot:dirt 4 · blockLoot:stone 1 · bombBlast 1 · burst 2 · explosion 1 · floorEnter 1 · heal 1 · kick:brick 5 · kick:deepstone 1 · kick:dirt 1 · kick:stone 1 · land 1 · touchCube:brick 5 · touchCube:deepstone 1 · touchCube:dirt 1 · touchCube:stone 2
+
+t 600 (10.0 s)
+  player hp 10/24 · at 6.5 -3.0 3.5 · hand [brick stone] · bombs 99 · keys 99
+  practices pressurevalve controlledburn boltfromtheblue serendipity catharsis kindling firewalking tummo · synergies hearth open_hearted resolute
+  blocks —
+  elements —
+  cubes brick 87 · crate 14 · deepstone 3 · dirt 4 · stone 8 · pickups 13
+  rewards red-heart
+  events actorDamage:doubt<kick 1 · actorDeath:doubt 1
+
+map t 600 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

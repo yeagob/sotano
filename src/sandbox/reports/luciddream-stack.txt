@@ -1,0 +1,29 @@
+# luciddream-stack — Lucid Dream: more pickups during a phase add 3 s each, and the time left is capped at 6 s
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices luciddream · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  phase 3.5 s
+  practices luciddream · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events heal 1 · pickupCollect 4 · roomEnter 1
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

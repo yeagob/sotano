@@ -30,12 +30,12 @@ On each floor from 1 to 5, one room is chosen from the normal rooms that hold no
 
 ## The Lesson
 
-Decided by agent, pending owner ruling (issue #149). The design had the player choose which path weighs on them and receive a Lesson of that path; the Covenant's Light waits on the Listener's last Lesson.
+Decided by agent (issue #149); the Light's place ruled by the owner (issue #228, D4: the Light goes at the top of the tree). The design had the player choose which path weighs on them and receive a Lesson of that path; the Covenant's Light is what was heard, carried up to the crown of the giant tree.
 
 - **The card.** The choice card of the Elder (up to four answers, keyboard, mouse, gamepad, touch), with the Listener's first line as the question and the four paths as the answers. It opens after the reward, so the Listener has already left: the card needs no body.
-- **The Lesson.** One line per path (`presence.listener.lesson.body`, `.mind`, `.emotion`, `.will`), then "I heard it". Words only: no item, no stat, no randomness. Reason: the 15/75/10 reward must not change, so the Lesson adds meaning and nothing to the table, and the `drops` stream is read exactly as before.
-- **The last Lesson and the Light.** An answered Lesson on the deepest floor of the Tree (`LAST_LESSON_FLOOR`, floor 5, read from the level table) gives the Covenant's Light, with one more line. Reason: a run meets at most one Listener per Tree floor, and floor 5 is the last of them, so "the last Lesson" is a fixed floor, not a count the player cannot see. "Not now" gives no Light; the reward that already dropped is never taken back.
-- **Code.** `src/content/presences/lesson.ts`, read by the game in `askLesson` and `answerLesson`. Tested in `tests/presences-lesson.test.ts`.
+- **The Lesson.** One line per path (`presence.listener.lesson.body`, `.mind`, `.emotion`, `.will`), then "I heard it", then a line that the Light waits in the crown of the great tree. Words only: no item, no stat, no randomness. Reason: the 15/75/10 reward must not change, so the Lesson adds meaning and nothing to the table, and the `drops` stream is read exactly as before.
+- **The Light, at the crown (owner, #228, D4).** A run that has heard a Lesson (any path, on any floor) keeps the Covenant's Light when the player's body enters the crown of the giant tree above the surface (its canopy story), once, with a gold burst and the toast *In the crown of the tree, what was heard becomes Light.* Climbing to the crown before any Lesson gives nothing; the Light waits there for a later climb, or for a fall from the sky's deck, which lands in the crown. "Not now" is no Lesson heard; the reward that already dropped is never taken back. Reason for needing a Lesson (decided by agent): the Light is what was heard, so the crown alone would give it to a run that never listened, on its first climb from the Roots. The crown's layout belongs to the tree; the Light only reads the story the body is in, in one function (`reachCrown`).
+- **Code.** `src/content/presences/lesson.ts` (`crownGivesLight`, `LIGHT_STORY`), read by the game in `askLesson`, `answerLesson` and `reachCrown`. Tested in `tests/presences-lesson.test.ts`.
 
 ## Silence
 

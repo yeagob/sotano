@@ -26,8 +26,6 @@ Replaces your intentions with a charged beam: hold to charge (2.7 divided by fir
 ## Synergies and states of being
 
 - [One Clear Cut](../synergies/ONE-CLEAR-CUT.md)
-- [Chorus](../synergies/CHORUS.md)
-- [Choir](../synergies/CHOIR.md)
 - [Resolute](../states-of-being/RESOLUTE.md) (counts the will tag)
 
 ## Open questions
