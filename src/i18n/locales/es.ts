@@ -704,7 +704,7 @@ export const ES: Catalog = {
     'completion.book': 'Descargar el libro',
     'book.download.title': 'El libro de las raíces',
     'book.download.page': 'Página {n}',
-    'completion.share': '{share}% del total',
+    'completion.share': '{share}%',
     'death.cause': 'En el piso {n}, {cause} te retuvo.',
     'death.restart': 'Pulsa R para empezar de nuevo',
     'cause.unknown': 'la profundidad',

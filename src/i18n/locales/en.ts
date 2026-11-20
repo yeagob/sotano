@@ -731,7 +731,7 @@ const messages = {
   'completion.book': 'Download the book',
   'book.download.title': 'The Roots\' book',
   'book.download.page': 'Page {n}',
-  'completion.share': '{share}% of the whole',
+  'completion.share': '{share}%',
   'death.cause': 'On floor {n}, {cause} held you.',
   'death.restart': 'Press R to begin again',
   'cause.unknown': 'the depths',
