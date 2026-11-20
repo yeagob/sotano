@@ -3282,7 +3282,7 @@ export class Game {
     document.body.classList.add('kairos-stop');
     sfxKairos.start();
     this.kairosBeatT = 0;
-    this.inventory.say('kairos', 'started');
+    this.inventory.say('kairos', 'started', controlParams(activeDevice()));
     return true;
   }
 

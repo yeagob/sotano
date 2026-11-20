@@ -11,7 +11,7 @@ import { heartCount } from '../entities/hearts';
 import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
-import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
+import { fill, fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
@@ -823,7 +823,7 @@ export class Hud {
       `<div class="ribbon slate"><img src="${iconDataUrl(def, 5)}" alt=""><div>` +
       `<b>${esc(tx.name)}</b><em class="q q${def.quality}">${qualityStars(def.quality)}</em>` +
       `<span>${esc(tx.description)}</span>` +
-      `<p class="effect">${esc(tx.effect)}</p>` +
+      `<p class="effect">${esc(fill(tx.effect, controlParams(activeDevice())))}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
       `${lines.concat(syn).join('')}<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
   }
