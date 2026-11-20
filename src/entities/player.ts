@@ -14,8 +14,9 @@ import type { Actor, ActorId, Faction } from './actors';
 import type { BloodRegen, HeartLayer } from './hearts';
 import type { DashDir } from '../input/gestures';
 import { dashDisplacement, DASH_COOLDOWN, DASH_TIME } from './dash';
+import { CROUCH_H, CROUCH_SPEED, EYE_CROUCH, EYE_STAND, RUN_SPEED, roomToStand, STAND_H, supportedAt } from './stance';
 
-export const EYE = 1.62;
+export const EYE = EYE_STAND;
 const SLOW_FACTOR = 0.5;
 /** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
 const ICE_GRIP = 0.12;
@@ -81,6 +82,8 @@ export class Player implements Actor {
   blood: BloodRegen | null = null;
   /** Seconds of invulnerability left after a hit. */
   invulnT = 0;
+  /** Child's Pose (RUN-AND-CROUCH.md): the body is crouched (a block shorter, eye lowered, slower, never off a ledge). */
+  crouching = false;
   /** Irimi (DASH.md): seconds left in the dash under way, its velocity, the cooldown left, and whether the air dash is spent. */
   dashT = 0;
   dashCool = 0;
@@ -261,7 +264,10 @@ export class Player implements Actor {
   /** Being carried this frame. */
   get carried() { return this.carrying !== null; }
 
-  get eye() { return new THREE.Vector3(this.body.x, this.body.y + EYE, this.body.z); }
+  /** The eye's height above the feet: lower while crouched. */
+  get eyeHeight() { return this.crouching ? EYE_CROUCH : EYE_STAND; }
+
+  get eye() { return new THREE.Vector3(this.body.x, this.body.y + this.eyeHeight, this.body.z); }
 
   get forward() {
     const cp = Math.cos(this.pitch);
@@ -284,6 +290,8 @@ export class Player implements Actor {
     this.dashStarted = false;
     this.dashCool = Math.max(0, this.dashCool - dt);
     if (b.onGround) this.dashAirUsed = false;
+    // crouching is a stance, not a move: it changes the body's height before anything moves it (a dash keeps it)
+    this.setStance(stats.crouch >= 1 && input.held('crouch'), solid);
     if (input.hit('dash') && input.dashDir) this.startDash(input.dashDir, stats.dash, medium);
     if (this.carrying) this.carryStep(dt, solid);
     else if (this.dashT > 0) this.dashStep(dt, solid);
@@ -291,6 +299,20 @@ export class Player implements Actor {
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
     this.invulnT = Math.max(0, this.invulnT - dt);
+  }
+
+  /**
+   * Crouches at once; stands only when the head has room (a ceiling keeps the body crouched). The feet stay
+   * where they are: the body shrinks from the top, and grows back into free space only.
+   */
+  private setStance(wantCrouch: boolean, solid: (x: number, y: number, z: number) => boolean) {
+    const b = this.body;
+    if (wantCrouch) {
+      if (!this.crouching) { this.crouching = true; b.h = CROUCH_H; }
+    } else if (this.crouching && roomToStand(solid, b)) {
+      this.crouching = false;
+      b.h = STAND_H;
+    }
   }
 
   /** One frame of a carry: the body eases toward the point (smoothstep) and stops against blocks. */
@@ -324,7 +346,11 @@ export class Player implements Actor {
     const fluid = medium.feet?.fluid ? medium.feet : null;
     const swim = !!medium.head?.swim;
     this.swimming = swim;
-    const speed = WALK * stats.moveSpeed * (fluid ? fluid.wade : 1) * (this.slowT > 0 ? SLOW_FACTOR : 1);
+    // running is refused while crouched: the crouch is slower (Child's Pose), and the run needs the stick or the key held
+    const crouch = this.crouching;
+    const running = !crouch && stats.run >= 1 && input.held('run');
+    const pace = crouch ? CROUCH_SPEED : running ? RUN_SPEED : 1;
+    const speed = WALK * stats.moveSpeed * pace * (fluid ? fluid.wade : 1) * (this.slowT > 0 ? SLOW_FACTOR : 1);
     const b = this.body;
     if (b.onGround) this.airStep = 0;
     // the third jump of the ladder steers fully in the air, and adds no forward speed (SKY.md §9)
@@ -341,6 +367,11 @@ export class Player implements Actor {
     }
     b.vx = ownX + (wx * speed - ownX) * blend + this.pushX;
     b.vz = ownZ + (wz * speed - ownZ) * blend + this.pushZ;
+    // a crouched body never walks off a ledge (Minecraft's sneak): an axis whose next step leaves no ground stops
+    if (crouch && b.onGround && !swim) {
+      if (!supportedAt(solid, b, b.x + b.vx * dt, b.z)) b.vx = 0;
+      if (!supportedAt(solid, b, b.x, b.z + b.vz * dt)) b.vz = 0;
+    }
 
     // jump with a little leeway (coyote time and input buffer)
     if (held) this.jumpBuffer = 0;

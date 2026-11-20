@@ -1,0 +1,87 @@
+{
+  "note": "Child's Pose: crouched, the body is a block shorter and passes the 1-block gap at row 3 (a crate lintel above it); the crossing takes 0.45 speed",
+  "items": [
+    "balasana"
+  ],
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "place": [
+    {
+      "at": [
+        6,
+        0,
+        0,
+        6,
+        0,
+        2
+      ],
+      "block": "crate"
+    },
+    {
+      "at": [
+        6,
+        0,
+        4,
+        6,
+        0,
+        6
+      ],
+      "block": "crate"
+    },
+    {
+      "at": [
+        6,
+        1,
+        0,
+        6,
+        1,
+        6
+      ],
+      "block": "crate"
+    }
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "ticks": 240,
+  "report": [
+    0,
+    60,
+    120,
+    180,
+    240
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        12,
+        0,
+        3
+      ]
+    },
+    {
+      "t": 0,
+      "do": "hold",
+      "code": "KeyC",
+      "ticks": 240
+    },
+    {
+      "t": 0,
+      "do": "hold",
+      "code": "KeyW",
+      "ticks": 240
+    }
+  ]
+}

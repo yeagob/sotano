@@ -377,7 +377,7 @@ export class Hud {
     this.phaseEl.hidden = !on;
     this.phaseTint.classList.toggle('on', on);
     if (!on) return;
-    document.documentElement.style.setProperty('--phase-tint', palCss('path.mind.glow'));
+    document.documentElement.style.setProperty('--phase-tint', palCss('path.milagros.glow'));
     this.phaseEl.classList.toggle('warn', warn);
     const name = esc(itemText(def).name);
     this.phaseEl.innerHTML = `<img src="${iconDataUrl(def, 2)}" alt="" title="${name}"><b>${esc(t('hud.phase.left', { n: fmtNum(Math.ceil(left)) }))}</b>`;

@@ -4,7 +4,7 @@ export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll' | 'meditation';
 
 export type Action =
-  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity' | 'dash' | 'miracle'
+  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity' | 'dash' | 'run' | 'crouch' | 'miracle'
   | 'previous' | 'next' | 'pick' | 'inventory' | 'map' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
 
 export const PAD = {
@@ -19,7 +19,7 @@ export type PadButton = typeof PAD[keyof typeof PAD];
  * action has no touch button of its own: it is reached through another (the tab button opens the menu).
  * `swipe` is a stroke across the left side of the screen (the dash, DASH.md): it has no button.
  */
-export type TouchControl = 'stick' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
+export type TouchControl = 'stick' | 'stickEdge' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
 
 export interface Binding {
   action: Action;
@@ -73,6 +73,22 @@ export const BINDINGS: readonly Binding[] = [
     gamepad: { doubleFlick: 'left' },
     touch: { control: 'swipe' },
     refs: { minecraft: 'a double press of forward sprints; a double jump is the jump button pressed again', noita: 'the levitate key is held; a new meaning of the movement, not a new key', isaac: 'a practice changes what a direction does, never adds a button' },
+  },
+  {
+    // Fartlek (RUN-AND-CROUCH.md): hold Shift; L3 toggles it until the stick returns to centre; on touch, the stick at its edge
+    action: 'run', kind: 'hold', when: ['play'],
+    keyboard: { keys: ['ShiftLeft', 'ShiftRight'] },
+    gamepad: { buttons: [PAD.LS] },
+    touch: { control: 'stickEdge' },
+    refs: { minecraft: 'Ctrl sprints while you walk forward; a stick click toggles the sprint on a controller', noita: 'no sprint: speed comes from the move keys and the levitate', isaac: 'no sprint: speed is an item, never a button' },
+  },
+  {
+    // Child's Pose (RUN-AND-CROUCH.md): hold C; R3 toggles it; on touch, a swipe down from the bottom of the right side toggles it
+    action: 'crouch', kind: 'hold', when: ['play'],
+    keyboard: { keys: ['KeyC'] },
+    gamepad: { buttons: [PAD.RS] },
+    touch: { control: 'swipe' },
+    refs: { minecraft: 'Shift sneaks and will not walk off an edge; a stick click toggles sneaking on a controller', noita: 'no crouch: the body has one shape', isaac: 'no crouch: a practice changes what the body does, never adds a button' },
   },
   {
     action: 'place', kind: 'press', when: ['play'],
@@ -232,7 +248,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'dash', 'pickup', 'place', 'throw', 'drink', 'bomb', 'miracle', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'dash', 'run', 'crouch', 'pickup', 'place', 'throw', 'drink', 'bomb', 'miracle', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {
@@ -255,6 +271,8 @@ export const TAP_SLOP = 12;
 export const PAD_TRIGGER = 0.35;
 export const PAD_LOOK_SPEED = 3.4;
 export const TOUCH_LOOK_SPEED = 0.0055;
+/** A stick pushed past this share of its radius runs (Fartlek; gamepad and touch). */
+export const STICK_RUN_EDGE = 0.95;
 
 export function deadzone(x: number, y: number, dz = PAD_DEADZONE): [number, number] {
   const m = Math.hypot(x, y);

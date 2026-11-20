@@ -25,8 +25,8 @@ export default defineItem({
     marksFull: 'Five marks is all the moment holds.',
     released: 'Time runs again: five intentions, one at each mark.',
   },
-  tags: ['will', 'miracle', 'intent'],
-  color: pal('path.will.glow'),
+  tags: ['milagros', 'miracle', 'intent'],
+  color: pal('path.milagros.glow'),
   quality: 4,
   icon: {
     rows: [
@@ -43,7 +43,7 @@ export default defineItem({
       '..cc....cc..',
       '....cccc....',
     ],
-    palette: { b: pal('bone.paper'), c: pal('path.will.base') },
+    palette: { b: pal('bone.paper'), c: pal('path.milagros.base') },
   },
   hooks: [
     hook('roomClear', (_e, api) => {

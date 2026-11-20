@@ -54,6 +54,8 @@ import thoughtstopping from './thoughtstopping';
 import triangulation from './triangulation';
 import tripleJump from './triple-jump';
 import irimi from './irimi';
+import fartlek from './fartlek';
+import balasana from './balasana';
 import mendersThread from './menders-thread';
 import dowsing from './dowsing';
 import eyecontact from './eyecontact';
@@ -94,7 +96,7 @@ export const ITEMS: readonly ItemDef[] = [
   pressurevalve, controlledburn, boltfromtheblue, serendipity,
   tummo, firewalking, prometheus,
   teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
-  irimi,
+  irimi, fartlek, balasana,
   furoshiki, kinship, apprenticeship,
   kairos,
   luciddream,

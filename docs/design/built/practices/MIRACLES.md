@@ -14,6 +14,8 @@ A miracle is an effect that is impossible in normal play, rare, and clearly time
 
 ## The miracles
 
+Both are practices of the Miracles path (`milagros`, the path the owner opened for Dr. Launcher), so the path now holds three practices; its state of being is the owner's to name.
+
 | Miracle | Issue | Quality | Found in | Status |
 |---|---|---|---|---|
 | [Lucid Dream](#lucid-dream) | #122 | 4 | vault rooms, boss rewards | built |
@@ -21,7 +23,7 @@ A miracle is an effect that is impossible in normal play, rare, and clearly time
 
 ## Lucid Dream
 
-`luciddream` · Mind path · tags `mind`, `miracle`, `movement` · quality 4 · pools vault 1, boss 0.5 · inspired by *Lucid dreaming* (Frederik van Eeden, 1913).
+`luciddream` · Miracles path (`milagros`) · tags `milagros`, `miracle`, `movement` · quality 4 · pools vault 1, boss 0.5 · inspired by *Lucid dreaming* (Frederik van Eeden, 1913).
 
 In a lucid dream you know the walls are made of you.
 
@@ -87,7 +89,7 @@ These were the choices the issue left open. The orchestrator took them; the owne
 
 ## Kairos
 
-Status: built. Kairos is the right moment, the time that is not counted on the clock. Its practice (quality 4, pools: vault 1, boss 0.5) stops time for a moment when you choose. It is triggered by the `miracle` action (keyboard V, pad D-pad Up, a touch button that appears only while the practice is held).
+Status: built. Kairos is the right moment, the time that is not counted on the clock. Its practice (Miracles path, `milagros`; quality 4, pools: vault 1, boss 0.5) stops time for a moment when you choose. It is triggered by the `miracle` action (keyboard V, pad D-pad Up, a touch button that appears only while the practice is held).
 
 - **Charge.** Three pips. Starts full on pickup. One pip fills per cleared room (`roomClear`); a boss room fills it at once (`bossOvercome`). The charge is kept in the practice's scratch memory: it survives inventory rebuilds and is not saved with the run. It is shown as three pips on the HUD (a persistent status beside the polarity mark) and as a ring on the touch button.
 - **Trigger.** The `miracle` action with the charge full. A press with the charge short says how much is charged (a toast from the practice's messages) and does nothing else.

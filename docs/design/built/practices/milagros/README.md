@@ -11,7 +11,9 @@ The folder holds the practices whose first path tag is `milagros`. The path is c
 | Practice | Quality | Also on | Found in |
 |---|---|---|---|
 | [Dr. Launcher](DR-LAUNCHER.md) | 3 | none | treasure rooms |
+| [Lucid Dream](../MIRACLES.md#lucid-dream) | 4 | none | vault rooms, boss rewards |
+| [Kairos](../MIRACLES.md#kairos) | 4 | none | vault rooms, boss rewards |
 
 ## Open questions
 
-- The state of being of Miracles, once the path has three practices: its name and its effect are the owner's to decide.
+- The state of being of Miracles: the path now has three practices (Dr. Launcher, Lucid Dream, Kairos), so it can have one. Its name and its effect are the owner's to decide; none is built.

@@ -91,6 +91,8 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `missile` | 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does nothing); `game.ts` `tapMissile`, rules in `combat/missiles.ts` |
 | `luck` | Chance of a reward when a room is cleared (chests to come; Serendipity finds in bomb blasts) |
 | `dash` | 1 = a double tap of a direction, a double flick of the left stick or a swipe dashes 4.5 blocks that way (0 = no dash); `Player.startDash`, the gestures in `src/input/gestures.ts`, rules in [DASH](../design/built/practices/DASH.md) |
+| `run` | 1 = holding the run control walks 1.45 times as fast (0 = no running; crouching wins over it); `Player.walk`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
+| `crouch` | 1 = holding the crouch control makes the body a block shorter, its eye lower, the walk 0.45 times as fast, keeps it off ledges and halves projection contact (0 = no crouch); `Player.setStance`, `src/entities/stance.ts`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
 

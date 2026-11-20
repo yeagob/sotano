@@ -38,11 +38,11 @@ function roomWorld(blocks: Set<string>, finite: Set<string>) {
 }
 
 describe('Lucid Dream is a miracle that lets the body pass through finite blocks', () => {
-  it('is a valid practice of the mind path, in the vault and boss pools, quality 4, with the miracle tag', () => {
+  it('is a valid practice of the Miracles path, in the vault and boss pools, quality 4, with the miracle tag', () => {
     expect(validateItem(luciddream)).toEqual([]);
     expect(ITEM_BY_ID.get('luciddream')).toBe(luciddream);
     expect(luciddream.pools).toEqual({ vault: 1, boss: 0.5 });
-    expect(luciddream.tags).toEqual(expect.arrayContaining(['mind', 'miracle']));
+    expect(luciddream.tags).toEqual(expect.arrayContaining(['milagros', 'miracle']));
     expect(luciddream.quality).toBe(4);
   });
 
