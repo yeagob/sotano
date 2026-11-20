@@ -17,6 +17,7 @@ What the bulb makes when a positive intention brews it, and how long the flask's
 | Ember Tonic | will | a will heart | fire rate ×1.3 | 3 sealed rooms | [EMBER-TONIC](EMBER-TONIC.md) |
 | Patient Draught | will | a heart and a mind of one will pattern | mining ×1.6 | the floor | [PATIENT-DRAUGHT](PATIENT-DRAUGHT.md) |
 | Berserker Draught | will | two will hearts and obsidian | the berserker state | 2 sealed rooms | [BERSERKER-DRAUGHT](BERSERKER-DRAUGHT.md) |
+| Rebirth Draught | mind | a will heart, a mind of mind and a flesh of body | starts the run again, keeping every practice held (asks first) | at once | [IN-HAND-AND-REBIRTH](../../practices/potions/IN-HAND-AND-REBIRTH.md) |
 
 ## How the bulb is read
 

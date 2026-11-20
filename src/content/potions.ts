@@ -7,7 +7,7 @@ import type { PartDef } from './parts';
 export const POTION_IDS = [
   'plain-tonic', 'restoring-draught', 'footing-tincture', 'spring-tonic',
   'clear-infusion', 'questioning-tincture', 'ember-tonic', 'patient-draught',
-  'meal-small', 'meal-hearty', 'berserker-draught',
+  'meal-small', 'meal-hearty', 'berserker-draught', 'rebirth-draught',
 ] as const;
 export type PotionId = (typeof POTION_IDS)[number];
 
@@ -31,13 +31,15 @@ export interface PotionDef {
   berserk?: true;
   /** Cooked in a kitchen, never brewed: it has no recipe. */
   meal?: true;
+  /** Drinking it asks first, then starts a new run keeping the practices in hand (game.ts; never in the sandbox). */
+  rebirth?: true;
 }
 
 const INSTANT: Duration = { kind: 'instant' };
 const FLOOR: Duration = { kind: 'floor' };
 const ROOMS = (rooms: number): Duration => ({ kind: 'rooms', rooms });
 
-type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal' | 'berserk'>;
+type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal' | 'berserk' | 'rebirth'>;
 
 const potion = (id: PotionId, path: PathName, liquid: PalToken, duration: Duration, extra: Extra = {}): PotionDef =>
   ({ id, path, liquid, duration, name: `potion.${id}.name` as MessageKey, effect: `potion.${id}.effect` as MessageKey, ...extra });
@@ -57,6 +59,7 @@ export const POTIONS: Record<PotionId, PotionDef> = {
   'meal-hearty': potion('meal-hearty', 'body', 'copper.base', INSTANT, { heal: 8, meal: true }),
   'patient-draught': potion('patient-draught', 'will', 'copper.base', FLOOR, { stats: [{ stat: 'mining', layer: 'mul', value: 1.6 }] }),
   'berserker-draught': potion('berserker-draught', 'will', 'heart.berserker.ember', ROOMS(2), { berserk: true }),
+  'rebirth-draught': potion('rebirth-draught', 'mind', 'path.milagros.glow', INSTANT, { rebirth: true }),
 };
 
 export function isFlask(c: Carried): c is Flask {

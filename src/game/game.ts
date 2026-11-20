@@ -61,7 +61,7 @@ import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { FullscreenButton } from '../input/fullscreen-button';
-import { Inventory } from '../items/inventory';
+import { Inventory, type SavedItem } from '../items/inventory';
 import { ItemPools, isPromised } from '../items/pool';
 import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
@@ -337,6 +337,10 @@ export class Game {
   private menderCame = false;
   /** The offer on the card: the hand slot and part it asks for (index -1 and no part for a gift). */
   private pendingPresenceOffer: { id: PresenceId; enemyId: number; index: number; carried?: Carried; rest?: OfferPick[] } | null = null;
+  /** The Rebirth Draught's confirm card is open (it shares the offer card; see `askRebirth`). */
+  private pendingRebirth = false;
+  /** The practices a Rebirth Draught keeps, read by the next new run (null for any other new run). */
+  private rebirthKeep: SavedItem[] | null = null;
   /** The choice card on screen: the presence that asks, and the enemy it is on (PRESENCE_CHOICE). */
   private pendingPresenceChoice: { id: PresenceId; enemyId: number; done?: true; still?: number } | null = null;
   /** The choice card's grace: a confirm right after it opens is ignored (consent.ts). */
@@ -565,11 +569,18 @@ export class Game {
    * `seed`: a seed code ("ABCD-EFGH"), a numeric root (tests), or nothing for a fresh random run.
    * Everything structural (all floor plans, rock themes, pedestal items) is decided here.
    */
-  newRun(seed?: string | number) {
+  newRun(seed?: string | number, keep?: readonly SavedItem[]) {
     let root: number | null = typeof seed === 'number' ? seed >>> 0 : typeof seed === 'string' ? decodeSeed(seed) : null;
     const invalid = typeof seed === 'string' && root === null;
     root ??= randomRoot();
     this.begin(root, null);
+    // a Rebirth Draught keeps the practices (with their stacks) and nothing else: the restore installs their effects
+    if (keep) {
+      this.inventory.restore(keep);
+      this.hud.setItems(this.inventory.items.map(i => i.def));
+      this.syncWeapon();
+      this.player.hp = this.maxHp;
+    }
     this.hud.toast(invalid ? 'toast.seedInvalid' : 'toast.newRun', { input: String(seed ?? ''), seed: this.seedLabel });
   }
 
@@ -3192,6 +3203,7 @@ export class Game {
   private drink() {
     const p = this.player, top = p.active;
     if (!top || !isFlask(top)) { sfx.denied(); return; }
+    if (POTIONS[top.potion].rebirth) { this.askRebirth(); return; }
     const def = POTIONS[top.potion];
     const rooms = flaskRooms(top);
     p.takeActive();
@@ -3804,7 +3816,38 @@ export class Game {
     }
   }
 
+  /**
+   * The Rebirth Draught asks before it is drunk: the offer card (its type, reused) names the potion and asks whether to
+   * begin again. Never in the sandbox. The flask stays in hand until the player says yes.
+   */
+  private askRebirth() {
+    if (this.sandbox) { sfx.denied(); this.hud.toast('potion.rebirth.sandbox'); return; }
+    if (this.transitioning) return;
+    this.pendingRebirth = true;
+    this.hud.presenceOfferCard(POTIONS['rebirth-draught'].name, undefined, 'potion.rebirth.question', false, undefined,
+      { accept: 'potion.rebirth.begin', decline: 'potion.rebirth.stay', controls: 'potion.rebirth.controls' });
+    this.input.modal = true;
+    this.input.unlockFor();
+  }
+
+  /** The answer to the Rebirth Draught's card: yes takes the potion out of the hand and starts a new run that keeps the practices. */
+  private resolveRebirth(accept: boolean) {
+    this.pendingRebirth = false;
+    this.hud.closePresenceOffer();
+    this.input.modal = false;
+    this.input.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm', 'back');
+    this.input.resume();
+    const top = this.player.active;
+    if (!accept) { sfx.denied(); return; }
+    if (!top || !isFlask(top) || top.potion !== 'rebirth-draught' || this.transitioning) return;
+    this.player.takeActive();
+    this.hands.placed();
+    this.rebirthKeep = this.inventory.serialize();
+    this.requestRestart();
+  }
+
   private resolvePresenceOffer(accept: boolean) {
+    if (this.pendingRebirth) { this.resolveRebirth(accept); return; }
     const pending = this.pendingPresenceOffer;
     if (!pending) return;
     this.pendingPresenceOffer = null;
@@ -4604,7 +4647,11 @@ export class Game {
     else if (ctx === 'play' && inp.hit('pause')) inp.release();
     if (this.restartT > 0) {
       this.restartT -= dt;
-      if (this.restartT <= 0) { if (this.sandbox) this.newSandbox(this.sandbox); else this.newRun(); this.revealT = 0; }
+      if (this.restartT <= 0) {
+        if (this.sandbox) this.newSandbox(this.sandbox);
+        else { const keep = this.rebirthKeep ?? undefined; this.rebirthKeep = null; this.newRun(undefined, keep); }
+        this.revealT = 0;
+      }
     } else if (this.revealT >= 0) {
       // stay dark until the new world is meshed, so it never pops in
       this.revealT += dt;

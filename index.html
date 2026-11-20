@@ -153,6 +153,14 @@
 
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
+    /* the held-item label: the flask or meal in hand, named above the hand (sotano-popups: persistent status) */
+    #held { position: fixed; left: 50%; bottom: calc(18px + 24 * var(--u) + 10px); transform: translateX(-50%); pointer-events: none;
+      display: none; flex-direction: column; align-items: center; gap: 2px; max-width: min(92vw, 420px); padding: 4px 10px; text-align: center;
+      color: var(--ui-text); font-size: calc(11 * var(--u)); }
+    #held.show { display: flex; }
+    #held b { font-weight: 600; }
+    #held span { opacity: 0.85; }
+    body.dev-touch #held { bottom: calc(8px + 16 * var(--u) + 10px); }
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
     .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
     .slot img { width: 100%; height: 100%; display: block; }
@@ -665,6 +673,7 @@
     <div id="items"></div>
   </div>
   <div id="hand"></div>
+  <div id="held" aria-live="polite"></div>
   <div id="corner"><canvas id="minimap" class="slate"></canvas><div id="depth"></div></div>
   <div id="debug"></div>
   <div id="banner"></div>
