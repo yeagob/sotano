@@ -59,6 +59,7 @@ function world() {
     setCheckpoint: (x: number, y: number, z: number) => { s.cp = { x, y, z }; },
     teleportPlayer: (x: number, y: number, z: number) => { s.teleports.push({ x, y, z }); s.feet = { x, y, z }; },
     invulnerable: (sec: number) => { s.invuln = Math.max(s.invuln, sec); },
+    grantStatus: () => {},
     burst: () => { s.bursts++; },
     chime: () => { s.chimes++; },
     counts: () => ({ keys: 0, bombs: 0, hp: s.hp, maxHp: s.maxHp }),

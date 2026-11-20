@@ -206,6 +206,10 @@ export const sfx3 = {
   hurt: () => { tone(220, 0.18, 'square', 0.18, 0.5); noise(0.12, 0.3, 600, 1); },
   heal: () => { tone(523, 0.12, 'sine', 0.15); setTimeout(() => tone(784, 0.16, 'sine', 0.15), 90); },
   bombPickup: () => { tone(330, 0.08, 'square', 0.12); setTimeout(() => tone(440, 0.1, 'square', 0.12), 60); },
+  /** Lucid Dream starts: a soft low swell that opens upward, the walls going thin. */
+  phaseStart: () => { tone(196, 0.5, 'sine', 0.12, 2); setTimeout(() => tone(392, 0.6, 'sine', 0.1, 1.5), 140); },
+  /** The last second of a phase: one soft tick. */
+  phaseTick: () => tone(880, 0.05, 'triangle', 0.08),
   fuse: () => noise(0.25, 0.12, 4000, 4),
   spawn: () => { tone(110, 0.6, 'sine', 0.18, 2.2); noise(0.6, 0.08, 1200, 6); },
   dissolve: () => { noise(0.3, 0.25, 900, 1.2); tone(300, 0.25, 'triangle', 0.12, 0.4); },

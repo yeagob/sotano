@@ -56,6 +56,7 @@ Each action has a tick `t` and runs right after that tick's report, before the t
 | `give`, `lose` | `item` | Gain (quietly) or lose a practice |
 | `tp`, `look` | `at` | Stand on a tile; aim at a cell's centre |
 | `hurt` | `amount` | Hurt the player by half-hearts (8 = one heart, the `damagePlayer` path): a large amount is a death, which a Waymark can cancel |
+| `collect` | `kind`: `bomb`, `key` or `heart` | Picks up one (two hearts for `heart`) through the normal `collect` path, so a pickup hook runs (Lucid Dream starts its phase) |
 | `fire` | `ticks`? (1) | Hold the fire button that many ticks (the intention, or the active weapon); each hold starts with a press, so two short `fire`s within 18 ticks are a double tap (Dr. Launcher) |
 | `key` | `code` | Press a key for one tick: `KeyE` bomb, `KeyQ` throw, `KeyF` polarity |
 | `dash` | `dir` (`forward`, `back`, `left`, `right`) | The gesture of a double tap of that direction (Irimi): the same as the input layer reports it, read by the Player that tick |

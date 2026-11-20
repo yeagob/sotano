@@ -60,6 +60,7 @@ import eyecontact from './eyecontact';
 import dialectic from './dialectic';
 import reframing from './reframing';
 import waymark from './waymark';
+import luciddream from './luciddream';
 import pressurevalve from './pressurevalve';
 import controlledburn from './controlledburn';
 import kairos from './kairos';
@@ -96,6 +97,7 @@ export const ITEMS: readonly ItemDef[] = [
   irimi,
   furoshiki, kinship, apprenticeship,
   kairos,
+  luciddream,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

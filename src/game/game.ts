@@ -124,6 +124,7 @@ import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
 import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
 import { CheckpointMark } from './checkpoint-mark';
+import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
@@ -370,6 +371,10 @@ export class Game {
   private bossRooms = new Map<number, BossRoom>();   // floor → its boss room's state
   /** The run's checkpoint (game/checkpoint.ts), set by Waymark; null until one is picked up. */
   private respawn: Spot | null = null;
+  /** Player status timers (seconds left by id: 'phase' is Lucid Dream). Cleared with a run. */
+  private statuses = new Map<string, number>();
+  /** The cells a phased body may be in (the room's box with its walls), and the room it started in. */
+  private phase: { box: CellBox; room: RoomInfo | null; interior: CellBox } | null = null;
   private checkpointMark!: CheckpointMark;
   private bossUsed = new Set<string>();
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
@@ -692,6 +697,8 @@ export class Game {
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
     p.clearStates();
+    this.statuses.clear();
+    this.phase = null;
     // actors: one id space per run, the player first
     this.actors.reset();
     this.contacts.clear();
@@ -1170,6 +1177,9 @@ export class Game {
   /** True in the dungeon's world, below the crown. Every dungeon-only rule is guarded by it (SKY.md §2.5a). */
   private get below() { return this.realm === 'dungeon'; }
 
+  /** Seconds left of the phase (Lucid Dream), 0 when none runs. Read by the sandbox report and the tests. */
+  get phaseLeft(): number { return this.statuses.get(PHASE_STATUS) ?? 0; }
+
   /** The swap's view of the game's fields (SKY.md §2.1). */
   private realmHost(): RealmHost {
     return {
@@ -1469,6 +1479,7 @@ export class Game {
       setCheckpoint: (x, y, z) => this.setRespawn({ x, y, z }),
       teleportPlayer: (x, y, z) => this.teleportPlayer(x, y, z),
       invulnerable: s => { this.player.invulnT = Math.max(this.player.invulnT, s); },
+      grantStatus: (id, s, o) => this.grantStatus(id, s, o),
       burst: (x, y, z, color, n) => this.particles.burst(x, y, z, color, n, 2.2, 0.07),
       chime: () => sfx3.reveal(),
     };
@@ -3463,7 +3474,8 @@ export class Game {
   private touchBlocks(dt: number) {
     const p = this.player, b = p.body;
     const crush = this.stats.get('crush');
-    if (crush <= 0 || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
+    // a phased body is inside blocks it passes through: it does not wear them down by pressing (Lucid Dream)
+    if (crush <= 0 || this.phase || Math.hypot(p.wishX, p.wishZ) < 0.1) { this.contactT = 0; return; }
     this.contactT += dt;
     if (this.contactT < CONTACT_TICK) return;
     this.contactT -= CONTACT_TICK;
@@ -3814,6 +3826,88 @@ export class Game {
 
   /** Somewhere new without walking there (a star pad, heaven, silence): find room to stand, then
    *  let the HUD, the fog and the floor bookkeeping catch up (review L4–L6 points 3 and 5). */
+  // ───────────────────────── player statuses (Lucid Dream: docs/design/built/practices/MIRACLES.md) ─────────────────────────
+
+  /** Starts or extends a status timer. A phase that starts takes the box of the room the player stands in. */
+  private grantStatus(id: string, seconds: number, opts?: { add?: boolean; cap?: number }) {
+    const cur = this.statuses.get(id) ?? 0;
+    let next = opts?.add ? cur + seconds : Math.max(cur, seconds);
+    if (opts?.cap !== undefined) next = Math.min(next, opts.cap);
+    if (next <= 0) return;
+    this.statuses.set(id, next);
+    if (id === PHASE_STATUS && cur <= 0) this.startPhase();
+  }
+
+  private startPhase() {
+    const b = this.player.body;
+    const room = this.roomAt(b.x, b.y + 0.1, b.z);
+    if (room) {
+      this.phase = { box: roomBox(room), room, interior: roomInterior(room) };
+    } else {
+      const box = fallbackBox(b.x, b.y, b.z);
+      this.phase = { box, room: null, interior: box };
+    }
+    sfx3.phaseStart();
+  }
+
+  /** Counts every status down; a phase that runs out is ended (and its body moved out of blocks). */
+  private tickStatuses(dt: number) {
+    if (!this.below && this.statuses.size) { this.statuses.clear(); this.phase = null; }
+    let phasing = false;
+    for (const [id, left] of this.statuses) {
+      const next = left - dt;
+      if (next > 0) {
+        if (id === PHASE_STATUS) {
+          if (left > PHASE_WARN_S && next <= PHASE_WARN_S) sfx3.phaseTick();
+          phasing = true;
+        }
+        this.statuses.set(id, next);
+        continue;
+      }
+      this.statuses.delete(id);
+      if (id === PHASE_STATUS) this.endPhase();
+    }
+    // a phased body that has left its box (a fall through the floor, a descent) ends the phase where it is
+    if (this.phase && !phasing) this.endPhase();
+    if (this.phase && !inBox(this.phase.box, this.player.body.x, this.player.body.y, this.player.body.z)) this.endPhase();
+    this.hud.setPhase(this.phase ? this.statuses.get(PHASE_STATUS) ?? 0 : null, this.inventory.items.find(i => i.def.id === 'luciddream')?.def ?? null);
+  }
+
+  /** The solid test of a phased body: a block with finite hp is passable inside the box, everything else as usual. */
+  private phaseSolid(x: number, y: number, z: number): boolean {
+    const ph = this.phase!;
+    return phasedSolid(
+      (a, b, c) => this.solid(a, b, c),
+      (a, b, c) => { const id = this.world.get(a, b, c); return id !== AIR && Number.isFinite(mat(id).hp); },
+      ph.box,
+    )(x, y, z);
+  }
+
+  /** Ends a phase. A body left inside a block moves to the nearest free standing cell in room interiors: the room it
+   *  started in first, then the rooms around it on its floor. */
+  private endPhase() {
+    const ph = this.phase;
+    this.phase = null;
+    this.statuses.delete(PHASE_STATUS);
+    if (!ph) return;
+    const b = this.player.body;
+    if (!boxHits((x, y, z) => this.solid(x, y, z), b.x, b.y, b.z, b.hw, b.h)) return;
+    const areas: RescueArea[] = [];
+    const seen = new Set<number>();
+    const add = (r: RoomInfo | null) => {
+      if (!r || seen.has(r.id)) return;
+      seen.add(r.id);
+      const interior = roomInterior(r);
+      areas.push({ box: interior, open: (x, z) => { const c = x - r.x0, k = z - r.z0; return c >= 0 && k >= 0 && c < r.w && k < r.d && r.open[c + k * r.w] === 1; } });
+    };
+    if (ph.room) add(ph.room);
+    add(this.roomAt(b.x, b.y + 0.1, b.z));
+    if (!areas.length) areas.push({ box: ph.interior });
+    if (this.below) for (const r of this.floors.get(bandOf(b.y))?.rooms ?? []) add(r);
+    const at = rescueSpot((x, y, z) => this.solid(x, y, z), { x: b.x, y: b.y, z: b.z }, areas, b.hw, b.h);
+    if (at) this.teleport(at.x, at.y, at.z);
+  }
+
   private teleport(x: number, y: number, z: number) {
     const fx0 = Math.floor(x), fz0 = Math.floor(z);
     if (!this.below) {
@@ -4918,7 +5012,8 @@ export class Game {
     this.time += dt;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
     const inp = this.input;
-    const solid = (x: number, y: number, z: number) => this.solid(x, y, z);
+    this.tickStatuses(dt);
+    const solid = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
     const below = this.below;
     this.player.update(dt, inp, this.stats.all, solid, {

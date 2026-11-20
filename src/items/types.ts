@@ -84,6 +84,9 @@ export interface ItemApi {
   teleportPlayer(x: number, y: number, z: number): void;
   /** Invulnerable for `seconds` from now (never shorter than the window already running). */
   invulnerable(seconds: number): void;
+  /** Starts a player status timer for `seconds` (a status the game reads: 'phase' is Lucid Dream). With `add`, the
+   *  time is added to what is left; `cap` limits what is left. Shown on the HUD while it runs. */
+  grantStatus(id: string, seconds: number, opts?: { add?: boolean; cap?: number }): void;
   /** A burst of `count` coloured particles at a point. */
   burst(x: number, y: number, z: number, color: number, count: number): void;
   /** The soft chime of a reveal. */

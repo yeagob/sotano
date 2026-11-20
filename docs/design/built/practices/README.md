@@ -86,6 +86,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Self-Efficacy](will/SELF-EFFICACY.md) | Will | 3 | treasure rooms |
 | [Eye Contact](will/EYE-CONTACT.md) | Will | 3 | treasure rooms |
 | [Waymark](will/WAYMARK.md) | Will | 3 | vault rooms, boss rewards |
+| [Lucid Dream](MIRACLES.md#lucid-dream) | Mind | 4 | vault rooms, boss rewards |
 | [Self-Reliance](will/SELF-RELIANCE.md) | Will | 4 | treasure rooms, vault rooms |
 | [Stoic Resolve](will/STOIC-RESOLVE.md) | Will | 2 | treasure rooms, boss rewards |
 | [Controlled Burn](BOMBS.md#2-controlled-burn-controlledburn) | Will | 2 | treasure rooms |
