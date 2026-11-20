@@ -6,6 +6,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.7-alpha.f1 · 2026-11-20
+
+### Fixed
+- The progress panel shows only the percentage of each part, without the words after it.
+
 ## 0.2.7-alpha · 2026-11-20
 
 ### Added
