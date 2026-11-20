@@ -92,10 +92,17 @@ export function runLab(game: Game, s: Scenario): LabResult {
     };
     let fireFor = 0;
     let next = 0;
+    // a key held for a number of ticks (`hold`): released on the tick it ends, so a run or a crouch lasts its script
+    const holds = new Map<string, number>();
     for (let t = 0; t <= ticks; t++) {
       if (at.has(t)) snapshot(t);
       if (mapTicks.has(t)) drawMaps(t);
-      while (next < actions.length && actions[next].t === t) act(game, actions[next++], o, n => { fireFor = n; }, errors);
+      for (const [code, end] of holds) if (t >= end) { game.input.keys.delete(code); holds.delete(code); }
+      while (next < actions.length && actions[next].t === t) {
+        const a = actions[next++];
+        if ('do' in a && a.do === 'hold') { game.input.keys.add(a.code); holds.set(a.code, t + (a.ticks ?? 1)); continue; }
+        act(game, a, o, n => { fireFor = n; }, errors);
+      }
       if (t === ticks) break;
       // a hold starts with a press, as a real one does (the double tap reads presses)
       if (fireFor > 0 && !game.input.touchHeld.has('cast')) game.input.touchPressed.add('cast');
@@ -141,6 +148,7 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     }
     case 'fire': fire(a.ticks ?? 1); break;
     case 'key': game.input.pressed.add(a.code); break;
+    case 'hold': break; // runLab holds the key itself (it needs the tick)
     // a double tap of a direction, as the input layer reports it (the detector itself is tested in tests/dash.test.ts)
     case 'dash': game.input.gesture('dash', a.dir, 'keyboard'); break;
     case 'use': game.input.touchPressed.add('place'); break;

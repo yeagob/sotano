@@ -1,0 +1,49 @@
+# balasana-gap — Child's Pose: crouched, the body is a block shorter and passes the 1-block gap at row 3 (a crate lintel above it); the crossing takes 0.45 speed
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 3.4 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+t 180 (3.0 s)
+  player hp 24/24 · at 7.6 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 24/24 · at 9.6 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+map t 240 · h 0
+  ......c......
+  ......c......
+  ......c......
+  .............
+  ......c......
+  ......c......
+  ......c......
+
+legend c crate

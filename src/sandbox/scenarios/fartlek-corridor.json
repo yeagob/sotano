@@ -1,0 +1,51 @@
+{
+  "note": "Fartlek: holding Shift runs 45% faster along a corridor (x 1.45 on the walk); after the run ends the walk is back at its own pace",
+  "items": [
+    "fartlek"
+  ],
+  "rows": [
+    "..........................",
+    "..........................",
+    "..........................",
+    "..........................",
+    ".........................."
+  ],
+  "player": [
+    1,
+    0,
+    2
+  ],
+  "god": true,
+  "ticks": 150,
+  "report": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        25,
+        0,
+        2
+      ]
+    },
+    {
+      "t": 0,
+      "do": "hold",
+      "code": "KeyW",
+      "ticks": 150
+    },
+    {
+      "t": 0,
+      "do": "hold",
+      "code": "ShiftLeft",
+      "ticks": 60
+    }
+  ]
+}

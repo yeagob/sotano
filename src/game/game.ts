@@ -54,7 +54,8 @@ import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
-import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
+import { Player, type Carried, type PlayerMedium } from '../entities/player';
+import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
 /** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
@@ -1995,7 +1996,9 @@ export class Game {
       attacker: a.id, attackerDef: a.def, target: t.id, targetKind: t.kind, toTarget: a.contactDamage, toAttacker: 0,
     });
     if (ev.cancelled) return;
-    if (ev.toTarget > 0) this.damageActor(t, ev.toTarget, 'contact', a.def, a.id);
+    // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
+    const hurt = t === this.player && this.player.crouching ? crouchedContact(ev.toTarget) : ev.toTarget;
+    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id);
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
@@ -3023,7 +3026,7 @@ export class Game {
   /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
-    const m = this.bodyMedium(b, EYE);
+    const m = this.bodyMedium(b, p.eyeHeight);
     this.playerMedium = { ...m, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
@@ -3040,7 +3043,7 @@ export class Game {
         if (this.drownT <= 0) {
           this.drownT = DROWN_GAP;
           sfx3.gulp();
-          this.particles.burst(b.x, b.y + EYE, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
+          this.particles.burst(b.x, b.y + p.eyeHeight, b.z, pal('el.water.foam'), 8, 1.5, 0.05);
           this.damageActor(p, HALF_HEART, 'drown', 'drown', 'world');
         }
       }

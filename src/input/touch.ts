@@ -3,7 +3,7 @@ import { palCss, type PalToken } from '../content/palette';
 import { carriedDef, isFlask, POTIONS, type Flask } from '../content/potions';
 import type { Carried } from '../entities/player';
 import { iconDataUrl } from '../render/icons';
-import { BINDINGS, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
+import { BINDINGS, STICK_RUN_EDGE, TAP_MS, TAP_SLOP, type Action, type Context } from './bindings';
 import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
@@ -18,6 +18,14 @@ const SWIPE_SIDE = 0.5;
 /** Whether a touch at `x` may start a dash swipe: the left side of the screen, right of the stick's zone. */
 export function swipeStartsAt(x: number, width: number): boolean {
   return x < width * SWIPE_SIDE && x >= width * STICK_SPLIT;
+}
+
+/**
+ * Whether a touch may start the crouch swipe (RUN-AND-CROUCH.md): the bottom edge of the right side of the screen,
+ * the last twelfth of the height, right of the middle.
+ */
+export function crouchStartsAt(x: number, y: number, width: number, height: number): boolean {
+  return x >= width * 0.5 && y >= height * (1 - 1 / 12);
 }
 
 export function castPolarityToken(polarity: Polarity): PalToken {
@@ -69,7 +77,7 @@ export function halfTurn(last: number | null, raw: number): { side: number | nul
   return { side, flip: last !== null && last !== side };
 }
 
-interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean }
+interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean; crouch?: boolean }
 
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
 
@@ -143,8 +151,9 @@ export class TouchControls {
         this.stick.classList.add('on');
         this.placeStick(x, y, 0, 0);
       } else {
-        // a touch in the left band, outside the stick's zone, may become a swipe (the dash) until its window closes
-        this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t, swipe: swipeStartsAt(x, innerWidth) });
+        // a touch in the left band, outside the stick's zone, may become a swipe (the dash) until its window closes;
+        // a touch at the bottom of the right side may become the crouch swipe (Child's Pose) the same way
+        this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t, swipe: swipeStartsAt(x, innerWidth) || crouchStartsAt(x, y, innerWidth, innerHeight), crouch: crouchStartsAt(x, y, innerWidth, innerHeight) });
       }
     }
   }
@@ -155,6 +164,16 @@ export class TouchControls {
    */
   private checkSwipe(tr: Track, x: number, y: number) {
     const dir = swipeDir(x - tr.ox, y - tr.oy, (performance.now() - tr.t) / 1000);
+    if (tr.crouch) {
+      // the crouch swipe is a downward stroke only; it toggles the crouch and takes its look back
+      if (dir === 'back') {
+        this.input.touchLook(-(x - tr.ox), -(y - tr.oy));
+        this.input.toggleCrouch();
+        tr.crouch = false;
+        tr.swipe = false;
+      } else if (performance.now() - tr.t > 250) tr.crouch = false;
+      return;
+    }
     if (dir) {
       this.input.touchLook(-(x - tr.ox), -(y - tr.oy));
       this.input.gesture('dash', dir, 'touch');
@@ -174,13 +193,15 @@ export class TouchControls {
         const l = Math.hypot(dx, dy);
         if (l > r) { tr.ox = x - dx / l * r; tr.oy = y - dy / l * r; dx = dx / l * r; dy = dy / l * r; }
         const m = Math.hypot(dx, dy) / r;
+        // the stick at its edge runs (Fartlek): a held touch on the run, released when the stick comes back in
+        if (m >= STICK_RUN_EDGE) this.input.touchHeld.add('run'); else this.input.touchHeld.delete('run');
         const k = m < STICK_DEAD ? 0 : (m - STICK_DEAD) / (1 - STICK_DEAD) / (m || 1);
         this.input.touchMove.x = dx / r * k;
         this.input.touchMove.y = -dy / r * k;
         this.placeStick(tr.ox, tr.oy, dx, dy);
       } else if (tr.kind === 'look' || tr.action === 'cast') {
         this.input.touchLook(x - tr.x, y - tr.y);
-        if (tr.swipe) this.checkSwipe(tr, x, y);
+        if (tr.swipe || tr.crouch) this.checkSwipe(tr, x, y);
       }
       tr.x = x; tr.y = y;
     }
@@ -248,6 +269,7 @@ export class TouchControls {
   private releaseStick() {
     this.stickId = -1;
     this.input.touchMove.x = this.input.touchMove.y = 0;
+    this.input.touchHeld.delete('run');
     this.stick.classList.remove('on');
     this.stick.style.left = this.stick.style.top = '';
     this.knob.style.transform = '';
