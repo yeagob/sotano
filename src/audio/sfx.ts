@@ -292,6 +292,14 @@ export function starTheme(on: boolean) {
   }
 }
 
+/** Kairos (#123): a slow heartbeat while time is stopped, a bright chime on the start, a low fall on the release. */
+export const sfxKairos = {
+  beat: () => { tone(60, 0.16, 'sine', 0.22); setTimeout(() => tone(52, 0.12, 'sine', 0.14), 170); },
+  start: () => { tone(330, 0.5, 'sine', 0.14); setTimeout(() => tone(660, 0.8, 'sine', 0.1), 120); },
+  mark: () => tone(1046, 0.08, 'triangle', 0.12),
+  release: () => { tone(880, 0.12, 'triangle', 0.14); tone(262, 0.5, 'sine', 0.2, -90); },
+};
+
 export const sfxHeart = {
   blue: () => { tone(587, 0.14, 'sine', 0.14); setTimeout(() => tone(880, 0.2, 'sine', 0.12), 90); },
   black: () => { tone(330, 0.14, 'sine', 0.14); setTimeout(() => tone(165, 0.3, 'sine', 0.13), 100); },

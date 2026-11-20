@@ -14,6 +14,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | place | LT |
 | throw | B |
 | drink | X |
+| miracle (Kairos) | D-pad Up |
 | bomb | RB |
 | polarity | LB |
 | dash | press | play | double-flick the left stick (push past 0.8, return under 0.3, push again the same way within 0.25 s) | `doubleFlick: left`; no button |

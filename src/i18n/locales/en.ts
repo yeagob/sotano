@@ -123,6 +123,10 @@ const messages = {
   'controls.throw': 'throw the top block',
   'controls.drink.key': 'G',
   'controls.drink': 'drink the flask in your hand',
+  'controls.miracle.key': 'V',
+  'controls.miracle.pad': 'D-pad Up',
+  'controls.miracle.touch': 'The clock ring (shown while you hold Kairos)',
+  'controls.miracle': 'stop time with Kairos when charged; press again to fire the marks',
   'controls.bomb.key': 'E',
   'controls.bomb': 'drop a bomb',
   'controls.launch.key': 'Quick double click',
@@ -699,6 +703,8 @@ const messages = {
   'boss.shadow.phase.2': 'It stops fighting: stand still beside it for three seconds',
   'toast.relapsed': 'An ally turned hostile again',
   'hud.polarity.positive': 'Good intention (F to switch)',
+  'hud.kairos': 'Kairos: {n} of {max} charged',
+  'hud.kairos.marks': 'marks {n}/{max}',
   'hud.polarity.negative': 'Bad intention (F to switch)',
 
   // ── death screen ──
@@ -833,6 +839,8 @@ const messages = {
   'teach.grace.lesson': 'Before a meal, pause for one breath and give thanks, silently or aloud. Think of the hands that grew, carried and cooked the food. Gratitude at the table is a small habit that turns eating into a moment of care.',
   'teach.nourishment.quote': 'Feed all of you.',
   'teach.nourishment.lesson': 'This week, notice what nourishes your body, your mind and your heart, and give each a little: a walk, a conversation, a book, a meal eaten slowly. Nourishment is not one food; it is care spread across the whole day.',
+  'teach.kairos.quote': 'Some moments are not counted on the clock. Wait for the right one.',
+  'teach.kairos.lesson': 'Notice the moments that are right for a thing: a conversation, a step, a word. When one comes, stop, look at the places that matter, and act there, all at once. Waiting is also a way of acting.',
   'teach.resonance.quote': 'One true note makes the ones around it ring.',
   'teach.resonance.lesson': 'Find what rings true for you and say it out loud, to yourself or to someone. Notice which ideas and people make you feel more alive. Spend more time near them.',
   'teach.satori.quote': 'One clear moment can change how you see everything.',

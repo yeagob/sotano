@@ -268,10 +268,15 @@ export class Player implements Actor {
     return new THREE.Vector3(-Math.sin(this.yaw) * cp, Math.sin(this.pitch), -Math.cos(this.yaw) * cp);
   }
 
-  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks,
-    medium: PlayerMedium = { feet: null, head: null }, opts: PlayerUpdateOptions = {}) {
+  /** The view alone: the mouse or the stick turns the head, the body does not move (also while time is stopped, Kairos). */
+  look(input: Input) {
     this.yaw -= input.lookDX * input.sensitivity;
     this.pitch = Math.max(-1.55, Math.min(1.55, this.pitch - input.lookDY * input.sensitivity));
+  }
+
+  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks,
+    medium: PlayerMedium = { feet: null, head: null }, opts: PlayerUpdateOptions = {}) {
+    this.look(input);
     this.slowT = Math.max(0, this.slowT - dt);
     this.muteT = Math.max(0, this.muteT - dt);
     this.heldT = Math.max(0, this.heldT - dt);

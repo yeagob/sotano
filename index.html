@@ -148,6 +148,18 @@
     #polarity { width: 14px; height: 14px; margin: 4px 0 2px 3px; border-radius: 50%; border: 2px solid var(--pol); background: var(--pol);
       box-shadow: 0 0 0 1px var(--ui-line); }
     #polarity[data-polarity="negative"] { background: var(--ui-line); }
+    /* Kairos (#123): three pips for the charge, a dimmed page while time is stopped, numbered marks on the world */
+    #kairos { display: flex; align-items: center; gap: 4px; margin: 4px 0 2px 3px; }
+    #kairos[hidden] { display: none; }
+    #kairos i { width: 8px; height: 8px; border: 2px solid var(--ui-line); transform: rotate(45deg); display: inline-block; }
+    #kairos i.on { background: var(--kairos); border-color: var(--kairos); }
+    #kairos em { font-style: normal; font-size: 12px; margin-left: 4px; }
+    #kairos-marks { position: fixed; inset: 0; pointer-events: none; }
+    #kairos-marks b { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid var(--kairos);
+      border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--kairos); background: rgba(0, 0, 0, 0.35); }
+    #kairos-marks b[hidden] { display: none; }
+    body.kairos-stop #game { filter: saturate(0.25) brightness(0.9); }
+    .tb-miracle { background: conic-gradient(var(--kairos) calc(var(--charge, 0) * 360deg), transparent 0); }
     #items { display: flex; flex-wrap: wrap; gap: 3px; max-width: 220px; margin-top: 8px; }
     #items img { width: 28px; height: 28px; }
 
@@ -671,6 +683,8 @@
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
     <div id="polarity" data-polarity="positive"></div>
+    <div id="kairos" hidden><span><i></i><i></i><i></i></span><em></em></div>
+    <div id="kairos-marks"></div>
     <div id="items"></div>
   </div>
   <div id="hand"></div>

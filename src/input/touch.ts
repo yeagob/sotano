@@ -71,6 +71,7 @@ export function halfTurn(last: number | null, raw: number): { side: number | nul
 
 interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean }
 
+import { KAIROS_CHARGES } from '../game/kairos';
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
 
 export class TouchControls {
@@ -283,6 +284,15 @@ export class TouchControls {
     this.root.classList.toggle('show', show);
     if (!show) return;
     const p = g.player;
+    // the miracle button (Kairos, #123) exists only while the practice is held; its ring is the charge
+    const miracle = this.buttons.get('miracle')!;
+    const kairos = g.inventory.has('kairos');
+    miracle.hidden = !kairos;
+    if (!kairos) forgetButtonPress(this.tracks, this.input.touchHeld, 'miracle');
+    else {
+      miracle.style.setProperty('--charge', String(g.kairosCharge() / KAIROS_CHARGES));
+      miracle.style.setProperty('--kairos', palCss('light.gold'));
+    }
     const drink = drinkView(p.active);
     // the loaded intention's power (#111): the ring thickens and glows with every step of damage
     const power = intentPowerLevel(g.stats.get('damage')).toFixed(3);

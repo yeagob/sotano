@@ -15,6 +15,7 @@ import { Rng } from '../core/rng';
 import { StatSheet, diffStats, type Stats } from '../core/stats';
 import type { GameBus, WeaponId } from '../game/events';
 import type { HostApi, ItemApi, ItemDef, ItemInstance, Req, SynergyDef } from './types';
+import type { Params } from '../i18n';
 
 export interface GainResult {
   instance: ItemInstance;
@@ -60,6 +61,19 @@ export class Inventory {
     let m = this.memories.get(owner);
     if (!m) { m = {}; this.memories.set(owner, m); }
     return m;
+  }
+
+  /** The scratch memory of a held practice, read by the game (the Kairos charge). Empty when it is not held. */
+  memoryFor(itemId: string): Record<string, number> {
+    return this.held.some(i => i.def.id === itemId) ? this.memoryOf(itemId) : {};
+  }
+
+  /** Shows one of a held practice's own `messages` as a toast, for the game to speak through it. */
+  say(itemId: string, messageId: string, params?: Params): boolean {
+    const it = this.held.find(i => i.def.id === itemId);
+    if (!it) return false;
+    this.api().message(it.def, messageId, params);
+    return true;
   }
 
   get items(): readonly ItemInstance[] { return this.held; }

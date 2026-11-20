@@ -18,6 +18,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | throw | the flying block |
 | drink | the flask on top of the hand: shown only while it is there, drawn as that potion in its liquid colour, in the right-thumb column above throw (#159) |
 | bomb | the bomb (shows the count) |
+| miracle (Kairos) | the clock ring, shown only while Kairos is held; its ring is the charge |
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | star map | the Star map tab on the screen (after the tab button); the ✕ or the tab button closes it. No button of its own in play (the seven-button limit) |
 | pause | none of its own: the menu is the screen the tab button opens |

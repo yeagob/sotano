@@ -118,6 +118,9 @@ export class Hud {
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private polarityEl = $('polarity');
+  private kairosEl = $('kairos');
+  private kairosMarksEl = $('kairos-marks');
+  private kairosTone = '';
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
@@ -319,6 +322,31 @@ export class Hud {
     if (!el) return;
     el.innerHTML = `<span>${th('intro.language')}</span>` + locales().map(l =>
       `<button type="button" data-lang="${l.code}"${l.code === locale() ? ' class="on" aria-pressed="true"' : ''}>${esc(l.name)}</button>`).join('');
+  }
+
+  /** Kairos (#123), a persistent status: the charge pips while the practice is held, and while time is stopped the
+   *  marks, each drawn where its point is on screen. A mark that is behind the camera is hidden, not moved. */
+  kairos(k: { held: boolean; charge: number; max: number; stopped: boolean; marks: { x: number; y: number; n: number; on: boolean }[] }) {
+    const el = this.kairosEl;
+    el.hidden = !k.held;
+    if (!this.kairosTone) {
+      this.kairosTone = palCss('light.gold');
+      el.style.setProperty('--kairos', this.kairosTone);
+      this.kairosMarksEl.style.setProperty('--kairos', this.kairosTone);
+    }
+    if (!k.held) { if (this.kairosMarksEl.childElementCount) this.kairosMarksEl.replaceChildren(); return; }
+    el.classList.toggle('stopped', k.stopped);
+    el.title = t('hud.kairos', { n: k.charge, max: k.max });
+    el.querySelectorAll('i').forEach((pip, i) => pip.classList.toggle('on', i < k.charge));
+    el.querySelector('em')!.textContent = k.stopped ? t('hud.kairos.marks', { n: k.marks.length, max: 5 }) : '';
+    this.kairosMarksEl.replaceChildren(...k.marks.map(m => {
+      const b = document.createElement('b');
+      b.textContent = String(m.n);
+      b.style.left = `${m.x}px`;
+      b.style.top = `${m.y}px`;
+      b.hidden = !m.on;
+      return b;
+    }));
   }
 
   /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
