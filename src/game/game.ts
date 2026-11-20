@@ -55,6 +55,7 @@ import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
+import { dashTouches, DASH_DAMAGE, DASH_MINING } from '../entities/dash';
 import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
@@ -2966,9 +2967,33 @@ export class Game {
   }
 
   /** The afterimage of a dash: a few motes left behind along the path, each frame it runs. */
-  private dashTrail() {
+  private dashTrail(from: { x: number; y: number; z: number }) {
     const b = this.player.body;
-    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.base'), 3, 0.5, 0.05, true);
+    const n = Math.max(1, Math.min(4, Math.ceil(Math.hypot(b.x - from.x, b.y - from.y, b.z - from.z) / 0.15)));
+    for (let i = 1; i <= n; i++) {
+      const k = i / n, x = from.x + (b.x - from.x) * k, y = from.y + (b.y - from.y) * k, z = from.z + (b.z - from.z) * k;
+      this.particles.burst(x, y + b.h * 0.25, z, pal('path.body.base'), 1, 0.4, 0.05, true);
+      this.particles.burst(x, y + b.h * 0.55, z, pal('path.body.glow'), 1, 0.3, 0.06, true);
+      this.particles.burst(x, y + b.h * 0.85, z, pal('path.body.dark'), 1, 0.4, 0.04, true);
+    }
+  }
+
+  private dashStrike(from: { x: number; y: number; z: number }) {
+    const p = this.player, b = p.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || p.dashHits.has(e.id) || !hostile(p.faction, e.faction)) continue;
+      if (!dashTouches(from, b, e.body)) continue;
+      p.dashHits.add(e.id);
+      const dx = e.body.x - b.x, dz = e.body.z - b.z, l = Math.hypot(dx, dz) || 1;
+      if (!this.damageActor(e, DASH_DAMAGE, 'melee', 'irimi', p.id, dx / l, dz / l)) continue;
+      this.particles.burst(e.body.x, e.body.y + e.body.h / 2, e.body.z, pal('cold.body'), 10, 2.5, 0.06);
+    }
+  }
+
+  private dashBreak(x: number, y: number, z: number): boolean {
+    if (!this.solid(x, y, z) || !this.world.inside(x, y, z)) return false;
+    if (blockDamage(DASH_MINING, mat(this.world.get(x, y, z))) < this.world.hp(x, y, z) - 1e-6) return false;
+    return this.damageBlock(x, y, z, DASH_MINING, 'melee', 'irimi');
   }
 
   /** A slight widening of the view through a dash (DASH.md §4): the field of view plus a few degrees, back at its own value after it. */
@@ -5135,6 +5160,7 @@ export class Game {
     const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
+    const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5143,10 +5169,11 @@ export class Game {
         this.bus.emit('land', { fallSpeed: fall, cause, x, y, z });
       },
       bump: speed => this.headBump(speed),
+      dashBreak: (x, y, z) => this.dashBreak(x, y, z),
     }, this.playerMedium, below ? {} : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
     if (this.player.dashStarted) this.dashFx();
-    if (this.player.dashT > 0) this.dashTrail();
+    if (dashing || this.player.dashStarted) { this.dashTrail(dashFrom); this.dashStrike(dashFrom); }
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
