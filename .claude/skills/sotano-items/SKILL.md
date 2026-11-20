@@ -20,7 +20,7 @@ export default defineItem({
   tags: ['emotion'],                   // at least one path: milagros | body | mind | emotion | will (items/validate.ts PATHS)
   color: pal('path.emotion.glow'),     // the primary path's glow token (tests/art-content.test.ts)
   quality: 1,                          // 0–4, Isaac-style; 4 = run-defining
-  icon: { rows: [/* 12 strings of 12 */], palette: { a: 0x7a4a2a } },
+  icon: { rows: [/* 12 strings of 12 */], palette: { a: pal('path.emotion.dark') } },
   stats: [{ stat: 'luck', layer: 'add', value: 1.5 }],
   hooks: [hook('doorOpen', (e, api) => { ... }, { id: 'unlock', priority: 20 })],
   onGain(api) { ... },                 // one-shot (heal, give keys); never re-run on rebuild/restore
