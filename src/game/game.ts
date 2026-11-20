@@ -54,7 +54,7 @@ import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
-import { Player, type Carried, type PlayerMedium } from '../entities/player';
+import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
 import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
@@ -1588,7 +1588,8 @@ export class Game {
       sliceCubes: (inside, along, across) => this.clearCubesIn(inside, { along, across }),
       particles: (x, y, z, c, n, s, size) => this.particles.burst(x, y, z, c, n, s, size),
       shake: s => this.hud.shake(s),
-      swingHands: () => this.hands.fire(),
+      // a weapon that replaces the shot does not take the turn: it swings from the hand that is next
+      swingHands: () => this.hands.fire(this.castHand()),
       chargeHands: k => this.hands.charge(k),
       sound: name => sfx2[name](),
     };
@@ -3359,12 +3360,19 @@ export class Game {
     if (ev.cancelled) return;
     p.fireCooldown = 1 / this.stats.get('fireRate');
     const dir = p.forward;
+    const side = this.castHand();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
-    const from = p.eye.addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
+    const from = p.eye.addScaledVector(right, 0.18 * side).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
     this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
-    this.hands.fire();
+    this.hands.fire(side);
+    if (this.stats.all.twinCast >= 1) p.castSide = nextCastSide(side);
     sfx.shoot();
+  }
+
+  /** The hand that casts now: with `twinCast` the hands take turns; otherwise the right hand always casts. */
+  private castHand(): 1 | -1 {
+    return this.stats.all.twinCast >= 1 ? this.player.castSide : 1;
   }
 
   /** Right click on the alembic: the top of the hand goes into its bulb (game/alembic.ts). */

@@ -224,7 +224,13 @@ export interface IntentSpec {
   /** Positive only (the Transcendent state): an aura of `absorb` times its radius. It takes every destructible block it
    *  touches, adds their armor to its damage, and warms each projection it touches. 0 or absent: no aura. */
   absorb?: number;
+  /** How the intention flies as three strands (combat/intents.ts): set from the `triad` and `spiral` stats. */
+  formation?: Formation;
 }
+
+/** The shape of an intention's strands: a triangle that widens over the flight (`triad`, Rule of Three),
+ *  a helix that turns (`spiral`, Spiral Growth), or both (the triangle turns). */
+export interface Formation { triad: boolean; spiral: boolean }
 
 export type GameBus = EventBus<GameEvents>;
 /** Emitted only by the core loop (depth 0). `death` is emitted right after `actorDamage`

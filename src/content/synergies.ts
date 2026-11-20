@@ -125,4 +125,12 @@ export const SYNERGIES: readonly SynergyDef[] = [
     requires: [{ tag: 'will', count: 3 }],
     stats: [{ stat: 'damage', layer: 'mul', value: 1.15 }, { stat: 'mining', layer: 'mul', value: 1.2 }],
   }),
+  defineSynergy({
+    id: 'doublehelix',
+    name: 'Double Helix',
+    description: 'Two spirals in one rhythm: the pair fires at twice the base rate, not four times, and each strike hits 1.25 times harder.',
+    // Bilateral Stimulation and Spiral Growth each double the fire rate; this halves the pair back to ×2
+    requires: ['bilateral', 'spiralgrowth'],
+    stats: [{ stat: 'fireRate', layer: 'mul', value: 0.5 }, { stat: 'damage', layer: 'mul', value: 1.25 }],
+  }),
 ];

@@ -17,6 +17,10 @@ import { dashDisplacement, DASH_COOLDOWN, DASH_TIME } from './dash';
 import { CROUCH_H, CROUCH_SPEED, EYE_CROUCH, EYE_STAND, RUN_SPEED, roomToStand, STAND_H, supportedAt } from './stance';
 
 export const EYE = EYE_STAND;
+/** The hand that casts: +1 is the right, -1 the left (Bilateral Stimulation and Spiral Growth take turns). */
+export type CastSide = 1 | -1;
+/** The hand that casts after `side` has cast (the turns of `twinCast`). */
+export const nextCastSide = (side: CastSide): CastSide => (side === 1 ? -1 : 1);
 const SLOW_FACTOR = 0.5;
 /** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
 const ICE_GRIP = 0.12;
@@ -116,6 +120,8 @@ export class Player implements Actor {
   /** Air jumps made since the last landing: the `airJumps` stat minus this is what is left, and the next
    *  one climbs to step `airStep + 1` of the ladder. Landing sets it back to 0. */
   airStep = 0;
+  /** The hand the next shot leaves from (game.ts reads it only while the `twinCast` stat is on). */
+  castSide: CastSide = 1;
   private jumpBuffer = 0;
   private coyote = 0;
   /** An external push, blocks/s, laid over the walk and fading on its own (a vertical push goes straight to `vy`). */

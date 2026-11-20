@@ -125,6 +125,9 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | `boundaries` | *Boundaries* (Henry Cloud and John Townsend, 1992) | Credit | **Boundaries** |
 | `self-compassion` | *Self-Compassion* (Kristin Neff, 2011) | Credit | **Self-Compassion** |
 | `sleep-hygiene` | Sleep hygiene (cognitive behavioural therapy for insomnia) | Concept | **Sleep Hygiene** |
+| `bilateral-stimulation` | Bilateral stimulation, alternating left and right, as used in EMDR (Francine Shapiro, 1989). The EMDR name itself is a Credit (*verify*), used only in `inspiredBy` | Concept | **Bilateral Stimulation**: the hands take turns |
+| `rule-of-three` | The rule of three: a proportion from three known terms (classical arithmetic) | PD | **Rule of Three**: each intention flies as three strands |
+| `spiral-growth` | The spiral of growth: the turning spirals of shells, leaves and seed heads (phyllotaxis) | Concept | **Spiral Growth**: each intention flies as three strands on a helix; **Double Helix** with Bilateral Stimulation |
 
 ### Depth psychology and myth
 
