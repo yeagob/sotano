@@ -20,7 +20,7 @@ Intentions curve toward the nearest projection within 8 blocks. If you also carr
 
 ## Stats and events
 
-- homing: at least 3 (set in the `fire` hook, never lowered)
+- homing: 10 (set in the `fire` hook; strong enough to bend a shot into a projection a few blocks off the line, where 3 only grazes it in the lab). Dowsing sets 3. Whichever of the two was gained last sets both the strength and the target.
 - when an intention is fired: its homing target is a projection (`homingTarget` = `projection`), within 8 blocks. A positive intention steers toward any projection it can meet; a negative one only toward hostile projections.
 
 ## Positive outcome

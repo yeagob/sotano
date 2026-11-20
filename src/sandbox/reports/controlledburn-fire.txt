@@ -16,7 +16,7 @@ t 150 (2.5 s)
   elements —
   cubes brick 9 · crate 14 · pickups 11
   rewards red-heart
-  events actorDamage:doubt<explosion 1 · actorDamage:doubt<item 1 · actorDamage:doubt<kick 4 · actorDeath:doubt 1 · blockBreak:brick 10 · blockBreak:crate 15 · blockDamage:brick 10 · blockDamage:crate 126 · blockLoot:brick 10 · blockLoot:crate 15 · bombBlast 1 · explosion 1 · roomEnter 1 · touchCube:brick 1 · touchCube:crate 1
+  events actorDamage:doubt<explosion 1 · actorDamage:doubt<item 1 · actorDamage:doubt<kick 4 · actorDeath:doubt 1 · blockBreak:brick 10 · blockBreak:crate 15 · blockDamage:brick 10 · blockDamage:crate 126 · blockLoot:brick 10 · blockLoot:crate 15 · bombBlast 1 · burst 1 · explosion 1 · roomEnter 1 · touchCube:brick 1 · touchCube:crate 1
 
 t 360 (6.0 s)
   player hp 24/24 · at 2.5 0.0 3.5 · hand [crate brick] · bombs 99 · keys 99

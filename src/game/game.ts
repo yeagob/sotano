@@ -4402,8 +4402,10 @@ export class Game {
       this.carve(band + 1);
       this.bus.clearDeferred();
       this.potionsEnded(this.potions.floorEntered());
-        this.bus.emit('floorEnter', { depth: band, arrival: arrivalOf(this.floors.get(band)!.spawn) });
-      this.hud.setFloor(this.floors.get(band)!, band);
+      // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
+      const entered = this.floors.get(band);
+      this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
+      if (entered) this.hud.setFloor(entered, band);
       this.hud.toast('toast.floor', { n: band });
       this.visited = new Set();
     }

@@ -158,7 +158,7 @@ describe('aim: Dowsing aims at blocks, Eye Contact at projections', () => {
   it('Eye Contact asks for projections within 8, never for blocks', () => {
     const { bus } = rig(['eyecontact']);
     const spec = fire(bus);
-    expect(spec.homing).toBe(3);
+    expect(spec.homing).toBe(10);
     expect(spec.homingTarget).toBe('projection');
     const { intents, calls } = steering();
     intents.fire(spec, new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0), new THREE.Vector3());
@@ -237,11 +237,13 @@ describe('the one gained last guides', () => {
     expect(fire(bus).homingTarget).toBe('projection');
   });
 
-  it('both add homing and neither lowers damage', () => {
-    const { bus } = rig(['dowsing', 'eyecontact']);
-    const spec = fire(bus);
-    expect(spec.homing).toBe(3);
-    expect(spec.damage).toBe(BASE_STATS.damage);
+  it('the one gained last sets the strength too, and neither lowers damage', () => {
+    const a = fire(rig(['dowsing', 'eyecontact']).bus);
+    expect(a.homing).toBe(10);
+    expect(a.damage).toBe(BASE_STATS.damage);
+    const b = fire(rig(['eyecontact', 'dowsing']).bus);
+    expect(b.homing).toBe(3);
+    expect(b.damage).toBe(BASE_STATS.damage);
   });
 
   it('the toast comes from the practice gained last, when the other is held (both orders)', () => {

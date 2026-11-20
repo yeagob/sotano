@@ -33,6 +33,7 @@ export default defineItem({
   messages: { takesOver: 'Dowsing now guides your intentions; Eye Contact is set aside.' },
   onGain(api) { if (api.has('eyecontact')) api.toast('takesOver'); },
   hooks: [
-    hook('fire', e => { e.intent.homing = Math.max(e.intent.homing, 3); e.intent.homingTarget = 'block'; }, { id: 'aim', priority: 20 }),
+    // the last gained of Dowsing and Eye Contact writes last, so it sets both the strength and the target
+    hook('fire', e => { e.intent.homing = 3; e.intent.homingTarget = 'block'; }, { id: 'aim', priority: 20 }),
   ],
 });
