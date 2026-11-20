@@ -33,8 +33,12 @@ export const intentCeiling = (polarity: Polarity, hp: number) =>
   polarity === 'positive' ? Math.max(0, hp - 1) : Infinity;
 
 /** Warmth after one hit of this polarity. */
-export const warmthAfter = (polarity: Polarity, warmth: number) =>
-  polarity === 'positive' ? Math.min(1, warmth + WARMTH_PER_HIT) : Math.max(0, warmth - WARMTH_COOL);
+export const warmthAfter = (polarity: Polarity, warmth: number, gain = WARMTH_PER_HIT) =>
+  polarity === 'positive' ? Math.min(1, warmth + gain) : Math.max(0, warmth - WARMTH_COOL);
+
+/** Warmth one hit adds to a boss: its raw damage as a share of its maximum health, so filling it costs the same
+ *  damage as destroying it (the positive share is halved, so `amount` is divided back to the raw damage). */
+export const bossWarmth = (amount: number, maxHp: number) => Math.min(1, amount / POSITIVE_DAMAGE / maxHp);
 
 /** Full warmth turns a projection to your side (tolerant to float sums: 0.2 five times is not exact). */
 export const isWarm = (warmth: number) => warmth >= 1 - EPS;
@@ -56,7 +60,7 @@ export const meetsIntention = (faction: Faction, hp: number, maxHp: number, pola
   responds ? responds === polarity : faction === 'projection' || polarity === 'negative' || hp < maxHp;
 
 /** An enemy as an intention sees it, before the hit. */
-export interface HitState { polarity: Polarity; warm: boolean; faction: Faction; hp: number; maxHp: number; warmth: number }
+export interface HitState { polarity: Polarity; warm: boolean; faction: Faction; hp: number; maxHp: number; warmth: number; boss?: boolean }
 
 /** What the hit does: the warmth after it, the health it takes, and whether an ally relapses or a
  *  projection converts. */
@@ -69,7 +73,7 @@ export interface HitResolution { warmth: number; dealt: number; relapse: boolean
  * converts when a positive intention fills its warmth.
  */
 export function resolveHit(s: HitState, amount: number): HitResolution {
-  const warmth = s.warm ? warmthAfter(s.polarity, s.warmth) : s.warmth;
+  const warmth = s.warm ? warmthAfter(s.polarity, s.warmth, s.boss ? bossWarmth(amount, s.maxHp) : WARMTH_PER_HIT) : s.warmth;
   if (s.polarity === 'negative' && s.faction === 'self' && s.hp - amount <= 0) return { warmth: 0, dealt: 0, relapse: true, convert: false };
   const dealt = Math.min(amount, intentCeiling(s.polarity, s.hp));
   const convert = s.polarity === 'positive' && s.faction === 'projection' && isWarm(warmth);

@@ -2151,7 +2151,7 @@ export class Game {
       if (e.alive) this.splitOnHit(e);
       return true;
     }
-    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth }, amount);
+    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth, boss: e.spec.kind === 'boss' }, amount);
     e.warmth = r.warmth;
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
     if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
