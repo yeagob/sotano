@@ -21,7 +21,6 @@ Changes to the tutorial and to the book are listed without their content, so not
 - "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
 - The Leaves: a new room of the giant tree, with a ring of star stone under an open eye in its dome (#149).
 - Dowsing and Eye Contact: two practices that steer intentions, one toward blocks and one toward projections. The one you gained last guides; the other is set aside, with a toast (#68).
-- Seed codes move to v38: the fire practices join the treasure rooms' draw, so the same code lays some treasures differently (#110).
 - Three fire practices: Inner Fire (negative intentions burn, and fire hurts you half as much), Firewalking (fire never hurts you, and standing in it heals a little), and Stolen Fire (one intention in five is a fire seed that bursts). Holding three fire practices gives Hearth, which warms you when a fire bursts. In English and Spanish (#110).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
 - Two practices of the bounce, in English and Spanish: Dialectic (a rebound splits the intention in two, each at half damage, at most twice per shot) and Reframing (after a rebound the intention turns toward a projection within 8 blocks and deals 25% more). They stack with Bounce Back (#110).
@@ -30,6 +29,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - 62 new room layouts: arenas with low rings and benches, galleries and towers to fight from, piers and broken bridges over dry docks, canals, flooded cloisters, canal locks you open by breaking a plug, lava lakes and forges, a pool that turns lava to stone when you break its wall, crypts and catacombs in the deep circles, four new challenge rooms, two starts, three treasure rooms, two vaults and two bosses' halls. Every band of floors has at least twice as many layouts as before (#115).
 
 ### Changed
+- Seed codes move to v38: the same code lays out its rooms with the new and redrawn layouts (#115), and the new practices join the treasure, vault and boss draws, so its pedestals hold other practices (#110, #122, #123, #157, #52).
 - Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
 - The Gardener now asks for a living root and a tuft of cave moss, one card each, instead of a flesh part (#228).
 - The Cartographer charts both the vault and the boss for the right ore, on its card and on the star map; without it, its single mark is unchanged (#228).
@@ -38,9 +38,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Child no longer adds a Lesson in words after its gift (#149).
 - The Questioning Tincture takes any ore, not only iron ore (#228).
 - Seed codes move to v37: the same code grows the giant tree with the Leaves and lays the new blocks in the rock; the rooms are unchanged (#149, #228).
-- Seed codes move to v38: the two new bounce practices join the treasure pool, so the same code reserves different practices on its pedestals; the rooms and the rock are unchanged (#110).
 - 48 room layouts redrawn so their corners stay clear: no more cubes in or beside the corners where projections rise unseen or where you snag while chasing them; pillars stand on the room's cross instead (#115).
-- Seed codes move to v38: the same code lays out its rooms with the new and redrawn layouts (#115).
 
 ## 0.2.6-alpha · 2026-11-19
 

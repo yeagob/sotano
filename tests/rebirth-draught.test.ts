@@ -9,6 +9,7 @@ import { PARTS } from '../src/content/parts';
 import { POTION_IDS, POTIONS, type Flask } from '../src/content/potions';
 import { brewOf } from '../src/content/recipes';
 import { createBus } from '../src/game/events';
+import { Kairos } from '../src/game/kairos';
 import type { SavedItem } from '../src/items/inventory';
 
 vi.mock('../src/audio/sfx', () => {
@@ -47,6 +48,7 @@ function rig(hand: Carried[], active: number | null, extra: Rig = {}): Rig {
     sandbox: null,
     restartT: 0, revealT: -1, gate: { busy: false }, // what the transitioning getter reads
     pendingRebirth: false,
+    kairos: new Kairos(), // newRun cancels a running time stop
     rebirthKeep: null,
     hud: { toast: vi.fn(), presenceOfferCard: vi.fn(), closePresenceOffer: vi.fn(), setItems: vi.fn() },
     input: { modal: false, suppress: vi.fn(), resume: vi.fn(), unlockFor: vi.fn() },
