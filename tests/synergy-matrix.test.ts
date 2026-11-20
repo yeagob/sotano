@@ -58,7 +58,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
   bossOvercome: () => ({ boss: 'resistance', floor: 1, how: 'destroyed' }),
-  meditationComplete: () => ({ meditation: 'ground', source: 'roots' }),
+  meditationComplete: () => ({ meditation: 'ground', source: 'roots', seconds: 20 }),
   cook: () => ({ meal: 'meal-small', part: 'flesh' }),
   playerDied: () => ({ floor: 0, source: 'bomb' }),
   surfaceEnter: () => ({ from: 0 }),

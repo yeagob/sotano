@@ -23,8 +23,10 @@ export interface AchievementDef {
   readonly on: AchievementEvent;
   /** Payload fields that must match. A list value matches any of its items. */
   readonly where?: Readonly<Record<string, WhereValue>>;
-  /** Matching events needed across runs (default 1). */
+  /** Matching events needed across runs (default 1). With `amount`, the sum of that payload field must reach it. */
   readonly times?: number;
+  /** A payload field of a number, added to the count instead of 1 (a sum across runs, e.g. seconds of meditation). */
+  readonly amount?: string;
 }
 
 /** The bosses of the catalogue: the ids of src/content/bosses (each one has a `destroyed` and a `converted` entry). */
@@ -82,6 +84,8 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'meditation.box', on: 'meditationComplete', where: { meditation: 'box' }, times: 3 },
   { id: 'meditation.warm', on: 'meditationComplete', where: { meditation: 'warm' }, times: 3 },
   { id: 'meditation.river', on: 'meditationComplete', where: { meditation: 'river' }, times: 3 },
+  // Meditation time: the sittings finished, from any Boundary, added up across runs to an hour (3600 s).
+  { id: 'meditation.hour', on: 'meditationComplete', amount: 'seconds', times: 3600 },
 
   // Stations: the first potion brewed, the first meal cooked (2).
   { id: 'brew.first', on: 'brew' },

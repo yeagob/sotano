@@ -27,8 +27,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 47 achievements: the 40 of #147 (36 plus the 4 book pages), the 6 of #179 (Down to the Roots, Root to Crown, Into the Crown, Mind Crafter, Turning Back, The Unbreakable Floor) and the final one (Made Omh, completion reaches 100%), and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(47);
+  it('holds the 48 achievements: the 40 of #147 (36 plus the 4 book pages), the 6 of #179 (Down to the Roots, Root to Crown, Into the Crown, Mind Crafter, Turning Back, The Unbreakable Floor), the final one (Made Omh, completion reaches 100%) and the hour of meditation (An Hour of Stillness), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(48);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -55,9 +55,10 @@ describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
 
   it('names exactly the meditations of src/content/presences/meditations.ts, three completions each', () => {
     expect([...ACHIEVEMENT_MEDITATIONS].sort()).toEqual(SEQUENCES.map(s => s.id).sort());
-    const meds = ACHIEVEMENTS.filter(d => d.on === 'meditationComplete');
+    const meds = ACHIEVEMENTS.filter(d => d.where?.meditation !== undefined);
     expect(meds).toHaveLength(6);
     for (const d of meds) expect(d.times).toBe(3);
+    expect(ACHIEVEMENTS.find(d => d.id === 'meditation.hour')).toMatchObject({ on: 'meditationComplete', amount: 'seconds', times: 3600 });
   });
 
   it('has the first brew and the first meal', () => {
@@ -189,6 +190,19 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     expect(start.counts).toEqual({ 'meditation.box': 2 });
   });
 
+  it('the hour adds the seconds of each finished sitting across runs, unlocks at 3600, and an event with no seconds counts nothing', () => {
+    expect(run(EMPTY, 'meditationComplete', { meditation: 'ground', source: 'roots' }).state.counts['meditation.hour']).toBeUndefined();
+    const a = run(EMPTY, 'meditationComplete', { meditation: 'ground', source: 'roots', seconds: 1800 });
+    expect(a.state.counts['meditation.hour']).toBe(1800);
+    const b = run(a.state, 'meditationComplete', { meditation: 'dusk', source: 'vault', seconds: 1799 });
+    expect(ids(b.unlocked)).not.toContain('meditation.hour');
+    expect(b.state.counts['meditation.hour']).toBe(3599);
+    const c = run(b.state, 'meditationComplete', { meditation: 'box', source: 'roots', seconds: 1 });
+    expect(ids(c.unlocked)).toContain('meditation.hour');
+    expect(c.state.achievements['meditation.hour']).toBe(NOW);
+    expect(c.state.counts['meditation.hour']).toBeUndefined();
+  });
+
   it('a destroyed boss unlocks only its destroyed achievement, a converted one only its converted one', () => {
     const d = run(EMPTY, boss('inertia', 'destroyed').event, boss('inertia', 'destroyed').payload);
     expect(ids(d.unlocked)).toEqual(['boss.inertia.destroyed']);
@@ -260,7 +274,7 @@ describe('mastery (MASTERY §1)', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(47);
+    expect(mastery({ achievements: all })).toBe(48);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {

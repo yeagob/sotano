@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 47 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, and the final one of #180, "Made Omh", §1). The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 48 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the final one of #180, "Made Omh", and the hour of meditation, §1). The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -76,6 +76,12 @@ Renamed from the first draft, whose single boss achievement became the "destroye
 | `meditation.warm` | Self-Compassion | A Kinder Voice | Una voz más amable | Complete the Self-Compassion meditation three times. | Completa tres veces la meditación de Autocompasión. |
 | `meditation.river` | Listening to the River | By the River | A la orilla del río | Complete the Listening to the River meditation three times. | Completa tres veces la meditación de Escuchar el río. |
 
+**The hour of meditation** is one achievement counted in seconds, not in sittings: `{ id: 'meditation.hour', on: 'meditationComplete', amount: 'seconds', times: 3600 }`. Every finished Sanctuary sitting adds its full length (from the Roots' chest or a vault's, added time included) to a count kept across runs, and it unlocks at one hour.
+
+| Id | Meditation | Name | Nombre | Description | Descripción |
+|---|---|---|---|---|---|
+| `meditation.hour` | Any, in total | An Hour of Stillness | Una hora de quietud | Sit for one hour in total, across every finished meditation. | Medita una hora en total, sumando todas las meditaciones terminadas. |
+
 The ids use the meditation ids of `src/content/presences/meditations.ts` (`ground`, `dusk`, `night`, `box`, `warm`, `river`). The names come from each sitting's scene (lanterns rising at dusk, the square of the breath, the river) or its practice.
 
 ### Stations: the first brew and the first meal (2)
@@ -125,14 +131,14 @@ interface AchievementDef {
 }
 ```
 
-The 45 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 48 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
 New events the 46 need (`src/game/events.ts`):
 
 | Event | Payload | Emitted |
 |---|---|---|
 | `bossOvercome` | `{ boss: string; floor: number; how: 'destroyed' \| 'converted' \| 'stillness' }` | In `bossDown`, once per boss room, with the floor's boss id and how it ended: `converted` from `convert`, `stillness` when the Shadow's stillness rule ends it (its behaviour marks that end), `destroyed` for every other death |
-| `meditationComplete` | `{ meditation: string; source: 'roots' \| 'vault' }` | When the Sanctuary ends with `complete`, from the Roots' chest or a vault's Boundary |
+| `meditationComplete` | `{ meditation: string; source: 'roots' \| 'vault'; seconds: number }` | When the Sanctuary ends with `complete`, from the Roots' chest or a vault's Boundary |
 | `pageReached` | `{ page: number }` | When a run's end advances the current page, once, with the new page (`RootsBook`, D1) |
 | `playerDied` | `{ floor: number; source: string }` | When the player dies and the death stands (no hook cancelled `death`); `floor` is the band of the body (0 the Roots, -1 the surface) |
 | `surfaceEnter` | `{ from: number }` | When the body goes from the Roots' band into the surface band (`from` 0) |
@@ -170,7 +176,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 47 defined ones (the 46, and "Made Omh", the final one that the completion percentage unlocks at 100%); the other 53 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 48 defined ones (the 46, "Made Omh", the final one that the completion percentage unlocks at 100%, and the hour of meditation); the other 52 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 

@@ -26,8 +26,8 @@ export interface AchievementNotice {
 }
 
 /** The payload of a finished sitting: a `complete` outcome only, never a quick reward or a cancel (ACHIEVEMENTS §1). */
-export function sittingPayload(outcome: 'cancel' | 'quick' | 'complete', meditation: string, source: 'roots' | 'vault'): { meditation: string; source: 'roots' | 'vault' } | null {
-  return outcome === 'complete' ? { meditation, source } : null;
+export function sittingPayload(outcome: 'cancel' | 'quick' | 'complete', meditation: string, source: 'roots' | 'vault', seconds: number): { meditation: string; source: 'roots' | 'vault'; seconds: number } | null {
+  return outcome === 'complete' ? { meditation, source, seconds } : null;
 }
 
 export class AchievementKeeper {

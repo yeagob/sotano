@@ -37,10 +37,16 @@ export function matches(def: AchievementDef, event: string, payload: Payload): b
   return true;
 }
 
+/** The number an `amount` field adds: a finite, non-negative number in the payload, or nothing. */
+function amountOf(payload: Payload, field: string): number {
+  const v = payload[field];
+  return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
+}
+
 /**
- * Feeds one event to the catalogue. Every matching entry that is still locked counts the event; an entry with
- * `times` unlocks when its count reaches that many. An unlocked id is never counted or unlocked again. `now` is
- * the unlock time written into `achievements`.
+ * Feeds one event to the catalogue. Every matching entry that is still locked counts the event (one, or the number
+ * in its `amount` field); an entry with `times` unlocks when its count reaches that many. An unlocked id is never
+ * counted or unlocked again. `now` is the unlock time written into `achievements`.
  */
 export function track(
   state: AchievementState,
@@ -54,7 +60,9 @@ export function track(
   const unlocked: AchievementDef[] = [];
   for (const def of catalogue) {
     if (!matches(def, event, payload) || has(achievements, def.id)) continue;
-    const seen = (has(counts, def.id) ? counts[def.id] : 0) + 1;
+    const step = def.amount ? amountOf(payload, def.amount) : 1;
+    if (step === 0) continue; // an event with no amount to add counts nothing, and leaves no zero count in the save
+    const seen = (has(counts, def.id) ? counts[def.id] : 0) + step;
     if (seen < (def.times ?? 1)) {
       counts = { ...counts, [def.id]: seen };
       continue;
@@ -101,6 +109,9 @@ export function catalogueErrors(catalogue: readonly AchievementDef[] = ACHIEVEME
     if (seen.has(def.id)) errors.push(`${at}: duplicate id`);
     seen.add(def.id);
     if (!(ACHIEVEMENT_EVENTS as readonly string[]).includes(def.on)) errors.push(`${at}: unknown event ${def.on}`);
+    if (def.amount !== undefined && (!/^[a-zA-Z]+$/.test(def.amount) || def.times === undefined)) {
+      errors.push(`${at}: amount must name a payload field, and needs times (the sum to reach)`);
+    }
     if (def.times !== undefined && !(Number.isInteger(def.times) && def.times >= 1)) errors.push(`${at}: times must be a whole number from 1`);
     for (const [field, want] of Object.entries(def.where ?? {})) {
       const ok = Array.isArray(want)
