@@ -57,6 +57,8 @@ import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './
 import { EYE, Player, type Carried, type PlayerMedium } from '../entities/player';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
+/** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
+const DASH_FOV_KICK = 4;
 import { PolarityHint } from './polarity-hint';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
@@ -2888,6 +2890,27 @@ export class Game {
     sfx3.launch(ev.polarity === 'negative');
   }
 
+  /** Irimi's dash starts: a whoosh and a burst of the practice's light at the feet (DASH.md §4). */
+  private dashFx() {
+    const b = this.player.body;
+    sfx3.dash();
+    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.glow'), 14, 2.4, 0.06);
+  }
+
+  /** The afterimage of a dash: a few motes left behind along the path, each frame it runs. */
+  private dashTrail() {
+    const b = this.player.body;
+    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.base'), 3, 0.5, 0.05, true);
+  }
+
+  /** A slight widening of the view through a dash (DASH.md §4): the field of view plus a few degrees, back at its own value after it. */
+  private kickFov() {
+    const want = this.fovNow + DASH_FOV_KICK * this.player.dashKick;
+    if (Math.abs(this.camera.fov - want) < 1e-3) return;
+    this.camera.fov = want;
+    this.camera.updateProjectionMatrix();
+  }
+
   /** Missiles fly; each one that meets something explodes there (a bomb blast, or love if positive). */
   private updateMissiles(dt: number) {
     if (!this.missiles.list.length) return;
@@ -4706,6 +4729,7 @@ export class Game {
     this.camera.getWorldDirection(this.camDir);
     spatial.listener(this.camera.position.x, this.camera.position.y, this.camera.position.z, this.camDir.x, this.camDir.z);
     this.updateRoots();
+    this.kickFov();
     // the Sanctuary covers the whole screen: the world under it is not drawn while it does
     if (!this.hud.sanctuary.covering) {
       this.renderer.clear();
@@ -4738,6 +4762,8 @@ export class Game {
       bump: speed => this.headBump(speed),
     }, this.playerMedium, below ? {} : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
+    if (this.player.dashStarted) this.dashFx();
+    if (this.player.dashT > 0) this.dashTrail();
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);

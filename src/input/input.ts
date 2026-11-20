@@ -4,8 +4,18 @@ import {
   type Action, type Device,
 } from './bindings';
 import { enterFullscreen } from './fullscreen';
+import { DoubleFlick, DoubleTap, type DashDir } from './gestures';
 
 let current: Device = 'keyboard';
+
+/** The camera-relative direction of each movement key (the double tap of the dash reads them). */
+const KEY_DIR: Readonly<Record<string, DashDir>> = Object.fromEntries(
+  (Object.entries(MOVE_KEYS) as [keyof typeof MOVE_KEYS, readonly string[]][])
+    .flatMap(([d, codes]) => codes.map(c => [c, ({ up: 'forward', down: 'back', left: 'left', right: 'right' } as const)[d]] as const)),
+);
+
+/** A gesture that happened since the last frame (a double tap, a double flick, a swipe): the action it is, its direction and device. */
+interface Gesture { action: Action; dir: DashDir; device: Device }
 const deviceListeners = new Set<(d: Device) => void>();
 
 export const activeDevice = () => current;
@@ -45,6 +55,9 @@ export class Input {
   private padPrev = new Set<number>();
   private padMove = { x: 0, y: 0 };
   private padIndex = -1;
+  private doubleTap = new DoubleTap();
+  private flick = new DoubleFlick();
+  private gestureNow: Gesture | null = null;
   private suppressed = new Set<Action>();
   private lastTouch = -1e9;
   private expectUnlock = false;
@@ -64,6 +77,8 @@ export class Input {
       if (!e.repeat && !this.keys.has(e.code)) this.pressed.add(e.code);
       this.keys.add(e.code);
       this.use('keyboard');
+      const dir = KEY_DIR[e.code];
+      if (dir && !e.repeat && this.doubleTap.press(dir, performance.now() / 1000)) this.gesture('dash', dir, 'keyboard');
       if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
     });
     addEventListener('keyup', e => this.keys.delete(e.code));
@@ -173,7 +188,18 @@ export class Input {
     return this.touchHeld.has(a);
   }
 
+  /** A gesture (dash) happened this frame: its action is hit, from the device that made it. */
+  gesture(action: Action, dir: DashDir, device: Device) {
+    this.gestureNow = { action, dir, device };
+  }
+
+  /** The direction of the dash gesture this frame, or null: the Player reads it when `hit('dash')`. */
+  get dashDir(): DashDir | null {
+    return this.gestureNow?.action === 'dash' ? this.gestureNow.dir : null;
+  }
+
   private rawHit(a: Action): boolean {
+    if (this.gestureNow?.action === a) return true;
     const b = BINDING[a];
     if (b.keyboard.keys?.some(k => this.pressed.has(k))) return true;
     if (b.keyboard.mouse?.some(m => this.mousePressed.has(m))) return true;
@@ -195,6 +221,7 @@ export class Input {
   hitBy(a: Action): Device | null {
     if (this.suppressed.has(a)) return null;
     const b = BINDING[a];
+    if (this.gestureNow?.action === a) return this.gestureNow.device;
     if (b.keyboard.keys?.some(k => this.pressed.has(k)) || b.keyboard.mouse?.some(m => this.mousePressed.has(m))) return 'keyboard';
     if (b.keyboard.wheel && this.wheelHit.has(b.keyboard.wheel)) return 'keyboard';
     if (b.gamepad.buttons?.some(i => this.padHeld.has(i) && !this.padPrev.has(i))) return 'gamepad';
@@ -243,6 +270,8 @@ export class Input {
     this.padHeld = new Set();
     if (!pad) return;
     pad.buttons.forEach((b, i) => { if (b.pressed || b.value > PAD_TRIGGER) this.padHeld.add(i); });
+    // the double flick reads the raw stick (no dead zone: the thresholds are the gesture's own)
+    const flick = this.flick.update(pad.axes[0] ?? 0, pad.axes[1] ?? 0, performance.now() / 1000);
     const [mx, my] = deadzone(pad.axes[0] ?? 0, pad.axes[1] ?? 0);
     const [lx, ly] = deadzone(pad.axes[2] ?? 0, pad.axes[3] ?? 0);
     const stick = Math.max(Math.hypot(mx, my), Math.hypot(lx, ly));
@@ -250,6 +279,7 @@ export class Input {
     this.stickWake = stick;
     if (woke || [...this.padHeld].some(i => !this.padPrev.has(i))) this.use('gamepad');
     if (current !== 'gamepad') return;
+    if (flick) this.gesture('dash', flick, 'gamepad');
     this.padMove.x = mx; this.padMove.y = -my;
     this.lookDX += lookCurve(lx) * PAD_LOOK_SPEED * dt / this.sensitivity;
     this.lookDY += lookCurve(ly) * PAD_LOOK_SPEED * 0.75 * dt / this.sensitivity;
@@ -264,6 +294,7 @@ export class Input {
 
   endFrame() {
     this.pressed.clear(); this.mousePressed.clear(); this.touchPressed.clear(); this.wheelHit.clear();
+    this.gestureNow = null;
     this.lookDX = 0; this.lookDY = 0;
   }
 }

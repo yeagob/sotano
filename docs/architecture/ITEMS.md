@@ -89,6 +89,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `bombRadius`, `bombDamage` | Your bombs (and the blast of a missile, love or not) |
 | `missile` | 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does nothing); `game.ts` `tapMissile`, rules in `combat/missiles.ts` |
 | `luck` | Chance of a reward when a room is cleared (chests to come; Serendipity finds in bomb blasts) |
+| `dash` | 1 = a double tap of a direction, a double flick of the left stick or a swipe dashes 4.5 blocks that way (0 = no dash); `Player.startDash`, the gestures in `src/input/gestures.ts`, rules in [DASH](../design/built/practices/DASH.md) |
 
 `value = clamp((base + Σ add) × Π mul, min, max)`, then `final` overrides. A stat is never mutated in place, so removing an item can't leave residue. The stats panel (Tab) shows all of them; the pickup banner shows exactly what changed.
 

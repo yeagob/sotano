@@ -1,0 +1,35 @@
+# irimi-corridor — Irimi: a dash forward on clear floor covers 4.5 blocks in 0.18 s and stops; the next dash waits out the 0.8 s cooldown
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices irimi · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 6.0 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices irimi · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 10.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices irimi · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+map t 120 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

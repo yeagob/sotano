@@ -1,0 +1,35 @@
+# irimi-wall — Irimi into a wall: the dash stops at the crate's face and never clips into it; a second dash into the same wall moves nothing
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices irimi · synergies —
+  blocks crate 1
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices irimi · synergies —
+  blocks crate 1
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices irimi · synergies —
+  blocks crate 1
+  elements —
+  cubes — · pickups 0
+
+map t 120 · h 0
+  .............
+  .............
+  .............
+  ......c......
+  .............
+  .............
+  .............
+
+legend c crate

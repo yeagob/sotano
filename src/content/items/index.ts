@@ -50,6 +50,7 @@ import sleephygiene from './sleephygiene';
 import thoughtstopping from './thoughtstopping';
 import triangulation from './triangulation';
 import tripleJump from './triple-jump';
+import irimi from './irimi';
 import mendersThread from './menders-thread';
 import dowsing from './dowsing';
 import eyecontact from './eyecontact';
@@ -88,6 +89,7 @@ export const ITEMS: readonly ItemDef[] = [
   pressurevalve, controlledburn, boltfromtheblue, serendipity,
   tummo, firewalking, prometheus,
   teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
+  irimi,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

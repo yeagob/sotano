@@ -12,6 +12,8 @@ import type { PartDef } from '../content/parts';
 import type { Flask } from '../content/potions';
 import type { Actor, ActorId, Faction } from './actors';
 import type { BloodRegen, HeartLayer } from './hearts';
+import type { DashDir } from '../input/gestures';
+import { dashDisplacement, DASH_COOLDOWN, DASH_TIME } from './dash';
 
 export const EYE = 1.62;
 const SLOW_FACTOR = 0.5;
@@ -79,6 +81,19 @@ export class Player implements Actor {
   blood: BloodRegen | null = null;
   /** Seconds of invulnerability left after a hit. */
   invulnT = 0;
+  /** Irimi (DASH.md): seconds left in the dash under way, its velocity, the cooldown left, and whether the air dash is spent. */
+  dashT = 0;
+  dashCool = 0;
+  dashAirUsed = false;
+  /** Set on the frame a dash starts (the game plays its whoosh and trail). */
+  dashStarted = false;
+  /** The direction of the dash under way (for the game's feedback). */
+  dashDir: DashDir | null = null;
+  private dashV = { x: 0, y: 0, z: 0 };
+  /** How far through the dash the body is, 0 to 1 (0 when it is not dashing). */
+  get dashProgress() { return this.dashT > 0 ? 1 - this.dashT / DASH_TIME : 0; }
+  /** The fOV kick of a dash: 0 at its start and end, 1 in the middle. */
+  get dashKick() { return this.dashT > 0 ? Math.sin(Math.PI * this.dashProgress) : 0; }
   slowT = 0;
   muteT = 0;
   dead = false;
@@ -173,6 +188,49 @@ export class Player implements Actor {
     this.slowT = 0;
     this.muteT = 0;
     this.float = false;
+    this.dashT = 0; this.dashCool = 0; this.dashAirUsed = false;
+  }
+
+  /**
+   * Starts a dash in a camera direction (DASH.md). Refused, with no effect, without the `dash` stat, during
+   * the cooldown, a dash under way, a carry or a hold, and a second dash in the air before landing. It is
+   * invulnerable for its length (a hit cannot land while it lasts), and a dash in water covers half the way.
+   */
+  startDash(dir: DashDir, dashStat: number, medium: PlayerMedium): boolean {
+    if (!(dashStat >= 1) || this.dashCool > 0 || this.dashT > 0 || this.dead || this.carrying || this.heldT > 0) return false;
+    const b = this.body;
+    if (!b.onGround) {
+      if (this.dashAirUsed) return false;
+      this.dashAirUsed = true;
+    }
+    const d = dashDisplacement(dir, this.yaw, this.pitch, !!(medium.feet?.fluid || medium.head?.swim));
+    this.dashV = { x: d.x / DASH_TIME, y: d.y / DASH_TIME, z: d.z / DASH_TIME };
+    this.dashT = DASH_TIME;
+    this.dashCool = DASH_COOLDOWN;
+    this.dashDir = dir;
+    this.dashStarted = true;
+    this.invulnT = Math.max(this.invulnT, DASH_TIME);
+    this.pushX = this.pushZ = 0;
+    this.jumpBuffer = 0;
+    return true;
+  }
+
+  /** One frame of a dash: a straight line at dash speed, through the voxel collision, sliding along walls and stopping at ceilings. */
+  private dashStep(dt: number, solid: (x: number, y: number, z: number) => boolean) {
+    const step = Math.min(dt, this.dashT);
+    this.dashT -= step;
+    const b = this.body, v = this.dashV;
+    b.vx = v.x; b.vy = v.y; b.vz = v.z;
+    moveBody(solid, b, step);
+    // a blocked axis stops the dash on that axis only: the rest slides along the wall
+    if (b.vx === 0) v.x = 0;
+    if (b.vy === 0) v.y = 0;
+    if (b.vz === 0) v.z = 0;
+    if (this.dashT <= 0) {
+      this.dashT = 0;
+      // no fall build-up after a dash: the vertical speed restarts at 0
+      b.vx = b.vy = b.vz = 0;
+    }
   }
 
   /**
@@ -218,7 +276,12 @@ export class Player implements Actor {
     this.muteT = Math.max(0, this.muteT - dt);
     this.heldT = Math.max(0, this.heldT - dt);
     const b = this.body;
+    this.dashStarted = false;
+    this.dashCool = Math.max(0, this.dashCool - dt);
+    if (b.onGround) this.dashAirUsed = false;
+    if (input.hit('dash') && input.dashDir) this.startDash(input.dashDir, stats.dash, medium);
     if (this.carrying) this.carryStep(dt, solid);
+    else if (this.dashT > 0) this.dashStep(dt, solid);
     else this.walk(dt, input, stats, Math.max(stats.jump, opts.minJump ?? -Infinity), solid, hooks, medium);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;

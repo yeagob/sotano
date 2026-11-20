@@ -50,6 +50,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
 | bomb | press | play | E | RB | the bomb |
 | polarity | press | play | F | LB | a half turn of the phone |
+| dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | swipe on the left side of the screen (a gesture, no button) |
 | previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |

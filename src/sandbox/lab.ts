@@ -141,6 +141,8 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     }
     case 'fire': fire(a.ticks ?? 1); break;
     case 'key': game.input.pressed.add(a.code); break;
+    // a double tap of a direction, as the input layer reports it (the detector itself is tested in tests/dash.test.ts)
+    case 'dash': game.input.gesture('dash', a.dir, 'keyboard'); break;
     case 'use': game.input.touchPressed.add('place'); break;
     case 'hand': p.hand = a.blocks.map(carriedFromId); break;
   }

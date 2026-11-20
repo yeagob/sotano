@@ -47,6 +47,7 @@ export type Action = { t: number } & (
   | { do: 'look'; at: Vec3 }
   | { do: 'fire'; ticks?: number }
   | { do: 'key'; code: string }
+  | { do: 'dash'; dir: 'forward' | 'back' | 'left' | 'right' }
   | { do: 'use' }
   | { do: 'hand'; blocks: string[] }
 );
