@@ -3034,9 +3034,9 @@ export class Game {
     const body = this.player.body;
     if (Math.hypot(body.x - x, body.y + body.h / 2 - y, body.z - z) <= r) {
       this.heal(LOVE_HEAL_HALF_HEARTS * HALF_HEART, 'bomb');
-      this.particles.burst(body.x, body.y + 1.2, body.z, pal(HEART_FX.red), 24, 3, 0.07);
+      this.particles.hearts(body.x, body.y + 0.9, body.z, pal(HEART_FX.red), 8, 0.7, 0.18);
     }
-    this.particles.burst(x, y, z, pal(HEART_FX.red), 18, 3, 0.08);
+    this.particles.hearts(x, y, z, pal(HEART_FX.red), 10, 0.6, 0.24);
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -5194,7 +5194,7 @@ export class Game {
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
     if (below) this.chestViews.update(dt, this.player.keys);
-    this.particles.update(dt);
+    this.particles.update(dt, this.camera.position);
     this.debrisView.update(this.debris);
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);
