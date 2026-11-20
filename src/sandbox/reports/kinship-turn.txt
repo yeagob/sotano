@@ -1,0 +1,38 @@
+# kinship-turn — Kinship: a projection turned to your side heals a quarter heart, once per room visit
+floor 1 · seed 1 · room 13×7×5 · 300 ticks (5.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kinship · synergies —
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kinship · synergies —
+  doubt#2 hp 24.0/24 · projection · at 8.3 1.0 4.5
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+  events blockDamage:crate 11 · enemySpawn:doubt 1 · fire 3 · intentHit 2 · roomEnter 1
+
+t 300 (5.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kinship · synergies —
+  doubt#2 hp 18.8/24 · self · at 6.4 0.0 4.6
+  blocks crate 3
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 5 · factionChange:doubt>self 1 · fire 8 · heal 1 · intentHit 9
+
+map t 300 · h 0
+  .............
+  .............
+  ........c....
+  ........c....
+  ........c....
+  .............
+  .............
+
+legend c crate

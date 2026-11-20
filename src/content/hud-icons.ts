@@ -1,4 +1,4 @@
-// HUD glyphs as pixel strings (docs/art/DECISIONS.md §10.2): hearts, the breakthrough seed and the
+// HUD glyphs as pixel strings (docs/art/DECISIONS.md §10.2): hearts, the bomb seed and the
 // key with an eye. Drawn by `hudIconUrl` from palette tokens; no SVG, no hex.
 
 import type { PalToken } from './palette';
@@ -25,6 +25,8 @@ export const HUD_ICONS = {
   heartEmpty: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'life.empty', h: 'life.rim', d: 'life.rim' } },
   /** A blue heart: the red heart's shape in ultramarine; once spent it does not come back. */
   heartBlue: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'heart.blue.base', h: 'bone.paper', d: 'heart.blue.dark' } },
+  /** A black heart: the red heart's shape in soot-black; once spent it does not come back (issue #154). */
+  heartBlack: { rows: HEART_ROWS, palette: { o: 'ink.void', f: 'heart.black.base', h: 'bone.paper', d: 'heart.black.dark' } },
   /** A stone heart: warm grey with a gold crack of kintsugi, light coming through the stone. */
   heartStone: {
     rows: [
@@ -234,5 +236,39 @@ export const HUD_ICONS = {
       'oooooooooooo',
     ],
     palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', k: 'ink.ash' },
+  },
+  /** The achievement medal: a gold disc with a light.core glint (the achievement notice's mark, issue #191). Gold is the light and the repair. */
+  // Kairos: a clock face with its hands held still (a placeholder until the art gate, sotano-art)
+  touchMiracle: {
+    rows: [
+      '....oooo....',
+      '..oggggggo..',
+      '.oggggggggo.',
+      '.ogggghhggo.',
+      '.ogggghhggo.',
+      '.ogggggggggo',
+      'ooggggggggoo',
+      'ogggggggggo.',
+      '.oggggggggo.',
+      '.ogggggggggo',
+      '..oggggggo..',
+      '....oooo....',
+    ],
+    palette: { o: 'ink.void', g: 'light.gold', h: 'bone.paper' },
+  },
+  achievement: {
+    rows: [
+      '..oooooo..',
+      '.ogggggggo',
+      'oggggggggo',
+      'oghgggggdo',
+      'oghggggggo',
+      'ogggggggdo',
+      'ogggggggdo',
+      'oggggggddo',
+      '.ogggddo..',
+      '..oooooo..',
+    ],
+    palette: { o: 'ink.void', g: 'light.gold', h: 'light.core', d: 'light.dusk' },
   },
 } satisfies Record<string, HudIcon>;

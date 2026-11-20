@@ -14,6 +14,7 @@ A Mossling is a round moss creature, asleep on the floor. It is the slowest crea
 
 - Drifts very slowly. It comes toward the player when they are more than four blocks away, and steps back when they are nearer than one and a half blocks.
 - Soft, rounded body, with two glowing eyes low on its front.
+- Two to three appear on floor 0.
 
 ## What the player can do
 

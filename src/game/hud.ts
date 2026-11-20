@@ -10,11 +10,12 @@ import { heartQuarters, HEART } from '../entities/actors';
 import { heartCount } from '../entities/hearts';
 import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
-import { fmtStat, statLabel, type StatName } from '../core/stats';
+import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
 import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
-import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, synergyText } from '../i18n/content';
+import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
+import { isPromised } from '../items/pool';
 import type { Polarity } from '../combat/polarity';
 import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
@@ -23,21 +24,31 @@ import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../rende
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
-import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
+import { PHASE_WARN_S } from './phase';
 import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
+import type { CardKeys } from './achievement-keeper';
+import { PARTS, type Completion } from './completion';
+import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
+import { PRESENCE_TALK, type PresenceId } from '../content/presences';
+import { COVENANT_PIECES } from '../content/presences/covenant';
+import { mapKeyOutcome, starMapHtml } from './star-map';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 /** A message, escaped for innerHTML. */
 const th = (key: MessageKey, params?: Params) => esc(t(key, params));
+/** A parameter of the Presence card: text, a number, or a function that gives the text on each redraw (see presenceCard). */
+export type CardParams = Record<string, string | number | (() => string)>;
+interface CardSpec { nameKey: MessageKey; lineKeys: readonly MessageKey[]; params?: CardParams; kicker?: MessageKey; onRead?: () => void }
 /** A heart's name in the toll window, with its quarters when it is not whole (the window's tiles show them). */
 const tollHeartLabel = (name: string, quarters: number) => (quarters >= 4 ? name : t('toll.heartPart', { name, q: quarters }));
 
@@ -57,20 +68,42 @@ const MAP = {
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
 
+/** A presence's request as the consent card shows it: what it asks, and the alternative (requests.ts, REQUESTS.md). */
+export interface PresenceRequestText { ask: MessageKey; alt: MessageKey }
+
 /** "Floor 3 · The rain": the number and the circle's image (docs/design/LEVELS.md). */
 export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
 }
 
-/** The two tabs of the screen: the menu (pause, controls, language) and the practices. */
-export type ScreenTab = 'menu' | 'items';
+/** The tabs of the screen: the menu (pause, controls, language), the practices, and the star map (D15 of #149). */
+export type ScreenTab = 'menu' | 'items' | 'map';
+
+/** The objects of one exchange in one phrase, in the player's language: "A", "A and B" or "A, B and C" (one message per
+ *  count, so the word order can change). A card names at most three (MAX_OFFER_PARTS), so a fourth is never asked for. */
+export function offerList(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  if (names.length === 2) return t('presence.offer.two', { a: names[0], b: names[1] });
+  return t('presence.offer.three', { a: names[0], b: names[1], c: names[2] });
+}
+
+/** The answers an offer card shows in place of a presence's own (the Rebirth Draught asks on the same card). */
+export interface OfferAnswers { accept: MessageKey; decline: MessageKey; controls: MessageKey }
 
 export class Hud {
   private hand = $('hand');
+  /** The held-item label above the hand (a flask or meal in hand; see `updateHeld`). */
+  private heldEl = $('held');
   private itemsBar = $('items');
   private debugEl = $('debug');
   private overlay = $('overlay');
   private bannerEl = $('banner');
+  /** The achievement notice's own element (sotano-popups §2): a corner panel, not the banner. */
+  private achievementEl = $('achievement');
+  private lastAchievement: { keys: CardKeys; level: number } | null = null;
+  /** Time the achievement notice has left on screen, in ms. It runs on game time (`update`), so a pause holds it. */
+  private achievementLeft = 0;
+  private achievementDone: (() => void) | undefined;
   private toastEl = $('toast');
   private bossEl = $('boss');
   private bossFill = $('bossfill');
@@ -86,9 +119,16 @@ export class Hud {
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private polarityEl = $('polarity');
+  private kairosEl = $('kairos');
+  private kairosMarksEl = $('kairos-marks');
+  private kairosTone = '';
+  private phaseEl = $('phase');
+  private phaseTint = $('phase-tint');
+  private phaseShown = '';
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
+  private mapEl = $('starmap');
   private tollEl = $('toll');
   tollOpen = false;
   private tollFloor = 0;
@@ -114,8 +154,18 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried } | null = null;
+  private lastCard: CardSpec | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText; answers?: OfferAnswers } | null = null;
+  /** The key of the held-item label last drawn (the flask in hand and its language), so it is not redrawn each frame. */
+  private heldKey = '';
+  /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
+   *  navigate action has reached; a tap or the confirm action picks one. */
+  private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
+  /** The presences met in this run, in the order met: the codex (CODEX.md). */
+  private codexIds: readonly PresenceId[] = [];
   private lastDeath: Parameters<Hud['showDeath']> | null = null;
+  /** The completion percentage shown on the pause card and the death screen (COMPLETION.md). */
+  private completionView: Completion | null = null;
   private game: Game | null = null;
   /** The screen (menu and practices) is open; it pauses the world on every device. */
   screenOpen = false;
@@ -123,6 +173,8 @@ export class Hud {
   private shownTab: ScreenTab | null = null;
   bannerOpen = false;
   get presenceOfferOpen() { return this.lastPresenceOffer !== null; }
+  get presenceChoiceOpen() { return this.lastPresenceChoice !== null; }
+  get choiceSelected() { return this.lastPresenceChoice?.selected ?? -1; }
   /** The debug readout is off by default; F3 toggles it (it's for developers). */
   showDebug = false;
   private lastFlash = 0;
@@ -185,12 +237,16 @@ export class Hud {
     this.setItems(this.lastItems);
     if (this.lastDepth >= 0) this.depthEl.textContent = floorLabel(this.lastDepth);
     this.renderSeed();
+    this.renderCompletion();
     this.renderPolarity();
     this.renderSpiritLabel();
     this.renderLanguages();
     this.renderControls();
     this.renderGraphics();
-    if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    if (this.lastAchievement) this.renderAchievement(this.lastAchievement);
+    else if (this.bannerOpen && this.lastPresenceOffer) this.renderPresenceOffer();
+    else if (this.bannerOpen && this.lastPresenceChoice) this.renderPresenceChoice();
+    else if (this.bannerOpen && this.lastCard) this.renderCard(this.lastCard);
     else if (this.bannerOpen && this.lastBanner) this.renderBanner(...this.lastBanner);
     if (this.deathEl.classList.contains('show') && this.lastDeath) this.renderDeath(...this.lastDeath);
     if (this.screenOpen && this.game) this.renderScreen(this.game);
@@ -219,13 +275,33 @@ export class Hud {
     const nr = document.getElementById('newrun');
     if (nr) nr.textContent = t('pause.newRun');
     for (const b of document.querySelectorAll<HTMLElement>('#overlay .tabs button')) {
-      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : 'tab.menu');
+      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : b.dataset.tab === 'map' ? 'tab.map' : 'tab.menu');
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
+    this.renderCodex();
+  }
+
+  /** The codex (CODEX.md): the presences met this run, with what each asks and what it gives. Text only, in the language on screen. */
+  setCodex(ids: readonly PresenceId[]) {
+    this.codexIds = [...ids];
+    this.renderCodex();
+  }
+
+  private renderCodex() {
+    const list = document.querySelector<HTMLElement>('#codex ul');
+    if (!list) return;
+    list.innerHTML = this.codexIds.length
+      ? this.codexIds.map(id => `<li><b>${th(PRESENCE_TALK[id].name)}</b>` +
+        `<span><em>${th('codex.asks')}</em> ${th(`codex.${id}.asks` as MessageKey)}</span>` +
+        `<span><em>${th('codex.gives')}</em> ${th(`codex.${id}.gives` as MessageKey)}</span></li>`).join('')
+      : `<li class="none">${th('codex.empty')}</li>`;
   }
 
   get menuShown() { return !this.screenOpen || this.screenTab === 'menu'; }
+
+  /** The star map is the tab on screen (D15): navigate and pick do nothing there. */
+  get mapShown() { return this.screenOpen && this.screenTab === 'map'; }
 
   setFov(fov: number) {
     this.fovShown = fov;
@@ -252,6 +328,31 @@ export class Hud {
       `<button type="button" data-lang="${l.code}"${l.code === locale() ? ' class="on" aria-pressed="true"' : ''}>${esc(l.name)}</button>`).join('');
   }
 
+  /** Kairos (#123), a persistent status: the charge pips while the practice is held, and while time is stopped the
+   *  marks, each drawn where its point is on screen. A mark that is behind the camera is hidden, not moved. */
+  kairos(k: { held: boolean; charge: number; max: number; stopped: boolean; marks: { x: number; y: number; n: number; on: boolean }[] }) {
+    const el = this.kairosEl;
+    el.hidden = !k.held;
+    if (!this.kairosTone) {
+      this.kairosTone = palCss('light.gold');
+      el.style.setProperty('--kairos', this.kairosTone);
+      this.kairosMarksEl.style.setProperty('--kairos', this.kairosTone);
+    }
+    if (!k.held) { if (this.kairosMarksEl.childElementCount) this.kairosMarksEl.replaceChildren(); return; }
+    el.classList.toggle('stopped', k.stopped);
+    el.title = t('hud.kairos', { n: k.charge, max: k.max });
+    el.querySelectorAll('i').forEach((pip, i) => pip.classList.toggle('on', i < k.charge));
+    el.querySelector('em')!.textContent = k.stopped ? t('hud.kairos.marks', { n: k.marks.length, max: 5 }) : '';
+    this.kairosMarksEl.replaceChildren(...k.marks.map(m => {
+      const b = document.createElement('b');
+      b.textContent = String(m.n);
+      b.style.left = `${m.x}px`;
+      b.style.top = `${m.y}px`;
+      b.hidden = !m.on;
+      return b;
+    }));
+  }
+
   /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
   bossBar(boss: { name: string; ratio: number } | null) {
     this.bossEl.hidden = !boss;
@@ -265,6 +366,23 @@ export class Hud {
     this.renderPolarity();
   }
 
+  /** Lucid Dream's status (the persistent status type of sotano-popups): its practice icon, the seconds left and a soft
+   *  tint over the screen, shown while the phase runs. `left` null hides it. Redraws only when what shows changes. */
+  setPhase(left: number | null, def: ItemDef | null) {
+    const on = left !== null && def !== null;
+    const warn = on && left <= PHASE_WARN_S;
+    const key = on ? `${Math.ceil(left)}:${warn}` : '';
+    if (key === this.phaseShown) return;
+    this.phaseShown = key;
+    this.phaseEl.hidden = !on;
+    this.phaseTint.classList.toggle('on', on);
+    if (!on) return;
+    document.documentElement.style.setProperty('--phase-tint', palCss('path.milagros.glow'));
+    this.phaseEl.classList.toggle('warn', warn);
+    const name = esc(itemText(def).name);
+    this.phaseEl.innerHTML = `<img src="${iconDataUrl(def, 2)}" alt="" title="${name}"><b>${esc(t('hud.phase.left', { n: fmtNum(Math.ceil(left)) }))}</b>`;
+  }
+
   private renderPolarity() {
     const el = this.polarityEl;
     const positive = this.lastPolarity === 'positive';
@@ -276,6 +394,7 @@ export class Hud {
 
   update(g: Game, running: boolean, dt: number) {
     this.shakeT = Math.max(0, this.shakeT - dt);
+    if (running) this.tickAchievement(dt);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
     this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
@@ -336,35 +455,17 @@ export class Hud {
     this.bombsEl.textContent = String(g.player.bombs).padStart(2, '0');
     this.keysEl.textContent = String(g.player.keys).padStart(2, '0');
 
-    // hand slots: one per carry point, top block highlighted
+    // hand slots: one per carry point; the active carried item is outlined in gold
     const carry = Math.floor(g.stats.get('carry'));
-    const key = carry + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
+    const active = g.player.activeIndex;
+    const key = carry + ':' + active + ':' + g.player.hand.map(c => typeof c === 'number' ? c : carriedDef(c).id).join(',');
     if (key !== this.handKey) {
       this.handKey = key;
       this.hand.innerHTML = '';
-      for (let i = 0; i < carry; i++) {
-        const c = g.player.hand[i];
-        const slot = document.createElement('div');
-        slot.className = 'slot' + (c ? ' full' : '') + (i === g.player.hand.length - 1 ? ' top' : '');
-        if (c) {
-          const img = document.createElement('img');
-          if (typeof c === 'number') {
-            img.src = this.slotUrl(c);
-            img.title = materialName(c);
-          } else if (isFlask(c)) {
-            const pd = POTIONS[c.potion];
-            img.src = iconDataUrl(carriedDef(c), 3);
-            img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
-          } else {
-            const tx = partText(c);
-            img.src = iconDataUrl(c, 3);
-            img.title = `${tx.name}\n${tx.description}`;
-          }
-          slot.appendChild(img);
-        }
-        this.hand.appendChild(slot);
-      }
+      // slots past the base carry (Furoshiki) are drawn dimmer
+      for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active, i >= BASE_STATS.carry));
     }
+    this.updateHeld(g.player.active);
 
     if (--this.debugTimer <= 0 && this.showDebug) {
       this.debugTimer = 15;
@@ -379,10 +480,64 @@ export class Hud {
     this.sanctuary.frame(now);
   }
 
+  /**
+   * The held label: while a flask or a meal is the active carried item, its name and what it does sit above the hand
+   * (sotano-popups: the persistent HUD status type). The recipe is never shown.
+   */
+  private updateHeld(c: Carried | undefined) {
+    const f = c && isFlask(c) ? c : null;
+    const key = f ? `${f.potion}:${f.iced ? 1 : 0}` : '';
+    if (key === this.heldKey) return;
+    this.heldKey = key;
+    if (!f) { this.heldEl.classList.remove('show'); this.heldEl.replaceChildren(); return; }
+    const def = POTIONS[f.potion];
+    const name = document.createElement('b');
+    name.textContent = t(def.name);
+    const effect = document.createElement('span');
+    effect.textContent = t(def.effect, { rooms: flaskRooms(f) });
+    this.heldEl.replaceChildren(name, effect);
+    this.heldEl.classList.add('show');
+  }
+
+  /** How long a flask lasts, in words: at once, for some sealed rooms, or until the next floor. */
+  private potionDuration(f: Flask): string {
+    const d = POTIONS[f.potion].duration;
+    return d.kind === 'instant' ? t('potion.duration.instant') : d.kind === 'floor' ? t('potion.duration.floor') : t('potion.duration.rooms', { rooms: flaskRooms(f) });
+  }
+
+  /** The "In hand" block at the top of the inventory when a flask or meal is the active item: name, effect, duration. */
+  private inHandBlock(f: Flask): string {
+    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(t(POTIONS[f.potion].name))}</b>` +
+      `<p>${esc(t(POTIONS[f.potion].effect, { rooms: flaskRooms(f) }))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
+  }
+
   private slotUrl(m: number) {
     let url = this.slotUrls.get(m);
     if (!url) { url = (materialTexture(m).image as HTMLCanvasElement).toDataURL(); this.slotUrls.set(m, url); }
     return url;
+  }
+
+  /** One carry slot: the item in it, or an empty well; outlined in gold when it is the active item. */
+  private handSlot(c: Carried | undefined, active: boolean, extra = false) {
+    const slot = document.createElement('div');
+    slot.className = 'slot' + (c ? ' full' : '') + (active ? ' on' : '') + (extra ? ' extra' : '');
+    if (c) {
+      const img = document.createElement('img');
+      if (typeof c === 'number') {
+        img.src = this.slotUrl(c);
+        img.title = materialName(c);
+      } else if (isFlask(c)) {
+        const pd = POTIONS[c.potion];
+        img.src = iconDataUrl(carriedDef(c), 3);
+        img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
+      } else {
+        const tx = partText(c);
+        img.src = iconDataUrl(c, 3);
+        img.title = `${tx.name}\n${tx.description}`;
+      }
+      slot.appendChild(img);
+    }
+    return slot;
   }
 
   /** Small icons of the items you hold, under the counters. */
@@ -505,24 +660,43 @@ export class Hud {
 
   // ───────────────────────── feedback ─────────────────────────
 
-  /** Isaac-style banner: icon, name, quality, inspiration, and exactly what changed. */
-  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: Params) {
+  /**
+   * The Presence card: a name and a few lines read once, confirmed to continue (sotano-popups §2). `kicker` is an optional
+   * short line above the name (the achievements' "Achievement", ACHIEVEMENTS §4). A param may be a function: it is
+   * called again on every redraw, so a line that names a sentence built from other keys follows a language change.
+   * `onRead` runs only when the player confirms this card (`confirmBanner`), never when it is cut off.
+   */
+  presenceCard(nameKey: MessageKey, lineKeys: readonly MessageKey[], params?: CardParams, kicker?: MessageKey, onRead?: () => void) {
+    this.hideAchievement();
     this.lastBanner = null;
+    this.lastCard = { nameKey, lineKeys, params, kicker, onRead };
     this.clearPresenceOfferState();
-    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
-    this.bannerEl.innerHTML =
-      `<div class="ribbon slate"><div><b>${th(nameKey)}</b>` +
-      lineKeys.map(k => `<span>${th(k, params)}</span>`).join('') +
-      `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+    this.renderCard(this.lastCard);
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth;
     this.bannerEl.classList.add('show');
     this.bannerOpen = true;
   }
 
-  presenceOfferCard(nameKey: MessageKey, carried: Carried) {
+  private renderCard(c: CardSpec) {
+    const params: Params = {};
+    for (const [k, v] of Object.entries(c.params ?? {})) params[k] = typeof v === 'function' ? v() : v;
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.bannerEl.style.setProperty('--gold', palCss('light.gold'));
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div>${c.kicker ? `<em class="kicker">${th(c.kicker)}</em>` : ''}<b>${th(c.nameKey)}</b>` +
+      c.lineKeys.map(k => `<span>${th(k, params)}</span>`).join('') +
+      `<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+  }
+
+  /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
+   *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
+  /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText, answers?: OfferAnswers) {
+    this.hideAchievement();
     this.lastBanner = null;
-    this.lastPresenceOffer = { nameKey, carried };
+    this.lastCard = null;
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request, answers };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -539,16 +713,20 @@ export class Hud {
   private renderPresenceOffer() {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
-    const item = typeof offer.carried === 'number'
-      ? materialName(offer.carried)
-      : isFlask(offer.carried)
-        ? t(POTIONS[offer.carried.potion].name)
-        : partText(offer.carried).name;
+    const carried = offer.carried;
+    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? t(POTIONS[c.potion].name) : partText(c).name;
+    // a multi-part agreement names every object in one sentence (AGREEMENTS.md; owner, #228, D11)
+    const item = carried === undefined
+      ? ''
+      : Array.isArray(carried)
+        ? offerList((carried as readonly Carried[]).map(nameOf))
+        : nameOf(carried as Carried);
     this.bannerEl.innerHTML =
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
-      `<span class="offer-question" id="presence-offer-question">${th('presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
-      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th('presence.offer.accept')}</button>` +
-      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.offer.decline')}</button></div>` +
+      `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
+      (offer.request ? `<span class="offer-request">${th(offer.request.ask)}<small>${th(offer.request.alt)}</small></span>` : '') +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.answers?.accept ?? (offer.gift ? 'presence.offer.take' : 'presence.offer.accept'))}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.answers?.decline ?? (offer.gift ? 'presence.offer.leave' : 'presence.offer.decline'))}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
     this.renderPresenceOfferControls();
     this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
@@ -556,7 +734,9 @@ export class Hud {
 
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
-    if (el) el.textContent = t(forDevice('presence.offer.controls', activeDevice()), controlParams(activeDevice()));
+    if (!el) return;
+    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.answers?.controls ?? (this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls');
+    el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
   closePresenceOffer() {
@@ -565,8 +745,53 @@ export class Hud {
     this.bannerEl.classList.remove('show');
   }
 
+  /** The choice card (see `lastPresenceChoice`): the presence asks, and the player picks one of its answers or declines. */
+  presenceChoiceCard(nameKey: MessageKey, questionKey: MessageKey, options: readonly MessageKey[], request?: PresenceRequestText) {
+    this.hideAchievement();
+    this.lastBanner = null;
+    this.lastCard = null;
+    this.clearPresenceOfferState();
+    this.lastPresenceChoice = { nameKey, questionKey, options, selected: 0, request };
+    this.bannerEl.dataset.offer = 'true';
+    this.bannerEl.setAttribute('role', 'dialog');
+    this.bannerEl.setAttribute('aria-modal', 'true');
+    this.bannerEl.setAttribute('aria-labelledby', 'presence-offer-title');
+    this.bannerEl.setAttribute('aria-describedby', 'presence-offer-question');
+    this.bannerEl.style.setProperty('--c', palCss('bone.paper'));
+    this.renderPresenceChoice();
+    this.bannerEl.classList.remove('show');
+    void this.bannerEl.offsetWidth;
+    this.bannerEl.classList.add('show');
+    this.bannerOpen = true;
+  }
+
+  /** Moves the selected answer by one (navigate); wraps at the ends. */
+  moveChoice(dx: number) {
+    const c = this.lastPresenceChoice;
+    if (!c || dx === 0) return;
+    c.selected = (c.selected + Math.sign(dx) + c.options.length) % c.options.length;
+    this.renderPresenceChoice();
+  }
+
+  private renderPresenceChoice() {
+    const c = this.lastPresenceChoice;
+    if (!c) return;
+    const answers = c.options.map((key, i) =>
+      `<button type="button" class="${i === c.selected ? 'on' : ''}" aria-pressed="${i === c.selected}" data-act="presence-choice-${i}">${th(key)}</button>`).join('');
+    this.bannerEl.innerHTML =
+      `<div class="ribbon slate"><div><b id="presence-offer-title">${th(c.nameKey)}</b>` +
+      `<span class="offer-question" id="presence-offer-question">${th(c.questionKey)}</span>` +
+      (c.request ? `<span class="offer-request">${th(c.request.ask)}<small>${th(c.request.alt)}</small></span>` : '') +
+      `<div class="offer-actions choices">${answers}` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th('presence.choice.decline')}</button></div>` +
+      `<small class="offer-controls"></small></div></div>`;
+    this.renderPresenceOfferControls();
+    this.bannerEl.querySelector<HTMLButtonElement>('.offer-actions button.on')?.focus({ preventScroll: true });
+  }
+
   private clearPresenceOfferState() {
     this.lastPresenceOffer = null;
+    this.lastPresenceChoice = null;
     delete this.bannerEl.dataset.offer;
     this.bannerEl.removeAttribute('role');
     this.bannerEl.removeAttribute('aria-modal');
@@ -575,7 +800,9 @@ export class Hud {
   }
 
   itemBanner(def: ItemDef, changes: { stat: StatName; from: number; to: number }[], synergies: SynergyDef[]) {
+    this.hideAchievement();
     this.lastBanner = [def, changes, synergies];
+    this.lastCard = null;
     this.clearPresenceOfferState();
     this.renderBanner(def, changes, synergies);
     this.bannerEl.classList.remove('show');
@@ -603,9 +830,70 @@ export class Hud {
 
   /** Information banners stay until the player clicks (owner rule). */
   dismissBanner() {
+    this.lastCard = null;
     this.clearPresenceOfferState();
+    this.hideAchievement();
     this.bannerOpen = false;
     this.bannerEl.classList.remove('show');
+  }
+
+  /**
+   * The player confirmed the window on screen: it closes, and the Presence card's `onRead` runs once (the achievement
+   * notice takes no confirmation: it leaves by its timer). Any other close (a restart, another window) is `dismissBanner`,
+   * which runs no `onRead`.
+   */
+  confirmBanner() {
+    const read = this.lastCard?.onRead;
+    this.dismissBanner();
+    read?.();
+  }
+
+  /** Whether an achievement notice is on screen (the game shows the next one only when none is). */
+  get achievementOpen() { return this.lastAchievement !== null; }
+
+  /**
+   * The achievement notice (sotano-popups §2, "Achievement notice"): a slate medal strip in the top-right corner with its
+   * kicker, the achievement's name, what it does, and the mastery count. It is not blocking and takes no input: it leaves
+   * by itself after `ms` (5 s, or 7 s for a long text), and then `onDone` runs once. A window that arrives first cuts it
+   * off: `onDone` does not run, and the notice stays queued. One at a time.
+   */
+  achievementNotice(keys: CardKeys, level: number, ms: number, onDone: () => void) {
+    this.hideAchievement();
+    this.lastAchievement = { keys, level };
+    this.renderAchievement(this.lastAchievement);
+    this.achievementEl.classList.remove('show');
+    void this.achievementEl.offsetWidth;
+    this.achievementEl.classList.add('show');
+    this.achievementDone = onDone;
+    this.achievementLeft = ms;
+  }
+
+  /** Counts the notice down on game time: a paused game (the menu, a window) holds it, and so does a background tab. */
+  private tickAchievement(dt: number) {
+    if (!this.lastAchievement) return;
+    this.achievementLeft -= dt * 1000;
+    if (this.achievementLeft > 0) return;
+    const done = this.achievementDone;
+    this.hideAchievement();
+    done?.();
+  }
+
+  private renderAchievement(a: { keys: CardKeys; level: number }) {
+    this.achievementEl.innerHTML =
+      `<div class="slate ach"><i class="ach-medal" aria-hidden="true"></i><div class="ach-text">` +
+      `<em class="ach-kicker">${th(a.keys.kicker)}</em><b class="ach-name">${th(a.keys.name)}</b>` +
+      `<span class="ach-desc">${th(a.keys.desc)}</span><small class="ach-mastery">${th(a.keys.mastery, { level: a.level })}</small></div></div>`;
+  }
+
+  /**
+   * Closes the achievement notice without its answer: a restart, a death or another window cuts it off. `onRead` does not
+   * run, so the notice stays queued for the next calm moment.
+   */
+  private hideAchievement() {
+    if (!this.lastAchievement) return;
+    this.achievementDone = undefined;
+    this.lastAchievement = null;
+    this.achievementEl.classList.remove('show');
   }
 
   flash(color: number) {
@@ -675,6 +963,36 @@ export class Hud {
     this.toastTimer = performance.now() + 2500;
   }
 
+  /** Gives the HUD the completion percentage to show (COMPLETION.md). Redraws the pause card; the death screen takes it when it shows. */
+  setCompletion(c: Completion) {
+    this.completionView = c;
+    this.renderCompletion();
+  }
+
+  /** Redraws the block; a focused download button keeps its focus across the redraw (a first time changes only the count). */
+  private renderCompletion() {
+    const el = document.getElementById('completion');
+    if (!el) return;
+    const focused = document.activeElement instanceof HTMLElement && document.activeElement.classList.contains('book-download') && el.contains(document.activeElement);
+    el.innerHTML = this.completionHtml();
+    if (focused) el.querySelector<HTMLElement>('.book-download')?.focus();
+  }
+
+  /**
+   * The completion block, one render function for the pause card and the death screen: the percentage, then each part with
+   * its done count and its share of the whole (COMPLETION.md §4). Empty until the game gives a completion.
+   */
+  private completionHtml(): string {
+    const c = this.completionView;
+    if (!c) return '';
+    const rows = PARTS.map(p => {
+      const x = c.parts[p];
+      return `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.count', { done: x.done, total: x.total })}</span>` +
+        `<span>${th('completion.share', { share: x.weight })}</span></li>`;
+    }).join('');
+    return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul>${bookButtonHtml(c.percent)}</section>`;
+  }
+
   private seedText = '';
   private seedListener = false;
 
@@ -713,7 +1031,7 @@ export class Hud {
     this.deathEl.innerHTML =
       `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
-      `<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
+      `${this.completionHtml()}<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
   }
 
   hideDeath() { this.deathEl.classList.remove('show'); }
@@ -748,9 +1066,27 @@ export class Hud {
     else this.openScreen(g, touchTab ? 'menu' : 'items');
   }
 
+  /** M, View and the map tab (D15): the screen on the star map, or closed when the map is what it shows. */
+  mapKey(g: Game) {
+    if (mapKeyOutcome(this.screenOpen, this.screenTab) === 'close') this.closeScreen(g);
+    else this.openScreen(g, 'map');
+  }
+
   private renderScreen(g: Game) {
     this.showTab(this.screenTab);
     if (this.screenTab === 'items') this.renderInventory(g);
+    if (this.screenTab === 'map') this.mapEl.innerHTML = starMapHtml(g.starMap(), activeDevice());
+  }
+
+  /** The active carried item changed (the game calls this): an open screen redraws its outline. */
+  carriedChanged() {
+    if (this.screenOpen && this.game) this.renderScreen(this.game);
+  }
+
+  /** The carried item the inventory has highlighted, as its hand slot; -1 when a practice is highlighted. */
+  selectedCarried(): number {
+    const m = /^hand:(\d+)$/.exec(this.selected ?? '');
+    return m ? Number(m[1]) : -1;
   }
 
   private showTab(tab: ScreenTab) {
@@ -767,14 +1103,14 @@ export class Hud {
     const g = this.game;
     if (!g) return;
     const root = this.tollOpen ? this.tollEl : this.invEl;
-    const tiles = [...root.querySelectorAll<HTMLElement>('.tile')];
+    const tiles = [...root.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')];
     if (!tiles.length) return;
     const cols = Math.max(1, tiles.filter(b => b.offsetTop === tiles[0].offsetTop).length);
     const at = Math.max(0, tiles.findIndex(b => b.dataset.id === this.selected));
     const next = Math.min(tiles.length - 1, Math.max(0, at + dx + dy * cols));
     this.selected = tiles[next].dataset.id!;
     if (this.tollOpen) this.renderToll(g); else this.renderInventory(g);
-    root.querySelector<HTMLElement>('.tile.sel, .tile.cur')?.scrollIntoView({ block: 'nearest' });
+    root.querySelector<HTMLElement>('.tile.sel, .tile.cur, .slot.sel')?.scrollIntoView({ block: 'nearest' });
   }
 
   openToll(g: Game, k: number) {
@@ -803,7 +1139,8 @@ export class Hud {
     const toll = tollOf(this.tollFloor);
     const p = g.player;
     const ids: string[] = [];
-    if (toll?.practices) g.inventory.items.forEach((_, i) => ids.push(`item:${i}`));
+    // a promised piece (the Mender's Thread) is never offered to a toll (GIFTS.md, the promised trait)
+    if (toll?.practices) g.inventory.items.forEach((it, i) => { if (!isPromised(it.def)) ids.push(`item:${i}`); });
     else if (toll) {
       ids.push(...handTollIds(p.hand));
       for (let i = 0; i < p.keys; i++) ids.push(`key:${i}`);
@@ -852,7 +1189,7 @@ export class Hud {
       : isFlask(m)
         ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), t(POTIONS[m.potion].name))
         : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
-    const items = g.inventory.items.map((it, i) => tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
+    const items = g.inventory.items.map((it, i) => isPromised(it.def) ? '' : tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
       ? section('toll.sec.item', items)
       : section('toll.sec.hand', hands) + section('toll.sec.key', keys) + section('toll.sec.bomb', bombs) + section('toll.sec.heart', hearts);
@@ -860,9 +1197,9 @@ export class Hud {
     const device = activeDevice();
     this.tollEl.innerHTML =
       `<div class="card slate"><header><h2>${th('toll.title')}</h2>` +
-      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · ${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</small></header>` +
+      `<small>${th(toll.practices ? 'toll.leadPractices' : 'toll.lead', { n: toll.count })} · <b class="count">${th('toll.chosen', { n: this.tollPicked.size, total: toll.count })}</b></small></header>` +
       `<p class="hint">${th('toll.hint', controlParams(device))}</p>` +
-      `<p class="hint">${this.tollCost(g)}</p>` +
+      `<p class="hint cost">${this.tollCost(g)}</p>` +
       `<div class="grid">${body || `<p class="none">${th('toll.none')}</p>`}</div>` +
       `<div class="go-row"><button type="button" class="tile go${ready ? '' : ' off'}${cur === 'pay' ? ' cur' : ''}" data-id="pay"><span class="lbl">${th('toll.go')}</span></button>` +
       `<button type="button" class="tile go${cur === 'close' ? ' cur' : ''}" data-id="close"><span class="lbl">${th('toll.stay')}</span></button></div></div>`;
@@ -901,16 +1238,23 @@ export class Hud {
     const counts = new Map<string, number>();
     for (const d of held) counts.set(d.id, (counts.get(d.id) ?? 0) + 1);
     const unique = [...new Map(held.map(d => [d.id, d])).values()];
-    const ids = unique.map(d => d.id);
+    const hand = g.player.hand, chosen = g.player.activeIndex;
+    const ids =[...hand.map((_, i) => `hand:${i}`), ...unique.map(d => d.id)];
     const selId = ids.find(id => id === this.selected) ?? ids.at(-1);
     const sel = unique.find(d => d.id === selId);
+    const handSel = selId?.startsWith('hand:') ? hand[Number(selId.slice(5))] : undefined;
 
     const tile = (id: string, c: number, icon: { id: string; icon: ItemDef['icon'] }, name: string, n: number) =>
       `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
       `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
+    const handBlock = hand.length ? `<h3>${th('inv.hand')}</h3><div class="hand-row"></div>` : '';
+    const top = chosen >= 0 ? hand[chosen] : undefined;
+    const inHand = top && isFlask(top) ? this.inHandBlock(top) : '';
 
-    const detail = sel ? this.itemDetail(sel) : `<p class="none">${th('inv.empty')}</p>`;
+    const detail = sel ? this.itemDetail(sel, g.inventory.items.filter(i => i.def.id === sel.id).map(i => i.stacks))
+      : handSel ? this.carriedDetail(handSel)
+      : `<p class="none">${th('inv.empty')}</p>`;
 
     const active = new Set(g.inventory.synergiesActive.map(x => x.id));
     const synRows = SYNERGIES.map(sy => {
@@ -923,32 +1267,70 @@ export class Hud {
         : `<li class="off"><b>✧ ???</b><small>${reqs} (${met}/${sy.requires.length})</small></li>`;
     }).join('');
 
+    // the Covenant (COVENANT.md): each piece held is a labelled tile with its gold seam and "promised"; nothing shows before
+    // the first piece, so the set is never announced before it is begun
+    const pieces = g.covenantPieces;
+    const covenant = pieces.length
+      ? `<h3>${th('covenant.title')} <small>${pieces.length}/${COVENANT_PIECES.length}</small></h3><ul class="covenant">` + pieces.map(p =>
+        `<li class="piece"><b>${th(`covenant.piece.${p}` as MessageKey)}</b><span>${th(`covenant.from.${p}` as MessageKey)}</span><small>${th('covenant.promised')}</small></li>`).join('') + '</ul>'
+      : '';
+
     const stats = STAT_ORDER.map(n => `<tr><td>${esc(statLabel(n))}</td><td>${esc(fmtStat(n, s[n]))}</td></tr>`).join('');
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
-      `<div class="cols"><section class="left"><div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
-      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul></section>` +
+      `<div class="cols"><section class="left">${inHand}${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
+      `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul>${covenant}</section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 
-    for (const b of this.invEl.querySelectorAll<HTMLButtonElement>('.tile')) {
+    // the carried items are the HUD's own hand slots, chosen by a click or a tap
+    this.invEl.querySelector('.hand-row')?.replaceChildren(...hand.map((c, i) => {
+      const slot = this.handSlot(c, i === chosen);
+      slot.dataset.id = `hand:${i}`;
+      slot.classList.toggle('sel', selId === slot.dataset.id);
+      return slot;
+    }));
+    for (const b of this.invEl.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')) {
       b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
-      b.addEventListener('click', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
+      b.addEventListener('click', () => {
+        this.selected = b.dataset.id!;
+        if (this.selected.startsWith('hand:')) g.chooseCarried(this.selectedCarried());
+        this.renderInventory(g);
+      });
     }
   }
 
-  private itemDetail(d: ItemDef) {
+  private carriedDetail(c: Carried) {
+    return `<div class="detail"><header class="d-head"><div><b class="d-name">${esc(this.carriedLabel(c))}</b></div></header>` +
+      `<section class="d-block"><p>${th(forDevice('inv.choose', activeDevice()))}</p></section></div>`;
+  }
+
+  private carriedLabel(c: Carried): string {
+    if (typeof c === 'number') return materialName(c);
+    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    return partText(c).name;
+  }
+
+  /**
+   * A practice in three blocks, always in this order (issue #202): the teaching (a phrase that carries the practice into
+   * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
+   */
+  private itemDetail(d: ItemDef, copies: readonly number[] = []) {
     const fx = (d.stats ?? []).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
-      return `<i>${esc(statLabel(m.stat))} ${esc(v)}</i>`;
+      const dir = m.layer === 'mul' ? (m.value >= 1 ? 'up' : 'down') : m.layer === 'final' ? 'set' : m.value >= 0 ? 'up' : 'down';
+      return `<li class="${dir}"><span>${esc(statLabel(m.stat))}</span><b>${esc(v)}</b></li>`;
     }).join('');
     const paths = (d.tags ?? []).filter(isPath).map(p => `<em class="path" style="--p:${pathColor(p)}">${PATH_GLYPH[p as PathName]} ${esc(pathName(p))}</em>`).join('');
-    const tx = itemText(d);
-    return `<div class="detail" style="--c:${hex(d.color)}"><img src="${iconDataUrl(d, 6)}" alt="">` +
-      `<div><b>${esc(tx.name)}</b> <span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}` +
-      `<p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}` +
-      `<div class="fx">${fx}</div></div></div>`;
+    const tx = itemText(d), lesson = practiceTeaching(d);
+    return `<div class="detail" style="--c:${hex(d.color)}"><header class="d-head"><img src="${iconDataUrl(d, 6)}" alt="">` +
+      `<div><b class="d-name">${esc(tx.name)}</b><span class="q q${d.quality}">${qualityStars(d.quality)}</span> ${paths}</div></header>` +
+      `<section class="d-block d-teach"><h4>${th('inv.teaching')}</h4><blockquote>${esc(lesson.quote)}</blockquote><p>${esc(lesson.lesson)}</p>` +
+      `${tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : ''}</section>` +
+      `<section class="d-block d-game"><h4>${th('inv.inGame')}</h4><p>${esc(tx.description)}</p><p class="effect">${esc(tx.effect)}</p>` +
+      `${d.stack && copies.length ? `<p class="stacks">${copies.map(n => th('inv.stacks', { n, max: d.stack!.max })).join(' · ')}</p>` : ''}</section>` +
+      `<section class="d-block d-stats"><h4>${th('inv.stats')}</h4>${fx ? `<ul class="fx">${fx}</ul>` : `<p class="none">${th('inv.noStats')}</p>`}</section></div>`;
   }
 
   private reqLabel(r: Req, g: Game) {

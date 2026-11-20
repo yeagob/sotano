@@ -26,6 +26,11 @@ It is fragile: a few hits end it. Keep out of the ring's reach when you close in
 
 None.
 
+## Numbers
+
+- **Pickups on release:** key 10%, bomb 10%.
+- **Roster weight:** one, the rarest entry of floors 7 and 8.
+
 ## Status
 
 Partial. The built part is the fleeing and the ring. Its placement by locked doors and its crack and sealed pocket are in [GAPS](../../not-built/projections/GAPS.md).

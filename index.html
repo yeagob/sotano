@@ -71,9 +71,14 @@
   }
   </script>
   <style>
+    /* Pixelify Sans (SIL OFL 1.1, public/fonts/PIXELIFY-SANS-OFL.txt): the approved display face, sizes 20 / 28 / 40 px only
+       (docs/art/DECISIONS.md §10.2). Latin subset, self-hosted. */
+    @font-face { font-family: "Pixelify Sans"; src: url("fonts/pixelify-sans-latin-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
     /* Vessel Light UI (docs/art/DECISIONS.md §10.2). Every colour is a palette token written by
        applyPaletteCss() (src/render/icons.ts) as a CSS variable: no hex in this file. */
-    :root { --u: clamp(2px, calc(100vh / 384), 5px); }
+    :root { --u: clamp(2px, calc(100vh / 384), 5px);
+      /* a 1 u pixel chamfer for tiles, buttons and blocks inside a slate (the slate itself cuts 2 u) */
+      --cut: polygon(var(--u) 0, calc(100% - var(--u)) 0, 100% var(--u), 100% calc(100% - var(--u)), calc(100% - var(--u)) 100%, var(--u) 100%, 0 calc(100% - var(--u)), 0 var(--u)); }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--pal-ink-void); overflow: hidden; color: var(--ui-text);
       font: 15px/1.4 system-ui, "Segoe UI", Roboto, sans-serif; user-select: none; }
@@ -91,7 +96,7 @@
     #crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
     #crosshair::after { top: 8px; left: 0; height: 2px; width: 18px; }
 
-    /* Isaac corner: hearts, breakthroughs (seeds), keys, practices */
+    /* Isaac corner: hearts, bombs, keys, practices */
     #status { position: fixed; top: 10px; left: 12px; pointer-events: none; }
     .hearts-row { display: flex; align-items: center; gap: calc(5 * var(--u)); margin-bottom: 6px; }
     .hearts-box { position: relative; display: flex; }
@@ -119,6 +124,7 @@
     #hearts.low > .heart:last-child { animation: beat .9s ease-in-out infinite; }
     .heart.layer { background-image: none; }
     .heart.full.k-blue { background-image: var(--ico-heartBlue); }
+    .heart.full.k-black { background-image: var(--ico-heartBlack); }
     .heart.full.k-stone { background-image: var(--ico-heartStone); }
     .heart.full.k-berserker { background-image: var(--ico-heartBerserker); }
     #hearts.star > .heart { outline: 1px solid var(--star-glow); filter: drop-shadow(0 0 3px var(--star-glow)); }
@@ -142,14 +148,48 @@
     #polarity { width: 14px; height: 14px; margin: 4px 0 2px 3px; border-radius: 50%; border: 2px solid var(--pol); background: var(--pol);
       box-shadow: 0 0 0 1px var(--ui-line); }
     #polarity[data-polarity="negative"] { background: var(--ui-line); }
+    /* Kairos (#123): three pips for the charge, a dimmed page while time is stopped, numbered marks on the world */
+    #kairos { display: flex; align-items: center; gap: 4px; margin: 4px 0 2px 3px; }
+    #kairos[hidden] { display: none; }
+    #kairos i { width: 8px; height: 8px; border: 2px solid var(--ui-line); transform: rotate(45deg); display: inline-block; }
+    #kairos i.on { background: var(--kairos); border-color: var(--kairos); }
+    #kairos em { font-style: normal; font-size: 12px; margin-left: 4px; }
+    #kairos-marks { position: fixed; inset: 0; pointer-events: none; }
+    #kairos-marks b { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid var(--kairos);
+      border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--kairos); background: rgba(0, 0, 0, 0.35); }
+    #kairos-marks b[hidden] { display: none; }
+    body.kairos-stop #game { filter: saturate(0.25) brightness(0.9); }
+    .tb-miracle { background: conic-gradient(var(--kairos) calc(var(--charge, 0) * 360deg), transparent 0); }
     #items { display: flex; flex-wrap: wrap; gap: 3px; max-width: 220px; margin-top: 8px; }
+    /* Status timer (sotano-popups: persistent status): the practice icon and the seconds left, a slate pill; in the last
+       second the outline turns to the ember token. The tint is a soft wash over the screen that lets the walls read thin. */
+    #phase { display: flex; align-items: center; gap: 4px; margin-top: 6px; padding: 2px 6px; width: max-content;
+      font-variant-numeric: tabular-nums; color: var(--ui-text); text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
+    #phase[hidden] { display: none; }
+    #phase img { width: 24px; height: 24px; image-rendering: pixelated; }
+    #phase.warn { outline: 2px solid var(--ui-warn, var(--ui-text)); }
+    #phase-tint { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s ease; z-index: 1;
+      background: radial-gradient(ellipse at center, transparent 40%, color-mix(in srgb, var(--phase-tint, #888) 30%, transparent) 100%); }
+    #phase-tint.on { opacity: 1; }
     #items img { width: 28px; height: 28px; }
 
     /* hand slots */
     #hand { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 6px; }
+    /* the held-item label: the flask or meal in hand, named above the hand (sotano-popups: persistent status) */
+    #held { position: fixed; left: 50%; bottom: calc(18px + 24 * var(--u) + 10px); transform: translateX(-50%); pointer-events: none;
+      display: none; flex-direction: column; align-items: center; gap: 2px; max-width: min(92vw, 420px); padding: 4px 10px; text-align: center;
+      color: var(--ui-text); font-size: calc(11 * var(--u)); }
+    #held.show { display: flex; }
+    #held b { font-weight: 600; }
+    #held span { opacity: 0.85; }
+    body.dev-touch #held { bottom: calc(8px + 16 * var(--u) + 10px); }
     .slot { position: relative; width: calc(24 * var(--u)); height: calc(24 * var(--u)); padding: 4px; }
-    .slot.top { box-shadow: inset 0 0 0 2px var(--ui-text); }
+    .slot.on { box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    .slot.extra { opacity: 0.55; }
     .slot img { width: 100%; height: 100%; display: block; }
+    #inventory .hand-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    #inventory .hand-row .slot { cursor: pointer; }
+    #inventory .hand-row .slot.sel { outline: 2px solid var(--ui-text); outline-offset: 2px; }
 
     /* minimap top-right (the right hand used to cover it), floor label underneath */
     #corner { position: fixed; right: 12px; top: 10px; text-align: right; pointer-events: none; }
@@ -164,6 +204,9 @@
       100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
     @media (prefers-reduced-motion: reduce) { #banner.show { animation: none; opacity: 1; transform: translate(-50%, 0); } }
     #banner .dismiss { margin: 8px 0 0; font-size: 14px; color: var(--ui-faded); text-align: right; }
+    /* the kicker of an achievement card: a short line above the name, with a gold diamond (ACHIEVEMENTS §4) */
+    #banner .kicker { display: block; font-style: normal; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, var(--c)); }
+    #banner .kicker::before { content: '\25C6  '; }
     #banner .ribbon { display: flex; gap: 14px; align-items: flex-start; padding: calc(6 * var(--u)); border-left: calc(2 * var(--u)) solid var(--c); }
     #banner .ribbon img { width: 70px; height: 70px; flex: none; filter: drop-shadow(0 0 8px var(--c)); }
     #banner b { display: block; font-size: 28px; letter-spacing: 1px; }
@@ -175,8 +218,10 @@
     .q { font-style: normal; letter-spacing: 1px; font-size: 15px; color: var(--ui-gold); }
     .q4 { text-shadow: 0 0 6px var(--ui-gold); }
     #banner[data-offer="true"] { width: min(440px, calc(100vw - 24px)); max-width: min(440px, calc(100vw - 24px)); pointer-events: auto; }
-    #banner .offer-question, #banner .offer-controls { visibility: hidden; }
-    #banner[data-offer="true"] .offer-question, #banner[data-offer="true"] .offer-controls { visibility: visible; }
+    #banner .offer-question, #banner .offer-request, #banner .offer-controls { visibility: hidden; }
+    #banner[data-offer="true"] .offer-question, #banner[data-offer="true"] .offer-request, #banner[data-offer="true"] .offer-controls { visibility: visible; }
+    #banner .offer-request { display: block; margin: 8px 0 0; font-style: normal; font-size: 15px; line-height: 1.4; color: var(--ui-text-2); }
+    #banner .offer-request small { font-size: 14px; color: var(--ui-faded); }
     #banner .offer-question { margin: 0; font-size: 16px; line-height: 1.4; color: var(--ui-text); }
     #banner .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; visibility: hidden; pointer-events: none; }
     #banner[data-offer="true"] .offer-actions { visibility: visible; pointer-events: auto; }
@@ -185,9 +230,25 @@
       box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
     #banner[data-offer="true"] .offer-actions button { pointer-events: auto; }
     #banner .offer-actions .offer-accept { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #banner .offer-actions.choices button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     #banner .offer-actions button:hover { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     #banner .offer-actions button:focus-visible { outline: 2px solid var(--ui-text); outline-offset: 2px; }
     #banner .offer-controls { display: block; margin-top: 8px; font-size: 14px; line-height: 1.4; color: var(--ui-faded); }
+    /* the achievement notice (sotano-popups §2, "Achievement notice"): its own element, a slate strip in the top-right
+       corner with a gold medal and a gold accent bar. It slides in on pixel steps, never blinks, and never blurs. */
+    #achievement { position: fixed; right: calc(6 * var(--u)); top: 26%; width: min(360px, calc(100vw - 24px)); pointer-events: none;
+      opacity: 0; transform: translateX(calc(100% + 12 * var(--u))); transition: transform .36s steps(6, end), opacity .2s; }
+    #achievement.show { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { #achievement { transition: none; } }
+    #achievement .ach { display: flex; align-items: center; gap: calc(4 * var(--u)); padding: calc(4 * var(--u)) calc(6 * var(--u)) calc(4 * var(--u)) calc(5 * var(--u));
+      border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #achievement .ach-medal { flex: none; width: calc(10 * var(--u)); height: calc(10 * var(--u)); background: no-repeat center/contain var(--ico-achievement); image-rendering: pixelated; }
+    #achievement .ach-text { min-width: 0; }
+    #achievement .ach-kicker { display: block; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-gold); }
+    #achievement .ach-kicker::before { content: '\25C6  '; }
+    #achievement .ach-name { display: block; margin-top: 4px; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #achievement .ach-desc { display: block; margin-top: 4px; font-size: 16px; line-height: 1.4; color: var(--ui-text-2); }
+    #achievement .ach-mastery { display: block; margin-top: 4px; font-size: 14px; color: var(--ui-faded); }
 
     /* screen effects, gentle (§10.4): item flash peak .45 over .5 s; hurt vignette life.dark peak .35 over .4 s */
     #flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 45%, var(--c) 0%, transparent 70%); }
@@ -229,6 +290,12 @@
     #overlay .actions button:hover, #overlay .actions button:focus-visible { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); outline: none; }
     #overlay h2 { margin: 0 0 4px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
     #overlay table { border-collapse: collapse; }
+    #codex ul.codex { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    #codex li { padding: 6px 8px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #codex li b { display: block; color: var(--ui-gold); }
+    #codex li span { display: block; margin-top: 3px; font-size: 15px; line-height: 1.4; color: var(--ui-text); }
+    #codex li em { font-style: normal; color: var(--ui-faded); }
+    #codex li.none { color: var(--ui-faded); background: none; box-shadow: none; }
     #overlay td { padding: 2px 10px 2px 0; vertical-align: top; }
     #overlay td:first-child { color: var(--ui-gold); white-space: nowrap; }
     #lang { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 0; font-size: 14px; }
@@ -236,6 +303,11 @@
     #lang button { font: inherit; font-weight: normal; color: var(--ui-text); background: var(--ui-line); border: 0; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); padding: 2px 10px; cursor: pointer; }
     #lang button:hover, #lang button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
     #overlay .actions .seed { margin: 2px 0 0; text-align: left; }
+    .completion { margin: 8px 0 0; font-size: 14px; color: var(--ui-text); }
+    .completion h2 { margin: 0 0 2px; font-size: 16px; color: var(--ui-gold); font-weight: normal; }
+    .completion ul { list-style: none; margin: 0; padding: 0; }
+    .completion li { display: grid; grid-template-columns: 1fr auto 3.5em; gap: 8px; color: var(--ui-faded); }
+    .completion li span:last-child { text-align: right; }
     #graphics { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 0; font-size: 14px; }
     #graphics h2 { margin: 0; }
     #graphics .row { display: flex; align-items: center; gap: 6px; }
@@ -275,33 +347,81 @@
     #inventory { display: none; }
     #overlay[data-tab="items"] #inventory { display: block; }
     #overlay[data-tab="items"] .panel-menu { display: none; }
+    /* the star map (D15 of #149, DECISIONS §14.3): the practices tab's card, a pixel map at an integer scale, a legend
+       of glyphs with their words */
+    #starmap { display: none; }
+    #overlay[data-tab="map"] #starmap { display: block; }
+    #overlay[data-tab="map"] .panel-menu { display: none; }
+    #overlay #starmap .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
+    #starmap .card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 12px; }
+    #starmap .card > header small { flex: 1 1 14em; color: var(--ui-text-2); font-size: 14px; }
+    #starmap h2 { margin: 0; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #starmap header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; clip-path: var(--cut); }
+    #starmap header .close:hover, #starmap header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    body.dev-touch #starmap header .close { width: 44px; height: 44px; }
+    #starmap .view { display: flex; justify-content: center; padding: calc(2 * var(--u)); background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #starmap .view svg { display: block; max-width: 100%; height: auto; image-rendering: pixelated; }
+    #starmap .legend { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+    #starmap .legend li { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--ui-line); font-size: 15px; color: var(--ui-text-2); }
+    #starmap .legend svg { flex: none; display: block; min-width: 15px; image-rendering: pixelated; }
     #overlay #inventory .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
-    #inventory header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--ui-line); margin-bottom: 10px; }
-    #inventory h2 { margin: 0 0 6px; letter-spacing: 3px; }
-    #inventory h3 { margin: 14px 0 6px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
-    #inventory .cols { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
+    /* the practices tab (issue #202): the achievement notice's pixel finish (DECISIONS §10.2). Pixelify Sans only at
+       20 / 28 / 40 px, chamfered tiles and blocks (--cut), palette tokens only. A practice reads in three blocks,
+       always in this order: the teaching, what it does in the game, the stats it changes. */
+    #inventory .card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 12px; }
+    #inventory .card > header small { flex: 1 1 14em; color: var(--ui-text-2); font-size: 14px; }
+    #inventory h2 { margin: 0; font: 40px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #inventory h3 { margin: 16px 0 8px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-gold); }
+    #inventory h3::before, #inventory h4::before { content: '\25C6  '; color: var(--ui-gold); }
+    #inventory .cols { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 18px; }
     #inventory .grid { display: flex; flex-wrap: wrap; gap: 6px; }
     /* 72 px tiles: the icon at an integer ×3 (42 px) and a name label under it (every item names itself, BESTIARY §8.7) */
-    #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; }
-    #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); }
-    #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px var(--ui-text); }
-    #inventory .tile img { width: 42px; height: 42px; }
+    #inventory .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; font: inherit; color: var(--ui-text);
+      border: 0; background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); cursor: pointer; }
+    #inventory .tile:focus-visible { outline: 2px solid var(--ui-text); outline-offset: -5px; }
+    #inventory .tile.sel, #inventory .tile:hover { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--c), inset 0 0 0 calc(3 * var(--u)) var(--ui-text); }
+    #inventory .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 2px 2px 0 var(--ui-bevel-hi); }
+    #inventory .tile img { width: 42px; height: 42px; image-rendering: pixelated; }
     #inventory .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; overflow-wrap: normal; hyphens: auto; font-size: 14px; line-height: 1.3; color: var(--ui-text); }
-    #inventory .tile i { position: absolute; right: 2px; top: 2px; font-style: normal; font-size: 14px; color: var(--ui-gold); }
-    #inventory .detail { display: flex; gap: 14px; margin-top: 12px; padding: 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--c); }
-    #inventory .detail img { width: 84px; height: 84px; flex: none; }
-    #inventory .detail b { font-size: 20px; }
-    #inventory .detail p { margin: 6px 0 4px; }
-    #inventory .detail small { color: var(--ui-faded); font-size: 14px; }
-    #inventory .fx { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
-    #inventory .fx i { font-style: normal; color: var(--ui-up); font-size: 14px; }
-    .path { font-style: normal; font-size: 14px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); margin-left: 4px; }
+    #inventory .tile i { position: absolute; right: 4px; top: 3px; font: normal 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-gold); text-shadow: 1px 1px 0 var(--ui-line); }
+    /* the detail: the item's colour on the left bar (like the notice's gold bar), the name at 28 px, three bevelled blocks */
+    #inventory .detail { margin-top: 12px; padding: calc(4 * var(--u)) calc(5 * var(--u)) calc(5 * var(--u)); background: var(--ui-line);
+      border-left: calc(2 * var(--u)) solid var(--c, var(--ui-gold)); clip-path: var(--cut); }
+    #inventory .d-head { display: flex; align-items: center; gap: calc(4 * var(--u)); }
+    #inventory .d-head img { width: 72px; height: 72px; flex: none; image-rendering: pixelated; }
+    #inventory .d-head > div { min-width: 0; }
+    #inventory .d-name { display: block; margin-bottom: 4px; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); overflow-wrap: anywhere; }
+    #inventory .d-head .q { margin-right: 2px; }
+    #inventory .d-block { margin-top: calc(3 * var(--u)); padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(4 * var(--u)); background: var(--ui-panel);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory h4 { margin: 0 0 6px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-text-2); }
+    #inventory .d-block p { margin: 4px 0 0; font-size: 16px; line-height: 1.4; color: var(--ui-text-2); }
+    #inventory .d-block small { display: block; margin-top: 6px; color: var(--ui-faded); font-size: 14px; }
+    #inventory .d-teach blockquote { margin: 0; padding-left: calc(3 * var(--u)); border-left: var(--u) solid var(--ui-gold); font: 20px/1.3 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #inventory .d-game p:first-of-type { font-style: italic; }
+    #inventory .d-game .effect { margin-top: 8px; }
+    #inventory .fx { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px; }
+    #inventory .fx li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 4px 8px; background: var(--ui-line); font-size: 15px; color: var(--ui-text-2); }
+    #inventory .fx li b { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ui-text); }
+    #inventory .fx li.up b { color: var(--ui-up); } #inventory .fx li.up b::before { content: '\25B2 '; }
+    #inventory .fx li.down b { color: var(--ui-down); } #inventory .fx li.down b::before { content: '\25BC '; }
+    .path { display: inline-block; white-space: nowrap; font-style: normal; font-size: 14px; padding: 0 5px; border: 1px solid var(--p); color: var(--p); margin-left: 4px; }
     #inventory .syns { list-style: none; margin: 0; padding: 0; }
-    #inventory .syns li { padding: 5px 8px; margin: 4px 0; background: var(--ui-line); }
+    #inventory .syns li { padding: 6px 10px; margin: 4px 0; background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory .syns li.none { background: none; box-shadow: none; padding: 0; }
+    #inventory .syns b { font: 20px/1.2 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
     #inventory .syns li.on b { color: var(--ui-gold); } #inventory .syns li.off { opacity: .6; }
+    #inventory .covenant { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    #inventory .covenant li { position: relative; flex: 1 1 120px; padding: 5px 8px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
+    #inventory .covenant li::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: linear-gradient(100deg, transparent 8%, var(--ui-gold) 30%, transparent 46%, var(--ui-gold) 62%, transparent 92%); opacity: .8; pointer-events: none; }
+    #inventory .covenant b { display: block; color: var(--ui-gold); } #inventory .covenant span { display: block; font-size: 14px; }
+    #inventory .covenant small { display: block; font-size: 12px; color: var(--ui-faded); } #inventory h3 small { color: var(--ui-faded); font-weight: normal; }
     #inventory .syns span { display: block; font-size: 14px; } #inventory .syns small { display: block; font-size: 14px; color: var(--ui-faded); }
+    #inventory .right { align-self: start; padding: calc(3 * var(--u)) calc(4 * var(--u)) calc(4 * var(--u)); background: var(--ui-line); box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory .right h3 { margin-top: 0; }
     #inventory table { width: 100%; border-collapse: collapse; }
-    #inventory td { padding: 2px 0; border-bottom: 1px solid var(--ui-line); color: var(--ui-text-2); } #inventory td:last-child { text-align: right; color: var(--ui-text); }
+    #inventory td { padding: 2px 0; border-bottom: 1px solid var(--ui-panel); color: var(--ui-text-2); }
+    #inventory td:last-child { text-align: right; font: 20px/1.2 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ui-text); }
     .none { color: var(--ui-faded); }
 
     /* death is rest: night to ink, an ensō that almost closes, no blood red */
@@ -340,36 +460,58 @@
     .tb.on { background-color: color-mix(in srgb, var(--ui-text) 25%, var(--ui-panel)); transform: scale(.94); }
     .tb.off { opacity: .4; }
     .tb span { position: absolute; right: 6%; bottom: 6%; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
-    .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 6px var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
+    .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 calc(6px * (1 + var(--power, 0))) var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line), 0 0 calc(4vmin * var(--power, 0)) calc(1vmin * var(--power, 0)) var(--pol, var(--ui-gold)); }
+    /* the ring thickens (6 → 12 px) and a glow of the same token widens with the loaded intention's damage (#111) */
     .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--ui-line) 92%, transparent); }
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
+    /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
+    .tb[hidden] { display: none; }
+    .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41.5vmin); width: 13vmin; height: 13vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
     .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
     .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
+    /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
+    #fullscreen { --glyph: none; right: calc(12px + 130px + 8px + 11vmin + 8px + env(safe-area-inset-right)); z-index: 61;
+      display: flex; align-items: center; justify-content: center; color: var(--ui-text); }
+    #fullscreen[hidden] { display: none; }
+    #fullscreen svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: square; }
     #death .go { font: inherit; font-weight: bold; color: var(--ui-gold); background: var(--ui-line); border: 0; padding: 8px 18px; margin-top: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
-    #inventory header .close { margin-left: 10px; font: inherit; font-size: 20px; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); }
-    #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
+    #inventory header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer;
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #inventory header .close:hover, #inventory header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    /* the toll window, "the way down" (issue #224): the achievement notice's pixel finish. A 2 u gold accent bar, the
+       title at 40 px and the headings, count, marks and buttons at 20 px Pixelify Sans; chamfered, bevelled tiles.
+       Picked = gold frame and ✓; cursor = paper frame inside (shape, not colour alone); a picked tile under the cursor keeps both. */
+    #toll { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: color-mix(in srgb, var(--pal-ink-void) 70%, transparent); }
     #toll.show { display: flex; }
-    #toll .card { width: min(640px, 94vw); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)); }
-    #toll header { border-bottom: 2px solid var(--ui-line); margin-bottom: 8px; }
-    #toll h2 { margin: 0 0 6px; letter-spacing: 3px; }
+    #toll .card { width: min(640px, 100%); max-height: 88vh; overflow: auto; padding: calc(6 * var(--u)) calc(8 * var(--u)) calc(6 * var(--u)) calc(7 * var(--u));
+      border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #toll header { border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 8px; }
+    #toll h2 { margin: 0 0 6px; font: 40px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
     #toll small { color: var(--ui-text-2); font-size: 14px; }
+    #toll .count { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ui-gold); white-space: nowrap; }
     #toll .hint { margin: 6px 0 0; font-size: 14px; color: var(--ui-faded); }
+    #toll .hint.cost { padding: 6px 10px; background: var(--ui-line); border-left: var(--u) solid var(--ui-text-2); color: var(--ui-text-2); clip-path: var(--cut); }
     #toll .grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    #toll .grid h3 { flex: 0 0 100%; margin: 12px 0 2px; font-size: 14px; letter-spacing: 2px; color: var(--ui-text-2); text-transform: uppercase; }
+    #toll .grid h3 { flex: 0 0 100%; margin: 14px 0 4px; font: 20px/1.15 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-text-2); text-transform: uppercase; }
+    #toll .grid h3::before { content: '\25C6  '; color: var(--ui-gold); }
     #toll .none { color: var(--ui-faded); }
-    #toll .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--ui-line); box-shadow: inset 0 0 0 1px var(--ui-bevel-hi); cursor: pointer; font: inherit; color: var(--ui-text); }
-    #toll .tile img { width: 42px; height: 42px; }
+    #toll .tile { position: relative; width: 72px; padding: 6px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; background: var(--ui-line);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); cursor: pointer; font: inherit; color: var(--ui-text); }
+    #toll .tile img { width: 42px; height: 42px; image-rendering: pixelated; }
     #toll .tile .lbl { width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; hyphens: auto; font-size: 14px; line-height: 1.3; }
-    #toll .tile.on { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 1px var(--ui-bevel-hi); }
-    #toll .tile.on::after { content: "✓"; position: absolute; right: 3px; top: 1px; color: var(--ui-gold); font-size: 14px; }
-    #toll .tile.cur { box-shadow: inset 0 0 0 2px var(--ui-text); }
-    #toll .tile:focus-visible { outline: 2px solid var(--ui-text); }
-    #toll .go-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
-    #toll .tile.go { width: auto; min-width: 120px; padding: 8px 14px; }
+    #toll .tile.on { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--ui-gold), inset 2px 2px 0 var(--ui-bevel-hi); }
+    #toll .tile.on::after { content: "✓"; position: absolute; right: 4px; top: 2px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-gold); text-shadow: 1px 1px 0 var(--ui-line); }
+    #toll .tile.cur { box-shadow: inset 0 0 0 2px var(--ui-text), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #toll .tile.on.cur { box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--ui-gold), inset 0 0 0 calc(3 * var(--u)) var(--ui-text); }
+    #toll .tile:focus-visible { outline: 2px solid var(--ui-text); outline-offset: -5px; }
+    #toll .go-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+    #toll .tile.go { width: auto; min-width: 120px; min-height: 44px; justify-content: center; padding: 8px 16px; }
+    #toll .tile.go .lbl { width: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; overflow: visible; }
+    #toll .tile.go[data-id="pay"]:not(.off) { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #toll .tile.go[data-id="pay"]:not(.off).cur { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
     #toll .tile.go.off { opacity: .5; }
-    #toll .tile.go .lbl { width: auto; }
     /* the Sanctuary, the Boundary's meditation app: its own look on purpose (docs/art/DECISIONS.md 10.8):
        round, soft, light type; colours only from the med.* tokens, written as --m-* by the view */
     #sanctuary { position: fixed; inset: 0; z-index: 40; display: none; opacity: 0; transition: opacity .7s ease; color: var(--m-ink);
@@ -407,6 +549,11 @@
     #sanctuary .sw { min-height: 40px; padding: 6px 18px; border-radius: 999px; font-size: 14px; letter-spacing: .04em;
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-ink) 26%, transparent); }
     #sanctuary .sw.set { box-shadow: inset 0 0 0 1px var(--m-accent); color: var(--m-accent); }
+    #sanctuary .lamp { display: inline-block; width: 8px; height: 8px; margin-right: 8px; vertical-align: 1px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid currentColor; }
+    #sanctuary .lamp.on { background: currentColor; }
+    #sanctuary .choices.three .choice { width: min(248px, 86vw); }
+    #sanctuary .ctl.spent { color: var(--m-dim); }
+    #sanctuary .ctl.spent:not(.cur) { background: none; }
     #sanctuary .library { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(940px, 100%); }
     #sanctuary .card { display: grid; grid-template-columns: 46px 1fr; grid-template-areas: "s b" "s t" "s e"; column-gap: 14px; align-items: center; text-align: left; padding: 14px 18px; min-height: 96px; }
     #sanctuary .card .swatch { grid-area: s; width: 46px; height: 46px; border-radius: 50%;
@@ -494,6 +641,32 @@
       #banner .offer-actions button { width: 100%; }
     }
     @media (max-width: 700px) { #inventory .cols { grid-template-columns: 1fr; } #banner .ribbon img { width: 52px; height: 52px; } #banner b { font-size: 20px; } }
+    /* ── the pause card's pixel pass (issue #223): the achievement notice's finish, kept in this one block. Pixelify Sans
+       only at 20 px here (tabs, buttons, headings, the field of view); chamfered (--cut) and bevelled controls; a 2 u
+       gold accent bar on the card's left like the notice's; palette tokens only (DECISIONS §10.2). ── */
+    #overlay > .card { border-left: calc(2 * var(--u)) solid var(--ui-gold); }
+    #overlay .tabs button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; padding: 8px 16px 9px;
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay .tabs button[aria-selected="true"] { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #overlay .tabs button:hover, #overlay .tabs button:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #overlay .cover { border-bottom: var(--u) solid var(--ui-line); }
+    #overlay .actions button { font: 20px/1.1 "Pixelify Sans", system-ui, sans-serif; padding: 10px 14px; box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay #play { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 4px 4px 0 var(--ui-bevel-hi); }
+    #overlay .actions button:hover, #overlay .actions button:focus-visible { box-shadow: inset 0 0 0 2px var(--ui-gold), inset 0 0 0 3px var(--ui-text); }
+    #overlay h2 { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-gold); margin: 0 0 8px; }
+    #overlay .panel-menu h2::before { content: '\25C6  '; }
+    #overlay #lang button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; padding: 5px 8px 6px; box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay #lang button:hover, #overlay #lang button:focus-visible, #overlay #lang button.on { color: var(--ui-gold); box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    #graphics output { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    #overlay #graphics button { font: 20px/1 "Pixelify Sans", system-ui, sans-serif; }
+    #overlay #controls td:first-child { color: var(--ui-gold); }
+    #overlay #controls tr + tr td { border-top: 1px solid var(--ui-line); }
+    #overlay .credits .coffee, #overlay .credits .bug { box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #overlay .seed { font-variant-numeric: tabular-nums; }
+    /* a phone held sideways: the two-column controls wrap their key names instead of running off the card */
+    body.dev-touch #controls tbody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    body.dev-touch #overlay #controls td:first-child { white-space: normal; }
+    body.dev-touch #overlay .actions button { padding: 12px 14px; }
   </style>
 </head>
 <body>
@@ -520,12 +693,18 @@
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
     <div id="polarity" data-polarity="positive"></div>
+    <div id="kairos" hidden><span><i></i><i></i><i></i></span><em></em></div>
+    <div id="kairos-marks"></div>
+    <div id="phase" class="slate" hidden role="status"></div>
     <div id="items"></div>
+    <div id="phase-tint" aria-hidden="true"></div>
   </div>
   <div id="hand"></div>
+  <div id="held" aria-live="polite"></div>
   <div id="corner"><canvas id="minimap" class="slate"></canvas><div id="depth"></div></div>
   <div id="debug"></div>
   <div id="banner"></div>
+  <div id="achievement" aria-live="polite"></div>
   <div id="toast" class="slate"></div>
   <div id="boss" hidden><span id="bossname"></span><div><i id="bossfill"></i></div></div>
   <div id="toll"></div>
@@ -536,6 +715,7 @@
       <nav class="tabs">
         <button type="button" data-act="tab-menu" data-tab="menu" aria-selected="true"></button>
         <button type="button" data-act="tab-items" data-tab="items" aria-selected="false"></button>
+        <button type="button" data-act="tab-map" data-tab="map" aria-selected="false"></button>
       </nav>
       <div class="panel-menu">
       <h1 class="cover"><img src="/the-roots-cover.jpg" alt="THE ROOTS" width="1663" height="640" /></h1>
@@ -555,6 +735,7 @@
             </div>
             <p id="fov-hint" class="hint"></p>
           </section>
+          <div id="completion"></div>
           <p id="seed" class="seed"></p>
         </div>
         <section>
@@ -562,6 +743,10 @@
           <table id="controls"></table>
         </section>
       </div>
+      <section id="codex">
+        <h2 data-i18n="codex.title">Presences met</h2>
+        <ul class="codex"></ul>
+      </section>
       <footer class="credits">
         <p><span data-i18n="intro.openSource">This game is open source and open to collaboration: if you love video games and want to help, you are welcome here.</span> <a href="https://github.com/yeagob/sotano" target="_blank" rel="noopener" data-i18n="intro.repo">Repository</a></p>
         <span id="version"></span>
@@ -570,6 +755,7 @@
       </footer>
       </div>
       <div id="inventory"></div>
+      <div id="starmap"></div>
     </div>
   </div>
   <div id="rotate" data-i18n="touch.rotate">Turn your device sideways to play</div>

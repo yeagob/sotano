@@ -10,15 +10,26 @@ export const HEART_CHANCE: Readonly<Record<RareHeart, readonly [number, number]>
   blood: [0.04, 0.08],
   star: [0.02, 0.04],
   berserker: [0.005, 0.015],
+  black: [0.01, 0.02],
 };
 
-export const RARE_HEARTS: readonly RareHeart[] = ['blue', 'stone', 'blood', 'star', 'berserker'];
+export const RARE_HEARTS: readonly RareHeart[] = ['blue', 'stone', 'blood', 'star', 'berserker', 'black'];
 
 export function floorHeartChances(rr: RunRandom, floor: number): Record<RareHeart, number> {
   const r = rr.fork('floor', Math.max(0, floor), 'hearts');
   const out = {} as Record<RareHeart, number>;
   for (const k of RARE_HEARTS) { const [lo, hi] = HEART_CHANCE[k]; out[k] = lo + (hi - lo) * r.next(); }
   return out;
+}
+
+/**
+ * The chances a heart's kind is rolled with on a band (`bandOf`, docs/architecture/LEVELS.md): on floor 0 (the
+ * Roots) the star heart's chance is halved, because star hearts are of little use there (owner, 2026-11-12). The red
+ * takes the difference, since `heartTable` gives red the rest. Every other band, the surface (`SURFACE`) included,
+ * keeps its chances. The game calls it wherever a random heart's kind is rolled (`Game`'s heart roll, `stream('hearts')`).
+ */
+export function heartChancesOnBand(band: number, chances: Readonly<Record<RareHeart, number>>): Record<RareHeart, number> {
+  return band === 0 ? { ...chances, star: chances.star / 2 } : { ...chances };
 }
 
 export function heartTable(chances: Readonly<Record<RareHeart, number>>): Table<HeartKind> {

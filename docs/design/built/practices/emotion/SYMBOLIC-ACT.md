@@ -22,6 +22,7 @@ Blocks you throw explode when they hit something (radius 1.8, can hurt you). Thr
 
 - throw strength: x1.3
 - when a block is thrown: marked as volatile
+- when a block is kicked (including one that falls on you while your hands are full, or a thrown block you kick later): the volatile mark is removed, so it does not explode (#198). Somatic Release arms kicks again.
 - when a thrown block lands: if it is volatile, it explodes (radius 1.8, 14 damage)
 
 ## Synergies and states of being

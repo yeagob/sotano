@@ -28,6 +28,10 @@ Stay off its axes, and stand where a placed block is between you. Good intention
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, bomb 10%.
+
 ## Status
 
 Built.

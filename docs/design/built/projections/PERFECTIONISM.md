@@ -25,6 +25,10 @@ Break the plates first, then the body. Good intentions do half damage and warm i
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 5%.
+
 ## Status
 
 Partial. The built part is the walk and the shell. Its release with gold seams is in [GAPS](../../not-built/projections/GAPS.md).

@@ -26,6 +26,10 @@ Step out of the arc's line. Good intentions do half damage and warm it; bad inte
 
 None.
 
+## Numbers
+
+- **Pickups on release:** bomb 10%, heart 5%.
+
 ## Status
 
 Partial. The built part is the walk and the arc. Its jumps between conductive blocks, the arcs between Sparks and grounding are in [GAPS](../../not-built/projections/GAPS.md).

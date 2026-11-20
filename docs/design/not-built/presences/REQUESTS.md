@@ -2,7 +2,7 @@
 
 # Requests from the depths
 
-Status: **decided** (the owner approved requests, not orders, and the five allowed requests, on 2026-10-27). None of this is built. The Boundary's request card, the first build of this design, was replaced on 2026-11-09 by its meditation app (see [built/presences/MEDITATION-APP.md](../../built/presences/MEDITATION-APP.md)), which keeps the safety rules below except rule 8, by the owner's decision. The idle window, the trust meter and the requests of the other presences are still to build. The readings of the idle window and the reward table are still to be confirmed.
+Status: **decided** (the owner approved requests, not orders, and the five allowed requests, on 2026-10-27). None of this is built. The Boundary's request card, the first build of this design, was replaced on 2026-11-09 by its meditation app (see [built/presences/MEDITATION-APP.md](../../built/presences/MEDITATION-APP.md)), which keeps the safety rules below except rule 8, by the owner's decision. Built so far: the request line and its alternative on the consent card (`src/content/presences/requests.ts`), for the Gardener (breathe) and the Boatman (move), and, proposed pending owner ruling, for the Child (draw, on its build card) and the Elder (be still, on its choice card); the exchange still completes only on Give or on the card's answer. Built in this pass too: the idle window (`src/content/presences/idle.ts`): after the Gardener or the Boatman is given its exchange, it stays for a seeded 30 to 60 seconds of game time, then leaves. Proposed, pending owner ruling: the window runs on game time, not on the player being idle (the game sees input, not whether the player stepped away, so it cannot tell). Built since (#228, D7; issue #235): the question "Have you done it?" at the end of the idle window, the honest-completion reading, the hidden trust step and its gifts, and the count of requests in the save; see [built/presences/REQUESTS.md](../../built/presences/REQUESTS.md). Still to build: the requests of the other presences in an idle window (the Child draws, the Elder stands still and writes, the Listener breathes and is still). The readings of the idle window and the reward table are still to be confirmed.
 
 Some presences ask for something in the real world, in a line of story, and then let the player go on. The game is a game: nothing here is a therapy, a cure or a test of the player.
 
@@ -25,13 +25,33 @@ A hidden number, kept per run. It is never drawn, named or said: not in the HUD,
 2. Every physical request has an alternative: seated or lying down, no hands, a quiet room, write it in the head, say it aloud.
 3. Gentle, never urgent: no red timers, no startling sounds, no screen effects.
 4. No judgement, no insults, no quoting failure back.
-5. No therapy claims. A short note in the settings says the game is not therapy and where to find help.
+5. No therapy claims; no word about the player's life, past or feelings.
 6. Private: writing and drawing are never saved, sent, read or judged. The game stores only the hidden number and the request count.
 7. No camera or microphone. Requests run on the player's own word.
 8. No request asks for longer than the idle window.
+
+## Decided by agent for #149 (pending owner ruling)
+
+- **The idle window.** Accepted as built: a seeded 30 to 60 seconds on game time (README D5).
+- **The trust meter.** Built (README D7, the owner's "Opus decides"): the question, the reading, the step and its gifts; see the built document. The idle detection stays a guess on input, as the open question below says.
+- **The reward table.** Accepted as built (README D6).
 
 ## Open questions
 
 - **Idle detection.** The game sees only input, not whether the player stepped away. The card must say so, and the game must not pretend otherwise.
 - **Readings.** Confirm the thirty-to-sixty-second window and the reward table (readings k and t of the design's section 13).
-- **Settings note.** The not-therapy note and the help line need the owner's text and the translations.
+
+## Checked in the browser (issue #149)
+
+- Headless Chromium, the real consent card of the Gardener (breathe) and the Boatman (move): the request line and its alternative show, Give and Keep are there, the card is 19 to 356 px wide at 375 px, no horizontal scroll. The card at 375 px was measured, not seen clearly: the menu stayed over it in the screenshot.
+- Not checked: the exchange played in the game itself (Give on the card, the idle window ending and the presence leaving), the gamepad and the touch paths on the card, and the request card in the sandbox lab (the lab prints text only).
+
+## Checked in the browser (issue #149, second pass)
+
+- Headless Chromium, the Elder's choice card opened through the game's own card call with its request: at 375 px the request line and its alternative show above the four paths and "Not now", the card is 323 px wide, and the page has no horizontal scroll. At 1280 px the card is 412 px wide. No page errors. Screenshots were checked by eye.
+- Not checked: choosing a path with the keyboard or a click on the live card, the Child's draw request on the build card, the idle window's end, the gamepad and touch paths, and the Covenant's line on a live exchange card.
+
+## Checked in the browser (issue #149, final pass)
+
+- Headless Chromium (Playwright, a sandbox room, the real game), English and Spanish, 1280 and 375 px: the idle window's end: a Gardener given a one-second window is in the room before and gone after the window runs out on game time. The codex in the menu lists the presences met with what each asks and gives. The Covenant's line on a live exchange card (the Listener's last Lesson with three pieces held) shows after the presence's own lines. No page errors, no horizontal scroll. See [built/presences/COVENANT.md](../../built/presences/COVENANT.md#checked-issue-149).
+- Not checked: the gamepad and touch paths on the cards, the Child's draw request on its build card, and a Give on the Gardener's live card (the window was started through the game's own timer, not by the exchange).

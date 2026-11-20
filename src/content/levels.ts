@@ -38,10 +38,41 @@ export interface LevelDef {
   /** Rock in its band: share of deepstone (`deep`) and obsidian, dirt pockets, ore veins. */
   strata: { deep: number; obsidian: number; pockets: number; ore: number };
   lava?: { layer: number; pockets: number; reach: number };
+  /** The material key of its ore veins and ore blocks: the ore of its zone (ZONES). */
+  ore: string;
+  /** Share of its rock that is a living root, and a tuft of cave moss: what the Gardener asks for (GARDENER.md). */
+  garden: { root: number; moss: number };
 }
 
+/** The five zones of the depths, each with its own ore (docs/design/built/levels/floors/README.md, owner ruling D13 on
+ *  2026-11-19): the planetary metals of the old alchemists, iron for the roots and Zone I down to lead at the bottom. */
+export const ZONES: readonly { zone: number; floors: readonly [number, number]; ore: string }[] = [
+  { zone: 1, floors: [1, 2], ore: 'ore' },
+  { zone: 2, floors: [3, 4], ore: 'copperore' },
+  { zone: 3, floors: [5, 6], ore: 'tinore' },
+  { zone: 4, floors: [7, 8], ore: 'quicksilverore' },
+  { zone: 5, floors: [9, 9], ore: 'leadore' },
+];
+
+/** The zone of a floor (1 to 5), or 0 for the roots. */
+export function zoneOf(floor: number): number {
+  return ZONES.find(z => floor >= z.floors[0] && floor <= z.floors[1])?.zone ?? 0;
+}
+
+/** The ore key of a floor: its zone's ore, iron on the roots. */
+export function oreOf(floor: number): string {
+  return ZONES.find(z => floor >= z.floors[0] && floor <= z.floors[1])?.ore ?? 'ore';
+}
+
+/** The Gardener's root and moss in the rock: most near the surface, never none, so a Gardener on any floor can be
+ *  answered from the floor it stands on. */
+const gardenOf = (floor: number) => {
+  const share = floor === 0 ? 0.03 : floor <= 2 ? 0.02 : floor <= 4 ? 0.015 : floor <= 6 ? 0.01 : 0.008;
+  return { root: share, moss: share };
+};
+
 const L = (floor: number, key: string, kind: LevelKind, rock: LevelDef['rock'], strata: LevelDef['strata'], extra: Partial<LevelDef> = {}): LevelDef => ({
-  floor, key, kind, rock, fog: `fog.${rock}` as PalToken, vaults: floor <= 5, plan: { minRooms: 8, maxRooms: 11 }, bigRooms: 1, palette: { wall: 'brick', floor: 'flagstone', trim: 'brick' }, enemyBudget: Math.min(2 + Math.ceil(floor * 0.8), 9), strata, ...extra,
+  floor, key, kind, rock, ore: oreOf(floor), garden: gardenOf(floor), fog: `fog.${rock}` as PalToken, vaults: floor <= 5, plan: { minRooms: 8, maxRooms: 11 }, bigRooms: 1, palette: { wall: 'brick', floor: 'flagstone', trim: 'brick' }, enemyBudget: Math.min(2 + Math.ceil(floor * 0.8), 9), strata, ...extra,
 });
 
 /** Underground floors, top to bottom. */

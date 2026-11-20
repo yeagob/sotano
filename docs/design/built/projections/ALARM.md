@@ -28,6 +28,11 @@ Learn the swell: a burst is announced three steps ahead. Stay out of the burst r
 - **Water:** calms it for 2.5 seconds, mid-swell included. It crosses water.
 - **Fire and lava:** it swells at once (0.3 seconds) and keeps out of them.
 
+## Numbers
+
+- **Pickups on release:** bomb 25%, heart 5%.
+- **Form:** the third form is [Dread](DREAD.md).
+
 ## Status
 
 Built. Whether a calm in water stops the chain is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

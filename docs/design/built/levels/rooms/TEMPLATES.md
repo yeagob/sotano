@@ -2,22 +2,22 @@
 
 Up: [rooms](README.md) · Status: built.
 
-The build's 86 templates in six kinds, and the rooms of the floors that they fill. Each template lists the floors it may appear on (blank floors mean every floor), its height and ceiling (flat when none is given), its footprint in cells, its weight among templates of its kind, and what it features.
+The build's 149 templates in six kinds, and the rooms of the floors that they fill. Each template lists the floors it may appear on (blank floors mean every floor), its height and ceiling (flat when none is given), its footprint in cells, its weight among templates of its kind, and what it features.
 
 ## Kinds
 
 | Kind | Templates | Meaning |
 |---|---|---|
-| Start | 4 | Where you land on a floor; never needs building |
-| Normal | 50 | A room with projections and doors, on its own |
-| Normal or path | 15 | A normal room, or a corridor of the Tree between two emanations |
+| Start | 6 | Where you land on a floor; never needs building |
+| Normal | 83 | A room with projections and doors, on its own |
+| Normal or path | 31 | A normal room, or a corridor of the Tree between two emanations |
 | Path | 1 | A corridor only (the ford) |
-| Treasure | 6 | Holds the floor's practice on a pedestal (or in a chest) |
-| Boss | 7 | Holds the way down (the hole) and the boss's practice; below the roots always a two-cell room ([MULTI-CELL](MULTI-CELL.md#boss-rooms-are-always-large)) |
-| Vault | 2 | A locked room; its shell is obsidian; on floors 1 to 5 only |
-| Challenge | 2 | Three waves per visit, repeatable |
+| Treasure | 9 | Holds the floor's practice on a pedestal (or in a chest) |
+| Boss | 9 | Holds the way down (the hole) and the boss's practice; below the roots always a two-cell room ([MULTI-CELL](MULTI-CELL.md#boss-rooms-are-always-large)) |
+| Vault | 4 | A locked room; its shell is obsidian; on floors 1 to 5 only |
+| Challenge | 6 | Three waves per visit, repeatable |
 
-Weights decide how often a template is chosen among the templates of its kind on a floor. A template with no weight counts once; the lesson rooms of the roots (except the gift) and several of the building rooms count three times or twice. Bigger rooms are chosen more often on the deeper floors (see [MULTI-CELL](MULTI-CELL.md)). Three templates keep their orientation and are never mirrored: the great pit, the antechamber and the giant well. Every other template may be mirrored on X or Z, so the same picture serves several rooms.
+Weights decide how often a template is chosen among the templates of its kind on a floor. A template with no weight counts once; the lesson rooms of the roots (except the gift) and several of the building rooms count three times or twice. Bigger rooms are chosen more often on the deeper floors (see [MULTI-CELL](MULTI-CELL.md)). Four templates keep their orientation and are never mirrored: the great pit, the antechamber, the giant well and the catacombs. Every other template may be mirrored on X or Z, so the same picture serves several rooms.
 
 On floors 6 to 9 a vault template becomes a normal room, so the vault kind is in play on floors 1 to 5 only.
 
@@ -49,12 +49,12 @@ The roots (floor 0) are the eleven lesson templates, marked `0`. They are descri
 | veins | normal | 1–4 | 5 | 1×1 | 1 | - |
 | checker | normal | 1–4 | 5 | 1×1 | 1 | - |
 | ring | normal | 1–4 | 5 | 1×1 | 1 | stone |
-| colonnade | normal | 1–4 | 5 | 1×1 | 1 | crates |
+| colonnade | normal | 1–4 | 5 | 1×1 | 1 | - |
 | shrine | treasure | all | 5 | 1×1 | 1 | - |
 | altar | treasure | all | 5 | 1×1 | 1 | stone |
 | nook | treasure | all | 5 | 1×1 | 1 | - |
 | arena | boss | all | 5 | 1×1 | 1 | stone |
-| pit | boss | all | 5 | 1×1 | 1 | stone |
+| pit | boss | all | 5 | 1×1 | 1 | dip, stone |
 | cache | vault | all | 5 | 1×1 | 1 | crates |
 | cistern | normal | 1–6 | 8 vault-x | 1×1 | 1 | layers, terraces, element |
 | hearth | normal | 2–9 | 6 vault-z | 1×1 | 1 | element, crates, stone |
@@ -73,7 +73,7 @@ The roots (floor 0) are the eleven lesson templates, marked `0`. They are descri
 | roofed-garden | normal | 2–5 | 6 vault-z | 1×1 | 1 | layers, terraces |
 | dig-field | normal | 1–4 | 6 | 1×1 | 1 | dip |
 | ore-vein | normal | 1–5 | 6 | 1×1 | 1 | ore |
-| obsidian-maze | normal | 4–5 | 8 pointed-x | 1×1 | 1 | door-plug |
+| obsidian-maze | normal | 4–5 | 8 pointed-x | 1×1 | 1 | - |
 | spring | treasure | all | 7 dome | 1×1 | 1 | element |
 | reliquary | vault | 3–9 | 7 vault-x | 1×1 | 1 | layers, terraces, element |
 | caldera | boss | 3–9 | 8 dome | 1×1 | 1 | layers, terraces, element |
@@ -124,6 +124,68 @@ The roots (floor 0) are the eleven lesson templates, marked `0`. They are descri
 | ditches | normal | 8–9 | 6 | 1×1 | 3 | pit, stone |
 | cocytus | normal | 9 | 8 dome | 1×1 | 3 | element, door-plug, stone |
 | islet | treasure | 3–9 | 7 dome | 1×1 | 1 | element |
+| rotunda | normal | 2–9 | 7 dome | 1×1 | 1 | terraces |
+| galleries | normal or path | 1–6 | 8 vault-x | 1×1 | 1 | layers, terraces |
+| pier | normal or path | 1–9 | 6 | 1×1 | 3 | pit |
+| quad-pools | normal | 1–6 | 6 vault-z | 1×1 | 1 | element |
+| ramparts | normal | 1–9 | 6 | 1×1 | 3 | terraces, door-plug |
+| stepping-stones | normal or path | 1–6 | 6 | 1×1 | 1 | pit |
+| mezzanine | normal | 1–6 | 8 cross | 1×1 | 1 | layers, terraces |
+| broken-bridge | normal or path | 1–9 | 7 vault-z | 1×1 | 3 | layers, terraces, pit |
+| atrium | normal | 1–6 | 7 dome | 1×1 | 1 | terraces, element |
+| pitfalls | normal | 1–5 | 6 | 1×1 | 1 | pit |
+| chapel | normal | 1–5 | 6 vault-z | 1×1 | 1 | - |
+| canals | normal or path | 2–9 | 6 vault-x | 1×1 | 1 | element |
+| watchtowers | normal | 2–9 | 8 pointed-z | 1×1 | 1 | terraces |
+| dikes | normal | 1–9 | 6 | 1×1 | 3 | element, stone |
+| trapdoors | normal or path | 1–9 | 6 | 1×1 | 3 | pit |
+| pillared-hall | normal | 2–9 | 8 cross | 1×1 | 1 | - |
+| mud-flats | normal | 1–5 | 6 | 1×1 | 1 | dip, element |
+| split-level | normal | 1–5 | 6 vault-x | 1×1 | 1 | terraces |
+| runnels | normal | 1–5 | 6 | 1×1 | 1 | element |
+| potholes | normal | 1–5 | 5 | 1×1 | 1 | dip |
+| curbs | normal | 1–5 | 6 vault-z | 1×1 | 1 | terraces |
+| trench-ring | normal | 1–5 | 6 dome | 1×1 | 1 | dip |
+| bleachers | normal | 1–6 | 7 vault-x | 1×1 | 1 | terraces |
+| wells | normal | 1–5 | 6 | 1×1 | 1 | pit |
+| rafters | normal | 1–6 | 8 vault-x | 1×1 | 1 | layers, stone |
+| braziers | normal | 2–9 | 7 cross | 1×1 | 1 | layers, terraces, element, crates |
+| fire-lanes | normal or path | 2–9 | 6 | 1×1 | 3 | element |
+| trials | normal | 2–9 | 6 | 1×1 | 3 | pit, door-plug |
+| arches | normal | 2–9 | 8 pointed-x | 1×1 | 1 | layers, terraces |
+| barricades | normal | 1–5 | 6 | 1×1 | 3 | crates |
+| brick-halls | normal | 1–5 | 6 | 1×1 | 3 | door-plug |
+| planters | normal | 1–6 | 6 vault-z | 1×1 | 1 | dip |
+| forge | normal | 3–9 | 7 vault-z | 1×1 | 1 | element |
+| locks | normal | 3–9 | 7 | 1×1 | 3 | element, door-plug |
+| quench | normal or path | 3–9 | 7 | 1×1 | 3 | element |
+| causeway | normal or path | 3–6 | 8 vault-z | 1×1 | 1 | element |
+| flooded-cloister | normal | 3–6 | 7 cross | 1×1 | 1 | element |
+| lava-ring | challenge | 3–9 | 7 dome | 1×1 | 1 | element |
+| lava-lake | normal or path | 4–9 | 7 cave | 1×1 | 3 | element |
+| boilers | normal | 4–9 | 7 vault-x | 1×1 | 1 | element |
+| ash-field | normal | 6–9 | 6 cave | 1×1 | 1 | dip, element |
+| crypt | normal | 6–9 | 6 vault-z | 1×1 | 1 | layers, terraces, element |
+| ice-floes | normal | 8–9 | 7 dome | 1×1 | 1 | element |
+| crossfire | challenge | 1–9 | 7 vault-x | 1×1 | 1 | - |
+| pool-arena | challenge | 1–9 | 7 dome | 1×1 | 1 | element |
+| bunkers | challenge | 1–9 | 6 | 1×1 | 1 | - |
+| twin-courts | normal or path | 2–9 | 7 | 2×1 | 3 | element, door-plug, stone |
+| hypostyle | normal or path | 2–6 | 8 cross | 2×1 | 1 | - |
+| aqueduct | normal or path | 1–5 | 8 vault-x | 2×1 | 1 | element, stone |
+| cistern-hall | normal or path | 3–5 | 8 vault-x | 2×1 | 1 | element |
+| lake-hall | normal or path | 3–5 | 8 cave | 1×2 | 1 | element |
+| ember-hall | normal or path | 5–9 | 8 pointed-x | 2×1 | 3 | element |
+| catacombs | normal | 6–9 | 7 | 1×2 | 3 | element, door-plug, stone |
+| landing | start | all | 8 vault-z | 1×1 | 1 | layers, terraces |
+| court | start | all | 7 dome | 1×1 | 1 | terraces, element |
+| enclosure | treasure | all | 6 vault-x | 1×1 | 1 | terraces |
+| lantern-hall | treasure | 2–9 | 7 cross | 1×1 | 1 | layers, terraces, element |
+| crate-cache | treasure | all | 6 | 1×1 | 1 | crates |
+| strongbox | vault | all | 6 vault-x | 1×1 | 1 | crates |
+| vigil | vault | 2–9 | 6 | 1×1 | 1 | layers, terraces, element |
+| throne-hall | boss | 2–4 | 8 pointed-x | 2×1 | 1 | layers, terraces, element, stone |
+| ember-throne | boss | 6–9 | 8 cave | 2×1 | 1 | element, stone |
 
 "All" means every floor. The roots draw only from their own eleven templates.
 
@@ -141,7 +203,6 @@ Each of these makes the player use blocks: a gap to bridge, a wall to climb, a p
 | roofed-garden | 2–5 | Dig the beds; build up under the canopy |
 | dig-field | 1–4 | Dig down and up between the mounds |
 | ore-vein | 1–5 | Break the veins for blocks |
-| obsidian-maze | 4–5 | Dig the plug to reach the south door; walk the gaps |
 | long-gallery | 1–3 | Jump the pillars; drop to the key and build your way out |
 | cloister | 1–2 | Fight from the walk; whatever falls into the garth builds out |
 | bastions | 1–5 | Climb the stair for a vantage; knock projections into the holes |
@@ -150,8 +211,17 @@ Each of these makes the player use blocks: a gap to bridge, a wall to climb, a p
 | strongroom | 4–5 | Break or climb your way to the key |
 | chasm | 6–9 | Jump the bridge of pillars; drop and build out |
 | giants-well | 7–9 | Build across, climb down, build out |
-| gauntlet, colosseum | 1–9 | Farm the waves; use the pit and the cover |
+| pier | 1–9 | Bridge the dry dock from the east or west ledge |
+| ramparts | 1–9 | Climb the stair onto a wall and drop beyond it; there is no way back up |
+| broken-bridge | 1–9 | Finish the bridge over the pit |
+| dikes | 1–9 | Break or climb the stone walls |
+| trapdoors | 1–9 | Bridge the wide pits to the north and south doors |
+| trials | 2–9 | Dig the brick wall's plug, bridge the trench, or dig the obsidian wall's plug: a different trial at each door |
+| barricades, brick-halls | 1–5 | Break, burn or climb the crate walls; dig the brick walls' plugs |
+| twin-courts, catacombs | 2–9, 6–9 | Dig the plug into the far court or the crypt |
+| ember-hall | 5–9 | Bridge the lava to the key's island |
+| gauntlet, colosseum, and the new challenge rooms | 1–9 | Farm the waves; use the pit and the cover |
 
 The element rooms (water, lava, fire) that the player builds through are in [ELEMENT-ROOMS](ELEMENT-ROOMS.md).
 
-Code: `src/content/rooms.ts` (every template, its fields and the validator), `src/world/floor.ts` (how templates are chosen by floor, mirroring and kind).
+Code: `src/content/rooms.ts` (every template, its fields and the validator), `src/content/room-layouts.ts` (the layouts of issue #115, [LAYOUT-RULES](LAYOUT-RULES.md)), `src/world/floor.ts` (how templates are chosen by floor, mirroring and kind).

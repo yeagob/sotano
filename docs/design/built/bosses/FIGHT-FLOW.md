@@ -18,7 +18,7 @@ The entrance omen lasts 1.5 seconds in total. The design asked for 2.5 seconds (
 
 ## 3. Health
 
-Boss health is set when the boss spawns, from its floor, not from its definition: 140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9 (a curve of about ×1.28 a floor). The HUD shows a health bar with the boss's name and its ratio, only while the player is in the boss room.
+Boss health is set when the boss spawns, from its floor, not from its definition: 140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9 (a curve of about ×1.28 a floor). The HUD shows a health bar with the boss's name and its ratio, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there.
 
 A boss's touch deals 8, the same as a full heart. Its shots and ground attacks are in [Attacks](../encounters/ATTACKS.md).
 
@@ -67,6 +67,8 @@ Any of these runs the same defeat (`bossDown`):
 2. The boss's practice appears on its pedestal, with light and a chime.
 3. A toast says the boss is down, and the screen gives a short shake.
 4. The way down is cracked open after 1.5 seconds: the hole's top blocks crack in stages, then it opens.
+
+No boss drops a pickup or a part. The practice on the pedestal is drawn by the floor's seed from the pedestal pool.
 
 On floors 1 to 8 the way down asks a toll first (section 8). Floor 9 has none.
 

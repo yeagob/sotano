@@ -28,3 +28,4 @@ Wonder is a small moth of pale paper that drifts among the roots and keeps away 
 - **Not in the design's roster.** The bestiary lists Rootlings for curiosity; Wonder is in the code and not in the design. Keep both, or fold Wonder into Rootling?
 - **Same pattern name.** Wonder and Rootling are both called curiosity in the code. One needs a different pattern.
 - **Flight.** A creature that flees the player is a different verb from the others, which approach or wander. Keep it.
+- **Floor field.** The code sets its `minFloor` to 99, while the creature table (`CREATURE_LIFE`) places it on floor 0. The table decides placement; the field is unused.

@@ -1,0 +1,46 @@
+{
+  "note": "Stacks, potion family: Tea Ceremony and Herbal Lore grow by one stack per potion drunk, capped at six; a meal in the hand is not drunk as a potion stack",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    5,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "teaceremony",
+    "herbalism"
+  ],
+  "hand": [
+    "plain-tonic",
+    "plain-tonic",
+    "meal-small",
+    "plain-tonic",
+    "plain-tonic",
+    "plain-tonic",
+    "plain-tonic"
+  ],
+  "ticks": 240,
+  "report": [
+    0,
+    60,
+    240
+  ],
+  "actions": [
+    { "t": 20, "do": "key", "code": "KeyG" },
+    { "t": 50, "do": "key", "code": "KeyG" },
+    { "t": 80, "do": "key", "code": "KeyG" },
+    { "t": 110, "do": "key", "code": "KeyG" },
+    { "t": 140, "do": "key", "code": "KeyG" },
+    { "t": 170, "do": "key", "code": "KeyG" },
+    { "t": 200, "do": "key", "code": "KeyG" }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "note": "The Elder asks which of four paths still holds; the chosen path gives a practice of that path",
+  "floor": 1,
+  "seed": 4182,
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    3,
+    0,
+    3
+  ],
+  "hand": [],
+  "ticks": 60,
+  "report": [
+    0,
+    1,
+    30,
+    60
+  ],
+  "enemies": [
+    {
+      "def": "elder",
+      "at": [
+        5,
+        0,
+        3
+      ]
+    }
+  ]
+}

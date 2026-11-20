@@ -2,7 +2,7 @@
 
 Up: [levels](../README.md) · the room templates, the rules every room obeys, and the rooms that the player builds through.
 
-A room is one cell of a floor's map (13 blocks by 7 inside, with a two-block wall shared with its neighbour), and it may spread into the empty cells beside it. The build has 86 room templates, chosen per cell by kind and by floor: starts, normal rooms, treasure rooms, vaults, bosses, the corridors of the Tree (paths) and two challenge rooms. A template is a picture of the room in blocks, with markers for the start, the pedestal, the key, the boss's hole and the doors. Every template passes a validator that enforces the house rules below before it may be used. The tests check the validator and the building rule on every hostile floor.
+A room is one cell of a floor's map (13 blocks by 7 inside, with a two-block wall shared with its neighbour), and it may spread into the empty cells beside it. The build has 149 room templates, chosen per cell by kind and by floor: starts, normal rooms, treasure rooms, vaults, bosses, the corridors of the Tree (paths) and six challenge rooms. A template is a picture of the room in blocks, with markers for the start, the pedestal, the key, the boss's hole and the doors. Every template passes a validator that enforces the house rules below before it may be used. The tests check the validator and the building rule on every hostile floor.
 
 ## The house rules
 
@@ -18,6 +18,7 @@ These hold for every room, because the validator refuses a template that breaks 
 - Elements that hurt (lava, fire) are kept off the roots.
 - Every room stays inside its band: height 5 to 8, pits at most 2 blocks deep, layers at heights 1 to the height minus 3 (see [levels](../README.md)).
 - A start room never needs building; it always has a clear four-by-four centre.
+- Corners stay open where projections rise: no loose block or decor slot in a corner, no notch a projection can hide in, and nothing two blocks high between the centre and a corner it can walk to ([LAYOUT-RULES](LAYOUT-RULES.md)).
 
 ## Building is the key
 
@@ -35,11 +36,12 @@ At least half of the fighting rooms with two or more doors need building on ever
 
 | Document | Contents |
 |---|---|
-| [TEMPLATES.md](TEMPLATES.md) | All 86 templates by kind, floors, height, ceiling, footprint and features; the rooms the player builds through |
+| [TEMPLATES.md](TEMPLATES.md) | All 149 templates by kind, floors, height, ceiling, footprint and features; the rooms the player builds through |
+| [LAYOUT-RULES.md](LAYOUT-RULES.md) | Open corners: the rules every room with projections keeps, the audit of the rooms that broke them, the new layouts and how many each band has |
 | [ELEMENT-ROOMS.md](ELEMENT-ROOMS.md) | The 28 rooms where water, lava or fire is the protagonist, and what each asks of the player |
 | [HEIGHT-AND-CEILINGS.md](HEIGHT-AND-CEILINGS.md) | Rooms taller than 5 blocks, the nine ceiling shapes, pits, dips, plateaus and layers |
 | [MULTI-CELL.md](MULTI-CELL.md) | Rooms bigger than their cell: the twelve footprints, the home cell, and how space is allotted |
 | [CHALLENGE.md](CHALLENGE.md) | Challenge rooms: three waves per visit, harder each time |
-| [DOORS.md](DOORS.md) | Doors: their kinds, opening and sealing, locked vaults, hard walls, breakthroughs and door plugs |
+| [DOORS.md](DOORS.md) | Doors: their kinds, opening and sealing, locked vaults, hard walls, bombs and door plugs |
 
-Code: `src/content/rooms.ts` (the templates and the validator), `src/world/floor.ts` (carving, allotting space, doors), `src/world/floorplan.ts` (the plans the rooms fill), `src/content/tables/rooms.ts` (mood, challenge chance), `tests/levels.test.ts` (the building rule and the bands).
+Code: `src/content/rooms.ts` (the templates and the validator), `src/content/room-layouts.ts` (the layouts of issue #115), `src/world/floor.ts` (carving, allotting space, doors), `src/world/floorplan.ts` (the plans the rooms fill), `src/content/tables/rooms.ts` (mood, challenge chance), `tests/levels.test.ts` (the building rule and the bands).

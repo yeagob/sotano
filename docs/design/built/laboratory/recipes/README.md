@@ -13,10 +13,11 @@ What the bulb makes when a positive intention brews it, and how long the flask's
 | Footing Tincture | body | a body flesh and deepstone or obsidian | kick ×1.5 | 3 sealed rooms | [FOOTING-TINCTURE](FOOTING-TINCTURE.md) |
 | Spring Tonic | body | a body heart | jump ×1.4 | the floor | [SPRING-TONIC](SPRING-TONIC.md) |
 | Clear Infusion | mind | two minds of two mind patterns | range ×1.3, shot speed ×1.2 | 3 sealed rooms | [CLEAR-INFUSION](CLEAR-INFUSION.md) |
-| Questioning Tincture | mind | a mind of the Doubt lineage and iron ore | the next lock asks one key less | one lock, or the floor | [QUESTIONING-TINCTURE](QUESTIONING-TINCTURE.md) |
+| Questioning Tincture | mind | a mind of the Doubt lineage and an ore (any zone's) | the next lock asks one key less | one lock, or the floor | [QUESTIONING-TINCTURE](QUESTIONING-TINCTURE.md) |
 | Ember Tonic | will | a will heart | fire rate ×1.3 | 3 sealed rooms | [EMBER-TONIC](EMBER-TONIC.md) |
 | Patient Draught | will | a heart and a mind of one will pattern | mining ×1.6 | the floor | [PATIENT-DRAUGHT](PATIENT-DRAUGHT.md) |
 | Berserker Draught | will | two will hearts and obsidian | the berserker state | 2 sealed rooms | [BERSERKER-DRAUGHT](BERSERKER-DRAUGHT.md) |
+| Rebirth Draught | mind | a will heart, a mind of mind and a flesh of body | starts the run again, keeping every practice held (asks first) | at once | [IN-HAND-AND-REBIRTH](../../practices/potions/IN-HAND-AND-REBIRTH.md) |
 
 ## How the bulb is read
 

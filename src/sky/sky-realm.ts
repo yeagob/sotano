@@ -124,6 +124,9 @@ export class SkyRealm implements SkyRealmApi {
   }
 
   /** The order of §2.5. The gate check is the game's: the crown the sky falls to lies in the dungeon. */
+  /** The last floor the player stood on, so the first time on a guardian floor is reported once per change. */
+  private reachedFloor = 0;
+
   update(dt: number) {
     const body = this.host.player().body;
     // the nests spawn their cubes now, while the sky is the active world (built earlier they would fill the dungeon's)
@@ -141,6 +144,10 @@ export class SkyRealm implements SkyRealmApi {
     this.creatures.update(dt, floor);
     this.updraft.update(dt);
     this.threshold.update(dt);
+    if (floor !== this.reachedFloor) {
+      this.reachedFloor = floor;
+      if (floor >= 1 && floor <= this.plans.floors.length) this.host.meetFloor(this.plans.floors[floor - 1].animal);
+    }
     this.host.place(placeLabel(floor));
   }
 

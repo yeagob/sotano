@@ -31,8 +31,10 @@ export interface VoxelSpace {
   /** A chunk plus a one-voxel border, (CHUNK + 2)³ bytes, for the mesher (`elem`: the element layer). */
   paddedChunk(cx: number, cy: number, cz: number, elem?: boolean): Uint8Array;
   /** True for a chunk column outside the stored world whose ground is a formula (the dungeon's
-   *  mountains): it is meshed once and never unloaded by the rows of levels. */
+   *  surface and mountains): it is streamed round the viewer, never by the rows of levels. */
   outerChunk?(cx: number, cz: number): boolean;
+  /** The formula ground's chunks to mesh within `radius` blocks of (x, z), nearest first. */
+  outerChunksNear?(x: number, z: number, radius: number): [number, number, number][];
   /** True when a chunk is all air with no element (the sky is mostly air). */
   emptyChunk?(cx: number, cy: number, cz: number): boolean;
 }

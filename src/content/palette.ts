@@ -12,6 +12,7 @@ import { SKY_LION_PALETTE } from './palette/sky-lion';
 import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
 import { MEDITATION_PALETTE } from './palette/meditation';
+import { DEEP_MATTER_PALETTE } from './palette/deep-matter';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -49,6 +50,9 @@ export const PALETTE = {
   // cold and from Emotion; stone is a warm grey for gold cracks; blood is a crimson under life.heart;
   // the berserker's ember burns inside an obsidian shell. The star heart is the light's own ramp.
   'heart.blue.base': '#4E4CFF', 'heart.blue.dark': '#1D1A80',
+  // The black heart (issue #154): soot-black, a violet-tinged ink that stays off the cold ramp and off
+  // the obsidian of the berserker heart; its paper glint keeps the outline readable on the dark HUD.
+  'heart.black.base': '#3A3442', 'heart.black.dark': '#16131C',
   'heart.stone.dark': '#48433D', 'heart.stone.base': '#6E6860', 'heart.stone.hi': '#968E83',
   'heart.blood.base': '#9B1236',
   'heart.berserker.ember': '#FF8C1A',
@@ -143,6 +147,9 @@ export const PALETTE = {
   'cloth.base': '#3D4F73', 'cloth.cuff': '#2C3A57', 'cloth.hi': '#4E6290',
 
   'living.dark': '#26331F', 'living.base': '#46603D', 'living.hi': '#7A9A62', 'living.glow': '#B5D39A',
+
+  // The presences' materials (D13): the Gardener's root and cave moss, the zones' ore veins (DECISIONS §6.7).
+  ...DEEP_MATTER_PALETTE,
 
   // The sky realm (docs/architecture/SKY.md §11): one part per package, never edited here.
   ...SKY_BLOCKS_PALETTE,

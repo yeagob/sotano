@@ -28,7 +28,7 @@ Walk up to it within about one and a half blocks, at its height. The chest asks 
 
 ## What is inside
 
-What a chest kept is spat out. As the lid opens, each thing leaps out of the mouth on an arc, about one block up, and lands in front of the player, one every 0.16 seconds, each with a pop and a spark. A practice gets the reveal chord. Each thing can be collected 0.6 seconds after it lands.
+What a chest kept is spat out. As the lid opens, each thing leaps out of the mouth on an arc, about one block up, and lands away from the player, never toward them, on clear ground (the same rule as every reward, see [ENTITIES.md](../../../architecture/ENTITIES.md)), one every 0.16 seconds, each with a pop and a spark. A practice gets the reveal chord. Each thing can be collected 0.6 seconds after it lands. Once the last thing has left the mouth the chest is empty: its model and its block are removed, whether or not anything was collected.
 
 Two kinds of chest hold different things.
 

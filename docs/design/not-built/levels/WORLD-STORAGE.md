@@ -1,6 +1,8 @@
 # World storage: a formula with exceptions
 
-Up: [not-built levels](README.md) · Status: Accepted (issue #11). The owner accepted the proposal by the decisions in §9; nothing is built yet.
+Up: [not-built levels](README.md) · Status: Accepted (issue #11). The owner accepted the proposal by the decisions in §9. **The surface (layer 2) is built** (issue #10, see [SURFACE](../../built/levels/SURFACE.md) and [architecture LEVELS §13](../../../architecture/LEVELS.md#13-the-surface-and-its-mountains-issue-10)); the strata, the floors, the tree, the elements, the dungeon's exception store and the save are not.
+
+**What is built, and how it differs from this text.** Only the ground outside the dungeon's array moved to the formula: `Mountains` computes each column from the seed's parameters (612 bytes for seed `0xBEEF`), keeps chunk columns of 18 × 18 heights in an LRU of 1 024, and materialises 16³ chunks into the sky engine's `ChunkCache` (512 chunks), then applies its exceptions (§5.2 sparse form, per chunk). The global heightmap of §2 is gone. The game never writes an exception there yet (decision 8: the mountains are not breakable), so the store is reached only by tests. The dungeon box is still the flat array (7.8 MB): the voxels measure about 10.9 MB with the whole surface walked, under the 16 MB ceiling (decision 7). `SkyWorld` itself was not generalised: the surface reuses its cache and exception kinds, not its class (the class is bound to the sky's size). Everything below that is not about the surface is still not built.
 
 The giant tree, the surface and the floors under it are computed from the run's seed by a formula, and only what differs from the formula is stored. Memory then grows with the number of features and with what the player changes, never with the size of the world. Issue #10 (a larger surface) depends on it.
 

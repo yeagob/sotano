@@ -26,6 +26,10 @@ Its volleys sweep across the room, so use blocks as cover and step between the p
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 6%, bomb 8%.
+
 ## Status
 
 Partial. The built part is the three-post volley from one body. The three separate lecterns, the vulnerable backs and release are in [GAPS](../../not-built/projections/GAPS.md). Its structure is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

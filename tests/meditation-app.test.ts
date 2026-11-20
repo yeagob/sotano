@@ -304,9 +304,9 @@ class Pressed {
 }
 
 describe('every control on every input type', () => {
-  it('maps the six actions of the context on keyboard, gamepad and touch, with no shared input', () => {
+  it('maps the seven actions of the context on keyboard, gamepad and touch, with no shared input', () => {
     const live = BINDINGS.filter(b => b.when.includes('meditation')).map(b => b.action).sort();
-    expect(live).toEqual(['back', 'calm', 'confirm', 'mute', 'navigate', 'skip']);
+    expect(live).toEqual(['back', 'calm', 'confirm', 'mute', 'navigate', 'skip', 'voice']);
     for (const d of DEVICES) {
       const seen = new Map<string, string>();
       for (const b of BINDINGS.filter(x => contextsFor(x, d).includes('meditation'))) {
@@ -376,8 +376,8 @@ describe('every control on every input type', () => {
     expect(app.tiles).toContain('quick');
     app.act('meditate', 0);
     app.act('seq:river', 0);
-    for (const a of ['skip', 'mute', 'calm'] as const) expect(app.tiles, a).toContain(TOUCH_TILE[a]);
-    expect(app.tiles).toEqual(['pause', 'skip', 'mute', 'calm', 'leave']);
+    for (const a of ['skip', 'mute', 'calm', 'voice'] as const) expect(app.tiles, a).toContain(TOUCH_TILE[a]);
+    expect(app.tiles).toEqual(['pause', 'skip', 'extend', 'mute', 'calm', 'voice', 'leave']);
     app.act('skip', 1000);
     expect(app.moment!.part).toBe(1);
     app.act('pause', 1000);
@@ -385,7 +385,7 @@ describe('every control on every input type', () => {
     app.act('pause', 1000);
     app.act('mute', 1000);
     app.act('calm', 1000);
-    expect(app.prefs).toEqual({ mute: true, calm: true });
+    expect(app.prefs).toEqual({ mute: true, calm: true, voice: false });
     app.act('leave', 1000);
     expect(app.tiles).toEqual(['stay', 'quick']);
     expect(app.act('quick', 1000)).toBe('quick');
@@ -394,7 +394,7 @@ describe('every control on every input type', () => {
   });
 
   it('the switches work on every screen and never move the flow', () => {
-    const app = new MeditationApp({ mute: false, calm: false });
+    const app = new MeditationApp({ mute: false, calm: false, voice: false });
     for (const step of ['meditate', 'seq:ground', 'pause']) {
       const screen = app.screen;
       expect(app.act('mute', 0)).toBeNull();
@@ -402,7 +402,7 @@ describe('every control on every input type', () => {
       expect(app.screen).toBe(screen);
       app.act(step, 0);
     }
-    expect(app.prefs).toEqual({ mute: true, calm: true });
+    expect(app.prefs).toEqual({ mute: true, calm: true, voice: false });
   });
 
   it('the selection stays inside the choices of the screen', () => {
@@ -489,7 +489,7 @@ describe('calm visuals and the particle caps', () => {
   });
 
   it('calm visuals keeps the timer, the part, the instruction and the breath exactly as they are', () => {
-    const calm = new MeditationApp({ mute: false, calm: true }), full = new MeditationApp({ mute: false, calm: false });
+    const calm = new MeditationApp({ mute: false, calm: true, voice: false }), full = new MeditationApp({ mute: false, calm: false, voice: false });
     for (const app of [calm, full]) { app.act('meditate', 0); app.act('seq:box', 0); }
     for (let now = 0; now <= 30 * S; now += 333) {
       calm.tick(now); full.tick(now);
@@ -514,6 +514,7 @@ describe('calm visuals and the particle caps', () => {
 function stand() {
   const rig = {
     hud: { toast: vi.fn() },
+    bus: { emit: vi.fn() },
     rng: { stream: () => ({}) },
     pools: { drawRuntime: vi.fn((_pool: string, _rng: unknown, _band: [number, number]) => ITEMS[0].id) },
     openChest: vi.fn(),

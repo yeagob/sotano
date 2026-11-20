@@ -8,11 +8,15 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 |---|---|---|
 | [BOUNDARIES.md](BOUNDARIES.md) | Status: shelved | The practice shelved on 2026-10-29 because it could lock a room. Its naming question (N1) waits for the owner |
 | [SHOP.md](SHOP.md) | Status: idea | A place where what you carry can be traded, so that items and parts get a purpose. The owner's pending task of 28 October |
-| [SECOND-CHANCE.md](SECOND-CHANCE.md) | Status: idea | A practice that lets the run go on when the last heart is lost. The death event is ready for it |
+| [SECOND-CHANCE.md](SECOND-CHANCE.md) | Status: partly built | Built as Waymark (built/practices/will/WAYMARK.md); the open questions remain |
 | [PARTS-PURPOSE.md](PARTS-PURPOSE.md) | Status: idea | What parts are for. Built as collectibles with no effect; the open question is whether they get a purpose, and the potions proposal may answer it |
 | [MENTAL-TRANSMUTATION.md](MENTAL-TRANSMUTATION.md) | Status: idea | Practices that move a state along its own pole (fear toward courage) instead of removing it |
 | [RIDING-THE-PENDULUM.md](RIDING-THE-PENDULUM.md) | Status: idea | Rhythms in rooms or projections that reward timing over reaction |
 | [EARLY-SKETCHES.md](EARLY-SKETCHES.md) | Status: idea (superseded) | The first ten item sketches of the design, with provisional names; most are not built |
+| [CAMINO-ROJO.md](CAMINO-ROJO.md) | Status: idea (pending the owner's definition) | Three practices from the Camino Rojo tradition for the Body path: "por todas mis relaciones", the temazcal and the búsqueda de visión, with the owner's open questions (#194) |
+| [BILATERAL-STIMULATION.md](BILATERAL-STIMULATION.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Emotion, quality 3. Fire rate ×2; the hands take turns, each shot cast by the other hand |
+| [RULE-OF-THREE.md](RULE-OF-THREE.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Mind, quality 3. Each intention flies as three strands in a triangle that widens; 70% damage and mining each |
+| [SPIRAL-GROWTH.md](SPIRAL-GROWTH.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Body, quality 4. Fire rate ×2; each intention flies as a helix of three strands (one full, two at 40%). Double Helix with Bilateral Stimulation |
 
 ## Decided design rule
 

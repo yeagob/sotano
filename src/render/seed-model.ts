@@ -12,8 +12,8 @@ const C = (SEED_W - 1) / 2;
 const SEAM = [0, 0, 0, 1, 1, 0, 0, -1, -1, 0, 0];
 const BRANCHES = ['6,5,1', '7,4,1', '2,6,1', '1,7,1', '6,6,-1', '7,7,-1', '2,3,-1', '1,2,-1'];
 
-/** `breakthrough`: the black seed of a negative bomb. `love`: the white seed of a bomb placed at positive polarity (DECISIONS §7.8). */
-export type SeedKind = 'breakthrough' | 'love';
+/** `bomb`: the black seed of a negative bomb. `love`: the white bomb of a bomb placed at positive polarity (DECISIONS §7.8). */
+export type SeedKind = 'bomb' | 'love';
 
 /** The palette of one seed: husk ramp, seams, heart, cap and halo. */
 interface Look {
@@ -24,13 +24,13 @@ interface Look {
 }
 
 const LOOKS: Record<SeedKind, Look> = {
-  breakthrough: {
+  bomb: {
     dark: 'mat.seed.dark', base: 'mat.seed.base', hi: 'mat.seed.hi',
     lip: 'light.ember', lipEnd: 'light.dusk', inner: 'light.hot', heart: 'light.core', branch: 'light.dusk',
     top: 'mat.seed.dark',
     halo: 'light.ember', haloRest: 0.35, haloBreathe: 0.3,
   },
-  // the white seed (§7.8): a white husk of bone and light.core, core seams with hot lip ends and branches (no gold), a light.core halo at 0.3
+  // the white bomb (§7.8): a white husk of bone and light.core, core seams with hot lip ends and branches (no gold), a light.core halo at 0.3
   love: {
     dark: 'bone.paper', base: 'light.core', hi: 'light.core',
     lip: 'light.core', lipEnd: 'light.hot', inner: 'light.core', heart: 'light.core', branch: 'light.hot',
@@ -139,7 +139,7 @@ function geometries(kind: SeedKind): Geo {
 
 const huskMats: Partial<Record<SeedKind, THREE.MeshLambertMaterial>> = {};
 
-/** One husk material per seed. The white seed carries its own emissive bone, so its shaded faces stay cream, not khaki (§7.8). */
+/** One husk material per seed. The white bomb carries its own emissive bone, so its shaded faces stay cream, not khaki (§7.8). */
 function huskMaterial(kind: SeedKind): THREE.MeshLambertMaterial {
   const cached = huskMats[kind];
   if (cached) return cached;
@@ -158,7 +158,7 @@ export interface SeedModel {
   halo: THREE.Sprite;
 }
 
-export function buildSeed(kind: SeedKind = 'breakthrough'): SeedModel {
+export function buildSeed(kind: SeedKind = 'bomb'): SeedModel {
   const L = LOOKS[kind];
   const g = geometries(kind);
   const cracks = new THREE.MeshBasicMaterial({ vertexColors: true });

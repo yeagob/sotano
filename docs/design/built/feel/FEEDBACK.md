@@ -33,7 +33,7 @@ The game is meant to be gentle. A hit is felt, a hurt is seen, and nothing flash
 
 ## The lessons in stone
 
-The tutorial lives in the world, never in an overlay. Each lesson room of the roots has two stone tablets, on its north and south walls beside the doors, so the player reads them whichever way they come in. There are twelve lessons: move, intention, polarity, step, kick, pit, bridge, bomb, water, practice, down and carry. The text is drawn in the player's language and redrawn when the language changes. Code: `src/render/tablets.ts`.
+The tutorial lives in the world, never in an overlay. Each room of the roots has two panels of carved stone, on its north and south walls beside the doors, so the player reads them whichever way they come in. The panels are the Roots' book: six tutorial pages, then the book's own pages, and the page the walls show changes as the player walks the ring ([the Roots' book](../levels/roots/README.md)). The text is drawn in the player's language and redrawn when the language changes. Code: `src/render/tablets.ts`.
 
 ## Open questions
 

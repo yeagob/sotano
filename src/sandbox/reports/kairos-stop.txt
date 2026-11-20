@@ -1,0 +1,47 @@
+# kairos-stop — Kairos: a full charge stops time (V); the projection stays where it stood; two casts mark it; V again releases five intentions dealt between the marks, all piercing toward it
+floor 1 · seed 1 · room 13×7×5 · 150 ticks (2.5 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kairos · synergies —
+  doubt#2 hp 24.0/24 · projection · at 10.5 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kairos · synergies —
+  doubt#2 hp 24.0/24 · projection · at 10.4 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kairos · synergies —
+  doubt#2 hp 24.0/24 · projection · at 10.4 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 150 (2.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices kairos · synergies —
+  doubt#2 hp 15.3/24 · self · at 10.8 0.0 3.5
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 5 · factionChange:doubt>self 1 · fire 5 · intentHit 5
+
+map t 150 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend

@@ -1,7 +1,7 @@
 // Isaac-style doors (owner, 2026-10-27): a solid 3×3 slab filling the doorway that stays up (open)
 // whenever its rooms hold no projections, slides down to seal a room while you fight, and rises
 // again by itself when the room is cleared. Locked doors still wait for you to walk up and ask the
-// game (keys, item hooks) through the `request` callback. A breakthrough that catches a door
+// game (keys, item hooks) through the `request` callback. A bomb that catches a door
 // destroys it for good (`broken`): its doorway stays open forever.
 
 import * as THREE from 'three';
@@ -20,7 +20,7 @@ export interface Door extends DoorSpec {
   refused: boolean;
   /** Shut by combat: projections in one of its rooms are still around. */
   sealed: boolean;
-  /** Blown apart by a breakthrough: gone for good, never locks or seals again. */
+  /** Blown apart by a bomb: gone for good, never locks or seals again. */
   broken: boolean;
   mesh: THREE.Mesh;
   cx: number; cy: number; cz: number;
@@ -110,7 +110,7 @@ export class Doors {
     }
   }
 
-  /** A breakthrough blew the door apart: its slab is gone and its doorway stays open forever. */
+  /** A bomb blew the door apart: its slab is gone and its doorway stays open forever. */
   break(d: Door) {
     d.broken = true; d.sealed = false; d.locked = false; d.open = 1; d.wantOpen = true;
     d.mesh.visible = false;

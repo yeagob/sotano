@@ -1,4 +1,4 @@
-// Things you collect by walking into them: keys (insights), bombs (breakthroughs), hearts,
+// Things you collect by walking into them: keys (insights), bombs, hearts,
 // and items on pedestals. They only know where they are and what they look like; the game
 // decides what touching them does (through `pickupCollect` / the inventory).
 // Floor pickups fall until they rest on something solid (a vertical settle, no physics engine).
@@ -38,6 +38,9 @@ type Solid = (x: number, y: number, z: number) => boolean;
 
 /** Seconds a pickup takes to grow into view. */
 const POP_IN = 0.45;
+
+/** Downward acceleration of falling pickups, blocks per second squared. */
+export const PICKUP_GRAVITY = 22;
 
 function box(g: THREE.Group, m: THREE.Material, w: number, h: number, d: number, x: number, y: number, z = 0) {
   const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
@@ -188,7 +191,7 @@ export class Pickups {
         // fall until resting on something solid (re-checked every frame: the floor may break)
         const below = solid(Math.floor(p.x), Math.floor(p.y - 0.01), Math.floor(p.z));
         if (!below || p.vy > 0) {
-          p.vy -= 22 * dt;
+          p.vy -= PICKUP_GRAVITY * dt;
           let ny = p.y + p.vy * dt;
           if (p.vy < 0 && solid(Math.floor(p.x), Math.floor(ny), Math.floor(p.z))) { ny = Math.floor(ny) + 1; p.vy = 0; }
           p.y = ny;

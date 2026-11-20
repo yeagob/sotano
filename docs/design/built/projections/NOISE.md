@@ -26,6 +26,10 @@ It is quick and small: time your intentions to its passes. Good intentions do ha
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 3%.
+
 ## Status
 
 Partial. The built part is one flitter. The swarm, its taking of intentions and its release are in [GAPS](../../not-built/projections/GAPS.md).

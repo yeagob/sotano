@@ -27,6 +27,10 @@ Move after it starts to crouch: the first ring is where you stood, not where you
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 6%.
+
 ## Status
 
 Built. Whether it leads your position is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

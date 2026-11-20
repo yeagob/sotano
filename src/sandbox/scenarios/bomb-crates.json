@@ -1,5 +1,5 @@
 {
-  "note": "A breakthrough among crates and stone: blast damage by distance, loose cubes, crates fly",
+  "note": "A bomb among crates and stone: blast damage by distance, loose cubes, crates fly",
   "rows": [".............", "....ccccc....", "....crrrc....", "....cr.rc....", "....crrrc....", "....ccccc....", "............."],
   "player": [0, 0, 0],
   "god": true,

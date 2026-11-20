@@ -2,6 +2,8 @@
 
 Up: [The sky (built)](../README.md) · the five deities as they run in the code now.
 
+Pictures and a catalogue entry for each guardian are in the [bestiary](../../bestiary/README.md).
+
 The five deities of the sky tree's first five floors are in the code: each one is spawned on its floor when the sky realm is built, wakes when the player reaches that floor, fights with its attacks and special attacks, and is won by positive hits. What each deity does is in its own document below; what they share is here. The full design, with the targets the build follows and the open questions, stays in [not-built guardians](../../../not-built/sky/guardians/README.md).
 
 | Document | Deity | Floor | Hits to win | Phases |

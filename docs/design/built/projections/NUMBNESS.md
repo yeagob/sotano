@@ -26,6 +26,10 @@ Keep out of its field, and keep moving: its pace is slow. Good intentions do hal
 
 - **Water:** crosses water at 70 per cent speed.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 6%.
+
 ## Status
 
 Partial. The built part is the walk and the field. Freezing water and loose cubes, and the thaw are in [GAPS](../../not-built/projections/GAPS.md).

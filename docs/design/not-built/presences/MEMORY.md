@@ -12,9 +12,14 @@ Dwellers remember which runs the player began, how deep they went, which Lessons
 - **Profile save.** It is stored in a small profile save, not in the run's seed. A new run starts from the profile.
 - **Run trust.** The hidden trust meter of the requests is per run, not per profile, and it is never shown (see [Requests](REQUESTS.md)).
 
+## Built so far
+
+- **The Echo's place.** The save (`meta.ts`, `fade`) keeps the deepest floor the last run reached when it ended by death, so the Echo can wait on that floor once. It is forgotten when the Echo is met, and a Roots reset keeps it. See [built/presences/ECHO.md](../../built/presences/ECHO.md).
+- Nothing else in this document is built: no counts, no codex, no lines that change with memory, and no Gardener greeting.
+
 ## Open questions
 
-- **The profile save.** The build has no profile save for presences yet. Its design (what is kept, where, and how it is cleared) comes first.
+- **The profile save.** The save record exists (the Roots, achievements, the pact and the Echo's place). The presences' rules for what else is kept, and how it is cleared, still come first.
 - **Counts.** Release counts and run counts are kept in the profile. Decide the limit, so that a long player does not see a memory that never ends.
 - **Reset.** A way to erase the profile must exist and be plain. Decide where it lives in the settings.
 - **Covenant set.** "Every Presence remembers you in the run" is a run rule, while the rest of memory is a profile rule. Keep the two apart in the code and the text.

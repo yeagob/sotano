@@ -26,6 +26,11 @@ Use blocks as cover from its bolts. Good intentions do half damage and warm it; 
 
 - **Water:** keeps out of water when it can, and walks at 40 per cent speed in it.
 
+## Numbers
+
+- **Pickups on release:** heart 8%.
+- **Form:** the third form is [Hall of Mirrors](HALL-OF-MIRRORS.md).
+
 ## Status
 
 Partial. The built part is the distance and the bolt. Copying your intentions, water fog and release are in [GAPS](../../not-built/projections/GAPS.md).

@@ -25,7 +25,7 @@ Linked rooms get a **3×3 doorway** through the middle of the shared wall, frame
 | Obsidian frame (one crack of captive light) | Obsidian leaf with a long captive-light crack | The boss room |
 | Brass frame | Wood leaf with an iron padlock and a gold keyhole | The vault: needs a key |
 
-**Doors** are Isaac-style (owner, 2026-10-27): a solid slab fills the doorway, and it stands **open whenever its rooms hold no projections**. Entering a room with projections seals its doors (never on top of you); clearing it opens them again by themselves. Locked doors still wait for you to touch them (direct contact with the frame, 0.05 blocks, never from across the room; issue #5): they ask the game first (`doorOpen` event): with a key they unlock for good; without one you get a "Locked" message. Items can hook `doorOpen` (e.g. a skeleton key that sets `needsKey = false`). **A breakthrough that reaches a door blows it apart for good** (`doorBreak`, cancellable): the doorway stays open forever, never sealed or locked again, a locked one included. The frame is breakable too, so you can still dig around a door if you're stubborn.
+**Doors** are Isaac-style (owner, 2026-10-27): a solid slab fills the doorway, and it stands **open whenever its rooms hold no projections**. Entering a room with projections seals its doors (never on top of you); clearing it opens them again by themselves. Locked doors still wait for you to touch them (direct contact with the frame, 0.05 blocks, never from across the room; issue #5): they ask the game first (`doorOpen` event): with a key they unlock for good; without one you get a "Locked" message. Items can hook `doorOpen` (e.g. a skeleton key that sets `needsKey = false`). **A bomb that reaches a door blows it apart for good** (`doorBreak`, cancellable): the doorway stays open forever, never sealed or locked again, a locked one included. The frame is breakable too, so you can still dig around a door if you're stubborn.
 
 During combat a room's doors are **sealed** (they stay shut) until every projection in it is gone.
 
@@ -35,6 +35,10 @@ If a floor has a locked door, it also has one **key**, placed on a `K` spot of a
 
 The fixed treasure room on floor 0 is the exception to the pedestal rule: its reserved practice sits in one free chest with no key cost. Approaching opens the Sanctuary. A quick reward or a completed meditation opens the chest; cancelling leaves it closed until the player steps away and returns. Its reward is capped at quality 3, as all practices on the roots are.
 
+The roots have two layouts of the same plan ([EASY-LAYOUT](../design/built/levels/roots/EASY-LAYOUT.md)). The plan cells in `TUTORIAL_CELLS` name each room's teaching template and, for the six rooms that change (`a`, `b`, `d`, `e`, `f`, `g`), an `easy` template. `carveFloor` takes `CarveOptions.easyRoots` (default `false`) and, on floor 0 only, carves the easy template with the cell's own flips; nothing else reads it and no random draw depends on it. The game asks for it from page 2 on. A room of the roots is identified by its plan cell: `rootsRoomKey(gx, gz)` returns the teaching template id in both layouts, and `RoomInfo.template` is the easy id in the easy layout. `strandedTiles` lists the tiles of a room from which a door cannot be reached on foot, one way (the check that proves the easy layout walks).
+
+The roots' loose things (what the mastery level lays, [REWARDS](../design/built/levels/roots/REWARDS.md) §2–§5) are placed by `carveFloor` on the `freeSpots` of the lesson rooms (`floor/0/roots/*` forks): at most one free chest and one extra practice pedestal per room, never a door approach, the centre, the shaft or beside a marker, with three blocks of air above a pedestal. A second Sanctuary chest and the altar take a free tile of the way-down room and the start room. The way-down pedestal and the treasure room's chest are carved exactly as before at every level.
+
 ## 3. Templates
 
 A template is 7 strings of 13 characters, top-down, first row = north:
@@ -42,13 +46,13 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 ```ts
 {
   id: 'quarry', types: ['normal'], rows: [
-    '.............',
-    '.ii.......oo.',
-    '.iRR.....Roo.',
+    '...ii...oo...',
+    '...i.....o...',
+    '.....r.r.....',
     '..R...K...R..',
-    '.dRR.....RRd.',
-    '.dd.......dd.',
-    '.............',
+    '.....r.r.....',
+    '...d.....d...',
+    '...dd...dd...',
   ],
 }
 ```
@@ -65,7 +69,7 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 | `!` | decor slot: ore or obsidian | `b` | brick, 1 high |
 | `1`–`4` | a built terrace (brick) of that height | `_` | a dip, 1 deep |
 | `w` / `W` | water 1 / 2 deep (dug into the floor, a source) | `l` / `L` | lava 1 / 2 deep |
-| `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a breakthrough) |
+| `f` | an eternal flame on the floor | `X` | an obsidian wall up to two blocks under the ceiling (climb it with blocks, or a bomb) |
 | ` ` (space) | not room: the rock stays (the outline of a template bigger than one cell) | | |
 | `=` | a dry pit, 2 deep (you need a block to climb out) | `D` / `E` | a door-shaped plug (3 wide, 3 high) of dirt set in a `#` / `X` wall; above the dirt the wall goes on |
 
@@ -97,8 +101,9 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 - Every room type must have at least one template.
 - **Height and elements** (`validateVolume`): `height` 5–8; a vault or dome needs extra height; no water next to lava and no flame next to something that burns (`c`, `C`, `?`), on the floor or in a layer; layers at 1…height − 3, never two at one height, never blocking the door approaches under door height, the centre (normal rooms), the pedestal or the shaft; no lone floating layer blocks; flames on layers need a terrace that high under them.
 - **Boss floor** (owner, 2026-10-28): a boss template keeps two blocks of clear floor around its hole `H` (only `.`, `H`, `T` or `K`), so a boss of 2–3 blocks never sticks between pillars. `pit` moved its pillars to the sides for this (`validateTemplate`, `tests/boss-rooms.test.ts`).
+- **Open corners** (`spawnPockets`, owner 2026-11-19, issue #115; design: [LAYOUT-RULES](../design/built/levels/rooms/LAYOUT-RULES.md)): projections spawn on any open floor tile away from the doors and the player (`pickSpawnCell`), so mostly in the corners. In every normal, path, challenge and boss template below the Roots: no open floor tile is closed on three sides with a block among them (a notch); no loose block (`r R c C d i o`) or decor slot stands in a corner zone (`CORNER_COLS` × `CORNER_ROWS`, 3 × 2 at each corner of the space) unless it is part of a run from wall to wall; and every open corner tile that can be walked to from its cell's centre and back is in line of sight of that centre over anything lower than two blocks. `tests/layouts.test.ts`. The new layouts live in `src/content/room-layouts.ts` (`LAYOUTS_115`), appended to `ROOM_TEMPLATES`.
 - **Building, as carved** (`needsBuildingIn` with the room's flips and real doors): over many seeds, at least half of every floor's fighting rooms with two or more doors need building (`tests/levels.test.ts`).
-- **Building** (`walkParts`, `needsBuilding`; [LEVELS.md](LEVELS.md) §5–§6): start rooms never need building; the centre of a fighting room reaches a door on foot; a room that needs building carries soft blocks to build with; `P` and `H` sit at the centre; fire, lava and deep water stay off floor 0. Optional fields `floors: [first, last]`, `lesson` (floor 0) and `size: [cellsX, cellsZ]` ([2, 1] is 28 × 7, [1, 2] is 13 × 16; doors only on its first cell; never mirrored). Start rooms keep a clear 4×4 centre (the great pit lands there); a wide crown keeps a clear 4×4 shaft around its `H`.
+- **Building** (`walkParts`, `needsBuilding`; [LEVELS.md](LEVELS.md) §5–§6): start rooms never need building; the centre of a fighting room reaches a door on foot; a room that needs building carries soft blocks to build with; `P` and `H` sit at the centre; fire, lava and deep water stay off floor 0. Optional fields `floors: [first, last]` and `size: [cellsX, cellsZ]` ([2, 1] is 28 × 7, [1, 2] is 13 × 16; doors only on its first cell; never mirrored). Start rooms keep a clear 4×4 centre (the great pit lands there); a wide crown keeps a clear 4×4 shaft around its `H`.
 - `tests/levels.test.ts` carves every element template across all ten floors for several seeds and checks that three layers of rock always remain between bands, that no element sits inside a block, that deep pools are lined, and that each room is as tall as its template.
 
 ### Adding a template
@@ -130,3 +135,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 ## 6. What rooms are built from
 
 Each level names its building palette (`LevelDef.palette`: wall, floor, trim). The shell's walls and ceiling and every `#` are the wall, the ground under the interior is the floor, `b` and `1`–`4` are the trim. Colours and the per-floor table: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md) §6.5).
+
+## The crown's room
+
+One template lives outside `ROOM_TEMPLATES`: `LEAVES_ROOM` (`src/content/crown.ts`), the Leaves of the giant tree's crown. It passes `validateTemplate` like any room (as a `normal` room, `mirror: false`), and the tree carves it in the crown's palette instead of a floor's ([architecture LEVELS §12](LEVELS.md#12-the-tree-in-stories-and-loading-by-level-2026-10-27-owner), [design](../design/built/levels/giant-tree/LEAVES.md)).

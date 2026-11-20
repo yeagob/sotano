@@ -6,6 +6,7 @@ export default defineItem({
   name: 'Visualization',
   description: 'See it before you do it: intentions fly further and faster.',
   effect: 'Range ×1.6: intentions fly straight for longer. Shot speed +30%.',
+  teaching: 'What you can see clearly in your mind, you can reach in the world. Picture your path before you walk it.',
   inspiredBy: 'Mental rehearsal in sports psychology',
   pools: { treasure: 1, boss: 1 },
   tags: ['mind', 'intent'],

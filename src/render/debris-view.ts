@@ -75,7 +75,7 @@ export class DebrisView {
 
   private seed(sys: DebrisSystem, i: number) {
     // the cache is keyed by slot and kind: a slot reused by a bomb of the other polarity is rebuilt
-    const kind: SeedKind = sys.love[i] ? 'love' : 'breakthrough';
+    const kind: SeedKind = sys.love[i] ? 'love' : 'bomb';
     let m = this.seeds.get(i);
     if (m && m.kind !== kind) { disposeSeed(m); m = undefined; }
     if (!m) {

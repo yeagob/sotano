@@ -12,8 +12,15 @@ import type { PartDef } from '../content/parts';
 import type { Flask } from '../content/potions';
 import type { Actor, ActorId, Faction } from './actors';
 import type { BloodRegen, HeartLayer } from './hearts';
+import type { DashDir } from '../input/gestures';
+import { dashDisplacement, DASH_COOLDOWN, DASH_TIME } from './dash';
+import { CROUCH_H, CROUCH_SPEED, EYE_CROUCH, EYE_STAND, RUN_SPEED, roomToStand, STAND_H, supportedAt } from './stance';
 
-export const EYE = 1.62;
+export const EYE = EYE_STAND;
+/** The hand that casts: +1 is the right, -1 the left (Bilateral Stimulation and Spiral Growth take turns). */
+export type CastSide = 1 | -1;
+/** The hand that casts after `side` has cast (the turns of `twinCast`). */
+export const nextCastSide = (side: CastSide): CastSide => (side === 1 ? -1 : 1);
 const SLOW_FACTOR = 0.5;
 /** Swimming (head under a fluid): gravity × SWIM_G, sinking capped, Space swims up. Wading: jump × WADE_JUMP. */
 const ICE_GRIP = 0.12;
@@ -66,8 +73,10 @@ export class Player implements Actor {
   set alive(v: boolean) { this.dead = !v; }
   body: Body = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: false };
   yaw = 0; pitch = 0;
-  /** What your hand holds, bottom to top. The top one is placed or thrown first. */
+  /** What your hand holds, bottom to top. The active one is placed, thrown, drunk or fed first. */
   hand: Carried[] = [];
+  /** The slot the player chose in the hand; -1 means the top (the newest carry). Choosing never moves an item. */
+  activeSlot = -1;
   keys = 0;
   bombs = 1;
   /** Health in damage points (max = HEART × the maxHearts stat; the HUD draws quarter hearts). */
@@ -77,6 +86,21 @@ export class Player implements Actor {
   blood: BloodRegen | null = null;
   /** Seconds of invulnerability left after a hit. */
   invulnT = 0;
+  /** Child's Pose (RUN-AND-CROUCH.md): the body is crouched (a block shorter, eye lowered, slower, never off a ledge). */
+  crouching = false;
+  /** Irimi (DASH.md): seconds left in the dash under way, its velocity, the cooldown left, and whether the air dash is spent. */
+  dashT = 0;
+  dashCool = 0;
+  dashAirUsed = false;
+  /** Set on the frame a dash starts (the game plays its whoosh and trail). */
+  dashStarted = false;
+  /** The direction of the dash under way (for the game's feedback). */
+  dashDir: DashDir | null = null;
+  private dashV = { x: 0, y: 0, z: 0 };
+  /** How far through the dash the body is, 0 to 1 (0 when it is not dashing). */
+  get dashProgress() { return this.dashT > 0 ? 1 - this.dashT / DASH_TIME : 0; }
+  /** The fOV kick of a dash: 0 at its start and end, 1 in the middle. */
+  get dashKick() { return this.dashT > 0 ? Math.sin(Math.PI * this.dashProgress) : 0; }
   slowT = 0;
   muteT = 0;
   dead = false;
@@ -96,6 +120,8 @@ export class Player implements Actor {
   /** Air jumps made since the last landing: the `airJumps` stat minus this is what is left, and the next
    *  one climbs to step `airStep + 1` of the ladder. Landing sets it back to 0. */
   airStep = 0;
+  /** The hand the next shot leaves from (game.ts reads it only while the `twinCast` stat is on). */
+  castSide: CastSide = 1;
   private jumpBuffer = 0;
   private coyote = 0;
   /** An external push, blocks/s, laid over the walk and fading on its own (a vertical push goes straight to `vy`). */
@@ -103,8 +129,50 @@ export class Player implements Actor {
   /** The current carry: the body eases from `from` to `to` over `s` seconds. */
   private carrying: { from: PlayerPoint; to: PlayerPoint; s: number; t: number } | null = null;
 
-  /** The material of the top block: 0 when the hand is empty or its top is a part. */
-  get top() { const c = this.hand.at(-1); return typeof c === 'number' ? c : 0; }
+  /** The slot of the active carried item, or -1 when the hand is empty. */
+  get activeIndex(): number {
+    const n = this.hand.length;
+    if (n === 0) return -1;
+    return this.activeSlot >= 0 && this.activeSlot < n ? this.activeSlot : n - 1;
+  }
+
+  /** The carried item the next use targets (place, throw, drink, the alembic, the kitchen). */
+  get active(): Carried | undefined { const i = this.activeIndex; return i < 0 ? undefined : this.hand[i]; }
+
+  /** The material of the active block: 0 when the hand is empty or its active item is a part. */
+  get top() { const c = this.active; return typeof c === 'number' ? c : 0; }
+
+  /** Chooses a carried item by its slot; a slot out of the hand is ignored. */
+  select(slot: number) { if (slot >= 0 && slot < this.hand.length) this.activeSlot = slot; }
+
+  /** Steps the choice through the hand, wrapping round. */
+  cycle(step: 1 | -1) {
+    const n = this.hand.length;
+    if (n) this.select((this.activeIndex + step + n) % n);
+  }
+
+  /** A new carry goes on top and becomes the choice again. */
+  gain(c: Carried) { this.hand.push(c); this.activeSlot = -1; }
+
+  /**
+   * Takes one carried item out of the hand (a placement, a throw, a gift, a toll). The choice stays on
+   * the same item: an item leaving before it moves the choice down one slot with it. Only losing the
+   * active item itself sends the choice back to the last valid slot, the top.
+   */
+  removeAt(i: number): Carried | undefined {
+    if (i < 0 || i >= this.hand.length) return undefined;
+    const active = this.activeIndex;
+    const [c] = this.hand.splice(i, 1);
+    if (i === active) this.activeSlot = -1;
+    else if (i < active) this.activeSlot = active - 1;
+    return c;
+  }
+
+  /** Takes the active carried item out of the hand; the choice goes back to the top. */
+  takeActive(): Carried | undefined {
+    const i = this.activeIndex;
+    return i < 0 ? undefined : this.removeAt(i);
+  }
 
   /**
    * Puts the body at a point, still, and drops every motion in progress: a carry, a push, a hold, the
@@ -129,6 +197,49 @@ export class Player implements Actor {
     this.slowT = 0;
     this.muteT = 0;
     this.float = false;
+    this.dashT = 0; this.dashCool = 0; this.dashAirUsed = false;
+  }
+
+  /**
+   * Starts a dash in a camera direction (DASH.md). Refused, with no effect, without the `dash` stat, during
+   * the cooldown, a dash under way, a carry or a hold, and a second dash in the air before landing. It is
+   * invulnerable for its length (a hit cannot land while it lasts), and a dash in water covers half the way.
+   */
+  startDash(dir: DashDir, dashStat: number, medium: PlayerMedium): boolean {
+    if (!(dashStat >= 1) || this.dashCool > 0 || this.dashT > 0 || this.dead || this.carrying || this.heldT > 0) return false;
+    const b = this.body;
+    if (!b.onGround) {
+      if (this.dashAirUsed) return false;
+      this.dashAirUsed = true;
+    }
+    const d = dashDisplacement(dir, this.yaw, this.pitch, !!(medium.feet?.fluid || medium.head?.swim));
+    this.dashV = { x: d.x / DASH_TIME, y: d.y / DASH_TIME, z: d.z / DASH_TIME };
+    this.dashT = DASH_TIME;
+    this.dashCool = DASH_COOLDOWN;
+    this.dashDir = dir;
+    this.dashStarted = true;
+    this.invulnT = Math.max(this.invulnT, DASH_TIME);
+    this.pushX = this.pushZ = 0;
+    this.jumpBuffer = 0;
+    return true;
+  }
+
+  /** One frame of a dash: a straight line at dash speed, through the voxel collision, sliding along walls and stopping at ceilings. */
+  private dashStep(dt: number, solid: (x: number, y: number, z: number) => boolean) {
+    const step = Math.min(dt, this.dashT);
+    this.dashT -= step;
+    const b = this.body, v = this.dashV;
+    b.vx = v.x; b.vy = v.y; b.vz = v.z;
+    moveBody(solid, b, step);
+    // a blocked axis stops the dash on that axis only: the rest slides along the wall
+    if (b.vx === 0) v.x = 0;
+    if (b.vy === 0) v.y = 0;
+    if (b.vz === 0) v.z = 0;
+    if (this.dashT <= 0) {
+      this.dashT = 0;
+      // no fall build-up after a dash: the vertical speed restarts at 0
+      b.vx = b.vy = b.vz = 0;
+    }
   }
 
   /**
@@ -159,26 +270,55 @@ export class Player implements Actor {
   /** Being carried this frame. */
   get carried() { return this.carrying !== null; }
 
-  get eye() { return new THREE.Vector3(this.body.x, this.body.y + EYE, this.body.z); }
+  /** The eye's height above the feet: lower while crouched. */
+  get eyeHeight() { return this.crouching ? EYE_CROUCH : EYE_STAND; }
+
+  get eye() { return new THREE.Vector3(this.body.x, this.body.y + this.eyeHeight, this.body.z); }
 
   get forward() {
     const cp = Math.cos(this.pitch);
     return new THREE.Vector3(-Math.sin(this.yaw) * cp, Math.sin(this.pitch), -Math.cos(this.yaw) * cp);
   }
 
-  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks,
-    medium: PlayerMedium = { feet: null, head: null }, opts: PlayerUpdateOptions = {}) {
+  /** The view alone: the mouse or the stick turns the head, the body does not move (also while time is stopped, Kairos). */
+  look(input: Input) {
     this.yaw -= input.lookDX * input.sensitivity;
     this.pitch = Math.max(-1.55, Math.min(1.55, this.pitch - input.lookDY * input.sensitivity));
+  }
+
+  update(dt: number, input: Input, stats: Stats, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks,
+    medium: PlayerMedium = { feet: null, head: null }, opts: PlayerUpdateOptions = {}) {
+    this.look(input);
     this.slowT = Math.max(0, this.slowT - dt);
     this.muteT = Math.max(0, this.muteT - dt);
     this.heldT = Math.max(0, this.heldT - dt);
     const b = this.body;
+    this.dashStarted = false;
+    this.dashCool = Math.max(0, this.dashCool - dt);
+    if (b.onGround) this.dashAirUsed = false;
+    // crouching is a stance, not a move: it changes the body's height before anything moves it (a dash keeps it)
+    this.setStance(stats.crouch >= 1 && input.held('crouch'), solid);
+    if (input.hit('dash') && input.dashDir) this.startDash(input.dashDir, stats.dash, medium);
     if (this.carrying) this.carryStep(dt, solid);
+    else if (this.dashT > 0) this.dashStep(dt, solid);
     else this.walk(dt, input, stats, Math.max(stats.jump, opts.minJump ?? -Infinity), solid, hooks, medium);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
     this.invulnT = Math.max(0, this.invulnT - dt);
+  }
+
+  /**
+   * Crouches at once; stands only when the head has room (a ceiling keeps the body crouched). The feet stay
+   * where they are: the body shrinks from the top, and grows back into free space only.
+   */
+  private setStance(wantCrouch: boolean, solid: (x: number, y: number, z: number) => boolean) {
+    const b = this.body;
+    if (wantCrouch) {
+      if (!this.crouching) { this.crouching = true; b.h = CROUCH_H; }
+    } else if (this.crouching && roomToStand(solid, b)) {
+      this.crouching = false;
+      b.h = STAND_H;
+    }
   }
 
   /** One frame of a carry: the body eases toward the point (smoothstep) and stops against blocks. */
@@ -212,7 +352,11 @@ export class Player implements Actor {
     const fluid = medium.feet?.fluid ? medium.feet : null;
     const swim = !!medium.head?.swim;
     this.swimming = swim;
-    const speed = WALK * stats.moveSpeed * (fluid ? fluid.wade : 1) * (this.slowT > 0 ? SLOW_FACTOR : 1);
+    // running is refused while crouched: the crouch is slower (Child's Pose), and the run needs the stick or the key held
+    const crouch = this.crouching;
+    const running = !crouch && stats.run >= 1 && input.held('run');
+    const pace = crouch ? CROUCH_SPEED : running ? RUN_SPEED : 1;
+    const speed = WALK * stats.moveSpeed * pace * (fluid ? fluid.wade : 1) * (this.slowT > 0 ? SLOW_FACTOR : 1);
     const b = this.body;
     if (b.onGround) this.airStep = 0;
     // the third jump of the ladder steers fully in the air, and adds no forward speed (SKY.md §9)
@@ -229,6 +373,11 @@ export class Player implements Actor {
     }
     b.vx = ownX + (wx * speed - ownX) * blend + this.pushX;
     b.vz = ownZ + (wz * speed - ownZ) * blend + this.pushZ;
+    // a crouched body never walks off a ledge (Minecraft's sneak): an axis whose next step leaves no ground stops
+    if (crouch && b.onGround && !swim) {
+      if (!supportedAt(solid, b, b.x + b.vx * dt, b.z)) b.vx = 0;
+      if (!supportedAt(solid, b, b.x, b.z + b.vz * dt)) b.vz = 0;
+    }
 
     // jump with a little leeway (coyote time and input buffer)
     if (held) this.jumpBuffer = 0;

@@ -1,5 +1,5 @@
-// ?gallery=bombs (docs/art/DECISIONS.md §7.8). The two seeds of a bomb: the black breakthrough of a negative
-// bomb and the white seed of a bomb placed at positive polarity (the love breakthrough). Both at rest (fuse
+// ?gallery=bombs (docs/art/DECISIONS.md §7.8). The two looks of a bomb: the black one of a negative
+// bomb and the white bomb of a bomb placed at positive polarity (the love bomb). Both at rest (fuse
 // 1.8) and at fuse 0.3, on the light deck and on the void, and both at 20 blocks in floor-1 fog. The seeds
 // are the game's own buildSeed and fuseSeed, at the placed size (DebrisView). No randomness.
 // Colour, greyscale and the colour-blindness filters are the gallery's &filter parameter.
@@ -11,7 +11,7 @@ import { buildSeed, disposeSeed, fuseSeed, SEED_H, SEED_VOXEL, type SeedKind } f
 import type { GalleryKit } from '../gallery';
 
 const SIZE = 200;
-const KINDS: SeedKind[] = ['breakthrough', 'love'];
+const KINDS: SeedKind[] = ['bomb', 'love'];
 const SEED_SCALE = DEBRIS_SIZE / (SEED_H * SEED_VOXEL);
 
 /** One seed at the origin, `dist` blocks from the camera, drawn at `fuse` seconds to go. */
@@ -42,7 +42,7 @@ function frame(kind: SeedKind, fuse: number, dist: number, bg: PalToken, fog?: P
 }
 
 export function bombsGallery(g: GalleryKit) {
-  g.head('Bombs: the breakthrough (negative, black) and the white seed (placed at positive polarity), at rest and at fuse 0.3');
+  g.head('Bombs: the bomb (negative, black) and the white bomb (placed at positive polarity), at rest and at fuse 0.3');
   for (const bg of ['rock.f1.base', 'ink.void'] as PalToken[]) {
     const r = g.row();
     for (const kind of KINDS) for (const fuse of [1.8, 0.3]) {

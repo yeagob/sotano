@@ -26,6 +26,10 @@ Hit it early, while it is small. Good intentions do half damage and warm it; bad
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%.
+
 ## Status
 
 Built.

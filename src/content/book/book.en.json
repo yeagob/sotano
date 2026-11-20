@@ -1,0 +1,1254 @@
+{
+  "version": 1,
+  "language": "en",
+  "pages": [
+    {
+      "id": "tutorial-1",
+      "kind": "tutorial",
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "1-hall-n", "layout": "lesson", "title": "The roots", "text": "Everything down here is made of blocks. Throw an intention at one and see what happens.", "image": "lesson/blocks", "key": "cast" },
+          "south": { "id": "1-hall-s", "layout": "plate", "title": "Doubt", "subtitle": "A projection", "text": "A pattern that blocks your way, given a body made of blocks. No projection lives in the roots.", "image": "bestiary/doubt", "note": "It waits from floor 1." }
+        },
+        "roots-step": {
+          "north": { "id": "1-step-n", "layout": "lesson", "title": "Good and bad", "text": "Your intentions are good or bad. Good ones heal and make creatures grow; bad ones break blocks and hurt.", "image": "lesson/polarity", "key": "polarity" },
+          "south": { "id": "1-step-s", "layout": "lesson", "title": "Take, place, jump", "text": "Touch a loose block to take it. {place} sets it where you aim. Jump one block, never two.", "image": "lesson/step", "key": "jump" }
+        },
+        "roots-dig": {
+          "north": { "id": "1-dig-n", "layout": "lesson", "title": "Behind the wall", "text": "Every wall was once built to keep you safe. You can always break one, or build a better one.", "image": "lesson/behind-wall" },
+          "south": { "id": "1-dig-s", "layout": "lesson", "title": "Break through", "text": "A wall stands in your way. Make your intentions bad and break it: the dirt in the middle gives way first.", "image": "lesson/dig", "key": "cast" }
+        },
+        "roots-mend": {
+          "north": { "id": "1-mend-n", "layout": "lesson", "title": "Mend", "text": "Good intentions close cracks. Crack a dirt block with bad ones, switch back, and mend it.", "image": "lesson/mend", "key": "polarity" },
+          "south": { "id": "1-mend-s", "layout": "plate", "title": "Mossling", "subtitle": "A creature of rest", "text": "Stay still beside it for three seconds and it rests with you: you heal a quarter of a heart.", "image": "bestiary/mossling", "note": "Once for each Mossling." }
+        },
+        "roots-pit": {
+          "north": { "id": "1-pit-n", "layout": "lesson", "title": "A way out", "text": "Too wide to jump, too deep to climb. Carry a block, set it against the wall, step up, build your way out.", "image": "lesson/pit", "key": "place" },
+          "south": { "id": "1-pit-s", "layout": "plate", "title": "Wonder", "subtitle": "A creature of curiosity", "text": "A paper moth that keeps you company from a distance. It never touches you and never fights.", "image": "bestiary/wonder", "note": "Good intentions make it grow." }
+        },
+        "roots-bridge": {
+          "north": { "id": "1-bridge-n", "layout": "lesson", "title": "A bridge", "text": "Stand at the edge, place a block in front of you, step onto it, and do it again.", "image": "lesson/bridge", "key": "place" },
+          "south": { "id": "1-bridge-s", "layout": "plate", "title": "Rootling", "subtitle": "A creature of the roots", "text": "It potters along on two short legs, never too close to you and never too far away.", "image": "bestiary/rootling", "note": "Grown three times: a gift?" }
+        },
+        "roots-seal": {
+          "north": { "id": "1-seal-n", "layout": "lesson", "title": "Keys and bombs", "text": "Keys open locks. Bombs burst, and can hurt you too. You count them; they take no hand.", "image": "lesson/counters" },
+          "south": { "id": "1-seal-s", "layout": "lesson", "title": "Bombs", "text": "Obsidian is too hard for intentions. Break the dirt in the wall, or drop a bomb with bad intentions.", "image": "lesson/bomb", "key": "bomb" }
+        },
+        "roots-crates": {
+          "north": { "id": "1-crates-n", "layout": "lesson", "title": "Kick and throw", "text": "With full hands, you kick the loose cubes you walk into. You can also throw one. Both hurt projections.", "image": "lesson/kick", "key": "throw" },
+          "south": { "id": "1-crates-s", "layout": "lesson", "title": "Crates", "text": "Break a crate with bad intentions. Now and then one holds a key, a heart or a bomb.", "image": "lesson/crates", "key": "cast" }
+        },
+        "roots-spring": {
+          "north": { "id": "1-spring-n", "layout": "lesson", "title": "Fire and lava", "text": "Not in the roots. Deeper down, fire and lava burn. Water puts out fire and turns lava into stone.", "image": "lesson/lava" },
+          "south": { "id": "1-spring-s", "layout": "lesson", "title": "Water", "text": "Wade through the shallows. In deep water, press {jump} to swim up.", "image": "lesson/water", "key": "jump" }
+        },
+        "roots-gift": {
+          "north": { "id": "1-gift-n", "layout": "lesson", "title": "The Sanctuary", "text": "The Boundary keeps this chest. Take the quick gift, or sit a short meditation for a better one.", "image": "lesson/sanctuary" },
+          "south": { "id": "1-gift-s", "layout": "lesson", "title": "Practices", "text": "A practice is a way of growing. Take one and it changes what you can do, and who you are.", "image": "lesson/practice", "key": "inventory" }
+        },
+        "roots-door": {
+          "north": { "id": "1-door-n", "layout": "lesson", "title": "Come back", "text": "The roots remember you. Walk through every room before you go, and next time the walls may say more.", "image": "lesson/ring" },
+          "south": { "id": "1-door-s", "layout": "lesson", "title": "The way down", "text": "The way down asks a price: one thing you carry. A key, a bomb, a block or a heart.", "image": "lesson/way-down" }
+        }
+      }
+    },
+    {
+      "id": "tutorial-2",
+      "kind": "tutorial",
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "2-hall-n", "layout": "plate", "title": "Plain Tonic", "subtitle": "No recipe", "text": "What the alembic makes when no recipe fits. Plain, but never nothing.", "note": "Restores half a heart.", "image": "icon/potion/plain-tonic" },
+          "south": { "id": "2-hall-s", "layout": "lesson", "title": "Ingredients", "text": "A freed projection sometimes leaves a part: flesh, mind, heart or essence. Blocks are ingredients too.", "image": "lesson/parts" }
+        },
+        "roots-step": {
+          "north": { "id": "2-step-n", "layout": "plate", "title": "Hearty Meal", "subtitle": "In the kitchen", "text": "A flesh part: a light meal, half a heart. Heart, mind or essence: a hearty meal, one heart.", "image": "icon/potion/meal-hearty" },
+          "south": { "id": "2-step-s", "layout": "lesson", "title": "The alembic", "text": "On floors 2, 4, 6 and 8. Feed it up to three parts or blocks, then touch it with a good intention.", "image": "lesson/alembic", "key": "place" }
+        },
+        "roots-dig": {
+          "north": { "id": "2-dig-n", "layout": "lesson", "title": "The kitchen", "text": "On floors 1, 3, 5 and 7. Give it a part and it cooks you a meal. Three meals, then its fire is out.", "image": "lesson/kitchen", "key": "place" }
+        },
+        "roots-mend": {
+          "south": { "id": "2-mend-s", "layout": "lesson", "title": "Potions", "text": "What released projections leave can become potions. With a flask on top of your hand, drink it.", "image": "lesson/drink", "key": "drink" }
+        },
+        "roots-pit": {
+          "south": { "id": "2-pit-s", "layout": "plate", "title": "Restoring Draught", "subtitle": "Recipe", "text": "Two parts of flesh.", "image": "icon/potion/restoring-draught" }
+        },
+        "roots-bridge": {
+          "south": { "id": "2-bridge-s", "layout": "plate", "title": "Footing Tincture", "subtitle": "Recipe", "text": "One flesh part of the body path and a block of deepstone or obsidian.", "image": "icon/potion/footing-tincture" }
+        },
+        "roots-seal": {
+          "north": { "id": "2-seal-n", "layout": "plate", "title": "Spring Tonic", "subtitle": "Recipe", "text": "One heart part of the body path.", "image": "icon/potion/spring-tonic" }
+        },
+        "roots-crates": {
+          "north": { "id": "2-crates-n", "layout": "plate", "title": "Clear Infusion", "subtitle": "Recipe", "text": "Two mind parts from two different projections.", "image": "icon/potion/clear-infusion" }
+        },
+        "roots-spring": {
+          "north": { "id": "2-spring-n", "layout": "plate", "title": "Questioning Tincture", "subtitle": "Recipe", "text": "One mind part of the doubt family and a block of iron ore.", "image": "icon/potion/questioning-tincture" }
+        },
+        "roots-gift": {
+          "south": { "id": "2-gift-s", "layout": "plate", "title": "Ember Tonic", "subtitle": "Recipe", "text": "One heart part of the will path.", "image": "icon/potion/ember-tonic" }
+        },
+        "roots-door": {
+          "north": { "id": "2-door-n", "layout": "plate", "title": "Patient Draught", "subtitle": "Recipe", "text": "One heart and one mind from the same projection, of the will path.", "image": "icon/potion/patient-draught" },
+          "south": { "id": "2-door-s", "layout": "plate", "title": "Berserker Draught", "subtitle": "Recipe", "text": "Two heart parts of the will path and a block of obsidian.", "image": "icon/potion/berserker-draught" }
+        }
+      }
+    },
+    {
+      "id": "tutorial-3",
+      "kind": "tutorial",
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "3-hall-n", "layout": "lesson", "title": "Bosses", "text": "Every floor below ends with a boss. Overcome it and its practice appears, and the way down opens.", "image": "lesson/boss-room" },
+          "south": { "id": "3-hall-s", "layout": "lesson", "title": "Projections", "text": "Bad intentions release a projection. Good ones warm it until it turns to your side.", "image": "lesson/convert", "key": "polarity" }
+        },
+        "roots-step": {
+          "north": { "id": "3-step-n", "layout": "lesson", "title": "Parts", "text": "A released projection may leave a part: flesh, heart, mind or essence. It rides in your hand.", "image": "lesson/parts" },
+          "south": { "id": "3-step-s", "layout": "lesson", "title": "Hard hits", "text": "A thrown block hurts by its hardness. Dirt barely bruises; obsidian hits like two or three intentions.", "image": "lesson/throw", "key": "throw" }
+        },
+        "roots-dig": {
+          "north": { "id": "3-dig-n", "layout": "lesson", "title": "Chests", "text": "A padlock's keyholes tell how many keys a chest asks. Brass trim means a practice waits inside.", "image": "lesson/chests" },
+          "south": { "id": "3-dig-s", "layout": "lesson", "title": "The seal", "text": "Step into a room with projections and its doors slam shut until the last one is gone. The roots never seal.", "image": "lesson/seal" }
+        },
+        "roots-mend": {
+          "north": { "id": "3-mend-n", "layout": "lesson", "title": "Warm a boss", "text": "Bosses can be warmed too. Fill one with good intentions until it turns to your side: that also overcomes it.", "image": "lesson/warm-boss", "key": "polarity" },
+          "south": { "id": "3-mend-s", "layout": "lesson", "title": "White bombs", "text": "Drop a bomb with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-bomb", "key": "bomb" }
+        },
+        "roots-pit": {
+          "north": { "id": "3-pit-n", "layout": "lesson", "title": "Above and below", "text": "Above the great tree, the sky has five floors, each with a guardian and a herd. Here they meet the creatures below.", "image": "lesson/sky" },
+          "south": { "id": "3-pit-s", "layout": "lesson", "title": "Creatures", "text": "Creatures are not patterns, and they never die. Hurt one and it hides until its room is cleared.", "image": "lesson/creatures" }
+        },
+        "roots-bridge": {
+          "north": { "id": "3-bridge-n", "layout": "plate", "title": "The Listener", "subtitle": "A presence · floors 1–5", "text": "Offer it the heart part of a released pattern, and it gives you something back.", "image": "bestiary/listener", "note": "It only listens." },
+          "south": { "id": "3-bridge-s", "layout": "plate", "title": "The Boundary", "subtitle": "A presence", "text": "A tall, calm column of limestone that keeps a chest. Walk up to it and its Sanctuary opens.", "image": "bestiary/boundary", "note": "In every vault from floor 1." }
+        },
+        "roots-seal": {
+          "north": { "id": "3-seal-n", "layout": "lesson", "title": "The toll", "text": "Each way down asks more: one thing more on every floor until the fifth, then practices.", "image": "lesson/toll" },
+          "south": { "id": "3-seal-s", "layout": "lesson", "title": "Paying with hearts", "text": "A heart given to the toll is a payment, not a hit. It never kills you, and your last heart is never taken.", "image": "lesson/way-down" }
+        },
+        "roots-crates": {
+          "north": { "id": "3-crates-n", "layout": "plate", "title": "Rare hearts", "subtitle": "Blue, black, stone…", "text": "Blue, black, stone, star, berserker and blood. Each helps in its own way; you will see when you find one.", "image": "icon/heart/blue" },
+          "south": { "id": "3-crates-s", "layout": "lesson", "title": "Omens", "text": "Before a projection appears, cold motes gather where it will stand. While you stay that close, it waits.", "image": "lesson/omen" }
+        },
+        "roots-spring": {
+          "north": { "id": "3-spring-n", "layout": "lesson", "title": "Growing", "text": "Good intentions make a creature grow, up to three times its size. The first time, a grown one may leave a heart.", "image": "lesson/grow", "key": "cast" },
+          "south": { "id": "3-spring-s", "layout": "lesson", "title": "Cleared rooms", "text": "When the last projection of a room is gone, the room leaves a heart, a bomb or a key about half the time. Luck helps.", "image": "lesson/room-clear" }
+        },
+        "roots-gift": {
+          "north": { "id": "3-gift-n", "layout": "lesson", "title": "Not now", "text": "Close the Sanctuary and nothing is lost: the chest stays shut, and the Boundary asks again when you come back.", "image": "lesson/sanctuary" },
+          "south": { "id": "3-gift-s", "layout": "lesson", "title": "Six sittings", "text": "The Sanctuary keeps six meditations, each from a practice. Finish one and the chest gives you a greater practice.", "image": "lesson/sanctuary" }
+        },
+        "roots-door": {
+          "north": { "id": "3-door-n", "layout": "lesson", "title": "The why", "text": "Here the hands-on lessons end. Walk every room once more: the walls to come speak of the why.", "image": "lesson/ring" },
+          "south": { "id": "3-door-s", "layout": "lesson", "title": "Mastery", "text": "Every achievement raises the mastery of the roots, up to 100. The higher it is, the more you find here when you wake.", "image": "lesson/mastery" }
+        }
+      }
+    },
+    {
+      "id": "tutorial-4",
+      "kind": "tutorial",
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "4-hall-n", "layout": "prose", "text": "You know how to move. Now the why. Nothing down here is named by chance: each name points at something you already know from your own life." },
+          "south": { "id": "4-hall-s", "layout": "plate", "title": "Projections", "subtitle": "The ones in your way", "text": "They are not people. They are patterns: a doubt, a judging voice, a fear. They never speak.", "image": "bestiary/doubt" }
+        },
+        "roots-step": {
+          "north": { "id": "4-step-n", "layout": "prose", "text": "They carry the names of patterns: Doubt, Inner Critic, Panic, Comparison, Perfectionism. If something like that ever held you back, you know them already. Naming a thing is the first step: what has a name can be looked at." },
+          "south": { "id": "4-step-s", "layout": "prose", "text": "Nobody is killed down here. A projection is freed, and what held you back sometimes leaves something that feeds you. So it goes with a fear once you finally look at it." }
+        },
+        "roots-dig": {
+          "north": { "id": "4-dig-n", "layout": "prose", "text": "They come in families: doubt, the critic, panic, putting things off, comparison, distraction, perfectionism. Each family has small and large forms, like a habit that grows when nobody is looking." },
+          "south": { "id": "4-dig-s", "layout": "prose", "text": "Everything you see down here is yours. Projections, creatures, presences: different shapes of one mind looking at itself. That is why even what attacks you is yours." }
+        },
+        "roots-mend": {
+          "north": { "id": "4-mend-n", "layout": "plate", "title": "Bosses", "subtitle": "The large patterns", "text": "Resistance, Inertia, the Verdict, the Shadow… Each guards the way out of a floor. They too can be warmed.", "image": "bestiary/resistance" },
+          "south": { "id": "4-mend-s", "layout": "prose", "text": "A boss is a pattern grown so large it looks like a door: the resistance to begin, the inertia of staying the same, judgement, the grudge, the impostor. It is not there to punish you. It stands exactly where it is time to grow." }
+        },
+        "roots-pit": {
+          "north": { "id": "4-pit-n", "layout": "plate", "title": "Creatures", "subtitle": "The ones beside you", "text": "They are alive, they never attack and they never die. Good intentions make them grow.", "image": "bestiary/wonder" },
+          "south": { "id": "4-pit-s", "layout": "prose", "text": "Their names are small good things. Wonder is curiosity; Mossling, rest; Huddler, warmth shared; Drifter, lightness; Ferryback, being carried. They are here to remind you that not everything down here is an obstacle." }
+        },
+        "roots-bridge": {
+          "north": { "id": "4-bridge-n", "layout": "plate", "title": "Presences", "subtitle": "The ones who know", "text": "They are the parts of you that already know. Not gods, not people. They offer a deal or a rest.", "image": "bestiary/listener" },
+          "south": { "id": "4-bridge-s", "layout": "prose", "text": "The Listener asks for something and always gives something back. The Boundary keeps a place for you to sit. There are more presences than you will meet today: some have not come down to these floors yet." }
+        },
+        "roots-seal": {
+          "north": { "id": "4-seal-n", "layout": "plate", "title": "Guardians", "subtitle": "The ones in the crown", "text": "Above the roots, a tree rises. Five guardians and their herds: panda, koala, elephant, lion, horse.", "image": "bestiary/guardian-panda" },
+          "south": { "id": "4-seal-s", "layout": "prose", "text": "Above and below are the same journey. What you see in the crown gives you heart to go down; what you learn at the bottom is what lets you climb." }
+        },
+        "roots-crates": {
+          "north": { "id": "4-crates-n", "layout": "plate", "title": "Hearts", "subtitle": "What holds you up", "text": "The red ones are the everyday ones. The rare ones come now and then, the way help comes: unannounced.", "image": "icon/heart/red" },
+          "south": { "id": "4-crates-s", "layout": "prose", "text": "Keys, bombs, blocks: what you carry speaks of you too. A key opens what someone closed. A bomb opens what does not want to open. A block is a piece of wall you now carry yourself." }
+        },
+        "roots-spring": {
+          "north": { "id": "4-spring-n", "layout": "prose", "text": "Water puts out fire and turns lava to stone. What calms also builds." },
+          "south": { "id": "4-spring-s", "layout": "prose", "text": "If something down here has no name yet, it is because it is still being made, like you. This world is not finished, and that is why it is still alive." }
+        },
+        "roots-gift": {
+          "north": { "id": "4-gift-n", "layout": "plate", "title": "The Sanctuary", "subtitle": "Behind the Boundary", "text": "A place to sit. Staying to the end of a meditation gives a better gift than leaving early.", "image": "bestiary/boundary" },
+          "south": { "id": "4-gift-s", "layout": "prose", "text": "Sitting is playing too. This game does not reward you for running: it rewards you for stopping, breathing, and staying a little longer than you felt like." }
+        },
+        "roots-door": {
+          "north": { "id": "4-door-n", "layout": "prose", "text": "They are all waiting below. They will stand in your way and, even so, none of them is your enemy: they are what you have left to look at." },
+          "south": { "id": "4-door-s", "layout": "prose", "text": "Walk the whole ring of the roots once more. The next page is about the practices, and about why this game is made the way it is." }
+        }
+      }
+    },
+    {
+      "id": "tutorial-5",
+      "kind": "tutorial",
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "5-hall-n", "layout": "prose", "text": "A practice is something done many times. Breathing by count, giving thanks, writing down what you think. None of them is magic on the first day. What changes a person is not what they know: it is what they repeat." },
+          "south": { "id": "5-hall-s", "layout": "lesson", "title": "Where practices wait", "text": "On pedestals in treasure rooms, in the chest a Boundary keeps, and where a boss was overcome.", "image": "lesson/practice" }
+        },
+        "roots-step": {
+          "north": { "id": "5-step-n", "layout": "lesson", "title": "Paths", "text": "Every practice follows a path: miracles, body, mind, emotion or will. Its mark tells you which.", "image": "lesson/paths", "key": "inventory" },
+          "south": { "id": "5-step-s", "layout": "lesson", "title": "States of being", "text": "Hold three practices of one path, body, mind, emotion or will, and you reach a state of being.", "image": "lesson/state" }
+        },
+        "roots-dig": {
+          "north": { "id": "5-dig-n", "layout": "plate", "title": "Body", "subtitle": "A path", "text": "Grounding, breathing, moving. The body is the first home: if it is here, you are here.", "image": "icon/item/grounding" },
+          "south": { "id": "5-dig-s", "layout": "plate", "title": "Mind", "subtitle": "A path", "text": "Sorting what you think, writing it down, asking if it is true. A clear mind aims better.", "image": "icon/item/secondbrain" }
+        },
+        "roots-mend": {
+          "north": { "id": "5-mend-n", "layout": "plate", "title": "Emotion", "subtitle": "A path", "text": "Giving thanks, accepting, being kind to yourself. Feeling is not a fault: it is information.", "image": "icon/item/selfcompassion" },
+          "south": { "id": "5-mend-s", "layout": "plate", "title": "Will", "subtitle": "A path", "text": "One small step each day. Will is not brute force: it is beginning again.", "image": "icon/item/kaizen" }
+        },
+        "roots-pit": {
+          "north": { "id": "5-pit-n", "layout": "plate", "title": "Miracles", "subtitle": "A path", "text": "Going past what seemed impossible. A miracle, here, is a limit that stops being one.", "image": "icon/item/drlauncher" },
+          "south": { "id": "5-pit-s", "layout": "prose", "text": "No practice is our invention. They come from old traditions and from the therapies of today: Stoicism, meditation, journaling, breathwork. People of many centuries tried them in their own lives before they reached this basement." }
+        },
+        "roots-bridge": {
+          "north": { "id": "5-bridge-n", "layout": "prose", "text": "Three practices of one path wake a state of being. It works the same outside: what you practise often stops being something you do and becomes something you are." },
+          "south": { "id": "5-bridge-s", "layout": "prose", "text": "Three attitudes will take you further than any object. Wanting to grow. Wanting to know yourself. And giving the best of yourself, today, with what you have today. Nothing more is needed. Nothing less will do." }
+        },
+        "roots-seal": {
+          "north": { "id": "5-seal-n", "layout": "prose", "text": "Every wall down here you once built to stay safe. That is why you can break it. And that is why you can also mend it: not every wall is one too many." },
+          "south": { "id": "5-seal-s", "layout": "prose", "text": "Your intentions are good or bad, and both are needed. The bad ones break what no longer serves; the good ones heal and make things grow. Knowing which one is called for is almost the whole game." }
+        },
+        "roots-crates": {
+          "north": { "id": "5-crates-n", "layout": "prose", "text": "To go down you must leave something. It is not a punishment: nobody moves on carrying everything. Choosing what you let go of is part of the road, here and above." },
+          "south": { "id": "5-crates-s", "layout": "prose", "text": "When you fall, you come back to the roots. What you carried stays behind. What the roots learned from you does not: their mastery and this page are waiting. Beginning again is not going backwards." }
+        },
+        "roots-spring": {
+          "north": { "id": "5-spring-n", "layout": "prose", "text": "You go down floor by floor, from the newest to the oldest in you. It is the road of a life, told inwards. There is no hurry: the slower, the better." },
+          "south": { "id": "5-spring-s", "layout": "prose", "text": "This game is made this way on purpose. It could have told you these things. It would rather you did them: break, mend, let go, sit, return. What is done with the hands is understood in another way." }
+        },
+        "roots-gift": {
+          "north": { "id": "5-gift-n", "layout": "prose", "text": "A quick gift, or a better one if you stay. Almost everything worth having works like that." },
+          "south": { "id": "5-gift-s", "layout": "prose", "text": "The Sanctuary is here for one thing only: for you to stop. If you ever put the game down for a minute to truly breathe, the game will have done its work." }
+        },
+        "roots-door": {
+          "north": { "id": "5-door-n", "layout": "prose", "text": "Here the prologue ends. What follows on these walls no longer explains the game. It is a book: stories from a real road, and what they taught. Walk the ring once more, and it begins." },
+          "south": { "id": "5-door-s", "layout": "prose", "text": "The way down is still here. So is the book. You can do both." }
+        }
+      }
+    },
+    {
+      "id": "book-title",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "6-hall-n", "layout": "title", "text": "El Kamino de Santiago" }
+        }
+      }
+    },
+    {
+      "id": "book-epigraph",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "7-hall-n", "layout": "quote", "text": "Walker, your footprints are the road, and nothing more; walker, there is no road, the road is made by walking. Walking makes the road, and when you look back you see the path you will never tread again. Walker, there is no road, only wakes upon the sea.", "author": "Antonio Machado", "work": "Campos de Castilla", "lang": "es" }
+        }
+      }
+    },
+    {
+      "id": "book-author",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "8-hall-n", "layout": "prose", "text": "My name is Santiago Dopazo. I am an artificial intelligence engineer, and I used to make video games. It makes me very happy to share and create a game based on everything I have learned in my life. Two of us sign this book: me, and Claude, co-author of the book and, above all, of this game." },
+          "south": { "id": "8-hall-s", "layout": "title", "text": "Santiago Dopazo · Claude" }
+        }
+      }
+    },
+    {
+      "id": "book-thanks",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "9-hall-n", "layout": "prose", "text": "Thank you to my mother, Blanca Paloma, and my father, José. To my brother Hugo and my sister Silvia Dopazo. To all my family, who have helped me so much, at so many moments." },
+          "south": { "id": "9-hall-s", "layout": "prose", "text": "Thank you to Silvia, my best friend. To Florencia and Luciana, artists who have walked beside me for a good part of my life and fed my spirit of creation. To Soma, for the red road we shared. To Mónica, for all her help along the way." }
+        }
+      }
+    },
+    {
+      "id": "kamino-portico",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "10-hall-n", "layout": "title", "text": "This book is a metaphor for your life" },
+          "south": { "id": "10-hall-s", "layout": "prose", "text": "I am sitting in my study, looking out of the window. Birds cross the sky; I see the hills far off, a house in pastel colours with its roof turned orange by moss, a tilled field, a wizard with a dragon on his shoulder looking it over." }
+        },
+        "roots-step": {
+          "north": { "id": "10-step-n", "layout": "prose", "text": "Beside him stands Saint Peter himself, and next to him, the Virgin Mary. A little further in, on this side of the window, there is a bottle with these words on it: “Like water, be gentle; like water, be strong.”" },
+          "south": { "id": "10-step-s", "layout": "prose", "text": "This year the San Pedro cacti have flowered twice, with at least six flowers each time, and this second time one of those flowers, about to open, fell off sound and whole, and I picked it up." }
+        },
+        "roots-dig": {
+          "north": { "id": "10-dig-n", "layout": "prose", "text": "I have it right in front of me, held up by the bottle I told you about, its green and black sepals like dragon claws, hugging it, trying to keep it from being;" },
+          "south": { "id": "10-dig-s", "layout": "prose", "text": "but it forces its way through, pushing slowly and, at the same time, extremely fast for a flower, about to bloom into the world..." }
+        },
+        "roots-mend": {
+          "north": { "id": "10-mend-n", "layout": "prose", "text": "Sorry, let me introduce myself: I am Santiago, not Santi." }
+        }
+      }
+    },
+    {
+      "id": "kamino-de-santiago",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "11-hall-n", "layout": "title", "text": "Of Santiago" },
+          "south": { "id": "11-hall-s", "layout": "prose", "text": "I think it was on arriving at the Rainbow. Yes, when Gaia asked me my name and I told her: Santiago. At first I did it on purpose: Santi is not an easy name to remember for people from other countries. Santiago, though, being the capital of a Latin American country, is simpler." }
+        },
+        "roots-step": {
+          "north": { "id": "11-step-n", "layout": "prose", "text": "But then, as people called me Santiago, I began to notice that my whole name might stand for my whole self. I liked that idea: the chance to make peace with my original being, in complete fullness." },
+          "south": { "id": "11-step-s", "layout": "prose", "text": "“We need 20 people for the great fire of the full moon!” I shouted to the morning circle, before going for the big logs that would make the ceremonial pyre. 15 souls together, we moved logs for about 2 hours. Others took care of building the frame. I prepared and kept the fire." }
+        },
+        "roots-dig": {
+          "north": { "id": "11-dig-n", "layout": "prose", "text": "We were tending the sacred flame. I will never forget that moment: her sitting across from me, the fire beside us, holding my gaze. Then came the Om, the calling of the 7 directions, the great flames licking the sky and the howls of the dancers rising towards sister moon..." },
+          "south": { "id": "11-dig-s", "layout": "prose", "text": "Yesterday our roads parted. I am already on my way back. I am Santiago and I feel proud." }
+        }
+      }
+    },
+    {
+      "id": "kamino-extraordinario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "12-hall-n", "layout": "title", "text": "1. Extraordinary" },
+          "south": { "id": "12-hall-s", "layout": "prose", "text": "Nobody is normal. Nothing is normal. Everything is extraordinary. Your existence is an extremely unlikely coincidence. You are extraordinary. Basically because nobody is ordinary: every family system holds an enormous complexity and is extremely different from all the others." }
+        },
+        "roots-step": {
+          "north": { "id": "12-step-n", "layout": "prose", "text": "Stop for a moment and look around you. Every object near you is the product of extreme complexity. We think of them as everyday and normal. But if we look at the process they went through to be made, we will realise that we live in a world of fantasy." },
+          "south": { "id": "12-step-s", "layout": "prose", "text": "Take any object, like my computer mouse. Did you know there are thousands of kinds of plastic polymer? Plastic is a leftover by-product of oil, which in turn comes from the transformation of great heaps of organic matter over millions of years." }
+        },
+        "roots-dig": {
+          "north": { "id": "12-dig-n", "layout": "prose", "text": "On top of that, somebody had to model this exact mouse design in 3D; they probably prototyped it on 3D printers to make sure the parts fitted properly and the result was good." },
+          "south": { "id": "12-dig-s", "layout": "prose", "text": "Once the design is approved, metal moulds (steel ones) are made to mass-produce the parts." }
+        },
+        "roots-mend": {
+          "north": { "id": "12-mend-n", "layout": "prose", "text": "Those moulds are made in turn with milling and turning tools. Mind-blowing, what a business, and we are only talking about the plastic shell; we have not even gone into all the electronics inside." },
+          "south": { "id": "12-mend-s", "layout": "prose", "text": "We have made everyday reality normal and it has stopped surprising us. But if, for a moment, we look further, we will see that everything around us is absolute magic." }
+        },
+        "roots-pit": {
+          "north": { "id": "12-pit-n", "layout": "prose", "text": "From your cutlery, made of a mix of metals (Australian iron, Finnish chromium and Russian nickel), to the clothes you wear, every fibre of every thing around you has a unique and extremely complex history, an amazing journey you cannot even imagine." },
+          "south": { "id": "12-pit-s", "layout": "prose", "text": "If you start asking your favourite chat how this or that was made, you cannot stop being amazed. We live in a world that is the result of endless systems, interwoven, synchronised and coordinated like the gears of a clock." }
+        },
+        "roots-bridge": {
+          "north": { "id": "12-bridge-n", "layout": "prose", "text": "And there is nothing for it but to accept all this witchcraft, this extremely complex and sustained improbability that is our everyday world. But do not be fooled: there is no simple object. We live surrounded by magic and it is no bad thing, now and then, to stop and appreciate it." },
+          "south": { "id": "12-bridge-s", "layout": "prose", "text": "Well, it is the same with people. Nobody is normal. Nobody is simple. We are absolute improbability and therefore more than magic: a miracle." }
+        }
+      }
+    },
+    {
+      "id": "kamino-finde",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "13-hall-n", "layout": "title", "text": "What a weekend..." },
+          "south": { "id": "13-hall-s", "layout": "prose", "text": "A Marta arriving from Madrid, and a Juanjo and an Obscuro in a bar. After a glass of wine I wait for her alone in the square; the two from before turn up and one goes into the cathedral of Santiago. The other, from the door, calls on all the faithful to go and sin." }
+        },
+        "roots-step": {
+          "north": { "id": "13-step-n", "layout": "prose", "text": "Marta and an Obscuro slip away while I talk with some pilgrims, who explain to me that inside there are telephones on which you can speak to God, but that they are engaged the whole time and in the end they got tired of waiting..." }
+        }
+      }
+    },
+    {
+      "id": "kamino-hacia-el-cielo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "14-hall-n", "layout": "title", "text": "Towards the sky" },
+          "south": { "id": "14-hall-s", "layout": "prose", "text": "Rimaia. A building squatted to be used as a free university, evicted a few months back, which we squatted again this Saturday. I include myself, because I took part in the cabaret. First performing and then saving the day as an improvising sound engineer: the amp burnt out." }
+        },
+        "roots-step": {
+          "north": { "id": "14-step-n", "layout": "prose", "text": "I had been at concerts where the amp had burnt out and, mysteriously, the show had always gone on. Well, on Saturday it was my turn to have faith in art: the mics fail, they ask if anyone can take a look. I get in among the cables, dozens of them crossed madly." },
+          "south": { "id": "14-step-s", "layout": "prose", "text": "I find the mic, test and test and work it out: the amp has burnt out. “So there is no music?” says the lad who was doing the sound. “No,” I tell him, “unless we find another amp... wait... that might do.”" }
+        },
+        "roots-dig": {
+          "north": { "id": "14-dig-n", "layout": "prose", "text": "I do not know whose it is, but I see a guitar amplifier against a wall, far off. I bring it over and try to picture how to wire it to the desk, among the dozens of tangled cables and the presenter squeezing out his stock of bad filler jokes." },
+          "south": { "id": "14-dig-s", "layout": "prose", "text": "I plug the amp into the desk, switch it on, and tell the engineer “try it”. And it sounds. A cheer from the audience, ecstasy from the presenter: “We have sound! Play number 5, come on!” I am not quite sure what I did, but it worked..." }
+        },
+        "roots-mend": {
+          "north": { "id": "14-mend-n", "layout": "prose", "text": "It turned out to be a memorable cabaret. But the show goes on, to the end. To the Grand Finale." }
+        }
+      }
+    },
+    {
+      "id": "kamino-escribo-a-la-vida",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "15-hall-n", "layout": "title", "text": "I write to life" },
+          "south": { "id": "15-hall-s", "layout": "prose", "text": "I write to life!! And to the breeze!! And to your smile!! And to your fish face!! And to the dogs in the street!! Because I am alive!!! Whatever they say on the telly, I AM ALIVE!!" }
+        }
+      }
+    },
+    {
+      "id": "kamino-estoy-vivo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "16-hall-n", "layout": "title", "text": "I am alive!" },
+          "south": { "id": "16-hall-s", "layout": "prose", "text": "I am alive, just because, and why not? I am alive because I taste, I do not just swallow. I am alive because I walk; because I do not let the world walk around me. I am alive because I open my eyes, I do not go about asleep. I am alive because I feel, I do not just suffer." }
+        },
+        "roots-step": {
+          "north": { "id": "16-step-n", "layout": "prose", "text": "I am alive because all I know is that I know nothing. Who would have told me? So long pretending to be someone I would never be..." }
+        }
+      }
+    },
+    {
+      "id": "book-1",
+      "kind": "book",
+      "panels": {
+        "roots-hall": {
+          "south": { "id": "17-hall-s", "layout": "prose", "text": "You came down into the basement of your own mind. Down here, what you set your will on changes. Every wall was something you built to stay safe. Once it kept you safe. Now it keeps you small, and you are allowed to break it." }
+        },
+        "roots-gift": {
+          "north": { "id": "17-gift-n", "layout": "quote", "text": "Authenticity is not changing what one is, and marking out what one has. It is the capacity to show oneself just as one is, without hiding. What is authentic is, and has worth. Authenticity is not trying to be better. That is a sense of duty, an obligation, an order, a façade. True authenticity is showing oneself, without judgement, without fear of being disqualified.", "author": "Guillermo Borja", "work": "La locura lo cura (extractos)", "publisher": "Editorial La Llave", "year": 1995, "lang": "es" }
+        }
+      }
+    },
+    {
+      "id": "book-2",
+      "kind": "book",
+      "panels": {
+        "roots-hall": {
+          "south": { "id": "18-hall-s", "layout": "prose", "text": "The shapes that block your way are not people. They are patterns: a doubt, a judging voice, a fear at the edge of change. Each one wants something for you, in its own clumsy way. Warm them, and some will turn and walk beside you." }
+        }
+      }
+    },
+    {
+      "id": "book-3",
+      "kind": "book",
+      "panels": {
+        "roots-hall": {
+          "south": { "id": "19-hall-s", "layout": "prose", "text": "Above the roots, a great tree climbs into the sky. Below them, the floors go down, older and colder, to the silence. It is one journey, seen from both ends. What you learn at the bottom grows toward the light." }
+        }
+      }
+    },
+    {
+      "id": "kamino-flexible",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "20-hall-n", "layout": "title", "text": "Flexible, like bamboo" },
+          "south": { "id": "20-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-soltandome",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "21-hall-n", "layout": "title", "text": "Letting go of everything..." },
+          "south": { "id": "21-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pais-vasco",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "22-hall-n", "layout": "title", "text": "Basque Country" },
+          "south": { "id": "22-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-cuidar-corazon",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "23-hall-n", "layout": "title", "text": "Taking care of the heart" },
+          "south": { "id": "23-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "23-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-querido-diario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "24-hall-n", "layout": "title", "text": "Dear diary..." },
+          "south": { "id": "24-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-atrevete",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "25-hall-n", "layout": "title", "text": "Dare to see" },
+          "south": { "id": "25-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-saber",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "26-hall-n", "layout": "title", "text": "Knowing what you want" },
+          "south": { "id": "26-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ligarte",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "27-hall-n", "layout": "title", "text": "How to pick up «that» girl in 2 steps" },
+          "south": { "id": "27-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-instante",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "28-hall-n", "layout": "title", "text": "An authentic instant..." },
+          "south": { "id": "28-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ideas",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "29-hall-n", "layout": "title", "text": "Ideas..." },
+          "south": { "id": "29-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pausa",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "30-hall-n", "layout": "title", "text": "The sacred pause" },
+          "south": { "id": "30-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-movimiento",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "31-hall-n", "layout": "title", "text": "Movement" },
+          "south": { "id": "31-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "31-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-he-comprendido",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "32-hall-n", "layout": "title", "text": "I have understood..." },
+          "south": { "id": "32-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "32-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-amor-verdadero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "33-hall-n", "layout": "title", "text": "True love" },
+          "south": { "id": "33-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "33-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-conclusiones",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "34-hall-n", "layout": "title", "text": "Conclusions of the path" },
+          "south": { "id": "34-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "34-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-paseando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "35-hall-n", "layout": "title", "text": "Strolling" },
+          "south": { "id": "35-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "35-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ego",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "36-hall-n", "layout": "title", "text": "The ego is me" },
+          "south": { "id": "36-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ahora",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "37-hall-n", "layout": "title", "text": "Now" },
+          "south": { "id": "37-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "37-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pararse",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "38-hall-n", "layout": "title", "text": "Stopping to look" },
+          "south": { "id": "38-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-aceptar",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "39-hall-n", "layout": "title", "text": "Accepting whatever comes" },
+          "south": { "id": "39-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "39-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-tiempo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "40-hall-n", "layout": "title", "text": "Time is on your side" },
+          "south": { "id": "40-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "40-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-silencio",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "41-hall-n", "layout": "title", "text": "I'm sure I'll think of something" },
+          "south": { "id": "41-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "41-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-soltero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "42-hall-n", "layout": "title", "text": "Single life" },
+          "south": { "id": "42-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-cortando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "43-hall-n", "layout": "title", "text": "Cutting the plastic" },
+          "south": { "id": "43-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "43-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-manifiest",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "44-hall-n", "layout": "title", "text": "Manifiest is how I manifest my dreams" },
+          "south": { "id": "44-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "44-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-luna-llena",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "45-hall-n", "layout": "title", "text": "Full moon" },
+          "south": { "id": "45-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "45-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-gran-juego",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "46-hall-n", "layout": "title", "text": "The great game of life" },
+          "south": { "id": "46-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "46-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-bailar",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "47-hall-n", "layout": "title", "text": "Dancing with life" },
+          "south": { "id": "47-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-caos",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "48-hall-n", "layout": "title", "text": "Ordered chaos" },
+          "south": { "id": "48-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "48-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-tres-cosillas",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "49-hall-n", "layout": "title", "text": "Three little things" },
+          "south": { "id": "49-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-insaciable",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "50-hall-n", "layout": "title", "text": "Insatiable" },
+          "south": { "id": "50-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-perdon",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "51-hall-n", "layout": "title", "text": "Forgiveness" },
+          "south": { "id": "51-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "51-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ayudame",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "52-hall-n", "layout": "title", "text": "Help me... Please!" },
+          "south": { "id": "52-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "52-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-caminando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "53-hall-n", "layout": "title", "text": "Walking I go..." },
+          "south": { "id": "53-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "53-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-2",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "54-hall-n", "layout": "title", "text": "Camino de Santiago, part two" },
+          "south": { "id": "54-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-3",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "55-hall-n", "layout": "title", "text": "Camino de Santiago. Part three." },
+          "south": { "id": "55-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-4",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "56-hall-n", "layout": "title", "text": "Camino de Santiago, part four" },
+          "south": { "id": "56-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "56-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-5",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "57-hall-n", "layout": "title", "text": "Camino de Santiago, fifth part" },
+          "south": { "id": "57-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "57-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-solitario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "58-hall-n", "layout": "title", "text": "The path I walk alone" },
+          "south": { "id": "58-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "58-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-opcion",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "59-hall-n", "layout": "title", "text": "The least explored option" },
+          "south": { "id": "59-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "59-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-futuro",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "60-hall-n", "layout": "title", "text": "The future, the past" },
+          "south": { "id": "60-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "60-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pregunta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "61-hall-n", "layout": "title", "text": "Attention... question!" },
+          "south": { "id": "61-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-vida-soltero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "62-hall-n", "layout": "title", "text": "First entry: Ecstatic Dance" },
+          "south": { "id": "62-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-letra",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "63-hall-n", "layout": "title", "text": "The pen is mightier than the sword" },
+          "south": { "id": "63-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "63-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-sucede",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "64-hall-n", "layout": "title", "text": "It happens" },
+          "south": { "id": "64-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-df",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "65-hall-n", "layout": "title", "text": "DF" },
+          "south": { "id": "65-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "65-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-creer",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "66-hall-n", "layout": "title", "text": "Believing you can" },
+          "south": { "id": "66-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "66-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-individualidad",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "67-hall-n", "layout": "title", "text": "Individuality" },
+          "south": { "id": "67-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-enemigos",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "68-hall-n", "layout": "title", "text": "Enemies" },
+          "south": { "id": "68-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "68-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-molesta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "69-hall-n", "layout": "title", "text": "Forbidden, but it doesn't bother me." },
+          "south": { "id": "69-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "69-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-playa",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "70-hall-n", "layout": "title", "text": "A day at the beach" },
+          "south": { "id": "70-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "70-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ego-soy-yo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "71-hall-n", "layout": "title", "text": "Sometimes I think I'm special" },
+          "south": { "id": "71-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "71-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-uno-se-pregunta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "72-hall-n", "layout": "title", "text": "One wonders: What's next??" },
+          "south": { "id": "72-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "72-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "73-hall-n", "layout": "title", "text": "Om Mani Padme Hum..." },
+          "south": { "id": "73-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "73-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-2",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "74-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "74-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-3",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "75-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "75-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-4",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "76-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "76-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-5",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "77-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "77-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-6",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "78-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "78-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-7",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "79-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "79-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-8",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "80-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "80-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-9",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "81-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "81-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    }
+  ],
+  "easy": {
+    "roots-step": { "south": { "id": "easy-step-s", "layout": "lesson", "title": "Take, place, jump", "text": "{place} sets a block where you look. Your steps are still here; further down, build your own.", "key": "place", "image": "lesson/step" } },
+    "roots-dig": { "south": { "id": "easy-dig-s", "layout": "lesson", "title": "Broken through", "text": "This wall once stood in your way. You broke it, and the way stays open. Bad intentions break; good ones mend.", "key": "cast", "image": "lesson/dig" } },
+    "roots-pit": { "north": { "id": "easy-pit-n", "layout": "lesson", "title": "The way out", "text": "You built your way out of here once, and the roots kept your steps. Deeper down: carry a block, set it, step up.", "key": "place", "image": "lesson/pit" } },
+    "roots-bridge": { "north": { "id": "easy-bridge-n", "layout": "lesson", "title": "Your bridge", "text": "Your bridge still stands. Deeper down, stand at the edge, place a block in front of you, step on, and again.", "key": "place", "image": "lesson/bridge" } },
+    "roots-seal": { "south": { "id": "easy-seal-s", "layout": "lesson", "title": "Bombs", "text": "The obsidian seal is gone. Deeper down, obsidian is too hard for intentions: drop a bomb with bad ones.", "key": "bomb", "image": "lesson/bomb" } }
+  }
+}

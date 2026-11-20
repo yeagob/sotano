@@ -2,13 +2,13 @@
 
 Status: idea. Index: [stations](README.md).
 
-A planter turns a breakthrough into growth. A bomb planted in it does not explode: it grows a vine up to the ceiling. Potential grows instead of blowing up.
+A planter turns a bomb into growth. A bomb planted in it does not explode: it grows a vine up to the ceiling. Potential grows instead of blowing up.
 
 ## Design
 
 - **What it does:** a planted bomb grows a vine up to the ceiling instead of exploding.
 - **Verb:** place a bomb in the planter. The bomb key is E ([KEYBOARD](../../../architecture/input/KEYBOARD.md)); the planter takes the bomb in place of its blast.
-- **Meaning:** a breakthrough is a seed ([ART-GUIDE §12](../../../art/ART-GUIDE.md)).
+- **Meaning:** a bomb is potential waiting to open; its look is the seed ([ART-GUIDE §12](../../../art/ART-GUIDE.md)).
 - **Vertical use:** the answer to part of the climbing problem ([DESIGN](README.md), the climbing problem). Vines grown on the way down are ladders up.
 - **Tier:** T2.
 

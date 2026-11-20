@@ -18,7 +18,7 @@
 // (13×7 interior + 2-block shared walls). The next floor's start room sits right under the
 // boss room above, and a 2×2 shaft joins them when the boss room opens.
 
-import { placePresences, type RoomPresence } from '../content/presences';
+import { boatmanFloorOf, dwellerFloorOf, gardenerFloorOf, placeMessengers, placePresences, starReaderFloorOf, tricksterFloorOf, wandererFloorsOf, WITNESS_FLOOR, type RoomPresence } from '../content/presences';
 import { SANCTUARY_RADIUS } from '../content/presences/boundary';
 import { AIR, MAT } from '../content/materials';
 import { EL_FIRE, EL_LAVA, EL_WATER, SOURCE } from '../content/elements';
@@ -26,11 +26,13 @@ import { FIRST_FLOOR, LAST_FLOOR, level, LEVELS, type LevelDef } from '../conten
 import { CELL_ELEMENT, CELL_PLUG, CELL_STACK, TUTORIAL_CELLS, cellAt, ceilingAt, DECOR_CHARS, homeAt, ROCK, ROOM_D, ROOM_H, ROOM_W, templateDims, type RoomTemplate } from '../content/rooms';
 import { CHEST_LOCK, ITEM_IN_CHEST, ROOM_CHEST } from '../content/tables/chests';
 import { ROCK_THEME, type RockTheme } from '../content/tables/floors';
+import { rootsRewards } from '../content/tables/roots-mastery';
+import type { HeartKind } from '../content/heart-art';
 import { CHALLENGE_ROOM, DECOR_SLOTS, REINFORCE, ROOM_MOOD, type RoomMood } from '../content/tables/rooms';
 import { hash3, type Rng, type RunRandom } from '../core/rng';
 import { DEFAULT_PLAN, generatePlan, OPPOSITE, sizeOf, TREE_ENTRY, TUTORIAL_LAYOUT, treeCell, treePlan, tutorialPlan, type FloorPlan, type PlanRoom, type RoomType, type Side } from './floorplan';
 import { Mountains } from './mountains';
-import { chunkKey, VoxelWorld } from './world';
+import { VoxelWorld } from './world';
 
 /** How many floors go down (0 … LAST_FLOOR). */
 export const FLOORS = LEVELS.length;
@@ -121,6 +123,8 @@ export interface ChestSpec {
   meditation?: boolean;
   /** Kept by the Boundary of its vault: it opens for a real-world mission, not for keys (docs/design/built/presences/BOUNDARY.md). */
   guard?: boolean;
+  /** A free chest of the Roots (REWARDS §5): how many draws of the chest table it gives when opened, inclusive. */
+  draws?: { readonly min: number; readonly max: number };
 }
 
 export interface FloorResult {
@@ -145,6 +149,12 @@ export interface FloorResult {
   laboratory: { room: number; x: number; y: number; z: number } | null;
   /** The kitchen: one tile. Kitchen floors only, or null. */
   kitchen: { room: number; x: number; y: number; z: number } | null;
+  /** Floor 0 only (the Roots, REWARDS §5): loose hearts, each with the kind the mastery table gives it. */
+  hearts: { room: number; x: number; y: number; z: number; kind: HeartKind }[];
+  /** Floor 0 only (REWARDS §4): extra practice pedestals. The block is set; the practice is drawn at run start. */
+  practices: { room: number; x: number; y: number; z: number }[];
+  /** Floor 0 only (REWARDS §4): the altar's pedestal in the start room, or null. Its practice is drawn at run start. */
+  altar: { room: number; x: number; y: number; z: number } | null;
   /** The room (plan index) whose space holds each grid cell, -1 for rock: rooms may spread into
    *  empty cells around their own, which the map never shows (docs/architecture/LEVELS.md §10). */
   space: Int16Array;
@@ -217,7 +227,7 @@ export interface FittedRoom { t: RoomTemplate; flipX: boolean; flipZ: boolean; l
  * it first, and on floor 0 and below it always gets a large template unless its boss asks for a
  * small room (`bossRoomIsLarge`).
  */
-export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, templates: readonly RoomTemplate[], bossSmallRoom = false): { space: Int16Array; fitted: Map<number, FittedRoom> } {
+export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, templates: readonly RoomTemplate[], bossSmallRoom = false, easyRoots = false): { space: Int16Array; fitted: Map<number, FittedRoom> } {
   const lv = level(k);
   const bossRoom = lv.tutorial ? undefined : plan.rooms.find(r => r.type === 'boss');
   const allot = allotSpace(plan, rr.fork('floor', k, 'space'), bossRoom?.id);
@@ -228,7 +238,8 @@ export function fitTemplates(rr: RunRandom, k: number, plan: FloorPlan, template
     const mirror = (t: RoomTemplate) => t.mirror !== false && pr.type !== 'start';
     const cell = lv.tutorial ? TUTORIAL_CELLS[TUTORIAL_LAYOUT[pr.gz][pr.gx]] : undefined;
     const fits = (t: RoomTemplate) => flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t)).length > 0;
-    const fixed = cell && templates.find(q => q.id === cell.template);
+    // the easy layout (EASY-LAYOUT §7) takes the cell's easy template; the cell's own flips stay
+    const fixed = cell && templates.find(q => q.id === (easyRoots && cell.easy ? cell.easy : cell.template));
     const large = pr === bossRoom && bossRoomIsLarge(k, bossSmallRoom);
     const t = fixed || pickTemplate(templates, pr.type, k, layout, pr.size, fits, lv.bigRooms, large);
     const flips = flipsThatFit(t, pr, allot, plan.w, plan.h, mirror(t));
@@ -266,9 +277,9 @@ export function pedestalSlots(dungeon: DungeonPlan): PedestalSlot[] {
 export function createDungeonWorld(rr: RunRandom, dungeon: DungeonPlan): VoxelWorld {
   const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
   fillRock(w, [rr.fork('rock', 0).u32(), rr.fork('rock', 1).u32()], dungeon.themes);
-  // the mountains round the surface, centred on the giant tree's axis (GiantTree: sx >> 1, sz >> 1)
+  // the surface and its mountains, centred on the giant tree's axis (GiantTree: sx >> 1, sz >> 1):
+  // a formula, streamed round the viewer by the chunk renderer (`outerChunksNear`)
   w.terrain = new Mountains(rr.fork('mountains'), w.sx >> 1, w.sz >> 1, SURFACE_Y, w);
-  for (const [cx, cy, cz] of w.terrain.chunks()) w.dirty.add(chunkKey(cx, cy, cz));
   return w;
 }
 
@@ -282,6 +293,15 @@ export interface CarveOptions {
   enemies: EnemyBudget;
   /** The floor's boss asks for a small room (`EnemyDef.smallRoom`); otherwise its room is large. */
   bossSmallRoom?: boolean;
+  /** The player's mastery level (0 to 100), read by floor 0 only (REWARDS). Default 0. Generation never reads the save:
+   *  the game passes the level it read at run start. */
+  mastery?: number;
+  /** The depth the last run faded on (the save's `fade`, read at run start by the game): the Echo waits on that floor.
+   *  Undefined when no Echo waits. It only picks which floor holds the Echo; the room is still chosen by the seed. */
+  echoFloor?: number;
+  /** Floor 0 only (EASY-LAYOUT §7): carve the easy layout of the Roots, which the game asks for from page 2 on.
+   *  Default false: the teaching layout, byte for byte as before. Read at run start; no random decision depends on it. */
+  easyRoots?: boolean;
 }
 
 /** The floors from which every boss fights in a large room: floor 0 and every floor below it. */
@@ -328,7 +348,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
 
   // 0. every room's template and flips, and the space it takes: the empty cells are shared out first
   //    from the plan and the floor's own fork, so a room's choice never depends on another room's
-  const { space, fitted } = fitTemplates(rr, k, plan, opt.templates, opt.bossSmallRoom);
+  const { space, fitted } = fitTemplates(rr, k, plan, opt.templates, opt.bossSmallRoom, !!opt.easyRoots);
   const pal = { wall: MAT[lv.palette.wall], floor: MAT[lv.palette.floor], trim: MAT[lv.palette.trim] };
 
   // 1. room shells and interiors
@@ -366,7 +386,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       const s = CELL_STACK[ch];
       if (s) {
         // built pieces take the floor's palette: '#' and a plug's upper wall are walls, the rest trim
-        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : m);
+        const built = (m: number, wall: boolean) => (m === MAT.brick ? (wall ? pal.wall : pal.trim) : zoned(m, k));
         const harden = (m: number) => (mood === 'reinforced' ? hardened(m) : m);
         const m = harden(built(s.m, ch === '#'));
         // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
@@ -382,7 +402,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
         const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
         const ls = CELL_STACK[lc];
         if (ls) {
-          const m = ls.m === MAT.brick ? pal.trim : ls.m;
+          const m = ls.m === MAT.brick ? pal.trim : zoned(ls.m, k);
           w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(m) : m;
         }
         else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
@@ -390,7 +410,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (DECOR_CHARS.has(ch)) {
         // decor slot: rolled in row order from the room's own layout fork
         const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-        if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+        if (key) w.data[w.idx(x, y0, z)] = zoned(MAT[key], k);
       }
       if (ch === 'P') spawn = [x + 0.5, y0, z + 0.5];
       if (ch === 'T') {
@@ -446,6 +466,21 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   }
 
   placePresences(rooms, k, rr.fork('floor', k, 'presence'));
+  // the Trickster (a dead end of its seeded floor), the Echo (where the last run faded, from the save) and the Wanderer
+  // (one or two seeded floors), after the Listener
+  placeMessengers(rooms, k, rr.fork('floor', k, 'messenger'), {
+    deadEnds: plan.rooms.map(pr => Object.keys(pr.links).length === 1),
+    tricksterFloor: tricksterFloorOf(rr),
+    echoFloor: opt.echoFloor,
+    wandererFloors: wandererFloorsOf(rr),
+    gardenerFloor: gardenerFloorOf(rr),
+    elderFloor: dwellerFloorOf(rr, 'elder'),
+    cartographerFloor: dwellerFloorOf(rr, 'cartographer'),
+    childFloor: dwellerFloorOf(rr, 'child'),
+    boatmanFloor: boatmanFloorOf(rr),
+    witnessFloor: WITNESS_FLOOR,
+    starReaderFloor: starReaderFloorOf(rr),
+  });
 
   // 2. doorways between linked rooms (each pair once: only east and south links)
   for (const pr of plan.rooms) {
@@ -481,6 +516,9 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
   // 3. a key in a normal room if there is a locked door (prefer K spots)
   const keys: FloorResult['keys'] = [];
   const bombs: FloorResult['bombs'] = [];
+  const hearts: FloorResult['hearts'] = [];
+  const practices: FloorResult['practices'] = [];
+  let altar: FloorResult['altar'] = null;
   if (doors.some(d => d.locked)) {
     const normal = new Set(rooms.filter(rm => rm.type === 'normal').map(rm => rm.id));
     const spots = keySpots.filter(s => normal.has(s.room));
@@ -502,14 +540,80 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     if (spots.length > 1) spots.splice(spots.findIndex(([sx, sz]) => sx === x && sz === z), 1);
   }
   if (lv.tutorial) {
-    const lootRng = rr.fork('floor', k, 'loot');
-    const lootRooms = [...freeByRoom.keys()].filter(id => freeByRoom.get(id)!.length);
-    for (const kind of ['key', 'bomb'] as const) {
-      if (!lootRooms.length) continue;
-      const room = lootRng.pick(lootRooms), spots = freeByRoom.get(room)!;
-      const [x, z] = lootRng.pick(spots);
-      (kind === 'key' ? keys : bombs).push({ room, x, y: y0, z });
-      if (spots.length > 1) spots.splice(spots.findIndex(([sx, sz]) => sx === x && sz === z), 1);
+    // The Roots (REWARDS §2–§5): what the mastery level lays on floor 0. Each kind draws from its own fork,
+    // in this order: extra practices, the altar, the second Sanctuary, free chests, keys, bombs, hearts.
+    // Each takes free tiles only (never a door approach, the centre, the shaft or beside a marker), and a room
+    // holds at most one practice pedestal and one free chest. The Sanctuary chest and the way-down pedestal are untouched.
+    const roots = rootsRewards(opt.mastery ?? 0);
+    const lessons = [...freeByRoom.keys()];
+    const freeIn = (pr: PlanRoom): [number, number][] => {
+      const f = fitted.get(pr.id)!, rm = rooms[pr.id];
+      return freeSpots(f.t, f.flipX, f.flipZ).map(([c, r]): [number, number] => [rm.x0 + c, rm.z0 + r]);
+    };
+    const rPractice = rr.fork('floor', k, 'roots', 'practice-spot');
+    const rAltar = rr.fork('floor', k, 'roots', 'altar-spot');
+    const rSanctuary = rr.fork('floor', k, 'roots', 'sanctuary-spot');
+    const rChest = rr.fork('floor', k, 'roots', 'chest');
+    const rOneOf = rr.fork('floor', k, 'roots', 'oneof');
+    const rKey = rr.fork('floor', k, 'roots', 'key');
+    const rBomb = rr.fork('floor', k, 'roots', 'bomb');
+    const rHeart = rr.fork('floor', k, 'roots', 'heart');
+    const laid = (room: number, x: number, z: number) => ({ room, x, y: y0, z });
+
+    const pedestalRooms: number[] = [];
+    for (let i = 0; i < roots.extraPractices; i++) {
+      const spot = takeFree(rPractice, freeByRoom, lessons.filter(id => !pedestalRooms.includes(id)));
+      if (!spot) break;
+      pedestalRooms.push(spot.room);
+      w.data[w.idx(spot.x, y0, spot.z)] = MAT.pedestal;
+      practices.push(laid(spot.room, spot.x, spot.z));
+    }
+
+    const start = plan.rooms.find(r => r.type === 'start')!;
+    if (roots.altar) {
+      const spots = freeIn(start);
+      if (spots.length) {
+        const [x, z] = rAltar.pick(spots);
+        w.data[w.idx(x, y0, z)] = MAT.pedestal;
+        altar = laid(gid(start.id), x, z);
+      }
+    }
+
+    if (roots.secondSanctuary) {
+      const way = plan.rooms.find(r => r.type === 'boss')!;
+      const spots = freeIn(way);
+      if (spots.length) {
+        const [x, z] = rSanctuary.pick(spots);
+        w.data[w.idx(x, y0, z)] = MAT.chest;
+        chests.push({ room: gid(way.id), x, y: y0, z, keys: 0, item: null, meditation: true });
+      }
+    }
+
+    const chestRooms: number[] = [];
+    for (let i = 0; i < roots.freeChests; i++) {
+      const spot = takeFree(rChest, freeByRoom, lessons.filter(id => !chestRooms.includes(id)));
+      if (!spot) break;
+      chestRooms.push(spot.room);
+      w.data[w.idx(spot.x, y0, spot.z)] = MAT.chest;
+      chests.push({ room: spot.room, x: spot.x, y: y0, z: spot.z, keys: 0, item: null, draws: { ...roots.chestDraws } });
+    }
+
+    // level 0 lays exactly one of a key or a bomb, drawn once; from level 1 the table's counts
+    const oneOf = roots.oneOfKeyOrBomb ? rOneOf.pick(['key', 'bomb'] as const) : null;
+    for (let i = 0; i < roots.keys + (oneOf === 'key' ? 1 : 0); i++) {
+      const spot = takeFree(rKey, freeByRoom, lessons);
+      if (!spot) break;
+      keys.push(laid(spot.room, spot.x, spot.z));
+    }
+    for (let i = 0; i < roots.bombs + (oneOf === 'bomb' ? 1 : 0); i++) {
+      const spot = takeFree(rBomb, freeByRoom, lessons);
+      if (!spot) break;
+      bombs.push(laid(spot.room, spot.x, spot.z));
+    }
+    for (const kind of roots.hearts) {
+      const spot = takeFree(rHeart, freeByRoom, lessons);
+      if (!spot) break;
+      hearts.push({ ...laid(spot.room, spot.x, spot.z), kind });
     }
   }
 
@@ -551,7 +655,7 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
       if (stationKind === 'kitchen') kitchen = at; else laboratory = at;
     }
   }
-  return { floor: k, boss: null, plan, rooms, doors, spawn, pedestals, chests, keys, bombs, hole, silence, laboratory, kitchen, space };
+  return { floor: k, boss: null, plan, rooms, doors, spawn, pedestals, chests, keys, bombs, hearts, practices, altar, hole, silence, laboratory, kitchen, space };
 }
 
 /**
@@ -576,7 +680,7 @@ export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: nu
     for (let y = y1 + 1; y <= top; y++) w.data[w.idx(x, y, z)] = AIR;
     const s = CELL_STACK[ch];
     if (s) {
-      const m = mood === 'reinforced' ? hardened(s.m) : s.m;
+      const m = mood === 'reinforced' ? hardened(zoned(s.m, k)) : zoned(s.m, k);
       // '#' reaches the ceiling (whatever its height); 'X' stops two blocks under it
       const n = ch === '#' ? top - y0 + 1 : ch === 'X' ? top - y0 - 1 : s.h;
       for (let h = 0; h < n; h++) w.data[w.idx(x, y0 + h, z)] = m;
@@ -589,13 +693,13 @@ export function carveInterior(w: VoxelWorld, t: RoomTemplate, x0: number, y0: nu
     for (const layer of t.layers ?? []) {
       const lc = cellAt({ ...t, rows: layer.rows }, col, row, flipX, flipZ), ly = y0 + layer.y;
       const ls = CELL_STACK[lc];
-      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(ls.m) : ls.m;
+      if (ls) w.data[w.idx(x, ly, z)] = mood === 'reinforced' ? hardened(zoned(ls.m, k)) : zoned(ls.m, k);
       else if (lc === 'f') w.elem[w.idx(x, ly, z)] = elemByteOf(EL_FIRE);
     }
     if (DECOR_CHARS.has(ch)) {
       // decor slot: rolled in row order from the room's own layout fork
       const key = DECOR_SLOTS[mood][ch as '?' | '~' | '!'].roll(layout, { floor: k });
-      if (key) w.data[w.idx(x, y0, z)] = MAT[key];
+      if (key) w.data[w.idx(x, y0, z)] = zoned(MAT[key], k);
     }
     if ('PTKH'.includes(ch)) markers.push({ ch, x, z });
   }
@@ -640,6 +744,19 @@ export function freeSpots(t: RoomTemplate, flipX: boolean, flipZ: boolean): [num
     if (ok) spots.push([col, row]);
   }
   return spots;
+}
+
+/**
+ * One free tile of a lesson room, drawn from the rooms in `rooms` that still have one (`rng.pick` on the rooms,
+ * then on that room's tiles), and taken out of `free` so no other thing lies on it. Null when none is left.
+ */
+function takeFree(rng: Rng, free: Map<number, [number, number][]>, rooms: readonly number[]): { room: number; x: number; z: number } | null {
+  const open = rooms.filter(id => (free.get(id)?.length ?? 0) > 0);
+  if (!open.length) return null;
+  const room = rng.pick(open), list = free.get(room)!;
+  const [x, z] = rng.pick(list);
+  list.splice(list.findIndex(([sx, sz]) => sx === x && sz === z), 1);
+  return { room, x, z };
 }
 
 /** The grid cells a template takes when its home cell is `pr`'s, with these flips. */
@@ -787,6 +904,11 @@ export function pickTemplate(templates: readonly RoomTemplate[], type: RoomType,
   return options[options.length - 1];
 }
 
+/** A room's ore is the ore of its floor's zone (levels.ts ZONES): iron on the roots and Zone I, lead at the bottom. */
+export function zoned(m: number, floor: number): number {
+  return m === MAT.ore ? MAT[level(floor).ore] : m;
+}
+
 /** "reinforced" rooms: soft obstacles become harder materials (interior only). */
 function hardened(m: number): number {
   for (const [from, to] of Object.entries(REINFORCE)) if (m === MAT[from]) return MAT[to];
@@ -815,7 +937,15 @@ function fillRock(w: VoxelWorld, layers: [number, number], themes: RockTheme[]) 
       const s = level(band).strata, t = themes[band];
       const obs = s.obsidian + t.hard * 0.1, deep = obs + s.deep + t.hard * 0.4, dirt = deep + s.pockets + t.pockets * (1 - s.deep);
       m = v < obs ? MAT.obsidian : v < deep ? MAT.deepstone : v < dirt ? MAT.dirt : MAT.stone;
-      if (v > 1 - (s.ore + t.ore) / 2) m = MAT.ore;
+      const lv = level(band);
+      if (v > 1 - (s.ore + t.ore) / 2) m = MAT[lv.ore];
+      else {
+        // the Gardener's root (strands two blocks tall) and tufts of cave moss, from the same hash layer at its own grain:
+        // no new draw, so the rest of the rock is unchanged (GARDENER.md, README D13)
+        const g = n(x, y >> 1, z, 0);
+        if (g < lv.garden.root) m = MAT.root;
+        else if (g > 1 - lv.garden.moss) m = MAT.cavemoss;
+      }
     }
     if (y < SURFACE_Y && (x === 0 || z === 0 || x === w.sx - 1 || z === w.sz - 1)) m = MAT.bedrock;
     w.data[w.idx(x, y, z)] = m;

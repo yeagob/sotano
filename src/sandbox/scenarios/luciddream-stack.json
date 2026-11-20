@@ -1,0 +1,15 @@
+{
+  "note": "Lucid Dream: more pickups during a phase add 3 s each, and the time left is capped at 6 s",
+  "rows": [".............", ".............", ".............", ".............", ".............", ".............", "............."],
+  "player": [6, 0, 3],
+  "god": true,
+  "items": ["luciddream"],
+  "ticks": 240,
+  "report": [0, 240],
+  "actions": [
+    { "t": 1, "do": "collect", "kind": "bomb" },
+    { "t": 30, "do": "collect", "kind": "key" },
+    { "t": 60, "do": "collect", "kind": "heart" },
+    { "t": 90, "do": "collect", "kind": "bomb" }
+  ]
+}

@@ -7,7 +7,7 @@ import { MATERIALS } from '../src/content/materials';
 import { SYNERGIES } from '../src/content/synergies';
 import { fmtStat } from '../src/core/stats';
 import { detectLocale, fmtNum, locale, onLocaleChange, setLocale, t } from '../src/i18n';
-import { causeName, effectMessage, enemyText, itemText, materialName, PATHS, pathName } from '../src/i18n/content';
+import { causeName, effectMessage, enemyText, itemText, materialName, PATHS, pathName, practiceTeaching } from '../src/i18n/content';
 import { LOCALES, type Catalog, type Message } from '../src/i18n/locales';
 import { EN } from '../src/i18n/locales/en';
 import { buildRun, signature } from './helpers';
@@ -87,6 +87,27 @@ describe('catalogs', () => {
       expect(s.trim(), `${l.code} ${k}`).not.toBe('');
       expect(s, `${l.code} ${k}`).not.toMatch(/[<>]/);
     }
+  });
+
+  it.each(LOCALES.map(l => [l.code, l] as const))('%s key caps fit in 14 characters (BOOK-DATA §5)', (_, l) => {
+    for (const [k, s] of strings(l)) if (k.startsWith('keycap.')) expect([...s].length, `${l.code} ${k}`).toBeLessThanOrEqual(14);
+  });
+
+  it.each(LOCALES.map(l => [l.code, l] as const))('%s gives every practice its teaching, and no stale one (issue #202)', (_, l) => {
+    const msgs = l.messages as Record<string, unknown>;
+    for (const d of ITEMS) for (const part of ['quote', 'lesson']) {
+      const m = msgs[`teach.${d.id}.${part}`];
+      expect(typeof m === 'string' && m.trim().length > 0, `${l.code} teach.${d.id}.${part}`).toBe(true);
+    }
+    const ids = new Set(ITEMS.map(i => i.id));
+    for (const k of Object.keys(msgs)) if (k.startsWith('teach.')) expect(ids.has(k.split('.')[1]), `${l.code} stale ${k}`).toBe(true);
+  });
+
+  it('a practice teaching reads in the current language', () => {
+    const d = ITEMS.find(i => i.id === 'taoteching')!;
+    expect(practiceTeaching(d).quote).toBe(t('teach.taoteching.quote'));
+    setLocale('es');
+    expect(practiceTeaching(d).quote).not.toBe(EN.messages['teach.taoteching.quote']);
   });
 
   it('every item message has English text in its definition', () => {

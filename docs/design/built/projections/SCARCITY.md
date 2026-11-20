@@ -26,6 +26,10 @@ Kill it to get back what it took. Good intentions do half damage and warm it; ba
 
 None.
 
+## Numbers
+
+- **Pickups on release:** key 60%, bomb 40%, heart 30%, and everything it carried.
+
 ## Status
 
 Partial. The built part is the stealing, the running and the release. Its pocket in a wall, where it hides what it took, is in [GAPS](../../not-built/projections/GAPS.md).

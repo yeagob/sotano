@@ -26,6 +26,10 @@ Good intentions do half damage and warm it; bad intentions do full damage. Its h
 
 None.
 
+## Numbers
+
+- **Pickups on release:** none.
+
 ## Status
 
 Built.

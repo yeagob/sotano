@@ -12,15 +12,20 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 |---|---|---|---|
 | [Exposure](EXPOSURE.md) | 2 | Body | treasure rooms |
 | [Symbolic Act](SYMBOLIC-ACT.md) | 3 | none | treasure rooms |
+| [Post-Traumatic Growth](POST-TRAUMATIC-GROWTH.md) | 2 | Fire | treasure rooms |
 | [Gratitude Journal](GRATITUDE-JOURNAL.md) | 1 | none | treasure rooms |
 | [Radical Acceptance](RADICAL-ACCEPTANCE.md) | 2 | none | treasure rooms |
 | [Forgiveness](FORGIVENESS.md) | 3 | none | treasure rooms |
 | [Nothing Personal](NOTHING-PERSONAL.md) | 2 | Mind | treasure rooms |
 | [Systemic Constellation](SYSTEMIC-CONSTELLATION.md) | 3 | Mind | treasure rooms |
+| [Pressure Valve](../BOMBS.md#1-pressure-valve-pressurevalve) | 2 | none | treasure rooms |
+| [Serendipity](../BOMBS.md#4-serendipity-serendipity) | 2 | none | treasure rooms |
 | [Art Therapy](ART-THERAPY.md) | 2 | Body | treasure rooms |
 | [Affirmation](AFFIRMATION.md) | 3 | none | treasure rooms |
 | [Rapport](RAPPORT.md) | 2 | none | treasure rooms |
 | [Self-Compassion](SELF-COMPASSION.md) | 2 | none | treasure rooms |
+| [Reframing](REFRAMING.md) | 3 | none | treasure rooms |
+| [Mender's Thread](MENDERS-THREAD.md) | 3 | none | the Mender only, once a run (promised) |
 
 ## Also on this path (first path tag elsewhere)
 
@@ -34,7 +39,7 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 ## Open questions in this folder
 
 - [Symbolic Act](SYMBOLIC-ACT.md): Scope: the explosions of thrown blocks also cancel your own damage under Radical Acceptance. See Radical Acceptance (open question A1).
-- [Radical Acceptance](RADICAL-ACCEPTANCE.md): Scope A1: the story text speaks of breakthroughs (bombs) only. The built effect also cancels your thrown-block explosions (Symbolic Act). The owner decides which rule stands.
+- [Radical Acceptance](RADICAL-ACCEPTANCE.md): Scope A1: the story text speaks of bombs only. The built effect also cancels your thrown-block explosions (Symbolic Act). The owner decides which rule stands.
 - [Radical Acceptance](RADICAL-ACCEPTANCE.md): Naming N6: "radical acceptance" is also the title of a 2003 book (verify). The term comes from the credited therapy. The owner decides whether the name stays.
 - [Nothing Personal](NOTHING-PERSONAL.md): The credited book's title is a registered trademark (SOURCES: Caution). It is used only as credit, so no name question is raised. The name is an idiom from one of its agreements; the owner may confirm it.
 - [Systemic Constellation](SYSTEMIC-CONSTELLATION.md): Credit C2: the credit names Bert Hellinger, whose work is contested. SOURCES asks to avoid founder-branded terms. The owner decides the wording of the credit.

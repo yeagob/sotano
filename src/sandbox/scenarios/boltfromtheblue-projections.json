@@ -1,0 +1,16 @@
+{
+  "note": "Bolt from the Blue: a bomb with four projections around it; the lightning reaches the three nearest within the blast's reach, nearest first, 6 each",
+  "rows": [".............", "....ccccc....", "....crrrc....", "....cr.rc....", "....crrrc....", "....ccccc....", "............."],
+  "items": ["boltfromtheblue"],
+  "player": [0, 0, 0],
+  "god": true,
+  "enemies": [
+    { "def": "doubt", "at": [9, 0, 3] },
+    { "def": "doubt", "at": [6, 0, 6] },
+    { "def": "doubt", "at": [3, 0, 3] },
+    { "def": "doubt", "at": [11, 0, 6] }
+  ],
+  "ticks": 240,
+  "report": [0, 110, 240],
+  "actions": [{ "t": 0, "do": "bomb", "at": [6, 0, 3], "fuse": 1.8 }]
+}

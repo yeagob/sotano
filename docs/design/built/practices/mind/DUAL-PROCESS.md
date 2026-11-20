@@ -25,7 +25,6 @@ Each shot fires two intentions; the second one deals 60% damage and mining.
 
 ## Synergies and states of being
 
-- [Chorus](../synergies/CHORUS.md)
 - [Lucid](../states-of-being/LUCID.md) (counts the mind tag)
 
 ## Open questions

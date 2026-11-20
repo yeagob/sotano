@@ -1,0 +1,42 @@
+# combo-split-seek-fire — Combo (#110): Dialectic + Reframing + Stolen Fire + Inner Fire shooting a wall of crates with two projections near it; halves keep fire seeds, burning spreads, the shot count stays capped and everything settles
+floor 1 · seed 1 · room 13×7×5 · 480 ticks (8.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic reframing prometheus tummo · synergies —
+  doubt#2 hp 24.0/24 · projection · at 5.5 0.0 1.5
+  doubt#3 hp 24.0/24 · projection · at 5.5 0.0 5.5
+  blocks stone 21 · crate 12
+  elements —
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic reframing prometheus tummo · synergies —
+  doubt#2 hp 24.0/24 · projection · at 2.6 0.0 2.4
+  doubt#3 hp 24.0/24 · projection · at 3.3 0.0 5.1
+  blocks stone 21 · crate 12
+  elements —
+  cubes — · pickups 0
+  events fire 6 · heal 1 · intentBounce 12 · intentHit 28 · roomEnter 1
+
+t 480 (8.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic reframing prometheus tummo · synergies —
+  doubt#2 hp 18.8/24 · projection · at 1.5 0.0 3.6
+  doubt#3 hp 24.0/24 · projection · at 1.5 0.0 3.5
+  blocks stone 21 · crate 12
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 3 · fire 3 · intentBounce 6 · intentHit 17
+
+map t 480 · h 0
+  ...........r.
+  .......ccc.r.
+  .......ccc.r.
+  ...........r.
+  .......ccc.r.
+  .......ccc.r.
+  ...........r.
+
+legend r stone · c crate

@@ -26,6 +26,11 @@ Keep the pressure on, so that it does not get four seconds without a hit. Good i
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 10%, key 6%, bomb 8%.
+- **Health:** 80.
+
 ## Status
 
 Partial. The built part is the armour, the mending and the walk. Its health, its plates and its repairs are in [GAPS](../../not-built/projections/GAPS.md), and the numbers are an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

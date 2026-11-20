@@ -19,14 +19,23 @@ On each floor from 1 to 5, one room is chosen from the normal rooms that hold no
 - **Replies.** If the player carries no heart, each time they come near with something else on top of the hand, the Listener names that thing and says it is not what it waits for. With empty hands it says so. It answers at most once every four seconds.
 - **Body.** The Listener has a body: the player cannot walk through it.
 - **The key.** Within about two blocks, the Listener scans the carried hand from the interaction item down and asks whether the player wants to give the first heart of a released pattern it finds. Accepting takes only that heart; declining takes nothing, and the Listener asks again only after the player steps away and returns. Other carried things stay in hand. It then talks. If no heart is carried, the first approach gives a hint without naming what it wants.
-- **Talk.** Once the heart is taken, a card shows two lines. The first asks what weighs on the player; the second says it heard them. The card stays until it is dismissed, and the lines are the same on every visit.
+- **Talk and the Lesson.** Once the heart is taken (and its reward has dropped), the choice card asks what weighs on the player, with the four paths (body, mind, emotion, will) and "Not now". A path gives one Lesson of that path, in words, and the line that it heard them. "Not now" gives only that line. See [The Lesson](#the-lesson).
 - **The reward.** Accepting the heart always gives one reward, rolled from the run's `drops` stream at that moment:
   - **15%:** a practice with a maximum-health stat.
   - **75%:** special hearts; 90% of these rewards are one heart, and 10% are two hearts of different special kinds.
   - **10%:** exactly two red hearts.
-  - **How it lands.** The reward leaves the Listener in an arc toward the player, with the gold sparks of a release. At full health a heart waits on the floor until the player is hurt.
+  - **How it lands.** The reward leaves the Listener in an arc away from the player, never toward them, with the gold sparks of a release. At full health a heart waits on the floor until the player is hurt.
 - **Leaving.** The Listener is removed from the world in the same frame its drop appears: its body, its hooks and its contacts go with it, and the room is ordinary again. Its pickups stay where they landed, so the reward does not depend on the Listener any more. A card that is already open stays on the screen.
 - **Light.** The design has it show its face only while the player listens, as light from the player's lantern. The build draws it as bone tones, with no such effect.
+
+## The Lesson
+
+Decided by agent (issue #149); the Light's place ruled by the owner (issue #228, D4: the Light goes at the top of the tree). The design had the player choose which path weighs on them and receive a Lesson of that path; the Covenant's Light is what was heard, carried up to the crown of the giant tree.
+
+- **The card.** The choice card of the Elder (up to four answers, keyboard, mouse, gamepad, touch), with the Listener's first line as the question and the four paths as the answers. It opens after the reward, so the Listener has already left: the card needs no body.
+- **The Lesson.** One line per path (`presence.listener.lesson.body`, `.mind`, `.emotion`, `.will`), then "I heard it", then a line that the Light waits in the crown of the great tree. Words only: no item, no stat, no randomness. Reason: the 15/75/10 reward must not change, so the Lesson adds meaning and nothing to the table, and the `drops` stream is read exactly as before.
+- **The Light, at the crown (owner, #228, D4).** A run that has heard a Lesson (any path, on any floor) keeps the Covenant's Light when the player's body enters the crown of the giant tree above the surface (its canopy story), once, with a gold burst and the toast *In the crown of the tree, what was heard becomes Light.* Climbing to the crown before any Lesson gives nothing; the Light waits there for a later climb, or for a fall from the sky's deck, which lands in the crown. "Not now" is no Lesson heard; the reward that already dropped is never taken back. Reason for needing a Lesson (decided by agent): the Light is what was heard, so the crown alone would give it to a run that never listened, on its first climb from the Roots. The crown's layout belongs to the tree; the Light only reads the story the body is in, in one function (`reachCrown`).
+- **Code.** `src/content/presences/lesson.ts` (`crownGivesLight`, `LIGHT_STORY`), read by the game in `askLesson`, `answerLesson` and `reachCrown`. Tested in `tests/presences-lesson.test.ts`.
 
 ## Silence
 
@@ -51,7 +60,6 @@ The silence rule (BESTIARY §8.1) applies to presences that stay, the Gardener a
 
 ## Open questions
 
-- **The choice.** The design has the player choose which of their paths weighs on them, and gives a Lesson from that path. The build offers no choice and no Lesson; it drops and leaves.
 - **Standing still.** The design has the player stand still beside it. The build talks on contact, without stillness.
 - **The tree.** The design places one Listener in a quiet side emanation of each Tree floor. The build places it in any quiet normal room of floors 1 to 5, which the code calls the tree level.
 - **Lines.** The lines are English and Spanish texts awaiting owner approval (the design leaves names and lines open).

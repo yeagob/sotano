@@ -11,7 +11,7 @@ Back to [built](../README.md) · [the design document](../../README.md)
 | [DAMAGE.md](DAMAGE.md) | How a hit on a block counts, armour, the minimum that always gets through, and repair by positive intentions |
 | [CUBES.md](CUBES.md) | A broken block as a loose cube: its life, its hops, what breaks it, what enemies do to it |
 | [KICK-AND-THROW.md](KICK-AND-THROW.md) | Kicking and throwing loose cubes, and the damage a flying cube does to a projection |
-| [PLACING.md](PLACING.md) | Placing the top block on the face you aim at, and what stops it |
+| [PLACING.md](PLACING.md) | Placing the active block (the top one unless you choose another) on the face you aim at, and what stops it |
 | [BOMBS.md](BOMBS.md) | The fused bomb: dropping it, its fuse, its blast, its chain and the counters |
 | [CONTACT.md](CONTACT.md) | Crush, wearing down the blocks you press against, and headbutt, breaking the ceiling |
 

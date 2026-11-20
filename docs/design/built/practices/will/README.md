@@ -11,6 +11,7 @@ The folder holds the practices whose first path tag is will. Practices that also
 | Practice | Quality | Also on | Found in |
 |---|---|---|---|
 | [Stoic Resolve](STOIC-RESOLVE.md) | 2 | none | treasure rooms, boss rewards |
+| [Controlled Burn](../BOMBS.md#2-controlled-burn-controlledburn) | 2 | none | treasure rooms |
 | [Kaizen](KAIZEN.md) | 2 | none | treasure rooms |
 | [Habit Stacking](HABIT-STACKING.md) | 3 | none | treasure rooms |
 | [Meditations](MEDITATIONS.md) | 4 | Mind | treasure rooms, vault rooms |
@@ -20,6 +21,8 @@ The folder holds the practices whose first path tag is will. Practices that also
 | [Bounce Back](BOUNCE-BACK.md) | 2 | none | treasure rooms |
 | [Kindling](KINDLING.md) | 2 | none | treasure rooms |
 | [Self-Efficacy](SELF-EFFICACY.md) | 3 | none | treasure rooms |
+| [Eye Contact](EYE-CONTACT.md) | 3 | none | treasure rooms |
+| [Waymark](WAYMARK.md) | 3 | none | vault rooms, boss rewards |
 
 ## Also on this path (first path tag elsewhere)
 

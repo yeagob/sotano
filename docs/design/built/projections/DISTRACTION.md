@@ -26,6 +26,10 @@ Its path is erratic, so wait for a clear moment and throw. Good intentions do ha
 
 None.
 
+## Numbers
+
+- **Pickups on release:** heart 5%.
+
 ## Status
 
 Built. Its card's attraction to lights is an open question ([OPEN-QUESTIONS](../../not-built/projections/OPEN-QUESTIONS.md)).

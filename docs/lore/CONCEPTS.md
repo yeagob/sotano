@@ -5,8 +5,10 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | Concept | Sources | In the game |
 |---|---|---|
 | **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |
+| **Looking is the way through** | `eye-contact`, `dowsing` | Steering: Eye Contact curves intentions toward what you fear; Dowsing toward what lies hidden |
 | **Insight is electric** | `insight`, `kindling` | Electricity: a sudden flash that runs from one thought to the next (Aha Moment, Resonance, Rapport, Discharge) |
 | **Many views, one truth** | `dual-process`, `chunking` | Several intentions at once (Dual Process, Triangulation); a whole broken into pieces (Chunking) |
+| **A setback points somewhere** | `resilience`, `cbt`, `dialectic` | The Bounce family ([BOUNCE](../design/built/practices/BOUNCE.md)): intentions rebound (Bounce Back), split into two opposed views (Dialectic), and turn toward what matters (Reframing) |
 | **As above, so below** | `emerald-tablet`, `kybalion` (correspondence) | The depth and the surface mirror each other and connect in the endgame ([COSMOLOGY.md](COSMOLOGY.md)) |
 | **The obstacle is the way** | `meditations` | Broken blocks become material you carry and build with |
 | **Projection** (what you see outside mirrors what is inside) | `course-in-miracles`, `jung` | Enemies are *projections* of inner blocks, rising from the room's own matter (announced by omens), never through the doors ([BESTIARY §2](../design/built/encounters/SEAL-AND-OMENS.md)) |
@@ -18,6 +20,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Be impeccable with your word** | `four-agreements` | Future: intentions that never miss what they're aimed at |
 | **Don't make assumptions / always do your best** | `four-agreements` | Future practices |
 | **The symbolic act** | `psychomagic`, `psychodrama` | **Symbolic Act** (thrown blocks burst); burning barrels where you let things go |
+| **Authenticity: showing oneself as one is** | `la-locura-lo-cura` | Page 7 of the Roots' book: the walls built to stay safe are for breaking; the quotation on the treasure room's wall says authenticity is not a façade and not trying to be better. Not a practice yet |
 | **The system and its orders** (belonging, order, balance) | `constellations` | **Systemic Constellation**: seeing the whole system weakens its projections; future: rooms as family systems, ancestors in the deepest floor |
 | **Art transforms the maker** | `art-therapy` | **Art Therapy**: placing blocks (building, creating) can heal you |
 | **Listening to the river** | `siddhartha`, `tao-te-ching` | Water as emotion ([ELEMENTS](../design/built/elements/WATER.md)); a future river place in the depths |
@@ -27,6 +30,11 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Softness overcomes hardness** | `tao-te-ching` | **Tao Te Ching**: intentions flow through anything |
 | **Parts of a projection** (flesh, heart, mind, essence) | — | What a released projection leaves behind, named after its pattern (the Doubt's pause, the Lectern's margin note); collected, never practices ([BESTIARY §5.7](../design/built/projections/PARTS.md)) |
 | **Descent and return** | `monomyth`, `jung` | A run: down to grow, up to win |
+| **Turning the light around** (attention withdrawn inward) | `golden-flower` | Not built: a practice whose intention turns back onto the player, reflecting inward instead of outward ([SOURCES](SOURCES.md)) |
+| **The golden flower** (the self that blooms when consciousness turns inward) | `golden-flower`, `jung` | Not built: an endgame symbol, what blooms at the deepest point ([COSMOLOGY.md §3](COSMOLOGY.md#3-the-endgame-connection)) |
+| **All beings are kin** ("for all my relations") | `camino-rojo`, `constellations` | Not built: "Por todas mis relaciones", a practice whose effects reach allies and weaken nearby projections ([CAMINO-ROJO.md](../design/not-built/practices/CAMINO-ROJO.md)) |
+| **Choice creates the moment** | `conversations-with-god` | Not built: a mechanic in which the player's choices shape the run's environment |
+| **Inner voices as guides** (signal, not noise) | `voices-beyond` (Caution: a book presented as true, later acknowledged as fiction) | Not built: a practice about listening to inner voices. The idea is not attributed to the book |
 | **The shadow** | `jung` | The keystone boss of floor 9 ([BESTIARY §6](../design/built/bosses/README.md)) |
 | **Polarity of intention** (opposites are degrees of one thing; move a state along its own pole) | `kybalion` | Positive intentions mend and can convert projections; negative ones wound, the living included; a control switches them ([BESTIARY §1.1](../design/built/intentions/POLARITY.md)) |
 | **Keeping your word** (agreements, promises) | `four-agreements` | Presences make agreements; the gifts are *promised* and cannot be lost ([BESTIARY §8.6–§8.7](../design/not-built/presences/AGREEMENTS.md)) |
@@ -52,3 +60,5 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **Ascent in leaps** (the triple jump, 1x, 2x and 8x) | — (our own) | Decided, not built: the reward of the Horse, the way through Totality ([TOTALITY.md](../design/not-built/levels/TOTALITY.md)) |
 | **Unity in the Sun** (the last sky floor, where the solar relic is given) | — (our own) | Decided setting, not built: silence below, the Sun above ([UNITY.md](../design/not-built/levels/UNITY.md)) |
 | **Strength while held** (the Berserker heart) | — (our own) | Built: one more heart of 100 health that keeps the player a berserker for as long as it is held ([BERSERKER.md](../design/built/player/hearts/BERSERKER.md)) |
+| **All beings are kin** (interconnection) | `camino-rojo`, `constellations` | Proposed: "Por Todas Mis Relaciones" practice — effects extend to allies and weaken projections ([issue #194](https://github.com/yeagob/sotano/issues/194)) |
+| **A mark on the path** (cairns and waymarks: the way back is known) | Concept (pilgrim routes, no single source) | Waymark: a checkpoint that is an extra life, where you last knew yourself ([built/practices/will/WAYMARK.md](../design/built/practices/will/WAYMARK.md)) |

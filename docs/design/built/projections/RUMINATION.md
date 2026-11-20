@@ -26,6 +26,10 @@ Step off the line's path before it fires. Good intentions do half damage and war
 
 None.
 
+## Numbers
+
+- **Pickups on release:** bomb 10%, heart 6%.
+
 ## Status
 
 Partial. The built part is the ghost chase and the line. Its fixed loop through the rock and its surfacing are in [GAPS](../../not-built/projections/GAPS.md).

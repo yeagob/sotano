@@ -1,0 +1,46 @@
+# eyecontact-aim — Eye Contact: an intention curves toward the nearest projection within 8 blocks (a doubt off its line), and not toward a block in reach
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices eyecontact · synergies —
+  doubt#2 hp 24.0/24 · projection · at 7.5 0.0 0.5
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices eyecontact · synergies —
+  doubt#2 hp 22.3/24 · projection · at 6.9 0.0 0.4
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 1 · fire 1 · intentHit 1 · roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices eyecontact · synergies —
+  doubt#2 hp 22.3/24 · projection · at 6.2 0.0 0.4
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices eyecontact · synergies —
+  doubt#2 hp 22.3/24 · projection · at 2.8 0.0 2.2
+  blocks stone 1
+  elements —
+  cubes — · pickups 0
+
+map t 240 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .....r.......
+
+legend r stone

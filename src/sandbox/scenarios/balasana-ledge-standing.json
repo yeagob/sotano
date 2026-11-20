@@ -1,0 +1,58 @@
+{
+  "note": "Without the crouch, the same walk goes over the ledge and falls into the drop",
+  "items": [
+    "balasana"
+  ],
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "place": [
+    {
+      "at": [
+        7,
+        -1,
+        0,
+        11,
+        -1,
+        6
+      ],
+      "clear": true
+    }
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "ticks": 240,
+  "report": [
+    0,
+    60,
+    120,
+    240
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "look",
+      "at": [
+        12,
+        0,
+        3
+      ]
+    },
+    {
+      "t": 0,
+      "do": "hold",
+      "code": "KeyW",
+      "ticks": 240
+    }
+  ]
+}

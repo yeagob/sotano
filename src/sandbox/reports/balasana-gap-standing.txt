@@ -1,0 +1,42 @@
+# balasana-gap-standing — Without the crouch, the standing body stops at the 1-block gap: the lintel is at head height
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices balasana · synergies —
+  blocks crate 13
+  elements —
+  cubes — · pickups 0
+
+map t 240 · h 0
+  ......c......
+  ......c......
+  ......c......
+  .............
+  ......c......
+  ......c......
+  ......c......
+
+legend c crate

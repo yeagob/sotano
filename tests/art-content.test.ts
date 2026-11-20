@@ -17,6 +17,8 @@ function L(n: number) {
 const tokenOf = new Map<number, string>(Object.entries(PALETTE).map(([t, h]) => [parseInt(h.slice(1), 16), t]));
 /** Items whose concept is light itself may use the light ramp in their icon (§10.1). */
 const LIGHT_CONCEPT = new Set(['satori', 'occamsrazor', 'kiai']);
+/** Items whose concept is repair (the kintsugi seam) may use `light.gold`, and only it: gold's other reserved use (DECISIONS.md §14.4). */
+const REPAIR_CONCEPT = new Set(['menders-thread']);
 
 describe('materials', () => {
   it('every ramp goes dark to light: outline < dark < base < hi (L*)', () => {
@@ -32,6 +34,25 @@ describe('materials', () => {
     const bedrock = MATERIALS.find(m => m.key === 'bedrock')!;
     expect(bedrock.accent).toBeUndefined();
   });
+
+  it('the zones\' ores are one family told apart by shape and colour (§6.7)', () => {
+    const ores = ['ore', 'copperore', 'tinore', 'quicksilverore', 'leadore'].map(k => MATERIALS.find(m => m.key === k)!);
+    const iron = ores[0];
+    // iron ore stays exactly as it was: copper nuggets, no vein of its own
+    expect([iron.vein, iron.veinShape, iron.accent]).toEqual([undefined, undefined, 'copper.base']);
+    for (const m of ores) {
+      expect([m.pattern, m.ramp.join()], m.key).toEqual(['nuggets', iron.ramp.join()]);
+      for (const t of m.vein ?? []) expect(t.startsWith('ore.'), `${m.key}: ${t}`).toBe(true);
+    }
+    const shapes = ores.map(m => m.veinShape ?? 'nuggets');
+    expect(new Set(shapes).size).toBe(ores.length);
+    // every vein hue keeps ΔL* ≥ 8 from the stone's base, so the vein reads in greyscale
+    const stone = L(pal(iron.ramp[2]));
+    for (const m of ores.slice(1)) {
+      const [, base, hi] = m.vein!;
+      expect(Math.max(Math.abs(L(pal(base)) - stone), Math.abs(L(pal(hi)) - stone)), m.key).toBeGreaterThanOrEqual(8);
+    }
+  });
 });
 
 describe('item icons (§10.1)', () => {
@@ -43,7 +64,8 @@ describe('item icons (§10.1)', () => {
         const t = tokenOf.get(c);
         expect(t, `${d.id}: colour ${c.toString(16)} is not a palette token`).toBeDefined();
         expect(t!.startsWith('life.') || t!.startsWith('cold.'), `${d.id}: ${t}`).toBe(false);
-        if (!LIGHT_CONCEPT.has(d.id)) expect(t!.startsWith('light.'), `${d.id}: ${t}`).toBe(false);
+        if (REPAIR_CONCEPT.has(d.id) && t!.startsWith('light.')) expect(t, `${d.id}: repair is gold only`).toBe('light.gold');
+        else if (!LIGHT_CONCEPT.has(d.id)) expect(t!.startsWith('light.'), `${d.id}: ${t}`).toBe(false);
       }
     }
   });

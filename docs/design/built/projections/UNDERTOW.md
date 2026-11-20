@@ -26,6 +26,10 @@ Move out of the wave's path. Good intentions do half damage and warm it; bad int
 
 - **Water:** it keeps to water cells, and moves at 1.5 times its speed in water.
 
+## Numbers
+
+- **Pickups on release:** heart 8%.
+
 ## Status
 
 Partial. The built part is the chase and the wave. Carrying, the surface rise and release are in [GAPS](../../not-built/projections/GAPS.md).

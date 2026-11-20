@@ -4,13 +4,14 @@
 import type { PalToken } from './palette';
 import { HUD_ICONS, type HudIcon } from './hud-icons';
 
-export type HeartKind = 'red' | 'blue' | 'stone' | 'blood' | 'star' | 'berserker';
+export type HeartKind = 'red' | 'blue' | 'black' | 'stone' | 'blood' | 'star' | 'berserker';
 
-export const HEART_KINDS: readonly HeartKind[] = ['red', 'blue', 'stone', 'blood', 'star', 'berserker'];
+export const HEART_KINDS: readonly HeartKind[] = ['red', 'blue', 'black', 'stone', 'blood', 'star', 'berserker'];
 
 export const HEART_HUD: Record<HeartKind, HudIcon> = {
   red: HUD_ICONS.heart,
   blue: HUD_ICONS.heartBlue,
+  black: HUD_ICONS.heartBlack,
   stone: HUD_ICONS.heartStone,
   blood: HUD_ICONS.heartBlood,
   star: HUD_ICONS.heartStar,
@@ -38,6 +39,7 @@ const RED_ROWS = [
 export const HEART_PICKUP: Record<HeartKind, HeartPickupArt> = {
   red: { rows: RED_ROWS, palette: { f: 'life.heart', h: 'bone.paper', d: 'life.dark' }, emissive: 'life.dark', lit: '' },
   blue: { rows: RED_ROWS, palette: { f: 'heart.blue.base', h: 'bone.paper', d: 'heart.blue.dark' }, emissive: 'heart.blue.dark', lit: '' },
+  black: { rows: RED_ROWS, palette: { f: 'heart.black.base', h: 'bone.paper', d: 'heart.black.dark' }, emissive: 'heart.black.dark', lit: '' },
   stone: {
     rows: [
       '.hh...ff.',
@@ -104,6 +106,7 @@ export const HEART_PICKUP: Record<HeartKind, HeartPickupArt> = {
 export const HEART_FX: Record<HeartKind, PalToken> = {
   red: 'life.heart',
   blue: 'heart.blue.base',
+  black: 'heart.black.base',
   stone: 'light.gold',
   blood: 'life.heart',
   star: 'light.gold',

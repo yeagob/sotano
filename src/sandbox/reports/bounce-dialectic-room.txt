@@ -1,0 +1,36 @@
+# bounce-dialectic-room — Dialectic with Bounce Back in a sealed room of stone walls: one shot makes at most four intentions (three splits) and settles
+floor 1 · seed 1 · room 13×7×5 · 300 ticks (5.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic bounceback · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic bounceback · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events fire 2 · intentBounce 6 · intentHit 7 · roomEnter 1
+
+t 300 (5.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic bounceback · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events intentBounce 8 · intentHit 15
+
+map t 300 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend
