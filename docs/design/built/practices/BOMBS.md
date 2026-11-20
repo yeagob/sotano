@@ -2,7 +2,7 @@
 
 Up: [all practices](README.md) · [built design](../../README.md)
 
-Four practices that change what your own bombs and missiles do: Pressure Valve (emotion), Controlled Burn (will), Bolt from the Blue (mind) and Serendipity (emotion). Issue #110, section 5. The bomb is "bomb" in the game (the vocabulary's word, [VOCABULARY](../../story/VOCABULARY.md)); a missile is a bomb launched by [Dr. Launcher](milagros/DR-LAUNCHER.md).
+Four practices that change what your own bombs and missiles do: Pressure Valve (emotion), Controlled Burn (will), Bolt from the Blue (mind) and Serendipity (emotion). Issue #110, section 5. The bomb is "bomb" in the game (the vocabulary's word, [VOCABULARY](../story/VOCABULARY.md)); a missile is a bomb launched by [Dr. Launcher](milagros/DR-LAUNCHER.md).
 
 All four are found in treasure rooms (weight 1). They have a positive outcome in every case: each one only adds, and none hurts you more than a plain bomb does.
 

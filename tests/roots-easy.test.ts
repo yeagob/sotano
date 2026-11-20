@@ -56,13 +56,13 @@ const shape = (f: FloorResult) => JSON.stringify({
 /** Recorded from the code before the easy layout existed: seed/mastery → hashes of floor 0, its band, the world, floors 1–9.
  *  Floors 1–9 re-recorded at GEN_VERSION 30 (the Wanderer's room, WANDERER.md), 31 (the Gardener's room), 32 (the Elder's and the Cartographer's rooms) and 33 (the Child's room, CHILD.md), 34 (the Witness's room on the ninth floor and the Boatman's nave, WITNESS.md and BOATMAN.md), 35 (the Star-reader's room on a Tree floor, STAR-READER.md). Checked unchanged at 36 (the Leaves are carved in the tree, which these floors do not hold). Band and world re-recorded at GEN_VERSION 37 (the
  *  Gardener's root and moss in the rock, and the ore of each zone, presences README D13): the rooms and floors 1 to 9 are unchanged.
- *  Shape and floors 1 to 9 re-recorded at GEN_VERSION 38 (Dowsing and Eye Contact join the treasure pool, so the practices drawn and reserved
- *  differ; band and world are unchanged). */
+ *  Re-recorded at GEN_VERSION 38 (the redrawn and new room layouts of #115 change the world and floors 1 to 9; the practices of the
+ *  November practices iteration join the pools, so the practices reserved on floor 0 differ too); the band is unchanged. */
 const BASELINE: Record<string, { shape: number; band: number; world: number; floors1to9: number }> = {
-  '1/0': { shape: 1728561805, band: 1591722983, world: 730638468, floors1to9: 815525720 },
-  '1/22': { shape: 151193860, band: 1081796789, world: 3744161958, floors1to9: 815525720 },
-  '48879/0': { shape: 2680632450, band: 2222142443, world: 3172422413, floors1to9: 1897831664 },
-  '48879/22': { shape: 2912074307, band: 4268051601, world: 434000359, floors1to9: 1897831664 },
+  '1/0': { shape: 4012203598, band: 1591722983, world: 2352658586, floors1to9: 3744571675 },
+  '1/22': { shape: 2484635001, band: 1081796789, world: 296907192, floors1to9: 3744571675 },
+  '48879/0': { shape: 2780444817, band: 2222142443, world: 3688475951, floors1to9: 265492485 },
+  '48879/22': { shape: 212237222, band: 4268051601, world: 1813437189, floors1to9: 265492485 },
 };
 
 // ── the walker's routes: door middles and room centres, in the frame each room is carved in ──
