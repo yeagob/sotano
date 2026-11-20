@@ -24,7 +24,7 @@ import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../rende
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
-import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
@@ -86,8 +86,13 @@ export function offerList(names: readonly string[]): string {
   return t('presence.offer.three', { a: names[0], b: names[1], c: names[2] });
 }
 
+/** The answers an offer card shows in place of a presence's own (the Rebirth Draught asks on the same card). */
+export interface OfferAnswers { accept: MessageKey; decline: MessageKey; controls: MessageKey }
+
 export class Hud {
   private hand = $('hand');
+  /** The held-item label above the hand (a flask or meal in hand; see `updateHeld`). */
+  private heldEl = $('held');
   private itemsBar = $('items');
   private debugEl = $('debug');
   private overlay = $('overlay');
@@ -143,7 +148,9 @@ export class Hud {
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
   private lastCard: CardSpec | null = null;
-  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText } | null = null;
+  private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText; answers?: OfferAnswers } | null = null;
+  /** The key of the held-item label last drawn (the flask in hand and its language), so it is not redrawn each frame. */
+  private heldKey = '';
   /** The choice card of a presence: a question with up to four answers, and a decline. `selected` is the answer the
    *  navigate action has reached; a tap or the confirm action picks one. */
   private lastPresenceChoice: { nameKey: MessageKey; questionKey: MessageKey; options: readonly MessageKey[]; selected: number; request?: PresenceRequestText } | null = null;
@@ -409,6 +416,7 @@ export class Hud {
       // slots past the base carry (Furoshiki) are drawn dimmer
       for (let i = 0; i < carry; i++) this.hand.appendChild(this.handSlot(g.player.hand[i], i === active, i >= BASE_STATS.carry));
     }
+    this.updateHeld(g.player.active);
 
     if (--this.debugTimer <= 0 && this.showDebug) {
       this.debugTimer = 15;
@@ -421,6 +429,37 @@ export class Hud {
     const now = performance.now();
     if (now > this.toastTimer) this.toastEl.classList.remove('show');
     this.sanctuary.frame(now);
+  }
+
+  /**
+   * The held label: while a flask or a meal is the active carried item, its name and what it does sit above the hand
+   * (sotano-popups: the persistent HUD status type). The recipe is never shown.
+   */
+  private updateHeld(c: Carried | undefined) {
+    const f = c && isFlask(c) ? c : null;
+    const key = f ? `${f.potion}:${f.iced ? 1 : 0}` : '';
+    if (key === this.heldKey) return;
+    this.heldKey = key;
+    if (!f) { this.heldEl.classList.remove('show'); this.heldEl.replaceChildren(); return; }
+    const def = POTIONS[f.potion];
+    const name = document.createElement('b');
+    name.textContent = t(def.name);
+    const effect = document.createElement('span');
+    effect.textContent = t(def.effect, { rooms: flaskRooms(f) });
+    this.heldEl.replaceChildren(name, effect);
+    this.heldEl.classList.add('show');
+  }
+
+  /** How long a flask lasts, in words: at once, for some sealed rooms, or until the next floor. */
+  private potionDuration(f: Flask): string {
+    const d = POTIONS[f.potion].duration;
+    return d.kind === 'instant' ? t('potion.duration.instant') : d.kind === 'floor' ? t('potion.duration.floor') : t('potion.duration.rooms', { rooms: flaskRooms(f) });
+  }
+
+  /** The "In hand" block at the top of the inventory when a flask or meal is the active item: name, effect, duration. */
+  private inHandBlock(f: Flask): string {
+    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(t(POTIONS[f.potion].name))}</b>` +
+      `<p>${esc(t(POTIONS[f.potion].effect, { rooms: flaskRooms(f) }))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
   }
 
   private slotUrl(m: number) {
@@ -604,11 +643,11 @@ export class Hud {
   /** The consent card of an offer. `questionKey` says what the presence gives back when it is not the plain question
    *  (the Trickster's trade, the Echo's key or bomb); the card always names the exact part offered. */
   /** The consent card of a presence: `carried` is the part it asks for, or undefined for a gift it asks for nothing (`gift`). */
-  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText) {
+  presenceOfferCard(nameKey: MessageKey, carried: Carried | readonly Carried[] | undefined, questionKey?: MessageKey, gift = false, request?: PresenceRequestText, answers?: OfferAnswers) {
     this.hideAchievement();
     this.lastBanner = null;
     this.lastCard = null;
-    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request };
+    this.lastPresenceOffer = { nameKey, carried, questionKey, gift, request, answers };
     this.bannerEl.dataset.offer = 'true';
     this.bannerEl.setAttribute('role', 'dialog');
     this.bannerEl.setAttribute('aria-modal', 'true');
@@ -637,8 +676,8 @@ export class Hud {
       `<div class="ribbon slate"><div><b id="presence-offer-title">${th(offer.nameKey)}</b>` +
       `<span class="offer-question" id="presence-offer-question">${th(offer.questionKey ?? 'presence.offer.question', { item, presence: t(offer.nameKey) })}</span>` +
       (offer.request ? `<span class="offer-request">${th(offer.request.ask)}<small>${th(offer.request.alt)}</small></span>` : '') +
-      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.gift ? 'presence.offer.take' : 'presence.offer.accept')}</button>` +
-      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.gift ? 'presence.offer.leave' : 'presence.offer.decline')}</button></div>` +
+      `<div class="offer-actions"><button type="button" class="offer-accept" data-act="presence-offer-accept">${th(offer.answers?.accept ?? (offer.gift ? 'presence.offer.take' : 'presence.offer.accept'))}</button>` +
+      `<button type="button" class="offer-decline" data-act="presence-offer-decline">${th(offer.answers?.decline ?? (offer.gift ? 'presence.offer.leave' : 'presence.offer.decline'))}</button></div>` +
       `<small class="offer-controls"></small></div></div>`;
     this.renderPresenceOfferControls();
     this.bannerEl.querySelector<HTMLButtonElement>('.offer-accept')?.focus({ preventScroll: true });
@@ -647,7 +686,7 @@ export class Hud {
   private renderPresenceOfferControls() {
     const el = this.bannerEl.querySelector<HTMLElement>('.offer-controls');
     if (!el) return;
-    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls';
+    const base = this.lastPresenceChoice ? 'presence.choice.controls' : this.lastPresenceOffer?.answers?.controls ?? (this.lastPresenceOffer?.gift ? 'presence.offer.take.controls' : 'presence.offer.controls');
     el.textContent = t(forDevice(base, activeDevice()), controlParams(activeDevice()));
   }
 
@@ -1160,7 +1199,9 @@ export class Hud {
       `<button class="tile${id === selId ? ' sel' : ''}" data-id="${id}" style="--c:${hex(c)}">` +
       `<img src="${iconDataUrl(icon, 3)}" alt=""><span class="lbl">${esc(name)}</span>${n > 1 ? `<i>×${n}</i>` : ''}</button>`;
     const grid = unique.map(d => tile(d.id, d.color, d, itemText(d).name, counts.get(d.id) ?? 1)).join('');
-    const handBlock = hand.length ? `<h3>${th('inv.carried')}</h3><div class="hand-row"></div>` : '';
+    const handBlock = hand.length ? `<h3>${th('inv.hand')}</h3><div class="hand-row"></div>` : '';
+    const top = chosen >= 0 ? hand[chosen] : undefined;
+    const inHand = top && isFlask(top) ? this.inHandBlock(top) : '';
 
     const detail = sel ? this.itemDetail(sel, g.inventory.items.filter(i => i.def.id === sel.id).map(i => i.stacks))
       : handSel ? this.carriedDetail(handSel)
@@ -1189,7 +1230,7 @@ export class Hud {
 
     this.invEl.innerHTML =
       `<div class="card slate"><header><h2>${th('inv.title')}</h2><small>${th('inv.held', { n: held.length })} · <span class="seed">${th('inv.seed', { seed: this.seedText })}</span> · ${th(forDevice('inv.close', activeDevice()))}</small><button type="button" class="close" data-act="inventory" aria-label="${th('inv.closeLabel')}">✕</button></header>` +
-      `<div class="cols"><section class="left">${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
+      `<div class="cols"><section class="left">${inHand}${handBlock}<div class="grid">${grid || '<p class="none">—</p>'}</div>${detail}` +
       `<h3>${th('inv.synergies')}</h3><ul class="syns">${synRows || `<li class="none">${th('inv.noSynergies')}</li>`}</ul>${covenant}</section>` +
       `<section class="right"><h3>${th('inv.state')}</h3><table>${stats}</table></section></div></div>`;
 

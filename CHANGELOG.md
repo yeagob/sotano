@@ -8,6 +8,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ### Added
 - Three practices for the hand, the allies and the tables: Furoshiki (two more things in your hand, the extra slots drawn dimmer), Kinship (a projection turned to your side heals a quarter heart, once per room visit) and Apprenticeship (every brew and cook heals a quarter heart; brews come out iced), in English and Spanish (#52).
+- The Rebirth Draught, a new potion: drinking it asks first, then starts the run again from the first floor and keeps every practice you hold, in English and Spanish (#52).
+- The flask or meal in your hand is named above the hand, with what it does; Tab shows its name, effect and duration at the top of the inventory (#52).
 - Waymark: a practice that is an extra life. A cairn on the path marks where you stand and the start of each new floor; when you would die, you return there with full hearts and everything you carry, and it is used up when it saves you (one copy, one extra life), in English and Spanish.
 - Nine practices of the drink family, which grow with every potion or meal you drink, up to six (Nourishment, up to eight), each with its own stacks in the inventory (#110).
 - New blocks: living root, cave moss, copper ore, tin ore, quicksilver ore and lead ore, in English and Spanish (#228).
