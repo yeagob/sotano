@@ -16,6 +16,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | drink | X |
 | bomb | RB |
 | polarity | LB |
+| dash | press | play | double-flick the left stick (push past 0.8, return under 0.3, push again the same way within 0.25 s) | `doubleFlick: left`; no button |
 | choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
 | star map | View (in play or on the screen): opens the star map tab; View again or B closes it. On the pause card View stays New run |

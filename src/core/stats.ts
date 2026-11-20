@@ -11,7 +11,7 @@ export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
   | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
-  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile';
+  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -48,6 +48,7 @@ export const BASE_STATS: Stats = {
   bombDamage: 40,  // damage to blocks at the centre of a bomb
   breath: 8,       // seconds you can stay with your head under water before you start drowning
   missile: 0,      // 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does not)
+  dash: 0,         // 1 = a double tap of a direction dashes 4.5 blocks that way (Irimi, DASH.md; 0 = no dash)
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -72,6 +73,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   bombDamage: [5, 500],
   breath: [1, 120],
   missile: [0, 1],
+  dash: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -102,6 +104,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   bombDamage: v => fmtNum(v, 0),
   breath: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   missile: v => (v < 1 ? t('unit.crushNone') : t('unit.missileOn')),
+  dash: v => (v < 1 ? t('unit.crushNone') : t('unit.dashOn')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

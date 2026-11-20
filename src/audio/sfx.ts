@@ -214,6 +214,8 @@ export const sfx3 = {
   rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
   /** The loaded intention switches (F): a short tick, rising to positive, falling to negative. */
   polarity: (negative: boolean) => tone(negative ? 360 : 620, 0.09, 'triangle', 0.14, negative ? 0.7 : 1.5),
+  /** Irimi's dash: a short rush of air that falls away, the body going into the movement. */
+  dash: () => { noise(0.18, 0.28, jitter(2400), 1.3); tone(jitter(700), 0.14, 'sine', 0.08, 0.6); },
   /** A missile leaves (Dr. Launcher): a rushing hiss that climbs, warmer when it carries love. */
   launch: (negative: boolean) => { noise(0.35, 0.3, jitter(negative ? 1400 : 2200), 1.1, master, 0.02); tone(jitter(negative ? 140 : 260), 0.3, 'sawtooth', 0.06, 2.2); },
   /** The love explosion: a soft swell and a rising chord instead of a boom. */

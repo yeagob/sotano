@@ -132,6 +132,10 @@ export const ES: Catalog = {
     'controls.launch.pad': 'Doble RT rápido',
     'controls.launch.touch': 'Doble toque rápido en la cuenta de luz',
     'controls.launch': 'lanzar una bomba como misil (con Dr. Launcher)',
+    'controls.dash.key': 'Doble toque en una dirección',
+    'controls.dash.pad': 'Doble empujón del stick izquierdo',
+    'controls.dash.touch': 'Desliza por el lado izquierdo de la pantalla',
+    'controls.dash': 'impulso de 4,5 bloques en esa dirección, intocable mientras avanzas (con Irimi)',
     'controls.doors.key': 'Puertas',
     'controls.doors': 'se abren al acercarte; las cerradas necesitan una llave',
     'controls.inventory.key': 'Tab',
@@ -757,6 +761,8 @@ export const ES: Catalog = {
     'teach.discharge.lesson': 'Tras el estrés, deja que el cuerpo lo saque: sacude las manos, pisa fuerte, camina rápido, suspira en voz alta. Los animales tiemblan tras el peligro y siguen. Siente los pies en el suelo hasta que la carga se asiente.',
     'teach.drlauncher.quote': 'Un límite es solo el borde de lo que has probado hasta ahora.',
     'teach.drlauncher.lesson': 'Cuando te oigas decir «imposible», pregúntate qué has probado de verdad. Prueba una forma más, un poco más lejos que la última vez. Cada intento mueve el borde.',
+    'teach.irimi.quote': 'Cuando algo viene hacia ti, no retrocedas. Entra en ello.',
+    'teach.irimi.lesson': 'Retroceder mantiene el movimiento delante de ti. Entrar en él, con un paso limpio, te pone al otro lado. Mira adonde quieres ir y ve allí en un solo movimiento.',
     'teach.dualprocess.quote': 'El primer pensamiento es rápido; el verdadero puede necesitar una segunda mirada.',
     'teach.dualprocess.lesson': 'Antes de una decisión importante, fíjate en tu primera respuesta rápida; luego para y revísala despacio. Pregúntate qué le dirías a un amigo. Usa la mente rápida para lo cotidiano y la lenta para lo que importa.',
     'teach.exposure.quote': 'El miedo al que te acercas despacio se hace más pequeño cada vez.',
@@ -855,6 +861,7 @@ export const ES: Catalog = {
     'stat.invuln': 'Recuperación',
     'stat.breath': 'Aliento',
     'stat.missile': 'Misiles',
+    'stat.dash': 'Impulso',
     'stat.bombRadius': 'Radio de bomba',
     'stat.bombDamage': 'Potencia de bomba',
     'unit.times': '×{n}',
@@ -874,6 +881,7 @@ export const ES: Catalog = {
     ...SKY_PARTS_ES.endgame,
     ...TEST_BENCH_ES,
     'unit.missileOn': 'doble toque',
+    'unit.dashOn': 'doble toque',
 
     // ── key caps: the label and verb of a control in the Roots' book (BOOK-DATA §5, 14 characters at most) ──
     'keycap.move.key': 'WASD',
@@ -1225,6 +1233,12 @@ export const ES: Catalog = {
         description: 'Lo que hacen los demás habla de ellos: dos de cada tres golpes de contacto resbalan sobre ti.',
         effect: 'Dos de cada tres golpes de contacto de las proyecciones no te hacen nada.',
         inspiredBy: 'Los cuatro acuerdos (don Miguel Ruiz): «no te tomes nada personalmente»',
+      },
+      irimi: {
+        name: 'Irimi',
+        description: 'Entrar, no retroceder. Cuando algo viene hacia ti, la salida no es hacia atrás: da el paso hacia el movimiento, rápido y limpio, y estarás en otro sitio antes de que llegue.',
+        effect: 'Doble toque en una dirección (doble empujón del stick, o desliza por el lado izquierdo) para impulsarte 4,5 bloques en esa dirección. Impulso hacia delante mirando hacia arriba para subir (hasta 3,5 bloques). Intocable mientras impulsas. Enfriamiento de 0,8 s; un impulso en el aire hasta que aterrizas. En el agua, el impulso cubre la mitad del camino.',
+        inspiredBy: 'Irimi, el paso de entrada del aikido',
       },
       drlauncher: {
         name: 'Dr. Launcher',

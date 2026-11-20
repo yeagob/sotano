@@ -25,6 +25,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | Practice | Path folder | Quality | Found in |
 |---|---|---|---|
 | [Dr. Launcher](milagros/DR-LAUNCHER.md) | Miracles | 3 | treasure rooms |
+| [Irimi](DASH.md) | Body (movement) | 3 | treasure rooms |
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |

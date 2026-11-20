@@ -8,9 +8,17 @@ import { onDeviceChange, type Input } from './input';
 import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
 import { intentPowerLevel } from '../combat/intents';
+import { swipeDir } from './gestures';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
+/** A swipe for the dash starts on the left side (up to the middle) and outside the stick's zone (DASH.md §2). */
+const SWIPE_SIDE = 0.5;
+
+/** Whether a touch at `x` may start a dash swipe: the left side of the screen, right of the stick's zone. */
+export function swipeStartsAt(x: number, width: number): boolean {
+  return x < width * SWIPE_SIDE && x >= width * STICK_SPLIT;
+}
 
 export function castPolarityToken(polarity: Polarity): PalToken {
   return polarity === 'positive' ? 'light.gold' : 'light.ember';
@@ -61,7 +69,7 @@ export function halfTurn(last: number | null, raw: number): { side: number | nul
   return { side, flip: last !== null && last !== side };
 }
 
-interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number }
+interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean }
 
 const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
 
@@ -134,8 +142,24 @@ export class TouchControls {
         this.tracks.set(tc.identifier, { kind: 'stick', x, y, ox: x, oy: y, t });
         this.stick.classList.add('on');
         this.placeStick(x, y, 0, 0);
-      } else this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t });
+      } else {
+        // a touch in the left band, outside the stick's zone, may become a swipe (the dash) until its window closes
+        this.tracks.set(tc.identifier, { kind: 'look', x, y, ox: x, oy: y, t, swipe: swipeStartsAt(x, innerWidth) });
+      }
     }
+  }
+
+  /**
+   * A look drag that may be a dash swipe. The look it already turned is taken back on recognition, so a
+   * swipe never turns the view; a drag that is not a swipe keeps the look it made.
+   */
+  private checkSwipe(tr: Track, x: number, y: number) {
+    const dir = swipeDir(x - tr.ox, y - tr.oy, (performance.now() - tr.t) / 1000);
+    if (dir) {
+      this.input.touchLook(-(x - tr.ox), -(y - tr.oy));
+      this.input.gesture('dash', dir, 'touch');
+      tr.swipe = false;
+    } else if (performance.now() - tr.t > 250) tr.swipe = false;
   }
 
   private moveTouches(e: TouchEvent) {
@@ -154,7 +178,10 @@ export class TouchControls {
         this.input.touchMove.x = dx / r * k;
         this.input.touchMove.y = -dy / r * k;
         this.placeStick(tr.ox, tr.oy, dx, dy);
-      } else if (tr.kind === 'look' || tr.action === 'cast') this.input.touchLook(x - tr.x, y - tr.y);
+      } else if (tr.kind === 'look' || tr.action === 'cast') {
+        this.input.touchLook(x - tr.x, y - tr.y);
+        if (tr.swipe) this.checkSwipe(tr, x, y);
+      }
       tr.x = x; tr.y = y;
     }
   }

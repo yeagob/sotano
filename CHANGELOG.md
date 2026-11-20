@@ -14,6 +14,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
 - The Leaves: a new room of the giant tree, with a ring of star stone under an open eye in its dome (#149).
 - The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
+- New practice: Irimi, a body practice that dashes 4.5 blocks in the direction you double-tap, flick or swipe. Untouchable while it lasts, one dash in the air, cooldown 0.8 s; looking up while you dash rises (#157).
 
 ### Changed
 - The Gardener now asks for a living root and a tuft of cave moss, one card each, instead of a flesh part (#228).

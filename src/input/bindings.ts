@@ -4,7 +4,7 @@ export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll' | 'meditation';
 
 export type Action =
-  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
+  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity' | 'dash'
   | 'previous' | 'next' | 'pick' | 'inventory' | 'map' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
 
 export const PAD = {
@@ -17,15 +17,18 @@ export type PadButton = typeof PAD[keyof typeof PAD];
  * How a touch reaches the action. `worldTap` is a short touch on the world (no drag): it aims at the
  * tapped block. `turn` is a half turn of the phone (the steering-wheel gesture). `none` means the
  * action has no touch button of its own: it is reached through another (the tab button opens the menu).
+ * `swipe` is a stroke across the left side of the screen (the dash, DASH.md): it has no button.
  */
-export type TouchControl = 'stick' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'none';
+export type TouchControl = 'stick' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
 
 export interface Binding {
   action: Action;
   kind: 'axis' | 'hold' | 'press';
   when: readonly Context[];
-  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; when?: readonly Context[] };
-  gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; when?: readonly Context[] };
+  /** `doubleTap: 'move'` is a double tap of the movement keys: no key of its own, so it never collides with `move`. */
+  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; doubleTap?: 'move'; when?: readonly Context[] };
+  /** `doubleFlick: 'left'` is a double flick of the left stick (no button). */
+  gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; doubleFlick?: 'left'; when?: readonly Context[] };
   touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
   refs: { minecraft: string; noita: string; isaac: string };
 }
@@ -62,6 +65,14 @@ export const BINDINGS: readonly Binding[] = [
     gamepad: { buttons: [PAD.RT] },
     touch: { control: 'button', icon: 'touchCast' },
     refs: { minecraft: 'left click / right trigger to attack and mine', noita: 'left click / right trigger fires the wand while held', isaac: 'holding a fire direction keeps shooting' },
+  },
+  {
+    // Irimi (DASH.md): a gesture of the movement, not a button. Read only in play, and only with the `dash` stat.
+    action: 'dash', kind: 'press', when: ['play'],
+    keyboard: { doubleTap: 'move' },
+    gamepad: { doubleFlick: 'left' },
+    touch: { control: 'swipe' },
+    refs: { minecraft: 'a double press of forward sprints; a double jump is the jump button pressed again', noita: 'the levitate key is held; a new meaning of the movement, not a new key', isaac: 'a practice changes what a direction does, never adds a button' },
   },
   {
     action: 'place', kind: 'press', when: ['play'],
@@ -212,7 +223,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'dash', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {
