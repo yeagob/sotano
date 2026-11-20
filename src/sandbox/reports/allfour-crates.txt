@@ -17,7 +17,7 @@ t 300 (5.0 s)
   elements —
   cubes bomb 1 · brick 77 · cavemoss 6 · crate 14 · deepstone 41 · dirt 24 · stone 41 · pickups 11
   rewards red-heart
-  events actorDamage:doubt<explosion 2 · actorDamage:doubt<item 5 · actorDamage:doubt<kick 3 · actorDeath:doubt 2 · blockBreak:brick 77 · blockBreak:cavemoss 6 · blockBreak:crate 16 · blockBreak:deepstone 41 · blockBreak:dirt 24 · blockBreak:stone 41 · blockDamage:brick 77 · blockDamage:cavemoss 6 · blockDamage:crate 27 · blockDamage:deepstone 41 · blockDamage:dirt 24 · blockDamage:obsidian 2 · blockDamage:stone 41 · blockLoot:brick 77 · blockLoot:cavemoss 6 · blockLoot:crate 16 · blockLoot:deepstone 41 · blockLoot:dirt 24 · blockLoot:stone 41 · bombBlast 2 · explosion 2 · kick:brick 2 · roomEnter 1 · touchCube:brick 2 · touchCube:crate 2
+  events actorDamage:doubt<explosion 2 · actorDamage:doubt<item 5 · actorDamage:doubt<kick 3 · actorDeath:doubt 2 · blockBreak:brick 77 · blockBreak:cavemoss 6 · blockBreak:crate 16 · blockBreak:deepstone 41 · blockBreak:dirt 24 · blockBreak:stone 41 · blockDamage:brick 77 · blockDamage:cavemoss 6 · blockDamage:crate 27 · blockDamage:deepstone 41 · blockDamage:dirt 24 · blockDamage:obsidian 2 · blockDamage:stone 41 · blockLoot:brick 77 · blockLoot:cavemoss 6 · blockLoot:crate 16 · blockLoot:deepstone 41 · blockLoot:dirt 24 · blockLoot:stone 41 · bombBlast 2 · burst 2 · explosion 2 · kick:brick 2 · roomEnter 1 · touchCube:brick 2 · touchCube:crate 2
 
 t 600 (10.0 s)
   player hp 24/24 · at 0.5 0.0 0.5 · hand [crate crate] · bombs 99 · keys 99
@@ -26,7 +26,7 @@ t 600 (10.0 s)
   elements —
   cubes brick 103 · cavemoss 6 · crate 14 · deepstone 41 · dirt 25 · stone 41 · pickups 12
   rewards red-heart
-  events blockBreak:brick 26 · blockBreak:dirt 1 · blockDamage:brick 26 · blockDamage:dirt 1 · blockDamage:obsidian 2 · blockLoot:brick 26 · blockLoot:dirt 1 · bombBlast 1 · explosion 2 · kick:brick 1 · touchCube:brick 1
+  events blockBreak:brick 26 · blockBreak:dirt 1 · blockDamage:brick 26 · blockDamage:dirt 1 · blockDamage:obsidian 2 · blockLoot:brick 26 · blockLoot:dirt 1 · bombBlast 1 · burst 1 · explosion 2 · kick:brick 1 · touchCube:brick 1
 
 map t 600 · h 0
   .............
