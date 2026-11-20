@@ -6,40 +6,40 @@ A room is five blocks high unless its template says otherwise, up to eight. Abov
 
 ## Height
 
-- **Five by default.** Twenty-eight templates keep the standard five blocks; the other fifty-eight raise it.
-- **Six to eight when the template says so.** Fifty-eight templates set a height: 18 of them six, 23 seven, 17 eight. Eight is the most a room may be.
+- **Five by default.** Twenty-nine templates keep the standard five blocks; the other hundred and twenty raise it.
+- **Six to eight when the template says so.** A hundred and twenty templates set a height: 45 of them six, 42 seven, 33 eight. Eight is the most a room may be.
 - **The band holds it.** A room's interior, plus the two brick layers over it, stays inside its sixteen-block band, with three rock layers between it and the next band.
 
 ## Ceilings
 
-A ceiling is the shape of the height above five. A non-flat ceiling needs a height above five. The build has eight shapes and 42 uses of them:
+A ceiling is the shape of the height above five. A non-flat ceiling needs a height above five. The build has eight shapes and 84 uses of them:
 
 | Ceiling | Uses | What it is |
 |---|---|---|
-| dome | 12 | a round roof over the whole room |
-| vault along X | 9 | a barrel vault running east to west |
-| vault along Z | 7 | a barrel vault running north to south |
-| cave | 5 | an uneven roof, higher in some places than in others |
+| dome | 20 | a round roof over the whole room |
+| vault along X | 20 | a barrel vault running east to west |
+| vault along Z | 16 | a barrel vault running north to south |
+| cave | 9 | an uneven roof, higher in some places than in others |
 | stepped | 3 | the roof climbs in steps across the room |
-| pointed along X | 3 | a pointed arch running east to west |
-| cross | 2 | two vaults crossing over the middle |
-| pointed along Z | 1 | a pointed arch running north to south |
+| pointed along X | 6 | a pointed arch running east to west |
+| cross | 8 | two vaults crossing over the middle |
+| pointed along Z | 2 | a pointed arch running north to south |
 
 Vaults and domes only shape the height above five; they never add more than the template's height allows. The shape is a rule of the room, not of the floor: a floor's rooms may have several ceilings.
 
 ## Pits and dips
 
-- **Pits.** A pit digs up to two blocks below the floor (the rule of the band). Sixteen templates have pits; the trenches the player builds across are pits of two. A pit is lined with brick when it is deep, so its walls hold.
+- **Pits.** A pit digs up to two blocks below the floor (the rule of the band). Twenty-three templates have pits; the trenches the player builds across are pits of two. A pit is lined with brick when it is deep, so its walls hold.
 - **Holes five deep.** A plateau of three bricks can stand over a two-deep pit. From the plateau's top the drop is five, and a pillar of the plateau is what the player jumps to. The long gallery and the chasm use this.
-- **Dips.** A dry hollow one block deep. Two templates have them (the dig field and the styx cavern).
+- **Dips.** A dry hollow one block deep. Eight templates have them (among them the dig field, the styx cavern, the mud flats and the potholes).
 
 ## Layers
 
-Thirteen templates carry layers: single blocks above the floor at heights from one to the template's height minus three, leaving two blocks of headroom over anything you can stand on. A layer stands on a block or spans between blocks; no block floats alone. A flame on a layer needs a terrace exactly that high under it: a brazier on a pillar. A layer may not block a door, the centre (below door height), the pedestal or the shaft.
+Twenty-five templates carry layers: single blocks above the floor at heights from one to the template's height minus three, leaving two blocks of headroom over anything you can stand on. A layer stands on a block or spans between blocks; no block floats alone. A flame on a layer needs a terrace exactly that high under it: a brazier on a pillar. A layer may not block a door, the centre (below door height), the pedestal or the shaft.
 
 ## Terraces
 
-Brick stacks one to four blocks high stand on the floor as stairs and tiers. Twenty-one templates use them. They are how the player climbs in a room without building, and how a room's vantage points are made.
+Brick stacks one to four blocks high stand on the floor as stairs and tiers. Forty-one templates use them. They are how the player climbs in a room without building, and how a room's vantage points are made.
 
 ## The rules the validator enforces
 
