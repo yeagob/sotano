@@ -11,7 +11,7 @@ export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
   | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
-  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch';
+  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -51,6 +51,7 @@ export const BASE_STATS: Stats = {
   dash: 0,         // 1 = a double tap of a direction dashes 4.5 blocks that way (Irimi, DASH.md; 0 = no dash)
   run: 0,          // 1 = holding the run control moves 45% faster (Fartlek; 0 = no running)
   crouch: 0,       // 1 = holding the crouch control makes the body a block shorter and slower (Child's Pose; 0 = no crouch)
+  lavaWalk: 0,     // 1 = lava never hurts you: you walk on its surface and wade through it at full speed
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -78,6 +79,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   dash: [0, 1],
   run: [0, 1],
   crouch: [0, 1],
+  lavaWalk: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -111,6 +113,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   dash: v => (v < 1 ? t('unit.crushNone') : t('unit.dashOn')),
   run: v => (v < 1 ? t('unit.crushNone') : t('unit.runOn')),
   crouch: v => (v < 1 ? t('unit.crushNone') : t('unit.crouchOn')),
+  lavaWalk: v => (v < 1 ? t('unit.crushNone') : t('unit.lavaWalkOn')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

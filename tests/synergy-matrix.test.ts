@@ -73,6 +73,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
   materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),
   elementEnter: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water', depth: 'head' }),
+  intentElement: () => ({ intent: intent(), x: 1, y: 1, z: 1, element: 'lava' }),
   elementLeave: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water' }),
 };
 
@@ -123,6 +124,7 @@ function sandbox() {
     invulnerable: () => {}, grantStatus: () => {},
     burst: () => {},
     chime: () => {},
+    convertFluid: () => 0,
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
   return { bus, stats, inv, calls };

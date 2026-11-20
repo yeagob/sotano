@@ -816,6 +816,10 @@ export const ES: Catalog = {
     'teach.kiai.lesson': 'Varias veces al día, para y haz una respiración plena y consciente: entra por la nariz, llega al vientre y sale despacio. Nota cómo te sientes antes y después. La respiración siempre va contigo.',
     'teach.kindling.quote': 'De las cenizas del dolor, un fuego pequeño puede darte calor.',
     'teach.kindling.lesson': 'Cuando algo te duela, pregúntate qué podría enseñarte o a qué podría moverte. Convierte parte del dolor en un gesto de cuidado, hacia ti o hacia otros. El calor que devuelves crece.',
+    'teach.solvecoagula.quote': 'Lo que se endureció puede ablandarse, y lo que se ablandó puede tomar forma.',
+    'teach.solvecoagula.lesson': 'Cuando una creencia se ha fraguado como piedra, o un sentimiento lo ha inundado todo, pregúntate qué haría falta para disolverlo o para darle forma. El cambio es el mismo movimiento hecho en las dos direcciones. Empieza por una cosa pequeña que puedas ablandar o dar forma hoy.',
+    'teach.posttraumatic.quote': 'Parte de lo que te hirió se vuelve suelo sobre el que puedes estar de pie.',
+    'teach.posttraumatic.lesson': 'Tras una experiencia dura, el crecimiento puede aparecer despacio: más cuidado por los demás, una idea más clara de lo que importa, una fuerza nueva que no esperabas. No tienes que agradecer el dolor para notarlo. Nombra una cosa que te enseñó y deja que se quede donde puedas apoyarte en ella.',
     'teach.lionsmane.quote': 'El techo que ves no siempre es el techo que tienes.',
     'teach.lionsmane.lesson': 'Cuida el cuerpo que te lleva: comida, descanso, movimiento. Una mente descansada y bien alimentada ve más lejos. Luego vuelve a mirar un límite que dabas por hecho.',
     'teach.manthinketh.quote': 'Según piensas, así te vuelves.',
@@ -949,6 +953,7 @@ export const ES: Catalog = {
     'stat.dash': 'Impulso',
     'stat.run': 'Correr',
     'stat.crouch': 'Agacharse',
+    'stat.lavaWalk': 'Caminar sobre lava',
     'stat.bombRadius': 'Radio de bomba',
     'stat.bombDamage': 'Potencia de bomba',
     'unit.times': '×{n}',
@@ -971,6 +976,7 @@ export const ES: Catalog = {
     'unit.dashOn': 'doble toque',
     'unit.runOn': 'mantén para correr',
     'unit.crouchOn': 'mantén para agacharte',
+    'unit.lavaWalkOn': 'sí',
 
     // ── key caps: the label and verb of a control in the Roots' book (BOOK-DATA §5, 14 characters at most) ──
     'keycap.move.key': 'WASD',
@@ -1476,6 +1482,19 @@ export const ES: Catalog = {
         description: 'Respirar con conciencia es lo más importante que puedes hacer. Reúne el aire, sostenlo y suéltalo de golpe: nada en su camino sigue en pie.',
         effect: 'Sustituye tus intenciones por un rayo cargado: mantén pulsado para cargar (2,7 ÷ cadencia segundos, entre 0,35 y 2) y suelta para un rayo de 1 segundo con 10 tics. Cada tic hace 2× minado al bloque en su camino (lo atraviesa a medida que los rompe) y 1× daño a cada proyección que toca, y destruye sus proyectiles.',
         inspiredBy: 'Santiago (Game Glover), sobre respirar con conciencia',
+      },
+      solvecoagula: {
+        name: 'Solve et coagula',
+        description: 'Los antiguos alquimistas aflojaban lo que se había endurecido y endurecían lo que se había aflojado: la misma obra, hecha en las dos direcciones. Donde tu intención toca agua o lava, la obra puede correr.',
+        effect: 'Una intención positiva que toca lava convierte la lava conectada (hasta 256 casillas) en agua. Una negativa convierte el agua conectada en lava, nunca el agua en la que estás.',
+        inspiredBy: 'La fórmula alquímica solve et coagula (disolver y coagular), una vieja imagen de la transformación',
+        messages: { refused: 'Aquí no: la lava te alcanzaría.' },
+      },
+      posttraumatic: {
+        name: 'Crecimiento postraumático',
+        description: 'Hay quien sale de un mal momento con más de lo que tenía antes: un cuidado más hondo por los demás, una idea más clara de lo que importa, una fuerza que no sabía que tenía. La herida queda, y puede volverse suelo.',
+        effect: 'La lava nunca te daña: caminas sobre su superficie y la atraviesas a toda velocidad. Tus intenciones se apagan igual en ella.',
+        inspiredBy: 'El crecimiento postraumático de Tedeschi y Calhoun (1996)',
       },
       lionsmane: {
         name: 'Melena de león',

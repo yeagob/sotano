@@ -80,6 +80,8 @@ import breakingbread from './breakingbread';
 import harahachibu from './harahachibu';
 import grace from './grace';
 import nourishment from './nourishment';
+import solvecoagula from './solvecoagula';
+import posttraumatic from './posttraumatic';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -100,6 +102,7 @@ export const ITEMS: readonly ItemDef[] = [
   furoshiki, kinship, apprenticeship,
   kairos,
   luciddream,
+  solvecoagula, posttraumatic,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

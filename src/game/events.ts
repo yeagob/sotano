@@ -127,6 +127,10 @@ export interface GameEvents {
   factionChange: { target: ActorId; targetKind: ActorKind; def: string; from: Faction; to: Faction; source: string };
   /** An actor is gone (react only). `drops` can be changed (projections drop them). */
   actorDeath: { target: ActorId; targetKind: ActorKind; def: string; x: number; y: number; z: number; drops: PickupKind[] };
+  /** An intention entered a water or lava cell, once per entry (not again while it stays in that element). Hooks may change
+   *  the world (`ItemApi.convertFluid`), never the intention: the element is read again after the hooks, so lava that a hook
+   *  made where the intention is puts it out, and water that a hook made does not. */
+  intentElement: { intent: IntentSpec; x: number; y: number; z: number; element: 'water' | 'lava' };
 
   // ── projections ──
   /** A projection is about to materialise. Every number here can be changed (`contactDamage` in points). */

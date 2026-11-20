@@ -12,6 +12,7 @@ The folder holds the practices whose first path tag is emotion. Practices that a
 |---|---|---|---|
 | [Exposure](EXPOSURE.md) | 2 | Body | treasure rooms |
 | [Symbolic Act](SYMBOLIC-ACT.md) | 3 | none | treasure rooms |
+| [Post-Traumatic Growth](POST-TRAUMATIC-GROWTH.md) | 2 | Fire | treasure rooms |
 | [Gratitude Journal](GRATITUDE-JOURNAL.md) | 1 | none | treasure rooms |
 | [Radical Acceptance](RADICAL-ACCEPTANCE.md) | 2 | none | treasure rooms |
 | [Forgiveness](FORGIVENESS.md) | 3 | none | treasure rooms |
