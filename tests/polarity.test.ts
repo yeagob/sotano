@@ -48,6 +48,17 @@ describe('warmth', () => {
     expect(isWarm(w)).toBe(true);
   });
 
+  it('a boss turns only after good intentions deal its whole health in raw damage, as destroying it would', () => {
+    const boss = { hp: 140, maxHp: 140, boss: true };
+    let warmth = 0, hits = 0;
+    while (!isWarm(warmth)) {
+      warmth = resolveHit(base({ ...boss, warmth }), intentDamage('positive', 10)).warmth;
+      hits++;
+    }
+    expect(hits).toBe(14);
+    expect(resolveHit(base({ ...boss, warmth: 0 }), intentDamage('positive', 10)).convert).toBe(false);
+  });
+
   it('warms a target once per stroke: a repeat tick does not move warmth', () => {
     const r = resolveHit(base({ warm: false, warmth: 0.4 }), 1.75);
     expect(r.warmth).toBe(0.4);

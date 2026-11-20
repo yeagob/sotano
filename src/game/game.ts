@@ -2151,7 +2151,7 @@ export class Game {
       if (e.alive) this.splitOnHit(e);
       return true;
     }
-    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth }, amount);
+    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth, boss: e.spec.kind === 'boss' }, amount);
     e.warmth = r.warmth;
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
     if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
@@ -3030,6 +3030,13 @@ export class Game {
     }
     this.hearPresences(x, z, 'positive');
     this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'positive', source, acted: new Set() });
+    const LOVE_HEAL_HALF_HEARTS = 2;
+    const body = this.player.body;
+    if (Math.hypot(body.x - x, body.y + body.h / 2 - y, body.z - z) <= r) {
+      this.heal(LOVE_HEAL_HALF_HEARTS * HALF_HEART, 'bomb');
+      this.particles.burst(body.x, body.y + 1.2, body.z, pal(HEART_FX.red), 24, 3, 0.07);
+    }
+    this.particles.burst(x, y, z, pal(HEART_FX.red), 18, 3, 0.08);
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -3110,8 +3117,9 @@ export class Game {
   /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
    *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
    *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
-  private convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
+  private convertFluid(fx: number, fy: number, fz: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
     if (this.fluidFrame === this.simFrame) return 0;
+    const x = Math.floor(fx), y = Math.floor(fy), z = Math.floor(fz);
     const kindFrom = from === 'water' ? EL_WATER : EL_LAVA, kindTo = to === 'water' ? EL_WATER : EL_LAVA;
     const w = this.world;
     if (elemKind(w.elemAt(x, y, z)) !== kindFrom) return 0;
@@ -3274,7 +3282,7 @@ export class Game {
     document.body.classList.add('kairos-stop');
     sfxKairos.start();
     this.kairosBeatT = 0;
-    this.inventory.say('kairos', 'started');
+    this.inventory.say('kairos', 'started', controlParams(activeDevice()));
     return true;
   }
 

@@ -1239,11 +1239,11 @@ export const ES: Catalog = {
       kairos: {
         name: 'Kairós',
         description: 'El momento oportuno no se cuenta en el reloj. Cuando llega, detienes el reloj y eliges adónde caen tus intenciones.',
-        effect: 'Despeja 3 salas para cargarlo (empieza cargado). Pulsa para detener el tiempo; marca hasta cinco lugares; suelta para disparar cinco intenciones a la vez, una en cada marca, perforantes.',
+        effect: 'Despeja 3 salas para cargarlo (empieza cargado). Pulsa {miracle} para detener el tiempo; marca hasta cinco lugares con {cast}; pulsa {miracle} de nuevo para disparar cinco intenciones a la vez, una en cada marca, perforantes.',
         inspiredBy: 'Kairós, la idea griega del momento oportuno',
         messages: {
           notReady: 'El momento tiene {n} de {max} cargas. Despeja salas para llenarlo.',
-          started: 'El tiempo se detiene. Lanza para marcar lugares; pulsa de nuevo para soltar.',
+          started: 'El tiempo se detiene. {cast} marca lugares; pulsa {miracle} de nuevo para soltar.',
           marksFull: 'Cinco marcas es todo lo que el momento sostiene.',
           released: 'El tiempo vuelve a correr: cinco intenciones, una en cada marca.',
         },
