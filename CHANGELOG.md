@@ -10,7 +10,10 @@ Changes to the tutorial and to the book are listed without their content, so not
 - In a sitting, Add time lengthens it in steps of 30 seconds, 1 minute, 5 minutes and then 10 minutes, up to one hour. The part you are in keeps its end (#160).
 - A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
 
-### Changed
+## 0.2.7-alpha.f1 · 2026-11-20
+
+### Fixed
+- The progress panel shows only the percentage of each part, without the words after it.
 
 ## 0.2.7-alpha · 2026-11-20
 
