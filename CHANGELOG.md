@@ -18,6 +18,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - A white bomb (good intentions) heals you, one heart, when you stand in its range, and its blast shows heart particles (#264).
 - Kairos names the control to press to stop time and to release, on each device (#265).
 - A boss turns to your side only after good intentions deal as much damage as it takes to destroy it.
+- The toxic heart shows its aura as motes around you and a pulse of its two-block zone each tick; its message is shorter, and messages stay on screen as long as their length needs.
 
 ## 0.2.7-alpha · 2026-11-20
 

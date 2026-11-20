@@ -1827,12 +1827,16 @@ export class Game {
         const a = fx.random() * Math.PI * 2;
         // three soot motes to one paper glint: the heart's own look, and the glint reads on dark floors
         const tone = this.toxicMotes++ % 4 === 3 ? 'bone.paper' : 'heart.black.base';
-        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, b.y + 0.15, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.25, 0.06, true);
+        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, cy, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.5, 0.09, true);
       }
     }
     this.toxicT += dt;
     if (this.toxicT < TOXIC_PERIOD) return;
     this.toxicT = Math.min(this.toxicT - TOXIC_PERIOD, TOXIC_PERIOD);
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2;
+      this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, cy, cz + Math.sin(a) * TOXIC_RADIUS, pal(k % 4 === 0 ? 'bone.paper' : 'heart.black.base'), 1, 1.2, 0.08, true);
+    }
     let hit = 0;
     for (const a of [...this.actors.all()]) {
       if (!toxicHits(a as unknown as ToxicCandidate, cx, cy, cz)) continue;

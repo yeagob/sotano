@@ -214,7 +214,7 @@ export const ES: Catalog = {
     'toast.roomClear': 'Sala despejada',
     'heart.blue': 'Corazón azul: un corazón más, que se pierde para siempre al gastarse.',
     'heart.blueLost': 'El corazón azul se ha ido.',
-    'heart.black': 'Corazón tóxico: un corazón más, que se pierde para siempre al gastarse. Mientras lo tengas, daña a las proyecciones a dos bloques de ti.',
+    'heart.black':'Corazón tóxico: quema a las proyecciones hostiles a dos bloques.',
     'heart.blackLost': 'El corazón tóxico se ha ido.',
     'heart.stone': 'Corazón de piedra: mientras recibe los golpes, cada golpe se reduce a la mitad.',
     'heart.stoneLost': 'El corazón de piedra se desmorona. Los golpes vuelven a entrar enteros.',
