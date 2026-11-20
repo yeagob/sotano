@@ -88,6 +88,13 @@ describe('Game.convertFluid', () => {
     expect(elemKind(cells.get(key(10, 0, 0))!)).toBe(EL_LAVA);
   });
 
+  it('reads an intention position between cells as the cell it is in', () => {
+    const { g, cells, fill } = rig();
+    fill(EL_LAVA, 0, 2, 0, 0, 2);
+    expect(g.convertFluid(1.7, 0.4, 1.2, 'lava', 'water', 256, 'solvecoagula')).toBe(9);
+    expect(elemKind(cells.get(key(0, 0, 0))!)).toBe(EL_WATER);
+  });
+
   it('stops at the cap: a 20 by 20 pool gives 256 cells, nearest the touched one first', () => {
     const { g, cells, fill } = rig();
     fill(EL_LAVA, 0, 19, 0, 0, 19);    // 400 cells

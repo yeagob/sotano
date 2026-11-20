@@ -3110,8 +3110,9 @@ export class Game {
   /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
    *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
    *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
-  private convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
+  private convertFluid(fx: number, fy: number, fz: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
     if (this.fluidFrame === this.simFrame) return 0;
+    const x = Math.floor(fx), y = Math.floor(fy), z = Math.floor(fz);
     const kindFrom = from === 'water' ? EL_WATER : EL_LAVA, kindTo = to === 'water' ? EL_WATER : EL_LAVA;
     const w = this.world;
     if (elemKind(w.elemAt(x, y, z)) !== kindFrom) return 0;
