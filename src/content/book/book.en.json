@@ -112,7 +112,7 @@
         },
         "roots-mend": {
           "north": { "id": "3-mend-n", "layout": "lesson", "title": "Warm a boss", "text": "Bosses can be warmed too. Fill one with good intentions until it turns to your side: that also overcomes it.", "image": "lesson/warm-boss", "key": "polarity" },
-          "south": { "id": "3-mend-s", "layout": "lesson", "title": "White bombs", "text": "Drop a bomb with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-bomb", "key": "bomb" }
+          "south": { "id": "3-mend-s", "layout": "lesson", "title": "White bombs", "text": "Drop a bomb with good intentions: it bursts in light, mends blocks, turns lava to water and heals you nearby.", "image": "lesson/white-bomb", "key": "bomb" }
         },
         "roots-pit": {
           "north": { "id": "3-pit-n", "layout": "lesson", "title": "Above and below", "text": "Above the great tree, the sky has five floors, each with a guardian and a herd. Here they meet the creatures below.", "image": "lesson/sky" },

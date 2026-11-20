@@ -15,6 +15,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ### Fixed
 - The progress panel shows only the percentage of each part, without the words after it.
 - Solve et Coagula converts water and lava again: the intention's position is read as the cell it is in (#256).
+- A white bomb (good intentions) heals you, one heart, when you stand in its range, and its blast shows heart particles (#264).
 
 ## 0.2.7-alpha · 2026-11-20
 

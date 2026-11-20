@@ -3030,6 +3030,13 @@ export class Game {
     }
     this.hearPresences(x, z, 'positive');
     this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'positive', source, acted: new Set() });
+    const LOVE_HEAL_HALF_HEARTS = 2;
+    const body = this.player.body;
+    if (Math.hypot(body.x - x, body.y + body.h / 2 - y, body.z - z) <= r) {
+      this.heal(LOVE_HEAL_HALF_HEARTS * HALF_HEART, 'bomb');
+      this.particles.burst(body.x, body.y + 1.2, body.z, pal(HEART_FX.red), 24, 3, 0.07);
+    }
+    this.particles.burst(x, y, z, pal(HEART_FX.red), 18, 3, 0.08);
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
