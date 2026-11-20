@@ -58,6 +58,7 @@ import reframing from './reframing';
 import waymark from './waymark';
 import pressurevalve from './pressurevalve';
 import controlledburn from './controlledburn';
+import kairos from './kairos';
 import boltfromtheblue from './boltfromtheblue';
 import serendipity from './serendipity';
 import tummo from './tummo';
@@ -88,6 +89,7 @@ export const ITEMS: readonly ItemDef[] = [
   pressurevalve, controlledburn, boltfromtheblue, serendipity,
   tummo, firewalking, prometheus,
   teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
+  kairos,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

@@ -12,6 +12,7 @@ The desktop scheme. Part of [Input](README.md).
 | cast (hold) | left click |
 | launch a missile (with Dr. Launcher) | a quick double click of the left button (within 0.3 s; counts only while the pointer is locked) |
 | place | right click (throws the block if there is nowhere to place it) |
+| miracle (Kairos, when charged: stops time; press again to release the marks) | V |
 | throw | Q |
 | drink | G |
 | bomb | E |

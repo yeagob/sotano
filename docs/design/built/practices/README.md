@@ -29,6 +29,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Box Breathing](body/BOX-BREATHING.md) | Body | 2 | treasure rooms, boss rewards |
 | [Dialectic](mind/DIALECTIC.md) | Mind | 3 | treasure rooms |
 | [Discharge](body/DISCHARGE.md) | Body | 2 | treasure rooms |
+| [Kairos](MIRACLES.md#kairos) | Will | 4 | vault rooms, boss rewards |
 | [Stacking practices](STACKING.md) | Potion and meal | 1–2 | treasure rooms (nine: Tea Ceremony, Herbal Lore, Distillation, Spagyric Art, Mindful Eating, Breaking Bread, Hara Hachi Bu, Grace Before Meals, Nourishment) |
 | [Flow](body/FLOW.md) | Body | 2 | treasure rooms, boss rewards |
 | [Grounding](body/GROUNDING.md) | Body | 1 | treasure rooms |

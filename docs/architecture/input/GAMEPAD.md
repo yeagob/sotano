@@ -14,6 +14,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | place | LT |
 | throw | B |
 | drink | X |
+| miracle (Kairos) | D-pad Up |
 | bomb | RB |
 | polarity | LB |
 | choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |

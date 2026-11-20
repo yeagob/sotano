@@ -5,7 +5,7 @@ export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'tol
 
 export type Action =
   | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'previous' | 'next' | 'pick' | 'inventory' | 'map' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'map' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice' | 'miracle';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -205,6 +205,15 @@ export const BINDINGS: readonly Binding[] = [
     touch: { control: 'menuButton' },
     refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'subtitles are a switch in the options', isaac: 'one switch, one button: each toggle has its own' },
   },
+  {
+    // Kairos (#123): stops time when full, and releases the marks. Its own button on every device; a touch button
+    // only while the practice is held. D-pad Up is free in play (navigate is live in the menus only).
+    action: 'miracle', kind: 'press', when: ['play'],
+    keyboard: { keys: ['KeyV'] },
+    gamepad: { buttons: [PAD.UP] },
+    touch: { control: 'button', icon: 'touchMiracle' },
+    refs: { minecraft: 'an item you hold up is used by its own button, never the attack', noita: 'a wand\'s special spell has its own key, held apart from the fire', isaac: 'the active item on its own button (Space / right trigger); one button per active' },
+  },
 ];
 
 export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as Record<Action, Binding>;
@@ -212,7 +221,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'miracle', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {

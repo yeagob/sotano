@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
-import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, spatial, unlockAudio } from '../audio/sfx';
+import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
@@ -67,6 +67,7 @@ import type { HostApi, ItemDef } from '../items/types';
 import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
+import { Kairos, KAIROS_CHARGES, KAIROS_HOMING, KAIROS_INTENTIONS, KAIROS_REACH, dealMarks, type KairosMark } from './kairos';
 import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
@@ -566,6 +567,7 @@ export class Game {
    * Everything structural (all floor plans, rock themes, pedestal items) is decided here.
    */
   newRun(seed?: string | number) {
+    this.cancelKairos();
     let root: number | null = typeof seed === 'number' ? seed >>> 0 : typeof seed === 'string' ? decodeSeed(seed) : null;
     const invalid = typeof seed === 'string' && root === null;
     root ??= randomRoot();
@@ -579,6 +581,7 @@ export class Game {
    * unchanged. Cosmetic randomness is seeded too, so the same scenario stepped the same way replays.
    */
   newSandbox(s: Scenario) {
+    this.cancelKairos();
     this.begin((s.seed ?? 1) >>> 0, s);
   }
 
@@ -3106,6 +3109,118 @@ export class Game {
 
   // ───────────────────────── player actions ─────────────────────────
 
+  // Kairos (#123): the practice that stops time. Its rules are in game/kairos.ts; the stop is one branch in
+  // simulate (stopTime). Docs: docs/design/built/practices/MIRACLES.md (Kairos).
+  private kairos = new Kairos();
+  private kairosBeatT = 0;
+
+  /** The charge of the held Kairos (0 when it is not held). */
+  kairosCharge(): number { return this.inventory.memoryFor('kairos').charge ?? 0; }
+
+  /** A full charge stops time; a short one says how much is charged. Returns true when the press was used. */
+  private startKairos(): boolean {
+    if (!this.inventory.has('kairos')) return false;
+    const charge = this.kairosCharge();
+    if (charge < KAIROS_CHARGES) {
+      sfx.denied();
+      this.inventory.say('kairos', 'notReady', { n: charge, max: KAIROS_CHARGES });
+      return true;
+    }
+    this.kairos.start();
+    document.body.classList.add('kairos-stop');
+    sfxKairos.start();
+    this.kairosBeatT = 0;
+    this.inventory.say('kairos', 'started');
+    return true;
+  }
+
+  /** The stopped frame: the view turns, a cast press marks, the miracle press or the countdown releases. */
+  private stopTime(dt: number) {
+    const inp = this.input;
+    this.player.look(inp);
+    if (inp.hit('cast')) this.markKairos();
+    this.kairosBeatT -= dt;
+    if (this.kairosBeatT <= 0) { sfxKairos.beat(); this.kairosBeatT = 1; }
+    if (inp.hit('miracle') || this.kairos.tick(dt)) this.releaseKairos();
+  }
+
+  /** Marks the point under the crosshair: a projection the ray meets first, else the block, else the far end of the ray. */
+  private markKairos() {
+    const p = this.player, e = p.eye, d = p.forward;
+    const hit = raycastVoxels((x, y, z) => this.solid(x, y, z), e.x, e.y, e.z, d.x, d.y, d.z, KAIROS_REACH);
+    const limit = hit ? hit.t : KAIROS_REACH;
+    let pick: { id: number; x: number; y: number; z: number; t: number } | null = null;
+    for (const en of this.enemies.list) {
+      if (!en.alive || en.spawning > 0) continue;
+      const b = en.body, cy = b.y + b.h / 2;
+      const vx = b.x - e.x, vy = cy - e.y, vz = b.z - e.z;
+      const t = vx * d.x + vy * d.y + vz * d.z;
+      if (t < 0 || t > limit) continue;
+      const r = b.hw + 0.35;
+      if (vx * vx + vy * vy + vz * vz - t * t > r * r) continue;
+      if (!pick || t < pick.t) pick = { id: en.id, x: b.x, y: cy, z: b.z, t };
+    }
+    let mark: KairosMark;
+    if (pick) mark = { kind: 'projection', x: pick.x, y: pick.y, z: pick.z, actor: pick.id };
+    else if (hit) mark = { kind: 'block', x: hit.x + 0.5, y: hit.y + 0.5, z: hit.z + 0.5 };
+    else mark = { kind: 'block', x: e.x + d.x * KAIROS_REACH, y: e.y + d.y * KAIROS_REACH, z: e.z + d.z * KAIROS_REACH };
+    const r = this.kairos.mark(mark);
+    if (r === 'full') { sfx.denied(); this.inventory.say('kairos', 'marksFull'); return; }
+    sfxKairos.mark();
+  }
+
+  /** Where a mark is now: a projection mark follows its projection (it stood still while time was stopped). */
+  private kairosPoint(m: KairosMark): { x: number; y: number; z: number } {
+    const en = m.actor !== undefined ? this.enemies.get(m.actor) : undefined;
+    return en ? { x: en.body.x, y: en.body.y + en.body.h / 2, z: en.body.z } : m;
+  }
+
+  /** Ends the stop and fires one intention per mark (round robin), piercing +1, from the eye as a shot does.
+   *  With no marks all of them go to the crosshair point. The charge empties. */
+  private releaseKairos() {
+    const marks = this.kairos.end();
+    document.body.classList.remove('kairos-stop');
+    const p = this.player, fwd = p.forward;
+    const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
+    const from = p.eye.clone().addScaledVector(right, 0.18).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(fwd, 0.3);
+    for (const m of dealMarks(KAIROS_INTENTIONS, marks)) {
+      const spec = intentFromStats(this.stats.all, this.polarity);
+      spec.pierce += 1;
+      if (m?.kind === 'projection') { spec.homingTarget = 'projection'; spec.homing = Math.max(spec.homing, KAIROS_HOMING); }
+      const ev = this.bus.emit('fire', { intent: spec });
+      if (ev.cancelled) continue;
+      const to = m ? this.kairosPoint(m) : null;
+      const dir = to ? new THREE.Vector3(to.x - from.x, to.y - from.y, to.z - from.z) : fwd.clone();
+      if (dir.lengthSq() < 1e-6) dir.copy(fwd);
+      this.intents.fire(ev.intent, from, dir.normalize(), new THREE.Vector3());
+    }
+    this.inventory.memoryFor('kairos').charge = 0;
+    this.hands.fire();
+    sfxKairos.release();
+    this.inventory.say('kairos', 'released');
+  }
+
+  /** Ends a stop that cannot go on (a death, a room change, a screen): the intentions are not fired and the charge stays. */
+  private cancelKairos() {
+    if (!this.kairos.stopped) return;
+    this.kairos.end();
+    document.body.classList.remove('kairos-stop');
+  }
+
+  /** The Kairos HUD: the charge pips while the practice is held, the marks while time is stopped. */
+  private kairosHud() {
+    const marks: { x: number; y: number; n: number; on: boolean }[] = [];
+    if (this.kairos.stopped) {
+      const r = this.renderer.domElement.getBoundingClientRect();
+      this.kairos.marks.forEach((m, i) => {
+        const v = new THREE.Vector3(m.x, m.y, m.z).project(this.camera);
+        const on = v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1;
+        marks.push({ x: r.left + (v.x * 0.5 + 0.5) * r.width, y: r.top + (-v.y * 0.5 + 0.5) * r.height, n: i + 1, on });
+      });
+    }
+    this.hud.kairos({ held: this.inventory.has('kairos'), charge: this.kairosCharge(), max: KAIROS_CHARGES, stopped: this.kairos.stopped, marks });
+  }
+
   private fire() {
     const p = this.player;
     if (!this.input.held('cast') || p.fireCooldown > 0 || this.hands.holding || p.muteT > 0) return;
@@ -4660,6 +4775,8 @@ export class Game {
     }
     if (ctx === 'meditation') this.hud.sanctuary.input(inp, performance.now());
     this.touch.update(this, ctx);
+    // time stays stopped only while the game is running or paused; any other screen ends it, nothing fired
+    if (this.kairos.stopped && ((ctx !== 'play' && ctx !== 'paused') || this.transitioning || this.player.dead)) this.cancelKairos();
     this.showAchievement(ctx);
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
@@ -4715,11 +4832,16 @@ export class Game {
     this.fpsAcc += dt; this.fpsN++;
     if (this.fpsAcc > 0.5) { this.fps = Math.round(this.fpsN / this.fpsAcc); this.fpsAcc = 0; this.fpsN = 0; }
     if (this.below) this.syncBossBar();
+    this.kairosHud();
     this.hud.update(this, running || this.transitioning, dt);
     inp.endFrame();
   }
 
   private simulate(dt: number) {
+    // Kairos (#123): while time is stopped this is the only branch of the world: the view turns, the marks
+    // and the countdown run; the body, intentions, projections, elements, doors and timers do not
+    if (this.kairos.stopped) { this.stopTime(dt); return; }
+    if (this.input.hit('miracle') && this.startKairos()) return;
     this.time += dt;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
     const inp = this.input;
