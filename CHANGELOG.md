@@ -30,6 +30,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - 62 new room layouts: arenas with low rings and benches, galleries and towers to fight from, piers and broken bridges over dry docks, canals, flooded cloisters, canal locks you open by breaking a plug, lava lakes and forges, a pool that turns lava to stone when you break its wall, crypts and catacombs in the deep circles, four new challenge rooms, two starts, three treasure rooms, two vaults and two bosses' halls. Every band of floors has at least twice as many layouts as before (#115).
 
 ### Changed
+- Remember Breathing's beam is a shot first: the practices that change your shot change the beam. Dual Process and Triangulation fan it into two or three beams, Rule of Three and Spiral Growth give it strands of light, Eye Contact and Dowsing steer its rays, and Bilateral Stimulation fires one beam from each hand in turn. The Chorus and Choir synergies are removed, since the shot now reaches the beam.
 - Seed codes move to v38: the same code lays out its rooms with the new and redrawn layouts (#115), and the new practices join the treasure, vault and boss draws, so its pedestals hold other practices (#110, #122, #123, #157, #52).
 - Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
 - The Gardener now asks for a living root and a tuft of cave moss, one card each, instead of a flesh part (#228).

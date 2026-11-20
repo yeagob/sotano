@@ -1510,7 +1510,7 @@ export const ES: Catalog = {
       kiai: {
         name: 'Recuerda respirar',
         description: 'Respirar con conciencia es lo más importante que puedes hacer. Reúne el aire, sostenlo y suéltalo de golpe: nada en su camino sigue en pie.',
-        effect: 'Sustituye tus intenciones por un rayo cargado: mantén pulsado para cargar (2,7 ÷ cadencia segundos, entre 0,35 y 2) y suelta para un rayo de 1 segundo con 10 tics. Cada tic hace 2× minado al bloque en su camino (lo atraviesa a medida que los rompe) y 1× daño a cada proyección que toca, y destruye sus proyectiles.',
+        effect: 'Sustituye tus intenciones por un rayo cargado: mantén pulsado para cargar (2,7 ÷ cadencia segundos, entre 0,35 y 2) y suelta para un rayo de 1 segundo con 10 tics. Cada tic hace 2× minado al bloque en su camino (lo atraviesa a medida que los rompe) y 1× daño a cada proyección que toca, y destruye sus proyectiles. Las prácticas que cambian tu disparo cambian el rayo: más intenciones son más rayos, las hebras son hebras de luz y las dos manos se turnan.',
         inspiredBy: 'Santiago (Game Glover), sobre respirar con conciencia',
       },
       solvecoagula: {
@@ -1666,9 +1666,7 @@ export const ES: Catalog = {
 
     synergies: {
       one_clear_cut: { name: 'Un corte claro', description: 'La claridad y la respiración se vuelven un solo gesto: carga, suelta, y una hoja de luz gigante barre todo lo que te drena.' },
-      chorus: { name: 'Coro', description: 'La respiración encuentra una segunda voz: el rayo golpea y excava 1.6 veces más fuerte. Proceso dual no llega al rayo, así que la voz se añade aquí.' },
       doublehelix: { name: 'Doble hélice', description: 'Dos espirales en un solo ritmo: el par dispara al doble de la cadencia base, no al cuádruple, y cada golpe hace 1.25 veces más daño.' },
-      choir: { name: 'Coral', description: 'Tres voces en una sola respiración: el rayo golpea y excava 2.2 veces más fuerte. Triangulación no llega al rayo, así que las voces se añaden aquí.' },
       somatic_release: { name: 'Liberación somática', description: 'Los bloques pateados también estallan.' },
       compound_effect: { name: 'Efecto compuesto', description: 'Los pasos pequeños con concentración profunda también atraviesan piedra y ladrillo.' },
       flooding: { name: 'Inundación', description: 'Los miedos que atraviesas se llevan a sus vecinos con ellos.' },

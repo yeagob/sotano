@@ -1537,13 +1537,25 @@ export class Game {
       eye: () => p.eye,
       forward: () => p.forward,
       casting: () => this.input.held('cast') && !this.hands.holding,
-      strike: (weapon, damage, mining, reach) => {
+      // a beam is a shot first: `fire` runs as for an intention (Dual Process, Eye Contact...), and a cancel gives the charge back
+      shot: () => {
+        const ev = this.bus.emit('fire', { intent: intentFromStats(this.stats.all, this.polarity) });
+        return ev.cancelled ? null : ev.intent;
+      },
+      castHand: () => this.castHand(),
+      strike: (weapon, damage, mining, reach, shot) => {
         const ev = this.bus.emit('strike', { weapon, damage, mining, reach, color: pal('light.hot'), tags: new Set(), polarity: this.polarity });
         if (ev.cancelled) return null;
-        const intent = { ...intentFromStats(this.stats.all, this.polarity), damage: ev.damage, mining: ev.mining, tags: new Set(ev.tags) };
+        // the stroke carries the shot's tags, volley and shape; its damage and mining are the strike's
+        const base = shot ?? intentFromStats(this.stats.all, this.polarity);
+        const intent = { ...base, damage: ev.damage, mining: ev.mining, tags: new Set([...base.tags, ...ev.tags]) };
         this.stroke = { polarity: this.polarity, warmed: new Set(), intent, weapon };
         this.strikeDebris = STRIKE_DEBRIS[weapon];
         return { damage: ev.damage, mining: ev.mining, reach: ev.reach, tags: ev.tags };
+      },
+      nearestBlock: (x, y, z, range) => {
+        const c = this.nearestSolid(new THREE.Vector3(x, y, z), range);
+        return c ? { x: c.x, y: c.y, z: c.z } : null;
       },
       solid: (x, y, z) => this.solid(x, y, z),
       // a positive stroke only reaches blocks it can mend: the damaged ones

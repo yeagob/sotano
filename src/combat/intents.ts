@@ -42,7 +42,7 @@ const AIM_RANGE = 6;
 const AIM_RANGE_PROJECTION = 8;
 const BOUNCE_KEEP = 0.75;
 export const VOLLEY_SHARE = 0.6;
-const VOLLEY_SPREAD = 0.12;
+export const VOLLEY_SPREAD = 0.12;
 /** Seconds before an aura (the Transcendent state) touches the same projection again. */
 const AURA_CALM = 0.5;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -69,11 +69,11 @@ const SHOT_LIFE = 6;
 /** A strand's offset from the line of its intention: a point on a circle of radius r(age) around the flight,
  *  at angle phase + spin × age. The circle lies across the flight: `u` is level, `v` points up. */
 export interface Orbit { phase: number; spin: number; r0: number; r1: number; rT: number; last: THREE.Vector3 }
-type OrbitShape = Omit<Orbit, 'last'>;
+export type OrbitShape = Omit<Orbit, 'last'>;
 
 const _u = new THREE.Vector3(), _v = new THREE.Vector3(), _d = new THREE.Vector3(), _off = new THREE.Vector3();
 /** Writes the offset of a strand at `age` into `out`. */
-function orbitOffset(o: OrbitShape, vel: THREE.Vector3, age: number, out: THREE.Vector3) {
+export function orbitOffset(o: OrbitShape, vel: THREE.Vector3, age: number, out: THREE.Vector3) {
   _u.crossVectors(vel, UP);
   if (_u.lengthSq() < 1e-10) _u.set(1, 0, 0); // a vertical shot has no level side: any will do
   _u.normalize();
@@ -85,7 +85,7 @@ function orbitOffset(o: OrbitShape, vel: THREE.Vector3, age: number, out: THREE.
 }
 
 /** The shape of strand `k` (0..2) of an intention with this formation. */
-function strandOrbit(f: Formation, flight: number, k: number): OrbitShape {
+export function strandOrbit(f: Formation, flight: number, k: number): OrbitShape {
   if (f.triad) {
     // the triangle points up; a spiral makes it turn
     return { phase: Math.PI / 2 + k * THIRD, spin: f.spiral ? SPIRAL_SPIN : 0, r0: TRIAD_R0, r1: TRIAD_R1, rT: Math.max(1e-3, flight) };
