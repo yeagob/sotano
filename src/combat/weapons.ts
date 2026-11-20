@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { pal } from '../content/palette';
 import type { Stats } from '../core/stats';
 import type { Formation, IntentSpec, WeaponId } from '../game/events';
-import { raycastVoxels } from '../physics/raycast';
+import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import { orbitOffset, strandOrbit, VOLLEY_SHARE, VOLLEY_SPREAD, HELIX_SHARE, TRIAD_SHARE } from './intents';
 
 export interface WeaponTarget { id: number; x: number; y: number; z: number; hw: number; h: number }
@@ -199,14 +199,20 @@ const BEAM_BLOCK_RANGE = 6;
 /** A beam leaves a hand a little below the eye, BEAM_HAND_SIDE blocks to its side (the left hand is mirrored). */
 const BEAM_HAND_SIDE = 0.18;
 const BEAM_HAND_DROP = 0.12;
-const BEAM_WIDTH = 0.09;
+export const BEAM_WIDTH = 0.09;
 /** Strands (Rule of Three, Spiral Growth) are thinner than the beam; the halo is wider than the core. */
 const STRAND_WIDTH = 0.6;
-const HALO_WIDTH = 1.9;
+export const HALO_WIDTH = 1.9;
 /** A ray hits a projection whose body lies within its half-width plus this many blocks. */
 const BEAM_PAD = 0.35;
 /** A spiral strand (Spiral Growth alone) circles its beam at this radius, one turn per block. */
-const BEAM_HELIX_R = 0.3;
+export const BEAM_HELIX_R = 0.15;
+export const BEAM_HELIX_EASE = 3;
+const BEAM_STEP = 0.5;
+const BEAM_AIM_EVERY = 0.15;
+const BEAM_BEND = (2 * Math.PI) / 180;
+const BEAM_PIECES = 384;
+const BEAM_SPEED = 16;
 
 /** One cast ray: where it starts, where it points (before homing), and the share of the shot it carries. */
 export interface BeamRay { origin: THREE.Vector3; dir: THREE.Vector3; share: number }
@@ -217,6 +223,7 @@ export interface BeamShape {
   readonly homing: number;
   readonly homingTarget: 'block' | 'projection';
   readonly twin: boolean;
+  readonly speed?: number;
 }
 
 /**
@@ -247,17 +254,72 @@ export function beamRays(shape: BeamShape, eye: THREE.Vector3, forward: THREE.Ve
   return out;
 }
 
-/** A ray as drawn: from `from` along `dir` for `len` blocks. A helix strand is drawn as the shared helix. */
-interface Seg { from: THREE.Vector3; dir: THREE.Vector3; len: number; strand: boolean; helix: { phase: number; spin: number } | null }
-/** A pool slot: the core and halo of one ray. A helix strand shows the shared helix (clipped per ray) instead of a tube. */
+export interface BeamPath { points: THREE.Vector3[]; hit: VoxelHit | null }
+
+export function beamPath(
+  origin: THREE.Vector3, dir: THREE.Vector3, reach: number, homing: number, speed: number,
+  solid: (x: number, y: number, z: number) => boolean,
+  aimAt: (p: THREE.Vector3, d: THREE.Vector3) => THREE.Vector3 | null,
+): BeamPath {
+  const d = dir.clone().normalize();
+  if (!(homing > 0)) {
+    const hit = raycastVoxels(solid, origin.x, origin.y, origin.z, d.x, d.y, d.z, reach);
+    return { points: [origin.clone(), origin.clone().addScaledVector(d, hit ? hit.t : reach)], hit };
+  }
+  const v = Math.max(1e-3, speed);
+  const turn = 1 - Math.exp((-homing * BEAM_STEP) / v);
+  const every = BEAM_AIM_EVERY * v;
+  const p = origin.clone(), points = [origin.clone()], bent = d.clone();
+  let travelled = 0, sinceAim = every, want: THREE.Vector3 | null = null;
+  while (travelled < reach - 1e-9) {
+    if (travelled > 0) {
+      if (sinceAim >= every - 1e-9) { sinceAim = 0; want = aimAt(p, d); }
+      if (want) {
+        const to = want.clone().sub(p);
+        if (to.lengthSq() > 1e-6) {
+          const nd = d.clone().lerp(to.normalize(), turn);
+          if (nd.lengthSq() > 1e-9) d.copy(nd.normalize());
+        }
+      }
+      if (d.angleTo(bent) > BEAM_BEND) { points.push(p.clone()); bent.copy(d); }
+    }
+    const step = Math.min(BEAM_STEP, reach - travelled);
+    const hit = raycastVoxels(solid, p.x, p.y, p.z, d.x, d.y, d.z, step);
+    if (hit) {
+      p.addScaledVector(d, hit.t);
+      points.push(p.clone());
+      return { points, hit };
+    }
+    p.addScaledVector(d, step);
+    travelled += step;
+    sinceAim += step;
+  }
+  points.push(p.clone());
+  return { points, hit: null };
+}
+
+function pathDistance(q: THREE.Vector3, points: THREE.Vector3[]): { dist: number; piece: number } {
+  let dist = Infinity, piece = 0;
+  for (let s = 0; s + 1 < points.length; s++) {
+    const dd = segDist(q, points[s], points[s + 1]);
+    if (dd < dist) { dist = dd; piece = s; }
+  }
+  return { dist, piece };
+}
+
+interface Seg { points: THREE.Vector3[]; strand: boolean; helix: { phase: number; spin: number } | null }
 interface Slot { core: THREE.Mesh; halo: THREE.Mesh; coreHelix: THREE.BufferGeometry; haloHelix: THREE.BufferGeometry }
 
-/** The helix a spiral strand traces: BEAM_HELIX_R around +z, one turn per block, from 0 to BEAM_REACH. */
+export function helixRadiusAt(z: number): number {
+  const k = Math.min(1, Math.max(0, z / BEAM_HELIX_EASE));
+  return BEAM_HELIX_R * k * k * (3 - 2 * k);
+}
+
 class Helix extends THREE.Curve<THREE.Vector3> {
   constructor() { super(); }
   getPoint(t: number, out: THREE.Vector3 = new THREE.Vector3()) {
-    const a = t * BEAM_REACH * Math.PI * 2;
-    return out.set(BEAM_HELIX_R * Math.cos(a), BEAM_HELIX_R * Math.sin(a), t * BEAM_REACH);
+    const z = t * BEAM_REACH, a = z * Math.PI * 2, r = helixRadiusAt(z);
+    return out.set(r * Math.cos(a), r * Math.sin(a), z);
   }
 }
 
@@ -273,7 +335,6 @@ function sharedView(src: THREE.BufferGeometry): THREE.BufferGeometry {
   return g;
 }
 
-/** Both hands, at most BEAM_MAX_RAYS rays each. */
 const BEAM_SLOTS = BEAM_MAX_RAYS * 2;
 
 export class Beam implements Weapon {
@@ -301,15 +362,20 @@ export class Beam implements Weapon {
     this.coreMat = glowMaterial(pal('light.core'), 0.95);
     this.haloMat = glowMaterial(pal('path.will.glow'), 0.35);
     const strandR = BEAM_WIDTH * STRAND_WIDTH;
-    const coreSrc = helixGeometry(strandR), haloSrc = helixGeometry(strandR * HALO_WIDTH);
-    this.helixSrc = [coreSrc, haloSrc];
-    for (let i = 0; i < BEAM_SLOTS; i++) {
-      const core = new THREE.Mesh(this.cylinder, this.coreMat), halo = new THREE.Mesh(this.cylinder, this.haloMat);
-      core.frustumCulled = halo.frustumCulled = false;
-      core.visible = halo.visible = false;
-      scene.add(core, halo);
-      this.slots.push({ core, halo, coreHelix: sharedView(coreSrc), haloHelix: sharedView(haloSrc) });
-    }
+    this.helixSrc = [helixGeometry(strandR), helixGeometry(strandR * HALO_WIDTH)];
+    for (let i = 0; i < BEAM_SLOTS; i++) this.slot(i);
+  }
+
+  private slot(n: number): Slot | null {
+    if (n < this.slots.length) return this.slots[n];
+    if (n >= BEAM_PIECES) return null;
+    const core = new THREE.Mesh(this.cylinder, this.coreMat), halo = new THREE.Mesh(this.cylinder, this.haloMat);
+    core.frustumCulled = halo.frustumCulled = false;
+    core.visible = halo.visible = false;
+    this.scene.add(core, halo);
+    const s = { core, halo, coreHelix: sharedView(this.helixSrc[0]), haloHelix: sharedView(this.helixSrc[1]) };
+    this.slots.push(s);
+    return s;
   }
 
   update(dt: number) {
@@ -338,6 +404,7 @@ export class Beam implements Weapon {
     this.spec = { damage: ev.damage, mining: ev.mining, reach: ev.reach };
     this.shape = Object.freeze({
       volley: shot.volley, formation: shot.formation, homing: shot.homing, homingTarget: shot.homingTarget, twin: s.twinCast >= 1,
+      speed: shot.speed,
     });
     this.hand = this.host.castHand?.() ?? 1;
     this.firing = BEAM_TIME;
@@ -348,77 +415,73 @@ export class Beam implements Weapon {
     this.host.sound('beam');
   }
 
-  /**
-   * One tick: the hand of this tick (the two hands alternate with Bilateral Stimulation) casts its rays. Each ray is
-   * homed, raycast, burns or answers the block it reaches, hits what its strip crosses and clears what it crosses.
-   */
   private doTick(i: number) {
     const eye = this.host.eye(), f = this.host.forward();
     const elapsed = i * BEAM_TICK;
     const side = this.shape.twin ? (i % 2 ? -this.hand : this.hand) : 1;
-    const crosshair = raycastVoxels((x, y, z) => this.host.solid(x, y, z), eye.x, eye.y, eye.z, f.x, f.y, f.z, BEAM_REACH);
+    const solid = (x: number, y: number, z: number) => this.host.solid(x, y, z);
+    const crosshair = raycastVoxels(solid, eye.x, eye.y, eye.z, f.x, f.y, f.z, BEAM_REACH);
     const aim = eye.clone().addScaledVector(f, crosshair ? crosshair.t : BEAM_REACH);
     const targets = this.host.targets();
     const rays = beamRays(this.shape, eye, f, aim, elapsed, side);
-    const segs: Seg[] = [];
-    let tip: THREE.Vector3 | null = null;
-    const formation = this.shape.formation;
-    for (let r = 0; r < rays.length; r++) {
-      const ray = rays[r];
-      const dir = this.homed(ray.origin, ray.dir, targets);
-      const hit = raycastVoxels((x, y, z) => this.host.solid(x, y, z), ray.origin.x, ray.origin.y, ray.origin.z, dir.x, dir.y, dir.z, this.spec.reach);
-      const len = hit ? hit.t : this.spec.reach;
-      const end = ray.origin.clone().addScaledVector(dir, len);
+    const trace = (origin: THREE.Vector3, dir: THREE.Vector3) => beamPath(
+      origin, dir, this.spec.reach, this.shape.homing, this.shape.speed ?? BEAM_SPEED, solid, (p, d) => this.aimAt(p, d, targets),
+    );
+    const paths: THREE.Vector3[][] = [];
+    for (const ray of rays) {
+      const path = trace(ray.origin, ray.dir);
+      const pts = path.points, hit = path.hit;
+      paths.push(pts);
       if (hit) {
         if (this.host.breakable(hit.x, hit.y, hit.z)) this.host.burn(hit.x, hit.y, hit.z, this.spec.mining * ray.share, 'beam');
         else this.host.answer(hit.x, hit.y, hit.z);
       }
       for (const t of targets) {
-        if (segDist(new THREE.Vector3(t.x, t.y + t.h / 2, t.z), ray.origin, end) > t.hw + BEAM_PAD) continue;
+        const near = pathDistance(new THREE.Vector3(t.x, t.y + t.h / 2, t.z), pts);
+        if (near.dist > t.hw + BEAM_PAD) continue;
+        const along = pts[near.piece + 1].clone().sub(pts[near.piece]);
+        const dir = along.lengthSq() > 1e-12 ? along.normalize() : ray.dir;
         this.host.hit(t.id, this.spec.damage * ray.share, dir.x, dir.z, 'beam');
       }
-      this.host.clearProjectiles((x, y, z) => segDist(new THREE.Vector3(x, y, z), ray.origin, end) < 0.5);
-      this.host.clearCubes((x, y, z) => segDist(new THREE.Vector3(x, y, z), ray.origin, end) < 0.6);
-      // a spiral strand's helix is centred on its beam: the strand's offset at this tick is taken back out
-      let from = ray.origin, helix: Seg['helix'] = null;
-      if (formation && formation.spiral && !formation.triad) {
-        const o = strandOrbit(formation, BEAM_TIME, r % 3), off = new THREE.Vector3();
-        orbitOffset(o, ray.dir, elapsed, off);
-        from = ray.origin.clone().sub(off);
-        helix = { phase: o.phase, spin: o.spin };
+      this.host.clearProjectiles((x, y, z) => pathDistance(new THREE.Vector3(x, y, z), pts).dist < 0.5);
+      this.host.clearCubes((x, y, z) => pathDistance(new THREE.Vector3(x, y, z), pts).dist < 0.6);
+    }
+    const segs: Seg[] = [];
+    const formation = this.shape.formation;
+    const spiral = !!formation && formation.spiral && !formation.triad;
+    for (let r = 0; r < rays.length; r++) {
+      if (!spiral) { segs.push({ points: paths[r], strand: !!formation, helix: null }); continue; }
+      if (r % 3) continue;
+      const off = new THREE.Vector3();
+      orbitOffset(strandOrbit(formation, BEAM_TIME, 0), rays[r].dir, elapsed, off);
+      const core = trace(rays[r].origin.clone().sub(off), rays[r].dir).points;
+      segs.push({ points: core, strand: false, helix: null });
+      for (let j = 0; j < 3; j++) {
+        if (core.length > 2) { segs.push({ points: paths[r + j], strand: true, helix: null }); continue; }
+        const o = strandOrbit(formation, BEAM_TIME, j);
+        segs.push({ points: core, strand: true, helix: { phase: o.phase, spin: o.spin } });
       }
-      segs.push({ from, dir, len, strand: !!formation, helix });
-      tip ??= end;
     }
     const hand = side > 0 ? 0 : 1;
     this.segs[hand] = segs;
+    const tip = paths.length ? paths[0][paths[0].length - 1] : null;
     if (tip) this.host.particles(tip.x, tip.y, tip.z, pal('light.hot'), 5, 3, 0.08);
     this.host.shake(0.06);
   }
 
-  /**
-   * Homing (Eye Contact toward a projection, Dowsing toward a block): the ray turns by 1 - e^(-homing × tick) toward
-   * its target. Stateless: each tick turns the base direction afresh, so the result depends on the tick alone.
-   */
-  private homed(origin: THREE.Vector3, dir: THREE.Vector3, targets: WeaponTarget[]): THREE.Vector3 {
-    const h = this.shape.homing;
-    if (!(h > 0)) return dir;
-    let want: THREE.Vector3 | null = null;
+  private aimAt(p: THREE.Vector3, d: THREE.Vector3, targets: WeaponTarget[]): THREE.Vector3 | null {
     if (this.shape.homingTarget === 'projection') {
-      let bd = Infinity, bid = Infinity;
+      let want: THREE.Vector3 | null = null, bd = Infinity, bid = Infinity;
       const cos = Math.cos(BEAM_CONE);
       for (const t of targets) {
-        const p = new THREE.Vector3(t.x, t.y + t.h / 2, t.z), v = p.clone().sub(origin), d = v.length();
-        if (d < 1e-6 || d > BEAM_PROJECTION_RANGE || v.dot(dir) / d < cos) continue;
-        if (d < bd || (d === bd && t.id < bid)) { bd = d; bid = t.id; want = p; }
+        const q = new THREE.Vector3(t.x, t.y + t.h / 2, t.z), v = q.clone().sub(p), dist = v.length();
+        if (dist < 1e-6 || dist > BEAM_PROJECTION_RANGE || v.dot(d) / dist < cos) continue;
+        if (dist < bd || (dist === bd && t.id < bid)) { bd = dist; bid = t.id; want = q; }
       }
-    } else {
-      const b = this.host.nearestBlock(origin.x, origin.y, origin.z, BEAM_BLOCK_RANGE);
-      if (b) want = new THREE.Vector3(b.x, b.y, b.z);
+      return want;
     }
-    if (!want) return dir;
-    const to = want.sub(origin).normalize();
-    return dir.clone().lerp(to, 1 - Math.exp(-h * BEAM_TICK)).normalize();
+    const b = this.host.nearestBlock(p.x, p.y, p.z, BEAM_BLOCK_RANGE);
+    return b ? new THREE.Vector3(b.x, b.y, b.z) : null;
   }
 
   /** Draws the rays of both hands at constant brightness: only the width breathes. */
@@ -427,31 +490,48 @@ export class Beam implements Weapon {
     const w = BEAM_WIDTH + Math.sin(t * 9) * 0.015;
     let n = 0;
     for (const list of this.segs) for (const seg of list) {
-      if (n >= this.slots.length) break;
-      this.place(this.slots[n++], seg, t, w);
+      const width = seg.strand ? w * STRAND_WIDTH : w;
+      if (seg.helix) {
+        const slot = this.slot(n);
+        if (slot) { this.placeHelix(slot, seg, t); n++; }
+        continue;
+      }
+      for (let k = 0; k + 1 < seg.points.length; k++) {
+        const slot = this.slot(n);
+        if (!slot) break;
+        if (this.placePiece(slot, seg.points[k], seg.points[k + 1], width)) n++;
+      }
     }
     for (; n < this.slots.length; n++) this.hide(this.slots[n]);
   }
 
-  private place(slot: Slot, seg: Seg, elapsed: number, w: number) {
-    const width = seg.strand ? w * STRAND_WIDTH : w;
-    const ahead = this.tmp.copy(seg.from).add(seg.dir);
-    const meshes: [THREE.Mesh, number, THREE.BufferGeometry][] = [[slot.core, 1, slot.coreHelix], [slot.halo, HALO_WIDTH, slot.haloHelix]];
-    for (const [m, k, view] of meshes) {
-      m.position.copy(seg.from);
+  private placePiece(slot: Slot, from: THREE.Vector3, to: THREE.Vector3, width: number): boolean {
+    const len = from.distanceTo(to);
+    if (len < 1e-6) return false;
+    for (const [m, k] of [[slot.core, 1], [slot.halo, HALO_WIDTH]] as const) {
+      m.geometry = this.cylinder;
+      m.position.copy(from);
+      m.lookAt(to);
+      m.scale.set(width * k, width * k, len);
+      m.visible = true;
+    }
+    return true;
+  }
+
+  private placeHelix(slot: Slot, seg: Seg, elapsed: number) {
+    const from = seg.points[0], to = seg.points[seg.points.length - 1];
+    const len = from.distanceTo(to);
+    const ahead = len > 1e-6 ? this.tmp.copy(to) : this.tmp.copy(from).add(UP);
+    const meshes: [THREE.Mesh, THREE.BufferGeometry][] = [[slot.core, slot.coreHelix], [slot.halo, slot.haloHelix]];
+    for (const [m, view] of meshes) {
+      m.geometry = view;
+      m.position.copy(from);
       m.lookAt(ahead);
-      if (seg.helix) {
-        m.geometry = view;
-        m.scale.set(1, 1, 1);
-        m.rotateZ(seg.helix.phase + seg.helix.spin * elapsed);
-        // the helix is clipped where the ray ends
-        const count = view.index ? view.index.count : 0;
-        const used = Math.floor((count * Math.min(1, seg.len / BEAM_REACH)) / 3) * 3;
-        view.setDrawRange(0, used);
-      } else {
-        m.geometry = this.cylinder;
-        m.scale.set(width * k, width * k, seg.len);
-      }
+      m.scale.set(1, 1, 1);
+      m.rotateZ(seg.helix!.phase - seg.helix!.spin * elapsed);
+      const count = view.index ? view.index.count : 0;
+      const used = Math.floor((count * Math.min(1, len / BEAM_REACH)) / 3) * 3;
+      view.setDrawRange(0, used);
       m.visible = true;
     }
   }
