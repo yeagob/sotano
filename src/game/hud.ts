@@ -28,6 +28,7 @@ import { carriedDef, flaskRooms, isFlask, POTIONS } from '../content/potions';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
+import { PHASE_WARN_S } from './phase';
 import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -113,6 +114,9 @@ export class Hud {
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private polarityEl = $('polarity');
+  private phaseEl = $('phase');
+  private phaseTint = $('phase-tint');
+  private phaseShown = '';
   private lastPolarity: Polarity = 'positive';
   private depthEl = $('depth');
   private invEl = $('inventory');
@@ -325,6 +329,23 @@ export class Hud {
   setPolarity(p: Polarity) {
     this.lastPolarity = p;
     this.renderPolarity();
+  }
+
+  /** Lucid Dream's status (the persistent status type of sotano-popups): its practice icon, the seconds left and a soft
+   *  tint over the screen, shown while the phase runs. `left` null hides it. Redraws only when what shows changes. */
+  setPhase(left: number | null, def: ItemDef | null) {
+    const on = left !== null && def !== null;
+    const warn = on && left <= PHASE_WARN_S;
+    const key = on ? `${Math.ceil(left)}:${warn}` : '';
+    if (key === this.phaseShown) return;
+    this.phaseShown = key;
+    this.phaseEl.hidden = !on;
+    this.phaseTint.classList.toggle('on', on);
+    if (!on) return;
+    document.documentElement.style.setProperty('--phase-tint', palCss('path.mind.glow'));
+    this.phaseEl.classList.toggle('warn', warn);
+    const name = esc(itemText(def).name);
+    this.phaseEl.innerHTML = `<img src="${iconDataUrl(def, 2)}" alt="" title="${name}"><b>${esc(t('hud.phase.left', { n: fmtNum(Math.ceil(left)) }))}</b>`;
   }
 
   private renderPolarity() {

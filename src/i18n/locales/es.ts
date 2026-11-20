@@ -168,6 +168,7 @@ export const ES: Catalog = {
     'controls.pick.touch': 'Toca un hueco de tu mano o un objeto del inventario',
 
     'hud.floor': 'Piso {n}',
+    'hud.phase.left': '{n} s',
     'hud.spirit': 'Espíritu',
     'level.roots': 'Las raíces',
     'level.circle1': 'El limbo',
@@ -850,6 +851,8 @@ export const ES: Catalog = {
     'teach.eyecontact.lesson': 'Evitar un miedo lo mantiene grande. En un momento en que te sientas a salvo, mira durante unos segundos lo que has estado evitando y respira. Hacerlo con un terapeuta o una persona de confianza suele ser más sabio.',
     'teach.waymark.quote': 'Donde te reconociste por última vez, el camino de vuelta está abierto.',
     'teach.waymark.lesson': 'Marca el lugar donde te reconociste por última vez. Una piedra en un camino largo no es señal de que te perdiste: le dice al siguiente caminante, y a ti, que el camino es conocido. Vuelve a ella cuando el camino se ponga difícil.',
+    'teach.luciddream.quote': 'Sabes que las paredes están hechas de ti.',
+    'teach.luciddream.lesson': 'Algunas paredes son solo costumbres de mirar. En un momento lúcido, nombra la pared, pregunta de qué está hecha y atraviésala despacio. Luego vuelve al suelo firme y lleva contigo lo que viste.',
     'teach.visualization.quote': 'Míralo claro primero, y tu cuerpo conoce el camino.',
     'teach.visualization.lesson': 'Antes de algo importante, cierra los ojos y ensáyalo con detalle: el lugar, los pasos, cómo se siente hacerlo bien. Incluye lo que podría salir mal y cómo responderías. Luego ve y hazlo.',
     'teach.dialectic.quote': 'Pon dos ideas frente a frente, y cada una te muestra su otro lado.',
@@ -1350,6 +1353,12 @@ export const ES: Catalog = {
         effect: 'Marca dónde estás y el inicio de cada nuevo piso. Cuando fueras a morir, vuelves allí con corazones llenos, 2,5 s de invulnerabilidad y todo lo que llevas. Se gasta cuando te salva: una copia, una vida extra.',
         inspiredBy: 'Montones de piedra e hitos en las rutas de peregrinos',
         messages: { revived: 'El hito te trae de vuelta.' },
+      },
+      luciddream: {
+        name: 'Sueño lúcido',
+        description: 'En un sueño lúcido sabes que las paredes están hechas de ti. Recoge una bomba, una llave o un corazón y, durante unos segundos, atraviesas lo que te retiene.',
+        effect: 'Recoger una bomba, llave o corazón te deja caminar a través de bloques durante 3 s (cada recogida añade tiempo, hasta 6). Los bloques indestructibles siguen sólidos. Siempre sales a un espacio libre.',
+        inspiredBy: 'Sueño lúcido (Frederik van Eeden, 1913)',
       },
       tummo: {
         name: 'Fuego interior',

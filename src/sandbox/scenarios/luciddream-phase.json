@@ -1,0 +1,14 @@
+{
+  "note": "Lucid Dream: a bomb pickup starts the phase; the body steps into a crate, and when the phase ends it is moved out",
+  "rows": [".............", "........c....", "........c....", "........c....", "........c....", "........c....", "............."],
+  "player": [6, 0, 3],
+  "god": true,
+  "items": ["luciddream"],
+  "ticks": 240,
+  "report": [90, 240],
+  "actions": [
+    { "t": 1, "do": "collect", "kind": "bomb" },
+    { "t": 30, "do": "tp", "at": [8, 0, 3] },
+    { "t": 60, "do": "look", "at": [10, 0, 3] }
+  ]
+}

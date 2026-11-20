@@ -58,6 +58,7 @@ export function runLab(game: Game, s: Scenario): LabResult {
       const p = game.player, b = p.body;
       out.push('', `t ${t} (${num(t / TPS)} s)`);
       out.push(`  player hp ${p.hp}/${game.maxHp} · at ${rel(b.x, b.y, b.z)} · hand [${p.hand.map(c => typeof c === 'number' ? MATERIALS[c].key : carriedDef(c).id).join(' ')}] · bombs ${p.bombs} · keys ${p.keys}${p.dead ? ' · DEAD' : ''}`);
+      if (game.phaseLeft > 0) out.push(`  phase ${game.phaseLeft.toFixed(1)} s`);
       const items = game.inventory.items.map(i => (i.stacks > 0 ? `${i.def.id}×${i.stacks}` : i.def.id));
       if (items.length) out.push(`  practices ${items.join(' ')} · synergies ${game.inventory.synergiesActive.map(x => x.id).join(' ') || '—'}`);
       // stacks only ever show when a practice has one, so reports without stacks are unchanged
@@ -131,6 +132,7 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     case 'give': game.grant(a.item); break;
     case 'lose': game.loseItem(a.item); break;
     case 'hurt': game.damagePlayer(a.amount, 'item', 'lab', game.player.id); break;
+    case 'collect': game.collect(a.kind, a.kind === 'heart' ? 2 : 1); break;
     case 'tp': { const [x, y, z] = w(a.at); p.spawnAt(x + 0.5, y, z + 0.5); break; }
     case 'look': {
       const [x, y, z] = w(a.at), e = p.eye;

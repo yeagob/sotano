@@ -37,6 +37,7 @@ Never:
 | **Death screen** | `#death` | `showDeath(depth, items, source)` | Blocking end-of-run card. | Death. |
 | **Boss bar** | `#boss` | `bossBar({ name, ratio } \| null)` | Persistent HUD status, not a message. Shows only during a boss fight. | The health of the boss in the room. |
 | **Polarity indicator** | `#polarity` | `setPolarity(p)` | Persistent HUD status with a colour per polarity. | The current polarity. |
+| **Status timer** | `#phase` | `setPhase(left, def)` | Persistent HUD status: a practice's icon and the seconds left, with a soft screen tint, shown while a player status runs (Lucid Dream). Not a message: no input. | A timed player status the player must see running. |
 | **Inline hint** | `#fov-hint` and similar `.hint` text | set the element's text | A line of text beside a control. Not a window. | Explaining one control in a menu. |
 | **Meditation app** | `src/game/meditation-app.ts`, `meditation-view.ts` | its own screen | A full screen of its own, not a pop-up. Listed so nobody builds a second one. | The Sanctuary. |
 | **Developer panels** | `src/debug/test-panel.ts`, `src/debug/test-bench.ts` | developer only | Never shown to players. Their text is English on purpose (see the comment at the top of `hud.ts`). | Testing and debugging only. |

@@ -149,6 +149,16 @@
       box-shadow: 0 0 0 1px var(--ui-line); }
     #polarity[data-polarity="negative"] { background: var(--ui-line); }
     #items { display: flex; flex-wrap: wrap; gap: 3px; max-width: 220px; margin-top: 8px; }
+    /* Status timer (sotano-popups: persistent status): the practice icon and the seconds left, a slate pill; in the last
+       second the outline turns to the ember token. The tint is a soft wash over the screen that lets the walls read thin. */
+    #phase { display: flex; align-items: center; gap: 4px; margin-top: 6px; padding: 2px 6px; width: max-content;
+      font-variant-numeric: tabular-nums; color: var(--ui-text); text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
+    #phase[hidden] { display: none; }
+    #phase img { width: 24px; height: 24px; image-rendering: pixelated; }
+    #phase.warn { outline: 2px solid var(--ui-warn, var(--ui-text)); }
+    #phase-tint { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s ease; z-index: 1;
+      background: radial-gradient(ellipse at center, transparent 40%, color-mix(in srgb, var(--phase-tint, #888) 30%, transparent) 100%); }
+    #phase-tint.on { opacity: 1; }
     #items img { width: 28px; height: 28px; }
 
     /* hand slots */
@@ -662,7 +672,9 @@
     <div class="counter"><span class="ico bomb"></span><span id="bombs">01</span></div>
     <div class="counter"><span class="ico key"></span><span id="keys">00</span></div>
     <div id="polarity" data-polarity="positive"></div>
+    <div id="phase" class="slate" hidden role="status"></div>
     <div id="items"></div>
+    <div id="phase-tint" aria-hidden="true"></div>
   </div>
   <div id="hand"></div>
   <div id="corner"><canvas id="minimap" class="slate"></canvas><div id="depth"></div></div>

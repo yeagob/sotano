@@ -120,7 +120,7 @@ function sandbox() {
     checkpoint: () => null,
     setCheckpoint: () => {},
     teleportPlayer: () => {},
-    invulnerable: () => {},
+    invulnerable: () => {}, grantStatus: () => {},
     burst: () => {},
     chime: () => {},
   };
