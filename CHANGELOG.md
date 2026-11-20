@@ -13,15 +13,17 @@ Changes to the tutorial and to the book are listed without their content, so not
 ### Changed
 - Irimi is a tier 4 practice: the dash leaves a trail of light, hurts each projection it passes through, breaks the blocks in its way and keeps you untouchable while it lasts (#261).
 
-## 0.2.7-alpha.f1 · 2026-11-20
-
 ### Fixed
-- The progress panel shows only the percentage of each part, without the words after it.
 - Solve et Coagula converts water and lava again: the intention's position is read as the cell it is in (#256).
 - A white bomb (good intentions) heals you, one heart, when you stand in its range, and its blast shows heart particles (#264).
 - Kairos names the control to press to stop time and to release, on each device (#265).
 - A boss turns to your side only after good intentions deal as much damage as it takes to destroy it.
 - The toxic heart shows its aura as motes around you and a pulse of its two-block zone each tick; its message is shorter, and messages stay on screen as long as their length needs.
+
+## 0.2.7-alpha.f1 · 2026-11-20
+
+### Fixed
+- The progress panel shows only the percentage of each part, without the words after it.
 
 ## 0.2.7-alpha · 2026-11-20
 
