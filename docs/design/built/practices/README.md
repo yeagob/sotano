@@ -25,7 +25,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | Practice | Path folder | Quality | Found in |
 |---|---|---|---|
 | [Dr. Launcher](milagros/DR-LAUNCHER.md) | Miracles | 3 | treasure rooms |
-| [Irimi](DASH.md) | Body (movement) | 3 | treasure rooms |
+| [Irimi](DASH.md) | Body (movement) | 4 | treasure rooms |
 | [Fartlek](RUN-AND-CROUCH.md) | Body (movement) | 2 | treasure rooms |
 | [Child's Pose](RUN-AND-CROUCH.md) | Body (movement) | 2 | treasure rooms |
 | [Solve et Coagula](milagros/SOLVE-ET-COAGULA.md) | Miracles | 3 | treasure rooms, vault rooms |
