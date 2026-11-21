@@ -29,6 +29,7 @@ import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './tol
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
 import { PHASE_WARN_S } from './phase';
+import { hurtEdge } from './hurt-feedback';
 import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -138,6 +139,7 @@ export class Hud {
   get sanctuaryOpen() { return this.sanctuary.open; }
   private flashEl = $('flash');
   private hurtEl = $('hurt');
+  private hurtSideEl = $('hurt-side');
   private berserkEl = $('berserk');
   private starEl = $('star');
   private deathEl = $('death');
@@ -912,10 +914,16 @@ export class Hud {
     document.body.classList.toggle('berserk', on);
   }
 
-  hurt() {
-    this.hurtEl.classList.remove('on');
-    void this.hurtEl.offsetWidth;
-    this.hurtEl.classList.add('on');
+  hurt(angle: number | null = null) {
+    const el = angle === null ? this.hurtEl : this.hurtSideEl;
+    if (angle !== null) {
+      const at = hurtEdge(angle);
+      el.style.setProperty('--hx', `${at.x.toFixed(1)}%`);
+      el.style.setProperty('--hy', `${at.y.toFixed(1)}%`);
+    }
+    el.classList.remove('on');
+    void el.offsetWidth;
+    el.classList.add('on');
     this.shake(0.2);
   }
 

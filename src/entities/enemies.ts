@@ -50,7 +50,7 @@ export interface EnemyHost {
   /** This enemy touches an actor it is hostile to (the game emits `contact`, rate-limited). */
   contact(e: Enemy, target: Actor): void;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
-  projectileHit(target: Actor, damage: number, thrower: number): void;
+  projectileHit(target: Actor, damage: number, thrower: number, from?: { x: number; z: number }): void;
   reflects?(target: Actor, x: number, y: number, z: number): boolean;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
@@ -58,7 +58,7 @@ export interface EnemyHost {
   burst(e: Enemy, radius: number): void;
   died(e: Enemy): void;
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
-  hurtActor(target: Actor, amount: number, cause: string, owner: number): void;
+  hurtActor(target: Actor, amount: number, cause: string, owner: number, from?: { x: number; z: number }): void;
   affectActor(target: Actor, effect: FieldEffect, seconds: number): void;
   arena(e: Enemy, what: string): void;
   summon(e: Enemy, defIds: string[]): void;
@@ -136,7 +136,7 @@ export class Enemies {
     scene.add(this.projMesh);
     const hazardHost: HazardHost = {
       actors: () => host.actors(),
-      hurt: (t, dmg, cause, owner) => host.hurtActor(t, dmg, cause, owner),
+      hurt: (t, dmg, cause, owner, from) => host.hurtActor(t, dmg, cause, owner, from),
       affect: (t, effect, seconds) => host.affectActor(t, effect, seconds),
       push: (t, vx, vz) => { t.body.vx += vx; t.body.vz += vz; },
       live: (shape: Shape) => { const [x, y, z] = shapePoint(shape); host.cue(shape.kind, x, y, z); },
@@ -637,7 +637,8 @@ export class Enemies {
         p.vx = -p.vx; p.vy = -p.vy; p.vz = -p.vz;
         p.faction = hit.faction; p.thrower = hit.id;
       } else if (hit) {
-        this.host.projectileHit(hit, p.damage, p.thrower);
+        const sp = Math.hypot(p.vx, p.vz) || 1;
+        this.host.projectileHit(hit, p.damage, p.thrower, { x: hit.body.x - p.vx / sp, z: hit.body.z - p.vz / sp });
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
         this.host.projectileBlock(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));

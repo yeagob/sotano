@@ -61,6 +61,7 @@ import { DOUBLE_TAP_MS } from '../input/bindings';
 /** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
 const DASH_FOV_KICK = 4;
 import { PolarityHint } from './polarity-hint';
+import { hotFrom, hurtAngle, hurtKnock, hurtPan, type HurtFrom } from './hurt-feedback';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { FullscreenButton } from '../input/fullscreen-button';
@@ -1675,7 +1676,7 @@ export class Game {
    * player loses exactly those points (shown as quarter hearts) and gets invulnerability.
    * Returns true if the hit landed.
    */
-  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch): boolean {
+  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch, from: HurtFrom | null = null): boolean {
     const p = this.player;
     // a sky actor has no health the dungeon can take, and no Enemies entry to hurt (SKY.md §5.2)
     if (t.kind === 'sky') return false;
@@ -1685,7 +1686,7 @@ export class Game {
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
-      knockback: t === p ? 0 : 3, cause: this.blasts.current ?? undefined, polarity: intent?.polarity ?? null,
+      knockback: t === p ? 1 : 3, cause: this.blasts.current ?? undefined, polarity: intent?.polarity ?? null,
     });
     if (ev.cancelled) return false;
     if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
@@ -1696,8 +1697,7 @@ export class Game {
     for (const k of hit.lost) this.heartLost(k);
     p.hp = Math.max(0, p.hp - hit.rest);
     p.invulnT = this.stats.get('invuln');
-    this.hud.hurt();
-    sfx3.hurt();
+    this.hurtFeedback(from, ev.knockback);
     if (p.hp <= 0) {
       const d = this.bus.emit('death', { source });
       if (d.cancelled) { p.hp = Math.max(1, p.hp); return true; }
@@ -1712,6 +1712,23 @@ export class Game {
       this.keeper.recordFade(this.maxDepth);
     }
     return true;
+  }
+
+  private hurtFeedback(from: HurtFrom | null, scale: number) {
+    const p = this.player, b = p.body;
+    const k = hurtKnock(b, from, p.wishX, p.wishZ, scale, p.swimming);
+    const l = Math.hypot(k.vx, k.vz);
+    const blocked = l > 0 && !this.harmfulAt(b.x, b.y, b.z) && this.harmfulAt(b.x + k.vx / l * 0.8, b.y, b.z + k.vz / l * 0.8);
+    p.push(blocked ? 0 : k.vx, k.vy, blocked ? 0 : k.vz);
+    const angle = hurtAngle(b, p.yaw, from);
+    this.hud.hurt(angle);
+    sfx3.hurt(hurtPan(angle));
+  }
+
+  private harmfulAt(x: number, y: number, z: number): boolean {
+    const fx = Math.floor(x), fz = Math.floor(z), fy = Math.floor(y);
+    for (let cy = fy - 1; cy <= fy + 1; cy++) if ((elemDef(this.world.elemAt(fx, cy, fz))?.harm ?? 0) > 0) return true;
+    return false;
   }
 
   /** Heals the player by `amount` damage points (HALF_HEART = half a heart) through `heal`. */
@@ -1893,7 +1910,7 @@ export class Game {
         return d ? this.affinity(e, d.key).path : null;
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
-      projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
+      projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {
         if (t !== this.player || !this.berserkOn) return false;
         sfxHeart.reflect();
@@ -1915,7 +1932,7 @@ export class Game {
       pickupsIn: (room: number) => this.pickups.list.filter(p => !p.taken && p.room === room && (p.type === 'key' || p.type === 'bomb' || p.type === 'heart'))
         .map(p => ({ kind: p.type as PickupKind, x: p.x, y: p.y, z: p.z, take: () => this.pickups.take(p) })),
       particles: (x: number, y: number, z: number, c: number, n: number, s: number, size: number) => this.particles.burst(x, y, z, c, n, s, size),
-      hurtActor: (t: Actor, amount: number, cause: string, owner: number) => { this.damageActor(t, amount, 'projectile', cause, owner); },
+      hurtActor: (t: Actor, amount: number, cause: string, owner: number, from?: HurtFrom) => { this.damageActor(t, amount, 'projectile', cause, owner, 0, 0, undefined, from ?? null); },
       affectActor: (t: Actor, effect: FieldEffect, seconds: number) => this.affectActor(t, effect, seconds),
       arena: (e: Enemy, what: string) => this.bossArena(e, what),
       summon: (e: Enemy, ids: string[]) => this.summonFor(e, ids),
@@ -2044,7 +2061,7 @@ export class Game {
     if (ev.cancelled) return;
     // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
     const hurt = t === this.player && this.player.crouching ? crouchedContact(ev.toTarget) : ev.toTarget;
-    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id);
+    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id, 0, 0, undefined, a.body);
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
@@ -2558,7 +2575,7 @@ export class Game {
     for (const a of [...this.actors.all()]) {
       if (a.kind === 'sky') continue;
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
-      if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
+      if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2, undefined, { x, z });
     }
     // one of the player's own bombs or missiles (not a volatile cube, an enemy's burst or an item's blast)
     if (owner === this.player.id && (source === 'bomb' || source === 'missile')) this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'negative', source, acted: new Set() });
@@ -3149,6 +3166,14 @@ export class Game {
     return section.length;
   }
 
+  private hotSource(b: { x: number; y: number; z: number; h: number }, key: ElementKey): HurtFrom | null {
+    const y0 = Math.floor(b.y), y1 = Math.floor(b.y + b.h);
+    return hotFrom(b.x, b.z, (cx, cz) => {
+      for (let y = y0; y <= y1; y++) if (elemDef(this.world.elemAt(cx, y, cz))?.key === key) return true;
+      return false;
+    });
+  }
+
   /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
@@ -3162,7 +3187,7 @@ export class Game {
     // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
     const shielded = this.fireShielded(b.x, b.y + b.h / 2, b.z);
     const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire') && !(walk && d.key === 'lava')).sort((a, c) => c.harm - a.harm)[0];
-    if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
+    if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world', 0, 0, undefined, p.invulnT > 0 ? null : this.hotSource(b, hot.key));
     // breath: drains with your head under water, refills fast at the surface
     const max = this.stats.get('breath');
     if (m.head?.breath) {

@@ -129,7 +129,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `pickupCollect` | `amount`, or cancel (`heart` names the kind of a heart other than red; a red heart has none) | collecting a key, bomb or heart |
 | `berserkChange` *(react only)* | nothing: `on` says whether the berserker state just started or ended (a berserker heart held or a Berserker Draught drunk) | the berserker state changes |
 | `heartLost` *(react only)* | nothing: `heart` is the blue, stone or berserker heart just spent | an extra heart is spent by a hit |
-| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
+| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback` (for the player, a multiplier of the hurt knockback: 1 by default, 0 takes it away), or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |
 | `death` | cancel (survive; Waymark cancels it at priority 150 and spends a copy) | the player reaching 0 hearts |

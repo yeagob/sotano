@@ -64,6 +64,14 @@ function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = m
 
 const jitter = (f: number) => f * (0.92 + fx.random() * 0.16);
 
+function panned(pan: number): AudioNode {
+  if (!ctx || pan === 0) return master;
+  const p = ctx.createStereoPanner();
+  p.pan.value = Math.max(-1, Math.min(1, pan));
+  p.connect(master);
+  return p;
+}
+
 export const sfx = {
   shoot: () => tone(jitter(520), 0.09, 'sine', 0.25, 0.6),
   hit: (tier: number) => noise(0.06, 0.25, jitter(1800 - tier * 350), 2),
@@ -203,7 +211,7 @@ export const sfx3 = {
     bellTone(f * 2, 1.0, 0.015);
     if (kind === 'end') setTimeout(() => bellTone(660, 2, 0.05), 400);
   },
-  hurt: () => { tone(220, 0.18, 'square', 0.18, 0.5); noise(0.12, 0.3, 600, 1); },
+  hurt: (pan = 0) => { const out = panned(pan); tone(jitter(220), 0.18, 'square', 0.18, 0.5, out); noise(0.12, 0.3, 600, 1, out); tone(jitter(90), 0.14, 'sine', 0.3, 0.6, out); },
   heal: () => { tone(523, 0.12, 'sine', 0.15); setTimeout(() => tone(784, 0.16, 'sine', 0.15), 90); },
   bombPickup: () => { tone(330, 0.08, 'square', 0.12); setTimeout(() => tone(440, 0.1, 'square', 0.12), 60); },
   /** Lucid Dream starts: a soft low swell that opens upward, the walls going thin. */
