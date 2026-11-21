@@ -8,7 +8,7 @@ import { loadBook } from '../src/content/book';
 import { ITEMS } from '../src/content/items';
 import { LEVELS } from '../src/content/levels';
 import { POTION_IDS } from '../src/content/potions';
-import { PART_WEIGHT, PARTS, completion, contentIds, type ContentIds, type CompletionSave } from '../src/game/completion';
+import { PART_WEIGHT, PARTS, completion, contentIds, partPercent, type ContentIds, type CompletionSave } from '../src/game/completion';
 import { AchievementKeeper } from '../src/game/achievement-keeper';
 import { BOOK_DOWNLOAD_PERCENT, bookButtonHtml, bookDownloadShown, bookHtml } from '../src/game/book-download';
 import { defaultMeta, loadMeta, mergeMeta, unionFirsts, type LoadedMeta, type MetaStore } from '../src/game/meta';
@@ -209,5 +209,14 @@ describe('the book download at 100% (COMPLETION §8)', () => {
       const pages = loadBook(lang).pages.filter(p => p.kind === 'book').length;
       expect(html.match(/<section class="page">/g)).toHaveLength(pages);
     }
+  });
+});
+
+describe('a part shows its own percentage', () => {
+  it('is its done count over its total, floored, and complete when it has no content', () => {
+    expect(partPercent({ done: 5, total: 22, weight: 25 })).toBe(22);
+    expect(partPercent({ done: 0, total: 29, weight: 5 })).toBe(0);
+    expect(partPercent({ done: 22, total: 22, weight: 25 })).toBe(100);
+    expect(partPercent({ done: 0, total: 0, weight: 5 })).toBe(100);
   });
 });

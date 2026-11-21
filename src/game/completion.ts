@@ -76,6 +76,10 @@ export interface PartCount {
   readonly weight: number;
 }
 
+export function partPercent(part: PartCount): number {
+  return part.total === 0 ? 100 : Math.floor((100 * part.done) / part.total);
+}
+
 export interface Completion {
   /** The whole number, 0 to 100. It is 100 only when every part is complete (floored, so 99.x reads 99). */
   readonly percent: number;

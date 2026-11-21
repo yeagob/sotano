@@ -121,13 +121,16 @@ git branch -d <branch>
 
 ## 9. Hotfix (from GITFLOW.md)
 
-1. `hotfix/<issue>-<slug>` from `main`.
-2. Fix it. Set the hotfix version in `package.json` (`0.1.2-f1`, then `-f2`). The build shows it as `0.1.2.f1`.
-3. PR into `main` (allowed only from `hotfix/*`), CI green, merge commit.
-4. Tag the merge commit with the dotted label (`v0.1.2.f1`), publish its changelog section as the GitHub release.
-5. Back-merge `main` into `develop` (section 10, step 4), so the fix is not lost.
+The owner confirmed the hotfix version label (2026-11-21, the first hotfix: 0.2.8-alpha, issue #281).
 
-The `-f1` form in `package.json` is documented in `GITFLOW.md`; no hotfix in the repo's history has been checked against it. To confirm with the owner before the first hotfix.
+1. `hotfix/<issue>-<slug>` from `main` (a worktree, so the work branch is not touched).
+2. Fix it, and set the hotfix version in `package.json` with the suffix `-f1`, then `-f2`, after the released version, label included: `npm version 0.2.8-alpha-f1 --no-git-tag-version`. Examples: `0.2.8-alpha-f1` (tag `v0.2.8-alpha.f1`), `0.1.2-f1` (tag `v0.1.2.f1`).
+3. Add the changelog section `## <dotted label> · <date>` above the released one (`## 0.2.8-alpha.f1 · 2026-11-21`), with its `### Fixed` lines. `## Unreleased` stays empty on `main`.
+4. PR into `main` (allowed only from `hotfix/*`), CI green, merge commit.
+5. Tag the merge commit with the dotted label (`v0.2.8-alpha.f1`, annotated), publish its changelog section as the GitHub release.
+6. Back-merge `main` into `develop` (section 10, step 4), so the fix is not lost. The `develop` version stays on its `-dev` line.
+
+Verified: the first hotfix is PR #282 (`hotfix/281-death-screen-phone`, issue #281).
 
 ## 10. Deploy to main
 

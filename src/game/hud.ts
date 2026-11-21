@@ -36,7 +36,7 @@ import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
-import { PARTS, type Completion } from './completion';
+import { PARTS, partPercent, type Completion } from './completion';
 import { bookButtonHtml } from './book-download';
 import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
@@ -987,16 +987,12 @@ export class Hud {
 
   /**
    * The completion block, one render function for the pause card and the death screen: the percentage, then each part with
-   * its done count and its share of the whole (COMPLETION.md §4). Empty until the game gives a completion.
+   * its own percentage (COMPLETION.md §4). Empty until the game gives a completion.
    */
   private completionHtml(): string {
     const c = this.completionView;
     if (!c) return '';
-    const rows = PARTS.map(p => {
-      const x = c.parts[p];
-      return `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.count', { done: x.done, total: x.total })}</span>` +
-        `<span>${th('completion.share', { share: x.weight })}</span></li>`;
-    }).join('');
+    const rows = PARTS.map(p => `<li><span>${th(`completion.part.${p}`)}</span><span>${th('completion.share', { share: partPercent(c.parts[p]) })}</span></li>`).join('');
     return `<section class="completion"><h2>${th('completion.title', { percent: c.percent })}</h2><ul>${rows}</ul>${bookButtonHtml(c.percent)}</section>`;
   }
 

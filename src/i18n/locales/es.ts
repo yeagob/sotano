@@ -738,7 +738,6 @@ export const ES: Catalog = {
     'completion.part.bestiary': 'Bestiario',
     'completion.part.recipes': 'Recetas',
     'completion.part.book': 'El libro oculto',
-    'completion.count': '{done} de {total}',
     'completion.book': 'Descargar el libro',
     'book.download.title': 'El libro de las raíces',
     'book.download.page': 'Página {n}',

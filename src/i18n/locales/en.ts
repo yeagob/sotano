@@ -765,7 +765,6 @@ const messages = {
   'completion.part.bestiary': 'Bestiary',
   'completion.part.recipes': 'Recipes',
   'completion.part.book': 'The hidden book',
-  'completion.count': '{done} of {total}',
   'completion.book': 'Download the book',
   'book.download.title': 'The Roots\' book',
   'book.download.page': 'Page {n}',
