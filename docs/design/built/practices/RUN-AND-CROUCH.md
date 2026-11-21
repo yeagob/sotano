@@ -2,7 +2,7 @@
 
 Up: [built practices](README.md)
 
-Two body practices that change how the Roots moves. **Fartlek** (the Swedish "speed play") lets you run for the joy of it. **Child's Pose** (*balasana*) lets you fold in and go low: under a low gap, along an edge, and out of the way of what is coming. Both are quality 2, path `body`, tags `body` and `movement`, found in treasure rooms.
+Two body practices that change how the Roots moves. **Fartlek** (the Swedish "speed play") lets you run for the joy of it. **Child's Pose** (*balasana*) lets you fold in and go low: under a low gap, along an edge, and out of the way of what is coming. Both are quality 2, path `body`, tags `body` and `movement`, found in treasure rooms. From mastery level 10 Fartlek always lies on the Roots' first extra practice pedestal, and from level 25 Child's Pose on the second ([REWARDS](../levels/roots/REWARDS.md) §4, issue #277).
 
 - **Code:** `src/content/items/fartlek.ts`, `src/content/items/balasana.ts` (the practices), the stats `run` and `crouch` (`src/core/stats.ts`), the stance and speed rules (`src/entities/stance.ts`, `Player.setStance` and `Player.walk` in `src/entities/player.ts`), the contact halving (`Game.contact` in `src/game/game.ts`), the actions `run` and `crouch` and the touch swipe (`src/input/bindings.ts`, `src/input/input.ts`, `src/input/touch.ts`).
 - **Tests:** `tests/run-crouch.test.ts`, `tests/controls.test.ts`. **Sandbox:** `src/sandbox/scenarios/fartlek-*.json`, `balasana-*.json` (§6).
@@ -12,7 +12,7 @@ Two body practices that change how the Roots moves. **Fartlek** (the Swedish "sp
 | Control | Keyboard and mouse | Gamepad | Touch (landscape) |
 |---|---|---|---|
 | Run (Fartlek) | hold Shift | L3 (stick click) toggles it until the left stick returns to centre; also running while the stick is pushed to its edge | push the left stick past 95 % of its radius |
-| Crouch (Child's Pose) | hold C | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
+| Crouch (Child's Pose) | C switches it, Control holds it | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
 
 Running is 45 % faster on the ground and in the air, and jumping keeps the pace. There is no stamina. Crouching is a stance: the body is a block shorter (1.8 to 0.8 blocks), the eye drops with it, and the body fits through a gap one block high. A crouched body never walks off a ledge, and takes half the contact damage from projections.
 

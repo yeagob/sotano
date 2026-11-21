@@ -14,9 +14,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Stride Tonic: an easy potion (a body pattern's mind) that lets you run 45% faster with Shift, L3 or the stick at its edge for 3 sealed rooms, as Fartlek does (#263).
 
 ### Changed
+- On the keyboard, C switches the crouch on and off, and Control holds it while you press it (#277).
 - Taking damage knocks you back, away from its source when there is one, with a red glow on the edge the damage came from and a damage sound (#268).
 - The hearts of a white bomb's blast are drawn as small red hearts that rise and turn to face you, not as red sparks (#264).
 - Irimi is a tier 4 practice: the dash leaves a trail of light, hurts each projection it passes through, breaks the blocks in its way and keeps you untouchable while it lasts (#261).
+- From mastery level 10 the Roots always offer Fartlek (run) on their first extra practice pedestal, and from level 25 Child's Pose (crouch) on the second, instead of a random practice (#277).
 
 ### Fixed
 - A healing potion or meal is not drunk at full health, and the game says why (#260).

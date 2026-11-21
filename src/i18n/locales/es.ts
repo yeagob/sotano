@@ -632,7 +632,7 @@ export const ES: Catalog = {
     'potion.stride-tonic.name': 'Tónico de zancada',
     'potion.stride-tonic.effect': 'Durante {rooms} salas selladas, mantén Mayús (L3, o empuja el stick hasta su borde) para correr un 45% más rápido, como con Fartlek.',
     'potion.folding-tincture.name': 'Tintura de repliegue',
-    'potion.folding-tincture.effect': 'Durante {rooms} salas selladas, mantén C (R3, o desliza hacia abajo desde el borde inferior del lado derecho) para agacharte, como con la Postura del niño: 1 bloque más bajo, 45% de velocidad, la mitad del contacto y nunca caes por un borde.',
+    'potion.folding-tincture.effect': 'Durante {rooms} salas selladas, pulsa C para agacharte y vuelve a pulsarla para levantarte, o mantén Control para agacharte mientras lo aprietas (R3, o desliza hacia abajo desde el borde inferior derecho), como la postura del niño: 1 bloque más bajo, 45% de velocidad, la mitad del contacto, nunca por un borde.',
     'potion.rebirth.question': '¿Empezar de nuevo desde el primer piso? Tus prácticas vienen contigo; las llaves, las bombas, los corazones y lo que llevas empiezan de cero.',
     'potion.rebirth.begin': 'Empezar de nuevo',
     'potion.rebirth.stay': 'Todavía no',
@@ -1489,7 +1489,7 @@ export const ES: Catalog = {
       balasana: {
         name: 'Postura del niño',
         description: 'Plegarse para descansar también es avanzar. Hazte pequeño y bajo: el cuerpo que se dobla pasa por debajo de lo que lo detendría y mantiene el equilibrio al borde.',
-        effect: 'Mantén C (R3, o desliza hacia abajo desde el borde inferior derecho, que alterna) para agacharte: pasas huecos de 1 bloque, nunca caes por los bordes y recibes la mitad del contacto. Agachado te mueves al 45% de velocidad.',
+        effect: 'Pulsa C para agacharte y vuelve a pulsarla para levantarte; mantén Control para estar agachado solo mientras lo aprietas (R3, o desliza hacia abajo desde el borde inferior derecho, alterna). Pasas huecos de 1 bloque, nunca caes por los bordes y recibes la mitad del contacto. Agachado te mueves al 45% de velocidad.',
         inspiredBy: 'Balasana, la postura del niño del yoga',
       },
       drlauncher: {

@@ -53,6 +53,18 @@ const BOMBS_AT = [1, 9, 19, 28, 38] as const;
 const CHESTS_AT = [4, 12, 17, 23, 29, 35] as const;
 /** Each extra practice: one more from the level given. */
 const PRACTICES_AT = [10, 25] as const;
+
+export interface FixedPractice { readonly at: number; readonly item: string }
+
+export const FIXED_PRACTICES: readonly FixedPractice[] = [
+  { at: PRACTICES_AT[0], item: 'fartlek' },
+  { at: PRACTICES_AT[1], item: 'balasana' },
+];
+
+export function fixedPracticeAt(site: number, level: number): string | null {
+  const fixed = FIXED_PRACTICES[site];
+  return fixed && clampLevel(level) >= fixed.at ? fixed.item : null;
+}
 /**
  * Each loose heart, in the order it is added (a second red comes at 16, and so on). Star hearts are halved (owner,
  * 2026-11-12): only the first one is ever laid, so the step that would give a second gives a second blood heart.
