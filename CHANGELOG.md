@@ -11,6 +11,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
 
 ### Changed
+- The hearts of a white bomb's blast are drawn as small red hearts that rise and turn to face you, not as red sparks (#264).
 - Irimi is a tier 4 practice: the dash leaves a trail of light, hurts each projection it passes through, breaks the blocks in its way and keeps you untouchable while it lasts (#261).
 
 ### Fixed
