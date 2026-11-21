@@ -26,6 +26,7 @@ export interface VoxelSpace {
   setElem(x: number, y: number, z: number, kind: number, level: number, falling?: boolean): void;
   setElemByte(x: number, y: number, z: number, v: number): void;
   markDirty(x: number, y: number, z: number): void;
+  keysAround?(x: number, y: number, z: number): string[];
   markElemDirty(x: number, y: number, z: number): void;
   hp(x: number, y: number, z: number): number;
   /** A chunk plus a one-voxel border, (CHUNK + 2)³ bytes, for the mesher (`elem`: the element layer). */
