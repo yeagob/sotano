@@ -6,7 +6,7 @@
 // Pure: the game calls these and places what they return.
 
 import type { Rng, RunRandom } from '../core/rng';
-import { EXTRA_PRACTICE_BAND, rootsRewards } from '../content/tables/roots-mastery';
+import { EXTRA_PRACTICE_BAND, fixedPracticeAt, rootsRewards } from '../content/tables/roots-mastery';
 import type { ItemPools } from '../items/pool';
 
 /** A spot of floor 0 that holds a practice: the block's cell (`FloorResult.practices` and `altar`). */
@@ -21,6 +21,7 @@ export interface RootsSite {
   readonly spot: RootsSpot;
   readonly path: readonly (string | number)[];
   readonly band: readonly [number, number];
+  readonly fixed: string | null;
 }
 
 /** The fork of one of floor 0's Roots draws: `floor/0/roots/…` followed by the decision's own path (RNG.md). */
@@ -35,9 +36,10 @@ export function rootsFork(rr: RunRandom, ...path: (string | number)[]): Rng {
 export function rootsSites(f: { readonly practices: readonly RootsSpot[]; readonly altar: RootsSpot | null }, level: number): RootsSite[] {
   const sites: RootsSite[] = f.practices.map((spot, i) => ({
     key: spotKey(spot), spot, path: ['practice', i], band: [EXTRA_PRACTICE_BAND.min, EXTRA_PRACTICE_BAND.max],
+    fixed: fixedPracticeAt(i, level),
   }));
   const altar = rootsRewards(level).altar;
-  if (f.altar && altar) sites.push({ key: spotKey(f.altar), spot: f.altar, path: ['altar'], band: [altar.min, altar.max] });
+  if (f.altar && altar) sites.push({ key: spotKey(f.altar), spot: f.altar, path: ['altar'], band: [altar.min, altar.max], fixed: null });
   return sites;
 }
 
@@ -60,7 +62,9 @@ export function drawRootsItems(
   drawn: Set<string> = new Set(),
 ): Map<string, string> {
   const out = new Map<string, string>();
-  for (const site of rootsSites(f, level)) out.set(site.key, drawRootsPractice(pools, rootsFork(rr, ...site.path), site.band, drawn));
+  const sites = rootsSites(f, level);
+  for (const site of sites) if (site.fixed) drawn.add(site.fixed);
+  for (const site of sites) out.set(site.key, site.fixed ?? drawRootsPractice(pools, rootsFork(rr, ...site.path), site.band, drawn));
   return out;
 }
 
