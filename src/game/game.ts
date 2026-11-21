@@ -3522,6 +3522,7 @@ export class Game {
     if (!top || !isFlask(top)) { sfx.denied(); return; }
     if (POTIONS[top.potion].rebirth) { this.askRebirth(); return; }
     const def = POTIONS[top.potion];
+    if (def.heal && p.hp >= this.maxHp) { sfx.denied(); this.hud.toast('potion.fullHealth', { name: t(def.name) }); return; }
     const rooms = flaskRooms(top);
     p.takeActive();
     this.hands.placed();
