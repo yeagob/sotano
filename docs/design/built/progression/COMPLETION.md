@@ -8,7 +8,7 @@ One number for the whole game: the share of the game the player has done at leas
 
 - A pure function, `completion(save, content)` in `src/game/completion.ts`, computes the percentage (0 to 100, floored: 100 only when every part is complete) and each part's done count, total and weight, from the save record and the content ids. Nothing is stored as a number.
 - The totals come from the content: a new floor, boss, achievement, practice, creature, potion or book page changes the totals with no code change (`contentIds()`).
-- The display is one render function (`completionHtml` in `src/game/hud.ts`), shown on the pause card and on the death screen: the percentage, then each part with its done count and its weight. At 100% it also shows the book's download button (§8).
+- The display is one render function (`completionHtml` in `src/game/hud.ts`), shown on the pause card and on the death screen: the percentage, then each part with its own percentage (its done count over its total, floored, `partPercent`). The counts and the weights are not shown: a row's number is the real share of its part. At 100% it also shows the book's download button (§8).
 - At 100% the final achievement "Made Omh" unlocks once (§8).
 
 ## 2. The parts, weights and totals
