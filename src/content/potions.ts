@@ -14,6 +14,7 @@ export const POTION_IDS = [
   'tender-tincture', 'tender-cordial', 'tender-elixir',
   'steadfast-tincture', 'steadfast-cordial', 'steadfast-elixir',
   'echo-draught',
+  'stride-tonic', 'folding-tincture',
 ] as const;
 export type PotionId = (typeof POTION_IDS)[number];
 
@@ -85,6 +86,8 @@ export const POTIONS: Record<PotionId, PotionDef> = {
   'steadfast-cordial': potion('steadfast-cordial', 'will', 'path.will.glow', ROOMS(3), { stats: [mul('damage', 1.3)] }),
   'steadfast-elixir': potion('steadfast-elixir', 'will', 'path.will.dark', FLOOR, { stats: [mul('damage', 1.3), mul('fireRate', 1.2)] }),
   'echo-draught': potion('echo-draught', 'mind', 'path.milagros.base', ROOMS(2), { echo: true }),
+  'stride-tonic': potion('stride-tonic', 'body', 'path.body.glow', ROOMS(3), { stats: [{ stat: 'run', layer: 'add', value: 1 }] }),
+  'folding-tincture': potion('folding-tincture', 'body', 'mat.dirt.hi', ROOMS(3), { stats: [{ stat: 'crouch', layer: 'add', value: 1 }] }),
 };
 
 export function isFlask(c: Carried): c is Flask {

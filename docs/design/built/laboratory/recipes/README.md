@@ -1,6 +1,6 @@
 # Recipes
 
-Up: [laboratory](../README.md) · built: nine named recipes and the Plain Tonic, the potion types and their variants, the Echo, the matching of the bulb, ice and the durations. Not built: the Warm Cordial and the Open-Hand Elixir (they need a warmth field on the damage and spawn events, step P3), the Distillate (P3) and the run-long duration ([potions](../../../not-built/practices/potions/README.md)).
+Up: [laboratory](../README.md) · built: nine named recipes, the Stride Tonic and Folding Tincture and the Plain Tonic, the potion types and their variants, the Echo, the matching of the bulb, ice and the durations. Not built: the Warm Cordial and the Open-Hand Elixir (they need a warmth field on the damage and spawn events, step P3), the Distillate (P3) and the run-long duration ([potions](../../../not-built/practices/potions/README.md)).
 
 What the bulb makes when a positive intention brews it, and how long the flask's effect lasts once it is drunk.
 
@@ -26,6 +26,8 @@ What the bulb makes when a positive intention brews it, and how long the flask's
 | Patient Draught | will | a heart and a mind of one will pattern | mining ×1.6 | the floor | [PATIENT-DRAUGHT](PATIENT-DRAUGHT.md) |
 | Berserker Draught | will | two will hearts and obsidian | the berserker state | 2 sealed rooms | [BERSERKER-DRAUGHT](BERSERKER-DRAUGHT.md) |
 | Rebirth Draught | mind | a will heart, a mind of mind and a flesh of body | starts the run again, keeping every practice held (asks first) | at once | [IN-HAND-AND-REBIRTH](../../practices/potions/IN-HAND-AND-REBIRTH.md) |
+| Stride Tonic | body | a mind of a body pattern | run (Fartlek's switch: hold the run control to move 45 % faster) | 3 sealed rooms | [STRIDE-TONIC](STRIDE-TONIC.md) |
+| Folding Tincture | body | a mind of a body pattern and dirt | crouch (Child's Pose's switch: hold the crouch control) | 3 sealed rooms | [FOLDING-TINCTURE](FOLDING-TINCTURE.md) |
 
 A bulb no named recipe matches brews a variant of its type (flesh alone: a tonic by the number of flesh; one path: that path's Tincture, Cordial or Elixir) or, when it mixes paths, an Echo ([TYPES-AND-VARIANTS](TYPES-AND-VARIANTS.md), [ECHO-DRAUGHT](ECHO-DRAUGHT.md)).
 

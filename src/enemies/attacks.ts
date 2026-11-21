@@ -65,7 +65,7 @@ export const PARTICLE_TINTS = ['cold.white', 'cold.body'] as const;
 
 export interface HazardHost {
   actors(): Iterable<Actor>;
-  hurt(target: Actor, damage: number, cause: string, owner: number): void;
+  hurt(target: Actor, damage: number, cause: string, owner: number, from?: { x: number; z: number }): void;
   affect(target: Actor, effect: FieldEffect, seconds: number): void;
   push(target: Actor, vx: number, vz: number): void;
   live(shape: Shape): void;
@@ -216,7 +216,7 @@ export class Hazards {
         inside = Math.abs(coord - at) < s.width + b.hw && along > s.across[0] - b.hw && along < s.across[1] + b.hw
           && b.y < s.y + s.height && b.y + b.h > s.y;
       }
-      if (inside) { h.hit.add(a.id); this.host.hurt(a, h.damage, h.cause, h.owner); }
+      if (inside) { h.hit.add(a.id); this.host.hurt(a, h.damage, h.cause, h.owner, hazardFrom(s, live, b.x, b.z)); }
     }
   }
 
@@ -233,7 +233,7 @@ export class Hazards {
         const k = s.force * dt / Math.max(0.5, d);
         this.host.push(a, dx * k, dz * k);
       } else if (s.effect === 'sting') {
-        if (tick) this.host.hurt(a, h.damage, h.cause, h.owner);
+        if (tick) this.host.hurt(a, h.damage, h.cause, h.owner, { x: s.x, z: s.z });
       } else {
         this.host.affect(a, s.effect, 0.4);
       }
@@ -312,6 +312,20 @@ export function shapePoint(s: Shape): [number, number, number] {
 export function sweepAt(s: Extract<Shape, { kind: 'sweep' }>, t: number): number {
   const at = s.from + Math.sign(s.to - s.from) * s.speed * t;
   return s.to >= s.from ? Math.min(s.to, at) : Math.max(s.to, at);
+}
+
+export function hazardFrom(s: Shape, live: number, x: number, z: number): { x: number; z: number } {
+  if (s.kind === 'line') {
+    const dx = s.x1 - s.x0, dz = s.z1 - s.z0, l2 = dx * dx + dz * dz;
+    const t = l2 > 0 ? Math.max(0, Math.min(1, ((x - s.x0) * dx + (z - s.z0) * dz) / l2)) : 0;
+    const px = s.x0 + dx * t, pz = s.z0 + dz * t;
+    return Math.hypot(x - px, z - pz) < 0.3 ? { x: s.x0, z: s.z0 } : { x: px, z: pz };
+  }
+  if (s.kind === 'sweep') {
+    const back = sweepAt(s, live) - Math.sign(s.to - s.from);
+    return s.axis === 'x' ? { x: back, z } : { x, z: back };
+  }
+  return { x: s.x, z: s.z };
 }
 
 export function distanceToSegment(px: number, pz: number, x0: number, z0: number, x1: number, z1: number): number {

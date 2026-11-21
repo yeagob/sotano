@@ -73,7 +73,7 @@ describe('playerElements with lavaWalk', () => {
     const { g, set, damage } = rig(0);
     set(EL_LAVA, 5, 0, 5);
     g.playerElements(0.1);
-    expect(damage).toHaveBeenCalledWith(g.player, 8, 'fire', 'lava', 'world');
+    expect(damage).toHaveBeenCalledWith(g.player, 8, 'fire', 'lava', 'world', 0, 0, undefined, null);
     expect(g.playerMedium.feet.wade).toBe(0.4);
   });
 
@@ -90,7 +90,7 @@ describe('playerElements with lavaWalk', () => {
     const { g, set, damage } = rig(1);
     set(EL_FIRE, 5, 0, 5, 8);
     g.playerElements(0.1);
-    expect(damage).toHaveBeenCalledWith(g.player, 4, 'fire', 'fire', 'world');
+    expect(damage).toHaveBeenCalledWith(g.player, 4, 'fire', 'fire', 'world', 0, 0, undefined, null);
   });
 
   it('a body in lava at full speed is still in the lava (the wade changes speed, not the medium)', () => {

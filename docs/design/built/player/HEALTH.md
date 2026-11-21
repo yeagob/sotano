@@ -27,6 +27,7 @@ Code: `src/entities/actors.ts` (the heart and the quarter, lines 16-24), `src/ga
 - Heart: 8 points, four quarters of 2 points.
 - Heart pickup: one heart (8 points); the design counts it as 100 health.
 - Invulnerability after a hit: 1 second, which items can lengthen.
+- A hit that lands knocks you back a little, away from its source, and lights the screen edge on that side ([FEEDBACK](../feel/FEEDBACK.md#knockback-on-a-hit)).
 - Drowning: 4 points every 1.5 seconds (see [SWIMMING.md](SWIMMING.md)).
 
 ## Open questions

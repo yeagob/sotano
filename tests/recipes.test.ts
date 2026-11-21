@@ -32,6 +32,10 @@ const SAMPLES: [string, Carried[]][] = [
   ['patient-draught', [part('autopilot', 'heart'), part('autopilot', 'mind')]],
   ['berserker-draught', [part('panic', 'heart'), part('autopilot', 'heart'), MAT.obsidian]],
   ['rebirth-draught', [part('doubt', 'mind'), part('panic', 'heart'), part('impulse', 'flesh')]],
+  ['stride-tonic', [part('impulse', 'mind')]],
+  ['stride-tonic', [part('craving', 'mind')]],
+  ['folding-tincture', [part('impulse', 'mind'), MAT.dirt]],
+  ['folding-tincture', [MAT.dirt, part('craving', 'mind')]],
   ['rebirth-draught', [part('impulse', 'flesh'), part('panic', 'heart'), part('doubt', 'mind')]],
 ];
 
@@ -113,7 +117,7 @@ describe('the resolver', () => {
 
 describe('the validator: every bulb resolves, no two recipes tie, and the Plain Tonic is rare', () => {
   it('every bulb of one to three cubes resolves without throwing, to at most one most specific recipe, and only a bulb with no part is a Plain Tonic', () => {
-    const cubes: Carried[] = [...PARTS, MAT.deepstone, MAT.obsidian, MAT.ore, ICE, MAT.stone];
+    const cubes: Carried[] = [...PARTS, MAT.deepstone, MAT.obsidian, MAT.ore, ICE, MAT.stone, MAT.dirt];
     const n = cubes.length;
     let bulbs = 0, matched = 0, fallback = 0;
     const brewed = new Set<string>();
