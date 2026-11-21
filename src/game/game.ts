@@ -23,7 +23,8 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
-import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
+import { flaskEffect, flaskName } from '../content/potion-text';
 import { heartTollPlan, tollIndex } from './toll';
 import { defaultMeta, noStore, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
@@ -2294,7 +2295,7 @@ export class Game {
         const ev = this.bus.emit('roomClear', { room: id, drops });
         this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3)), 3.2, 4);
         this.hud.toast('toast.roomClear');
-        this.potionsEnded(this.potions.roomCleared());
+        this.potionsEnded(this.potions.endRooms());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
       } else if (!inside && st.sealed) {
@@ -3449,12 +3450,12 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
     const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
-    devlog.line(`alembic ${cell(x, y, z)}: intention ${polarity} -> ${r}${flask ? ` (${flask.potion})` : ''}`);
+    devlog.line(`alembic ${cell(x, y, z)}: intention ${polarity} -> ${r}${flask ? ` (${flask.potion}${flask.echo ? ` ${flask.echo}` : ''})` : ''}`);
     if (r === 'brew' && flask) {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
-      this.hud.toastDrinkHint('lab.brewed', { name: t(POTIONS[flask.potion].name), left: BREWS - a.brews, total: BREWS });
+      this.hud.toastDrinkHint('lab.brewed', { name: flaskName(flask), left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);
@@ -3476,11 +3477,11 @@ export class Game {
     this.bus.emit('drink', { potion: top.potion, rooms });
     this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(def.liquid), 16, 1.2, 0.05);
     sfx.pickup();
-    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect, { rooms }) });
+    this.hud.toast('potion.drunk', { name: flaskName(top), effect: flaskEffect(top) });
   }
 
-  private potionsEnded(ended: readonly PotionId[]) {
-    for (const id of ended) this.hud.toast('potion.ended', { name: t(POTIONS[id].name) });
+  private potionsEnded(ended: readonly Flask[]) {
+    for (const f of ended) this.hud.toast('potion.ended', { name: flaskName(f) });
   }
 
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
@@ -4685,7 +4686,7 @@ export class Game {
 
   private carriedName(c: Carried): string {
     if (typeof c === 'number') return materialName(c);
-    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    if (isFlask(c)) return flaskName(c);
     return partText(c).name;
   }
 
@@ -4790,7 +4791,7 @@ export class Game {
       this.activate(band);
       this.carve(band + 1);
       this.bus.clearDeferred();
-      this.potionsEnded(this.potions.floorEntered());
+      this.potionsEnded(this.potions.endFloor());
       // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
       const entered = this.floors.get(band);
       this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });

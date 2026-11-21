@@ -1,14 +1,22 @@
 # Recipes
 
-Up: [laboratory](../README.md) · built: nine of the twelve recipes, the matching of the bulb, ice and the durations. Not built: the Warm Cordial and the Open-Hand Elixir (they need a warmth field on the damage and spawn events, step P3), the Distillate (P3) and the run-long duration ([potions](../../../not-built/practices/potions/README.md)).
+Up: [laboratory](../README.md) · built: nine named recipes and the Plain Tonic, the potion types and their variants, the Echo, the matching of the bulb, ice and the durations. Not built: the Warm Cordial and the Open-Hand Elixir (they need a warmth field on the damage and spawn events, step P3), the Distillate (P3) and the run-long duration ([potions](../../../not-built/practices/potions/README.md)).
 
 What the bulb makes when a positive intention brews it, and how long the flask's effect lasts once it is drunk.
 
-## The recipes
+## Documents
+
+| Document | Contents |
+|---|---|
+| [TYPES-AND-VARIANTS](TYPES-AND-VARIANTS.md) | How a bulb resolves in four steps, the tonic type and the four path types with their variants |
+| [ECHO-DRAUGHT](ECHO-DRAUGHT.md) | The Echo: a mixed bulb carries the effect of a practice for two sealed rooms |
+| One document per named recipe | The table below |
+
+## The named recipes
 
 | Potion | Path | Bulb | Effect | Duration | Document |
 |---|---|---|---|---|---|
-| Plain Tonic | body | anything else | half a heart | instant | [PLAIN-TONIC](PLAIN-TONIC.md) |
+| Plain Tonic | body | no part at all: blocks or ice | half a heart | instant | [PLAIN-TONIC](PLAIN-TONIC.md) |
 | Restoring Draught | body | two flesh | one heart | instant | [RESTORING-DRAUGHT](RESTORING-DRAUGHT.md) |
 | Footing Tincture | body | a body flesh and deepstone or obsidian | kick ×1.5 | 3 sealed rooms | [FOOTING-TINCTURE](FOOTING-TINCTURE.md) |
 | Spring Tonic | body | a body heart | jump ×1.4 | the floor | [SPRING-TONIC](SPRING-TONIC.md) |
@@ -19,12 +27,14 @@ What the bulb makes when a positive intention brews it, and how long the flask's
 | Berserker Draught | will | two will hearts and obsidian | the berserker state | 2 sealed rooms | [BERSERKER-DRAUGHT](BERSERKER-DRAUGHT.md) |
 | Rebirth Draught | mind | a will heart, a mind of mind and a flesh of body | starts the run again, keeping every practice held (asks first) | at once | [IN-HAND-AND-REBIRTH](../../practices/potions/IN-HAND-AND-REBIRTH.md) |
 
+A bulb no named recipe matches brews a variant of its type (flesh alone: a tonic by the number of flesh; one path: that path's Tincture, Cordial or Elixir) or, when it mixes paths, an Echo ([TYPES-AND-VARIANTS](TYPES-AND-VARIANTS.md), [ECHO-DRAUGHT](ECHO-DRAUGHT.md)).
+
 ## How the bulb is read
 
 - **The whole bulb counts**, up to three things, in any order. Parts match by kind (flesh, heart, mind, essence) and by their pattern at one of four levels: the exact pattern, its lineage, its path, or any. Blocks match by their material.
-- **Every thing in the bulb must be accounted for.** A recipe for one heart does not match a heart and a stone.
+- **Every thing in the bulb must be accounted for by a named recipe.** A recipe for one heart does not match a heart and a stone; that bulb brews the heart's type instead.
 - **The most specific recipe wins**: exact pattern or material, then lineage, then path, then any; among equals, more inputs win. A test walks every bulb of one to three things (every part, the recipe materials, ice and one other block) and finds no two recipes tied.
-- **Nothing matched makes a Plain Tonic.** A brew is never nothing.
+- **No named recipe: a type, then an Echo.** A bulb no named recipe matches brews its type's variant, or an Echo when its parts mix paths. Only a bulb with no part makes a Plain Tonic. A brew is never nothing.
 - **No roll.** The same bulb makes the same potion in every run and every order. Recipes are content, not seed.
 
 ## Paths and lineages
@@ -42,7 +52,7 @@ The lineages are Doubt (Doubt, Second-Guessing, Paralysis), the Lectern (the Lec
 
 ## Ice
 
-Ice takes a slot and keeps the brew cold. A potion counted in rooms then lasts one sealed room more; on an instant or floor-long potion ice does nothing. Ice is not an ingredient: a bulb of only ice makes a Plain Tonic.
+Ice takes a slot and keeps the brew cold. A potion counted in rooms then lasts one sealed room more; on an instant or floor-long potion ice does nothing. Ice is not an ingredient: a bulb of only ice makes a Plain Tonic, and ice never changes a type, a variant or an Echo.
 
 ## Durations
 
@@ -55,6 +65,6 @@ Durations never show a clock. A drunk potion's effect stays while practices are 
 | The floor | on the next floor entry, going down. Climbing back up does not end it, and does not give it back |
 | One lock | when it opens a lock, or on the next floor entry |
 
-Drinking a potion that is already active refreshes it to its full duration; it never stacks. When an effect ends, a short notice names the potion.
+Drinking a potion that is already active refreshes it to its full duration; it never stacks. A second Echo replaces the first. When an effect ends, a short notice names the potion.
 
-Code: `src/content/recipes.ts` (the resolver), `src/content/patterns.ts` (paths and lineages), `src/content/potions.ts` (the potions), `src/game/potion-effects.ts` (the durations). Tests: `tests/recipes.test.ts`, `tests/potion-effects.test.ts`.
+Code: `src/content/recipes.ts` (the resolver, the types and the Echo), `src/content/echo.ts` (which practices an Echo can carry), `src/content/patterns.ts` (paths and lineages), `src/content/potions.ts` (the potions), `src/game/potion-effects.ts` (the durations). Tests: `tests/recipes.test.ts`, `tests/potion-variants.test.ts`, `tests/potion-effects.test.ts`.

@@ -22,7 +22,7 @@ The weights are the proposal of issue #180, unchanged (they add up to 100). The 
 | Achievements | 20 | the achievement is unlocked | 46 | `ACHIEVEMENTS`, without `completion.full` (§8) |
 | Practices | 15 | the practice was held at least once | 46 | `ITEMS` |
 | Bestiary | 10 | the projection, creature, presence or sky creature was met | 76 | see below |
-| Recipes | 5 | the potion or meal was made at least once | 11 | `POTION_IDS` (nine potions and two meals) |
+| Recipes | 5 | the potion or meal was made at least once | 27 | `POTION_IDS` (twenty-five potions, the Echo counted once whatever practice it carries, and two meals) |
 | The hidden book | 5 | the page was reached | 19 pages | the Roots' book; reached = the Roots' current page |
 
 **The floors** are the three routes of the world (§7 decision 2):

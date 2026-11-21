@@ -25,6 +25,7 @@ import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
+import { flaskEffect, flaskName } from '../content/potion-text';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
@@ -486,15 +487,14 @@ export class Hud {
    */
   private updateHeld(c: Carried | undefined) {
     const f = c && isFlask(c) ? c : null;
-    const key = f ? `${f.potion}:${f.iced ? 1 : 0}` : '';
+    const key = f ? `${f.potion}:${f.echo ?? ''}:${f.iced ? 1 : 0}` : '';
     if (key === this.heldKey) return;
     this.heldKey = key;
     if (!f) { this.heldEl.classList.remove('show'); this.heldEl.replaceChildren(); return; }
-    const def = POTIONS[f.potion];
     const name = document.createElement('b');
-    name.textContent = t(def.name);
+    name.textContent = flaskName(f);
     const effect = document.createElement('span');
-    effect.textContent = t(def.effect, { rooms: flaskRooms(f) });
+    effect.textContent = flaskEffect(f);
     this.heldEl.replaceChildren(name, effect);
     this.heldEl.classList.add('show');
   }
@@ -507,8 +507,8 @@ export class Hud {
 
   /** The "In hand" block at the top of the inventory when a flask or meal is the active item: name, effect, duration. */
   private inHandBlock(f: Flask): string {
-    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(t(POTIONS[f.potion].name))}</b>` +
-      `<p>${esc(t(POTIONS[f.potion].effect, { rooms: flaskRooms(f) }))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
+    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(flaskName(f))}</b>` +
+      `<p>${esc(flaskEffect(f))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
   }
 
   private slotUrl(m: number) {
@@ -527,9 +527,8 @@ export class Hud {
         img.src = this.slotUrl(c);
         img.title = materialName(c);
       } else if (isFlask(c)) {
-        const pd = POTIONS[c.potion];
         img.src = iconDataUrl(carriedDef(c), 3);
-        img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
+        img.title = `${flaskName(c)}\n${flaskEffect(c)}`;
       } else {
         const tx = partText(c);
         img.src = iconDataUrl(c, 3);
@@ -714,7 +713,7 @@ export class Hud {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
     const carried = offer.carried;
-    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? t(POTIONS[c.potion].name) : partText(c).name;
+    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? flaskName(c) : partText(c).name;
     // a multi-part agreement names every object in one sentence (AGREEMENTS.md; owner, #228, D11)
     const item = carried === undefined
       ? ''
@@ -1187,7 +1186,7 @@ export class Hud {
     const hands = p.hand.map((m, i) => (typeof m === 'number'
       ? tile(`hand:${i}`, this.slotUrl(m), materialName(m))
       : isFlask(m)
-        ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), t(POTIONS[m.potion].name))
+        ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), flaskName(m))
         : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
     const items = g.inventory.items.map((it, i) => isPromised(it.def) ? '' : tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
@@ -1307,7 +1306,7 @@ export class Hud {
 
   private carriedLabel(c: Carried): string {
     if (typeof c === 'number') return materialName(c);
-    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    if (isFlask(c)) return flaskName(c);
     return partText(c).name;
   }
 
