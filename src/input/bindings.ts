@@ -85,7 +85,7 @@ export const BINDINGS: readonly Binding[] = [
   {
     // Child's Pose (RUN-AND-CROUCH.md): hold C; R3 toggles it; on touch, a swipe down from the bottom of the right side toggles it
     action: 'crouch', kind: 'hold', when: ['play'],
-    keyboard: { keys: ['KeyC'] },
+    keyboard: { keys: ['KeyC', 'ControlLeft', 'ControlRight'] },
     gamepad: { buttons: [PAD.RS] },
     touch: { control: 'swipe' },
     refs: { minecraft: 'Shift sneaks and will not walk off an edge; a stick click toggles sneaking on a controller', noita: 'no crouch: the body has one shape', isaac: 'no crouch: a practice changes what the body does, never adds a button' },

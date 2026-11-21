@@ -52,7 +52,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | polarity | press | play | F | LB | a half turn of the phone |
 | dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | swipe on the left side of the screen (a gesture, no button) |
 | run | hold | play | hold Shift (left or right) | L3 (toggles until the left stick returns to centre; the left stick at its edge also runs) | the left stick pushed past 95 % of its radius |
-| crouch | hold | play | hold C | R3 (toggles) | a swipe down from the bottom twelfth of the right side (toggles; no button) |
+| crouch | hold | play | hold C or Control | R3 (toggles) | a swipe down from the bottom twelfth of the right side (toggles; no button) |
 | previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |

@@ -19,7 +19,7 @@ The desktop scheme. Part of [Input](README.md).
 | polarity | F |
 | dash | double-tap a movement key (W A S D or arrows) within 0.25 s; no key of its own |
 | run | hold Shift (ShiftLeft or ShiftRight) |
-| crouch | hold C |
+| crouch | hold C or Control |
 | choose the active carried item (the next place, throw, drink or feed uses it) | mouse wheel up (previous) and down (next); the number keys 1 to 9 pick a slot; in the inventory, Enter picks the highlighted item |
 | inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |
 | star map | M: opens the star map tab of the screen (in play, on the pause card or on another tab); M again or Esc closes it; a click on the Star map tab opens it too |

@@ -1489,7 +1489,7 @@ export const ES: Catalog = {
       balasana: {
         name: 'Postura del niño',
         description: 'Plegarse para descansar también es avanzar. Hazte pequeño y bajo: el cuerpo que se dobla pasa por debajo de lo que lo detendría y mantiene el equilibrio al borde.',
-        effect: 'Mantén C (R3, o desliza hacia abajo desde el borde inferior derecho, que alterna) para agacharte: pasas huecos de 1 bloque, nunca caes por los bordes y recibes la mitad del contacto. Agachado te mueves al 45% de velocidad.',
+        effect: 'Mantén C o Control (R3, o desliza hacia abajo desde el borde inferior derecho, que alterna) para agacharte: pasas huecos de 1 bloque, nunca caes por los bordes y recibes la mitad del contacto. Agachado te mueves al 45% de velocidad.',
         inspiredBy: 'Balasana, la postura del niño del yoga',
       },
       drlauncher: {

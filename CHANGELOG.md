@@ -14,6 +14,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - The Stride Tonic: an easy potion (a body pattern's mind) that lets you run 45% faster with Shift, L3 or the stick at its edge for 3 sealed rooms, as Fartlek does (#263).
 
 ### Changed
+- Crouch also works with Control, as well as C, on the keyboard (#277).
 - Taking damage knocks you back, away from its source when there is one, with a red glow on the edge the damage came from and a damage sound (#268).
 - The hearts of a white bomb's blast are drawn as small red hearts that rise and turn to face you, not as red sparks (#264).
 - Irimi is a tier 4 practice: the dash leaves a trail of light, hurts each projection it passes through, breaks the blocks in its way and keeps you untouchable while it lasts (#261).
