@@ -1,7 +1,8 @@
 import type { Carried } from '../entities/player';
 import { MAT, ORES } from './materials';
 import type { PathName } from './palette';
-import type { PartKind } from './parts';
+import type { PartDef, PartKind } from './parts';
+import { echoPick } from './echo';
 import { lineageOf, pathOf } from './patterns';
 import { isFlask, POTIONS, type Flask, type PotionId } from './potions';
 
@@ -17,6 +18,21 @@ export interface Recipe {
 
 export const ICE = MAT.ice;
 export const FALLBACK: PotionId = 'plain-tonic';
+export const ECHO: PotionId = 'echo-draught';
+
+export type FamilyPath = 'body' | 'mind' | 'emotion' | 'will';
+export type DeepKind = Exclude<PartKind, 'flesh'>;
+
+export const FLESH_TONICS: readonly PotionId[] = ['mending-tonic', 'restoring-draught', 'full-restoring-draught'];
+
+export const FAMILIES: Readonly<Record<FamilyPath, Readonly<Record<DeepKind, PotionId>>>> = {
+  body: { mind: 'nimble-tincture', heart: 'nimble-cordial', essence: 'nimble-elixir' },
+  mind: { mind: 'lucid-tincture', heart: 'lucid-cordial', essence: 'lucid-elixir' },
+  emotion: { mind: 'tender-tincture', heart: 'tender-cordial', essence: 'tender-elixir' },
+  will: { mind: 'steadfast-tincture', heart: 'steadfast-cordial', essence: 'steadfast-elixir' },
+};
+
+export const KIND_DEPTH: Readonly<Record<PartKind, number>> = { flesh: 0, mind: 1, heart: 2, essence: 3 };
 
 export const RECIPES: readonly Recipe[] = [
   { potion: 'restoring-draught', slots: [{ part: 'flesh' }, { part: 'flesh' }] },
@@ -27,6 +43,8 @@ export const RECIPES: readonly Recipe[] = [
   { potion: 'ember-tonic', slots: [{ part: 'heart', path: 'will' }] },
   { potion: 'berserker-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'heart', path: 'will' }, { materials: [MAT.obsidian] }] },
   { potion: 'patient-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'mind', path: 'will' }], patterns: 'same' },
+  { potion: 'stride-tonic', slots: [{ part: 'mind', path: 'body' }] },
+  { potion: 'folding-tincture', slots: [{ part: 'mind', path: 'body' }, { materials: [MAT.dirt] }] },
   { potion: 'rebirth-draught', slots: [{ part: 'heart', path: 'will' }, { part: 'mind', path: 'mind' }, { part: 'flesh', path: 'body' }] },
 ];
 
@@ -84,10 +102,48 @@ export function topMatches(bulb: readonly Carried[]): Recipe[] {
   return top;
 }
 
+export function partsOf(cubes: readonly Carried[]): PartDef[] {
+  return cubes.flatMap(c => (typeof c === 'object' && !isFlask(c) ? [c] : []));
+}
+
+const isFamilyPath = (p: string | null): p is FamilyPath => p !== null && p in FAMILIES;
+
+function pathsOf(parts: readonly PartDef[]): (string | null)[] {
+  return [...new Set(parts.map(p => pathOf(p.source)))];
+}
+
+export function familyOf(bulb: readonly Carried[]): PotionId | null {
+  const parts = partsOf(withoutIce(bulb));
+  if (!parts.length) return null;
+  const deep = parts.filter(p => p.kind !== 'flesh');
+  if (!deep.length) return FLESH_TONICS[Math.min(parts.length, FLESH_TONICS.length) - 1];
+  const paths = pathsOf(parts);
+  if (paths.length !== 1 || !isFamilyPath(paths[0])) return null;
+  const kind = deep.reduce((a, p) => (KIND_DEPTH[p.kind] > KIND_DEPTH[a] ? p.kind : a), deep[0].kind) as DeepKind;
+  return FAMILIES[paths[0]][kind];
+}
+
+const cubeKey = (c: Carried) => (typeof c === 'number' ? `m${c}` : isFlask(c) ? `f.${c.potion}` : c.id);
+
+export function bulbKey(bulb: readonly Carried[]): string {
+  return withoutIce(bulb).map(cubeKey).sort().join('|');
+}
+
+export function echoOf(bulb: readonly Carried[]): string | null {
+  const parts = partsOf(withoutIce(bulb));
+  if (!parts.some(p => p.kind !== 'flesh')) return null;
+  const paths = pathsOf(parts).filter((p): p is string => p !== null);
+  if (paths.length < 2) return null;
+  return echoPick(paths, bulbKey(bulb));
+}
+
 export function resolve(bulb: readonly Carried[]): Flask {
-  const potion = topMatches(bulb)[0]?.potion ?? FALLBACK;
-  const iced = withoutIce(bulb).length < bulb.length && POTIONS[potion].duration.kind === 'rooms';
-  return iced ? { potion, iced: true } : { potion };
+  const named = topMatches(bulb)[0]?.potion ?? familyOf(bulb);
+  const echo = named ? null : echoOf(bulb);
+  const potion = named ?? (echo ? ECHO : FALLBACK);
+  const flask: Flask = echo ? { potion, echo } : { potion };
+  if (withoutIce(bulb).length < bulb.length && POTIONS[potion].duration.kind === 'rooms') flask.iced = true;
+  return flask;
 }
 
 export const brewOf = (bulb: readonly Carried[]): PotionId => resolve(bulb).potion;

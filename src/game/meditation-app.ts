@@ -9,7 +9,7 @@
 
 import type { Action } from '../input/bindings';
 import {
-  EXTEND_SEC, MAX_EXTENSIONS, SEQUENCE, SEQUENCE_IDS, extendPlan, momentAt, planSitting, randomLengthSec, skipPart,
+  SEQUENCE, SEQUENCE_IDS, extendPlan, extensionSec, momentAt, planSitting, randomLengthSec, skipPart,
   type Moment, type Outcome, type Plan, type SequenceId,
 } from '../content/presences/meditations';
 
@@ -70,10 +70,12 @@ export class MeditationApp {
   paused = false;
   /** Milliseconds of the sitting that have run. Only a running session moves it. */
   elapsed = 0;
-  /** How many times this sitting has been lengthened by Add time. */
+  /** How many times this sitting has been lengthened by Add time: the step of the next press (EXTEND_STEPS_SEC). */
   extensions = 0;
   /** The first meditation this visit that was finished: the reward is earned, and it is kept whatever comes next. */
   earned: SequenceId | null = null;
+  /** Milliseconds of every sitting finished this visit, each at its full length (added time included). */
+  meditatedMs = 0;
   outcome: Outcome | null = null;
   selected = 'meditate';
   /** How fast the clock runs against real time. 1 in play; the debug console may raise it to review a sitting. */
@@ -99,8 +101,11 @@ export class MeditationApp {
 
   get running() { return this.screen === 'session' && !this.paused && !this.outcome; }
 
-  /** Add time is offered while the sitting runs and the limit has not been reached. */
-  get canExtend() { return this.screen === 'session' && !this.outcome && !!this.plan && this.extensions < MAX_EXTENSIONS && this.elapsed < this.plan.totalMs; }
+  /** Add time is offered while the sitting runs and the sitting is not yet an hour long. */
+  get canExtend() { return this.screen === 'session' && !this.outcome && !!this.plan && this.nextExtendSec > 0 && this.elapsed < this.plan.totalMs; }
+
+  /** The seconds the next press of Add time adds, 0 when the sitting is at the hour. */
+  get nextExtendSec(): number { return this.plan ? extensionSec(this.extensions, this.seconds) : 0; }
 
   /** The meditation the reward is for: the one finished first this visit, or the one on screen. */
   get rewardSeq(): SequenceId { return this.earned ?? this.seq; }
@@ -130,11 +135,12 @@ export class MeditationApp {
     this.go('session', 'pause');
   }
 
-  /** Adds EXTEND_SEC to the sitting, if the limit allows it. The part in course keeps its end. */
+  /** Adds the next step of time to the sitting (nextExtendSec), if the sitting is not yet an hour. The part in course keeps its end. */
   extend(): boolean {
     if (!this.canExtend) return false;
-    this.plan = extendPlan(this.plan!, this.elapsed, EXTEND_SEC * 1000);
-    this.seconds += EXTEND_SEC;
+    const add = this.nextExtendSec;
+    this.plan = extendPlan(this.plan!, this.elapsed, add * 1000);
+    this.seconds += add;
     this.extensions++;
     return true;
   }
@@ -218,6 +224,7 @@ export class MeditationApp {
     const m = momentAt(this.plan, this.elapsed);
     if (m.done) {
       this.earned ??= this.seq;
+      this.meditatedMs += this.plan.totalMs;
       this.go('end', 'receive');
       out.done = true;
       return out;

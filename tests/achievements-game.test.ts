@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { ACHIEVEMENTS } from '../src/content/achievements';
 import { ITEM_BY_ID } from '../src/content/items';
 import { CRATE_DROP_MIN, crateChanceInBand } from '../src/content/tables/crates';
-import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
+import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, FIXED_PRACTICES, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
 import { AchievementKeeper, cardKeys, gainParams, gainText, noticeKeys, noticeMillis, NOTICE_LONG_CHARS, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
 import { mastery, type Payload } from '../src/game/achievements';
 import { defaultMeta, loadMeta, mergeMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
@@ -136,26 +136,26 @@ describe('bosses: destroyed and turned to your side (ACHIEVEMENTS §1)', () => {
 
 describe('meditations: three completed sittings, across runs (ACHIEVEMENTS §1)', () => {
   it('three completed sittings of one meditation unlock it; a quick reward and a cancel do not count', () => {
-    expect(sittingPayload('quick', 'ground', 'roots')).toBeNull();
-    expect(sittingPayload('cancel', 'ground', 'roots')).toBeNull();
-    const done = sittingPayload('complete', 'ground', 'roots');
-    expect(done).toEqual({ meditation: 'ground', source: 'roots' });
+    expect(sittingPayload('quick', 'ground', 'roots', 20)).toBeNull();
+    expect(sittingPayload('cancel', 'ground', 'roots', 20)).toBeNull();
+    const done = sittingPayload('complete', 'ground', 'roots', 20);
+    expect(done).toEqual({ meditation: 'ground', source: 'roots', seconds: 20 });
 
     const { record, store } = fresh();
     const k = session(record, store);
     k.track('meditationComplete', done!, NOW);
-    k.track('meditationComplete', sittingPayload('complete', 'ground', 'vault')!, NOW + 1);
+    k.track('meditationComplete', sittingPayload('complete', 'ground', 'vault', 20)!, NOW + 1);
     expect(k.pending).toBe(0);
-    expect(record.counts).toEqual({ 'meditation.ground': 2 });
+    expect(record.counts).toEqual({ 'meditation.ground': 2, 'meditation.hour': 40 });
     const third = k.track('meditationComplete', done!, NOW + 2);
     expect(ids(third)).toEqual(['meditation.ground']);
-    expect(record.counts).toEqual({});
+    expect(record.counts).toEqual({ 'meditation.hour': 60 });
   });
 
   it('a count is kept in the save while the achievement is locked', () => {
     const { record, store } = fresh();
-    session(record, store).track('meditationComplete', { meditation: 'box', source: 'roots' }, NOW);
-    expect(loadMeta(store).counts).toEqual({ 'meditation.box': 1 });
+    session(record, store).track('meditationComplete', { meditation: 'box', source: 'roots', seconds: 20 }, NOW);
+    expect(loadMeta(store).counts).toEqual({ 'meditation.box': 1, 'meditation.hour': 20 });
     expect(mastery(record)).toBe(0);
   });
 });
@@ -433,7 +433,7 @@ describe('the Roots\' mastery on floor 0 (REWARDS §3-§6)', () => {
     }
   });
 
-  it('the Roots\' practices are drawn from the treasure pool, in the band, never a reserved one, and each once', () => {
+  it('the Roots\' practices are fixed or drawn from the treasure pool, in the band, a drawn one never reserved, and each once', () => {
     const run = buildRun(0xBEEF, 1, undefined, { mastery: 25 });
     const f0 = run.floors[0];
     expect(f0.practices).toHaveLength(2);
@@ -443,7 +443,7 @@ describe('the Roots\' mastery on floor 0 (REWARDS §3-§6)', () => {
     const values = [...drawn.values()];
     expect(new Set(values).size).toBe(values.length);
     for (const id of values) {
-      expect(reserved.has(id), `${id} is reserved`).toBe(false);
+      if (!FIXED_PRACTICES.some(p => p.item === id)) expect(reserved.has(id), `${id} is reserved`).toBe(false);
       const q = ITEM_BY_ID.get(id)?.quality ?? 0;
       expect(q).toBeGreaterThanOrEqual(EXTRA_PRACTICE_BAND.min);
       expect(q).toBeLessThanOrEqual(EXTRA_PRACTICE_BAND.max);

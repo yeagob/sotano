@@ -1,12 +1,12 @@
 # Laboratory
 
-Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink and nine of the twelve recipes are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
+Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink, nine named recipes, the Stride Tonic and Folding Tincture, the potion types with their variants and the Echo are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
 
 ## Documents
 
 | Document | Contents |
 |---|---|
-| [recipes](recipes/README.md) | The nine built recipes, how the bulb is read, ice and durations, one document per recipe |
+| [recipes](recipes/README.md) | The named recipes, the potion types and variants, the Echo, how the bulb is read, ice and durations |
 
 ## Where it is
 
@@ -26,9 +26,9 @@ One tile in one normal room on the odd floors 1, 3, 5 and 7 (`KITCHEN_FLOORS`), 
 
 - **Feed it.** Aim at the alembic and right-click: the top of your hand goes into the bulb. The bulb holds three things, parts or blocks. A fourth is refused.
 - **A positive intention brews.** One of the alembic's three brews is spent, and what was fed is gone for good. The brew leaves a flask on top of the alembic and a notice names the potion made in the player's language ("The mixture settles into Plain Tonic: …"). Walk onto it to take it into your hand, if the hand has room.
-- **What the bulb makes.** The whole bulb is read against nine recipes; the most specific one wins, and a bulb no recipe matches makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
+- **What the bulb makes.** The whole bulb is read against the named recipes; the most specific one wins. A bulb no named recipe matches brews a variant of its type, or an Echo of a practice when its parts mix paths; only a bulb with no part makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
 - **Drink hint.** A brew, and picking up a flask, show the drink key for the active device in the toast.
-- **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
+- **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal, and a healing potion or meal at full health is not drunk: it stays in the hand and a notice says your health is full; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
 - **A negative intention boils the bulb off.** What was fed is lost and no brew is spent.
 - **One hit counts once.** Only the first intention hit in each 0.6 seconds counts, so a swing or a beam tick cannot brew twice.
 - **The beam and the great cut brew too.** Remember Breathing's beam and One Clear Cut reach the alembic and answer it as a shot does: the first tick brews (or boils), and the rest of the beam falls in the hit gap. A held blade does not brew.

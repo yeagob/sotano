@@ -1,9 +1,12 @@
 import type { StatSheet } from '../core/stats';
+import { echoStats } from '../content/echo';
 import { flaskRooms, POTIONS, type Flask, type PotionId } from '../content/potions';
 
-export interface ActivePotion { potion: PotionId; rooms: number; locks: number }
+export interface ActivePotion { potion: PotionId; rooms: number; locks: number; echo?: string }
 
 export const potionSource = (id: PotionId) => `potion:${id}`;
+
+const flaskOf = (a: ActivePotion): Flask => (a.echo ? { potion: a.potion, echo: a.echo } : { potion: a.potion });
 
 export class PotionEffects {
   private live = new Map<PotionId, ActivePotion>();
@@ -18,24 +21,35 @@ export class PotionEffects {
     const def = POTIONS[f.potion];
     if (def.duration.kind === 'instant') return false;
     this.remove(f.potion);
-    for (const m of def.stats ?? []) this.stats.add({ ...m, source: potionSource(f.potion) });
-    this.live.set(f.potion, { potion: f.potion, rooms: flaskRooms(f), locks: def.locks ?? 0 });
+    const mods = def.echo ? echoStats(f.echo) : def.stats ?? [];
+    for (const m of mods) this.stats.add({ ...m, source: potionSource(f.potion) });
+    const a: ActivePotion = { potion: f.potion, rooms: flaskRooms(f), locks: def.locks ?? 0 };
+    if (def.echo && f.echo) a.echo = f.echo;
+    this.live.set(f.potion, a);
     return true;
   }
 
   roomCleared(): PotionId[] {
-    const ended: PotionId[] = [];
-    for (const a of this.live.values()) {
-      if (POTIONS[a.potion].duration.kind !== 'rooms') continue;
-      if (--a.rooms <= 0) ended.push(a.potion);
-    }
-    for (const id of ended) this.remove(id);
-    return ended;
+    return this.endRooms().map(f => f.potion);
   }
 
   floorEntered(): PotionId[] {
-    const ended = [...this.live.keys()];
-    for (const id of ended) this.remove(id);
+    return this.endFloor().map(f => f.potion);
+  }
+
+  endRooms(): Flask[] {
+    const ended: Flask[] = [];
+    for (const a of this.live.values()) {
+      if (POTIONS[a.potion].duration.kind !== 'rooms') continue;
+      if (--a.rooms <= 0) ended.push(flaskOf(a));
+    }
+    for (const f of ended) this.remove(f.potion);
+    return ended;
+  }
+
+  endFloor(): Flask[] {
+    const ended = [...this.live.values()].map(flaskOf);
+    for (const f of ended) this.remove(f.potion);
     return ended;
   }
 

@@ -190,6 +190,8 @@ export class Input {
   /** Touch's crouch swipe (and any other toggle source): flips the crouch latch. */
   toggleCrouch() { this.crouchLatch = !this.crouchLatch; }
 
+  crouchSwitchPressed(): boolean { return !!BINDING.crouch.keyboard.toggle?.some(k => this.pressed.has(k)); }
+
   private raw(a: Action): boolean {
     if (a === 'run' && (this.runLatch || this.padEdge)) return true;
     if (a === 'crouch' && this.crouchLatch) return true;

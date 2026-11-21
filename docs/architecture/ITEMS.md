@@ -129,7 +129,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `pickupCollect` | `amount`, or cancel (`heart` names the kind of a heart other than red; a red heart has none) | collecting a key, bomb or heart |
 | `berserkChange` *(react only)* | nothing: `on` says whether the berserker state just started or ended (a berserker heart held or a Berserker Draught drunk) | the berserker state changes |
 | `heartLost` *(react only)* | nothing: `heart` is the blue, stone or berserker heart just spent | an extra heart is spent by a hit |
-| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback`, or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
+| `actorDamage` *(target required)* | `amount` (damage points; 8 = a heart, 2 = a quarter), `knockback` (for the player, a multiplier of the hurt knockback: 1 by default, 0 takes it away), or cancel (`targetKind`, `kind`, `source`, `owner`, `cause` tell you what it is; `polarity` is set for player intentions, already halved if positive: a positive one cannot kill a projection after your hooks, [ENTITIES.md §5](ENTITIES.md)) | anything hurting the player or a projection |
 | `contact` *(target required)* | `toTarget`, `toAttacker` (points) | a projection touching an actor it is hostile to (once per pair every 0.5 s) |
 | `heal` | `amount` (points), or cancel | healing |
 | `death` | cancel (survive; Waymark cancels it at priority 150 and spends a copy) | the player reaching 0 hearts |
@@ -145,7 +145,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `floorEnter` *(react)* | nothing: `depth` is the floor entered, `arrival` its arrival point (feet position, the floor's spawn); Waymark moves its checkpoint there |
 | `pageReached` | — (react) | a run's end advanced the Roots' page (`page`, the new current page); once per run, never in the sandbox |
 | `bossOvercome` | — (react) | a floor's boss was overcome, once per boss room (`boss`, `floor`, `how`: `destroyed` when its health reached zero, `converted` when it turned to your side, `stillness` for the Shadow's own ending, which is a turning) |
-| `meditationComplete` | — (react) | a Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (`meditation`, the sitting's id; `source`: `roots` or `vault`); never a quick reward, a cancel or the debug console's Sanctuary |
+| `meditationComplete` | — (react) | a Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (`meditation`, the sitting's id; `source`: `roots` or `vault`; `seconds`: the finished sittings of that visit, each at its full length); never a quick reward, a cancel or the debug console's Sanctuary |
 | `cook` | — (react) | a kitchen cooked a part into a meal (`meal`, the potion id; `part`, the part's kind) |
 | `brew` | `iced` (set true to ice the flask: Apprenticeship; the alembic reads it back) · else react | an alembic brews a flask (`potion`, `iced`, how many things were in the bulb, where the alembic stands) |
 | `drink` | — (react) | the player drinks a flask (`potion`; `rooms` it lasts, 0 when it is not counted in rooms) |

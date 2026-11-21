@@ -14,7 +14,7 @@ Part of [intentions](README.md) · see also [WEAPONS.md](WEAPONS.md).
 - A positive beam mends the damaged blocks it touches and warms projections. An undamaged block does nothing.
 - Releasing before the charge is full does nothing.
 
-The beam is a shot first: releasing it emits the same fire event an intention does, so the practices that change the shot change the beam. Dual Process and Triangulation fan it into two or three beams (the extra ones at 60 %). Rule of Three splits each beam into three strands at 70 %, Spiral Growth into a helix (strand 0 at 100 %, the others at 40 %). Eye Contact bends its rays toward a projection, Dowsing toward a block. Bilateral Stimulation gives it one beam from each hand, the ten ticks alternating. Bounces, pierce, phase and absorb do not apply to a beam.
+The beam is a shot first: releasing it emits the same fire event an intention does, so the practices that change the shot change the beam. Dual Process and Triangulation fan it into two or three beams (the extra ones at 60 %). Rule of Three splits each beam into three strands at 70 %, Spiral Growth into a helix (strand 0 at 100 %, the others at 40 %); with Spiral Growth the beam keeps its normal size and the strands are thin spirals of light layered over it, running forward along it. Eye Contact curves its rays toward a projection and Dowsing toward a block, as they curve an intention, so a fan of beams stays a fan of curves. Bilateral Stimulation gives it one beam from each hand, the ten ticks alternating. Bounces, pierce, phase and absorb do not apply to a beam.
 
 
 ## The rule behind it

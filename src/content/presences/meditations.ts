@@ -215,9 +215,17 @@ export function skipPart(plan: Plan, elapsedMs: number): Plan {
   return { ...plan, bounds: [...plan.bounds.slice(0, i + 1), now, ...share(plan.seq, i + 1, now, plan.totalMs)] };
 }
 
-/** Add time: each press lengthens the sitting by EXTEND_SEC, at most MAX_EXTENSIONS times in one sitting. */
-export const EXTEND_SEC = 20;
-export const MAX_EXTENSIONS = 3;
+/** Add time: the presses add these lengths in order, in seconds. After the last one, every press adds the last one. */
+export const EXTEND_STEPS_SEC = [30, 60, 300, 600] as const;
+/** The longest sitting the Sanctuary holds, in seconds: an hour. Add time stops here. */
+export const MAX_SITTING_SEC = 3600;
+
+/** The seconds the next press of Add time adds to a sitting that is `totalSec` long after `index` presses. Zero when
+ *  the sitting is already at the hour. The last press is cut short so the sitting ends on the hour, never past it. */
+export function extensionSec(index: number, totalSec: number): number {
+  const step = EXTEND_STEPS_SEC[Math.min(index, EXTEND_STEPS_SEC.length - 1)];
+  return Math.max(0, Math.min(step, MAX_SITTING_SEC - totalSec));
+}
 
 /** Adds `addMs` to the sitting. The part in course keeps its end, so the time it has left does not change; the
  *  added time is shared by the parts that follow, by their shares. In the last part it goes to that part. */

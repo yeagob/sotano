@@ -6,7 +6,7 @@
 import { locale, onLocaleChange, t, type MessageKey } from '../i18n';
 import { palCss } from '../content/palette';
 import {
-  BREATH_KEY, EXTEND_SEC, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
+  BREATH_KEY, MAX_SITTING_SEC, SEQUENCE, SEQUENCES, blurbKey, lineKey, nameKey, palOf, partKey,
   type Moment, type Outcome, type PaletteRole, type SceneId, type SequenceId,
 } from '../content/presences/meditations';
 import { MeditationAudio } from '../audio/meditation';
@@ -18,6 +18,13 @@ import { localStore, type MetaStore } from './meta';
 import { AppClock, MeditationApp, sceneBudget, type Prefs, type Screen } from './meditation-app';
 
 const ROLES: readonly PaletteRole[] = ['high', 'mid', 'deep', 'glow', 'accent', 'accent2', 'mote', 'ink'];
+
+/** A span of time as the player reads it: seconds under a minute, minutes, or the hour (never "60 minutes"). */
+function spanText(sec: number): string {
+  if (sec < 60) return t('sanctuary.span.seconds', { n: sec });
+  if (sec >= MAX_SITTING_SEC) return t('sanctuary.span.hour');
+  return t('sanctuary.span.minutes', { n: Math.round(sec / 60) });
+}
 /** The session bar hides after this long without input. */
 export const BAR_IDLE_MS = 6000;
 const MAX_PIXEL_RATIO = 1.5;
@@ -64,7 +71,7 @@ export class MeditationView {
   /** The spoken guidance (docs/design/built/presences/MEDITATION-APP.md §7a): one line at a time, never over another. */
   private voice = new NarrationQueue(htmlPlayer(), key => clipUrl(import.meta.env.BASE_URL, locale(), key));
   private scenes = new Map<SceneId, ScenePainter>();
-  private done: ((o: Outcome, meditation: SequenceId) => void) | null = null;
+  private done: ((o: Outcome, meditation: SequenceId, seconds: number) => void) | null = null;
   private key = '';
   private openedAt = 0;
   private lastFrame = 0;
@@ -111,8 +118,9 @@ export class MeditationView {
     });
   }
 
-  /** Opens the app. `done` is called once, with the outcome that closed it and the meditation the app was on (its sequence). */
-  show(done: (o: Outcome, meditation: SequenceId) => void, rate = 1, random: () => number = () => 0) {
+  /** Opens the app. `done` is called once, with the outcome that closed it, the meditation the app was on (its sequence)
+   *  and the seconds of every sitting finished in the visit (each at its full length). */
+  show(done: (o: Outcome, meditation: SequenceId, seconds: number) => void, rate = 1, random: () => number = () => 0) {
     if (this.app) return;
     this.mount();
     const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -175,7 +183,7 @@ export class MeditationView {
   }
 
   private close(outcome: Outcome) {
-    const root = this.root!, done = this.done, meditation = this.app!.rewardSeq;
+    const root = this.root!, done = this.done, meditation = this.app!.rewardSeq, seconds = Math.round(this.app!.meditatedMs / 1000);
     this.app = null;
     this.done = null;
     this.audio.stop();
@@ -185,7 +193,7 @@ export class MeditationView {
     this.wake = null;
     root.classList.remove('show');
     setTimeout(() => { if (!this.app) root.classList.remove('on'); }, 750);
-    done?.(outcome, meditation);
+    done?.(outcome, meditation, seconds);
   }
 
   /** One frame of input from the bindings (keyboard and gamepad). The mouse and touch press the buttons. */
@@ -343,7 +351,7 @@ export class MeditationView {
       ctl.append(
         this.tile('pause', 'ctl', app, t(app.paused ? 'sanctuary.resume' : 'sanctuary.pause')),
         this.tile('skip', 'ctl', app, t('sanctuary.skip')),
-        this.tile('extend', app.canExtend ? 'ctl' : 'ctl spent', app, t(app.canExtend ? 'sanctuary.extend' : 'sanctuary.extend.max', { s: EXTEND_SEC })),
+        this.tile('extend', app.canExtend ? 'ctl' : 'ctl spent', app, t(app.canExtend ? 'sanctuary.extend' : 'sanctuary.extend.max', { span: spanText(app.nextExtendSec) })),
         this.tile('mute', 'ctl', app, lamp(!app.prefs.mute), t(app.prefs.mute ? 'sanctuary.sound.off' : 'sanctuary.sound.on')),
         this.tile('calm', 'ctl', app, lamp(app.prefs.calm), t(app.prefs.calm ? 'sanctuary.calm.on' : 'sanctuary.calm.off')),
         this.tile('voice', 'ctl', app, lamp(app.prefs.voice), t(app.prefs.voice ? 'sanctuary.voice.on' : 'sanctuary.voice.off')),

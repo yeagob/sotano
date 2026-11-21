@@ -2,7 +2,7 @@
 
 Up: [built practices](README.md)
 
-Two body practices that change how the Roots moves. **Fartlek** (the Swedish "speed play") lets you run for the joy of it. **Child's Pose** (*balasana*) lets you fold in and go low: under a low gap, along an edge, and out of the way of what is coming. Both are quality 2, path `body`, tags `body` and `movement`, found in treasure rooms.
+Two body practices that change how the Roots moves. **Fartlek** (the Swedish "speed play") lets you run for the joy of it. **Child's Pose** (*balasana*) lets you fold in and go low: under a low gap, along an edge, and out of the way of what is coming. Both are quality 2, path `body`, tags `body` and `movement`, found in treasure rooms. From mastery level 10 Fartlek always lies on the Roots' first extra practice pedestal, and from level 25 Child's Pose on the second ([REWARDS](../levels/roots/REWARDS.md) §4, issue #277).
 
 - **Code:** `src/content/items/fartlek.ts`, `src/content/items/balasana.ts` (the practices), the stats `run` and `crouch` (`src/core/stats.ts`), the stance and speed rules (`src/entities/stance.ts`, `Player.setStance` and `Player.walk` in `src/entities/player.ts`), the contact halving (`Game.contact` in `src/game/game.ts`), the actions `run` and `crouch` and the touch swipe (`src/input/bindings.ts`, `src/input/input.ts`, `src/input/touch.ts`).
 - **Tests:** `tests/run-crouch.test.ts`, `tests/controls.test.ts`. **Sandbox:** `src/sandbox/scenarios/fartlek-*.json`, `balasana-*.json` (§6).
@@ -12,7 +12,7 @@ Two body practices that change how the Roots moves. **Fartlek** (the Swedish "sp
 | Control | Keyboard and mouse | Gamepad | Touch (landscape) |
 |---|---|---|---|
 | Run (Fartlek) | hold Shift | L3 (stick click) toggles it until the left stick returns to centre; also running while the stick is pushed to its edge | push the left stick past 95 % of its radius |
-| Crouch (Child's Pose) | hold C | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
+| Crouch (Child's Pose) | C switches it, Control holds it | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
 
 Running is 45 % faster on the ground and in the air, and jumping keeps the pace. There is no stamina. Crouching is a stance: the body is a block shorter (1.8 to 0.8 blocks), the eye drops with it, and the body fits through a gap one block high. A crouched body never walks off a ledge, and takes half the contact damage from projections.
 
@@ -48,7 +48,7 @@ Both are `hold` actions in `BINDINGS`, live in `play` on every device. The keybo
 
 On touch no button is added (the seven-button limit in play is kept for the Kairos button): **the crouch is a swipe down from the bottom twelfth of the right side, right of the middle**. It toggles the crouch and takes back the look it turned, the same way the dash swipe does. A look drag that is not a downward swipe keeps its look.
 
-The pause card shows both rows always (`CONTROL_ROWS`), with "(with Fartlek)" and "(with Child's Pose)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
+The pause card shows both rows always (`CONTROL_ROWS`), with "(with Fartlek or a Stride Tonic)" and "(with Child's Pose or a Folding Tincture)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
 
 ## 6. Sandbox
 
@@ -77,5 +77,17 @@ Decisions taken on the owner's behalf (review these):
 5. **Gamepad run** is both the L3 toggle and the stick at its edge. The stick-click toggles in the menus too (the latch is device state, not screen state); the run latch ends when the stick returns to centre, the crouch latch does not end by itself.
 6. **Feedback is not built.** A stance change has no sound, particle or toast. The sotano-feature bar asks for them; they are the first thing to add if the owner wants them.
 7. **The icons are first drafts** (`touchCrouch` was removed with the button; the practice icons `fartlek` and `balasana` are not through the art gate, `sotano-art` §0).
-8. **No recipe yet** (rule 14 of `sotano-items`): the crafting table does not cover practices yet, so neither practice has one.
+8. **No crafting recipe yet** (rule 14 of `sotano-items`): the crafting table does not cover practices yet. The alembic brews each effect for a while instead (§9).
 9. **GEN_VERSION** is not bumped in this package (38 is already the value on the integration branch). The golden pins in `tests/rng.test.ts` and `tests/roots-easy.test.ts` are expected to fail until the orchestrator re-records them.
+10. **The potions' names, recipes and duration** (Stride Tonic, Folding Tincture, a body mind with or without dirt, 3 sealed rooms) are proposals (#262, #263).
+
+## 9. The potions (#262, #263)
+
+Both effects can also be brewed at the alembic, as easy potions, so a run without the practice can still run or crouch for a while. Each potion adds the same stat the practice gives, so the controls, the numbers and every rule above are the same; holding the control is what changes the body.
+
+| Potion | Bulb | Stat | Duration | Recipe |
+|---|---|---|---|---|
+| Stride Tonic | a mind of a body pattern | `run` +1 | 3 sealed rooms (4 with ice) | [STRIDE-TONIC](../laboratory/recipes/STRIDE-TONIC.md) |
+| Folding Tincture | a mind of a body pattern and dirt | `crouch` +1 | 3 sealed rooms (4 with ice) | [FOLDING-TINCTURE](../laboratory/recipes/FOLDING-TINCTURE.md) |
+
+`run` and `crouch` are switches limited to 0 to 1, so a potion drunk while holding the practice adds nothing. Tests: `tests/stride-folding.test.ts`.

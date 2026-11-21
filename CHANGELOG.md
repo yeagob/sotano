@@ -6,6 +6,32 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.8-alpha · 2026-11-21
+
+### Added
+- In a sitting, Add time lengthens it in steps of 30 seconds, 1 minute, 5 minutes and then 10 minutes, up to one hour. The part you are in keeps its end (#160).
+- A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
+- Potions are types with variants: a bulb no recipe matches brews the Tincture, Cordial or Elixir of its path, flesh alone heals more the more flesh, and parts of mixed paths brew an Echo that carries a practice's effect for two sealed rooms; the Plain Tonic is left for a bulb of blocks alone (#259).
+- The Folding Tincture: an easy potion (a body pattern's mind and dirt) that lets you crouch with C, R3 or a swipe down for 3 sealed rooms, as Child's Pose does (#262).
+- The Stride Tonic: an easy potion (a body pattern's mind) that lets you run 45% faster with Shift, L3 or the stick at its edge for 3 sealed rooms, as Fartlek does (#263).
+
+### Changed
+- On the keyboard, C switches the crouch on and off, and Control holds it while you press it (#277).
+- Taking damage knocks you back, away from its source when there is one, with a red glow on the edge the damage came from and a damage sound (#268).
+- The hearts of a white bomb's blast are drawn as small red hearts that rise and turn to face you, not as red sparks (#264).
+- Irimi is a tier 4 practice: the dash leaves a trail of light, hurts each projection it passes through, breaks the blocks in its way and keeps you untouchable while it lasts (#261).
+- From mastery level 10 the Roots always offer Fartlek (run) on their first extra practice pedestal, and from level 25 Child's Pose (crouch) on the second, instead of a random practice (#277).
+
+### Fixed
+- A healing potion or meal is not drunk at full health, and the game says why (#260).
+- Solve et Coagula converts water and lava again: the intention's position is read as the cell it is in (#256).
+- A white bomb (good intentions) heals you, one heart, when you stand in its range, and its blast shows heart particles (#264).
+- Kairos names the control to press to stop time and to release, on each device (#265).
+- A boss turns to your side only after good intentions deal as much damage as it takes to destroy it.
+- The toxic heart shows its aura as motes around you and a pulse of its two-block zone each tick; its message is shorter, and messages stay on screen as long as their length needs.
+- Remember Breathing: the beam curves toward its target, so Triangulation shows three beams and the self-shot bends back to you (#257).
+- Spiral Growth no longer fills the screen with Remember Breathing: its strands are thin and layered over the beam (#258).
+
 ## 0.2.7-alpha.f1 · 2026-11-20
 
 ### Fixed

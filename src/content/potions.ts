@@ -8,10 +8,17 @@ export const POTION_IDS = [
   'plain-tonic', 'restoring-draught', 'footing-tincture', 'spring-tonic',
   'clear-infusion', 'questioning-tincture', 'ember-tonic', 'patient-draught',
   'meal-small', 'meal-hearty', 'berserker-draught', 'rebirth-draught',
+  'mending-tonic', 'full-restoring-draught',
+  'nimble-tincture', 'nimble-cordial', 'nimble-elixir',
+  'lucid-tincture', 'lucid-cordial', 'lucid-elixir',
+  'tender-tincture', 'tender-cordial', 'tender-elixir',
+  'steadfast-tincture', 'steadfast-cordial', 'steadfast-elixir',
+  'echo-draught',
+  'stride-tonic', 'folding-tincture',
 ] as const;
 export type PotionId = (typeof POTION_IDS)[number];
 
-export interface Flask { potion: PotionId; iced?: true }
+export interface Flask { potion: PotionId; iced?: true; echo?: string }
 
 export type Duration =
   | { kind: 'instant' }
@@ -33,13 +40,17 @@ export interface PotionDef {
   meal?: true;
   /** Drinking it asks first, then starts a new run keeping the practices in hand (game.ts; never in the sandbox). */
   rebirth?: true;
+  echo?: true;
 }
 
 const INSTANT: Duration = { kind: 'instant' };
 const FLOOR: Duration = { kind: 'floor' };
 const ROOMS = (rooms: number): Duration => ({ kind: 'rooms', rooms });
 
-type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal' | 'berserk' | 'rebirth'>;
+type Extra = Pick<PotionDef, 'heal' | 'stats' | 'locks' | 'meal' | 'berserk' | 'rebirth' | 'echo'>;
+
+const mul = (stat: StatModSpec['stat'], value: number): StatModSpec => ({ stat, layer: 'mul', value });
+const add = (stat: StatModSpec['stat'], value: number): StatModSpec => ({ stat, layer: 'add', value });
 
 const potion = (id: PotionId, path: PathName, liquid: PalToken, duration: Duration, extra: Extra = {}): PotionDef =>
   ({ id, path, liquid, duration, name: `potion.${id}.name` as MessageKey, effect: `potion.${id}.effect` as MessageKey, ...extra });
@@ -60,6 +71,23 @@ export const POTIONS: Record<PotionId, PotionDef> = {
   'patient-draught': potion('patient-draught', 'will', 'copper.base', FLOOR, { stats: [{ stat: 'mining', layer: 'mul', value: 1.6 }] }),
   'berserker-draught': potion('berserker-draught', 'will', 'heart.berserker.ember', ROOMS(2), { berserk: true }),
   'rebirth-draught': potion('rebirth-draught', 'mind', 'path.milagros.glow', INSTANT, { rebirth: true }),
+  'mending-tonic': potion('mending-tonic', 'body', 'bone.dim', INSTANT, { heal: 6 }),
+  'full-restoring-draught': potion('full-restoring-draught', 'body', 'heart.blood.base', INSTANT, { heal: 12 }),
+  'nimble-tincture': potion('nimble-tincture', 'body', 'path.body.base', ROOMS(2), { stats: [mul('moveSpeed', 1.2)] }),
+  'nimble-cordial': potion('nimble-cordial', 'body', 'path.body.glow', ROOMS(3), { stats: [mul('moveSpeed', 1.3)] }),
+  'nimble-elixir': potion('nimble-elixir', 'body', 'path.body.dark', FLOOR, { stats: [mul('moveSpeed', 1.3), mul('jump', 1.2)] }),
+  'lucid-tincture': potion('lucid-tincture', 'mind', 'path.mind.base', ROOMS(2), { stats: [mul('shotSpeed', 1.2)] }),
+  'lucid-cordial': potion('lucid-cordial', 'mind', 'path.mind.glow', ROOMS(3), { stats: [mul('shotSpeed', 1.3)] }),
+  'lucid-elixir': potion('lucid-elixir', 'mind', 'path.mind.dark', FLOOR, { stats: [mul('shotSpeed', 1.3), mul('range', 1.2)] }),
+  'tender-tincture': potion('tender-tincture', 'emotion', 'path.emotion.base', ROOMS(2), { stats: [add('luck', 0.5)] }),
+  'tender-cordial': potion('tender-cordial', 'emotion', 'path.emotion.glow', ROOMS(3), { stats: [add('luck', 1)] }),
+  'tender-elixir': potion('tender-elixir', 'emotion', 'path.emotion.dark', FLOOR, { stats: [add('luck', 1), mul('invuln', 1.2)] }),
+  'steadfast-tincture': potion('steadfast-tincture', 'will', 'path.will.base', ROOMS(2), { stats: [mul('damage', 1.2)] }),
+  'steadfast-cordial': potion('steadfast-cordial', 'will', 'path.will.glow', ROOMS(3), { stats: [mul('damage', 1.3)] }),
+  'steadfast-elixir': potion('steadfast-elixir', 'will', 'path.will.dark', FLOOR, { stats: [mul('damage', 1.3), mul('fireRate', 1.2)] }),
+  'echo-draught': potion('echo-draught', 'mind', 'path.milagros.base', ROOMS(2), { echo: true }),
+  'stride-tonic': potion('stride-tonic', 'body', 'path.body.glow', ROOMS(3), { stats: [{ stat: 'run', layer: 'add', value: 1 }] }),
+  'folding-tincture': potion('folding-tincture', 'body', 'mat.dirt.hi', ROOMS(3), { stats: [{ stat: 'crouch', layer: 'add', value: 1 }] }),
 };
 
 export function isFlask(c: Carried): c is Flask {
@@ -72,7 +100,7 @@ export function flaskRooms(f: Flask): number {
 }
 
 export function flaskDef(f: Flask): Pick<PartDef, 'id' | 'icon' | 'color'> {
-  return { id: `flask.${f.potion}${f.iced ? '.iced' : ''}`, icon: flaskIcon(f.potion), color: pal(POTIONS[f.potion].liquid) };
+  return { id: `flask.${f.potion}${f.echo ? `.${f.echo}` : ''}${f.iced ? '.iced' : ''}`, icon: flaskIcon(f.potion), color: pal(POTIONS[f.potion].liquid) };
 }
 
 export function carriedDef(c: PartDef | Flask): Pick<PartDef, 'id' | 'icon' | 'color'> {

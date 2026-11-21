@@ -11,7 +11,7 @@ import { heartCount } from '../entities/hearts';
 import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
-import { fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
+import { fill, fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import type { ItemDef, Req, SynergyDef } from '../items/types';
@@ -25,10 +25,12 @@ import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
+import { flaskEffect, flaskName } from '../content/potion-text';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
 import type { Game } from './game';
 import { PHASE_WARN_S } from './phase';
+import { hurtEdge } from './hurt-feedback';
 import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
@@ -138,6 +140,7 @@ export class Hud {
   get sanctuaryOpen() { return this.sanctuary.open; }
   private flashEl = $('flash');
   private hurtEl = $('hurt');
+  private hurtSideEl = $('hurt-side');
   private berserkEl = $('berserk');
   private starEl = $('star');
   private deathEl = $('death');
@@ -486,15 +489,14 @@ export class Hud {
    */
   private updateHeld(c: Carried | undefined) {
     const f = c && isFlask(c) ? c : null;
-    const key = f ? `${f.potion}:${f.iced ? 1 : 0}` : '';
+    const key = f ? `${f.potion}:${f.echo ?? ''}:${f.iced ? 1 : 0}` : '';
     if (key === this.heldKey) return;
     this.heldKey = key;
     if (!f) { this.heldEl.classList.remove('show'); this.heldEl.replaceChildren(); return; }
-    const def = POTIONS[f.potion];
     const name = document.createElement('b');
-    name.textContent = t(def.name);
+    name.textContent = flaskName(f);
     const effect = document.createElement('span');
-    effect.textContent = t(def.effect, { rooms: flaskRooms(f) });
+    effect.textContent = flaskEffect(f);
     this.heldEl.replaceChildren(name, effect);
     this.heldEl.classList.add('show');
   }
@@ -507,8 +509,8 @@ export class Hud {
 
   /** The "In hand" block at the top of the inventory when a flask or meal is the active item: name, effect, duration. */
   private inHandBlock(f: Flask): string {
-    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(t(POTIONS[f.potion].name))}</b>` +
-      `<p>${esc(t(POTIONS[f.potion].effect, { rooms: flaskRooms(f) }))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
+    return `<section class="in-hand"><h3>${th('inv.carried')}</h3><b class="d-name">${esc(flaskName(f))}</b>` +
+      `<p>${esc(flaskEffect(f))}</p><small>${esc(this.potionDuration(f))}</small></section>`;
   }
 
   private slotUrl(m: number) {
@@ -527,9 +529,8 @@ export class Hud {
         img.src = this.slotUrl(c);
         img.title = materialName(c);
       } else if (isFlask(c)) {
-        const pd = POTIONS[c.potion];
         img.src = iconDataUrl(carriedDef(c), 3);
-        img.title = `${t(pd.name)}\n${t(pd.effect, { rooms: flaskRooms(c) })}`;
+        img.title = `${flaskName(c)}\n${flaskEffect(c)}`;
       } else {
         const tx = partText(c);
         img.src = iconDataUrl(c, 3);
@@ -714,7 +715,7 @@ export class Hud {
     const offer = this.lastPresenceOffer;
     if (!offer) return;
     const carried = offer.carried;
-    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? t(POTIONS[c.potion].name) : partText(c).name;
+    const nameOf = (c: Carried) => typeof c === 'number' ? materialName(c) : isFlask(c) ? flaskName(c) : partText(c).name;
     // a multi-part agreement names every object in one sentence (AGREEMENTS.md; owner, #228, D11)
     const item = carried === undefined
       ? ''
@@ -823,7 +824,7 @@ export class Hud {
       `<div class="ribbon slate"><img src="${iconDataUrl(def, 5)}" alt=""><div>` +
       `<b>${esc(tx.name)}</b><em class="q q${def.quality}">${qualityStars(def.quality)}</em>` +
       `<span>${esc(tx.description)}</span>` +
-      `<p class="effect">${esc(tx.effect)}</p>` +
+      `<p class="effect">${esc(fill(tx.effect, controlParams(activeDevice())))}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
       `${lines.concat(syn).join('')}<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
   }
@@ -912,10 +913,16 @@ export class Hud {
     document.body.classList.toggle('berserk', on);
   }
 
-  hurt() {
-    this.hurtEl.classList.remove('on');
-    void this.hurtEl.offsetWidth;
-    this.hurtEl.classList.add('on');
+  hurt(angle: number | null = null) {
+    const el = angle === null ? this.hurtEl : this.hurtSideEl;
+    if (angle !== null) {
+      const at = hurtEdge(angle);
+      el.style.setProperty('--hx', `${at.x.toFixed(1)}%`);
+      el.style.setProperty('--hy', `${at.y.toFixed(1)}%`);
+    }
+    el.classList.remove('on');
+    void el.offsetWidth;
+    el.classList.add('on');
     this.shake(0.2);
   }
 
@@ -960,7 +967,7 @@ export class Hud {
   private showToast(text: string, html = false) {
     if (html) this.toastEl.innerHTML = text; else this.toastEl.textContent = text;
     this.toastEl.classList.add('show');
-    this.toastTimer = performance.now() + 2500;
+    this.toastTimer = performance.now() + Math.min(6000, Math.max(1500, 1200 + 50 * text.replace(/<[^>]*>/g, '').length));
   }
 
   /** Gives the HUD the completion percentage to show (COMPLETION.md). Redraws the pause card; the death screen takes it when it shows. */
@@ -1187,7 +1194,7 @@ export class Hud {
     const hands = p.hand.map((m, i) => (typeof m === 'number'
       ? tile(`hand:${i}`, this.slotUrl(m), materialName(m))
       : isFlask(m)
-        ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), t(POTIONS[m.potion].name))
+        ? tile(`hand:${i}`, iconDataUrl(carriedDef(m), 3), flaskName(m))
         : tile(`hand:${i}`, iconDataUrl(m, 3), partText(m).name))).join('');
     const items = g.inventory.items.map((it, i) => isPromised(it.def) ? '' : tile(`item:${i}`, iconDataUrl(it.def, 3), itemText(it.def).name)).join('');
     const body = toll.practices
@@ -1307,7 +1314,7 @@ export class Hud {
 
   private carriedLabel(c: Carried): string {
     if (typeof c === 'number') return materialName(c);
-    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    if (isFlask(c)) return flaskName(c);
     return partText(c).name;
   }
 

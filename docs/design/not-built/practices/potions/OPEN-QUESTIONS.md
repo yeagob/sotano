@@ -59,6 +59,22 @@ The questions each built recipe's document asked, still open. The recipes are in
 | Ember Tonic | Is Panic's captive ember a heart? | Yes, in the parts table |
 | Patient Draught | Does it change damage? Is a floor too long for a mining boost? | Mining only. A floor, as proposed |
 
+## Potion types, variants and the Echo (issue #259)
+
+Built as a proposal ([TYPES-AND-VARIANTS](../../../built/laboratory/recipes/TYPES-AND-VARIANTS.md), [ECHO-DRAUGHT](../../../built/laboratory/recipes/ECHO-DRAUGHT.md)). Each question has the default the build uses; the owner decides.
+
+| Question | What the build does |
+|---|---|
+| Is the type set by the path of the parts and the variant by the deepest kind? | Yes: four path types (Nimble, Lucid, Tender, Steadfast), three variants each (Tincture, Cordial, Elixir), and a tonic type for flesh alone |
+| The names Nimble, Lucid, Tender, Steadfast, Tincture, Cordial, Elixir, Mending Tonic, Full Restoring Draught and Echo, in English and Spanish | Proposals; the Spanish follows the English (Tintura ágil, Cordial lúcido, Elixir tierno, Tintura firme, Tónico reparador, Brebaje restaurador pleno, Eco de…) |
+| The stats of each type: body speed and jump, mind shot speed and range, emotion luck and recovery, will damage and fire rate | As listed; the numbers are targets until play confirms them |
+| Does a block in the bulb count? | It is carried along and changes neither the type nor the variant; it changes which practice an Echo carries |
+| Which practices can an Echo carry? | Only practices whose whole effect is stats, of the four paths, from a treasure, boss or vault pool, without heart containers or carry. Miracles, practices with hooks or stacks, and gifts of the sky and the Covenant are left out |
+| Is the echoed practice fixed by the bulb or rolled? | Fixed by the bulb, so it can be learned; it never reads the seed |
+| How long does an Echo last, and can two be active at once? | Two sealed rooms (three with ice); a second Echo replaces the first |
+| Should flesh mixed with a deeper part add healing? | No: flesh along with a deeper part is carried, never counted |
+| Does the Plain Tonic stay the potion for blocks alone? | Yes; every bulb with a part brews something else |
+
 ## Technical questions (for the architecture, not decided here)
 
 - A warmth field on the damage and spawn events, needed by Warm Cordial, Open-Hand Elixir and the Distillate.

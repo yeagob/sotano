@@ -64,7 +64,7 @@ function skyRig() {
     shake: () => {},
     setMinimap(on: boolean) { this.minimap = on; },
   };
-  const player = { id: 0, float: false, invulnT: 0, starT: 0, spawnAt: vi.fn() };
+  const player = { id: 0, float: false, invulnT: 0, starT: 0, spawnAt: vi.fn(), body: { x: 90, y: 0, z: 90, h: 1.8 } };
   const skyRealm: Record<string, any> = { set: sky, install() {}, dispose: vi.fn(), leave: vi.fn() };
   const g: Rig = Object.assign(Object.create(Game.prototype), {
     realm: 'sky',
@@ -77,7 +77,7 @@ function skyRig() {
     world: sky.world, chunks: sky.chunks, elements: sky.elements, debris: sky.debris, pickups: sky.pickups, enemies: sky.enemies,
     actors: { setRealm: vi.fn(), all: () => actorList },
     intents: { clear() {} },
-    particles: { clear() {}, burst() {} },
+    particles: { clear() {}, burst() {}, hearts() {} },
     blasts: { clear() {} },
     missiles: new Missiles(),
     router: new TouchRouter(),
@@ -270,6 +270,20 @@ describe('the touch router reaches sky creatures (SKY.md §5.7)', () => {
     rig.g.hearPresences = vi.fn();
     rig.g.loveBlast(2.5, 1, 2.5);
     expect(c.touches).toHaveLength(1);
+  });
+
+  it('a love explosion heals the player inside its range, and not outside it', () => {
+    const rig = skyRig();
+    const c = creatures([BOX9]);
+    rig.g.router.add(c);
+    rig.g.hearPresences = vi.fn();
+    const heal = vi.spyOn(rig.g, 'heal').mockImplementation(() => {});
+    rig.player.body.x = 2.5; rig.player.body.y = 0.2; rig.player.body.z = 2.5;
+    rig.g.loveBlast(2.5, 1, 2.5);
+    expect(heal).toHaveBeenCalledTimes(1);
+    rig.player.body.x = 90; rig.player.body.z = 90;
+    rig.g.loveBlast(2.5, 1, 2.5);
+    expect(heal).toHaveBeenCalledTimes(1);
   });
 
   it('a placement sets the sky world\'s placing only around the placement (law 3.2, SKY.md §3.4)', () => {

@@ -23,7 +23,8 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
-import { carriedDef, flaskRooms, isFlask, POTIONS, type PotionId } from '../content/potions';
+import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
+import { flaskEffect, flaskName } from '../content/potion-text';
 import { heartTollPlan, tollIndex } from './toll';
 import { defaultMeta, noStore, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 import { debugRootsPage, openRoots, roomKeyOf, type RootsKeeper, type WallSink } from './roots-keeper';
@@ -55,12 +56,14 @@ import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
+import { dashTouches, DASH_DAMAGE, DASH_MINING } from '../entities/dash';
 import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
 /** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
 const DASH_FOV_KICK = 4;
 import { PolarityHint } from './polarity-hint';
+import { hotFrom, hurtAngle, hurtKnock, hurtPan, type HurtFrom } from './hurt-feedback';
 import { controlParams } from '../input/labels';
 import { TouchControls } from '../input/touch';
 import { FullscreenButton } from '../input/fullscreen-button';
@@ -1675,7 +1678,7 @@ export class Game {
    * player loses exactly those points (shown as quarter hearts) and gets invulnerability.
    * Returns true if the hit landed.
    */
-  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch): boolean {
+  damageActor(t: Actor, amount: number, kind: DamageKind, source: string, owner: Owner, kx = 0, kz = 0, intent?: IntentTouch, from: HurtFrom | null = null): boolean {
     const p = this.player;
     // a sky actor has no health the dungeon can take, and no Enemies entry to hurt (SKY.md §5.2)
     if (t.kind === 'sky') return false;
@@ -1685,7 +1688,7 @@ export class Game {
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
-      knockback: t === p ? 0 : 3, cause: this.blasts.current ?? undefined, polarity: intent?.polarity ?? null,
+      knockback: t === p ? 1 : 3, cause: this.blasts.current ?? undefined, polarity: intent?.polarity ?? null,
     });
     if (ev.cancelled) return false;
     if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
@@ -1696,8 +1699,7 @@ export class Game {
     for (const k of hit.lost) this.heartLost(k);
     p.hp = Math.max(0, p.hp - hit.rest);
     p.invulnT = this.stats.get('invuln');
-    this.hud.hurt();
-    sfx3.hurt();
+    this.hurtFeedback(from, ev.knockback);
     if (p.hp <= 0) {
       const d = this.bus.emit('death', { source });
       if (d.cancelled) { p.hp = Math.max(1, p.hp); return true; }
@@ -1712,6 +1714,23 @@ export class Game {
       this.keeper.recordFade(this.maxDepth);
     }
     return true;
+  }
+
+  private hurtFeedback(from: HurtFrom | null, scale: number) {
+    const p = this.player, b = p.body;
+    const k = hurtKnock(b, from, p.wishX, p.wishZ, scale, p.swimming);
+    const l = Math.hypot(k.vx, k.vz);
+    const blocked = l > 0 && !this.harmfulAt(b.x, b.y, b.z) && [0.4, 0.8, 1.2, 1.6].some(d => this.harmfulAt(b.x + k.vx / l * d, b.y, b.z + k.vz / l * d));
+    p.push(blocked ? 0 : k.vx, k.vy, blocked ? 0 : k.vz);
+    const angle = hurtAngle(b, p.yaw, from);
+    this.hud.hurt(angle);
+    sfx3.hurt(hurtPan(angle));
+  }
+
+  private harmfulAt(x: number, y: number, z: number): boolean {
+    const fx = Math.floor(x), fz = Math.floor(z), fy = Math.floor(y);
+    for (let cy = fy - 1; cy <= fy + 1; cy++) if ((elemDef(this.world.elemAt(fx, cy, fz))?.harm ?? 0) > 0) return true;
+    return false;
   }
 
   /** Heals the player by `amount` damage points (HALF_HEART = half a heart) through `heal`. */
@@ -1827,12 +1846,16 @@ export class Game {
         const a = fx.random() * Math.PI * 2;
         // three soot motes to one paper glint: the heart's own look, and the glint reads on dark floors
         const tone = this.toxicMotes++ % 4 === 3 ? 'bone.paper' : 'heart.black.base';
-        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, b.y + 0.15, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.25, 0.06, true);
+        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, cy, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.5, 0.09, true);
       }
     }
     this.toxicT += dt;
     if (this.toxicT < TOXIC_PERIOD) return;
     this.toxicT = Math.min(this.toxicT - TOXIC_PERIOD, TOXIC_PERIOD);
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2;
+      this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, cy, cz + Math.sin(a) * TOXIC_RADIUS, pal(k % 4 === 0 ? 'bone.paper' : 'heart.black.base'), 1, 1.2, 0.08, true);
+    }
     let hit = 0;
     for (const a of [...this.actors.all()]) {
       if (!toxicHits(a as unknown as ToxicCandidate, cx, cy, cz)) continue;
@@ -1893,7 +1916,7 @@ export class Game {
         return d ? this.affinity(e, d.key).path : null;
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
-      projectileHit: (t: Actor, dmg: number, thrower: number) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower); },
+      projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {
         if (t !== this.player || !this.berserkOn) return false;
         sfxHeart.reflect();
@@ -1915,7 +1938,7 @@ export class Game {
       pickupsIn: (room: number) => this.pickups.list.filter(p => !p.taken && p.room === room && (p.type === 'key' || p.type === 'bomb' || p.type === 'heart'))
         .map(p => ({ kind: p.type as PickupKind, x: p.x, y: p.y, z: p.z, take: () => this.pickups.take(p) })),
       particles: (x: number, y: number, z: number, c: number, n: number, s: number, size: number) => this.particles.burst(x, y, z, c, n, s, size),
-      hurtActor: (t: Actor, amount: number, cause: string, owner: number) => { this.damageActor(t, amount, 'projectile', cause, owner); },
+      hurtActor: (t: Actor, amount: number, cause: string, owner: number, from?: HurtFrom) => { this.damageActor(t, amount, 'projectile', cause, owner, 0, 0, undefined, from ?? null); },
       affectActor: (t: Actor, effect: FieldEffect, seconds: number) => this.affectActor(t, effect, seconds),
       arena: (e: Enemy, what: string) => this.bossArena(e, what),
       summon: (e: Enemy, ids: string[]) => this.summonFor(e, ids),
@@ -2044,7 +2067,7 @@ export class Game {
     if (ev.cancelled) return;
     // Child's Pose: a crouched body takes half the contact, after the items have had their say (RUN-AND-CROUCH.md)
     const hurt = t === this.player && this.player.crouching ? crouchedContact(ev.toTarget) : ev.toTarget;
-    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id);
+    if (hurt > 0) this.damageActor(t, hurt, 'contact', a.def, a.id, 0, 0, undefined, a.body);
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
@@ -2151,7 +2174,7 @@ export class Game {
       if (e.alive) this.splitOnHit(e);
       return true;
     }
-    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth }, amount);
+    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth, boss: e.spec.kind === 'boss' }, amount);
     e.warmth = r.warmth;
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
     if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
@@ -2294,7 +2317,7 @@ export class Game {
         const ev = this.bus.emit('roomClear', { room: id, drops });
         this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, id, null, 0.3)), 3.2, 4);
         this.hud.toast('toast.roomClear');
-        this.potionsEnded(this.potions.roomCleared());
+        this.potionsEnded(this.potions.endRooms());
         if (this.room >= 0) this.hud.setRoom(this.floors.get(r.floor)!, this.room, this.visited, this.clearedRooms());
         sfx3.clear();
       } else if (!inside && st.sealed) {
@@ -2558,7 +2581,7 @@ export class Game {
     for (const a of [...this.actors.all()]) {
       if (a.kind === 'sky') continue;
       const ab = a.body, ox = ab.x - x, oz = ab.z - z, d = Math.hypot(ox, ab.y + ab.h / 2 - y, oz);
-      if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2);
+      if (d < r + 0.4) this.damageActor(a, ev.actorDamage, 'explosion', source, owner, ox / (d || 1) * 2, oz / (d || 1) * 2, undefined, { x, z });
     }
     // one of the player's own bombs or missiles (not a volatile cube, an enemy's burst or an item's blast)
     if (owner === this.player.id && (source === 'bomb' || source === 'missile')) this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'negative', source, acted: new Set() });
@@ -2966,9 +2989,33 @@ export class Game {
   }
 
   /** The afterimage of a dash: a few motes left behind along the path, each frame it runs. */
-  private dashTrail() {
+  private dashTrail(from: { x: number; y: number; z: number }) {
     const b = this.player.body;
-    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.base'), 3, 0.5, 0.05, true);
+    const n = Math.max(1, Math.min(4, Math.ceil(Math.hypot(b.x - from.x, b.y - from.y, b.z - from.z) / 0.15)));
+    for (let i = 1; i <= n; i++) {
+      const k = i / n, x = from.x + (b.x - from.x) * k, y = from.y + (b.y - from.y) * k, z = from.z + (b.z - from.z) * k;
+      this.particles.burst(x, y + b.h * 0.25, z, pal('path.body.base'), 1, 0.4, 0.05, true);
+      this.particles.burst(x, y + b.h * 0.55, z, pal('path.body.glow'), 1, 0.3, 0.06, true);
+      this.particles.burst(x, y + b.h * 0.85, z, pal('path.body.dark'), 1, 0.4, 0.04, true);
+    }
+  }
+
+  private dashStrike(from: { x: number; y: number; z: number }) {
+    const p = this.player, b = p.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || p.dashHits.has(e.id) || !hostile(p.faction, e.faction)) continue;
+      if (!dashTouches(from, b, e.body)) continue;
+      p.dashHits.add(e.id);
+      const dx = e.body.x - b.x, dz = e.body.z - b.z, l = Math.hypot(dx, dz) || 1;
+      if (!this.damageActor(e, DASH_DAMAGE, 'melee', 'irimi', p.id, dx / l, dz / l)) continue;
+      this.particles.burst(e.body.x, e.body.y + e.body.h / 2, e.body.z, pal('cold.body'), 10, 2.5, 0.06);
+    }
+  }
+
+  private dashBreak(x: number, y: number, z: number): boolean {
+    if (!this.solid(x, y, z) || !this.world.inside(x, y, z)) return false;
+    if (blockDamage(DASH_MINING, mat(this.world.get(x, y, z))) < this.world.hp(x, y, z) - 1e-6) return false;
+    return this.damageBlock(x, y, z, DASH_MINING, 'melee', 'irimi');
   }
 
   /** A slight widening of the view through a dash (DASH.md §4): the field of view plus a few degrees, back at its own value after it. */
@@ -3030,6 +3077,13 @@ export class Game {
     }
     this.hearPresences(x, z, 'positive');
     this.bus.emit('bombBlast', { x, y, z, radius: r, polarity: 'positive', source, acted: new Set() });
+    const LOVE_HEAL_HALF_HEARTS = 2;
+    const body = this.player.body;
+    if (Math.hypot(body.x - x, body.y + body.h / 2 - y, body.z - z) <= r) {
+      this.heal(LOVE_HEAL_HALF_HEARTS * HALF_HEART, 'bomb');
+      this.particles.hearts(body.x, body.y + 0.9, body.z, pal(HEART_FX.red), 8, 0.7, 0.18);
+    }
+    this.particles.hearts(x, y, z, pal(HEART_FX.red), 10, 0.6, 0.24);
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -3110,8 +3164,9 @@ export class Game {
   /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
    *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
    *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
-  private convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
+  private convertFluid(fx: number, fy: number, fz: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
     if (this.fluidFrame === this.simFrame) return 0;
+    const x = Math.floor(fx), y = Math.floor(fy), z = Math.floor(fz);
     const kindFrom = from === 'water' ? EL_WATER : EL_LAVA, kindTo = to === 'water' ? EL_WATER : EL_LAVA;
     const w = this.world;
     if (elemKind(w.elemAt(x, y, z)) !== kindFrom) return 0;
@@ -3141,6 +3196,14 @@ export class Game {
     return section.length;
   }
 
+  private hotSource(b: { x: number; y: number; z: number; h: number }, key: ElementKey): HurtFrom | null {
+    const y0 = Math.floor(b.y), y1 = Math.floor(b.y + b.h);
+    return hotFrom(b.x, b.z, (cx, cz) => {
+      for (let y = y0; y <= y1; y++) if (elemDef(this.world.elemAt(cx, y, cz))?.key === key) return true;
+      return false;
+    });
+  }
+
   /** The player in the elements: wading, swimming, breath, burns; enter/leave events. */
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
@@ -3154,7 +3217,7 @@ export class Game {
     // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
     const shielded = this.fireShielded(b.x, b.y + b.h / 2, b.z);
     const hot = [m.feet, m.mid, m.head].filter((d): d is ElementDef => !!d && d.harm > 0 && !(shielded && d.key === 'fire') && !(walk && d.key === 'lava')).sort((a, c) => c.harm - a.harm)[0];
-    if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world');
+    if (hot) this.damageActor(p, hot.harm, 'fire', hot.key, 'world', 0, 0, undefined, p.invulnT > 0 ? null : this.hotSource(b, hot.key));
     // breath: drains with your head under water, refills fast at the surface
     const max = this.stats.get('breath');
     if (m.head?.breath) {
@@ -3274,7 +3337,7 @@ export class Game {
     document.body.classList.add('kairos-stop');
     sfxKairos.start();
     this.kairosBeatT = 0;
-    this.inventory.say('kairos', 'started');
+    this.inventory.say('kairos', 'started', controlParams(activeDevice()));
     return true;
   }
 
@@ -3441,12 +3504,12 @@ export class Game {
     const a = this.labs.get(this.world.idx(x, y, z));
     if (!a) return;
     const { result: r, flask } = labBrew(a, polarity, this.bus, x, y, z);
-    devlog.line(`alembic ${cell(x, y, z)}: intention ${polarity} -> ${r}${flask ? ` (${flask.potion})` : ''}`);
+    devlog.line(`alembic ${cell(x, y, z)}: intention ${polarity} -> ${r}${flask ? ` (${flask.potion}${flask.echo ? ` ${flask.echo}` : ''})` : ''}`);
     if (r === 'brew' && flask) {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
-      this.hud.toastDrinkHint('lab.brewed', { name: t(POTIONS[flask.potion].name), left: BREWS - a.brews, total: BREWS });
+      this.hud.toastDrinkHint('lab.brewed', { name: flaskName(flask), left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('ink.ash'), 24, 2, 0.1);
       sfx.hit(3);
@@ -3460,6 +3523,7 @@ export class Game {
     if (!top || !isFlask(top)) { sfx.denied(); return; }
     if (POTIONS[top.potion].rebirth) { this.askRebirth(); return; }
     const def = POTIONS[top.potion];
+    if (def.heal && p.hp >= this.maxHp) { sfx.denied(); this.hud.toast('potion.fullHealth', { name: t(def.name) }); return; }
     const rooms = flaskRooms(top);
     p.takeActive();
     this.hands.placed();
@@ -3468,11 +3532,11 @@ export class Game {
     this.bus.emit('drink', { potion: top.potion, rooms });
     this.particles.burst(p.body.x, p.body.y + 1.2, p.body.z, pal(def.liquid), 16, 1.2, 0.05);
     sfx.pickup();
-    this.hud.toast('potion.drunk', { name: t(def.name), effect: t(def.effect, { rooms }) });
+    this.hud.toast('potion.drunk', { name: flaskName(top), effect: flaskEffect(top) });
   }
 
-  private potionsEnded(ended: readonly PotionId[]) {
-    for (const id of ended) this.hud.toast('potion.ended', { name: t(POTIONS[id].name) });
+  private potionsEnded(ended: readonly Flask[]) {
+    for (const f of ended) this.hud.toast('potion.ended', { name: flaskName(f) });
   }
 
   /** Right click: place the top block on the face you look at; with nowhere to place it, throw it. */
@@ -3746,7 +3810,7 @@ export class Game {
       if (c.refused || dist > 1.5 || b.y < s.y - 1.2 || b.y > s.y + 2.2) continue;
       if (s.meditation) {
         c.refused = true;
-        this.openSanctuary((outcome, meditation) => this.answerTutorialChest(c, outcome, meditation), 1, () => this.rootsGuard(c.spec).next());
+        this.openSanctuary((outcome, meditation, seconds) => this.answerTutorialChest(c, outcome, meditation, seconds), 1, () => this.rootsGuard(c.spec).next());
         continue;
       }
       this.openKeyedChest(c);
@@ -3770,14 +3834,14 @@ export class Game {
     this.openChest(c, cost);
   }
 
-  private answerTutorialChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId) {
+  private answerTutorialChest(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId, seconds: number) {
     if (c.opened) return;
     if (outcome === 'cancel') {
       c.refused = true;
       this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const sitting = sittingPayload(outcome, meditation, 'roots');
+    const sitting = sittingPayload(outcome, meditation, 'roots', seconds);
     if (sitting) this.bus.emit('meditationComplete', sitting);
     this.openSanctuaryChest(c, outcome);
     this.releaseBoundary(c.spec.room);
@@ -3797,22 +3861,22 @@ export class Game {
       if (!c) continue;
       if (dist > 3) c.refused = false;
       if (c.refused || !near) continue;
-      this.openSanctuary((outcome, meditation) => this.answerGuard(c, outcome, meditation));
+      this.openSanctuary((outcome, meditation, seconds) => this.answerGuard(c, outcome, meditation, seconds));
       return;
     }
   }
 
   /** Opens the Sanctuary over the paused world and hands the mouse back to play when it closes. `rate` speeds
    *  its clock for the debug console only. */
-  openSanctuary(done: (outcome: Outcome, meditation: SequenceId) => void, rate = 1, guard: () => number = () => this.rng.stream('guard').next()) {
+  openSanctuary(done: (outcome: Outcome, meditation: SequenceId, seconds: number) => void, rate = 1, guard: () => number = () => this.rng.stream('guard').next()) {
     if (this.hud.sanctuaryOpen) return;
     this.input.modal = true;
     this.input.unlockFor();
-    this.hud.sanctuary.show((outcome, meditation) => {
+    this.hud.sanctuary.show((outcome, meditation, seconds) => {
       this.input.modal = false;
       if (this.input.device === 'keyboard') { this.input.release(); this.input.lock(); }
       else this.input.resume();
-      done(outcome, meditation);
+      done(outcome, meditation, seconds);
     }, rate, guard);
   }
 
@@ -3828,14 +3892,14 @@ export class Game {
    *  4 one: the reward spawns from the chest and the Boundary leaves. Not now gives nothing: the chest stays
    *  locked, and the Boundary opens the Sanctuary again once the player has stepped away (more than three
    *  blocks) and come back. An opened chest ignores a second answer, so the reward is given once. */
-  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId) {
+  private answerGuard(c: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }, outcome: Outcome, meditation: SequenceId, seconds: number) {
     if (c.opened) return;
     if (outcome === 'cancel') {
       c.refused = true;
       this.hud.toast('sanctuary.cancelled');
       return;
     }
-    const sitting = sittingPayload(outcome, meditation, 'vault');
+    const sitting = sittingPayload(outcome, meditation, 'vault', seconds);
     if (sitting) this.bus.emit('meditationComplete', sitting);
     this.openSanctuaryChest(c, outcome);
     this.releaseBoundary(c.spec.room);
@@ -4677,7 +4741,7 @@ export class Game {
 
   private carriedName(c: Carried): string {
     if (typeof c === 'number') return materialName(c);
-    if (isFlask(c)) return t(POTIONS[c.potion].name);
+    if (isFlask(c)) return flaskName(c);
     return partText(c).name;
   }
 
@@ -4782,7 +4846,7 @@ export class Game {
       this.activate(band);
       this.carve(band + 1);
       this.bus.clearDeferred();
-      this.potionsEnded(this.potions.floorEntered());
+      this.potionsEnded(this.potions.endFloor());
       // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
       const entered = this.floors.get(band);
       this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
@@ -5127,6 +5191,7 @@ export class Game {
     const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
+    const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5135,15 +5200,17 @@ export class Game {
         this.bus.emit('land', { fallSpeed: fall, cause, x, y, z });
       },
       bump: speed => this.headBump(speed),
+      dashBreak: (x, y, z) => this.dashBreak(x, y, z),
     }, this.playerMedium, below ? {} : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
     if (this.player.dashStarted) this.dashFx();
-    if (this.player.dashT > 0) this.dashTrail();
+    if (dashing || this.player.dashStarted) { this.dashTrail(dashFrom); this.dashStrike(dashFrom); }
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
     this.bedrockTouches();
     this.syncWeapon();
+    if (this.input.crouchSwitchPressed()) this.input.toggleCrouch();
     this.tapMissile();
     if (this.weapon) this.weapon.update(dt);
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();
@@ -5186,7 +5253,7 @@ export class Game {
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
     if (below) this.chestViews.update(dt, this.player.keys);
-    this.particles.update(dt);
+    this.particles.update(dt, this.camera.position);
     this.debrisView.update(this.debris);
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);

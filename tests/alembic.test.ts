@@ -258,7 +258,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     r.shoot();
     expect(r.seen).toHaveLength(1);
     expect(r.pickups.add).toHaveBeenCalledTimes(1);
-    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'plain-tonic' });
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'lucid-cordial' });
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });
@@ -267,7 +267,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     const r = rig('positive');
     r.shoot();
     expect(r.hud.toastDrinkHint).toHaveBeenCalledTimes(1);
-    expect(r.hud.toastDrinkHint).toHaveBeenCalledWith('lab.brewed', { name: t('potion.plain-tonic.name'), left: 1, total: BREWS });
+    expect(r.hud.toastDrinkHint).toHaveBeenCalledWith('lab.brewed', { name: t('potion.lucid-cordial.name'), left: 1, total: BREWS });
   });
 
   it('the notice names the potion the bulb makes, not a fixed one', () => {
@@ -283,7 +283,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     // the beam's other ticks land inside the hit gap: they count for nothing
     expect(r.seen).toHaveLength(1);
     expect(r.pickups.add).toHaveBeenCalledTimes(1);
-    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'plain-tonic' });
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'lucid-cordial' });
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });
