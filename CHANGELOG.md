@@ -20,6 +20,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 - Kairos names the control to press to stop time and to release, on each device (#265).
 - A boss turns to your side only after good intentions deal as much damage as it takes to destroy it.
 - The toxic heart shows its aura as motes around you and a pulse of its two-block zone each tick; its message is shorter, and messages stay on screen as long as their length needs.
+- Remember Breathing: the beam curves toward its target, so Triangulation shows three beams and the self-shot bends back to you (#257).
+- Spiral Growth no longer fills the screen with Remember Breathing: its strands are thin and layered over the beam (#258).
 
 ## 0.2.7-alpha.f1 · 2026-11-20
 
