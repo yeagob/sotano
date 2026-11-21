@@ -229,4 +229,4 @@ describe('golden seed', () => {
   });
 });
 // adding a practice to the catalogue changes reservations too: that also changes every seed
-const GOLDEN = '58d3d382';
+const GOLDEN = '4ac8f0de';

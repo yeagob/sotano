@@ -281,7 +281,7 @@ function gameRig() {
     debris: { max: 0, isAlive: () => false, push() {}, isBomb: () => false },
     router: Object.assign(new TouchRouter(), { blast() {} }),
     actors: { all: () => [] },
-    particles: { burst() {} },
+    particles: { burst() {}, hearts() {} },
     hud: { shake() {} },
     stats: { get: (k: string) => (k === 'bombRadius' ? 2.6 : k === 'bombDamage' ? 40 : 0) },
     world: { get: () => AIR, elemAt: () => 0, idx: () => 0, damaged: new Map() },

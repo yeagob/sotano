@@ -77,7 +77,7 @@ function skyRig() {
     world: sky.world, chunks: sky.chunks, elements: sky.elements, debris: sky.debris, pickups: sky.pickups, enemies: sky.enemies,
     actors: { setRealm: vi.fn(), all: () => actorList },
     intents: { clear() {} },
-    particles: { clear() {}, burst() {} },
+    particles: { clear() {}, burst() {}, hearts() {} },
     blasts: { clear() {} },
     missiles: new Missiles(),
     router: new TouchRouter(),
