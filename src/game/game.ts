@@ -1719,7 +1719,7 @@ export class Game {
     const p = this.player, b = p.body;
     const k = hurtKnock(b, from, p.wishX, p.wishZ, scale, p.swimming);
     const l = Math.hypot(k.vx, k.vz);
-    const blocked = l > 0 && !this.harmfulAt(b.x, b.y, b.z) && this.harmfulAt(b.x + k.vx / l * 0.8, b.y, b.z + k.vz / l * 0.8);
+    const blocked = l > 0 && !this.harmfulAt(b.x, b.y, b.z) && [0.4, 0.8, 1.2, 1.6].some(d => this.harmfulAt(b.x + k.vx / l * d, b.y, b.z + k.vz / l * d));
     p.push(blocked ? 0 : k.vx, k.vy, blocked ? 0 : k.vz);
     const angle = hurtAngle(b, p.yaw, from);
     this.hud.hurt(angle);
