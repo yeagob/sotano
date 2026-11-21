@@ -7,6 +7,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Fixed
+- A broken block disappears at once on a phone, and its pieces show with it.
 - The death screen scrolls on a phone, so its button can be reached.
 - The completion rows show each part's real percentage.
 

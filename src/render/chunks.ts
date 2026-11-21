@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, chunkKey, parseChunkKey } from '../world/world';
-import type { MeshData } from '../world/mesher';
+import { meshChunk, type MeshData } from '../world/mesher';
 import type { MeshRequest } from '../world/mesher.worker';
 import { elementTextures } from './element-textures';
 
@@ -84,6 +84,18 @@ export class ChunkRenderer {
       this.inFlight[layer].add(key);
       this.worker.postMessage(req, [req.padded.buffer, req.elem.buffer]);
       n++;
+    }
+  }
+
+  remeshNow(keys: string[]) {
+    for (const key of keys) {
+      if (!this.world.dirty.has(key) || !this.loaded(key)) continue;
+      this.world.dirty.delete(key);
+      const [cx, cy, cz] = parseChunkKey(key);
+      const v = (this.version.blocks.get(key) ?? 0) + 1;
+      this.version.blocks.set(key, v);
+      const m = meshChunk(this.world.paddedChunk(cx, cy, cz), CHUNK, this.world.paddedChunk(cx, cy, cz, true));
+      this.receive({ ...m, key, version: v, layer: 'blocks', groups: null });
     }
   }
 

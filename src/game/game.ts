@@ -2500,6 +2500,7 @@ export class Game {
     const ev = this.bus.emit('blockBreak', { x, y, z, material: id, kind, source, spawnDebris: debris });
     if (ev.cancelled) return false;
     this.world.set(x, y, z, AIR);
+    this.chunks.remeshNow(this.world.keysAround?.(x, y, z) ?? []);
     this.debris.wake(x, y, z);
     if (this.breakFx++ < BREAK_FX_PER_FRAME) this.particles.burst(x + 0.5, y + 0.5, z + 0.5, mat(id).colors[0], 10, 3.5, 0.09);
     if (ev.spawnDebris) {
