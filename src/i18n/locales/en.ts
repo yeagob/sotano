@@ -658,7 +658,7 @@ const messages = {
   'potion.stride-tonic.name': 'Stride Tonic',
   'potion.stride-tonic.effect': 'For {rooms} sealed rooms, hold Shift (L3, or push the stick to its edge) to run 45% faster, as with Fartlek.',
   'potion.folding-tincture.name': 'Folding Tincture',
-  'potion.folding-tincture.effect': "For {rooms} sealed rooms, hold C or Control (R3, or swipe down from the bottom of the right side) to crouch, as with Child's Pose: 1 block shorter, 45% speed, half contact damage, never off an edge.",
+  'potion.folding-tincture.effect': "For {rooms} sealed rooms, press C to crouch and press it again to stand, or hold Control to crouch while you hold it (R3, or swipe down from the bottom of the right side), as with Child's Pose: 1 block shorter, 45% speed, half contact damage, never off an edge.",
   'potion.rebirth.question': 'Begin again from the first floor? Your practices come with you; keys, bombs, hearts and what you carry start new.',
   'potion.rebirth.begin': 'Begin again',
   'potion.rebirth.stay': 'Not yet',

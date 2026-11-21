@@ -12,7 +12,7 @@ Two body practices that change how the Roots moves. **Fartlek** (the Swedish "sp
 | Control | Keyboard and mouse | Gamepad | Touch (landscape) |
 |---|---|---|---|
 | Run (Fartlek) | hold Shift | L3 (stick click) toggles it until the left stick returns to centre; also running while the stick is pushed to its edge | push the left stick past 95 % of its radius |
-| Crouch (Child's Pose) | hold C or Control | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
+| Crouch (Child's Pose) | C switches it, Control holds it | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
 
 Running is 45 % faster on the ground and in the air, and jumping keeps the pace. There is no stamina. Crouching is a stance: the body is a block shorter (1.8 to 0.8 blocks), the eye drops with it, and the body fits through a gap one block high. A crouched body never walks off a ledge, and takes half the contact damage from projections.
 
