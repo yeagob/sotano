@@ -13,7 +13,7 @@ import type { Flask } from '../content/potions';
 import type { Actor, ActorId, Faction } from './actors';
 import type { BloodRegen, HeartLayer } from './hearts';
 import type { DashDir } from '../input/gestures';
-import { dashDisplacement, DASH_COOLDOWN, DASH_TIME } from './dash';
+import { dashCells, dashDisplacement, DASH_COOLDOWN, DASH_SAMPLE, DASH_TIME } from './dash';
 import { CROUCH_H, CROUCH_SPEED, EYE_CROUCH, EYE_STAND, RUN_SPEED, roomToStand, STAND_H, supportedAt } from './stance';
 
 export const EYE = EYE_STAND;
@@ -57,6 +57,7 @@ export interface PlayerHooks {
   land(fallSpeed: number, x: number, y: number, z: number): void;
   /** The head hit a ceiling while rising at `speed` blocks/s; returns the upward speed to keep. */
   bump(speed: number): number;
+  dashBreak?(x: number, y: number, z: number): boolean;
 }
 
 /** The player: an actor like any projection (docs/architecture/ACTORS.md), plus input, a hand and counters. */
@@ -96,6 +97,8 @@ export class Player implements Actor {
   dashStarted = false;
   /** The direction of the dash under way (for the game's feedback). */
   dashDir: DashDir | null = null;
+  dashHits = new Set<ActorId>();
+  private dashFloor = 0;
   private dashV = { x: 0, y: 0, z: 0 };
   /** How far through the dash the body is, 0 to 1 (0 when it is not dashing). */
   get dashProgress() { return this.dashT > 0 ? 1 - this.dashT / DASH_TIME : 0; }
@@ -218,6 +221,8 @@ export class Player implements Actor {
     this.dashCool = DASH_COOLDOWN;
     this.dashDir = dir;
     this.dashStarted = true;
+    this.dashHits.clear();
+    this.dashFloor = Math.floor(b.y + 1e-3);
     this.invulnT = Math.max(this.invulnT, DASH_TIME);
     this.pushX = this.pushZ = 0;
     this.jumpBuffer = 0;
@@ -225,10 +230,11 @@ export class Player implements Actor {
   }
 
   /** One frame of a dash: a straight line at dash speed, through the voxel collision, sliding along walls and stopping at ceilings. */
-  private dashStep(dt: number, solid: (x: number, y: number, z: number) => boolean) {
+  private dashStep(dt: number, solid: (x: number, y: number, z: number) => boolean, hooks: PlayerHooks) {
     const step = Math.min(dt, this.dashT);
     this.dashT -= step;
     const b = this.body, v = this.dashV;
+    if (hooks.dashBreak) this.dashClear(step, solid, hooks.dashBreak);
     b.vx = v.x; b.vy = v.y; b.vz = v.z;
     moveBody(solid, b, step);
     // a blocked axis stops the dash on that axis only: the rest slides along the wall
@@ -239,6 +245,20 @@ export class Player implements Actor {
       this.dashT = 0;
       // no fall build-up after a dash: the vertical speed restarts at 0
       b.vx = b.vy = b.vz = 0;
+    }
+  }
+
+  private dashClear(step: number, solid: (x: number, y: number, z: number) => boolean, breaks: (x: number, y: number, z: number) => boolean) {
+    const b = this.body, v = this.dashV;
+    const n = Math.max(1, Math.ceil(Math.hypot(v.x, v.y, v.z) * step / DASH_SAMPLE));
+    for (let i = 1; i <= n; i++) {
+      const k = step * i / n;
+      const box = { x: b.x + v.x * k, y: b.y + v.y * k, z: b.z + v.z * k, hw: b.hw, h: b.h };
+      let held = false;
+      for (const [x, y, z] of dashCells(box, this.dashFloor)) {
+        if (solid(x, y, z) && !breaks(x, y, z)) held = true;
+      }
+      if (held) return;
     }
   }
 
@@ -300,7 +320,7 @@ export class Player implements Actor {
     this.setStance(stats.crouch >= 1 && input.held('crouch'), solid);
     if (input.hit('dash') && input.dashDir) this.startDash(input.dashDir, stats.dash, medium);
     if (this.carrying) this.carryStep(dt, solid);
-    else if (this.dashT > 0) this.dashStep(dt, solid);
+    else if (this.dashT > 0) this.dashStep(dt, solid, hooks);
     else this.walk(dt, input, stats, Math.max(stats.jump, opts.minJump ?? -Infinity), solid, hooks, medium);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;

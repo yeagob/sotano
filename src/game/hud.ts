@@ -959,7 +959,7 @@ export class Hud {
   private showToast(text: string, html = false) {
     if (html) this.toastEl.innerHTML = text; else this.toastEl.textContent = text;
     this.toastEl.classList.add('show');
-    this.toastTimer = performance.now() + 2500;
+    this.toastTimer = performance.now() + Math.min(6000, Math.max(1500, 1200 + 50 * text.replace(/<[^>]*>/g, '').length));
   }
 
   /** Gives the HUD the completion percentage to show (COMPLETION.md). Redraws the pause card; the death screen takes it when it shows. */

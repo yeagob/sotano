@@ -214,7 +214,7 @@ export const ES: Catalog = {
     'toast.roomClear': 'Sala despejada',
     'heart.blue': 'Corazón azul: un corazón más, que se pierde para siempre al gastarse.',
     'heart.blueLost': 'El corazón azul se ha ido.',
-    'heart.black': 'Corazón tóxico: un corazón más, que se pierde para siempre al gastarse. Mientras lo tengas, daña a las proyecciones a dos bloques de ti.',
+    'heart.black':'Corazón tóxico: quema a las proyecciones hostiles a dos bloques.',
     'heart.blackLost': 'El corazón tóxico se ha ido.',
     'heart.stone': 'Corazón de piedra: mientras recibe los golpes, cada golpe se reduce a la mitad.',
     'heart.stoneLost': 'El corazón de piedra se desmorona. Los golpes vuelven a entrar enteros.',
@@ -1472,7 +1472,7 @@ export const ES: Catalog = {
       irimi: {
         name: 'Irimi',
         description: 'Entrar, no retroceder. Cuando algo viene hacia ti, la salida no es hacia atrás: da el paso hacia el movimiento, rápido y limpio, y estarás en otro sitio antes de que llegue.',
-        effect: 'Doble toque en una dirección (doble empujón del stick, o desliza por el lado izquierdo) para impulsarte 4,5 bloques en esa dirección. Impulso hacia delante mirando hacia arriba para subir (hasta 3,5 bloques). Intocable mientras impulsas. Enfriamiento de 0,8 s; un impulso en el aire hasta que aterrizas. En el agua, el impulso cubre la mitad del camino.',
+        effect: 'Doble toque en una dirección (doble empujón del stick, o desliza por el lado izquierdo) para impulsarte 4,5 bloques en esa dirección. Impulso hacia delante mirando hacia arriba para subir (hasta 3,5 bloques). Intocable mientras impulsas: cada proyección que atraviesas recibe 7 de daño, y los bloques en tu camino se rompen (hasta la piedra profunda; la obsidiana, los marcos y lo más duro te detienen, y el impulso nunca excava bajo tus pies). Enfriamiento de 0,8 s; un impulso en el aire hasta que aterrizas. En el agua, el impulso cubre la mitad del camino.',
         inspiredBy: 'Irimi, el paso de entrada del aikido',
       },
       fartlek: {
