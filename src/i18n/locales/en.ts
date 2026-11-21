@@ -679,6 +679,7 @@ const messages = {
   'kitchen.refused': 'Only parts can be cooked',
   'potion.drinkHint': 'Drink it with {key}',
   'potion.drunk': 'You drink {name}. {effect}',
+  'potion.fullHealth': 'Your health is full: you cannot drink {name} now.',
   'toast.polarityPositive': 'Good intention: it heals',
   'toast.polarityNegative': 'Bad intention: it breaks and destroys',
   'toast.polarityHint': 'Good intentions only heal. To break, switch to bad ones: {polarity}.',

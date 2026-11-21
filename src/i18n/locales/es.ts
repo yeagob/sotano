@@ -653,6 +653,7 @@ export const ES: Catalog = {
     'kitchen.refused': 'Solo se pueden cocinar partes',
     'potion.drinkHint': 'Bébetelo con {key}',
     'potion.drunk': 'Bebes {name}. {effect}',
+    'potion.fullHealth': 'Tu vida está llena: no puedes beber {name} ahora.',
     'toast.polarityPositive': 'Buena intención: cura',
     'toast.polarityNegative': 'Mala intención: rompe y destruye',
     'toast.polarityHint': 'Las buenas intenciones solo curan. Para romper, cambia a las malas: {polarity}.',
