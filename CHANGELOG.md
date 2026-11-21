@@ -6,6 +6,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.8-alpha.f2 · 2026-11-21
+
+### Fixed
+- A broken block disappears at once on a phone, and its pieces show with it (#285).
+
 ## 0.2.8-alpha.f1 · 2026-11-21
 
 ### Fixed
