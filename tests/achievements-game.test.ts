@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { ACHIEVEMENTS } from '../src/content/achievements';
 import { ITEM_BY_ID } from '../src/content/items';
 import { CRATE_DROP_MIN, crateChanceInBand } from '../src/content/tables/crates';
-import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
+import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, FIXED_PRACTICES, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
 import { AchievementKeeper, cardKeys, gainParams, gainText, noticeKeys, noticeMillis, NOTICE_LONG_CHARS, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
 import { mastery, type Payload } from '../src/game/achievements';
 import { defaultMeta, loadMeta, mergeMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
@@ -433,7 +433,7 @@ describe('the Roots\' mastery on floor 0 (REWARDS §3-§6)', () => {
     }
   });
 
-  it('the Roots\' practices are drawn from the treasure pool, in the band, never a reserved one, and each once', () => {
+  it('the Roots\' practices are fixed or drawn from the treasure pool, in the band, a drawn one never reserved, and each once', () => {
     const run = buildRun(0xBEEF, 1, undefined, { mastery: 25 });
     const f0 = run.floors[0];
     expect(f0.practices).toHaveLength(2);
@@ -443,7 +443,7 @@ describe('the Roots\' mastery on floor 0 (REWARDS §3-§6)', () => {
     const values = [...drawn.values()];
     expect(new Set(values).size).toBe(values.length);
     for (const id of values) {
-      expect(reserved.has(id), `${id} is reserved`).toBe(false);
+      if (!FIXED_PRACTICES.some(p => p.item === id)) expect(reserved.has(id), `${id} is reserved`).toBe(false);
       const q = ITEM_BY_ID.get(id)?.quality ?? 0;
       expect(q).toBeGreaterThanOrEqual(EXTRA_PRACTICE_BAND.min);
       expect(q).toBeLessThanOrEqual(EXTRA_PRACTICE_BAND.max);

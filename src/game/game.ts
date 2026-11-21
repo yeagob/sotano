@@ -5210,6 +5210,7 @@ export class Game {
     this.touchBlocks(dt);
     this.bedrockTouches();
     this.syncWeapon();
+    if (this.input.crouchSwitchPressed()) this.input.toggleCrouch();
     this.tapMissile();
     if (this.weapon) this.weapon.update(dt);
     if (!this.weapon || WEAPONS_KEEPING_SHOT.has(this.weaponId)) this.fire();

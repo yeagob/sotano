@@ -26,7 +26,7 @@ export interface Binding {
   kind: 'axis' | 'hold' | 'press';
   when: readonly Context[];
   /** `doubleTap: 'move'` is a double tap of the movement keys: no key of its own, so it never collides with `move`. */
-  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; doubleTap?: 'move'; when?: readonly Context[] };
+  keyboard: { keys?: readonly string[]; toggle?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; doubleTap?: 'move'; when?: readonly Context[] };
   /** `doubleFlick: 'left'` is a double flick of the left stick (no button). */
   gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; doubleFlick?: 'left'; when?: readonly Context[] };
   touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
@@ -83,9 +83,8 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'Ctrl sprints while you walk forward; a stick click toggles the sprint on a controller', noita: 'no sprint: speed comes from the move keys and the levitate', isaac: 'no sprint: speed is an item, never a button' },
   },
   {
-    // Child's Pose (RUN-AND-CROUCH.md): hold C; R3 toggles it; on touch, a swipe down from the bottom of the right side toggles it
     action: 'crouch', kind: 'hold', when: ['play'],
-    keyboard: { keys: ['KeyC'] },
+    keyboard: { keys: ['ControlLeft', 'ControlRight'], toggle: ['KeyC'] },
     gamepad: { buttons: [PAD.RS] },
     touch: { control: 'swipe' },
     refs: { minecraft: 'Shift sneaks and will not walk off an edge; a stick click toggles sneaking on a controller', noita: 'no crouch: the body has one shape', isaac: 'no crouch: a practice changes what the body does, never adds a button' },
