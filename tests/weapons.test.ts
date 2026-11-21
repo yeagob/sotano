@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { ITEMS } from '../src/content/items';
 import { SYNERGIES } from '../src/content/synergies';
-import { Beam, beamRays, BEAM_MAX_RAYS, Blade, BLADE_MAX_REACH, chargeTime, GreatCut, GREATCUT_MAX_REACH, type WeaponHost, type WeaponTarget } from '../src/combat/weapons';
+import { Beam, BEAM_HELIX_R, BEAM_MAX_RAYS, BEAM_WIDTH, beamPath, beamRays, Blade, HALO_WIDTH, helixRadiusAt, BLADE_MAX_REACH, chargeTime, GreatCut, GREATCUT_MAX_REACH, type WeaponHost, type WeaponTarget } from '../src/combat/weapons';
 import { HELIX_SHARE, intentFromStats, TRIAD_SHARE, VOLLEY_SHARE, VOLLEY_SPREAD } from '../src/combat/intents';
 import { Rng } from '../src/core/rng';
 import { BASE_STATS, StatSheet, type Stats } from '../src/core/stats';
@@ -282,10 +282,9 @@ describe('Remember Breathing (beam)', () => {
     expect(outside.state.hits).toEqual([]);
   });
 
-  it('Dowsing bends the rays toward the nearest block', () => {
+  it('Dowsing curves the rays toward the nearest block', () => {
     const shot = { homing: 3, homingTarget: 'block' as const };
-    // one block to the right; the target lies on the line the beam takes once it turns toward that block, off its straight line
-    const target = [{ id: 3, x: 3.3, y: 0.6, z: -7, hw: 0.4, h: 1.6 }];
+    const target = [{ id: 3, x: 3.7, y: 0.6, z: -5, hw: 0.4, h: 1.6 }];
     const dowsed = fakeHost({ fill: 0, stats: { fireRate: 2.7 }, shot, extra: [[2, 1, 0]], targets: target });
     dowsed.state.casting = true;
     const b1 = new Beam(new THREE.Scene(), dowsed.host);
@@ -332,6 +331,92 @@ describe('Remember Breathing (beam)', () => {
     state.casting = false; run(beam, 1.5, 1 / 60);
     expect(state.strikes).toBe(1);
     expect(state.hits.length).toBeGreaterThan(0);
+  });
+});
+
+const HAND = new THREE.Vector3(0.68, 1.48, 0.5);
+
+function visibleBeam(scene: THREE.Scene) {
+  const meshes = scene.children.filter((o): o is THREE.Mesh => o instanceof THREE.Mesh && o.visible);
+  const cores = meshes.filter(m => (m.material as THREE.MeshBasicMaterial).opacity > 0.9);
+  const tubes = cores.filter(m => m.geometry instanceof THREE.CylinderGeometry);
+  const helices = meshes.filter(m => !(m.geometry instanceof THREE.CylinderGeometry));
+  return { cores, tubes, helices };
+}
+
+function castOnce(opts: Parameters<typeof fakeHost>[0], after = 0.15) {
+  const { host, state } = fakeHost(opts);
+  const scene = new THREE.Scene();
+  const beam = new Beam(scene, host);
+  state.casting = true; run(beam, 1.05, 1 / 60);
+  state.casting = false; run(beam, after, 1 / 60);
+  return { scene, state };
+}
+
+describe('Remember Breathing takes the shot practices (issue #257)', () => {
+  const eyeContactFan = { volley: 3, homing: 10, homingTarget: 'projection' as const };
+  const ahead = [{ id: 3, x: 1.5, y: 0.6, z: -6.5, hw: 0.4, h: 1.6 }];
+
+  it('Triangulation with Eye Contact casts three beams that leave the hand a fan apart', () => {
+    const { scene } = castOnce({ fill: 0, stats: { fireRate: 2.7 }, shot: eyeContactFan, targets: ahead });
+    const fromHand = visibleBeam(scene).tubes.filter(m => m.position.distanceTo(HAND) < 1e-6);
+    expect(fromHand).toHaveLength(3);
+    const dirs = fromHand.map(m => m.getWorldDirection(new THREE.Vector3()));
+    const angles = [dirs[0].angleTo(dirs[1]), dirs[0].angleTo(dirs[2]), dirs[1].angleTo(dirs[2])].sort((a, b) => a - b);
+    for (const a of angles.slice(0, 2)) {
+      expect(a).toBeGreaterThan(0.9 * VOLLEY_SPREAD);
+      expect(a).toBeLessThan(1.1 * VOLLEY_SPREAD);
+    }
+    expect(angles[2]).toBeGreaterThan(1.8 * VOLLEY_SPREAD);
+  });
+
+  it('Eye Contact bends the beam into a curve, drawn in more than one piece per beam, and every beam reaches the projection', () => {
+    const { state } = castOnce({ fill: 0, stats: { fireRate: 2.7 }, shot: eyeContactFan, targets: ahead }, 1.5);
+    expect(state.hits.filter(id => id === 3)).toHaveLength(30);
+    const { scene } = castOnce({ fill: 0, stats: { fireRate: 2.7 }, shot: eyeContactFan, targets: ahead });
+    expect(visibleBeam(scene).tubes.length).toBeGreaterThan(3);
+  });
+
+  it('a homing path turns a little at every step, as an intention does, never in one straight turn', () => {
+    const solid = () => false;
+    const want = new THREE.Vector3(4, 1.5, -6);
+    const path = beamPath(new THREE.Vector3(0.5, 1.5, 0.5), new THREE.Vector3(0, 0, -1), 24, 10, 16, solid, () => want);
+    expect(path.points.length).toBeGreaterThan(3);
+    const first = path.points[1].clone().sub(path.points[0]).normalize();
+    expect(first.angleTo(new THREE.Vector3(0, 0, -1))).toBeCloseTo(0, 6);
+    const passes = path.points.some(p => p.distanceTo(want) < 0.5);
+    expect(passes).toBe(true);
+    const straight = beamPath(new THREE.Vector3(0.5, 1.5, 0.5), new THREE.Vector3(0, 0, -1), 24, 0, 16, solid, () => want);
+    expect(straight.points).toHaveLength(2);
+  });
+});
+
+describe('Spiral Growth layers over the beam (issue #258)', () => {
+  const spiral = { formation: { triad: false, spiral: true } };
+
+  it('the beam keeps its own core at its normal width under the strands', () => {
+    const { scene } = castOnce({ fill: 0, stats: { fireRate: 2.7 }, shot: spiral });
+    const { tubes, helices } = visibleBeam(scene);
+    expect(tubes).toHaveLength(1);
+    expect(tubes[0].scale.x).toBeGreaterThan(BEAM_WIDTH - 0.016);
+    expect(tubes[0].scale.x).toBeLessThan(BEAM_WIDTH + 0.016);
+    expect(helices).toHaveLength(6);
+  });
+
+  it('the strands start on the beam and stay inside its halo for the first block, so none wraps around the eye', () => {
+    const { scene } = castOnce({ fill: 0, stats: { fireRate: 2.7 }, shot: spiral });
+    const { helices } = visibleBeam(scene);
+    expect(helices.length).toBeGreaterThan(0);
+    const halo = BEAM_WIDTH * HALO_WIDTH;
+    for (const m of helices) {
+      const pos = m.geometry.getAttribute('position');
+      for (let i = 0; i < pos.count; i++) {
+        if (pos.getZ(i) >= 1) continue;
+        expect(Math.hypot(pos.getX(i), pos.getY(i))).toBeLessThanOrEqual(halo);
+      }
+    }
+    expect(helixRadiusAt(0)).toBe(0);
+    expect(helixRadiusAt(24)).toBe(BEAM_HELIX_R);
   });
 });
 
