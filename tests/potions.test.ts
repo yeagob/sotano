@@ -13,13 +13,24 @@ describe('potions: what the bulb brews', () => {
     expect(brewOf([part('flesh', 'doubt'), part('flesh', 'critic')])).toBe('restoring-draught');
   });
 
-  it('anything else is a Plain Tonic: one flesh, flesh with another kind, three things, or a block', () => {
-    expect(brewOf([part('flesh')])).toBe('plain-tonic');
-    expect(brewOf([part('flesh'), part('heart')])).toBe('plain-tonic');
-    expect(brewOf([part('flesh'), part('flesh'), part('flesh')])).toBe('plain-tonic');
-    expect(brewOf([part('heart'), part('mind')])).toBe('plain-tonic');
+  it('flesh alone only heals, more the more flesh: one, two or three', () => {
+    expect(brewOf([part('flesh')])).toBe('mending-tonic');
+    expect(brewOf([3, part('flesh')])).toBe('mending-tonic');
+    expect(brewOf([part('flesh', 'doubt'), part('flesh', 'panic'), part('flesh', 'impulse')])).toBe('full-restoring-draught');
+    for (const id of ['mending-tonic', 'restoring-draught', 'full-restoring-draught'] as const) {
+      expect(POTIONS[id].duration.kind, id).toBe('instant');
+      expect(POTIONS[id].stats, id).toBeUndefined();
+    }
+  });
+
+  it('a bulb of one path brews that path\'s variant for its deepest kind, flesh along with it or not', () => {
+    expect(brewOf([part('flesh', 'doubt'), part('heart', 'doubt')])).toBe('lucid-cordial');
+    expect(brewOf([part('heart', 'doubt'), part('mind', 'doubt')])).toBe('lucid-cordial');
+  });
+
+  it('only a bulb with no part is a Plain Tonic', () => {
     expect(brewOf([3, 3])).toBe('plain-tonic');
-    expect(brewOf([3, part('flesh')])).toBe('plain-tonic');
+    expect(brewOf([3])).toBe('plain-tonic');
   });
 });
 
@@ -39,9 +50,11 @@ describe('potions: flesh buys only instant healing, and the Footing Tincture is 
 });
 
 describe('potions: what they do', () => {
-  it('the Plain Tonic restores half a heart, the Restoring Draught one heart', () => {
+  it('the Plain Tonic restores half a heart, the Mending Tonic three quarters, the Restoring Draught one heart, the Full Restoring Draught one and a half', () => {
     expect(POTIONS['plain-tonic'].heal).toBe(HEART / 2);
+    expect(POTIONS['mending-tonic'].heal).toBe((HEART * 3) / 4);
     expect(POTIONS['restoring-draught'].heal).toBe(HEART);
+    expect(POTIONS['full-restoring-draught'].heal).toBe(HEART * 1.5);
   });
 
   it('every potion has a flask with a 12 by 12 icon and a definition the hand can show', () => {

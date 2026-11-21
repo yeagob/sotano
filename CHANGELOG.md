@@ -9,6 +9,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ### Added
 - In a sitting, Add time lengthens it in steps of 30 seconds, 1 minute, 5 minutes and then 10 minutes, up to one hour. The part you are in keeps its end (#160).
 - A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
+- Potions are types with variants: a bulb no recipe matches brews the Tincture, Cordial or Elixir of its path, flesh alone heals more the more flesh, and parts of mixed paths brew an Echo that carries a practice's effect for two sealed rooms; the Plain Tonic is left for a bulb of blocks alone (#259).
 - The Folding Tincture: an easy potion (a body pattern's mind and dirt) that lets you crouch with C, R3 or a swipe down for 3 sealed rooms, as Child's Pose does (#262).
 - The Stride Tonic: an easy potion (a body pattern's mind) that lets you run 45% faster with Shift, L3 or the stick at its edge for 3 sealed rooms, as Fartlek does (#263).
 

@@ -43,7 +43,7 @@ export function drinkView(top: Carried | undefined): DrinkView {
   if (!top || !isFlask(top)) return { show: false, key: '' };
   return {
     show: true,
-    key: top.iced ? `${top.potion}+iced` : top.potion,
+    key: `${top.potion}${top.echo ? `.${top.echo}` : ''}${top.iced ? '+iced' : ''}`,
     flask: top,
     liquid: POTIONS[top.potion].liquid,
   };

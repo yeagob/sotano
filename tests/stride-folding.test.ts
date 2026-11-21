@@ -63,8 +63,8 @@ describe('run and crouch: the practices and their easy potions', () => {
     expect(brewOf([part('craving', 'mind')])).toBe('stride-tonic');
     expect(brewOf([part('impulse', 'mind'), MAT.dirt])).toBe('folding-tincture');
     expect(brewOf([MAT.dirt, part('craving', 'mind')])).toBe('folding-tincture');
-    expect(brewOf([part('doubt', 'mind')])).toBe('plain-tonic');
-    expect(brewOf([part('doubt', 'mind'), MAT.dirt])).toBe('plain-tonic');
+    expect(brewOf([MAT.dirt])).toBe('plain-tonic');
+    expect(brewOf([MAT.dirt, MAT.stone])).toBe('plain-tonic');
   });
 
   it('both recipes are easy: one or two inputs, no flesh, no heart, no essence', () => {
