@@ -31,6 +31,10 @@ const SAMPLES: [string, Carried[]][] = [
   ['patient-draught', [part('autopilot', 'heart'), part('autopilot', 'mind')]],
   ['berserker-draught', [part('panic', 'heart'), part('autopilot', 'heart'), MAT.obsidian]],
   ['rebirth-draught', [part('doubt', 'mind'), part('panic', 'heart'), part('impulse', 'flesh')]],
+  ['stride-tonic', [part('impulse', 'mind')]],
+  ['stride-tonic', [part('craving', 'mind')]],
+  ['folding-tincture', [part('impulse', 'mind'), MAT.dirt]],
+  ['folding-tincture', [MAT.dirt, part('craving', 'mind')]],
   ['rebirth-draught', [part('impulse', 'flesh'), part('panic', 'heart'), part('doubt', 'mind')]],
 ];
 
@@ -108,7 +112,7 @@ describe('the resolver', () => {
 
 describe('the validator: no two recipes tie for any bulb', () => {
   it('every bulb of one to three cubes has at most one most specific recipe, and an unmatched bulb brews the fallback', () => {
-    const cubes: Carried[] = [...PARTS, MAT.deepstone, MAT.obsidian, MAT.ore, ICE, MAT.stone];
+    const cubes: Carried[] = [...PARTS, MAT.deepstone, MAT.obsidian, MAT.ore, ICE, MAT.stone, MAT.dirt];
     const n = cubes.length;
     let bulbs = 0, matched = 0;
     const check = (bulb: Carried[]) => {

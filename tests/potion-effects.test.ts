@@ -36,13 +36,20 @@ describe('potion effects', () => {
       'patient-draught': { mining: 1.6 },
       'questioning-tincture': {},
       'berserker-draught': {},
+      'stride-tonic': {},
+      'folding-tincture': {},
+    };
+    const added: Partial<Record<PotionId, Partial<Record<StatName, number>>>> = {
+      'stride-tonic': { run: 1 },
+      'folding-tincture': { crouch: 1 },
     };
     for (const id of timed) {
       const { stats, fx } = setup();
       fx.drink({ potion: id });
       const want = expected[id]!;
+      const plus = added[id] ?? {};
       for (const s of Object.keys(BASE_STATS) as StatName[]) {
-        expect(stats.get(s), `${id} ${s}`).toBeCloseTo(BASE_STATS[s] * (want[s] ?? 1), 6);
+        expect(stats.get(s), `${id} ${s}`).toBeCloseTo(BASE_STATS[s] * (want[s] ?? 1) + (plus[s] ?? 0), 6);
       }
       for (const v of Object.values(want)) expect(EN.messages[POTIONS[id].effect], id).toContain(`×${v}`);
     }
