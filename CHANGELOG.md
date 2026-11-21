@@ -6,6 +6,10 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Fixed
+- The death screen scrolls on a phone, so its button can be reached.
+- The completion rows show each part's real percentage.
+
 ## 0.2.8-alpha · 2026-11-21
 
 ### Added
