@@ -55,6 +55,7 @@ import { Alembics } from '../entities/alembics';
 import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
+import { dashTouches, DASH_DAMAGE, DASH_MINING } from '../entities/dash';
 import { crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
@@ -1827,12 +1828,16 @@ export class Game {
         const a = fx.random() * Math.PI * 2;
         // three soot motes to one paper glint: the heart's own look, and the glint reads on dark floors
         const tone = this.toxicMotes++ % 4 === 3 ? 'bone.paper' : 'heart.black.base';
-        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, b.y + 0.15, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.25, 0.06, true);
+        this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, cy, cz + Math.sin(a) * TOXIC_RADIUS, pal(tone), 1, 0.5, 0.09, true);
       }
     }
     this.toxicT += dt;
     if (this.toxicT < TOXIC_PERIOD) return;
     this.toxicT = Math.min(this.toxicT - TOXIC_PERIOD, TOXIC_PERIOD);
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2;
+      this.particles.burst(cx + Math.cos(a) * TOXIC_RADIUS, cy, cz + Math.sin(a) * TOXIC_RADIUS, pal(k % 4 === 0 ? 'bone.paper' : 'heart.black.base'), 1, 1.2, 0.08, true);
+    }
     let hit = 0;
     for (const a of [...this.actors.all()]) {
       if (!toxicHits(a as unknown as ToxicCandidate, cx, cy, cz)) continue;
@@ -2966,9 +2971,33 @@ export class Game {
   }
 
   /** The afterimage of a dash: a few motes left behind along the path, each frame it runs. */
-  private dashTrail() {
+  private dashTrail(from: { x: number; y: number; z: number }) {
     const b = this.player.body;
-    this.particles.burst(b.x, b.y + 0.9, b.z, pal('path.body.base'), 3, 0.5, 0.05, true);
+    const n = Math.max(1, Math.min(4, Math.ceil(Math.hypot(b.x - from.x, b.y - from.y, b.z - from.z) / 0.15)));
+    for (let i = 1; i <= n; i++) {
+      const k = i / n, x = from.x + (b.x - from.x) * k, y = from.y + (b.y - from.y) * k, z = from.z + (b.z - from.z) * k;
+      this.particles.burst(x, y + b.h * 0.25, z, pal('path.body.base'), 1, 0.4, 0.05, true);
+      this.particles.burst(x, y + b.h * 0.55, z, pal('path.body.glow'), 1, 0.3, 0.06, true);
+      this.particles.burst(x, y + b.h * 0.85, z, pal('path.body.dark'), 1, 0.4, 0.04, true);
+    }
+  }
+
+  private dashStrike(from: { x: number; y: number; z: number }) {
+    const p = this.player, b = p.body;
+    for (const e of this.enemies.list) {
+      if (!e.alive || e.spawning > 0 || p.dashHits.has(e.id) || !hostile(p.faction, e.faction)) continue;
+      if (!dashTouches(from, b, e.body)) continue;
+      p.dashHits.add(e.id);
+      const dx = e.body.x - b.x, dz = e.body.z - b.z, l = Math.hypot(dx, dz) || 1;
+      if (!this.damageActor(e, DASH_DAMAGE, 'melee', 'irimi', p.id, dx / l, dz / l)) continue;
+      this.particles.burst(e.body.x, e.body.y + e.body.h / 2, e.body.z, pal('cold.body'), 10, 2.5, 0.06);
+    }
+  }
+
+  private dashBreak(x: number, y: number, z: number): boolean {
+    if (!this.solid(x, y, z) || !this.world.inside(x, y, z)) return false;
+    if (blockDamage(DASH_MINING, mat(this.world.get(x, y, z))) < this.world.hp(x, y, z) - 1e-6) return false;
+    return this.damageBlock(x, y, z, DASH_MINING, 'melee', 'irimi');
   }
 
   /** A slight widening of the view through a dash (DASH.md §4): the field of view plus a few degrees, back at its own value after it. */
@@ -3034,9 +3063,9 @@ export class Game {
     const body = this.player.body;
     if (Math.hypot(body.x - x, body.y + body.h / 2 - y, body.z - z) <= r) {
       this.heal(LOVE_HEAL_HALF_HEARTS * HALF_HEART, 'bomb');
-      this.particles.burst(body.x, body.y + 1.2, body.z, pal(HEART_FX.red), 24, 3, 0.07);
+      this.particles.hearts(body.x, body.y + 0.9, body.z, pal(HEART_FX.red), 8, 0.7, 0.18);
     }
-    this.particles.burst(x, y, z, pal(HEART_FX.red), 18, 3, 0.08);
+    this.particles.hearts(x, y, z, pal(HEART_FX.red), 10, 0.6, 0.24);
     LOVE_BLAST.forEach((t, k) => this.particles.burst(x, y, z, pal(t), 24 - k * 6, 4 + k, 0.1 + k * 0.03));
     this.hud.shake(0.15);
     sfx3.loveBoom();
@@ -5136,6 +5165,7 @@ export class Game {
     const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
+    const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5144,10 +5174,11 @@ export class Game {
         this.bus.emit('land', { fallSpeed: fall, cause, x, y, z });
       },
       bump: speed => this.headBump(speed),
+      dashBreak: (x, y, z) => this.dashBreak(x, y, z),
     }, this.playerMedium, below ? {} : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
     if (this.player.dashStarted) this.dashFx();
-    if (this.player.dashT > 0) this.dashTrail();
+    if (dashing || this.player.dashStarted) { this.dashTrail(dashFrom); this.dashStrike(dashFrom); }
     this.clampHealth();
     this.updateHearts(dt);
     this.touchBlocks(dt);
@@ -5195,7 +5226,7 @@ export class Game {
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
     if (below) this.chestViews.update(dt, this.player.keys);
-    this.particles.update(dt);
+    this.particles.update(dt, this.camera.position);
     this.debrisView.update(this.debris);
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);

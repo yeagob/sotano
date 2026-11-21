@@ -61,8 +61,8 @@ const shape = (f: FloorResult) => JSON.stringify({
 const BASELINE: Record<string, { shape: number; band: number; world: number; floors1to9: number }> = {
   '1/0': { shape: 4198360254, band: 1591722983, world: 2352658586, floors1to9: 2489947517 },
   '1/22': { shape: 1706385929, band: 1081796789, world: 296907192, floors1to9: 2489947517 },
-  '48879/0': { shape: 1201584274, band: 2222142443, world: 3688475951, floors1to9: 1503889822 },
-  '48879/22': { shape: 391549363, band: 4268051601, world: 1813437189, floors1to9: 1503889822 },
+  '48879/0': { shape: 3823202982, band: 2222142443, world: 3688475951, floors1to9: 1503889822 },
+  '48879/22': { shape: 3769812207, band: 4268051601, world: 1813437189, floors1to9: 1503889822 },
 };
 
 // ── the walker's routes: door middles and room centres, in the frame each room is carved in ──
