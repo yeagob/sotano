@@ -425,6 +425,16 @@ export class Game {
   /** The double-tap hint has been shown this run. */
   private missileHinted = false;
   private fpsAcc = 0; private fpsN = 0; fps = 0;
+  private failures = new Set<string>();
+
+  private guard(step: string, fn: () => void) {
+    try { fn(); } catch (err) {
+      const key = `${step}:${(err as Error)?.stack ?? String(err)}`;
+      if (this.failures.has(key)) return;
+      this.failures.add(key);
+      console.error(`[frame] ${step} failed`, err);
+    }
+  }
   /** The weapon replacing the intention, if any (docs/architecture/WEAPONS.md). */
   private weapon: Weapon | null = null;
   private weaponId: WeaponId = 'intent';
@@ -5117,7 +5127,7 @@ export class Game {
     this.showAchievement(ctx);
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
-    if (running && !this.hud.presenceOfferOpen && !this.paused) this.simulate(this.sandbox ? SANDBOX_DT : dt);
+    if (running && !this.hud.presenceOfferOpen && !this.paused) this.guard('simulate', () => this.simulate(this.sandbox ? SANDBOX_DT : dt));
     if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;

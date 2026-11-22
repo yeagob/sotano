@@ -42,6 +42,7 @@ interface Hazard extends Strike {
   tick: number;
   /** Whether this attack can hurt an actor (see `harms`): its marks are then yellow while they warn, red once live. */
   hurts: boolean;
+  gone?: boolean;
 }
 
 /** Whether a strike can hurt an actor: a blow with damage, a sting field, or a warning of one. A pull only drags. */
@@ -138,29 +139,33 @@ export class Hazards {
   }
 
   clear(owner: number) {
+    for (const h of this.list) if (h.owner === owner) h.gone = true;
     this.list = this.list.filter(h => h.owner !== owner);
   }
 
   update(dt: number) {
     this.time += dt;
     const actors = [...this.host.actors()];
-    for (let i = this.list.length - 1; i >= 0; i--) {
-      const h = this.list[i];
+    const list = this.list.slice(), done = new Set<Hazard>();
+    for (let i = list.length - 1; i >= 0; i--) {
+      const h = list[i];
+      if (h.gone) continue;
       h.t += dt;
       const live = h.t - h.lead;
       if (live < 0) { if (fx.random() < TELL_MOTE) this.mote(h, h.lead > 0 ? h.t / h.lead : 1); continue; }
       if (h.shape.kind === 'field' || h.shape.kind === 'pull') {
         if (!h.started) { h.started = true; this.host.live(h.shape); }
-        if (live > h.live) { this.list.splice(i, 1); continue; }
+        if (live > h.live) { done.add(h); continue; }
         this.continuous(h, dt, actors);
         continue;
       }
       if (!h.started) { h.started = true; this.host.live(h.shape); }
-      if (live > h.live) { this.list.splice(i, 1); continue; }
+      if (live > h.live) { done.add(h); continue; }
       if (h.damage > 0) this.sparks(h.shape, live);
       // a tinted strike is a picture: the effect it belongs to (SKY.md §6) does the touching
       if (!h.tint) this.strike(h, live, actors);
     }
+    if (done.size) this.list = this.list.filter(h => !done.has(h));
     this.draw();
   }
 
