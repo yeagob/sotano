@@ -38,6 +38,7 @@ Each entry: id (used in docs and `inspiredBy`), kind, status, key ideas, where i
 
 | Id | Source | Kind | Status | Key ideas | In the game |
 |---|---|---|---|---|---|
+| `books-of-secrets` | The Renaissance books of secrets (*Secreti*, Alessio Piemontese, 1555, and the genre that followed) | Recipe books (remedies, cooking, small arts) | PD (the genre; the generic name may be used) | Knowledge kept by writing it down; recipes for the body, the kitchen and the workshop in one book; sharing what works | **Book of Secrets** (opens the Recipe Book: every potion, meal and offering; [RECIPE-BOOK](../design/built/practices/RECIPE-BOOK.md)) |
 | `meditations` | *Meditations* (Marcus Aurelius) | Philosophy | PD | What's in your control; the obstacle is the way | **Meditations**, **Stoic Resolve**; the carry-and-build mechanic ([STORY.md §2](../design/built/story/MECHANICS-AND-METAPHOR.md)) |
 | `enchiridion` | *Enchiridion* (Epictetus) | Philosophy | PD | Dichotomy of control | **Stoic Resolve** |
 | `seneca-letters` | *Moral Letters to Lucilius* (Seneca) | Philosophy | PD | Letting go; preparing for hardship | **Letters from a Stoic** |

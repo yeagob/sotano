@@ -366,6 +366,45 @@
     #starmap .legend { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
     #starmap .legend li { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--ui-line); font-size: 15px; color: var(--ui-text-2); }
     #starmap .legend svg { flex: none; display: block; min-width: 15px; image-rendering: pixelated; }
+    /* the Recipe Book (Book of Secrets, DECISIONS §14.5): the star map's card finish; chapters of chamfered pages with
+       a 2 u bar in the potion's path colour, its flask at 3×, and chips for what a recipe asks. No new colour. */
+    #recipebook { display: none; }
+    #overlay[data-tab="recipes"] #recipebook { display: block; }
+    #overlay[data-tab="recipes"] .panel-menu { display: none; }
+    #overlay #recipebook .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
+    #recipebook .card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 12px; }
+    #recipebook .card > header small { flex: 1 1 14em; color: var(--ui-text-2); font-size: 14px; }
+    #recipebook .ornament { flex: none; display: block; image-rendering: pixelated; }
+    #overlay #recipebook h2 { margin: 0; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: 0; color: var(--ui-text); }
+    #recipebook header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; clip-path: var(--cut); }
+    #recipebook header .close:hover, #recipebook header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    body.dev-touch #recipebook header .close { width: 44px; height: 44px; }
+    #recipebook h3 { margin: 20px 0 8px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-gold); }
+    #recipebook h3::before { content: '\25C6  '; }
+    #recipebook .note { margin: 0 0 6px; font-size: 15px; line-height: 1.4; color: var(--ui-text-2); }
+    #recipebook .pages { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+    #recipebook .page { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--p, var(--ui-faded));
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #recipebook .flask { flex: none; display: block; width: 42px; height: 42px; image-rendering: pixelated; }
+    #recipebook .body { flex: 1; min-width: 0; }
+    #recipebook .body header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+    #recipebook .name { font: 20px/1.15 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #recipebook .path { font-style: normal; font-size: 14px; color: var(--p); }
+    #recipebook .effect { margin: 4px 0 6px; font-size: 15px; line-height: 1.35; color: var(--ui-text); }
+    #recipebook .way { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+    #recipebook .chip { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 3px 8px; background: var(--ui-panel); font-size: 14px; color: var(--ui-text);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #recipebook .chip img { flex: none; display: block; width: 16px; height: 16px; image-rendering: pixelated; }
+    #recipebook .chip small, #recipebook .rule { font-size: 14px; color: var(--ui-text-2); }
+    #recipebook .rule { flex-basis: 100%; line-height: 1.35; }
+    #recipebook .plus { font-size: 14px; color: var(--ui-gold); }
+    #recipebook .or { margin: 4px 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--ui-faded); }
+    #recipebook .ores { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+    #recipebook .gives { margin: 6px 0 0; font-size: 14px; line-height: 1.35; color: var(--ui-text-2); }
+    #recipebook .gives em { font-style: normal; color: var(--ui-gold); }
+    /* the Recipes tab shows a gold diamond until the book is first opened: the menu says the book is new */
+    #overlay .tabs button.new::after { content: ' \25C6'; color: var(--ui-gold); }
+    #overlay .tabs button[hidden] { display: none; }
     #overlay #inventory .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
     /* the practices tab (issue #202): the achievement notice's pixel finish (DECISIONS §10.2). Pixelify Sans only at
        20 / 28 / 40 px, chamfered tiles and blocks (--cut), palette tokens only. A practice reads in three blocks,
@@ -720,6 +759,7 @@
         <button type="button" data-act="tab-menu" data-tab="menu" aria-selected="true"></button>
         <button type="button" data-act="tab-items" data-tab="items" aria-selected="false"></button>
         <button type="button" data-act="tab-map" data-tab="map" aria-selected="false"></button>
+        <button type="button" data-act="tab-recipes" data-tab="recipes" aria-selected="false" hidden></button>
       </nav>
       <div class="panel-menu">
       <h1 class="cover"><img src="/the-roots-cover.jpg" alt="THE ROOTS" width="1663" height="640" /></h1>
@@ -760,6 +800,7 @@
       </div>
       <div id="inventory"></div>
       <div id="starmap"></div>
+      <div id="recipebook"></div>
     </div>
   </div>
   <div id="rotate" data-i18n="touch.rotate">Turn your device sideways to play</div>

@@ -46,6 +46,10 @@ export function cartographerOre(floor: number): number {
   return MAT[oreOf(floor)];
 }
 
+/** The presences that take the ore of their zone, beside the answer on their card (the Cartographer charts both places
+ *  for it; `findCartographerOre`). The Recipe Book reads this to say who takes ore (src/game/recipe-book.ts). */
+export const PRESENCE_TAKES_ORE: ReadonlySet<PresenceId> = new Set<PresenceId>(['cartographer']);
+
 /** The offer of the Cartographer's ore: the hand slot that holds its zone's ore, from the top down, or none. */
 export function findCartographerOre(floor: number, hand: readonly Carried[]): { index: number; carried: number } | undefined {
   const ore = cartographerOre(floor);

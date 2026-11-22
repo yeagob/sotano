@@ -31,6 +31,7 @@ export function validateItem(d: ItemDef): string[] {
   if (!Object.values(d.pools).some(w => (w ?? 0) > 0)) e.push(`${at}: in no pool`);
   if ((d.pools.sky ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'sky' && (w ?? 0) > 0)) e.push(`${at}: the sky pool must be its only pool`);
   if ((d.pools.covenant ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'covenant' && (w ?? 0) > 0)) e.push(`${at}: the covenant pool must be its only pool`);
+  if ((d.pools.roots ?? 0) > 0 && Object.entries(d.pools).some(([p, w]) => p !== 'roots' && (w ?? 0) > 0)) e.push(`${at}: the roots pool must be its only pool`);
   // icon: 12×12, every key in the palette
   const rows = d.icon?.rows ?? [];
   if (rows.length !== 12 || rows.some(r => r.length !== 12)) e.push(`${at}: icon must be 12 rows of 12`);

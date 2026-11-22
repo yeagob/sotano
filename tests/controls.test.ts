@@ -82,7 +82,7 @@ describe('controls contract', () => {
       expect(contextsFor(b, 'gamepad'), 'gamepad').toContain(c);
       expect(contextsFor(b, 'touch'), 'touch').toContain(c);
     }
-    expect(inputs(b, 'keyboard')).toEqual(['KeyB']);
+    expect(inputs(b, 'keyboard')).toEqual(['KeyH']);
     expect(inputs(b, 'gamepad')).toEqual(['button2']);
     expect(b.touch.control).toBe('menuButton');
   });

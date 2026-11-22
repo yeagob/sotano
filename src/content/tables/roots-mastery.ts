@@ -43,6 +43,8 @@ export interface RootsRewards {
   readonly altar: TierBand | null;
   /** A second Sanctuary (a free chest with its own Boundary), from level 100. */
   readonly secondSanctuary: boolean;
+  /** The Roots' call (issue #295), from level 50: at run start what the Roots lay flies to the player (`roots-call.ts`). */
+  readonly rootsCall: boolean;
 }
 
 /** The level at which each loose key starts (one more key each time): 1, 2, 3, 4, 5 and 6 keys. */
@@ -52,13 +54,19 @@ const BOMBS_AT = [1, 9, 19, 28, 38] as const;
 /** Each free chest: one more from the level given. */
 const CHESTS_AT = [4, 12, 17, 23, 29, 35] as const;
 /** Each extra practice: one more from the level given. */
-const PRACTICES_AT = [10, 25] as const;
+const PRACTICES_AT = [10, 25, 30] as const;
 
-export interface FixedPractice { readonly at: number; readonly item: string }
+/**
+ * The practice an extra practice site always holds (issue #277). `gain` names the step in the notice's own words when
+ * the practice opens something of its own (the Book of Secrets opens the Recipe Book); without it the step is the plain
+ * `mastery.gain.practice` line.
+ */
+export interface FixedPractice { readonly at: number; readonly item: string; readonly gain?: string }
 
 export const FIXED_PRACTICES: readonly FixedPractice[] = [
   { at: PRACTICES_AT[0], item: 'fartlek' },
   { at: PRACTICES_AT[1], item: 'balasana' },
+  { at: PRACTICES_AT[2], item: 'bookofsecrets', gain: 'mastery.gain.recipeBook' },
 ];
 
 export function fixedPracticeAt(site: number, level: number): string | null {
@@ -85,6 +93,9 @@ const DRAWS_UP_AGAIN_AT = 70;
 const ALTAR_AT = 80;
 const ALTAR_BEST_AT = 90;
 const SANCTUARY_AT = 100;
+
+/** The Roots' call (issue #295): half of the mastery, so half of the way. From this level every run starts with the call. */
+export const ROOTS_CALL_AT = 50;
 
 /** Clamps a level to the table's range. Not a number reads as 0; a fraction is floored. */
 export function clampLevel(level: number): number {
@@ -123,6 +134,7 @@ export function rootsRewards(level: number): RootsRewards {
     extraPractices: reached(PRACTICES_AT),
     altar: L >= ALTAR_BEST_AT ? { min: 2, max: 4 } : L >= ALTAR_AT ? { min: 1, max: 3 } : null,
     secondSanctuary: L >= SANCTUARY_AT,
+    rootsCall: L >= ROOTS_CALL_AT,
   };
 }
 
@@ -169,7 +181,10 @@ export function gainsAt(level: number): GainLine[] {
     lines.push({ key: 'mastery.gain.chestDraws', params: {} });
   }
   if (now.extraPractices > before.extraPractices) {
-    lines.push({ key: 'mastery.gain.practice', params: { n: now.extraPractices, stars: EXTRA_PRACTICE_BAND.max } });
+    const gain = FIXED_PRACTICES[now.extraPractices - 1]?.gain;
+    lines.push(gain
+      ? { key: gain, params: { n: now.extraPractices } }
+      : { key: 'mastery.gain.practice', params: { n: now.extraPractices, stars: EXTRA_PRACTICE_BAND.max } });
   }
   if (!before.altar && now.altar) {
     lines.push({ key: 'mastery.gain.altar', params: { stars: now.altar.max } });
@@ -177,6 +192,8 @@ export function gainsAt(level: number): GainLine[] {
     lines.push({ key: 'mastery.gain.altarBest', params: { stars: now.altar.max } });
   }
   if (now.secondSanctuary && !before.secondSanctuary) lines.push({ key: 'mastery.gain.sanctuary', params: {} });
+  // the Roots' call (issue #295)
+  if (now.rootsCall && !before.rootsCall) lines.push({ key: 'mastery.gain.call', params: {} });
   if (now.crateFactor !== before.crateFactor) {
     const pct = (chance: number) => Math.round(chance * 100);
     lines.push({

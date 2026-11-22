@@ -22,6 +22,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | crouch | hold | play | R3 toggles crouching | `buttons: [RS]` (the latch lives in the input layer) |
 | choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
+| recipe book | D-pad Down in play (while the Book of Secrets is held): opens the Recipes tab; B closes it. On the screen the d-pad scrolls the book |
 | star map | View (in play or on the screen): opens the star map tab; View again or B closes it. On the pause card View stays New run |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |

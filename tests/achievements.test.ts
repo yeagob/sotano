@@ -4,8 +4,9 @@
 
 import { describe, expect, it } from 'vitest';
 import { BOSSES } from '../src/content/bosses';
-import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, ACHIEVEMENT_EVENTS, ACHIEVEMENT_MEDITATIONS, type AchievementDef } from '../src/content/achievements';
+import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, ACHIEVEMENT_CAP, ACHIEVEMENT_EVENTS, ACHIEVEMENT_MEDITATIONS, type AchievementDef } from '../src/content/achievements';
 import { SEQUENCES } from '../src/content/presences/meditations';
+import { SYNERGIES } from '../src/content/synergies';
 import { EN } from '../src/i18n/locales/en';
 import { ES } from '../src/i18n/locales/es';
 import { catalogueErrors, isUnlocked, mastery, matches, track, type AchievementState, type Payload } from '../src/game/achievements';
@@ -27,16 +28,36 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 48 achievements: the 40 of #147 (36 plus the 4 book pages), the 6 of #179 (Down to the Roots, Root to Crown, Into the Crown, Mind Crafter, Turning Back, The Unbreakable Floor), the final one (Made Omh, completion reaches 100%) and the hour of meditation (An Hour of Stillness), and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(48);
+  it('holds the 55 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), and the 7 of the blocks, the projections and the four states of being, and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(55);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
-  it('has unique ids, shaped like ^[a-z0-9.-]+$, never more than 100', () => {
+  it('has unique ids, shaped like ^[a-z0-9.-]+$, never more than the cap', () => {
     const all = ids(ACHIEVEMENTS);
     expect(new Set(all).size).toBe(all.length);
     for (const id of all) expect(id).toMatch(/^[a-z0-9.-]+$/);
-    expect(all.length).toBeLessThanOrEqual(100);
+    expect(all.length).toBeLessThanOrEqual(ACHIEVEMENT_CAP);
+  });
+
+  it('has blocks.placed beside mind.crafter: 1000 blocks with no pact condition, and mind.crafter kept as it was', () => {
+    expect(ACHIEVEMENTS.find(d => d.id === 'blocks.placed')).toEqual({ id: 'blocks.placed', on: 'blockPlaced', times: 1000 });
+    expect(ACHIEVEMENTS.find(d => d.id === 'mind.crafter')).toEqual({ id: 'mind.crafter', on: 'blockPlaced', where: { afterPact: true }, times: 1000 });
+  });
+
+  it('has the projections, ordinary ones only (boss: false), converted and destroyed 100 times each across runs', () => {
+    expect(ACHIEVEMENTS.find(d => d.id === 'projections.converted')).toEqual({ id: 'projections.converted', on: 'projectionConverted', where: { boss: false }, times: 100 });
+    expect(ACHIEVEMENTS.find(d => d.id === 'projections.destroyed')).toEqual({ id: 'projections.destroyed', on: 'projectionDestroyed', where: { boss: false }, times: 100 });
+  });
+
+  it('has one first-time achievement per state of being, each waiting for its own synergy, and every one of them is a real synergy', () => {
+    const states = ACHIEVEMENTS.filter(d => d.on === 'synergyOn');
+    expect(states.map(d => d.id)).toEqual(['state.embodied', 'state.lucid', 'state.open-hearted', 'state.resolute']);
+    for (const d of states) {
+      expect(d.times).toBeUndefined();
+      const synergy = d.where?.synergy;
+      expect(SYNERGIES.some(s => s.id === synergy), `${d.id} waits on a synergy of content/synergies.ts`).toBe(true);
+    }
   });
 
   it('has 28 boss achievements, one destroyed and one converted for each of the 14 bosses', () => {
@@ -262,6 +283,33 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     expect(JSON.stringify(before)).toBe(snapshot);
   });
 
+  it('blocks.placed counts every placement, before and after the pact, and unlocks at the 1000th', () => {
+    let s = EMPTY;
+    for (let i = 0; i < 999; i++) s = run(s, 'blockPlaced', { afterPact: i % 2 === 0 }).state;
+    expect(s.counts['blocks.placed']).toBe(999);
+    const last = run(s, 'blockPlaced', { afterPact: false });
+    expect(ids(last.unlocked)).toContain('blocks.placed');
+    expect(last.state.counts['blocks.placed']).toBeUndefined();
+  });
+
+  it('projections.converted and projections.destroyed count the ordinary ones, a boss never', () => {
+    let s = EMPTY;
+    for (let i = 0; i < 100; i++) s = run(s, 'projectionConverted', { def: 'doubt', boss: true }).state;
+    for (let i = 0; i < 100; i++) s = run(s, 'projectionDestroyed', { def: 'doubt', boss: true }).state;
+    expect(s.counts).toEqual({});
+    for (let i = 0; i < 99; i++) s = run(s, 'projectionConverted', { def: 'doubt', boss: false }).state;
+    expect(s.counts['projections.converted']).toBe(99);
+    expect(ids(run(s, 'projectionConverted', { def: 'doubt', boss: false }).unlocked)).toEqual(['projections.converted']);
+    expect(ids(run(EMPTY, 'projectionDestroyed', { def: 'doubt', boss: false }).unlocked)).toEqual([]);
+  });
+
+  it('a state of being unlocks on its own synergy the first time, and another synergy never unlocks it', () => {
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'hearth' }).unlocked)).toEqual([]);
+    const first = run(EMPTY, 'synergyOn', { synergy: 'lucid' });
+    expect(ids(first.unlocked)).toEqual(['state.lucid']);
+    expect(ids(run(first.state, 'synergyOn', { synergy: 'lucid' }).unlocked)).toEqual([]);
+  });
+
   it('an unknown id in the save is kept, not counted and not an error', () => {
     const state: AchievementState = { achievements: { 'boss.gone.destroyed': 5, 'brew.first': 6 }, counts: {} };
     expect(mastery(state)).toBe(1);
@@ -270,11 +318,11 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 47 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 55 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(48);
+    expect(mastery({ achievements: all })).toBe(55);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {
