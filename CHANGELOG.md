@@ -6,8 +6,21 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.8-alpha.f3 · 2026-11-22
+
 ### Fixed
-- The death screen scrolls on a phone, so its button can be reached.
+- An error during play no longer freezes the game on a black screen with no menu, as after picking up the berserker heart on a phone (#287).
+- A projection killed by an area attack no longer breaks the game loop: this froze the game on a black screen with no menu (#287).
+
+## 0.2.8-alpha.f2 · 2026-11-21
+
+### Fixed
+- A broken block disappears at once on a phone, and its pieces show with it (#285).
+
+## 0.2.8-alpha.f1 · 2026-11-21
+
+### Fixed
+- The death screen scrolls on a phone, so its button can be reached (#281).
 - The completion rows show each part's real percentage.
 
 ## 0.2.8-alpha · 2026-11-21

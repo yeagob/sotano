@@ -118,17 +118,22 @@ export class VoxelWorld implements VoxelSpace {
   }
 
   markDirty(x: number, y: number, z: number) {
+    for (const k of this.keysAround(x, y, z)) this.dirty.add(k);
+  }
+
+  keysAround(x: number, y: number, z: number): string[] {
     const cx = Math.floor(x / CHUNK), cy = Math.floor(y / CHUNK), cz = Math.floor(z / CHUNK);
-    this.dirty.add(chunkKey(cx, cy, cz));
+    const keys = [chunkKey(cx, cy, cz)];
     const lx = x - cx * CHUNK, ly = y - cy * CHUNK, lz = z - cz * CHUNK;
     // a change on the array's rim also changes the terrain's faces across it
     const outer = !!this.terrain;
-    if (lx === 0 && (cx > 0 || outer)) this.dirty.add(chunkKey(cx - 1, cy, cz));
-    if (lx === CHUNK - 1 && (cx < this.ncx - 1 || outer)) this.dirty.add(chunkKey(cx + 1, cy, cz));
-    if (ly === 0 && cy > 0) this.dirty.add(chunkKey(cx, cy - 1, cz));
-    if (ly === CHUNK - 1 && cy < this.ncy - 1) this.dirty.add(chunkKey(cx, cy + 1, cz));
-    if (lz === 0 && (cz > 0 || outer)) this.dirty.add(chunkKey(cx, cy, cz - 1));
-    if (lz === CHUNK - 1 && (cz < this.ncz - 1 || outer)) this.dirty.add(chunkKey(cx, cy, cz + 1));
+    if (lx === 0 && (cx > 0 || outer)) keys.push(chunkKey(cx - 1, cy, cz));
+    if (lx === CHUNK - 1 && (cx < this.ncx - 1 || outer)) keys.push(chunkKey(cx + 1, cy, cz));
+    if (ly === 0 && cy > 0) keys.push(chunkKey(cx, cy - 1, cz));
+    if (ly === CHUNK - 1 && cy < this.ncy - 1) keys.push(chunkKey(cx, cy + 1, cz));
+    if (lz === 0 && (cz > 0 || outer)) keys.push(chunkKey(cx, cy, cz - 1));
+    if (lz === CHUNK - 1 && (cz < this.ncz - 1 || outer)) keys.push(chunkKey(cx, cy, cz + 1));
+    return keys;
   }
 
   markAllDirty() {
