@@ -76,6 +76,7 @@ function rig(polarity: Polarity, realm: 'dungeon' | 'sky' = 'sky') {
     stats: { get: (k: string) => (k === 'bombRadius' ? 2.6 : k === 'bombDamage' ? 40 : 0) },
     particles: { burst() {}, hearts() {} },
     elements: { wakeAround() {} },
+    chunks: { remeshNow() {} },
     elemFx: 0,
     elemSfx: 0,
     actors: { all: () => [] },
