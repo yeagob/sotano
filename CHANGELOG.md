@@ -6,6 +6,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.8-alpha.f3 · 2026-11-22
+
+### Fixed
+- An error during play no longer freezes the game on a black screen with no menu, as after picking up the berserker heart on a phone (#287).
+
 ## 0.2.8-alpha.f2 · 2026-11-21
 
 ### Fixed
