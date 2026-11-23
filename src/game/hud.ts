@@ -24,7 +24,7 @@ import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../rende
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { AIR } from '../content/materials';
-import { bandRange, gridPoint, MAP_CELL, mapPlace as placeOnMap, mapPx, type MapPlace } from './minimap';
+import { ARROW_BORDER, ARROW_BORDER_PX, arrowFill, bandRange, MAP_CELL, MAP_PAD, mapPlace as placeOnMap, mapPx, TUNNEL_TONE, tunnelRect, type MapPlace } from './minimap';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskIcon, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { flaskEffect, flaskName } from '../content/potion-text';
@@ -69,10 +69,8 @@ const pathColor = (p: string) => palCss(`path.${p}.base` as PalToken);
 const MAP = {
   unvisited: palCss('bone.faded'), visited: palCss('ink.ash'), cleared: palCss('light.gold'), current: palCss('bone.paper'),
   treasure: palCss('light.gold'), vault: palCss('brass.base'), boss: palCss('cold.white'), start: palCss('bone.dim'), challenge: palCss('cold.body'),
-  tunnel: palCss('bone.faded'),
+  tunnel: palCss(TUNNEL_TONE),
 };
-/** The dug tunnels are a faint trail, quieter than a visited room and louder than an unvisited outline (§10.2). */
-const TUNNEL_ALPHA = 0.6;
 /** Seconds between two looks at the tunnels while the player digs: the map follows the digging without a frame's cost. */
 const TUNNEL_REFRESH_S = 0.25;
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
@@ -644,8 +642,11 @@ export class Hud {
     const c = this.map, g = c.getContext('2d')!;
     const { w: cw, h: ch, gap } = MAP_CELL;
     const { w, h } = floor.plan;
-    c.width = w * (cw + gap) + gap; c.height = h * (ch + gap) + gap;
+    // the grid sits inside a border of rock (MAP_PAD), so the tunnels and the arrow in the floor's margin stay on it (#305)
+    const [padX, padZ] = MAP_PAD;
+    c.width = w * (cw + gap) + gap + 2 * padX; c.height = h * (ch + gap) + gap + 2 * padZ;
     g.clearRect(0, 0, c.width, c.height);
+    g.translate(padX, padZ);
     const known = new Set<number>();
     const marks: [string, number, number][] = [];
     for (const r of floor.rooms) {
@@ -690,25 +691,18 @@ export class Hud {
       paint(x, y, rw, rh);
       if (r.type !== 'normal') marks.push([r.type, x + cw / 2, y + ch / 2]);
     }
-    // the tunnels the player dug: one map pixel per block column, a faint trail over the rock (DECISIONS §10.2)
+    // the tunnels the player dug: a solid light trail over the rock, at least 2 px a column (DECISIONS §10.2, #305)
     if (this.mapTunnels.length && this.tunnelDepth === this.lastDepthOf(floor)) {
-      g.globalAlpha = TUNNEL_ALPHA;
       g.fillStyle = MAP.tunnel;
-      for (const [x, z] of this.mapTunnels) {
-        const [u0, v0] = gridPoint(x, z), [u1, v1] = gridPoint(x + 1, z + 1);
-        const [ax, az] = mapPx(u0, v0), [bx, bz] = mapPx(u1, v1);
-        const x0 = Math.round(ax), z0 = Math.round(az);
-        g.fillRect(x0, z0, Math.max(1, Math.round(bx) - x0), Math.max(1, Math.round(bz) - z0));
-      }
-      g.globalAlpha = 1;
+      for (const [x, z] of this.mapTunnels) g.fillRect(...tunnelRect(x, z));
     }
     // the room marks over the tunnels, so a glyph always reads whole
     for (const [type, mx, mz] of marks) this.mapMark(g, type, mx, mz);
     // the player is always on the map: on the room's cell inside a room, on the body's place anywhere else
     const place = this.mapPlace;
     const here = current >= 0 ? floor.rooms.find(r => r.id === current) : undefined;
-    if (place) { const [px, pz] = mapPx(place.u, place.v); this.mapArrow(g, px, pz); }
-    else if (here) this.mapArrow(g, gap + here.gx * (cw + gap) + cw / 2, gap + here.gz * (ch + gap) + ch / 2);
+    if (place) { const [px, pz] = mapPx(place.u, place.v); this.mapArrow(g, px, pz, place.room >= 0); }
+    else if (here) this.mapArrow(g, gap + here.gx * (cw + gap) + cw / 2, gap + here.gz * (ch + gap) + ch / 2, true);
   }
 
   /** The depth of a floor result on the map (its rooms carry their floor). */
@@ -716,14 +710,20 @@ export class Hud {
     return floor.rooms[0]?.floor ?? this.lastDepth;
   }
 
-  private mapArrow(g: CanvasRenderingContext2D, cx: number, cy: number) {
+  /** The player's arrow: a light border under the fill, so it reads on the dark map and on the room's cell (#305). */
+  private mapArrow(g: CanvasRenderingContext2D, cx: number, cy: number, inRoom: boolean) {
     const dx = -Math.sin(this.mapYaw), dz = -Math.cos(this.mapYaw);
-    g.fillStyle = palCss('ink.void');
     g.beginPath();
     g.moveTo(cx + dx * 4.5, cy + dz * 4.5);
     g.lineTo(cx - dx * 2.5 + dz * 3, cy - dz * 2.5 - dx * 3);
     g.lineTo(cx - dx * 2.5 - dz * 3, cy - dz * 2.5 + dx * 3);
     g.closePath();
+    // the stroke is centred on the edge: twice the border width leaves ARROW_BORDER_PX outside the fill
+    g.strokeStyle = palCss(ARROW_BORDER);
+    g.lineWidth = ARROW_BORDER_PX * 2;
+    g.lineJoin = 'round';
+    g.stroke();
+    g.fillStyle = palCss(arrowFill(inRoom));
     g.fill();
   }
 
