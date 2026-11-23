@@ -12,7 +12,7 @@ import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { grownScale, setScale, shrunkScale } from './growth';
 import { MENDED_TAG } from '../content/presences/mended';
-import { boxHits, moveBody } from '../physics/voxel-collide';
+import { boxHits, freeBody, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
@@ -188,7 +188,10 @@ export class Enemies {
   pressure() { return { hazards: this.hazards.size, projectiles: this.projectiles.length }; }
 
   /** Projections of a room that keep its doors shut: alive and still hostile (allies don't count). */
-  blockingIn(room: number) { return this.list.filter(e => e.alive && e.room === room && e.faction === 'projection').length; }
+  blockingIn(room: number) { return this.blockers(room).length; }
+
+  /** The projections `blockingIn` counts. */
+  blockers(room: number) { return this.list.filter(e => e.alive && e.room === room && e.faction === 'projection'); }
 
   /** Id of a hittable enemy touching the sphere (and passing `filter`), or -1. */
   at(x: number, y: number, z: number, r: number, filter?: (e: Enemy) => boolean): number {
@@ -338,7 +341,13 @@ export class Enemies {
         this.draw(e);
         continue;
       }
-      if (e.hidden) { b.vx = 0; b.vz = 0; this.draw(e); continue; }
+      // a creature hidden by a hit waits for its room to clear; a projection that hides on its own
+      // (Avoidance shut, Pretence) keeps thinking, or it would never come out and its room would
+      // stay sealed with nothing left to shoot (issue #301)
+      if (e.hidden) {
+        if (e.spec.kind !== 'creature') { this.unbury(e); e.spec.behaviour.update(e, ctx); }
+        b.vx = 0; b.vz = 0; this.draw(e); continue;
+      }
       if (e.frozen > 0) { e.frozen -= dt; e.wishX = 0; e.wishZ = 0; }
       else if (e.fear > 0) { e.fear -= dt; this.flee(e, ctx); }
       else if (e.hold > 0) { e.hold -= dt; e.wishX = 0; e.wishZ = 0; }
@@ -358,6 +367,7 @@ export class Enemies {
       b.vz += (e.wishZ * e.speed * e.elemSpeed - b.vz) * blend;
       if (e.flyY >= 0) b.vy += Math.max(-FLY_MAX, Math.min(FLY_MAX, (e.flyY - b.y) * FLY_GAIN)) - b.vy;
       else b.vy = Math.max(b.vy - GRAVITY * dt, -30);
+      this.unbury(e);
       const wantX = b.vx, wantZ = b.vz, wasGround = b.onGround;
       const walls = e.ghost || e.flyY >= 0 ? undefined : this.avoidWalls(e);
       moveBody(e.ghost ? NO_SOLID : host.solid, b, dt, walls);
@@ -384,6 +394,20 @@ export class Enemies {
     this.updateProjectiles(dt, actors);
     // forget the dead
     for (let i = this.list.length - 1; i >= 0; i--) if (!this.list[i].alive) this.list.splice(i, 1);
+  }
+
+  /**
+   * Caught inside blocks (a stone landed on it, its spawn spot was filled while it formed), a body
+   * could never move again: it goes out to the nearest open spot of its room, never through a wall;
+   * one already out of its room may land anywhere (issue #301). A ghost passes through walls by
+   * design and is left alone. Costs one box test while the body is free.
+   */
+  private unbury(e: Enemy) {
+    if (e.ghost) return;
+    const b = e.body, rm = this.host.room(e.room);
+    const x0 = rm.x0, z0 = rm.z0, x1 = rm.x0 + (rm.w ?? ROOM_W), z1 = rm.z0 + (rm.d ?? ROOM_D);
+    const out = b.x < x0 - 0.5 || b.x > x1 + 0.5 || b.z < z0 - 0.5 || b.z > z1 + 0.5;
+    freeBody(this.host.solid, b, (x, z) => out || x - b.hw >= x0 && x + b.hw <= x1 && z - b.hw >= z0 && z + b.hw <= z1);
   }
 
   /**

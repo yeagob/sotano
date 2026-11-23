@@ -19,6 +19,40 @@ export function boxHits(solid: Solid, x: number, y: number, z: number, hw: numbe
   return false;
 }
 
+/** How far, in whole blocks, `freeBody` looks sideways and upward for room to stand (issue #301). */
+const FREE_SIDE = 2;
+const FREE_UP = 3;
+/** Every cell offset `freeBody` tries, nearest first; at equal distance, straight up before sideways. */
+const FREE_OFFSETS: [number, number, number][] = (() => {
+  const out: [number, number, number][] = [];
+  for (let dy = 0; dy <= FREE_UP; dy++) for (let dx = -FREE_SIDE; dx <= FREE_SIDE; dx++) for (let dz = -FREE_SIDE; dz <= FREE_SIDE; dz++) {
+    if (dx || dy || dz) out.push([dx, dy, dz]);
+  }
+  const cost = ([dx, dy, dz]: [number, number, number]) => Math.hypot(dx, dy, dz) + (dx || dz ? 0.01 : 0);
+  return out.sort((a, b) => cost(a) - cost(b));
+})();
+
+/**
+ * A body caught inside solid blocks (a block set on it, a stone landing on it, a spawn spot filled
+ * while it formed) cannot move: `moveBody` backs off every step. This moves it to the nearest open
+ * spot, keeping its offset in the cell, among the spots `allowed` accepts (a projection stays in its
+ * room: it is never pushed through a wall). True when the body is free (it already was, or it was
+ * moved); false when no open spot is in reach, and the body stays where it is.
+ */
+export function freeBody(solid: Solid, b: Body, allowed: (x: number, z: number) => boolean = () => true): boolean {
+  if (!boxHits(solid, b.x, b.y, b.z, b.hw, b.h)) return true;
+  // the lift goes to the top of the cell the feet are in, so a block set over the feet lifts it by one
+  const base = Math.floor(b.y + EPS);
+  for (const [dx, dy, dz] of FREE_OFFSETS) {
+    const x = b.x + dx, y = base + dy, z = b.z + dz;
+    if (!allowed(x, z) || boxHits(solid, x, y, z, b.hw, b.h)) continue;
+    b.x = x; b.y = y; b.z = z;
+    b.vx = 0; b.vy = 0; b.vz = 0;
+    return true;
+  }
+  return false;
+}
+
 export function moveBody(solid: Solid, b: Body, dt: number, walls?: Solid) {
   b.onGround = false;
   // small substeps so nothing tunnels through blocks at high speed

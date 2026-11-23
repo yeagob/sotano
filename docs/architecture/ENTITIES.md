@@ -82,6 +82,11 @@ The roster holds 40 projection entries in `content/enemies/` (38 files; Procrast
 - **Every spawn goes through `enemySpawn`** (hp, speed, contact damage, tags, position all mutable).
 - **Leash**: projections belong to their room; one that leaves it walks back to the centre.
 - **Clear**: when no hostile projection of the room is left (wherever it went; allies don't count), the doors unseal, `roomClear { drops }` fires and the reward (if any) appears at the centre and is ejected away from the player (§3). If you dig out of a sealed room, its doors stay shut until it's cleared, and seal again when you're back inside.
+- **Nothing keeps a room shut for good** (issue #301, [SEAL-AND-OMENS](../design/built/encounters/SEAL-AND-OMENS.md)):
+  - A hidden projection (Avoidance shut, Pretence) still runs its behaviour every step, so it can come out; only a creature hidden by a hit or a seal waits for its room to clear (`Enemies.update`).
+  - `Enemies.unbury` runs before a body moves: a non-ghost body whose box is inside solid blocks goes to the nearest open spot in its room (`freeBody` in `physics/voxel-collide.ts`: up to 2 blocks sideways and 3 up, straight up first). One box test while the body is free.
+  - `Game.tryPlace` refuses a cell any living actor other than the player reaches into (`cellTaken` in `game/placement.ts`), as `placeItemBlock` already did.
+  - The watchdog (`game/room-watchdog.ts`): a `RecountClock` beats every `ROOM_WATCHDOG_INTERVAL` = 2 s. On a beat, each started room on its last wave with no open omen (and each active challenge room) calls `Game.releaseStranded`: when every projection of `Enemies.blockers(room)` is `unreachable` (buried and not a ghost or still forming, or more than `LOST_BELOW` = 8 blocks under the room's `y0`), each is moved to the room's centre and released with `Enemies.kill` (its drops, no `projectionDestroyed`), and the room clears through the normal path on the same step. Each release is a devlog line (`room watchdog: released …`). A recount reads only that room's projections.
 
 ### Kinds of beings (BESTIARY §1)
 

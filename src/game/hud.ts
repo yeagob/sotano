@@ -23,6 +23,8 @@ import { materialTexture } from '../render/atlas';
 import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../render/icons';
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
+import { AIR } from '../content/materials';
+import { bandRange, gridPoint, MAP_CELL, mapPlace as placeOnMap, mapPx, type MapPlace } from './minimap';
 import { level, tollOf } from '../content/levels';
 import { carriedDef, flaskIcon, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { flaskEffect, flaskName } from '../content/potion-text';
@@ -67,7 +69,12 @@ const pathColor = (p: string) => palCss(`path.${p}.base` as PalToken);
 const MAP = {
   unvisited: palCss('bone.faded'), visited: palCss('ink.ash'), cleared: palCss('light.gold'), current: palCss('bone.paper'),
   treasure: palCss('light.gold'), vault: palCss('brass.base'), boss: palCss('cold.white'), start: palCss('bone.dim'), challenge: palCss('cold.body'),
+  tunnel: palCss('bone.faded'),
 };
+/** The dug tunnels are a faint trail, quieter than a visited room and louder than an unvisited outline (§10.2). */
+const TUNNEL_ALPHA = 0.6;
+/** Seconds between two looks at the tunnels while the player digs: the map follows the digging without a frame's cost. */
+const TUNNEL_REFRESH_S = 0.25;
 /** A full-screen effect may not retrigger within this many ms (the flash budget, §10.4). */
 const FLASH_BUDGET_MS = 333;
 
@@ -198,7 +205,14 @@ export class Hud {
   private lastCleared = new Set<number>();
   private mapState: { floor: FloorResult; room: number; visited: Set<number> } | null = null;
   private mapYaw = 0;
-  private mapYawKey = NaN;
+  /** Where the arrow is (updateMap), and what the map was last drawn from: it redraws only when that changes. */
+  private mapPlace: MapPlace | null = null;
+  private mapDrawn = '';
+  /** The tunnel layer of the floor on the map, refreshed at most every TUNNEL_REFRESH_S while digging. */
+  private mapTunnels: [number, number][] = [];
+  private tunnelStamp = -1;
+  private tunnelDepth = NaN;
+  private tunnelWait = 0;
 
   constructor() {
     applyPaletteCss(HUD_ICONS);
@@ -416,12 +430,7 @@ export class Hud {
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
     this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
 
-    this.mapYaw = g.player.yaw;
-    const yawKey = Math.round(this.mapYaw * 64);
-    if (this.mapState && yawKey !== this.mapYawKey) {
-      this.mapYawKey = yawKey;
-      this.drawMap(this.mapState.floor, this.mapState.room, this.mapState.visited);
-    }
+    this.updateMap(g, dt);
 
     const max = Math.floor(g.stats.get('maxHearts')), p = g.player, hp = p.hp;
     const star = p.starT > 0, layersKey = p.layers.map(l => `${l.kind}${l.hp}`).join(',');
@@ -586,24 +595,59 @@ export class Hud {
   setFloor(floor: FloorResult, depth: number) {
     this.lastDepth = depth;
     this.depthEl.textContent = floorLabel(depth);
-    this.mapState = null;
-    this.drawMap(floor, -1, new Set());
+    // the rooms already explored stay: `visited` holds every floor's rooms (global ids), so a floor reached again,
+    // or the next band touched by a deep hole, never wipes the map (issue #302)
+    this.mapState = { floor, room: -1, visited: this.mapState?.visited ?? new Set() };
+    this.mapDrawn = '';
+    this.drawMap(floor, -1, this.mapState.visited);
   }
 
   setRoom(floor: FloorResult, room: number, visited: Set<number>, cleared: Set<number> = this.lastCleared) {
     this.lastCleared = cleared;
     this.mapState = { floor, room, visited };
+    this.mapDrawn = '';
     this.drawMap(floor, room, visited);
   }
 
-  /** Isaac-style minimap: visited rooms, their neighbours as outlines, special rooms marked. */
+  /**
+   * Each frame: the floor of the band the body is in, where the arrow is, and the tunnel layer. The map is redrawn
+   * only when one of them (or the view's yaw) changes; the tunnels are gathered at most every TUNNEL_REFRESH_S.
+   */
+  private updateMap(g: Game, dt: number) {
+    this.mapYaw = g.player.yaw;
+    if (!this.mapState || this.map.style.display === 'none') return;
+    const b = g.player.body;
+    const floor = g.floors.get(g.depth) ?? this.mapState.floor;
+    if (floor !== this.mapState.floor) this.mapState = { floor, room: g.room, visited: g.visited };
+    this.mapState.visited = g.visited;
+    this.mapPlace = placeOnMap(floor, b.x, b.y, b.z);
+    this.tunnelWait -= dt;
+    if (g.tunnels.version !== this.tunnelStamp || g.depth !== this.tunnelDepth) {
+      if (this.tunnelWait <= 0 || g.depth !== this.tunnelDepth) {
+        const [y0, y1] = bandRange(g.depth);
+        this.mapTunnels = g.tunnels.tiles(y0, y1, (x, y, z) => g.dw.get(x, y, z) === AIR);
+        this.tunnelStamp = g.tunnels.version;
+        this.tunnelDepth = g.depth;
+        this.tunnelWait = TUNNEL_REFRESH_S;
+      }
+    }
+    const [px, pz] = mapPx(this.mapPlace.u, this.mapPlace.v);
+    const key = `${g.depth}:${this.mapState.room}:${Math.round(px)}:${Math.round(pz)}:${Math.round(this.mapYaw * 64)}:` +
+      `${g.visited.size}:${this.lastCleared.size}:${this.tunnelStamp}`;
+    if (key === this.mapDrawn) return;
+    this.mapDrawn = key;
+    this.drawMap(floor, this.mapState.room, g.visited);
+  }
+
+  /** Isaac-style minimap: visited rooms, their neighbours as outlines, special rooms marked, the dug tunnels, the player. */
   private drawMap(floor: FloorResult, current: number, visited: Set<number>) {
     const c = this.map, g = c.getContext('2d')!;
-    const cw = 14, ch = 9, gap = 2;
+    const { w: cw, h: ch, gap } = MAP_CELL;
     const { w, h } = floor.plan;
     c.width = w * (cw + gap) + gap; c.height = h * (ch + gap) + gap;
     g.clearRect(0, 0, c.width, c.height);
     const known = new Set<number>();
+    const marks: [string, number, number][] = [];
     for (const r of floor.rooms) {
       if (!visited.has(r.id)) continue;
       known.add(r.id);
@@ -644,10 +688,32 @@ export class Hud {
         continue;
       }
       paint(x, y, rw, rh);
-      if (r.type !== 'normal') this.mapMark(g, r.type, x + cw / 2, y + ch / 2);
+      if (r.type !== 'normal') marks.push([r.type, x + cw / 2, y + ch / 2]);
     }
+    // the tunnels the player dug: one map pixel per block column, a faint trail over the rock (DECISIONS §10.2)
+    if (this.mapTunnels.length && this.tunnelDepth === this.lastDepthOf(floor)) {
+      g.globalAlpha = TUNNEL_ALPHA;
+      g.fillStyle = MAP.tunnel;
+      for (const [x, z] of this.mapTunnels) {
+        const [u0, v0] = gridPoint(x, z), [u1, v1] = gridPoint(x + 1, z + 1);
+        const [ax, az] = mapPx(u0, v0), [bx, bz] = mapPx(u1, v1);
+        const x0 = Math.round(ax), z0 = Math.round(az);
+        g.fillRect(x0, z0, Math.max(1, Math.round(bx) - x0), Math.max(1, Math.round(bz) - z0));
+      }
+      g.globalAlpha = 1;
+    }
+    // the room marks over the tunnels, so a glyph always reads whole
+    for (const [type, mx, mz] of marks) this.mapMark(g, type, mx, mz);
+    // the player is always on the map: on the room's cell inside a room, on the body's place anywhere else
+    const place = this.mapPlace;
     const here = current >= 0 ? floor.rooms.find(r => r.id === current) : undefined;
-    if (here) this.mapArrow(g, gap + here.gx * (cw + gap) + cw / 2, gap + here.gz * (ch + gap) + ch / 2);
+    if (place) { const [px, pz] = mapPx(place.u, place.v); this.mapArrow(g, px, pz); }
+    else if (here) this.mapArrow(g, gap + here.gx * (cw + gap) + cw / 2, gap + here.gz * (ch + gap) + ch / 2);
+  }
+
+  /** The depth of a floor result on the map (its rooms carry their floor). */
+  private lastDepthOf(floor: FloorResult): number {
+    return floor.rooms[0]?.floor ?? this.lastDepth;
   }
 
   private mapArrow(g: CanvasRenderingContext2D, cx: number, cy: number) {
