@@ -46,6 +46,21 @@ const STAIR_HEAD = 3;
 /** `up`: the last star of the last constellation; stepping on it leaves the built tree upward (SKY.md §2.4). */
 export interface StarPad { x: number; y: number; z: number; to: number; up?: boolean }
 
+/** The star pad a body stands on (its feet's cell is the pad's centre, on the ground), or -1 (STARS.md). */
+export function padUnder(pads: readonly StarPad[], x: number, y: number, z: number, onGround: boolean): number {
+  if (!onGround) return -1;
+  const fx = Math.floor(x), fy = Math.floor(y + 0.05), fz = Math.floor(z);
+  return pads.findIndex(q => q.x === fx && q.y === fy && q.z === fz);
+}
+
+/** The pads' chain, one frame (STARS.md): stepping onto pad `pad` carries you to its next, unless it is the pad you
+ *  were just carried to (`lock`); stepping off every pad re-arms it. Returns the new lock and the pad to go to. */
+export function padTravel(pads: readonly StarPad[], pad: number, lock: number): { lock: number; to: StarPad | null } {
+  if (pad < 0) return { lock: -1, to: null };
+  if (pad === lock) return { lock, to: null };
+  return { lock: pads[pad].to, to: pads[pads[pad].to] };
+}
+
 /** The centre of the spiral stair that climbs from story `i` into story `i + 1`, for a tree centred on (cx, cz). */
 export function stairCentre(i: number, cx: number, cz: number): [number, number] {
   const s = TREE_STORIES[i];
