@@ -33,7 +33,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | `prompt` | Information banners dismiss with confirm; a Presence offer pauses the world until confirm accepts or back declines |
 | `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
-| `inventory` | The screen is open on its menu or practices tab (it pauses the world) |
+| `inventory` | The screen is open on its menu, practices or star map tab (it pauses the world) |
 | `toll` | The way-down window: pick what to give, confirm gives, back stays (LEVELS §2.3c) |
 | `meditation` | The Sanctuary, the Boundary's meditation app, over the paused world: navigate moves between the choices of its screen, confirm chooses (and pauses or resumes a sitting), skip moves to the next part, mute and calm are its two switches, back goes one screen back (not now on its first screen, the leave sheet in a sitting). A click on it never captures the mouse (`Input.modal`) ([MEDITATION-APP.md](../../design/built/presences/MEDITATION-APP.md)) |
 
@@ -50,18 +50,28 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
 | bomb | press | play | E | RB | the bomb |
 | polarity | press | play | F | LB | a half turn of the phone |
+| dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | swipe on the left side of the screen (a gesture, no button) |
+| run | hold | play | hold Shift (left or right) | L3 (toggles until the left stick returns to centre; the left stick at its edge also runs) | the left stick pushed past 95 % of its radius |
+| crouch | hold | play | C switches it, Control holds it | R3 (toggles) | a swipe down from the bottom twelfth of the right side (toggles; no button) |
 | previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
+| map | press | play, paused, inventory (gamepad: play, inventory; touch: paused, inventory) | M | View | the Star map tab of the screen |
+| recipes | press | play, paused, inventory (gamepad: play; touch: paused, inventory) | J | D-pad Down | the Recipes tab of the screen (shown only while the Book of Secrets is held) |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
+| book | press | paused, dead | H | X | the "Download the book" button, at 100% completion (COMPLETION §8) |
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
-| navigate | axis | inventory, toll, paused, meditation | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+| navigate | axis | inventory, toll, paused, meditation, prompt | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
+
+**The choice card (prompt).** A presence's question with up to four answers (`Hud.presenceChoiceCard`) reads `navigate` to move the selection (left and right, or up and down, wrap at the ends); confirm picks the selected answer; back, or Not now, answers nothing. A tap on an answer picks it. Owed in a browser: the gamepad and touch paths were not checked (see ELDER.md and CARTOGRAPHER.md).
 | back | press | inventory, toll, meditation; prompt (keyboard/gamepad) | Esc | B | ✕ (in a sitting, the Leave button); offer card buttons |
 | skip | press | meditation | N | RB | the Next part button |
 | mute | press | meditation | M | X | the Sound button |
 | calm | press | meditation | C | Y | the Calm visuals button |
+| voice | press | meditation | V | LB | the Voice button (the Sanctuary's spoken guidance) |
+| miracle | press | play | V | D-pad Up | the clock ring, shown only while Kairos is held (its charge fills the ring) |
 
 **Air jumps** (with the Triple Jump, [built/player/TRIPLE-JUMP.md](../../design/built/player/TRIPLE-JUMP.md)). No new action: while you are off the ground, a second press of jump is the next air jump (the Triple Jump gives two). It is the same button, the same press on every device, and it needs no `BINDINGS` change. The words for jump name the air jumps (`controls.jump`, every device's row). References: Minecraft (a double jump is the same jump button, pressed again in the air), Noita (the levitate key is held, not a new key), Isaac (a practice changes what the one button does, never adds a button).
 
@@ -80,3 +90,7 @@ Every prompt has a version per device (`intro.play`, `banner.continue`, `death.r
 ## 6. Later
 
 Remapping (DECISIONS §10.4 asks for remappable input): `BINDINGS` is the default layout a settings page would copy and edit. Gyro aiming on phones.
+
+**The star map (D15 of #149).** `map` opens the screen on its star map tab, and closes the screen when that tab is the one on screen (`mapKeyOutcome`); back (Esc, B) and the card's ✕ close it as any tab. On the map tab `navigate` and `pick` do nothing. References: Minecraft (the map is held up and read; the screen keeps one view per tab), Noita (M opens the map of what you have seen), Isaac (Tab, or Select on a pad, shows the floor's map). The design is [STAR-MAP.md](../../design/built/levels/giant-tree/STAR-MAP.md).
+
+**The Recipe Book.** `recipes` opens the screen on its Recipes tab, and closes the screen when that tab is the one on screen (`recipesKeyOutcome`); back (Esc, B) and the card's ✕ close it as any tab. It works only while the `recipes` stat is 1 (the Book of Secrets); without it the key does nothing and the tab is hidden. On a pad D-pad Down opens it in play only: on the screen the d-pad is `navigate`, which scrolls the book up and down on its tab (`Hud.scrollRecipes`); `pick` does nothing there. The key is J (a journal, as in many games): B is the Roots' book download on the pause card and the death screen, and it moved to H; I is the inventory and F the polarity. References: Minecraft (the recipe book is a button of the inventory screen), Noita (what you learned is read on a page of the pause screen), Isaac (one key, one screen: the journal of what you found). The design is [RECIPE-BOOK.md](../../design/built/practices/RECIPE-BOOK.md).

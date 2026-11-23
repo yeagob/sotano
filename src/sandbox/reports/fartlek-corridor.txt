@@ -1,0 +1,54 @@
+# fartlek-corridor — Fartlek: holding Shift runs 45% faster along a corridor (x 1.45 on the walk); after the run ends the walk is back at its own pace
+floor 1 · seed 1 · room 26×5×5 · 150 ticks (2.5 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 2.5 · hand [] · bombs 99 · keys 99
+  practices fartlek · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 4.3 0.0 2.5 · hand [] · bombs 99 · keys 99
+  practices fartlek · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 7.7 0.0 2.5 · hand [] · bombs 99 · keys 99
+  practices fartlek · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 90 (1.5 s)
+  player hp 24/24 · at 10.1 0.0 2.5 · hand [] · bombs 99 · keys 99
+  practices fartlek · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 120 (2.0 s)
+  player hp 24/24 · at 12.4 0.0 2.5 · hand [] · bombs 99 · keys 99
+  practices fartlek · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 150 (2.5 s)
+  player hp 24/24 · at 14.7 0.0 2.5 · hand [] · bombs 99 · keys 99
+  practices fartlek · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+map t 150 · h 0
+  ..........................
+  ..........................
+  ..........................
+  ..........................
+  ..........................
+
+legend

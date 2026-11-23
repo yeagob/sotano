@@ -1,0 +1,39 @@
+# bounce-three-together — Dialectic, Reframing and Bounce Back together: rebounds add up, the halves are aimed at a projection, and the count stays at four per shot
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic reframing bounceback · synergies —
+  doubt#2 hp 24.0/24 · projection · at 3.5 0.0 6.5
+  blocks stone 14
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic reframing bounceback · synergies —
+  doubt#2 hp 22.9/24 · projection · at 2.8 0.0 5.2
+  blocks stone 14
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 1 · fire 3 · intentBounce 3 · intentHit 4 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dialectic reframing bounceback · synergies —
+  doubt#2 hp 20.5/24 · self · at 1.7 0.0 3.5
+  blocks stone 14
+  elements —
+  cubes — · pickups 0
+  events actorDamage:doubt<intent 4 · factionChange:doubt>self 1 · intentBounce 19 · intentHit 28
+
+map t 240 · h 0
+  ........r....
+  ........r....
+  ........r....
+  ........r....
+  ........r....
+  ........r....
+  ........r....
+
+legend r stone

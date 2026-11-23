@@ -1,0 +1,51 @@
+{
+  "note": "Stacks, Nourishment: each potion or meal drunk adds one stack to all four stats, to eight stacks; a potion and a meal count alike",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    5,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "nourishment"
+  ],
+  "hand": [
+    "plain-tonic",
+    "meal-small",
+    "plain-tonic",
+    "meal-hearty",
+    "plain-tonic",
+    "meal-small",
+    "plain-tonic",
+    "meal-hearty",
+    "plain-tonic",
+    "meal-small"
+  ],
+  "ticks": 320,
+  "report": [
+    0,
+    100,
+    320
+  ],
+  "actions": [
+    { "t": 20, "do": "key", "code": "KeyG" },
+    { "t": 50, "do": "key", "code": "KeyG" },
+    { "t": 80, "do": "key", "code": "KeyG" },
+    { "t": 110, "do": "key", "code": "KeyG" },
+    { "t": 140, "do": "key", "code": "KeyG" },
+    { "t": 170, "do": "key", "code": "KeyG" },
+    { "t": 200, "do": "key", "code": "KeyG" },
+    { "t": 230, "do": "key", "code": "KeyG" },
+    { "t": 260, "do": "key", "code": "KeyG" },
+    { "t": 290, "do": "key", "code": "KeyG" }
+  ]
+}

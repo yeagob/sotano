@@ -64,6 +64,14 @@ function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = m
 
 const jitter = (f: number) => f * (0.92 + fx.random() * 0.16);
 
+function panned(pan: number): AudioNode {
+  if (!ctx || pan === 0) return master;
+  const p = ctx.createStereoPanner();
+  p.pan.value = Math.max(-1, Math.min(1, pan));
+  p.connect(master);
+  return p;
+}
+
 export const sfx = {
   shoot: () => tone(jitter(520), 0.09, 'sine', 0.25, 0.6),
   hit: (tier: number) => noise(0.06, 0.25, jitter(1800 - tier * 350), 2),
@@ -203,9 +211,13 @@ export const sfx3 = {
     bellTone(f * 2, 1.0, 0.015);
     if (kind === 'end') setTimeout(() => bellTone(660, 2, 0.05), 400);
   },
-  hurt: () => { tone(220, 0.18, 'square', 0.18, 0.5); noise(0.12, 0.3, 600, 1); },
+  hurt: (pan = 0) => { const out = panned(pan); tone(jitter(220), 0.18, 'square', 0.18, 0.5, out); noise(0.12, 0.3, 600, 1, out); tone(jitter(90), 0.14, 'sine', 0.3, 0.6, out); },
   heal: () => { tone(523, 0.12, 'sine', 0.15); setTimeout(() => tone(784, 0.16, 'sine', 0.15), 90); },
   bombPickup: () => { tone(330, 0.08, 'square', 0.12); setTimeout(() => tone(440, 0.1, 'square', 0.12), 60); },
+  /** Lucid Dream starts: a soft low swell that opens upward, the walls going thin. */
+  phaseStart: () => { tone(196, 0.5, 'sine', 0.12, 2); setTimeout(() => tone(392, 0.6, 'sine', 0.1, 1.5), 140); },
+  /** The last second of a phase: one soft tick. */
+  phaseTick: () => tone(880, 0.05, 'triangle', 0.08),
   fuse: () => noise(0.25, 0.12, 4000, 4),
   spawn: () => { tone(110, 0.6, 'sine', 0.18, 2.2); noise(0.6, 0.08, 1200, 6); },
   dissolve: () => { noise(0.3, 0.25, 900, 1.2); tone(300, 0.25, 'triangle', 0.12, 0.4); },
@@ -214,6 +226,8 @@ export const sfx3 = {
   rumble: () => { noise(1.2, 0.45, 90, 0.6); tone(45, 1.0, 'sine', 0.5, 0.6); },
   /** The loaded intention switches (F): a short tick, rising to positive, falling to negative. */
   polarity: (negative: boolean) => tone(negative ? 360 : 620, 0.09, 'triangle', 0.14, negative ? 0.7 : 1.5),
+  /** Irimi's dash: a short rush of air that falls away, the body going into the movement. */
+  dash: () => { noise(0.18, 0.28, jitter(2400), 1.3); tone(jitter(700), 0.14, 'sine', 0.08, 0.6); },
   /** A missile leaves (Dr. Launcher): a rushing hiss that climbs, warmer when it carries love. */
   launch: (negative: boolean) => { noise(0.35, 0.3, jitter(negative ? 1400 : 2200), 1.1, master, 0.02); tone(jitter(negative ? 140 : 260), 0.3, 'sawtooth', 0.06, 2.2); },
   /** The love explosion: a soft swell and a rising chord instead of a boom. */
@@ -290,9 +304,19 @@ export function starTheme(on: boolean) {
   }
 }
 
+/** Kairos (#123): a slow heartbeat while time is stopped, a bright chime on the start, a low fall on the release. */
+export const sfxKairos = {
+  beat: () => { tone(60, 0.16, 'sine', 0.22); setTimeout(() => tone(52, 0.12, 'sine', 0.14), 170); },
+  start: () => { tone(330, 0.5, 'sine', 0.14); setTimeout(() => tone(660, 0.8, 'sine', 0.1), 120); },
+  mark: () => tone(1046, 0.08, 'triangle', 0.12),
+  release: () => { tone(880, 0.12, 'triangle', 0.14); tone(262, 0.5, 'sine', 0.2, -90); },
+};
+
 export const sfxHeart = {
   blue: () => { tone(587, 0.14, 'sine', 0.14); setTimeout(() => tone(880, 0.2, 'sine', 0.12), 90); },
   black: () => { tone(330, 0.14, 'sine', 0.14); setTimeout(() => tone(165, 0.3, 'sine', 0.13), 100); },
+  /** The black heart's aura touching projections (#178): a soft, low hiss that swells in from silence, at most once a second. */
+  blackAura: () => { noise(0.24, 0.12, jitter(380), 1.1, master, 0.05); noise(0.3, 0.05, jitter(140), 0.8, master, 0.08); },
   stone: () => { noise(0.14, 0.35, 700, 1.4); tone(196, 0.25, 'triangle', 0.16, 1.2); setTimeout(() => tone(988, 0.2, 'triangle', 0.06), 120); },
   stoneHit: () => { noise(0.1, 0.35, jitter(1100), 2); tone(jitter(150), 0.12, 'square', 0.08, 0.7); },
   blood: () => { tone(98, 0.18, 'sine', 0.3, 0.8); setTimeout(() => tone(110, 0.22, 'sine', 0.26, 0.8), 260); },

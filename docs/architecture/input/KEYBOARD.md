@@ -12,15 +12,22 @@ The desktop scheme. Part of [Input](README.md).
 | cast (hold) | left click |
 | launch a missile (with Dr. Launcher) | a quick double click of the left button (within 0.3 s; counts only while the pointer is locked) |
 | place | right click (throws the block if there is nowhere to place it) |
+| miracle (Kairos, when charged: stops time; press again to release the marks) | V |
 | throw | Q |
 | drink | G |
 | bomb | E |
 | polarity | F |
+| dash | double-tap a movement key (W A S D or arrows) within 0.25 s; no key of its own |
+| run | hold Shift (ShiftLeft or ShiftRight) |
+| crouch | C switches it, Control holds it |
 | choose the active carried item (the next place, throw, drink or feed uses it) | mouse wheel up (previous) and down (next); the number keys 1 to 9 pick a slot; in the inventory, Enter picks the highlighted item |
 | inventory | Tab or I: opens the practices tab of the screen; Tab again switches tabs or closes; arrows move the selection |
+| recipe book | J (while the Book of Secrets is held): opens the Recipes tab of the screen (in play, on the pause card or on another tab); J again or Esc closes it; a click on the Recipes tab opens it too |
+| star map | M: opens the star map tab of the screen (in play, on the pause card or on another tab); M again or Esc closes it; a click on the Star map tab opens it too |
 | pause | Esc (the browser releases the pointer and the menu tab of the screen shows) |
 | field of view (on the menu) | the left and right arrows, or the mouse on the bar or on − and + |
 | restart | R, while playing or dead |
+| book | H, on the pause card or the death screen (download the book at 100%) |
 | confirm | any mouse button while captured, or Enter; accepts a Presence offer |
 | back | Esc; declines a Presence offer |
 
@@ -40,4 +47,4 @@ Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cu
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app takes the arrow keys (move between the choices), Enter or a click (choose; in a sitting, pause and resume), N (next part), M (sound on or off), C (calm visuals on or off) and Esc (one screen back; not now on the first screen; the leave sheet in a sitting). The mouse is free while it is open and a click never captures it. Hovering a choice selects it.
+The Boundary's meditation app takes the arrow keys (move between the choices), Enter or a click (choose; in a sitting, pause and resume), N (next part), M (sound on or off), C (calm visuals on or off), V (the spoken guidance on or off) and Esc (one screen back; not now on the first screen; the leave sheet in a sitting). The mouse is free while it is open and a click never captures it. Hovering a choice selects it.

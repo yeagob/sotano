@@ -10,6 +10,18 @@ The presences give gifts: objects with a name, a line of text and a plain effect
 
 Every Presence reward is selected from a seeded probability distribution with outcomes of different value, from a lesser result to a better one. The roll belongs to the run's deterministic seeded sequence, so the same seed and preceding sequence of events reproduce the same result. Each Presence has its own table and weights; the exact tables remain open until that Presence is designed. The built Listener's guaranteed reward and its existing 15/75/10 table are not changed by this future rule.
 
+The tables of the built presences (all rolled from the `drops` stream when the offer is accepted):
+
+| Presence | Table (`heart-gifts.ts`) | Outcomes and weights | Status |
+|---|---|---|---|
+| The Listener | `listener-heart-gift` | practice with maximum-health 15; special hearts 75 (one heart 90%, two different 10%); two red hearts 10 | built, unchanged |
+| The Trickster | `trickster-deal` | quality-three practice 4; quality-three health practice 1 | built, proposed pending owner ruling |
+| The Echo | `echo-gift` | key 1; bomb 1 | built, proposed pending owner ruling |
+
+The Trickster's gift is a practice, not the Trickster's Coin of the tier list below; the coin is not built.
+
+Decided by agent for #149 (README D6): the tables above are accepted as built, pending the owner's ear.
+
 ## Tiers
 
 | Tier | Gift names (proposals) | Given by |
@@ -21,6 +33,8 @@ Every Presence reward is selected from a seeded probability distribution with ou
 ## The promised trait
 
 Every gift bears a thin gold seam, the mark of kintsugi: what was mended is stronger. A promised item cannot be dropped, destroyed or stolen (Scarcity cannot take it), and it stays in the pack when the rest is thrown away. Its label says "promised" in small type. The mark belongs only to gifts, so a seam means "given".
+
+Built for one gift (#228, D10): the Mender's Thread is an item in the 'covenant' pool, promised in code (`isPromised`): the toll card neither offers nor accepts it and a sky capture never takes it. Its effect line says "Promised". The gold seam on its inventory tile is still the Covenant's tile (DECISIONS.md §14.2); a seam drawn on the item's own slot is owed. See [built/presences/MENDER.md](../../built/presences/MENDER.md).
 
 ## Inventory labels
 

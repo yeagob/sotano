@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { ACHIEVEMENTS } from '../src/content/achievements';
 import { ITEM_BY_ID } from '../src/content/items';
 import { CRATE_DROP_MIN, crateChanceInBand } from '../src/content/tables/crates';
-import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
+import { CRATE_CHANCE_CAP, EXTRA_PRACTICE_BAND, FIXED_PRACTICES, gainsAt, rootsRewards, rootsCrateChance } from '../src/content/tables/roots-mastery';
 import { AchievementKeeper, cardKeys, gainParams, gainText, noticeKeys, noticeMillis, NOTICE_LONG_CHARS, sittingPayload, tollMayOpen, type AchievementNotice } from '../src/game/achievement-keeper';
 import { mastery, type Payload } from '../src/game/achievements';
 import { defaultMeta, loadMeta, mergeMeta, type LoadedMeta, type MetaStore } from '../src/game/meta';
@@ -136,26 +136,26 @@ describe('bosses: destroyed and turned to your side (ACHIEVEMENTS §1)', () => {
 
 describe('meditations: three completed sittings, across runs (ACHIEVEMENTS §1)', () => {
   it('three completed sittings of one meditation unlock it; a quick reward and a cancel do not count', () => {
-    expect(sittingPayload('quick', 'ground', 'roots')).toBeNull();
-    expect(sittingPayload('cancel', 'ground', 'roots')).toBeNull();
-    const done = sittingPayload('complete', 'ground', 'roots');
-    expect(done).toEqual({ meditation: 'ground', source: 'roots' });
+    expect(sittingPayload('quick', 'ground', 'roots', 20)).toBeNull();
+    expect(sittingPayload('cancel', 'ground', 'roots', 20)).toBeNull();
+    const done = sittingPayload('complete', 'ground', 'roots', 20);
+    expect(done).toEqual({ meditation: 'ground', source: 'roots', seconds: 20 });
 
     const { record, store } = fresh();
     const k = session(record, store);
     k.track('meditationComplete', done!, NOW);
-    k.track('meditationComplete', sittingPayload('complete', 'ground', 'vault')!, NOW + 1);
+    k.track('meditationComplete', sittingPayload('complete', 'ground', 'vault', 20)!, NOW + 1);
     expect(k.pending).toBe(0);
-    expect(record.counts).toEqual({ 'meditation.ground': 2 });
+    expect(record.counts).toEqual({ 'meditation.ground': 2, 'meditation.hour': 40 });
     const third = k.track('meditationComplete', done!, NOW + 2);
     expect(ids(third)).toEqual(['meditation.ground']);
-    expect(record.counts).toEqual({});
+    expect(record.counts).toEqual({ 'meditation.hour': 60 });
   });
 
   it('a count is kept in the save while the achievement is locked', () => {
     const { record, store } = fresh();
-    session(record, store).track('meditationComplete', { meditation: 'box', source: 'roots' }, NOW);
-    expect(loadMeta(store).counts).toEqual({ 'meditation.box': 1 });
+    session(record, store).track('meditationComplete', { meditation: 'box', source: 'roots', seconds: 20 }, NOW);
+    expect(loadMeta(store).counts).toEqual({ 'meditation.box': 1, 'meditation.hour': 20 });
     expect(mastery(record)).toBe(0);
   });
 });
@@ -189,6 +189,66 @@ describe('stations and pages (ACHIEVEMENTS §1)', () => {
     const card = endOfRun.peek();
     expect(card?.id).toBe('book.page.7');
     endOfRun.confirm(card!);
+  });
+});
+
+describe('blocks, projections and states of being (ACHIEVEMENTS §1)', () => {
+  it('blocks.placed counts across runs: a second session on the saved record carries the count on, and unlocks at 1000', () => {
+    const { record, store } = fresh();
+    const first = session(record, store);
+    for (let i = 0; i < 600; i++) first.track('blockPlaced', { afterPact: false }, NOW);
+    expect(record.counts['blocks.placed']).toBe(600);
+    const later = session(loadMeta(store), store);
+    for (let i = 0; i < 399; i++) later.track('blockPlaced', { afterPact: false }, NOW + 1);
+    expect(later.unlocked('blocks.placed')).toBe(false);
+    expect(ids(later.track('blockPlaced', { afterPact: true }, NOW + 2))).toEqual(['blocks.placed']);
+    expect(loadMeta(store).achievements['blocks.placed']).toBe(NOW + 2);
+    expect(later.level).toBe(1);
+  });
+
+  it('projections.converted counts across runs and never a boss; the 100th ordinary conversion unlocks it', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('projectionConverted', { def: 'doubt', boss: true }, NOW))).toEqual([]);
+    expect(record.counts['projections.converted']).toBeUndefined();
+    for (let i = 0; i < 99; i++) k.track('projectionConverted', { def: 'doubt', boss: false }, NOW);
+    expect(record.counts['projections.converted']).toBe(99);
+    const next = session(loadMeta(store), store);
+    expect(ids(next.track('projectionConverted', { def: 'doubt', boss: false }, NOW + 1))).toEqual(['projections.converted']);
+    expect(next.pending).toBe(1);
+  });
+
+  it('projections.destroyed counts ordinary projections across runs, and a destroyed boss does not count', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('projectionDestroyed', { def: 'resistance', boss: true }, NOW))).toEqual([]);
+    expect(record.counts['projections.destroyed']).toBeUndefined();
+    for (let i = 0; i < 99; i++) k.track('projectionDestroyed', { def: 'doubt', boss: false }, NOW);
+    const next = session(loadMeta(store), store);
+    expect(ids(next.track('projectionDestroyed', { def: 'doubt', boss: false }, NOW + 1))).toEqual(['projections.destroyed']);
+  });
+
+  it('each state of being unlocks the first time its synergy turns on, in any run, and a second time gives nothing', () => {
+    const { record, store } = fresh();
+    expect(ids(session(record, store).track('synergyOn', { synergy: 'resolute' }, NOW))).toEqual(['state.resolute']);
+    const later = session(loadMeta(store), store);
+    expect(later.track('synergyOn', { synergy: 'resolute' }, NOW + 1)).toEqual([]);
+    expect(ids(later.track('synergyOn', { synergy: 'open_hearted' }, NOW + 2))).toEqual(['state.open-hearted']);
+    expect(later.level).toBe(2);
+    expect(later.pending).toBe(1); // the second session's own queue: the first session's notice is its card, not this one
+  });
+
+  it('the sandbox and the lab unlock none of them and write nothing', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    k.live = false;
+    for (let i = 0; i < 1000; i++) k.track('blockPlaced', { afterPact: true }, NOW);
+    expect(k.track('synergyOn', { synergy: 'embodied' }, NOW)).toEqual([]);
+    expect(k.track('projectionConverted', { def: 'doubt', boss: false }, NOW)).toEqual([]);
+    expect(k.track('projectionDestroyed', { def: 'doubt', boss: false }, NOW)).toEqual([]);
+    expect(k.pending).toBe(0);
+    expect(store.writes).toBe(0);
+    expect(record.counts['blocks.placed']).toBeUndefined();
   });
 });
 
@@ -240,6 +300,13 @@ describe('the Roots and the way up, the Listener, the book and bedrock (ACHIEVEM
     expect(ids(k.track('treeStory', { story: 'branches' }, NOW))).toEqual([]);
     expect(ids(k.track('treeStory', { story: 'canopy' }, NOW))).toEqual(['climb.crown']);
     expect(ids(k.track('treeStory', { story: 'canopy' }, NOW + 1))).toEqual([]);
+  });
+
+  it('Made Omh: the completion reaching 100% unlocks the final achievement once, and nothing else', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('completionFull', { percent: 100 }, NOW))).toEqual(['completion.full']);
+    expect(ids(k.track('completionFull', { percent: 100 }, NOW + 1))).toEqual([]);
   });
 
   it('once a bedrock achievement is in the save, the check can stop: unlocked() says so', () => {
@@ -426,7 +493,7 @@ describe('the Roots\' mastery on floor 0 (REWARDS §3-§6)', () => {
     }
   });
 
-  it('the Roots\' practices are drawn from the treasure pool, in the band, never a reserved one, and each once', () => {
+  it('the Roots\' practices are fixed or drawn from the treasure pool, in the band, a drawn one never reserved, and each once', () => {
     const run = buildRun(0xBEEF, 1, undefined, { mastery: 25 });
     const f0 = run.floors[0];
     expect(f0.practices).toHaveLength(2);
@@ -436,7 +503,7 @@ describe('the Roots\' mastery on floor 0 (REWARDS §3-§6)', () => {
     const values = [...drawn.values()];
     expect(new Set(values).size).toBe(values.length);
     for (const id of values) {
-      expect(reserved.has(id), `${id} is reserved`).toBe(false);
+      if (!FIXED_PRACTICES.some(p => p.item === id)) expect(reserved.has(id), `${id} is reserved`).toBe(false);
       const q = ITEM_BY_ID.get(id)?.quality ?? 0;
       expect(q).toBeGreaterThanOrEqual(EXTRA_PRACTICE_BAND.min);
       expect(q).toBeLessThanOrEqual(EXTRA_PRACTICE_BAND.max);

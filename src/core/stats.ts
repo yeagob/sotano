@@ -11,7 +11,8 @@ export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
   | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
-  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile';
+  | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
+  | 'twinCast' | 'triad' | 'spiral' | 'recipes';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -48,6 +49,14 @@ export const BASE_STATS: Stats = {
   bombDamage: 40,  // damage to blocks at the centre of a bomb
   breath: 8,       // seconds you can stay with your head under water before you start drowning
   missile: 0,      // 1 = a quick double tap of the fire control launches a bomb as a missile (0 = it does not)
+  dash: 0,         // 1 = a double tap of a direction dashes 4.5 blocks that way (Irimi, DASH.md; 0 = no dash)
+  run: 0,          // 1 = holding the run control moves 45% faster (Fartlek; 0 = no running)
+  crouch: 0,       // 1 = holding the crouch control makes the body a block shorter and slower (Child's Pose; 0 = no crouch)
+  lavaWalk: 0,     // 1 = lava never hurts you: you walk on its surface and wade through it at full speed
+  twinCast: 0,     // 1 = your two hands take turns casting; each shot leaves from the other hand (Bilateral Stimulation)
+  triad: 0,        // 1 = each intention flies as three strands in a widening triangle (Rule of Three)
+  spiral: 0,       // 1 = each intention flies as three strands on a turning helix (Spiral Growth)
+  recipes: 0,      // 1 = the Recipe Book opens (Book of Secrets, src/game/recipe-book.ts; 0 = its key and tab do nothing)
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -72,6 +81,14 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   bombDamage: [5, 500],
   breath: [1, 120],
   missile: [0, 1],
+  dash: [0, 1],
+  run: [0, 1],
+  crouch: [0, 1],
+  lavaWalk: [0, 1],
+  twinCast: [0, 1],
+  triad: [0, 1],
+  spiral: [0, 1],
+  recipes: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -102,6 +119,14 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   bombDamage: v => fmtNum(v, 0),
   breath: v => t('unit.seconds', { n: fmtNum(v, 1) }),
   missile: v => (v < 1 ? t('unit.crushNone') : t('unit.missileOn')),
+  dash: v => (v < 1 ? t('unit.crushNone') : t('unit.dashOn')),
+  run: v => (v < 1 ? t('unit.crushNone') : t('unit.runOn')),
+  crouch: v => (v < 1 ? t('unit.crushNone') : t('unit.crouchOn')),
+  lavaWalk: v => (v < 1 ? t('unit.crushNone') : t('unit.lavaWalkOn')),
+  twinCast: v => (v < 1 ? t('unit.off') : t('unit.alternate')),
+  triad: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  spiral: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  recipes: v => (v < 1 ? t('unit.off') : t('unit.on')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

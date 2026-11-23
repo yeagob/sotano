@@ -4,7 +4,8 @@ import { MAT } from '../src/content/materials';
 import { PARTS, type PartKind } from '../src/content/parts';
 import { LINEAGE, PATTERN_PATH } from '../src/content/patterns';
 import { POTION_IDS, POTIONS, flaskRooms } from '../src/content/potions';
-import { FALLBACK, ICE, RECIPES, brewOf, resolve, topMatches } from '../src/content/recipes';
+import { ECHO, FALLBACK, ICE, RECIPES, brewOf, partsOf, resolve, topMatches } from '../src/content/recipes';
+import { ECHO_ITEMS } from '../src/content/echo';
 import { ENEMIES } from '../src/content/enemies';
 
 const part = (source: string, kind: PartKind) => {
@@ -30,6 +31,12 @@ const SAMPLES: [string, Carried[]][] = [
   ['ember-tonic', [part('panic', 'heart')]],
   ['patient-draught', [part('autopilot', 'heart'), part('autopilot', 'mind')]],
   ['berserker-draught', [part('panic', 'heart'), part('autopilot', 'heart'), MAT.obsidian]],
+  ['rebirth-draught', [part('doubt', 'mind'), part('panic', 'heart'), part('impulse', 'flesh')]],
+  ['stride-tonic', [part('impulse', 'mind')]],
+  ['stride-tonic', [part('craving', 'mind')]],
+  ['folding-tincture', [part('impulse', 'mind'), MAT.dirt]],
+  ['folding-tincture', [MAT.dirt, part('craving', 'mind')]],
+  ['rebirth-draught', [part('impulse', 'flesh'), part('panic', 'heart'), part('doubt', 'mind')]],
 ];
 
 describe('the paths and lineages of the patterns', () => {
@@ -57,29 +64,31 @@ describe('the resolver', () => {
     for (const order of orders(bulb)) expect(brewOf(order)).toBe(potion);
   });
 
-  it('every potion but the fallback has a recipe, and every recipe brews', () => {
-    expect(new Set(RECIPES.map(r => r.potion))).toEqual(new Set(POTION_IDS.filter(id => id !== FALLBACK && !POTIONS[id].meal)));
+  it('every named recipe brews from its sample bulb', () => {
     for (const r of RECIPES) expect(SAMPLES.some(([p]) => p === r.potion), r.potion).toBe(true);
   });
 
-  it('accounts for every cube: one more thing than a recipe asks makes a Plain Tonic', () => {
-    for (const [, bulb] of SAMPLES) if (bulb.length < 3) expect(brewOf([...bulb, MAT.stone])).toBe(FALLBACK);
+  it('accounts for every cube: one more thing than a named recipe asks leaves that recipe, but never makes a Plain Tonic', () => {
+    for (const [, bulb] of SAMPLES) if (bulb.length < 3) {
+      expect(topMatches([...bulb, MAT.stone])).toEqual([]);
+      expect(brewOf([...bulb, MAT.stone])).not.toBe(FALLBACK);
+    }
   });
 
-  it('keeps each recipe to its own sources', () => {
-    expect(brewOf([part('doubt', 'mind'), part('doubt', 'mind')])).toBe(FALLBACK);
-    expect(brewOf([part('autopilot', 'flesh'), part('panic', 'mind')])).toBe(FALLBACK);
-    expect(brewOf([part('critic', 'mind'), MAT.ore])).toBe(FALLBACK);
-    expect(brewOf([part('panic', 'flesh'), MAT.deepstone])).toBe(FALLBACK);
-    expect(brewOf([part('impulse', 'flesh'), MAT.stone])).toBe(FALLBACK);
-    expect(brewOf([part('doubt', 'heart')])).toBe(FALLBACK);
-    expect(brewOf([part('doubt', 'flesh'), part('doubt', 'mind'), part('doubt', 'essence')])).toBe(FALLBACK);
+  it('keeps each named recipe to its own sources: other bulbs brew a variant of their type', () => {
+    expect(brewOf([part('doubt', 'mind'), part('doubt', 'mind')])).toBe('lucid-tincture');
+    expect(brewOf([part('autopilot', 'flesh'), part('panic', 'mind')])).toBe('steadfast-tincture');
+    expect(brewOf([part('critic', 'mind'), MAT.ore])).toBe('lucid-tincture');
+    expect(brewOf([part('panic', 'flesh'), MAT.deepstone])).toBe('mending-tonic');
+    expect(brewOf([part('impulse', 'flesh'), MAT.stone])).toBe('mending-tonic');
+    expect(brewOf([part('doubt', 'heart')])).toBe('lucid-cordial');
+    expect(brewOf([part('doubt', 'flesh'), part('doubt', 'mind'), part('doubt', 'essence')])).toBe('lucid-elixir');
   });
 
-  it('leaves the warmth recipes and the Distillate unbuilt: their bulbs make a Plain Tonic', () => {
-    expect(brewOf([part('gloom', 'heart'), part('panic', 'heart')])).toBe(FALLBACK);
-    expect(brewOf([part('gloom', 'essence')])).toBe(FALLBACK);
-    expect(brewOf([part('doubt', 'heart'), part('doubt', 'mind'), part('doubt', 'essence')])).toBe(FALLBACK);
+  it('leaves the warmth recipes and the Distillate unbuilt: their bulbs brew a family variant or an echo', () => {
+    expect(brewOf([part('gloom', 'heart'), part('panic', 'heart')])).toBe(ECHO);
+    expect(brewOf([part('gloom', 'essence')])).toBe('tender-elixir');
+    expect(brewOf([part('doubt', 'heart'), part('doubt', 'mind'), part('doubt', 'essence')])).toBe('lucid-elixir');
   });
 
   it('ice takes a slot and adds a room to a potion counted in rooms, and nothing else', () => {
@@ -90,6 +99,8 @@ describe('the resolver', () => {
     expect(resolve([ICE, part('impulse', 'heart')])).toEqual({ potion: 'spring-tonic' });
     expect(resolve([part('doubt', 'flesh'), ICE, part('doubt', 'flesh')])).toEqual({ potion: 'restoring-draught' });
     expect(resolve([ICE])).toEqual({ potion: FALLBACK });
+    expect(resolve([part('doubt', 'heart'), part('panic', 'heart'), ICE])).toMatchObject({ potion: ECHO, iced: true });
+    expect(flaskRooms(resolve([part('doubt', 'heart'), part('panic', 'heart'), ICE]))).toBe(3);
   });
 
   it('is pure: the same bulb gives the same flask and the bulb is left as it was', () => {
@@ -104,17 +115,26 @@ describe('the resolver', () => {
   });
 });
 
-describe('the validator: no two recipes tie for any bulb', () => {
-  it('every bulb of one to three cubes has at most one most specific recipe, and an unmatched bulb brews the fallback', () => {
-    const cubes: Carried[] = [...PARTS, MAT.deepstone, MAT.obsidian, MAT.ore, ICE, MAT.stone];
+describe('the validator: every bulb resolves, no two recipes tie, and the Plain Tonic is rare', () => {
+  it('every bulb of one to three cubes resolves without throwing, to at most one most specific recipe, and only a bulb with no part is a Plain Tonic', () => {
+    const cubes: Carried[] = [...PARTS, MAT.deepstone, MAT.obsidian, MAT.ore, ICE, MAT.stone, MAT.dirt];
     const n = cubes.length;
-    let bulbs = 0, matched = 0;
+    let bulbs = 0, matched = 0, fallback = 0;
+    const brewed = new Set<string>();
+    const echoed = new Set<string>();
     const check = (bulb: Carried[]) => {
       bulbs++;
       const top = topMatches(bulb);
       if (top.length > 1) throw new Error(`tie: ${top.map(r => r.potion).join(', ')} for ${bulb.map(c => (typeof c === 'number' ? c : 'potion' in c ? c.potion : c.id)).join(' + ')}`);
       if (top.length) matched++;
-      else expect(brewOf(bulb)).toBe(FALLBACK);
+      const flask = resolve(bulb);
+      brewed.add(flask.potion);
+      if (flask.echo) echoed.add(flask.echo);
+      expect(flask.potion === ECHO, `echo ${flask.potion}`).toBe(flask.echo !== undefined);
+      if (flask.potion === FALLBACK) {
+        fallback++;
+        expect(partsOf(bulb)).toEqual([]);
+      } else if (!top.length && !partsOf(bulb).length) throw new Error('a bulb with no part brewed something');
     };
     for (let i = 0; i < n; i++) {
       check([cubes[i]]);
@@ -125,5 +145,8 @@ describe('the validator: no two recipes tie for any bulb', () => {
     }
     expect(bulbs).toBe(n + (n * (n + 1)) / 2 + (n * (n + 1) * (n + 2)) / 6);
     expect(matched).toBeGreaterThan(0);
-  }, 120_000);
+    expect(fallback / bulbs).toBeLessThan(0.001);
+    expect(brewed).toEqual(new Set(POTION_IDS.filter(id => !POTIONS[id].meal)));
+    expect(echoed).toEqual(new Set(ECHO_ITEMS.map(d => d.id)));
+  }, 300_000);
 });

@@ -9,9 +9,12 @@
 /**
  * The events the catalogue listens to, all declared in GameEvents (game/events.ts): `pageReached` (the current page of the
  * Roots' book at a run's end, emitted by `Game.endRoots`), `bossOvercome`, `meditationComplete`, `cook`, `brew`, and the
- * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only).
+ * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only), and
+ * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8), and the three of the
+ * block, projection and state-of-being achievements: `projectionConverted`, `projectionDestroyed` and `synergyOn`, and the
+ * presences' first exchange, `presenceMet` (one per presence, the codex's rule).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -22,8 +25,10 @@ export interface AchievementDef {
   readonly on: AchievementEvent;
   /** Payload fields that must match. A list value matches any of its items. */
   readonly where?: Readonly<Record<string, WhereValue>>;
-  /** Matching events needed across runs (default 1). */
+  /** Matching events needed across runs (default 1). With `amount`, the sum of that payload field must reach it. */
   readonly times?: number;
+  /** A payload field of a number, added to the count instead of 1 (a sum across runs, e.g. seconds of meditation). */
+  readonly amount?: string;
 }
 
 /** The bosses of the catalogue: the ids of src/content/bosses (each one has a `destroyed` and a `converted` entry). */
@@ -34,6 +39,12 @@ export const ACHIEVEMENT_BOSSES = [
 
 /** The meditations of the catalogue: the scene ids of src/content/presences/meditations.ts. */
 export const ACHIEVEMENT_MEDITATIONS = ['ground', 'dusk', 'night', 'box', 'warm', 'river'] as const;
+
+/**
+ * The final achievement's id. The completion percentage (COMPLETION.md) does not count it: it is the reward for reaching
+ * 100, so counting it would make 100 unreachable.
+ */
+export const COMPLETION_ACHIEVEMENT = 'completion.full';
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // Bosses destroyed: their health reaches zero (14).
@@ -75,6 +86,8 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'meditation.box', on: 'meditationComplete', where: { meditation: 'box' }, times: 3 },
   { id: 'meditation.warm', on: 'meditationComplete', where: { meditation: 'warm' }, times: 3 },
   { id: 'meditation.river', on: 'meditationComplete', where: { meditation: 'river' }, times: 3 },
+  // Meditation time: the sittings finished, from any Boundary, added up across runs to an hour (3600 s).
+  { id: 'meditation.hour', on: 'meditationComplete', amount: 'seconds', times: 3600 },
 
   // Stations: the first potion brewed, the first meal cooked (2).
   { id: 'brew.first', on: 'brew' },
@@ -97,6 +110,46 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // The tutorial book turned back a page, and bedrock touched on any side (2).
   { id: 'book.back', on: 'bookBack' },
   { id: 'bedrock.touch', on: 'bedrockTouch' },
+
+  // The whole game: the completion percentage reaches 100 (COMPLETION.md §8). Name and text proposed, pending the owner's name.
+  { id: COMPLETION_ACHIEVEMENT, on: 'completionFull' },
+
+  // Blocks placed from the hand, 1000 times across runs, whatever the pact: beside mind.crafter, which counts after it (1).
+  { id: 'blocks.placed', on: 'blockPlaced', times: 1000 },
+
+  // Ordinary projections only (`boss: false`): the bosses have their own achievements. Turned to your side, and destroyed
+  // (health to zero by harm), 100 times each across runs (2).
+  { id: 'projections.converted', on: 'projectionConverted', where: { boss: false }, times: 100 },
+  { id: 'projections.destroyed', on: 'projectionDestroyed', where: { boss: false }, times: 100 },
+
+  // States of being: the first time each one's synergy turns on, once in the save (5, the owner's list of issue #179).
+  { id: 'state.embodied', on: 'synergyOn', where: { synergy: 'embodied' } },
+  { id: 'state.lucid', on: 'synergyOn', where: { synergy: 'lucid' } },
+  { id: 'state.open-hearted', on: 'synergyOn', where: { synergy: 'open_hearted' } },
+  { id: 'state.resolute', on: 'synergyOn', where: { synergy: 'resolute' } },
+  { id: 'state.transcendent', on: 'synergyOn', where: { synergy: 'transcendent' } },
+
+  // Synergies: the first time each one's synergy turns on, from two practices held together or three of one tag (6).
+  { id: 'synergy.one-clear-cut', on: 'synergyOn', where: { synergy: 'one_clear_cut' } },
+  { id: 'synergy.somatic-release', on: 'synergyOn', where: { synergy: 'somatic_release' } },
+  { id: 'synergy.compound-effect', on: 'synergyOn', where: { synergy: 'compound_effect' } },
+  { id: 'synergy.flooding', on: 'synergyOn', where: { synergy: 'flooding' } },
+  { id: 'synergy.hearth', on: 'synergyOn', where: { synergy: 'hearth' } },
+  { id: 'synergy.doublehelix', on: 'synergyOn', where: { synergy: 'doublehelix' } },
+
+  // Presences: the first exchange with each one, once each (12). The id is the presence's (`presence` of `presenceMet`).
+  { id: 'presence.boatman', on: 'presenceMet', where: { presence: 'boatman' } },
+  { id: 'presence.cartographer', on: 'presenceMet', where: { presence: 'cartographer' } },
+  { id: 'presence.child', on: 'presenceMet', where: { presence: 'child' } },
+  { id: 'presence.echo', on: 'presenceMet', where: { presence: 'echo' } },
+  { id: 'presence.elder', on: 'presenceMet', where: { presence: 'elder' } },
+  { id: 'presence.gardener', on: 'presenceMet', where: { presence: 'gardener' } },
+  { id: 'presence.listener', on: 'presenceMet', where: { presence: 'listener' } },
+  { id: 'presence.mender', on: 'presenceMet', where: { presence: 'mender' } },
+  { id: 'presence.star-reader', on: 'presenceMet', where: { presence: 'star-reader' } },
+  { id: 'presence.trickster', on: 'presenceMet', where: { presence: 'trickster' } },
+  { id: 'presence.wanderer', on: 'presenceMet', where: { presence: 'wanderer' } },
+  { id: 'presence.witness', on: 'presenceMet', where: { presence: 'witness' } },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

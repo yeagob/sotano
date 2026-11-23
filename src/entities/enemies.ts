@@ -11,6 +11,7 @@ import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { grownScale, setScale, shrunkScale } from './growth';
+import { MENDED_TAG } from '../content/presences/mended';
 import { boxHits, moveBody } from '../physics/voxel-collide';
 
 const GRAVITY = 26;
@@ -49,7 +50,7 @@ export interface EnemyHost {
   /** This enemy touches an actor it is hostile to (the game emits `contact`, rate-limited). */
   contact(e: Enemy, target: Actor): void;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
-  projectileHit(target: Actor, damage: number, thrower: number): void;
+  projectileHit(target: Actor, damage: number, thrower: number, from?: { x: number; z: number }): void;
   reflects?(target: Actor, x: number, y: number, z: number): boolean;
   /** A projectile hit a block: return true if it broke it (soft blocks only). */
   projectileBlock(x: number, y: number, z: number): boolean;
@@ -57,7 +58,7 @@ export interface EnemyHost {
   burst(e: Enemy, radius: number): void;
   died(e: Enemy): void;
   particles(x: number, y: number, z: number, color: number, n: number, speed: number, size: number): void;
-  hurtActor(target: Actor, amount: number, cause: string, owner: number): void;
+  hurtActor(target: Actor, amount: number, cause: string, owner: number, from?: { x: number; z: number }): void;
   affectActor(target: Actor, effect: FieldEffect, seconds: number): void;
   arena(e: Enemy, what: string): void;
   summon(e: Enemy, defIds: string[]): void;
@@ -79,6 +80,8 @@ export interface View {
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
 const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
+/** A mended ally (the Mender's integration, mended.ts) glows with repair's gold instead of the ally's ember (DECISIONS.md §14.4). */
+const MENDED_GLOW = new THREE.Color(pal('light.gold')).multiplyScalar(0.25);
 /** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
  *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest
  *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
@@ -133,7 +136,7 @@ export class Enemies {
     scene.add(this.projMesh);
     const hazardHost: HazardHost = {
       actors: () => host.actors(),
-      hurt: (t, dmg, cause, owner) => host.hurtActor(t, dmg, cause, owner),
+      hurt: (t, dmg, cause, owner, from) => host.hurtActor(t, dmg, cause, owner, from),
       affect: (t, effect, seconds) => host.affectActor(t, effect, seconds),
       push: (t, vx, vz) => { t.body.vx += vx; t.body.vz += vz; },
       live: (shape: Shape) => { const [x, y, z] = shapePoint(shape); host.cue(shape.kind, x, y, z); },
@@ -634,7 +637,8 @@ export class Enemies {
         p.vx = -p.vx; p.vy = -p.vy; p.vz = -p.vz;
         p.faction = hit.faction; p.thrower = hit.id;
       } else if (hit) {
-        this.host.projectileHit(hit, p.damage, p.thrower);
+        const sp = Math.hypot(p.vx, p.vz) || 1;
+        this.host.projectileHit(hit, p.damage, p.thrower, { x: hit.body.x - p.vx / sp, z: hit.body.z - p.vz / sp });
         dead = true;
       } else if (this.host.solid(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))) {
         this.host.projectileBlock(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z));
@@ -683,7 +687,7 @@ export class Enemies {
     // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
       if (e.flash > 0) m.emissive.copy(HURT_FLASH);
-      else if (e.faction === 'self') m.emissive.copy(ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
+      else if (e.faction === 'self') m.emissive.copy(e.tags.has(MENDED_TAG) ? MENDED_GLOW : ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
       else if (e.warmth > 0) m.emissive.copy(WARM_GLOW).multiplyScalar(e.warmth);
       else m.emissive.setRGB(0, 0, 0);
     }

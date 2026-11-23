@@ -46,13 +46,13 @@ A template is 7 strings of 13 characters, top-down, first row = north:
 ```ts
 {
   id: 'quarry', types: ['normal'], rows: [
-    '.............',
-    '.ii.......oo.',
-    '.iRR.....Roo.',
+    '...ii...oo...',
+    '...i.....o...',
+    '.....r.r.....',
     '..R...K...R..',
-    '.dRR.....RRd.',
-    '.dd.......dd.',
-    '.............',
+    '.....r.r.....',
+    '...d.....d...',
+    '...dd...dd...',
   ],
 }
 ```
@@ -101,6 +101,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 - Every room type must have at least one template.
 - **Height and elements** (`validateVolume`): `height` 5–8; a vault or dome needs extra height; no water next to lava and no flame next to something that burns (`c`, `C`, `?`), on the floor or in a layer; layers at 1…height − 3, never two at one height, never blocking the door approaches under door height, the centre (normal rooms), the pedestal or the shaft; no lone floating layer blocks; flames on layers need a terrace that high under them.
 - **Boss floor** (owner, 2026-10-28): a boss template keeps two blocks of clear floor around its hole `H` (only `.`, `H`, `T` or `K`), so a boss of 2–3 blocks never sticks between pillars. `pit` moved its pillars to the sides for this (`validateTemplate`, `tests/boss-rooms.test.ts`).
+- **Open corners** (`spawnPockets`, owner 2026-11-19, issue #115; design: [LAYOUT-RULES](../design/built/levels/rooms/LAYOUT-RULES.md)): projections spawn on any open floor tile away from the doors and the player (`pickSpawnCell`), so mostly in the corners. In every normal, path, challenge and boss template below the Roots: no open floor tile is closed on three sides with a block among them (a notch); no loose block (`r R c C d i o`) or decor slot stands in a corner zone (`CORNER_COLS` × `CORNER_ROWS`, 3 × 2 at each corner of the space) unless it is part of a run from wall to wall; and every open corner tile that can be walked to from its cell's centre and back is in line of sight of that centre over anything lower than two blocks. `tests/layouts.test.ts`. The new layouts live in `src/content/room-layouts.ts` (`LAYOUTS_115`), appended to `ROOM_TEMPLATES`.
 - **Building, as carved** (`needsBuildingIn` with the room's flips and real doors): over many seeds, at least half of every floor's fighting rooms with two or more doors need building (`tests/levels.test.ts`).
 - **Building** (`walkParts`, `needsBuilding`; [LEVELS.md](LEVELS.md) §5–§6): start rooms never need building; the centre of a fighting room reaches a door on foot; a room that needs building carries soft blocks to build with; `P` and `H` sit at the centre; fire, lava and deep water stay off floor 0. Optional fields `floors: [first, last]` and `size: [cellsX, cellsZ]` ([2, 1] is 28 × 7, [1, 2] is 13 × 16; doors only on its first cell; never mirrored). Start rooms keep a clear 4×4 centre (the great pit lands there); a wide crown keeps a clear 4×4 shaft around its `H`.
 - `tests/levels.test.ts` carves every element template across all ten floors for several seeds and checks that three layers of rock always remain between bands, that no element sits inside a block, that deep pools are lined, and that each room is as tall as its template.
@@ -134,3 +135,7 @@ Optional fields: `weight` (relative chance among templates of the same type, def
 ## 6. What rooms are built from
 
 Each level names its building palette (`LevelDef.palette`: wall, floor, trim). The shell's walls and ceiling and every `#` are the wall, the ground under the interior is the floor, `b` and `1`–`4` are the trim. Colours and the per-floor table: the art ledger ([../art/DECISIONS.md](../art/DECISIONS.md) §6.5).
+
+## The crown's room
+
+One template lives outside `ROOM_TEMPLATES`: `LEAVES_ROOM` (`src/content/crown.ts`), the Leaves of the giant tree's crown. It passes `validateTemplate` like any room (as a `normal` room, `mirror: false`), and the tree carves it in the crown's palette instead of a floor's ([architecture LEVELS §12](LEVELS.md#12-the-tree-in-stories-and-loading-by-level-2026-10-27-owner), [design](../design/built/levels/giant-tree/LEAVES.md)).

@@ -1,0 +1,37 @@
+# combo-aim-order-reframing — Combo (#68 + #110): Dowsing then Eye Contact (Eye Contact guides) with Reframing and Dual Process, negative intentions shot away from a projection: the volley curves to it and rebounds seek it
+floor 1 · seed 1 · room 13×7×5 · 300 ticks (5.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing eyecontact reframing dualprocess · synergies —
+  doubt#2 hp 24.0/24 · projection · at 10.5 0.0 1.5
+  blocks stone 21
+  elements —
+  cubes — · pickups 0
+
+t 150 (2.5 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing eyecontact reframing dualprocess · synergies —
+  blocks stone 21
+  elements —
+  cubes — · pickups 1
+  events actorDamage:doubt<intent 10 · actorDeath:doubt 1 · fire 7 · intentHit 10 · polarityChange 1 · roomEnter 1
+
+t 300 (5.0 s)
+  player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices dowsing eyecontact reframing dualprocess · synergies —
+  blocks stone 21
+  elements —
+  cubes — · pickups 1
+  events blockDamage:brick 12 · fire 1 · intentBounce 6 · intentHit 12
+
+map t 300 · h 0
+  r............
+  r............
+  r............
+  r............
+  r............
+  r............
+  r............
+
+legend r stone

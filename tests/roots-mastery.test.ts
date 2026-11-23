@@ -50,7 +50,7 @@ describe('spot values (REWARDS §2 at-a-glance and the rows)', () => {
   it('level 5: a key, a bomb, a red heart, one free chest, crates 4 to 12 %', () => {
     expect(shape(at(5))).toEqual({
       oneOfKeyOrBomb: false, keys: 1, bombs: 1, hearts: ['red'], freeChests: 1,
-      chestDraws: { min: 1, max: 3 }, crateFactor: 0.4, extraPractices: 0, altar: null, secondSanctuary: false,
+      chestDraws: { min: 1, max: 3 }, crateFactor: 0.4, extraPractices: 0, altar: null, secondSanctuary: false, rootsCall: false,
     });
     expect(rootsCrateChance(CRATE_DROP_MIN, 5)).toBeCloseTo(0.04, 10);
     expect(rootsCrateChance(CRATE_DROP, 5)).toBeCloseTo(0.12, 10);
@@ -84,7 +84,7 @@ describe('spot values (REWARDS §2 at-a-glance and the rows)', () => {
 
   it('level 36: five keys, four bombs, eight hearts, six free chests of two to four draws, crates 13 to 39 %', () => {
     const r = at(36);
-    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices]).toEqual([5, 4, 8, 6, 2]);
+    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices]).toEqual([5, 4, 8, 6, 3]);
     expect(r.hearts).toEqual(['red', 'blue', 'stone', 'red', 'blood', 'star', 'blue', 'black']);
     expect(r.chestDraws).toEqual({ min: 2, max: 4 });
     expect(rootsCrateChance(CRATE_DROP_MIN, 36)).toBeCloseTo(0.13, 10);
@@ -96,16 +96,17 @@ describe('spot values (REWARDS §2 at-a-glance and the rows)', () => {
     expect(shape(r)).toEqual({
       oneOfKeyOrBomb: false, keys: 6, bombs: 5,
       hearts: ['red', 'blue', 'stone', 'red', 'blood', 'star', 'blue', 'black', 'stone', 'blood'],
-      freeChests: 6, chestDraws: { min: 2, max: 4 }, crateFactor: 1.3, extraPractices: 2, altar: null, secondSanctuary: false,
+      freeChests: 6, chestDraws: { min: 2, max: 4 }, crateFactor: 1.3, extraPractices: 3, altar: null, secondSanctuary: false, rootsCall: false,
     });
     expect(rootsCrateChance(CRATE_DROP_MIN, 40)).toBeCloseTo(0.13, 10);
     expect(rootsCrateChance(CRATE_DROP, 40)).toBeCloseTo(0.39, 10);
   });
 
-  it('level 50: six keys, five bombs, ten hearts, six free chests, crates 15 to 45 %, two extra practices', () => {
+  it('level 50: six keys, five bombs, ten hearts, six free chests, crates 15 to 45 %, three extra practices', () => {
     const r = at(50);
-    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices, r.altar]).toEqual([6, 5, 10, 6, 2, null]);
+    expect([r.keys, r.bombs, r.hearts.length, r.freeChests, r.extraPractices, r.altar]).toEqual([6, 5, 10, 6, 3, null]);
     expect(r.crateFactor).toBe(1.5);
+    expect(r.rootsCall).toBe(true);
     expect(rootsCrateChance(CRATE_DROP_MIN, 50)).toBeCloseTo(0.15, 10);
     expect(rootsCrateChance(CRATE_DROP, 50)).toBeCloseTo(0.45, 10);
   });
@@ -115,8 +116,8 @@ describe('spot values (REWARDS §2 at-a-glance and the rows)', () => {
     expect(shape(r)).toEqual({
       oneOfKeyOrBomb: false, keys: 6, bombs: 5,
       hearts: ['red', 'blue', 'stone', 'red', 'blood', 'star', 'blue', 'black', 'stone', 'blood', 'red'],
-      freeChests: 6, chestDraws: { min: 3, max: 5 }, crateFactor: 2.5, extraPractices: 2,
-      altar: { min: 2, max: 4 }, secondSanctuary: true,
+      freeChests: 6, chestDraws: { min: 3, max: 5 }, crateFactor: 2.5, extraPractices: 3,
+      altar: { min: 2, max: 4 }, secondSanctuary: true, rootsCall: true,
     });
     expect(rootsCrateChance(CRATE_DROP_MIN, 100)).toBeCloseTo(0.25, 10);
     expect(rootsCrateChance(CRATE_DROP, 100)).toBe(CRATE_CHANCE_CAP);
@@ -175,6 +176,7 @@ describe('monotonic (every level keeps every step of the level below)', () => {
       expect(b.altar?.min ?? 0, `altar min at ${L + 1}`).toBeGreaterThanOrEqual(a.altar?.min ?? 0);
       expect(b.altar?.max ?? 0, `altar max at ${L + 1}`).toBeGreaterThanOrEqual(a.altar?.max ?? 0);
       expect(Number(b.secondSanctuary), `second Sanctuary at ${L + 1}`).toBeGreaterThanOrEqual(Number(a.secondSanctuary));
+      expect(Number(b.rootsCall), `the Roots' call at ${L + 1}`).toBeGreaterThanOrEqual(Number(a.rootsCall));
     }
   });
 
@@ -194,7 +196,7 @@ describe('bounded (REWARDS §6)', () => {
       expect(r.bombs).toBeLessThanOrEqual(5);
       expect(r.hearts.length).toBeLessThanOrEqual(11);
       expect(r.freeChests).toBeLessThanOrEqual(6);
-      expect(r.extraPractices).toBeLessThanOrEqual(2);
+      expect(r.extraPractices).toBeLessThanOrEqual(3);
       expect(r.chestDraws.min).toBeGreaterThanOrEqual(1);
       expect(r.chestDraws.max).toBeLessThanOrEqual(5);
       expect(Number.isFinite(r.crateFactor)).toBe(true);
@@ -239,13 +241,22 @@ describe('the Sanctuary chest and the way-down pedestal stay as they are', () =>
   it('the table has the same fields at every level and no field for the Sanctuary or the pedestal', () => {
     const fields = Object.keys(at(0)).sort();
     for (const L of LEVELS) expect(Object.keys(at(L)).sort(), `level ${L}`).toEqual(fields);
-    expect(fields).toEqual(['altar', 'bombs', 'chestDraws', 'crateFactor', 'extraPractices', 'freeChests', 'hearts', 'keys', 'level', 'oneOfKeyOrBomb', 'secondSanctuary']);
+    expect(fields).toEqual(['altar', 'bombs', 'chestDraws', 'crateFactor', 'extraPractices', 'freeChests', 'hearts', 'keys', 'level', 'oneOfKeyOrBomb', 'rootsCall', 'secondSanctuary']);
   });
 });
 
 describe('gainsAt (REWARDS §7: one named line for each step)', () => {
-  it('every level from 1 to 40 names exactly one step', () => {
-    for (let L = 1; L <= 40; L++) expect(gainsAt(L), `level ${L}`).toHaveLength(1);
+  it('every level from 1 to 40 names exactly one step, but 30, which adds the Book of Secrets to its crate step', () => {
+    for (let L = 1; L <= 40; L++) expect(gainsAt(L), `level ${L}`).toHaveLength(L === 30 ? 2 : 1);
+  });
+
+  it('level 30 names the Book of Secrets (the Recipe Book) first and the crate step last', () => {
+    expect(at(29).extraPractices).toBe(2);
+    expect(at(30).extraPractices).toBe(3);
+    expect(gainsAt(30)).toEqual([
+      { key: 'mastery.gain.recipeBook', params: { n: 3 } },
+      { key: 'mastery.gain.crates', params: { lo: 12, hi: 36 } },
+    ]);
   });
 
   it('every level from 41 to 100 names at least the crate step, the factor growing every level', () => {

@@ -14,7 +14,8 @@ import type { MessageKey } from '../i18n';
 import type { Params } from '../i18n';
 import { qualityStars } from '../render/icons';
 import { isUnlocked, mastery, track, type Payload } from './achievements';
-import { adoptMeta, resetMeta, saveMeta, type LoadedMeta, type MetaStore } from './meta';
+import { completion, type Completion } from './completion';
+import { adoptMeta, emptyFirsts, resetMeta, saveMeta, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 
 /** One achievement earned, waiting for its card. `level` is the mastery level once it counts (1 to 100). */
 export interface AchievementNotice {
@@ -25,8 +26,8 @@ export interface AchievementNotice {
 }
 
 /** The payload of a finished sitting: a `complete` outcome only, never a quick reward or a cancel (ACHIEVEMENTS §1). */
-export function sittingPayload(outcome: 'cancel' | 'quick' | 'complete', meditation: string, source: 'roots' | 'vault'): { meditation: string; source: 'roots' | 'vault' } | null {
-  return outcome === 'complete' ? { meditation, source } : null;
+export function sittingPayload(outcome: 'cancel' | 'quick' | 'complete', meditation: string, source: 'roots' | 'vault', seconds: number): { meditation: string; source: 'roots' | 'vault'; seconds: number } | null {
+  return outcome === 'complete' ? { meditation, source, seconds } : null;
 }
 
 export class AchievementKeeper {
@@ -102,6 +103,56 @@ export class AchievementKeeper {
     this.record.pact = true;
     const merged = saveMeta(this.record, this.store);
     if (merged) adoptMeta(this.record, merged);
+  }
+
+  /** How many requests the player has answered "yes" to, in any run (the save's `requests`). */
+  get requests(): number { return this.record.requests ?? 0; }
+
+  /** A request was answered "yes" (REQUESTS.md): the count goes up by one and is saved at once. It is the only request
+   *  data kept. Nothing is written in the sandbox, the lab or a read-only record. */
+  recordRequest(): void {
+    if (!this.live || this.record.readOnly) return;
+    this.record.requests = (this.record.requests ?? 0) + 1;
+    this.save();
+  }
+
+  /** The depth the last run faded on, for the Echo (the save's `fade`), or undefined when no Echo waits. */
+  get fade(): number | undefined { return this.record.fade?.floor; }
+
+  /** The run ended by a death on `floor` (ECHO.md). Only dungeon floors count, and only in a live run; the save is written at once. */
+  recordFade(floor: number): void {
+    if (!this.live || this.record.readOnly || floor < 1) return;
+    this.record.fade = { floor };
+    this.save();
+  }
+
+  /** The Echo was met: its place is forgotten, so it waits only once. Nothing is written in the sandbox or a read-only record. */
+  clearFade(): void {
+    if (!this.live || this.record.readOnly || this.record.fade === undefined) return;
+    delete this.record.fade;
+    this.save();
+  }
+
+  private save(): void {
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+  }
+
+  /** The completion percentage now (completion.ts): the achievements, the page and the first-time records of this record. */
+  get completion(): Completion { return completion(this.record); }
+
+  /**
+   * Records a first time for the completion percentage (COMPLETION.md): the id is kept once, saved at once like an unlock.
+   * Returns whether it was new. Nothing is written in the sandbox, the lab or a read-only record.
+   */
+  recordFirst(kind: FirstKind, id: string): boolean {
+    if (!this.live || this.record.readOnly) return false;
+    const have = this.record.firsts?.[kind] ?? [];
+    if (have.includes(id)) return false;
+    this.record.firsts = { ...emptyFirsts(), ...this.record.firsts, [kind]: [...have, id] };
+    const merged = saveMeta(this.record, this.store);
+    if (merged) adoptMeta(this.record, merged);
+    return true;
   }
 
   /**

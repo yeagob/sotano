@@ -1,0 +1,21 @@
+{
+  "note": "The Star-reader asks for no part: a Take or Decline card, a gift of light for the shape it reads, and it stays (STAR-READER.md)",
+  "floor": 1,
+  "seed": 4182,
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [3, 0, 3],
+  "hand": [],
+  "enemies": [
+    { "def": "star-reader", "at": [5, 0, 3] }
+  ],
+  "ticks": 60,
+  "report": [0, 1, 30, 60]
+}

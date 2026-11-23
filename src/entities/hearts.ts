@@ -21,6 +21,15 @@ export const heartCount = (hp: number, layers: readonly HeartLayer[]) => Math.ce
 export const heartSlots = (maxHearts: number, layers: readonly HeartLayer[]) => maxHearts + layers.length;
 /** Containers and extra hearts together stay within MAX_TOTAL_HEARTS: a new heart needs room. */
 export const hasHeartRoom = (maxHearts: number, layers: readonly HeartLayer[]) => heartSlots(Math.floor(maxHearts), layers) < MAX_TOTAL_HEARTS;
+/**
+ * Whether a heart of this kind would be taken now (`Game.collectHeart`): a red one needs missing health; a layer, or a
+ * blood heart at full health (which opens a slot), needs room for one more heart.
+ */
+export function heartFits(kind: HeartKind, hp: number, maxHp: number, maxHearts: number, layers: readonly HeartLayer[]): boolean {
+  const slot = kind === 'blood' && hp >= maxHp;
+  if (kind === 'red' && hp >= maxHp) return false;
+  return !((isLayer(kind) || slot) && !hasHeartRoom(maxHearts, layers));
+}
 /** The stat source of heart containers that a blood heart opened at full health (#146). Cleared on a new run. */
 export const BLOOD_SLOT_SOURCE = 'bloodHeart';
 export function landHit(layers: HeartLayer[], amount: number, halve = true): { rest: number; dealt: number; lost: LayerKind[]; halved: boolean } {
@@ -44,3 +53,38 @@ export function tickBlood(r: BloodRegen, dt: number, hp: number, maxHp: number):
 }
 
 export const berserk = (layers: readonly HeartLayer[]) => layers.some(l => l.kind === 'berserker');
+
+/**
+ * The black heart's toxic aura (#178, docs/design/built/player/hearts/BLACK.md): while the player
+ * holds at least one black heart, every hostile projection within TOXIC_RADIUS blocks of the player
+ * takes TOXIC_DAMAGE once every TOXIC_PERIOD seconds. One aura however many black hearts are held.
+ * It never touches blocks, the player, allies (converted projections), creatures or presences.
+ */
+export const TOXIC_RADIUS = 2;
+export const TOXIC_PERIOD = 1;
+export const TOXIC_DAMAGE = 3;
+/** Seconds between the aura's soot motes on its edge (decoration, not a pulse). */
+export const TOXIC_MOTE_EVERY = 0.2;
+
+export const toxic = (layers: readonly HeartLayer[]) => layers.some(l => l.kind === 'black');
+
+/** What the aura reads of an actor: an `Enemy` fits, and so does the player. */
+export interface ToxicCandidate {
+  kind: string;
+  faction: string;
+  alive: boolean;
+  spawning: number;
+  body: { x: number; y: number; z: number; h: number; hw: number };
+  spec?: { kind?: string };
+}
+
+/**
+ * True when the aura centred at (x, y, z) (the player's body centre) hurts `a`: a living, hostile
+ * projection, not a creature, whose centre is within TOXIC_RADIUS plus its own half-width.
+ */
+export function toxicHits(a: ToxicCandidate, x: number, y: number, z: number): boolean {
+  if (a.kind !== 'projection' || a.faction !== 'projection' || !a.alive || a.spawning > 0) return false;
+  if (a.spec?.kind === 'creature') return false;
+  const b = a.body;
+  return Math.hypot(b.x - x, b.y + b.h / 2 - y, b.z - z) <= TOXIC_RADIUS + b.hw;
+}

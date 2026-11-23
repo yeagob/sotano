@@ -1,0 +1,15 @@
+{
+  "note": "Lucid Dream: an unbreakable block stays solid while phased; a body left inside bedrock is moved out when the phase ends",
+  "rows": [".............", "........c....", "........c....", "........c....", "........c....", "........c....", "............."],
+  "place": [{ "at": [8, 0, 1], "block": "bedrock" }, { "at": [8, 0, 2], "block": "bedrock" }],
+  "player": [6, 0, 1],
+  "god": true,
+  "items": ["luciddream"],
+  "ticks": 240,
+  "report": [90, 240],
+  "actions": [
+    { "t": 1, "do": "collect", "kind": "key" },
+    { "t": 30, "do": "tp", "at": [8, 0, 1] },
+    { "t": 60, "do": "look", "at": [10, 0, 1] }
+  ]
+}

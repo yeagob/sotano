@@ -12,11 +12,18 @@ interface MetaState {
   staircase: boolean;                 // as version 1
   metAt?: number;                     // as version 1
   pact?: true;                        // the Listener's pact has been made once (ACHIEVEMENTS, Mind Crafter); absent until then
+  fade?: { floor: number };           // the deepest floor the last run reached when it ended by death: the Echo waits there once (ECHO.md); absent when met or never recorded
+  requests?: number;                  // how many requests the player answered "Yes" (REQUESTS.md, safety rule 6: the only request data kept); absent until the first
   roots: { page: number };            // the current page, an integer ≥ 1
   achievements: Record<string, number>;  // unlocked id → unlock time (ms since the epoch)
   counts: Record<string, number>;     // achievement id → matching events so far (only while locked, only for `times` > 1)
+  firsts?: {                          // first-time records of the completion percentage (COMPLETION.md); absent until one is made
+    floors: string[]; practices: string[]; bestiary: string[]; recipes: string[];
+  };
 }
 ```
+
+- `firsts` is optional and added without a version bump: a version 2 record without it reads as none, and nothing already saved is lost. Its ids are only ever added (a union on merge).
 
 - The **mastery level** is not stored: it is computed from `achievements` ([MASTERY](MASTERY.md)).
 - The **shown page** (browsing) is not stored.

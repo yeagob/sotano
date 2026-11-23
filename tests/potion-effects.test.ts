@@ -6,6 +6,7 @@ import { Rng } from '../src/core/rng';
 import { BASE_STATS, STAT_LIMITS, StatSheet, type StatName } from '../src/core/stats';
 import { createBus, type GameBus } from '../src/game/events';
 import { PotionEffects } from '../src/game/potion-effects';
+import { ECHO_ITEMS } from '../src/content/echo';
 import { Inventory } from '../src/items/inventory';
 import type { HostApi } from '../src/items/types';
 import { EN } from '../src/i18n/locales/en';
@@ -36,16 +37,71 @@ describe('potion effects', () => {
       'patient-draught': { mining: 1.6 },
       'questioning-tincture': {},
       'berserker-draught': {},
+      'nimble-tincture': { moveSpeed: 1.2 },
+      'nimble-cordial': { moveSpeed: 1.3 },
+      'nimble-elixir': { moveSpeed: 1.3, jump: 1.2 },
+      'lucid-tincture': { shotSpeed: 1.2 },
+      'lucid-cordial': { shotSpeed: 1.3 },
+      'lucid-elixir': { shotSpeed: 1.3, range: 1.2 },
+      'tender-elixir': { invuln: 1.2 },
+      'steadfast-tincture': { damage: 1.2 },
+      'steadfast-cordial': { damage: 1.3 },
+      'steadfast-elixir': { damage: 1.3, fireRate: 1.2 },
+      'echo-draught': {},
+      'stride-tonic': {},
+      'folding-tincture': {},
+    };
+    const added: Partial<Record<PotionId, Partial<Record<StatName, number>>>> = {
+      'tender-tincture': { luck: 0.5 },
+      'tender-cordial': { luck: 1 },
+      'tender-elixir': { luck: 1 },
+      'stride-tonic': { run: 1 },
+      'folding-tincture': { crouch: 1 },
     };
     for (const id of timed) {
       const { stats, fx } = setup();
       fx.drink({ potion: id });
-      const want = expected[id]!;
+      const want = expected[id] ?? {};
+      const plus = added[id] ?? {};
+      expect(expected[id] !== undefined || added[id] !== undefined, id).toBe(true);
       for (const s of Object.keys(BASE_STATS) as StatName[]) {
-        expect(stats.get(s), `${id} ${s}`).toBeCloseTo(BASE_STATS[s] * (want[s] ?? 1), 6);
+        expect(stats.get(s), `${id} ${s}`).toBeCloseTo((BASE_STATS[s] + (plus[s] ?? 0)) * (want[s] ?? 1), 6);
       }
       for (const v of Object.values(want)) expect(EN.messages[POTIONS[id].effect], id).toContain(`×${v}`);
+      for (const [s, v] of Object.entries(plus)) if (s !== "run" && s !== "crouch") expect(EN.messages[POTIONS[id].effect], id).toContain(`+${v}`);
     }
+  });
+
+  it('an echo carries the stats of its practice for its sealed rooms, and leaves nothing behind', () => {
+    for (const item of ECHO_ITEMS) {
+      const { stats, fx } = setup();
+      const ref = new StatSheet();
+      for (const m of item.stats ?? []) ref.add({ ...m, source: 'ref' });
+      fx.drink({ potion: 'echo-draught', echo: item.id });
+      expect(stats.all, item.id).toEqual(ref.all);
+      expect(fx.active).toEqual([{ potion: 'echo-draught', rooms: 2, locks: 0, echo: item.id }]);
+      expect(fx.endRooms()).toEqual([]);
+      expect(fx.endRooms()).toEqual([{ potion: 'echo-draught', echo: item.id }]);
+      expect(stats.all, item.id).toEqual(BASE_STATS);
+    }
+  });
+
+  it('a second echo replaces the first: one echo at a time', () => {
+    const { stats, fx } = setup();
+    const [a, b] = ECHO_ITEMS;
+    fx.drink({ potion: 'echo-draught', echo: a.id });
+    fx.drink({ potion: 'echo-draught', echo: b.id });
+    const ref = new StatSheet();
+    for (const m of b.stats ?? []) ref.add({ ...m, source: 'ref' });
+    expect(stats.all).toEqual(ref.all);
+    expect(fx.active.map(x => x.echo)).toEqual([b.id]);
+  });
+
+  it('an echo of no practice, or of one that cannot be echoed, changes nothing', () => {
+    const { stats, fx } = setup();
+    fx.drink({ potion: 'echo-draught' });
+    fx.drink({ potion: 'echo-draught', echo: 'no-such-practice' });
+    expect(stats.all).toEqual(BASE_STATS);
   });
 
   it('a potion counted in rooms ends after that many sealed rooms', () => {
@@ -126,7 +182,7 @@ describe('potion effects', () => {
     const stats = new StatSheet();
     ITEMS.forEach((it, i) => { for (const m of it.stats ?? []) stats.add({ ...m, source: `item:${i}` }); });
     const fx = new PotionEffects(stats);
-    for (const id of timed) fx.drink({ potion: id });
+    for (const id of timed) fx.drink({ potion: id, echo: ECHO_ITEMS[0]?.id });
     for (const [s, v] of Object.entries(stats.all) as [StatName, number][]) {
       expect(Number.isFinite(v), s).toBe(true);
       const lim = STAT_LIMITS[s];

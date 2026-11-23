@@ -101,12 +101,18 @@ Three complete schemes; the game follows whichever device you used last (details
 | Choose the active block or part (the next place, throw or drink uses it; nothing is moved or used) | **Mouse wheel**, or **1–9** to pick a slot | **D-pad ← →** to step; **A** in the inventory | Tap a slot of your hand (or an item in the inventory) |
 | Drop a bomb | **E** | **RB** | The bomb |
 | Launch a bomb as a missile (with the practice Dr. Launcher) | A quick **double click** | A quick double **RT** | A quick double tap on the bead of light |
+| Dash 4.5 blocks that way (with the practice Irimi) | A double tap of a movement key | A double flick of the left stick | A swipe on the left side of the screen |
+| Run 45% faster (with the practice Fartlek) | Hold Shift | Click L3 (toggles) or push the stick to its edge | Push the left stick to its edge |
+| Crouch: fit through 1-block gaps, never fall off edges (with the practice Child's Pose) | Hold C | Click R3 (toggles) | Swipe down from the bottom of the right side (toggles) |
 | Open a door | Doors open by themselves when there are no projections; locked ones open with a key; a bomb destroys any door | same | same |
 | Offer a carried piece to a Presence | **Enter** accepts; **Esc** declines | **A** accepts; **B** declines | Tap **Give** or **Keep** |
 | Practices and stats | **Tab** (or **I**): the practices tab of the menu | **Y** (d-pad moves, **B** closes) | The tab button (top), then Practices |
 | Menu and pause | **Esc**: the menu tab (controls, language, graphics, new run) | **Menu** | The tab button (top), the Menu tab |
+| Recipe Book (with the Book of Secrets: every recipe, and what each presence takes) | **J** (J or **Esc** closes) | **D-pad Down** (**B** closes) | The tab button (top), the Recipes tab |
+| Star map (the floor you are on, or the crown) | **M** (M or **Esc** closes) | **View** (View or **B** closes) | The tab button (top), the Star map tab |
 | Field of view (on the menu) | **← →**, or drag the bar or click − and + | D-pad **← →** | Drag the bar, or tap − and + |
 | New run | **R** | **View** (paused or dead) | "New run" on the landing and the pause card |
+| Download the book (at 100% completion) | **B** (paused or dead) | **X** (paused or dead) | "Download the book" on the pause card and the death screen |
 
 The Sanctuary, the meditation app a Boundary opens, has its own keys: arrows or the d-pad to choose, Enter or A to confirm (and to pause a sitting), N or RB for the next part, M or X for sound, C or Y for calm visuals, Esc or B to go back or leave. On a phone everything is a button.
 

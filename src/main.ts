@@ -99,9 +99,10 @@ async function boot() {
 
   let last = performance.now();
   const loop = (now: number) => {
-    game.frame((now - last) / 1000);
-    last = now;
     requestAnimationFrame(loop);
+    const dt = (now - last) / 1000;
+    last = now;
+    try { game.frame(dt); } catch (err) { console.error('[frame] failed', err); }
   };
   requestAnimationFrame(loop);
   document.getElementById('loading')?.remove();

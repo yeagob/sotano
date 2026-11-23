@@ -25,7 +25,6 @@ Each shot fires three intentions in a fan; the two extra ones deal 60% damage an
 
 ## Synergies and states of being
 
-- [Choir](../synergies/CHOIR.md)
 - [Lucid](../states-of-being/LUCID.md) (counts the mind tag)
 
 ## Open questions

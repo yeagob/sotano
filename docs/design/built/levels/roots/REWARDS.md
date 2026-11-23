@@ -19,7 +19,7 @@ The Roots read one number when a run starts: the mastery level, 0 to 100. Everyt
 
 ## 2. The table
 
-Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (46 achievements exist). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
+Each row is the level at which something changes. Every step is kept at every higher level (monotonic). Levels 1 to 40 each bring one named step (46 achievements exist); level 30 brings two (the Book of Secrets, and crates). From 41 to 100, the crate factor grows a little every level and a few larger steps come on top.
 
 | Level | What the Roots gain | Keys | Bombs | Hearts lying loose | Free chests | Crate factor | Extra practices |
 |---|---|---|---|---|---|---|---|
@@ -53,23 +53,24 @@ Each row is the level at which something changes. Every step is kept at every hi
 | 27 | Crates give more than elsewhere | | | | | 1.1 | |
 | 28 | A fourth bomb | | 4 | | | | |
 | 29 | A fifth free chest | | | | 5 | | |
-| 30 | Crates give more | | | | | 1.2 | |
+| 30 | Crates give more; **the Book of Secrets waits on a pedestal** (it opens the Recipe Book) | | | | | 1.2 | 3 |
 | 31 | A fifth key | 5 | | | | | |
 | 32 | A second blue heart | | | + blue | | | |
 | 33 | Free chests give one thing more | | | | (2 to 4 draws each) | | |
 | 34 | Crates give more | | | | | 1.3 | |
 | 35 | A sixth free chest | | | | 6 | | |
-| 36 | A black heart | | | + black | | | |
+| 36 | A toxic heart | | | + black | | | |
 | 37 | A sixth key | 6 | | | | | |
 | 38 | A fifth bomb | | 5 | | | | |
 | 39 | A second stone heart | | | + stone | | | |
 | 40 | A second blood heart (star hearts are halved: only the first is laid) | | | + blood | | | |
 | 41 to 100 | Crates give a little more each level | | | | | +0.02 a level | |
+| 50 | **The Roots' call** (issue #295, [CALL](CALL.md)): at every run start the keys, bombs, hearts, practices and free chests' contents fly to the player; the Sanctuary's practice still waits for its sitting | | | | | | |
 | 60 | A third red heart | | | + red | | | |
 | 70 | Free chests give one thing more again | | | | (3 to 5 draws each) | | |
 | 80 | An altar in the start room | | | | | | + the altar (★ to ★★★) |
 | 90 | The altar can hold the best | | | | | | altar ★★ to ★★★★ |
-| **100** | A second Sanctuary | 6 | 5 | 11 | 6 (3 to 5 draws) | 2.5 | 2 + altar, and a second Sanctuary chest |
+| **100** | A second Sanctuary | 6 | 5 | 11 | 6 (3 to 5 draws) | 2.5 | 3 + altar, and a second Sanctuary chest |
 
 ### At a glance
 
@@ -77,14 +78,15 @@ Each row is the level at which something changes. Every step is kept at every hi
 |---|---|
 | 0 | One key or one bomb; crates give something 2 to 6% of the time |
 | 5 | A key, a bomb, a red heart, one free chest; crates 4–12% |
-| 10 | Two keys, two bombs, red and blue hearts, one free chest, crates 5–15%, **one extra practice** |
+| 10 | Two keys, two bombs, red and blue hearts, one free chest, crates 5–15%, **one extra practice (Fartlek)** |
 | 15 | Three keys, two bombs, red, blue and stone hearts, two free chests, crates 7–21%, one extra practice |
 | 22 | Four keys, three bombs, five hearts (two red, blue, stone, blood), three free chests, crates 9–27%, one extra practice |
-| 25 | As 22 with four free chests, crates 10–30% (as other floors), **two extra practices** |
-| 36 | Five keys, four bombs, eight hearts (two red, two blue, stone, blood, star, black), six free chests of two to four draws, crates 13–39%, two extra practices |
-| 40 | Six keys, five bombs, ten hearts (two red, two blue, two stone, two blood, one star, one black), six free chests of two to four draws, crates 13–39%, two extra practices |
-| 50 | Six keys, five bombs, ten hearts, six free chests, crates 15–45%, two extra practices |
-| 100 | Six keys, five bombs, eleven hearts, six free chests of three to five draws, crates 25–75%, two extra practices, an altar up to ★★★★, and two Sanctuaries |
+| 25 | As 22 with four free chests, crates 10–30% (as other floors), **two extra practices (Fartlek and Child's Pose)** |
+| 30 | As 25 with five free chests, crates 12–36%, **three extra practices (Fartlek, Child's Pose and the Book of Secrets)** |
+| 36 | Five keys, four bombs, eight hearts (two red, two blue, stone, blood, star, black), six free chests of two to four draws, crates 13–39%, three extra practices |
+| 40 | Six keys, five bombs, ten hearts (two red, two blue, two stone, two blood, one star, one black), six free chests of two to four draws, crates 13–39%, three extra practices |
+| 50 | Six keys, five bombs, ten hearts, six free chests, crates 15–45%, three extra practices |
+| 100 | Six keys, five bombs, eleven hearts, six free chests of three to five draws, crates 25–75%, three extra practices, an altar up to ★★★★, and two Sanctuaries |
 
 ## 3. Crates
 
@@ -98,7 +100,11 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 ## 4. The extra practices, the altar and the second Sanctuary
 
-- **Extra practices (level 10: one; level 25: two).** Each is a practice floating over a pedestal block, in the open, like the way-down pedestal. The pedestal stands on a free tile of a lesson room (never a door approach, the centre or next to a marker), with nothing within three blocks above it (the pedestal rule of the validator), in a room that holds no other pedestal. The room and tile come from the fork `floor/0/roots/practice-spot`. The practice is drawn **at run start, after every pedestal of every floor has been reserved**, with a runtime draw from the treasure pool in the band ★ to ★★★ (the Roots' gentle practices), from the fork `floor/0/roots/practice/<i>`. A Roots draw never takes a reserved practice, so it can never take a deeper floor's practice. It does **not** mark its practice taken: marking it would change the pool every later chest draws from at level 10 and above, and a later floor must draw the same at every level. A later chest can therefore give the same practice; if the player takes it, the pedestal still showing it draws another practice (`reofferRoots`), so no pedestal offers a practice its player already holds.
+- **Extra practices (level 10: one; level 25: two; level 30: three).** Each is a practice floating over a pedestal block, in the open, like the way-down pedestal. The pedestal stands on a free tile of a lesson room (never a door approach, the centre or next to a marker), with nothing within three blocks above it (the pedestal rule of the validator), in a room that holds no other pedestal. The room and tile come from the fork `floor/0/roots/practice-spot`.
+
+- **The two extra practices are fixed (issue #277).** The first, from level 10, is always **Fartlek** (run, hold Shift); the second, from level 25, is always **Child's Pose** (`balasana`, crouch). Once a player reaches level 10, every run's Roots offer the run on a pedestal; from level 25 they offer the crouch too. The table is `FIXED_PRACTICES` in `src/content/tables/roots-mastery.ts` (`at` is the level, `item` the practice, one row per extra practice in order); `rootsSites` (`src/game/roots-draws.ts`) gives the site its `fixed` item and `drawRootsItems` places it without a pool draw. Both are ★★, inside the band ★ to ★★★. Below the level nothing changes: at 0 to 9 there is no extra practice, at 10 to 24 only the first. A fixed practice still counts as drawn by the Roots (`drawn`), so no other Roots draw (the altar, a free chest, the Sanctuary) offers it again. Unlike a drawn practice, a fixed one may also be the reserved practice of a deeper floor's pedestal; once the player holds it, that pedestal offers another practice (`offerPedestal`), as for any held item. If the player gets a fixed practice from elsewhere first, its Roots pedestal draws another practice as below (`reofferRoots`, fork `floor/0/roots/practice/<i>/again/<n>`). No RNG fork changes: the forks of the other sites are the same, and the fixed site's own fork `floor/0/roots/practice/<i>` is simply not read at run start.
+- **The third extra practice is the Book of Secrets (level 30, owner's request).** From mastery level 30 every run's Roots lay the **Book of Secrets** (`bookofsecrets`, ★, mind) on a third pedestal, in a lesson room with no other pedestal, from the same fork `floor/0/roots/practice-spot`. Held, it opens the Recipe Book ([RECIPE-BOOK](../../practices/RECIPE-BOOK.md)). It is the third row of `FIXED_PRACTICES`, with its own notice line (`gain: 'mastery.gain.recipeBook'`). Unlike Fartlek and Child's Pose it is in no random pool: its only pool is `roots` (`isRootsGift`, `src/items/pool.ts`), so no chest, pedestal, presence or echo ever draws it, and adding it moved no seed of floors 1 to 9 nor of floor 0 below level 30. At level 30 and above, the third pedestal takes one more free tile of a lesson room before the chests, keys, bombs and hearts are placed, so their tiles can differ from a build without it at those levels.
+- **How a drawn Roots practice is chosen.** The altar, the free chests' practices, the Sanctuary and a redrawn pedestal draw **at run start, after every pedestal of every floor has been reserved** (the altar) or when opened, with a runtime draw from the treasure pool in its band (★ to ★★★ for the Roots' gentle practices). Before issue #277 the extra practices were drawn the same way, from the fork `floor/0/roots/practice/<i>`. A Roots draw never takes a reserved practice, so it can never take a deeper floor's practice. It does **not** mark its practice taken: marking it would change the pool every later chest draws from at level 10 and above, and a later floor must draw the same at every level. A later chest can therefore give the same practice; if the player takes it, the pedestal still showing it draws another practice (`reofferRoots`), so no pedestal offers a practice its player already holds.
 - **The altar (level 80).** One more pedestal, on a free tile of the start room (`roots-hall`), drawn the same way (`floor/0/roots/altar`), band ★ to ★★★, and ★★ to ★★★★ from level 90.
 - **The second Sanctuary (level 100).** A second free chest with its own Boundary standing over it, on a free tile of the way-down room, behaving exactly as the first (same bands: quick ★ to ★★, finished ★★★).
 
@@ -109,7 +115,7 @@ Each row is the level at which something changes. Every step is kept at every hi
 
 ## 6. Rules the table keeps
 
-- **Bounded.** At most 6 keys, 5 bombs, 11 hearts of which one is a star heart, 6 free chests, 2 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
+- **Bounded.** At most 6 keys, 5 bombs, 11 hearts of which one is a star heart, 6 free chests, 3 extra practices, one altar, two Sanctuary chests (far fewer than the free tiles of eight rooms); the crate chance never exceeds 0.75; every band lies in ★ to ★★★★; the level is clamped to 0…100.
 - **Monotonic.** For every level L, everything at L + 1 is at least what it is at L.
 - **Deterministic.** Floor 0 depends only on the seed and the level.
 - **Only the Roots.** Floors 1 to 9, the sky and the surface are identical at every mastery level for a given seed, because every new Roots practice is a runtime draw made after the whole reservation, and every other new decision draws from a new `floor/0/roots/*` fork.
@@ -131,7 +137,7 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 | `mastery.gain.heart.stone` | A stone heart lies in the Roots. | Un corazón de piedra te espera en las raíces. |
 | `mastery.gain.heart.blood` | A blood heart lies in the Roots. | Un corazón de sangre te espera en las raíces. |
 | `mastery.gain.heart.star` | A star heart lies in the Roots. | Un corazón estrella te espera en las raíces. |
-| `mastery.gain.heart.black` | A black heart lies in the Roots. | Un corazón negro te espera en las raíces. |
+| `mastery.gain.heart.black` | A toxic heart lies in the Roots. | Un corazón tóxico te espera en las raíces. |
 | `mastery.gain.heartAgain.red` | One more red heart lies in the Roots. | Un corazón rojo más te espera en las raíces. |
 | `mastery.gain.heartAgain.blue` | One more blue heart lies in the Roots. | Un corazón azul más te espera en las raíces. |
 | `mastery.gain.heartAgain.stone` | One more stone heart lies in the Roots. | Un corazón de piedra más te espera en las raíces. |
@@ -143,6 +149,10 @@ The achievement notice ([ACHIEVEMENTS §4](../../progression/ACHIEVEMENTS.md#4-t
 | `mastery.gain.altar` | An altar rises in the first room, with a practice up to {stars}. | Un altar se alza en la primera sala, con una práctica hasta {stars}. |
 | `mastery.gain.altarBest` | The altar's practice can reach {stars}. | La práctica del altar puede llegar a {stars}. |
 | `mastery.gain.sanctuary` | A second Boundary keeps a chest by the way down. | Un segundo Límite guarda un cofre junto a la bajada. |
+| `mastery.gain.call` (level 50) | The Roots call: at every waking, what they lay comes to you. The meditation still waits for you. | Las raíces te llaman: cada vez que despiertas, lo que guardan viene a ti. La meditación sigue esperándote. |
+| `mastery.gain.recipeBook` | The Book of Secrets waits on a pedestal in the Roots: it opens the Recipe Book ({n} practices in all). | El libro de los secretos te espera en un pedestal de las raíces: abre el libro de recetas ({n} prácticas en total). |
+
+A fixed practice with its own `gain` key (the Book of Secrets at 30) names itself with that line in place of `mastery.gain.practice`; level 30 therefore shows two lines, the book first and the crate step last.
 
 Percentages go through `fmtNum`. From 41 on, a level with only the crate step shows `mastery.gain.crates`; a level with two changes shows both lines.
 

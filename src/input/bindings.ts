@@ -4,8 +4,8 @@ export const DEVICES: readonly Device[] = ['keyboard', 'gamepad', 'touch'];
 export type Context = 'play' | 'prompt' | 'paused' | 'dead' | 'inventory' | 'toll' | 'meditation';
 
 export type Action =
-  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity'
-  | 'previous' | 'next' | 'pick' | 'inventory' | 'pause' | 'restart' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm';
+  | 'move' | 'look' | 'jump' | 'cast' | 'place' | 'throw' | 'drink' | 'bomb' | 'polarity' | 'dash' | 'run' | 'crouch' | 'miracle'
+  | 'previous' | 'next' | 'pick' | 'inventory' | 'map' | 'recipes' | 'pause' | 'restart' | 'book' | 'confirm' | 'navigate' | 'back' | 'skip' | 'mute' | 'calm' | 'voice';
 
 export const PAD = {
   A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, MENU: 9, LS: 10, RS: 11,
@@ -17,15 +17,18 @@ export type PadButton = typeof PAD[keyof typeof PAD];
  * How a touch reaches the action. `worldTap` is a short touch on the world (no drag): it aims at the
  * tapped block. `turn` is a half turn of the phone (the steering-wheel gesture). `none` means the
  * action has no touch button of its own: it is reached through another (the tab button opens the menu).
+ * `swipe` is a stroke across the left side of the screen (the dash, DASH.md): it has no button.
  */
-export type TouchControl = 'stick' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'none';
+export type TouchControl = 'stick' | 'stickEdge' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
 
 export interface Binding {
   action: Action;
   kind: 'axis' | 'hold' | 'press';
   when: readonly Context[];
-  keyboard: { keys?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; when?: readonly Context[] };
-  gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; when?: readonly Context[] };
+  /** `doubleTap: 'move'` is a double tap of the movement keys: no key of its own, so it never collides with `move`. */
+  keyboard: { keys?: readonly string[]; toggle?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; doubleTap?: 'move'; when?: readonly Context[] };
+  /** `doubleFlick: 'left'` is a double flick of the left stick (no button). */
+  gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; doubleFlick?: 'left'; when?: readonly Context[] };
   touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
   refs: { minecraft: string; noita: string; isaac: string };
 }
@@ -62,6 +65,29 @@ export const BINDINGS: readonly Binding[] = [
     gamepad: { buttons: [PAD.RT] },
     touch: { control: 'button', icon: 'touchCast' },
     refs: { minecraft: 'left click / right trigger to attack and mine', noita: 'left click / right trigger fires the wand while held', isaac: 'holding a fire direction keeps shooting' },
+  },
+  {
+    // Irimi (DASH.md): a gesture of the movement, not a button. Read only in play, and only with the `dash` stat.
+    action: 'dash', kind: 'press', when: ['play'],
+    keyboard: { doubleTap: 'move' },
+    gamepad: { doubleFlick: 'left' },
+    touch: { control: 'swipe' },
+    refs: { minecraft: 'a double press of forward sprints; a double jump is the jump button pressed again', noita: 'the levitate key is held; a new meaning of the movement, not a new key', isaac: 'a practice changes what a direction does, never adds a button' },
+  },
+  {
+    // Fartlek (RUN-AND-CROUCH.md): hold Shift; L3 toggles it until the stick returns to centre; on touch, the stick at its edge
+    action: 'run', kind: 'hold', when: ['play'],
+    keyboard: { keys: ['ShiftLeft', 'ShiftRight'] },
+    gamepad: { buttons: [PAD.LS] },
+    touch: { control: 'stickEdge' },
+    refs: { minecraft: 'Ctrl sprints while you walk forward; a stick click toggles the sprint on a controller', noita: 'no sprint: speed comes from the move keys and the levitate', isaac: 'no sprint: speed is an item, never a button' },
+  },
+  {
+    action: 'crouch', kind: 'hold', when: ['play'],
+    keyboard: { keys: ['ControlLeft', 'ControlRight'], toggle: ['KeyC'] },
+    gamepad: { buttons: [PAD.RS] },
+    touch: { control: 'swipe' },
+    refs: { minecraft: 'Shift sneaks and will not walk off an edge; a stick click toggles sneaking on a controller', noita: 'no crouch: the body has one shape', isaac: 'no crouch: a practice changes what the body does, never adds a button' },
   },
   {
     action: 'place', kind: 'press', when: ['play'],
@@ -127,6 +153,24 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'E / Y opens the inventory', noita: 'Tab / I opens the inventory and pauses', isaac: 'Tab shows the map and your items' },
   },
   {
+    // the star map (D15 of #149): a tab of the same screen, opened and closed by its own key; touch taps its tab
+    action: 'map', kind: 'press', when: ['play', 'paused', 'inventory'],
+    keyboard: { keys: ['KeyM'] },
+    gamepad: { buttons: [PAD.VIEW], when: ['play', 'inventory'] },
+    touch: { control: 'menuButton', when: ['paused', 'inventory'] },
+    refs: { minecraft: 'the map is an item you hold up; the screen keeps one view per tab', noita: 'M opens the map of the world you have seen', isaac: 'Tab (or Select on a pad) shows the whole floor map' },
+  },
+  {
+    // the Recipe Book (Book of Secrets): a tab of the same screen, opened and closed by its own key, live only while the
+    // practice is held (the `recipes` stat). D-pad Down is free in play (navigate is live in the menus only); on the
+    // screen the d-pad scrolls the book and B closes it. Touch taps its tab.
+    action: 'recipes', kind: 'press', when: ['play', 'paused', 'inventory'],
+    keyboard: { keys: ['KeyJ'] },
+    gamepad: { buttons: [PAD.DOWN], when: ['play'] },
+    touch: { control: 'menuButton', when: ['paused', 'inventory'] },
+    refs: { minecraft: 'the recipe book is a button of the inventory screen, beside the crafting grid', noita: 'what you have learned is read on a page of the pause screen, never in play', isaac: 'one key, one screen: the journal of what you have found opens on its own button' },
+  },
+  {
     action: 'pause', kind: 'press', when: ['play', 'paused'],
     keyboard: { keys: ['Escape'] },
     gamepad: { buttons: [PAD.MENU] },
@@ -141,6 +185,14 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'respawn from the death screen', noita: 'new game from the pause menu', isaac: 'hold R to restart; on a pad, restart from the pause menu' },
   },
   {
+    // the book download at 100% (COMPLETION.md §8): on the pause card and the death screen; the game does nothing below 100%
+    action: 'book', kind: 'press', when: ['paused', 'dead'],
+    keyboard: { keys: ['KeyH'] },
+    gamepad: { buttons: [PAD.X] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'the menu opens its own pages with a button of the screen', noita: 'the notes are a window of the pause menu', isaac: 'the map and the items each have their own button in the pause' },
+  },
+  {
     action: 'confirm', kind: 'press', when: ['prompt', 'paused', 'dead', 'toll', 'meditation'],
     keyboard: { keys: ['Enter'], mouse: [0, 1, 2] },
     gamepad: { buttons: [PAD.A] },
@@ -148,7 +200,7 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'click / A accepts', noita: 'click / A continues', isaac: 'any shot key / A dismisses and continues' },
   },
   {
-    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused', 'meditation'],
+    action: 'navigate', kind: 'axis', when: ['inventory', 'toll', 'paused', 'meditation', 'prompt'],
     keyboard: { keys: Object.values(NAV_KEYS).flat() },
     gamepad: { buttons: Object.values(NAV_PAD) },
     touch: { control: 'tap' },
@@ -182,6 +234,22 @@ export const BINDINGS: readonly Binding[] = [
     touch: { control: 'menuButton' },
     refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'screen shake is a switch in the options', isaac: 'Y opens what the screen offers beside the main choice' },
   },
+  {
+    action: 'voice', kind: 'press', when: ['meditation'],
+    keyboard: { keys: ['KeyV'] },
+    gamepad: { buttons: [PAD.LB] },
+    touch: { control: 'menuButton' },
+    refs: { minecraft: 'an accessibility switch on the screen it changes', noita: 'subtitles are a switch in the options', isaac: 'one switch, one button: each toggle has its own' },
+  },
+  {
+    // Kairos (#123): stops time when full, and releases the marks. Its own button on every device; a touch button
+    // only while the practice is held. D-pad Up is free in play (navigate is live in the menus only).
+    action: 'miracle', kind: 'press', when: ['play'],
+    keyboard: { keys: ['KeyV'] },
+    gamepad: { buttons: [PAD.UP] },
+    touch: { control: 'button', icon: 'touchMiracle' },
+    refs: { minecraft: 'an item you hold up is used by its own button, never the attack', noita: 'a wand\'s special spell has its own key, held apart from the fire', isaac: 'the active item on its own button (Space / right trigger); one button per active' },
+  },
 ];
 
 export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as Record<Action, Binding>;
@@ -189,7 +257,7 @@ export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as R
 export const PASSIVE = ['pickup', 'doors'] as const;
 
 export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
-  'look', 'move', 'jump', 'cast', 'polarity', 'pickup', 'place', 'throw', 'drink', 'bomb', 'doors', 'previous', 'next', 'pick', 'inventory', 'restart', 'pause',
+  'look', 'move', 'jump', 'cast', 'polarity', 'dash', 'run', 'crouch', 'pickup', 'place', 'throw', 'drink', 'bomb', 'miracle', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'recipes', 'restart', 'pause',
 ];
 
 export function contextsFor(b: Binding, device: Device): readonly Context[] {
@@ -212,6 +280,8 @@ export const TAP_SLOP = 12;
 export const PAD_TRIGGER = 0.35;
 export const PAD_LOOK_SPEED = 3.4;
 export const TOUCH_LOOK_SPEED = 0.0055;
+/** A stick pushed past this share of its radius runs (Fartlek; gamepad and touch). */
+export const STICK_RUN_EDGE = 0.95;
 
 export function deadzone(x: number, y: number, dz = PAD_DEADZONE): [number, number] {
   const m = Math.hypot(x, y);

@@ -6,8 +6,157 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Added
+- Nineteen achievements: Beyond the Self (the state Transcendent), six for the synergies turned on for the first time, and twelve for meeting each presence (finish your first exchange with it).
+- The Book of Secrets: a practice on the Roots' pedestals from mastery level 30. It opens the Recipe Book on J, in play and on the menu's Recipes tab: every potion, every meal, and what each presence takes, all read from the game's data.
+- The Roots call from mastery level 50: at the start of every run, the keys, bombs, hearts, practices and chest contents on the basement floor fly to you and are taken. The Sanctuary's meditation is never pulled (#295).
+- Achievements for the states of being reached for the first time (four), and for the blocks and the projections: Brick by Brick (1000 blocks placed), Many Come Home (100 projections turned to your side), and Clearing the Way (100 projections destroyed).
+- Cooking a potion or a meal holds it up in both hands for a moment, with its name, as a monster's drop does (#290). Each cookable meal has its own food: a chicken drumstick for the small meal, a bowl of broth for the hearty one (#291).
+
 ### Changed
 - The polarity is easier to read: the mark beside the counters is a framed bead of light (gold with a white core for a good intention, ash with an ember core for a bad one). The bomb counter takes the colour of the loaded intention, and a good intention's bomb is the white seed. On a phone, the fire button and the bomb button take that colour too.
+- On the keyboard, the book download moved from B to H.
+- The alembic holds a brewed flask up only when you take it out, not when it is brewed (#290).
+
+## 0.2.8-alpha.f3 · 2026-11-22
+
+### Fixed
+- An error during play no longer freezes the game on a black screen with no menu, as after picking up the berserker heart on a phone (#287).
+- A projection killed by an area attack no longer breaks the game loop: this froze the game on a black screen with no menu (#287).
+
+## 0.2.8-alpha.f2 · 2026-11-21
+
+### Fixed
+- A broken block disappears at once on a phone, and its pieces show with it (#285).
+
+## 0.2.8-alpha.f1 · 2026-11-21
+
+### Fixed
+- The death screen scrolls on a phone, so its button can be reached (#281).
+- The completion rows show each part's real percentage.
+
+## 0.2.8-alpha · 2026-11-21
+
+### Added
+- In a sitting, Add time lengthens it in steps of 30 seconds, 1 minute, 5 minutes and then 10 minutes, up to one hour. The part you are in keeps its end (#160).
+- A new achievement, An Hour of Stillness: finish meditations for one hour in total, across runs (#160).
+- Potions are types with variants: a bulb no recipe matches brews the Tincture, Cordial or Elixir of its path, flesh alone heals more the more flesh, and parts of mixed paths brew an Echo that carries a practice's effect for two sealed rooms; the Plain Tonic is left for a bulb of blocks alone (#259).
+- The Folding Tincture: an easy potion (a body pattern's mind and dirt) that lets you crouch with C, R3 or a swipe down for 3 sealed rooms, as Child's Pose does (#262).
+- The Stride Tonic: an easy potion (a body pattern's mind) that lets you run 45% faster with Shift, L3 or the stick at its edge for 3 sealed rooms, as Fartlek does (#263).
+
+### Changed
+- On the keyboard, C switches the crouch on and off, and Control holds it while you press it (#277).
+- Taking damage knocks you back, away from its source when there is one, with a red glow on the edge the damage came from and a damage sound (#268).
+- The hearts of a white bomb's blast are drawn as small red hearts that rise and turn to face you, not as red sparks (#264).
+- Irimi is a tier 4 practice: the dash leaves a trail of light, hurts each projection it passes through, breaks the blocks in its way and keeps you untouchable while it lasts (#261).
+- From mastery level 10 the Roots always offer Fartlek (run) on their first extra practice pedestal, and from level 25 Child's Pose (crouch) on the second, instead of a random practice (#277).
+
+### Fixed
+- A healing potion or meal is not drunk at full health, and the game says why (#260).
+- Solve et Coagula converts water and lava again: the intention's position is read as the cell it is in (#256).
+- A white bomb (good intentions) heals you, one heart, when you stand in its range, and its blast shows heart particles (#264).
+- Kairos names the control to press to stop time and to release, on each device (#265).
+- A boss turns to your side only after good intentions deal as much damage as it takes to destroy it.
+- The toxic heart shows its aura as motes around you and a pulse of its two-block zone each tick; its message is shorter, and messages stay on screen as long as their length needs.
+- Remember Breathing: the beam curves toward its target, so Triangulation shows three beams and the self-shot bends back to you (#257).
+- Spiral Growth no longer fills the screen with Remember Breathing: its strands are thin and layered over the beam (#258).
+
+## 0.2.7-alpha.f1 · 2026-11-20
+
+### Fixed
+- The progress panel shows only the percentage of each part, without the words after it.
+
+## 0.2.7-alpha · 2026-11-20
+
+### Added
+- Solve et Coagula: a miracle. A positive intention that touches lava turns the connected lava (up to 256 cells) into water; a negative one turns connected water into lava, never the water you stand in.- Post-Traumatic Growth: lava never hurts you. You walk on its surface and wade through it at full speed; your intentions still go out in it.- The Transcendent state of being: with three Miracles practices, your positive intentions take the blocks around them, and hit harder for each one they take.
+- Three practices for the hand, the allies and the tables: Furoshiki (two more things in your hand, the extra slots drawn dimmer), Kinship (a projection turned to your side heals a quarter heart, once per room visit) and Apprenticeship (every brew and cook heals a quarter heart; brews come out iced), in English and Spanish (#52).
+- The Rebirth Draught, a new potion: drinking it asks first, then starts the run again from the first floor and keeps every practice you hold, in English and Spanish (#52).
+- The flask or meal in your hand is named above the hand, with what it does; Tab shows its name, effect and duration at the top of the inventory (#52).
+- Kairos: a practice that stops time. Clear rooms to charge it (it starts charged); when it is full, the miracle button (V, the D-pad up, or the clock ring on a phone) stops the world, and you mark up to five places. Release to fire five piercing intentions at once, one at each mark (#123).
+- Waymark: a practice that is an extra life. A cairn on the path marks where you stand and the start of each new floor; when you would die, you return there with full hearts and everything you carry, and it is used up when it saves you (one copy, one extra life), in English and Spanish.
+- Lucid Dream: a miracle. Picking up a bomb, a key or a heart lets you walk through blocks for a few seconds (more pickups add time, up to a cap), and you always come out in free space. Unbreakable blocks stay solid, in English and Spanish.
+- Nine practices of the drink family, which grow with every potion or meal you drink, up to six (Nourishment, up to eight), each with its own stacks in the inventory (#110).
+- New blocks: living root, cave moss, copper ore, tin ore, quicksilver ore and lead ore, in English and Spanish (#228).
+- The Covenant's Light can now be given in play, after hearing a Listener's Lesson, with a gold burst and a toast (#228).
+- The Mender's Thread: a promised practice (+1 heart container, a little more invulnerability after each hit) that The Mender drops once a run beside its gift; picking it up keeps the Covenant's Thread, and no toll or capture can take it (#228).
+- The Mender brings back the last projection you released on its floor as an ally with a gold glow and slow gold motes (#228, #232).
+- "Have you done it?": when The Gardener's or The Boatman's waiting time ends with you nearby, it asks, with Yes and Not now; Yes always gives something, and Not now costs nothing (#228, #235).
+- The Leaves: a new room of the giant tree, with a ring of star stone under an open eye in its dome (#149).
+- Dowsing and Eye Contact: two practices that steer intentions, one toward blocks and one toward projections. The one you gained last guides; the other is set aside, with a toast (#68).
+- Three fire practices: Inner Fire (negative intentions burn, and fire hurts you half as much), Firewalking (fire never hurts you, and standing in it heals a little), and Stolen Fire (one intention in five is a fire seed that bursts). Holding three fire practices gives Hearth, which warms you when a fire bursts. In English and Spanish (#110).
+- The star map: a new tab of the menu (M, View, or the Star map tab) that draws the floor you are on as a constellation of the rooms you know, with the places the presences told you of. In English and Spanish (#149).
+- Two practices of the bounce, in English and Spanish: Dialectic (a rebound splits the intention in two, each at half damage, at most twice per shot) and Reframing (after a rebound the intention turns toward a projection within 8 blocks and deals 25% more). They stack with Bounce Back (#110).
+- Four bomb practices, in English and Spanish: Pressure Valve (bomb radius and damage, two bombs), Controlled Burn (your blasts light the dry blocks around them, and their fire spares you close by), Bolt from the Blue (lightning from your blasts to the nearest projections) and Serendipity (luck, and a chance that a blast leaves a key, a bomb or a heart) (#110).
+- New practice: Irimi, a body practice that dashes 4.5 blocks in the direction you double-tap, flick or swipe. Untouchable while it lasts, one dash in the air, cooldown 0.8 s; looking up while you dash rises (#157).
+- New practices: Fartlek (hold Shift, L3 or the stick's edge to run 45% faster) and Child's Pose (hold C, R3 or swipe down on the right to crouch: fit through 1-block gaps, never fall off edges, take half contact damage; crouched you move at 45% speed) (#52).
+- 62 new room layouts: arenas with low rings and benches, galleries and towers to fight from, piers and broken bridges over dry docks, canals, flooded cloisters, canal locks you open by breaking a plug, lava lakes and forges, a pool that turns lava to stone when you break its wall, crypts and catacombs in the deep circles, four new challenge rooms, two starts, three treasure rooms, two vaults and two bosses' halls. Every band of floors has at least twice as many layouts as before (#115).
+
+### Changed
+- Remember Breathing's beam is a shot first: the practices that change your shot change the beam. Dual Process and Triangulation fan it into two or three beams, Rule of Three and Spiral Growth give it strands of light, Eye Contact and Dowsing steer its rays, and Bilateral Stimulation fires one beam from each hand in turn. The Chorus and Choir synergies are removed, since the shot now reaches the beam.
+- Seed codes move to v38: the same code lays out its rooms with the new and redrawn layouts (#115), and the new practices join the treasure, vault and boss draws, so its pedestals hold other practices (#110, #122, #123, #157, #52).
+- Affirmation no longer aims: a positive intention that hits a block places a copy of that block beside it, in empty space inside the room (#68).
+- The Gardener now asks for a living root and a tuft of cave moss, one card each, instead of a flesh part (#228).
+- The Cartographer charts both the vault and the boss for the right ore, on its card and on the star map; without it, its single mark is unchanged (#228).
+- The Mender now asks for two parts of different kinds on one card that names both; nothing is taken unless you say Give and both are still in your hand (#228, #233).
+- The Listener's Lesson no longer gives the Covenant's Light itself: a heard Lesson opens the way to it (#149, #228).
+- The Child no longer adds a Lesson in words after its gift (#149).
+- The Questioning Tincture takes any ore, not only iron ore (#228).
+- Seed codes move to v37: the same code grows the giant tree with the Leaves and lays the new blocks in the rock; the rooms are unchanged (#149, #228).
+- 48 room layouts redrawn so their corners stay clear: no more cubes in or beside the corners where projections rise unseen or where you snag while chasing them; pillars stand on the room's cross instead (#115).
+
+## 0.2.6-alpha · 2026-11-19
+
+### Added
+- The Boatman takes its block only when it can ferry you; in a room with no far shore it says so and you keep the block. A presence's choice card ignores a confirm in its first moment, so a double press cannot pick an answer by accident (#149).
+- The Child now adds one Lesson in words to its card after its gift (#149).
+- The inventory shows the Covenant pieces you hold, each with its name, the presence that gave it, a gold seam and the word promised. Nothing shows before the first piece (#149).
+- The Listener's Lesson: after its gift, The Listener asks which path weighs on you, with Not now always offered, and answers in words. Its last Lesson, on floor 5, gives the Covenant's Light, so the Covenant can now be completed in play (#149).
+- The Covenant, in part: The Mender, The Elder and The Witness each give one piece of it (the Thread, the Page and the Seal), kept for the run. The Light comes from The Listener's last Lesson. Once all four are held, every presence remembers you in its card (#149).
+- The Child asks you to draw something small on its build card, and The Elder asks you to be still on its choice card, each with an alternative that needs no hands (#149).
+- The codex: the menu lists the presences you met in this run, with what each asks and what it gives, in English and Spanish (#149).
+- The idle window: after you give The Gardener or The Boatman what they asked for, it stays in its room for a seeded 30 to 60 seconds, then leaves. The length is fixed by the run's seed (#149).
+- Requests from the depths: The Gardener asks you to breathe slowly, and The Boatman asks you to stand and move before the crossing. The card names the request and an always-offered alternative; Give or Keep decides, and keeping costs nothing (#149).
+- The Mender, a dweller that comes to the first vault you open on floor 3, 4 or 5 (once the vault's guardian has left). It asks for one part you carry, on a Give or Keep card; Give gives a practice of quality three, or a special heart, and it stays (#149).
+- The Star-reader, a dweller in a quiet room of one floor of the Tree (floors 1 to 5). It asks for a yes to its light, on a Take or Decline card: a practice of quality one or two, or a special heart. Decline keeps everything, and it stays (#149).
+- The Witness, a messenger that waits in a quiet room of the ninth floor. It offers one gift: a practice of quality two, or a special heart. Take gives it and it leaves; decline keeps everything (#149).
+- The Boatman, a dweller by the drowned nave of floor 3 or 4. For one block you leave on the shore, it ferries you across the deep water to the island, where its gift lies: a practice of quality two, or a special heart. It stays (#149).
+- The Child, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks you to place three blocks while it watches; Take starts the build and Decline costs nothing. When three blocks are placed it gives one gift: a practice of quality one, or a special heart. It stays (#149).
+- The Trickster, a messenger that waits on one floor of each run from floor 3 down, in a quiet dead end. It offers a trade: one heart for a practice of quality three. Nothing is taken unless you confirm; declining costs nothing (#149).
+- The Echo: when a run ends in death, the Echo waits on the deepest floor that run reached, in the next run that reaches it, once. It asks for one part you carry and gives back a key or a bomb. Declining costs nothing (#149).
+- The Wanderer, a messenger that waits on one or two floors of each run from floor 1, in a quiet room. It offers a gift: a practice of quality one, or a special heart. Nothing is taken unless you take it; declining costs nothing and it walks on (#149).
+- The Elder, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks which of four paths still holds, on a choice card; it gives a practice of that path and stays. Not now costs nothing (#149).
+- The Cartographer, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks whether to mark the vault or the boss, and says in words where it lies from here. It stays. Not now costs nothing (#149).
+- The choice card: a presence's question with up to four answers, chosen with the arrows or the d-pad, a tap, or confirm (#149).
+- The Gardener, a dweller that waits on one floor of each run from floor 1, in a quiet room. It asks for one flesh part you carry and gives nothing back; it stays where it is. Declining costs nothing (#149).
+- A completion percentage: the share of the game you have done at least once (floors, bosses, achievements, practices, the bestiary, recipes and the hidden book), with each part's share. It is kept between runs, never goes down, and shows on the pause card and the death screen (#180).
+- At 100% completion a final achievement unlocks, and the book can be downloaded from the pause card and the death screen (#180).
+- The toxic heart now carries a toxic aura: while you hold one, every hostile projection within two blocks of you takes damage once a second, with rising soot around your feet and a soft hiss when it touches. It never breaks blocks and never hurts allies, creatures or presences, and it ends when the heart is spent (#178).
+- In the Sanctuary, a finished meditation shows three choices: Receive, Sit again (the same meditation, a new length) and Choose another meditation. Sitting again does not give a second reward (#160).
+- In a sitting, Add 20 seconds lengthens it, up to three times. The part you are in keeps its end (#160).
+- Optional spoken guidance in the Sanctuary, in English and Spanish: the guidance lines are read aloud and never overlap. Breath cues are not spoken. Turn it on with the Voice switch (V, LB or the Voice button); it is off at first (#203).
+
+### Changed
+- The Sanctuary's reward is one per visit. Once a sitting is finished, leaving never gives the quick reward and never takes the earned one back. Leaving early still gives the quick reward when nothing is finished yet (#160).
+- The practices tab, the pause card and the way-down window share the pixel art look of the achievement notice. Each practice now opens in three blocks: a teaching that carries it into everyday life, what it does in the game, and the stats it changes; every practice has its teaching in English and Spanish (#202, #223, #224).
+- The lore was extended with new references and a tradition (#194, #201, #204).
+
+### Fixed
+- Symbolic Act no longer explodes blocks that were kicked: a block that falls on you while your hands are full, or a thrown block you kick later, loses its charge and does not burst (#198).
+
+## 0.2.5.f1 · 2026-11-15
+
+### Fixed
+- The book page now advances before the player reaches the main room, so no text is missed when completing a lap (#212).
+- Book page text panels now appear in the correct reading order when walking toward the Sanctuary (#214).
+
+## 0.2.5 · 2026-11-15
+
+### Changed
+- The tutorial direction was reversed: walking forward now leads toward the Sanctuary, matching player intuition.
+- The book was extended with 62 new pages covering more chapters from the author's book.
+- Browsing forward through the book is no longer capped: players can walk the ring continuously to read all pages without dying or restarting.
+- New teaching items added: Box Breathing, Gratitude, Grounding, Self-Compassion and Visualization.
 
 ## 0.2.4.f1 · 2026-11-14
 

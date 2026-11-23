@@ -11,15 +11,22 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | cast (hold) | the bead of light, the largest button, bottom right. Its panel takes the loaded intention's colour: a gold-lit panel for a good intention, a charred one for a bad one (DECISIONS §14.1) |
 | launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
 | polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which: gold for good, ember for bad, a 6 px ring on a 92 % panel so it reads on a phone; issue #105, DECISIONS §14.1). The ring also shows the loaded intention's power: it thickens from 6 to 12 px and gains a glow of the same colour as damage rises, one step per doubling (issue #111, DECISIONS §7.1.1) |
+| dash | a swipe on the left side of the screen, starting right of the stick's zone, at least 60 px within 0.25 s: up is forward, down back (see [DASH](../../design/built/practices/DASH.md)) |
+| run (Fartlek) | the left stick pushed past 95 % of its radius; released when it comes back in (see [RUN-AND-CROUCH](../../design/built/practices/RUN-AND-CROUCH.md)) |
+| crouch (Child's Pose) | a swipe down that starts at the bottom twelfth of the right side, right of the middle: toggles the crouch and takes back the look it turned. No button, so the seven-button limit holds |
 | choose the active carried item (`pick`, and `previous` / `next` by the same tap) | **a tap on a slot of the hand** (bottom centre, in play): that carried item becomes the active one. In the inventory the tab button opens, a tap on a hand slot or on an item chooses it. A tap that drags does nothing, and it never places a block |
 | jump (hold to swim up; with air jumps, again in the air) | the arrow |
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
 | drink | the flask on top of the hand: shown only while it is there, drawn as that potion in its liquid colour, in the right-thumb column above throw (#159) |
 | bomb | the bomb (shows the count). For a good intention it is the white seed, framed and counted in gold; for a bad one, the black seed, framed and counted in ember (DECISIONS §14.1) |
+| miracle (Kairos) | the clock ring, shown only while Kairos is held; its ring is the charge |
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
+| recipe book | the Recipes tab on the screen (after the tab button), shown only while the Book of Secrets is held; the ✕ or the tab button closes it. No button of its own in play (the seven-button limit) |
+| star map | the Star map tab on the screen (after the tab button); the ✕ or the tab button closes it. No button of its own in play (the seven-button limit) |
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |
+| book | "Download the book" on the pause card or the death screen (at 100%) |
 | confirm | tap a Presence offer button; tap anywhere to dismiss other banners; "Tap to play" on the menu tab |
 | back | no separate binding for offers: tap Keep to decline |
 
@@ -59,4 +66,4 @@ The double tap on the bead came back for one practice only (owner, issue #89): w
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Sound, Calm visuals and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.
+The Boundary's meditation app is all buttons: every choice is tapped, and Next part, Add time, Sound, Calm visuals, Voice and Leave are buttons on the bar of a sitting (the ✕ in the corner goes back on the other screens). The play buttons and the stick are hidden while it is open. The bar hides after six seconds without a touch; the first tap only brings it back. Buttons are at least 40 px high, 44 px for the ✕.

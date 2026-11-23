@@ -4,12 +4,14 @@
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { BASE_STATS, type Stats } from '../core/stats';
-import type { IntentSpec } from '../game/events';
+import type { IntentBounce, Formation, IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import type { Polarity } from './polarity';
 
 export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
+  const triad = s.triad >= 1, spiral = s.spiral >= 1;
   return {
+    ...(triad || spiral ? { formation: { triad, spiral } } : {}),
     damage: s.damage,
     polarity,
     mining: s.mining,
@@ -24,6 +26,7 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
     volley: 1,
     bounces: 0,
     homing: 0,
+    homingTarget: 'block',
     // the shell; items may tint it. A negative intention is your light charred: an ash shell (never
     // cold, which is the projections'); its core and halo dim in draw() (docs/art/DECISIONS.md §7.1)
     color: polarity === 'negative' ? pal('ink.ash') : pal('light.gold'),
@@ -35,17 +38,72 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
 const PHASE_NUDGE = 1e-3;
 const AIM_EVERY = 0.15;
 const AIM_RANGE = 6;
+/** Homing toward a projection reaches further than toward a block (Eye Contact). */
+const AIM_RANGE_PROJECTION = 8;
 const BOUNCE_KEEP = 0.75;
 export const VOLLEY_SHARE = 0.6;
-const VOLLEY_SPREAD = 0.12;
+export const VOLLEY_SPREAD = 0.12;
+/** Seconds before an aura (the Transcendent state) touches the same projection again. */
+const AURA_CALM = 0.5;
 const UP = new THREE.Vector3(0, 1, 0);
 const NO_NORMAL = new THREE.Vector3();
 
 const MIRROR_CALM = 0.25;
 
+/** Strands (Rule of Three, Spiral Growth). Each keeps a share of the intention's damage and mining. */
+export const TRIAD_SHARE = 0.7;
+export const HELIX_SHARE = 0.4;
+/** The triangle widens from TRIAD_R0 to TRIAD_R1 blocks over the straight part of the flight. */
+const TRIAD_R0 = 0.15, TRIAD_R1 = 0.9;
+/** A helix (without the triangle) is HELIX_R blocks around the flight, reached over HELIX_EASE seconds, so a
+ *  strand never starts inside a wall. */
+const HELIX_R = 0.3, HELIX_EASE = 0.08;
+/** A spiral turns five times a second. */
+const SPIRAL_SPIN = 10 * Math.PI;
+const THIRD = (2 * Math.PI) / 3;
+/** A strand dies after this many seconds. Three strands per direction would overflow the cap of 200
+ *  intentions at the rates the practices allow, so strands are shorter-lived than a shot (6 s). */
+const STRAND_LIFE = 3;
+const SHOT_LIFE = 6;
+
+/** A strand's offset from the line of its intention: a point on a circle of radius r(age) around the flight,
+ *  at angle phase + spin × age. The circle lies across the flight: `u` is level, `v` points up. */
+export interface Orbit { phase: number; spin: number; r0: number; r1: number; rT: number; last: THREE.Vector3 }
+export type OrbitShape = Omit<Orbit, 'last'>;
+
+const _u = new THREE.Vector3(), _v = new THREE.Vector3(), _d = new THREE.Vector3(), _off = new THREE.Vector3();
+/** Writes the offset of a strand at `age` into `out`. */
+export function orbitOffset(o: OrbitShape, vel: THREE.Vector3, age: number, out: THREE.Vector3) {
+  _u.crossVectors(vel, UP);
+  if (_u.lengthSq() < 1e-10) _u.set(1, 0, 0); // a vertical shot has no level side: any will do
+  _u.normalize();
+  _d.copy(vel).normalize();
+  _v.crossVectors(_u, _d).normalize();
+  const r = o.r0 + (o.r1 - o.r0) * Math.min(1, age / o.rT);
+  const th = o.phase + o.spin * age;
+  out.copy(_u).multiplyScalar(r * Math.cos(th)).addScaledVector(_v, r * Math.sin(th));
+}
+
+/** The shape of strand `k` (0..2) of an intention with this formation. */
+export function strandOrbit(f: Formation, flight: number, k: number): OrbitShape {
+  if (f.triad) {
+    // the triangle points up; a spiral makes it turn
+    return { phase: Math.PI / 2 + k * THIRD, spin: f.spiral ? SPIRAL_SPIN : 0, r0: TRIAD_R0, r1: TRIAD_R1, rT: Math.max(1e-3, flight) };
+  }
+  return { phase: k * THIRD, spin: SPIRAL_SPIN, r0: 0, r1: HELIX_R, rT: HELIX_EASE };
+}
+
 interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age: number; phased: [number, number, number] | null; aim: THREE.Vector3 | null; aimT: number; calm: [number, number] | null;
+  /** Rebounds this intention has made so far (the `bounce` number of `intentBounce`). */
+  rebounds: number;
+  /** Set on a strand: where it rides around its intention's line. */
+  orbit?: Orbit;
   /** The look, cached for `lookOf` (the spec it was built from, so a spent pierce, phase or bounce rebuilds it). */
-  look: IntentLook; lookSpec: IntentSpec }
+  look: IntentLook; lookSpec: IntentSpec;
+  /** Projections an aura touched, and the age until it may touch each again. */
+  aura?: Map<number, number>;
+  /** The element of the cell it was in last frame (`entered` fires when it changes). */
+  inEl: 'water' | 'lava' | 'fire' | null }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -89,7 +147,7 @@ export function intentLook(spec: IntentSpec, baseDamage = BASE_STATS.damage): In
   const power = Math.min(POWER_MAX, Math.max(POWER_MIN, Math.log2(ratio)));
   const effects = Math.min(EFFECTS_MAX,
     (spec.pierce > 0 ? 1 : 0) + (spec.phase > 0 ? 1 : 0) + (spec.bounces > 0 ? 1 : 0)
-    + (spec.homing > 0 ? 1 : 0) + (spec.volley > 1 ? 1 : 0) + spec.tags.size);
+    + (spec.homing > 0 ? 1 : 0) + (spec.volley > 1 ? 1 : 0) + (spec.absorb ? 1 : 0) + spec.tags.size);
   return {
     power,
     effects,
@@ -114,6 +172,9 @@ export interface IntentHooks {
   hitBlock(hit: VoxelHit, intent: IntentSpec): boolean;
   /** Tier of the block (pierce only works up to `pierceTier`). */
   tier(x: number, y: number, z: number): number;
+  /** Positive aura (IntentSpec.absorb): removes every destructible block with a cell within `r` of (x, y, z) and returns
+   *  the sum of their armor. Optional: without it an aura takes nothing. */
+  absorbAt?(x: number, y: number, z: number, r: number): number;
   /** Index of a loose cube touching this sphere, or -1. */
   debrisAt(x: number, y: number, z: number, r: number): number;
   /** Something hit a loose cube with this velocity. */
@@ -130,12 +191,21 @@ export interface IntentHooks {
   elementAt?(x: number, y: number, z: number): 'water' | 'lava' | 'fire' | null;
   /** An intention went out in lava (effects only). */
   quenched?(p: THREE.Vector3): void;
+  /** An intention entered a water or lava cell (once per entry). Hooks may change the cell; the element is read again after. */
+  entered?(spec: IntentSpec, x: number, y: number, z: number, element: 'water' | 'lava'): void;
   hit(kind: 'actor' | 'cube' | 'block', target: number, p: THREE.Vector3, n: THREE.Vector3, v: THREE.Vector3, spec: IntentSpec): void;
   nearestBlock(p: THREE.Vector3, r: number): THREE.Vector3 | null;
+  /** The nearest projection this polarity meets within `r` (a negative intention: hostile ones only), or null. */
+  nearestEnemy(p: THREE.Vector3, r: number, polarity: Polarity): THREE.Vector3 | null;
+  /** An intention rebounded off a block. Hooks may change `vx, vy, vz` and the spec; `launch` adds intentions. */
+  bounced?(b: IntentBounce): void;
 }
 
 export class Intents {
   private list: Intent[] = [];
+  /** Intentions launched while `list` is being walked (from a hook): they join after the walk, never inside it. */
+  private launching: { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; rebounds: number; orbit?: Orbit }[] = [];
+  private walking = false;
   private mesh: THREE.InstancedMesh;
   /** A bead of light (docs/art/DECISIONS.md §7.1): white-hot core, gold shell, an ember halo. */
   private core: THREE.InstancedMesh;
@@ -171,23 +241,64 @@ export class Intents {
   /** Drops every intention in flight and hides its meshes (a passage between worlds). */
   clear() {
     this.list = [];
+    this.launching = [];
     this.draw();
   }
 
   fire(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
     const n = Math.max(1, Math.round(spec.volley));
     for (let k = 0; k < n; k++) {
-      if (k === 0) { this.push(spec, from, dir, inherit); continue; }
+      if (k === 0) { this.shoot(spec, from, dir, inherit); continue; }
       const turn = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * VOLLEY_SPREAD;
       const share = { ...spec, damage: spec.damage * VOLLEY_SHARE, mining: spec.mining * VOLLEY_SHARE, tags: new Set(spec.tags) };
-      this.push(share, from, dir.clone().applyAxisAngle(UP, turn), inherit);
+      this.shoot(share, from, dir.clone().applyAxisAngle(UP, turn), inherit);
     }
   }
 
-  private push(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
-    if (this.list.length >= this.max) this.list.shift();
+  /** One direction of a volley: one intention, or its three strands when it has a formation. */
+  private shoot(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3) {
+    const f = spec.formation;
+    if (!f) { this.push(spec, from, dir, inherit); return; }
+    for (let k = 0; k < 3; k++) {
+      // the triangle's strands share its damage; a helix keeps full damage on strand 0 only
+      const share = (f.triad ? TRIAD_SHARE : 1) * (f.spiral && k > 0 ? HELIX_SHARE : 1);
+      const strand = { ...spec, damage: spec.damage * share, mining: spec.mining * share, tags: new Set(spec.tags) };
+      this.push(strand, from, dir, inherit, strandOrbit(f, spec.flight, k));
+    }
+  }
+
+  private push(spec: IntentSpec, from: THREE.Vector3, dir: THREE.Vector3, inherit: THREE.Vector3, shape?: OrbitShape) {
     const vel = dir.clone().normalize().multiplyScalar(spec.speed).addScaledVector(inherit, 0.5);
-    this.list.push({ spec, pos: from.clone(), vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, look: intentLook(spec), lookSpec: spec });
+    const pos = from.clone();
+    let orbit: Orbit | undefined;
+    if (shape) {
+      // a strand starts on its circle, so the first frame moves it no further than a frame would
+      orbit = { ...shape, last: new THREE.Vector3() };
+      orbitOffset(orbit, vel, 0, orbit.last);
+      pos.add(orbit.last);
+    }
+    this.enqueue(spec, pos, vel, 0, orbit);
+  }
+
+  /** Adds an intention now, or after the walk when a hook launches it during the walk (the list must not change under it). */
+  private enqueue(spec: IntentSpec, pos: THREE.Vector3, vel: THREE.Vector3, rebounds: number, orbit?: Orbit) {
+    if (this.walking) this.launching.push({ spec, pos, vel, rebounds, orbit });
+    else this.add(spec, pos, vel, rebounds, orbit);
+  }
+
+  private add(spec: IntentSpec, pos: THREE.Vector3, vel: THREE.Vector3, rebounds: number, orbit?: Orbit) {
+    if (this.list.length >= this.max) this.list.shift();
+    this.list.push({ spec, pos, vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, rebounds, look: intentLook(spec), lookSpec: spec, inEl: null, orbit });
+  }
+
+  /** The rebound of an intention: the hooks see it, then its velocity is what they left. */
+  private rebound(t: Intent, p: THREE.Vector3, normal: THREE.Vector3): IntentBounce {
+    const b: IntentBounce = {
+      intent: t.spec, x: p.x, y: p.y, z: p.z, vx: t.vel.x, vy: t.vel.y, vz: t.vel.z,
+      nx: normal.x, ny: normal.y, nz: normal.z, bounce: t.rebounds, launch: [],
+    };
+    this.hooks.bounced?.(b);
+    return b;
   }
 
   within(test: (p: THREE.Vector3) => boolean): number {
@@ -198,7 +309,12 @@ export class Intents {
 
   private steer(t: Intent, dt: number) {
     t.aimT -= dt;
-    if (t.aimT <= 0) { t.aimT = AIM_EVERY; t.aim = this.hooks.nearestBlock(t.pos, AIM_RANGE); }
+    if (t.aimT <= 0) {
+      t.aimT = AIM_EVERY;
+      t.aim = t.spec.homingTarget === 'projection'
+        ? this.hooks.nearestEnemy(t.pos, AIM_RANGE_PROJECTION, t.spec.polarity)
+        : this.hooks.nearestBlock(t.pos, AIM_RANGE);
+    }
     if (!t.aim) return;
     const want = t.aim.clone().sub(t.pos);
     if (want.lengthSq() < 1e-6) return;
@@ -209,16 +325,31 @@ export class Intents {
 
   update(dt: number) {
     const h = this.hooks;
+    this.walking = true;
     for (let i = this.list.length - 1; i >= 0; i--) {
       const t = this.list[i];
       t.age += dt;
       if (t.age > t.spec.flight) t.vel.y -= t.spec.gravity * dt;
       if (t.spec.homing > 0) this.steer(t, dt);
+      // an entry into water or lava: a practice may change the cell at once, and the element is read again
+      let el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
+      if (el !== t.inEl) {
+        if ((el === 'water' || el === 'lava') && h.entered) {
+          h.entered(t.spec, t.pos.x, t.pos.y, t.pos.z, el);
+          el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
+        }
+        t.inEl = el;
+      }
       // water drags an intention (it keeps going, slower); lava puts it out
-      const el = h.elementAt?.(t.pos.x, t.pos.y, t.pos.z) ?? null;
       if (el === 'water') t.vel.multiplyScalar(Math.exp(-2.5 * dt));
       else if (el === 'lava') { h.quenched?.(t.pos); this.list.splice(i, 1); continue; }
       const step = t.vel.clone().multiplyScalar(dt);
+      if (t.orbit) {
+        // a strand moves with its intention and turns about it: the step also carries the change of its offset
+        orbitOffset(t.orbit, t.vel, t.age, _off);
+        step.add(_off).sub(t.orbit.last);
+        t.orbit.last.copy(_off);
+      }
       const dist = step.length();
       let dead = false;
 
@@ -240,6 +371,8 @@ export class Intents {
         this.list.splice(i, 1);
         continue;
       }
+      // the Transcendent aura: a positive intention that did not hit a projection takes what is around it
+      if (t.spec.absorb && t.spec.polarity === 'positive') this.absorb(t);
       const cube = h.debrisAt(t.pos.x, t.pos.y, t.pos.z, t.spec.radius);
       if (cube >= 0) {
         h.hitDebris(cube, t.vel, t.spec);
@@ -283,14 +416,39 @@ export class Intents {
             const along = t.vel.dot(normal);
             t.vel.addScaledVector(normal, -2 * along).multiplyScalar(BOUNCE_KEEP);
             t.spec = { ...t.spec, bounces: t.spec.bounces - 1 };
+            t.rebounds += 1;
             t.pos.copy(hitPos).addScaledVector(normal, PHASE_NUDGE);
+            const b = this.rebound(t, hitPos, normal);
+            t.vel.set(b.vx, b.vy, b.vz);
+            for (const l of b.launch) {
+              const at = hitPos.clone().addScaledVector(normal, PHASE_NUDGE);
+              this.enqueue(l.spec, at, new THREE.Vector3(l.vx, l.vy, l.vz), l.bounce);
+            }
             break;
           } else dead = true;
         }
       }
-      if (dead || t.age > 6) this.list.splice(i, 1);
+      if (dead || t.age > (t.orbit ? STRAND_LIFE : SHOT_LIFE)) this.list.splice(i, 1);
     }
+    this.walking = false;
+    for (const l of this.launching) this.add(l.spec, l.pos, l.vel, l.rebounds);
+    this.launching = [];
     this.draw();
+  }
+
+  /** The aura of a positive intention (IntentSpec.absorb): it takes the destructible blocks in its sphere, and their
+   *  armor adds to its damage; it also warms the nearest projection in the sphere, once per AURA_CALM. */
+  private absorb(t: Intent) {
+    const h = this.hooks;
+    const r = t.spec.radius * (t.spec.absorb ?? 0);
+    const armor = h.absorbAt?.(t.pos.x, t.pos.y, t.pos.z, r) ?? 0;
+    if (armor > 0) t.spec = { ...t.spec, damage: t.spec.damage + armor };
+    const foe = h.enemyAt(t.pos.x, t.pos.y, t.pos.z, r, 'positive');
+    if (foe < 0) return;
+    t.aura ??= new Map();
+    if ((t.aura.get(foe) ?? -Infinity) > t.age) return;
+    t.aura.set(foe, t.age + AURA_CALM);
+    h.hitEnemy(foe, t.vel, t.spec);
   }
 
   /** The look of every intention in flight, in the order drawn (for tests and the gallery). */

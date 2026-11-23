@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { Player, type Carried } from '../src/entities/player';
 import { AIR, MAT } from '../src/content/materials';
 import { PARTS } from '../src/content/parts';
-import { POTIONS, type PotionId } from '../src/content/potions';
+import { POTION_IDS, POTIONS, type PotionId } from '../src/content/potions';
 import { createBus } from '../src/game/events';
 import { newAlembic } from '../src/game/alembic';
 import { newKitchen } from '../src/game/kitchen';
@@ -49,7 +49,7 @@ function rig(hand: Carried[], active: number | null = null, extra: Rig = {}): Ri
     player, hud, world,
     realm: 'dungeon', room: 0,
     bus: createBus(),
-    stats: { get: (k: string) => (k === 'reach' ? 10 : 1), all: {} },
+    stats: { get: (k: string) => (k === 'reach' ? 10 : k === 'maxHearts' ? 4 : 1), all: {} },
     hands: { placed: vi.fn(), holdUp: vi.fn(), update: vi.fn() },
     particles: { burst: vi.fn() },
     pickups: { add: vi.fn(() => ({})), launch: vi.fn() },
@@ -143,6 +143,57 @@ describe('the game chooses and uses the active carried item', () => {
     expect(g.player.hand).toHaveLength(2);
     expect(typeof g.player.hand[1]).toBe('object');
     expect((g.player.hand[1] as { potion: PotionId }).potion).toBeTruthy();
+  });
+
+  it('a cooked meal is held up in both hands, and the toast names it (issue #290)', () => {
+    const kitchen = newKitchen();
+    const g = rig([part, MAT.stone], 0, { kitchens: new Map([[7, kitchen]]) });
+    g.cookAt(1, 1, 1);
+    expect(g.hands.holdUp).toHaveBeenCalledTimes(1);
+    const shown = g.hands.holdUp.mock.calls[0][0];
+    expect(shown.id).toMatch(/^flask\.meal-/);
+    expect(g.hud.toastDrinkHint).toHaveBeenCalledWith('kitchen.cooked', expect.objectContaining({ name: expect.stringMatching(/\S/), left: 1, total: 3 }));
+  });
+
+  it('a brewed flask is not held up when the alembic brews it; it is held up only when taken out (issue #290)', () => {
+    const lab = newAlembic();
+    lab.bulb = [part];
+    const g = rig([MAT.stone], null, { labs: new Map([[7, lab]]) });
+    g.hitLab(1, 1, 1, 'positive');
+    expect(g.hands.holdUp).not.toHaveBeenCalled();
+  });
+});
+
+describe('drinking a healing potion or meal at full health', () => {
+  const healing = POTION_IDS.filter(id => POTIONS[id].heal);
+
+  it.each(healing)('%s is not drunk at full health: it stays in the hand and a toast says why', (id) => {
+    const g = rig([{ potion: id }], 0);
+    g.player.hp = g.maxHp;
+    g.drink();
+    expect(g.heal).not.toHaveBeenCalled();
+    expect(g.potions.drink).not.toHaveBeenCalled();
+    expect(g.player.hand).toEqual([{ potion: id }]);
+    expect(g.hud.toast).toHaveBeenCalledWith('potion.fullHealth', expect.objectContaining({ name: expect.any(String) }));
+    expect(g.hud.toast).not.toHaveBeenCalledWith('potion.drunk', expect.anything());
+  });
+
+  it.each(healing)('%s is drunk below full health and heals', (id) => {
+    const g = rig([{ potion: id }], 0);
+    g.player.hp = g.maxHp - 1;
+    g.drink();
+    expect(g.heal).toHaveBeenCalledWith(POTIONS[id].heal, `potion.${id}`);
+    expect(g.potions.drink).toHaveBeenCalledWith({ potion: id });
+    expect(g.player.hand).toEqual([]);
+    expect(g.hud.toast).toHaveBeenCalledWith('potion.drunk', expect.anything());
+  });
+
+  it('a potion without a heal is still drunk at full health', () => {
+    const g = rig([{ potion: 'spring-tonic' }], 0);
+    g.player.hp = g.maxHp;
+    g.drink();
+    expect(g.potions.drink).toHaveBeenCalledWith({ potion: 'spring-tonic' });
+    expect(g.player.hand).toEqual([]);
   });
 });
 

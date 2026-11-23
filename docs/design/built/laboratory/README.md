@@ -1,12 +1,12 @@
 # Laboratory
 
-Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink and nine of the twelve recipes are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
+Up: [Built](../README.md) · the alembic as the game has it today. The brewing rules are approved; the flask, the drink, nine named recipes, the Stride Tonic and Folding Tincture, the potion types with their variants and the Echo are built ([recipes](recipes/README.md)). The Warm Cordial, the Open-Hand Elixir, the Distillate, the codex and the alembic's own look are not built yet ([potions](../../not-built/practices/potions/README.md)).
 
 ## Documents
 
 | Document | Contents |
 |---|---|
-| [recipes](recipes/README.md) | The nine built recipes, how the bulb is read, ice and durations, one document per recipe |
+| [recipes](recipes/README.md) | The named recipes, the potion types and variants, the Echo, how the bulb is read, ice and durations |
 
 ## Where it is
 
@@ -16,7 +16,8 @@ Four laboratories, on floors 2, 4, 6 and 8 (`LABORATORY_FLOORS` in `src/world/fl
 
 One tile in one normal room on the odd floors 1, 3, 5 and 7 (`KITCHEN_FLOORS`), alternating with the alembic; none on floor 0 or 9. Same placement rules as the alembic (a free tile, never a key, a bomb or the spawn, with the same fallback to any normal room). Unbreakable, drawn by a model (`src/render/kitchen-model.ts`, a **placeholder box** until the art branch `art/station-split` lands: the left half of the old alembic model).
 
-- **Cook.** Right-click the kitchen with a part on top of the hand: the part is consumed and a meal goes to the hand. A flesh part makes a Small Meal (half a heart); a heart, mind or essence part makes a Hearty Meal (one heart). Blocks and flasks are refused.
+- **Cook.** Right-click the kitchen with a part on top of the hand: the part is consumed and a meal goes to the hand. A flesh part makes a Small Meal (half a heart); a heart, mind or essence part makes a Hearty Meal (one heart). Blocks and flasks are refused. The meal is held up in both hands, as a dropped part is when taken (issue #290), and the toast names it: "Cooked: Small Meal. 1 of 3 cooks used · Drink it with G" (English and Spanish, the `kitchen.cooked` message).
+- **Meal icons.** Each cookable meal has its own icon and in-hand card (issue #291), so it reads as food at a glance: a chicken drumstick for the Small Meal, a bowl of broth for the Hearty Meal. Every other flask keeps the potion bottle. The icons are in `src/content/potions.ts` (`MEAL_ICONS`), tested in `tests/meal-icons.test.ts`.
 - **Three cooks per run** per kitchen, then it is out of fire (`src/game/kitchen.ts`, tested in `tests/kitchen.test.ts`).
 - **Eat.** Meals are instant flasks of the potion system (`meal-small`, `meal-hearty`): the same drink key (G, X, the flask button on touch, shown only while a flask or meal is on top of the hand).
 - Cooking has no polarity and no effect on projections. The kitchen will later give other heart kinds; the owner will decide them (not designed yet). See [stations](../../not-built/stations/README.md).
@@ -25,10 +26,10 @@ One tile in one normal room on the odd floors 1, 3, 5 and 7 (`KITCHEN_FLOORS`), 
 ## What it does
 
 - **Feed it.** Aim at the alembic and right-click: the top of your hand goes into the bulb. The bulb holds three things, parts or blocks. A fourth is refused.
-- **A positive intention brews.** One of the alembic's three brews is spent, and what was fed is gone for good. The brew leaves a flask on top of the alembic and a notice names the potion made in the player's language ("The mixture settles into Plain Tonic: …"). Walk onto it to take it into your hand, if the hand has room.
-- **What the bulb makes.** The whole bulb is read against nine recipes; the most specific one wins, and a bulb no recipe matches makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
+- **A positive intention brews.** One of the alembic's three brews is spent, and what was fed is gone for good. The brew leaves a flask on top of the alembic and a notice names the potion made in the player's language ("The mixture settles into Plain Tonic: …"). The new flask is held up in both hands, as a dropped part is when taken (issue #290). Walk onto it to take it into your hand, if the hand has room.
+- **What the bulb makes.** The whole bulb is read against the named recipes; the most specific one wins. A bulb no named recipe matches brews a variant of its type, or an Echo of a practice when its parts mix paths; only a bulb with no part makes a Plain Tonic ([recipes](recipes/README.md)). Ice in the bulb makes a potion counted in rooms last one room more. The flask is not an ingredient: the bulb refuses it.
 - **Drink hint.** A brew, and picking up a flask, show the drink key for the active device in the toast.
-- **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
+- **Drink.** G on a keyboard, X on a pad, or the flask button on a touch screen (shown only while a flask is in the hand). The top of the hand is drunk at once and a notice names the potion and its effect. Instant potions heal, and a healing potion or meal at full health is not drunk: it stays in the hand and a notice says your health is full; the others change stats for a number of sealed rooms or until the next floor, and the Questioning Tincture takes one key off the next lock. A flask can also be placed (right click) or thrown (Q) like a part.
 - **A negative intention boils the bulb off.** What was fed is lost and no brew is spent.
 - **One hit counts once.** Only the first intention hit in each 0.6 seconds counts, so a swing or a beam tick cannot brew twice.
 - **The beam and the great cut brew too.** Remember Breathing's beam and One Clear Cut reach the alembic and answer it as a shot does: the first tick brews (or boils), and the rest of the beam falls in the hit gap. A held blade does not brew.
@@ -37,6 +38,6 @@ One tile in one normal room on the odd floors 1, 3, 5 and 7 (`KITCHEN_FLOORS`), 
 
 ## Placeholders
 
-The alembic is one tile in one normal room. It is drawn by a model (`src/render/alembic-model.ts`: a stepped stone hearth, a glass bulb in brass hoops, a copper coil and a flask stand), and every flask is still one shared bottle icon with a liquid colour per potion. Neither has passed the art gate (sotano-art): they stay placeholders until an art pass draws the alembic (bulb, coil and flask stand) and the potion icons. The drink button's touch glyph (`touchDrink` in `src/content/hud-icons.ts`) is a placeholder too. The six-second fill of a brew (BREWING-RULES §2.5 and §4.5) is not built: a brew leaves its flask at once.
+The alembic is one tile in one normal room. It is drawn by a model (`src/render/alembic-model.ts`: a stepped stone hearth, a glass bulb in brass hoops, a copper coil and a flask stand), and every flask except the two meals is still one shared bottle icon with a liquid colour per potion (the meals have their own food icons, issue #291). Neither has passed the art gate (sotano-art): they stay placeholders until an art pass draws the alembic (bulb, coil and flask stand) and the potion icons. The drink button's touch glyph (`touchDrink` in `src/content/hud-icons.ts`) is a placeholder too. The six-second fill of a brew (BREWING-RULES §2.5 and §4.5) is not built: a brew leaves its flask at once.
 
 The rules are in `src/game/alembic.ts` and tested in `tests/alembic.test.ts`, with the brew event. The placement is tested in `tests/laboratory.test.ts`. Brewing and drinking emit the `brew` and `drink` events for practices to react to ([ITEMS](../../../architecture/ITEMS.md)).

@@ -1,0 +1,30 @@
+# luciddream-phase — Lucid Dream: a bomb pickup starts the phase; the body steps into a crate, and when the phase ends it is moved out
+floor 1 · seed 1 · room 13×7×5 · 240 ticks (4.0 s)
+
+t 90 (1.5 s)
+  player hp 24/24 · at 8.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  phase 1.5 s
+  practices luciddream · synergies —
+  blocks crate 5
+  elements —
+  cubes — · pickups 0
+  events pickupCollect 1 · roomEnter 1
+
+t 240 (4.0 s)
+  player hp 24/24 · at 7.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices luciddream · synergies —
+  blocks crate 5
+  elements —
+  cubes — · pickups 0
+  events roomEnter 1
+
+map t 240 · h 0
+  .............
+  ........c....
+  ........c....
+  ........c....
+  ........c....
+  ........c....
+  .............
+
+legend c crate

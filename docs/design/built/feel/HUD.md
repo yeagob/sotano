@@ -26,14 +26,14 @@ A small map in the top right. Cleared rooms show in gold, the current room in th
 
 ## The toll window
 
-Going down asks a price. The toll window lists what you carry (keys, bombs, hearts, blocks from the hand, and from the sixth level on, practices). You choose exactly the number the window asks for. The rule is in [MECHANICS](../story/MECHANICS-AND-METAPHOR.md#notes) and the levels documents.
+Going down asks a price. The toll window lists what you carry (keys, bombs, hearts, blocks from the hand, and from the sixth level on, practices). You choose exactly the number the window asks for. The rule is in [MECHANICS](../story/MECHANICS-AND-METAPHOR.md#notes) and the levels documents. The window ("The way down", *La bajada*) has the pixel finish of the achievement notice (issue #224): a gold bar down its left, the title in Pixelify Sans at 40 px, the section headings, the chosen count, the ✓ marks and the two buttons at 20 px, and chamfered tiles. A picked tile has a gold frame and a ✓; the tile under the cursor has a paper frame inside; Go down turns gold once the count is met. What the picks would cost sits in its own inset line.
 
 ## The screen
 
 Esc, or Tab, and the touch tab button open one screen with two tabs:
 
-- **Menu.** The pause card: resume, the controls, the language choice, the graphics settings and the seed.
-- **Practices.** The inventory: every practice you hold, with its icon, description and effect, and the carried items in your hand above them (the same slots as the HUD's hand). The pause card shows no inventory of its own; the inventory is one tap away on the same screen.
+- **Menu.** The pause card: resume, the controls, the language choice, the graphics settings and the seed. It has the pixel finish of the achievement notice (issue #223): a gold bar down the card's left, the tabs, buttons, headings and the field of view in Pixelify Sans at 20 px, and chamfered, bevelled buttons.
+- **Practices.** The inventory: every practice you hold as a tile, and the carried items in your hand above them (the same slots as the HUD's hand). The chosen practice opens below in three blocks, always in this order (issue #202): **the teaching** (a phrase that carries the practice into everyday life, two or three lines on how to live it, and its credit), **in the game** (its description and its effect, with the numbers) and **the stats** it changes (▲ up in gold, ▼ down in cold). Every practice has its teaching, in every language. The tab has the pixel finish of the achievement notice: the name in Pixelify Sans at 28 px, the title at 40 px, the block headings at 20 px. The pause card shows no inventory of its own; the inventory is one tap away on the same screen.
 
 Opening the screen pauses the world on every device. Clicking outside it on touch resumes the game.
 

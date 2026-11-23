@@ -14,12 +14,19 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | place | LT |
 | throw | B |
 | drink | X |
+| miracle (Kairos) | D-pad Up |
 | bomb | RB |
 | polarity | LB |
+| dash | press | play | double-flick the left stick (push past 0.8, return under 0.3, push again the same way within 0.25 s) | `doubleFlick: left`; no button |
+| run | hold | play | L3 toggles running until the left stick returns to centre; the left stick pushed past 95 % of its radius also runs | `buttons: [LS]` and the stick's edge (the latch lives in the input layer) |
+| crouch | hold | play | R3 toggles crouching | `buttons: [RS]` (the latch lives in the input layer) |
 | choose the active carried item | d-pad left (previous) and right (next); in the inventory, A picks the highlighted item |
 | inventory | Y; the d-pad moves the selection, B or Y closes |
+| recipe book | D-pad Down in play (while the Book of Secrets is held): opens the Recipes tab; B closes it. On the screen the d-pad scrolls the book |
+| star map | View (in play or on the screen): opens the star map tab; View again or B closes it. On the pause card View stays New run |
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
+| book | X, on the pause card or the death screen (download the book at 100%) |
 | confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death) |
 | back | B (declines a Presence offer) |
 
@@ -48,4 +55,4 @@ Every screen shake (hurt, blasts, slams) plays a `dual-rumble` scaled to its str
 
 ## The Sanctuary (context `meditation`)
 
-The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.
+The Boundary's meditation app takes the d-pad (move between the choices), A (choose; in a sitting, pause and resume), RB (next part), X (sound on or off), Y (calm visuals on or off), LB (the spoken guidance on or off) and B (one screen back; not now on the first screen; the leave sheet in a sitting). Y is the inventory everywhere else; the inventory cannot open while the app is.

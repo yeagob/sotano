@@ -1,0 +1,33 @@
+{
+  "note": "Rebirth Draught (#52): the flask on top of the hand; drinking it in the sandbox does nothing and says so, and the flask stays in hand (a new run is never started here)",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    5,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [],
+  "hand": [
+    "plain-tonic",
+    "rebirth-draught"
+  ],
+  "ticks": 120,
+  "report": [
+    0,
+    60,
+    120
+  ],
+  "actions": [
+    { "t": 20, "do": "key", "code": "KeyG" },
+    { "t": 60, "do": "key", "code": "KeyG" }
+  ]
+}

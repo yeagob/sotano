@@ -1,0 +1,52 @@
+{
+  "note": "Furoshiki: carry 2 more things; the two extra hand slots are drawn dimmer",
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    1,
+    0,
+    3
+  ],
+  "god": true,
+  "items": [
+    "furoshiki"
+  ],
+  "place": [
+    {
+      "at": [
+        8,
+        0,
+        2,
+        8,
+        0,
+        4
+      ],
+      "block": "crate"
+    }
+  ],
+  "ticks": 60,
+  "report": [
+    0,
+    30,
+    60
+  ],
+  "actions": [
+    {
+      "t": 0,
+      "do": "hand",
+      "blocks": [
+        "crate",
+        "crate",
+        "crate",
+        "crate"
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ Up: [recipes](README.md) · built. Name and numbers are proposals the owner has 
 A question that opens a lock: the next lock asks for one key less.
 
 - **Path:** mind.
-- **Bulb:** one mind of the Doubt lineage (Doubt, Second-Guessing, Paralysis) and one iron ore cube.
+- **Bulb:** one mind of the Doubt lineage (Doubt, Second-Guessing, Paralysis) and one ore cube: iron ore, or the ore of any deeper zone (copper, tin, quicksilver or lead; `ORES` in `src/content/materials.ts`).
 - **Effect:** the next locked door, or the next chest that costs keys, asks one key less. A chest is covered only when the keys left in hand pay the rest. The toll is not a lock, so it is never covered.
 - **Duration:** one lock, or until the next floor entry, whichever comes first.
 - **Why it stays scarce:** One lock per flask. It cannot open the way down.

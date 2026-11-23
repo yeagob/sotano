@@ -7,8 +7,8 @@ import { defineItem } from '../../items/types';
 export default defineItem({
   id: 'drlauncher',
   name: 'Dr. Launcher',
-  description: 'There is nothing impossible: a limit is only the edge of what you have tried. The bomb you carry no longer falls under its own weight; it keeps its line and flies to where you look.',
-  effect: 'A quick double tap of the fire control (within 0.3 s) launches one bomb as a missile instead of an intention: it flies straight, speeds up to 24 blocks/s and explodes on the first thing it meets, or after 40 blocks, with your bomb\'s blast. Negative: a bomb blast, which can hurt you too. Positive: a love explosion that mends blocks, heals allies, warms projections toward your side and grows creatures. Refused, with no bomb spent, when a block is within 2 blocks.',
+  description: 'There is nothing impossible: a limit is only the edge of what you have tried. The bomb you carry flies where you look.',
+  effect: 'Double-tap fire (within 0.3 s) launches a bomb as a missile: straight, up to 24 blocks/s, exploding on the first thing it meets or after 40 blocks. Negative: a bomb blast, which can hurt you. Positive: a love blast that mends blocks. Refused, no bomb spent, if a block is within 2.',
   inspiredBy: 'Transcending limits (Santiago Dopazo)',
   pools: { treasure: 1 },
   tags: ['milagros', 'explosive'],

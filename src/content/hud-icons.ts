@@ -286,6 +286,24 @@ export const HUD_ICONS = {
     palette: { o: 'ink.void', p: 'bone.paper', d: 'bone.dim', k: 'ink.ash' },
   },
   /** The achievement medal: a gold disc with a light.core glint (the achievement notice's mark, issue #191). Gold is the light and the repair. */
+  // Kairos: a clock face with its hands held still (a placeholder until the art gate, sotano-art)
+  touchMiracle: {
+    rows: [
+      '....oooo....',
+      '..oggggggo..',
+      '.oggggggggo.',
+      '.ogggghhggo.',
+      '.ogggghhggo.',
+      '.ogggggggggo',
+      'ooggggggggoo',
+      'ogggggggggo.',
+      '.oggggggggo.',
+      '.ogggggggggo',
+      '..oggggggo..',
+      '....oooo....',
+    ],
+    palette: { o: 'ink.void', g: 'light.gold', h: 'bone.paper' },
+  },
   achievement: {
     rows: [
       '..oooooo..',

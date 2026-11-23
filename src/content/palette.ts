@@ -12,6 +12,7 @@ import { SKY_LION_PALETTE } from './palette/sky-lion';
 import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
 import { MEDITATION_PALETTE } from './palette/meditation';
+import { DEEP_MATTER_PALETTE } from './palette/deep-matter';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -146,6 +147,9 @@ export const PALETTE = {
   'cloth.base': '#3D4F73', 'cloth.cuff': '#2C3A57', 'cloth.hi': '#4E6290',
 
   'living.dark': '#26331F', 'living.base': '#46603D', 'living.hi': '#7A9A62', 'living.glow': '#B5D39A',
+
+  // The presences' materials (D13): the Gardener's root and cave moss, the zones' ore veins (DECISIONS §6.7).
+  ...DEEP_MATTER_PALETTE,
 
   // The sky realm (docs/architecture/SKY.md §11): one part per package, never edited here.
   ...SKY_BLOCKS_PALETTE,

@@ -14,12 +14,13 @@ import { Inventory } from '../src/items/inventory';
 import type { HostApi } from '../src/items/types';
 import { validateCatalogue } from '../src/items/validate';
 
-const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, phase: 0, color: 0, tags: new Set(), polarity: 'positive', volley: 1, bounces: 0, homing: 0 });
+const intent = (): IntentSpec => ({ damage: 3.5, mining: 3.5, knock: 0.46, speed: 16, flight: 0.5, gravity: 22, radius: 0.12, pierce: 0, pierceTier: 0, phase: 0, color: 0, tags: new Set(), polarity: 'positive', volley: 1, bounces: 0, homing: 0, homingTarget: 'block' });
 
 const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   fire: () => ({ intent: intent() }),
   polarityChange: () => ({ from: 'positive', to: 'negative' }),
   intentHit: () => ({ kind: 'actor', target: 2, x: 1, y: 1, z: 1, nx: 0, ny: 0, nz: 0, vx: 8, vy: 0, vz: 0, intent: intent() }),
+  intentBounce: () => ({ intent: intent(), x: 1, y: 1, z: 1, vx: 4, vy: 0, vz: 1, nx: -1, ny: 0, nz: 0, bounce: 1, launch: [] }),
   strike: () => ({ weapon: 'blade', damage: 10, mining: 3, reach: 2.5, color: 0, tags: new Set(), polarity: 'positive' }),
   blockDamage: () => ({ x: 1, y: 1, z: 1, material: 4, amount: 3, kind: 'intent', source: 'intent' }),
   blockBreak: () => ({ x: 1, y: 1, z: 1, material: 4, kind: 'intent', source: 'intent', spawnDebris: true }),
@@ -28,6 +29,8 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   headBump: () => ({ x: 1, y: 2, z: 1, material: 4, speed: 6, breaks: false }),
   explosion: () => ({ x: 1, y: 1, z: 1, radius: 2, damage: 10, actorDamage: 8, source: 'test', owner: 1, cause: { origin: 'test', gen: 0 } }),
   blockLoot: () => ({ x: 1, y: 1, z: 1, material: 4, source: 'intent', drops: ['key'] }),
+  bombBlast: () => ({ x: 1, y: 1, z: 1, radius: 2.6, polarity: 'negative', source: 'bomb', acted: new Set<string>() }),
+  burst: () => ({ x: 1, y: 1, z: 1, radius: 1.6, damage: 5, source: 'kindling' }),
   touchCube: () => ({ cube: 0, material: 1, held: 0, carry: 1, bomb: false, action: 'pickup' }),
   bombPlace: () => ({ fuse: 1.8 }),
   missileLaunch: () => ({ speed: 24, range: 40, polarity: 'positive' }),
@@ -50,12 +53,12 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   pickupCollect: () => ({ kind: 'key', amount: 1 }),
   itemGained: () => ({ id: 'x', uid: 1 }),
   roomEnter: () => ({ room: 1, floor: 2, type: 'normal', template: 'test', firstVisit: true }),
-  floorEnter: () => ({ depth: 2 }),
+  floorEnter: () => ({ depth: 2, arrival: { x: 0, y: 0, z: 0 } }),
   pageReached: () => ({ page: 2 }),
   brew: () => ({ potion: 'spring-tonic', iced: false, contents: 1, x: 0, y: 0, z: 0 }),
   drink: () => ({ potion: 'spring-tonic', rooms: 0 }),
   bossOvercome: () => ({ boss: 'resistance', floor: 1, how: 'destroyed' }),
-  meditationComplete: () => ({ meditation: 'ground', source: 'roots' }),
+  meditationComplete: () => ({ meditation: 'ground', source: 'roots', seconds: 20 }),
   cook: () => ({ meal: 'meal-small', part: 'flesh' }),
   playerDied: () => ({ floor: 0, source: 'bomb' }),
   surfaceEnter: () => ({ from: 0 }),
@@ -63,12 +66,18 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   bookBack: () => ({ from: 2, page: 1 }),
   bedrockTouch: () => ({ side: 'below' }),
   treeStory: () => ({ story: 'canopy' }),
+  completionFull: () => ({ percent: 100 }),
+  projectionConverted: () => ({ def: 'doubt', boss: false }),
+  projectionDestroyed: () => ({ def: 'doubt', boss: false }),
+  synergyOn: () => ({ synergy: 'embodied' }),
+  presenceMet: () => ({ presence: 'boatman' }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
   ignite: () => ({ x: 1, y: 1, z: 1, material: 6, by: 'fire' }),
   materialReact: () => ({ x: 1, y: 1, z: 1, reaction: 'quench', result: 7 }),
   elementEnter: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water', depth: 'head' }),
+  intentElement: () => ({ intent: intent(), x: 1, y: 1, z: 1, element: 'lava' }),
   elementLeave: () => ({ target: 1, targetKind: 'player', def: 'player', element: 'water' }),
 };
 
@@ -83,6 +92,8 @@ function sandbox() {
     hasTag: t => inv.hasTag(t),
     held: () => [1],
     rng: () => new Rng(1),
+    time: () => 0,
+    memory: () => ({}),
     materialAt: () => 4,
     damageBlock: () => { calls.damage++; return true; },
     explode: () => { calls.explode++; },
@@ -104,9 +115,20 @@ function sandbox() {
     freeze: () => {},
     frighten: () => {},
     igniteArea: () => {},
+    shieldFire: () => {},
     launch: () => {},
     intentsHere: () => 0,
     tagCube: () => {},
+    placeBlock: () => false,
+    consumeCopy: () => {},
+    playerFeet: () => ({ x: 0, y: 0, z: 0 }),
+    checkpoint: () => null,
+    setCheckpoint: () => {},
+    teleportPlayer: () => {},
+    invulnerable: () => {}, grantStatus: () => {},
+    burst: () => {},
+    chime: () => {},
+    convertFluid: () => 0,
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
   return { bus, stats, inv, calls };

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_BY_ID } from '../src/content/items';
 import { CRATE_DROP, floorCrateChance, rollCrate } from '../src/content/tables/crates';
 import { floorHeartChances, heartChancesOnBand, rollHeart } from '../src/content/tables/hearts';
-import { rootsCrateChance } from '../src/content/tables/roots-mastery';
+import { FIXED_PRACTICES, rootsCrateChance } from '../src/content/tables/roots-mastery';
 import { offerPedestal, rollChestContents } from '../src/game/chest-draws';
 import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSites } from '../src/game/roots-draws';
 import { bandOf, floorY } from '../src/world/floor';
@@ -95,12 +95,12 @@ describe('the Roots never move the floors below (RNG.md, REWARDS §6)', () => {
     expect(pools.size('treasure')).toBe(before);
   });
 
-  it('the Roots never take a reserved practice of a deeper floor, nor offer one of their own twice', () => {
+  it('the Roots never draw a reserved practice of a deeper floor, nor offer one of their own twice', () => {
     const run = buildRun(SEED, 4, undefined, { mastery: 100 });
     const reserved = new Set(run.floors.flatMap(f => f.pedestals.map(p => p.item)).filter((x): x is string => !!x));
     const drawn = new Set<string>();
     const items = drawRootsItems(run.pools, run.rr, run.floors[0], 100, drawn);
-    for (const id of items.values()) expect(reserved.has(id)).toBe(false);
+    for (const id of items.values()) if (!FIXED_PRACTICES.some(p => p.item === id)) expect(reserved.has(id)).toBe(false);
     expect(new Set(items.values()).size).toBe(items.size);
     // a few more draws, well inside the pool (the pool's last-resort fallback is for an exhausted pool only)
     for (let i = 0; i < 6; i++) {

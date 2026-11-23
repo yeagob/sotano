@@ -7,6 +7,7 @@ import bookEs from '../src/content/book/book.es.json';
 import {
   type Book, BookValidationError, PLACEHOLDER_ACTIONS, type RoomKey, type Side, bookMessage, bookRefs, loadBook, pageCount, panelAt,
   panelById, panelIdOf, easyPanelIdOf, quoteSource, validateBook, type BookRefs, ROOM_KEYS, SIDES, IMAGE_CAPTION_BUDGET,
+  BOOK_SLOT_MAP,
 } from '../src/content/book';
 import { BESTIARY_PORTRAITS, LESSON_IMAGES, knownImageIds, resolveImage } from '../src/content/book/images';
 import { BOSS_BY_ID } from '../src/content/bosses';
@@ -58,25 +59,44 @@ describe('the shipped book', () => {
     expect(loadBook('es').pages.map(p => p.id)).toEqual(shipped('en').pages.map(p => p.id));
   });
 
-  it('has nineteen pages: five tutorial pages, then the front matter, the seven Kamino pages and three book pages', () => {
+  it('has eighty-one pages: five tutorial pages, then the front matter, the sixty-two Kamino pages and three book pages', () => {
     const book = shipped('en');
-    expect(pageCount(book)).toBe(19);
+    expect(pageCount(book)).toBe(81);
     expect(book.pages.map(p => p.kind)).toEqual([
       'tutorial', 'tutorial', 'tutorial', 'tutorial', 'tutorial',
       'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book', 'book',
+      ...Array(62).fill('book'),
     ]);
     expect(book.pages.map(p => p.id)).toEqual([
       'tutorial-1', 'tutorial-2', 'tutorial-3', 'tutorial-4', 'tutorial-5',
       'book-title', 'book-epigraph', 'book-author', 'book-thanks',
       'kamino-portico', 'kamino-de-santiago', 'kamino-extraordinario', 'kamino-finde', 'kamino-hacia-el-cielo', 'kamino-escribo-a-la-vida', 'kamino-estoy-vivo',
       'book-1', 'book-2', 'book-3',
+      'kamino-flexible', 'kamino-soltandome', 'kamino-pais-vasco', 'kamino-cuidar-corazon',
+      'kamino-querido-diario', 'kamino-atrevete', 'kamino-saber', 'kamino-ligarte',
+      'kamino-instante', 'kamino-ideas', 'kamino-pausa', 'kamino-movimiento',
+      'kamino-he-comprendido', 'kamino-amor-verdadero', 'kamino-conclusiones', 'kamino-paseando',
+      'kamino-ego', 'kamino-ahora', 'kamino-pararse', 'kamino-aceptar',
+      'kamino-tiempo', 'kamino-silencio', 'kamino-soltero', 'kamino-cortando',
+      'kamino-manifiest', 'kamino-luna-llena', 'kamino-gran-juego', 'kamino-bailar',
+      'kamino-caos', 'kamino-tres-cosillas', 'kamino-insaciable', 'kamino-perdon',
+      'kamino-ayudame', 'kamino-caminando', 'kamino-camino-2', 'kamino-camino-3',
+      'kamino-camino-4', 'kamino-camino-5', 'kamino-camino-solitario', 'kamino-opcion',
+      'kamino-futuro', 'kamino-pregunta', 'kamino-vida-soltero', 'kamino-letra',
+      'kamino-sucede', 'kamino-df', 'kamino-creer', 'kamino-individualidad',
+      'kamino-enemigos', 'kamino-molesta', 'kamino-playa', 'kamino-ego-soy-yo',
+      'kamino-uno-se-pregunta', 'kamino-om-mani', 'kamino-om-mani-2', 'kamino-om-mani-3',
+      'kamino-om-mani-4', 'kamino-om-mani-5', 'kamino-om-mani-6', 'kamino-om-mani-7',
+      'kamino-om-mani-8', 'kamino-om-mani-9',
     ]);
   });
 
   it('the front matter and the Kamino pages are blank pages; the tutorial and the old book pages are not', () => {
     const book = shipped('en');
     book.pages.forEach((page, i) => {
-      const blank = i >= 5 && i <= 15;
+      // blank: front matter (5-8), Kamino (9-15), new Kamino (19-80)
+      // not blank: tutorial (0-4), old book pages (16-18)
+      const blank = (i >= 5 && i <= 15) || (i >= 19 && i <= 80);
       expect(page.blank === true, page.id).toBe(blank);
     });
   });
@@ -167,7 +187,7 @@ describe('panelAt', () => {
   it('throws on a page, room or side that does not exist', () => {
     const book = shipped('en');
     expect(() => panelAt(book, 0, 'roots-hall', 'north')).toThrow(RangeError);
-    expect(() => panelAt(book, 20, 'roots-hall', 'north')).toThrow(RangeError);
+    expect(() => panelAt(book, 100, 'roots-hall', 'north')).toThrow(RangeError);
     expect(() => panelAt(book, 1.5, 'roots-hall', 'north')).toThrow(RangeError);
     expect(() => panelAt(book, 1, 'roots-moon' as never, 'north')).toThrow(RangeError);
     expect(() => panelAt(book, 1, 'roots-hall', 'east' as never)).toThrow(RangeError);
@@ -754,7 +774,12 @@ describe('the remembered panels: resolution (EASY-LAYOUT §4)', () => {
   const book = shipped('en');
   const pages = pageCount(book);
   const pageOne = (room: RoomKey, side: Side) => book.pages[0].panels[room]?.[side];
-  const own = (page: number, room: RoomKey, side: Side) => book.pages[page - 1].panels[room]?.[side];
+  // For book pages, use the slot map so the test matches panelAt behavior.
+  const own = (page: number, room: RoomKey, side: Side) => {
+    const pageObj = book.pages[page - 1];
+    const slotRoom = pageObj.kind === 'book' ? BOOK_SLOT_MAP[room] : room;
+    return pageObj.panels[slotRoom]?.[side];
+  };
   const remembered = (room: RoomKey, side: Side) => book.easy?.[room]?.[side];
 
   /** A blank page's empty slab, as panelAt makes it. */

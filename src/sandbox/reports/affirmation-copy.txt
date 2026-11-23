@@ -1,4 +1,4 @@
-# affirmation-copy — Affirmation: a positive intention curves toward the nearest block and leaves a copy of it beside it
+# affirmation-copy — Affirmation: a positive intention that hits a crate places a copy of it in the empty cell beside the face it hit
 floor 1 · seed 1 · room 13×7×5 · 180 ticks (3.0 s)
 
 t 0 (0.0 s)
@@ -11,23 +11,23 @@ t 0 (0.0 s)
 t 30 (0.5 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices affirmation · synergies —
-  blocks crate 3
+  blocks crate 4
   elements —
-  cubes brick 1 · pickups 0
+  cubes — · pickups 0
   events fire 1 · intentHit 1 · roomEnter 1
 
 t 180 (3.0 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices affirmation · synergies —
-  blocks crate 3
+  blocks crate 4
   elements —
-  cubes brick 1 · pickups 0
+  cubes — · pickups 0
 
 map t 180 · h 0
   .............
   .............
   ........c....
-  ........c....
+  .......cc....
   ........c....
   .............
   .............

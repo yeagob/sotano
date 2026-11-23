@@ -8,9 +8,25 @@ const CONTEXTS: Context[] = ['play', 'prompt', 'paused', 'dead', 'inventory', 't
 const messages = EN.messages as Record<string, unknown>;
 
 function inputs(b: Binding, d: Device): string[] {
-  if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : []), ...(b.keyboard.wheel ? [`wheel${b.keyboard.wheel}`] : [])];
-  if (d === 'gamepad') return [...(b.gamepad.buttons ?? []).map(i => `button${i}`), ...(b.gamepad.stick ? [`stick-${b.gamepad.stick}`] : [])];
+  if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : []), ...(b.keyboard.wheel ? [`wheel${b.keyboard.wheel}`] : []), ...(b.keyboard.doubleTap ? [`doubleTap-${b.keyboard.doubleTap}`] : [])];
+  if (d === 'gamepad') return [...(b.gamepad.buttons ?? []).map(i => `button${i}`), ...(b.gamepad.stick ? [`stick-${b.gamepad.stick}`] : []), ...(b.gamepad.doubleFlick ? [`doubleFlick-${b.gamepad.doubleFlick}`] : [])];
   return b.touch.control === 'tap' ? [] : [`${b.touch.control}-${b.action}`];
+}
+
+/** Every input claimed twice in one context on one device, as `input on device in context: a and b`. */
+function clashes(list: readonly Binding[]): string[] {
+  const out: string[] = [];
+  for (const d of DEVICES) for (const c of CONTEXTS) {
+    const seen = new Map<string, string>();
+    for (const b of list) {
+      if (!contextsFor(b, d).includes(c)) continue;
+      for (const i of inputs(b, d)) {
+        if (seen.has(i)) out.push(`${i} on ${d} in ${c}: ${seen.get(i)} and ${b.action}`);
+        else seen.set(i, b.action);
+      }
+    }
+  }
+  return out;
 }
 
 describe('controls contract', () => {
@@ -26,16 +42,25 @@ describe('controls contract', () => {
   });
 
   it('no two actions share an input in the same context on the same device', () => {
-    for (const d of DEVICES) for (const c of CONTEXTS) {
-      const seen = new Map<string, string>();
-      for (const b of BINDINGS) {
-        if (!contextsFor(b, d).includes(c)) continue;
-        for (const i of inputs(b, d)) {
-          expect(seen.get(i), `${i} on ${d} in ${c}: ${seen.get(i)} and ${b.action}`).toBeUndefined();
-          seen.set(i, b.action);
-        }
-      }
-    }
+    expect(clashes(BINDINGS)).toEqual([]);
+  });
+
+  it('a double tap of a direction does not clash with the movement keys, but two gestures on the same direction would', () => {
+    // the dash's double tap is a gesture of `move`, not a key: the real table is clean
+    const dash = BINDING.dash;
+    expect(inputs(dash, 'keyboard')).toEqual(['doubleTap-move']);
+    expect(clashes([BINDING.move, dash])).toEqual([]);
+    // a second action on the same gesture is a clash
+    expect(clashes([dash, { ...dash, action: 'move' as const }]).length).toBeGreaterThan(0);
+    expect(clashes([{ ...dash, action: 'move' as const }, dash]).length).toBeGreaterThan(0);
+  });
+
+  it('the dash is mapped by a gesture on every device, never a button', () => {
+    expect(BINDING.dash.keyboard.doubleTap).toBe('move');
+    expect(BINDING.dash.gamepad.doubleFlick).toBe('left');
+    expect(BINDING.dash.gamepad.buttons).toBeUndefined();
+    expect(BINDING.dash.touch.control).toBe('swipe');
+    expect(contextsFor(BINDING.dash, 'touch')).toEqual(['play']);
   });
 
   it('a world tap and a half turn of the phone are live in play', () => {
@@ -48,6 +73,18 @@ describe('controls contract', () => {
     expect(contextsFor(BINDING.back, 'keyboard')).toContain('prompt');
     expect(contextsFor(BINDING.back, 'gamepad')).toContain('prompt');
     expect(contextsFor(BINDING.back, 'touch')).not.toContain('prompt');
+  });
+
+  it('the book download is reachable on every device on the pause card and the death screen', () => {
+    const b = BINDING.book;
+    for (const c of ['paused', 'dead'] as const) {
+      expect(contextsFor(b, 'keyboard'), 'keyboard').toContain(c);
+      expect(contextsFor(b, 'gamepad'), 'gamepad').toContain(c);
+      expect(contextsFor(b, 'touch'), 'touch').toContain(c);
+    }
+    expect(inputs(b, 'keyboard')).toEqual(['KeyH']);
+    expect(inputs(b, 'gamepad')).toEqual(['button2']);
+    expect(b.touch.control).toBe('menuButton');
   });
 
   it('a touch action with no button of its own is reached through another control', () => {

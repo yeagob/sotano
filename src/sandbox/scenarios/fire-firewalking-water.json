@@ -1,0 +1,10 @@
+{
+  "note": "Firewalking with water: a flame of level 4 touches the water, which puts it out, so the player stops touching fire and the heal stops with it",
+  "rows": [".............", ".............", ".............", "..wwwwww.....", "..wwwwww.....", "..wwwwww.....", "............."],
+  "place": [{ "at": [4, 0, 3, 7, 0, 5], "element": "fire", "level": 4 }],
+  "player": [3, 0, 4],
+  "god": false,
+  "items": ["firewalking"],
+  "ticks": 180,
+  "report": [0, 30, 60, 180]
+}

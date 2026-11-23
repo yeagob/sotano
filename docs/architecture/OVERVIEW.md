@@ -113,9 +113,9 @@ See [RNG.md](RNG.md). A 32-bit root shared as an 8-character code; structure fro
 
 - `atlas.ts` — every texture painted at startup (materials 0–15, grass top 16, cracks 20–23, door textures, the bomb "seed").
 - `icons.ts` — item icons from their 12×12 pixel art, with outline and highlight; sprite textures; the glow sprite; quality stars.
-- `chunks.ts` — worker meshing, versioned replies, visible-range culling by height.
+- `chunks.ts` — worker meshing, versioned replies, visible-range culling by height. A broken block's own chunk and its rim neighbours are meshed on the main thread in the break frame (`remeshNow`, the edge list of `VoxelWorld.keysAround`), so the block is gone at once; every other change still goes to the worker, because a block the player did not break can wait a few frames.
 - `debris-view.ts` — all loose cubes in **one** instanced mesh (per-instance atlas tile in the shader); crack overlays.
-- `hands.ts` — cube arms in their own scene; top block in the left hand, the next one in the right; **hold-up** animation for new items.
+- `hands.ts` — cube arms in their own scene; top block in the left hand, the next one in the right; **hold-up** animation for new items, and for the parts, flasks and meals taken up or crafted (`holdUp`, called from `touchPickups`, `give`, `cookAt` and `hitLab`).
 - `particles.ts` — cube particles for splashes, chips, spawns, explosions.
 
 ## HUD (`game/hud.ts`, `index.html`)

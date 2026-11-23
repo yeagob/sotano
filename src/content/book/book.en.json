@@ -112,7 +112,7 @@
         },
         "roots-mend": {
           "north": { "id": "3-mend-n", "layout": "lesson", "title": "Warm a boss", "text": "Bosses can be warmed too. Fill one with good intentions until it turns to your side: that also overcomes it.", "image": "lesson/warm-boss", "key": "polarity" },
-          "south": { "id": "3-mend-s", "layout": "lesson", "title": "White bombs", "text": "Drop a bomb with good intentions: it bursts in light, mends blocks and turns lava into water.", "image": "lesson/white-bomb", "key": "bomb" }
+          "south": { "id": "3-mend-s", "layout": "lesson", "title": "White bombs", "text": "Drop a bomb with good intentions: it bursts in light, mends blocks, turns lava to water and heals you nearby.", "image": "lesson/white-bomb", "key": "bomb" }
         },
         "roots-pit": {
           "north": { "id": "3-pit-n", "layout": "lesson", "title": "Above and below", "text": "Above the great tree, the sky has five floors, each with a guardian and a herd. Here they meet the creatures below.", "image": "lesson/sky" },
@@ -446,6 +446,800 @@
       "panels": {
         "roots-hall": {
           "south": { "id": "19-hall-s", "layout": "prose", "text": "Above the roots, a great tree climbs into the sky. Below them, the floors go down, older and colder, to the silence. It is one journey, seen from both ends. What you learn at the bottom grows toward the light." }
+        }
+      }
+    },
+    {
+      "id": "kamino-flexible",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "20-hall-n", "layout": "title", "text": "Flexible, like bamboo" },
+          "south": { "id": "20-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-soltandome",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "21-hall-n", "layout": "title", "text": "Letting go of everything..." },
+          "south": { "id": "21-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pais-vasco",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "22-hall-n", "layout": "title", "text": "Basque Country" },
+          "south": { "id": "22-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-cuidar-corazon",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "23-hall-n", "layout": "title", "text": "Taking care of the heart" },
+          "south": { "id": "23-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "23-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-querido-diario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "24-hall-n", "layout": "title", "text": "Dear diary..." },
+          "south": { "id": "24-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-atrevete",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "25-hall-n", "layout": "title", "text": "Dare to see" },
+          "south": { "id": "25-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-saber",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "26-hall-n", "layout": "title", "text": "Knowing what you want" },
+          "south": { "id": "26-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ligarte",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "27-hall-n", "layout": "title", "text": "How to pick up «that» girl in 2 steps" },
+          "south": { "id": "27-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-instante",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "28-hall-n", "layout": "title", "text": "An authentic instant..." },
+          "south": { "id": "28-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ideas",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "29-hall-n", "layout": "title", "text": "Ideas..." },
+          "south": { "id": "29-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pausa",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "30-hall-n", "layout": "title", "text": "The sacred pause" },
+          "south": { "id": "30-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-movimiento",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "31-hall-n", "layout": "title", "text": "Movement" },
+          "south": { "id": "31-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "31-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-he-comprendido",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "32-hall-n", "layout": "title", "text": "I have understood..." },
+          "south": { "id": "32-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "32-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-amor-verdadero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "33-hall-n", "layout": "title", "text": "True love" },
+          "south": { "id": "33-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "33-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-conclusiones",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "34-hall-n", "layout": "title", "text": "Conclusions of the path" },
+          "south": { "id": "34-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "34-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-paseando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "35-hall-n", "layout": "title", "text": "Strolling" },
+          "south": { "id": "35-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "35-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ego",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "36-hall-n", "layout": "title", "text": "The ego is me" },
+          "south": { "id": "36-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ahora",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "37-hall-n", "layout": "title", "text": "Now" },
+          "south": { "id": "37-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "37-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pararse",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "38-hall-n", "layout": "title", "text": "Stopping to look" },
+          "south": { "id": "38-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-aceptar",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "39-hall-n", "layout": "title", "text": "Accepting whatever comes" },
+          "south": { "id": "39-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "39-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-tiempo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "40-hall-n", "layout": "title", "text": "Time is on your side" },
+          "south": { "id": "40-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "40-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-silencio",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "41-hall-n", "layout": "title", "text": "I'm sure I'll think of something" },
+          "south": { "id": "41-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "41-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-soltero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "42-hall-n", "layout": "title", "text": "Single life" },
+          "south": { "id": "42-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-cortando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "43-hall-n", "layout": "title", "text": "Cutting the plastic" },
+          "south": { "id": "43-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "43-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-manifiest",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "44-hall-n", "layout": "title", "text": "Manifiest is how I manifest my dreams" },
+          "south": { "id": "44-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "44-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-luna-llena",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "45-hall-n", "layout": "title", "text": "Full moon" },
+          "south": { "id": "45-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "45-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-gran-juego",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "46-hall-n", "layout": "title", "text": "The great game of life" },
+          "south": { "id": "46-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "46-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-bailar",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "47-hall-n", "layout": "title", "text": "Dancing with life" },
+          "south": { "id": "47-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-caos",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "48-hall-n", "layout": "title", "text": "Ordered chaos" },
+          "south": { "id": "48-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "48-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-tres-cosillas",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "49-hall-n", "layout": "title", "text": "Three little things" },
+          "south": { "id": "49-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-insaciable",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "50-hall-n", "layout": "title", "text": "Insatiable" },
+          "south": { "id": "50-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-perdon",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "51-hall-n", "layout": "title", "text": "Forgiveness" },
+          "south": { "id": "51-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "51-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ayudame",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "52-hall-n", "layout": "title", "text": "Help me... Please!" },
+          "south": { "id": "52-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "52-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-caminando",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "53-hall-n", "layout": "title", "text": "Walking I go..." },
+          "south": { "id": "53-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "53-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-2",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "54-hall-n", "layout": "title", "text": "Camino de Santiago, part two" },
+          "south": { "id": "54-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-3",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "55-hall-n", "layout": "title", "text": "Camino de Santiago. Part three." },
+          "south": { "id": "55-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-4",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "56-hall-n", "layout": "title", "text": "Camino de Santiago, part four" },
+          "south": { "id": "56-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "56-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-5",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "57-hall-n", "layout": "title", "text": "Camino de Santiago, fifth part" },
+          "south": { "id": "57-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "57-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-camino-solitario",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "58-hall-n", "layout": "title", "text": "The path I walk alone" },
+          "south": { "id": "58-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "58-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-opcion",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "59-hall-n", "layout": "title", "text": "The least explored option" },
+          "south": { "id": "59-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "59-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-futuro",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "60-hall-n", "layout": "title", "text": "The future, the past" },
+          "south": { "id": "60-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "60-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-pregunta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "61-hall-n", "layout": "title", "text": "Attention... question!" },
+          "south": { "id": "61-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-vida-soltero",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "62-hall-n", "layout": "title", "text": "First entry: Ecstatic Dance" },
+          "south": { "id": "62-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-letra",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "63-hall-n", "layout": "title", "text": "The pen is mightier than the sword" },
+          "south": { "id": "63-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "63-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-sucede",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "64-hall-n", "layout": "title", "text": "It happens" },
+          "south": { "id": "64-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-df",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "65-hall-n", "layout": "title", "text": "DF" },
+          "south": { "id": "65-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "65-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-creer",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "66-hall-n", "layout": "title", "text": "Believing you can" },
+          "south": { "id": "66-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "66-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-individualidad",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "67-hall-n", "layout": "title", "text": "Individuality" },
+          "south": { "id": "67-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-enemigos",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "68-hall-n", "layout": "title", "text": "Enemies" },
+          "south": { "id": "68-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "68-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-molesta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "69-hall-n", "layout": "title", "text": "Forbidden, but it doesn't bother me." },
+          "south": { "id": "69-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "69-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-playa",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "70-hall-n", "layout": "title", "text": "A day at the beach" },
+          "south": { "id": "70-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "70-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-ego-soy-yo",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "71-hall-n", "layout": "title", "text": "Sometimes I think I'm special" },
+          "south": { "id": "71-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "71-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-uno-se-pregunta",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "72-hall-n", "layout": "title", "text": "One wonders: What's next??" },
+          "south": { "id": "72-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "72-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "73-hall-n", "layout": "title", "text": "Om Mani Padme Hum..." },
+          "south": { "id": "73-hall-s", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "73-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-2",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "74-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "74-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-3",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "75-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "75-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-4",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "76-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "76-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-5",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "77-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "77-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-6",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "78-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "78-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-7",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "79-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "79-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-8",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "80-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "80-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        }
+      }
+    },
+    {
+      "id": "kamino-om-mani-9",
+      "kind": "book",
+      "blank": true,
+      "panels": {
+        "roots-hall": {
+          "north": { "id": "81-hall-n", "layout": "prose", "text": "PENDING — to be reviewed." }
+        },
+        "roots-step": {
+          "north": { "id": "81-step-n", "layout": "prose", "text": "PENDING — to be reviewed." }
         }
       }
     }

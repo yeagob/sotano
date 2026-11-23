@@ -42,6 +42,7 @@ interface Hazard extends Strike {
   tick: number;
   /** Whether this attack can hurt an actor (see `harms`): its marks are then yellow while they warn, red once live. */
   hurts: boolean;
+  gone?: boolean;
 }
 
 /** Whether a strike can hurt an actor: a blow with damage, a sting field, or a warning of one. A pull only drags. */
@@ -65,7 +66,7 @@ export const PARTICLE_TINTS = ['cold.white', 'cold.body'] as const;
 
 export interface HazardHost {
   actors(): Iterable<Actor>;
-  hurt(target: Actor, damage: number, cause: string, owner: number): void;
+  hurt(target: Actor, damage: number, cause: string, owner: number, from?: { x: number; z: number }): void;
   affect(target: Actor, effect: FieldEffect, seconds: number): void;
   push(target: Actor, vx: number, vz: number): void;
   live(shape: Shape): void;
@@ -138,29 +139,33 @@ export class Hazards {
   }
 
   clear(owner: number) {
+    for (const h of this.list) if (h.owner === owner) h.gone = true;
     this.list = this.list.filter(h => h.owner !== owner);
   }
 
   update(dt: number) {
     this.time += dt;
     const actors = [...this.host.actors()];
-    for (let i = this.list.length - 1; i >= 0; i--) {
-      const h = this.list[i];
+    const list = this.list.slice(), done = new Set<Hazard>();
+    for (let i = list.length - 1; i >= 0; i--) {
+      const h = list[i];
+      if (h.gone) continue;
       h.t += dt;
       const live = h.t - h.lead;
       if (live < 0) { if (fx.random() < TELL_MOTE) this.mote(h, h.lead > 0 ? h.t / h.lead : 1); continue; }
       if (h.shape.kind === 'field' || h.shape.kind === 'pull') {
         if (!h.started) { h.started = true; this.host.live(h.shape); }
-        if (live > h.live) { this.list.splice(i, 1); continue; }
+        if (live > h.live) { done.add(h); continue; }
         this.continuous(h, dt, actors);
         continue;
       }
       if (!h.started) { h.started = true; this.host.live(h.shape); }
-      if (live > h.live) { this.list.splice(i, 1); continue; }
+      if (live > h.live) { done.add(h); continue; }
       if (h.damage > 0) this.sparks(h.shape, live);
       // a tinted strike is a picture: the effect it belongs to (SKY.md §6) does the touching
       if (!h.tint) this.strike(h, live, actors);
     }
+    if (done.size) this.list = this.list.filter(h => !done.has(h));
     this.draw();
   }
 
@@ -216,7 +221,7 @@ export class Hazards {
         inside = Math.abs(coord - at) < s.width + b.hw && along > s.across[0] - b.hw && along < s.across[1] + b.hw
           && b.y < s.y + s.height && b.y + b.h > s.y;
       }
-      if (inside) { h.hit.add(a.id); this.host.hurt(a, h.damage, h.cause, h.owner); }
+      if (inside) { h.hit.add(a.id); this.host.hurt(a, h.damage, h.cause, h.owner, hazardFrom(s, live, b.x, b.z)); }
     }
   }
 
@@ -233,7 +238,7 @@ export class Hazards {
         const k = s.force * dt / Math.max(0.5, d);
         this.host.push(a, dx * k, dz * k);
       } else if (s.effect === 'sting') {
-        if (tick) this.host.hurt(a, h.damage, h.cause, h.owner);
+        if (tick) this.host.hurt(a, h.damage, h.cause, h.owner, { x: s.x, z: s.z });
       } else {
         this.host.affect(a, s.effect, 0.4);
       }
@@ -312,6 +317,20 @@ export function shapePoint(s: Shape): [number, number, number] {
 export function sweepAt(s: Extract<Shape, { kind: 'sweep' }>, t: number): number {
   const at = s.from + Math.sign(s.to - s.from) * s.speed * t;
   return s.to >= s.from ? Math.min(s.to, at) : Math.max(s.to, at);
+}
+
+export function hazardFrom(s: Shape, live: number, x: number, z: number): { x: number; z: number } {
+  if (s.kind === 'line') {
+    const dx = s.x1 - s.x0, dz = s.z1 - s.z0, l2 = dx * dx + dz * dz;
+    const t = l2 > 0 ? Math.max(0, Math.min(1, ((x - s.x0) * dx + (z - s.z0) * dz) / l2)) : 0;
+    const px = s.x0 + dx * t, pz = s.z0 + dz * t;
+    return Math.hypot(x - px, z - pz) < 0.3 ? { x: s.x0, z: s.z0 } : { x: px, z: pz };
+  }
+  if (s.kind === 'sweep') {
+    const back = sweepAt(s, live) - Math.sign(s.to - s.from);
+    return s.axis === 'x' ? { x: back, z } : { x, z: back };
+  }
+  return { x: s.x, z: s.z };
 }
 
 export function distanceToSegment(px: number, pz: number, x0: number, z0: number, x1: number, z1: number): number {

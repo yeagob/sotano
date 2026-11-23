@@ -205,7 +205,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       player: { eye: new THREE.Vector3(0.5, 1.6, 0.5), forward: new THREE.Vector3(0, 0, -1) },
       stats: { all: BASE_STATS },
       input: { held: () => state.casting },
-      hands: { holding: false, fire: () => {}, charge: () => {} },
+      hands: { holding: false, fire: () => {}, charge: () => {}, holdUp: () => {} },
       enemies: { list: [], clearProjectiles: () => {} },
       particles: { burst: () => {} },
       pickups,
@@ -228,6 +228,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       splash: () => {},
       hit: () => {},
       nearestBlock: () => null,
+      nearestEnemy: () => null,
     });
     const beam = new Beam(new THREE.Scene(), host);
     // One Clear Cut: Remember Breathing with Occam's Razor, the great cut that also replaces the shot
@@ -257,7 +258,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     r.shoot();
     expect(r.seen).toHaveLength(1);
     expect(r.pickups.add).toHaveBeenCalledTimes(1);
-    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'plain-tonic' });
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'lucid-cordial' });
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });
@@ -266,7 +267,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     const r = rig('positive');
     r.shoot();
     expect(r.hud.toastDrinkHint).toHaveBeenCalledTimes(1);
-    expect(r.hud.toastDrinkHint).toHaveBeenCalledWith('lab.brewed', { name: t('potion.plain-tonic.name'), left: 1, total: BREWS });
+    expect(r.hud.toastDrinkHint).toHaveBeenCalledWith('lab.brewed', { name: t('potion.lucid-cordial.name'), left: 1, total: BREWS });
   });
 
   it('the notice names the potion the bulb makes, not a fixed one', () => {
@@ -282,7 +283,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
     // the beam's other ticks land inside the hit gap: they count for nothing
     expect(r.seen).toHaveLength(1);
     expect(r.pickups.add).toHaveBeenCalledTimes(1);
-    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'plain-tonic' });
+    expect(r.pickups.add.mock.calls[0][7]).toEqual({ potion: 'lucid-cordial' });
     expect(r.lab.bulb).toEqual([]);
     expect(r.lab.brews).toBe(BREWS - 1);
   });

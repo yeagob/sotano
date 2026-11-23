@@ -1,0 +1,51 @@
+# combo-lucid-irimi — Combo (#122 + #157): Lucid Dream and Irimi; a picked-up key starts the phase, a dash carries the body into a thick stone wall, and when the phase ends the player is moved to free space inside the room, never left in the wall or outside it
+floor 1 · seed 1 · room 13×7×5 · 420 ticks (7.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 2.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices luciddream irimi · synergies —
+  blocks stone 84
+  elements —
+  cubes — · pickups 0
+
+t 30 (0.5 s)
+  player hp 24/24 · at 6.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  phase 2.6 s
+  practices luciddream irimi · synergies —
+  blocks stone 84
+  elements —
+  cubes — · pickups 0
+  events pickupCollect 1 · roomEnter 1
+
+t 60 (1.0 s)
+  player hp 24/24 · at 7.0 0.0 3.5 · hand [] · bombs 99 · keys 99
+  phase 2.1 s
+  practices luciddream irimi · synergies —
+  blocks stone 84
+  elements —
+  cubes — · pickups 0
+
+t 240 (4.0 s)
+  player hp 24/24 · at 11.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices luciddream irimi · synergies —
+  blocks stone 84
+  elements —
+  cubes — · pickups 0
+
+t 420 (7.0 s)
+  player hp 24/24 · at 11.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices luciddream irimi · synergies —
+  blocks stone 84
+  elements —
+  cubes — · pickups 0
+
+map t 420 · h 0
+  ......rrrr...
+  ......rrrr...
+  ......rrrr...
+  ......rrrr...
+  ......rrrr...
+  ......rrrr...
+  ......rrrr...
+
+legend r stone
