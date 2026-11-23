@@ -100,6 +100,7 @@ import { ElementSim } from '../world/elements';
 import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { inLeaves } from '../world/crown';
 import { floorStarMap, type StarMap, type StarMarks } from './star-map';
+import { TunnelLog } from './minimap';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { requestOf } from '../content/presences/requests';
@@ -309,7 +310,10 @@ export class Game {
   pickups!: Pickups;
   enemies!: Enemies;
   room = -1;
+  /** Every room entered this run, on every floor (global ids): a floor keeps its explored rooms on the minimap (#302). */
   visited = new Set<number>();
+  /** The blocks broken in the dungeon this run: the minimap's tunnels (#302). */
+  readonly tunnels = new TunnelLog();
   /** Keep simulating while the mouse isn't captured (for automated tests). */
   simulateUnlocked = false;
   private deadT = 0;
@@ -762,6 +766,7 @@ export class Game {
     this.depth = this.maxDepth = this.groundBand = k;
     this.room = -1;
     this.visited = new Set();
+    this.tunnels.clear();
     this.hud.hideDeath();
     this.hud.closePresenceOffer();
     this.hud.dismissBanner();
@@ -1407,7 +1412,7 @@ export class Game {
     this.carve(k + 1);
     this.teleport(at[0], at[1], at[2]);
     // trackPlace announces a new deepest floor; a floor already reached gets its map back here
-    if (k <= this.maxDepth) { this.visited = new Set(); this.hud.setFloor(this.floors.get(k)!, k); }
+    if (k <= this.maxDepth) this.hud.setFloor(this.floors.get(k)!, k);
     return true;
   }
 
@@ -2561,6 +2566,7 @@ export class Game {
     if (this.breakSfx++ < BREAK_SFX_PER_FRAME) sfx.break(Math.min(3, mat(id).tier));
     // dungeon only: no loot and no floor activation in the sky (SKY.md §2.5a)
     if (this.below) {
+      this.tunnels.dig(x, y, z);
       // what burns away leaves nothing, not even loot an item would add (no burning loot farms)
       if (kind !== 'fire') this.rollLoot(x, y, z, id, source);
       // digging into the next floor's band activates it
@@ -4975,7 +4981,6 @@ export class Game {
       this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
       if (entered) this.hud.setFloor(entered, band);
       this.hud.toast('toast.floor', { n: band });
-      this.visited = new Set();
     }
     const r = this.roomAt(b.x, b.y + 0.1, b.z);
     if (r && r.id !== this.room) {
