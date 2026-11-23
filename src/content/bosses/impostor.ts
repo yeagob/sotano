@@ -1,5 +1,6 @@
 import { pal } from '../palette';
 import { charge, emitter, phased, wobble } from '../../enemies/behaviours';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const pretend = (e: Enemy, ctx: EnemyCtx) => {
@@ -21,14 +22,15 @@ export default defineEnemy({
   cost: 0,
   minFloor: 7,
   maxFloor: 8,
-  behaviour: phased({
+  // found out, it is gone, and it is somewhere else, pretending it was always there
+  behaviour: evasive(phased({
     arena: ['brass', 'frame'],
     phases: [
       charge({ aim: 0.7, speed: 4, run: 1.6, stun: 1.2, range: 10, cooldown: 1.4 }),
       emitter({ follow: { speed: 1.2, keep: 4 }, every: 6, shot: pretend }),
       emitter({ follow: { speed: 1.2, keep: 4 }, every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
-  }),
+  }), { kind: 'blink', dist: 7, tell: 0.35, seconds: 0.45, cooldown: 2.2 }),
   model: [
     { size: [18 * TX, 30 * TX, 4 * TX], pos: [0, 16 * TX, 0], color: pal('brass.dark'), name: 'body' },
     { size: [14 * TX, 26 * TX, 2 * TX], pos: [0, 16 * TX, 2 * TX], color: pal('ink.void') },

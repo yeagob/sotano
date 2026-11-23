@@ -1,5 +1,6 @@
 import { pal } from '../palette';
 import { charge, emitter, phased, wobble } from '../../enemies/behaviours';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const surface = (e: Enemy, ctx: EnemyCtx) => {
@@ -33,14 +34,15 @@ export default defineEnemy({
   cost: 0,
   minFloor: 6,
   maxFloor: 6,
-  behaviour: phased({
+  // it dives into the mud and surfaces elsewhere, where the ground swells first
+  behaviour: evasive(phased({
     arena: ['mud', 'surface'],
     phases: [
       emitter({ follow: { speed: 1.0, keep: 4 }, every: 3.5, shot: surface }),
       emitter({ follow: { speed: 1.0, keep: 4 }, every: 2.2, shot: erupt }),
       charge({ aim: 0.7, speed: 4.2, run: 1.6, stun: 1.6, range: 12, cooldown: 1.4 }),
     ],
-  }),
+  }), { kind: 'blink', dist: 7, tell: 0.4, seconds: 0.5, cooldown: 2.6 }),
   model: [
     { size: [30 * TX, 10 * TX, 14 * TX], pos: [0, 6 * TX, 0], color: pal('husk.doubt.dark'), name: 'body' },
     { size: [28 * TX, 2 * TX, 12 * TX], pos: [0, 12 * TX, 0], color: pal('husk.doubt.base') },

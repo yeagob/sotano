@@ -314,6 +314,8 @@ export function barrage(o: { windup: number; recover: number; count: number; sec
     name: 'barrage', windup: o.windup, recover: o.recover, min: o.min, max: o.max, walk: o.walk,
     act(e) { left.set(e, 0); },
     hold(e, ctx, t, time) {
+      // with no one to aim at, the rest of the barrage is dropped: it must never wait here (issue #314)
+      if (!t) return true;
       const fired = Math.min(o.count, Math.floor(time / o.seconds * o.count) + 1);
       let k = left.get(e) ?? o.count;
       for (; k < fired && t; k++) {

@@ -6,6 +6,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.9-alpha.f3 · 2026-11-24
+
+### Fixed
+- Bosses no longer stand still while you shoot them or freeze with nothing to do: every boss now gets out of your line of fire when hit while standing still, and always moves on to its next attack (#314).
+
 ## 0.2.9-alpha.f2 · 2026-11-23
 
 ### Fixed

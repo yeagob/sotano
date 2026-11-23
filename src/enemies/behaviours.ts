@@ -283,9 +283,13 @@ export function emitter(opt: { every: number; follow?: { speed: number; keep: nu
       e.wishX = 0; e.wishZ = 0;
       if (opt.follow) {
         const t = ctx.target(e);
-        if (t && ctx.dist(e, t) > opt.follow.keep) {
+        if (t) {
           const [dx, dz] = ctx.toward(e, t);
-          e.wishX = dx * opt.follow.speed / e.speed; e.wishZ = dz * opt.follow.speed / e.speed;
+          const k = opt.follow.speed / e.speed;
+          // within its distance it circles you instead of standing still (issue #314)
+          const side = e.id % 2 ? 1 : -1;
+          if (ctx.dist(e, t) > opt.follow.keep) { e.wishX = dx * k; e.wishZ = dz * k; }
+          else { e.wishX = -dz * side * k * 0.7; e.wishZ = dx * side * k * 0.7; }
         }
       }
       e.timer -= ctx.dt;
@@ -349,13 +353,16 @@ export function phased(opt: { phases: Behaviour[]; arena: string[] }): Behaviour
 
 /**
  */
-export function sleep(opt: { wakeSpeed: number; then: Behaviour }): Behaviour {
+export function sleep(opt: { wakeSpeed: number; wakeHurt?: number; then: Behaviour }): Behaviour {
   return {
     name: 'sleep',
     update(e, ctx) {
       if (e.tags.has('asleep')) {
         e.wishX = 0; e.wishZ = 0; e.pulse = 0.05;
-        if (Math.hypot(e.body.vx, e.body.vz) > opt.wakeSpeed) { e.tags.delete('asleep'); ctx.cue(e, 'phase'); }
+        // a push wakes it, and so does being hurt (`wakeHurt`, a share of its health): shots too weak
+        // to move it must not leave it asleep for good (issue #314)
+        const hurt = opt.wakeHurt !== undefined && e.hp <= e.maxHp * (1 - opt.wakeHurt);
+        if (Math.hypot(e.body.vx, e.body.vz) > opt.wakeSpeed || hurt) { e.tags.delete('asleep'); ctx.cue(e, 'phase'); }
         return;
       }
       opt.then.update(e, ctx);

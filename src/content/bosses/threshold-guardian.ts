@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
 import { bars, charge, combo, fan, moveset, nova, slam } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // The gate at the edge of change, on the route of shadow (BESTIARY §6.5). 1 Bars: bars of force cross
@@ -19,7 +20,8 @@ export default defineEnemy({
   cost: 0,
   minFloor: 5,
   maxFloor: 5,
-  behaviour: phased({
+  // it steps aside, as a gate swings: the threshold is never where you aim
+  behaviour: evasive(phased({
     arena: ['rockfall', 'rockfall'],
     phases: [
       moveset({
@@ -47,7 +49,7 @@ export default defineEnemy({
         ],
       }),
     ],
-  }),
+  }), { kind: 'dash', dist: 4, tell: 0.3, seconds: 0.3, cooldown: 2 }),
   model: [
     { size: [6 * TX, 40 * TX, 8 * TX], pos: [-8 * TX, 20 * TX, 0], color: pal('husk.doubt.base'), name: 'body' },
     { size: [6 * TX, 40 * TX, 8 * TX], pos: [8 * TX, 20 * TX, 0], color: pal('husk.doubt.base') },

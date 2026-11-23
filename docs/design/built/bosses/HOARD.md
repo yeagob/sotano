@@ -39,6 +39,10 @@ Arena `spill`: cubes are shed around it. Its moves:
 - A spiral nova of twelve bolts over three volleys.
 - Five stones.
 
+## Evasion
+
+A dash: the mound shuffles aside with everything it carries, 3.5 blocks in 0.45 seconds, after a 0.3-second tell. Cooldown 2.4 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It clutches: it pulls everything back to its pile".

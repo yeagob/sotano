@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
 import { barrage, charge, combo, moveset, rocks, shockwave, slam } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A door that walks (BESTIARY §6.3). 1 Blocks: it comes at you and rams, and what it rams breaks.
@@ -19,7 +20,8 @@ export default defineEnemy({
   minFloor: 1,
   maxFloor: 2,
   breaks: { tier: 1, power: 6 },
-  behaviour: phased({
+  // a door does not step aside: it lurches, a heavy hop off your line that lands with a thud
+  behaviour: evasive(phased({
     arena: ['walls', 'rockfall'],
     phases: [
       moveset({
@@ -51,7 +53,7 @@ export default defineEnemy({
         ],
       }),
     ],
-  }),
+  }), { kind: 'hop', dist: 3.5, tell: 0.3, seconds: 0.5, cooldown: 2.4 }),
   model: [
     { size: [28 * TX, 20 * TX, 14 * TX], pos: [0, 16 * TX, 0], color: pal('husk.panic.base'), name: 'body' },
     { size: [28 * TX, 2 * TX, 14 * TX], pos: [0, 27 * TX, 0], color: pal('husk.panic.hi') },

@@ -31,6 +31,10 @@ Arena `drop`: a block of the room's wall material falls on the player's position
 
 Arena `crumble`: toast only. It charges the player along a line, runs 1.6 blocks, stuns for 1.2 seconds on hitting a wall, and repeats after a cooldown of 1.2 seconds.
 
+## Evasion
+
+A hop: the old rule does not move for you; it stamps aside, one heavy step of 3.5 blocks in 0.6 seconds that shakes the floor, after a 0.35-second tell. Cooldown 2.6 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It enforces: stone falls where a rule is broken".

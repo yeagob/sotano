@@ -1,5 +1,6 @@
 import { pal } from '../palette';
 import { charge, emitter, phased, wobble } from '../../enemies/behaviours';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const accuse = (e: Enemy, ctx: EnemyCtx) => {
@@ -31,14 +32,15 @@ export default defineEnemy({
   cost: 0,
   minFloor: 6,
   maxFloor: 6,
-  behaviour: phased({
+  // beyond reproach: it steps out of the dock before the accusation lands
+  behaviour: evasive(phased({
     arena: ['marks', 'turn'],
     phases: [
       emitter({ follow: { speed: 0.9, keep: 4 }, every: 2, shot: accuse }),
       emitter({ follow: { speed: 0.9, keep: 4 }, every: 2.2, shot: sentence }),
       charge({ aim: 0.5, speed: 5, run: 2, stun: 1.8, range: 12, cooldown: 1 }),
     ],
-  }),
+  }), { kind: 'dash', dist: 3.5, tell: 0.3, seconds: 0.4, cooldown: 2.2 }),
   model: [
     { size: [30 * TX, 12 * TX, 10 * TX], pos: [0, 12 * TX, 0], color: pal('paper.dark'), name: 'body' },
     { size: [30 * TX, 2 * TX, 10 * TX], pos: [0, 19 * TX, 0], color: pal('paper.base') },

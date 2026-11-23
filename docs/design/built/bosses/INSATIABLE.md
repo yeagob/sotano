@@ -39,6 +39,10 @@ Arena `rockfall`: stones fall across the room. Its moves:
 - Three shockwave rings reaching 12 blocks.
 - A volley of five stones.
 
+## Evasion
+
+A blink. It never walks: it sinks into the floor and its maw opens somewhere else, four to seven blocks from the player. The spot is marked as soon as it starts (a 0.4-second tell, then 0.45 seconds gone). Cooldown 2.8 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It spits back what it swallowed".

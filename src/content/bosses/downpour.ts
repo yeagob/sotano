@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
 import { altitude, barrage, bars, combo, moveset, nova, puddles } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A low ceiling of cloud (BESTIARY §6.3). It drifts over you, never as fast as you run. 1 Rains: cold
@@ -19,7 +20,8 @@ export default defineEnemy({
   cost: 0,
   minFloor: 3,
   maxFloor: 4,
-  behaviour: phased({
+  // the cloud drifts off your line on a gust
+  behaviour: evasive(phased({
     arena: ['puddle', 'drain'],
     phases: [
       altitude(3.5, moveset({
@@ -46,7 +48,7 @@ export default defineEnemy({
         ],
       })),
     ],
-  }),
+  }), { kind: 'dash', dist: 4, tell: 0.3, seconds: 0.5, cooldown: 2.2 }),
   model: [
     { size: [30 * TX, 6 * TX, 30 * TX], pos: [0, 26 * TX, 0], color: pal('husk.doubt.dark'), name: 'body' },
     { size: [30 * TX, 2 * TX, 30 * TX], pos: [0, 29 * TX, 0], color: pal('husk.doubt.hi') },

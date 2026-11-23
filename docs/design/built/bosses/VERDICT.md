@@ -14,7 +14,7 @@ The Verdict is a long bench of ledger stone with seven tall lecterns standing on
 
 ### Phase 1: accuses
 
-It walks toward the player and keeps about four blocks away. Every two seconds it fires three bolts at the player's position, spread a little, at speed 9. Each does 4.
+It walks toward the player and keeps about four blocks away, circling the player at that distance. Every two seconds it fires three bolts at the player's position, spread a little, at speed 9. Each does 4.
 
 - Arena: none on entering.
 
@@ -29,6 +29,10 @@ It keeps walking at the same distance. Every 2.2 seconds it drops a slow field o
 It charges the player along a line, with a short run and a stun on hitting a wall, then repeats after a cooldown of one second.
 
 - Arena `turn`: toast only.
+
+## Evasion
+
+A dash: beyond reproach, it steps out of the dock before the accusation lands, 3.5 blocks in 0.4 seconds, after a 0.3-second tell. Cooldown 2.2 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
 
 ## Toasts
 
