@@ -6,6 +6,13 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.9-alpha.f2 · 2026-11-23
+
+### Fixed
+- The minimap's player arrow has a white border and can be seen on the dark map (#305).
+- Outside a room, in the rock or a tunnel, the minimap's arrow is gold instead of black, and it is no longer cut off at the edge of the map (#305).
+- The tunnels you dig more than 2 blocks tall show on the minimap as a clear light trail, also in the rock around the rooms, and the trail grows as you dig (#305).
+
 ## 0.2.9-alpha.f1 · 2026-11-23
 
 ### Added
