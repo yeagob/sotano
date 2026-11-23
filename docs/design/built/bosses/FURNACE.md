@@ -14,7 +14,7 @@ The Furnace is a great furnace of obsidian and brick, its door a mouth, and a co
 
 ### Phase 1: pulls
 
-It stays near the player, keeping about four blocks away. Every five seconds it pulls: a field of six blocks' radius, lasting 2.5 seconds, that drags the player toward it.
+It stays near the player, keeping about four blocks away and circling the player at that distance (in every phase). Every five seconds it pulls: a field of six blocks' radius, lasting 2.5 seconds, that drags the player toward it.
 
 - Arena: none on entering.
 
@@ -25,6 +25,10 @@ Arena `fire`: fire spreads over the room's free floor, except near the player. E
 ### Phase 3: cracks (from one third of its health)
 
 Arena `cool`: toast only. Every 2.4 seconds a ring of fire grows out of its own body, doing 8.
+
+## Evasion
+
+A dash: it lurches aside on a gout of its own heat, 3.5 blocks in 0.45 seconds, after a 0.3-second tell. Cooldown 2.4 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
 
 ## Toasts
 

@@ -41,6 +41,10 @@ Arena `rockfall`: stones fall across the room. It stops walking and stays where 
 - A triple shockwave reaching 10 blocks, with a quake.
 - A volley of six stones.
 
+## Evasion
+
+A hop. A door does not step aside: it lurches. Shot while it stands still, it stops for 0.3 seconds, its eyes flare, and it hops 3.5 blocks off the line of fire in half a second, landing with a harmless thud. Cooldown 2.4 seconds. In phase 3, where it no longer walks, the hop is the only way it moves between its drops. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It walls the room in and rams through its own walls".

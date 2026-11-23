@@ -49,6 +49,27 @@ The next move is chosen by a seed from the boss's id and its move count, so a fi
 
 Moves that cross the room (charges, tides, bars, volleys) are the boss's reach. Stones and rubble a boss sheds do not hurt it until the player kicks or throws them.
 
+The bosses of floors 6 to 9 that use the older emitter behaviours keep their distance from the player the same way: they walk in until they are about four or five blocks away, then circle the player at that distance instead of standing still.
+
+### Evasion
+
+A boss never stands in the player's line of fire for long (issue #314). Every boss has one **manoeuvre**, chosen to fit it, that takes it off the line from the player through it:
+
+- **Dash**: it rushes sideways (a roll, a surge, a step aside), straight or slanting toward or away from the player.
+- **Hop**: a heavy jump sideways that lands with a thud. The landing shakes the screen a little and does not hurt.
+- **Blink**: it is gone for a moment and cannot be hit, then comes back somewhere around the player, four to seven blocks away, on safe floor. Where it will come back is marked on the floor in the pale, harmless ring as soon as it starts. If there is nowhere safe to come back, it dashes instead.
+- **Orbit**: it slides around the player, keeping its distance (the Shadow only).
+
+**When it dodges.** A boss that is hit while it stands still (moving slower than one block a second) dodges. It finishes any move it has started first: a windup or an attack is never cut short, and the first 0.4 seconds of a recovery stay open to hits. After a dodge it waits about two to three seconds (each boss's cooldown) before a hit can make it dodge again, so it stays hittable. Where it goes is the spot, inside the room, that leaves the line from the player by the most, with a seeded nudge so it does not always pick the same side.
+
+**The tell.** Before it goes it stops for 0.25 to 0.4 seconds and its tells flare, as in a windup but without the growl: the sound is a short whoosh (`leap`) for a dash, hop or orbit, and a hiss (`hide`) as a blink goes and comes back. Pale dust trails a dash.
+
+**The answer.** After a dodge its next move or shot comes within a quarter of a second, so a dodge is followed by an attack. The Shadow is the exception: it does not answer.
+
+**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: if the player stands still and holds their fire, so does it.
+
+The code is `src/enemies/evade.ts` (`evasive`), wrapped around each boss's phases in its own file. The tests are in `tests/boss-evasion.test.ts`: every boss, in every phase, leaves the line of fire when shot standing still, is never a sitting duck under steady fire for more than a few seconds, and always has a next action.
+
 ## 6. Breaking blocks
 
 Each boss has a breaking strength (its `breaks` field) and breaks soft blocks as it moves and charges, so a fight pushes through a room. Rubble a boss breaks loose is harmless to it.
@@ -87,7 +108,7 @@ Each phase has a toast, written in both languages. The toasts say what the boss 
 
 ## Why the moves are like this
 
-The owner's verdict on the first bosses was that they felt weak: few and poor attacks, low reach, and no real risk. The rules above answer it. A boss is never idle, every blow is telegraphed for its whole windup, attacks reach across the room, and each phase is a new set of moves, with combos chained in a different order each fight. Floors 6 to 9 still use the older behaviours for some moves; their documents say where.
+The owner's verdict on the first bosses was that they felt weak: few and poor attacks, low reach, and no real risk. The rules above answer it. A boss is never idle, every blow is telegraphed for its whole windup, attacks reach across the room, and each phase is a new set of moves, with combos chained in a different order each fight. The owner's later rule (issue #314) added evasion: a boss shot while it stands still must leave the line of fire, and no boss state may freeze with nothing to do. Floors 6 to 9 still use the older behaviours for some moves; their documents say where.
 
 ## Open questions
 

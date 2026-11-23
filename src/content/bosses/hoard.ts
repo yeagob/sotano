@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
 import { barrage, bars, charge, combo, inhale, moveset, nova, rocks, tide } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A mound of everything kept (BESTIARY §6.3). 1 Pushes weights: great weights roll across the room
@@ -19,7 +20,8 @@ export default defineEnemy({
   minFloor: 3,
   maxFloor: 4,
   breaks: { tier: 0, power: 5 },
-  behaviour: phased({
+  // the mound shuffles aside with everything it carries
+  behaviour: evasive(phased({
     arena: ['rockfall', 'spill'],
     phases: [
       moveset({
@@ -47,7 +49,7 @@ export default defineEnemy({
         ],
       }),
     ],
-  }),
+  }), { kind: 'dash', dist: 3.5, tell: 0.3, seconds: 0.45, cooldown: 2.4 }),
   model: [
     { size: [22 * TX, 20 * TX, 22 * TX], pos: [0, 10 * TX, 0], color: pal('husk.doubt.dark'), name: 'body' },
     { size: [14 * TX, 14 * TX, 14 * TX], pos: [0, 24 * TX, 0], color: pal('husk.doubt.base') },

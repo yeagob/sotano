@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased, sleep } from '../../enemies/behaviours';
 import { barrage, charge, combo, inhale, moveset, shockwave, slam } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A mass of packed earth, asleep (BESTIARY §6.3). 1 Sleeps: you must move it (a kick, a bomb, a hard
@@ -20,11 +21,12 @@ export default defineEnemy({
   minFloor: 1,
   maxFloor: 2,
   breaks: { tier: 1, power: 8 },
-  behaviour: phased({
+  // it rolls aside, as a weight rolls off the line it was pushed along
+  behaviour: evasive(phased({
     arena: ['rockfall', 'spill'],
     phases: [
       sleep({
-        wakeSpeed: 1.5, then: moveset({
+        wakeSpeed: 1.5, wakeHurt: 0.03, then: moveset({
           gait: { kind: 'stalk' }, pace: [0.5, 1], moves: [
             combo('roll-and-clods', [charge({ windup: 0.65, recover: 0, speed: 10, run: 3, bounces: 1, impact: 4 }), barrage({ windup: 0.4, recover: 0, count: 4, seconds: 0.7, spread: 1.8 })], { recover: 1 }),
             charge({ windup: 0.7, recover: 1, speed: 10, run: 3, bounces: 2, impact: 4 }),
@@ -49,7 +51,7 @@ export default defineEnemy({
         ],
       }),
     ],
-  }),
+  }), { kind: 'dash', dist: 4, tell: 0.3, seconds: 0.4, cooldown: 2.4 }),
   model: [
     { size: [22 * TX, 22 * TX, 22 * TX], pos: [0, 16 * TX, 0], color: pal('husk.doubt.base'), name: 'body' },
     { size: [22 * TX, 2 * TX, 22 * TX], pos: [0, 27 * TX, 0], color: pal('husk.doubt.hi') },
