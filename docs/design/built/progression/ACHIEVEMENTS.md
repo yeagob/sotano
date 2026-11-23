@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 54 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, and the 7 of the blocks, the projections and the states of being, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 74 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, and the 19 of the owner's approved list, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -138,8 +138,35 @@ The choices made for this set, for the owner to confirm (also in *Not decided*):
 - **Destroyed** is a hostile projection whose health is at zero after a harm (`onEnemyDeath` in `game.ts`, with `e.hp <= 0` and the faction still hostile). A good intention never takes the last point (`src/combat/polarity.ts`). A projection that ends on its own (an alarm's blast, a fall out of the world) keeps its health above zero and does not count. An ally killed by harm does not count: it is no longer a projection.
 - **Converted** counts each turn to your side. A projection that relapses and is converted again counts again.
 - **The states** are the first time each one's synergy turns on in the save. Reaching a state and unlocking it are the same moment, so there is one achievement per state. The event `synergyOn` is emitted by `Game.give` for each synergy a practice gained turns on (`Inventory.gain` lists them as `newSynergies`).
-- **Transcendent** is a fifth built state (`docs/design/built/practices/states-of-being/README.md`). The request named four, so it has no achievement yet.
-- **Completion.** The completion percentage counts every catalogue entry in its achievements part except "Made Omh" (`src/game/completion.ts`), so these seven raise that count's total.
+- **Completion.** The completion percentage counts every catalogue entry in its achievements part except "Made Omh" (`src/game/completion.ts`), so these seven, and the nineteen below, raise that count's total.
+
+### Transcendence, six synergies and twelve presences (19, the owner's approved list of issue #179)
+
+The owner approved these ids, names and events as a list. The names are the owner's; the descriptions are written in the style of the rest. Each synergy is its first time on (`synergyOn`, the synergy's id); each presence is its first exchange (`presenceMet`, once per presence and encounter, counted once in the save).
+
+| Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `state.transcendent` | `synergyOn` with `synergy` `transcendent`: the fifth state of being | Beyond the Self | Más allá de uno mismo | Reach the state of being Transcendent: hold three milagros practices. | Alcanza el estado de ser Trascendente: lleva a la vez tres prácticas de milagros. |
+| `synergy.one-clear-cut` | `synergyOn` with `synergy` `one_clear_cut` | One Clean Cut | Un corte limpio | Hold Cut Ties with Toxic Relationships and Remember Breathing together: the synergy One Clear Cut turns on. | Lleva a la vez Corta con las relaciones tóxicas y Recuerda respirar: se activa la sinergia Un corte claro. |
+| `synergy.somatic-release` | `synergyOn` with `synergy` `somatic_release` | The Body Lets Go | El cuerpo suelta | Hold Symbolic Act and Grounding together: the synergy Somatic Release turns on. | Lleva a la vez Acto simbólico y Enraizamiento: se activa la sinergia Liberación somática. |
+| `synergy.compound-effect` | `synergyOn` with `synergy` `compound_effect` | Small Gains Add Up | Lo pequeño suma | Hold Kaizen and Deep Focus together: the synergy Compound Effect turns on. | Lleva a la vez Kaizen y Concentración profunda: se activa la sinergia Efecto compuesto. |
+| `synergy.flooding` | `synergyOn` with `synergy` `flooding` | Facing It All | Afrontarlo todo | Hold Exposure and Habit Stacking together: the synergy Flooding turns on. | Lleva a la vez Exposición y Apilar hábitos: se activa la sinergia Inundación. |
+| `synergy.hearth` | `synergyOn` with `synergy` `hearth` | By the Fire | Junto al fuego | Hold three fire practices at once: the synergy Hearth turns on. | Lleva a la vez tres prácticas de fuego: se activa la sinergia Hogar. |
+| `synergy.doublehelix` | `synergyOn` with `synergy` `doublehelix` | Twin Strands | Dos hebras | Hold Bilateral Stimulation and Spiral Growth together: the synergy Double Helix turns on. | Lleva a la vez Estimulación bilateral y Espiral de crecimiento: se activa la sinergia Doble hélice. |
+| `presence.boatman` | `presenceMet` with `presence` `boatman` | The Crossing | La travesía | Meet The Boatman: finish your first exchange with it. | Conoce al Barquero: termina tu primer intercambio con él. |
+| `presence.cartographer` | `presenceMet` with `presence` `cartographer` | A Map Offered | Un mapa ofrecido | Meet The Cartographer: finish your first exchange with it. | Conoce al Cartógrafo: termina tu primer intercambio con él. |
+| `presence.child` | `presenceMet` with `presence` `child` | The Child Within | El niño interior | Meet The Child: finish your first exchange with it. | Conoce al Niño: termina tu primer intercambio con él. |
+| `presence.echo` | `presenceMet` with `presence` `echo` | Your Own Voice | Tu propia voz | Meet The Echo: finish your first exchange with it. | Conoce al Eco: termina tu primer intercambio con él. |
+| `presence.elder` | `presenceMet` with `presence` `elder` | Old Wisdom | Sabiduría antigua | Meet The Elder: finish your first exchange with it. | Conoce al Anciano: termina tu primer intercambio con él. |
+| `presence.gardener` | `presenceMet` with `presence` `gardener` | Tending | Cuidar el jardín | Meet The Gardener: finish your first exchange with it. | Conoce al Jardinero: termina tu primer intercambio con él. |
+| `presence.listener` | `presenceMet` with `presence` `listener` | Someone Listens | Alguien escucha | Meet The Listener: finish your first exchange with it. | Conoce a La Escucha: termina tu primer intercambio con ella. |
+| `presence.mender` | `presenceMet` with `presence` `mender` | Mended | Remendado | Meet The Mender: finish your first exchange with it. | Conoce al Sanador: termina tu primer intercambio con él. |
+| `presence.star-reader` | `presenceMet` with `presence` `star-reader` | Written in the Stars | Escrito en las estrellas | Meet The Star-reader: finish your first exchange with it. | Conoce al Lector de estrellas: termina tu primer intercambio con él. |
+| `presence.trickster` | `presenceMet` with `presence` `trickster` | A Sly Grin | Una sonrisa pícara | Meet The Trickster: finish your first exchange with it. | Conoce al Embaucador: termina tu primer intercambio con él. |
+| `presence.wanderer` | `presenceMet` with `presence` `wanderer` | Fellow Traveller | Compañero de camino | Meet The Wanderer: finish your first exchange with it. | Conoce al Caminante: termina tu primer intercambio con él. |
+| `presence.witness` | `presenceMet` with `presence` `witness` | Seen | Visto | Meet The Witness: finish your first exchange with it. | Conoce al Testigo: termina tu primer intercambio con él. |
+
+**What "met" means.** A presence is met when the player finishes its first exchange with it: the gift taken, the choice answered, the toll paid, the ore given, or the Child's build finished. This is the rule the codex already keeps (`meet` in `game.ts`, CODEX.md): the tag `met` is set only there, so the event `presenceMet` is emitted at the same point, the first time that enemy is met. The presence's card opening is not the moment, because a player can open a card and decline it.
 
 ## 2. The data model (takes the rest without code changes)
 
@@ -154,7 +181,7 @@ interface AchievementDef {
 }
 ```
 
-The 54 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 74 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
 New events the 46 need (`src/game/events.ts`):
 
@@ -173,6 +200,7 @@ New events the 46 need (`src/game/events.ts`):
 | `projectionConverted` | `{ def: string; boss: boolean }` | In `convert`, once per conversion (`boss` true for a boss) |
 | `projectionDestroyed` | `{ def: string; boss: boolean }` | In `onEnemyDeath`, when a hostile projection dies with its health at zero (not a self-ending) |
 | `synergyOn` | `{ synergy: string }` | In `Game.give`, for each synergy a practice gained turns on (its id, as in `src/content/synergies.ts`) |
+| `presenceMet` | `{ presence: string }` | In `Game.meet`, the first time a presence's enemy is met: its first exchange is done (its id, as in `src/content/presences`). Once per presence and encounter |
 
 Rules the tracker keeps:
 
@@ -202,12 +230,12 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 55 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 74 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 
 - The names of the seven of §1 (blocks, projections, states) are proposals, and so is the choice of bosses not counting, the destroyed reading and the converted reading (see the choices in §1). The owner decides them.
-- The Transcendent state has no achievement (the request named four states). One line in the catalogue if the owner wants it.
+- The meaning of "met" for a presence (its first finished exchange, not the first card) is built as the codex keeps it; the owner confirms it.
 
 - **Touching the top of the tree** (owner, 2026-11-14): a sixth achievement, apart from the crown. Its criterion is open: the tree's highest block is not reachable on foot (the last star pad leads up into the sky), so the owner must say what "touching the top" means before it is built. Never invented.
 - The names (both languages) await the owner, except "Lucky Number" and "Nice", which are the owner's ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).

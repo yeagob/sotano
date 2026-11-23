@@ -996,6 +996,7 @@ export class Game {
     this.bus.on('projectionConverted', { priority: 300, source, fn: p => this.achieved('projectionConverted', p) });
     this.bus.on('projectionDestroyed', { priority: 300, source, fn: p => this.achieved('projectionDestroyed', p) });
     this.bus.on('synergyOn', { priority: 300, source, fn: p => this.achieved('synergyOn', p) });
+    this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
     // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
@@ -4753,11 +4754,15 @@ export class Game {
 
   /** A presence is met: its tag, and its place in this run's codex the first time it is met (CODEX.md). */
   private meet(e: Enemy) {
+    const first = !e.tags.has('met');
     e.tags.add('met');
     const id = e.def as PresenceId;
-    if (this.codex.includes(id)) return;
-    this.codex.push(id);
-    this.hud.setCodex(this.codex);
+    if (!this.codex.includes(id)) {
+      this.codex.push(id);
+      this.hud.setCodex(this.codex);
+    }
+    // once per presence encounter: the achievements count it once in the save (ACHIEVEMENTS §1)
+    if (first) this.bus.emit('presenceMet', { presence: id });
   }
 
   /** Counts the idle windows down on game time; a presence whose window ran out leaves in that frame. */
