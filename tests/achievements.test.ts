@@ -7,6 +7,7 @@ import { BOSSES } from '../src/content/bosses';
 import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, ACHIEVEMENT_CAP, ACHIEVEMENT_EVENTS, ACHIEVEMENT_MEDITATIONS, type AchievementDef } from '../src/content/achievements';
 import { SEQUENCES } from '../src/content/presences/meditations';
 import { SYNERGIES } from '../src/content/synergies';
+import { PRESENCE_BY_ID } from '../src/content/presences';
 import { EN } from '../src/i18n/locales/en';
 import { ES } from '../src/i18n/locales/es';
 import { catalogueErrors, isUnlocked, mastery, matches, track, type AchievementState, type Payload } from '../src/game/achievements';
@@ -28,8 +29,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 55 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), and the 7 of the blocks, the projections and the four states of being, and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(55);
+  it('holds the 74 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(74);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -51,12 +52,33 @@ describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
   });
 
   it('has one first-time achievement per state of being, each waiting for its own synergy, and every one of them is a real synergy', () => {
-    const states = ACHIEVEMENTS.filter(d => d.on === 'synergyOn');
-    expect(states.map(d => d.id)).toEqual(['state.embodied', 'state.lucid', 'state.open-hearted', 'state.resolute']);
+    const states = ACHIEVEMENTS.filter(d => d.id.startsWith('state.'));
+    expect(states.map(d => d.id)).toEqual(['state.embodied', 'state.lucid', 'state.open-hearted', 'state.resolute', 'state.transcendent']);
     for (const d of states) {
+      expect(d.on).toBe('synergyOn');
       expect(d.times).toBeUndefined();
       const synergy = d.where?.synergy;
       expect(SYNERGIES.some(s => s.id === synergy), `${d.id} waits on a synergy of content/synergies.ts`).toBe(true);
+    }
+  });
+
+  it('has six synergy achievements, one first time per synergy, each waiting for a real synergy of content/synergies.ts', () => {
+    const synergies = ACHIEVEMENTS.filter(d => d.id.startsWith('synergy.'));
+    expect(ids(synergies)).toEqual(['synergy.one-clear-cut', 'synergy.somatic-release', 'synergy.compound-effect', 'synergy.flooding', 'synergy.hearth', 'synergy.doublehelix']);
+    for (const d of synergies) {
+      expect(d.on).toBe('synergyOn');
+      expect(d.times).toBeUndefined();
+      expect(SYNERGIES.some(s => s.id === d.where?.synergy), `${d.id} waits on a synergy`).toBe(true);
+    }
+  });
+
+  it('has twelve presence achievements, one per presence of the game, each on presenceMet with its own id', () => {
+    const presences = ACHIEVEMENTS.filter(d => d.on === 'presenceMet');
+    expect(presences).toHaveLength(12);
+    expect([...presences.map(d => d.where?.presence as string)].sort()).toEqual([...PRESENCE_BY_ID.keys()].sort());
+    for (const d of presences) {
+      expect(d.id).toBe(`presence.${d.where?.presence}`);
+      expect(d.times).toBeUndefined();
     }
   });
 
@@ -304,10 +326,50 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
   });
 
   it('a state of being unlocks on its own synergy the first time, and another synergy never unlocks it', () => {
-    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'hearth' }).unlocked)).toEqual([]);
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'hearth' }).unlocked)).toEqual(['synergy.hearth']);
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'embodied' }).unlocked)).toEqual(['state.embodied']);
     const first = run(EMPTY, 'synergyOn', { synergy: 'lucid' });
     expect(ids(first.unlocked)).toEqual(['state.lucid']);
     expect(ids(run(first.state, 'synergyOn', { synergy: 'lucid' }).unlocked)).toEqual([]);
+  });
+
+  it('each of the nineteen approved achievements unlocks on its own event and payload, and on no other, once', () => {
+    const approved = ACHIEVEMENTS.filter(d => d.id === 'state.transcendent' || d.id.startsWith('synergy.') || d.id.startsWith('presence.'));
+    expect(approved).toHaveLength(19);
+    for (const d of approved) {
+      const payload = { ...d.where } as Payload;
+      const r = run(EMPTY, d.on, payload);
+      expect(ids(r.unlocked), d.id).toEqual([d.id]);
+      expect(ids(run(r.state, d.on, payload).unlocked), `${d.id} once`).toEqual([]);
+    }
+  });
+
+  it('state.transcendent unlocks on the transcendent synergy only, the first time it turns on', () => {
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'transcendent' }).unlocked)).toEqual(['state.transcendent']);
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'resolute' }).unlocked)).not.toContain('state.transcendent');
+  });
+
+  it('a synergy achievement unlocks on its own synergy only, and an event for another synergy leaves it locked', () => {
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'one_clear_cut' }).unlocked)).toEqual(['synergy.one-clear-cut']);
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'one-clear-cut' }).unlocked)).toEqual([]);
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'doublehelix' }).unlocked)).toEqual(['synergy.doublehelix']);
+    expect(ids(run(EMPTY, 'synergyOn', { synergy: 'flooding' }).unlocked)).not.toContain('synergy.hearth');
+  });
+
+  it('a presence achievement fires once per presence: its first meeting unlocks it, another presence does not', () => {
+    const first = run(EMPTY, 'presenceMet', { presence: 'star-reader' });
+    expect(ids(first.unlocked)).toEqual(['presence.star-reader']);
+    expect(ids(run(first.state, 'presenceMet', { presence: 'star-reader' }).unlocked)).toEqual([]);
+    expect(ids(run(first.state, 'presenceMet', { presence: 'witness' }).unlocked)).toEqual(['presence.witness']);
+    expect(ids(run(EMPTY, 'presenceMet', { presence: 'unknown' }).unlocked)).toEqual([]);
+  });
+
+  it('the twelve presences and the six synergies, with the five states, make the 19 of the owner\'s list; the total stays under the cap', () => {
+    const all: Record<string, number> = {};
+    for (const d of ACHIEVEMENTS.filter(x => x.id.startsWith('presence.') || x.id.startsWith('synergy.') || x.id === 'state.transcendent')) all[d.id] = NOW;
+    expect(mastery({ achievements: all })).toBe(19);
+    expect(ACHIEVEMENTS.length).toBeLessThanOrEqual(ACHIEVEMENT_CAP);
+    expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
   it('an unknown id in the save is kept, not counted and not an error', () => {
@@ -318,11 +380,11 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 55 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 74 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(55);
+    expect(mastery({ achievements: all })).toBe(74);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {

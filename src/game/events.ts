@@ -193,6 +193,10 @@ export interface GameEvents {
   /** A practice gained turned the synergy `synergy` (its id) on: the first time in this inventory it met its
    *  requirement. A state of being is one of these (ACHIEVEMENTS §1). React only. */
   synergyOn: { synergy: string };
+  /** A presence is met for the first time on this enemy: its first exchange is done (the gift taken, the choice answered,
+   *  the toll paid, the ore given, the Child's build finished), the rule the codex keeps (CODEX.md). `presence` is its id
+   *  ('boatman', 'star-reader'…). Once per presence and encounter; the achievements count it once in the save. React only (ACHIEVEMENTS §1). */
+  presenceMet: { presence: string };
 }
 
 /** A rebound of an intention, as the `intentBounce` event carries it. */
