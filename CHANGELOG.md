@@ -6,6 +6,8 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.9-alpha · 2026-11-23
+
 ### Added
 - Nineteen achievements: Beyond the Self (the state Transcendent), six for the synergies turned on for the first time, and twelve for meeting each presence (finish your first exchange with it).
 - The Book of Secrets: a practice on the Roots' pedestals from mastery level 30. It opens the Recipe Book on J, in play and on the menu's Recipes tab: every potion, every meal, and what each presence takes, all read from the game's data.

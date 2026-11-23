@@ -1,7 +1,7 @@
 {
   "name": "the-roots",
   "private": true,
-  "version": "0.2.9-dev",
+  "version": "0.2.9-alpha",
   "type": "module",
   "scripts": {
     "dev": "vite",
