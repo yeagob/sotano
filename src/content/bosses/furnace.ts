@@ -1,5 +1,6 @@
 import { pal } from '../palette';
 import { emitter, phased, wobble } from '../../enemies/behaviours';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const blaze = (e: Enemy, ctx: EnemyCtx) => {
@@ -25,14 +26,15 @@ export default defineEnemy({
   cost: 0,
   minFloor: 7,
   maxFloor: 8,
-  behaviour: phased({
+  // it lurches aside on a gout of its own heat
+  behaviour: evasive(phased({
     arena: ['fire', 'cool'],
     phases: [
       emitter({ follow: { speed: 0.8, keep: 4 }, every: 5, shot: (e, ctx) => ctx.strike(e, { lead: 0.9, live: 2.5, damage: 0, shape: { kind: 'pull', x: e.body.x, y: e.body.y, z: e.body.z, r: 6, force: 5 } }) }),
       emitter({ follow: { speed: 0.8, keep: 4 }, every: 1.8, shot: blaze }),
       emitter({ follow: { speed: 0.8, keep: 4 }, every: 2.4, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
-  }),
+  }), { kind: 'dash', dist: 3.5, tell: 0.3, seconds: 0.45, cooldown: 2.4 }),
   model: [
     { size: [22 * TX, 30 * TX, 20 * TX], pos: [0, 15 * TX, 0], color: pal('husk.doubt.dark'), name: 'body' },
     { size: [8 * TX, 8 * TX, TX / 2], pos: [0, 5 * TX, 10.25 * TX], color: pal('ink.void') },

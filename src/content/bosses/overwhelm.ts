@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
 import { charge, combo, fan, moveset, nova, shockwave, tide } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A tide with a face of foam (BESTIARY §6.3). 1 Rises: it surges at you and sends a wave across the
@@ -19,7 +20,8 @@ export default defineEnemy({
   cost: 0,
   minFloor: 3,
   maxFloor: 4,
-  behaviour: phased({
+  // a surge to the side: the tide breaks off your line and comes back from another angle
+  behaviour: evasive(phased({
     arena: ['flood', 'drain'],
     phases: [
       moveset({
@@ -48,7 +50,7 @@ export default defineEnemy({
         ],
       }),
     ],
-  }),
+  }), { kind: 'dash', dist: 4.5, tell: 0.25, seconds: 0.35, cooldown: 2.2 }),
   model: [
     { size: [24 * TX, 30 * TX, 10 * TX], pos: [0, 15 * TX, 0], color: pal('husk.doubt.base'), name: 'body' },
     { size: [24 * TX, 4 * TX, 12 * TX], pos: [0, 30 * TX, 0], color: pal('husk.doubt.hi') },

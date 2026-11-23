@@ -1,5 +1,6 @@
 import { pal } from '../palette';
 import { emitter, phased, wobble } from '../../enemies/behaviours';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const charm = (e: Enemy, ctx: EnemyCtx) => {
@@ -29,14 +30,15 @@ export default defineEnemy({
   cost: 0,
   minFloor: 7,
   maxFloor: 8,
-  behaviour: phased({
+  // it turns away and shows another face from another side of you
+  behaviour: evasive(phased({
     arena: ['faces', 'plain'],
     phases: [
       emitter({ follow: { speed: 1.0, keep: 5 }, every: 6, shot: charm }),
       emitter({ follow: { speed: 1.0, keep: 5 }, every: 3, shot: swap }),
       emitter({ follow: { speed: 1.0, keep: 5 }, every: 2.2, shot: (e, ctx) => ctx.strike(e, { lead: 0.6, live: 0.3, damage: 8, shape: { kind: 'ring', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.5, grow: 4, width: 0.6, height: 1.5 } }) }),
     ],
-  }),
+  }), { kind: 'blink', dist: 6, tell: 0.35, seconds: 0.4, cooldown: 2.4 }),
   model: [
     { size: [10 * TX, 10 * TX, 10 * TX], pos: [0, 10 * TX, 0], color: pal('husk.doubt.dark'), name: 'body' },
     { size: [4 * TX, 4 * TX, TX / 2], pos: [-2 * TX, 13 * TX, 5.25 * TX], color: pal('cold.white'), glow: true, name: 'tell' },
