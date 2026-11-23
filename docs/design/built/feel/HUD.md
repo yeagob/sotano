@@ -19,6 +19,11 @@ What the player reads on screen, in the corners and on the screens that open ove
 
 A small map in the top right. Cleared rooms show in gold, the current room in the paper colour, unvisited rooms are faint, and the treasure, vault, boss and challenge rooms have their own marks. A floor label sits above it: the floor number and its circle's name, for example "Floor 3 · The rain". The map turns with the view.
 
+- **One cell per room.** Every room is one cell, however big it is: the map tells how many rooms there are and how they join, never their size or shape.
+- **The player is always on it.** Inside a room the arrow sits on the room's cell. Anywhere else on the floor (a doorway, a wall, the rock, a tunnel) it follows the body across the map, at about one map pixel per block. The arrow points where you look.
+- **Explored rooms stay.** The rooms you have been in stay on a floor's map for the whole run: going down a floor, digging into the next floor's band and climbing back, or walking into a room through a dug wall never clears them. A new run starts with empty maps.
+- **Dug tunnels.** Every hole you dig that is more than 2 blocks tall (three dug blocks one above the other, still open) is drawn on the map of each floor whose band it reaches, as a faint trail one map pixel per block column. The trail follows the digging a few times a second; a hole you fill back in leaves the map. Blocks broken by bombs, fire and projections count too: the map shows the rock that is gone. Code: `src/game/minimap.ts` (`TunnelLog`, `mapPlace`), `Hud.updateMap`.
+
 ## Banners and toasts
 
 - **Pickup banner.** When a practice is picked up, a banner shows its icon, its name, its quality in stars, its inspiration line, what it changed, and any new synergy. It stays until the player dismisses it, because information is never on a timer.

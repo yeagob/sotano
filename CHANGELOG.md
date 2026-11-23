@@ -6,6 +6,18 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.9-alpha.f1 · 2026-11-23
+
+### Added
+- The minimap draws the tunnels you dig: every hole more than 2 blocks tall shows as a faint trail on its floor's map, and the trail grows as you dig (#302).
+
+### Fixed
+- A room no longer stays sealed with nothing left to fight (#301): Avoidance comes out of hiding again, a projection caught inside blocks steps free, a block can no longer be placed on a projection, and a sealed room checks itself every 2 seconds and lets go of any projection nobody can reach.
+- The minimap always shows you, also between rooms, in the rock and in a tunnel (#302).
+- The minimap no longer forgets the rooms you explored on a floor after a hole dug into the floor below, or after walking into a room through a dug wall (#302).
+
+## 0.2.9-alpha · 2026-11-23
+
 ### Added
 - Nineteen achievements: Beyond the Self (the state Transcendent), six for the synergies turned on for the first time, and twelve for meeting each presence (finish your first exchange with it).
 - The Book of Secrets: a practice on the Roots' pedestals from mastery level 30. It opens the Recipe Book on J, in play and on the menu's Recipes tab: every potion, every meal, and what each presence takes, all read from the game's data.
