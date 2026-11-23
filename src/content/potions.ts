@@ -107,7 +107,47 @@ export function carriedDef(c: PartDef | Flask): Pick<PartDef, 'id' | 'icon' | 'c
   return isFlask(c) ? flaskDef(c) : c;
 }
 
+/** The kitchen's meals are food, not bottles (issue #291): a chicken drumstick for the flesh meal, a bowl of soup for the hearty one. */
+const MEAL_ICONS: Partial<Record<PotionId, ItemIcon>> = {
+  'meal-small': {
+    rows: [
+      '............',
+      '........bbb.',
+      '........bbb.',
+      '...ccccbbb..',
+      '..chhcccbb..',
+      '.chhccccc...',
+      '.hccccccd...',
+      '.ccccccccd..',
+      '.ccccccccd..',
+      '.cccccccd...',
+      '..ccccdd....',
+      '............',
+    ],
+    palette: { b: pal('bone.paper'), c: pal('copper.base'), h: pal('copper.hi'), d: pal('copper.dark') },
+  },
+  'meal-hearty': {
+    rows: [
+      '............',
+      '............',
+      '.wwwwwwwwww.',
+      '.wssgsssgsw.',
+      '..wssssssw..',
+      '..wkkkkkkw..',
+      '...kkkkkk...',
+      '....kkkk....',
+      '...kkkkkk...',
+      '..kkkkkkkk..',
+      '............',
+      '............',
+    ],
+    palette: { w: pal('limestone.hi'), k: pal('limestone.base'), s: pal('copper.dark'), g: pal('mat.grass.hi') },
+  },
+};
+
 export function flaskIcon(potion: PotionId): ItemIcon {
+  const meal = MEAL_ICONS[potion];
+  if (meal) return meal;
   return {
     rows: [
       '............',

@@ -7,6 +7,7 @@ Potions are the active-item system of the hand: whatever flask or meal is chosen
 ## In hand
 
 - **Held label.** While a flask or a meal is the active carried item, its name and what it does sit above the hand as a persistent label (the `#held` element; sotano-popups "Held label"). The recipe is never shown. Changing the choice updates it at once.
+- **Crafted, held up.** A meal cooked in a kitchen, and a flask the alembic brews, are held up in both hands for a moment, as a part taken from the floor is, and a toast names them (issue #290). Each meal has its own food icon in the hand (issue #291); the potions keep the bottle.
 - **Inventory (Tab, every device).** With a flask or meal in hand, the inventory opens with an "In hand" block at the top: the name, the effect, and the duration ("Takes effect at once.", "Lasts N sealed rooms.", "Lasts until the next floor.").
 - **Choosing among six or more carried items.** The number keys 1 to 9 choose slot 1 to 9; the wheel and the D-pad left and right step through the hand, wrapping round; a tap on a slot of the hand (touch) and a click in the inventory choose a slot. The unit tests cover choosing and stepping through six slots (`tests/rebirth-draught.test.ts`). The live check at carry 6 or more on each device is not done yet (see the report of the change).
 

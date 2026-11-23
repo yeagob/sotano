@@ -141,13 +141,18 @@
       font-variant-numeric: tabular-nums; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
     .counter .ico { width: 24px; height: 24px; background: no-repeat center/contain; image-rendering: pixelated; }
     .ico.bomb { background-image: var(--ico-seed); }
+    /* a positive intention's bombs are white, as the bomb placed then is (DECISIONS §14.1); the count takes the same colour */
+    #status[data-polarity="positive"] .ico.bomb { background-image: var(--ico-seedLove); }
+    #status[data-polarity="positive"] #bombs { color: var(--pal-light-hot); }
+    #status[data-polarity="negative"] #bombs { color: var(--pal-light-ember); }
     .ico.key { background-image: var(--ico-key); }
-    /* the loaded intention (F): a round mark, the same size and place in both states; static, never flickers.
-       Positive: a filled gold disc. Negative: an ember ring round an ink centre (shape first, value confirms).
-       The 1 px ink outline keeps it readable over any floor or the sky, like the counters' text outline. */
-    #polarity { width: 14px; height: 14px; margin: 4px 0 2px 3px; border-radius: 50%; border: 2px solid var(--pol); background: var(--pol);
-      box-shadow: 0 0 0 1px var(--ui-line); }
-    #polarity[data-polarity="negative"] { background: var(--ui-line); }
+    /* the loaded intention (F): a square pixel frame in its polarity colour (gold, or ember) round a 10 × 10 miniature of the
+       intention itself at 2×: a gold bead with a white core for the good one, an ash bead with an ember core for the bad one.
+       The value of the bead says it (light against charred); the frame's hue only confirms it. Static, never animated. The 1 px ink outline keeps it
+       readable over any floor or the sky, like the counters' text outline. */
+    #polarity { box-sizing: content-box; width: 20px; height: 20px; margin: 4px 0 2px 3px; padding: 2px; border: 2px solid var(--pol);
+      background: var(--ico-intentPositive) no-repeat center / 20px var(--ui-panel); image-rendering: pixelated; box-shadow: 0 0 0 1px var(--ui-line); }
+    #polarity[data-polarity="negative"] { background-image: var(--ico-intentNegative); }
     /* Kairos (#123): three pips for the charge, a dimmed page while time is stopped, numbered marks on the world */
     #kairos { display: flex; align-items: center; gap: 4px; margin: 4px 0 2px 3px; }
     #kairos[hidden] { display: none; }
@@ -366,6 +371,45 @@
     #starmap .legend { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
     #starmap .legend li { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--ui-line); font-size: 15px; color: var(--ui-text-2); }
     #starmap .legend svg { flex: none; display: block; min-width: 15px; image-rendering: pixelated; }
+    /* the Recipe Book (Book of Secrets, DECISIONS §14.5): the star map's card finish; chapters of chamfered pages with
+       a 2 u bar in the potion's path colour, its flask at 3×, and chips for what a recipe asks. No new colour. */
+    #recipebook { display: none; }
+    #overlay[data-tab="recipes"] #recipebook { display: block; }
+    #overlay[data-tab="recipes"] .panel-menu { display: none; }
+    #overlay #recipebook .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
+    #recipebook .card > header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; border-bottom: 2px solid var(--ui-line); padding-bottom: calc(2 * var(--u)); margin-bottom: 12px; }
+    #recipebook .card > header small { flex: 1 1 14em; color: var(--ui-text-2); font-size: 14px; }
+    #recipebook .ornament { flex: none; display: block; image-rendering: pixelated; }
+    #overlay #recipebook h2 { margin: 0; font: 28px/1.1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: 0; color: var(--ui-text); }
+    #recipebook header .close { margin-left: auto; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); background: var(--ui-line); border: 0; width: 36px; height: 36px; cursor: pointer; clip-path: var(--cut); }
+    #recipebook header .close:hover, #recipebook header .close:focus-visible { color: var(--ui-gold); outline: none; box-shadow: inset 0 0 0 2px var(--ui-gold); }
+    body.dev-touch #recipebook header .close { width: 44px; height: 44px; }
+    #recipebook h3 { margin: 20px 0 8px; font: 20px/1 "Pixelify Sans", system-ui, sans-serif; letter-spacing: .08em; color: var(--ui-gold); }
+    #recipebook h3::before { content: '\25C6  '; }
+    #recipebook .note { margin: 0 0 6px; font-size: 15px; line-height: 1.4; color: var(--ui-text-2); }
+    #recipebook .pages { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+    #recipebook .page { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; background: var(--ui-line); border-left: calc(2 * var(--u)) solid var(--p, var(--ui-faded));
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #recipebook .flask { flex: none; display: block; width: 42px; height: 42px; image-rendering: pixelated; }
+    #recipebook .body { flex: 1; min-width: 0; }
+    #recipebook .body header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+    #recipebook .name { font: 20px/1.15 "Pixelify Sans", system-ui, sans-serif; color: var(--ui-text); }
+    #recipebook .path { font-style: normal; font-size: 14px; color: var(--p); }
+    #recipebook .effect { margin: 4px 0 6px; font-size: 15px; line-height: 1.35; color: var(--ui-text); }
+    #recipebook .way { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+    #recipebook .chip { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 3px 8px; background: var(--ui-panel); font-size: 14px; color: var(--ui-text);
+      box-shadow: inset 2px 2px 0 var(--ui-bevel-hi); clip-path: var(--cut); }
+    #recipebook .chip img { flex: none; display: block; width: 16px; height: 16px; image-rendering: pixelated; }
+    #recipebook .chip small, #recipebook .rule { font-size: 14px; color: var(--ui-text-2); }
+    #recipebook .rule { flex-basis: 100%; line-height: 1.35; }
+    #recipebook .plus { font-size: 14px; color: var(--ui-gold); }
+    #recipebook .or { margin: 4px 0; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--ui-faded); }
+    #recipebook .ores { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+    #recipebook .gives { margin: 6px 0 0; font-size: 14px; line-height: 1.35; color: var(--ui-text-2); }
+    #recipebook .gives em { font-style: normal; color: var(--ui-gold); }
+    /* the Recipes tab shows a gold diamond until the book is first opened: the menu says the book is new */
+    #overlay .tabs button.new::after { content: ' \25C6'; color: var(--ui-gold); }
+    #overlay .tabs button[hidden] { display: none; }
     #overlay #inventory .card { width: auto; max-height: none; overflow: visible; padding: 0 calc(6 * var(--u)); background: none; outline: none; box-shadow: none; }
     /* the practices tab (issue #202): the achievement notice's pixel finish (DECISIONS §10.2). Pixelify Sans only at
        20 / 28 / 40 px, chamfered tiles and blocks (--cut), palette tokens only. A practice reads in three blocks,
@@ -465,10 +509,18 @@
     .tb span { position: absolute; right: 6%; bottom: 6%; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
     .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 calc(6px * (1 + var(--power, 0))) var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line), 0 0 calc(4vmin * var(--power, 0)) calc(1vmin * var(--power, 0)) var(--pol, var(--ui-gold)); }
     /* the ring thickens (6 → 12 px) and a glow of the same token widens with the loaded intention's damage (#111) */
-    .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--ui-line) 92%, transparent); }
+    /* the fire button takes its intention's colour: a gold-lit panel for the good one, a charred one for the bad one, and a
+       brighter tint while pressed (sotano-art: the polarity pair stays on the button too, DECISIONS §14.1 amendment #105) */
+    .tb-cast[data-polarity="positive"] { background-color: color-mix(in srgb, var(--pol) 24%, var(--ui-panel)); }
+    .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--pol) 16%, var(--ui-line)); }
+    .tb-cast.on { background-color: color-mix(in srgb, var(--pol) 40%, var(--ui-panel)); }
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
+    /* the bomb button takes the loaded intention's colour: its frame and its count (the seed itself is swapped in touch.ts) */
+    .tb-bomb { box-shadow: inset 0 0 0 4px var(--pol, var(--ui-line)), 0 0 0 1px var(--ui-line); }
+    .tb-bomb[data-polarity="positive"] span { color: var(--pal-light-hot); }
+    .tb-bomb[data-polarity="negative"] span { color: var(--pal-light-ember); }
     /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
     .tb[hidden] { display: none; }
     .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41.5vmin); width: 13vmin; height: 13vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
@@ -688,7 +740,7 @@
   <div id="hurt-side"></div>
   <div id="star"></div>
   <div id="berserk"></div>
-  <div id="status">
+  <div id="status" data-polarity="positive">
     <div id="hearts-row" class="hearts-row">
       <div id="hearts-box" class="hearts-box"><div id="hearts"></div></div>
       <div id="spirit-num" class="spirit-num" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div>
@@ -720,6 +772,7 @@
         <button type="button" data-act="tab-menu" data-tab="menu" aria-selected="true"></button>
         <button type="button" data-act="tab-items" data-tab="items" aria-selected="false"></button>
         <button type="button" data-act="tab-map" data-tab="map" aria-selected="false"></button>
+        <button type="button" data-act="tab-recipes" data-tab="recipes" aria-selected="false" hidden></button>
       </nav>
       <div class="panel-menu">
       <h1 class="cover"><img src="/the-roots-cover.jpg" alt="THE ROOTS" width="1663" height="640" /></h1>
@@ -760,6 +813,7 @@
       </div>
       <div id="inventory"></div>
       <div id="starmap"></div>
+      <div id="recipebook"></div>
     </div>
   </div>
   <div id="rotate" data-i18n="touch.rotate">Turn your device sideways to play</div>

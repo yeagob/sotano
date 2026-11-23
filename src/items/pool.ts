@@ -17,8 +17,12 @@ export const isSkyGift = (item: ItemDef) => (item.pools.sky ?? 0) > 0;
  *  never drawn, and promised: no capture, toll or other rule takes it from the player (GIFTS.md, the promised trait). */
 export const isPromised = (item: ItemDef) => (item.pools.covenant ?? 0) > 0;
 
-/** An item no pool draws: a sky gift or a promised piece. */
-export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item);
+/** A gift of the Roots' mastery table (its only pool is 'roots', REWARDS §4): laid by id on its fixed pedestal from its
+ *  level on (FIXED_PRACTICES), never drawn, so adding one moves no seed. */
+export const isRootsGift = (item: ItemDef) => (item.pools.roots ?? 0) > 0;
+
+/** An item no pool draws: a sky gift, a promised piece or a gift of the Roots. */
+export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item) || isRootsGift(item);
 
 export class ItemPools {
   private weights = new Map<PoolName, Map<string, number>>();

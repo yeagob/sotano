@@ -6,6 +6,20 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.9-alpha · 2026-11-23
+
+### Added
+- Nineteen achievements: Beyond the Self (the state Transcendent), six for the synergies turned on for the first time, and twelve for meeting each presence (finish your first exchange with it).
+- The Book of Secrets: a practice on the Roots' pedestals from mastery level 30. It opens the Recipe Book on J, in play and on the menu's Recipes tab: every potion, every meal, and what each presence takes, all read from the game's data.
+- The Roots call from mastery level 50: at the start of every run, the keys, bombs, hearts, practices and chest contents on the basement floor fly to you and are taken. The Sanctuary's meditation is never pulled (#295).
+- Achievements for the states of being reached for the first time (four), and for the blocks and the projections: Brick by Brick (1000 blocks placed), Many Come Home (100 projections turned to your side), and Clearing the Way (100 projections destroyed).
+- Cooking a potion or a meal holds it up in both hands for a moment, with its name, as a monster's drop does (#290). Each cookable meal has its own food: a chicken drumstick for the small meal, a bowl of broth for the hearty one (#291).
+
+### Changed
+- The polarity is easier to read: the mark beside the counters is a framed bead of light (gold with a white core for a good intention, ash with an ember core for a bad one). The bomb counter takes the colour of the loaded intention, and a good intention's bomb is the white seed. On a phone, the fire button and the bomb button take that colour too.
+- On the keyboard, the book download moved from B to H.
+- The alembic holds a brewed flask up only when you take it out, not when it is brewed (#290).
+
 ## 0.2.8-alpha.f3 · 2026-11-22
 
 ### Fixed

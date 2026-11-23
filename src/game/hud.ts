@@ -24,7 +24,7 @@ import { applyPaletteCss, hudIconUrl, iconDataUrl, qualityStars } from '../rende
 import { createSpiritRing, paintSpiritRing } from '../render/spirit-ring';
 import { ROOM_ID_STRIDE, type FloorResult } from '../world/floor';
 import { level, tollOf } from '../content/levels';
-import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
+import { carriedDef, flaskIcon, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { flaskEffect, flaskName } from '../content/potion-text';
 import { handTollIds, heartTollIds, heartTollPlan, splitHeartPicks } from './toll';
 import { MeditationView } from './meditation-view';
@@ -42,6 +42,7 @@ import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 import { COVENANT_PIECES } from '../content/presences/covenant';
 import { mapKeyOutcome, starMapHtml } from './star-map';
+import { recipeBook, recipeBookHtml, recipesKeyOutcome } from './recipe-book';
 
 const $ = (id: string) => document.getElementById(id)!;
 const hex = (c: number) => '#' + c.toString(16).padStart(6, '0');
@@ -78,8 +79,9 @@ export function floorLabel(depth: number): string {
   return `${t('hud.floor', { n: depth })} · ${t(`level.${level(depth).key}` as MessageKey)}`;
 }
 
-/** The tabs of the screen: the menu (pause, controls, language), the practices, and the star map (D15 of #149). */
-export type ScreenTab = 'menu' | 'items' | 'map';
+/** The tabs of the screen: the menu (pause, controls, language), the practices, the star map (D15 of #149), and the
+ *  Recipe Book (only while the Book of Secrets is held: the `recipes` stat). */
+export type ScreenTab = 'menu' | 'items' | 'map' | 'recipes';
 
 /** The objects of one exchange in one phrase, in the player's language: "A", "A and B" or "A, B and C" (one message per
  *  count, so the word order can change). A card names at most three (MAX_OFFER_PARTS), so a fourth is never asked for. */
@@ -121,6 +123,8 @@ export class Hud {
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private polarityEl = $('polarity');
+  /** The corner of counters: it carries the polarity too, so the bomb counter and its icon take the intention's colour. */
+  private statusEl = $('status');
   private kairosEl = $('kairos');
   private kairosMarksEl = $('kairos-marks');
   private kairosTone = '';
@@ -131,6 +135,11 @@ export class Hud {
   private depthEl = $('depth');
   private invEl = $('inventory');
   private mapEl = $('starmap');
+  /** The Recipe Book's tab (recipe-book.ts); its tab button shows only while the practice is held. */
+  private bookEl = $('recipebook');
+  private recipesHeld = false;
+  /** The book has been opened since the practice was taken: its tab loses the new mark. */
+  private recipesRead = false;
   private tollEl = $('toll');
   tollOpen = false;
   private tollFloor = 0;
@@ -278,7 +287,7 @@ export class Hud {
     const nr = document.getElementById('newrun');
     if (nr) nr.textContent = t('pause.newRun');
     for (const b of document.querySelectorAll<HTMLElement>('#overlay .tabs button')) {
-      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : b.dataset.tab === 'map' ? 'tab.map' : 'tab.menu');
+      b.textContent = t(b.dataset.tab === 'items' ? 'inv.title' : b.dataset.tab === 'map' ? 'tab.map' : b.dataset.tab === 'recipes' ? 'tab.recipes' : 'tab.menu');
     }
     const rot = document.getElementById('rotate');
     if (rot) rot.textContent = t('touch.rotate');
@@ -305,6 +314,9 @@ export class Hud {
 
   /** The star map is the tab on screen (D15): navigate and pick do nothing there. */
   get mapShown() { return this.screenOpen && this.screenTab === 'map'; }
+
+  /** The Recipe Book is the tab on screen: navigate scrolls it, pick does nothing. */
+  get recipesShown() { return this.screenOpen && this.screenTab === 'recipes'; }
 
   setFov(fov: number) {
     this.fovShown = fov;
@@ -390,7 +402,8 @@ export class Hud {
     const el = this.polarityEl;
     const positive = this.lastPolarity === 'positive';
     el.dataset.polarity = this.lastPolarity;
-    // the full light, or the eclipsed one (an ember ring round a dark centre): never cold, it is yours
+    this.statusEl.dataset.polarity = this.lastPolarity;
+    // the frame's colour: gold for the good intention, ember for the bad one (never cold: it is yours)
     el.style.setProperty('--pol', palCss(positive ? 'light.gold' : 'light.ember'));
     el.title = t(positive ? 'hud.polarity.positive' : 'hud.polarity.negative');
   }
@@ -398,6 +411,7 @@ export class Hud {
   update(g: Game, running: boolean, dt: number) {
     this.shakeT = Math.max(0, this.shakeT - dt);
     if (running) this.tickAchievement(dt);
+    this.syncRecipesTab(g);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
     this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
@@ -1075,10 +1089,45 @@ export class Hud {
     else this.openScreen(g, 'map');
   }
 
+  /** J, D-pad Down and the Recipes tab: the screen on the Recipe Book, or closed when the book is what it shows.
+   *  The game calls it only while the Book of Secrets is held. */
+  recipesKey(g: Game) {
+    if (recipesKeyOutcome(this.screenOpen, this.screenTab) === 'close') this.closeScreen(g);
+    else this.openScreen(g, 'recipes');
+  }
+
+  /** Scrolls the Recipe Book a step (navigate up or down on its tab). */
+  scrollRecipes(dy: number) {
+    this.overlay.scrollBy({ top: dy * 120 });
+  }
+
+  /** The Recipes tab shows only while the practice is held; it carries a mark until the book is first opened. A book
+   *  on screen whose practice has gone (a toll took it) falls back to the menu. */
+  private syncRecipesTab(g: Game) {
+    const held = g.stats.get('recipes') >= 1;
+    if (held !== this.recipesHeld) {
+      this.recipesHeld = held;
+      if (!held) this.recipesRead = false;
+      if (!held && this.screenTab === 'recipes') { this.screenTab = 'menu'; if (this.screenOpen) this.renderScreen(g); }
+    }
+    const tab = this.overlay.querySelector<HTMLElement>('.tabs button[data-tab="recipes"]');
+    if (!tab) return;
+    if (tab.hidden === held) tab.hidden = !held;
+    tab.classList.toggle('new', held && !this.recipesRead);
+  }
+
   private renderScreen(g: Game) {
+    if (this.screenTab === 'recipes' && g.stats.get('recipes') < 1) this.screenTab = 'menu';
     this.showTab(this.screenTab);
     if (this.screenTab === 'items') this.renderInventory(g);
     if (this.screenTab === 'map') this.mapEl.innerHTML = starMapHtml(g.starMap(), activeDevice());
+    if (this.screenTab === 'recipes') {
+      this.recipesRead = true;
+      this.bookEl.innerHTML = recipeBookHtml(recipeBook(), {
+        flask: id => iconDataUrl({ id: `flask.${id}`, icon: flaskIcon(id) }, 3),
+        material: m => this.slotUrl(m),
+      }, activeDevice());
+    }
   }
 
   /** The active carried item changed (the game calls this): an open screen redraws its outline. */

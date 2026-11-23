@@ -23,7 +23,7 @@ import {
 } from '../content/elements';
 import { ROOM_H, ROOM_TEMPLATES, cellAt } from '../content/rooms';
 import { rollParts } from '../content/parts';
-import { carriedDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
+import { carriedDef, flaskDef, flaskRooms, isFlask, POTIONS, type Flask } from '../content/potions';
 import { flaskEffect, flaskName } from '../content/potion-text';
 import { heartTollPlan, tollIndex } from './toll';
 import { defaultMeta, noStore, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
@@ -33,6 +33,7 @@ import { mastery as achievedMastery, type Payload } from './achievements';
 import { AchievementKeeper, cardKeys, noticeMillis, sittingPayload, tollMayOpen, type AchievementNotice } from './achievement-keeper';
 import { HeightWatch } from './height-watch';
 import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSites, type RootsSite } from './roots-draws';
+import { callActive, chestAnswersCall, RootsCall } from './roots-call';
 import { offerPedestal, rollChestContents } from './chest-draws';
 import { STILLNESS_TAG } from '../content/bosses/shadow';
 import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
@@ -119,7 +120,7 @@ import { floorHeartChances, heartChancesOnBand, rollHeart } from '../content/tab
 import { claimCreatureGrowthGift, rollCreatureGrowthHeart, rollEchoGift, rollListenerGift, rollTricksterPractice, rollWandererGift, rollElderLesson, rollChildGift, rollWitnessGift, rollBoatmanGift, rollMenderGift, rollStarReaderGift } from '../content/tables/heart-gifts';
 import { HEART_FX, type HeartKind } from '../content/heart-art';
 import { GROWTH_MAX, growsUnder } from '../entities/growth';
-import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, hasHeartRoom, isLayer, landHit, STAR_SECONDS, tickBlood, TOXIC_DAMAGE, TOXIC_MOTE_EVERY, TOXIC_PERIOD, TOXIC_RADIUS, toxic, toxicHits, type LayerKind, type ToxicCandidate } from '../entities/hearts';
+import { BERSERK_DAMAGE, BERSERK_JUMP, BERSERK_RANGE, BERSERK_SPEED, BLOOD_BUDGET, BLOOD_SECONDS, BLOOD_SLOT_SOURCE, berserk, heartFits, isLayer, landHit, STAR_SECONDS, tickBlood, TOXIC_DAMAGE, TOXIC_MOTE_EVERY, TOXIC_PERIOD, TOXIC_RADIUS, toxic, toxicHits, type LayerKind, type ToxicCandidate } from '../entities/hearts';
 import { setEcho, sfxHeart, starTheme } from '../audio/sfx';
 import { applyFov, FOV_DEFAULT, loadSettings, saveSettings, stepFov } from './settings';
 import { ActorRegistry, ContactGate, HALF_HEART, HEART, QUARTER_HEART, hostile, type Actor, type Faction } from '../entities/actors';
@@ -480,6 +481,9 @@ export class Game {
   private debugMastery: number | null = null;
   /** Floor 0's Roots pedestals (extra practices and the altar): each site, the item it shows and its pickup (roots-draws.ts). */
   private rootsSpots: { site: RootsSite; item: string | null; again: number; pickup: Pickup | null }[] = [];
+  /** The Roots' call (issue #295): from mastery level 50 what the Roots lay comes to the player. Null below it and in the sandbox. */
+  private call: RootsCall | null = null;
+  private callTrailT = 0;
   /** Every item the Roots drew this run (pedestals, chests, the Sanctuary): the Roots never offer one of them twice. */
   private rootsDrawn = new Set<string>();
   /** The Sanctuary sittings' draws of each Roots chest, one fork per chest, kept across a "not now" (roots-draws.ts). */
@@ -744,6 +748,9 @@ export class Game {
     const rootsItems = roots0 ? drawRootsItems(this.pools, this.rng, roots0, this.runMastery, this.rootsDrawn) : new Map<string, string>();
     this.rootsSpots = roots0 ? rootsSites(roots0, this.runMastery).map(site => ({ site, item: rootsItems.get(site.key) ?? null, again: 0, pickup: null })) : [];
     this.activate(k);
+    // the Roots' call answers for what floor 0 laid now (keys, bombs, hearts, the pedestals' practices), and later for
+    // what its free chests hold; never the Sanctuary's practice, which stays shut until its sitting (CALL.md)
+    this.call = callActive(this.runMastery, sandbox !== null) ? new RootsCall(this.pickups.list) : null;
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
     p.yaw = 0; p.pitch = 0;
@@ -986,6 +993,10 @@ export class Game {
     this.bus.on('bedrockTouch', { priority: 300, source, fn: p => this.achieved('bedrockTouch', p) });
     this.bus.on('treeStory', { priority: 300, source, fn: p => this.achieved('treeStory', p) });
     this.bus.on('completionFull', { priority: 300, source, fn: p => this.achieved('completionFull', p) });
+    this.bus.on('projectionConverted', { priority: 300, source, fn: p => this.achieved('projectionConverted', p) });
+    this.bus.on('projectionDestroyed', { priority: 300, source, fn: p => this.achieved('projectionDestroyed', p) });
+    this.bus.on('synergyOn', { priority: 300, source, fn: p => this.achieved('synergyOn', p) });
+    this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
     // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
@@ -1137,11 +1148,12 @@ export class Game {
   private reofferRoots(id: string) {
     for (const r of this.rootsSpots) {
       if (!r.pickup || r.pickup.taken || r.item !== id) continue;
-      const s = r.site.spot;
+      const s = r.site.spot, old = r.pickup;
       this.pickups.take(r.pickup);
       r.item = redrawRootsSite(this.pools, this.rng, r.site, ++r.again, this.rootsDrawn);
       const def = ITEM_BY_ID.get(r.item) ?? null;
       r.pickup = def ? this.pickups.add('item', s.x + 0.5, s.y, s.z + 0.5, s.room, def) : null;
+      this.call?.replace(old, r.pickup);
     }
   }
 
@@ -1657,6 +1669,7 @@ export class Game {
     this.reofferRoots(id);
     const def = r.instance.def;
     this.bus.emit('itemGained', { id, uid: r.instance.uid });
+    for (const s of r.newSynergies) this.bus.emit('synergyOn', { synergy: s.id });
     this.clampHealth();
     this.hud.setItems(this.inventory.items.map(i => i.def));
     this.hud.itemBanner(def, r.changes, r.newSynergies);
@@ -1755,8 +1768,7 @@ export class Game {
     const p = this.player;
     // a blood heart at full health opens one heart slot and fills it (#146); below full it heals over time
     const slot = kind === 'blood' && p.hp >= this.maxHp;
-    if (kind === 'red' && p.hp >= this.maxHp) return false;
-    if ((isLayer(kind) || slot) && !hasHeartRoom(this.stats.get('maxHearts'), p.layers)) return false;
+    if (!heartFits(kind, p.hp, this.maxHp, this.stats.get('maxHearts'), p.layers)) return false;
     if (kind === 'red') return this.collect('heart', 2);
     const ev = this.bus.emit('pickupCollect', { kind: 'heart', amount: 2, heart: kind });
     if (ev.cancelled) return false;
@@ -2214,6 +2226,7 @@ export class Game {
   private convert(e: Enemy) {
     e.hp = convertedHp(e.hp, e.maxHp);
     this.setFaction(e, 'self', 'polarity');
+    this.bus.emit('projectionConverted', { def: e.def, boss: e.spec.kind === 'boss' });
     const floor = this.rooms.get(e.room)?.floor;
     if (e.spec.kind === 'boss' && floor !== undefined) this.bossDown(floor, 'converted');
     const b = e.body;
@@ -2270,6 +2283,8 @@ export class Game {
     this.projectionSeq.delete(e.id);
     // a release the Mender may bring back on this floor (mended.ts)
     if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def);
+    // a hostile projection destroyed by harm: its health is at zero (a self-ending, an alarm's blast or a fall, keeps health above zero)
+    if (e.faction === 'projection' && e.hp <= 0) this.bus.emit('projectionDestroyed', { def: e.def, boss: e.spec.kind === 'boss' });
     // the Shadow's stillness ending is a turning to your side, not a destruction (ACHIEVEMENTS §1)
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor, e.tags.has(STILLNESS_TAG) ? 'stillness' : 'destroyed');
     if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
@@ -3502,12 +3517,15 @@ export class Game {
     }
     devlog.line(`kitchen ${cell(x, y, z)}: cook ${carriedName(top)} -> cooked (${COOKS - k.cooks}/${COOKS} used)`);
     p.takeActive();   // the part leaves the hand first, so the meal always has its place
-    p.gain({ potion: mealOf(top.kind) });
-    this.bus.emit('cook', { meal: mealOf(top.kind), part: top.kind });
+    const meal: Flask = { potion: mealOf(top.kind) };
+    p.gain(meal);
+    this.bus.emit('cook', { meal: meal.potion, part: top.kind });
     this.hands.placed();
+    // the crafted meal is held up in both hands, as a monster's drop is when taken (hands.holdUp), with its name in the toast
+    this.hands.holdUp(flaskDef(meal));
     this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 16, 2, 0.06);
-    sfx.place();
-    this.hud.toastDrinkHint('kitchen.cooked', { left: COOKS - k.cooks, total: COOKS });
+    sfx.pickup();
+    this.hud.toastDrinkHint('kitchen.cooked', { name: flaskName(meal), left: COOKS - k.cooks, total: COOKS });
   }
 
   /** An intention on the alembic: a brew, a boil, or nothing (game/alembic.ts). */
@@ -3519,6 +3537,7 @@ export class Game {
     if (r === 'brew' && flask) {
       this.particles.burst(x + 0.5, y + 1, z + 0.5, pal('light.gold'), 30, 3, 0.07);
       sfx3.reveal();
+      // the brewed flask is left on the alembic; it is held up in both hands only when taken out (the pickup hold); the toast names it (lab.brewed)
       this.pickups.add('flask', x + 0.5, y + 1, z + 0.5, this.room, null, PART_DROP_DELAY, flask);
       this.hud.toastDrinkHint('lab.brewed', { name: flaskName(flask), left: BREWS - a.brews, total: BREWS });
     } else if (r === 'boil') {
@@ -3776,16 +3795,13 @@ export class Game {
   private touchPickups() {
     const b = this.player.body;
     for (const p of this.pickups.list) {
-      if (p.taken || p.delay > 0) continue;
+      // a pickup the Roots' call carries is absorbed by the call when it arrives
+      if (p.taken || p.delay > 0 || p.homing) continue;
       const horiz = Math.hypot(p.x - b.x, p.z - b.z);
       const dy = b.y - p.y;
       if (p.type === 'item') {
-        if (p.item && horiz < 1.1 && dy > -1.3 && dy < 1.6) {
-          // the item floats over a 1-block pedestal: reachable standing next to it or on top
-          const id = p.item.id;
-          this.pickups.take(p);
-          this.give(id);
-        }
+        // the item floats over a 1-block pedestal: reachable standing next to it or on top
+        if (horiz < 1.1 && dy > -1.3 && dy < 1.6) this.absorbPickup(p);
         continue;
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
@@ -3803,10 +3819,72 @@ export class Game {
         }
         continue;
       }
-      if (p.type === 'heart' ? this.collectHeart(p.heart) : this.collect(p.type, 1)) {
-        this.pickups.take(p);
-        this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'heart' ? pal(HEART_FX[p.heart]) : PICKUP_FX[p.type], 10, 2, 0.06);
+      this.absorbPickup(p);
+    }
+  }
+
+  /**
+   * Takes a practice, key, bomb or heart by the touch rules: the practice is gained, the rest through `collect` and
+   * `collectHeart`. False when it was refused (it stays where it is). The touch and the Roots' call both use it.
+   */
+  private absorbPickup(p: Pickup): boolean {
+    if (p.type === 'item') {
+      if (!p.item) return false;
+      const id = p.item.id;
+      this.pickups.take(p);
+      this.give(id);
+      return true;
+    }
+    if (p.type === 'part' || p.type === 'flask') return false;
+    if (!(p.type === 'heart' ? this.collectHeart(p.heart) : this.collect(p.type, 1))) return false;
+    this.pickups.take(p);
+    this.particles.burst(p.x, p.y + 0.3, p.z, p.type === 'heart' ? pal(HEART_FX[p.heart]) : PICKUP_FX[p.type], 10, 2, 0.06);
+    return true;
+  }
+
+  /**
+   * The Roots' call (issue #295, CALL.md), one step: once the run is revealed it opens the Roots' free chests and
+   * draws every loose object the Roots laid to the player. Never the Sanctuary's practice: its chest is never opened here.
+   */
+  private updateCall(dt: number) {
+    const call = this.call;
+    if (!call || this.transitioning || this.player.dead) return;
+    const b = this.player.body;
+    const began = call.update(dt, {
+      player: b,
+      inRoots: bandOf(b.y) === FIRST_FLOOR,
+      calm: !this.hud.bannerOpen && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen,
+      canAbsorb: q => {
+        const p = q as Pickup;
+        if (p.type === 'item') return p.item !== null;
+        if (p.type === 'heart') {
+          // the hearts already flying count as taken: a second red heart does not set off for health the first will fill
+          const flying = (call.inFlight as Pickup[]).filter(q => q.type === 'heart');
+          const heal = flying.filter(q => q.heart === 'red').length * 2 * HALF_HEART;
+          const layers = [...this.player.layers, ...flying.filter(q => isLayer(q.heart) || q.heart === 'blood').map(() => ({ kind: 'blue' as const, hp: HEART }))];
+          return heartFits(p.heart, this.player.hp + heal, this.maxHp, this.stats.get('maxHearts'), layers);
+        }
+        return p.type === 'key' || p.type === 'bomb';
+      },
+      absorb: q => this.absorbPickup(q as Pickup),
+      launched: q => this.particles.burst(q.x, q.y + 0.3, q.z, pal('light.gold'), 8, 1.4, 0.05),
+    });
+    if (began) {
+      let opened = 0;
+      for (const c of this.chests) {
+        const s = c.spec;
+        // the free chests of the Roots only: a Sanctuary (meditation) or a guarded chest is never opened by the call
+        if (c.opened || !chestAnswersCall(s) || bandOf(s.y) !== FIRST_FLOOR) continue;
+        this.openChest(c, 0, undefined, p => call.add(p));
+        opened++;
       }
+      if (opened || call.pending) { this.hud.toast('roots.call'); spatial.cue('pull', b.x, b.y + 1, b.z); }
+    }
+    // a faint golden trail behind what flies
+    this.callTrailT -= dt;
+    if (this.callTrailT <= 0) {
+      this.callTrailT = 0.05;
+      for (const p of call.inFlight) this.particles.burst(p.x, p.y + 0.3, p.z, pal('light.gold'), 1, 0.3, 0.04);
     }
   }
 
@@ -3949,16 +4027,19 @@ export class Game {
     sfx2.unlock();
   }
 
-  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number, reward?: ItemDef) {
+  /** `called`: the Roots' call opened it from afar; it opens quietly and hands each thing it spits to the call. */
+  private openChest(c: { spec: ChestSpec; opened: boolean; view: ChestView }, cost: number, reward?: ItemDef, called?: (p: Pickup) => void) {
     c.opened = true;
     const s = c.spec;
     this.world.set(s.x, s.y, s.z, MAT.chestopen);
     const lead = this.chestViews.open(c.view);
     const cx = s.x + 0.5, cz = s.z + 0.5;
     this.particles.burst(cx, s.y + 0.5, cz, pal('brass.base'), 10, 2, 0.06);
-    this.hud.shake(0.08);
-    if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
-    sfx3.creak();
+    if (!called) {
+      this.hud.shake(0.08);
+      if (cost > 0) { this.hud.toast('toast.chestUnlocked', { n: cost }); sfx2.unlock(); } else sfx2.key();
+      sfx3.creak();
+    }
     const out: { type: PickupKind | 'item'; def: ItemDef | null }[] = [];
     if (s.item) out.push({ type: 'item', def: this.pedestalDef(s) });
     else if (reward) out.push({ type: 'item', def: reward });
@@ -3980,7 +4061,8 @@ export class Game {
       const speed = (o.type === 'item' ? 1.7 : 1.5) / 0.68;
       this.ejectReward(p, speed, 6.5, spread);
       this.particles.burst(cx, s.y + 1, cz, pal('light.gold'), o.type === 'item' ? 22 : 10, 2.5, 0.07);
-      if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
+      if (called) called(p);
+      else if (o.type === 'item') sfx3.reveal(); else sfx3.spit();
     } }));
     // once the last thing has left the mouth the chest is empty: its model and its block go (issue #156)
     const world = this.world;
@@ -4672,11 +4754,15 @@ export class Game {
 
   /** A presence is met: its tag, and its place in this run's codex the first time it is met (CODEX.md). */
   private meet(e: Enemy) {
+    const first = !e.tags.has('met');
     e.tags.add('met');
     const id = e.def as PresenceId;
-    if (this.codex.includes(id)) return;
-    this.codex.push(id);
-    this.hud.setCodex(this.codex);
+    if (!this.codex.includes(id)) {
+      this.codex.push(id);
+      this.hud.setCodex(this.codex);
+    }
+    // once per presence encounter: the achievements count it once in the save (ACHIEVEMENTS §1)
+    if (first) this.bus.emit('presenceMet', { presence: id });
   }
 
   /** Counts the idle windows down on game time; a presence whose window ran out leaves in that frame. */
@@ -5095,6 +5181,11 @@ export class Game {
       if (by) this.hud.screenKey(this, by);
       // the star map (D15): M or View opens the screen on it, and closes it when it is the tab on screen
       else if (inp.hit('map')) this.hud.mapKey(this);
+      // the Recipe Book (Book of Secrets): J, or D-pad Down in play only (in the menus the d-pad navigates)
+      else {
+        const rb = inp.hitBy('recipes');
+        if (rb && (rb !== 'gamepad' || ctx === 'play') && this.stats.get('recipes') >= 1) this.hud.recipesKey(this);
+      }
     }
     // the book download (COMPLETION §8): X on the pause card or the death screen; `act` ignores it below 100%
     if ((ctx === 'paused' || ctx === 'dead') && inp.hit('book')) this.act('book-download');
@@ -5107,10 +5198,11 @@ export class Game {
       else {
         const n = inp.navigate();
         if (this.hud.menuShown) { if (n.x) this.setFov(stepFov(this.fovNow, n.x)); }
+        else if (this.hud.recipesShown) { if (n.y) this.hud.scrollRecipes(n.y); }
         else if (!this.hud.mapShown && (n.x || n.y)) this.hud.moveSelection(n.x, n.y);
       }
       // a number key picks its slot; Enter or A picks the highlighted carried item (not on the star map)
-      if (!this.hud.mapShown && inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
+      if (!this.hud.mapShown && !this.hud.recipesShown && inp.hit('pick')) { const d = inp.digit(); this.chooseCarried(d >= 0 ? d : this.hud.selectedCarried()); }
     }
     if (ctx === 'toll') {
       if (inp.hit('back')) this.hud.closeToll(this);
@@ -5242,6 +5334,7 @@ export class Game {
     this.touchDebris();
     this.cubeStrikes();
     this.shoveCubes();
+    if (below) this.updateCall(dt);
     this.touchPickups();
     if (below) this.touchChests();
     this.intents.update(dt);
@@ -5295,6 +5388,7 @@ export class Game {
     else if (act === 'tab-menu') this.hud.openScreen(this, 'menu');
     else if (act === 'tab-items') this.hud.openScreen(this, 'items');
     else if (act === 'tab-map') this.hud.openScreen(this, 'map');
+    else if (act === 'tab-recipes' && this.stats.get('recipes') >= 1) this.hud.openScreen(this, 'recipes');
     else if (act === 'fov-down' || act === 'fov-up') this.setFov(stepFov(this.fovNow, act === 'fov-up' ? 1 : -1));
   }
 

@@ -21,6 +21,15 @@ export const heartCount = (hp: number, layers: readonly HeartLayer[]) => Math.ce
 export const heartSlots = (maxHearts: number, layers: readonly HeartLayer[]) => maxHearts + layers.length;
 /** Containers and extra hearts together stay within MAX_TOTAL_HEARTS: a new heart needs room. */
 export const hasHeartRoom = (maxHearts: number, layers: readonly HeartLayer[]) => heartSlots(Math.floor(maxHearts), layers) < MAX_TOTAL_HEARTS;
+/**
+ * Whether a heart of this kind would be taken now (`Game.collectHeart`): a red one needs missing health; a layer, or a
+ * blood heart at full health (which opens a slot), needs room for one more heart.
+ */
+export function heartFits(kind: HeartKind, hp: number, maxHp: number, maxHearts: number, layers: readonly HeartLayer[]): boolean {
+  const slot = kind === 'blood' && hp >= maxHp;
+  if (kind === 'red' && hp >= maxHp) return false;
+  return !((isLayer(kind) || slot) && !hasHeartRoom(maxHearts, layers));
+}
 /** The stat source of heart containers that a blood heart opened at full health (#146). Cleared on a new run. */
 export const BLOOD_SLOT_SOURCE = 'bloodHeart';
 export function landHit(layers: HeartLayer[], amount: number, halve = true): { rest: number; dealt: number; lost: LayerKind[]; halved: boolean } {

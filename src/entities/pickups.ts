@@ -31,6 +31,8 @@ export interface Pickup {
   delay: number;
   /** Seconds since it appeared (drives the pop-in). */
   age: number;
+  /** Carried by the Roots' call (game/roots-call.ts): it moves itself, so it neither falls nor drifts here. */
+  homing?: boolean;
   obj: THREE.Object3D;
 }
 
@@ -182,12 +184,12 @@ export class Pickups {
         const k = p.age / POP_IN - 1;
         p.obj.scale.setScalar(Math.max(0.001, 1 + 2.2 * k * k * k + 1.2 * k * k));
       }
-      if (p.flying && (p.vx || p.vz)) {
+      if (!p.homing && p.flying && (p.vx || p.vz)) {
         const nx = p.x + p.vx * dt, nz = p.z + p.vz * dt, cy = Math.floor(p.y + 0.05);
         if (solid(Math.floor(nx), cy, Math.floor(p.z))) p.vx *= -0.3; else p.x = nx;
         if (solid(Math.floor(p.x), cy, Math.floor(nz))) p.vz *= -0.3; else p.z = nz;
       }
-      if (p.type !== 'item' || p.flying) {
+      if (!p.homing && (p.type !== 'item' || p.flying)) {
         // fall until resting on something solid (re-checked every frame: the floor may break)
         const below = solid(Math.floor(p.x), Math.floor(p.y - 0.01), Math.floor(p.z));
         if (!below || p.vy > 0) {

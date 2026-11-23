@@ -76,7 +76,7 @@ A release is cut when `develop` has enough for a version, or on a steady rhythm,
 For a bug in the stable version that cannot wait for the next release:
 
 1. Create `hotfix/<issue>-<slug>` from `main`.
-2. Fix, set the next hotfix suffix in `package.json` (`0.1.2-f1`, then `0.1.2-f2`), and open a PR into **`main`**.
+2. Fix, set the next hotfix suffix in `package.json` (`0.1.2-f1`, then `0.1.2-f2`; after an alpha, `0.2.8-alpha-f1`), and open a PR into **`main`**.
 3. Tag the merged release with its dotted label (`v0.1.2.f1`) and publish the matching changelog section as a GitHub release.
 4. Merge `main` into `develop` so the fix is not lost in the next release.
 

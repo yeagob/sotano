@@ -18,6 +18,8 @@ This folder has one document per practice, in a folder for its path. The two ste
 | [Emotion](emotion/README.md) | Feeling instead of avoiding; release; compassion | 20 | Open-hearted |
 | [Will](will/README.md) | Consistency, discipline, small steps compounding | 15 | Resolute |
 
+The Recipe Book, the menu tab the Book of Secrets opens (every recipe, every meal, what each presence takes): [RECIPE-BOOK](RECIPE-BOOK.md).
+
 A note on reach, the four practices that give a little of it back, and the cut to the starting reach: [Reach practices](REACH-PRACTICES.md).
 
 ## Index

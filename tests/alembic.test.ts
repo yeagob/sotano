@@ -205,7 +205,7 @@ describe('the alembic under the love-shot and under Remember Breathing (three it
       player: { eye: new THREE.Vector3(0.5, 1.6, 0.5), forward: new THREE.Vector3(0, 0, -1) },
       stats: { all: BASE_STATS },
       input: { held: () => state.casting },
-      hands: { holding: false, fire: () => {}, charge: () => {} },
+      hands: { holding: false, fire: () => {}, charge: () => {}, holdUp: () => {} },
       enemies: { list: [], clearProjectiles: () => {} },
       particles: { burst: () => {} },
       pickups,
