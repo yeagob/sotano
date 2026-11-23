@@ -36,7 +36,8 @@ import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSit
 import { callActive, chestAnswersCall, RootsCall } from './roots-call';
 import { offerPedestal, rollChestContents } from './chest-draws';
 import { STILLNESS_TAG } from '../content/bosses/shadow';
-import { cellOverlap, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
+import { cellOverlap, cellTaken, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
+import { RecountClock, strandedIn } from './room-watchdog';
 import { SYNERGIES } from '../content/synergies';
 import { pal } from '../content/palette';
 import { LEVELS, level, tollOf } from '../content/levels';
@@ -405,6 +406,9 @@ export class Game {
   private contacts = new ContactGate();
   /** Queued explosions (chain safety: a few per frame, chains capped). */
   private blasts = new BlastQueue<Blast>();
+  /** Seconds since the sealed-room watchdog last recounted, and whether this step recounts (room-watchdog.ts). */
+  private roomWatch = new RecountClock();
+  private recountRooms = false;
   /** The loaded intention's polarity (BESTIARY §1.1); F switches it. */
   private polarity: Polarity = 'positive';
   get polarityNow() { return this.polarity; }
@@ -2301,6 +2305,7 @@ export class Game {
    *  points, open the doors when every projection of the room is gone (BESTIARY §2). */
   private updateCombat(dt: number) {
     const b = this.player.body;
+    this.recountRooms = this.roomWatch.tick(dt);
     for (const [id, st] of this.roomState) {
       if (st.cleared) continue;
       const r = this.rooms.get(id)!;
@@ -2314,7 +2319,7 @@ export class Game {
         if (!st.started) { st.started = true; st.breath = 0.5; st.armed = true; this.slamDoors(id); }
       }
       if (!st.started) continue;
-      const remaining = this.enemies.blockingIn(id);
+      let remaining = this.enemies.blockingIn(id);
       const lastWave = st.wave + 1 >= st.waves.length;
       // the next wave opens once the last one is nearly down, after a breath (a swell says more are coming)
       if (st.wave >= 0) st.waveT += dt;
@@ -2328,6 +2333,8 @@ export class Game {
         if (st.next <= 0) { st.next = SPAWN_GAP; this.announce(st.queue.shift()!, r); }
         continue;
       }
+      // the watchdog: on the last wave, projections nobody can reach are released, and the room clears below as always
+      if (this.recountRooms && lastWave && remaining > 0 && this.omensIn(id) === 0) remaining -= this.releaseStranded(r);
       // a room only clears once its last wave is down and queued blasts (e.g. a last Panic's burst) have gone off
       if (lastWave && remaining === 0 && this.omensIn(id) === 0 && this.blasts.pending === 0) {
         st.cleared = true;
@@ -2380,6 +2387,7 @@ export class Game {
         if (st.next <= 0) { st.next = SPAWN_GAP; this.announce(st.queue.shift()!, r); }
         continue;
       }
+      if (this.recountRooms && this.omensIn(r.id) === 0) this.releaseStranded(r);
       if (this.enemies.blockingIn(r.id) > 0 || this.omensIn(r.id) > 0 || this.blasts.pending > 0) continue;
       // a wave is down: its reward, then the next wave or the end
       const u = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'challenge', st.entries, st.wave).next();
@@ -2437,6 +2445,22 @@ export class Game {
     let n = 0;
     for (const o of this.omens) if (o.room === room) n++;
     return n;
+  }
+
+  /**
+   * The sealed-room watchdog (room-watchdog.ts): when every projection still keeping room `r` shut is
+   * out of reach (buried in blocks it could not be freed from, or fallen out of the room), each is
+   * released in the middle of the room, its drops with it, so the room clears by its normal path.
+   * Returns how many were released; none while any of them can still be reached.
+   */
+  private releaseStranded(r: RoomInfo): number {
+    const stranded = strandedIn(this.enemies.blockers(r.id), r.y0, (x, y, z) => this.solid(x, y, z));
+    for (const { e, why } of stranded) {
+      devlog.line(`room watchdog: released ${e.def} (actor ${e.id}, ${why}) at ${cell(e.body.x, e.body.y, e.body.z)} so room ${r.id} can clear`);
+      e.body.x = r.hx + 6.5; e.body.y = r.y0 + 1; e.body.z = r.hz + 3.5;
+      this.enemies.kill(e);
+    }
+    return stranded.length;
   }
 
   /** Advances the open omens: motes gather, the crack opens, and the projection breaches out. */
@@ -3586,6 +3610,8 @@ export class Game {
     // a face in reach whose cell cannot take a block (a doorway, the world's edge) is refused like a
     // blocked placement, never thrown: only aiming at nothing throws the block
     if (!ok) { if (tap || hit) sfx.denied(); else this.throwTop(); return; }
+    // a cell another body stands in is refused like a doorway: the block would bury it (issue #301)
+    if (cellTaken([...this.actors.all()].filter(a => a.kind !== 'player'), x, y, z)) { sfx.denied(); return; }
     // the body reaching into the cell: a quarter of a block or less is nudged out and the block goes
     // down; deeper, the block waits in hand until the player steps clear (never thrown, never a jump)
     // the push is worked out now but applied only once the placement goes through (an item may cancel it)

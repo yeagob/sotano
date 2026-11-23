@@ -20,6 +20,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 - On the keyboard, the book download moved from B to H.
 - The alembic holds a brewed flask up only when you take it out, not when it is brewed (#290).
 
+### Fixed
+- A room no longer stays sealed with nothing left to fight (#301): Avoidance comes out of hiding again, a projection caught inside blocks steps free, a block can no longer be placed on a projection, and a sealed room checks itself every 2 seconds and lets go of any projection nobody can reach.
+
 ## 0.2.8-alpha.f3 · 2026-11-22
 
 ### Fixed

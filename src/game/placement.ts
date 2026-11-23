@@ -24,6 +24,16 @@ export interface CellOverlap {
  * How far a body reaches into the cell at (cx, cy, cz), and along which horizontal axis it is
  * cheapest to get out. null when the body and the cell don't overlap.
  */
+/**
+ * Whether any living body of `others` (projections, allies, creatures, presences: never the player,
+ * who is nudged instead) reaches into the cell. Like Minecraft, a block is never set on a creature:
+ * set on a projection, it would bury it and its room could never clear (issue #301).
+ */
+export function cellTaken(others: Iterable<{ alive: boolean; body: BodyBox }>, cx: number, cy: number, cz: number): boolean {
+  for (const a of others) if (a.alive && cellOverlap(a.body, cx, cy, cz)) return true;
+  return false;
+}
+
 export function cellOverlap(b: BodyBox, cx: number, cy: number, cz: number): CellOverlap | null {
   const oy = Math.min(b.y + b.h, cy + 1) - Math.max(b.y, cy);
   const ox = Math.min(b.x + b.hw, cx + 1) - Math.max(b.x - b.hw, cx);
