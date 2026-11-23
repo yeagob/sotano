@@ -49,6 +49,14 @@ A room clears when its last wave is down, no omen is open, and no queued blast i
 
 A room that is cleared once stays cleared: re-entering it does not seal it again.
 
+### Nothing keeps a room shut for good
+
+A room must never stay sealed with nothing left to fight (issue #301). Three rules see to it:
+
+- **A projection that hides comes out again.** Avoidance shuts and drops out of sight, but it keeps watching, and peeks (and can be hit) when the player comes within its reach.
+- **No projection stays buried in blocks.** A block cannot be placed on a projection (or any other creature): the placement is refused, like a doorway. A projection caught inside blocks anyway (a stone falling on it, its spawn point filled while it formed) steps out to the nearest open spot of its room, never through a wall.
+- **The watchdog.** Every 2 seconds, each sealed room on its last wave is recounted from what is really there. If every projection still keeping it shut is out of reach (buried where no open spot is near, or fallen more than 8 blocks under the room's floor), they are released in the middle of the room, their drops with them, and the room clears as always: doors, reward, toast. A room with any projection the player can still reach is never touched. Two seconds is longer than any honest wait the rules make, and short enough that the player barely notices it.
+
 ## Open questions
 
 - **Gather length.** The design gives 1.0 seconds on most floors, 1.4 on floors 1 and 2, and 0.8 from floor 6. The build uses one length for every floor (1.3 seconds). The design's per-floor pacing is in [not-built/encounters](../../not-built/encounters/README.md).

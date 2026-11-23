@@ -57,6 +57,7 @@ function rig(hand: Carried[], active: number | null = null, extra: Rig = {}): Ri
     potions: { drink: vi.fn() },
     heal: vi.fn(),
     doors: { inDoorway: () => false },
+    actors: { all: () => [] },
     labs: new Map(),
     kitchens: new Map(),
     nudge: vi.fn(),
@@ -105,6 +106,17 @@ describe('the game chooses and uses the active carried item', () => {
     g.tryPlace();
     expect(g.world.set).toHaveBeenCalledWith(5, 0, 4, MAT.stone);
     expect(g.player.hand).toEqual([MAT.dirt]);
+  });
+
+  it('place refuses a cell a projection stands in and keeps the block in hand (issue #301)', () => {
+    const projection = { kind: 'projection', alive: true, body: { x: 5.5, y: 0, z: 4.5, hw: 0.3, h: 0.9 } };
+    const g = rig([MAT.stone, MAT.dirt], 0, {
+      solid: (x: number, y: number, z: number) => x === 5 && y === 0 && z === 5,
+      actors: { all: () => [projection] },
+    });
+    g.tryPlace();
+    expect(g.world.set).not.toHaveBeenCalled();
+    expect(g.player.hand).toEqual([MAT.stone, MAT.dirt]);
   });
 
   it('throw sends the active part out and keeps the top block in hand', () => {
