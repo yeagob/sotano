@@ -106,6 +106,54 @@ export const HUD_ICONS = {
     ],
     palette: { o: 'ink.void', b: 'mat.seed.base', h: 'mat.seed.hi', d: 'mat.seed.dark', e: 'light.ember', s: 'light.dusk', c: 'light.core' },
   },
+  /** The white seed: the bomb of a positive intention (a bomb placed at positive polarity is white, DECISIONS §7.8). */
+  seedLove: {
+    rows: [
+      '....oo....',
+      '...ohbo...',
+      '..ohbeso..',
+      '.ohbbesbo.',
+      '.ohbecsbo.',
+      'ohbbccsbdo',
+      'obbbcesbdo',
+      '.obbesbdo.',
+      '..odesdo..',
+      '...oooo...',
+    ],
+    palette: { o: 'ink.void', b: 'bone.paper', h: 'light.core', d: 'bone.dim', e: 'light.hot', s: 'light.hot', c: 'light.core' },
+  },
+  /** The loaded intention, positive: a bead of light, a gold shell round a white core in an ember halo (the intention's own look, §14.1). */
+  intentPositive: {
+    rows: [
+      '...oooo...',
+      '..oeeeeo..',
+      '.oeeggeeo.',
+      'oeeggggeeo',
+      'oeggccggeo',
+      'oeggccggeo',
+      'oeeggggeeo',
+      '.oeeggeeo.',
+      '..oeeeeo..',
+      '...oooo...',
+    ],
+    palette: { o: 'ink.void', e: 'light.ember', g: 'light.gold', c: 'light.core' },
+  },
+  /** The loaded intention, negative: the same bead, its light charred to ash with a banked ember core and a dusk halo. */
+  intentNegative: {
+    rows: [
+      '...oooo...',
+      '..oddddo..',
+      '.oddaaddo.',
+      'oddaaaaddo',
+      'oddaeeaddo',
+      'oddaeeaddo',
+      'oddaaaaddo',
+      '.oddaaddo.',
+      '..oddddo..',
+      '...oooo...',
+    ],
+    palette: { o: 'ink.void', d: 'light.dusk', a: 'ink.ash', e: 'light.ember' },
+  },
   /** A key with an eye in its bow: an insight. */
   key: {
     rows: [

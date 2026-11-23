@@ -8,7 +8,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 |---|---|
 | move | left thumb: a floating stick that appears where you put it down (left 42 % of the screen) |
 | look | drag anywhere on the right; dragging the cast button also aims |
-| cast (hold) | the bead of light, the largest button, bottom right |
+| cast (hold) | the bead of light, the largest button, bottom right. Its panel takes the loaded intention's colour: a gold-lit panel for a good intention, a charred one for a bad one (DECISIONS §14.1) |
 | launch a missile (with Dr. Launcher) | a quick double tap on the bead of light (within 0.3 s) |
 | polarity | **a half turn of the phone (180 degrees)**, like a steering wheel: each turn switches between good and bad intentions (its ring shows which: gold for good, ember for bad, a 6 px ring on a 92 % panel so it reads on a phone; issue #105, DECISIONS §14.1). The ring also shows the loaded intention's power: it thickens from 6 to 12 px and gains a glow of the same colour as damage rises, one step per doubling (issue #111, DECISIONS §7.1.1) |
 | choose the active carried item (`pick`, and `previous` / `next` by the same tap) | **a tap on a slot of the hand** (bottom centre, in play): that carried item becomes the active one. In the inventory the tab button opens, a tap on a hand slot or on an item chooses it. A tap that drags does nothing, and it never places a block |
@@ -16,7 +16,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | place | **a tap on the world**: the block under the finger is where the block in your hand goes |
 | throw | the flying block |
 | drink | the flask on top of the hand: shown only while it is there, drawn as that potion in its liquid colour, in the right-thumb column above throw (#159) |
-| bomb | the bomb (shows the count) |
+| bomb | the bomb (shows the count). For a good intention it is the white seed, framed and counted in gold; for a bad one, the black seed, framed and counted in ember (DECISIONS §14.1) |
 | inventory | the tab button, top bar beside the minimap: opens the screen on its menu tab (shows how many practices you hold) |
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |
@@ -49,7 +49,7 @@ Resuming asks for fullscreen and locks the orientation to landscape where the br
 
 ## 6. Glyphs and feedback
 
-The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`), drawn from palette tokens (`sotano-art`). Buttons dim when they cannot act (empty hand, no seeds) and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).
+The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`, or `seedLove` for a good intention, chosen by `bombGlyph` in `src/input/touch.ts`), drawn from palette tokens (`sotano-art`). Buttons dim when they cannot act (empty hand, no seeds) and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).
 
 ## 7. Why these controls
 

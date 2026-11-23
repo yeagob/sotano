@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Changed
+- The polarity is easier to read: the mark beside the counters is a framed bead of light (gold with a white core for a good intention, ash with an ember core for a bad one). The bomb counter takes the colour of the loaded intention, and a good intention's bomb is the white seed. On a phone, the fire button and the bomb button take that colour too.
+
 ## 0.2.4.f1 · 2026-11-14
 
 ### Added

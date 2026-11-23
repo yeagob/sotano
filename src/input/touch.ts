@@ -16,6 +16,11 @@ export function castPolarityToken(polarity: Polarity): PalToken {
   return polarity === 'positive' ? 'light.gold' : 'light.ember';
 }
 
+/** The bomb's glyph: the white seed for a positive intention (a bomb placed then is white), the black seed for a negative one. */
+export function bombGlyph(polarity: Polarity): 'seedLove' | 'seed' {
+  return polarity === 'positive' ? 'seedLove' : 'seed';
+}
+
 /**
  * What the drink button shows for the top of the hand. Only a flask on top can be drunk (Game.drink
  * takes the top), so the button is shown for exactly that case and hidden for everything else.
@@ -267,6 +272,10 @@ export class TouchControls {
     this.updateDrink(drink);
     bomb.classList.toggle('off', p.bombs <= 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
+    // the bomb takes the loaded intention's colour: the white seed and its frame when positive, the black seed when negative
+    bomb.dataset.polarity = g.polarityNow;
+    bomb.style.setProperty('--pol', palCss(castPolarityToken(g.polarityNow)));
+    bomb.style.setProperty('--glyph', `var(--ico-${bombGlyph(g.polarityNow)})`);
     this.buttons.get('inventory')!.querySelector('span')!.textContent = g.inventory.items.length ? String(g.inventory.items.length) : '';
     const pol = this.buttons.get('cast')!;
     pol.dataset.polarity = g.polarityNow;
