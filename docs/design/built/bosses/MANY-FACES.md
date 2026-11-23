@@ -14,7 +14,7 @@ The Many Faces is a cube with a face for everyone: two bright eyes, and a ring o
 
 ### Phase 1: charms
 
-It walks at the player and keeps about five blocks away. Every six seconds it summons one random projection from the doubt, the critic and the panic.
+It walks at the player and keeps about five blocks away, circling the player at that distance (in every phase). Every six seconds it summons one random projection from the doubt, the critic and the panic.
 
 - Arena: none on entering.
 
@@ -25,6 +25,10 @@ Arena `faces`: toast only. Every three seconds it moves to a seeded point on a r
 ### Phase 3: plain (from one third of its health)
 
 Arena `plain`: toast only. Every 2.2 seconds a ring of force grows out of its own body, doing 8.
+
+## Evasion
+
+A blink: it turns away and shows another face from another side of the player, four to six blocks away. The spot is marked first (a 0.35-second tell, then 0.4 seconds gone). Cooldown 2.4 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
 
 ## Toasts
 

@@ -39,6 +39,10 @@ Arena `rockfall`, again. It charges and crushes. Its moves:
 - A slam with three stones around the landing.
 - A double crossed bar grid.
 
+## Evasion
+
+A dash: it steps aside, as a gate swings, 4 blocks in 0.3 seconds, after a 0.3-second tell. Cooldown 2 seconds, the shortest of the bosses. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It tests you: volleys and bars cross the whole room".

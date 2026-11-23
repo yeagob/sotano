@@ -15,7 +15,7 @@ Inertia is a round mass of packed earth, asleep in the middle of the room. Nothi
 
 ### Phase 1: asleep, then rolling
 
-It stays asleep until its body moves faster than 1.5 blocks a second. Then it wakes and walks at the player. Its moves:
+It stays asleep until its body moves faster than 1.5 blocks a second, or until it has lost 3% of its health (shots too weak to move it still wake it: it never stays asleep for good once the player fights it). Then it wakes and walks at the player. Its moves:
 
 - A roll and clods: a charge that runs three blocks and bounces once, then four clods thrown across the room.
 - A charge that bounces twice.
@@ -38,6 +38,10 @@ Arena `spill`: cubes are shed around it. It stops in one place for a while and p
 - A second inhale, 1.6 seconds long.
 - A charge with three bounces.
 - A barrage of six clods.
+
+## Evasion
+
+A dash: it rolls aside, 4 blocks in 0.4 seconds, after a 0.3-second tell. Cooldown 2.4 seconds. While it is asleep it does not dodge; a shot that wakes it is answered by a roll. See [Fight flow](FIGHT-FLOW.md#evasion).
 
 ## Toasts
 

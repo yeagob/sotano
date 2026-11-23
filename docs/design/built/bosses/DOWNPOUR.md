@@ -38,6 +38,10 @@ Arena `drain`: the water goes. Its moves:
 - A crossed bar grid, walking.
 - A nova of ten bolts over two volleys.
 
+## Evasion
+
+A dash: the cloud drifts off the line on a gust, 4 blocks in half a second at its height, after a 0.3-second tell. Cooldown 2.2 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It comes down: rain floods the floor and lightning bars the room".

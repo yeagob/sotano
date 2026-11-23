@@ -28,6 +28,10 @@ Every 2.2 seconds it erupts twice: two rings of mud at two seeded points, each a
 
 It charges the player along a line, runs 1.6 blocks, stuns for 1.6 seconds on hitting a wall, then repeats after 1.4 seconds.
 
+## Evasion
+
+A blink: it dives into the mud and surfaces elsewhere, four to seven blocks from the player, where the ground is marked first (a 0.4-second tell, then half a second under). Cooldown 2.6 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It erupts: bursts of mud cross the arena".
