@@ -141,13 +141,18 @@
       font-variant-numeric: tabular-nums; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
     .counter .ico { width: 24px; height: 24px; background: no-repeat center/contain; image-rendering: pixelated; }
     .ico.bomb { background-image: var(--ico-seed); }
+    /* a positive intention's bombs are white, as the bomb placed then is (DECISIONS §14.1); the count takes the same colour */
+    #status[data-polarity="positive"] .ico.bomb { background-image: var(--ico-seedLove); }
+    #status[data-polarity="positive"] #bombs { color: var(--pal-light-hot); }
+    #status[data-polarity="negative"] #bombs { color: var(--pal-light-ember); }
     .ico.key { background-image: var(--ico-key); }
-    /* the loaded intention (F): a round mark, the same size and place in both states; static, never flickers.
-       Positive: a filled gold disc. Negative: an ember ring round an ink centre (shape first, value confirms).
-       The 1 px ink outline keeps it readable over any floor or the sky, like the counters' text outline. */
-    #polarity { width: 14px; height: 14px; margin: 4px 0 2px 3px; border-radius: 50%; border: 2px solid var(--pol); background: var(--pol);
-      box-shadow: 0 0 0 1px var(--ui-line); }
-    #polarity[data-polarity="negative"] { background: var(--ui-line); }
+    /* the loaded intention (F): a square pixel frame in its polarity colour (gold, or ember) round a 10 × 10 miniature of the
+       intention itself at 2×: a gold bead with a white core for the good one, an ash bead with an ember core for the bad one.
+       The value of the bead says it (light against charred); the frame's hue only confirms it. Static, never animated. The 1 px ink outline keeps it
+       readable over any floor or the sky, like the counters' text outline. */
+    #polarity { box-sizing: content-box; width: 20px; height: 20px; margin: 4px 0 2px 3px; padding: 2px; border: 2px solid var(--pol);
+      background: var(--ico-intentPositive) no-repeat center / 20px var(--ui-panel); image-rendering: pixelated; box-shadow: 0 0 0 1px var(--ui-line); }
+    #polarity[data-polarity="negative"] { background-image: var(--ico-intentNegative); }
     /* Kairos (#123): three pips for the charge, a dimmed page while time is stopped, numbered marks on the world */
     #kairos { display: flex; align-items: center; gap: 4px; margin: 4px 0 2px 3px; }
     #kairos[hidden] { display: none; }
@@ -504,10 +509,18 @@
     .tb span { position: absolute; right: 6%; bottom: 6%; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
     .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 calc(6px * (1 + var(--power, 0))) var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line), 0 0 calc(4vmin * var(--power, 0)) calc(1vmin * var(--power, 0)) var(--pol, var(--ui-gold)); }
     /* the ring thickens (6 → 12 px) and a glow of the same token widens with the loaded intention's damage (#111) */
-    .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--ui-line) 92%, transparent); }
+    /* the fire button takes its intention's colour: a gold-lit panel for the good one, a charred one for the bad one, and a
+       brighter tint while pressed (sotano-art: the polarity pair stays on the button too, DECISIONS §14.1 amendment #105) */
+    .tb-cast[data-polarity="positive"] { background-color: color-mix(in srgb, var(--pol) 24%, var(--ui-panel)); }
+    .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--pol) 16%, var(--ui-line)); }
+    .tb-cast.on { background-color: color-mix(in srgb, var(--pol) 40%, var(--ui-panel)); }
     .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
     .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
     .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
+    /* the bomb button takes the loaded intention's colour: its frame and its count (the seed itself is swapped in touch.ts) */
+    .tb-bomb { box-shadow: inset 0 0 0 4px var(--pol, var(--ui-line)), 0 0 0 1px var(--ui-line); }
+    .tb-bomb[data-polarity="positive"] span { color: var(--pal-light-hot); }
+    .tb-bomb[data-polarity="negative"] span { color: var(--pal-light-ember); }
     /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
     .tb[hidden] { display: none; }
     .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41.5vmin); width: 13vmin; height: 13vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
@@ -727,7 +740,7 @@
   <div id="hurt-side"></div>
   <div id="star"></div>
   <div id="berserk"></div>
-  <div id="status">
+  <div id="status" data-polarity="positive">
     <div id="hearts-row" class="hearts-row">
       <div id="hearts-box" class="hearts-box"><div id="hearts"></div></div>
       <div id="spirit-num" class="spirit-num" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div>

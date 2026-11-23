@@ -123,6 +123,8 @@ export class Hud {
   private bombsEl = $('bombs');
   private keysEl = $('keys');
   private polarityEl = $('polarity');
+  /** The corner of counters: it carries the polarity too, so the bomb counter and its icon take the intention's colour. */
+  private statusEl = $('status');
   private kairosEl = $('kairos');
   private kairosMarksEl = $('kairos-marks');
   private kairosTone = '';
@@ -400,7 +402,8 @@ export class Hud {
     const el = this.polarityEl;
     const positive = this.lastPolarity === 'positive';
     el.dataset.polarity = this.lastPolarity;
-    // the full light, or the eclipsed one (an ember ring round a dark centre): never cold, it is yours
+    this.statusEl.dataset.polarity = this.lastPolarity;
+    // the frame's colour: gold for the good intention, ember for the bad one (never cold: it is yours)
     el.style.setProperty('--pol', palCss(positive ? 'light.gold' : 'light.ember'));
     el.title = t(positive ? 'hud.polarity.positive' : 'hud.polarity.negative');
   }

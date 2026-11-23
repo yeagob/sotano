@@ -14,6 +14,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - Cooking a potion or a meal holds it up in both hands for a moment, with its name, as a monster's drop does (#290). Each cookable meal has its own food: a chicken drumstick for the small meal, a bowl of broth for the hearty one (#291).
 
 ### Changed
+- The polarity is easier to read: the mark beside the counters is a framed bead of light (gold with a white core for a good intention, ash with an ember core for a bad one). The bomb counter takes the colour of the loaded intention, and a good intention's bomb is the white seed. On a phone, the fire button and the bomb button take that colour too.
 - On the keyboard, the book download moved from B to H.
 - The alembic holds a brewed flask up only when you take it out, not when it is brewed (#290).
 
