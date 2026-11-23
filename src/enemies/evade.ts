@@ -36,6 +36,8 @@ export const STILL = 1;
 export const OPENING = 0.4;
 /** Seconds without an action before a boss repositions on its own. */
 export const IDLE = 3;
+/** The fastest pace the stillness check reads (a charge's speed), so it reads stillness soon after one. */
+const MAX_PACE = 12;
 /** States in which an attack is under way (moveset windup and act; the older charge's aim and run). */
 const BUSY = new Set(['windup', 'act', 'aim', 'run']);
 const GRAVITY = 26;
@@ -68,7 +70,10 @@ export function evasive(inner: Behaviour, d: Dodge): Behaviour {
         m = { hp: e.hp, lx: b.x, lz: b.z, speed: 0, timer: e.timer, state: e.state, since: 0, idle: 0, cool: 0, pending: false, n: 0, phase: 'none', t: 0, tx: 0, tz: 0, ox: 0, oz: 0 };
         minds.set(e, m);
       }
-      const inst = Math.hypot(b.x - m.lx, b.z - m.lz) / Math.max(ctx.dt, 1e-3);
+      // its pace, smoothed; a jump of more than two blocks in a frame is a teleport of its own (the
+      // Grudge surfacing, the Many Faces' swap): it stands where it lands
+      const moved = Math.hypot(b.x - m.lx, b.z - m.lz);
+      const inst = moved > 2 ? 0 : Math.min(MAX_PACE, moved / Math.max(ctx.dt, 1e-3));
       m.lx = b.x; m.lz = b.z;
       m.speed += (inst - m.speed) * Math.min(1, ctx.dt * 4);
       const hit = e.hp < m.hp - 1e-6;
