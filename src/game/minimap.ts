@@ -5,13 +5,54 @@
 // block is about one map pixel. Rooms stay one cell each (DECISIONS §10.2: the map tells how many rooms and how they
 // join, never their size or shape); the tunnels are a second layer drawn only where the player has dug.
 
+import type { PalToken } from '../content/palette';
 import { BAND, cellOf, floorY, inRoomSpace, MARGIN, PITCH_X, PITCH_Z, type RoomInfo } from '../world/floor';
 
 /** The map's cell, in canvas pixels. */
 export const MAP_CELL = { w: 14, h: 9, gap: 2 } as const;
 
+/**
+ * The rock border drawn around the room grid, in canvas pixels per side (x, z): the floor's solid margin (MARGIN + 1
+ * blocks around the grid) at the map's scale, so a tunnel dug there and the arrow of a body in it stay on the canvas
+ * instead of being cut off at its edge (issue #305).
+ */
+export const MAP_PAD: readonly [number, number] = [
+  Math.ceil((MARGIN + 1) * (MAP_CELL.w + MAP_CELL.gap) / PITCH_X),
+  Math.ceil((MARGIN + 1) * (MAP_CELL.h + MAP_CELL.gap) / PITCH_Z),
+];
+
 /** A dug hole is drawn on the map once it is more than 2 blocks tall (owner, issue #302). */
 export const TUNNEL_MIN_HEIGHT = 3;
+
+/** The map's background: the slate panel the canvas sits on (`--ui-panel`, index.html `.slate`). */
+export const MAP_BG: PalToken = 'ink.panel';
+
+/**
+ * The dug tunnels (DECISIONS §10.2, issue #305): `bone.dim`, fully opaque, at least TUNNEL_MIN_PX on a side, so the
+ * trail is clearly lighter than the map's background (the first trail, `bone.faded` at α 0.6 and one pixel wide, was
+ * not seen in play).
+ */
+export const TUNNEL_TONE: PalToken = 'bone.dim';
+export const TUNNEL_MIN_PX = 2;
+
+/** The arrow's light border, drawn under its fill, so the marker reads on the dark map and on any cell (issue #305). */
+export const ARROW_BORDER: PalToken = 'bone.paper';
+export const ARROW_BORDER_PX = 2;
+
+/**
+ * The arrow's fill: `ink.void` on the current room's `bone.paper` cell (as built, owner 2026-10-27), the player's
+ * `light.gold` anywhere else (rock, a doorway, a tunnel), where it sits on the dark background (issue #305).
+ */
+export function arrowFill(inRoom: boolean): PalToken {
+  return inRoom ? 'ink.void' : 'light.gold';
+}
+
+/** The canvas rectangle of a tunnel tile (world column x, z): its block's pixels, grown to TUNNEL_MIN_PX. */
+export function tunnelRect(x: number, z: number): [number, number, number, number] {
+  const [ax, az] = mapPx(...gridPoint(x, z)), [bx, bz] = mapPx(...gridPoint(x + 1, z + 1));
+  const x0 = Math.round(ax), z0 = Math.round(az);
+  return [x0, z0, Math.max(TUNNEL_MIN_PX, Math.round(bx) - x0), Math.max(TUNNEL_MIN_PX, Math.round(bz) - z0)];
+}
 
 /** The floor as the minimap reads it. */
 export interface MapFloor {
