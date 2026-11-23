@@ -58,9 +58,10 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
 | inventory | press | play, paused, inventory | Tab / I | Y | the tab button (top) |
 | map | press | play, paused, inventory (gamepad: play, inventory; touch: paused, inventory) | M | View | the Star map tab of the screen |
+| recipes | press | play, paused, inventory (gamepad: play; touch: paused, inventory) | J | D-pad Down | the Recipes tab of the screen (shown only while the Book of Secrets is held) |
 | pause | press | play, paused | Esc | Menu | none: the tab button opens the same screen |
 | restart | press | see each device | R | View | "New run" on the landing and the pause card |
-| book | press | paused, dead | B | X | the "Download the book" button, at 100% completion (COMPLETION §8) |
+| book | press | paused, dead | H | X | the "Download the book" button, at 100% completion (COMPLETION §8) |
 | confirm | press | prompt, paused, dead, toll, meditation | click / Enter | A | tap |
 | navigate | axis | inventory, toll, paused, meditation, prompt | arrows | d-pad | tap a tile; on the menu, drag the field-of-view bar or tap − and + |
 
@@ -91,3 +92,5 @@ Every prompt has a version per device (`intro.play`, `banner.continue`, `death.r
 Remapping (DECISIONS §10.4 asks for remappable input): `BINDINGS` is the default layout a settings page would copy and edit. Gyro aiming on phones.
 
 **The star map (D15 of #149).** `map` opens the screen on its star map tab, and closes the screen when that tab is the one on screen (`mapKeyOutcome`); back (Esc, B) and the card's ✕ close it as any tab. On the map tab `navigate` and `pick` do nothing. References: Minecraft (the map is held up and read; the screen keeps one view per tab), Noita (M opens the map of what you have seen), Isaac (Tab, or Select on a pad, shows the floor's map). The design is [STAR-MAP.md](../../design/built/levels/giant-tree/STAR-MAP.md).
+
+**The Recipe Book.** `recipes` opens the screen on its Recipes tab, and closes the screen when that tab is the one on screen (`recipesKeyOutcome`); back (Esc, B) and the card's ✕ close it as any tab. It works only while the `recipes` stat is 1 (the Book of Secrets); without it the key does nothing and the tab is hidden. On a pad D-pad Down opens it in play only: on the screen the d-pad is `navigate`, which scrolls the book up and down on its tab (`Hud.scrollRecipes`); `pick` does nothing there. The key is J (a journal, as in many games): B is the Roots' book download on the pause card and the death screen, and it moved to H; I is the inventory and F the polarity. References: Minecraft (the recipe book is a button of the inventory screen), Noita (what you learned is read on a page of the pause screen), Isaac (one key, one screen: the journal of what you found). The design is [RECIPE-BOOK.md](../../design/built/practices/RECIPE-BOOK.md).

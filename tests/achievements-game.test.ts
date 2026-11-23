@@ -192,6 +192,66 @@ describe('stations and pages (ACHIEVEMENTS §1)', () => {
   });
 });
 
+describe('blocks, projections and states of being (ACHIEVEMENTS §1)', () => {
+  it('blocks.placed counts across runs: a second session on the saved record carries the count on, and unlocks at 1000', () => {
+    const { record, store } = fresh();
+    const first = session(record, store);
+    for (let i = 0; i < 600; i++) first.track('blockPlaced', { afterPact: false }, NOW);
+    expect(record.counts['blocks.placed']).toBe(600);
+    const later = session(loadMeta(store), store);
+    for (let i = 0; i < 399; i++) later.track('blockPlaced', { afterPact: false }, NOW + 1);
+    expect(later.unlocked('blocks.placed')).toBe(false);
+    expect(ids(later.track('blockPlaced', { afterPact: true }, NOW + 2))).toEqual(['blocks.placed']);
+    expect(loadMeta(store).achievements['blocks.placed']).toBe(NOW + 2);
+    expect(later.level).toBe(1);
+  });
+
+  it('projections.converted counts across runs and never a boss; the 100th ordinary conversion unlocks it', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('projectionConverted', { def: 'doubt', boss: true }, NOW))).toEqual([]);
+    expect(record.counts['projections.converted']).toBeUndefined();
+    for (let i = 0; i < 99; i++) k.track('projectionConverted', { def: 'doubt', boss: false }, NOW);
+    expect(record.counts['projections.converted']).toBe(99);
+    const next = session(loadMeta(store), store);
+    expect(ids(next.track('projectionConverted', { def: 'doubt', boss: false }, NOW + 1))).toEqual(['projections.converted']);
+    expect(next.pending).toBe(1);
+  });
+
+  it('projections.destroyed counts ordinary projections across runs, and a destroyed boss does not count', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    expect(ids(k.track('projectionDestroyed', { def: 'resistance', boss: true }, NOW))).toEqual([]);
+    expect(record.counts['projections.destroyed']).toBeUndefined();
+    for (let i = 0; i < 99; i++) k.track('projectionDestroyed', { def: 'doubt', boss: false }, NOW);
+    const next = session(loadMeta(store), store);
+    expect(ids(next.track('projectionDestroyed', { def: 'doubt', boss: false }, NOW + 1))).toEqual(['projections.destroyed']);
+  });
+
+  it('each state of being unlocks the first time its synergy turns on, in any run, and a second time gives nothing', () => {
+    const { record, store } = fresh();
+    expect(ids(session(record, store).track('synergyOn', { synergy: 'resolute' }, NOW))).toEqual(['state.resolute']);
+    const later = session(loadMeta(store), store);
+    expect(later.track('synergyOn', { synergy: 'resolute' }, NOW + 1)).toEqual([]);
+    expect(ids(later.track('synergyOn', { synergy: 'open_hearted' }, NOW + 2))).toEqual(['state.open-hearted']);
+    expect(later.level).toBe(2);
+    expect(later.pending).toBe(1); // the second session's own queue: the first session's notice is its card, not this one
+  });
+
+  it('the sandbox and the lab unlock none of them and write nothing', () => {
+    const { record, store } = fresh();
+    const k = session(record, store);
+    k.live = false;
+    for (let i = 0; i < 1000; i++) k.track('blockPlaced', { afterPact: true }, NOW);
+    expect(k.track('synergyOn', { synergy: 'embodied' }, NOW)).toEqual([]);
+    expect(k.track('projectionConverted', { def: 'doubt', boss: false }, NOW)).toEqual([]);
+    expect(k.track('projectionDestroyed', { def: 'doubt', boss: false }, NOW)).toEqual([]);
+    expect(k.pending).toBe(0);
+    expect(store.writes).toBe(0);
+    expect(record.counts['blocks.placed']).toBeUndefined();
+  });
+});
+
 describe('the sandbox and the lab (ACHIEVEMENTS §2)', () => {
   it('unlock nothing, queue nothing and write nothing', () => {
     const { record, store } = fresh();

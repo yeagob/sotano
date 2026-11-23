@@ -6,6 +6,16 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Added
+- The Book of Secrets: a practice on the Roots' pedestals from mastery level 30. It opens the Recipe Book on J, in play and on the menu's Recipes tab: every potion, every meal, and what each presence takes, all read from the game's data.
+- The Roots call from mastery level 50: at the start of every run, the keys, bombs, hearts, practices and chest contents on the basement floor fly to you and are taken. The Sanctuary's meditation is never pulled (#295).
+- Achievements for the states of being reached for the first time (four), and for the blocks and the projections: Brick by Brick (1000 blocks placed), Many Come Home (100 projections turned to your side), and Clearing the Way (100 projections destroyed).
+- Cooking a potion or a meal holds it up in both hands for a moment, with its name, as a monster's drop does (#290). Each cookable meal has its own food: a chicken drumstick for the small meal, a bowl of broth for the hearty one (#291).
+
+### Changed
+- On the keyboard, the book download moved from B to H.
+- The alembic holds a brewed flask up only when you take it out, not when it is brewed (#290).
+
 ## 0.2.8-alpha.f3 · 2026-11-22
 
 ### Fixed

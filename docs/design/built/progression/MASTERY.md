@@ -17,7 +17,7 @@ The Roots have a mastery level: **the number of achievements unlocked, capped at
 ## Where the player sees it
 
 - In the achievement notice: "Mastery of the Roots: 5 of 100" ([ACHIEVEMENTS §4](ACHIEVEMENTS.md#4-the-notice)).
-- In the Roots themselves: more on the floor, an extra practice from level 10 (always Fartlek, the run) and a second from level 25 (always Child's Pose, the crouch; issue #277), an altar in the start room from level 80, a second Boundary at 100. The two practices the Roots offer (the Sanctuary chest and the way-down pedestal) are the same at every level.
+- In the Roots themselves: more on the floor, an extra practice from level 10 (always Fartlek, the run) and a second from level 25 (always Child's Pose, the crouch; issue #277), a third from level 30 (always the Book of Secrets, which opens the Recipe Book), the Roots' call from level 50 (half of the mastery: at every run start what the Roots lay flies to the player, all but the Sanctuary's practice; issue #295, [CALL](../levels/roots/CALL.md)), an altar in the start room from level 80, a second Boundary at 100. The two practices the Roots offer (the Sanctuary chest and the way-down pedestal) are the same at every level.
 - A screen that lists the achievements and the level is not built. It would come with the completion percentage of issue #180, which is not designed yet.
 
 ## Not decided

@@ -19,6 +19,7 @@ import { ITEMS } from '../content/items';
 import { MATERIALS } from '../content/materials';
 import { PALETTE, PATH_GLYPH, PATHS, pal, palCss, type PalToken } from '../content/palette';
 import { PART_ICONS } from '../content/part-icons';
+import { flaskDef } from '../content/potions';
 import { CRACK_STAGES } from '../content/tiles';
 import { buildModel } from '../entities/enemies';
 import { pickupMesh } from '../entities/pickups';
@@ -178,6 +179,19 @@ export function runGallery(params: URLSearchParams) {
       fig(r, box, d.id);
       fig(r, scaled(iconCanvas(d, 1), 3), '', 'on-black');
       fig(r, scaled(iconCanvas(d, 1), 3), '', 'on-white');
+    }
+    // the kitchen's meals (issue #291) beside the potion bottle they used to share
+    head('Meals: the kitchen\'s two dishes, icons at ×2, ×3, ×5 on slate, and ×3 on black and white');
+    const meals = row();
+    for (const potion of ['plain-tonic', 'meal-small', 'meal-hearty'] as const) {
+      const d = flaskDef({ potion });
+      if (only && d.id !== only && `flask.${potion}` !== only) continue;
+      const box = document.createElement('div');
+      box.className = 'row';
+      for (const k of [2, 3, 5]) box.appendChild(scaled(iconCanvas(d, k), 1));
+      fig(meals, box, potion);
+      fig(meals, scaled(iconCanvas(d, 1), 3), '', 'on-black');
+      fig(meals, scaled(iconCanvas(d, 1), 3), '', 'on-white');
     }
   }
 

@@ -18,6 +18,7 @@ Every panel is short, warm and concrete, and true to what the room holds.
 | [PANELS.md](PANELS.md) | The five layouts (lesson, plate, prose, quote, image) on the 896 × 512 slab: geometry, character budgets, key caps, where each panel hangs |
 | [BOOK-DATA.md](BOOK-DATA.md) | The two JSON files, every field, the validation rules, the image namespaces and the key caps |
 | [REWARDS.md](REWARDS.md) | What the Roots lay at each mastery level, 0 to 100, and what stays the same everywhere else |
+| [CALL.md](CALL.md) | The Roots' call (level 50): at every run start what the Roots lay flies to the player, all but the meditation's practice |
 
 The achievements, the mastery level and the save record are not specific to the Roots: they are in [progression](../../progression/README.md) ([ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md), [MASTERY](../../progression/MASTERY.md), [SAVE](../../progression/SAVE.md)).
 

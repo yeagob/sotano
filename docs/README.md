@@ -5,6 +5,7 @@ Everything about the game, organised in sections. Each section has its own READM
 | Section | What's in it |
 |---|---|
 | [design/](design/README.md) | The game design document, a folder tree in two branches: [built/](design/built/README.md) (what exists) and [not-built/](design/not-built/README.md) (decided or proposed). Pillars, mechanics, story, metaphor, enemies, bosses, levels and practices (items) from the player's side |
+| [recipe book](design/built/practices/RECIPE-BOOK.md) | The Recipe Book the Book of Secrets opens: every potion and meal recipe and what each presence takes, read from the game's data |
 | [bestiary](design/built/bestiary/README.md) | The illustrated catalogue: a screenshot of every creature, projection, boss, presence and voice, with its kind, where it appears and a link to the document that holds its detail |
 | [architecture/](architecture/README.md) | How the code works today: overview, items and synergies, rooms and floors, entities |
 | [research/](research/README.md) | Research into how Isaac and Noita are built, the target technical architecture, budgets, IP notes and the roadmap |

@@ -144,6 +144,24 @@ describe('the game chooses and uses the active carried item', () => {
     expect(typeof g.player.hand[1]).toBe('object');
     expect((g.player.hand[1] as { potion: PotionId }).potion).toBeTruthy();
   });
+
+  it('a cooked meal is held up in both hands, and the toast names it (issue #290)', () => {
+    const kitchen = newKitchen();
+    const g = rig([part, MAT.stone], 0, { kitchens: new Map([[7, kitchen]]) });
+    g.cookAt(1, 1, 1);
+    expect(g.hands.holdUp).toHaveBeenCalledTimes(1);
+    const shown = g.hands.holdUp.mock.calls[0][0];
+    expect(shown.id).toMatch(/^flask\.meal-/);
+    expect(g.hud.toastDrinkHint).toHaveBeenCalledWith('kitchen.cooked', expect.objectContaining({ name: expect.stringMatching(/\S/), left: 1, total: 3 }));
+  });
+
+  it('a brewed flask is not held up when the alembic brews it; it is held up only when taken out (issue #290)', () => {
+    const lab = newAlembic();
+    lab.bulb = [part];
+    const g = rig([MAT.stone], null, { labs: new Map([[7, lab]]) });
+    g.hitLab(1, 1, 1, 'positive');
+    expect(g.hands.holdUp).not.toHaveBeenCalled();
+  });
 });
 
 describe('drinking a healing potion or meal at full health', () => {

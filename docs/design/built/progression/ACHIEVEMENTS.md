@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 48 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the final one of #180, "Made Omh", and the hour of meditation, §1). The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 54 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, and the 7 of the blocks, the projections and the states of being, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -118,7 +118,30 @@ The names for 54 and 69 are the owner's; "Nice" stays as it is in both languages
 
 The names are proposals, for the owner to change, as the others are. `mind.crafter` counts only after the **first pact with the Listener**, which is accepting its heart offer (`resolvePresenceOffer`); the pact is saved in the record as `pact` (SAVE.md), so the count holds in later runs. A reset of the Roots forgets it, like the other unlocks.
 
-## 2. The data model (takes the other 54 without code changes)
+### Blocks, projections and states of being (7, the owner's request of 2026-11-22)
+
+Names are proposals, pending the owner's word. Each one is a first time or a count kept across runs, saved at once like the others.
+
+| Id | Rule | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `blocks.placed` | `blockPlaced`, **1000 times across runs**, whatever the pact. Beside `mind.crafter`, which counts the same placements only after the pact; both exist | Brick by Brick | Ladrillo a ladrillo | Place 1000 blocks, across all your runs. | Coloca 1000 bloques, sumando todas tus partidas. |
+| `projections.converted` | `projectionConverted` with `boss` false, **100 times across runs**: a projection turned to your side | Many Come Home | Muchos vuelven a casa | Turn 100 projections to your side, across all your runs. | Pon de tu lado a 100 proyecciones, sumando todas tus partidas. |
+| `projections.destroyed` | `projectionDestroyed` with `boss` false, **100 times across runs**: a hostile projection whose health reached zero by harm | Clearing the Way | Despejar el camino | Destroy 100 projections, across all your runs. | Destruye 100 proyecciones, sumando todas tus partidas. |
+| `state.embodied` | `synergyOn` with `synergy` `embodied`: the first time the state turns on | Back in the Body | De vuelta en el cuerpo | Reach the state of being Embodied: hold three body practices. | Alcanza el estado de ser Encarnado: lleva a la vez tres prácticas del cuerpo. |
+| `state.lucid` | `synergyOn` with `synergy` `lucid` | A Clear Mind | Mente clara | Reach the state of being Lucid: hold three mind practices. | Alcanza el estado de ser Lúcido: lleva a la vez tres prácticas de la mente. |
+| `state.open-hearted` | `synergyOn` with `synergy` `open_hearted` | An Open Heart | Abrir el corazón | Reach the state of being Open-hearted: hold three emotion practices. | Alcanza el estado de ser Corazón abierto: lleva a la vez tres prácticas de la emoción. |
+| `state.resolute` | `synergyOn` with `synergy` `resolute` | Steady Will | Voluntad firme | Reach the state of being Resolute: hold three will practices. | Alcanza el estado de ser Resuelto: lleva a la vez tres prácticas de la voluntad. |
+
+The choices made for this set, for the owner to confirm (also in *Not decided*):
+
+- **Bosses do not count** toward the 100 conversions or the 100 destructions. A boss already has its two achievements.
+- **Destroyed** is a hostile projection whose health is at zero after a harm (`onEnemyDeath` in `game.ts`, with `e.hp <= 0` and the faction still hostile). A good intention never takes the last point (`src/combat/polarity.ts`). A projection that ends on its own (an alarm's blast, a fall out of the world) keeps its health above zero and does not count. An ally killed by harm does not count: it is no longer a projection.
+- **Converted** counts each turn to your side. A projection that relapses and is converted again counts again.
+- **The states** are the first time each one's synergy turns on in the save. Reaching a state and unlocking it are the same moment, so there is one achievement per state. The event `synergyOn` is emitted by `Game.give` for each synergy a practice gained turns on (`Inventory.gain` lists them as `newSynergies`).
+- **Transcendent** is a fifth built state (`docs/design/built/practices/states-of-being/README.md`). The request named four, so it has no achievement yet.
+- **Completion.** The completion percentage counts every catalogue entry in its achievements part except "Made Omh" (`src/game/completion.ts`), so these seven raise that count's total.
+
+## 2. The data model (takes the rest without code changes)
 
 The catalogue is data, in `src/content/achievements.ts`:
 
@@ -131,7 +154,7 @@ interface AchievementDef {
 }
 ```
 
-The 48 are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 54 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
 New events the 46 need (`src/game/events.ts`):
 
@@ -147,6 +170,9 @@ New events the 46 need (`src/game/events.ts`):
 | `bedrockTouch` | `{ side: string }` | Once when a side of the body starts to touch bedrock (above, below, north, south, east, west) |
 | `completionFull` | `{ percent: number }` | Once, when the completion percentage reaches 100 and the final achievement is still locked (`Game.showCompletion`). React only. |
 | `cook` | `{ meal: 'meal-small' \| 'meal-hearty'; part: string }` | When a kitchen turns a part into a meal (`src/game/kitchen.ts`) |
+| `projectionConverted` | `{ def: string; boss: boolean }` | In `convert`, once per conversion (`boss` true for a boss) |
+| `projectionDestroyed` | `{ def: string; boss: boolean }` | In `onEnemyDeath`, when a hostile projection dies with its health at zero (not a self-ending) |
+| `synergyOn` | `{ synergy: string }` | In `Game.give`, for each synergy a practice gained turns on (its id, as in `src/content/synergies.ts`) |
 
 Rules the tracker keeps:
 
@@ -176,9 +202,12 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 48 defined ones (the 46, "Made Omh", the final one that the completion percentage unlocks at 100%, and the hour of meditation); the other 52 are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 55 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
+
+- The names of the seven of §1 (blocks, projections, states) are proposals, and so is the choice of bosses not counting, the destroyed reading and the converted reading (see the choices in §1). The owner decides them.
+- The Transcendent state has no achievement (the request named four states). One line in the catalogue if the owner wants it.
 
 - **Touching the top of the tree** (owner, 2026-11-14): a sixth achievement, apart from the crown. Its criterion is open: the tree's highest block is not reachable on foot (the last star pad leads up into the sky), so the owner must say what "touching the top" means before it is built. Never invented.
 - The names (both languages) await the owner, except "Lucky Number" and "Nice", which are the owner's ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).

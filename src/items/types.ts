@@ -142,9 +142,10 @@ export interface Effect {
   weapon?: { id: WeaponId; priority: number };
 }
 
-/** 'sky' is the sky realm's gift pool and 'covenant' the Covenant's (the Mender's Thread, COVENANT.md): no pool draws from
- *  either at random (ItemPools leaves their items out); each item is handed out by id by its one source. */
-export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant';
+/** 'sky' is the sky realm's gift pool, 'covenant' the Covenant's (the Mender's Thread, COVENANT.md) and 'roots' the Roots'
+ *  mastery table's (the Book of Secrets, REWARDS §4): no pool draws from any of them at random (ItemPools leaves their
+ *  items out); each item is handed out by id by its one source. */
+export type PoolName = 'treasure' | 'boss' | 'vault' | 'sky' | 'covenant' | 'roots';
 
 export interface ItemDef extends Effect {
   id: string;
