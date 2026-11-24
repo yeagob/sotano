@@ -140,6 +140,12 @@ export function pickupMesh(type: PickupKind, heart: HeartKind = 'red'): THREE.Ob
   return type === 'key' ? keyMesh() : type === 'bomb' ? bombMesh() : heartMesh(heart);
 }
 
+/** A practice floats over a 1-block pedestal: a body (feet at `by`) takes it standing next to it or on top. */
+export function reachesItem(p: { x: number; y: number; z: number }, bx: number, by: number, bz: number): boolean {
+  const dy = by - p.y;
+  return Math.hypot(p.x - bx, p.z - bz) < 1.1 && dy > -1.3 && dy < 1.6;
+}
+
 export class Pickups {
   readonly list: Pickup[] = [];
   private group = new THREE.Group();

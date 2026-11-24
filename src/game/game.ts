@@ -51,7 +51,7 @@ import type { Enemy } from '../enemies/types';
 import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
-import { Pickups, PICKUP_GRAVITY, type Pickup } from '../entities/pickups';
+import { Pickups, PICKUP_GRAVITY, reachesItem, type Pickup } from '../entities/pickups';
 import { Chests, OPEN_TIME, type ChestView } from '../entities/chests';
 import { ejectAngle, throwReach, type Ground } from '../entities/eject';
 import { Alembics } from '../entities/alembics';
@@ -97,8 +97,8 @@ import {
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
-import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
-import { inLeaves } from '../world/crown';
+import { GiantTree, padTravel, padUnder, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { inLeaves, LEAVES_GIFT_SPOT } from '../world/crown';
 import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { TunnelLog } from './minimap';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
@@ -468,6 +468,8 @@ export class Game {
   private stillT = 0;
   /** The star pad you arrived on (re-armed once you step off it). */
   private padLock = -1;
+  /** The Leaves' gift (issue #316): the jump practice over the ring's east stone, laid at run start. */
+  private leavesGift: Pickup | null = null;
   /** What the HUD says about where you are (a floor, or a level of the tree). */
   private zone = '';
   private stars: THREE.Points;
@@ -759,6 +761,8 @@ export class Game {
     // the Roots' call answers for what floor 0 laid now (keys, bombs, hearts, the pedestals' practices), and later for
     // what its free chests hold; never the Sanctuary's practice, which stays shut until its sitting (CALL.md)
     this.call = callActive(this.runMastery, sandbox !== null) ? new RootsCall(this.pickups.list) : null;
+    // the Leaves' gift (#316), after the call: the crown's practice is never the Roots' to call
+    this.leavesGift = box ? null : this.placeLeavesGift();
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
     p.yaw = 0; p.pitch = 0;
@@ -1139,6 +1143,13 @@ export class Game {
       return this.pools.drawRuntime(type === 'vault' || type === 'boss' ? type : 'treasure', this.rng.stream('loot'));
     });
     return id ? ITEM_BY_ID.get(id) ?? null : null;
+  }
+
+  /** The Leaves' gift (issue #316, LEAVES.md): the jump practice floats over the ring's east stone, as a pedestal's
+   *  practice floats over its pedestal, taken by touch. It belongs to no room of a floor. */
+  private placeLeavesGift(): Pickup | null {
+    const s = LEAVES_GIFT_SPOT, def = ITEM_BY_ID.get(s.item) ?? null;
+    return def ? this.pickups.add('item', s.x, s.y, s.z, -1, def) : null;
   }
 
   /** Floor 0's Roots pedestals (extra practices and the altar) hold their practices from the moment floor 0 activates. */
@@ -3833,7 +3844,7 @@ export class Game {
       const dy = b.y - p.y;
       if (p.type === 'item') {
         // the item floats over a 1-block pedestal: reachable standing next to it or on top
-        if (horiz < 1.1 && dy > -1.3 && dy < 1.6) this.absorbPickup(p);
+        if (reachesItem(p, b.x, b.y, b.z)) this.absorbPickup(p);
         continue;
       }
       if (horiz > 0.8 || dy < -1.2 || dy > 1.2) continue;
@@ -4900,24 +4911,25 @@ export class Game {
       }
     } else this.stillT = 0;
     // the top of the sky, and the last star, lead up into the sky realm (SKY.md §2.4): the gate runs the fade
-    const fx0 = Math.floor(b.x), fy = Math.floor(b.y + 0.05), fz0 = Math.floor(b.z);
-    const pad = b.onGround ? this.tree.pads.findIndex(q => q.x === fx0 && q.y === fy && q.z === fz0) : -1;
+    const pad = padUnder(this.tree.pads, b.x, b.y, b.z, b.onGround);
     const up = pad >= 0 && this.tree.pads[pad].up === true;
     if (up || b.y > SKY_TOP) {
       const travel = RealmGate.check('dungeon', b, up ? { up: true } : null, this.skyBounds());
       if (travel) { this.gate.start(travel); return; }
     }
     // star pads: step on one and you are on the next star of its constellation
-    if (pad < 0) this.padLock = -1;
-    else if (pad !== this.padLock) {
-      const to = this.tree.pads[this.tree.pads[pad].to];
-      this.padLock = this.tree.pads[pad].to;
+    const hop = padTravel(this.tree.pads, pad, this.padLock);
+    this.padLock = hop.lock;
+    if (hop.to) {
       this.particles.burst(b.x, b.y + 0.5, b.z, pal('bone.paper'), 16, 2.5, 0.07);
-      this.teleport(to.x + 0.5, to.y, to.z + 0.5);
+      this.teleport(hop.to.x + 0.5, hop.to.y, hop.to.z + 0.5);
       sfx2.charged();
     }
     // the Leaves (D14): their name, the first time you stand in them this run
     if (!this.leavesSeen && this.realm === 'dungeon' && inLeaves(b.x, b.y, b.z)) { this.leavesSeen = true; this.hud.toast('toast.leaves'); }
+    // the Leaves' gift (#316) leaves once its practice is held some other way (the horse's gift): never offered twice
+    const gift = this.leavesGift;
+    if (gift && !gift.taken && this.realm === 'dungeon' && gift.item && this.inventory.has(gift.item.id)) this.pickups.take(gift);
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
     const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {

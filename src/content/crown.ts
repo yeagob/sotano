@@ -33,3 +33,9 @@ export const CROWN_PALETTE = { wall: 'leaves', floor: 'bough', trim: 'bough', ri
 
 /** Tiles of the dome's open eye, round the centre tile (6, 3): the sky comes in over the ring. */
 export const LEAVES_OCULUS = 1;
+
+/** The Leaves' gift (issue #316): the jump practice floats over the ring's east stone (column 7, row 3 of the
+ *  template, a one-high block of starstone), facing the ring's open west side. A player standing in the ring takes
+ *  it; with it the star pads above the crown are the climb to the sun. The centre tile stays free for the crown's
+ *  place (`CROWN_PLACE`). */
+export const LEAVES_GIFT = { item: 'triple-jump', col: 7, row: 3 } as const;

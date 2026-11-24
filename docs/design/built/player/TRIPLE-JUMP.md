@@ -1,6 +1,6 @@
 # The Triple Jump (built)
 
-The Triple Jump is a practice that gives the player two more jumps in the air, each higher than the one before. This page is what the game does with it; its gift from the fifth tree deity is not built yet ([not-built/player/MOVEMENT-ABILITIES.md](../../not-built/player/MOVEMENT-ABILITIES.md)).
+The Triple Jump is a practice that gives the player two more jumps in the air, each higher than the one before. This page is what the game does with it and where it is found; its open questions are in [not-built/player/MOVEMENT-ABILITIES.md](../../not-built/player/MOVEMENT-ABILITIES.md).
 
 Part of [the player (built)](README.md).
 
@@ -21,6 +21,6 @@ The name "Triple Jump" is a working name; the owner has not named the item yet. 
 
 ## Where it is in play
 
-The item belongs to the sky's gift pool, which the game never draws from at random, so the Triple Jump is not yet found in play. Its gift is part of the fifth tree deity, which is not built ([the horse, not built](../../not-built/sky/guardians/HORSE.md)).
+The item belongs to the sky's gift pool, which the game never draws from at random. It is found in two places: in the Leaves, the room of the crown, floating over the ring's east stone from the start of every run ([LEAVES](../levels/giant-tree/LEAVES.md), issue #316), and as the horse's gift ([HORSE](../sky/guardians/HORSE.md)). Once you hold it, the one in the Leaves leaves its stone, so it is not given twice there; the horse still gives its own.
 
 Code: `src/content/items/triple-jump.ts` (the item), `src/entities/player.ts` (the air jumps, the cap), `src/physics/jump.ts` (the ladder of heights `[1, 2, 8]`).
