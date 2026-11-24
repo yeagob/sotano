@@ -6,6 +6,11 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+## 0.2.9-alpha.f4 · 2026-11-24
+
+### Fixed
+- The Leaves, the room at the top of the tree, now hold the Triple Jump: the way from the crown to the star pads and the sky is no longer closed (#316).
+
 ## 0.2.9-alpha.f3 · 2026-11-24
 
 ### Fixed
