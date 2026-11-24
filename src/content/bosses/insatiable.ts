@@ -1,6 +1,7 @@
 import { pal } from '../palette';
 import { phased } from '../../enemies/behaviours';
 import { barrage, combo, fan, inhale, moveset, nova, rocks, shockwave } from '../../enemies/moves';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX } from '../../enemies/types';
 
 // A giant open cup of stone, a maw at floor level (BESTIARY §6.3). It never walks: the room comes to
@@ -20,7 +21,8 @@ export default defineEnemy({
   cost: 0,
   minFloor: 1,
   maxFloor: 2,
-  behaviour: phased({
+  // it never walks: it sinks into the floor and its maw opens somewhere else, the spot marked first
+  behaviour: evasive(phased({
     arena: ['spill', 'rockfall'],
     phases: [
       moveset({
@@ -48,7 +50,7 @@ export default defineEnemy({
         ],
       }),
     ],
-  }),
+  }), { kind: 'blink', dist: 7, tell: 0.4, seconds: 0.45, cooldown: 2.8 }),
   model: [
     { size: [26 * TX, 18 * TX, 26 * TX], pos: [0, 12 * TX, 0], color: pal('husk.doubt.dark'), name: 'body' },
     { size: [30 * TX, 4 * TX, 30 * TX], pos: [0, 22 * TX, 0], color: pal('husk.doubt.base') },

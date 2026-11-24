@@ -40,6 +40,10 @@ Arena `drain`: the water goes. Its moves:
 - A volley of twelve bolts over two volleys.
 - A bouncing charge with two bounces.
 
+## Evasion
+
+A dash: a surge to the side, 4.5 blocks in 0.35 seconds, after a 0.25-second tell. Cooldown 2.2 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It breaks: the water rises and waves come from every side. Jump them".

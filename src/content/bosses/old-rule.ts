@@ -1,5 +1,6 @@
 import { pal } from '../palette';
 import { charge, emitter, phased, wobble } from '../../enemies/behaviours';
+import { evasive } from '../../enemies/evade';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const command = (e: Enemy, ctx: EnemyCtx) => {
@@ -28,14 +29,15 @@ export default defineEnemy({
   cost: 0,
   minFloor: 6,
   maxFloor: 6,
-  behaviour: phased({
+  // the old rule does not move for you: it stamps aside, one heavy step that shakes the floor
+  behaviour: evasive(phased({
     arena: ['drop', 'crumble'],
     phases: [
       emitter({ follow: { speed: 0.6, keep: 4 }, every: 4, shot: command }),
       emitter({ follow: { speed: 0.6, keep: 4 }, every: 2.4, shot: enforce }),
       charge({ aim: 0.6, speed: 3.6, run: 1.6, stun: 1.2, range: 10, cooldown: 1.2 }),
     ],
-  }),
+  }), { kind: 'hop', dist: 3.5, tell: 0.35, seconds: 0.6, cooldown: 2.6 }),
   model: [
     { size: [16 * TX, 40 * TX, 8 * TX], pos: [0, 20 * TX, 0], color: pal('husk.panic.dark'), name: 'body' },
     { size: [18 * TX, 4 * TX, 10 * TX], pos: [0, 42 * TX, 0], color: pal('husk.panic.hi') },

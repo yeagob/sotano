@@ -24,7 +24,11 @@ Arena `mirrors`: toast only. Every six seconds it summons one random projection 
 
 ### Phase 3: stops (from one third of its health)
 
-Arena `stop`: toast only. It stops moving. If the player stands within 2.5 blocks of it, moving less than 0.2 blocks a second, for three seconds in a row, it is defeated. Stepping away resets the count.
+Arena `stop`: toast only. It stops fighting and comes home: it walks slowly (under a block a second) to two blocks from the player, and stands there. If the player stands within 2.5 blocks of it, moving less than 0.2 blocks a second, for three seconds in a row, it is defeated. Stepping away resets the count.
+
+## Evasion
+
+An orbit: you cannot shoot your own shadow. Shot while it stands still, it slides around the player for 0.35 seconds after a 0.25-second tell, keeping its distance, so standing still beside it still ends the fight. Cooldown 2 seconds. It does not answer with an attack, and it never repositions on its own: if the player stands still and holds their fire, so does it. See [Fight flow](FIGHT-FLOW.md#evasion).
 
 ## Toasts
 

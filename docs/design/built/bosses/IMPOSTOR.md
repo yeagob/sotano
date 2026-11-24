@@ -26,6 +26,10 @@ Arena `brass`: toast only. Every six seconds it summons two random projections f
 
 Arena `frame`: toast only. Every 2.4 seconds it throws a ring of force from its own body, doing 8.
 
+## Evasion
+
+A blink: found out, it is gone, and it is somewhere else, four to seven blocks from the player, pretending it was always there. The spot is marked first (a 0.35-second tell, then 0.45 seconds gone). Cooldown 2.2 seconds. See [Fight flow](FIGHT-FLOW.md#evasion).
+
 ## Toasts
 
 - Entering phase 2: "It hides: false figures fill the frame".
