@@ -4,6 +4,7 @@
 // docs/design/built/levels/giant-tree/LEAVES.md.
 
 import { SURFACE_Y, WORLD_SIZE } from './floor';
+import { LEAVES_GIFT } from '../content/crown';
 import { leavesRoomAt, type LeavesRoom } from './tree';
 
 /** The Leaves in the run's world: the giant tree stands at the world's centre on the surface (GiantTree), so the
@@ -25,3 +26,12 @@ export function inLeaves(x: number, y: number, z: number): boolean {
   const r = CROWN_PLACE.room;
   return x >= r.x0 && x < r.x1 + 1 && z >= r.z0 && z < r.z1 + 1 && y >= r.y0 - 0.5 && y < r.y1 + 1;
 }
+
+/** Where the Leaves' gift floats (issue #316, LEAVES.md): over the ring's east stone, as a pedestal's practice floats
+ *  over its pedestal (`x`, `z` the tile's centre, `y` the top of the stone). The game lays it at run start. */
+export const LEAVES_GIFT_SPOT = Object.freeze({
+  item: LEAVES_GIFT.item,
+  x: LEAVES.x0 + LEAVES_GIFT.col + 0.5,
+  y: LEAVES.y0 + 1,
+  z: LEAVES.z0 + LEAVES_GIFT.row + 0.5,
+});
