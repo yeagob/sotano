@@ -23,7 +23,7 @@ The practice works on the first cell of a fluid that an intention enters (once p
 - **The section.** The cells of the same fluid that are face-connected to the touched one, in the same room, nearest first, up to **256 cells**. Each cell keeps its level and its falling bit; a source stays a source. The touched cell is the first one converted.
 - **Once per frame.** At most one conversion happens in a frame; an entry that comes after it in the same frame is not converted.
 - **The intention keeps flying.** Water still slows it and lava still puts it out. The element is read again after the conversion, so a conversion that makes the intention's own cell lava puts that intention out in the same frame, and a conversion to water lets it fly on.
-- **Safety.** A negative conversion into lava is refused, with the toast "Not here: the lava would reach you.", if the player's body touches any cell of the section, unless `lavaWalk` is 1 (see [Post-Traumatic Growth](../emotion/POST-TRAUMATIC-GROWTH.md)). A positive conversion into water never hurts anyone.
+- **Safety.** A negative conversion into lava is refused, with the toast "Not here: the lava would reach you.", if the player's body touches any cell of the section and no `lavaWalk` time is left (see [Post-Traumatic Growth](../emotion/POST-TRAUMATIC-GROWTH.md)). A positive conversion into water never hurts anyone.
 
 ## Pool sizes
 

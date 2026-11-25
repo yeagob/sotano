@@ -996,7 +996,7 @@ export const ES: Catalog = {
     'stat.dash': 'Impulso',
     'stat.run': 'Correr',
     'stat.crouch': 'Agacharse',
-    'stat.lavaWalk': 'Caminar sobre lava',
+    'stat.lavaWalk': 'Tiempo caminando sobre lava',
     'stat.bombRadius': 'Radio de bomba',
     'stat.bombDamage': 'Potencia de bomba',
     'stat.twinCast': 'Turnos de manos',
@@ -1022,7 +1022,6 @@ export const ES: Catalog = {
     'unit.dashOn': 'doble toque',
     'unit.runOn': 'mantén para correr',
     'unit.crouchOn': 'mantén para agacharte',
-    'unit.lavaWalkOn': 'sí',
     'unit.on': 'sí',
     'unit.off': 'no',
     'unit.alternate': 'alternan',
@@ -1668,7 +1667,7 @@ export const ES: Catalog = {
       posttraumatic: {
         name: 'Crecimiento postraumático',
         description: 'Hay quien sale de un mal momento con más de lo que tenía antes: un cuidado más hondo por los demás, una idea más clara de lo que importa, una fuerza que no sabía que tenía. La herida queda, y puede volverse suelo.',
-        effect: 'La lava nunca te daña: caminas sobre su superficie y la atraviesas a toda velocidad. Tus intenciones se apagan igual en ella.',
+        effect: 'Camina sobre la lava 2 segundos por copia, hasta 6 segundos; después te quema como siempre. El tiempo vuelve cuando sales de ella. Tus intenciones se apagan igual en ella.',
         inspiredBy: 'El crecimiento postraumático de Tedeschi y Calhoun (1996)',
       },
       lionsmane: {

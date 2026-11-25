@@ -68,7 +68,7 @@ export interface ItemApi {
   /** Turn the connected cells of one fluid (`from`) into another (`to`), breadth-first in the room of (x, y, z), nearest
    *  first, up to `cap` cells. Levels and the falling bit stay; a source stays a source. Returns the cells converted; 0 when
    *  nothing was (not that fluid there, no room, or already one conversion this frame); -1 when a negative conversion into
-   *  lava is refused because the player's body touches the section and `lavaWalk` is below 1. `source` names the practice. */
+   *  lava is refused because the player's body touches the section and no `lavaWalk` time is left. `source` names the practice. */
   convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, source: string): number;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;

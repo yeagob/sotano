@@ -521,6 +521,8 @@ export class Game {
   private elemFx = 0;
   private elemSfx = 0;
   private drownT = 0;
+  /** lavaWalk (posttraumatic): the seconds the body has stood in lava since it last left it (see lavaWalkLeft). */
+  private lavaSpent = 0;
   /** Elements the player's body was in last frame (for elementEnter / elementLeave). */
   private playerIn = new Set<ElementKey>();
   private playerMedium: PlayerMedium = { feet: null, head: null };
@@ -699,7 +701,7 @@ export class Game {
     this.input.modal = false;
     setMasterTarget(0.35);
     this.elements = this.elementSim(this.world, this.rng.fork('elements').u32());
-    this.playerIn.clear(); this.drownT = 0;
+    this.playerIn.clear(); this.drownT = 0; this.lavaSpent = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
     this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
@@ -728,7 +730,7 @@ export class Game {
     this.stats.removeSource('toll');
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath'); this.lavaSpent = 0;
     p.clearStates();
     this.statuses.clear();
     this.phase = null;
@@ -3207,8 +3209,15 @@ export class Game {
     return { feet: this.elementAt(b.x, b.y + 0.1, b.z), mid: this.elementAt(b.x, b.y + b.h * 0.5, b.z), head: this.elementAt(b.x, b.y + eye, b.z) };
   }
 
-  /** lavaWalk (posttraumatic): a lava cell with air above it is ground for a body whose feet were above its surface at the
-   *  start of the frame. Gravity and walking then stop on it, and a body already in the lava is not held by it. */
+  /** lavaWalk (posttraumatic): the seconds of lava walking left. The stat is the time the copies give (2 each, at most 6);
+   *  it runs down while the body stands in lava (`lavaSpent`), and is whole again once the body is out of it. */
+  private lavaWalkLeft(): number {
+    return Math.max(0, this.stats.get('lavaWalk') - this.lavaSpent);
+  }
+
+  /** lavaWalk (posttraumatic): while walking time is left, a lava cell with air above it is ground for a body whose feet
+   *  were above its surface at the start of the frame. Gravity and walking then stop on it, and a body already in the lava
+   *  is not held by it. Once the time is up the surface is lava again (the body sinks in, as in any lava). */
   private lavaSurface(x: number, y: number, z: number, feet: number): boolean {
     const c = this.world.elemAt(x, y, z);
     if (elemKind(c) !== EL_LAVA || elemKind(this.world.elemAt(x, y + 1, z)) === EL_LAVA) return false;
@@ -3228,7 +3237,7 @@ export class Game {
 
   /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
    *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
-   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
+   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section and no lavaWalk time is left. */
   private convertFluid(fx: number, fy: number, fz: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
     if (this.fluidFrame === this.simFrame) return 0;
     const x = Math.floor(fx), y = Math.floor(fy), z = Math.floor(fz);
@@ -3250,7 +3259,7 @@ export class Game {
         section.push([nx, ny, nz]);
       }
     }
-    if (kindTo === EL_LAVA && this.stats.get('lavaWalk') < 1 && this.bodyTouches(section)) return -1;
+    if (kindTo === EL_LAVA && this.lavaWalkLeft() <= 0 && this.bodyTouches(section)) return -1;
     for (const [cx, cy, cz] of section) {
       const b = w.elemAt(cx, cy, cz);
       w.setElemByte(cx, cy, cz, elemByte(kindTo, elemLevel(b), isFalling(b)));
@@ -3273,9 +3282,13 @@ export class Game {
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
     const m = this.bodyMedium(b, p.eyeHeight);
-    // lavaWalk (posttraumatic): lava does not hurt you, and you wade through it at full speed (the 0.4 wade becomes 1)
-    const walk = this.stats.get('lavaWalk') >= 1;
+    // lavaWalk (posttraumatic): while walking time is left, lava does not hurt you, and you wade through it at full speed
+    // (the 0.4 wade becomes 1). The time runs down while the body stands in lava: its feet, middle or head in it, or the
+    // lava it stands on. Out of lava it is whole again; with no copy of the practice it is never counted.
+    const walk = this.lavaWalkLeft() > 0;
     const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
+    const onLava = [m.feet, m.mid, m.head].some(d => d?.key === 'lava') || this.elementAt(b.x, b.y - 0.05, b.z)?.key === 'lava';
+    this.lavaSpent = onLava && this.stats.get('lavaWalk') > 0 ? this.lavaSpent + dt : 0;
     this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
@@ -5322,9 +5335,9 @@ export class Game {
     this.tickStatuses(dt);
     const solidHere = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
-    // lavaWalk: a lava surface is ground. The feet are read as they were at the start of the frame, so a body that
-    // falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
-    const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
+    // lavaWalk: a lava surface is ground while walking time is left. The feet are read as they were at the start of the
+    // frame, so a body that falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
+    const walk = this.lavaWalkLeft() > 0, feet0 = b.y;
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
