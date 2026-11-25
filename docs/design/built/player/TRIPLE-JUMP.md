@@ -12,6 +12,7 @@ Part of [the player (built)](README.md).
 - Landing gives both air jumps back.
 - No jump rises above 16 blocks, whatever your practices do to the jump.
 - The item adds **+2 air jumps** (the `airJumps` stat, base 0, at most 4).
+- With the [Double Jump](../../not-built/practices/DOUBLE-JUMP.md) (one more air jump, built in code, awaiting the owner's acceptance) held too, the climb is four jumps: the ground jump and three in the air, rising 2×, 8× and 8×. The first two air jumps keep the heights and the steering above, whichever item gave them; the third also rises 8× with full steering.
 
 The rule behind it: the jump is the one button, and the air jump is a new meaning of that button in the air, so the player needs no new control. The pause card's jump row mentions the air jumps ([the input document](../../../architecture/input/README.md)).
 

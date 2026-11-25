@@ -53,6 +53,7 @@ import sleephygiene from './sleephygiene';
 import thoughtstopping from './thoughtstopping';
 import triangulation from './triangulation';
 import tripleJump from './triple-jump';
+import doubleJump from './double-jump';
 import irimi from './irimi';
 import fartlek from './fartlek';
 import balasana from './balasana';
@@ -95,7 +96,7 @@ export const ITEMS: readonly ItemDef[] = [
   forgiveness, nothingpersonal, constellation, arttherapy, thinkwaitfast, omens,
   lionsmane, occamsrazor, kiai,
   ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
-  drlauncher, tripleJump, mendersThread,
+  drlauncher, tripleJump, doubleJump, mendersThread,
   dowsing, eyecontact,
   dialectic, reframing,
   waymark,

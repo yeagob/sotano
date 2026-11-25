@@ -937,6 +937,8 @@ const messages = {
   'teach.spiralgrowth.lesson': 'Change rarely runs in a straight line. You meet the same question, habit or feeling again, but from a different place each time. Do not judge the turn by its first pass. Note where you stand now, and let the next loop be a little wider.',
   'teach.triple-jump.quote': 'No single leap gets you there; each one lifts the next.',
   'teach.triple-jump.lesson': 'Break a big goal into three stages, each built on the one before. Finish the first before you worry about the third. Momentum carries you further than a single effort.',
+  'teach.double-jump.quote': 'Once you have left the ground, you can still rise.',
+  'teach.double-jump.lesson': 'When the first attempt is not enough, try again before you stop. A second try from where you stand is still progress.',
   'teach.menders-thread.quote': 'Where it broke, it holds.',
   'teach.menders-thread.lesson': 'A repair does not have to hide the break. What you mended can be the strongest part of you, and the seam is the honest record of it.',
   'teach.dowsing.quote': 'Trust the quiet pull, and look where it leads you.',
