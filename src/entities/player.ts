@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import type { Input } from '../input/input';
 import { moveBody, type Body } from '../physics/voxel-collide';
-import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER } from '../physics/jump';
+import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER, STEER_RUNG } from '../physics/jump';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
@@ -378,7 +378,7 @@ export class Player implements Actor {
     const b = this.body;
     if (b.onGround) this.airStep = 0;
     // the third jump of the ladder steers fully in the air, and adds no forward speed (SKY.md §9)
-    const air = this.airStep >= LADDER.length - 1 ? 1 : AIR_CONTROL;
+    const air = this.airStep >= STEER_RUNG ? 1 : AIR_CONTROL;
     // on ice you keep sliding: far less grip to start, turn or stop
     const k = swim ? SWIM_CONTROL : b.onGround ? (medium.slippery ? ICE_GRIP : 1) : air;
     const blend = 1 - Math.exp(-14 * k * dt);

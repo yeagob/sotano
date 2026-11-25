@@ -4,7 +4,10 @@
 
 import * as THREE from 'three';
 import { pal } from '../content/palette';
-import type { CloudSpot } from '../world/tree';
+import { CLOUD_RADIUS, type CloudSpot } from '../world/tree';
+
+/** The billows below were laid out for a reach of five blocks; the layer is drawn at the reach it has now. */
+const LAID_OUT_REACH = 5;
 
 export class CloudLayer {
   readonly group = new THREE.Group();
@@ -17,11 +20,13 @@ export class CloudLayer {
       m.position.set(x, y + h / 2, z);
       this.group.add(m);
     };
-    // one billow over the top pad's centre, and a ring of eight round it: each a dark underside, a base and a lit crest
-    const billows: [number, number, number][] = [[0, 0, 4.4]];
+    // one billow over the top pad's centre, and a ring of eight round it: each a dark underside, a base and a lit crest.
+    // Their spread and widths scale with the reach (CLOUD_RADIUS), so the layer is drawn at the size the gate uses.
+    const k = CLOUD_RADIUS / LAID_OUT_REACH;
+    const billows: [number, number, number][] = [[0, 0, 4.4 * k]];
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
-      billows.push([Math.cos(a) * 3.1, Math.sin(a) * 3.1, 2.8]);
+      billows.push([Math.cos(a) * 3.1 * k, Math.sin(a) * 3.1 * k, 2.8 * k]);
     }
     for (const [x, z, w] of billows) {
       slab(w, w * 0.8, -0.1, 0.4, pal('mat.cloud.dark'), x, z);

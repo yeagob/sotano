@@ -20,13 +20,15 @@ A disc of bough, nine blocks in radius and two thick, lies over the stair from t
 
 ## The cloud layer
 
-Above the top pad, six blocks above its floor, lies a layer of cloud with a reach of five blocks across its centre (`CLOUD_RISE`, `CLOUD_RADIUS`, `cloudAbove` in `src/world/tree.ts`). It has no solids: the voxel world never sees it, and the body passes through it. It is drawn as a flat sheet of soft cloud in the cloud tokens of the sky blocks (`src/game/cloud-layer.ts`).
+Above the top pad, 13.3 blocks above its floor, lies a layer of cloud with a reach of 50 blocks across its centre (`CLOUD_RISE`, `CLOUD_RADIUS` in `src/world/tree.ts`; the reach is the old five blocks times ten, so it covers almost the whole sky). It has no solids: the voxel world never sees it, and the body passes through it. It is drawn as a flat sheet of soft cloud in the cloud tokens of the sky blocks (`src/game/cloud-layer.ts`, its billows scaled to the same reach).
 
-When the body's feet reach the cloud's height, within its reach over the top pad, the sky realm opens (SKY.md §2.4): the gate runs its fade, and you arrive on the sky's deck. The height is checked on the feet, so jumping up through the layer enters the sky. The Triple Jump reaches it from the pad: the second air jump's apex is about 13.9 blocks above the floor, so 6 blocks is in reach with two air jumps.
+The height sits in a window, so that the top pad is the one way up with the Triple Jump. The Triple Jump's third jump reaches 13.86 blocks above the top pad's floor, so the layer is in reach from the top pad. The pad one block below the top reaches 12.86 above the top's floor, so it cannot climb into the layer: the layer sits at 13.3, half-way between. With four jumps (two copies of the item), the fourth jump carries the body about 34 blocks, and the last five pads of the route reach the layer, so the top pad is not the only way up with that power.
+
+When the body's feet reach the cloud's height, within its reach over the top pad, the sky realm opens (SKY.md §2.4): the gate runs its fade, and you arrive on the sky's deck. The height is checked on the feet, so jumping up through the layer enters the sky. The cloud is checked before the bounds are built, so the gate costs nothing while the body is below it.
 
 ## The route
 
-The pads carry no teleport. Stepping onto a pad does nothing: the route is the order the pads were made in, and you walk it with the jumps. The Triple Jump gives two air jumps at most as its first copy; a second copy adds one more air jump (a fourth jump), and a third copy adds nothing, so the stat stops at three. No jump has a height cap, so a jump-height practice only makes each hop easier to reach.
+The pads carry no teleport. Stepping onto a pad does nothing: the route is the order the pads were made in, and you walk it with the jumps. The Triple Jump gives two air jumps at most as its first copy; a second copy adds one more air jump (a fourth jump, which rises sixteen times, twice the third), and a third copy adds nothing, so the stat stops at three. No jump has a height cap, so a jump-height practice only makes each hop easier to reach.
 
 The pads keep their cells for the whole run: they are made once, when the tree's stars are grown, and never change.
 

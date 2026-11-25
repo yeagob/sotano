@@ -61,9 +61,12 @@ const PAD_SIZE_STEPS = [-3, -2, -1, 1, 2] as const;
 const LENGTHENED = new Set<string>(['0.2', '1.1', '1.3', '2.4']);
 const LENGTHEN = 3;
 /** The cloud layer above the route's top pad (STARS.md): its height over the pad's floor, and its reach across. The Triple
- *  Jump carries the body to it from the pad: the second air jump's apex is 13.9 blocks above the floor, so 6 is in reach. */
-export const CLOUD_RISE = 6;
-export const CLOUD_RADIUS = 5;
+ *  Jump reaches 13.86 above the top pad's floor, so the layer is in reach from the top pad. The pad one block under the top
+ *  reaches 12.86 above the top's floor, so a height above that keeps the sky from opening from the pads below: the layer sits
+ *  at 13.3, between the two, with 0.45 blocks of margin on each side. */
+export const CLOUD_RISE = 13.3;
+/** The cloud's reach across, in blocks: five blocks before, times ten (the layer covers almost the whole sky). */
+export const CLOUD_RADIUS = 5 * 10;
 
 /** The cloud layer's spot: the body passes it (no solids) and its feet at `y`, within `r` blocks of (x, z), open the sky. */
 export interface CloudSpot { x: number; y: number; z: number; r: number }

@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { AIR_JUMP_CLEARANCE, Player, type PlayerHooks, type PlayerUpdateOptions } from '../src/entities/player';
 import { BASE_STATS, computeStats, STAT_LIMITS, type Stats } from '../src/core/stats';
-import { AIR_CONTROL, JUMP_V, LADDER, apex, velocity } from '../src/physics/jump';
+import { AIR_CONTROL, JUMP_V, apex, velocity } from '../src/physics/jump';
 import type { Input } from '../src/input/input';
 
 /** Open ground: every cell at y ≤ 0 is solid, so the feet rest at y = 1. */
@@ -186,14 +186,17 @@ describe('air jumps (SKY.md §9)', () => {
     expect(rises[0]).toBeCloseTo(apex(0), 1);
   });
 
-  it('two copies of the Triple Jump allow four jumps, 1×, 2×, 8× and a fourth at the ladder\'s last rung (the stat stops at three, #325)', () => {
+  it('two copies of the Triple Jump allow four jumps, 1×, 2×, 8× and 16×: measured, the fourth peaks twice as high as the third (#325)', () => {
     const held = computeStats([{ stat: 'airJumps' as const, layer: 'add' as const, value: 2, source: 'triple-jump-0' }, { stat: 'airJumps' as const, layer: 'add' as const, value: 1, source: 'triple-jump-1' }]);
     expect(held.airJumps).toBe(3);
     const { rises, r } = ladder(held, 6);
     expect(rises).toHaveLength(4);
     expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2, 3]);
-    expect(r.jumps[2].v).toBeCloseTo(velocity(LADDER.length - 1), 9);
-    expect(r.jumps[3].v).toBeCloseTo(velocity(LADDER.length - 1), 9);
+    expect(r.jumps[2].v).toBeCloseTo(velocity(2), 9);
+    expect(r.jumps[3].v).toBeCloseTo(velocity(3), 9);
+    // the peaks, each measured from where its jump was pressed: the fourth is twice the third, and the third is the Triple Jump's own
+    for (let k = 0; k < 4; k++) expect(rises[k], `jump ${k + 1}`).toBeCloseTo(apex(k), 1);
+    expect(rises[3] / rises[2]).toBeCloseTo(2, 1);
   });
 
   it('nine copies still give three: the stat is capped, and so is the ladder', () => {

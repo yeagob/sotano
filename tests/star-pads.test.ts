@@ -11,7 +11,7 @@ import { MARGIN, reach } from '../src/sky/totality/reach';
 import { SURFACE_Y, WORLD_SIZE } from '../src/world/floor';
 import { GiantTree, padHopFits, padUnder, TREE_STORIES, type StarPad } from '../src/world/tree';
 import { VoxelWorld } from '../src/world/world';
-import { walkHops, type Solid, type Waypoint } from './helpers/walker';
+import { climbTo, walkHops, type Solid, type Waypoint } from './helpers/walker';
 
 const SEEDS = [1, 7, 42, 0xbeef, 5];
 
@@ -79,6 +79,15 @@ describe('the star pads\' route (#325)', () => {
       const { t, solid } = grown(seed);
       const res = walkHops(solid, centre(t.pads[0]), t.pads.slice(1).map(centre), BASE_STATS);
       expect(res.ok, `seed ${seed}`).toBe(false);
+    }
+  });
+  it('the cloud layer is in reach of the Triple Jump from the top pad, and not from the pad below it (the height of CLOUD_RISE)', () => {
+    const held = holdingOne();
+    for (const seed of SEEDS) {
+      const { t, solid } = grown(seed);
+      const n = t.pads.length, cloud = t.cloud!;
+      expect(climbTo(solid, centre(t.pads[n - 1]), cloud.y, held).ok, `seed ${seed}: from the top pad`).toBe(true);
+      expect(climbTo(solid, centre(t.pads[n - 2]), cloud.y, held).ok, `seed ${seed}: from the pad below`).toBe(false);
     }
   });
 });
