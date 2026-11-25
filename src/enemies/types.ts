@@ -141,7 +141,8 @@ export interface EnemyCtx {
   /** How many prizes the enemy carries. */
   carried(e: Enemy): number;
   strike(e: Enemy, s: Strike): void;
-  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number): void;
+  /** A straight bolt along (dx, dy, dz). `radius` (blocks, default 0.12) is how close it must pass to hit, and its size. */
+  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number, radius?: number): void;
   safe(e: Enemy, x: number, y: number, z: number): boolean;
   centre(e: Enemy): [number, number];
   quiet(e: Enemy): boolean;
@@ -156,6 +157,9 @@ export interface EnemyCtx {
   /** The nearest actor of the self (the player, its allies), whatever the enemy's side: peaceful
    *  creatures use it to keep you company. */
   near(e: Enemy): TargetView | null;
+  /** The ids of the practices the player holds now, in the order gained. Read only: the Shadow takes them once,
+   *  when its fight starts, and mirrors them (content/bosses/mirror.ts). Nothing else of the player is exposed. */
+  practices(): readonly string[];
   /** Horizontal distance to a target. */
   dist(e: Enemy, t: TargetView): number;
   /** Direction to walk towards a target inside the room (flow field), or straight at it. */

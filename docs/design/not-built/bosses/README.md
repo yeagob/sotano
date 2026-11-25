@@ -20,6 +20,6 @@ What the design asks for the bosses that the build does not have yet. Every boss
 | [FURNACE.md](FURNACE.md) | The Furnace's feeding, burning debris, cooling and ember | proposal |
 | [IMPOSTOR.md](IMPOSTOR.md) | The Impostor's imitation, hidden figure and doorway | proposal |
 | [MANY-FACES.md](MANY-FACES.md) | The Many Faces' copying, real mask and stepping stones | proposal |
-| [SHADOW.md](SHADOW.md) | The Shadow's mirrored intentions, shadows of your releases and integration | decided (keystone); phases proposal |
+| [SHADOW.md](SHADOW.md) | The Shadow's shadows of your releases, integration and the mirror's open questions | decided (keystone, mirror built); phases proposal |
 
 The Tree's bosses belong with the Tree milestone (L5), which is not built; they are ideas until the owner designs them with the Tree.

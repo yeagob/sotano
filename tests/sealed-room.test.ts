@@ -22,7 +22,7 @@ function rig(blocks = new Set<string>(), px = 6.5, pz = 3.5) {
   const host = {
     solid, worldVersion: () => blocks.size, actors: () => [player], actor: (id: number) => (id === 1 ? player : undefined),
     room: () => ROOM, elemVersion: () => 0, pickupsIn: () => [],
-    hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+    hazard: () => null, contact: () => {}, practices: () => [], projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost;

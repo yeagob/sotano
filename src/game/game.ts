@@ -1958,6 +1958,7 @@ export class Game {
         return d ? this.affinity(e, d.key).path : null;
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
+      practices: () => this.inventory.items.map(i => i.def.id),
       projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {
         if (t !== this.player || !this.berserkOn) return false;

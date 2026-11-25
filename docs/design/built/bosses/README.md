@@ -23,7 +23,7 @@ The bosses are the large patterns behind the small ones: each is built from its 
 | [FURNACE.md](FURNACE.md) | Floors 7 to 8. Zone IV pool |
 | [IMPOSTOR.md](IMPOSTOR.md) | Floors 7 to 8. Zone IV pool |
 | [MANY-FACES.md](MANY-FACES.md) | Floors 7 to 8. Zone IV pool |
-| [SHADOW.md](SHADOW.md) | Floor 9. Keystone |
+| [SHADOW.md](SHADOW.md) | Floor 9. Keystone. Mirrors the practices you hold |
 
 ## Pools by zone
 
