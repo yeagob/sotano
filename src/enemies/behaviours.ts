@@ -194,9 +194,11 @@ export function leap(opt: { every: number; range: number; crouch: number; air: n
         e.wishX = 0; e.wishZ = 0;
         e.pulse = 1 - e.timer / opt.crouch;
         if (e.timer <= 0) {
-          const vx = e.aimX * d / opt.air, vz = e.aimZ * d / opt.air;
-          e.body.vx = vx; e.body.vz = vz; e.body.vy = 13 * opt.air;
-          e.state = 'air'; e.timer = opt.air; e.pulse = 0;
+          // a tier that jumps higher (tiers.ts) arcs `jump` times as high: √jump the lift, so √jump the flight
+          const air = opt.air * Math.sqrt(e.jump ?? 1);
+          const vx = e.aimX * d / air, vz = e.aimZ * d / air;
+          e.body.vx = vx; e.body.vz = vz; e.body.vy = 13 * air;
+          e.state = 'air'; e.timer = air; e.pulse = 0;
           ctx.cue(e, 'leap');
         }
         return;

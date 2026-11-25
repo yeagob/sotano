@@ -782,6 +782,10 @@ export const ES: Catalog = {
     'cause.fire': 'el fuego',
     'cause.drown': 'el agua profunda',
     'cause.toll': 'el precio de bajar',
+    'tier.black': 'rango negro',
+    'tier.yellow': 'rango amarillo',
+    'tier.red': 'rango rojo',
+    'tier.named': '{name} ({tier})',
 
     'inv.title': 'Prácticas',
     'inv.held': { one: '{n} en mano', other: '{n} en mano' },

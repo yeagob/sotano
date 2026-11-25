@@ -26,7 +26,7 @@ Bosses also use a gait in each phase: a stalk (walks at the player), a keep (hol
 
 ## Walkers and the flow field
 
-A walker moves on a flow field for its room: a map of which cells lead toward the target. It climbs up terraces of up to four blocks, drops into pits of up to two, and avoids or crosses water and lava, depending on the element's rule for that kind. The field is rebuilt when the target changes cell, or when the world or the elements change.
+A walker moves on a flow field for its room: a map of which cells lead toward the target. It steps one block up or down between two cells (two for a Yellow projection, three for a Red one: see [colour tiers](../projections/TIERS.md)), stands on terraces of up to four blocks, drops into pits of up to two, and avoids or crosses water and lava, depending on the element's rule for that kind. The field is rebuilt when the target changes cell, or when the world or the elements change.
 
 ## Passing through blocks
 

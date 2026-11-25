@@ -782,6 +782,10 @@ const messages = {
   'cause.fire': 'the fire',
   'cause.drown': 'the deep water',
   'cause.toll': 'the price of the way down',
+  'tier.black': 'black tier',
+  'tier.yellow': 'yellow tier',
+  'tier.red': 'red tier',
+  'tier.named': '{name} ({tier})',
 
   // ── inventory window ──
   'inv.title': 'Practices',

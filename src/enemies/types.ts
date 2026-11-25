@@ -8,6 +8,7 @@ import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
 import type { Polarity } from '../combat/polarity';
+import type { Tier } from './tiers';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -125,6 +126,11 @@ export interface Enemy extends Actor {
   move: number;
   act: number;
   volley: number;
+  /** Its colour tier (tiers.ts); absent means Black. */
+  tier?: Tier;
+  /** The tier's jump multiplier (hop and leap height), and its damage multiplier for strikes and shots. */
+  jump?: number;
+  power?: number;
 }
 
 /** Where a target is (a snapshot for this frame). */

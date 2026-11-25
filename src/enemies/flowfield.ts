@@ -1,6 +1,7 @@
 // Per-room navigation: a flow field over the room's interior (13×7, or bigger for a footprint) towards the target. Each cell gets
 // a standing height: up over terraces (the first free 2-block gap), down into dips and pools (down to
-// two blocks below the floor); neighbours connect when the step is at most one block. Elements shape
+// two blocks below the floor); neighbours connect when the step is at most the body's climb (one block,
+// more for a projection whose tier jumps higher, tiers.ts). Elements shape
 // the water. Recomputed only when the target changes cell or the world or its elements change.
 
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -35,7 +36,8 @@ export class FlowField {
 
   /** `reach`: cells a body needs around its centre cell on each side (see reachOf). A cell is open only when
    *  every cell within `reach` of it is open at the same height, so a wide body never routes through a gap it cannot pass. */
-  constructor(readonly room: RoomArea, private readonly reach = 0) {
+  /** `climb`: the tallest step, in blocks, a body takes up or down between neighbouring cells. */
+  constructor(readonly room: RoomArea, private readonly reach = 0, private readonly climb = 1) {
     this.W = room.w ?? ROOM_W; this.D = room.d ?? ROOM_D;
     const n = this.W * this.D;
     this.dist = new Int16Array(n); this.height = new Int16Array(n); this.cost = new Uint8Array(n); this.done = new Uint8Array(n);
@@ -87,7 +89,7 @@ export class FlowField {
           if (nc < 0 || nr < 0 || nc >= this.W || nr >= this.D) continue;
           const n = nc + nr * this.W;
           if (done[n] || this.height[n] < 0) continue;
-          if (h >= 0 && Math.abs(this.height[n] - h) > 1) continue;
+          if (h >= 0 && Math.abs(this.height[n] - h) > this.climb) continue;
           // no cutting corners diagonally past an obstacle
           if (dc && dr && (this.height[c + dc + r * this.W] < 0 || this.height[c + (r + dr) * this.W] < 0)) continue;
           const d = d0 + this.cost[n];

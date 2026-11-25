@@ -11,6 +11,7 @@
 //   &filter=grey|deutan|protan|tritan|silhouette
 //   &angle=35                turntable angle for enemies and pickups (degrees)
 //   &id=critic               one enemy or item only
+//   &tier=yellow|red|all     the enemies in a colour tier (tiers.ts), or every tier side by side
 
 import * as THREE from 'three';
 import { ENEMIES } from '../content/enemies';
@@ -22,6 +23,7 @@ import { PART_ICONS } from '../content/part-icons';
 import { flaskDef } from '../content/potions';
 import { CRACK_STAGES } from '../content/tiles';
 import { buildModel } from '../entities/enemies';
+import { TIERS, type Tier } from '../enemies/tiers';
 import { pickupMesh } from '../entities/pickups';
 import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
 import { buildChest } from '../render/chest-model';
@@ -91,6 +93,8 @@ export function runGallery(params: URLSearchParams) {
   const filter = params.get('filter') ?? '';
   const angle = Number(params.get('angle') ?? 35) * Math.PI / 180;
   const only = params.get('id');
+  const tierParam = params.get('tier');
+  const tiers: readonly Tier[] = tierParam === 'all' ? TIERS : TIERS.includes(tierParam as Tier) ? [tierParam as Tier] : ['black'];
   document.body.innerHTML = '';
   document.body.style.overflow = 'auto';
   document.body.style.userSelect = 'text';
@@ -237,9 +241,9 @@ export function runGallery(params: URLSearchParams) {
     const r = row();
     for (const e of ENEMIES) {
       if (only && e.id !== only) continue;
-      for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
-        const c = three(scene => { const v = buildModel(e).group; scene.add(v); return v; }, 260, 320, 3.6, e.size[1] / 2, bg);
-        fig(r, c, `${e.id} · ${bg}`);
+      for (const tier of tiers) for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
+        const c = three(scene => { const v = buildModel(e, tier).group; scene.add(v); return v; }, 260, 320, 3.6, e.size[1] / 2, bg);
+        fig(r, c, `${e.id} · ${tier === 'black' ? '' : `${tier} · `}${bg}`);
       }
     }
   }
