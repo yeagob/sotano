@@ -719,7 +719,8 @@ export class Game {
     this.chestViews = new Chests(this.dungeonRoot);
     this.alembicViews = new Alembics(this.dungeonRoot);
     this.kitchenViews = new Kitchens(this.dungeonRoot);
-    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost());
+    // the dungeon's allies give way to the player (issue #327); the sky's set has none (out of scope)
+    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost(), { player: () => this.escortee() });
     this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
@@ -1944,6 +1945,14 @@ export class Game {
   }
 
   // ───────────────────────── enemies ─────────────────────────
+
+  /** The player as the dungeon's allies see it (enemies/escort.ts), or null while it is not about. */
+  private escortee() {
+    const p = this.player;
+    if (!p.alive) return null;
+    const f = p.forward;
+    return { id: p.id, room: p.room, body: p.body, eye: p.eyeHeight, aim: [f.x, f.y, f.z] as [number, number, number] };
+  }
 
   private enemyHost() {
     return {

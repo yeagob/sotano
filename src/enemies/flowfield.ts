@@ -42,8 +42,10 @@ export class FlowField {
     this.avoided = new Uint8Array(n);
   }
 
-  /** Rebuilds if the target cell, the world or its elements changed. */
-  update(solid: Solid, tx: number, tz: number, worldVersion: number | string, hazard: Hazard = () => null) {
+  /** Rebuilds if the target cell, the world or its elements changed. `soft`: an extra step cost per cell (an ally's
+   *  field keeps off the player's cells, issue #327); the caller folds what it depends on into `worldVersion`.
+   *  Without it the field is the one every hostile projection has always walked. */
+  update(solid: Solid, tx: number, tz: number, worldVersion: number | string, hazard: Hazard = () => null, soft?: (x: number, z: number) => number) {
     const cx = Math.floor(tx) - this.room.x0, cz = Math.floor(tz) - this.room.z0;
     const key = `${cx},${cz},${worldVersion}`;
     if (key === this.key) return;
@@ -66,6 +68,7 @@ export class FlowField {
     if (this.reach > 0) this.narrow();
     // without a dwelling element every step costs the same (a plain breadth-first search)
     if (!dwells) this.cost.fill(1);
+    if (soft) for (let r = 0; r < this.D; r++) for (let c = 0; c < this.W; c++) this.cost[c + r * this.W] += soft(x0 + c, z0 + r);
     this.dist.fill(-1);
     if (cx < 0 || cz < 0 || cx >= this.W || cz >= this.D) return;
     // Dijkstra with a bucket queue (Dial's): steps cost 1 or 3, and big rooms reach a thousand cells

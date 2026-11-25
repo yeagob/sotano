@@ -13,6 +13,7 @@ import { hostile, type Actor } from './actors';
 import { grownScale, setScale, shrunkScale } from './growth';
 import { MENDED_TAG } from '../content/presences/mended';
 import { boxHits, freeBody, moveBody } from '../physics/voxel-collide';
+import { FOLLOW_FAR, FOLLOW_NEAR, PATH_RANGE, SHOT_RANGE, SOFT_COST, YIELD_RADIUS, LANE_GAP, across, approaching, isAlly, keepClear, laneSide, yieldStep, type Escortee } from '../enemies/escort';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
@@ -68,6 +69,10 @@ export interface EnemyHost {
   /** A stone of the room falls loose from (x, y, z) (a boss's rockfall): a loose cube. */
   drop(e: Enemy, x: number, y: number, z: number): void;
 }
+
+/** The player as the allies of this set see it (issue #327). Only the dungeon's set has one: the sky's allies are
+ *  out of scope, and a set without it moves every being exactly as before. */
+export interface EscortHost { player(): Escortee | null }
 
 interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction']; gravity: number }
 
@@ -127,7 +132,7 @@ export class Enemies {
 
   private carrying = new Map<number, PickupKind[]>();
   private shells = new Map<number, ShellState>();
-  constructor(private scene: THREE.Object3D, private host: EnemyHost) {
+  constructor(private scene: THREE.Object3D, private host: EnemyHost, private escortHost?: EscortHost) {
     scene.add(this.group);
     this.projMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.22, 0.22, 0.22),
       new THREE.MeshBasicMaterial({ color: pal('attack.red.base') }), MAX_PROJECTILES);
@@ -351,7 +356,10 @@ export class Enemies {
       if (e.frozen > 0) { e.frozen -= dt; e.wishX = 0; e.wishZ = 0; }
       else if (e.fear > 0) { e.fear -= dt; this.flee(e, ctx); }
       else if (e.hold > 0) { e.hold -= dt; e.wishX = 0; e.wishZ = 0; }
-      else e.spec.behaviour.update(e, ctx);
+      else {
+        e.spec.behaviour.update(e, ctx);
+        if (this.escortHost && isAlly(e)) this.escort(e, actors);
+      }
       // leash: an enemy that wandered out of its room heads back to the centre of its home cell (a
       // room's space may be any shape, its home cell is always open)
       const rm = host.room(e.room);
@@ -431,6 +439,51 @@ export class Enemies {
       if (best && (!cur || bestCost < cost(cur) - RETARGET_MARGIN)) { cur = best; e.targetId = best.id; }
     }
     return cur ? { id: cur.id, x: cur.body.x, y: cur.body.y, z: cur.body.z, vx: cur.body.vx, vz: cur.body.vz } : null;
+  }
+
+  /**
+   * An ally's way around the player (issue #327, MOVEMENT.md): with nothing hostile in its room a projection
+   * on your side follows you at FOLLOW_NEAR to FOLLOW_FAR blocks; any ally leaves a doorway or corridor you
+   * walk toward, steps out of the line of your shots and of the path you walk, and keeps PERSONAL_GAP
+   * between its box and yours. It only reshapes the wish the behaviour set; the behaviour still acts.
+   */
+  private escort(e: Enemy, actors: Actor[]) {
+    const p = this.escortHost!.player();
+    if (!p || p.room !== e.room) return;
+    const b = e.body, pb = p.body, solid = this.host.solid;
+    const d = Math.hypot(pb.x - b.x, pb.z - b.z);
+    if (e.faction === 'self' && !actors.some(a => a.alive && a.spawning <= 0 && a.room === e.room && hostile(e.faction, a.faction))) {
+      if (d > FOLLOW_FAR) [e.wishX, e.wishZ] = this.toward(e, { id: p.id, x: pb.x, y: pb.y, z: pb.z });
+      else if (d < FOLLOW_NEAR) { const l = d || 1; e.wishX = (b.x - pb.x) / l; e.wishZ = (b.z - pb.z) / l; }
+      else { e.wishX = 0; e.wishZ = 0; }
+    }
+    let wish: [number, number] = [e.wishX, e.wishZ];
+    const rm = this.host.room(e.room);
+    const bounds: [number, number, number, number] = [rm.x0 - 1, rm.z0 - 1, rm.x0 + (rm.w ?? ROOM_W), rm.z0 + (rm.d ?? ROOM_D)];
+    const out = d <= YIELD_RADIUS && approaching(b, pb) ? yieldStep(solid, b, pb, bounds) : null;
+    if (out) wish = out;
+    else {
+      const speed = Math.hypot(pb.vx, pb.vz);
+      const walk: [number, number, number] = speed > 1e-3 ? [pb.vx / speed, 0, pb.vz / speed] : [0, 0, 0];
+      let dir = p.aim, side = laneSide(b, pb.x, pb.y + p.eye, pb.z, p.aim, SHOT_RANGE);
+      if (!side && approaching(b, pb)) { dir = walk; side = laneSide(b, pb.x, pb.y + pb.h / 2, pb.z, walk, PATH_RANGE, pb.hw + LANE_GAP); }
+      if (side) wish = this.sidestep(e, dir, side, wish);
+    }
+    [e.wishX, e.wishZ] = keepClear(b, pb, wish);
+  }
+
+  /** Out of a line, to the open side (the one it already leans to first), keeping the wish's part along the line. */
+  private sidestep(e: Enemy, dir: [number, number, number], side: number, wish: [number, number]): [number, number] {
+    const b = e.body, l = Math.hypot(dir[0], dir[2]);
+    if (l < 1e-3) return wish;
+    const ux = dir[0] / l, uz = dir[2] / l, along = Math.max(0, wish[0] * ux + wish[1] * uz);
+    for (const s of [side, -side]) {
+      const step = across(dir, s)!;
+      const x = Math.floor(b.x + step[0] * (b.hw + 0.5)), z = Math.floor(b.z + step[1] * (b.hw + 0.5)), y = Math.floor(b.y + 0.05);
+      if (this.host.solid(x, y, z) || this.host.solid(x, y + 1, z)) continue;
+      return [ux * along + step[0], uz * along + step[1]];
+    }
+    return wish;
   }
 
   /**
@@ -531,14 +584,20 @@ export class Enemies {
     // one field per room, target, kind of projection and footprint (each treats the elements its own way).
     // A grown body needs the cells beyond its birth footprint; the birth footprint is always the same.
     const reach = reachOf(e.body.hw) - reachOf(e.spec.size[0]);
-    const key = `${e.room}:${t.id}:${e.def}:${reach}`;
+    // an ally's field, toward anyone but you, costs more on and around your cells (issue #327); a hostile's never does
+    const you = this.escortHost && isAlly(e) ? this.escortHost.player() : null;
+    const soft = you && you.room === e.room && you.id !== t.id ? you.body : null;
+    const pcx = soft ? Math.floor(soft.x) : 0, pcz = soft ? Math.floor(soft.z) : 0;
+    const key = `${e.room}:${t.id}:${e.def}:${reach}${soft ? ':ally' : ''}`;
     let f = this.flows.get(key);
     if (!f) {
       if (this.flows.size > 128) this.flows.clear(); // fields are tiny; just drop stale ones now and then
       f = new FlowField(this.host.room(e.room), reach);
       this.flows.set(key, f);
     }
-    f.update(this.host.solid, tx, tz, `${this.host.worldVersion()}:${this.host.elemVersion()}`, (x, y, z) => this.host.hazard(e, x, y, z));
+    const version = `${this.host.worldVersion()}:${this.host.elemVersion()}${soft ? `:${pcx},${pcz}` : ''}`;
+    f.update(this.host.solid, tx, tz, version, (x, y, z) => this.host.hazard(e, x, y, z),
+      soft ? (x, z) => Math.abs(x - pcx) <= 1 && Math.abs(z - pcz) <= 1 ? SOFT_COST : 0 : undefined);
     if (f.unsafe(b.x, b.z)) {
       const out = f.escape(b.x, b.z);
       if (out) return out;
