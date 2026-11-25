@@ -36,11 +36,12 @@ export function validateItem(d: ItemDef): string[] {
   const rows = d.icon?.rows ?? [];
   if (rows.length !== 12 || rows.some(r => r.length !== 12)) e.push(`${at}: icon must be 12 rows of 12`);
   for (const ch of new Set(rows.join(''))) if (ch !== '.' && d.icon.palette[ch] === undefined) e.push(`${at}: icon uses "${ch}" with no palette colour`);
-  for (const m of d.stats ?? []) {
+  for (const m of [...(d.stats ?? []), ...(d.copyStats ?? []).flat()]) {
     if (!STATS.has(m.stat)) e.push(`${at}: unknown stat "${m.stat}"`);
     if (!Number.isFinite(m.value)) e.push(`${at}: non-finite value for ${m.stat}`);
     if (m.layer === 'mul' && m.value <= 0) e.push(`${at}: multiplier for ${m.stat} must be > 0`);
   }
+  if (d.copyStats && d.stats) e.push(`${at}: give stats or copyStats, not both`);
   if (d.stack) {
     if (!(Number.isInteger(d.stack.max) && d.stack.max >= 1 && d.stack.max <= 99)) e.push(`${at}: stack max must be an integer 1..99`);
     if (!d.stack.stats?.length) e.push(`${at}: a stack needs at least one stat modifier`);
