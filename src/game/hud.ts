@@ -14,7 +14,7 @@ import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
 import { fill, fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
 import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
-import type { ItemDef, Req, SynergyDef } from '../items/types';
+import { copyMods, type ItemDef, type Req, type SynergyDef } from '../items/types';
 import { isPromised } from '../items/pool';
 import type { Polarity } from '../combat/polarity';
 import { HUD_ICONS } from '../content/hud-icons';
@@ -1434,7 +1434,7 @@ export class Hud {
    * everyday life, how to live it, and its credit), what it does in the game, and the stats it changes.
    */
   private itemDetail(d: ItemDef, copies: readonly number[] = []) {
-    const fx = (d.stats ?? []).map(m => {
+    const fx = copyMods(d, 0).map(m => {
       const n = fmtNum(m.value);
       const v = m.layer === 'mul' ? t('unit.times', { n }) : m.layer === 'final' ? `= ${n}` : `${m.value > 0 ? '+' : ''}${n}`;
       const dir = m.layer === 'mul' ? (m.value >= 1 ? 'up' : 'down') : m.layer === 'final' ? 'set' : m.value >= 0 ? 'up' : 'down';

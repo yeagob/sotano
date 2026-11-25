@@ -2,9 +2,9 @@
 // giant-tree/STAR-MAP.md, the look in docs/art/DECISIONS.md §14.3). A tab of the menu screen: under the ground it
 // draws the floor you stand on as a constellation (the rooms are stars, the doors are the lines between them, as the
 // minimap knows them) with the room the Cartographer marked and the Star-reader's room; above the ground it draws the
-// crown from above: the Leaves, the last stair, and the star pads, joined into their chain once the Star-reader has
-// read them for you. Pure: a model from the game's state, and pixel art as an SVG string, so it is tested without a
-// page. Every word goes through i18n; every colour is a palette token.
+// crown from above: the Leaves, the last stair, and the star pads, drawn without links (the pads carry no teleport).
+// Pure: a model from the game's state, and pixel art as an SVG string, so it is tested without a page. Every word goes
+// through i18n; every colour is a palette token.
 
 import { palCss, type PalToken } from '../content/palette';
 import { t, type MessageKey } from '../i18n';
@@ -19,7 +19,7 @@ export interface StarMarks {
   cartographer: ReadonlyMap<number, { room: number; want: 'vault' | 'boss'; also?: number }>;
   /** The Star-reader's room once met, on its floor. */
   starReader: { floor: number; room: number } | null;
-  /** The Star-reader read the stars for you (its gift was taken): the crown's chain of pads is drawn. */
+  /** The Star-reader read the stars for you (its gift was taken). The crown's map shows that in its line of text. */
   read: boolean;
 }
 
@@ -50,7 +50,7 @@ export interface CrownStarMap {
   crown: [number, number];
   leaves: { x0: number; z0: number; w: number; d: number };
   stair: [number, number];
-  pads: { x: number; z: number; to: number; up: boolean }[];
+  pads: { x: number; z: number; up: boolean }[];
   read: boolean;
   here: [number, number] | null;
 }
@@ -211,8 +211,6 @@ export function starMapSvg(m: StarMap, scale = 4): string {
   for (let z = L.z0; z < L.z0 + L.d; z++) for (let x = L.x0; x < L.x0 + L.w; x++) px.dot(x, z, 'mat.leaf.dark', 0.8);
   px.glyph(L.x0 + 6, L.z0 + 3, GLYPHS.ring, INKS);
   px.glyph(m.stair[0], m.stair[1], GLYPHS.stair, INKS);
-  // the doors of the stars: drawn only once the Star-reader has read them for you
-  if (m.read) for (const p of m.pads) { const q = m.pads[p.to]; if (q && !p.up) px.line(p.x, p.z, q.x, q.z, 'bone.dim', 0.7, 3); }
   for (const p of m.pads) px.glyph(p.x, p.z, p.up ? GLYPHS.padUp : GLYPHS.pad, INKS, p.up ? 1 : 0.9);
   if (m.here) {
     px.glyph(m.here[0], m.here[1], GLYPHS.you, INKS);

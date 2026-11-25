@@ -5,7 +5,7 @@ export default defineItem({
   id: 'posttraumatic',
   name: 'Post-Traumatic Growth',
   description: 'Some people come through a hard time with more than they had before: a deeper care for others, a clearer sense of what matters, a strength they did not know they had. The wound stays, and it can become ground.',
-  effect: 'Lava never hurts you: you walk on its surface and wade through it at full speed. Your intentions still go out in it.',
+  effect: 'Walk on lava for 2 seconds per copy, up to 6 seconds, then the lava burns you as usual. The time comes back once you are out of it. Your intentions still go out in it.',
   inspiredBy: "Tedeschi and Calhoun's post-traumatic growth (1996)",
   pools: { treasure: 1 },
   tags: ['emotion', 'fire'],
@@ -28,7 +28,8 @@ export default defineItem({
     ],
     palette: { c: pal('path.body.glow'), s: pal('path.emotion.dark'), b: pal('el.lava.hot'), d: pal('el.lava.molten') },
   },
-  // lavaWalk: lava does not hurt you (playerElements), walks on its surface and wades at full speed (the solid test
-  // and the wade in game.ts). Intentions are still put out by lava, and fire still hurts.
-  stats: [{ stat: 'lavaWalk', layer: 'add', value: 1 }],
+  // lavaWalk: the seconds you may walk on lava (2 per copy; the stat caps the total at 6). While time is left, lava does
+  // not hurt you and you walk on its surface at full speed (game.ts: lavaWalkLeft, playerElements, the solid test).
+  // Intentions are still put out by lava, and fire still hurts.
+  stats: [{ stat: 'lavaWalk', layer: 'add', value: 2 }],
 });

@@ -2,6 +2,7 @@ import { AIR, MAT } from '../content/materials';
 import { CELL_STACK, ROCK, ROOM_D, ROOM_H, ROOM_W, ceilingAt } from '../content/rooms';
 import { CROWN_PALETTE, LEAVES_OCULUS, LEAVES_ROOM } from '../content/crown';
 import { hash3, type Rng } from '../core/rng';
+import { MARGIN, reach } from '../sky/totality/reach';
 import type { VoxelWorld } from './world';
 
 export type TreeZone = 'trunk' | 'branches' | 'leaves' | 'heaven';
@@ -43,22 +44,103 @@ const STAIR_CORE = 2;
 const STAIR_DA = 2 / 4.5;
 const STAIR_HEAD = 3;
 
-/** `up`: the last star of the last constellation; stepping on it leaves the built tree upward (SKY.md §2.4). */
-export interface StarPad { x: number; y: number; z: number; to: number; up?: boolean }
+/** A pad's cell: its centre cell, on the ground (x, z) at the height of its floor (y). */
+export interface Spot { x: number; y: number; z: number }
+
+/** A star pad. `up`: the last pad of the route; stepping on it leaves the built tree upward (SKY.md §2.4). The pads
+ *  carry no teleport: the route is walked by the jumps (STARS.md). */
+export interface StarPad extends Spot { up?: boolean }
+
+/** Pads in each constellation (fixed: the positions do not change with the seed, only the pads' sizes do). */
+const CONSTELLATION_PADS = 5;
+/** A base pad is three blocks across; each pad's seeded draw adds one of these steps to that width (STARS.md). */
+const PAD_WIDTH = 3;
+/** The width steps: a loss of one to three blocks (a loss that leaves no block is one block), a gain of one or two. */
+const PAD_SIZE_STEPS = [-3, -2, -1, 1, 2] as const;
+/** Constellation pads whose hop from the one before is lengthened, as 'c.s' (constellation c, pad s). */
+const LENGTHENED = new Set<string>(['0.2', '1.1', '1.3', '2.4']);
+const LENGTHEN = 3;
+/** The cloud layer above the route's top pad (STARS.md): its height over the pad's floor, and its reach across. The Triple
+ *  Jump reaches 13.86 above the top pad's floor, so the layer is in reach from the top pad. The pad one block under the top
+ *  reaches 12.86 above the top's floor, so a height above that keeps the sky from opening from the pads below: the layer sits
+ *  at 13.3, between the two, with 0.45 blocks of margin on each side. */
+export const CLOUD_RISE = 13.3;
+/** The cloud's reach across, in blocks: five blocks before, times ten (the layer covers almost the whole sky). */
+export const CLOUD_RADIUS = 5 * 10;
+
+/** The cloud layer's spot: the body passes it (no solids) and its feet at `y`, within `r` blocks of (x, z), open the sky. */
+export interface CloudSpot { x: number; y: number; z: number; r: number }
+
+/** The cloud layer above a pad: centred on its centre cell, CLOUD_RISE blocks above its floor. */
+export function cloudAbove(top: Spot): CloudSpot {
+  return { x: top.x + 0.5, y: top.y + CLOUD_RISE, z: top.z + 0.5, r: CLOUD_RADIUS };
+}
+
+/** The most intermediate pads one hop may take (a guard: the base route's longest hop needs four). */
+const MAX_BRIDGE = 10;
+/** Sideways swings a bridge's pads may take, in blocks, from the straight line between the hop's ends (tried for up to
+ *  three pads; a longer bridge is an equal split of the straight line). */
+const SWINGS = [0, 2, -2, 4, -4, 6, -6, 8, -8];
+const SWING_PADS = 3;
+/** A pad is three blocks wide and a body 0.6 wide: a body must be this far (centre to centre) from a pad's centre to
+ *  pass beside it without its head meeting the pad's underside (STARS.md, the way up). */
+export const PAD_CLEARANCE = 1.8;
+/** Horizontal room a rise needs before the pad above: the Triple Jump has climbed clear of the pad's underside after
+ *  this many blocks per block of rise (the flight of physics/jump.ts, at base stats). */
+export const CLIMB_TRAVEL = 0.45;
+
+/** A hop between two pads fits the Triple Jump at base stats (STARS.md): its gap is at most MARGIN × reach of its rise,
+ *  and at least what it takes to pass the pad above beside it. */
+export function padHopFits(a: Spot, b: Spot): boolean {
+  const r = reach(b.y - a.y), gap = Math.hypot(b.x - a.x, b.z - a.z);
+  return r !== undefined && gap <= MARGIN * r && gap >= PAD_CLEARANCE + CLIMB_TRAVEL * Math.max(0, b.y - a.y);
+}
+
+/** Every list of `k` swings, the smallest total swing first (the order a bridge tries them in). */
+function swingPlans(k: number): number[][] {
+  let plans: number[][] = [[]];
+  for (let n = 0; n < k; n++) plans = plans.flatMap(p => SWINGS.map(s => [...p, s]));
+  return plans.sort((p, q) => p.reduce((t, v) => t + Math.abs(v), 0) - q.reduce((t, v) => t + Math.abs(v), 0));
+}
+const PLANS: number[][][] = Array.from({ length: MAX_BRIDGE + 1 }, (_, k) => (k <= SWING_PADS ? swingPlans(k) : [new Array<number>(k).fill(0)]));
+
+/** The route the pads make: each hop the Triple Jump cannot make is split by the fewest intermediate pads that all fit
+ *  once rounded to cells. Each intermediate pad lies on the straight line between the hop's ends, swung sideways by the
+ *  smallest swing that lets every part fit, so a short hop that climbs is taken round the pad above. `clamp` keeps the
+ *  pads in the world. Deterministic: it draws no randomness. */
+export function bridgePads(spots: readonly Spot[], clamp: (x: number, z: number) => [number, number] = (x, z) => [x, z]): Spot[] {
+  const out: Spot[] = spots.length ? [{ ...spots[0] }] : [];
+  for (let i = 1; i < spots.length; i++) {
+    const a = spots[i - 1], b = spots[i];
+    const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1;
+    const px = -dz / len, pz = dx / len;
+    const path = (swing: number[]): Spot[] => {
+      const k = swing.length, p: Spot[] = [a];
+      for (let j = 1; j <= k; j++) {
+        const t = j / (k + 1), side = swing[j - 1];
+        const [x, z] = clamp(a.x + dx * t + px * side, a.z + dz * t + pz * side);
+        p.push({ x: Math.round(x), y: Math.round(a.y + (b.y - a.y) * t), z: Math.round(z) });
+      }
+      p.push(b);
+      return p;
+    };
+    let found: Spot[] | null = null;
+    for (let k = 0; k <= MAX_BRIDGE && !found; k++) {
+      for (const swing of PLANS[k]) {
+        const p = path(swing);
+        if (p.every((q, j) => j === 0 || padHopFits(p[j - 1], q))) { found = p; break; }
+      }
+    }
+    out.push(...(found ?? path(new Array(MAX_BRIDGE).fill(0))).slice(1).map(p => ({ ...p })));
+  }
+  return out;
+}
 
 /** The star pad a body stands on (its feet's cell is the pad's centre, on the ground), or -1 (STARS.md). */
 export function padUnder(pads: readonly StarPad[], x: number, y: number, z: number, onGround: boolean): number {
   if (!onGround) return -1;
   const fx = Math.floor(x), fy = Math.floor(y + 0.05), fz = Math.floor(z);
   return pads.findIndex(q => q.x === fx && q.y === fy && q.z === fz);
-}
-
-/** The pads' chain, one frame (STARS.md): stepping onto pad `pad` carries you to its next, unless it is the pad you
- *  were just carried to (`lock`); stepping off every pad re-arms it. Returns the new lock and the pad to go to. */
-export function padTravel(pads: readonly StarPad[], pad: number, lock: number): { lock: number; to: StarPad | null } {
-  if (pad < 0) return { lock: -1, to: null };
-  if (pad === lock) return { lock, to: null };
-  return { lock: pads[pad].to, to: pads[pads[pad].to] };
 }
 
 /** The centre of the spiral stair that climbs from story `i` into story `i + 1`, for a tree centred on (cx, cz). */
@@ -130,6 +212,8 @@ export class GiantTree {
   readonly base: number;
   readonly top: number;
   readonly pads: StarPad[] = [];
+  /** The cloud layer above the top pad, once the stars are grown (null before). The sky opens where the body passes it. */
+  cloud: CloudSpot | null = null;
   /** The room of the crown (D14): fixed by the tree's place, never by the seed, so it is known before it is grown. */
   readonly leaves: LeavesRoom;
   voxels = 0;
@@ -460,25 +544,32 @@ export class GiantTree {
     for (let dz = -9; dz <= 9; dz++) for (let dx = -9; dx <= 9; dx++) if (dx * dx + dz * dz <= 81) {
       put(sx + dx, fy - 2, sz + dz, BARK); put(sx + dx, fy - 1, sz + dz, BARK);
     }
-    const pad = (x: number, y: number, z: number) => {
-      for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) put(x + dx, y - 1, z + dz, MAT.starstone);
-      this.pads.push({ x, y, z, to: -1 });
-    };
+    // the base pads: the first one on the disc, then three constellations rising from the tree's centre. Every position is
+    // fixed (the same on every seed); only the sizes of the pads are seeded (see the width draw below).
+    const spots: Spot[] = [];
     const a = Math.atan2(sz - this.cz, sx - this.cx);
-    pad(sx - Math.round(Math.cos(a) * 6), fy, sz - Math.round(Math.sin(a) * 6));
+    spots.push({ x: sx - Math.round(Math.cos(a) * 6), y: fy, z: sz - Math.round(Math.sin(a) * 6) });
     for (let c = 0; c < 3; c++) {
-      const count = 4 + rng.int(0, 2);
-      const a0 = (c / 3) * Math.PI * 2 + rng.range(-0.3, 0.3);
-      for (let s = 0; s < count; s++) {
-        const r = 12 + s * 8 + rng.int(0, 4), aa = a0 + s * 0.4;
+      const a0 = (c / 3) * Math.PI * 2;
+      for (let s = 0; s < CONSTELLATION_PADS; s++) {
+        const r = 12 + s * 8 + 2 + (LENGTHENED.has(`${c}.${s}`) ? LENGTHEN : 0), aa = a0 + s * 0.4;
         const x = Math.max(4, Math.min(this.w.sx - 5, this.cx + Math.round(Math.cos(aa) * r)));
         const z = Math.max(4, Math.min(this.w.sz - 5, this.cz + Math.round(Math.sin(aa) * r)));
-        const y = Math.min(this.w.sy - 8, fy + 16 + c * 26 + s * 4 + rng.int(0, 4));
-        pad(x, y, z);
+        const y = Math.min(this.w.sy - 8, fy + 16 + c * 26 + s * 4 + 2);
+        spots.push({ x, y, z });
       }
     }
-    for (let p = 0; p < this.pads.length; p++) this.pads[p].to = (p + 1) % this.pads.length;
+    // every hop of the route is one the Triple Jump makes (STARS.md): the bridges between the base pads are pads too
+    const clamp = (x: number, z: number): [number, number] => [Math.max(4, Math.min(this.w.sx - 5, x)), Math.max(4, Math.min(this.w.sz - 5, z))];
+    for (const { x, y, z } of bridgePads(spots, clamp)) {
+      // the pad's size: one seeded draw. A loss of one to three blocks of width (never below one block across), or a gain of one or two (STARS.md)
+      const width = Math.max(1, PAD_WIDTH + PAD_SIZE_STEPS[rng.int(0, PAD_SIZE_STEPS.length - 1)]);
+      const lo = Math.floor((width - 1) / 2), hi = width - 1 - lo;
+      for (let dz = -lo; dz <= hi; dz++) for (let dx = -lo; dx <= hi; dx++) put(x + dx, y - 1, z + dz, MAT.starstone);
+      this.pads.push({ x, y, z });
+    }
     this.pads[this.pads.length - 1].up = true;
+    this.cloud = cloudAbove(this.pads[this.pads.length - 1]);
   }
 
 }

@@ -36,7 +36,7 @@ export const BASE_STATS: Stats = {
   mining: 3.5,     // damage per intention to blocks (separate from `damage`, which hurts actors)
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
-  airJumps: 0,     // jumps you may make in the air before landing (floored; SKY.md §9)
+  airJumps: 0,     // jumps you may make in the air before landing (floored; at most 3: two Triple Jump copies, SKY.md §9)
   reach: 4,        // reach for placing blocks, in blocks (4 = 20% less than the old 5; issue #162)
   carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
@@ -52,7 +52,7 @@ export const BASE_STATS: Stats = {
   dash: 0,         // 1 = a double tap of a direction dashes 4.5 blocks that way (Irimi, DASH.md; 0 = no dash)
   run: 0,          // 1 = holding the run control moves 45% faster (Fartlek; 0 = no running)
   crouch: 0,       // 1 = holding the crouch control makes the body a block shorter and slower (Child's Pose; 0 = no crouch)
-  lavaWalk: 0,     // 1 = lava never hurts you: you walk on its surface and wade through it at full speed
+  lavaWalk: 0,     // seconds you may walk on lava before it burns you (Post-Traumatic Growth: 2 per copy); 0 = none
   twinCast: 0,     // 1 = your two hands take turns casting; each shot leaves from the other hand (Bilateral Stimulation)
   triad: 0,        // 1 = each intention flies as three strands in a widening triangle (Rule of Three)
   spiral: 0,       // 1 = each intention flies as three strands on a turning helix (Spiral Growth)
@@ -69,7 +69,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   mining: [0.35, 350],
   moveSpeed: [0.3, 3],
   jump: [0.3, 5],
-  airJumps: [0, 4],
+  airJumps: [0, 3],
   carry: [1, 9],
   kick: [0.2, 6],
   throw: [0.2, 6],
@@ -84,7 +84,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   dash: [0, 1],
   run: [0, 1],
   crouch: [0, 1],
-  lavaWalk: [0, 1],
+  lavaWalk: [0, 6],
   twinCast: [0, 1],
   triad: [0, 1],
   spiral: [0, 1],
@@ -122,7 +122,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   dash: v => (v < 1 ? t('unit.crushNone') : t('unit.dashOn')),
   run: v => (v < 1 ? t('unit.crushNone') : t('unit.runOn')),
   crouch: v => (v < 1 ? t('unit.crushNone') : t('unit.crouchOn')),
-  lavaWalk: v => (v < 1 ? t('unit.crushNone') : t('unit.lavaWalkOn')),
+  lavaWalk: v => (v < 1 ? t('unit.crushNone') : t('unit.seconds', { n: fmtNum(v, 1) })),
   twinCast: v => (v < 1 ? t('unit.off') : t('unit.alternate')),
   triad: v => (v < 1 ? t('unit.off') : t('unit.on')),
   spiral: v => (v < 1 ? t('unit.off') : t('unit.on')),
