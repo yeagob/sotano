@@ -439,7 +439,7 @@ describe('silence, the ice and the tree (L4, L5)', () => {
     expect(a.h).not.toBe(c.h);
     expect(a.t.voxels).toBeGreaterThan(100000);
     expect(a.t.pads.length).toBeGreaterThanOrEqual(13);
-    for (const p of a.t.pads) expect(a.t.pads[p.to]).toBeDefined();
+    for (const p of a.t.pads) expect([p.x, p.y, p.z].every(Number.isInteger)).toBe(true);
     for (let i = 1; i < TREE_STORIES.length; i++) expect(a.t.range(i)[0]).toBe(a.t.range(i - 1)[1] + 1);
     expect(a.t.range(0)[0]).toBe(SURFACE_Y - 1);
     expect(a.t.range(TREE_STORIES.length - 1)[1]).toBe(SURFACE_Y + SKY_LIMIT);

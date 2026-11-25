@@ -14,8 +14,12 @@ export const AIR_CONTROL = 0.35;
 export const COYOTE = 0.1;
 /** Seconds a jump press is remembered before landing. */
 export const JUMP_BUFFER = 0.12;
-/** Height multipliers of the ground jump and the air jumps, in order (SKY.md §9). */
-export const LADDER: readonly number[] = [1, 2, 8];
+/** Height multipliers of the ground jump and the air jumps, in order (SKY.md §9): 1× the ground jump, 2× and 8× the two air
+ *  jumps of the Triple Jump, and 16× (twice the 8×) the fourth jump of two copies of it. */
+export const LADDER: readonly number[] = [1, 2, 8, 16];
+/** The rung from which the air steers fully and adds no forward speed: the Triple Jump's third jump (8×), so a fourth jump
+ *  changes nothing about the steering of the first three. */
+export const STEER_RUNG = 2;
 
 /** Take-off speed of the k-th jump of a sequence (0 = the ground jump) for a `jump` stat. */
 export function velocity(k: number, jump = 1): number {

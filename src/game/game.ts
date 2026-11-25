@@ -97,7 +97,7 @@ import {
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
-import { GiantTree, padTravel, padUnder, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { inLeaves, LEAVES_GIFT_SPOT } from '../world/crown';
 import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { TunnelLog } from './minimap';
@@ -131,6 +131,7 @@ import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
 import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
 import { CheckpointMark } from './checkpoint-mark';
+import { CloudLayer } from './cloud-layer';
 import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
@@ -388,6 +389,8 @@ export class Game {
   /** The cells a phased body may be in (the room's box with its walls), and the room it started in. */
   private phase: { box: CellBox; room: RoomInfo | null; interior: CellBox } | null = null;
   private checkpointMark!: CheckpointMark;
+  /** The cloud layer above the route's top pad (cloud-layer.ts, STARS.md). */
+  private cloudLayer!: CloudLayer;
   private bossUsed = new Set<string>();
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -466,8 +469,6 @@ export class Game {
   private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss'; also?: number }>; starReader: StarMarks['starReader']; read: boolean } =
     { cartographer: new Map(), starReader: null, read: false };
   private stillT = 0;
-  /** The star pad you arrived on (re-armed once you step off it). */
-  private padLock = -1;
   /** The Leaves' gift (issue #316): the jump practice over the ring's east stone, laid at run start. */
   private leavesGift: Pickup | null = null;
   /** What the HUD says about where you are (a floor, or a level of the tree). */
@@ -523,6 +524,8 @@ export class Game {
   private elemFx = 0;
   private elemSfx = 0;
   private drownT = 0;
+  /** lavaWalk (posttraumatic): the seconds the body has stood in lava since it last left it (see lavaWalkLeft). */
+  private lavaSpent = 0;
   /** Elements the player's body was in last frame (for elementEnter / elementLeave). */
   private playerIn = new Set<ElementKey>();
   private playerMedium: PlayerMedium = { feet: null, head: null };
@@ -686,7 +689,7 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
-    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];
@@ -701,7 +704,7 @@ export class Game {
     this.input.modal = false;
     setMasterTarget(0.35);
     this.elements = this.elementSim(this.world, this.rng.fork('elements').u32());
-    this.playerIn.clear(); this.drownT = 0;
+    this.playerIn.clear(); this.drownT = 0; this.lavaSpent = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
     this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
@@ -709,6 +712,7 @@ export class Game {
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
     this.checkpointMark = new CheckpointMark(this.dungeonRoot);
+    this.cloudLayer = new CloudLayer(this.dungeonRoot);
     this.respawn = null;
     // a random heart's kind reads the chances of its band: floor 0 halves the star heart, the surface keeps its numbers (REWARDS §3)
     // a heart's kind on floor 0 takes its own fork, so the Roots' crates never move the hearts stream the floors below read
@@ -730,7 +734,7 @@ export class Game {
     this.stats.removeSource('toll');
     this.syncWeapon();
     const p = this.player;
-    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath');
+    p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath'); this.lavaSpent = 0;
     p.clearStates();
     this.statuses.clear();
     this.phase = null;
@@ -1382,6 +1386,7 @@ export class Game {
       top: SKY_TOP, floorOut: SKY_FLOOR_OUT,
       deck: [d.x, d.y, d.z],
       crown: [this.tree.cx, SURFACE_Y + SKY_LIMIT - 3, this.tree.cz],
+      cloud: this.tree.cloud ?? { x: this.tree.cx, y: Infinity, z: this.tree.cz, r: 0 },
     };
   }
 
@@ -1434,7 +1439,7 @@ export class Game {
 
   /** Falling below the deck's floor goes down to the crown (SKY.md §2.4). The sky's own update runs after this. */
   private skyGate() {
-    const travel = RealmGate.check('sky', this.player.body, null, this.skyBounds());
+    const travel = RealmGate.check('sky', this.player.body, this.skyBounds());
     if (travel) this.gate.start(travel);
   }
 
@@ -3209,8 +3214,15 @@ export class Game {
     return { feet: this.elementAt(b.x, b.y + 0.1, b.z), mid: this.elementAt(b.x, b.y + b.h * 0.5, b.z), head: this.elementAt(b.x, b.y + eye, b.z) };
   }
 
-  /** lavaWalk (posttraumatic): a lava cell with air above it is ground for a body whose feet were above its surface at the
-   *  start of the frame. Gravity and walking then stop on it, and a body already in the lava is not held by it. */
+  /** lavaWalk (posttraumatic): the seconds of lava walking left. The stat is the time the copies give (2 each, at most 6);
+   *  it runs down while the body stands in lava (`lavaSpent`), and is whole again once the body is out of it. */
+  private lavaWalkLeft(): number {
+    return Math.max(0, this.stats.get('lavaWalk') - this.lavaSpent);
+  }
+
+  /** lavaWalk (posttraumatic): while walking time is left, a lava cell with air above it is ground for a body whose feet
+   *  were above its surface at the start of the frame. Gravity and walking then stop on it, and a body already in the lava
+   *  is not held by it. Once the time is up the surface is lava again (the body sinks in, as in any lava). */
   private lavaSurface(x: number, y: number, z: number, feet: number): boolean {
     const c = this.world.elemAt(x, y, z);
     if (elemKind(c) !== EL_LAVA || elemKind(this.world.elemAt(x, y + 1, z)) === EL_LAVA) return false;
@@ -3230,7 +3242,7 @@ export class Game {
 
   /** solvecoagula (`ItemApi.convertFluid`): the face-connected cells of `from` in the room of (x, y, z), breadth-first from
    *  the touched cell (nearest first), up to `cap`. Each keeps its level and falling bit; a source stays a source. Once per
-   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section, unless lavaWalk is 1. */
+   *  frame. A negative conversion into lava is refused (-1) when the player's body touches the section and no lavaWalk time is left. */
   private convertFluid(fx: number, fy: number, fz: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, _source: string): number {
     if (this.fluidFrame === this.simFrame) return 0;
     const x = Math.floor(fx), y = Math.floor(fy), z = Math.floor(fz);
@@ -3252,7 +3264,7 @@ export class Game {
         section.push([nx, ny, nz]);
       }
     }
-    if (kindTo === EL_LAVA && this.stats.get('lavaWalk') < 1 && this.bodyTouches(section)) return -1;
+    if (kindTo === EL_LAVA && this.lavaWalkLeft() <= 0 && this.bodyTouches(section)) return -1;
     for (const [cx, cy, cz] of section) {
       const b = w.elemAt(cx, cy, cz);
       w.setElemByte(cx, cy, cz, elemByte(kindTo, elemLevel(b), isFalling(b)));
@@ -3275,9 +3287,13 @@ export class Game {
   private playerElements(dt: number) {
     const p = this.player, b = p.body;
     const m = this.bodyMedium(b, p.eyeHeight);
-    // lavaWalk (posttraumatic): lava does not hurt you, and you wade through it at full speed (the 0.4 wade becomes 1)
-    const walk = this.stats.get('lavaWalk') >= 1;
+    // lavaWalk (posttraumatic): while walking time is left, lava does not hurt you, and you wade through it at full speed
+    // (the 0.4 wade becomes 1). The time runs down while the body stands in lava: its feet, middle or head in it, or the
+    // lava it stands on. Out of lava it is whole again; with no copy of the practice it is never counted.
+    const walk = this.lavaWalkLeft() > 0;
     const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
+    const onLava = [m.feet, m.mid, m.head].some(d => d?.key === 'lava') || this.elementAt(b.x, b.y - 0.05, b.z)?.key === 'lava';
+    this.lavaSpent = onLava && this.stats.get('lavaWalk') > 0 ? this.lavaSpent + dt : 0;
     this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
@@ -4605,7 +4621,7 @@ export class Game {
     return {
       kind: 'crown', sx: this.dw.sx, sz: this.dw.sz, centre: [t.cx, t.cz], trunk: TREE_STORIES[0].r, crown: [54, t.cz - 2],
       leaves: { x0: L.x0, z0: L.z0, w: L.w, d: L.d }, stair: t.stairAt(TREE_STORIES.length - 2),
-      pads: t.pads.map(p => ({ x: p.x, z: p.z, to: p.to, up: p.up === true })), read: this.starMarks.read,
+      pads: t.pads.map(p => ({ x: p.x, z: p.z, up: p.up === true })), read: this.starMarks.read,
       here: this.realm === 'dungeon' ? [Math.floor(b.x), Math.floor(b.z)] : null,
     };
   }
@@ -4910,20 +4926,11 @@ export class Game {
         sfx3.reveal();
       }
     } else this.stillT = 0;
-    // the top of the sky, and the last star, lead up into the sky realm (SKY.md §2.4): the gate runs the fade
-    const pad = padUnder(this.tree.pads, b.x, b.y, b.z, b.onGround);
-    const up = pad >= 0 && this.tree.pads[pad].up === true;
-    if (up || b.y > SKY_TOP) {
-      const travel = RealmGate.check('dungeon', b, up ? { up: true } : null, this.skyBounds());
+    // the cloud layer above the top pad, and the top of the dungeon's sky, lead up into the sky realm (STARS.md, SKY.md §2.4):
+    // the gate runs the fade. The cloud's height is checked first, so the bounds are only built when the body is near it.
+    if (this.realm === 'dungeon' && ((b.y >= (this.tree.cloud?.y ?? Infinity) && b.vy > 0) || b.y > SKY_TOP)) {
+      const travel = RealmGate.check('dungeon', b, this.skyBounds(), b.vy > 0);
       if (travel) { this.gate.start(travel); return; }
-    }
-    // star pads: step on one and you are on the next star of its constellation
-    const hop = padTravel(this.tree.pads, pad, this.padLock);
-    this.padLock = hop.lock;
-    if (hop.to) {
-      this.particles.burst(b.x, b.y + 0.5, b.z, pal('bone.paper'), 16, 2.5, 0.07);
-      this.teleport(hop.to.x + 0.5, hop.to.y, hop.to.z + 0.5);
-      sfx2.charged();
     }
     // the Leaves (D14): their name, the first time you stand in them this run
     if (!this.leavesSeen && this.realm === 'dungeon' && inLeaves(b.x, b.y, b.z)) { this.leavesSeen = true; this.hud.toast('toast.leaves'); }
@@ -5332,9 +5339,9 @@ export class Game {
     this.tickStatuses(dt);
     const solidHere = this.phase ? (x: number, y: number, z: number) => this.phaseSolid(x, y, z) : (x: number, y: number, z: number) => this.solid(x, y, z);
     const b = this.player.body;
-    // lavaWalk: a lava surface is ground. The feet are read as they were at the start of the frame, so a body that
-    // falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
-    const walk = this.stats.get('lavaWalk') >= 1, feet0 = b.y;
+    // lavaWalk: a lava surface is ground while walking time is left. The feet are read as they were at the start of the
+    // frame, so a body that falls onto the surface lands on it instead of sinking through the cell's own test (see lavaSurface).
+    const walk = this.lavaWalkLeft() > 0, feet0 = b.y;
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
@@ -5399,6 +5406,7 @@ export class Game {
     }
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
+    this.cloudLayer.place(this.tree.cloud);
     if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt, this.camera.position);
     this.debrisView.update(this.debris);
