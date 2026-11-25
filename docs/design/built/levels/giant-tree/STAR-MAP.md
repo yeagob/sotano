@@ -27,13 +27,13 @@ Opening it pauses the world, as the screen always does. The arrows and the d-pad
 - **The crown** is a dotted ellipse of leaves, the trunk a dotted ring of bough under it.
 - **The Leaves** are a small room of young leaves with their ring of starstone at the centre (see [LEAVES](LEAVES.md)); the last stair is a ring of bough beside it.
 - **The stars.** Once the stars story has grown, each star pad is a small starstone star; the last one, the way up into the sky, carries a point above it.
-- **The doors of the stars.** The chain that carries you from pad to pad is drawn, as dotted lines, only once the Star-reader has read the stars for you (you took its light). Before that the card says so.
+- **The stars.** The pads are drawn as stars, with no lines between them: the pads carry no teleport, and the route is climbed with the jumps (issue #325). The card's line says whether the Star-reader has read the stars for you (you took its light).
 - **You** are a small gold star, where you stand.
 
 A line under the title says what the map shows (the floor, the crown read or unread, or that the stars are not out yet) and how to close it on the device you last used. A legend under the map gives each glyph with its words; nothing is told by colour alone.
 
 ## What it does not do
 
-The map never shows a room you have no way of knowing: no plan of the whole floor, no rooms behind unseen doors (except the two marks the presences give). It does not move you: the teleport doors of the design are the star pads, which carry you when you step on them.
+The map never shows a room you have no way of knowing: no plan of the whole floor, no rooms behind unseen doors (except the two marks the presences give). It does not move you: the star pads carry no teleport (issue #325), so stepping on one does nothing.
 
 Code: `src/game/star-map.ts` (the map's model, its pixel art and its card), `src/game/hud.ts` (the tab), `src/game/game.ts` (the marks and the view), `src/input/bindings.ts` (`map`), `index.html` (the tab and its styles). Words in `src/i18n/locales/` (`starmap.*`, `tab.map`). The look: [DECISIONS §14.3](../../../../art/DECISIONS.md). Tested in `tests/star-map.test.ts`.
