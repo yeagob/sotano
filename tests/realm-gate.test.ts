@@ -4,35 +4,42 @@ import { describe, expect, it, vi } from 'vitest';
 import { GATE_FADE, GATE_HOLD_MAX, RealmGate, SKY_FLOOR_OUT } from '../src/sky/gate';
 import type { RealmGateHost, SkyBounds, Travel } from '../src/sky/types';
 
-const SKY: SkyBounds = { top: 425.5, floorOut: SKY_FLOOR_OUT, deck: [128, 4, 128], crown: [128, 427, 128] };
+const CLOUD = { x: 128.5, y: 316, z: 128.5, r: 5 };
+const SKY: SkyBounds = { top: 425.5, floorOut: SKY_FLOOR_OUT, deck: [128, 4, 128], crown: [128, 427, 128], cloud: CLOUD };
 const pos = (x: number, y: number, z: number) => ({ x, y, z });
 
-describe('RealmGate.check (SKY.md §2.4)', () => {
+describe('RealmGate.check (SKY.md §2.4, STARS.md)', () => {
   it('the dungeon sends the player up past the top of its sky, from anywhere', () => {
-    expect(RealmGate.check('dungeon', pos(10, 425.6, 10), null, SKY)).toEqual({ to: 'sky', at: SKY.deck, float: true });
-    expect(RealmGate.check('dungeon', pos(200, 500, 3), null, SKY)?.to).toBe('sky');
+    expect(RealmGate.check('dungeon', pos(10, 425.6, 10), SKY)).toEqual({ to: 'sky', at: SKY.deck, float: true });
+    expect(RealmGate.check('dungeon', pos(200, 500, 3), SKY)?.to).toBe('sky');
   });
 
   it('nothing happens below the top of the dungeon\'s sky, and not exactly at it', () => {
-    expect(RealmGate.check('dungeon', pos(10, 425.5, 10), null, SKY)).toBeNull();
-    expect(RealmGate.check('dungeon', pos(10, 300, 10), null, SKY)).toBeNull();
-    expect(RealmGate.check('dungeon', pos(10, 0, 10), null, SKY)).toBeNull();
+    expect(RealmGate.check('dungeon', pos(10, 425.5, 10), SKY)).toBeNull();
+    expect(RealmGate.check('dungeon', pos(10, 300, 10), SKY)).toBeNull();
+    expect(RealmGate.check('dungeon', pos(10, 0, 10), SKY)).toBeNull();
   });
 
-  it('the last star leads up even below the top; an ordinary star does not', () => {
-    expect(RealmGate.check('dungeon', pos(10, 300, 10), { up: true }, SKY)).toEqual({ to: 'sky', at: SKY.deck, float: true });
-    expect(RealmGate.check('dungeon', pos(10, 300, 10), { up: false }, SKY)).toBeNull();
+  it('the cloud layer above the top pad leads up: the feet at its height, over the pad, open the sky', () => {
+    expect(RealmGate.check('dungeon', pos(128.5, 316, 128.5), SKY)).toEqual({ to: 'sky', at: SKY.deck, float: true });
+    expect(RealmGate.check('dungeon', pos(128.5, 320, 128.5), SKY)?.to).toBe('sky');
+    expect(RealmGate.check('dungeon', pos(128.5, 315.9, 128.5), SKY)).toBeNull();
+  });
+
+  it('the cloud reaches only so far across: beyond its radius, a body under it does not go up', () => {
+    expect(RealmGate.check('dungeon', pos(128.5 + CLOUD.r, 320, 128.5), SKY)?.to).toBe('sky');
+    expect(RealmGate.check('dungeon', pos(128.5 + CLOUD.r + 0.5, 320, 128.5), SKY)).toBeNull();
   });
 
   it('the sky sends the player down to the crown only when they fall below its deck floor', () => {
-    expect(RealmGate.check('sky', pos(128, 3.9, 128), null, SKY)).toEqual({ to: 'dungeon', at: SKY.crown, float: true });
-    expect(RealmGate.check('sky', pos(128, SKY_FLOOR_OUT, 128), null, SKY)).toBeNull();
-    expect(RealmGate.check('sky', pos(128, 120, 128), null, SKY)).toBeNull();
+    expect(RealmGate.check('sky', pos(128, 3.9, 128), SKY)).toEqual({ to: 'dungeon', at: SKY.crown, float: true });
+    expect(RealmGate.check('sky', pos(128, SKY_FLOOR_OUT, 128), SKY)).toBeNull();
+    expect(RealmGate.check('sky', pos(128, 120, 128), SKY)).toBeNull();
   });
 
-  it('the sky ignores the dungeon\'s top and the star pads', () => {
-    expect(RealmGate.check('sky', pos(128, 600, 128), null, SKY)).toBeNull();
-    expect(RealmGate.check('sky', pos(128, 120, 128), { up: true }, SKY)).toBeNull();
+  it('the sky ignores the dungeon\'s top and the cloud layer', () => {
+    expect(RealmGate.check('sky', pos(128, 600, 128), SKY)).toBeNull();
+    expect(RealmGate.check('sky', pos(128.5, 320, 128.5), SKY)).toBeNull();
   });
 });
 

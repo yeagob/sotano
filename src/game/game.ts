@@ -97,7 +97,7 @@ import {
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
-import { GiantTree, padUnder, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { GiantTree, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { inLeaves, LEAVES_GIFT_SPOT } from '../world/crown';
 import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { TunnelLog } from './minimap';
@@ -131,6 +131,7 @@ import { attachDevlog, carriedName, cell, devlog } from '../debug/devlog';
 import { Hud, floorLabel } from './hud';
 import { CHECKPOINT_TAG, arrivalOf, releasedRooms, standingSpot, type Spot } from './checkpoint';
 import { CheckpointMark } from './checkpoint-mark';
+import { CloudLayer } from './cloud-layer';
 import { PHASE_STATUS, PHASE_WARN_S, phasedSolid, roomBox, roomInterior, fallbackBox, rescueSpot, inBox, type CellBox, type RescueArea } from './phase';
 import { carveSandbox, carriedFromId, type SandboxRoom, type Scenario } from '../sandbox/scenario';
 import { playSkyCue } from '../audio/sky';
@@ -388,6 +389,8 @@ export class Game {
   /** The cells a phased body may be in (the room's box with its walls), and the room it started in. */
   private phase: { box: CellBox; room: RoomInfo | null; interior: CellBox } | null = null;
   private checkpointMark!: CheckpointMark;
+  /** The cloud layer above the route's top pad (cloud-layer.ts, STARS.md). */
+  private cloudLayer!: CloudLayer;
   private bossUsed = new Set<string>();
   /** R: > 0 while fading to black; then the new run stays dark until its meshes are ready. */
   private restartT = 0;
@@ -709,6 +712,7 @@ export class Game {
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
     this.checkpointMark = new CheckpointMark(this.dungeonRoot);
+    this.cloudLayer = new CloudLayer(this.dungeonRoot);
     this.respawn = null;
     // a random heart's kind reads the chances of its band: floor 0 halves the star heart, the surface keeps its numbers (REWARDS §3)
     // a heart's kind on floor 0 takes its own fork, so the Roots' crates never move the hearts stream the floors below read
@@ -1382,6 +1386,7 @@ export class Game {
       top: SKY_TOP, floorOut: SKY_FLOOR_OUT,
       deck: [d.x, d.y, d.z],
       crown: [this.tree.cx, SURFACE_Y + SKY_LIMIT - 3, this.tree.cz],
+      cloud: this.tree.cloud ?? { x: this.tree.cx, y: Infinity, z: this.tree.cz, r: 0 },
     };
   }
 
@@ -1434,7 +1439,7 @@ export class Game {
 
   /** Falling below the deck's floor goes down to the crown (SKY.md §2.4). The sky's own update runs after this. */
   private skyGate() {
-    const travel = RealmGate.check('sky', this.player.body, null, this.skyBounds());
+    const travel = RealmGate.check('sky', this.player.body, this.skyBounds());
     if (travel) this.gate.start(travel);
   }
 
@@ -4921,11 +4926,10 @@ export class Game {
         sfx3.reveal();
       }
     } else this.stillT = 0;
-    // the top of the sky, and the last star, lead up into the sky realm (SKY.md §2.4): the gate runs the fade
-    const pad = padUnder(this.tree.pads, b.x, b.y, b.z, b.onGround);
-    const up = pad >= 0 && this.tree.pads[pad].up === true;
-    if (up || b.y > SKY_TOP) {
-      const travel = RealmGate.check('dungeon', b, up ? { up: true } : null, this.skyBounds());
+    // the cloud layer above the top pad, and the top of the dungeon's sky, lead up into the sky realm (STARS.md, SKY.md §2.4):
+    // the gate runs the fade. The cloud's height is checked first, so the bounds are only built when the body is near it.
+    if (this.realm === 'dungeon' && (b.y >= (this.tree.cloud?.y ?? Infinity) || b.y > SKY_TOP)) {
+      const travel = RealmGate.check('dungeon', b, this.skyBounds());
       if (travel) { this.gate.start(travel); return; }
     }
     // the Leaves (D14): their name, the first time you stand in them this run
@@ -5402,6 +5406,7 @@ export class Game {
     }
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
+    this.cloudLayer.place(this.tree.cloud);
     if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt, this.camera.position);
     this.debrisView.update(this.debris);

@@ -13,10 +13,16 @@ export const GATE_HOLD_MAX = 2;
 
 type Phase = 'idle' | 'out' | 'hold' | 'in';
 
+/** The feet have reached the cloud layer and stand within its reach of its centre (the layer has no solids: a body passes it). */
+function inCloud(pos: Pos, c: SkyBounds['cloud']): boolean {
+  return pos.y >= c.y && Math.hypot(pos.x - c.x, pos.z - c.z) <= c.r;
+}
+
 export class RealmGate implements RealmGateApi {
-  /** Pure: which travel, if any, the player's position asks for this frame. `pad` is set on the last star. */
-  static check(realm: RealmKind, pos: Pos, pad: { up: boolean } | null, sky: SkyBounds): Travel | null {
-    if (realm === 'dungeon') return pad?.up || pos.y > sky.top ? { to: 'sky', at: sky.deck, float: true } : null;
+  /** Pure: which travel, if any, the player's position asks for this frame. Up in the dungeon, the feet passing the cloud
+   *  layer above the top pad opens the sky (STARS.md), and so does rising past the top of the dungeon's sky. */
+  static check(realm: RealmKind, pos: Pos, sky: SkyBounds): Travel | null {
+    if (realm === 'dungeon') return inCloud(pos, sky.cloud) || pos.y > sky.top ? { to: 'sky', at: sky.deck, float: true } : null;
     return pos.y < sky.floorOut ? { to: 'dungeon', at: sky.crown, float: true } : null;
   }
 

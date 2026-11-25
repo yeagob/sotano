@@ -280,7 +280,7 @@ The owner asked for the tree **at least three times bigger**, built as **stories
 | `hollows` | trunk | 66–87 | 23 | A forest of wooden columns with bridges between them half way up |
 | `branches` | branches | 88–111 | 20 | Seven to nine great branches leave through arches, rising gently, each to a platform under a blob of leaves |
 | `canopy` | leaves | 112–145 | — | A floor of woven wood under a dome of leaves 108 × 72 with windows onto the sky, limbs climbing inside |
-| `stars` | heaven | 146–260 | — | The crown's platform where the last stair arrives, with a star pad, and three constellations above; the pads form a route the Triple Jump climbs, to the last one, which leads up |
+| `stars` | heaven | 146–260 | — | The crown's platform where the last stair arrives, with a star pad, and three constellations above; the pads form a route the Triple Jump climbs, to the last one, under a cloud layer that leads up |
 
 Every trunk story has a two-block floor slab, a wall three blocks thick and knot windows at eye height. Each story's stair (`stairAt(i)`) turns 137° from the one below and stands inside its hall, so every hall is crossed: a core of wood, a step a block higher every two blocks of tread, three blocks of air over every step; the opening in the next floor is the air over the last steps (a fall into it is a few blocks). A story's stair is drawn by both stories it touches, each clipped to its own heights, so stories grow in any order. No projections live in the tree yet. Tested: same seed same tree in any order, ranges contiguous, the foot nearly as wide as a floor, and a walk from the grass to the crown through every story.
 

@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { AIR, MAT } from '../src/content/materials';
 import { LEAVES_GIFT, LEAVES_ROOM } from '../src/content/crown';
 import { ITEM_BY_ID } from '../src/content/items';
+import { copyMods } from '../src/items/types';
 import { Rng } from '../src/core/rng';
 import { computeStats, type Stats } from '../src/core/stats';
 import { reachesItem } from '../src/entities/pickups';
@@ -17,7 +18,7 @@ import { SURFACE_Y, WORLD_SIZE } from '../src/world/floor';
 import { CROWN_PLACE, LEAVES, LEAVES_GIFT_SPOT } from '../src/world/crown';
 import { GiantTree, padUnder, TREE_STORIES, type StarPad } from '../src/world/tree';
 import { VoxelWorld } from '../src/world/world';
-import { walkHops, walkRoute, type Solid, type Waypoint } from './helpers/walker';
+import { climbTo, walkHops, walkRoute, type Solid, type Waypoint } from './helpers/walker';
 
 const CANOPY = TREE_STORIES.findIndex(s => s.key === 'canopy');
 const SEEDS = [1, 7, 42];
@@ -44,7 +45,7 @@ function stairOf(t: GiantTree) {
 /** The stats of a player holding the jump practice: its stat modifiers on the base, as the inventory installs them. */
 function holding(id: string): Stats {
   const def = ITEM_BY_ID.get(id)!;
-  return computeStats((def.stats ?? []).map(s => ({ ...s, source: id })));
+  return computeStats(copyMods(def, 0).map(s => ({ ...s, source: id })));
 }
 
 /** The climb from three steps below the Leaves' step, through the doorway, to the ring's centre. */
@@ -79,7 +80,7 @@ function rideChain(solid: Solid, pads: readonly StarPad[], held: Stats) {
   return { ok: res.ok, visited: pads.slice(0, res.reached + 1).map((_, i) => i), at: res.at };
 }
 
-const SKY: SkyBounds = { top: 1e9, floorOut: 4, deck: [0, 0, 0], crown: [0, 0, 0] };
+const SKY: SkyBounds = { top: 1e9, floorOut: 4, deck: [0, 0, 0], crown: [0, 0, 0], cloud: { x: 0, y: 1e9, z: 0, r: 0 } };
 
 describe('the Leaves\' gift (#316)', () => {
   it('is the jump practice, floating over the ring\'s east stone, with the centre left free', () => {
@@ -124,7 +125,12 @@ describe('the Leaves\' gift (#316)', () => {
       expect(ride.visited).toEqual(t.pads.map((_, i) => i));
       const up = t.pads[ride.visited[ride.visited.length - 1]];
       expect(up.up).toBe(true);
-      expect(RealmGate.check('dungeon', ride.at, { up: true }, SKY)?.to).toBe('sky');
+      // the top pad leads nowhere by itself: the body climbs from it, by the Triple Jump, into the cloud layer above it, and the gate takes it up
+      const cloud = t.cloud!, top = centre(t.pads[t.pads.length - 1]);
+      expect(RealmGate.check('dungeon', top, { ...SKY, cloud }), `seed ${seed}`).toBeNull();
+      const climb = climbTo(solid, top, cloud.y, held);
+      expect(climb, `seed ${seed}`).toMatchObject({ ok: true });
+      expect(RealmGate.check('dungeon', climb.at, { ...SKY, cloud })?.to, `seed ${seed}`).toBe('sky');
     }
   });
 });

@@ -82,3 +82,24 @@ export function walkHops(solid: Solid, from: Waypoint, route: readonly Waypoint[
   }
   return { ok: true, reached: route.length, at: { x: b.x, y: b.y, z: b.z } };
 }
+/** A climb straight up by the jumps alone (STARS.md, the cloud layer): from `from`, the walker jumps off the ground and presses
+ *  jump again each time it falls while it holds an air jump, until its feet reach height `y` or the time runs out. `ok` is
+ *  true when the feet got to `y`. */
+export function climbTo(solid: Solid, from: Waypoint, y: number, held: Stats = BASE_STATS): WalkResult {
+  const p = new Player();
+  p.spawnAt(from.x, from.y, from.z);
+  p.body.onGround = true;
+  const pressed = new Set<string>();
+  const move = { x: 0, y: 0 };
+  const input = { hit: (a: string) => pressed.has(a), held: (a: string) => pressed.has(a), move, lookDX: 0, lookDY: 0, sensitivity: 0 } as unknown as Input;
+  const hooks = { jump: (v: number) => v, land: () => {}, bump: (v: number) => v };
+  const stats = { ...held };
+  const b = p.body;
+  for (let t = 0; t < LEG_TIMEOUT && b.y < y; t += DT) {
+    pressed.clear();
+    if (b.onGround) pressed.add('jump');
+    else if (b.vy < 0 && stats.airJumps >= 1) pressed.add('jump');
+    p.update(DT, input, stats, solid, hooks);
+  }
+  return { ok: b.y >= y, reached: 0, at: { x: b.x, y: b.y, z: b.z } };
+}

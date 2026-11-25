@@ -1642,7 +1642,7 @@ export const ES: Catalog = {
       'triple-jump': {
         name: 'Triple salto',
         description: 'Subir no se hace de un solo salto. Cada salto llega más alto que el anterior, y el último te lleva adonde ningún paso solo alcanzaba.',
-        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan.',
+        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Una segunda copia añade un salto más, que también sube 8×. Una tercera copia no añade nada.',
         inspiredBy: 'Atletismo: el triple salto (un deporte, su nombre genérico)',
       },
       occamsrazor: {

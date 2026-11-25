@@ -131,9 +131,18 @@ export function hook<K extends keyof GameEvents>(
   return { event, fn, ...opts };
 }
 
+/** The stat modifiers one held copy of an effect adds: its `copyStats` entry when it has them, else its `stats` for every copy.
+ *  `index` is the copy's place in the order it was gained (0 is the first copy). */
+export function copyMods(e: { stats?: StatModSpec[]; copyStats?: StatModSpec[][] }, index = 0): StatModSpec[] {
+  return e.copyStats ? e.copyStats[index] ?? [] : e.stats ?? [];
+}
+
 /** The part shared by items and synergies. */
 export interface Effect {
   stats?: StatModSpec[];
+  /** Stat modifiers per held copy, by the order the copies were gained: copy k adds `copyStats[k]`, and a copy past the
+   *  list adds nothing. When set it replaces `stats` (the Triple Jump: the second copy adds one air jump, a third adds none). */
+  copyStats?: StatModSpec[][];
   hooks?: HookSpec<any>[];
   /** Hooks to switch off while this is active, as "itemId.hookId". This is where exceptions live. */
   suppress?: string[];

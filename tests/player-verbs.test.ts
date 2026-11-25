@@ -186,20 +186,21 @@ describe('air jumps (SKY.md §9)', () => {
     expect(rises[0]).toBeCloseTo(apex(0), 1);
   });
 
-  it('two copies of the Triple Jump allow exactly three jumps, 1×, 2× and 8× (the stat stops at two, #325)', () => {
-    const held = computeStats([0, 1].map(i => ({ stat: 'airJumps' as const, layer: 'add' as const, value: 2, source: `triple-jump-${i}` })));
-    expect(held.airJumps).toBe(2);
-    const { rises, r } = ladder(held, 5);
-    expect(rises).toHaveLength(3);
-    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2]);
+  it('two copies of the Triple Jump allow four jumps, 1×, 2×, 8× and a fourth at the ladder\'s last rung (the stat stops at three, #325)', () => {
+    const held = computeStats([{ stat: 'airJumps' as const, layer: 'add' as const, value: 2, source: 'triple-jump-0' }, { stat: 'airJumps' as const, layer: 'add' as const, value: 1, source: 'triple-jump-1' }]);
+    expect(held.airJumps).toBe(3);
+    const { rises, r } = ladder(held, 6);
+    expect(rises).toHaveLength(4);
+    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2, 3]);
     expect(r.jumps[2].v).toBeCloseTo(velocity(LADDER.length - 1), 9);
+    expect(r.jumps[3].v).toBeCloseTo(velocity(LADDER.length - 1), 9);
   });
 
-  it('nine copies still give two: the stat is capped, and so is the ladder', () => {
+  it('nine copies still give three: the stat is capped, and so is the ladder', () => {
     const held = computeStats(Array.from({ length: 9 }, (_, i) => ({ stat: 'airJumps' as const, layer: 'add' as const, value: 2, source: `copy-${i}` })));
-    expect(held.airJumps).toBe(2);
+    expect(held.airJumps).toBe(3);
     const { r } = ladder(held, 12);
-    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2]);
+    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2, 3]);
   });
 
   it('no air jump near the ground: the press waits and becomes a ground jump on landing', () => {
@@ -285,10 +286,10 @@ describe('minJump (SKY.md §2.5)', () => {
 });
 
 describe('the airJumps stat', () => {
-  it('is 0 by default, at most 2 however many Triple Jumps are held (#325), and never negative', () => {
+  it('is 0 by default, at most 3 however many Triple Jumps are held (#325), and never negative', () => {
     expect(BASE_STATS.airJumps).toBe(0);
-    expect(STAT_LIMITS.airJumps).toEqual([0, 2]);
-    expect(computeStats([{ stat: 'airJumps', layer: 'add', value: 9, source: 't' }]).airJumps).toBe(2);
+    expect(STAT_LIMITS.airJumps).toEqual([0, 3]);
+    expect(computeStats([{ stat: 'airJumps', layer: 'add', value: 9, source: 't' }]).airJumps).toBe(3);
     expect(computeStats([{ stat: 'airJumps', layer: 'add', value: -3, source: 't' }]).airJumps).toBe(0);
   });
 });

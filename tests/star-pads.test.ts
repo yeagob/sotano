@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { ITEM_BY_ID } from '../src/content/items';
+import { copyMods } from '../src/items/types';
 import { Rng } from '../src/core/rng';
 import { BASE_STATS, computeStats, type Stats } from '../src/core/stats';
 import { MARGIN, reach } from '../src/sky/totality/reach';
@@ -26,7 +27,7 @@ const centre = (p: StarPad): Waypoint => ({ x: p.x + 0.5, y: p.y, z: p.z + 0.5 }
 /** The stats of a player holding one Triple Jump (the item's own stat modifiers on the base). */
 function holdingOne(): Stats {
   const def = ITEM_BY_ID.get('triple-jump')!;
-  return computeStats((def.stats ?? []).map(s => ({ ...s, source: 'triple-jump' })));
+  return computeStats(copyMods(def, 0).map(s => ({ ...s, source: 'triple-jump' })));
 }
 
 describe('the star pads\' route (#325)', () => {

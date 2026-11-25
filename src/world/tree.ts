@@ -51,6 +51,28 @@ export interface Spot { x: number; y: number; z: number }
  *  carry no teleport: the route is walked by the jumps (STARS.md). */
 export interface StarPad extends Spot { up?: boolean }
 
+/** Pads in each constellation (fixed: the positions do not change with the seed, only the pads' sizes do). */
+const CONSTELLATION_PADS = 5;
+/** A base pad is three blocks across; each pad's seeded draw adds one of these steps to that width (STARS.md). */
+const PAD_WIDTH = 3;
+/** The width steps: a loss of one to three blocks (a loss that leaves no block is one block), a gain of one or two. */
+const PAD_SIZE_STEPS = [-3, -2, -1, 1, 2] as const;
+/** Constellation pads whose hop from the one before is lengthened, as 'c.s' (constellation c, pad s). */
+const LENGTHENED = new Set<string>(['0.2', '1.1', '1.3', '2.4']);
+const LENGTHEN = 3;
+/** The cloud layer above the route's top pad (STARS.md): its height over the pad's floor, and its reach across. The Triple
+ *  Jump carries the body to it from the pad: the second air jump's apex is 13.9 blocks above the floor, so 6 is in reach. */
+export const CLOUD_RISE = 6;
+export const CLOUD_RADIUS = 5;
+
+/** The cloud layer's spot: the body passes it (no solids) and its feet at `y`, within `r` blocks of (x, z), open the sky. */
+export interface CloudSpot { x: number; y: number; z: number; r: number }
+
+/** The cloud layer above a pad: centred on its centre cell, CLOUD_RISE blocks above its floor. */
+export function cloudAbove(top: Spot): CloudSpot {
+  return { x: top.x + 0.5, y: top.y + CLOUD_RISE, z: top.z + 0.5, r: CLOUD_RADIUS };
+}
+
 /** The most intermediate pads one hop may take (a guard: the base route's longest hop needs four). */
 const MAX_BRIDGE = 10;
 /** Sideways swings a bridge's pads may take, in blocks, from the straight line between the hop's ends (tried for up to
@@ -187,6 +209,8 @@ export class GiantTree {
   readonly base: number;
   readonly top: number;
   readonly pads: StarPad[] = [];
+  /** The cloud layer above the top pad, once the stars are grown (null before). The sky opens where the body passes it. */
+  cloud: CloudSpot | null = null;
   /** The room of the crown (D14): fixed by the tree's place, never by the seed, so it is known before it is grown. */
   readonly leaves: LeavesRoom;
   voxels = 0;
@@ -517,28 +541,32 @@ export class GiantTree {
     for (let dz = -9; dz <= 9; dz++) for (let dx = -9; dx <= 9; dx++) if (dx * dx + dz * dz <= 81) {
       put(sx + dx, fy - 2, sz + dz, BARK); put(sx + dx, fy - 1, sz + dz, BARK);
     }
-    // the base pads: the first one on the disc, then three constellations rising from the tree's centre
+    // the base pads: the first one on the disc, then three constellations rising from the tree's centre. Every position is
+    // fixed (the same on every seed); only the sizes of the pads are seeded (see the width draw below).
     const spots: Spot[] = [];
     const a = Math.atan2(sz - this.cz, sx - this.cx);
     spots.push({ x: sx - Math.round(Math.cos(a) * 6), y: fy, z: sz - Math.round(Math.sin(a) * 6) });
     for (let c = 0; c < 3; c++) {
-      const count = 4 + rng.int(0, 2);
-      const a0 = (c / 3) * Math.PI * 2 + rng.range(-0.3, 0.3);
-      for (let s = 0; s < count; s++) {
-        const r = 12 + s * 8 + rng.int(0, 4), aa = a0 + s * 0.4;
+      const a0 = (c / 3) * Math.PI * 2;
+      for (let s = 0; s < CONSTELLATION_PADS; s++) {
+        const r = 12 + s * 8 + 2 + (LENGTHENED.has(`${c}.${s}`) ? LENGTHEN : 0), aa = a0 + s * 0.4;
         const x = Math.max(4, Math.min(this.w.sx - 5, this.cx + Math.round(Math.cos(aa) * r)));
         const z = Math.max(4, Math.min(this.w.sz - 5, this.cz + Math.round(Math.sin(aa) * r)));
-        const y = Math.min(this.w.sy - 8, fy + 16 + c * 26 + s * 4 + rng.int(0, 4));
+        const y = Math.min(this.w.sy - 8, fy + 16 + c * 26 + s * 4 + 2);
         spots.push({ x, y, z });
       }
     }
     // every hop of the route is one the Triple Jump makes (STARS.md): the bridges between the base pads are pads too
     const clamp = (x: number, z: number): [number, number] => [Math.max(4, Math.min(this.w.sx - 5, x)), Math.max(4, Math.min(this.w.sz - 5, z))];
     for (const { x, y, z } of bridgePads(spots, clamp)) {
-      for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) put(x + dx, y - 1, z + dz, MAT.starstone);
+      // the pad's size: one seeded draw. A loss of one to three blocks of width (never below one block across), or a gain of one or two (STARS.md)
+      const width = Math.max(1, PAD_WIDTH + PAD_SIZE_STEPS[rng.int(0, PAD_SIZE_STEPS.length - 1)]);
+      const lo = Math.floor((width - 1) / 2), hi = width - 1 - lo;
+      for (let dz = -lo; dz <= hi; dz++) for (let dx = -lo; dx <= hi; dx++) put(x + dx, y - 1, z + dz, MAT.starstone);
       this.pads.push({ x, y, z });
     }
     this.pads[this.pads.length - 1].up = true;
+    this.cloud = cloudAbove(this.pads[this.pads.length - 1]);
   }
 
 }
