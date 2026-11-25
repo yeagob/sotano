@@ -3,7 +3,7 @@
 // keeps them applied on a tick; floors and the sky go through Game.debugFloor and Game.debugSky; practices through
 // Game.give (with its banner) and Game.grant (quietly, for Give all). Nothing here runs unless ?test is in the URL.
 
-import { BOSS_BY_ID, BOSS_ZONES, bossHp } from '../content/bosses';
+import { BOSS_BY_ID, BOSS_ZONES, bossLifeRange } from '../content/bosses';
 import { ITEMS } from '../content/items';
 import { LEVELS, tollOf, type LevelDef } from '../content/levels';
 import type { MessageKey } from '../i18n/locales/en';
@@ -122,11 +122,12 @@ export function dungeonGuide(): GuideEntry[] {
 }
 
 /** The boss of an underground floor, from its zone (content/bosses): the pool's ids, or the keystone; empty on the roots. */
-export function bossesOf(floor: number): { ids: string[]; fixed: boolean; hp: number } {
+export function bossesOf(floor: number): { ids: string[]; fixed: boolean; hp: string } {
   const zone = BOSS_ZONES.find(z => floor >= z.floors[0] && floor <= z.floors[1]);
-  if (!zone) return { ids: [], fixed: false, hp: 0 };
+  if (!zone) return { ids: [], fixed: false, hp: '' };
   const ids = zone.keystone ? [zone.keystone] : [...zone.pool];
-  return { ids: ids.filter(id => BOSS_BY_ID.has(id)), fixed: !!zone.keystone, hp: bossHp(floor) };
+  const [lo, hi] = bossLifeRange(floor);
+  return { ids: ids.filter(id => BOSS_BY_ID.has(id)), fixed: !!zone.keystone, hp: `${lo}–${hi}` };
 }
 
 const SKY_FLOORS = ['panda', 'koala', 'elephant', 'lion', 'horse'] as const;

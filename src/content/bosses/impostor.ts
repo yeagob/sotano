@@ -14,7 +14,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Impostor',
   pattern: 'The fear of being found out',
-  hp: 140,
   speed: 1.6,
   size: [1.0, 2.6],
   contactDamage: 8,

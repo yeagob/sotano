@@ -12,7 +12,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'Inertia',
   pattern: 'Staying as you are',
-  hp: 140,
   speed: 2.4,
   asleep: true,
   size: [1.1, 2.6],

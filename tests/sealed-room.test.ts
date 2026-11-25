@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { ENEMY_BY_ID } from '../src/content/enemies';
+import { birthHp } from '../src/enemies/types';
 import type { Actor } from '../src/entities/actors';
 import { boxHits, freeBody, type Body } from '../src/physics/voxel-collide';
 import { cellTaken } from '../src/game/placement';
@@ -29,7 +30,7 @@ function rig(blocks = new Set<string>(), px = 6.5, pz = 3.5) {
   const en = new Enemies(new THREE.Scene(), host);
   const add = (def: string, x: number, y: number, z: number, id = 10) => {
     const d = ENEMY_BY_ID.get(def)!;
-    const e = en.spawn(d, id, 0, x, y, z, d.hp, d.speed, d.contactDamage, new Set());
+    const e = en.spawn(d, id, 0, x, y, z, birthHp(d), d.speed, d.contactDamage, new Set());
     e.spawning = 0;
     return e;
   };

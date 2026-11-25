@@ -13,7 +13,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Downpour',
   pattern: 'To be left alone',
-  hp: 140,
   speed: 2.2,
   size: [1.4, 1.2],
   contactDamage: 8,

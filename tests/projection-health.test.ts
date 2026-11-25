@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ENEMIES } from '../src/content/enemies';
 import { BASE_STATS } from '../src/core/stats';
+import { birthHp } from '../src/enemies/types';
 
 // Balance pass of issue #45 (2026-10-31): every hostile projection has twice the health it had
 // before. These are the health values before the pass; the current values are twice these.
@@ -25,19 +26,19 @@ describe('projection health after the balance pass (issue #45)', () => {
 
   it('every projection has twice its health from before the balance pass', () => {
     for (const def of ENEMIES) {
-      expect(def.hp, def.id).toBe(2 * HEALTH_BEFORE_BALANCE[def.id]);
+      expect(birthHp(def), def.id).toBe(2 * HEALTH_BEFORE_BALANCE[def.id]);
     }
   });
 
   it('a fight with the starting intention takes twice as many hits (rounded up), not fewer', () => {
     for (const def of ENEMIES) {
       const before = hitsToKill(HEALTH_BEFORE_BALANCE[def.id]);
-      expect(hitsToKill(def.hp), def.id).toBeGreaterThanOrEqual(2 * before - 1);
+      expect(hitsToKill(birthHp(def)), def.id).toBeGreaterThanOrEqual(2 * before - 1);
     }
   });
 
   it('the examples in the design documents hold: Panic takes four starting hits, Doubt seven', () => {
-    const hp = (id: string) => ENEMIES.find(e => e.id === id)!.hp;
+    const hp = (id: string) => birthHp(ENEMIES.find(e => e.id === id)!);
     expect(hitsToKill(hp('panic'))).toBe(4);
     expect(hitsToKill(hp('doubt'))).toBe(7);
   });

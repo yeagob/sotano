@@ -8,7 +8,7 @@ The Grudge is something huge under the marsh: from the surface, only a long back
 
 - **Pattern:** resentment, grown old. To never be hurt again.
 - **Path:** Emotion.
-- **Health:** 478 on floor 6.
+- **Health:** 435 to 932 on floor 6.
 
 ## Phases
 

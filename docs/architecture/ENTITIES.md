@@ -90,7 +90,7 @@ The roster holds 40 projection entries in `content/enemies/` (38 files; Procrast
 
 ### Kinds of beings (BESTIARY §1)
 
-Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose health is set by their floor (`content/bosses` `bossHp`, about 140 on floor 1 and 1000 on floor 9, a geometric curve of about ×1.28 a floor; the open question is in [BESTIARY §12.1](../design/not-built/BUILD-ORDER.md)).
+Every enemy definition has a `kind`: `projection` (hostile, released when beaten), `creature` (neutral, alive, never killed by a hit) or `boss` (a projection with phases and a health bar). Creatures are `neutral` and nothing targets them; bosses are projections whose life is set at spawn (issue #315): `bossLife(floor, rr, id)` in `content/bosses` is `bossHp(floor)` (a geometric curve, 140 on floor 1 and 1000 on floor 9, about ×1.28 a floor) × 1.3 × `bossLifeFactor`, a factor from 0.7 to 1.5 drawn from the fork `fork('boss', 'life', id)`. Boss definitions carry no `hp`; `birthHp` reads it for projections and creatures only and throws for a boss.
 
 ### Attacks (`enemies/attacks.ts`)
 

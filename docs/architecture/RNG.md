@@ -58,6 +58,7 @@ A run is a 32-bit **root seed**, shared as an 8-character **code** (`ABCD EFGH �
 | `fork('sandbox', 'layout')` | Structure | The sandbox room's decor slots ([SANDBOX.md](SANDBOX.md)) |
 | `fork('floor', 0, 'creatures')` | Structure | Where the roots' peaceful creatures start |
 | `fork('floor', k, 'space')` | Structure | Which room may spread into each empty cell of floor k (`allotSpace`), drawn before any room's layout |
+| `fork('boss', 'life', id)` | Structure (read at spawn) | Boss `id`'s life factor, uniform in [0.7, 1.5) (`bossLifeFactor`, issue #315): its life is `bossHp(floor) × 1.3 × factor`. Each spawn makes a fresh fork, so it moves no stream; the structure and the golden hash are unchanged, so `GEN_VERSION` is not bumped |
 | `fork('plan', k, 'challenge')` | Structure | Whether floor k keeps a challenge room (`CHALLENGE_ROOM`) and which |
 | `fork('floor', k, 'room', i, 'wave', visit, wave)` | Runtime | A challenge room's wave (`pickWave`) |
 | `fork('floor', k, 'room', i, 'challenge', visit, wave)` | Runtime | The reward for clearing that wave |
