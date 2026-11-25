@@ -43,6 +43,64 @@ const STAIR_CORE = 2;
 const STAIR_DA = 2 / 4.5;
 const STAIR_HEAD = 3;
 
+/** The gap in each trunk story's stair (issue #317, TRUNK.md): steps `from` to `from + len − 1` of the stair that
+ *  climbs out of that story are missing. A step rises one block, so a gap of `len` steps is a rise of `len + 1` from
+ *  the last step below it to the first above it, far over a ground jump (1.26). The gaps start at step 13, above the
+ *  highest thing a story's floor lets you stand on (the hollows' decks, 10), so no ledge reaches past them; they grow
+ *  by one step a story, so the climb gets harder as it goes. One block laid per missing step crosses a gap. */
+export const STAIR_GAPS: Readonly<Partial<Record<TreeStory['key'], { from: number; len: number }>>> = {
+  roots: { from: 13, len: 5 },
+  rings: { from: 13, len: 6 },
+  galleries: { from: 13, len: 7 },
+  hollows: { from: 13, len: 8 },
+};
+
+/** The steps of stair `i` that are missing (STAIR_GAPS), or null when its stair is whole. */
+export function stairGap(i: number): { from: number; to: number } | null {
+  const g = STAIR_GAPS[TREE_STORIES[i]?.key];
+  return g ? { from: g.from, to: g.from + g.len - 1 } : null;
+}
+
+/** How many steps stair `i` has (1 is the lowest), and the feet height over the base of its first step's floor. */
+export function stairSteps(i: number): { steps: number; floor: number } {
+  const s = TREE_STORIES[i], floor = s.y0 + (i === 0 ? 0 : 2);
+  return { steps: TREE_STORIES[i + 1].y0 + 2 - floor, floor };
+}
+
+/** The branches (BRANCHES.md): the owner's seven limbs, every seed. */
+export const BRANCH_COUNT = 7;
+/** What a limb asks of you on the way to its ball of leaves (BRANCHES.md):
+ *  - `bare`: nothing, a walk out;
+ *  - `breaks`: two breaks in the limb, one to two blocks long, that a ground jump crosses;
+ *  - `knots`: two knots of bough across the limb, two blocks over its top, to break or to climb by building;
+ *  - `tufts`: two tufts of leaves across the limb, three high, to break through or burn;
+ *  - `narrows`: a stretch of six blocks where the limb thins to a beam about one block wide. */
+export type BranchCourse = 'bare' | 'breaks' | 'knots' | 'tufts' | 'narrows';
+/** The courses with an obstacle, the ones `mixed` deals out. */
+export const BRANCH_OBSTACLES: readonly BranchCourse[] = ['breaks', 'knots', 'tufts', 'narrows'];
+/** The one switch for the limbs' obstacles (owner, 2026-11-25: the owner tests the variations): one course for every
+ *  limb, or `mixed`, which deals every obstacle once to the first four limbs in a seeded order and draws the other
+ *  three from the seed, so one climb shows them all. */
+export const BRANCH_COURSE: BranchCourse | 'mixed' = 'mixed';
+/** How many blocks of path a limb runs from inside the trunk's wall, when the world leaves room for it. */
+const LIMB_REACH = 46;
+/** How far in from the world's sides a limb's path stops, so its platform and its ball fit. */
+const LIMB_EDGE = 8;
+/** Radians a limb turns per block toward the world's long axis, once out of the trunk. */
+const LIMB_TURN = 0.11;
+/** The least angle between two limbs where they leave the trunk, radians. */
+const LIMB_APART = 0.45;
+
+/** One limb of the branch story, as grown: its course, its walking line (the top block of each path point), the
+ *  centre of its tip platform (the top block) and of its ball of leaves, and the cells of its obstacles. */
+export interface Limb {
+  course: BranchCourse;
+  path: [number, number, number][];
+  tip: [number, number, number];
+  ball: [number, number, number];
+  obstacles: [number, number, number][];
+}
+
 /** `up`: the last star of the last constellation; stepping on it leaves the built tree upward (SKY.md §2.4). */
 export interface StarPad { x: number; y: number; z: number; to: number; up?: boolean }
 
@@ -132,12 +190,15 @@ export class GiantTree {
   readonly pads: StarPad[] = [];
   /** The room of the crown (D14): fixed by the tree's place, never by the seed, so it is known before it is grown. */
   readonly leaves: LeavesRoom;
+  /** The limbs of the branch story, filled when it grows. */
+  readonly limbs: Limb[] = [];
   voxels = 0;
   private grown = new Set<number>();
   /** The run's salt for the bark and leaf patches: the same seed grows the same bark. */
   private readonly salt: number;
 
-  constructor(private w: VoxelWorld, surfaceY: number, private fork: (story: number) => Rng) {
+  constructor(private w: VoxelWorld, surfaceY: number, private fork: (story: number) => Rng,
+    private readonly course: BranchCourse | 'mixed' = BRANCH_COURSE) {
     this.cx = w.sx >> 1; this.cz = w.sz >> 1; this.base = surfaceY + 1;
     this.salt = fork(TREE_STORIES.length).u32() & 0x7fffffff;
     this.top = Math.min(w.sy - 1, this.base + TREE_STORIES[TREE_STORIES.length - 1].y0 + TREE_STORIES[TREE_STORIES.length - 1].h - 1);
@@ -236,28 +297,34 @@ export class GiantTree {
     }
   }
 
-  private stair(i: number, put: Put) {
-    const s = TREE_STORIES[i], [sx, sz] = this.stairAt(i);
-    const fy = this.base + s.y0 + (i === 0 ? 0 : 2);
-    const steps = TREE_STORIES[i + 1].y0 + 2 - (s.y0 + (i === 0 ? 0 : 2));
-    const a0 = i * 1.3;
-    const R = Math.ceil(STAIR_R);
-    const cells: [number, number, number][] = [];
+  /** The tread cells of stair `i`, each with its step (1 is the lowest): [x, y, z, step], y the step's block. Missing
+   *  steps (STAIR_GAPS) are listed too: they are the blocks to lay back to mend the gap. */
+  stairCells(i: number): [number, number, number, number][] {
+    const [sx, sz] = this.stairAt(i), { steps, floor } = stairSteps(i), fy = this.base + floor;
+    const a0 = i * 1.3, R = Math.ceil(STAIR_R);
+    const cells: [number, number, number, number][] = [];
     for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
       const d = Math.hypot(dx, dz);
-      if (d > STAIR_R) continue;
-      if (d <= STAIR_CORE) { for (let y = fy; y < fy + steps; y++) put(sx + dx, y, sz + dz, MAT.log); continue; }
-      if (d < STAIR_CORE + 0.6) continue;
+      if (d > STAIR_R || d < STAIR_CORE + 0.6) continue;
       let t = Math.atan2(dz, dx) - a0;
       t = ((t % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       for (let m = 0; ; m++) {
         const j = Math.floor((t + m * Math.PI * 2) / STAIR_DA) + 1;
         if (j > steps) break;
-        cells.push([sx + dx, sz + dz, j]);
+        cells.push([sx + dx, fy + j - 1, sz + dz, j]);
       }
     }
-    for (const [x, z, j] of cells) for (let y = 1; y <= STAIR_HEAD; y++) put(x, fy + j - 1 + y, z, AIR);
-    for (const [x, z, j] of cells) put(x, fy + j - 1, z, MAT.log);
+    return cells;
+  }
+
+  private stair(i: number, put: Put) {
+    const [sx, sz] = this.stairAt(i), { steps, floor } = stairSteps(i), fy = this.base + floor;
+    const R = Math.ceil(STAIR_R);
+    for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++)
+      if (Math.hypot(dx, dz) <= STAIR_CORE) for (let y = fy; y < fy + steps; y++) put(sx + dx, y, sz + dz, MAT.log);
+    const cells = this.stairCells(i), gap = stairGap(i);
+    for (const [x, y, z] of cells) for (let h = 1; h <= STAIR_HEAD; h++) put(x, y + h, z, AIR);
+    for (const [x, y, z, j] of cells) put(x, y, z, gap && j >= gap.from && j <= gap.to ? AIR : MAT.log);
   }
 
   private roots(put: Put, fy: number, ceil: number, rng: Rng) {
@@ -371,28 +438,116 @@ export class GiantTree {
     }
   }
 
+  /** The courses of the seven limbs: one for all, or `mixed` (BRANCH_COURSE). */
+  private courses(rng: Rng): BranchCourse[] {
+    if (this.course !== 'mixed') return Array(BRANCH_COUNT).fill(this.course);
+    const deck = [...BRANCH_OBSTACLES];
+    for (let k = deck.length - 1; k > 0; k--) { const j = rng.int(0, k); [deck[k], deck[j]] = [deck[j], deck[k]]; }
+    while (deck.length < BRANCH_COUNT) deck.push(BRANCH_OBSTACLES[rng.int(0, BRANCH_OBSTACLES.length - 1)]);
+    return deck;
+  }
+
+  /** The branch story (BRANCHES.md): seven limbs leave the hall at its floor through tunnels in the wall, wide and thick
+   *  at the trunk and thinner at the tip, rising a block every four to six; out of the trunk each one bends toward the
+   *  world's long axis (the world is wider east to west), so every limb runs long. Each ends in a platform of bough
+   *  under its ball of leaves, and carries its course's obstacles (`BranchCourse`). */
   private branches(i: number, put: Put, fy: number, ceil: number, rng: Rng) {
-    const { cx, cz } = this, r = TREE_STORIES[i].r;
-    const n = 7 + rng.int(0, 2);
-    for (let k = 0; k < n; k++) {
-      const a = (k / n) * Math.PI * 2 + rng.range(-0.15, 0.15);
-      const y0 = fy + 2 + rng.int(0, 3);
-      let ex = cx, ez = cz, ey = y0;
-      for (let s = r - WALL - 1; s <= r + 30; s++) {
-        const x = cx + Math.round(Math.cos(a) * s), z = cz + Math.round(Math.sin(a) * s), y = y0 + ((s - r) >> 2);
-        if (x < 5 || z < 5 || x > this.w.sx - 6 || z > this.w.sz - 6) break;
-        const thick = s < r + 10 ? 1 : 0;
-        for (let ox = -thick; ox <= 1; ox++) for (let oz = -thick; oz <= 1; oz++) {
-          put(x + ox, y, z + oz, MAT.bough);
-          if (thick) put(x + ox, y - 1, z + oz, MAT.bough);
-        }
-        if (s <= r + 1) for (let oy = 1; oy <= 4; oy++) for (let ox = -1; ox <= 2; ox++) for (let oz = -1; oz <= 2; oz++) put(x + ox, y + oy, z + oz, AIR);
-        ex = x; ez = z; ey = y;
+    const { cx, cz } = this, r = TREE_STORIES[i].r, n = BRANCH_COUNT;
+    const courses = this.courses(rng);
+    const lo = LIMB_EDGE, hiX = this.w.sx - 1 - LIMB_EDGE, hiZ = this.w.sz - 1 - LIMB_EDGE;
+    // a limb leaves where its way through the wall, three blocks wide, misses both stairs of the story
+    const clear = (a: number) => {
+      for (let s = r - WALL - 1; s <= r + 1; s += 0.5) for (const o of [-1.5, 0, 1.5]) {
+        const x = Math.floor(cx + Math.cos(a) * s - Math.sin(a) * o), z = Math.floor(cz + Math.sin(a) * s + Math.cos(a) * o);
+        if (this.nearStairs(i, x, z)) return false;
       }
-      if (Math.hypot(ex - cx, ez - cz) < r + 4) continue;
-      for (let dz = -3; dz <= 3; dz++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dz * dz <= 10) put(ex + dx, ey, ez + dz, MAT.bough);
-      blob(this.w, put, ex, Math.min(ey + 8, ceil - 4), ez, 5);
+      return true;
+    };
+    // nudged off the stairs, and kept a little apart from the limbs already placed so no two run into one another
+    const angles: number[] = [];
+    for (let k = 0; k < n; k++) {
+      const a0 = (k / n) * Math.PI * 2 + rng.range(-0.15, 0.15);
+      const tries = Array.from({ length: 33 }, (_, m) => a0 + (m % 2 ? 1 : -1) * Math.ceil(m / 2) * 0.05).filter(clear);
+      angles.push(tries.find(a => angles.every(b => Math.abs(angleDiff(a, b)) >= LIMB_APART)) ?? tries[0] ?? a0);
     }
+    for (let k = 0; k < n; k++) {
+      const a = angles[k];
+      const top0 = fy - 1 + rng.int(0, 1), per = 4 + rng.int(0, 2);
+      // the side it bends to is its place in the ring, not where a stair nudged it, so two limbs never merge
+      const goal = Math.cos((k / n) * Math.PI * 2) >= 0 ? 0 : Math.PI;
+      // the path: points one block apart, from just inside the wall, bending toward the long axis once outside
+      const pts: { x: number; z: number; y: number; h: number }[] = [];
+      let px = cx + Math.cos(a) * (r - WALL - 1), pz = cz + Math.sin(a) * (r - WALL - 1), h = a;
+      for (let s = 0; s < LIMB_REACH; s++) {
+        if (Math.hypot(px - cx, pz - cz) > r + 1) h += Math.max(-LIMB_TURN, Math.min(LIMB_TURN, angleDiff(goal, h)));
+        if (s > 0) {
+          const nx = px + Math.cos(h), nz = pz + Math.sin(h);
+          if (nx < lo || nz < lo || nx > hiX || nz > hiZ) break;
+          px = nx; pz = nz;
+        }
+        pts.push({ x: px, z: pz, y: top0 + Math.floor(s / per), h });
+      }
+      // the limb: a disc of bough under each point, its half-width and its rows shrinking toward the tip
+      for (let p = 0; p < pts.length; p++) {
+        const q = pts[p], t = p / pts.length, hw = 2.4 - 0.9 * t, rows = t < 0.5 ? 3 : 2, R = Math.ceil(hw);
+        for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
+          const x = Math.floor(q.x) + dx, z = Math.floor(q.z) + dz;
+          if (Math.hypot(x + 0.5 - q.x, z + 0.5 - q.z) > hw || this.nearStairs(i, x, z)) continue;
+          for (let y = q.y - rows + 1; y <= q.y; y++) put(x, y, z, MAT.bough);
+          // the tunnel through the trunk's wall
+          if (Math.hypot(x - cx, z - cz) <= r + 1) for (let y = q.y + 1; y <= q.y + 4; y++) put(x, y, z, AIR);
+        }
+      }
+      const end = pts[pts.length - 1], ex = Math.floor(end.x), ez = Math.floor(end.z), ey = end.y;
+      for (let dz = -3; dz <= 3; dz++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dz * dz <= 10) put(ex + dx, ey, ez + dz, MAT.bough);
+      const by = Math.min(ey + 8, ceil - 4);
+      blob(this.w, put, ex, by, ez, 5);
+      const limb: Limb = {
+        course: courses[k], tip: [ex, ey, ez], ball: [ex, by, ez], obstacles: [],
+        path: pts.map(q => [Math.floor(q.x), q.y, Math.floor(q.z)]),
+      };
+      this.obstacles(limb, pts, put, r);
+      this.limbs.push(limb);
+    }
+  }
+
+  /** A limb's obstacles (`BranchCourse`), at two places out of the trunk (a third and two thirds of the way from the
+   *  wall to the tip) or, for `narrows`, one stretch half way. Each sits where the limb is level for two blocks on
+   *  either side, so a break is never also a step up. */
+  private obstacles(limb: Limb, pts: { x: number; z: number; y: number; h: number }[], put: Put, r: number) {
+    if (limb.course === 'bare') return;
+    const { cx, cz } = this;
+    const out = pts.findIndex(q => Math.hypot(q.x - cx, q.z - cz) > r + 2);
+    const span = pts.length - 4 - out;
+    if (out < 0 || span < 8) return;
+    const level = (p: number) => p >= 2 && p + 2 < pts.length && pts[p - 2].y === pts[p + 2].y;
+    const near = (p: number) => { for (let d = 0; d < 6; d++) { if (level(p + d)) return p + d; if (level(p - d)) return p - d; } return p; };
+    const at = limb.course === 'narrows' ? [out + Math.round(span / 2)] : [out + Math.round(span / 3), out + Math.round(span * 2 / 3)];
+    for (const p0 of at) {
+      const c = pts[near(p0)], ux = Math.cos(c.h), uz = Math.sin(c.h);
+      const along = limb.course === 'narrows' ? 3 : limb.course === 'breaks' ? 0.75 : 1;
+      for (let dz = -5; dz <= 5; dz++) for (let dx = -5; dx <= 5; dx++) {
+        const x = Math.floor(c.x) + dx, z = Math.floor(c.z) + dz;
+        const ox = x + 0.5 - c.x, oz = z + 0.5 - c.z, u = ox * ux + oz * uz, v = Math.abs(-ox * uz + oz * ux);
+        if (Math.abs(u) > along || v > 3.5) continue;
+        if (limb.course === 'breaks') for (let y = c.y - 3; y <= c.y; y++) this.clear(put, limb, x, y, z, AIR);
+        if (limb.course === 'narrows' && v > 0.75) for (let y = c.y - 3; y <= c.y; y++) this.clear(put, limb, x, y, z, AIR);
+        // a knot and a tuft stand on the limb's top, across its whole width
+        // (where the limb already rises a block, the obstacle rises with it, so it is never one block over its ground)
+        const top = this.w.get(x, c.y + 1, z) === MAT.bough ? c.y + 1 : this.w.get(x, c.y, z) === MAT.bough ? c.y : -1;
+        if (top < 0) continue;
+        if (limb.course === 'knots') for (let y = top + 1; y <= top + 2; y++) this.clear(put, limb, x, y, z, MAT.bough);
+        if (limb.course === 'tufts') for (let y = top + 1; y <= top + 3; y++) this.clear(put, limb, x, y, z, this.leafAt(x, y, z));
+      }
+    }
+  }
+
+  /** Writes an obstacle's cell: a cut only takes the limb's own bough, a knot or a tuft only fills air. */
+  private clear(put: Put, limb: Limb, x: number, y: number, z: number, m: number) {
+    const was = this.w.get(x, y, z);
+    if (m === AIR ? was !== MAT.bough : was !== AIR) return;
+    put(x, y, z, m);
+    limb.obstacles.push([x, y, z]);
   }
 
   private canopy(i: number, put: Put, fy: number, ceil: number, rng: Rng) {

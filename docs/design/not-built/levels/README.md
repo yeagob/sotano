@@ -8,6 +8,7 @@ The built levels are in [built/levels](../../built/levels/README.md). This folde
 |---|---|---|
 | [roots/](roots/README.md) | open | What is not built of the Roots' book (issue #147): the hidden book's pages 7 to 9, the open questions, the pictures and achievements still pending. The built parts are in [built/levels/roots](../../built/levels/roots/README.md) |
 | [TREE-PATHS.md](TREE-PATHS.md) | proposal | Seeded variation: which corridors of the Tree are open, locked or hidden |
+| [TREE-CORE.md](TREE-CORE.md) | proposal, open | What issue #328 still leaves open about the tree's interior, once the shared minimum with #317 (four stories, one climb, a broken stair each) is built |
 | [FLOOR-KINDS.md](FLOOR-KINDS.md) | proposal, open | The trunk, branches and leaves as maps of rooms, and the contradiction with seven stories |
 | [ROUTE-FROM-ROOTS.md](ROUTE-FROM-ROOTS.md) | decided, not built | The climb from the roots to the surface, however you can |
 | [TREE-CONSTELLATIONS.md](TREE-CONSTELLATIONS.md) | proposal, open | Where the constellations belong: the leaves (design) or the heaven zone (build) |
