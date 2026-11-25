@@ -9,7 +9,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## 0.2.9-alpha.f5 · 2026-11-25
 
 ### Changed
-- The star pads above the crown no longer carry you from one to the next: you climb the route with the Triple Jump, which gives at most two air jumps and no longer caps the height of a jump (#325).
+- The star pads above the crown no longer carry you from one to the next: you climb the route with the Triple Jump. A second Triple Jump gives a fourth jump, rising twice as high as the third, and that is the most you can hold. A cloud layer above the top of the route opens the sky when you rise through it (#325).
 
 ### Fixed
 - Post-Traumatic Growth: you walk on lava for 2 seconds per copy, up to 6 seconds; then the lava burns you as usual (#341).
