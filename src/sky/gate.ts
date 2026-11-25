@@ -21,8 +21,8 @@ function inCloud(pos: Pos, c: SkyBounds['cloud']): boolean {
 export class RealmGate implements RealmGateApi {
   /** Pure: which travel, if any, the player's position asks for this frame. Up in the dungeon, the feet passing the cloud
    *  layer above the top pad opens the sky (STARS.md), and so does rising past the top of the dungeon's sky. */
-  static check(realm: RealmKind, pos: Pos, sky: SkyBounds): Travel | null {
-    if (realm === 'dungeon') return inCloud(pos, sky.cloud) || pos.y > sky.top ? { to: 'sky', at: sky.deck, float: true } : null;
+  static check(realm: RealmKind, pos: Pos, sky: SkyBounds, rising = true): Travel | null {
+    if (realm === 'dungeon') return (rising && inCloud(pos, sky.cloud)) || pos.y > sky.top ? { to: 'sky', at: sky.deck, float: true } : null;
     return pos.y < sky.floorOut ? { to: 'dungeon', at: sky.crown, float: true } : null;
   }
 

@@ -4928,8 +4928,8 @@ export class Game {
     } else this.stillT = 0;
     // the cloud layer above the top pad, and the top of the dungeon's sky, lead up into the sky realm (STARS.md, SKY.md §2.4):
     // the gate runs the fade. The cloud's height is checked first, so the bounds are only built when the body is near it.
-    if (this.realm === 'dungeon' && (b.y >= (this.tree.cloud?.y ?? Infinity) || b.y > SKY_TOP)) {
-      const travel = RealmGate.check('dungeon', b, this.skyBounds());
+    if (this.realm === 'dungeon' && ((b.y >= (this.tree.cloud?.y ?? Infinity) && b.vy > 0) || b.y > SKY_TOP)) {
+      const travel = RealmGate.check('dungeon', b, this.skyBounds(), b.vy > 0);
       if (travel) { this.gate.start(travel); return; }
     }
     // the Leaves (D14): their name, the first time you stand in them this run
