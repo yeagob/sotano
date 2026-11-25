@@ -95,7 +95,7 @@ export function swapRealm(host: RealmHost, stash: RealmSet, dungeonRoot: THREE.G
 | **Within the realm** | Falling through a floor's open way up, or off Totality's lowest platforms | The floor below; falls never hurt (§4) |
 | **Death** | Hearts run out in the dungeon | The death screen; the restart builds a new run (both sets disposed). The player cannot die in the sky (owner decision 8) |
 
-**The star pads** [m2]. The pads still form one cycle (`tree.ts` 324) and `padLock` keeps `-1` as "no pad". The last pad of the last constellation gets a flag `up: true`; stepping on it starts the travel up instead of teleporting to its `to`.
+**The star pads** [m2]. Since issue #325 the pads carry no teleport: the route (`tree.ts`, `bridgePads`) is climbed with the Triple Jump, and the last pad of the route gets a flag `up: true`; stepping on it starts the travel up.
 
 **The loop.** Today the top of the sky returns you to silence once silence is known (lines 2557–2561). Now **the top of the sky always opens into the sky realm** (owner decisions 1 and 6); silence still carries you up to heaven above the crown (lines 2541–2555), from where the last star (or rising) opens the realm. The loop becomes silence → heaven → the sky.
 
@@ -694,7 +694,7 @@ For 50 seeds and every floor: the layout respects its B6 numbers (sizes, heights
 
 ## 9. The Triple Jump
 
-**Physics** (`entities/player.ts` on `physics/jump.ts`, PL). A new stat **`airJumps`** (base 0, limits [0, 4], `stat.airJumps` in every catalog) counts the jumps the player may make in the air. The heights follow the ladder `[1, 2, 8]`: the k-th jump's velocity is `JUMP_V · √(stats.jump · LADDER[k])`. In the air a press of `jump` spends one air jump when the coyote time has run out, the player is not swimming, and there is no ground within 0.6 blocks below (so a press just before landing stays a ground jump, kept by the buffer). Landing refills them. The third jump raises air control from 0.35 to 1 and adds **no forward speed** (MOVEMENT-ABILITIES open question 2, provisional: no boost, full steering). With practices that raise `jump`, the third jump's apex is capped at 16 blocks.
+**Physics** (`entities/player.ts` on `physics/jump.ts`, PL). A new stat **`airJumps`** (base 0, limits [0, 2] since issue #325, so two copies of the Triple Jump give two air jumps and no more; `stat.airJumps` in every catalog) counts the jumps the player may make in the air. The heights follow the ladder `[1, 2, 8]`: the k-th jump's velocity is `JUMP_V · √(stats.jump · LADDER[k])`. In the air a press of `jump` spends one air jump when the coyote time has run out, the player is not swimming, and there is no ground within 0.6 blocks below (so a press just before landing stays a ground jump, kept by the buffer). Landing refills them. The third jump raises air control from 0.35 to 1 and adds **no forward speed** (MOVEMENT-ABILITIES open question 2, provisional: no boost, full steering). Practices that raise `jump` raise every jump with no cap (the 16-block apex cap of the first design is removed, issue #325).
 
 **Events.** `jump` gains `air?: number` (absent or 0 on the ground, then 1 and 2), so items can react to air jumps; the synergy matrix gets the sample payload. R2 emits it (seam 15).
 
@@ -928,7 +928,7 @@ Each brief is self-contained: paste it with the rules of §16.1.
 5. **`game.ts` grows.** Mitigation: the twenty seams of §2.6 are the whole budget; review rejects any other edit.
 6. **The sky reaches a dungeon system** through a call nobody guarded. Mitigation: §2.5a, `dw`, the `sky-passage` scenario; the `below` grouping if it happens again (§18).
 7. **3D creature behaviour gets stuck** on geometry the player built. Mitigation: graph-based navigation, the stuck guard, a lab scenario per floor.
-8. **Jump practices stack with the triple jump** (jump × 5 × 8). Mitigation: the apex cap of 16; Totality is generated against base stats and the sky clamps `jump` to at least base, so practices only make it easier.
+8. **Jump practices stack with the triple jump** (jump × 5 × 8, with no apex cap since issue #325). Mitigation: the air jumps stop at two whatever the copies; the star pads are placed with base-stat reach (STARS.md), so practices only make them easier to reach; Totality is generated against base stats and the sky clamps `jump` to at least base, so practices only make it easier.
 9. **The staircase meets a big room or a claimed cell.** Mitigation: only unclaimed empty cells, doorless sides of rooms that never seal, the margin alcove; 300 seeds in the test.
 10. **The design is moving** (other sessions edit `not-built/` documents now). Mitigation: D0 writes the decisions first; each package reads the current text before building and moves only its own.
 11. **The meta flag is lost** with browser data. Accepted: the design asks only for local storage.

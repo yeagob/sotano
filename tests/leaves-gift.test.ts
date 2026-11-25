@@ -2,7 +2,7 @@
 // over the ring's east stone in the Leaves, and the crown leads on to the sky. The real player body
 // (tests/helpers/walker.ts) climbs the last stair into the Leaves, stands in the ring where the practice is taken,
 // then, holding it, climbs the rest of the stair onto the disc, walks onto the first star pad and rides the pads'
-// chain (the game's own rule, `padUnder` and `padTravel`) to the last pad, the one that leads up into the sky.
+// route (the pads carry no teleport: the jumps walk it, `walkHops`) to the last pad, the one that leads up into the sky.
 
 import { describe, expect, it } from 'vitest';
 import { AIR, MAT } from '../src/content/materials';
@@ -15,9 +15,9 @@ import { RealmGate } from '../src/sky/gate';
 import type { SkyBounds } from '../src/sky/types';
 import { SURFACE_Y, WORLD_SIZE } from '../src/world/floor';
 import { CROWN_PLACE, LEAVES, LEAVES_GIFT_SPOT } from '../src/world/crown';
-import { GiantTree, padTravel, padUnder, TREE_STORIES, type StarPad } from '../src/world/tree';
+import { GiantTree, padUnder, TREE_STORIES, type StarPad } from '../src/world/tree';
 import { VoxelWorld } from '../src/world/world';
-import { walkRoute, type Solid, type Waypoint } from './helpers/walker';
+import { walkHops, walkRoute, type Solid, type Waypoint } from './helpers/walker';
 
 const CANOPY = TREE_STORIES.findIndex(s => s.key === 'canopy');
 const SEEDS = [1, 7, 42];
@@ -71,36 +71,12 @@ function ringToFirstPad(t: GiantTree): Waypoint[] {
 const centre = (p: StarPad): Waypoint => ({ x: p.x + 0.5, y: p.y, z: p.z + 0.5 });
 
 /**
- * Rides the pads' chain from the first pad by the game's rule: standing on a pad's centre carries you to its next
- * (the game's teleport to the next pad's centre); you step off onto the pad's east edge (the lock re-arms) and back
- * onto its centre to go on. Stops on the pad that leads up. Returns the pads visited and whether the up pad was reached.
+ * Rides the pads' route from the first pad by the jumps alone (issue #325): from each pad's centre the player jumps to the
+ * next pad's centre (`walkHops`). Returns the pads visited, whether the route was walked, and where the walk ended.
  */
 function rideChain(solid: Solid, pads: readonly StarPad[], held: Stats) {
-  let at = centre(pads[0]), lock = -1;
-  const visited: number[] = [];
-  for (let guard = 0; guard < pads.length * 2; guard++) {
-    const pad = padUnder(pads, at.x, at.y, at.z, true);
-    if (pad < 0) return { ok: false, visited, at };
-    if (visited[visited.length - 1] !== pad) visited.push(pad);
-    if (pads[pad].up) return { ok: true, visited, at };
-    const hop = padTravel(pads, pad, lock);
-    lock = hop.lock;
-    if (hop.to) {
-      // the game's teleport lands on the next pad's centre, which must be free to stand in
-      if (solid(hop.to.x, hop.to.y, hop.to.z) || solid(hop.to.x, hop.to.y + 1, hop.to.z)) return { ok: false, visited, at };
-      at = centre(hop.to);
-      continue;
-    }
-    // on the pad it was just carried to: off to the edge and back onto the centre
-    const p = pads[pad], edge = { x: p.x + 1.5, y: p.y, z: p.z + 0.5 };
-    const off = walkRoute(solid, at, [edge], held);
-    if (!off.ok) return { ok: false, visited, at };
-    lock = padTravel(pads, padUnder(pads, off.at.x, off.at.y, off.at.z, true), lock).lock;
-    const back = walkRoute(solid, off.at, [at], held);
-    if (!back.ok) return { ok: false, visited, at };
-    at = back.at;
-  }
-  return { ok: false, visited, at };
+  const res = walkHops(solid, centre(pads[0]), pads.slice(1).map(centre), held);
+  return { ok: res.ok, visited: pads.slice(0, res.reached + 1).map((_, i) => i), at: res.at };
 }
 
 const SKY: SkyBounds = { top: 1e9, floorOut: 4, deck: [0, 0, 0], crown: [0, 0, 0] };
@@ -136,7 +112,7 @@ describe('the Leaves\' gift (#316)', () => {
     }
   });
 
-  it('holding it, the player goes from the ring up the stair to the first star pad, rides the chain to the pad that leads up, and the gate takes it into the sky', () => {
+  it('holding it, the player goes from the ring up the stair to the first star pad, crosses the route by the jumps to the pad that leads up, and the gate takes it into the sky', () => {
     const held = holding(LEAVES_GIFT.item);
     for (const seed of SEEDS) {
       const { t, solid } = grown(seed);

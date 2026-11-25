@@ -9,7 +9,7 @@ export default defineItem({
   id: 'triple-jump',
   name: 'Triple Jump',
   description: 'Climbing is not one leap. Each jump takes you higher than the one before, and the last one carries you where no single step could reach.',
-  effect: 'Two more jumps in the air: press jump again while you are off the ground. The first rises 2× a ground jump; the second rises 8× and gives full steering in the air. Neither pushes you forward. Landing restores them. No jump rises above 16 blocks.',
+  effect: 'Two more jumps in the air: press jump again while you are off the ground. The first rises 2× a ground jump; the second rises 8× and gives full steering in the air. Neither pushes you forward. Landing restores them.',
   inspiredBy: 'Athletics: the triple jump (a sport, its generic name)',
   pools: { sky: 1 },
   tags: ['body'],

@@ -27,7 +27,7 @@ export const ES: Catalog = {
     'starmap.crown': 'El mapa estelar de la copa',
     'starmap.floor.sub': 'Las salas son estrellas; las puertas que has visto las unen',
     'starmap.crown.unread': 'La copa vista desde arriba. El Lector de estrellas aún no ha leído sus estrellas para ti',
-    'starmap.crown.read': 'La copa vista desde arriba. El Lector de estrellas leyó sus estrellas: cada una te lleva a la siguiente',
+    'starmap.crown.read': 'La copa vista desde arriba. El Lector de estrellas leyó sus estrellas para ti',
     'starmap.crown.nostars': 'La copa vista desde arriba. Sus estrellas aún no han salido: sube más',
     'starmap.close': 'M o Esc lo cierra',
     'starmap.close.pad': 'Vista o B lo cierra',
@@ -1643,7 +1643,7 @@ export const ES: Catalog = {
       'triple-jump': {
         name: 'Triple salto',
         description: 'Subir no se hace de un solo salto. Cada salto llega más alto que el anterior, y el último te lleva adonde ningún paso solo alcanzaba.',
-        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Ningún salto sube más de 16 bloques.',
+        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan.',
         inspiredBy: 'Atletismo: el triple salto (un deporte, su nombre genérico)',
       },
       occamsrazor: {

@@ -49,3 +49,36 @@ export function walkRoute(solid: Solid, from: Waypoint, route: readonly Waypoint
   }
   return { ok: true, reached: route.length, at: { x: b.x, y: b.y, z: b.z } };
 }
+
+/** A walk by the jumps alone, for a route of pads (issue #325, STARS.md): from each waypoint's centre the walker jumps
+ *  off the ground at once when the next waypoint is above it or more than two blocks away, and presses jump again each
+ *  time it falls below the next waypoint's height or more than 2.5 blocks short of it, while it holds an air jump. (A
+ *  press while falling below the target never buffers a bounce on the target: the target is above.) It never walks off
+ *  an edge to jump, so every hop starts on a pad's centre. Same result as `walkRoute`. */
+export function walkHops(solid: Solid, from: Waypoint, route: readonly Waypoint[], held: Stats = BASE_STATS): WalkResult {
+  const p = new Player();
+  p.spawnAt(from.x, from.y, from.z);
+  p.body.onGround = true;
+  const pressed = new Set<string>();
+  const move = { x: 0, y: 0 };
+  const input = { hit: (a: string) => pressed.has(a), held: (a: string) => pressed.has(a), move, lookDX: 0, lookDY: 0, sensitivity: 0 } as unknown as Input;
+  const hooks = { jump: (v: number) => v, land: () => {}, bump: (v: number) => v };
+  const stats = { ...held };
+  const b = p.body;
+  for (let i = 0; i < route.length; i++) {
+    const w = route[i];
+    let t = 0;
+    for (;;) {
+      const dx = w.x - b.x, dz = w.z - b.z, d = Math.hypot(dx, dz);
+      if (d < 0.3 && b.onGround && Math.abs(b.y - w.y) < 0.3) break;
+      if ((t += DT) > LEG_TIMEOUT) return { ok: false, reached: i, at: { x: b.x, y: b.y, z: b.z } };
+      p.yaw = Math.atan2(-dx, -dz);
+      move.y = d < 0.05 ? 0 : Math.min(1, d * 1.5);
+      pressed.clear();
+      if (b.onGround && (w.y > b.y + 0.2 || d > 2)) pressed.add('jump');
+      else if (!b.onGround && b.vy < 0 && (w.y > b.y + 0.2 || d > 2.5) && stats.airJumps >= 1) pressed.add('jump');
+      p.update(DT, input, stats, solid, hooks);
+    }
+  }
+  return { ok: true, reached: route.length, at: { x: b.x, y: b.y, z: b.z } };
+}

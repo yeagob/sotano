@@ -34,7 +34,7 @@ const messages = {
   'starmap.crown': 'The star map of the crown',
   'starmap.floor.sub': 'Rooms are stars; the doors you have seen join them',
   'starmap.crown.unread': 'The crown from above. The Star-reader has not read its stars for you yet',
-  'starmap.crown.read': 'The crown from above. The Star-reader read its stars: each one carries you to the next',
+  'starmap.crown.read': 'The crown from above. The Star-reader read its stars for you',
   'starmap.crown.nostars': 'The crown from above. Its stars are not out yet: climb higher',
   'starmap.close': 'M or Esc closes it',
   'starmap.close.pad': 'View or B closes it',

@@ -97,7 +97,7 @@ import {
 import type { VoxelSpace } from '../world/space';
 import { CHUNK, type VoxelWorld } from '../world/world';
 import { ElementSim } from '../world/elements';
-import { GiantTree, padTravel, padUnder, TREE_STORIES, TREE_ZONES } from '../world/tree';
+import { GiantTree, padUnder, TREE_STORIES, TREE_ZONES } from '../world/tree';
 import { inLeaves, LEAVES_GIFT_SPOT } from '../world/crown';
 import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { TunnelLog } from './minimap';
@@ -466,8 +466,6 @@ export class Game {
   private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss'; also?: number }>; starReader: StarMarks['starReader']; read: boolean } =
     { cartographer: new Map(), starReader: null, read: false };
   private stillT = 0;
-  /** The star pad you arrived on (re-armed once you step off it). */
-  private padLock = -1;
   /** The Leaves' gift (issue #316): the jump practice over the ring's east stone, laid at run start. */
   private leavesGift: Pickup | null = null;
   /** What the HUD says about where you are (a floor, or a level of the tree). */
@@ -686,7 +684,7 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
-    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.padLock = -1; this.zone = ''; this.presenceReplies.clear();
+    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];
@@ -4605,7 +4603,7 @@ export class Game {
     return {
       kind: 'crown', sx: this.dw.sx, sz: this.dw.sz, centre: [t.cx, t.cz], trunk: TREE_STORIES[0].r, crown: [54, t.cz - 2],
       leaves: { x0: L.x0, z0: L.z0, w: L.w, d: L.d }, stair: t.stairAt(TREE_STORIES.length - 2),
-      pads: t.pads.map(p => ({ x: p.x, z: p.z, to: p.to, up: p.up === true })), read: this.starMarks.read,
+      pads: t.pads.map(p => ({ x: p.x, z: p.z, up: p.up === true })), read: this.starMarks.read,
       here: this.realm === 'dungeon' ? [Math.floor(b.x), Math.floor(b.z)] : null,
     };
   }
@@ -4916,14 +4914,6 @@ export class Game {
     if (up || b.y > SKY_TOP) {
       const travel = RealmGate.check('dungeon', b, up ? { up: true } : null, this.skyBounds());
       if (travel) { this.gate.start(travel); return; }
-    }
-    // star pads: step on one and you are on the next star of its constellation
-    const hop = padTravel(this.tree.pads, pad, this.padLock);
-    this.padLock = hop.lock;
-    if (hop.to) {
-      this.particles.burst(b.x, b.y + 0.5, b.z, pal('bone.paper'), 16, 2.5, 0.07);
-      this.teleport(hop.to.x + 0.5, hop.to.y, hop.to.z + 0.5);
-      sfx2.charged();
     }
     // the Leaves (D14): their name, the first time you stand in them this run
     if (!this.leavesSeen && this.realm === 'dungeon' && inLeaves(b.x, b.y, b.z)) { this.leavesSeen = true; this.hud.toast('toast.leaves'); }
