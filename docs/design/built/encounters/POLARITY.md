@@ -20,7 +20,17 @@ Converting and killing are one value, a bar. Every hostile projection and boss h
 | | To a projection (hostile) | To a converted projection (ally) | To a creature | To a presence |
 |---|---|---|---|---|
 | **Good** | Fills its bar by the whole damage. At the top it turns to the player's side, with half its maximum health, and is not destroyed. A good intention never harms a projection | Heals it: half the damage it would have done, never past its maximum | Heals it. A creature has a 7.5% chance to drop one special heart when it first grows to three times its birth size | Nothing to heal. A good intention near it lifts a silence; it does not speak differently yet |
-| **Bad** | Drains its bar by the whole damage. At zero it is released | Harms it. At zero it turns hostile again, its bar back in the middle | Harms it. At zero it flees into the blocks until the room clears. It never dies | Silences it: the presence turns its light away until a good intention passes near |
+| **Bad** | Drains its bar by the whole damage. At zero it is released | Harms it. At zero it turns hostile again, its bar back in the middle. A bad intention of the Shadow turns it at once (see [Friendly fire](#friendly-fire-issue-372)) | Harms it. At zero it flees into the blocks until the room clears. It never dies | Silences it: the presence turns its light away until a good intention passes near |
+
+## Friendly fire (issue #372)
+
+The owner's rule: friendly fire is everywhere. Whatever hurts reaches the player's allies too, whichever side it comes from. Code: `resolveHit` in `src/combat/polarity.ts`, applied in the one damage pipeline (`hurtEnemy` in `src/game/game.ts`).
+
+- **A hostile intention** turns an ally hostile at once and harms it: its bar goes back to the middle, then drains by the hit's damage. Today the Shadow is the only hostile being whose attacks are intentions: its bolts, its weapon's strokes, its rings and its missile's splash. Its bolts stop on the first ally they meet, as they stop on the player.
+- **Any other harm** reaches an ally as a bad intention of the player's does: a hostile projection's shot, strike or touch, the Shadow's touch, a bomb (the player's or the Shadow's), fire and lava. It harms the ally by its whole damage, and harm that would bring it to zero turns it hostile instead, its bar back in the middle. Before this rule an ally that harm brought to zero was released.
+- **Good intentions** still heal an ally (half the damage, never past its maximum) and pass a healthy one.
+- **What does not change.** The bar of a hostile being is the same bar: harm drains it, love fills it, at zero it is released, at the top it turns. A relapsed ally in a cleared room does not reseal it. Hostile beings still never hurt one another, and a blast still only pushes a creature. The black heart's aura still touches hostile projections only (its own rule, [BLACK](../player/hearts/BLACK.md)).
+- **Tests:** `tests/friendly-fire.test.ts`.
 
 ## Blocks and weapons
 

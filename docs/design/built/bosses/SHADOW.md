@@ -2,9 +2,9 @@
 
 # The Shadow
 
-Built, in part. Floor 9, the keystone of the frozen bottom. Code: `src/content/bosses/shadow.ts`, its mirror `src/content/bosses/mirror.ts`.
+Built, in part. Floor 9, the keystone of the frozen bottom. Code: `src/content/bosses/shadow.ts`, its mirror `src/content/bosses/mirror.ts`, its summons `src/content/bosses/summons.ts`.
 
-The Shadow is the player's own silhouette in the room's negative: the same height, the same hands, a jumper. It is the player's equal (issue #339, the Mirror, "El Espejo"): it has the player's health, it carries the player's practices and bombs, and it fights as a player does, moving, jumping, dashing, shooting and bombing. It has a second ending that is not a fight: the player stands still beside it.
+The Shadow is the player's own silhouette in the room's negative: the same height, the same hands, a jumper. It is the player's equal (issue #339, the Mirror, "El Espejo"): it has the player's health, it carries the player's practices and bombs, and it fights as a player does, moving, jumping, dashing, shooting and bombing. It calls the friends the player made in the run, turned against them (issue #372). It has a second ending that is not a fight: the player stands still beside it.
 
 - **Pattern:** everything you do not want to see in yourself. To be seen, and to come home.
 - **Path:** all paths.
@@ -37,7 +37,21 @@ There are no scripted phases and no fixed sequence. Each frame it scores every a
 
 **The other ending.** Once its health falls to a third, a toast says how its other ending is reached ("It stops fighting: stand still beside it for three seconds"). From then on, whenever the player stands still (under 0.2 blocks a second), it stops attacking and walks slowly (under a block a second) to two blocks from the player. If the player stays within 2.5 blocks of it, still, for three seconds in a row, it is defeated. Moving again resets the count, and it fights again. The stillness ending counts as turning it to your side: the achievement "Coming Home" (`boss.shadow.converted`).
 
-Its contact hurts too (a heart). It summons nothing: a player does not summon projections (the summons of doubt, the critic and panic were removed by issue #339).
+Its contact hurts too (a heart).
+
+**Friendly fire.** Its bolts and its strokes are intentions, cold, and they meet the player's allies as they meet the player: a bolt stops on the first ally in its way, and a bolt or a stroke that reaches an ally turns it hostile at once and harms it (its bar goes back to the middle and drains by the hit). Its touch and its bombs harm an ally as any harm does, turning it only if they would bring it to zero. The rule is the game's, not the Shadow's alone: [Friendly fire](../encounters/POLARITY.md#friendly-fire-issue-372).
+
+## Its summons
+
+The owner's rule (issue #372): the fight is against your own friends. The Shadow calls beings of exactly the kinds the player made allies in this run, as the run's ally tally counts them (the same count the final ascent reads, [Illumination](../levels/totality/ILLUMINATION.md)).
+
+- **Which.** Every projection the player turned, and every ally the Mender brought back, one entry per friend: two Doubts befriended are two Doubts to call. It calls them in turn, in the order they were befriended (the projections first, then the mended), so every kind comes before any comes again. It takes the list once, when its fight starts, as it takes the practices: a friend made during the fight does not join it.
+- **Who never comes.** Deities (the sky's guardians are not beings of the dungeon), bosses (one to a floor, with its floor's life and room) and creatures (they are not patterns, and the dungeon has no omen to call one through). A kind the tally holds that is not a projection is left out.
+- **What comes.** Each summon is that projection itself: the same definition and behaviour, hostile, with its own spawn's roll (its colour tier, the rooted chance, its parts), never the tier the player's ally had. It is announced by an omen, as every spawn is, on a floor cell 1.5 to 4 blocks from the Shadow and never within 3.5 blocks of the player.
+- **When.** The first 4 seconds into the fight (after its first breath), then one every 7 to 10 seconds, the gap seeded by the Shadow, never random. It does not call while it yields to the stillness ending.
+- **How many.** At most three of its summons at once, alive and hostile or still in their omen. A summon the player turns again no longer counts; at the cap the call waits for the next turn.
+- **No friends.** A player who made no friend in the run meets no summons: the fight is the mirror alone, as before.
+- **After it.** Its summons outlive it: they stay, hostile, until they are released or turned. The room opens with its defeat as before.
 
 ## The mirror
 
@@ -176,4 +190,5 @@ Stillness is a defeat like any other: the boss room opens and the way down is cr
 
 - **Integration.** The design says the Shadow shrinks into the player's hands. The build removes it with the usual release.
 - **Arena.** The design turns the frozen floor into mirrors. The build gives the Shadow its own room, the biggest a floor holds, with the fight started across it and cover all over it ([Arenas](ARENAS.md#the-shadows-room-built)); the mirrors are not built, and the phase at a third of its health changes nothing in the room.
+- **Its summons under the owner's eye.** The cadence (7 to 10 s), the cap (three) and the turn order are set in numbers and tests, not yet in play. See [not-built/bosses/SHADOW.md](../../not-built/bosses/SHADOW.md).
 - The mirror's own open questions, and the full design, are in [not-built/bosses/SHADOW.md](../../not-built/bosses/SHADOW.md).
