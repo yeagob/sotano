@@ -27,6 +27,7 @@ The names are the HUD's; they name a place, not a figure. The rooms that mark ea
 ## The frozen ninth
 
 - **Ice.** Every pool of water carved on floor 9 is ice on its surface; the water under the ice stays liquid. Ice is solid, breakable and slippery (see [ICE-AND-WOOD](../../elements/ICE-AND-WOOD.md)).
+- **The Shadow's room.** The boss room of floor 9 is the Shadow's, and it is the biggest room in the game: four cells of space, 28 blocks by 16 and 8 high, with cover of every material of the floor (dark brick, ashlar, stone, crates, obsidian, lead ore, dirt and ice) and the fight started from opposite corners (see [Arenas](../../bosses/ARENAS.md#the-shadows-room-built)).
 - **Silence below.** The boss room's hole drops the player into the silence chamber, the one place with no toll (see [SILENCE](SILENCE.md)).
 
 ## Using Dante

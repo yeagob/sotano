@@ -37,6 +37,20 @@ The phase in brackets is the one the arena starts. Hoard's arenas are `rockfall`
 
 Their toasts still play, so the phase is announced, but the room is not changed.
 
+## The Shadow's room (built)
+
+The Shadow (floor 9) fights in a room of its own, `mirror-hall`, the biggest a floor can hold. The owner asked for a much bigger room, a start much farther from the boss, plenty of cover of different materials all over it, and room for a more generous fight.
+
+- **Size.** Four cells of space: 28 blocks by 16, under a flat roof 8 blocks high. That is the limit of the room format: a template is at most two cells each way, and 8 blocks is the tallest interior that keeps three layers of rock between floors 16 blocks apart (see [Height and ceilings](../levels/rooms/HEIGHT-AND-CEILINGS.md)). Every other boss room is two cells (28 by 7). The flat roof keeps the full 8 blocks over every tile; a vault or a dome would take height back at the edges.
+- **Always there.** Floor 9's plan always leaves an empty two-by-two block of cells beside its boss room, and the boss room claims it before any other room, so the Shadow's room always fits. It is the only boss room of floor 9 and appears on no other floor.
+- **The start.** You come in through the door of one corner cell. The Shadow rises on the open floor tile of the room farthest from you, which is the far corner: 25.8 blocks away if you came in by the door in the short wall's middle, 29.5 by the door in the long wall's middle. In the two-cell halls it rose on a seeded tile at least 3.5 blocks away (8 to 15 blocks typically). Nothing two blocks high stands on the line between either door and that corner, so you see it the moment it rises.
+- **Cover.** About 28 pieces, spread over the whole room: pillars of dark brick to the roof, obsidian walls, stepped ledges of ashlar three blocks high along the north and south walls and on the west side, stone boulders, crate stacks, lead ore, dirt, and patches of ice underfoot. Tall pieces (two blocks or more) hide you; low pieces (one block) you jump on. Every high top you can stand on has a step of one block beside it.
+- **What breaks.** The game's own rule: a shot breaks the softest blocks it hits (crates and dirt), so that cover wears away as the fight goes on; it stops on stone, ashlar, dark brick, lead ore, obsidian and ice, which only digging or a bomb takes down.
+- **Lanes, nooks and ledges.** The diagonal from the doors to the far corner is an open lane; the pieces against the walls make close nooks (never a pocket closed on three sides); the stepped ledges are the high ground.
+- **Nothing traps you.** From every tile you can stand on there is a walking way to the Shadow and back, with steps of one block, so it can always reach you and you it.
+
+Code: `src/content/room-layouts.ts` (`mirror-hall`), `src/world/floorplan.ts` and `src/world/floor.ts` (the two-by-two block), `src/game/game.ts` and `src/game/omens.ts` (the far start). Tests: `tests/shadow-arena.test.ts`.
+
 ## Not in this list
 
 `ice` changes the room (it raises ice walls), but only a projection uses it, the Isolation projection. No boss does.
