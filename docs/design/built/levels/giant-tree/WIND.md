@@ -6,9 +6,8 @@ From the crown of the tree upward the wind always blows. It is drawn as thin whi
 
 ## Where it blows
 
-- **From the first row above the crown.** The crown's leaves end on the last row of the canopy story, 145 blocks above the tree's base. The wind starts on the next row, 146 blocks above the base (the first row of the stars story, the zone the HUD calls heaven), and blows all the way to the top of the sky. It is measured at the feet.
-- **At any place at that height.** It is a height, not a column round the trunk: the stars' disc, the pads, the open air between them and the summits of the mountains (which rise as high as the tree) all have it.
-- **Not in the sky realm.** Above the cloud layer the sky is a world of its own with its own gusts ([sky WIND](../../sky/abilities/WIND.md)); this wind belongs to the tree's sky.
+- **Not on the tree.** The giant tree and its stars route to the sky have no wind: the crown, the disc and the star pads are calm.
+- **On the Totality, after the horse.** The wind blows over the Totality, the climb of small platforms from the crown of the sky tree up to the Sun. It starts at the Totality's first stratum and goes on to the Sun. The halls and the guardians' floors have their own gusts ([sky WIND](../../sky/abilities/WIND.md)), not this wind.
 
 ## What it does
 
