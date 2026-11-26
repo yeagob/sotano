@@ -105,6 +105,8 @@ The exact behaviour of every guardian and every minion is not decided here. It i
 10. **Winning by allies alone.** Allies add positive hits with no cap on four floors. Can a floor be won with no positive hit from the player's own hand?
 11. **Harm.** Decided (owner, 2026-11-03): no health damage in the sky. Certain special attacks drain spirit, and a capture takes one practice (section 6.6, realm [law 3.10](../README.md#310-the-player-cannot-die-in-the-sky)). Each guardian document proposes its special attacks and drains (B3b); the owner accepts the drain amounts for now, to adjust later (2026-11-05). See [abilities](../abilities/README.md#4-open-questions).
 12. **The telegraph ladder.** The warnings shorten from 1.4 s on the first floor to 0.9 s on the fifth (section 6.4). Confirm that the shortening is the sky's rising difficulty.
+13. **Fight length (#357).** With the life of each deity (240, 480, 960, 1920, 3840 hits) and the hunt, the simulated player with the normal practices wins in about 1, 2, 5, 8 and 8 minutes; with the starting kit alone the later floors take 24 to 65 minutes (section 8.6). Is that the intended length?
+14. **The hunt's names and look (#357).** The dives (Belly flop, Drop hold, Mud stamp, Swipe), the horse's trample and the allies' hold reuse existing marks, motes and cues; their names and art need the owner's ruling and the art gate.
 
 ## 6. Shared terms of the behaviour specifications
 
@@ -201,3 +203,65 @@ Status: not built. Reported by the five deity builds (2026-11-05); each one is a
 | [Elephant](ELEPHANT.md) | Positive shots into the dust circle, at the grey water or at the stone in flight do not answer; the tower sweep is not wired; the floor's channels are a stand-in; no sound |
 | [Lion](LION.md) | The ledges do not settle when it is won; no rally minions; no wall stops the roar; no tower glide |
 | [Horse](HORSE.md) | No leap to a tower; no sounds |
+
+## 8. The hunt (#357)
+
+Status: built as a target (owner request, 2026-11-26: the deities must move when shot, chase the player, act on them in ways they feel, be hard to reach, and lead many more minions). Every number is provisional until the owner plays it. The life of each deity (240, 480, 960, 1920, 3840 hits), its gift and the rule that the boss life factor of #315 does not apply to deities are the owner's and do not change here.
+
+### 8.1 Hovering deities: the panda, the koala, the elephant, the lion
+
+The shared hunt is data on each deity (`chase` in `DeityDef`, run by `src/sky/creatures/chase.ts`):
+
+- **It follows the player across the floor.** It keeps a distance (`keep`, 8 to 10 blocks) and a height over the player's feet (`lift`, 3 to 4 blocks plus its hover), circling them slowly; it backs away at its dash speed when the player comes closer than `near` (4.5 to 5). It flies over the platforms, stays inside the floor's walls and under its ceiling, and never sinks into a block.
+- **It moves when a hit counts.** It dodges `dodge` blocks to the side and 1.5 up (at most once every `cool` seconds), in any state but its naps, and its next attack comes within `counter` seconds.
+- **It dives.** Every few seconds of free time it marks the ground where the player will be when the mark lands (their speed times the telegraph), with the floor's telegraph (1.4, 1.2, 1.1, 1.0 s), drops to 2.4 blocks over that spot while the mark shows, and the mark lands: each deity's dive affects the player in its own way (the panda pushes, the koala holds, the elephant slows the ground, the lion pulls). Then it rises back. The dive is the moment it comes within easy reach.
+- **Its wind-up is warded.** While it telegraphs an attack, a positive hit counts (and answers the attack) only from a player within 5 blocks; from farther it puffs. To answer, the player must come close while it is still.
+- **Won,** it stops hunting and settles back over its seat, where its gift appears once.
+
+### 8.2 The horse
+
+The horse walks; its own moves do the hunt (HORSE.md, B10): it sees the whole field, leaps onto the player's path and stamps on two hits in three, leaps away to 6 to 11 blocks on the third, shies to the side between leaps, and its leap home follows the player.
+
+### 8.3 Allies hold the deity still
+
+While the player has touched a deity in the last 4 s, every ally of the floor goes to it; an ally that reaches it holds it still for 2 s, then the deity is free and cannot be held again for 3 s ([minions, section 2.1](../minions/README.md#21-allies-go-for-the-deity-the-player-shoots-357)).
+
+### 8.4 The herds
+
+Ten times the first counts, effects three to four times stronger, fast filling, hunters and blockers ([minions, section 8](../minions/README.md#8-many-and-hard-to-ignore-357)).
+
+### 8.5 The playtest
+
+A simulated player (`tests/helpers/sky-duel.ts`) plays each floor with the real realm, the real Player physics and the real creatures: it walks to 4 to 7 blocks from the deity, strafes or stands for 1.5 to 3.5 s at a time, hops every 2 to 5 s, aims with a lead and a small error, shoots the nearest wild minion within 2.5 blocks first and the deity otherwise. Two kits: the starting kit (base stats) and the normal practices (fire rate 4.3, shot speed 1.3, range 1.8, move speed 1.2, jump 1.5, two air jumps, three strands per intention). `tests/sky-playtest.test.ts` checks the targets on short fights; `SKY_PLAYTEST=1` runs the full measurements.
+
+Targets (chosen for #357):
+
+| Measure | Target |
+|---|---|
+| The deity moves at least 1 block within 1.5 s of a counted hit | 80 % of hits or more (the horse 60 %) |
+| The deity and its herd act on the player (a push, hold, slow, carry or drain begins) | 2 or more a minute |
+| Share of time the player is held | 20 % or less |
+| Sent underground | never in the short fights |
+| Share of time the deity is within the starting kit's straight shot | 20 % to 90 % |
+| Panda won with the normal practices | 30 s to 4 min |
+
+The measurements of the latest run are in section 8.6.
+
+### 8.6 Measurements (2026-11-26, seed 3, fights capped at 900 s)
+
+Time is simulated seconds; a fight not won by the cap shows the time its hit rate projects, marked "proj.". "Acts" are the times a push, hold, slow, carry or drain begins on the player, per minute, from the deity and from its herd. "Moves" is the share of counted hits after which the deity moved at least 1 block within 1.5 s. "Reach" is the share of time the deity is within the kit's straight shot.
+
+| Floor | Kit | Time to win | Deity hits / shots | Deity acts/min | Herd acts/min | Spirit drained | Sent down | Held | Moves | Reach | Ally holds |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 panda | starting | 293 s | 38 % | 3.9 | 2.9 | 20 | 0 | 0 % | 89 % | 50 % | 32 |
+| 1 panda | practices | 55 s | 44 % | 1.1 | 1.1 | 0 | 0 | 0 % | 98 % | 89 % | 1 |
+| 2 koala | starting | 829 s | 40 % | 4.1 | 0.2 | 32 | 0 | 7 % | 94 % | 40 % | 28 |
+| 2 koala | practices | 123 s | 55 % | 2.4 | 0.5 | 8 | 0 | 4 % | 95 % | 91 % | 2 |
+| 3 elephant | starting | 1442 s proj. | 40 % | 13.3 | 0 | 320 | 3 | 0 % | 98 % | 40 % | 3 |
+| 3 elephant | practices | 303 s | 38 % | 6.9 | 0 | 82 | 0 | 0 % | 98 % | 96 % | 0 |
+| 4 lion | starting | 2856 s proj. | 37 % | 12.1 | 0.2 | 0 | 0 | 8 % | 92 % | 41 % | 52 |
+| 4 lion | practices | 457 s | 41 % | 6.4 | 0.1 | 0 | 0 | 4 % | 90 % | 94 % | 35 |
+| 5 horse | starting | 3883 s proj. | 35 % | 2.7 | 0.9 | 0 | 0 | 0 % | 83 % | 75 % | 72 |
+| 5 horse | practices | 481 s | 62 % | 1.6 | 0 | 0 | 0 | 0 % | 62 % | 99 % | 48 |
+
+What the run shows: every deity moves after most hits (the horse least, because it reacts only between its attacks and leaps); every floor but the horse's against the practices (1.6 a minute) acts on the player at least twice a minute; the starting kit is out of straight-shot reach about 60 % of the time; the normal practices win every floor, the last ones in 5 to 8 minutes. The fight lengths follow the owner's life numbers (240 to 3840 hits): with the starting kit alone the later floors take 24 to 65 minutes, an open question for the owner (section 5). The elephant's drains sent a starting-kit player underground three times in fifteen minutes.

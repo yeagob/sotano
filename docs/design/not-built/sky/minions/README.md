@@ -52,6 +52,12 @@ An ally helps the player on the floor. The help must come from the animal's habi
 
 An ally does not do the player's platforming for them. The player still makes the jump, the block and the route.
 
+### 2.1 Allies go for the deity the player shoots (#357)
+
+Status: built as a target (owner, 2026-11-26).
+
+While the player's positive or negative shots have touched a deity in the last 4 s, every ally of its floor leaves its other help and goes to it: along the floor's graph, then straight under it. An ally that reaches it (within 1.5 blocks plus the deity's half width, and up to 6 blocks under its body) holds it still for 2 s: the deity does not move, does not attack and does not change state, and anything it had already started runs on. After the 2 s it is free again, and no ally can hold it again for 3 s more. The owner said "it stays still for 2 seconds"; the 3 s gap is a proposal, so a crowd of allies cannot hold a deity for good.
+
 ## 3. When the deity is defeated
 
 Status: proposal.
@@ -88,5 +94,22 @@ Each guardian document's "Behaviour specification" holds the minions' count, spa
 
 1. Are minions projections? (Section 5.)
 2. What happens to the minions after the floor is cleared, and which of them transform, change attitude or leave when their deity is defeated? (Section 3.)
-3. How many minions does a floor have? Each guardian document now sets a count as a target (4, 6, 5, 6 and 5); the owner has to confirm them.
+3. How many minions does a floor have? The owner asked for ten to twenty times the first counts (#357): the targets are now ten times each: 40, 60, 50, 60 and 50 (30, 60, 30, 40 and 30 hostile), with their effects three to five times stronger (section 8). The owner has to confirm them after playing.
 4. Allies and negative intentions. In the built game a bad intention harms an ally and can turn it back. In the sky a negative intention does nothing to any sky creature, allies included, so an ally never turns back. Confirm.
+
+## 8. Many, and hard to ignore (#357)
+
+Status: built as a target; numbers provisional until the owner plays them.
+
+| Animal | Max (was) | Hostile (was) | Count × | Effect × | What the effect multiplies | Spawn |
+|---|---|---|---|---|---|---|
+| Panda | 40 (4) | 30 (3) | 10 | 4 | the roll's shove 3.75 → 15; a new shove at 5 blocks | six every 3 s |
+| Koala | 60 (6) | 60 (6) | 10 | 3 | hug 2 → 6 s; wakes at 4 → 12; climbs toward the player from 8 → 24 | six every 4 s |
+| Elephant | 50 (5) | 30 (3) | 10 | 3 | shoulder 2 → 6 blocks; spray current 3 → 9 | five every 3 s |
+| Lion | 60 (6) | 40 (4) | 10 | 3 | pounce ring 5 → 15; roar freeze 1 → 3 s | six every 3 s |
+| Horse | 50 (5) | 30 (3) | 10 | 4 | kick 2.5 → 10 blocks | six every 3 s |
+
+- **The floor fills fast:** when the player arrives, a batch comes at once at the next spawn places (scattered over each place), then one batch a warning, until the hostile count is reached.
+- **They hunt:** once the deity is awake, a share of each herd (panda six in ten, elephant and horse half; the koalas climb toward the player and the lions stalk on their own) leaves its habit and walks to the player along the floor's graph, then straight at them.
+- **They block:** a minion between the player and the deity takes the shot meant for the deity (and is turned by it).
+- **Telegraphs:** every minion blow is a hindrance with the floor's telegraph (1.4 to 0.9 s); at most three minion shoves are on show at once on the panda's floor, 1.2 s apart.

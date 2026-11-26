@@ -207,7 +207,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 
 ### B5. Minions
 
-- **How many:** at most target 5 on the floor, a herd, allies included. At most target 3 hostile.
+- **How many:** at most target 50 on the floor, a herd, allies included. At most target 30 hostile (#357, section B10; was 5 and 3).
 - **Spawn:** from the paddock gate on the ground at the edge of the meadow. Hoofbeats rise and dust lifts for target 1.5 s, and a horse trots out. One every target 15 s while fewer than 3 are hostile.
 - **Movement (the horse's own):**
   - gallops in a wide loop across the meadow and the platforms at target 6 blocks a second;
@@ -265,14 +265,23 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2 s (2.5 s after a landing) | up to about 1 s |
 | Great leap | up to 20 blocks across, 8 high | player jump about 1.26 high, about 2.7 across |
 | Rest between attacks | 2.5, 2, 1.5 s by stage | a short walk, shorter each phase |
-| Positive hits | 48, two each while Gentled | 374 health: about 107 bad hits |
+| Positive hits | 3840 (owner, #357), more each while Gentled | 374 health: about 107 bad hits |
 | Minions sent to kick | 1, then up to 2 from the second stage | no built equivalent |
 | Hits to turn a minion | 4 | 5 good hits for a projection |
-| Minions at once | 5 (3 hostile) | no built equivalent |
+| Minions at once | 50 (30 hostile), six at a time every 3 s (#357) | no built equivalent |
 | Floor size | radius 30, Paddocks up to 12 high | trunk story 22 high |
 | Harm | none (decided: it pushes or holds) | boss touch 8 |
 | Special attacks (provisional) | 6: 3 drain spirit (14, 16, 18 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
 | Special telegraphs | 0.9 s to slow or move, 1.1 s to drain, 1.4 s to capture | windup 0.4 to 0.9 s |
+
+### B10. The hunt (#357)
+
+Status: built as a target; the numbers are provisional until the owner plays them. The shared rules are in [guardians, section 8](README.md#8-the-hunt-357). The horse walks, so it has no hover hunt: its own moves do the work.
+
+- **It sees the whole field:** sight 24 (was 14), so it keeps attacking from range.
+- **When a hit counts** it leaps (at most every 4 s, 2 s after a landing): two leaps in three land on the ground where the player is heading half a second ahead, with a ring of 3.5 drawn through the crouch and the flight, and a stamp that pushes 4 blocks on landing; the third leaps to a paddock 6 to 11 blocks from the player. Between leaps it shies 2.5 blocks to the side at 6 blocks/s.
+- **Leap home** goes to the paddock nearest the player that is at least 6 away, so it follows the player round the field.
+- **Its herd:** 50 at most, 30 hostile (ten times the first count). Effects four times stronger: a kick pushes 10 blocks (was 2.5). Half of them leave the loop and hunt the player.
 
 ## Open questions
 
