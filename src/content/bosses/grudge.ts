@@ -26,7 +26,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Grudge',
   pattern: 'To never be hurt again',
-  hp: 140,
   speed: 1.0,
   size: [1.3, 1.2],
   contactDamage: 8,

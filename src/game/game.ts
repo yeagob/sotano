@@ -12,7 +12,7 @@ import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
-import { BOSS_BY_ID, bossFor, bossHp } from '../content/bosses';
+import { BOSS_BY_ID, bossFor, bossLife } from '../content/bosses';
 import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
@@ -47,7 +47,7 @@ import { hash3, RunRandom } from '../core/rng';
 import { decodeSeed, encodeSeed, formatSeed, GEN_VERSION, randomRoot } from '../core/seed';
 import { ROOM_CLEAR } from '../content/tables/rewards';
 import { StatSheet } from '../core/stats';
-import type { Enemy } from '../enemies/types';
+import { birthHp, type Enemy } from '../enemies/types';
 import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
@@ -817,7 +817,7 @@ export class Game {
     if (!r) return null;
     // the Boundary as a vault places it (updateBoundaries reads its tag), without the Sanctuary's ring: a sandbox has no chest
     if (defId === boundaryDef.id) {
-      const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, x, y, z, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+      const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, x, y, z, birthHp(boundaryDef), boundaryDef.speed, 0, new Set(['boundary']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -825,7 +825,7 @@ export class Game {
     }
     const presence = PRESENCE_BY_ID.get(defId);
     if (presence) {
-      const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, presence.hp, presence.speed, 0, new Set(['presence']));
+      const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, birthHp(presence), presence.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -833,7 +833,7 @@ export class Game {
     }
     const creature = CREATURE_BY_ID.get(defId);
     if (creature) {
-      const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, creature.hp, creature.speed, 0, new Set(['creature']));
+      const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, birthHp(creature), creature.speed, 0, new Set(['creature']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -1088,7 +1088,7 @@ export class Game {
       const face = this.chestFacing(spec);
       this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, face.angle, face.tight) });
       if (!this.sandbox && spec.meditation) {
-        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), spec.room, spec.x + 0.5, spec.y + 1, spec.z + 0.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), spec.room, spec.x + 0.5, spec.y + 1, spec.z + 0.5, birthHp(boundaryDef), boundaryDef.speed, 0, new Set(['boundary']));
         e.faction = 'neutral';
         e.spawning = 0;
         this.actors.add(e);
@@ -1103,7 +1103,7 @@ export class Game {
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
     for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
       const def = CREATURE_BY_ID.get(c.def)!;
-      const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, def.hp, def.speed, 0, new Set(['creature']));
+      const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, birthHp(def), def.speed, 0, new Set(['creature']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -1112,7 +1112,7 @@ export class Game {
     for (const r of this.sandbox ? [] : f.rooms) {
       if (!r.presence) continue;
       if (r.presence === 'boundary') {
-        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, birthHp(boundaryDef), boundaryDef.speed, 0, new Set(['boundary']));
         e.faction = 'neutral';
         e.spawning = 0;
         this.actors.add(e);
@@ -1126,7 +1126,7 @@ export class Game {
         continue;
       }
       const def = PRESENCE_BY_ID.get(r.presence)!;
-      const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, def.hp, def.speed, 0, new Set(['presence']));
+      const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, birthHp(def), def.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -2535,7 +2535,7 @@ export class Game {
     if (!def) return null;
     const id = this.actors.newId();
     const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
-    const hp = def.kind === 'boss' ? bossHp(r.floor) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
+    const hp = def.kind === 'boss' ? bossLife(r.floor, this.rng, defId) : rooted ? Math.round(birthHp(def) * ROOTED_HP) : birthHp(def);
     const tags = new Set(def.asleep ? ['asleep'] : []);
     if (rooted) tags.add('rooted');
     const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags, x, y, z });
@@ -4685,7 +4685,7 @@ export class Game {
     // beside the Mender, on the side away from the player, so it does not stand in the player's way
     const a = Math.atan2(b.z - player.z, b.x - player.x);
     const x = b.x + Math.cos(a) * 1.2, z = b.z + Math.sin(a) * 1.2;
-    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, def.hp, def.speed, def.contactDamage, new Set([MENDED_TAG]));
+    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, birthHp(def), def.speed, def.contactDamage, new Set([MENDED_TAG]));
     e.spawning = 0;
     this.actors.add(e);
     this.setFaction(e, 'self', 'mender');
@@ -4712,7 +4712,7 @@ export class Game {
     if (!r || !menderComesTo(this.rng, r.floor, this.menderCame)) return;
     this.menderCame = true;
     const def = PRESENCE_BY_ID.get('mender')!;
-    const e = this.enemies.spawn(def, this.actors.newId(), room, at.x, at.y, at.z, def.hp, def.speed, 0, new Set(['presence']));
+    const e = this.enemies.spawn(def, this.actors.newId(), room, at.x, at.y, at.z, birthHp(def), def.speed, 0, new Set(['presence']));
     e.faction = 'neutral';
     e.spawning = 0;
     this.actors.add(e);

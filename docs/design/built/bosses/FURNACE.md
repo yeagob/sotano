@@ -8,7 +8,7 @@ The Furnace is a great furnace of obsidian and brick, its door a mouth, and a co
 
 - **Pattern:** Burnout, grown old. To be enough.
 - **Path:** Will.
-- **Health:** 612 on floor 7, 782 on floor 8.
+- **Health:** 557 to 1193 on floor 7, 712 to 1525 on floor 8.
 
 ## Phases
 

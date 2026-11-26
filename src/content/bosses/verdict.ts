@@ -24,7 +24,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Verdict',
   pattern: 'To be beyond reproach',
-  hp: 140,
   speed: 0.9,
   size: [1.6, 2.6],
   contactDamage: 8,

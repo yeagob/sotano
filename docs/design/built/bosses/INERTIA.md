@@ -9,7 +9,7 @@ Inertia is a round mass of packed earth, asleep in the middle of the room. Nothi
 - **Pattern:** staying as you are. Rest that became a stop.
 - **Need:** to be left alone in its stillness.
 - **Path:** Body.
-- **Health:** 140 on floor 1, 179 on floor 2.
+- **Health:** 127 to 273 on floor 1, 163 to 349 on floor 2.
 
 ## Phases
 

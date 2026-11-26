@@ -9,7 +9,7 @@ Resistance is a door that walks: a great slab of the floor's brick on two short 
 - **Pattern:** the force that stops creative work. It is named for an everyday idea, not a person.
 - **Need:** that nothing changes.
 - **Path:** Will.
-- **Health:** 140 on floor 1, 179 on floor 2.
+- **Health:** 127 to 273 on floor 1, 163 to 349 on floor 2.
 
 ## Phases
 

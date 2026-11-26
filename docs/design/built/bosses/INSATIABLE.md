@@ -8,7 +8,7 @@ The Insatiable is a giant open cup of stone with a maw at floor level. It never 
 
 - **Pattern:** craving, grown old. To be full.
 - **Path:** Body.
-- **Health:** 140 on floor 1, 179 on floor 2.
+- **Health:** 127 to 273 on floor 1, 163 to 349 on floor 2.
 
 ## Phases
 

@@ -22,7 +22,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Many Faces',
   pattern: 'To be loved',
-  hp: 140,
   speed: 1.0,
   size: [1.6, 2.4],
   contactDamage: 8,

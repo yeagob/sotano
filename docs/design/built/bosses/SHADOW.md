@@ -8,7 +8,7 @@ The Shadow is the player's own silhouette in the room's negative: the same heigh
 
 - **Pattern:** everything you do not want to see in yourself. To be seen, and to come home.
 - **Path:** all paths.
-- **Health:** 1000 on floor 9.
+- **Health:** 910 to 1950 on floor 9.
 
 ## Phases
 

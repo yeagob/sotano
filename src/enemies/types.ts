@@ -49,7 +49,8 @@ export interface EnemyDef {
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
-  hp: number;
+  /** Life at birth, for a projection or a creature. A boss has none: its life comes from its floor and the run's seed (`bossLife`, content/bosses). */
+  hp?: number;
   speed: number;
   /** Half-width and height of its box. */
   size: [number, number];
@@ -183,3 +184,9 @@ export interface Behaviour {
 }
 
 export const defineEnemy = (d: EnemyDef) => d;
+
+/** A projection's or creature's life at birth (`EnemyDef.hp`). Throws for a boss, whose life is set at its spawn. */
+export const birthHp = (def: EnemyDef): number => {
+  if (def.hp === undefined) throw new Error(`${def.id}: no birth health (a boss's life comes from bossLife)`);
+  return def.hp;
+};

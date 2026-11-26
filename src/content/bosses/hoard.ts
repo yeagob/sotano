@@ -12,7 +12,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Hoard',
   pattern: 'Holding on to everything',
-  hp: 140,
   speed: 2.6,
   size: [1.2, 2.2],
   contactDamage: 8,

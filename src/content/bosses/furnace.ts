@@ -18,7 +18,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Furnace',
   pattern: 'To be enough',
-  hp: 140,
   speed: 0.8,
   size: [1.4, 2.6],
   contactDamage: 8,
