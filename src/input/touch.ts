@@ -9,6 +9,7 @@ import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
 import { intentPowerLevel } from '../combat/intents';
 import { swipeDir } from './gestures';
+import { sizePx, slotFor, slotStyle, SLOT, TouchPresence, touchLayerShown, type TouchSlot } from './touch-layout';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
@@ -97,6 +98,11 @@ export class TouchControls {
   private key = '';
   /** The side of the phone the last landscape turn ended on (90 or 270); a change of side is a half turn. */
   private side: number | null = null;
+  /** When the set is on screen (issue #376): woken by a touch, gone TOUCH_IDLE_MS after the last one. */
+  private presence = new TouchPresence();
+  private shown = false;
+  /** The contextual buttons shown last frame: one that appears wakes the set, so a new verb is seen. */
+  private context = new Set<Action>();
 
   constructor(private input: Input) {
     this.root = document.createElement('div');
@@ -106,6 +112,7 @@ export class TouchControls {
     this.knob = document.createElement('i');
     this.stick.appendChild(this.knob);
     this.root.appendChild(this.stick);
+    place(this.stick, SLOT.stick);
     for (const b of PAD_ACTIONS) {
       const el = document.createElement('button');
       el.type = 'button';
@@ -113,6 +120,8 @@ export class TouchControls {
       el.dataset.a = b.action;
       if (b.touch.icon) el.style.setProperty('--glyph', `var(--ico-${b.touch.icon})`);
       el.appendChild(document.createElement('span'));
+      const slot = slotFor(b.action);
+      if (slot) place(el, slot);
       this.buttons.set(b.action, el);
       this.root.appendChild(el);
     }
@@ -136,6 +145,7 @@ export class TouchControls {
 
   private start(e: TouchEvent) {
     e.preventDefault();
+    this.presence.wake(performance.now());
     const inp = this.input;
     for (const tc of e.changedTouches) {
       const btn = (tc.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-a]');
@@ -189,6 +199,7 @@ export class TouchControls {
 
   private moveTouches(e: TouchEvent) {
     e.preventDefault();
+    this.presence.wake(performance.now());
     for (const tc of e.changedTouches) {
       const tr = this.tracks.get(tc.identifier);
       if (!tr) continue;
@@ -225,6 +236,7 @@ export class TouchControls {
 
   private end(e: TouchEvent) {
     e.preventDefault();
+    this.presence.wake(performance.now());
     for (const tc of e.changedTouches) {
       const tr = this.tracks.get(tc.identifier);
       this.tracks.delete(tc.identifier);
@@ -264,7 +276,8 @@ export class TouchControls {
     this.side = turn.side;
   }
 
-  private radius() { return Math.min(innerWidth, innerHeight) * 0.13; }
+  /** The stick's reach: half its drawn side, so the knob stops at the ring. */
+  private radius() { return sizePx(SLOT.stick, innerWidth, innerHeight) / 2; }
 
   private placeStick(x: number, y: number, dx: number, dy: number) {
     this.stick.style.left = `${x}px`;
@@ -277,7 +290,7 @@ export class TouchControls {
     this.input.touchMove.x = this.input.touchMove.y = 0;
     this.input.touchHeld.delete('run');
     this.stick.classList.remove('on');
-    this.stick.style.left = this.stick.style.top = '';
+    place(this.stick, SLOT.stick);
     this.knob.style.transform = '';
   }
 
@@ -296,6 +309,7 @@ export class TouchControls {
   private updateDrink(v: DrinkView) {
     const el = this.buttons.get('drink')!;
     el.hidden = !v.show;
+    this.noteContext('drink', v.show);
     if (!v.show || !v.flask || !v.liquid) {
       forgetButtonPress(this.tracks, this.input.touchHeld, 'drink');
       el.classList.remove('on');
@@ -305,16 +319,35 @@ export class TouchControls {
     el.style.setProperty('--liquid', palCss(v.liquid));
   }
 
+  /** Show or hide a contextual button; hiding it lets go of its press, showing it wakes the set. */
+  private showContext(a: Action, on: boolean) {
+    const el = this.buttons.get(a)!;
+    el.hidden = !on;
+    if (!on) { forgetButtonPress(this.tracks, this.input.touchHeld, a); el.classList.remove('on'); }
+    this.noteContext(a, on);
+  }
+
+  private noteContext(a: Action, on: boolean) {
+    if (on && !this.context.has(a)) this.presence.wake(performance.now());
+    if (on) this.context.add(a); else this.context.delete(a);
+  }
+
   update(g: Game, ctx: Context) {
-    const show = this.input.device === 'touch' && (ctx === 'play' || ctx === 'prompt');
+    const show = touchLayerShown(this.input.device, ctx);
     if (!show && this.tracks.size) this.clear();
     this.root.classList.toggle('show', show);
-    if (!show) return;
+    const now = performance.now();
+    // coming into play on a phone shows the set once, so the player sees where everything is
+    if (show && !this.shown) this.presence.wake(now);
+    this.shown = show;
+    if (!show) { this.presence.sleep(); return; }
+    this.root.classList.toggle('awake', this.presence.awake(now, this.tracks.size > 0));
     const p = g.player;
     // the miracle button (Kairos, #123) exists only while the practice is held; its ring is the charge
     const miracle = this.buttons.get('miracle')!;
     const kairos = g.inventory.has('kairos');
     miracle.hidden = !kairos;
+    this.noteContext('miracle', kairos);
     if (!kairos) forgetButtonPress(this.tracks, this.input.touchHeld, 'miracle');
     else {
       miracle.style.setProperty('--charge', String(g.kairosCharge() / KAIROS_CHARGES));
@@ -326,10 +359,11 @@ export class TouchControls {
     const key = `${p.hand.length}:${p.bombs}:${g.inventory.items.length}:${g.polarityNow}:${drink.key}:${power}`;
     if (key === this.key) return;
     this.key = key;
-    const thr = this.buttons.get('throw')!, bomb = this.buttons.get('bomb')!;
-    thr.classList.toggle('off', !p.hand.length);
+    const bomb = this.buttons.get('bomb')!;
+    // a contextual button is there only while it can act (issue #376): no block in hand, no throw; no seed, no bomb
+    this.showContext('throw', p.hand.length > 0);
     this.updateDrink(drink);
-    bomb.classList.toggle('off', p.bombs <= 0);
+    this.showContext('bomb', p.bombs > 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     // the bomb takes the loaded intention's colour: the white seed and its frame when positive, the black seed when negative
     bomb.dataset.polarity = g.polarityNow;
@@ -341,4 +375,9 @@ export class TouchControls {
     pol.style.setProperty('--pol', palCss(castPolarityToken(g.polarityNow)));
     pol.style.setProperty('--power', power);
   }
+}
+
+/** Put an element at its slot of the touch layout (src/input/touch-layout.ts, the one place for positions). */
+export function place(el: HTMLElement, slot: TouchSlot): void {
+  for (const [k, v] of Object.entries(slotStyle(slot))) el.style.setProperty(k.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`), v);
 }

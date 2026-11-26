@@ -3,7 +3,7 @@
 // generation, no physics, no randomness. A developer tool: English only, like the debug readout.
 //
 //   ?gallery                 every section
-//   ?gallery=materials|items|parts|enemies|pickups|missiles|bombs|chests|hud|palette|spirit
+//   ?gallery=materials|items|parts|enemies|pickups|missiles|bombs|chests|hud|palette|spirit|touch
 //   ?gallery=book            the Roots' wall panels, every page, both languages, every device (gallery/book.ts;
 //                            only by name: it is not part of `all`)
 //   ?gallery=sky-<part>      one sky section (docs/architecture/SKY.md §11): blocks, the five animals,
@@ -44,6 +44,7 @@ import { skyLionGallery } from './gallery/sky-lion';
 import { skyPandaGallery } from './gallery/sky-panda';
 import { skyTotalityGallery } from './gallery/sky-totality';
 import { spiritGallery } from './gallery/spirit';
+import { touchGallery } from './gallery/touch';
 
 /** What a gallery part gets to draw its section with. */
 export interface GalleryKit {
@@ -421,6 +422,7 @@ export function runGallery(params: URLSearchParams) {
   }
 
   const kit: GalleryKit = { root, head, row, fig, scaled, angle, only };
+  if (show('touch')) touchGallery(kit);
   for (const [name, draw] of SKY_SECTIONS) if (show(name)) draw(kit);
   if (show('bombs')) bombsGallery(kit);
   if (show('spirit')) spiritGallery(kit);

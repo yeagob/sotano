@@ -506,39 +506,40 @@
     #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--pal-ink-void); color: var(--pal-bone-paper); }
     #touch { position: fixed; inset: 0; display: none; touch-action: none; -webkit-touch-callout: none; }
     #touch.show { display: block; }
-    #touch .stick { position: fixed; left: calc(18vw + env(safe-area-inset-left)); top: 72vh; width: 26vmin; height: 26vmin; margin: -13vmin 0 0 -13vmin;
-      border-radius: 50%; box-shadow: inset 0 0 0 2px var(--ui-text-2); background: color-mix(in srgb, var(--ui-panel) 35%, transparent); opacity: .35; pointer-events: none; }
-    #touch .stick.on { opacity: .8; }
+    /* contextual touch controls (issue #376, DECISIONS §14.11): places and sizes come from src/input/touch-layout.ts
+       (inline styles). With no touch only the rest set (the tab button) shows; a touch wakes the rest, which fades out
+       300 ms after 3 s with no touch. A faded button still answers where it sits. */
+    #touch .stick, #touch .tb:not(.sys) { opacity: 0; transition: opacity 300ms ease-out; }
+    #touch.awake .tb:not(.sys) { opacity: 1; }
+    #touch .stick { position: fixed; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--ui-text-2); background: color-mix(in srgb, var(--ui-panel) 35%, transparent); pointer-events: none; }
+    #touch.awake .stick { opacity: .35; }
+    #touch .stick.on { opacity: .8; transition: none; }
+    @media (prefers-reduced-motion: reduce) { #touch .stick, #touch .tb { transition: none; } }
     #touch .stick i { position: absolute; left: 50%; top: 50%; width: 11vmin; height: 11vmin; margin: -5.5vmin 0 0 -5.5vmin; border-radius: 50%;
       background: var(--ui-text-2); box-shadow: 0 0 0 2px var(--ui-line); }
-    .tb { position: fixed; width: 15vmin; height: 15vmin; padding: 0; border: 0; color: var(--ui-text); font: bold 14px/1 system-ui, sans-serif;
+    .tb { position: fixed; width: max(48px, 15vmin); height: max(48px, 15vmin); padding: 0; border: 0; color: var(--ui-text); font: bold 14px/1 system-ui, sans-serif;
       background: var(--glyph) no-repeat center / 55% color-mix(in srgb, var(--ui-panel) 70%, transparent);
       box-shadow: inset 2px 2px 0 var(--ui-bevel-hi), inset -2px -2px 0 var(--ui-line), 0 0 0 1px var(--ui-line); image-rendering: pixelated;
       clip-path: polygon(8% 0, 92% 0, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0 92%, 0 8%); touch-action: none; }
     .tb.on { background-color: color-mix(in srgb, var(--ui-text) 25%, var(--ui-panel)); transform: scale(.94); }
-    .tb.off { opacity: .4; }
     .tb span { position: absolute; right: 6%; bottom: 6%; text-shadow: 1px 0 var(--ui-line), -1px 0 var(--ui-line), 0 1px var(--ui-line), 0 -1px var(--ui-line); }
-    .tb-cast { right: calc(5vw + env(safe-area-inset-right)); bottom: 8vh; width: 23vmin; height: 23vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 calc(6px * (1 + var(--power, 0))) var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line), 0 0 calc(4vmin * var(--power, 0)) calc(1vmin * var(--power, 0)) var(--pol, var(--ui-gold)); }
+    .tb-cast { background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 calc(6px * (1 + var(--power, 0))) var(--pol, var(--ui-gold)), 0 0 0 1px var(--ui-line), 0 0 calc(4vmin * var(--power, 0)) calc(1vmin * var(--power, 0)) var(--pol, var(--ui-gold)); }
     /* the ring thickens (6 → 12 px) and a glow of the same token widens with the loaded intention's damage (#111) */
     /* the fire button takes its intention's colour: a gold-lit panel for the good one, a charred one for the bad one, and a
        brighter tint while pressed (sotano-art: the polarity pair stays on the button too, DECISIONS §14.1 amendment #105) */
     .tb-cast[data-polarity="positive"] { background-color: color-mix(in srgb, var(--pol) 24%, var(--ui-panel)); }
     .tb-cast[data-polarity="negative"] { background-color: color-mix(in srgb, var(--pol) 16%, var(--ui-line)); }
     .tb-cast.on { background-color: color-mix(in srgb, var(--pol) 40%, var(--ui-panel)); }
-    .tb-jump { right: calc(5vw + 25vmin + env(safe-area-inset-right)); bottom: 6vh; }
-    .tb-throw { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 25vmin); }
-    .tb-bomb { right: calc(5vw + 42vmin + env(safe-area-inset-right)); bottom: 6vh; }
     /* the bomb button takes the loaded intention's colour: its frame and its count (the seed itself is swapped in touch.ts) */
     .tb-bomb { box-shadow: inset 0 0 0 4px var(--pol, var(--ui-line)), 0 0 0 1px var(--ui-line); }
     .tb-bomb[data-polarity="positive"] span { color: var(--pal-light-hot); }
     .tb-bomb[data-polarity="negative"] span { color: var(--pal-light-ember); }
-    /* drink: only while a flask is on top of the hand (touch.ts drinkView); the right thumb's column, one step above throw */
+    /* drink: only while a flask is on top of the hand (touch.ts drinkView); above jump in the right thumb's arc */
     .tb[hidden] { display: none; }
-    .tb-drink { right: calc(5vw + 8vmin + env(safe-area-inset-right)); bottom: calc(8vh + 41.5vmin); width: 13vmin; height: 13vmin; background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
-    .tb.sys { width: 11vmin; height: 11vmin; top: calc(10px + env(safe-area-inset-top)); }
-    .tb-inventory { right: calc(12px + 130px + 8px + env(safe-area-inset-right)); }
+    .tb-drink { background-color: color-mix(in srgb, var(--ui-panel) 92%, transparent); box-shadow: inset 0 0 0 4px var(--liquid, var(--ui-gold)), 0 0 0 1px var(--ui-line); }
+    .tb.sys { width: max(48px, 11vmin); height: max(48px, 11vmin); top: calc(10px + env(safe-area-inset-top)); }
     /* the return to fullscreen (#161): the top bar, left of the inventory; above the rotate card so it works in portrait too */
-    #fullscreen { --glyph: none; right: calc(12px + 130px + 8px + 11vmin + 8px + env(safe-area-inset-right)); z-index: 61;
+    #fullscreen { --glyph: none; z-index: 61;
       display: flex; align-items: center; justify-content: center; color: var(--ui-text); }
     #fullscreen[hidden] { display: none; }
     #fullscreen svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: square; }
