@@ -458,7 +458,7 @@ export class Player implements Actor {
     // the air's forces act only on a body off the ground (the collision's own ground test) and out of the water. Each is
     // integrated as part of the walk's own pull: it moves the velocity the walk settles at by force / rate, so pushing
     // straight against a force 1.1 times the body's own leaves a drift of 0.1 × the walk speed with it
-    if (airForces && !b.onGround && !swim) {
+    if (airForces && !b.onGround && !swim && !this.shielded) {
       const rate = STEER_RATE * k, q = this.airQuery;
       q.x = b.x; q.y = b.y; q.z = b.z; q.control = this.airControl = airControlForce(k, speed);
       const f = airForces.total(q, this.airForce);
