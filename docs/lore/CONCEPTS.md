@@ -15,6 +15,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 | **A miracle is a shift in perception** | `course-in-miracles` | Practices that change how a hit is perceived (Forgiveness, Nothing Personal); future: rooms that change when seen differently |
 | **Forgiveness as release** | `course-in-miracles` | **Forgiveness**: what touches you is hurt instead of you |
 | **Transcending limits** ("No hay nada imposible...", the owner's line) | `no-impossible` | **Dr. Launcher** (the Miracles path): its missile keeps its line where a thrown bomb would fall ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
+| **Walking slowly** ("El acto más revolucionario...", the owner's line) | `walk-slowly` | **Walk Slowly** (Body): crouched on the ground, the world slows to half ([WALK-SLOWLY.md](../design/built/practices/body/WALK-SLOWLY.md)) |
 | **The love explosion** (our own, reusable) | — (our own) | Built: a positive missile of **Dr. Launcher** ends in an area explosion that mends blocks, heals allies, warms projections and grows creatures instead of breaking, in the bomb's radius ([DR-LAUNCHER.md](../design/built/practices/milagros/DR-LAUNCHER.md)) |
 | **Don't take anything personally** | `four-agreements` | **Nothing Personal**: contact hits often slide off |
 | **Be impeccable with your word** | `four-agreements` | Future: intentions that never miss what they're aimed at |

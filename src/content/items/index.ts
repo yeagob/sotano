@@ -88,6 +88,7 @@ import posttraumatic from './posttraumatic';
 import bilateral from './bilateral';
 import ruleofthree from './ruleofthree';
 import spiralgrowth from './spiralgrowth';
+import walkslow from './walkslow';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -110,6 +111,7 @@ export const ITEMS: readonly ItemDef[] = [
   luciddream,
   solvecoagula, posttraumatic,
   bilateral, ruleofthree, spiralgrowth,
+  walkslow,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

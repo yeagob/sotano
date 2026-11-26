@@ -76,6 +76,7 @@ import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import { Kairos, KAIROS_CHARGES, KAIROS_HOMING, KAIROS_INTENTIONS, KAIROS_REACH, dealMarks, type KairosMark } from './kairos';
+import { worldFrame } from './time-scale';
 import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
@@ -3403,6 +3404,8 @@ export class Game {
   // simulate (stopTime). Docs: docs/design/built/practices/MIRACLES.md (Kairos).
   private kairos = new Kairos();
   private kairosBeatT = 0;
+  /** The world's speed in the last simulated frame: 0.5 while walking slowly (Walk Slowly), else 1 (game/time-scale.ts). */
+  timeScale = 1;
 
   /** The charge of the held Kairos (0 when it is not held). */
   kairosCharge(): number { return this.inventory.memoryFor('kairos').charge ?? 0; }
@@ -5327,11 +5330,16 @@ export class Game {
     inp.endFrame();
   }
 
-  private simulate(dt: number) {
+  private simulate(realDt: number) {
     // Kairos (#123): while time is stopped this is the only branch of the world: the view turns, the marks
-    // and the countdown run; the body, intentions, projections, elements, doors and timers do not
-    if (this.kairos.stopped) { this.stopTime(dt); return; }
+    // and the countdown run; the body, intentions, projections, elements, doors and timers do not.
+    // Walk Slowly: crouched on the ground, every system below gets half the step (game/time-scale.ts).
+    const p0 = this.player;
+    const frame = worldFrame(realDt, { kairosStopped: this.kairos.stopped, walkSlow: this.stats.get('walkSlow'), onGround: p0.body.onGround, crouching: p0.crouching });
+    if (frame.kind === 'stopped') { this.stopTime(frame.dt); return; }
     if (this.input.hit('miracle') && this.startKairos()) return;
+    const dt = frame.dt;
+    this.timeScale = frame.scale;
     this.time += dt;
     this.simFrame++;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;

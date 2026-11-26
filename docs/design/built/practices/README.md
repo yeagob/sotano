@@ -46,6 +46,7 @@ A note on reach, the four practices that give a little of it back, and the cut t
 | [Lion's Mane](body/LIONS-MANE.md) | Body | 2 | treasure rooms, boss rewards |
 | [Satori](body/SATORI.md) | Body | 4 | treasure rooms, vault rooms |
 | [Sleep Hygiene](body/SLEEP-HYGIENE.md) | Body | 2 | treasure rooms |
+| [Walk Slowly](body/WALK-SLOWLY.md) | Body (movement) | 4 | no pool: an achievement lays it |
 | [Aha Moment](mind/AHA-MOMENT.md) | Mind | 2 | treasure rooms |
 | [As a Man Thinketh](mind/AS-A-MAN-THINKETH.md) | Mind | 4 | treasure rooms, vault rooms |
 | [Chunking](mind/CHUNKING.md) | Mind | 3 | treasure rooms |
