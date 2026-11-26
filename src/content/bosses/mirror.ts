@@ -140,20 +140,14 @@ export const MIRROR_STATS: readonly StatName[] = [
 export const LIFE_PER_POINT = (2 * BASE_STATS.damage) / HEART;
 /** Points of your health one point of your damage is worth on its side: the inverse, 8/7 (your 3.5 is its 4). */
 export const POINTS_PER_DAMAGE = 1 / LIFE_PER_POINT;
-/** The Shadow's life from your health in points (hearts and layers) as you enter: the same hearts as yours. */
-export const shadowLife = (points: number) => Math.max(1, points) * LIFE_PER_POINT;
+/** Its life is this many times your health, converted (owner playtest, 2026-11: twice as long a fight). */
+export const LIFE_SCALE = 2;
+/** The Shadow's life from your health in points (hearts and layers) as you enter: your hearts, converted, times LIFE_SCALE. */
+export const shadowLife = (points: number) => Math.max(1, points) * LIFE_PER_POINT * LIFE_SCALE;
 
-// ── the cadence (SHADOW.md, "Not a stream"): it fires as you do, then lets the room breathe ──
-/** Shots in one volley, each the full fan of strands, at your own fire interval. */
-export const VOLLEY_SHOTS = 3;
-/** Seconds between the last shot of a volley and the tell of the next: drawn each time in [MIN, the fight's
- *  maximum], and the maximum drawn once per fight in MAX, both from the fight's own fork (`'boss', 'idle'`). */
-export const IDLE = { min: 1, max: [2, 4] } as const;
-/** The beat: seconds between its tell and the first shot of a volley, aimed where you stood when the tell began. */
-export const BEAT = 0.45;
 /** The base bolt speed of a projection's shot (blocks a second), times your shot speed: slower than yours, to be read. */
 const BOLT_SPEED = 9;
-/** Blocks its volley reaches: your intention's 0.5 s straight flight and its drop, times your range and shot speed. */
+/** Blocks its shots reach: your intention's 0.5 s straight flight and its drop, times your range and shot speed. */
 const RANGE = 12;
 const RUN = 1.45;
 const TRIAD_SHARE = 0.7;
@@ -166,7 +160,7 @@ export const DASH = { dist: 4.5, seconds: 0.25, cooldown: 1.2 } as const;
 export interface MirrorShot {
   /** Damage of a full strand to you, in points. */
   damage: number;
-  /** Seconds between two shots of a volley (your fire interval). */
+  /** Seconds between two of its shots (your fire interval): the only limit on how often it fires. */
   interval: number;
   /** Damage share of each strand of a shot, the full one first. */
   strands: number[];

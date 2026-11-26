@@ -2,11 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { BASE_STATS, computeStats, type StatMod } from '../src/core/stats';
 import { BOSSES, bossHp, bossLife } from '../src/content/bosses';
 import {
-  BEAT, IDLE, LIFE_PER_POINT, MIRROR_RULES, POINTS_PER_DAMAGE, VOLLEY_SHOTS, mirrorOf, shadowLife,
+  LIFE_PER_POINT, LIFE_SCALE, MIRROR_RULES, POINTS_PER_DAMAGE, mirrorOf, shadowLife,
 } from '../src/content/bosses/mirror';
 import { STILLNESS_TAG, shadowState } from '../src/content/bosses/shadow';
 import { MAT } from '../src/content/materials';
-import { RunRandom } from '../src/core/rng';
 import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb } from '../src/game/bomb';
 import { DebrisSystem } from '../src/physics/debris';
 import { ITEMS, ITEM_BY_ID } from '../src/content/items';
@@ -34,8 +33,6 @@ interface Opts {
   health?: number;
   /** Seconds between two of your hits on it (1 point each), 0: you never hit it. */
   hits?: number;
-  /** The fight's seed (its `rng` fork). */
-  seed?: number;
 }
 
 const still = (x: number) => () => ({ x, z: 0, vx: 0, vz: 0 });
@@ -60,7 +57,6 @@ function fight(o: Opts = {}) {
   const ctx = {
     dt: DT, target: you, near: you, practices: () => held, health: () => o.health ?? 48, bombs: () => (typeof o.bombs === 'function' ? o.bombs() : o.bombs ?? 0),
     placeBomb: (_e: Enemy, blast: { radius: number; blocks: number; damage: number }) => { placed.push({ t, blast }); },
-    rng: (_e: Enemy, site: string) => new RunRandom(o.seed ?? 1).fork('boss', site),
     dist: (_e: Enemy, p: { x: number; z: number }) => Math.hypot(p.x - e.body.x, p.z - e.body.z),
     toward: (_e: Enemy, p: { x: number; z: number }) => { const dx = p.x - e.body.x, dz = p.z - e.body.z, l = Math.hypot(dx, dz) || 1; return [dx / l, dz / l]; },
     bounds: () => [-10, -10, 9, 9], centre: () => [0, 0],
@@ -94,16 +90,6 @@ function fight(o: Opts = {}) {
   };
 }
 
-/** Shot times grouped into volleys: shots closer than a second belong to one. */
-function volleys(times: number[]): number[][] {
-  const out: number[][] = [];
-  for (const t of [...new Set(times)].sort((a, b) => a - b)) {
-    const last = out[out.length - 1];
-    if (last && t - last[last.length - 1] < 1) last.push(t); else out.push([t]);
-  }
-  return out;
-}
-
 describe('the Shadow: every practice is classified', () => {
   it('every practice in src/content/items has a rule, in the catalogue or not, and every rule is a practice', () => {
     const files = import.meta.glob<{ default?: { id?: string; effect?: string } }>('../src/content/items/*.ts', { eager: true });
@@ -134,15 +120,17 @@ describe('the Shadow: every practice is classified', () => {
 });
 
 describe('the Shadow: its life is your health at entry', () => {
-  it('its starting life equals your health, heart for heart, for two different healths', () => {
+  it('its starting life is your health at entry, converted and doubled, for two different healths', () => {
+    expect(LIFE_SCALE).toBe(2);
     for (const points of [48, 24]) {
       const lifeNow = bossLife(SHADOW, 9, points);
       expect(lifeNow).toBe(shadowLife(points));
-      // the same hearts as yours: a heart of yours (8 points) is 7 of its life
-      expect(lifeNow / (HEART * LIFE_PER_POINT)).toBe(points / HEART);
+      // twice your hearts: a heart of yours (8 points) is 7 of its life, times LIFE_SCALE
+      expect(lifeNow / (HEART * LIFE_PER_POINT)).toBe(LIFE_SCALE * points / HEART);
     }
     expect(bossLife(SHADOW, 9, 48)).not.toBe(bossLife(SHADOW, 9, 24));
-    expect(shadowLife(48)).toBe(42);
+    expect(shadowLife(48)).toBe(84);
+    expect(shadowLife(80)).toBe(140); // ten hearts
   });
 
   it('is exempt from the boss formula: any other boss keeps the life of its floor', () => {
@@ -150,8 +138,8 @@ describe('the Shadow: its life is your health at entry', () => {
     for (const b of BOSSES.filter(x => x.id !== 'shadow')) expect(bossLife(b, 9, 48), b.id).toBe(bossHp(9));
   });
 
-  it('both sides need the same hits: your base shots to end it equal its base strands to end you', () => {
-    for (const points of [48, 24, 72]) expect(shadowLife(points) / BASE_STATS.damage).toBeCloseTo(points / FALLBACK.shot.damage, 9);
+  it('you need LIFE_SCALE times the hits it needs: your base shots to end it, its base strands to end you', () => {
+    for (const points of [48, 24, 72]) expect(shadowLife(points) / BASE_STATS.damage).toBeCloseTo(LIFE_SCALE * points / FALLBACK.shot.damage, 9);
     expect(FALLBACK.shot.damage).toBeCloseTo(BASE_STATS.damage * POINTS_PER_DAMAGE, 9);
   });
 });
@@ -210,44 +198,24 @@ describe('the Shadow: it fights like a player', () => {
     expect(acts.bomb + acts.missile).toBeGreaterThan(0);
     expect(f.bombs().length + f.rains.length).toBe(acts.bomb + acts.missile);
     expect(shadowState(f.e)!.bombs).toBe(4 - acts.bomb - acts.missile);
-    expect(acts.volley).toBeGreaterThan(0);
+    expect(acts.shot).toBeGreaterThan(0);
   });
 
-  it('its fire is not continuous: between two volleys, at least a second and at most its seeded maximum', () => {
-    const f = fight({ held, bombs: 4, you: circling, hits: 0.8 });
-    f.run(40);
-    const groups = volleys(f.bolts.map(b => b.t));
-    expect(groups.length).toBeGreaterThan(3);
-    for (const g of groups) expect(g.length).toBeLessThanOrEqual(VOLLEY_SHOTS);
-    for (let k = 1; k < groups.length; k++) {
-      const gap = groups[k][0] - groups[k - 1][groups[k - 1].length - 1];
-      expect(gap, `gap before volley ${k}`).toBeGreaterThanOrEqual(IDLE.min + BEAT - 2 * DT);
+  it('no pause limit: it fires at your own fire interval while it moves, as you do', () => {
+    for (const build of [[], ['selfreliance', 'bilateral']]) {
+      const m = mirrorOf(build);
+      const f = fight({ held: build, you: circling });
+      f.run(20);
+      const times = [...new Set(f.bolts.map(b => b.t))].sort((a, b) => a - b);
+      const gaps = times.slice(1).map((t, k) => t - times[k]);
+      expect(times.length).toBeGreaterThan(20);
+      // most shots follow the last one by just its fire interval: no volley, no pause between volleys
+      const atInterval = gaps.filter(g => g <= m.shot.interval + 2 * DT).length;
+      expect(atInterval / gaps.length, build.join('+') || 'no practices').toBeGreaterThan(0.6);
+      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(m.shot.interval - 2 * DT);
+      // and it walks while it fires
+      expect(f.walked).toBeGreaterThan(20);
     }
-  });
-
-  it('each fight draws its longest pause once from its own fork, and every pause in [1 s, that maximum]', () => {
-    const most = new Set<number>();
-    for (const seed of [1, 2, 3, 4, 5]) {
-      const f = fight({ seed, you: still(6) });
-      f.run(60);
-      const m = shadowState(f.e)!.most;
-      expect(m).toBeGreaterThanOrEqual(IDLE.max[0]);
-      expect(m).toBeLessThanOrEqual(IDLE.max[1]);
-      most.add(m);
-      const groups = volleys(f.bolts.map(b => b.t));
-      expect(groups.length).toBeGreaterThan(8);
-      const gaps = groups.slice(1).map((g, k) => g[0] - groups[k][groups[k].length - 1]);
-      // the gap is the pause plus the tell; you stand still in its range, so nothing else delays it
-      for (const gap of gaps) {
-        expect(gap).toBeGreaterThanOrEqual(IDLE.min + BEAT - 2 * DT);
-        expect(gap).toBeLessThanOrEqual(m + BEAT + 2 * DT);
-      }
-      // the same seed, the same fight
-      const again = fight({ seed, you: still(6) });
-      again.run(60);
-      expect(again.bolts).toEqual(f.bolts);
-    }
-    expect(most.size).toBeGreaterThan(1);
   });
 
   it('the same build and the same moves give the same fight', () => {
@@ -284,7 +252,6 @@ describe('the Shadow: it fights like a player', () => {
     f.run(20);
     expect(f.bolts.length).toBeGreaterThan(0);
     expect(f.bolts.every(b => b.damage === 4)).toBe(true);
-    expect(f.bolts.reduce((a, b) => a + b.damage, 0) / 20).toBeLessThan(6);
   });
 
   it('the beam and the great cut replace its shot and are always telegraphed', () => {

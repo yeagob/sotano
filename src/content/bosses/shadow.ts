@@ -1,11 +1,10 @@
 import { pal } from '../palette';
 import { wobble } from '../../enemies/behaviours';
 import { evading, evasive, type Dodge } from '../../enemies/evade';
-import type { Rng } from '../../core/rng';
 import { BOMB_FUSE } from '../../game/bomb';
 import { defineEnemy, TX, type Behaviour, type Enemy, type EnemyCtx, type TargetView } from '../../enemies/types';
 import {
-  BEAM, BEAT, BLADE, DASH, GREATCUT, IDLE, MISSILE, RING, VOLLEY_SHOTS,
+  BEAM, BLADE, DASH, GREATCUT, MISSILE, RING,
   POINTS_PER_DAMAGE, bladeEvery, bladeReach, mirrorOf, shadowLife, strokeDamage, type Mirror,
 } from './mirror';
 
@@ -46,21 +45,17 @@ const AIR_JUMP = 0.25;
  *  (ACHIEVEMENTS §1). Turned to your side in the achievements, not destroyed. */
 export const STILLNESS_TAG = 'stillness';
 
-type Act = 'volley' | 'stroke' | 'bomb' | 'missile' | 'dash' | 'jump';
+type Act = 'shot' | 'stroke' | 'bomb' | 'missile' | 'dash' | 'jump';
 
 /** What it holds and its clocks. Taken the first time it acts: practices and bombs gained later change nothing. */
 interface Mind {
   mirror: Mirror;
-  /** The fight's own fork for its pauses, and the longest pause it draws this fight. */
-  rng: Rng; most: number;
   /** Bombs it carries (yours at entry); a bomb or a missile spends one. */
   bombs: number;
   /** Your health at entry, in points: the scale for "both healths". */
   yours: number;
-  /** Seconds before a volley or a heavy stroke may begin; the shots left in the volley under way and the seconds to the next. */
-  idle: number; shots: number; next: number;
-  /** Where the first shot of the volley under way goes: where you stood when its tell began. */
-  ax: number; ay: number; az: number;
+  /** Seconds before a shot or a heavy stroke may begin (its first breath, a stroke under way), and to its next shot. */
+  idle: number; next: number;
   fired: number;
   blade: number; bombT: number; missileT: number; dashT: number; jumpT: number; ringT: number;
   /** A dash under way: seconds left and its direction. */
@@ -82,13 +77,12 @@ function mindOf(e: Enemy, ctx: EnemyCtx): Mind {
   let h = minds.get(e);
   if (!h) {
     const mirror = mirrorOf(ctx.practices());
-    const rng = ctx.rng(e, 'idle');
     h = {
-      mirror, rng, most: IDLE.max[0] + rng.next() * (IDLE.max[1] - IDLE.max[0]), bombs: Math.max(0, Math.floor(ctx.bombs())), yours: Math.max(1, ctx.health()),
-      idle: FIRST_ECHO, shots: 0, next: 0, ax: 0, ay: 0, az: 0, fired: 0,
+      mirror, bombs: Math.max(0, Math.floor(ctx.bombs())), yours: Math.max(1, ctx.health()),
+      idle: FIRST_ECHO, next: 0, fired: 0,
       blade: FIRST_ECHO, bombT: FIRST_ECHO, missileT: FIRST_ECHO, dashT: 0, jumpT: 0, ringT: 0,
       dash: 0, dx: 0, dz: 0, air: 0, airLeft: mirror.airJumps, hp: e.hp, hurt: HURT, side: 1, sideT: STRAFE, seq: 0, ox: NaN, oz: NaN,
-      bomb: null, acts: { volley: 0, stroke: 0, bomb: 0, missile: 0, dash: 0, jump: 0 },
+      bomb: null, acts: { shot: 0, stroke: 0, bomb: 0, missile: 0, dash: 0, jump: 0 },
     };
     minds.set(e, h);
     e.speed = SPEED * mirror.move;
@@ -99,13 +93,11 @@ function mindOf(e: Enemy, ctx: EnemyCtx): Mind {
 /** The mirror of this Shadow (taken now if it has none yet). */
 export const mirrorFor = (e: Enemy, ctx: EnemyCtx): Mirror => mindOf(e, ctx).mirror;
 
-/** Bombs it still carries, how many times it took each action and this fight's longest pause (for the tests and the lab). */
-export const shadowState = (e: Enemy) => { const h = minds.get(e); return h ? { bombs: h.bombs, acts: { ...h.acts }, most: h.most } : null; };
+/** Bombs it still carries, and how many times it took each action (for the tests and the lab). */
+export const shadowState = (e: Enemy) => { const h = minds.get(e); return h ? { bombs: h.bombs, acts: { ...h.acts } } : null; };
 
 const did = (h: Mind, a: Act) => { h.acts[a]++; };
 
-/** The pause before its next volley or heavy stroke: at least a second, at most this fight's longest (seeded). */
-const pause = (h: Mind) => IDLE.min + h.rng.next() * (h.most - IDLE.min);
 
 /** Where you will be when a bolt reaches you (Eye Contact), or where you are. */
 function aimAt(e: Enemy, m: Mirror, you: TargetView): [number, number, number] {
@@ -175,8 +167,9 @@ function choose(e: Enemy, ctx: EnemyCtx, h: Mind, d: number): [Act | null, Act |
   const shotWeapon = m.weapon === 'intent' || m.weapon === 'blade';
   const nearBomb = !!h.bomb && Math.hypot(b.x - h.bomb.x, b.z - h.bomb.z) < m.bomb.radius + 0.5;
   const attacks: [Act, number][] = [];
-  if (h.shots === 0) {
-    if (!m.harmless && shotWeapon && h.idle <= 0 && d <= m.shot.range) attacks.push(['volley', 0.6 + (d >= 3 ? 0.15 : 0) - (hurt && behind ? 0.25 : 0)]);
+  {
+    // no limit on how often it fires but your own fire interval: it shoots as you do, on the move
+    if (!m.harmless && shotWeapon && h.idle <= 0 && h.next <= 0 && d <= m.shot.range) attacks.push(['shot', 0.75 - (hurt && behind ? 0.2 : 0)]);
     if (!m.harmless && m.weapon === 'blade' && h.blade <= 0 && d <= reach + 0.5) attacks.push(['stroke', 0.9]);
     if (!m.harmless && m.weapon === 'beam' && h.idle <= 0 && d <= BEAM.length) attacks.push(['stroke', 0.7]);
     if (!m.harmless && m.weapon === 'greatcut' && h.idle <= 0 && d <= GREATCUT.r + GREATCUT.grow * GREATCUT.live) attacks.push(['stroke', 0.75]);
@@ -213,15 +206,12 @@ function walk(e: Enemy, ctx: EnemyCtx, h: Mind, you: TargetView, d: number) {
   const radial = Math.max(-1, Math.min(1, (d - want) / 2));
   let wx = tx * radial - tz * h.side * 0.8, wz = tz * radial + tx * h.side * 0.8;
   const l = Math.hypot(wx, wz) || 1;
-  // it stands to aim through the tell of a volley, as you steady your hand: the opening it gives you
-  const k = h.shots === VOLLEY_SHOTS ? 0 : 1;
-  wx = wx / l * k; wz = wz / l * k;
-  e.wishX = wx; e.wishZ = wz;
+  e.wishX = wx / l; e.wishZ = wz / l;
 }
 
 /** Below a third of its health, if you stand still, it stops fighting and comes to stand beside you. */
-function yieldTo(e: Enemy, ctx: EnemyCtx, h: Mind, you: TargetView) {
-  h.shots = 0; e.pulse = 0;
+function yieldTo(e: Enemy, ctx: EnemyCtx, you: TargetView) {
+  e.pulse = 0;
   e.wishX = 0; e.wishZ = 0;
   const dx = you.x - e.body.x, dz = you.z - e.body.z, d = Math.hypot(dx, dz);
   // it has stopped fighting, not stopped living: it comes home, slowly (issue #314)
@@ -234,7 +224,7 @@ const fights: Behaviour = {
   name: 'mirrors',
   update(e: Enemy, ctx: EnemyCtx) {
     const h = mindOf(e, ctx), m = h.mirror, b = e.body, dt = ctx.dt;
-    for (const k of ['idle', 'blade', 'bombT', 'missileT', 'dashT', 'jumpT', 'ringT', 'sideT'] as const) h[k] -= dt;
+    for (const k of ['idle', 'next', 'blade', 'bombT', 'missileT', 'dashT', 'jumpT', 'ringT', 'sideT'] as const) h[k] -= dt;
     h.hurt += dt;
     if (h.bomb && (h.bomb.t -= dt) <= 0) h.bomb = null;
     if (e.hp < h.hp - 1e-6) {
@@ -252,11 +242,11 @@ const fights: Behaviour = {
 
     const self = ctx.near(e);
     const still = !!self && Math.hypot(self.vx ?? 0, self.vz ?? 0) < 0.2;
-    if (self && still && e.hp <= e.maxHp / 3) { yieldTo(e, ctx, h, self); return; }
+    if (self && still && e.hp <= e.maxHp / 3) { yieldTo(e, ctx, self); return; }
     e.timer = 0;
 
     const you = ctx.target(e);
-    if (!you) { e.wishX = 0; e.wishZ = 0; h.shots = 0; e.pulse = 0; return; }
+    if (!you) { e.wishX = 0; e.wishZ = 0; e.pulse = 0; return; }
     const d = ctx.dist(e, you);
     if (!Number.isNaN(h.ox)) {
       // the dodge it just made: it keeps going that way round you
@@ -266,29 +256,15 @@ const fights: Behaviour = {
     }
     if (h.sideT <= 0) { h.seq++; h.side = wobble(e.id, h.seq, 17) < 0.5 ? -1 : 1; h.sideT = STRAFE + wobble(e.id, h.seq, 23) * 2.5; }
 
-    // the volley under way: a tell, then your shots at your own interval
-    if (h.shots > 0) {
-      h.next -= dt;
-      const first = h.shots === VOLLEY_SHOTS;
-      if (first) e.pulse = Math.min(1, 1 - h.next / BEAT);
-      if (h.next <= 0) {
-        e.pulse = 0;
-        const [x, y, z] = first ? [h.ax, h.ay, h.az] : aimAt(e, m, you);
-        shoot(e, ctx, h, x, y, z);
-        h.shots--; h.next = m.shot.interval;
-        if (h.shots === 0) h.idle = pause(h);
-      }
-    }
-
     const [attack, motion] = choose(e, ctx, h, d);
-    if (attack === 'volley') {
-      h.shots = VOLLEY_SHOTS; h.next = BEAT;
-      [h.ax, h.ay, h.az] = aimAt(e, m, you);
-      ctx.cue(e, 'windup');
+    if (attack === 'shot') {
+      const [x, y, z] = aimAt(e, m, you);
+      shoot(e, ctx, h, x, y, z);
+      h.next = m.shot.interval;
     } else if (attack === 'stroke') {
       const took = stroke(e, ctx, m, you);
       if (m.weapon === 'blade') h.blade = Math.max(took, bladeEvery(m));
-      else h.idle = took + pause(h);
+      else h.idle = took;
     } else if (attack === 'bomb') bomb(e, ctx, h);
     else if (attack === 'missile') missile(e, ctx, h, you);
     if (attack) did(h, attack);

@@ -1,7 +1,6 @@
 // could care about goes back to the game through `EnemyHost`, which emits the events.
 
 import { fx } from '../core/fx';
-import type { Rng } from '../core/rng';
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -58,8 +57,6 @@ export interface EnemyHost {
   bombs(): number;
   /** A projection drops the player's bomb (EnemyCtx.placeBomb). */
   placeBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }): void;
-  /** A fresh RNG for one decision site of an enemy's fight (EnemyCtx.rng). */
-  rng(e: Enemy, site: string): Rng;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
   projectileHit(target: Actor, damage: number, thrower: number, from?: { x: number; z: number }): void;
   reflects?(target: Actor, x: number, y: number, z: number): boolean;
@@ -312,7 +309,6 @@ export class Enemies {
       health: () => host.health(),
       bombs: () => host.bombs(),
       placeBomb: (e, blast) => host.placeBomb(e, blast),
-      rng: (e, site) => host.rng(e, site),
       safe: (e, x, y, z) => this.safeCell(e, x, y, z),
       centre: e => { const rm = host.room(e.room); return [(rm.hx ?? rm.x0) + ROOM_W / 2, (rm.hz ?? rm.z0) + ROOM_D / 2]; },
       quiet: e => this.blockingIn(e.room) === 0,
