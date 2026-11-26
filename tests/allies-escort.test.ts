@@ -8,7 +8,7 @@ import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { ENEMY_BY_ID } from '../src/content/enemies';
 import { CREATURE_BY_ID } from '../src/content/creatures';
 import type { Actor } from '../src/entities/actors';
-import type { Enemy } from '../src/enemies/types';
+import { birthHp, type Enemy } from '../src/enemies/types';
 import { FlowField, type RoomArea } from '../src/enemies/flowfield';
 import { setScale } from '../src/entities/growth';
 import {
@@ -72,7 +72,7 @@ function rig(s: Script, escort: boolean) {
   let next = 10;
   const add = (def: string | EnemyDef, x: number, y: number, z: number, faction: Actor['faction'], room = 0) => {
     const d = typeof def === 'string' ? ENEMY_BY_ID.get(def) ?? CREATURE_BY_ID.get(def)! : def;
-    const e = en.spawn(d, next++, room, x, y, z, d.hp, d.speed, d.contactDamage, new Set(CREATURE_BY_ID.has(d.id) ? ['creature'] : []));
+    const e = en.spawn(d, next++, room, x, y, z, birthHp(d), d.speed, d.contactDamage, new Set(CREATURE_BY_ID.has(d.id) ? ['creature'] : []));
     e.spawning = 0; e.faction = faction;
     actors.push(e);
     return e;
