@@ -9,12 +9,12 @@ An **achievement** is a moment the game remembers between runs: a boss overcome,
 
 **Mandatory:** every time an achievement is added, changed or removed, or a reward (item, decoration or zone) is attached to one, the **register issue** is updated in the same change: the GitHub issue titled "Achievements register" (its number is written in section 9 once it exists; until then, the register issue, #363, the "Achievements register" issue). See section 9.
 
-Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVEMENTS.md) (the 47, the data model, the notice), [MASTERY](../../../docs/design/built/progression/MASTERY.md), [SAVE](../../../docs/design/built/progression/SAVE.md), [REWARDS](../../../docs/design/built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
+Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVEMENTS.md) (the 78, the data model, the notice), [MASTERY](../../../docs/design/built/progression/MASTERY.md), [SAVE](../../../docs/design/built/progression/SAVE.md), [REWARDS](../../../docs/design/built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
 
 ## 1. The owner's rules (binding)
 
 - **One achievement is one mastery level**, earned in any order, kept between runs. The level is the count of unlocked catalogue ids, **capped at 100**.
-- **47 exist (the 46 of #147 and #179, and "Made Omh", the final one of issue #180, which the completion percentage unlocks at 100%). The other 53 are pending in GitHub issue #179** and enter only when the owner defines them. **Never invent criteria**, never add a placeholder entry "to fill the slot". If an idea comes up, write it in #179 and ask.
+- **78 exist (the register is #363; the list is in ACHIEVEMENTS §1). The other 22 are pending in GitHub issue #179** and enter only when the owner defines them. **Never invent criteria**, never add a placeholder entry "to fill the slot". If an idea comes up, write it in #179 and ask.
 - **Every first time counts**, several in one run too.
 - **A boss has two achievements: destroyed and turned to your side.** A player who only converts gets only the conversion one. The Shadow's own ending (stillness) counts as conversion.
 - **A meditation counts when completed** (never the quick reward, never a cancel), **three times per meditation, counted across runs**, and only from a Sanctuary a Boundary opened (the Roots' chest or a vault's).
@@ -65,7 +65,7 @@ Only one the owner defined (issue #179). In one change:
    - the event row in ACHIEVEMENTS §2 and, if items may use it, `docs/architecture/ITEMS.md` (`sotano-items`).
 3. **The entry** in `ACHIEVEMENTS`, in its group, with a comment line if it opens a new group.
 4. **Two message keys in both languages** (`sotano-i18n`): `achievement.<id>.name` and `achievement.<id>.desc` in `src/i18n/locales/en.ts` and `es.ts`, beside the others. The description says plainly what to do ("Destroy Resistance: bring its health to zero."); the name says what it means (section 7).
-5. **Tests.** Raise the count in `tests/achievements.test.ts` ("holds the 47 achievements…"), and add one test that feeds the event and unlocks exactly this id and no other. A `times` entry: test that it needs that many events and keeps its count. A new boss or meditation in `src/content` breaks the tests that check `ACHIEVEMENT_BOSSES` and `ACHIEVEMENT_MEDITATIONS` against the game: add both boss entries (destroyed and converted) or the meditation entry with `times: 3`.
+5. **Tests.** Raise the count in `tests/achievements.test.ts` ("holds the 78 achievements…"), and add one test that feeds the event and unlocks exactly this id and no other. A `times` entry: test that it needs that many events and keeps its count. A new boss or meditation in `src/content` breaks the tests that check `ACHIEVEMENT_BOSSES` and `ACHIEVEMENT_MEDITATIONS` against the game: add both boss entries (destroyed and converted) or the meditation entry with `times: 3`.
 6. **The mastery step** of the new level, if the catalogue grows past the levels the table names (section 6).
 7. **Docs** (`sotano-docs`, `sotano-design`): the row in ACHIEVEMENTS §1, the count where it is stated, and #179 updated.
 

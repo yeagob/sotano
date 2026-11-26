@@ -4,7 +4,7 @@ How items are defined, stored and installed, and how they can affect anything (a
 
 This design went through a three-party review (engineer, architect, mediator); the critique, the ruling and what changed are in [reviews/items-architecture.md](../reviews/items-architecture.md).
 
-Code: [`src/items/`](../src/items) (the machinery), [`src/content/items/`](../src/content/items) (one file per item), [`src/content/synergies.ts`](../src/content/synergies.ts) (combinations and exceptions), [`src/game/events.ts`](../src/game/events.ts) (every place an item can step in).
+Code: [`src/items/`](../../src/items) (the machinery), [`src/content/items/`](../../src/content/items) (one file per item), [`src/content/synergies.ts`](../../src/content/synergies.ts) (combinations and exceptions), [`src/game/events.ts`](../../src/game/events.ts) (every place an item can step in).
 
 ## 1. The model in one paragraph
 
@@ -94,7 +94,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `luck` | Chance of a reward when a room is cleared (chests to come; Serendipity finds in bomb blasts) |
 | `dash` | 1 = a double tap of a direction, a double flick of the left stick or a swipe dashes 4.5 blocks that way (0 = no dash); `Player.startDash`, the gestures in `src/input/gestures.ts`, rules in [DASH](../design/built/practices/DASH.md) |
 | `run` | 1 = holding the run control walks 1.45 times as fast (0 = no running; crouching wins over it); `Player.walk`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
-| `crouch` | 1 = holding the crouch control makes the body a block shorter, its eye lower, the walk 0.45 times as fast, keeps it off ledges and halves projection contact (0 = no crouch); `Player.setStance`, `src/entities/stance.ts`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
+| `crouch` | 1 = holding the crouch control makes the body a block shorter, its eye lower, the walk 0.45 times as fast, keeps it off ledges and halves projection contact (0 = no crouch; Walk Slowly also gives 1); `Player.setStance`, `src/entities/stance.ts`, rules in [RUN-AND-CROUCH](../design/built/practices/RUN-AND-CROUCH.md) |
 | `lavaWalk` | Seconds of lava walking (0 = none; the practice gives 2 per copy, the stat caps at 6). While time is left, lava does not hurt the player (it is left out of the damage check), its surface is ground (`Game.lavaSurface`, read by the solid test of the frame) and wading in it is full speed (the 0.4 wade becomes 1). `Game.lavaWalkLeft` is the stat less the seconds stood in lava (`lavaSpent`, it runs down in lava and is whole again out of it). Intentions are still put out by lava (posttraumatic, [practices](../design/built/practices/emotion/POST-TRAUMATIC-GROWTH.md)) |
 | `twinCast` | Flag (0 or 1): the two hands take turns casting. `Player.castSide` flips after each shot and `Game.fire()` starts the shot from that side (`hands.ts` swings that arm); weapons that replace the shot swing from the next hand without taking a turn |
 | `recipes` | Flag (0 or 1): the Recipe Book opens. `Game.frame` reads it before the `recipes` action opens the screen on the book, `Hud.syncRecipesTab` shows the Recipes tab while it is 1, and `Game.act('tab-recipes')` checks it. Given by the Book of Secrets ([RECIPE-BOOK](../design/built/practices/RECIPE-BOOK.md)); not echoable (its only pool is `roots`) |

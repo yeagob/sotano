@@ -182,7 +182,7 @@ The owner approved these ids, names and events as a list. The names are the owne
 |---|---|---|---|---|---|
 | `tree.branches.all` | `branchPracticesAll` | Every Way Out | Todos los caminos | Hold the six practices of the branches of the giant tree in the same run. | Ten a la vez las seis prácticas de las ramas del gran árbol en la misma partida. |
 
-The owner says it "enables" Andar despacio (Camina Despacio, #340, item id `walk-slow`). That practice is not built here. The hook is built: at the moment the achievement fires, the game puts `walk-slow` on a pedestal at the centre of the branch story's hall, if the build has the item (`src/game/branch-gifts.ts`, BRANCHES.md). Two of the six practices, the double jump (#293) and the wall jump (#294), are built too (both merged in iteration 0.2.10), so the six can be held together.
+The owner says it "enables" Camina Despacio (#340, item id `walk-slow`). That practice is not built here. The hook is built: at the moment the achievement fires, the game puts `walk-slow` on a pedestal at the centre of the branch story's hall, if the build has the item (`src/game/branch-gifts.ts`, BRANCHES.md). Two of the six practices, the double jump (#293) and the wall jump (#294), are built too (both merged in iteration 0.2.10), so the six can be held together.
 
 ### The ending of illumination (1, issue #351)
 

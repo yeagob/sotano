@@ -45,7 +45,7 @@ The Triple Jump is not one of the six: it is the Leaves' gift (LEAVES.md) and th
 
 ## All six in one run
 
-The run holds the six branch practices at once, however each one was taken. At that moment the achievement **Every Way Out** (`tree.branches.all`, [ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md) §1) unlocks, and "Andar despacio" is laid. That is Camina Despacio (#340, item `walk-slow`, built on its own branch). It goes on a pedestal at the centre of the branch story's hall: the room where every branch starts and the top of the trunk's climb (#328's core; the owner left the room "to define" and expected the core). The practice and its effect (a time control while crouched) are not built here. Only the hook is: if the build has no `walk-slow` item, nothing is laid. Until the double jump and the wall jump are merged, nobody can hold all six.
+The run holds the six branch practices at once, however each one was taken. At that moment the achievement **Every Way Out** (`tree.branches.all`, [ACHIEVEMENTS](../../progression/ACHIEVEMENTS.md) §1) unlocks, and Camina Despacio is laid (#340, item `walk-slow`, built on its own branch). It goes on a pedestal at the centre of the branch story's hall: the room where every branch starts and the top of the trunk's climb (#328's core; the owner left the room "to define" and expected the core). The practice and its effect (a time control while crouched) are not built here. Only the hook is: if the build has no `walk-slow` item, nothing is laid. Until the double jump and the wall jump are merged, nobody can hold all six.
 
 ## Decorative limbs
 
@@ -64,4 +64,4 @@ Tested in `tests/tree-climb.test.ts`:
 - The pieces at run time: a slide carries its rider, a crumble goes and comes back, never inside a body, and the pairs alternate and reset.
 - The gifts lie at the ball centres, and the hook's spot is open floor.
 
-Code: `src/world/branches.ts` (the six plans, their layouts, `BRANCH_PRACTICES`), `src/world/course.ts` (the moving, giving-way, alternating and pulsing pieces at run time), `src/world/tree.ts` (the limbs, ledges, still pieces, balls and holes), `src/game/branch-gifts.ts` (the gifts, the moment, the "Andar despacio" hook), `src/game/game.ts` (the courses before the body moves, the gifts at run start, the achievement's event).
+Code: `src/world/branches.ts` (the six plans, their layouts, `BRANCH_PRACTICES`), `src/world/course.ts` (the moving, giving-way, alternating and pulsing pieces at run time), `src/world/tree.ts` (the limbs, ledges, still pieces, balls and holes), `src/game/branch-gifts.ts` (the gifts, the moment, the Camina Despacio hook), `src/game/game.ts` (the courses before the body moves, the gifts at run start, the achievement's event).

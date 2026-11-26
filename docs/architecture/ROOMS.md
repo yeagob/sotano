@@ -1,6 +1,6 @@
 # Rooms and floors
 
-How a floor is put together: a procedural **plan** (which room goes where) filled with hand-made **room templates** (what's inside each room), joined by doors. Code: [`src/world/floorplan.ts`](../src/world/floorplan.ts), [`src/world/floor.ts`](../src/world/floor.ts), [`src/content/rooms.ts`](../src/content/rooms.ts).
+How a floor is put together: a procedural **plan** (which room goes where) filled with hand-made **room templates** (what's inside each room), joined by doors. Code: [`src/world/floorplan.ts`](../../src/world/floorplan.ts), [`src/world/floor.ts`](../../src/world/floor.ts), [`src/content/rooms.ts`](../../src/content/rooms.ts).
 
 ## 1. The plan
 

@@ -18,7 +18,7 @@ The entrance omen lasts 1.5 seconds in total. The design asked for 2.5 seconds (
 
 ## 3. Health
 
-A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The Shadow is exempt: its life is your health as it materialises ([SHADOW](SHADOW.md)). The range each floor can give:
+A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor; the Shadow is exempt, its life is yours, see [The Shadow](SHADOW.md)) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The Shadow is exempt: its life is your health as it materialises ([SHADOW](SHADOW.md)). The range each floor can give:
 
 | Floor | Life |
 |---|---|

@@ -19,7 +19,7 @@ The weights are the proposal of issue #180, unchanged (they add up to 100). The 
 |---|---|---|---|---|
 | Floors | 25 | the floor was entered for the first time, on any of three routes | 22: the descent 10, the giant tree 7, the sky 5 | `LEVELS` (`0` to `9`), `TREE_STORIES` (`tree.<story>`), `DEITIES` (`sky.<animal>`) |
 | Bosses | 20 | the boss was destroyed or turned to your side (either achievement unlocked) | 14 | `ACHIEVEMENT_BOSSES` |
-| Achievements | 20 | the achievement is unlocked | 46 | `ACHIEVEMENTS`, without `completion.full` (§8) |
+| Achievements | 20 | the achievement is unlocked | 77 | `ACHIEVEMENTS`, without `completion.full` (§8) |
 | Practices | 15 | the practice was held at least once | 46 | `ITEMS` |
 | Bestiary | 10 | the creature, presence or sky creature was met; a projection only when every one of its six variations was seen (issue #360) | 76 (the 40 projections need 240 variations) | see below |
 | Recipes | 5 | the potion or meal was made at least once | 27 | `POTION_IDS` (twenty-five potions, the Echo counted once whatever practice it carries, and two meals) |
