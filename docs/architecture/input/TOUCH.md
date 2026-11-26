@@ -27,7 +27,7 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 | pause | none of its own: the menu is the screen the tab button opens |
 | restart | "New run" on the menu tab, "Begin again" on the death screen |
 | book | "Download the book" on the pause card or the death screen (at 100%) |
-| confirm | tap a Presence offer button; tap anywhere to dismiss other banners; "Tap to play" on the menu tab |
+| confirm | tap a Presence offer button; tap anywhere to dismiss other banners; on a practice card, tap its "Tap to continue" line or tap outside it (the release decides, a drag never closes it: #375); "Tap to play" on the menu tab |
 | back | no separate binding for offers: tap Keep to decline |
 
 References: Minecraft's pocket edition (left joystick, look by dragging on the right, jump at the lower right, tap to place), Noita (fire held while you aim), Isaac (one button per consumable, a glance tells you what you have).
@@ -46,7 +46,7 @@ The tab button opens the screen (the same one Esc and Tab open on the keyboard, 
 
 ## 4. What leaves the screen
 
-The phone screen keeps only what matters every second: hearts, counters, the polarity ring on the cast button, the minimap (130 px), the hand slots (smaller). The item bar is hidden: the tab button shows the count and opens the screen. Banners sit higher and narrower; toasts higher. The menu tab lays the controls out in two columns; the practices take the whole screen with a large ✕.
+The phone screen keeps only what matters every second: hearts, counters, the polarity ring on the cast button, the minimap (130 px), the hand slots (smaller). The item bar is hidden: the tab button shows the count and opens the screen. Banners sit higher and narrower; toasts higher. A practice card takes the touch on itself: its text scrolls with a vertical drag (`touch-action: pan-y`), and the drag never reaches the game (#375). The menu tab lays the controls out in two columns; the practices take the whole screen with a large ✕.
 
 ## 5. Landscape, fullscreen, safe areas
 

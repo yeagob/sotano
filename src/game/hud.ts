@@ -36,6 +36,7 @@ import { PHASE_WARN_S } from './phase';
 import { hurtEdge } from './hurt-feedback';
 import type { Carried } from '../entities/player';
 import { CONTROL_ROWS, type Device } from '../input/bindings';
+import { practiceReleaseCloses } from '../input/gestures';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
@@ -174,6 +175,8 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
+  /** The press on the practice card in progress (#375): its pointer, where it started, and how far it moved. */
+  private press: { id: number; x: number; y: number; onCard: boolean; reach: number; path: number } | null = null;
   private lastCard: CardSpec | null = null;
   private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText; answers?: OfferAnswers } | null = null;
   /** The key of the held-item label last drawn (the flask in hand and its language), so it is not redrawn each frame. */
@@ -255,6 +258,13 @@ export class Hud {
       if ((e.target as HTMLElement).closest('[data-lang], .seed, #graphics')) return;
       this.onAct?.('resume');
     });
+    // the practice card closes on the release of a tap, never on a press (#375, practiceReleaseCloses)
+    addEventListener('pointerdown', e => this.practicePress(e), true);
+    addEventListener('pointermove', e => this.practiceMove(e), true);
+    addEventListener('pointerup', e => this.practiceRelease(e), true);
+    addEventListener('pointercancel', () => { this.press = null; }, true);
+    // with the pointer locked, a wheel targets the canvas, not the card: the card still scrolls
+    addEventListener('wheel', e => { if (this.practiceOpen && !this.bannerEl.contains(e.target as Node)) this.scrollPractice(e.deltaY); }, { passive: true });
     // capture phase, like the seed: choosing a language must not also capture the mouse
     addEventListener('mousedown', e => {
       const b = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-lang]');
@@ -889,6 +899,7 @@ export class Hud {
     this.lastPresenceOffer = null;
     this.lastPresenceChoice = null;
     delete this.bannerEl.dataset.offer;
+    delete this.bannerEl.dataset.practice;
     this.bannerEl.removeAttribute('role');
     this.bannerEl.removeAttribute('aria-modal');
     this.bannerEl.removeAttribute('aria-labelledby');
@@ -901,6 +912,7 @@ export class Hud {
     this.lastCard = null;
     this.clearPresenceOfferState();
     this.renderBanner(def, changes, synergies);
+    this.bannerEl.dataset.practice = 'true';
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
     this.bannerEl.classList.add('show');
@@ -922,6 +934,37 @@ export class Hud {
       `<p class="effect">${esc(fill(tx.effect, controlParams(activeDevice())))}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
       `${lines.concat(syn).join('')}<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+  }
+
+  /** The practice card (the item banner) is on screen: its text scrolls, and a tap's release closes it (#375). */
+  get practiceOpen() { return this.bannerOpen && this.lastBanner !== null; }
+
+  /** Scrolls the practice card's text by `dy` pixels: the keyboard, the pad stick, a wheel the card does not get. */
+  scrollPractice(dy: number) {
+    this.bannerEl.querySelector<HTMLElement>('.ribbon')?.scrollBy({ top: dy });
+  }
+
+  private practicePress(e: PointerEvent) {
+    if (!this.practiceOpen) return;
+    this.press = { id: e.pointerId, x: e.clientX, y: e.clientY, onCard: this.bannerEl.contains(e.target as Node), reach: 0, path: 0 };
+  }
+
+  private practiceMove(e: PointerEvent) {
+    const p = this.press;
+    if (!p || p.id !== e.pointerId) return;
+    p.reach = Math.max(p.reach, Math.hypot(e.clientX - p.x, e.clientY - p.y));
+    // a locked pointer keeps its position: only the movement tells how far a mouse went
+    p.path += Math.hypot(e.movementX, e.movementY);
+  }
+
+  private practiceRelease(e: PointerEvent) {
+    const p = this.press;
+    this.press = null;
+    if (!p || p.id !== e.pointerId || !this.practiceOpen) return;
+    const target = e.target as Element | null;
+    const endedOnCard = this.bannerEl.contains(target as Node);
+    const endedOnClose = endedOnCard && !!target?.closest?.('.dismiss');
+    if (practiceReleaseCloses({ startedOnCard: p.onCard, endedOnCard, endedOnClose, travel: Math.max(p.reach, p.path) })) this.confirmBanner();
   }
 
   /** Information banners stay until the player clicks (owner rule). */

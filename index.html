@@ -209,6 +209,10 @@
       100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
     @media (prefers-reduced-motion: reduce) { #banner.show { animation: none; opacity: 1; transform: translate(-50%, 0); } }
     #banner .dismiss { margin: 8px 0 0; font-size: 14px; color: var(--ui-faded); text-align: right; }
+    /* the practice card (#375): it takes the pointer, its text scrolls (touch pans it, the wheel and the keys scroll it),
+       and a drag never reaches the game or closes it */
+    #banner[data-practice="true"] { pointer-events: auto; }
+    #banner[data-practice="true"] .ribbon { max-height: 72vh; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
     /* the kicker of an achievement card: a short line above the name, with a gold diamond (ACHIEVEMENTS §4) */
     #banner .kicker { display: block; font-style: normal; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, var(--c)); }
     #banner .kicker::before { content: '\25C6  '; }
