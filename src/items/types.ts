@@ -68,7 +68,7 @@ export interface ItemApi {
   /** Turn the connected cells of one fluid (`from`) into another (`to`), breadth-first in the room of (x, y, z), nearest
    *  first, up to `cap` cells. Levels and the falling bit stay; a source stays a source. Returns the cells converted; 0 when
    *  nothing was (not that fluid there, no room, or already one conversion this frame); -1 when a negative conversion into
-   *  lava is refused because the player's body touches the section and `lavaWalk` is below 1. `source` names the practice. */
+   *  lava is refused because the player's body touches the section and no `lavaWalk` time is left. `source` names the practice. */
   convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, source: string): number;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
@@ -131,9 +131,18 @@ export function hook<K extends keyof GameEvents>(
   return { event, fn, ...opts };
 }
 
+/** The stat modifiers one held copy of an effect adds: its `copyStats` entry when it has them, else its `stats` for every copy.
+ *  `index` is the copy's place in the order it was gained (0 is the first copy). */
+export function copyMods(e: { stats?: StatModSpec[]; copyStats?: StatModSpec[][] }, index = 0): StatModSpec[] {
+  return e.copyStats ? e.copyStats[index] ?? [] : e.stats ?? [];
+}
+
 /** The part shared by items and synergies. */
 export interface Effect {
   stats?: StatModSpec[];
+  /** Stat modifiers per held copy, by the order the copies were gained: copy k adds `copyStats[k]`, and a copy past the
+   *  list adds nothing. When set it replaces `stats` (the Triple Jump: the second copy adds one air jump, a third adds none). */
+  copyStats?: StatModSpec[][];
   hooks?: HookSpec<any>[];
   /** Hooks to switch off while this is active, as "itemId.hookId". This is where exceptions live. */
   suppress?: string[];

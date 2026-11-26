@@ -27,7 +27,7 @@ export const ES: Catalog = {
     'starmap.crown': 'El mapa estelar de la copa',
     'starmap.floor.sub': 'Las salas son estrellas; las puertas que has visto las unen',
     'starmap.crown.unread': 'La copa vista desde arriba. El Lector de estrellas aún no ha leído sus estrellas para ti',
-    'starmap.crown.read': 'La copa vista desde arriba. El Lector de estrellas leyó sus estrellas: cada una te lleva a la siguiente',
+    'starmap.crown.read': 'La copa vista desde arriba. El Lector de estrellas leyó sus estrellas para ti',
     'starmap.crown.nostars': 'La copa vista desde arriba. Sus estrellas aún no han salido: sube más',
     'starmap.close': 'M o Esc lo cierra',
     'starmap.close.pad': 'Vista o B lo cierra',
@@ -1000,7 +1000,7 @@ export const ES: Catalog = {
     'stat.dash': 'Impulso',
     'stat.run': 'Correr',
     'stat.crouch': 'Agacharse',
-    'stat.lavaWalk': 'Caminar sobre lava',
+    'stat.lavaWalk': 'Tiempo caminando sobre lava',
     'stat.bombRadius': 'Radio de bomba',
     'stat.bombDamage': 'Potencia de bomba',
     'stat.twinCast': 'Turnos de manos',
@@ -1026,7 +1026,6 @@ export const ES: Catalog = {
     'unit.dashOn': 'doble toque',
     'unit.runOn': 'mantén para correr',
     'unit.crouchOn': 'mantén para agacharte',
-    'unit.lavaWalkOn': 'sí',
     'unit.on': 'sí',
     'unit.off': 'no',
     'unit.alternate': 'alternan',
@@ -1647,7 +1646,7 @@ export const ES: Catalog = {
       'triple-jump': {
         name: 'Triple salto',
         description: 'Subir no se hace de un solo salto. Cada salto llega más alto que el anterior, y el último te lleva adonde ningún paso solo alcanzaba.',
-        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Ningún salto sube más de 16 bloques.',
+        effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Una segunda copia añade un salto más, que sube 16×, el doble del anterior. Una tercera copia no añade nada.',
         inspiredBy: 'Atletismo: el triple salto (un deporte, su nombre genérico)',
       },
       occamsrazor: {
@@ -1672,7 +1671,7 @@ export const ES: Catalog = {
       posttraumatic: {
         name: 'Crecimiento postraumático',
         description: 'Hay quien sale de un mal momento con más de lo que tenía antes: un cuidado más hondo por los demás, una idea más clara de lo que importa, una fuerza que no sabía que tenía. La herida queda, y puede volverse suelo.',
-        effect: 'La lava nunca te daña: caminas sobre su superficie y la atraviesas a toda velocidad. Tus intenciones se apagan igual en ella.',
+        effect: 'Camina sobre la lava 2 segundos por copia, hasta 6 segundos; después te quema como siempre. El tiempo vuelve cuando sales de ella. Tus intenciones se apagan igual en ella.',
         inspiredBy: 'El crecimiento postraumático de Tedeschi y Calhoun (1996)',
       },
       lionsmane: {

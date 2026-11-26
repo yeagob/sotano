@@ -7,7 +7,7 @@ import type { Input } from '../src/input/input';
 describe('the jump numbers (SKY.md §8, §9)', () => {
   it('keeps the player constants', () => {
     expect([WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE]).toEqual([4.6, 28, 8.4, 0.35, 0.1]);
-    expect(LADDER).toEqual([1, 2, 8]);
+    expect(LADDER).toEqual([1, 2, 8, 16]);
     expect(velocity(0)).toBeCloseTo(8.4, 9);
     expect(velocity(1)).toBeCloseTo(8.4 * Math.SQRT2, 9);
   });
@@ -31,7 +31,8 @@ describe('the jump numbers (SKY.md §8, §9)', () => {
     for (const dy of [3.78, 3.79, 4, 10]) expect(flight(dy, 2)).toBeUndefined();
     expect(flight(13.86, 3)).toBeUndefined();
     expect(flight(0, 0)).toBeUndefined();
-    expect(flight(0, 4)).toBeUndefined();
+    expect(flight(0, 4)!).toBeGreaterThan(flight(0, 3)!);
+    expect(flight(0, 5)).toBeUndefined();
   });
 
   it('flight shrinks as the rise grows and grows with every jump of the ladder', () => {

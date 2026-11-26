@@ -24,7 +24,7 @@ const FLOOR: FloorInput = {
 const CROWN: CrownStarMap = {
   kind: 'crown', sx: WORLD_SIZE.sx, sz: WORLD_SIZE.sz, centre: [WORLD_SIZE.sx >> 1, WORLD_SIZE.sz >> 1], trunk: 34, crown: [54, 36],
   leaves: { x0: LEAVES.x0, z0: LEAVES.z0, w: LEAVES.w, d: LEAVES.d }, stair: [69, 40],
-  pads: [{ x: 60, z: 30, to: 1, up: false }, { x: 80, z: 20, to: 2, up: false }, { x: 100, z: 60, to: 0, up: true }], read: false, here: [70, 40],
+  pads: [{ x: 60, z: 30, up: false }, { x: 80, z: 20, up: false }, { x: 100, z: 60, up: true }], read: false, here: [70, 40],
 };
 
 const hexes = (svg: string) => [...svg.matchAll(/fill="(#[0-9A-Fa-f]{6})"/g)].map(m => m[1].toUpperCase());
@@ -60,9 +60,9 @@ describe('the star map: the floor as a constellation', () => {
 });
 
 describe('the star map: the crown from above', () => {
-  it('draws the Leaves, the stair and the stars; the chain of doors only once the Star-reader has read it', () => {
+  it('draws the Leaves, the stair and the stars, with no links between the stars (the pads carry no teleport, #325)', () => {
     const unread = starMapSvg(CROWN), read = starMapSvg({ ...CROWN, read: true });
-    expect(read.length).toBeGreaterThan(unread.length);
+    expect(read).toBe(unread);
     for (const h of hexes(read)) expect(tokens.has(h), h).toBe(true);
     expect(legendRows(CROWN).map(r => r.key)).toEqual(['starmap.legend.you', 'starmap.legend.leaves', 'starmap.legend.stair', 'starmap.legend.pad', 'starmap.legend.padUp']);
     expect(starMapHtml(CROWN, 'keyboard')).toContain(EN.messages['starmap.crown.unread']);

@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import type { Input } from '../input/input';
 import { moveBody, type Body } from '../physics/voxel-collide';
-import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER } from '../physics/jump';
+import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER, STEER_RUNG } from '../physics/jump';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
@@ -28,8 +28,6 @@ const SWIM_G = 0.2, SINK = 1.5, SWIM_UP = 3.4, SWIM_OUT = 5.2, WADE_JUMP = 0.7, 
 /** An air jump is refused when ground lies this close below the feet: the press waits in the buffer
  *  and becomes a ground jump on landing (SKY.md §9). */
 export const AIR_JUMP_CLEARANCE = 0.6;
-/** No jump rises higher than this, whatever the practices (SKY.md §9: the third jump's cap). */
-export const APEX_CAP = 16;
 /** How fast an external push fades, per second: on the ground, on ice, and in the air or water. */
 const PUSH_DRAG = 8, PUSH_DRAG_ICE = 1, PUSH_DRAG_AIR = 2;
 
@@ -380,7 +378,7 @@ export class Player implements Actor {
     const b = this.body;
     if (b.onGround) this.airStep = 0;
     // the third jump of the ladder steers fully in the air, and adds no forward speed (SKY.md §9)
-    const air = this.airStep >= LADDER.length - 1 ? 1 : AIR_CONTROL;
+    const air = this.airStep >= STEER_RUNG ? 1 : AIR_CONTROL;
     // on ice you keep sliding: far less grip to start, turn or stop
     const k = swim ? SWIM_CONTROL : b.onGround ? (medium.slippery ? ICE_GRIP : 1) : air;
     const blend = 1 - Math.exp(-14 * k * dt);
@@ -414,14 +412,14 @@ export class Player implements Actor {
       b.vy = Math.max(b.vy - GRAVITY * dt, SWIM_OUT * Math.sqrt(jumpStat));
     } else {
       if (this.jumpBuffer > 0 && this.coyote > 0) {
-        const v = hooks.jump(capped(JUMP_V * Math.sqrt(jumpStat) * (fluid ? Math.sqrt(WADE_JUMP) : 1)), 0);
+        const v = hooks.jump(JUMP_V * Math.sqrt(jumpStat) * (fluid ? Math.sqrt(WADE_JUMP) : 1), 0);
         if (v !== null) b.vy = v;
         this.jumpBuffer = 0; this.coyote = 0;
       } else if (this.jumpBuffer > 0 && this.airStep < Math.floor(stats.airJumps) && !this.float && !this.groundNear(solid)) {
         // an air jump: the next step on the ladder (2×, then 8× the height of a ground jump)
         const step = Math.min(this.airStep + 1, LADDER.length - 1);
         this.airStep++;
-        const v = hooks.jump(capped(JUMP_V * Math.sqrt(jumpStat * LADDER[step])), this.airStep);
+        const v = hooks.jump(JUMP_V * Math.sqrt(jumpStat * LADDER[step]), this.airStep);
         if (v !== null) b.vy = v;
         this.jumpBuffer = 0;
       }
@@ -448,7 +446,3 @@ export class Player implements Actor {
     return false;
   }
 }
-
-/** The take-off speed that rises exactly `APEX_CAP` blocks: no jump leaves faster. */
-const V_CAP = Math.sqrt(2 * GRAVITY * APEX_CAP);
-function capped(v: number): number { return Math.min(v, V_CAP); }
