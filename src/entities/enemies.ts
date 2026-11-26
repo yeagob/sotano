@@ -454,7 +454,7 @@ export class Enemies {
       const from = { x: b.x, y: b.y, z: b.z };
       moveBody(e.ghost ? NO_SOLID : host.solid, b, dt, walls);
       // an ally on the ground never goes over a ledge deeper than its step (issue #327); a hostile still can
-      if (wasGround && !e.ghost && e.flyY < 0 && this.escortHost && isAlly(e)) holdLedge(host.solid, b, from, stepOf(e));
+      if (wasGround && !e.ghost && e.flyY < 0 && this.escortHost && isAlly(e)) holdLedge(host.solid, b, from, this.climbStep(e));
       if (e.spec.breaks && b.onGround && !wasGround) this.crackBelow(e);
       const blockedX = Math.abs(wantX) > 0.05 && b.vx === 0, blockedZ = Math.abs(wantZ) > 0.05 && b.vz === 0;
       if (b.onGround && (blockedX || blockedZ)) {
@@ -745,6 +745,12 @@ export class Enemies {
     e.wishX = 0; e.wishZ = 0;
   }
 
+  /** The tallest step between cells, up or down: the tier's climb (#338), or two for an ally of a climber kind (#327).
+   *  The flow field routes by it and an ally's ledge guard allows the same drop, so the two never disagree. */
+  private climbStep(e: Enemy): number {
+    return Math.max(climbOf(e.climb ?? 0), this.escortHost && isAlly(e) ? stepOf(e) : 1);
+  }
+
   /** Flow-field direction inside the enemy's room (one field per room and target); straight line otherwise. */
   private toward(e: Enemy, t: TargetView): [number, number] {
     const b = e.body, tx = t.x, tz = t.z;
@@ -757,8 +763,7 @@ export class Enemies {
     const you = this.escortHost && isAlly(e) ? this.escortHost.player() : null;
     const soft = you && you.room === e.room && you.id !== t.id ? you.body : null;
     const pcx = soft ? Math.floor(soft.x) : 0, pcz = soft ? Math.floor(soft.z) : 0;
-    // the tallest step between cells: the tier's climb (#338), or two for an ally of a climber kind (#327)
-    const climb = Math.max(climbOf(e.climb ?? 0), this.escortHost && isAlly(e) ? stepOf(e) : 1);
+    const climb = this.climbStep(e);
     const key = `${e.room}:${t.id}:${e.def}:${reach}:${climb}${soft ? ':ally' : ''}`;
     let f = this.flows.get(key);
     if (!f) {
