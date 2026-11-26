@@ -1130,6 +1130,8 @@ const messages = {
   'achievement.boss.many-faces.converted.desc': 'Turn the Many Faces to your side with good intentions.',
   'achievement.boss.shadow.converted.name': 'Coming Home',
   'achievement.boss.shadow.converted.desc': 'Turn the Shadow to your side, or stay still beside it until it comes home.',
+  'achievement.boss.shadow.max-difficulty.name': 'Face to Face',
+  'achievement.boss.shadow.max-difficulty.desc': 'Overcome the Shadow at the highest difficulty: mastery level 99 or more.',
   'achievement.meditation.ground.name': 'Rooted',
   'achievement.meditation.ground.desc': 'Complete the Grounding meditation three times.',
   'achievement.meditation.dusk.name': 'Lanterns at Dusk',

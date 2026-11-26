@@ -4,7 +4,8 @@
 //
 // An entry says which event may unlock it (`on`), the payload fields that must match (`where`; a list means any
 // of its values) and how many matching events it needs across runs (`times`, default 1). A boss has two entries,
-// `destroyed` and `converted`; the Shadow's `converted` also takes the stillness ending (`how: 'stillness'`).
+// `destroyed` and `converted`; the Shadow's `converted` also takes the stillness ending (`how: 'stillness'`). The Shadow
+// has a third, overcome at the maximum difficulty (#353).
 
 /**
  * The events the catalogue listens to, all declared in GameEvents (game/events.ts): `pageReached` (the current page of the
@@ -78,6 +79,11 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'boss.impostor.converted', on: 'bossOvercome', where: { boss: 'impostor', how: 'converted' } },
   { id: 'boss.many-faces.converted', on: 'bossOvercome', where: { boss: 'many-faces', how: 'converted' } },
   { id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } },
+
+  // The Shadow at the maximum difficulty (#353): overcome in any way (destroyed, converted or stillness) in a run carved
+  // at mastery level 99 or more (owner: from 99 the maximum counts, MAX_DIFFICULTY_FROM in enemies/difficulty.ts). The
+  // level is capped at 100, so the list holds every level from 99 (1).
+  { id: 'boss.shadow.max-difficulty', on: 'bossOvercome', where: { boss: 'shadow', mastery: [99, 100] } },
 
   // Meditations: a sitting completed three times, across runs (6).
   { id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 },
