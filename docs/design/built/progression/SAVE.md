@@ -23,6 +23,7 @@ interface MetaState {
 }
 ```
 
+- `firsts.bestiary` holds a projection as its variations, `<projection>:<tier>` and `<projection>:<tier>:ally` (issue #360, [COMPLETION](COMPLETION.md) §2); an older bare projection id reads as its Black hostile variation. No version bump: they are strings like the other ids.
 - `firsts` is optional and added without a version bump: a version 2 record without it reads as none, and nothing already saved is lost. Its ids are only ever added (a union on merge).
 
 - The **mastery level** is not stored: it is computed from `achievements` ([MASTERY](MASTERY.md)).

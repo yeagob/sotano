@@ -120,6 +120,7 @@ describe('boss life in the game', () => {
   const rig = (seed: number, floor: number): any => {
     const g: any = Object.create(Game.prototype);
     g.player = { hp: HEALTH, layers: [] };
+    g.keeper = { recordFirst: () => false }; // the bestiary's first-time record (#360): nothing new to show
     g.rng = new RunRandom(seed);
     g.actors = { newId: () => 1, add: () => {} };
     g.bus = { emit: (_kind: string, payload: object) => ({ cancelled: false, ...payload }) };

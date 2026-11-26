@@ -1236,6 +1236,8 @@ export const ES: Catalog = {
     'sun.ending.1': 'Felicidades, has alcanzado la iluminación.',
     'sun.ending.2': 'Nadie se ilumina solo. Alcanzamos juntas la iluminación, juntas con @.',
     'sun.ending.3': 'Finalmente os habéis convertido en luz.',
+    'achievement.bestiary.full.name': 'Conócete a ti mismo',
+    'achievement.bestiary.full.desc': 'Completa el bestiario: ve cada proyección en negro, amarillo y rojo, hostil y como aliada.',
 
     // ── the hidden book: a quotation's translation note (PANELS §4b) ──
     'book.quote.translated': 'Traducción nuestra',

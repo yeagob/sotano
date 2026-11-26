@@ -20,7 +20,7 @@ Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVE
 - **Book pages: 7** (the first page of the hidden book), **54 ("Lucky Number"), 69 ("Nice"), 100.** A page achievement cannot be earned until the book has that many pages: the page never advances past the last page of the files (`RootsBook.endRun`), so `pageReached` never carries a page the book does not have.
 - **The notice** shows the achievement's name, its description (what the achievement does) and the mastery level "of 100". It does **not** show what the Roots gain (owner, 2026-11-14, issue #191): the gain lines stay in the data (`gainsAt`, `gainText`) for a place that shows them later. It is the corner **Achievement notice** of `sotano-popups` §2: not blocking, no input, 5 s (7 s for a long description).
 - **Names carry meaning** (`sotano-lore`): they name what the moment means, not the mechanic.
-- **Out of scope, tracked elsewhere:** sky-plant first clears, the unlockables of issue #113. The completion percentage of issue #180 (COMPLETION.md) feeds one achievement, `completion.full`, through the `completionFull` event.
+- **Out of scope, tracked elsewhere:** sky-plant first clears, the unlockables of issue #113. The completion percentage of issue #180 (COMPLETION.md) feeds one achievement, `completion.full`, through the `completionFull` event. The bestiary's variations (issue #360, COMPLETION.md §2) feed `bestiary.full` through `bestiaryComplete`, emitted from `Game.showCompletion` like `completionFull`.
 
 ## 2. Where it lives
 

@@ -205,6 +205,9 @@ export interface GameEvents {
    *  is all light; the card is shown. Once per run, by the game. `friends` is the run's befriended beings (ally-tally.ts).
    *  React only (ACHIEVEMENTS §1). */
   illumination: { friends: number };
+  /** Every variation of every projection has been seen (its three tiers, hostile and allied; COMPLETION.md §2, issue #360):
+   *  `projections` is how many projections that is. Emitted once, by the game, while `bestiary.full` is locked. React only. */
+  bestiaryComplete: { projections: number };
 }
 
 /** A rebound of an intention, as the `intentBounce` event carries it. */

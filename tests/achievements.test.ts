@@ -30,8 +30,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 77 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), the six branches of the tree (#329) the ending of illumination (#351) and the Shadow at the maximum difficulty (#353), and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(77);
+  it('holds the 78 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), the six branches of the tree (#329), the ending of illumination (#351), the Shadow at the maximum difficulty (#353) and the bestiary complete (#360), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(78);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -403,11 +403,11 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 77 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 78 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(77);
+    expect(mastery({ achievements: all })).toBe(78);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {

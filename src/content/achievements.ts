@@ -14,10 +14,11 @@
  * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8), and the three of the
  * block, projection and state-of-being achievements: `projectionConverted`, `projectionDestroyed` and `synergyOn`, and the
  * presences' first exchange, `presenceMet` (one per presence, the codex's rule), `branchPracticesAll`, the six practices
- * of the giant tree's branches held in one run (#329), and the ending of illumination, `illumination` (issue #351, once
- * per run when the Sun's light is full).
+ * of the giant tree's branches held in one run (#329), the ending of illumination, `illumination` (issue #351, once
+ * per run when the Sun's light is full), and `bestiaryComplete`, emitted once when every variation of every projection
+ * has been seen (COMPLETION.md §2, issue #360).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination', 'bestiaryComplete'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -48,6 +49,9 @@ export const ACHIEVEMENT_MEDITATIONS = ['ground', 'dusk', 'night', 'box', 'warm'
  * 100, so counting it would make 100 unreachable.
  */
 export const COMPLETION_ACHIEVEMENT = 'completion.full';
+
+/** The bestiary's achievement (issue #360): every variation of every projection seen (completion.ts `bestiaryComplete`). */
+export const BESTIARY_ACHIEVEMENT = 'bestiary.full';
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // Bosses destroyed: their health reaches zero (14).
@@ -164,6 +168,8 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'tree.branches.all', on: 'branchPracticesAll' },
   // The ending of illumination: the last platform carried the player into the Sun (issue #351, the owner's direction) (1).
   { id: 'sun.illumination', on: 'illumination' },
+  // The bestiary complete: every projection seen in Black, Yellow and Red, hostile and as an ally (issue #360) (1).
+  { id: BESTIARY_ACHIEVEMENT, on: 'bestiaryComplete' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

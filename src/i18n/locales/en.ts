@@ -1242,6 +1242,8 @@ const messages = {
   'sun.ending.1': 'Congratulations, you have reached illumination.',
   'sun.ending.2': 'No one is illuminated alone. Together we reached illumination, together with @.',
   'sun.ending.3': 'At last you have all turned to light.',
+  'achievement.bestiary.full.name': 'Know Thyself',
+  'achievement.bestiary.full.desc': 'Complete the bestiary: see every projection in black, yellow and red, hostile and as an ally.',
 
   // ── the hidden book: a quotation's translation note (PANELS §4b) ──
   'book.quote.translated': 'Our translation',
