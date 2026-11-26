@@ -293,6 +293,10 @@ Decided by the owner for issue #203 and remade for issue #381. The voice is gene
 - **Clip state.** Until the clips are regenerated with Gemini, the committed clips in `public/audio/meditation/` are still the Chatterbox ones (3.63 MB in total, 156 files, at 56 kbit/s).
 - **Code:** `src/audio/meditation-voice.ts` (the queue, DOM-free, and the HTML player), `src/game/meditation-view.ts` (the calls: a line due is said, the switch, the pause and the stop).
 
+## 7b. The meditations in the ascent (issue #380)
+
+Outside the app, the six meditations also play during the final ascent of Totality, in 40-second blocks after a starry one: each block shows the meditation's background as the sky, plays its music and ambience, and speaks one guidance line of each part from its clips (§7a), in order, never two at once. The app's Sound switch silences them; its Voice switch does not. Details: [ILLUMINATION.md §3a](../levels/totality/ILLUMINATION.md).
+
 ## 8. Settings inside the app
 
 Three switches, on the Home screen and on the session bar, remembered between visits. Each says its state in words ("Voice: on") and with a small lamp before them, a filled dot when the thing named is on and an empty ring when it is off, so the state never rests on colour (docs/art/DECISIONS.md §10.8):
