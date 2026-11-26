@@ -71,10 +71,6 @@
   },
   "crouch": {
     "keyboard": {
-      "keys": [
-        "ControlLeft",
-        "ControlRight"
-      ],
       "toggle": [
         "KeyC"
       ]

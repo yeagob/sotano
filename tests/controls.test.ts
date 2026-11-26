@@ -12,7 +12,7 @@ const CONTEXTS: Context[] = ['play', 'prompt', 'paused', 'dead', 'inventory', 't
 const messages = EN.messages as Record<string, unknown>;
 
 function inputs(b: Binding, d: Device): string[] {
-  if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : []), ...(b.keyboard.wheel ? [`wheel${b.keyboard.wheel}`] : []), ...(b.keyboard.doubleTap ? [`doubleTap-${b.keyboard.doubleTap}`] : [])];
+  if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.toggle ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : []), ...(b.keyboard.wheel ? [`wheel${b.keyboard.wheel}`] : []), ...(b.keyboard.doubleTap ? [`doubleTap-${b.keyboard.doubleTap}`] : [])];
   if (d === 'gamepad') return [...(b.gamepad.buttons ?? []).map(i => `button${i}`), ...(b.gamepad.stick ? [`stick-${b.gamepad.stick}`] : []), ...(b.gamepad.doubleFlick ? [`doubleFlick-${b.gamepad.doubleFlick}`] : [])];
   // a shared context button is one input for every action it carries (`button-body`), so sharing shows as a clash
   return b.touch.control === 'tap' ? [] : [`${b.touch.control}-${b.touch.shared ?? b.action}`];

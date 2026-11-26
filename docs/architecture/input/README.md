@@ -53,7 +53,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | polarity | press | play | F | LB | a half turn of the phone |
 | dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | the body button while the stick moves (shared with crouch, TOUCH §1.1); the swipe on the left side still dashes |
 | run | hold | play | hold Shift (left or right) | L3 (toggles until the left stick returns to centre; the left stick at its edge also runs) | the left stick pushed past 95 % of its radius |
-| crouch | hold | play | C switches it, Control holds it | R3 (toggles) | the body button (toggles; shared with dash, kneels while the stick rests); the swipe down from the bottom of the right side still toggles |
+| crouch | hold | play | C switches it | R3 (toggles) | the body button (toggles; shared with dash, kneels while the stick rests); the swipe down from the bottom of the right side still toggles |
 | previous | press | play | mouse wheel up | d-pad left | none of its own: tap the item in the inventory |
 | next | press | play | mouse wheel down | d-pad right | none of its own: tap the item in the inventory |
 | pick | press | play, inventory | 1 to 9; Enter in the inventory | A in the inventory | tap an item in the inventory |
@@ -86,7 +86,7 @@ Every verb the player has, against each device, including the verbs that are a n
 | air jumps | Double Jump, Triple Jump, Wall Jump | Space again in the air | A again | the arrow again | had it |
 | launch a missile | Dr. Launcher (`missile`) | double click | double RT | double tap on the bead | had it |
 | run | Fartlek, Stride Tonic (`run`) | Shift | L3 | stick at its edge | had it |
-| **crouch** | Child's Pose, Walk Slow, Folding Tincture (`crouch`) | C / Control | R3 | **the body button** (+ the swipe) | **gap**: only a hidden swipe at the bottom edge, where the phone's home gesture lives |
+| **crouch** | Child's Pose, Walk Slow, Folding Tincture (`crouch`) | C | R3 | **the body button** (+ the swipe) | **gap**: only a hidden swipe at the bottom edge, where the phone's home gesture lives |
 | **dash** | Irimi (`dash`) | double tap a direction | double flick | **the body button** (+ the swipe) | **gap**: only a hidden swipe, no visible control |
 | slow time | Walk Slow | crouch on the ground | crouch | the body button | gap (through crouch) |
 | miracle | Kairos | V | D-pad Up | the clock ring | had it |
