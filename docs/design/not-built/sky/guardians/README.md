@@ -265,3 +265,23 @@ Time is simulated seconds; a fight not won by the cap shows the time its hit rat
 | 5 horse | practices | 481 s | 62 % | 1.6 | 0 | 0 | 0 | 0 % | 62 % | 99 % | 48 |
 
 What the run shows: every deity moves after most hits (the horse least, because it reacts only between its attacks and leaps); every floor but the horse's against the practices (1.6 a minute) acts on the player at least twice a minute; the starting kit is out of straight-shot reach about 60 % of the time; the normal practices win every floor, the last ones in 5 to 8 minutes. The fight lengths follow the owner's life numbers (240 to 3840 hits): with the starting kit alone the later floors take 24 to 65 minutes, an open question for the owner (section 5). The elephant's drains sent a starting-kit player underground three times in fifteen minutes.
+
+## 9. Gifts, freeze and water (#357)
+
+Status: built in code, waits for the owner's acceptance (owner decisions, 2026-11-26).
+
+**Gifts on defeat.** Each won deity leaves one practice on its seat, once:
+
+| Deity | Gift | Quality | Design |
+|---|---|---|---|
+| Panda | Self-Distancing (damage by distance flown, times size) | 1 | [SELF-DISTANCING](../../practices/SELF-DISTANCING.md) |
+| Koala | Guarding the Centre (a freezing sphere every 3 s) | 2 | [GUARDING-THE-CENTRE](../../practices/GUARDING-THE-CENTRE.md) |
+| Elephant | Like Water (positive hits on blocks leave water for 3 s) | 3 | [LIKE-WATER](../../practices/LIKE-WATER.md) |
+| Lion | Shield (invulnerable in the air; its only source) | 4 | [SHIELD](../../practices/SHIELD.md) |
+| Horse | Triple Jump (the Leaves give it too) | 3 | built |
+
+They replace Still Sitting, Co-Regulation, Long Memory, Assertive Roar and Open Field, which are removed. A double-jump practice, if built, is quality 4 ([movement abilities](../../player/MOVEMENT-ABILITIES.md)).
+
+**One freeze family.** Every freeze lasts its own time: the koala's sphere 3 s, an ally's hold on its deity 2 s, the paralysis ring (the lion's roar, the lion minion's small roar and the koala's dive, which share the `paralysis` hindrance) its own `hold`. After a freeze on an entity ends, no freeze from any source takes on it for 3 s (`FREEZE_CADENCE`, `src/core/freeze.ts`). Frozen means still: no move, attack or change of state; what it had already started runs on. For the player a freeze is a hold (no walking or jumping; looking and shooting stay). Thought Stopping's freeze of a projection is in the family too.
+
+**Water.** Every being in water moves at half speed (`WATER_PACE`, `src/sky/laws/water.ts`): the player in any water of the sky, and in the temporary water of Like Water underground; every minion and every deity, the lion and the horse included, in water in the sky. A deity in water also runs its hunt's timers at half pace (its dives last twice as long). Underground projections are not slowed by it yet.

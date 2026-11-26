@@ -17,6 +17,10 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 | [BILATERAL-STIMULATION.md](BILATERAL-STIMULATION.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Emotion, quality 3. Fire rate ×2; the hands take turns, each shot cast by the other hand |
 | [RULE-OF-THREE.md](RULE-OF-THREE.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Mind, quality 3. Each intention flies as three strands in a triangle that widens; 70% damage and mining each |
 | [BOOK-OF-SECRETS.md](BOOK-OF-SECRETS.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Mind, quality 1. Opens the Recipe Book; the Roots lay it from mastery level 30 |
+| [SELF-DISTANCING.md](SELF-DISTANCING.md) | Status: built in code, waits for the owner's acceptance | Mind, quality 1, the panda's gift. Damage ×0.5 to ×2 by distance flown, times size |
+| [GUARDING-THE-CENTRE.md](GUARDING-THE-CENTRE.md) | Status: built in code, waits for the owner's acceptance | Body, quality 2, the koala's gift. A sphere every 3 s that freezes for 3 s |
+| [LIKE-WATER.md](LIKE-WATER.md) | Status: built in code, waits for the owner's acceptance | Emotion, quality 3, the elephant's gift. A positive hit on a block leaves water for 3 s |
+| [SHIELD.md](SHIELD.md) | Status: built in code, waits for the owner's acceptance | Will, quality 4, the lion's gift. Invulnerable while in the air |
 | [SPIRAL-GROWTH.md](SPIRAL-GROWTH.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Body, quality 4. Fire rate ×2; each intention flies as a helix of three strands (one full, two at 40%). Double Helix with Bilateral Stimulation |
 
 ## Decided design rule
