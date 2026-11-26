@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { BASE_STATS, computeStats, type StatMod } from '../src/core/stats';
 import { BOSSES, bossHp, bossLife } from '../src/content/bosses';
 import {
-  BEAT, BOMB, LIFE_PER_POINT, MIN_IDLE, MIRROR_RULES, POINTS_PER_DAMAGE, VOLLEY_SHOTS, mirrorOf, shadowLife,
+  BEAT, IDLE, LIFE_PER_POINT, MIRROR_RULES, POINTS_PER_DAMAGE, VOLLEY_SHOTS, mirrorOf, shadowLife,
 } from '../src/content/bosses/mirror';
 import { STILLNESS_TAG, shadowState } from '../src/content/bosses/shadow';
+import { MAT } from '../src/content/materials';
+import { RunRandom } from '../src/core/rng';
+import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb } from '../src/game/bomb';
+import { DebrisSystem } from '../src/physics/debris';
 import { ITEMS, ITEM_BY_ID } from '../src/content/items';
 import { HEART } from '../src/entities/actors';
 import type { Strike } from '../src/enemies/attacks';
@@ -30,6 +34,8 @@ interface Opts {
   health?: number;
   /** Seconds between two of your hits on it (1 point each), 0: you never hit it. */
   hits?: number;
+  /** The fight's seed (its `rng` fork). */
+  seed?: number;
 }
 
 const still = (x: number) => () => ({ x, z: 0, vx: 0, vz: 0 });
@@ -48,10 +54,13 @@ function fight(o: Opts = {}) {
   } as unknown as Enemy;
   let t = 0, killed = false, walked = 0;
   const bolts: Bolt[] = [], strikes: { t: number; s: Strike }[] = [], rains: number[] = [];
+  const placed: { t: number; blast: { radius: number; blocks: number; damage: number } }[] = [];
   const where = o.you ?? still(6);
   const you = () => { const p = where(t); return { id: 1, x: p.x, y: 0, z: p.z, vx: p.vx, vz: p.vz }; };
   const ctx = {
     dt: DT, target: you, near: you, practices: () => held, health: () => o.health ?? 48, bombs: () => (typeof o.bombs === 'function' ? o.bombs() : o.bombs ?? 0),
+    placeBomb: (_e: Enemy, blast: { radius: number; blocks: number; damage: number }) => { placed.push({ t, blast }); },
+    rng: (_e: Enemy, site: string) => new RunRandom(o.seed ?? 1).fork('boss', site),
     dist: (_e: Enemy, p: { x: number; z: number }) => Math.hypot(p.x - e.body.x, p.z - e.body.z),
     toward: (_e: Enemy, p: { x: number; z: number }) => { const dx = p.x - e.body.x, dz = p.z - e.body.z, l = Math.hypot(dx, dz) || 1; return [dx / l, dz / l]; },
     bounds: () => [-10, -10, 9, 9], centre: () => [0, 0],
@@ -66,7 +75,7 @@ function fight(o: Opts = {}) {
     e, bolts, strikes, rains,
     get killed() { return killed; },
     get walked() { return walked; },
-    bombs: () => strikes.filter(k => k.s.lead === BOMB.fuse),
+    bombs: () => placed,
     run(seconds: number) {
       for (let k = 0; k < Math.round(seconds / DT); k++) {
         if (o.hits && k > 0 && k % Math.round(o.hits / DT) === 0) e.hp -= 1;
@@ -204,7 +213,7 @@ describe('the Shadow: it fights like a player', () => {
     expect(acts.volley).toBeGreaterThan(0);
   });
 
-  it('its fire is not continuous: volleys of a few shots, at least MIN_IDLE apart', () => {
+  it('its fire is not continuous: between two volleys, at least a second and at most its seeded maximum', () => {
     const f = fight({ held, bombs: 4, you: circling, hits: 0.8 });
     f.run(40);
     const groups = volleys(f.bolts.map(b => b.t));
@@ -212,8 +221,33 @@ describe('the Shadow: it fights like a player', () => {
     for (const g of groups) expect(g.length).toBeLessThanOrEqual(VOLLEY_SHOTS);
     for (let k = 1; k < groups.length; k++) {
       const gap = groups[k][0] - groups[k - 1][groups[k - 1].length - 1];
-      expect(gap, `gap before volley ${k}`).toBeGreaterThanOrEqual(MIN_IDLE + BEAT - 2 * DT);
+      expect(gap, `gap before volley ${k}`).toBeGreaterThanOrEqual(IDLE.min + BEAT - 2 * DT);
     }
+  });
+
+  it('each fight draws its longest pause once from its own fork, and every pause in [1 s, that maximum]', () => {
+    const most = new Set<number>();
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const f = fight({ seed, you: still(6) });
+      f.run(60);
+      const m = shadowState(f.e)!.most;
+      expect(m).toBeGreaterThanOrEqual(IDLE.max[0]);
+      expect(m).toBeLessThanOrEqual(IDLE.max[1]);
+      most.add(m);
+      const groups = volleys(f.bolts.map(b => b.t));
+      expect(groups.length).toBeGreaterThan(8);
+      const gaps = groups.slice(1).map((g, k) => g[0] - groups[k][groups[k].length - 1]);
+      // the gap is the pause plus the tell; you stand still in its range, so nothing else delays it
+      for (const gap of gaps) {
+        expect(gap).toBeGreaterThanOrEqual(IDLE.min + BEAT - 2 * DT);
+        expect(gap).toBeLessThanOrEqual(m + BEAT + 2 * DT);
+      }
+      // the same seed, the same fight
+      const again = fight({ seed, you: still(6) });
+      again.run(60);
+      expect(again.bolts).toEqual(f.bolts);
+    }
+    expect(most.size).toBeGreaterThan(1);
   });
 
   it('the same build and the same moves give the same fight', () => {
@@ -261,6 +295,38 @@ describe('the Shadow: it fights like a player', () => {
       expect(f.strikes.length).toBeGreaterThan(0);
       for (const { s } of f.strikes) expect(s.lead).toBeGreaterThanOrEqual(0.8);
     }
+  });
+});
+
+describe('the Shadow: its bombs are yours', () => {
+  it('one implementation lights both: the same cube, material and fuse', () => {
+    const d = new DebrisSystem(8, () => false, () => {});
+    const fused: number[] = [];
+    d.onFuse = i => { fused.push(i); };
+    const i = lightBomb(d, 0.5, 1.5, 0.5, 0, 0, BOMB_FUSE, false);
+    expect(d.material[i]).toBe(MAT.bomb);
+    expect(d.isBomb(i)).toBe(true);
+    expect(d.fuse[i]).toBeCloseTo(BOMB_FUSE, 6);
+    expect(d.love[i]).toBe(0);
+    for (let k = 0; k < 2 / DT; k++) d.update(DT);
+    expect(fused).toEqual([i]);
+  });
+
+  it('the game lights the player bomb and the Shadow bomb through lightBomb, and spawns no other bomb', () => {
+    const src = Object.values(import.meta.glob<string>('../src/game/game.ts', { query: '?raw', import: 'default', eager: true }))[0];
+    const body = (name: string) => { const at = src.indexOf(`private ${name}(`); return src.slice(at, src.indexOf('\n  }\n', at)); };
+    expect(body('placeBomb')).toContain('lightBomb(this.debris');
+    expect(body('enemyBomb')).toContain('lightBomb(this.debris');
+    expect(src).not.toContain('MAT.bomb');
+  });
+
+  it('drops them with your blast: your radius, your block damage, a heart to every actor, plus its own upgrades', () => {
+    const f = fight({ bombs: 3, you: still(-4.5) });
+    f.run(4);
+    expect(f.bombs().length).toBeGreaterThan(0);
+    expect(f.bombs()[0].blast).toEqual({ radius: BASE_STATS.bombRadius, blocks: BASE_STATS.bombDamage, damage: BLAST_ACTOR_DAMAGE });
+    expect(mirrorOf(['controlledburn']).bomb.damage).toBe(BLAST_ACTOR_DAMAGE + 4);
+    expect(mirrorOf(['pressurevalve']).bomb.blocks).toBeCloseTo(BASE_STATS.bombDamage * 1.6, 9);
   });
 });
 

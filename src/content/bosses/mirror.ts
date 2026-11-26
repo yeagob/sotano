@@ -4,7 +4,8 @@
 // and this file's table, so a practice that only makes sense for the player can never act through the boss.
 
 import { BASE_STATS, computeStats, type StatMod, type StatName } from '../../core/stats';
-import { HALF_HEART, HEART } from '../../entities/actors';
+import { HEART } from '../../entities/actors';
+import { BLAST_ACTOR_DAMAGE } from '../../game/bomb';
 import type { WeaponId } from '../../game/events';
 import { copyMods, type ItemDef, type Req, type StatModSpec, type SynergyDef } from '../../items/types';
 import { ITEM_BY_ID } from '../items';
@@ -130,7 +131,7 @@ export const MIRROR_RULES: Readonly<Record<string, MirrorRule>> = {
 
 /** The stats the mirror reads. Any other stat of a mirrored practice (mining, luck, carry…) has nothing to act on. */
 export const MIRROR_STATS: readonly StatName[] = [
-  'damage', 'fireRate', 'shotSpeed', 'range', 'size', 'moveSpeed', 'run', 'jump', 'airJumps', 'dash', 'missile', 'bombRadius', 'triad', 'spiral',
+  'damage', 'fireRate', 'shotSpeed', 'range', 'size', 'moveSpeed', 'run', 'jump', 'airJumps', 'dash', 'missile', 'bombRadius', 'bombDamage', 'triad', 'spiral',
 ];
 
 // ── the conversion (SHADOW.md, "Health"): both sides need the same number of comparable hits ──
@@ -145,8 +146,9 @@ export const shadowLife = (points: number) => Math.max(1, points) * LIFE_PER_POI
 // ── the cadence (SHADOW.md, "Not a stream"): it fires as you do, then lets the room breathe ──
 /** Shots in one volley, each the full fan of strands, at your own fire interval. */
 export const VOLLEY_SHOTS = 3;
-/** Seconds at least between the last shot of a volley and the tell of the next. */
-export const MIN_IDLE = 1.5;
+/** Seconds between the last shot of a volley and the tell of the next: drawn each time in [MIN, the fight's
+ *  maximum], and the maximum drawn once per fight in MAX, both from the fight's own fork (`'boss', 'idle'`). */
+export const IDLE = { min: 1, max: [2, 4] } as const;
 /** The beat: seconds between its tell and the first shot of a volley, aimed where you stood when the tell began. */
 export const BEAT = 0.45;
 /** The base bolt speed of a projection's shot (blocks a second), times your shot speed: slower than yours, to be read. */
@@ -158,8 +160,6 @@ const TRIAD_SHARE = 0.7;
 const SPIRAL_SHARE = 0.4;
 /** A ground jump: 1.25 blocks for the base jump stat, under a projection's gravity (26 blocks/s²). */
 const JUMP_V = Math.sqrt(2 * 26 * 1.25);
-/** Your bombs hurt any actor in their blast for a heart (game.ts BLAST_ACTOR_DAMAGE), whatever their block damage. */
-const BOMB_HIT = 2 * HALF_HEART;
 /** The dash Irimi gives you: 4.5 blocks in a quarter second, and its cooldown. */
 export const DASH = { dist: 4.5, seconds: 0.25, cooldown: 1.2 } as const;
 
@@ -197,8 +197,8 @@ export interface Mirror {
   dash: boolean;
   /** It may launch a bomb as a missile (Dr. Launcher). */
   missile: boolean;
-  /** Its bombs: radius in blocks, damage to you in points. */
-  bomb: { radius: number; damage: number };
+  /** Its bombs, the player's own (game/bomb.ts): radius in blocks, block damage at the centre, points to every actor. */
+  bomb: { radius: number; blocks: number; damage: number };
   /** A ring from its feet when it lands from a long jump (Discharge), and when it is hurt (Kindling). */
   landing: boolean;
   burst: boolean;
@@ -269,7 +269,8 @@ export function mirrorOf(held: readonly string[]): Mirror {
     airJumps: Math.floor(s.airJumps),
     dash: s.dash >= 1,
     missile: s.missile >= 1,
-    bomb: { radius: s.bombRadius, damage: (BOMB_HIT + blast) * POINTS_PER_DAMAGE },
+    // the same blast as yours, unconverted (the owner's rule: its bombs are exactly yours), plus its own upgrades
+    bomb: { radius: s.bombRadius, blocks: s.bombDamage, damage: BLAST_ACTOR_DAMAGE + blast },
     landing: flags.landing,
     burst: flags.burst,
     charge: Math.max(BEAM.minLead, 2.7 / s.fireRate),
@@ -288,8 +289,6 @@ export const GREATCUT = { lead: 1.4, live: 0.5, r: 0.8, grow: 10, width: 0.4, he
 export const strokeDamage = (m: Mirror, weapon: WeaponId) => m.shot.damage * (weapon === 'greatcut' ? 4 : 3);
 /** Seconds between two blade strokes: yours (one each 1 ÷ (0.8 × fire rate)). */
 export const bladeEvery = (m: Mirror) => m.shot.interval / 0.8;
-/** Your bomb: its fuse, and how long the blast lives as it grows to the radius. */
-export const BOMB = { fuse: 1.8, live: 0.2, width: 0.5, height: 2 } as const;
 /** The missile flies to 24 blocks and never starts closer than 5 (its own blast would be on it). */
 export const MISSILE = { near: 5, far: 24 } as const;
 /** Discharge and Kindling: a ring of 3 blocks (2.5 for Kindling), 4 of your damage points, converted. */

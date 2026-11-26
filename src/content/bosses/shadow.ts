@@ -1,9 +1,11 @@
 import { pal } from '../palette';
 import { wobble } from '../../enemies/behaviours';
 import { evading, evasive, type Dodge } from '../../enemies/evade';
+import type { Rng } from '../../core/rng';
+import { BOMB_FUSE } from '../../game/bomb';
 import { defineEnemy, TX, type Behaviour, type Enemy, type EnemyCtx, type TargetView } from '../../enemies/types';
 import {
-  BEAM, BEAT, BLADE, BOMB, DASH, GREATCUT, MIN_IDLE, MISSILE, RING, VOLLEY_SHOTS,
+  BEAM, BEAT, BLADE, DASH, GREATCUT, IDLE, MISSILE, RING, VOLLEY_SHOTS,
   POINTS_PER_DAMAGE, bladeEvery, bladeReach, mirrorOf, shadowLife, strokeDamage, type Mirror,
 } from './mirror';
 
@@ -49,6 +51,8 @@ type Act = 'volley' | 'stroke' | 'bomb' | 'missile' | 'dash' | 'jump';
 /** What it holds and its clocks. Taken the first time it acts: practices and bombs gained later change nothing. */
 interface Mind {
   mirror: Mirror;
+  /** The fight's own fork for its pauses, and the longest pause it draws this fight. */
+  rng: Rng; most: number;
   /** Bombs it carries (yours at entry); a bomb or a missile spends one. */
   bombs: number;
   /** Your health at entry, in points: the scale for "both healths". */
@@ -78,8 +82,9 @@ function mindOf(e: Enemy, ctx: EnemyCtx): Mind {
   let h = minds.get(e);
   if (!h) {
     const mirror = mirrorOf(ctx.practices());
+    const rng = ctx.rng(e, 'idle');
     h = {
-      mirror, bombs: Math.max(0, Math.floor(ctx.bombs())), yours: Math.max(1, ctx.health()),
+      mirror, rng, most: IDLE.max[0] + rng.next() * (IDLE.max[1] - IDLE.max[0]), bombs: Math.max(0, Math.floor(ctx.bombs())), yours: Math.max(1, ctx.health()),
       idle: FIRST_ECHO, shots: 0, next: 0, ax: 0, ay: 0, az: 0, fired: 0,
       blade: FIRST_ECHO, bombT: FIRST_ECHO, missileT: FIRST_ECHO, dashT: 0, jumpT: 0, ringT: 0,
       dash: 0, dx: 0, dz: 0, air: 0, airLeft: mirror.airJumps, hp: e.hp, hurt: HURT, side: 1, sideT: STRAFE, seq: 0, ox: NaN, oz: NaN,
@@ -94,10 +99,13 @@ function mindOf(e: Enemy, ctx: EnemyCtx): Mind {
 /** The mirror of this Shadow (taken now if it has none yet). */
 export const mirrorFor = (e: Enemy, ctx: EnemyCtx): Mirror => mindOf(e, ctx).mirror;
 
-/** Bombs it still carries, and how many times it took each action (for the tests and the lab). */
-export const shadowState = (e: Enemy) => { const h = minds.get(e); return h ? { bombs: h.bombs, acts: { ...h.acts } } : null; };
+/** Bombs it still carries, how many times it took each action and this fight's longest pause (for the tests and the lab). */
+export const shadowState = (e: Enemy) => { const h = minds.get(e); return h ? { bombs: h.bombs, acts: { ...h.acts }, most: h.most } : null; };
 
 const did = (h: Mind, a: Act) => { h.acts[a]++; };
+
+/** The pause before its next volley or heavy stroke: at least a second, at most this fight's longest (seeded). */
+const pause = (h: Mind) => IDLE.min + h.rng.next() * (h.most - IDLE.min);
 
 /** Where you will be when a bolt reaches you (Eye Contact), or where you are. */
 function aimAt(e: Enemy, m: Mirror, you: TargetView): [number, number, number] {
@@ -144,14 +152,12 @@ function ring(e: Enemy, ctx: EnemyCtx, h: Mind, r: number) {
   ctx.strike(e, { lead: RING.lead, live: RING.live, damage: RING.damage, shape: { kind: 'ring', x: b.x, y: b.y, z: b.z, r: 0.3, grow: (r - 0.3) / RING.live, width: 0.4, height: 1 } });
 }
 
-/** Its bomb at its feet: the blast is marked on the floor for your fuse, then it grows to your radius. */
+/** Its bomb at its feet: your bomb, the same cube, look and fuse, with its mirrored blast. */
 function bomb(e: Enemy, ctx: EnemyCtx, h: Mind) {
-  const b = e.body, m = h.mirror;
+  const b = e.body;
   h.bombs--; h.bombT = BOMB_EVERY;
-  h.bomb = { x: b.x, z: b.z, t: BOMB.fuse };
-  ctx.strike(e, { lead: BOMB.fuse, live: BOMB.live, damage: m.bomb.damage, shape: { kind: 'ring', x: b.x, y: b.y, z: b.z, r: 0.3, grow: (m.bomb.radius - 0.3) / BOMB.live, width: BOMB.width, height: BOMB.height } });
-  ctx.fx(b.x, b.y + 0.3, b.z, pal('cold.body'), 8, 1.5, 0.08);
-  ctx.cue(e, 'windup');
+  h.bomb = { x: b.x, z: b.z, t: BOMB_FUSE };
+  ctx.placeBomb(e, h.mirror.bomb);
 }
 
 /** Its missile, lobbed to where you stand: its landing is marked while it flies, and it bursts there. */
@@ -230,7 +236,7 @@ const fights: Behaviour = {
     const h = mindOf(e, ctx), m = h.mirror, b = e.body, dt = ctx.dt;
     for (const k of ['idle', 'blade', 'bombT', 'missileT', 'dashT', 'jumpT', 'ringT', 'sideT'] as const) h[k] -= dt;
     h.hurt += dt;
-    if (h.bomb && (h.bomb.t -= dt) <= -BOMB.live) h.bomb = null;
+    if (h.bomb && (h.bomb.t -= dt) <= 0) h.bomb = null;
     if (e.hp < h.hp - 1e-6) {
       h.hurt = 0;
       if (m.burst) ring(e, ctx, h, RING.burst);
@@ -270,7 +276,7 @@ const fights: Behaviour = {
         const [x, y, z] = first ? [h.ax, h.ay, h.az] : aimAt(e, m, you);
         shoot(e, ctx, h, x, y, z);
         h.shots--; h.next = m.shot.interval;
-        if (h.shots === 0) h.idle = MIN_IDLE;
+        if (h.shots === 0) h.idle = pause(h);
       }
     }
 
@@ -282,7 +288,7 @@ const fights: Behaviour = {
     } else if (attack === 'stroke') {
       const took = stroke(e, ctx, m, you);
       if (m.weapon === 'blade') h.blade = Math.max(took, bladeEvery(m));
-      else h.idle = took + MIN_IDLE;
+      else h.idle = took + pause(h);
     } else if (attack === 'bomb') bomb(e, ctx, h);
     else if (attack === 'missile') missile(e, ctx, h, you);
     if (attack) did(h, attack);

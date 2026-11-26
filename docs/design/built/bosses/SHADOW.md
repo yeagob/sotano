@@ -30,8 +30,8 @@ There are no scripted phases and no fixed sequence. Each frame it scores every a
 **How it attacks.**
 
 - **Volleys.** Its tell glows and it stands to aim for a beat (0.45 s, a `windup` growl): the opening it gives the player. Then it fires three shots at the player's own fire interval, the first toward where the player stood when the tell began, the next toward where the player is. Each shot is the full fan of the player's strands, cold (negative polarity), drawn in the attack red of every hurting shot (DECISIONS §7.2).
-- **Not a stream.** After the last shot of a volley it waits at least **1.5 seconds** before the tell of the next one, so two volleys are always at least 1.95 seconds apart. The first attack comes 1.5 seconds into the fight, so the player first sees it copy their step.
-- **Bombs.** It carries the bombs the player carried at entry and spends them. Close to the player it drops one at its feet: the blast is marked on the floor for the player's fuse (1.8 s), then grows to the player's bomb radius and hurts for a heart (converted). Bigger bombs (Pressure Valve) make it reach for them sooner.
+- **Not a stream.** After the last shot of a volley it pauses before the tell of the next one. Each pause is drawn between **1 second** and the fight's own maximum, and that maximum is drawn once per fight, between **2 and 4 seconds**, both from the fight's seed. So two volleys are always at least 1.45 seconds apart (the pause and the tell), and a fight may be a patient one or a hurried one. The first attack comes 1.5 seconds into the fight, so the player first sees it copy their step.
+- **Bombs.** It carries the bombs the player carried at entry and spends them. Close to the player it drops one at its feet, and it is exactly the player's bomb: the same cube, look and fuse (1.8 s), which rolls, can be kicked and is set off by other blasts. It goes off as the player's does, with the player's bomb radius and block damage, and a heart to every actor in it, the Shadow included (owner, 2026-11: its bombs are ours). Its bomb upgrades add to the blast as they are mirrored (Controlled Burn +4 points, Bolt from the Blue +6). It never drops a white bomb: it is cold. Bigger bombs (Pressure Valve) make it reach for them sooner.
 - **Missiles.** With Dr. Launcher, from five to twenty-four blocks away it lobs one of its bombs at the player: the landing is marked while it flies, and it bursts there.
 - **Weapons.** See [The mirror](#the-mirror).
 
@@ -54,15 +54,15 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Jump, air jumps | Its jump rises 1.25 blocks times the player's jump; the player's air jumps |
 | Dash | Irimi: it dashes 4.5 blocks in 0.25 s, ready again after 1.2 s |
 | Missile | Dr. Launcher: it may lob a bomb as a missile |
-| Bomb radius | Its blast grows to the player's bomb radius |
+| Bomb radius, bomb damage | Its bombs are the player's: the same radius and block damage |
 
 **Its weapon.** A weapon practice gives it that weapon, cold and always telegraphed in the attack ramp:
 
 - **Blade** (Cut Ties with Toxic Relationships): it keeps the shot, and when the player is within its reach (2.5 blocks times the player's size, at most 3.5) it strokes a line toward them: 0.4 s of warning, three strands' damage as the player's blade, at the player's blade interval.
-- **Beam** (Remember Breathing): it replaces the shot. A line 12 blocks long toward the player, charged as the player's beam (2.7 ÷ fire rate seconds), never under 0.8 s, live for one second; three strands' damage; then the 1.5 s of rest.
-- **Great cut** (both, the synergy One Clear Cut): it replaces the shot. A ring grows from its feet to about six blocks, low enough to jump, after 1.4 s of warning; four strands' damage, as the player's; then the 1.5 s of rest.
+- **Beam** (Remember Breathing): it replaces the shot. A line 12 blocks long toward the player, charged as the player's beam (2.7 ÷ fire rate seconds), never under 0.8 s, live for one second; three strands' damage; then its pause.
+- **Great cut** (both, the synergy One Clear Cut): it replaces the shot. A ring grows from its feet to about six blocks, low enough to jump, after 1.4 s of warning; four strands' damage, as the player's; then its pause.
 
-**The fallback.** A player with no practices meets the base mirror: volleys of three single strands of 4 points, 9 blocks a second, after a visible beat and with at least 1.5 s between volleys; its own speed, a jump of 1.25 blocks, its orbit, and as many bombs as the player carries. With three hearts it has 21 of life. That is a fair fight.
+**The fallback.** A player with no practices meets the base mirror: volleys of three single strands of 4 points, 9 blocks a second, after a visible beat and with a pause of at least 1 s between volleys; its own speed, a jump of 1.25 blocks, its orbit, and as many bombs as the player carries. With three hearts it has 21 of life. That is a fair fight.
 
 **Skipped, the documented list.** These have no meaning in a fight, or would act on the player rather than through the Shadow: meals and potions (the nourish practices that grow when you eat or drink), crafting and the recipe book, miracles that are neither a shot nor a movement (stopped time, walking through walls, turning lava), luck, keys and rewards (of rooms, chests and blasts), heart containers, invulnerability and answers to contact or blasts (the hearts are already in the player's health at entry, which is its life), healing and the checkpoint, blocks and mining, carrying, kicking and throwing, fire and lava underfoot, shots through blocks, crouching, shot behaviours a bolt cannot carry (bounces off blocks, intentions in flight), effects on other projections, and effects that would take the player's body out of their control.
 
@@ -125,7 +125,7 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Cut Ties with Toxic Relationships | `occamsrazor` | adapted | The blade, beside its shot |
 | Follow the Omens | `omens` | skipped | Loot |
 | Post-Traumatic Growth | `posttraumatic` | skipped | World: lava |
-| Pressure Valve | `pressurevalve` | copied | Bomb radius +0.8 (block damage has no meaning for it) |
+| Pressure Valve | `pressurevalve` | copied | Bomb radius +0.8, block damage ×1.6 |
 | Stolen Fire | `prometheus` | adapted | Every fifth shot is a fire seed: 5 more of your damage on its first strand |
 | Rapport | `rapport` | skipped | World: loose cubes |
 | Reframing | `reframing` | adapted | +25% damage (its bolts do not bounce) |

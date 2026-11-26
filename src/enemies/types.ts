@@ -8,6 +8,7 @@ import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
 import type { Polarity } from '../combat/polarity';
+import type { Rng } from '../core/rng';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -168,6 +169,11 @@ export interface EnemyCtx {
   health(): number;
   /** The bombs the player carries now. Read only: the Shadow takes as many when its fight starts. */
   bombs(): number;
+  /** Drops the player's own bomb at its feet (game/bomb.ts: the same cube, look and fuse), cold, with its own blast:
+   *  radius in blocks, block damage at the centre, and points to every actor it reaches. */
+  placeBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }): void;
+  /** A fresh seeded RNG for one decision site of this enemy's fight (`fork('floor', k, 'room', i, 'boss', site)`). */
+  rng(e: Enemy, site: string): Rng;
   /** Horizontal distance to a target. */
   dist(e: Enemy, t: TargetView): number;
   /** Direction to walk towards a target inside the room (flow field), or straight at it. */

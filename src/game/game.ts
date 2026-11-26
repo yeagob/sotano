@@ -13,6 +13,7 @@ import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat
 import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
 import { BOSS_BY_ID, bossFor, bossLife } from '../content/bosses';
+import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb, type BombBlast } from './bomb';
 import { enemyText, materialName, partText } from '../i18n/content';
 import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
@@ -211,7 +212,6 @@ const SLICED_CUBES_PER_STRIKE = 24;
 /** Seconds between contact wear ticks (the `crush` stat is damage per second). */
 const CONTACT_TICK = 0.25;
 /** Damage points a blast deals to every actor in range (8 = one heart to the player). */
-const BLAST_ACTOR_DAMAGE = 2 * HALF_HEART;
 
 /** Element effects per frame at most (particles, sounds): a big fire or a flood never floods the screen. */
 const ELEMENT_FX_PER_FRAME = 10;
@@ -427,6 +427,8 @@ export class Game {
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Bombs on the floor that are not the player's (the Shadow's), by cube: what each blast does. */
+  private bombBlast = new Map<number, BombBlast>();
   /** Fire shields (Controlled Burn): where fire never hurts you, and until when (game time). */
   private fireShields: { x: number; y: number; z: number; r: number; until: number }[] = [];
   /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
@@ -707,7 +709,7 @@ export class Game {
     this.playerIn.clear(); this.drownT = 0; this.lavaSpent = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
-    this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
+    this.blasts.clear(); this.bombCause.clear(); this.bombBlast.clear(); this.fireShields = [];
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
@@ -1295,8 +1297,14 @@ export class Game {
   private newDebris(): DebrisSystem {
     const debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
     debris.onFuse = (i, x, y, z, love) => {
-      const chain = this.bombCause.get(i);
-      this.bombCause.delete(i);
+      const chain = this.bombCause.get(i), other = this.bombBlast.get(i);
+      this.bombCause.delete(i); this.bombBlast.delete(i);
+      if (other) {
+        this.blasts.current = chain ?? null;
+        this.explode(x, y, z, other.radius, other.blocks, other.source, other.owner, other.damage);
+        this.blasts.current = null;
+        return;
+      }
       // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
       if (love) { this.loveBlast(x, y, z, 'bomb'); return; }
       this.blasts.current = chain ?? null;
@@ -1968,6 +1976,8 @@ export class Game {
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
       practices: () => this.inventory.items.map(i => i.def.id),
       health: () => this.playerHealth(),
+      placeBomb: (e: Enemy, blast: { radius: number; blocks: number; damage: number }) => this.enemyBomb(e, blast),
+      rng: (e: Enemy, site: string) => this.rng.fork('floor', this.rooms.get(e.room)?.floor ?? 0, 'room', e.room % ROOM_ID_STRIDE, 'boss', site),
       bombs: () => this.player.bombs,
       projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {
@@ -3007,18 +3017,26 @@ export class Game {
   private placeBomb() {
     const p = this.player;
     if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
-    const ev = this.bus.emit('bombPlace', { fuse: 1.8 });
+    const ev = this.bus.emit('bombPlace', { fuse: BOMB_FUSE });
     if (ev.cancelled) return;
     p.bombs--;
     const f = p.forward;
     const l = Math.hypot(f.x, f.z) || 1;
     const b = p.body;
-    const cube = this.debris.spawn(MAT.bomb, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, 0, b.vz * 0.5);
-    this.debris.fuse[cube] = Math.max(0.1, ev.fuse);
     // a bomb placed while the polarity is positive is white: its fuse ends in a love explosion (DECISIONS §7.8)
-    this.debris.love[cube] = this.polarity === 'positive' ? 1 : 0;
-    this.bombCause.delete(cube); // the slot may have held an old bomb that despawned unlit
-    this.debris.cooldown[cube] = 0.8;
+    const cube = lightBomb(this.debris, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, b.vz * 0.5, ev.fuse, this.polarity === 'positive');
+    // the slot may have held an old bomb that despawned unlit
+    this.bombCause.delete(cube); this.bombBlast.delete(cube);
+    sfx3.fuse();
+  }
+
+  /** A projection drops a bomb at its feet (the Shadow): the player's bomb, cold, with the projection's own blast. */
+  private enemyBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }) {
+    const b = e.body;
+    const cube = lightBomb(this.debris, b.x, b.y + 0.5, b.z, b.vx * 0.5, b.vz * 0.5, BOMB_FUSE, false);
+    this.bombCause.delete(cube);
+    this.bombBlast.set(cube, { ...blast, owner: e.id, source: `enemy:${e.def}` });
+    spatial.cue('windup', b.x, b.y, b.z);
     sfx3.fuse();
   }
 

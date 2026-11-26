@@ -66,7 +66,7 @@ A boss never stands in the player's line of fire for long (issue #314). Every bo
 
 **The answer.** After a dodge its next move or shot comes within a quarter of a second, so a dodge is followed by an attack. The Shadow is the exception: it does not answer.
 
-**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: it never repositions on its own, so a player who stands still is never chased by its manoeuvre. It still fights on its own, choosing from the moment (see [The Shadow](SHADOW.md#the-fight)).
+**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: it never repositions on its own, so a player who stands still is never chased by its manoeuvre. It still fights on its own, choosing from the moment, with a seeded pause of 1 second to its fight's maximum (2 to 4 seconds) between volleys, and it drops the player's own bombs (see [The Shadow](SHADOW.md#the-fight)).
 
 The code is `src/enemies/evade.ts` (`evasive`), wrapped around each boss's phases in its own file. The tests are in `tests/boss-evasion.test.ts`: every boss, in every phase, leaves the line of fire when shot standing still, is never a sitting duck under steady fire for more than a few seconds, and always has a next action.
 
