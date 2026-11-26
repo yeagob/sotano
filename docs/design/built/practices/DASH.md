@@ -13,7 +13,8 @@ Irimi is the entering step of aikido: step into the movement instead of away fro
 |---|---|
 | Double-tap a movement key (W A S D or the arrows) within 0.25 s | Keyboard and mouse |
 | Double-flick the left stick: push past 0.8, return under 0.3, push the same way within 0.25 s | Gamepad (no button) |
-| Swipe on the left side of the screen, starting right of the stick's zone, at least 60 px within 0.25 s; up is forward, down back | Touch (landscape) |
+| The body button (issue #377): it dashes the way the stick points, forward when the stick rests; with a crouch practice too, it dashes only while the stick is pushed past 30 % (still, it kneels) | Touch (landscape) |
+| Swipe on the left side of the screen, starting right of the stick's zone, at least 60 px within 0.25 s; up is forward, down back | Touch (landscape), kept beside the button |
 
 The direction is the camera's: forward, back, left or right.
 
@@ -44,7 +45,7 @@ A whoosh (`sfx3.dash`), a burst of the practice's glow at the feet, a trail that
 
 ## 5. Controls and words
 
-The gesture is a new meaning of the movement, not a button: the table row `dash` has `keyboard: { doubleTap: 'move' }`, `gamepad: { doubleFlick: 'left' }`, `touch: { control: 'swipe' }`. Nothing reserved is taken. The pause card shows the row always, with the words "(with Irimi)". The prompts name the gesture of the device in use (`controls.dash.key`, `.pad`, `.touch`).
+The gesture is a new meaning of the movement, not a button: the table row `dash` has `keyboard: { doubleTap: 'move' }`, `gamepad: { doubleFlick: 'left' }`, `touch: { control: 'button', shared: 'body', gesture: 'swipe' }`: on a phone a hidden swipe was the only way in, so issue #377 gave it the body button it shares with the crouch ([TOUCH.md §1.1](../../../architecture/input/TOUCH.md)). Nothing reserved is taken. The pause card shows the row always, with the words "(with Irimi)". The prompts name the gesture of the device in use (`controls.dash.key`, `.pad`, `.touch`).
 
 ## 6. Open for the owner
 

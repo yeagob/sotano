@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BINDING, BINDINGS, CONTROL_ROWS, DEVICES, contextsFor, type Binding, type Context, type Device } from '../src/input/bindings';
+import { readFileSync } from 'node:fs';
+import { BINDING, BINDINGS, CONTROL_ROWS, DEVICES, SHARED_TOUCH, contextsFor, type Binding, type Context, type Device } from '../src/input/bindings';
+import SNAPSHOT from './controls.keyboard-gamepad.json';
 import { LESSON_CONTROLS } from '../src/input/labels';
 import { HUD_ICONS } from '../src/content/hud-icons';
 import { EN } from '../src/i18n/locales/en';
@@ -10,7 +12,8 @@ const messages = EN.messages as Record<string, unknown>;
 function inputs(b: Binding, d: Device): string[] {
   if (d === 'keyboard') return [...(b.keyboard.keys ?? []), ...(b.keyboard.mouse ?? []).map(m => `mouse${m}`), ...(b.keyboard.mouseMove ? ['mouseMove'] : []), ...(b.keyboard.wheel ? [`wheel${b.keyboard.wheel}`] : []), ...(b.keyboard.doubleTap ? [`doubleTap-${b.keyboard.doubleTap}`] : [])];
   if (d === 'gamepad') return [...(b.gamepad.buttons ?? []).map(i => `button${i}`), ...(b.gamepad.stick ? [`stick-${b.gamepad.stick}`] : []), ...(b.gamepad.doubleFlick ? [`doubleFlick-${b.gamepad.doubleFlick}`] : [])];
-  return b.touch.control === 'tap' ? [] : [`${b.touch.control}-${b.action}`];
+  // a shared context button is one input for every action it carries (`button-body`), so sharing shows as a clash
+  return b.touch.control === 'tap' ? [] : [`${b.touch.control}-${b.touch.shared ?? b.action}`];
 }
 
 /** Every input claimed twice in one context on one device, as `input on device in context: a and b`. */
@@ -41,8 +44,56 @@ describe('controls contract', () => {
     for (const b of BINDINGS) for (const r of ['minecraft', 'noita', 'isaac'] as const) expect(b.refs[r].length, `${b.action}.${r}`).toBeGreaterThan(3);
   });
 
-  it('no two actions share an input in the same context on the same device', () => {
-    expect(clashes(BINDINGS)).toEqual([]);
+  it('no two actions share an input in the same context on the same device, except the shared touch buttons', () => {
+    // the only shared input is the body button (#377): crouch and dash, on touch, in play
+    expect(SHARED_TOUCH.body).toEqual(['dash', 'crouch']);
+    expect(clashes(BINDINGS)).toEqual(['button-body on touch in play: dash and crouch']);
+    expect(clashes(BINDINGS.filter(b => !b.touch.shared))).toEqual([]);
+  });
+
+  it('the keyboard, mouse and gamepad mappings are unchanged by the touch review (#377)', () => {
+    const now = Object.fromEntries(BINDINGS.map(b => [b.action, JSON.parse(JSON.stringify({ keyboard: b.keyboard, gamepad: b.gamepad }))]));
+    expect(now).toEqual(SNAPSHOT);
+  });
+
+  it('the touch audit table has a row for every action and no empty touch cell', () => {
+    const doc = readFileSync('docs/architecture/input/README.md', 'utf8');
+    const rows = new Map<string, string[]>();
+    for (const line of doc.split(/\r?\n/)) {
+      const cells = line.split('|').slice(1, -1).map(c => c.trim());
+      if (cells.length === 6 && !rows.has(cells[0])) rows.set(cells[0], cells);
+    }
+    for (const b of BINDINGS) {
+      const row = rows.get(b.action);
+      expect(row, `${b.action} has a row in the action table`).toBeDefined();
+      for (const [i, d] of [[3, 'keyboard'], [4, 'gamepad'], [5, 'touch']] as const) expect(row![i].length, `${b.action} on ${d}`).toBeGreaterThan(0);
+    }
+  });
+
+  it('crouch and dash have a visible touch control in play: the body button, with their swipes kept', () => {
+    for (const b of [BINDING.crouch, BINDING.dash]) {
+      expect(b.touch.control, b.action).toBe('button');
+      expect(b.touch.shared, b.action).toBe('body');
+      expect(b.touch.gesture, b.action).toBe('swipe');
+      expect(contextsFor(b, 'touch'), b.action).toEqual(['play']);
+    }
+  });
+
+  it('every action live in play on touch has a visible control or a named gesture there', () => {
+    const visible = new Set(['stick', 'stickEdge', 'lookPad', 'button', 'systemButton', 'tap', 'worldTap', 'turn']);
+    for (const b of BINDINGS.filter(x => contextsFor(x, 'touch').includes('play'))) {
+      expect(visible.has(b.touch.control) || b.touch.control === 'none', `${b.action}: ${b.touch.control}`).toBe(true);
+    }
+  });
+
+  it('the play screen shows at most seven touch buttons when no practice adds one', () => {
+    const buttons = BINDINGS.filter(b => (b.touch.control === 'button' || b.touch.control === 'systemButton') && contextsFor(b, 'touch').includes('play'));
+    const onScreen = new Set(buttons.map(b => b.touch.shared ?? b.action));
+    // drink (a flask on top), miracle (Kairos) and the body button (crouch or dash) appear only in their state
+    const conditional = new Set(['drink', 'miracle', 'body']);
+    expect([...onScreen].filter(k => !conditional.has(k)).length).toBeLessThanOrEqual(7);
+    // the worst case, every conditional button at once, is eight: an open question for the owner (TOUCH.md §1.1)
+    expect(onScreen.size).toBe(8);
   });
 
   it('a double tap of a direction does not clash with the movement keys, but two gestures on the same direction would', () => {
@@ -55,11 +106,12 @@ describe('controls contract', () => {
     expect(clashes([{ ...dash, action: 'move' as const }, dash]).length).toBeGreaterThan(0);
   });
 
-  it('the dash is mapped by a gesture on every device, never a button', () => {
+  it('the dash is a gesture on keyboard and gamepad; on touch the body button and the swipe', () => {
     expect(BINDING.dash.keyboard.doubleTap).toBe('move');
     expect(BINDING.dash.gamepad.doubleFlick).toBe('left');
     expect(BINDING.dash.gamepad.buttons).toBeUndefined();
-    expect(BINDING.dash.touch.control).toBe('swipe');
+    expect(BINDING.dash.touch.control).toBe('button');
+    expect(BINDING.dash.touch.gesture).toBe('swipe');
     expect(contextsFor(BINDING.dash, 'touch')).toEqual(['play']);
   });
 

@@ -9,6 +9,8 @@ import type { Game } from '../game/game';
 import type { Polarity } from '../combat/polarity';
 import { intentPowerLevel } from '../combat/intents';
 import { swipeDir } from './gestures';
+import { bodyChoice, bodyDashDir, bodyShown, type BodyChoice } from './context-button';
+import { ITEM_BY_ID } from '../content/items';
 
 const STICK_SPLIT = 0.42;
 const STICK_DEAD = 0.12;
@@ -82,16 +84,22 @@ export function halfTurn(last: number | null, raw: number): { side: number | nul
   return { side, flip: last !== null && last !== side };
 }
 
-interface Track { kind: 'stick' | 'look' | 'button' | 'slot'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean; crouch?: boolean }
+interface Track { kind: 'stick' | 'look' | 'button' | 'slot' | 'body'; action?: Action; slot?: number; x: number; y: number; ox: number; oy: number; t: number; swipe?: boolean; crouch?: boolean }
 
 import { KAIROS_CHARGES } from '../game/kairos';
-const PAD_ACTIONS = BINDINGS.filter(b => b.touch.control === 'button' || b.touch.control === 'systemButton');
+const PAD_ACTIONS = BINDINGS.filter(b => (b.touch.control === 'button' || b.touch.control === 'systemButton') && !b.touch.shared);
+/** The glyph of the body button for each choice: the practice that gives the verb (Child's Pose kneels, Irimi dashes). */
+const BODY_GLYPH: Record<Exclude<BodyChoice, null>, string> = { crouch: 'balasana', stand: 'balasana', dash: 'irimi' };
 
 export class TouchControls {
   private root: HTMLElement;
   private stick: HTMLElement;
   private knob: HTMLElement;
   private buttons = new Map<Action, HTMLElement>();
+  /** The body button (#377): the context button the crouch and the dash share (context-button.ts). */
+  private body: HTMLElement;
+  private bodyStats = { crouch: false, dash: false };
+  private bodyGlyph = '';
   private tracks = new Map<number, Track>();
   private stickId = -1;
   private key = '';
@@ -116,6 +124,12 @@ export class TouchControls {
       this.buttons.set(b.action, el);
       this.root.appendChild(el);
     }
+    this.body = document.createElement('button');
+    (this.body as HTMLButtonElement).type = 'button';
+    this.body.className = 'tb tb-body';
+    this.body.dataset.body = '1';
+    this.body.hidden = true;
+    this.root.appendChild(this.body);
     const canvas = document.getElementById('game');
     canvas?.after(this.root);
     const opts = { passive: false } as const;
@@ -132,6 +146,7 @@ export class TouchControls {
 
   private label() {
     for (const [a, el] of this.buttons) el.setAttribute('aria-label', t(`controls.${a}` as MessageKey));
+    this.bodyGlyph = '';
   }
 
   private start(e: TouchEvent) {
@@ -142,6 +157,11 @@ export class TouchControls {
       const x = tc.clientX, y = tc.clientY;
       const t = performance.now();
       inp.touchPressed.add('confirm');
+      if (!btn && (tc.target as HTMLElement | null)?.closest?.('[data-body]')) {
+        this.pressBody();
+        this.tracks.set(tc.identifier, { kind: 'body', x, y, ox: x, oy: y, t });
+        continue;
+      }
       const slot = btn ? -1 : this.slotAt(x, y);
       if (slot >= 0) {
         // a tap on the hand chooses that carried item (`pick`); it never places a block
@@ -229,6 +249,10 @@ export class TouchControls {
       const tr = this.tracks.get(tc.identifier);
       this.tracks.delete(tc.identifier);
       if (!tr) continue;
+      if (tr.kind === 'body') {
+        if (![...this.tracks.values()].some(o => o.kind === 'body')) this.body.classList.remove('on');
+        continue;
+      }
       if (tr.kind === 'slot') {
         if (performance.now() - tr.t < TAP_MS && Math.hypot(tr.x - tr.ox, tr.y - tr.oy) < TAP_SLOP) {
           this.input.touchSlot = tr.slot ?? -1;
@@ -264,6 +288,40 @@ export class TouchControls {
     this.side = turn.side;
   }
 
+  /** What the body button does now (context-button.ts), from the practices held, the crouch and the stick. */
+  private bodyNow(): BodyChoice {
+    const { crouch, dash } = this.bodyStats;
+    return bodyChoice({ crouch, dash, crouched: crouch && this.input.held('crouch'), stickX: this.input.touchMove.x, stickY: this.input.touchMove.y });
+  }
+
+  /** A press of the body button: it kneels, stands or dashes, whichever applies at this moment. */
+  private pressBody() {
+    const choice = this.bodyNow();
+    if (!choice) return;
+    this.body.classList.add('on');
+    if (choice === 'dash') this.input.gesture('dash', bodyDashDir(this.input.touchMove.x, this.input.touchMove.y), 'touch');
+    else this.input.toggleCrouch();
+  }
+
+  /** The body button exists only while a practice gives the crouch or the dash; its glyph is what a press would do. */
+  private updateBody(g: Game) {
+    this.bodyStats.crouch = g.stats.get('crouch') >= 1;
+    this.bodyStats.dash = g.stats.get('dash') >= 1;
+    const show = bodyShown({ ...this.bodyStats, crouched: false });
+    this.body.hidden = !show;
+    if (!show) {
+      for (const [id, tr] of this.tracks) if (tr.kind === 'body') this.tracks.delete(id);
+      this.body.classList.remove('on');
+      return;
+    }
+    const choice = this.bodyNow() ?? 'crouch';
+    this.body.classList.toggle('crouched', choice === 'stand');
+    if (choice === this.bodyGlyph) return;
+    this.bodyGlyph = choice;
+    this.body.style.setProperty('--glyph', `url("${iconDataUrl(ITEM_BY_ID.get(BODY_GLYPH[choice])!, 3)}")`);
+    this.body.setAttribute('aria-label', t(choice === 'dash' ? 'controls.dash' : 'controls.crouch'));
+  }
+
   private radius() { return Math.min(innerWidth, innerHeight) * 0.13; }
 
   private placeStick(x: number, y: number, dx: number, dy: number) {
@@ -286,6 +344,7 @@ export class TouchControls {
     this.input.touchHeld.clear();
     this.releaseStick();
     for (const el of this.buttons.values()) el.classList.remove('on');
+    this.body.classList.remove('on');
   }
 
   /**
@@ -320,6 +379,7 @@ export class TouchControls {
       miracle.style.setProperty('--charge', String(g.kairosCharge() / KAIROS_CHARGES));
       miracle.style.setProperty('--kairos', palCss('light.gold'));
     }
+    this.updateBody(g);
     const drink = drinkView(p.active);
     // the loaded intention's power (#111): the ring thickens and glows with every step of damage
     const power = intentPowerLevel(g.stats.get('damage')).toFixed(3);

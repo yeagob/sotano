@@ -83,7 +83,8 @@ describe('run and crouch: the practices and their easy potions', () => {
     expect(BINDING.crouch.keyboard.keys).toEqual(['ControlLeft', 'ControlRight']);
     expect(BINDING.crouch.keyboard.toggle).toEqual(['KeyC']);
     expect(BINDING.crouch.gamepad.buttons).toEqual([PAD.RS]);
-    expect(BINDING.crouch.touch.control).toBe('swipe');
+    expect(BINDING.crouch.touch.control).toBe('button');
+    expect(BINDING.crouch.touch.shared).toBe('body');
     expect(BINDING.run.when).toContain('play');
     expect(BINDING.crouch.when).toContain('play');
   });

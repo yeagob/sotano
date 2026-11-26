@@ -17,9 +17,12 @@ export type PadButton = typeof PAD[keyof typeof PAD];
  * How a touch reaches the action. `worldTap` is a short touch on the world (no drag): it aims at the
  * tapped block. `turn` is a half turn of the phone (the steering-wheel gesture). `none` means the
  * action has no touch button of its own: it is reached through another (the tab button opens the menu).
- * `swipe` is a stroke across the left side of the screen (the dash, DASH.md): it has no button.
+ * `swipe` is a stroke across the screen with no button of its own.
  */
 export type TouchControl = 'stick' | 'stickEdge' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
+
+/** The touch context buttons: one button, several actions, only one of which applies at a time (issue #377). */
+export type ContextButton = 'body';
 
 export interface Binding {
   action: Action;
@@ -29,7 +32,11 @@ export interface Binding {
   keyboard: { keys?: readonly string[]; toggle?: readonly string[]; mouse?: readonly number[]; mouseMove?: true; wheel?: -1 | 1; doubleTap?: 'move'; when?: readonly Context[] };
   /** `doubleFlick: 'left'` is a double flick of the left stick (no button). */
   gamepad: { buttons?: readonly PadButton[]; stick?: 'left' | 'right'; doubleFlick?: 'left'; when?: readonly Context[] };
-  touch: { control: TouchControl; icon?: string; when?: readonly Context[] };
+  /**
+   * `shared` names a context button that several actions share (TOUCH.md §1.1): one button on screen, and a press does
+   * the action that applies now. `gesture` is a second way in, kept beside the button (the swipes of #377).
+   */
+  touch: { control: TouchControl; icon?: string; when?: readonly Context[]; shared?: ContextButton; gesture?: 'swipe' };
   refs: { minecraft: string; noita: string; isaac: string };
 }
 
@@ -67,11 +74,12 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'left click / right trigger to attack and mine', noita: 'left click / right trigger fires the wand while held', isaac: 'holding a fire direction keeps shooting' },
   },
   {
-    // Irimi (DASH.md): a gesture of the movement, not a button. Read only in play, and only with the `dash` stat.
+    // Irimi (DASH.md): a gesture of the movement on keyboard and pad, not a button. Read only in play, and only with the `dash` stat.
     action: 'dash', kind: 'press', when: ['play'],
     keyboard: { doubleTap: 'move' },
     gamepad: { doubleFlick: 'left' },
-    touch: { control: 'swipe' },
+    // touch (#377): the body button, shared with the crouch (it dashes while the stick moves); the swipe still dashes
+    touch: { control: 'button', shared: 'body', gesture: 'swipe' },
     refs: { minecraft: 'a double press of forward sprints; a double jump is the jump button pressed again', noita: 'the levitate key is held; a new meaning of the movement, not a new key', isaac: 'a practice changes what a direction does, never adds a button' },
   },
   {
@@ -86,7 +94,8 @@ export const BINDINGS: readonly Binding[] = [
     action: 'crouch', kind: 'hold', when: ['play'],
     keyboard: { keys: ['ControlLeft', 'ControlRight'], toggle: ['KeyC'] },
     gamepad: { buttons: [PAD.RS] },
-    touch: { control: 'swipe' },
+    // touch (#377): the body button, shared with the dash (it kneels while the stick rests); the swipe down still toggles
+    touch: { control: 'button', shared: 'body', gesture: 'swipe' },
     refs: { minecraft: 'Shift sneaks and will not walk off an edge; a stick click toggles sneaking on a controller', noita: 'no crouch: the body has one shape', isaac: 'no crouch: a practice changes what the body does, never adds a button' },
   },
   {
@@ -251,6 +260,11 @@ export const BINDINGS: readonly Binding[] = [
     refs: { minecraft: 'an item you hold up is used by its own button, never the attack', noita: 'a wand\'s special spell has its own key, held apart from the fire', isaac: 'the active item on its own button (Space / right trigger); one button per active' },
   },
 ];
+
+/** The actions each touch context button carries, in table order. */
+export const SHARED_TOUCH: Readonly<Record<ContextButton, readonly Action[]>> = {
+  body: BINDINGS.filter(b => b.touch.shared === 'body').map(b => b.action),
+};
 
 export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as Record<Action, Binding>;
 

@@ -12,7 +12,7 @@ Two body practices that change how the Roots moves. **Fartlek** (the Swedish "sp
 | Control | Keyboard and mouse | Gamepad | Touch (landscape) |
 |---|---|---|---|
 | Run (Fartlek) | hold Shift | L3 (stick click) toggles it until the left stick returns to centre; also running while the stick is pushed to its edge | push the left stick past 95 % of its radius |
-| Crouch (Child's Pose) | C switches it, Control holds it | R3 (stick click) toggles it | a swipe down from the bottom twelfth of the right side toggles it |
+| Crouch (Child's Pose) | C switches it, Control holds it | R3 (stick click) toggles it | the body button toggles it (issue #377); the swipe down from the bottom twelfth of the right side still does |
 
 Running is 45 % faster on the ground and in the air, and jumping keeps the pace. There is no stamina. Crouching is a stance: the body is a block shorter (1.8 to 0.8 blocks), the eye drops with it, and the body fits through a gap one block high. A crouched body never walks off a ledge, and takes half the contact damage from projections.
 
@@ -46,7 +46,7 @@ Both practices are only ever help. Running costs nothing and makes the way faste
 
 Both are `hold` actions in `BINDINGS`, live in `play` on every device. The keyboard keys (Shift, C) are free in play (C is `calm` only in the meditation screen). The gamepad buttons L3 and R3 are free in play and toggle through the input layer's latches (`runLatch`, `crouchLatch`); the run latch ends when the stick comes back to centre after being pushed.
 
-On touch no button is added (the seven-button limit in play is kept for the Kairos button): **the crouch is a swipe down from the bottom twelfth of the right side, right of the middle**. It toggles the crouch and takes back the look it turned, the same way the dash swipe does. A look drag that is not a downward swipe keeps its look.
+On touch **the crouch is the body button** (issue #377, owner: the crouch had no button on the phone): a context button in the right thumb's arc, above jump and left of throw, shown only while a practice gives the crouch or the dash. A press switches the crouch on, and while crouched the button is ringed in gold and a press stands you up. With Irimi too, it kneels while the stick rests and dashes while the stick moves ([TOUCH.md §1.1](../../../architecture/input/TOUCH.md)). Its glyph is Child's Pose's icon, or Irimi's when a press would dash. The old **swipe down from the bottom twelfth of the right side** still toggles the crouch and takes back the look it turned; it sat where the phone's home gesture lives, so it was hard to find and to make.
 
 The pause card shows both rows always (`CONTROL_ROWS`), with "(with Fartlek or a Stride Tonic)" and "(with Child's Pose or a Folding Tincture)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
 
@@ -73,7 +73,7 @@ Running and crouching have no sound or particle of their own yet (see §8). The 
 Decisions taken on the owner's behalf (review these):
 
 1. **The crouched height** is one block shorter (0.8), the same as the brief's rule. It means a crouched body fits a gap one block high, and only just.
-2. **Crouch on touch is a swipe, not a button.** The brief first said a button, then the seven-button cap (the Kairos button took the seventh) moved it to a downward swipe on the right look pad, toggling. The swipe is a toggle, so the crouch stays on until it is swiped again.
+2. **Crouch on touch is a button again (#377).** The brief first said a button, then the seven-button cap (the Kairos button took the seventh) moved it to a downward swipe; the owner found no way to crouch on the phone. The body button shares one place with the dash, so the cap holds while neither practice is held; with Kairos, a flask on top and a body practice all at once the play screen shows eight buttons, which is open for the owner (TOUCH.md §1.1).
 3. **Running while crouched is refused**, and a dash does not cancel the crouch (§4).
 4. **Contact halving is rounded up** (1 point stays 1), applied after the items' hooks, so a damage-reducing practice still counts first.
 5. **Gamepad run** is both the L3 toggle and the stick at its edge. The stick-click toggles in the menus too (the latch is device state, not screen state); the run latch ends when the stick returns to centre, the crouch latch does not end by itself.
