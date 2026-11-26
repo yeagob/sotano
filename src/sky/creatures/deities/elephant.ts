@@ -30,7 +30,7 @@ import {
 
 // ───────────────────────── numbers (ELEPHANT.md B2–B4, B9: every one a target) ─────────────────────────
 
-export const HITS = 36;
+export const HITS = 960;
 export const RECOVER = 2.5;
 export const REST: readonly [number, number, number] = [3, 2.5, 2];
 /** Levitation over the seat (the water line): the small body hangs from 27, the head reaches about 30. */
@@ -791,6 +791,6 @@ export const elephantDeity: DeityDef = {
   // (B8), so the cap is the whole count
   ally: { act: 'trumpet', every: 6, cap: HITS },
   knock: 'sweep',
-  won: { toast: WON_TOAST, play: settle },
+  won: { toast: WON_TOAST, gift: 'long-memory', play: settle },
   model: { body: BODY, head: HEAD, hw: 1.1, h: 3, progress: (parts, ratio) => poseModel(parts, ratio) },
 };

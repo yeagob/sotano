@@ -26,7 +26,7 @@ import {
 
 // ───────────────────────── targets (HORSE.md B2, B3, B3b, B4, B9) ─────────────────────────
 
-export const HORSE_HITS = 48;
+export const HORSE_HITS = 3840;
 /** Alert starts within this distance. */
 export const SIGHT = 14;
 export const REST: readonly [number, number, number] = [2.5, 2, 1.5];
@@ -1099,7 +1099,7 @@ export const horseDeity: DeityDef = {
   knock: 'kick',
   won: {
     toast: 'toast.horseWon',
-    gift: 'triple-jump',
+    gift: 'open-field',
     // it changes its attitude (provisional, owner 2026-11-03): it stops leaping away, and the wind stops
     play: ctx => {
       const b = brainOf(ctx);

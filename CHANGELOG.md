@@ -8,8 +8,10 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ### Added
 - Stretch, a body practice: keys, bombs and hearts on the floor within 3 blocks fly to you.
+- A gift from each sky deity when it is defeated: Still Sitting, Co-Regulation, Long Memory, Assertive Roar and Open Field (#357).
 
 ### Changed
+- The sky deities have more life: the panda 240 (10 times its former 24), then each deity double the one before, up to the horse at 3840. The horse no longer gives the Triple Jump (#357).
 - A challenge room's three waves run once: after the third is cleared the room stays open and does not start again.
 
 ## 0.2.9-alpha.f5 · 2026-11-25

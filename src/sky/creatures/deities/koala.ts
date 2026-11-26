@@ -363,7 +363,7 @@ const MODEL = koalaModel();
 
 export const koalaDeity: DeityDef = {
   animal: 'koala', floor: 2,
-  hits: 30,
+  hits: 480,
   telegraph: TELEGRAPH[1],
   recover: DOZE,
   rest: [3, 2.5, 2],
@@ -380,6 +380,7 @@ export const koalaDeity: DeityDef = {
   knock: 'hug',
   won: {
     toast: 'toast.skyKoalaWon',
+    gift: 'co-regulation',
     play(ctx) {
       // section 6 (provisional): it lets go of its branch; whether the branches then give way is open
       const b = ctx.deity.body;

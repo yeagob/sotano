@@ -31,9 +31,9 @@ import {
 
 // ───────────────────────── numbers (PANDA.md B2–B4, B9: every one a target) ─────────────────────────
 
-export const HITS = 24;
+export const HITS = 240;
 /** The one change of phase: half the hit count (B3b). */
-export const HALF_HITS = 12;
+export const HALF_HITS = 120;
 /** Levitation over the seat (B2). */
 export const HOVER = 1.5;
 /** Watching starts within this distance, or above WATCH_HEIGHT within 1.5 times it (B2). */
@@ -931,6 +931,7 @@ export function makePandaDeity(only?: readonly Kind[]): DeityDef {
     knock: 'nudge',
     won: {
       toast: 'sky.panda.won',
+      gift: 'still-sitting',
       play(ctx) {
         const m = mindOf(ctx);
         m.won = true;

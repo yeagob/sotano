@@ -127,7 +127,7 @@ function fight(r: Rig, n: number) {
     acted = base >= 0 && (effects() > base || r.runner.active().some(h => h.source === deity.id && h.phase === 'effect'));
   }
   let touches = 0;
-  for (let t = 0; t < 240 && deity.state !== 'Won'; t += DT) {
+  for (let t = 0; t < 900 && deity.state !== 'Won'; t += DT) {
     r.stand(x + 0.5, y, z + 0.5);
     r.frame();
     seen.add(deity.state);

@@ -407,7 +407,7 @@ describe('the koala deity: the guard and defeat (B2, B4)', () => {
   it('from the second stage it clings after each attack: positive hits puff; an ally hugging it lifts the guard', () => {
     const r = rig(only('leaf-drop'));
     awake(r);
-    r.touchDeity(10);
+    r.touchDeity(160);
     r.until(() => r.deity.state === 'Clinging');
     const before = r.deity.hits;
     r.touchDeity();
@@ -423,11 +423,11 @@ describe('the koala deity: the guard and defeat (B2, B4)', () => {
     expect(r.deity.hits).toBe(h + 1);
   });
 
-  it('30 positive hits win it: it lets go, turns ally, fires onWon once for floor 2, and attacks no more', () => {
+  it('480 positive hits win it: it lets go, turns ally, fires onWon once for floor 2, and attacks no more', () => {
     const r = rig();
     awake(r);
-    r.touchDeity(35);
-    expect(r.deity.hits).toBe(30);
+    r.touchDeity(485);
+    expect(r.deity.hits).toBe(480);
     expect(r.deity.side).toBe('ally');
     r.frame();
     expect(r.deity.state).toBe('Won');

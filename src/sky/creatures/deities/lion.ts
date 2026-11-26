@@ -664,7 +664,7 @@ export function poseLion(parts: Parts, p: LionPose) {
 
 export const lionDeity: DeityDef = {
   animal: 'lion', floor: 4,
-  hits: 42,
+  hits: 1920,
   telegraph: TELEGRAPH[3],
   recover: 2,
   rest: [3, 2.5, 2],
@@ -679,6 +679,7 @@ export const lionDeity: DeityDef = {
   knock: 'paw',
   won: {
     toast: 'toast.skyLionWon',
+    gift: 'assertive-roar',
     // its attitude changes (provisional, owner 2026-11-03): the pride lies down (its wild minions go Calm, minion.ts),
     // the stare ends, and the lion settles over its ledge, purring
     play: ctx => {

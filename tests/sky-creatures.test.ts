@@ -488,7 +488,7 @@ describe('the five deities of the sky (SKY.md §5.3)', () => {
     const [a] = realm.creatures.all();
     const ids = realm.creatures.all().map(x => x.id);
     const p = { x: a.body.x, y: a.body.y + 0.5, z: a.body.z };
-    for (let i = 0; i < 24; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
+    for (let i = 0; i < 1000 && a.state !== 'Won'; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
     expect([a.state, a.side]).toEqual(['Won', 'ally']);
     realm.leave();
     realm.creatures.update(DT, 1);

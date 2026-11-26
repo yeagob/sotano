@@ -119,11 +119,16 @@ describe('sky registries', () => {
       expect(d.telegraph).toBe(TELEGRAPH[n]);
       expect(d.telegraph).toBeGreaterThanOrEqual(MIN_TELEGRAPH);
     });
-    expect(ANIMALS.map(a => DEITIES[a].hits)).toEqual([24, 30, 36, 42, 48]);
+    expect(ANIMALS.map(a => DEITIES[a].hits)).toEqual([240, 480, 960, 1920, 3840]);
     expect(ANIMALS.map(a => DEITIES[a].teleport)).toEqual([false, true, false, false, true]);
     expect(DEITIES.horse.hover).toBeNull();
     expect(ANIMALS.map(a => MINIONS[a].hitsToTurn)).toEqual([3, 3, 5, 4, 4]);
     expect(ANIMALS.map(a => [MINIONS[a].max, MINIONS[a].wildMax])).toEqual([[4, 3], [6, 6], [5, 3], [6, 4], [5, 3]]);
+  });
+
+  it('every deity hands out its own gift on defeat, and the horse never gives the triple jump', () => {
+    expect(ANIMALS.map(a => DEITIES[a].won.gift)).toEqual(['still-sitting', 'co-regulation', 'long-memory', 'assertive-roar', 'open-field']);
+    expect(DEITIES.horse.won.gift).not.toBe('triple-jump');
   });
 
   it('has every hindrance once, under its own id', () => {
