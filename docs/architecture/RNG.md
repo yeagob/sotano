@@ -138,4 +138,4 @@ At run start every treasure, vault and boss room of every floor gets its practic
 
 ## 10. Offline tools
 
-The Sanctuary's voice clips (`scripts/meditation-voice/generate.py`, `public/audio/meditation/`) are made once, offline, with Chatterbox. Each clip has a fixed seed (`SEED + index` in sorted key order). This is build tooling, not game randomness: no game path draws from it, and the game plays the committed clips.
+The Sanctuary's voice clips (`scripts/meditation-voice/gemini.py`, `public/audio/meditation/`) are made once, offline, with Gemini's speech model (before issue #381, with Chatterbox in `generate.py`, seeded). Gemini's speech output is not seeded. This is build tooling, not game randomness: no game path draws from it, and the game plays the committed clips.

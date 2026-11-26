@@ -1,5 +1,7 @@
 # Generates the spoken guidance of the Sanctuary (docs/design/built/presences/MEDITATION-APP.md §7a) with Chatterbox,
 # offline. The clips are committed; the game never calls a model or the network during a sitting.
+# Since issue #381, scripts/meditation-voice/gemini.py makes the voices (Gemini's speech model). This file is kept
+# for reference and for its line reader, which gemini.py uses; it is no longer the way to make the voices.
 #
 # Usage (from the repository root, in a Python 3.11 environment with torch (CUDA), torchaudio, chatterbox-tts;
 # --check also needs faster-whisper):
