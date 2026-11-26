@@ -1583,6 +1583,16 @@ export class Game {
     if (this.below) this.gate.start({ to: 'sky', at: this.skyBounds().deck, float: true });
   }
 
+  debugSkyFloor(k: number): boolean {
+    if (!Number.isInteger(k) || k < 1 || k > 6 || this.sandbox || this.gate.busy) return false;
+    const { plans } = this.skyRealm();
+    const p = k === 6 ? plans.totality.platforms[plans.totality.checkpoints[0]] : plans.floors[k - 1].route[0];
+    const at: SkyCell = [Math.floor(p.x), Math.floor(p.y), Math.floor(p.z)];
+    if (this.below) this.gate.start({ to: 'sky', at, float: true });
+    else this.teleport(at[0], at[1], at[2]);
+    return true;
+  }
+
   /** Falling below the deck's floor goes down to the crown (SKY.md §2.4). The sky's own update runs after this. */
   private skyGate() {
     const travel = RealmGate.check('sky', this.player.body, this.skyBounds());

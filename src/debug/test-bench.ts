@@ -31,13 +31,14 @@ export interface BenchHelpers {
 
 /** What the bench reads and calls on the game: every member is a real Game member. */
 export interface BenchGame {
-  readonly player: { invulnT: number; keys: number; bombs: number; hp: number };
+  readonly player: { invulnT: number; keys: number; bombs: number; hp: number; flying: boolean; ghost: boolean };
   readonly maxHp: number;
   readonly spiritNow: number;
   readonly inSky: boolean;
   readonly depth: number;
   debugFloor(k: number): boolean;
   debugSky(): void;
+  debugSkyFloor(k: number): boolean;
   refillSpirit(): void;
   give(id: string): void;
   grant(id: string): boolean;
@@ -49,6 +50,14 @@ export class TestBench {
   constructor(private readonly game: BenchGame, private readonly helpers: BenchHelpers) {}
 
   get god() { return this.godOn; }
+
+  get fly() { return this.game.player.flying; }
+
+  get ghost() { return this.game.player.ghost; }
+
+  setFly(on: boolean) { this.game.player.flying = on; }
+
+  setGhost(on: boolean) { this.game.player.ghost = on; }
 
   setGod(on: boolean) {
     this.godOn = on;
@@ -70,6 +79,8 @@ export class TestBench {
   floor(k: number): boolean { return this.game.debugFloor(k); }
 
   sky() { this.game.debugSky(); }
+
+  skyFloor(k: number): boolean { return this.game.debugSkyFloor(k); }
 
   refillSpirit() { this.game.refillSpirit(); }
 

@@ -34,6 +34,7 @@ export const AIR_JUMP_CLEARANCE = 0.6;
 const WALL_TOUCH = 0.05;
 /** How fast an external push fades, per second: on the ground, on ice, and in the air or water. */
 const PUSH_DRAG = 8, PUSH_DRAG_ICE = 1, PUSH_DRAG_AIR = 2;
+const FLY_SPEED = 9;
 
 /** What the hand holds: a block (its material), a part a projection left (DESIGN §6), or a flask brewed in a laboratory. */
 export type Carried = number | PartDef | Flask;
@@ -127,6 +128,8 @@ export class Player implements Actor {
   breath = 8;
   /** Falling from heaven: gravity is gentle until the first landing, which never hurts. */
   float = false;
+  flying = false;
+  ghost = false;
   /** Swimming this frame (head under a fluid you can swim in). */
   swimming = false;
   /** Direction the player is trying to move this frame (unit or zero), for contact checks. */
@@ -356,6 +359,7 @@ export class Player implements Actor {
     this.airForce.x = this.airForce.z = 0; this.airControl = 0;
     if (this.carrying) this.carryStep(dt, solid);
     else if (this.dashT > 0) this.dashStep(dt, solid, hooks);
+    else if (this.flying) this.flyStep(dt, input, solid);
     else this.walk(dt, input, stats, Math.max(stats.jump, opts.minJump ?? -Infinity), solid, hooks, medium, opts.air);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
@@ -393,6 +397,29 @@ export class Player implements Actor {
       this.carrying = null;
       b.vx = b.vy = b.vz = 0;
     }
+  }
+
+  private flyStep(dt: number, input: Input, solid: (x: number, y: number, z: number) => boolean) {
+    const b = this.body, held = this.heldT > 0;
+    const { x: s, y: f } = held ? { x: 0, y: 0 } : input.move;
+    const sin = Math.sin(this.yaw), cos = Math.cos(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+    const up = held ? 0 : (input.held('jump') ? 1 : 0) - (input.held('crouch') ? 1 : 0);
+    let vx = -sin * cp * f + cos * s, vy = sp * f + up, vz = -cos * cp * f - sin * s;
+    const l = Math.hypot(vx, vy, vz);
+    if (l > 1) { vx /= l; vy /= l; vz /= l; }
+    this.wishX = vx; this.wishZ = vz;
+    this.jumpBuffer = 0;
+    b.vx = vx * FLY_SPEED; b.vy = vy * FLY_SPEED; b.vz = vz * FLY_SPEED;
+    this.moveFree(solid, b, dt);
+  }
+
+  private moveFree(solid: (x: number, y: number, z: number) => boolean, b: Body, dt: number) {
+    if (!this.ghost) { moveBody(solid, b, dt); return; }
+    const vx = b.vx, vz = b.vz;
+    b.vx = 0; b.vz = 0;
+    moveBody(solid, b, dt);
+    b.x += vx * dt; b.z += vz * dt;
+    b.vx = vx; b.vz = vz;
   }
 
   private walk(dt: number, input: Input, stats: Stats, jumpStat: number, solid: (x: number, y: number, z: number) => boolean,
@@ -472,7 +499,7 @@ export class Player implements Actor {
       b.vy = Math.max(b.vy - GRAVITY * (this.float ? 0.15 : 1) * dt, this.float ? -6 : fluid ? -SINK * 4 : -40);
     }
     const wasGround = b.onGround, fall = -b.vy, rise = b.vy, pvx = b.vx, pvz = b.vz;
-    moveBody(solid, b, dt);
+    this.moveFree(solid, b, dt);
     // a wall stops the push too
     if (pvx !== 0 && b.vx === 0) this.pushX = 0;
     if (pvz !== 0 && b.vz === 0) this.pushZ = 0;
