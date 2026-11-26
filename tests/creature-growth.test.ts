@@ -1,5 +1,4 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { Rng } from '../src/core/rng';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { birthHp } from '../src/enemies/types';
@@ -30,7 +29,7 @@ const host = (): EnemyHost => ({
   solid: () => false, worldVersion: () => 1, actors: () => [] as Actor[], actor: () => undefined,
   room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: 13, d: 7, hx: 0, hz: 0 }), elemVersion: () => 0,
   pickupsIn: () => [],
-  hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
+  hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, projectileHit: () => {}, projectileBlock: () => false,
   smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
   affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
 } as EnemyHost);

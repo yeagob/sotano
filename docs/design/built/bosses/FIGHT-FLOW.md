@@ -18,7 +18,7 @@ The entrance omen lasts 1.5 seconds in total. The design asked for 2.5 seconds (
 
 ## 3. Health
 
-A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor; the Shadow is exempt, its life is yours, see [The Shadow](SHADOW.md)) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The Shadow is exempt: its life is your health as it materialises ([SHADOW](SHADOW.md)). The range each floor can give:
+A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor; the Shadow is exempt, its life is yours, see [The Shadow](SHADOW.md)) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The Shadow is exempt: its life is twice your health as it materialises, converted ([SHADOW](SHADOW.md)). The range each floor can give:
 
 | Floor | Life |
 |---|---|
@@ -80,7 +80,7 @@ A boss never stands in the player's line of fire for long (issue #314). Every bo
 
 **The answer.** After a dodge its next move or shot comes within a quarter of a second, so a dodge is followed by an attack. The Shadow is the exception: it does not answer.
 
-**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: it never repositions on its own, so a player who stands still is never chased by its manoeuvre. It still fights on its own, choosing from the moment, with a seeded pause of 1 second to its fight's maximum (2 to 4 seconds) between volleys, and it drops the player's own bombs (see [The Shadow](SHADOW.md#the-fight)).
+**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: it never repositions on its own, so a player who stands still is never chased by its manoeuvre. It still fights on its own, choosing from the moment: it fires as often as the player's fire rate allows, with no pause between shots, while it moves, and it drops the player's own bombs (see [The Shadow](SHADOW.md#the-fight)).
 
 The code is `src/enemies/evade.ts` (`evasive`), wrapped around each boss's phases in its own file. The tests are in `tests/boss-evasion.test.ts`: every boss, in every phase, leaves the line of fire when shot standing still, is never a sitting duck under steady fire for more than a few seconds, and always has a next action.
 

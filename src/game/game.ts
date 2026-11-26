@@ -2101,7 +2101,6 @@ export class Game {
       practices: () => this.inventory.items.map(i => i.def.id),
       health: () => this.playerHealth(),
       placeBomb: (e: Enemy, blast: { radius: number; blocks: number; damage: number }) => this.enemyBomb(e, blast),
-      rng: (e: Enemy, site: string) => this.rng.fork('floor', this.rooms.get(e.room)?.floor ?? 0, 'room', e.room % ROOM_ID_STRIDE, 'boss', site),
       bombs: () => this.player.bombs,
       projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {

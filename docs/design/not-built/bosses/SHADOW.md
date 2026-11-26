@@ -19,10 +19,10 @@ The earlier proposal to summon, as shadows, the projections the player released 
 
 - **Integration.** The ring at the wrist is a state; it needs the art ruling and a place in the HUD or the body.
 - **Silence.** The way into silence leads to the Silence below floor 9, which is not built. Until it is, the Shadow's defeat opens the usual hole.
-- **The conversion.** One heart of yours is 7 of its life, and your 3.5 damage is its 4 (issue #339 left the exact conversion open). Confirm, or name another.
+- **The conversion.** One heart of yours is 7 of its life, doubled after the first playtest (`LIFE_SCALE` 2, so 14), and your 3.5 damage is its 4. Confirm the double after more play, or name another factor.
 - **The stillness ending from a third.** Built as a health threshold so it cannot end the fight at its start. Should it be open from the start?
 - **Harmful practices.** They are copied (the mirror carries your burdens), as the issue decided; to confirm with the owner.
 - **A word on entry.** Nothing tells the player that it took their practices; the copy shows in its shot. Add a toast at the start of the fight (both languages)?
 - **Cold look.** Its bolts are the attack red of every hurting shot (DECISIONS §7.2), and its bombs are the player's own bomb cubes. Should the mirror carry a cold rim, under the art gate?
-- **Its pace.** The maximum pause between volleys is drawn per fight between 2 and 4 seconds (each pause from 1 second to it). Confirm the range.
+- **Its pace.** It fires at the player's own fire rate with no pause (the owner removed the limit after the first playtest, instead of adding dodging). Watch whether a fast build makes the fight unreadable.
 - **Boundaries** is classified (its shots deal nothing) but is not in the catalogue today.

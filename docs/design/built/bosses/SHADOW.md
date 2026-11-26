@@ -8,16 +8,16 @@ The Shadow is the player's own silhouette in the room's negative: the same heigh
 
 - **Pattern:** everything you do not want to see in yourself. To be seen, and to come home.
 - **Path:** all paths.
-- **Health:** the player's health as it materialises (see [Health](#health)). It is exempt from the boss health curve and the seeded life factor of the other bosses (#315), and it never takes a colour tier (#338).
+- **Health:** twice the player's health as it materialises, converted (see [Health](#health)). It is exempt from the boss health curve and the seeded life factor of the other bosses (#315), and it never takes a colour tier (#338).
 
 ## Health
 
-The owner's rule: its life is the player's at entry, "a fight against someone as strong as you". As the Shadow materialises, a moment after the player enters, it takes the player's health in points (every heart and every layer over them) and converts it:
+The owner's rule: its life comes from the player's at entry, "a fight against someone as strong as you", and after the first playtest it is doubled (owner, 2026-11). As the Shadow materialises, a moment after the player enters, it takes the player's health in points (every heart and every layer over them), converts it, and doubles it (`LIFE_SCALE`, 2, one constant so it can change):
 
-- **One heart of the player (8 points) is 7 of its life.** Two of the player's base shots (3.5 each) take one of its hearts, as two of its base strands (4 points each) take one of the player's.
+- **One heart of the player (8 points) is 7 of its life, times two: 14.** Two of the player's base shots (3.5 each) take one of its hearts, as two of its base strands (4 points each) take one of the player's.
 - **Its hits are converted the other way.** Each point of the player's damage is 8/7 of a point on its side: the base 3.5 becomes its 4 (half a heart).
 
-So both sides need the same number of comparable hits, whatever the build: a player with six hearts and the base shot needs twelve hits to end it, and it needs twelve strands to end the player. No practice changes its life when it appears (Systemic Constellation, which weakens every other projection, does not touch it). Its life is not the floor's curve (`bossHp`).
+So, whatever the build, the player needs twice the comparable hits it needs: a player with six hearts and the base shot needs twenty-four hits to end it (84 of life), and it needs twelve strands to end the player. A player with ten hearts meets 140 of life. No practice changes its life when it appears (Systemic Constellation, which weakens every other projection, does not touch it). Its life is not the floor's curve (`bossHp`).
 
 ## The fight
 
@@ -29,8 +29,8 @@ There are no scripted phases and no fixed sequence. Each frame it scores every a
 
 **How it attacks.**
 
-- **Volleys.** Its tell glows and it stands to aim for a beat (0.45 s, a `windup` growl): the opening it gives the player. Then it fires three shots at the player's own fire interval, the first toward where the player stood when the tell began, the next toward where the player is. Each shot is the full fan of the player's strands, cold (negative polarity), drawn in the attack red of every hurting shot (DECISIONS §7.2).
-- **Not a stream.** After the last shot of a volley it pauses before the tell of the next one. Each pause is drawn between **1 second** and the fight's own maximum, and that maximum is drawn once per fight, between **2 and 4 seconds**, both from the fight's seed. So two volleys are always at least 1.45 seconds apart (the pause and the tell), and a fight may be a patient one or a hurried one. The first attack comes 1.5 seconds into the fight, so the player first sees it copy their step.
+- **Shots.** It fires as the player does: as often as the player's own fire interval allows, while it moves, toward where the player is (where the player will be, with Eye Contact). No tell, no volley and no pause between shots: the only limit is the player's fire rate (owner, 2026-11: the limit was removed after the first playtest). Each shot is the full fan of the player's strands, cold (negative polarity), drawn in the attack red of every hurting shot (DECISIONS §7.2). Its bolts fly slower than the player's (9 blocks a second at the base), so each one can still be seen and stepped aside from.
+- **Its first breath.** The first attack comes 1.5 seconds into the fight, so the player first sees it copy their step.
 - **Bombs.** It carries the bombs the player carried at entry and spends them. Close to the player it drops one at its feet, and it is exactly the player's bomb: the same cube, look and fuse (1.8 s), which rolls, can be kicked and is set off by other blasts. It goes off as the player's does, with the player's bomb radius and block damage, and a heart to every actor in it, the Shadow included (owner, 2026-11: its bombs are ours). Its bomb upgrades add to the blast as they are mirrored (Controlled Burn +4 points, Bolt from the Blue +6). It never drops a white bomb: it is cold. Bigger bombs (Pressure Valve) make it reach for them sooner.
 - **Missiles.** With Dr. Launcher, from five to twenty-four blocks away it lobs one of its bombs at the player: the landing is marked while it flies, and it bursts there.
 - **Weapons.** See [The mirror](#the-mirror).
@@ -46,9 +46,9 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Player's stat or practice | The Shadow |
 |---|---|
 | Damage | A full strand deals the player's damage times 8/7 (the base 3.5 gives 4 points) |
-| Fire rate | The interval between the shots of a volley is the player's |
+| Fire rate | The interval between two of its shots is the player's |
 | Shot speed | Bolt speed: 9 blocks a second times the player's shot speed (slower than the player's own, to be read) |
-| Range | Its volleys reach 12 blocks times the player's range and shot speed |
+| Range | Its shots reach 12 blocks times the player's range and shot speed |
 | Size | Bolt radius: 0.12 blocks times the player's size, drawn to match |
 | Move speed, running | Its top speed times the player's; Fartlek times 1.45 more |
 | Jump, air jumps | Its jump rises 1.25 blocks times the player's jump; the player's air jumps |
@@ -59,12 +59,12 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 **Its weapon.** A weapon practice gives it that weapon, cold and always telegraphed in the attack ramp:
 
 - **Blade** (Cut Ties with Toxic Relationships): it keeps the shot, and when the player is within its reach (2.5 blocks times the player's size, at most 3.5) it strokes a line toward them: 0.4 s of warning, three strands' damage as the player's blade, at the player's blade interval.
-- **Beam** (Remember Breathing): it replaces the shot. A line 12 blocks long toward the player, charged as the player's beam (2.7 ÷ fire rate seconds), never under 0.8 s, live for one second; three strands' damage; then its pause.
-- **Great cut** (both, the synergy One Clear Cut): it replaces the shot. A ring grows from its feet to about six blocks, low enough to jump, after 1.4 s of warning; four strands' damage, as the player's; then its pause.
+- **Beam** (Remember Breathing): it replaces the shot. A line 12 blocks long toward the player, charged as the player's beam (2.7 ÷ fire rate seconds), never under 0.8 s, live for one second; three strands' damage; then it may charge again.
+- **Great cut** (both, the synergy One Clear Cut): it replaces the shot. A ring grows from its feet to about six blocks, low enough to jump, after 1.4 s of warning; four strands' damage, as the player's; then it may cut again.
 
-**The fallback.** A player with no practices meets the base mirror: volleys of three single strands of 4 points, 9 blocks a second, after a visible beat and with a pause of at least 1 s between volleys; its own speed, a jump of 1.25 blocks, its orbit, and as many bombs as the player carries. With three hearts it has 21 of life. That is a fair fight.
+**The fallback.** A player with no practices meets the base mirror: single strands of 4 points at the player's base fire interval (2.7 shots a second), 9 blocks a second, on the move; its own speed, a jump of 1.25 blocks, its orbit, and as many bombs as the player carries. With three hearts it has 42 of life.
 
-**Skipped, the documented list.** These have no meaning in a fight, or would act on the player rather than through the Shadow: meals and potions (the nourish practices that grow when you eat or drink), crafting and the recipe book, miracles that are neither a shot nor a movement (stopped time, walking through walls, turning lava), luck, keys and rewards (of rooms, chests and blasts), heart containers, invulnerability and answers to contact or blasts (the hearts are already in the player's health at entry, which is its life), healing and the checkpoint, blocks and mining, carrying, kicking and throwing, fire and lava underfoot, shots through blocks, crouching, shot behaviours a bolt cannot carry (bounces off blocks, intentions in flight), effects on other projections, and effects that would take the player's body out of their control.
+**Skipped, the documented list.** These have no meaning in a fight, or would act on the player rather than through the Shadow: meals and potions (the nourish practices that grow when you eat or drink), crafting and the recipe book, miracles that are neither a shot nor a movement (stopped time, walking through walls, turning lava), luck, keys and rewards (of rooms, chests and blasts) and pulling pickups, heart containers, invulnerability and answers to contact or blasts (the hearts are already in the player's health at entry, which is its life), healing and the checkpoint, blocks and mining, carrying, kicking and throwing, fire and lava underfoot, shots through blocks, crouching, shot behaviours a bolt cannot carry (bounces off blocks, intentions in flight), effects on other projections, and effects that would take the player's body out of their control.
 
 ### Every practice
 
@@ -145,6 +145,7 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Spagyric Art | `spagyric` | skipped | Potions |
 | Spiral Growth | `spiralgrowth` | copied | Fire rate ×2, two more strands at 40% |
 | Stoic Resolve | `stoic` | copied | Damage +2, size ×1.4 |
+| Stretch | `stretch` | skipped | Loot: pulls keys, bombs and hearts on the floor to you; the Shadow picks nothing up |
 | Tao Te Ching | `taoteching` | skipped | World: piercing blocks |
 | Tea Ceremony | `teaceremony` | skipped | Potions |
 | Thinking, Waiting, Fasting | `thinkwaitfast` | skipped | Defence: invulnerability, luck |
@@ -161,7 +162,7 @@ A new practice without a row in the code's table fails `tests/shadow-mirror.test
 
 ## Evasion
 
-An orbit: you cannot shoot your own shadow while it stands. Shot while it stands still (its tell is the usual moment), it slides around the player for 0.35 seconds after a 0.25-second tell, keeping its distance, so standing still beside it can still end the fight; then it keeps strafing the way the slide took it. Cooldown 2 seconds (with a mirrored Irimi: 4.5 blocks in 0.25 seconds, cooldown 1.2). It does not answer the dodge with an attack, and it never repositions on its own. See [Fight flow](FIGHT-FLOW.md#evasion).
+An orbit: you cannot shoot your own shadow while it stands. Shot while it stands still (rare: it strafes as it fires), it slides around the player for 0.35 seconds after a 0.25-second tell, keeping its distance, so standing still beside it can still end the fight; then it keeps strafing the way the slide took it. Cooldown 2 seconds (with a mirrored Irimi: 4.5 blocks in 0.25 seconds, cooldown 1.2). It does not answer the dodge with an attack, and it never repositions on its own. See [Fight flow](FIGHT-FLOW.md#evasion).
 
 ## Toasts
 
