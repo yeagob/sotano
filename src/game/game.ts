@@ -87,6 +87,9 @@ import { CrackView, CutHalves, DebrisView } from '../render/debris-view';
 import { LOVE_BLAST, MISSILE_TRAIL, MissileView } from '../render/missile-view';
 import { Hands } from '../render/hands';
 import { Particles } from '../render/particles';
+import { WindView } from '../render/wind-view';
+import { Wind, WIND_FROM } from './wind';
+import { AirForces } from '../physics/air-forces';
 import { currentVoice, panelImages, Tablets } from '../render/tablets';
 import { PageStone } from '../render/page-stone';
 import { loadBook } from '../content/book';
@@ -431,6 +434,11 @@ export class Game {
   private cutHalves: CutHalves;
   private cracks: CrackView;
   private particles: Particles;
+  /** The forces of the air on the body (ENTITIES.md, "Forces in the air"); the wind is one source, a practice may filter it. */
+  readonly airForces = new AirForces();
+  /** The wind above the crown (WIND.md), made fresh each run on `fork('wind', n)`. */
+  wind!: Wind;
+  private windView: WindView;
   private intents: Intents;
   private api: HostApi;
   private time = 0;
@@ -597,6 +605,7 @@ export class Game {
     sun.position.set(0.4, 1, 0.3);
     this.scene.add(sun);
     this.particles = new Particles(this.scene, 900);
+    this.windView = new WindView(this.scene, WIND_FROM);
     this.stars = makeStars();
     this.scene.add(this.stars);
     this.debrisView = new DebrisView(this.scene, this.atlas, MAX_CUBES);
@@ -734,6 +743,10 @@ export class Game {
     const box = sandbox ? carveSandbox(this.dw, this.rng, sandbox) : null;
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
+    // the wind above the crown: a fresh clock each run, each 3-second period's direction on its own fork (RNG.md)
+    this.wind = new Wind(n => this.rng.fork('wind', n), WIND_FROM);
+    this.airForces.add(this.wind);
+    this.windView.clear();
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
     this.courses = []; this.branchesAll = false; this.watersWoken = 0;
     this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.zone = ''; this.presenceReplies.clear();
@@ -5563,6 +5576,7 @@ export class Game {
     const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
     // the branch courses move before the body does, and carry it when it stands on a moving piece (BRANCHES.md)
     if (below) for (const c of this.courses) c.update(this.time, dt, this.dw, b);
+    this.wind.advance(dt);
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5572,7 +5586,7 @@ export class Game {
       },
       bump: speed => this.headBump(speed),
       dashBreak: (x, y, z) => this.dashBreak(x, y, z),
-    }, this.playerMedium, below ? {} : { minJump: 1 });
+    }, this.playerMedium, below ? { air: this.airForces } : { minJump: 1 });
     if (below && b.onGround) this.groundBand = bandOf(b.y);
     if (this.player.dashStarted) this.dashFx();
     if (dashing || this.player.dashStarted) { this.dashTrail(dashFrom); this.dashStrike(dashFrom); }
@@ -5629,6 +5643,8 @@ export class Game {
     this.cloudLayer.place(this.tree.cloud);
     if (below) this.chestViews.update(dt, this.player.keys);
     this.particles.update(dt, this.camera.position);
+    if (below) this.windView.update(dt, this.camera.position, this.wind.direction);
+    else this.windView.clear();
     this.debrisView.update(this.debris);
     this.missileView.update(this.missiles.list);
     this.cutHalves.update(dt);

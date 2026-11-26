@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { Input } from '../input/input';
 import { boxHits, moveBody, type Body } from '../physics/voxel-collide';
 import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER, STEER_RUNG } from '../physics/jump';
+import type { AirForces, AirQuery, AirVec } from '../physics/air-forces';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
@@ -43,6 +44,17 @@ export interface PlayerMedium { feet: ElementDef | null; head: ElementDef | null
 export interface PlayerUpdateOptions {
   /** The effective `jump` stat is never below this (the sky passes 1: practices only make it easier, SKY.md §2.5). */
   minJump?: number;
+  /** The forces of the air (the wind above the crown): asked only while the body is airborne, walking, not swimming. */
+  air?: AirForces;
+}
+
+/** How fast the walk pulls the body toward the wished velocity, per second, at control `k` (1 on the ground). */
+const STEER_RATE = 14;
+
+/** The player's own air movement force, blocks/s²: the pull the walk gives a body at rest in the air holding a
+ *  direction, `STEER_RATE × control × speed` (at base stats 14 × 0.35 × 4.6 = 22.54). The wind is 1.1 times it. */
+export function airControlForce(control: number, speed: number): number {
+  return STEER_RATE * control * speed;
 }
 
 /** A point the body is carried to (`Player.carry`). */
@@ -125,6 +137,11 @@ export class Player implements Actor {
   airStep = 0;
   /** The hand the next shot leaves from (game.ts reads it only while the `twinCast` stat is on). */
   castSide: CastSide = 1;
+  /** The air's force on the body this frame, blocks/s² (0 on the ground): the sum of `PlayerUpdateOptions.air`. */
+  readonly airForce: AirVec = { x: 0, z: 0 };
+  /** The body's own air control force this frame, blocks/s² (`airControlForce`; 0 while it is not walking in the air). */
+  airControl = 0;
+  private airQuery: AirQuery = { x: 0, y: 0, z: 0, control: 0 };
   private jumpBuffer = 0;
   private coyote = 0;
   /** An external push, blocks/s, laid over the walk and fading on its own (a vertical push goes straight to `vy`). */
@@ -319,9 +336,10 @@ export class Player implements Actor {
     // crouching is a stance, not a move: it changes the body's height before anything moves it (a dash keeps it)
     this.setStance(stats.crouch >= 1 && input.held('crouch'), solid);
     if (input.hit('dash') && input.dashDir) this.startDash(input.dashDir, stats.dash, medium);
+    this.airForce.x = this.airForce.z = 0; this.airControl = 0;
     if (this.carrying) this.carryStep(dt, solid);
     else if (this.dashT > 0) this.dashStep(dt, solid, hooks);
-    else this.walk(dt, input, stats, Math.max(stats.jump, opts.minJump ?? -Infinity), solid, hooks, medium);
+    else this.walk(dt, input, stats, Math.max(stats.jump, opts.minJump ?? -Infinity), solid, hooks, medium, opts.air);
     if (b.onGround) this.walkPhase += Math.hypot(b.vx, b.vz) * dt;
     this.fireCooldown -= dt;
     this.invulnT = Math.max(0, this.invulnT - dt);
@@ -361,7 +379,7 @@ export class Player implements Actor {
   }
 
   private walk(dt: number, input: Input, stats: Stats, jumpStat: number, solid: (x: number, y: number, z: number) => boolean,
-    hooks: PlayerHooks, medium: PlayerMedium) {
+    hooks: PlayerHooks, medium: PlayerMedium, airForces?: AirForces) {
     const held = this.heldT > 0;
     const { x: s, y: f } = held ? { x: 0, y: 0 } : input.move;
     const sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);
@@ -383,7 +401,7 @@ export class Player implements Actor {
     const air = this.airStep >= STEER_RUNG ? 1 : AIR_CONTROL;
     // on ice you keep sliding: far less grip to start, turn or stop
     const k = swim ? SWIM_CONTROL : b.onGround ? (medium.slippery ? ICE_GRIP : 1) : air;
-    const blend = 1 - Math.exp(-14 * k * dt);
+    const blend = 1 - Math.exp(-STEER_RATE * k * dt);
     // the walk blends its own velocity; an external push is laid over it afterwards and fades on its own
     const ownX = b.vx - this.pushX, ownZ = b.vz - this.pushZ;
     if (this.pushX !== 0 || this.pushZ !== 0) {
@@ -393,6 +411,15 @@ export class Player implements Actor {
     }
     b.vx = ownX + (wx * speed - ownX) * blend + this.pushX;
     b.vz = ownZ + (wz * speed - ownZ) * blend + this.pushZ;
+    // the air's forces act only on a body off the ground (the collision's own ground test) and out of the water. Each is
+    // integrated as part of the walk's own pull: it moves the velocity the walk settles at by force / rate, so pushing
+    // straight against a force 1.1 times the body's own leaves a drift of 0.1 × the walk speed with it
+    if (airForces && !b.onGround && !swim) {
+      const rate = STEER_RATE * k, q = this.airQuery;
+      q.x = b.x; q.y = b.y; q.z = b.z; q.control = this.airControl = airControlForce(k, speed);
+      const f = airForces.total(q, this.airForce);
+      if (f.x !== 0 || f.z !== 0) { b.vx += (f.x / rate) * blend; b.vz += (f.z / rate) * blend; }
+    }
     // a crouched body never walks off a ledge (Minecraft's sneak): an axis whose next step leaves no ground stops
     if (crouch && b.onGround && !swim) {
       if (!supportedAt(solid, b, b.x + b.vx * dt, b.z)) b.vx = 0;

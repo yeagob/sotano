@@ -35,7 +35,7 @@ The four trunk stories are one hollow column, a wall of bark three blocks thick 
 
 ## The sky above it
 
-Above the surface, the open sky is 260 blocks high, up to the top of the world. The sky turns to night from the branches up, and the stars come out in it. Silence and heaven loop around the top of the sky (see [SILENCE](../floors/SILENCE.md)).
+Above the surface, the open sky is 260 blocks high, up to the top of the world. The sky turns to night from the branches up, and the stars come out in it. From the crown up the wind always blows, and it pushes you whenever you are in the air (see [WIND](WIND.md)). Silence and heaven loop around the top of the sky (see [SILENCE](../floors/SILENCE.md)).
 
 ## Documents
 
@@ -47,6 +47,7 @@ Above the surface, the open sky is 260 blocks high, up to the top of the world. 
 | [LEAVES.md](LEAVES.md) | The Leaves: the room of the crown, by the last stair, its band and the crown's place |
 | [STAR-MAP.md](STAR-MAP.md) | The star map: the menu's map tab, the floor as a constellation and the crown from above |
 | [STARS.md](STARS.md) | Heaven: the disc, the pads and the constellations, and the night |
+| [WIND.md](WIND.md) | The wind above the crown: from 146 blocks over the base it pushes you in the air with 1.1 times your own air control, turning every 3 seconds; white streaks (issue #373) |
 | [BARK.md](BARK.md) | The bark by height, the boughs and the old and young leaves: what the tree is made of, story by story |
 
 Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads, the Leaves), `src/world/branches.ts` and `src/world/course.ts` (the branch courses), `src/world/crown.ts` (the crown's place), `src/game/star-map.ts` (the star map), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (the barks, boughs, leaves, starstone).

@@ -24,6 +24,7 @@ The movement is kept simple on purpose: the challenge of the dungeon is in the b
 - Coyote time: 0.1 s after leaving the ground.
 - Jump buffer: 0.12 s before landing.
 - Air control: about a third of the control you have on the ground.
+- Above the crown of the tree the wind pushes you in the air with 1.1 times your own air control, so there you can slow your drift but never stop it ([WIND](../levels/giant-tree/WIND.md)).
 - Ice: the grip on a slippery floor is about an eighth of the normal grip.
 - Wading: you move at 60 percent of your pace in water and 40 percent in lava; a jump out of a fluid is weaker than a jump on land.
 
