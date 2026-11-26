@@ -82,6 +82,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `damage` (to actors), `mining` (to blocks, absolute: separate from damage), `fireRate`, `shotSpeed`, `range`, `gravity`, `size` | Intentions |
 | `moveSpeed`, `jump` | Movement |
 | `airJumps` | Jumps you may make in the air before landing (0 by default, at most 3, floored: the first Triple Jump copy gives two, the second one more, a third none); each climbs the ladder `[1, 2, 8, 16]` of `physics/jump.ts` (SKY.md §9; the 16 is the fourth jump, reached only with three air jumps) |
+| `wallJumps` | The last of the `airJumps` that need a solid block touching your side (0 by default, at most 3, floored; the Wall Jump adds one per copy, [WALL-JUMP.md](../design/built/practices/body/WALL-JUMP.md)) |
 | `reach` | How far you can place blocks |
 | `carry` | How many blocks you can hold (2 by default: one per hand; items add to it) |
 | `kick`, `throw` | Strength of kicks and throws |

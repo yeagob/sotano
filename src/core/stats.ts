@@ -9,7 +9,7 @@ import { fmtNum, t } from '../i18n';
 
 export type StatName =
   | 'damage' | 'fireRate' | 'shotSpeed' | 'range' | 'gravity' | 'size' | 'luck' | 'mining'
-  | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
+  | 'moveSpeed' | 'jump' | 'airJumps' | 'wallJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
   | 'twinCast' | 'triad' | 'spiral' | 'recipes';
@@ -37,6 +37,7 @@ export const BASE_STATS: Stats = {
   moveSpeed: 1,    // relative (1 = 4.6 blocks/s)
   jump: 1,         // relative jump height (1 ≈ 1.25 blocks)
   airJumps: 0,     // jumps you may make in the air before landing (floored; at most 3: two Triple Jump copies, SKY.md §9)
+  wallJumps: 0,    // the last of the airJumps that need a solid block touching your side (floored; Wall Jump, WALL-JUMP.md; 0 = none)
   reach: 4,        // reach for placing blocks, in blocks (4 = 20% less than the old 5; issue #162)
   carry: 2,        // how many blocks you can hold (floored): one per hand
   kick: 1,         // kick strength multiplier
@@ -70,6 +71,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   moveSpeed: [0.3, 3],
   jump: [0.3, 5],
   airJumps: [0, 3],
+  wallJumps: [0, 3],
   carry: [1, 9],
   kick: [0.2, 6],
   throw: [0.2, 6],
@@ -107,6 +109,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   moveSpeed: times,
   jump: times,
   airJumps: v => fmtNum(Math.floor(v), 0),
+  wallJumps: v => fmtNum(Math.floor(v), 0),
   reach: v => blocks(v, 1),
   carry: v => blocks(Math.floor(v), 0),
   kick: times,
