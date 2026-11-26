@@ -58,8 +58,9 @@ export const climbOf = (extra: number) => 1 + Math.max(0, Math.floor(extra));
 export const leapAir = (air: number, extra: number) => extra > 0 ? Math.sqrt(air * air + 52 * extra / 169) : air;
 
 /**
- * The difficulty a run plays at. There is no difficulty setting yet: it is 1, and the formula takes it
- * as an input so a later issue (#352, from the mastery level) can drive it. 0 makes everything Black.
+ * The difficulty at mastery level 0, the default of the formula. A run's difficulty comes from the Roots' mastery
+ * level (#352, enemies/difficulty.ts `difficultyOf`: 1 + min(level, 100) / 100) and the game passes it in.
+ * 0 makes everything Black.
  */
 export const BASE_DIFFICULTY = 1;
 
