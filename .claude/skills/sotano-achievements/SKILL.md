@@ -7,6 +7,8 @@ description: Achievement discipline for The Roots. Use it EVERY time an achievem
 
 An **achievement** is a moment the game remembers between runs: a boss overcome, a meditation sat to the end, a first potion, a page of the Roots' book. **Each achievement is one level of the Roots' mastery**, and the mastery level decides what floor 0 lays out for the next run. The catalogue is data; the tracker is pure; the game only feeds it events and shows a card.
 
+**Mandatory:** every time an achievement is added, changed or removed, or a reward (item, decoration or zone) is attached to one, the **register issue** is updated in the same change: the GitHub issue titled "Achievements register" (its number is written in section 9 once it exists; until then, the register issue, created on first use). See section 9.
+
 Design, for depth: [ACHIEVEMENTS](../../../docs/design/built/progression/ACHIEVEMENTS.md) (the 47, the data model, the notice), [MASTERY](../../../docs/design/built/progression/MASTERY.md), [SAVE](../../../docs/design/built/progression/SAVE.md), [REWARDS](../../../docs/design/built/levels/roots/REWARDS.md) (the table, §6 rules, §7 the step lines).
 
 ## 1. The owner's rules (binding)
@@ -119,4 +121,29 @@ Rules: short (two to four words), title case in English, sentence case in Spanis
 - [ ] If the level is new to the table: its step added, bounded, monotonic, its `mastery.gain.*` line in both languages, REWARDS updated.
 - [ ] Seen in the browser: the corner notice shows the name, description and "N of 100", leaves after 5 s (7 s for a long description), in both languages, with no gain line.
 - [ ] Docs: ACHIEVEMENTS §1 (and §2 for a new event), #179.
+- [ ] Register issue updated (section 9), in the same change.
 - [ ] `npm run typecheck && npm test`.
+
+## 9. The achievements register
+
+The register is the GitHub issue titled **"Achievements register"** (number: created on first use, written here once it exists). It holds **only the achievements that exist**, one row each, in order of mastery level. The pending ones stay in #179, and the register links to it.
+
+Each row holds:
+
+| Field | What it says |
+|---|---|
+| Level | its place in `ACHIEVEMENTS` (the mastery level it gives) |
+| Id | the stable catalogue id |
+| Name (EN / ES) | `achievement.<id>.name` |
+| Description (EN / ES) | `achievement.<id>.desc` |
+| Unlock rule | the rule as the code checks it: `on`, `where`, `times` |
+| Reward | none, item, decoration or zone, with its id |
+| Progression | the level it sets, and the id the next level needs |
+| Defined in | the feature or issue that defined it |
+| Status | on `develop`, or on a named branch |
+
+**How to update it:**
+
+1. Edit the issue body's table: keep the rows in mastery-level order.
+2. Under the table, set one line: `Last changed: <commit sha or issue number>`.
+3. Pending count: 100 minus the number of entries in `ACHIEVEMENTS`, read from `src/content/achievements.ts`, never from memory. Write it as "Pending: N levels empty up to 100", with the link to #179.
