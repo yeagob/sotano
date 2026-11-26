@@ -5,6 +5,7 @@
 import type { Behaviour, Enemy, EnemyCtx } from './types';
 import { fx } from '../core/fx';
 import { hash3 } from '../core/rng';
+import { leapAir } from './tiers';
 
 /**
  * Walk at the target and keep pressing on it (Doubt). With `hesitate`, it stops every so often to
@@ -194,9 +195,11 @@ export function leap(opt: { every: number; range: number; crouch: number; air: n
         e.wishX = 0; e.wishZ = 0;
         e.pulse = 1 - e.timer / opt.crouch;
         if (e.timer <= 0) {
-          const vx = e.aimX * d / opt.air, vz = e.aimZ * d / opt.air;
-          e.body.vx = vx; e.body.vz = vz; e.body.vy = 13 * opt.air;
-          e.state = 'air'; e.timer = opt.air; e.pulse = 0;
+          // a tier that climbs higher (tiers.ts) arcs its extra blocks higher, and still lands on its mark
+          const air = leapAir(opt.air, e.climb ?? 0);
+          const vx = e.aimX * d / air, vz = e.aimZ * d / air;
+          e.body.vx = vx; e.body.vz = vz; e.body.vy = 13 * air;
+          e.state = 'air'; e.timer = air; e.pulse = 0;
           ctx.cue(e, 'leap');
         }
         return;

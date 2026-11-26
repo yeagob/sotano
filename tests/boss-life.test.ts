@@ -6,6 +6,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { BOSSES, BOSS_BY_ID, BOSS_ZONES, bossHp, bossLife, bossLifeFactor, bossLifeRange } from '../src/content/bosses';
 import { RunRandom } from '../src/core/rng';
+import { tierStats } from '../src/enemies/tiers';
 
 vi.mock('../src/audio/sfx', () => {
   const silent = new Proxy({}, { get: () => () => {} });
@@ -109,12 +110,18 @@ describe('boss life: the curve and the factor', () => {
 });
 
 describe('boss life in the game', () => {
+  /** The boss's life of its floor and seed, times its colour tier when it rose in one (#338: health only). */
+  const expected = (g: any, e: any, floor: number, seed: number, id: string) => {
+    const life = bossLife(floor, new RunRandom(seed), id), tier = g.projectionTier.get(e.id);
+    return tier ? tierStats(BOSS_BY_ID.get(id)!, tier, life).hp : life;
+  };
   const rig = (seed: number, floor: number): any => {
     const g: any = Object.create(Game.prototype);
     g.rng = new RunRandom(seed);
     g.actors = { newId: () => 1, add: () => {} };
     g.bus = { emit: (_kind: string, payload: object) => ({ cancelled: false, ...payload }) };
     g.projectionSeq = new Map();
+    g.projectionTier = new Map();
     g.enemies = { list: [] as any[], spawn: (def: any, id: number, room: number, _x: number, _y: number, _z: number, hp: number) => {
       const e = { id, def: def.id, spec: def, room, hp, maxHp: hp, alive: true };
       g.enemies.list.push(e);
@@ -129,7 +136,7 @@ describe('boss life in the game', () => {
       for (const [floor, id] of [[1, 'resistance'], [4, 'downpour'], [9, 'shadow']] as const) {
         const g = rig(seed, floor);
         const e = (Game.prototype as any).spawnEnemy.call(g, id, { id: 3, floor, type: 'boss' }, 0, 1, 1, 1);
-        expect(e.maxHp, `${id} floor ${floor} seed ${seed}`).toBe(bossLife(floor, new RunRandom(seed), id));
+        expect(e.maxHp, `${id} floor ${floor} seed ${seed}`).toBe(expected(g, e, floor, seed, id));
         expect(e.hp).toBe(e.maxHp);
       }
     }
@@ -149,6 +156,6 @@ describe('boss life in the game', () => {
     });
     (Game.prototype as any).syncBossBar.call(g);
     expect(bar.bar.ratio).toBeCloseTo(0.5);
-    expect(boss.maxHp).toBe(bossLife(2, new RunRandom(12345), 'resistance'));
+    expect(boss.maxHp).toBe(expected(g, boss, 2, 12345, 'resistance'));
   });
 });

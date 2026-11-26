@@ -104,6 +104,7 @@ import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { TunnelLog } from './minimap';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
+import { spawnTier, tierStats, type Tier } from '../enemies/tiers';
 import { requestOf } from '../content/presences/requests';
 import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
 import { ChoiceGuard, boatmanCrossing, choiceOutcome, offerOutcome } from '../content/presences/consent';
@@ -373,6 +374,8 @@ export class Game {
   private spawnSeq = new Map<number, number>();
   /** Per live projection: the spawn count of its omen, the seed path of its parts. */
   private projectionSeq = new Map<number, number>();
+  /** The tier of every Yellow or Red projection of the run, kept past its death so the death screen can name it. */
+  private projectionTier = new Map<number, Tier>();
   private camDir = new THREE.Vector3();
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
@@ -731,7 +734,7 @@ export class Game {
       unsafe: (x, y, z) => !!elemDef(this.world.elemAt(x, y, z)),
     });
     this.potions.clear();
-    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.projectionTier.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     attachDevlog(this.bus);
     this.listenAchievements();
@@ -1762,7 +1765,7 @@ export class Game {
       this.bus.emit('playerDied', { floor: bandOf(p.body.y), source });
       this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
       sfx3.death();
-      this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
+      this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source, typeof owner === 'number' ? this.projectionTier.get(owner) : undefined);
       this.endRoots();
       // the Echo remembers where this run faded (ECHO.md): the deepest floor reached
       this.keeper.recordFade(this.maxDepth);
@@ -2014,7 +2017,7 @@ export class Game {
         this.damageBlock(x, y, z, damage, 'crush', `enemy:${e.def}`);
         return true;
       },
-      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE),
+      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE * (e.power ?? 1)),
       died: (e: Enemy) => this.onEnemyDeath(e),
       pickupsIn: (room: number) => this.pickups.list.filter(p => !p.taken && p.room === room && (p.type === 'key' || p.type === 'bomb' || p.type === 'heart'))
         .map(p => ({ kind: p.type as PickupKind, x: p.x, y: p.y, z: p.z, take: () => this.pickups.take(p) })),
@@ -2341,9 +2344,13 @@ export class Game {
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
     // a release the Mender may bring back on this floor (mended.ts)
-    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def);
+    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def, e.tier ?? 'black');
     // a hostile projection destroyed by harm: its health is at zero (a self-ending, an alarm's blast or a fall, keeps health above zero)
-    if (e.faction === 'projection' && e.hp <= 0) this.bus.emit('projectionDestroyed', { def: e.def, boss: e.spec.kind === 'boss' });
+    if (e.faction === 'projection' && e.hp <= 0) {
+      this.bus.emit('projectionDestroyed', { def: e.def, boss: e.spec.kind === 'boss' });
+      // optional, off by default (FALTER_ENABLED): the strongest form let go, the rest of its room falters (DEEPER-BEHAVIOUR)
+      this.enemies.falter(e);
+    }
     // the Shadow's stillness ending is a turning to your side, not a destruction (ACHIEVEMENTS §1)
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor, e.tags.has(STILLNESS_TAG) ? 'stillness' : 'destroyed');
     if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
@@ -2568,13 +2575,18 @@ export class Game {
     if (!def) return null;
     const id = this.actors.newId();
     const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
-    const hp = def.kind === 'boss' ? bossLife(r.floor, this.rng, defId) : rooted ? Math.round(birthHp(def) * ROOTED_HP) : birthHp(def);
+    // the colour tier: projections and bosses (health only), never the Shadow, on its own fork so no other roll moves (TIERS.md)
+    const tier = spawnTier(this.rng, r.floor, r.id % ROOM_ID_STRIDE, seq, def);
+    // a boss's life comes from its floor and the run's seed (#315); the tier multiplies it
+    const base = def.kind === 'boss' ? bossLife(r.floor, this.rng, defId) : rooted ? Math.round(birthHp(def) * ROOTED_HP) : birthHp(def);
+    const stats = tier === 'black' ? { hp: base, speed: def.speed, contactDamage: def.contactDamage } : tierStats(def, tier, base);
     const tags = new Set(def.asleep ? ['asleep'] : []);
     if (rooted) tags.add('rooted');
-    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags, x, y, z });
+    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp: stats.hp, speed: stats.speed, contactDamage: stats.contactDamage, tags, x, y, z });
     if (ev.cancelled) return null;
     this.projectionSeq.set(id, seq);
-    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
+    if (tier !== 'black') this.projectionTier.set(id, tier);
+    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags, tier);
     this.actors.add(e);
     return e;
   }
@@ -4718,7 +4730,9 @@ export class Game {
     // beside the Mender, on the side away from the player, so it does not stand in the player's way
     const a = Math.atan2(b.z - player.z, b.x - player.x);
     const x = b.x + Math.cos(a) * 1.2, z = b.z + Math.sin(a) * 1.2;
-    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, birthHp(def), def.speed, def.contactDamage, new Set([MENDED_TAG]));
+    // it comes back in the tier it was released in (TIERS.md): its numbers, its white ally body
+    const tier = this.releases.lastTier(r.floor), s = tierStats(def, tier);
+    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, s.hp, s.speed, s.contactDamage, new Set([MENDED_TAG]), tier);
     e.spawning = 0;
     this.actors.add(e);
     this.setFaction(e, 'self', 'mender');

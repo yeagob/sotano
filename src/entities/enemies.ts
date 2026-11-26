@@ -11,12 +11,12 @@ import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { grownScale, setScale, shrunkScale } from './growth';
-import { MENDED_TAG } from '../content/presences/mended';
 import { boxHits, freeBody, moveBody } from '../physics/voxel-collide';
 import {
-  ALLY_PUSH, CLIMB_JUMP, DOOR_REACH, DOOR_WALK_TIME, FOLLOW_FAR, FOLLOW_NEAR, PATH_RANGE, PLAYER_PUSH, SHOT_RANGE, SOFT_COST, STEP_JUMP, TELEPORT_RADIUS, YIELD_RADIUS, LANE_GAP,
+  ALLY_PUSH, CLIMB_JUMP, DOOR_REACH, DOOR_WALK_TIME, FOLLOW_FAR, FOLLOW_NEAR, PATH_RANGE, PLAYER_PUSH, SHOT_RANGE, SOFT_COST, TELEPORT_RADIUS, YIELD_RADIUS, LANE_GAP,
   across, approaching, entrySpot, holdLedge, isAlly, keepClear, laneSide, nudgePlayer, overlaps, spacing, stepOf, yieldStep, type Escortee,
 } from '../enemies/escort';
+import { allyColor, climbOf, FALTER_ENABLED, falterTargets, FALTER_SECONDS, tierModel, tierMultipliers, type Tier } from '../enemies/tiers';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
@@ -36,6 +36,8 @@ const NO_SOLID = () => false;
 const MAX_PROJECTILES = 128;
 /** A stone dropped from the ceiling falls under the debris gravity (physics/debris.ts). */
 const DROP_GRAVITY = 26;
+/** The hop that takes a walker up one block; a taller step takes √(blocks) times as much. */
+const STEP_HOP = 7.6;
 
 type Solid = (x: number, y: number, z: number) => boolean;
 
@@ -89,27 +91,29 @@ export interface View {
   group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[];
   /** Glowing parts named 'tell' or 'core', and their idle colours. */
   tells: THREE.MeshBasicMaterial[]; tellBase: THREE.Color[];
+  /** Every part's material and its hostile colour, in model order: an ally draws each one inverted
+   *  (`allyColor`, DECISIONS §14.6). `allied` is what the view shows now. */
+  paints: { mat: THREE.MeshLambertMaterial | THREE.MeshBasicMaterial; hostile: THREE.Color }[]; allied: boolean;
 }
 
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
-const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
-/** A mended ally (the Mender's integration, mended.ts) glows with repair's gold instead of the ally's ember (DECISIONS.md §14.4). */
-const MENDED_GLOW = new THREE.Color(pal('light.gold')).multiplyScalar(0.25);
 /** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
  *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest
  *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
 const WARM_GLOW = new THREE.Color(pal('captive.ember')).multiplyScalar(0.35);
 
-export function buildModel(def: EnemyDef): View {
+export function buildModel(def: EnemyDef, tier: Tier = 'black'): View {
   const group = new THREE.Group();
   const parts = new Map<string, THREE.Object3D[]>();
   const mats: THREE.MeshLambertMaterial[] = [];
   const tells: THREE.MeshBasicMaterial[] = [];
-  for (const p of def.model) {
+  const paints: View['paints'] = [];
+  for (const p of tierModel(def, tier)) {
     const mat = p.glow ? new THREE.MeshBasicMaterial({ color: p.color }) : new THREE.MeshLambertMaterial({ color: p.color });
     // an inlay shares a face with its host: pull its depth toward the camera so the two never fight
     if (p.inlay) { mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -4; }
+    paints.push({ mat, hostile: new THREE.Color(p.color) });
     if (!p.glow) mats.push(mat as THREE.MeshLambertMaterial);
     else if (p.name === 'tell' || p.name === 'core') tells.push(mat as THREE.MeshBasicMaterial);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...p.size), mat);
@@ -120,7 +124,13 @@ export function buildModel(def: EnemyDef): View {
     (parent ?? group).add(mesh);
     if (p.name) parts.set(p.name, [...(parts.get(p.name) ?? []), mesh]);
   }
-  return { group, parts, mats, tells, tellBase: tells.map(m => m.color.clone()) };
+  return { group, parts, mats, tells, tellBase: tells.map(m => m.color.clone()), paints, allied: false };
+}
+
+/** Draws a view as an ally (every part in `allyColor`) or back as its hostile self. */
+export function paintAllied(v: View, allied: boolean) {
+  v.allied = allied;
+  for (const { mat, hostile } of v.paints) mat.color.setHex(allied ? allyColor(hostile.getHex()) : hostile.getHex());
 }
 
 export class Enemies {
@@ -180,16 +190,20 @@ export class Enemies {
     for (const a of this.host.actors()) this.hazards.clear(a.id);
   }
 
-  spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>) {
+  /** `hp`, `speed` and `contactDamage` already carry the tier (tierStats); the tier adds its climb, the
+   *  power of its strikes and shots, and its look. */
+  spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>, tier: Tier = 'black') {
+    const m = tierMultipliers(def, tier);
     const e: Enemy = {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, scale: 1, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
       hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
+      tier, climb: m.climb, power: m.damage,
     };
     this.list.push(e);
-    this.views.set(id, this.buildView(def));
+    this.views.set(id, this.buildView(def, tier));
     return e;
   }
 
@@ -261,6 +275,22 @@ export class Enemies {
     }
   }
 
+  /**
+   * A Red projection was released: when the optional falter is on (FALTER_ENABLED, off by default), the
+   * hostile projections left in its room hold still for FALTER_SECONDS (DEEPER-BEHAVIOUR), each shedding
+   * a few pale motes, with one falling sound. Returns how many.
+   */
+  falter(released: Enemy, enabled = FALTER_ENABLED): number {
+    const who = falterTargets(this.list, released, enabled);
+    for (const o of who) {
+      o.hold = Math.max(o.hold, FALTER_SECONDS);
+      o.pulse = 0;
+      this.host.particles(o.body.x, o.body.y + o.body.h + 0.2, o.body.z, pal('cold.body'), 5, 0.6, 0.06);
+    }
+    if (who.length) this.host.cue('falter', released.body.x, released.body.y, released.body.z);
+    return who.length;
+  }
+
   kill(e: Enemy) {
     if (!e.alive) return;
     e.alive = false;
@@ -313,7 +343,7 @@ export class Enemies {
       shootAt: (e, x, y, z) => this.shoot(e, x, y, z),
       burst: (e, r) => host.burst(e, r),
       kill: e => this.kill(e),
-      strike: (e, s: Strike) => this.hazards.add(e.id, e.faction, `enemy:${e.def}`, s),
+      strike: (e, s: Strike) => this.hazards.add(e.id, e.faction, `enemy:${e.def}`, (e.power ?? 1) === 1 ? s : { ...s, damage: s.damage * e.power! }),
       bolt: (e, dx, dy, dz, speed, damage) => this.bolt(e, dx, dy, dz, speed, damage),
       safe: (e, x, y, z) => this.safeCell(e, x, y, z),
       centre: e => { const rm = host.room(e.room); return [(rm.hx ?? rm.x0) + ROOM_W / 2, (rm.hz ?? rm.z0) + ROOM_D / 2]; },
@@ -410,9 +440,12 @@ export class Enemies {
       if (b.onGround && (blockedX || blockedZ)) {
         const fx = b.x + Math.sign(wantX) * (b.hw + 0.2), fz = b.z + Math.sign(wantZ) * (b.hw + 0.2);
         if (boxHits(host.solid, fx, b.y, fz, b.hw, b.h)) {
-          if (!boxHits(host.solid, fx, b.y + 1.05, fz, b.hw, b.h)) b.vy = STEP_JUMP;
+          // the lowest step it can take, up to its tier's climb
+          const climb = climbOf(e.climb ?? 0);
+          let hopped = false;
+          for (let k = 1; k <= climb; k++) if (!boxHits(host.solid, fx, b.y + k + 0.05, fz, b.hw, b.h)) { b.vy = STEP_HOP * Math.sqrt(k); hopped = true; break; }
           // an ally of a climber kind steps up two (issue #327); a hostile never does
-          else if (this.escortHost && isAlly(e) && stepOf(e) > 1 && !boxHits(host.solid, fx, b.y + 2.05, fz, b.hw, b.h)
+          if (!hopped && this.escortHost && isAlly(e) && stepOf(e) > 1 && !boxHits(host.solid, fx, b.y + 2.05, fz, b.hw, b.h)
             && !boxHits(host.solid, b.x, b.y + 1.05, b.z, b.hw, b.h)) b.vy = CLIMB_JUMP;
         }
       }
@@ -704,13 +737,13 @@ export class Enemies {
     const you = this.escortHost && isAlly(e) ? this.escortHost.player() : null;
     const soft = you && you.room === e.room && you.id !== t.id ? you.body : null;
     const pcx = soft ? Math.floor(soft.x) : 0, pcz = soft ? Math.floor(soft.z) : 0;
-    // an ally of a climber kind walks a field whose neighbours may be two blocks apart
-    const step = this.escortHost && isAlly(e) ? stepOf(e) : 1;
-    const key = `${e.room}:${t.id}:${e.def}:${reach}${soft ? ':ally' : ''}${step > 1 ? ':climb' : ''}`;
+    // the tallest step between cells: the tier's climb (#338), or two for an ally of a climber kind (#327)
+    const climb = Math.max(climbOf(e.climb ?? 0), this.escortHost && isAlly(e) ? stepOf(e) : 1);
+    const key = `${e.room}:${t.id}:${e.def}:${reach}:${climb}${soft ? ':ally' : ''}`;
     let f = this.flows.get(key);
     if (!f) {
       if (this.flows.size > 128) this.flows.clear(); // fields are tiny; just drop stale ones now and then
-      f = new FlowField(this.host.room(e.room), reach, step);
+      f = new FlowField(this.host.room(e.room), reach, climb);
       this.flows.set(key, f);
     }
     const version = `${this.host.worldVersion()}:${this.host.elemVersion()}${soft ? `:${pcx},${pcz}` : ''}`;
@@ -743,6 +776,7 @@ export class Enemies {
   /** A lobbed projectile that lands on the target point. */
   private shoot(e: Enemy, tx: number, ty: number, tz: number, damage = 4): number {
     const b = e.body;
+    damage *= e.power ?? 1;
     const sx = b.x, sy = b.y + b.h * 0.75, sz = b.z;
     const dx = tx - sx, dz = tz - sz, d = Math.hypot(dx, dz);
     const t = Math.max(0.5, d / 9);
@@ -757,7 +791,7 @@ export class Enemies {
     // the drop itself is harmless: only the splash on its mark hurts, so the warning is the whole rule
     const flight = this.shoot(e, x, y + 0.3, z, 0);
     this.hazards.add(e.id, e.faction, `enemy:${e.def}`, {
-      lead: flight, live: 0.2, damage, shape: { kind: 'ring', x, y, z, r: 0.3, grow: 3, width: 0.4, height: 1.2 },
+      lead: flight, live: 0.2, damage: damage * (e.power ?? 1), shape: { kind: 'ring', x, y, z, r: 0.3, grow: 3, width: 0.4, height: 1.2 },
     });
   }
 
@@ -767,7 +801,7 @@ export class Enemies {
     const top = rm.y0 + (rm.height ?? 6) - 0.6;
     const fall = Math.sqrt(2 * Math.max(0, top - y) / DROP_GRAVITY);
     this.hazards.add(e.id, e.faction, `enemy:${e.def}`, {
-      lead, live: 0.15, damage, shape: { kind: 'ring', x, y, z, r: 0.7, grow: 0, width: 0.7, height: 2.6 },
+      lead, live: 0.15, damage: damage * (e.power ?? 1), shape: { kind: 'ring', x, y, z, r: 0.7, grow: 0, width: 0.7, height: 2.6 },
     });
     this.drops.push({ owner: e.id, x, y: top, z, t: Math.max(0, lead - fall) });
   }
@@ -811,6 +845,7 @@ export class Enemies {
 
   private bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number) {
     const b = e.body, l = Math.hypot(dx, dy, dz) || 1;
+    damage *= e.power ?? 1;
     this.push({
       x: b.x, y: b.y + b.h * 0.6, z: b.z, vx: dx / l * speed, vy: dy / l * speed, vz: dz / l * speed, age: 0, damage, thrower: e.id, faction: e.faction, gravity: 0,
     });
@@ -859,8 +894,8 @@ export class Enemies {
 
   // ───────────────────────── visuals ─────────────────────────
 
-  private buildView(def: EnemyDef): View {
-    const v = buildModel(def);
+  private buildView(def: EnemyDef, tier: Tier): View {
+    const v = buildModel(def, tier);
     this.group.add(v.group);
     return v;
   }
@@ -885,14 +920,19 @@ export class Enemies {
     for (const l of v.parts.get('legR') ?? []) l.rotation.x = -walk;
     for (const l of v.parts.get('armL') ?? []) l.rotation.x = -walk * 0.6;
     for (const l of v.parts.get('armR') ?? []) l.rotation.x = walk * 0.6;
-    // the hit flash is a short cold lift, never white; allies (part of the self) keep a dim warm glow.
+    // an ally of any tier is the full inversion of its colours, and a relapse paints it back (DECISIONS §14.6)
+    const allied = e.faction === 'self';
+    if (allied !== v.allied) paintAllied(v, allied);
+    // the hit flash is a short cold lift, never white; an ally takes no glow over its inverted colours.
     // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
       if (e.flash > 0) m.emissive.copy(HURT_FLASH);
-      else if (e.faction === 'self') m.emissive.copy(e.tags.has(MENDED_TAG) ? MENDED_GLOW : ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
       else if (e.warmth > 0) m.emissive.copy(WARM_GLOW).multiplyScalar(e.warmth);
       else m.emissive.setRGB(0, 0, 0);
     }
-    v.tells.forEach((m, i) => m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse)));
+    v.tells.forEach((m, i) => {
+      m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse));
+      if (allied) m.color.setHex(allyColor(m.color.getHex()));
+    });
   }
 }

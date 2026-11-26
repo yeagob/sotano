@@ -8,6 +8,7 @@ import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
 import type { Polarity } from '../combat/polarity';
+import type { Tier } from './tiers';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -128,6 +129,12 @@ export interface Enemy extends Actor {
   move: number;
   act: number;
   volley: number;
+  /** Its colour tier (tiers.ts); absent means Black. */
+  tier?: Tier;
+  /** The tier's extra climb in blocks (its tallest step and its leap's height), and its damage multiplier
+   *  for strikes, shots and bursts. A converted or mended ally keeps both. */
+  climb?: number;
+  power?: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
@@ -188,7 +195,7 @@ export interface Behaviour {
 export const defineEnemy = (d: EnemyDef) => d;
 
 /** A projection's or creature's life at birth (`EnemyDef.hp`). Throws for a boss, whose life is set at its spawn. */
-export const birthHp = (def: EnemyDef): number => {
+export const birthHp = (def: Pick<EnemyDef, 'id' | 'hp'>): number => {
   if (def.hp === undefined) throw new Error(`${def.id}: no birth health (a boss's life comes from bossLife)`);
   return def.hp;
 };

@@ -178,6 +178,8 @@ export const spatial = {
       case 'windup': tone(jitter(110), 0.45, 'sawtooth', 0.07, 2.2, out); noise(0.3, 0.12, 400, 1.6, out); break;
       // a heavy impact: a deep thud under a crack of stone
       case 'quake': noise(0.35, 0.5, 140, 0.7, out); tone(jitter(55), 0.5, 'sine', 0.35, 0.5, out); break;
+      // a Red projection released and the rest of its room falters: two soft tones that sink (tiers.ts)
+      case 'falter': tone(jitter(392), 0.7, 'sine', 0.07, 0.6, out); tone(jitter(294), 0.8, 'triangle', 0.05, 0.55, out); break;
       default: noise(0.05, 0.3, 800, 1, out);
     }
   },

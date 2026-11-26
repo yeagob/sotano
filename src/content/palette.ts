@@ -67,6 +67,12 @@ export const PALETTE = {
   'attack.warn.base': '#EEE33C',
   'attack.warn.dim': '#A8A02E',
 
+  // The colour tiers' bodies (owner, issue #338; DECISIONS §14.6): a hostile Yellow is a loud, green-leaning
+  // yellow (ΔE ≥ 20 from light.gold under normal, deutan and protan vision), a hostile Red a red kept ΔE ≥ 20
+  // from life.heart under every simulation. Never light.* names. (An ally is the inversion of its colours: tiers.ts allyColor.)
+  'tier.yellow.dark': '#8C8800', 'tier.yellow.base': '#F5F000', 'tier.yellow.hi': '#FFFA70',
+  'tier.red.dark': '#7A1010', 'tier.red.base': '#E01E1E', 'tier.red.hi': '#FF3B1F',
+
   // The five paths: base, glow, dark and the shadow a projection takes. Miracles (the fifth,
   // placed first by the owner) is magenta: the one hue the rainbow lacks, made where its two ends meet
   // (DECISIONS §3.5 amendment, 2026-11-02).
