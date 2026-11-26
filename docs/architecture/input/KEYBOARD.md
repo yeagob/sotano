@@ -35,7 +35,7 @@ References: Minecraft (WASD, left click to break, right click to place, Q to dro
 
 ## 2. Pointer lock is the pause
 
-A click anywhere captures the mouse (`Input.lock()`); Esc releases it and the pause card shows. Browsers refuse a new lock for about a second after Esc: clicking again works. The emulated mouse events a phone fires after a tap are ignored for one second, so touch never asks for pointer lock.
+A click on the game view captures the mouse (`Input.lock()`); a press inside a menu never does (the pause card, the menu panel and the screen are `data-menu`, `capturesMouse`, #356): there play starts from the Click to play button or a click on the pause card's backdrop. Esc releases it and the pause card shows. Browsers refuse a new lock for about a second after Esc: clicking again works. The emulated mouse events a phone fires after a tap are ignored for one second, so touch never asks for pointer lock.
 
 Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cursor can click tiles and buttons while the game stays "engaged"; closing it with the keyboard captures the mouse again. Esc closes the screen when it is open.
 

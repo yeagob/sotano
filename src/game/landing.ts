@@ -41,8 +41,6 @@ const BUG: HudIcon = {
   palette: { k: 'ink.void', h: 'life.heart', b: 'bone.dim', p: 'bone.paper' },
 };
 
-const KEEP_MOUSE = '#overlay a, #newrun, #graphics';
-
 export function initLanding(game: Game) {
   document.documentElement.style.setProperty('--ico-coffee', `url("${hudIconUrl(COFFEE)}")`);
   document.documentElement.style.setProperty('--ico-bug', `url("${hudIconUrl(BUG)}")`);
@@ -59,9 +57,7 @@ export function initLanding(game: Game) {
   render();
   onLocaleChange(render);
   onDeviceChange(render);
-  addEventListener('mousedown', e => {
-    if ((e.target as HTMLElement | null)?.closest?.(KEEP_MOUSE)) e.stopPropagation();
-  }, true);
+  // a press anywhere in #overlay keeps the mouse (data-menu, input.ts capturesMouse); a link's click is not a tap to resume
   addEventListener('click', e => {
     if ((e.target as HTMLElement | null)?.closest?.('#overlay a')) e.stopPropagation();
   }, true);

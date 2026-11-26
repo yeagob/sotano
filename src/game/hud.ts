@@ -45,6 +45,7 @@ import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 import { COVENANT_PIECES } from '../content/presences/covenant';
 import { mapKeyOutcome, starMapHtml } from './star-map';
+import { backdropResumes, hoverRedraws } from './menu-pointer';
 import { recipeBook, recipeBookHtml, recipesKeyOutcome } from './recipe-book';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -244,6 +245,12 @@ export class Hud {
     addEventListener('click', e => {
       const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-act]');
       if (el) { e.stopPropagation(); if (el.closest('#graphics')) el.blur(); this.onAct?.(el.dataset.act!); return; }
+      // the mouse: a click on the pause card's backdrop (outside the card, not its scrollbar) starts play, from the click
+      // itself; a press inside the menu never captures the mouse (input.ts capturesMouse, #356)
+      if (backdropResumes({ device: activeDevice(), screenOpen: this.screenOpen, onBackdrop: e.target === this.overlay, offsetX: e.offsetX, clientWidth: this.overlay.clientWidth })) {
+        this.onAct?.('resume');
+        return;
+      }
       if (activeDevice() !== 'touch' || this.screenOpen || !this.overlay.contains(e.target as Node)) return;
       if ((e.target as HTMLElement).closest('[data-lang], .seed, #graphics')) return;
       this.onAct?.('resume');
@@ -1444,7 +1451,9 @@ export class Hud {
       return slot;
     }));
     for (const b of this.invEl.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')) {
-      b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
+      // only a new tile redraws: redrawing replaces the tile under the pointer, and a redraw between press and release
+      // would send the click to no tile (#356)
+      b.addEventListener('mouseenter', () => { if (hoverRedraws(this.selected, b.dataset.id!)) { this.selected = b.dataset.id!; this.renderInventory(g); } });
       b.addEventListener('click', () => {
         this.selected = b.dataset.id!;
         if (this.selected.startsWith('hand:')) g.chooseCarried(this.selectedCarried());
