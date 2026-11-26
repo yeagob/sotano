@@ -141,6 +141,8 @@ import { SkyRealm } from '../sky/sky-realm';
 import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type SkyWorldApi, type Travel } from '../sky/types';
 import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
+import { CourseRunner } from '../world/course';
+import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -471,6 +473,14 @@ export class Game {
   private stillT = 0;
   /** The Leaves' gift (issue #316): the jump practice over the ring's east stone, laid at run start. */
   private leavesGift: Pickup | null = null;
+  /** The branches' gifts (issue #329): the mobility practice at the centre of each branch's ball, laid at run start. */
+  private branchGifts: Pickup[] = [];
+  /** The branch courses' moving pieces (src/world/course.ts), one runner per branch once the branch story has grown. */
+  private courses: CourseRunner[] = [];
+  /** The run held the six branch practices at once (the achievement's moment, emitted once a run). */
+  private branchesAll = false;
+  /** How many of the tree's water boxes were woken (the galleries' waterfall flows once its story grows). */
+  private watersWoken = 0;
   /** What the HUD says about where you are (a floor, or a level of the tree). */
   private zone = '';
   private stars: THREE.Points;
@@ -689,6 +699,7 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
+    this.courses = []; this.branchesAll = false; this.watersWoken = 0;
     this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
@@ -767,6 +778,7 @@ export class Game {
     this.call = callActive(this.runMastery, sandbox !== null) ? new RootsCall(this.pickups.list) : null;
     // the Leaves' gift (#316), after the call: the crown's practice is never the Roots' to call
     this.leavesGift = box ? null : this.placeLeavesGift();
+    this.branchGifts = box ? [] : this.placeBranchGifts();
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
     p.yaw = 0; p.pitch = 0;
@@ -1014,6 +1026,7 @@ export class Game {
     this.bus.on('projectionDestroyed', { priority: 300, source, fn: p => this.achieved('projectionDestroyed', p) });
     this.bus.on('synergyOn', { priority: 300, source, fn: p => this.achieved('synergyOn', p) });
     this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
+    this.bus.on('branchPracticesAll', { priority: 300, source, fn: p => this.achieved('branchPracticesAll', p) });
     // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
@@ -1154,6 +1167,27 @@ export class Game {
   private placeLeavesGift(): Pickup | null {
     const s = LEAVES_GIFT_SPOT, def = ITEM_BY_ID.get(s.item) ?? null;
     return def ? this.pickups.add('item', s.x, s.y, s.z, -1, def) : null;
+  }
+
+  /** The branches' gifts (issue #329, BRANCHES.md): each branch's practice floats at the centre of its ball of leaves, taken
+   *  by touch, as the Leaves' gift is. A practice this build does not have (the double jump, the wall jump: their own
+   *  issues) leaves its ball empty. */
+  private placeBranchGifts(): Pickup[] {
+    return branchGifts(this.tree.branchPlans, id => ITEM_BY_ID.has(id)).map(g => this.pickups.add('item', g.x, g.y, g.z, -1, ITEM_BY_ID.get(g.item)!));
+  }
+
+  /** The six branch practices are held at once (issue #329): the achievement's event, once a run, and the hook of
+   *  "Andar despacio" (branch-gifts.ts): Camina Despacio (#340) on a pedestal at the centre of the branch story's hall,
+   *  when this build has it. */
+  private branchesComplete() {
+    this.branchesAll = true;
+    this.bus.emit('branchPracticesAll', { practices: this.tree.branchPlans.length });
+    const def = ITEM_BY_ID.get(WALK_SLOW_ITEM);
+    if (!def || this.inventory.has(def.id)) return;
+    const i = TREE_STORIES.findIndex(s => s.key === 'branches');
+    const at = walkSlowSpot(this.tree.cx, this.tree.cz, this.tree.base + TREE_STORIES[i].y0 + 2);
+    this.dw.set(at.x, at.y, at.z, MAT.pedestal);
+    this.pickups.add('item', at.x + 0.5, at.y + 1, at.z + 0.5, -1, def);
   }
 
   /** Floor 0's Roots pedestals (extra practices and the altar) hold their practices from the moment floor 0 activates. */
@@ -4937,6 +4971,9 @@ export class Game {
     // the Leaves' gift (#316) leaves once its practice is held some other way (the horse's gift): never offered twice
     const gift = this.leavesGift;
     if (gift && !gift.taken && this.realm === 'dungeon' && gift.item && this.inventory.has(gift.item.id)) this.pickups.take(gift);
+    // the branches' gifts (#329) likewise: a practice already held empties its ball
+    for (const g of this.branchGifts) if (!g.taken && this.realm === 'dungeon' && g.item && this.inventory.has(g.item.id)) this.pickups.take(g);
+    if (!this.branchesAll && this.realm === 'dungeon' && holdsAllBranchPractices(id => this.inventory.has(id))) this.branchesComplete();
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
     const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {
@@ -4956,6 +4993,14 @@ export class Game {
       const i = -n - 1;
       if (i < 0 || i >= TREE_STORIES.length || this.tree.isGrown(i)) continue;
       this.tree.grow(i);
+      // the branch courses run once their story has grown (src/world/course.ts)
+      if (TREE_STORIES[i].key === 'branches') this.courses = this.tree.branchPlans.map(b => new CourseRunner(b.pieces));
+      // the water the tree carved (the galleries' waterfall) is meshed and woken, so it flows by rule
+      for (; this.watersWoken < this.tree.waters.length; this.watersWoken++) {
+        const q = this.tree.waters[this.watersWoken];
+        for (let y = q.y0; y <= q.y1; y += 4) this.world.markElemDirty(q.x0, y, q.z0), this.world.markElemDirty(q.x1, y, q.z1);
+        this.elements.wakeBox(q.x0, q.y0, q.z0, q.x1, q.y1, q.z1);
+      }
       const [y0, y1] = this.tree.range(i);
       for (let y = y0; y <= y1 + CHUNK; y += CHUNK) for (let z = 0; z < this.world.sz + CHUNK; z += CHUNK) for (let x = 0; x < this.world.sx + CHUNK; x += CHUNK)
         this.world.markDirty(Math.min(x, this.world.sx - 1), Math.min(y, y1), Math.min(z, this.world.sz - 1));
@@ -5345,6 +5390,8 @@ export class Game {
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
+    // the branch courses move before the body does, and carry it when it stands on a moving piece (BRANCHES.md)
+    if (below) for (const c of this.courses) c.update(this.time, dt, this.dw, b);
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {

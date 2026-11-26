@@ -1314,3 +1314,24 @@ No new colour, no new material, no new texture and no new particle: every piece 
 **The seven limbs (world side).** Meaning: what you reach out with, toward the others (the bough's own, §6.2). Bough on every face, as before; only the shape changes: five wide and three deep at the trunk, three by two at the tip, curving toward the long side of the world. The obstacles are the limb's own blocks: a knot is bough grown two blocks over the limb, a tuft is the crown's leaves (old and young, `leafAt`), a break and a narrows are the limb with bough taken away. The balls of leaves are unchanged. Rule 9 of §6.1 holds unchanged: bough meets old bark at the tunnel and leaves at the ball, the pairs already measured (`tests/tree-textures.test.ts`).
 
 **Gate.** Checked by data, not by eye: no material, token or tile was added, and the tree-texture tests pass. Not done: captures in colour and greyscale of a broken stair from below and from the step under it, a limb of each course from the hall's tunnel and from its tip, and the whole branch story at 20 blocks in the night fog; the three colour-blindness filters are owed with them, though nothing new is coloured.
+
+
+**Superseded in part (2026-11-26, issues #328 and #329).** The seven limbs and their obstacles are gone: six main branches with platform courses replace them (§14.7). The broken stairs stay, with more works on them (§14.7).
+
+### 14.7 The broken climb and the six branch courses (build agent, 2026-11-26, issues #328, #317 and #329; OWNER to confirm the look)
+
+**The broken climb (world side).** The stairs keep their living wood. A broken tread is the same wood with part of the step missing, so it reads by shape. A plug is dirt filling the headroom over two steps. It reads as earth fallen into the stair, and it is the softest block in the trunk, so it says "dig". The galleries' waterfall is water as the floors' pools are: falling water beside the stair from the ceiling to the floor. It does not glow (§5), and its foot spreads a few blocks over the floor by the fluid rules. No new token.
+
+**The six branch courses (world side).** Each mechanic has its own block, so a platform says what it does before you step on it (Isaac readability). All of them are world matter: unlit, low chroma, never warm light, life, the attack's red or a path hue. They are tier 3 like starstone (a course is crossed, not dug). Palette part `tree-course` (`src/content/palette/tree-course.ts`):
+
+| Block | Meaning (`concept`) | Ramp (outline / dark / base / hi) | Pattern | Mechanic |
+|---|---|---|---|---|
+| Raft wood `raftwood` | what carries you, if you go with it | `#1A1814 / #47423A / #857C6C / #AFA591` (grey weathered wood) | `planks` | moving sideways and up and down ("like a boat") |
+| Dry leaves `dryleaf` | a hold that is already letting go | `#1C140C / #3F2D1A / #7A5A34 / #A0804F` (brown) | `leaves` | gives way a while after you step on it |
+| Pale bough `palebough` | the side you lean on now | `#2A261E / #6E6550 / #B5A988 / #D9CFB2` | `platebark` | alternating pairs, the first group |
+| Shade bough `shadebough` | the side that waits for its turn | `#0D0B0E / #211C24 / #3E3444 / #5E5266` | `platebark` | alternating pairs, the second group |
+| Breath leaves `breathleaf` | what comes and goes with the breath | `#121A16 / #34473C / #6F8C78 / #A3BCA6` (pale sage) | `leaves` | appears and disappears on a rhythm |
+
+The beams and single cubes are the branch's own bough. The pale and shade boughs differ in value (L* about 70 against 23), so the pair reads in greyscale too. The balls of leaves are as before, with a hollow at the centre, a hole on the course's side and a three-by-three eye on top. The practice floats there, lit only by the sky through the eye.
+
+**Gate.** Checked by data only: the ramps go dark to light (`tests/art-content.test.ts`), every block has a concept, and the patterns are existing ones. Not done: captures in colour and greyscale of each course from its ledge and from its perch, the waterfall from the galleries' floor, and the three colour-blindness filters. Moving pieces move a whole block at a time. A smooth or telegraphed look (a crack before dry leaves go, a ghost before a pulse comes back) is not built.

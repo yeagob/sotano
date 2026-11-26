@@ -54,6 +54,8 @@ const RAMPS: Record<string, [PalToken, PalToken, PalToken, PalToken]> = {
   sunseal: R('mat.sunseal'),
   // the presences' materials (palette part deep-matter)
   root: R('mat.root'), cavemoss: R('mat.cavemoss'),
+  // the giant tree's branch courses (palette part tree-course, issue #329)
+  raftwood: R('mat.raftwood'), dryleaf: R('mat.dryleaf'), palebough: R('mat.palebough'), shadebough: R('mat.shadebough'), breathleaf: R('mat.breathleaf'),
   brass: ['ink.line', 'brass.dark', 'brass.base', 'brass.hi'],
   limestone: ['ink.ash', 'limestone.dark', 'limestone.base', 'limestone.hi'],
   seed: ['ink.void', 'mat.seed.dark', 'mat.seed.base', 'mat.seed.hi'],
@@ -130,6 +132,13 @@ const DEFS: Def[] = [
   { id: 50, key: 'tinore', name: 'Tin ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.tin.base', pattern: 'nuggets', vein: ['ore.tin.dark', 'ore.tin.base', 'ore.tin.hi'], veinShape: 'crystals', concept: 'the measure the old rules were weighed with' },
   { id: 51, key: 'quicksilverore', name: 'Quicksilver ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.quicksilver.base', pattern: 'nuggets', vein: ['ore.quicksilver.dark', 'ore.quicksilver.base', 'ore.quicksilver.hi'], veinShape: 'beads', concept: 'what takes every shape the heat gives it' },
   { id: 52, key: 'leadore', name: 'Lead ore', tier: 2, hp: 18, armor: 1, heavy: true, ramp: 'stone', accent: 'ore.lead.base', pattern: 'nuggets', vein: ['ore.lead.dark', 'ore.lead.base', 'ore.lead.hi'], veinShape: 'cubes', concept: 'the weight that sank to the bottom, waiting to be turned' },
+  // the giant tree's branch courses (docs/design/built/levels/giant-tree/BRANCHES.md, issue #329): one block per platform
+  // mechanic, so a platform says what it does before you step on it. Hard as starstone (tier 3): a course is crossed, not dug
+  { id: 53, key: 'raftwood', name: 'Raft wood', tier: 3, hp: 60, armor: 3, ramp: 'raftwood', pattern: 'planks', concept: 'what carries you, if you go with it' },
+  { id: 54, key: 'dryleaf', name: 'Dry leaves', tier: 3, hp: 60, armor: 3, ramp: 'dryleaf', pattern: 'leaves', concept: 'a hold that is already letting go' },
+  { id: 55, key: 'palebough', name: 'Pale bough', tier: 3, hp: 60, armor: 3, ramp: 'palebough', pattern: 'platebark', concept: 'the side you lean on now' },
+  { id: 56, key: 'shadebough', name: 'Shade bough', tier: 3, hp: 60, armor: 3, ramp: 'shadebough', pattern: 'platebark', concept: 'the side that waits for its turn' },
+  { id: 57, key: 'breathleaf', name: 'Breath leaves', tier: 3, hp: 60, armor: 3, ramp: 'breathleaf', pattern: 'leaves', concept: 'what comes and goes with the breath' },
 ];
 
 export const MATERIALS: MaterialDef[] = DEFS.map(d => {

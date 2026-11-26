@@ -1217,6 +1217,8 @@ export const ES: Catalog = {
     'achievement.presence.wanderer.desc': 'Conoce al Caminante: termina tu primer intercambio con él.',
     'achievement.presence.witness.name': 'Visto',
     'achievement.presence.witness.desc': 'Conoce al Testigo: termina tu primer intercambio con él.',
+    'achievement.tree.branches.all.name': 'Todos los caminos',
+    'achievement.tree.branches.all.desc': 'Ten a la vez las seis prácticas de las ramas del gran árbol en la misma partida.',
 
     // ── the hidden book: a quotation's translation note (PANELS §4b) ──
     'book.quote.translated': 'Traducción nuestra',
@@ -1956,6 +1958,12 @@ export const ES: Catalog = {
       tinore: 'Mineral de estaño',
       quicksilverore: 'Mineral de azogue',
       leadore: 'Mineral de plomo',
+      // the giant tree's branch courses (issue #329)
+      raftwood: 'Madera de balsa',
+      dryleaf: 'Hojas secas',
+      palebough: 'Rama clara',
+      shadebough: 'Rama umbría',
+      breathleaf: 'Hojas de aliento',
     },
     parts: {
       'doubt.flesh': {

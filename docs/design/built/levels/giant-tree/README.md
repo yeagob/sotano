@@ -2,7 +2,7 @@
 
 Up: [levels](../README.md) · the tree that rises above the surface, built as seven stories you climb, and the sky that opens above it.
 
-The giant tree stands at the centre of the surface and rises through the open sky. It is made of ordinary blocks: three barks for the trunk that change with height, boughs for the limbs, old and young leaves for the canopy, and starstone pads for the stars. Its height reaches the top of the sky. It is built as seven stories, each one a hall or a level you can walk through, joined by spiral stairs of living wood; the four stairs of the trunk are broken half way up, and you build across the breaks (see [TRUNK](TRUNK.md)). Each story is generated the first time you come near it, so the tree costs nothing until you climb. The owner's words for the tree: a real, giant tree of thousands of cubes that you climb, with a trunk you move through as a vertical map, branches as a 3D map, and leaves as a star map. The first three are built as stories; the design's upper three floors are discussed in [not-built/levels/FLOOR-KINDS](../../../not-built/levels/FLOOR-KINDS.md). The crown holds the tree's one room, the Leaves (owner decision D14), and the star map belongs to it (D15).
+The giant tree stands at the centre of the surface and rises through the open sky. It is made of ordinary blocks: three barks for the trunk that change with height, boughs for the limbs, old and young leaves for the canopy, and starstone pads for the stars. Its height reaches the top of the sky. It is built as seven stories, each one a hall or a level you can walk through, joined by spiral stairs of living wood; the four stairs of the trunk are a broken climb (steps to hop, plugs to dig, a waterfall to swim in the galleries, and a gap on every story that you rebuild; see [TRUNK](TRUNK.md)), and six main branches with platform courses leave the story above them (see [BRANCHES](BRANCHES.md)). Each story is generated the first time you come near it, so the tree costs nothing until you climb. The owner's words for the tree: a real, giant tree of thousands of cubes that you climb, with a trunk you move through as a vertical map, branches as a 3D map, and leaves as a star map. The first three are built as stories; the design's upper three floors are discussed in [not-built/levels/FLOOR-KINDS](../../../not-built/levels/FLOOR-KINDS.md). The crown holds the tree's one room, the Leaves (owner decision D14), and the star map belongs to it (D15).
 
 ## The seven stories
 
@@ -21,12 +21,13 @@ The four trunk stories are one hollow column, a wall of bark three blocks thick 
 ## Growing and loading
 
 - **Grown once.** A story is built the first time you come within reach of it, from its own seeded stream, and it stays built for the run. Growing happens in the same run every time, because the stream belongs to the run's seed.
-- **Loaded near you.** Only the stories around you are kept loaded (yours, and the one above and below). Far stories are not drawn until you come near. No projections or elements live in the tree yet.
+- **Loaded near you.** Only the stories around you are kept loaded (yours, and the one above and below). Far stories are not drawn until you come near. No projections live in the tree yet. The one element is the galleries' waterfall.
 - **Zones.** The HUD names the zone you stand in: the trunk, the branches, the leaves or heaven. Below the surface a floor's name is shown instead.
 
 ## What the tree is made of
 
 - **Bark** is the trunk: its walls, floors, pillars, ramps and decks. It changes with height: **root bark** at the foot, **living wood** (the log) in the middle, **old bark** high up (see [BARK](BARK.md)). The spiral stairs are living wood; the stars' disc is bough. Every bark burns, like every wood-like block (see [ICE-AND-WOOD](../../elements/ICE-AND-WOOD.md)).
+- **Course blocks** are the branch courses' pieces: raft wood (moving), dry leaves (giving way), pale and shade bough (alternating), breath leaves (pulsing) ([DECISIONS](../../../../art/DECISIONS.md) §14.7).
 - **Boughs** are the limbs of the branch story and the crown, and come through the old bark of the crown's deck: a paler, smooth bark of their own. They burn too.
 - **Leaves** are the canopy, the hanging strands of the galleries and the balls at the tips of the branches; **young leaves** grow in patches through the crown. They burn too.
 - **Starstone** is the pad you climb from one star to the next (see [STARS](STARS.md)). It is tier 3 with 60 points of hardness, a fixed point to steer by.
@@ -40,12 +41,12 @@ Above the surface, the open sky is 260 blocks high, up to the top of the world. 
 
 | Document | Contents |
 |---|---|
-| [TRUNK.md](TRUNK.md) | The four trunk stories: the roots, the rings, the galleries and the hollows; the spiral stairs between them, broken on every story (issue #317); the climb's route and goals (issue #328) |
-| [BRANCHES.md](BRANCHES.md) | The branch story: the seven limbs that leave the trunk, their obstacles and their balls of leaves |
+| [TRUNK.md](TRUNK.md) | The four trunk stories: the roots, the rings, the galleries and the hollows; the broken climb of their stairs (issue #328): broken treads, leaps, plugs, the waterfall, and the gaps you rebuild (issue #317) |
+| [BRANCHES.md](BRANCHES.md) | The branch story: six main branches, each a platform course with its own mechanic, to a ball of leaves holding a mobility practice; all six in one run (issue #329) |
 | [CANOPY.md](CANOPY.md) | The leaves: the crown, its limbs and the floor under it |
 | [LEAVES.md](LEAVES.md) | The Leaves: the room of the crown, by the last stair, its band and the crown's place |
 | [STAR-MAP.md](STAR-MAP.md) | The star map: the menu's map tab, the floor as a constellation and the crown from above |
 | [STARS.md](STARS.md) | Heaven: the disc, the pads and the constellations, and the night |
 | [BARK.md](BARK.md) | The bark by height, the boughs and the old and young leaves: what the tree is made of, story by story |
 
-Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads, the Leaves), `src/world/crown.ts` (the crown's place), `src/game/star-map.ts` (the star map), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (the barks, boughs, leaves, starstone).
+Code: `src/world/tree.ts` (the stories, their growth, the stairs, the pads, the Leaves), `src/world/branches.ts` and `src/world/course.ts` (the branch courses), `src/world/crown.ts` (the crown's place), `src/game/star-map.ts` (the star map), `src/game/game.ts` (growing and loading the stories near you, the zones, the star pads, the night sky), `src/content/materials.ts` (the barks, boughs, leaves, starstone).

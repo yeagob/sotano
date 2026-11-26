@@ -457,11 +457,15 @@ describe('silence, the ice and the tree (L4, L5)', () => {
     for (let z = 0; z < w.sz; z++) for (let x = 0; x < w.sx; x++) w.data[w.idx(x, SURFACE_Y, z)] = MAT.grass;
     const t = new GiantTree(w, SURFACE_Y, i => new Rng(77 + i));
     TREE_STORIES.forEach((_, i) => t.grow(i));
-    // the trunk stairs have gaps you rebuild (issue #317, tests/tree-climb.test.ts): this walk climbs them mended
-    const { stairGap } = await import('../src/world/tree');
+    // the trunk stairs are broken (issues #317, #328, tests/tree-climb.test.ts): this walk climbs them mended by building
+    const { treadMissing, stairWorks, PLUG } = await import('../src/world/tree');
     TREE_STORIES.forEach((_, i) => {
-      const g = stairGap(i);
-      if (g) for (const [x, y, z, j] of t.stairCells(i)) if (j >= g.from && j <= g.to) w.data[w.idx(x, y, z)] = MAT.log;
+      if (i === TREE_STORIES.length - 1) return;
+      const plugs = stairWorks(i).filter(k => k.kind === 'plug');
+      for (const [x, y, z, j, f] of t.stairCells(i)) {
+        if (treadMissing(i, j, f)) w.data[w.idx(x, y, z)] = MAT.log;
+        if (plugs.some(k => j >= k.from && j <= k.to)) for (let h = 1; h <= 3; h++) if (w.get(x, y + h, z) === PLUG) w.data[w.idx(x, y + h, z)] = AIR;
+      }
     });
     const solid = (x: number, y: number, z: number) => w.get(x, y, z) !== AIR;
     const stand = (x: number, y: number, z: number) => w.inside(x, y, z) && solid(x, y - 1, z) && !solid(x, y, z) && !solid(x, y + 1, z);

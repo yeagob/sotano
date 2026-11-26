@@ -2,7 +2,7 @@
 
 Up: [giant tree](README.md) · Status: built.
 
-The trunk is four stories of one hollow column of bark: root bark at the roots, living wood in the rings and galleries, old bark in the hollows (see [BARK](BARK.md)). Each story is a hall with a wall three blocks thick, its own floor and its own ceiling, and a spiral stair to the story above, broken half way up. You climb through it by building across the breaks, and each hall has its own look.
+The trunk is four stories of one hollow column of bark: root bark at the roots, living wood in the rings and galleries, old bark in the hollows (see [BARK](BARK.md)). Each story is a hall with a wall three blocks thick, its own floor and its own ceiling, and a spiral stair to the story above. The stair is broken: steps to hop, plugs to dig, in the galleries a waterfall to swim, and half way up a gap to rebuild. Each hall has its own look.
 
 ## Roots (the foot of the trunk)
 
@@ -48,16 +48,46 @@ Why these numbers (decided for #317, which left them open, the owner's word bein
 - **Every gap leaves steps above it.** Each stair keeps at least two whole steps over its gap, up to the floor of the story above.
 - **Practices.** The gaps are for a body with no practices. The [Triple Jump](../../player/TRIPLE-JUMP.md) (the horse's gift, or the Leaves' at the top of the tree) rises far enough to cross them; that is its reward, not a hole in the design.
 
-Above the trunk the stairs are whole: once the hollows are climbed, the branches, the canopy and the Leaves are reached on foot, and the Leaves give the jump practice for the stars ([LEAVES](LEAVES.md)).
+Above the trunk the stairs are whole. Once the hollows are climbed, the branch story, the canopy and the Leaves are reached on foot, and the Leaves give the jump practice for the stars ([LEAVES](LEAVES.md)). The six branch courses leave the branch story's hall ([BRANCHES](BRANCHES.md)).
 
-## The climb: route and goal of each story (issue #328, reconciled with #317)
+## The broken climb (issue #328, the core)
 
-The trunk's interior is the four stories above, unchanged, and one route through them: the spiral stair of each story, in order, from the roots' doorways to the branch story's floor. Each story has one goal on that route, its broken stair: reach the step under the gap, build across it, climb on. The gaps are the route's obstacles and the stories are where they stand, so the climb and the interior are one design. The halls' own features (the rings, the gallery and its ramps, the posts and decks) are places to stand and look from and blocks to take, never a way past a gap. The climb is met in every run on the way to the crown; it adds no room, no projection and no boss. What #328 still leaves open (what else a story asks or gives, and whether the climb ever changes with progress) is in [TREE-CORE](../../../not-built/levels/TREE-CORE.md).
+The core is the whole climb inside the trunk, from the roots' doorways to the floor of the branch story. Each of the four stories keeps its hall, and its stair is a broken climb with parkour in it. There is one route, the stairs in order. The halls are the detours: places to stand, look from and take blocks from, never a way past a work of the stair. The rule: every section can be passed with the base body (one ground jump, no practice) plus digging and placing blocks, so a run never gets stuck. Practices make it faster, never possible.
+
+What a stair asks below its gap:
+
+| Work | What you meet | How you pass |
+|---|---|---|
+| **Broken tread** | the first half of a step is missing: about a block of air, one block up | a ground jump |
+| **Leap** | the first two thirds of a step are missing: about a block and a third of air on the line you walk (less on the inner side, more on the outer), one block up | a ground jump, from the edge |
+| **Plug** | earth fills the headroom over two steps, three high | dig through it: dirt is the softest block in the trunk, and what you dig is what you carry up to mend the gap |
+| **Waterfall** (galleries) | steps 2 to 8 are washed out. A waterfall falls beside step 9, from the story's ceiling to the floor | swim up the falling water (hold Jump) and step out onto step 9. Building up also works |
+| **Gap** (#317) | five to eight steps missing, beyond any jump | lay a block per missing step (the table above) |
+
+| Story | Its stair, step by step |
+|---|---|
+| roots | broken treads at 4 and 6, a plug over 8 and 9, the gap 13 to 17 |
+| rings | a broken tread at 3, a leap at 5, a plug over 8 and 9, a broken tread at 11, the gap 13 to 18 |
+| galleries | the waterfall beside the washed-out steps 2 to 8 (out at 9), a leap at 10, the gap 13 to 19 |
+| hollows | a leap at 3, a plug over 6 and 7, a leap at 9, the gap 13 to 20 |
+
+**The waterfall.** A source sits under the galleries' ceiling, and falling water reaches down to the floor, just outside the stair's tread at step 9's middle. It is water by the floors' rules: written still, woken once the story grows, and its foot spreads a few blocks of shallow water over the floor. The climb is about six blocks of swimming. Breath lasts eight seconds and the swim takes under three. The water runs past the gap's height, but nothing of the stair above the gap is in reach from it (by the stair's geometry the nearest whole step over the gap is about seven and a half blocks away across the air; not tested). The galleries' walkway, ramps and strands keep four blocks off the stairs (`GALLERY_CLEAR`), so the walkway is three blocks of air from the tread and cannot be used to skip the washed-out flight.
+
+**Building through it all.** A player with no practice who digs the plugs and lays a block in every missing tread cell reaches every story and the Leaves on foot. The trunk asks for at least 26 blocks laid for the gaps, plus the broken treads and leaps they choose to fill instead of jumping. The plugs give more dirt than that.
+
+The climb is met in every run on the way to the crown. It adds no room, no projection and no boss. What #328 still leaves open is in [TREE-CORE](../../../not-built/levels/TREE-CORE.md).
 
 ## Knots
 
 The wall of each trunk story has knots at heights three to six: small gaps in the bark, placed at random per run.
 
-Tested in `tests/tree-climb.test.ts`: each trunk story has its gap and no other stair has one; a generous jumper (any place within 3.5 blocks across and one block up) reaches nothing past a gap from its story; the real body fails the gap and crosses it with one block laid per missing step; from the grass the climb stops at the roots' gap, and with every gap mended it reaches every story and the Leaves on foot.
+Tested in `tests/tree-climb.test.ts`:
 
-Code: `src/world/tree.ts` (the trunk, the roots, the rings, the galleries, the hollows, the stairs and `STAIR_GAPS`, the knots).
+- Each trunk story has its gap, no other stair has one, and every other work sits below the gap.
+- A generous jumper reaches nothing past a gap from its story, with the rest of the stair mended. The real body fails the gap and crosses it with one block laid per missing step.
+- The real body (base stats, `tests/helpers/parkour.ts`) hops every broken tread and every leap.
+- A plug stops the walk until it is dug.
+- The waterfall is a source with falling water down to the floor. No jump climbs past the washed-out flight, and the real body swims up it and steps out onto step 9.
+- From the grass the climb stops in the roots. Built through (plugs dug, missing treads laid), it reaches every story and the Leaves on foot.
+
+Code: `src/world/tree.ts` (the trunk, the roots, the rings, the galleries, the hollows, the stairs, `STAIR_GAPS`, `STAIR_WORKS`, `LEAP`, `PLUG`, the waterfall, the knots), `src/game/game.ts` (the waterfall woken once its story grows).
