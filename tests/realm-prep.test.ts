@@ -129,12 +129,10 @@ describe('the up pad (SKY.md §2.4)', () => {
     expect(pads.slice(0, -1).some(p => p.up)).toBe(false);
   });
 
-  it('the cycle and every `to` are unchanged by the flag: the last star leads back to the first', () => {
+  it('the pads carry no teleport (#325): a pad is a cell, and the flag is the only other field', () => {
     const w = new VoxelWorld(WORLD_SIZE.sx, WORLD_SIZE.sy, WORLD_SIZE.sz);
     const t = new GiantTree(w, SURFACE_Y, i => new Rng(5 * 31 + i));
     TREE_STORIES.forEach((_, i) => t.grow(i));
-    const n = t.pads.length;
-    t.pads.forEach((p, i) => expect(p.to).toBe((i + 1) % n));
-    expect(t.pads[n - 1].to).toBe(0);
+    for (const p of t.pads) expect(Object.keys(p).filter(k => k !== 'up').sort()).toEqual(['x', 'y', 'z']);
   });
 });

@@ -65,6 +65,8 @@ export interface Travel { to: RealmKind; at: Cell; float: boolean }
 export interface SkyBounds {
   /** Dungeon world: rising past this y opens the realm (SURFACE_Y + SKY_LIMIT − 1.5). */
   top: number;
+  /** The cloud layer above the top pad: the dungeon's passage up (STARS.md). Feet at or above its height, within its reach, open the sky. */
+  cloud: { x: number; y: number; z: number; r: number };
   /** Sky realm: falling below this y off the arrival deck goes down to the crown (SKY_FLOOR_OUT). */
   floorOut: number;
   /** Where each passage lands. */
@@ -89,7 +91,7 @@ export interface RealmGateApi {
 export interface RealmGateCtor {
   new (host: RealmGateHost): RealmGateApi;
   /** Pure: which travel, if any, the player's position asks for this frame. */
-  check(realm: RealmKind, pos: Pos, pad: { up: boolean } | null, sky: SkyBounds): Travel | null;
+  check(realm: RealmKind, pos: Pos, sky: SkyBounds): Travel | null;
 }
 
 // ───────────────────────── the formula world (§3) ─────────────────────────

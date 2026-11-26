@@ -5,6 +5,7 @@ import { SYNERGIES } from '../src/content/synergies';
 import { Rng } from '../src/core/rng';
 import { computeStats } from '../src/core/stats';
 import { ItemPools, isSkyGift } from '../src/items/pool';
+import { copyMods } from '../src/items/types';
 import type { PoolName } from '../src/items/types';
 import { validateCatalogue, validateItem } from '../src/items/validate';
 
@@ -23,8 +24,14 @@ describe('the Triple Jump item', () => {
     expect(isSkyGift(tripleJump)).toBe(true);
   });
 
-  it('gives two air jumps on the airJumps stat (base 0)', () => {
-    expect(computeStats((tripleJump.stats ?? []).map(s => ({ ...s, source: 'triple-jump' }))).airJumps).toBe(2);
+  it('gives two air jumps on the airJumps stat (base 0), a second copy one more, and a third nothing (#325)', () => {
+    const air = (copies: number) => computeStats(Array.from({ length: copies }, (_, k) => copyMods(tripleJump, k).map(s => ({ ...s, source: `triple-jump-${k}` }))).flat()).airJumps;
+    expect([0, 1, 2, 3].map(air)).toEqual([0, 2, 3, 3]);
+  });
+
+  it('its copies are given by copyStats, never by a flat stats list', () => {
+    expect(tripleJump.stats).toBeUndefined();
+    expect(tripleJump.copyStats).toEqual([[{ stat: 'airJumps', layer: 'add', value: 2 }], [{ stat: 'airJumps', layer: 'add', value: 1 }]]);
   });
 
   it('the validator refuses the sky pool beside any other pool', () => {

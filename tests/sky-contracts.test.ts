@@ -236,7 +236,7 @@ describe('sky stubs', () => {
     const stash = { kind: "dungeon" } as RealmSet;
     const inert = { install() {}, current: () => stash, clearTransient() {}, hooks() {} } as RealmHost;
     expect(swapRealm(inert, stash, root, root)).toBe(stash); // the real swap is tested in realm-swap.test.ts
-    expect(RealmGate.check('sky', { x: 128, y: 33, z: 128 }, null, { top: 426, floorOut: 4, deck: [128, 33, 128], crown: [0, 0, 0] })).toBeNull(); // the passages: realm-gate.test.ts
+    expect(RealmGate.check('sky', { x: 128, y: 33, z: 128 }, { top: 426, floorOut: 4, deck: [128, 33, 128], crown: [0, 0, 0], cloud: { x: 0, y: 1e9, z: 0, r: 0 } })).toBeNull(); // the passages: realm-gate.test.ts
     const gate = new RealmGate({ fade: () => {}, pass: () => {}, ready: () => true });
     gate.update(1);
     expect(gate.busy).toBe(false);

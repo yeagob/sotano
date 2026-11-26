@@ -205,6 +205,9 @@ displaces the element (`set` clears `elem`). Breaking a block next to an element
   jump × 0.7; **swimming** (head under) gravity × 0.2, sink cap 1.5 b/s, Space swims up, breath
   drains (new stat `breath`, seconds, base 8) then `drown` damage (half a heart per 1.5 s). Lava:
   × 0.4 speed, swim-like, 1 heart per hit (`fire` kind, source `lava`). Fire: half a heart.
+  Post-Traumatic Growth (`lavaWalk`, seconds: 2 per copy, at most 6): while the time is left, lava
+  does no harm, its surface holds the body and the wade is × 1; the time runs down while the body
+  stands in lava and is whole again out of it. When it is up, lava hurts as above.
   All through `damageActor`.
 - Projections get `EnemyDef.elements` (affinity per element: `harm` multiplier, `speed` multiplier,
   `path: 'avoid' | 'cross' | 'dwell'`, optional `enter` reaction). Defaults: water cross ×0.6

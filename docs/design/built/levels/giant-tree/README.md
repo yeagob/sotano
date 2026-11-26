@@ -29,7 +29,7 @@ The four trunk stories are one hollow column, a wall of bark three blocks thick 
 - **Bark** is the trunk: its walls, floors, pillars, ramps and decks. It changes with height: **root bark** at the foot, **living wood** (the log) in the middle, **old bark** high up (see [BARK](BARK.md)). The spiral stairs are living wood; the stars' disc is bough. Every bark burns, like every wood-like block (see [ICE-AND-WOOD](../../elements/ICE-AND-WOOD.md)).
 - **Boughs** are the limbs of the branch story and the crown, and come through the old bark of the crown's deck: a paler, smooth bark of their own. They burn too.
 - **Leaves** are the canopy, the hanging strands of the galleries and the balls at the tips of the branches; **young leaves** grow in patches through the crown. They burn too.
-- **Starstone** is the pad that carries you from one star to the next (see [STARS](STARS.md)). It is tier 3 with 60 points of hardness, a fixed point to steer by.
+- **Starstone** is the pad you climb from one star to the next (see [STARS](STARS.md)). It is tier 3 with 60 points of hardness, a fixed point to steer by.
 - **Dirt and grass** lie on the floor of the first story's centre, a small clearing.
 
 ## The sky above it
