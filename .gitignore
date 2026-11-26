@@ -5,3 +5,6 @@ dist
 .vercel
 
 .vercel
+
+# Local git worktrees (per-session checkouts)
+.claude/worktrees/
