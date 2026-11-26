@@ -71,6 +71,7 @@ import controlledburn from './controlledburn';
 import kairos from './kairos';
 import boltfromtheblue from './boltfromtheblue';
 import serendipity from './serendipity';
+import stretch from './stretch';
 import tummo from './tummo';
 import firewalking from './firewalking';
 import prometheus from './prometheus';
@@ -102,7 +103,7 @@ export const ITEMS: readonly ItemDef[] = [
   dowsing, eyecontact,
   dialectic, reframing,
   waymark,
-  pressurevalve, controlledburn, boltfromtheblue, serendipity,
+  pressurevalve, controlledburn, boltfromtheblue, serendipity, stretch,
   tummo, firewalking, prometheus,
   teaceremony, herbalism, distillation, spagyric, mindfuleating, breakingbread, harahachibu, grace, nourishment,
   irimi, fartlek, balasana, bookofsecrets,

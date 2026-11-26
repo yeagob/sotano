@@ -968,6 +968,8 @@ export const ES: Catalog = {
     'teach.boltfromtheblue.lesson': 'Sostén un problema que aún no resuelves y luego déjalo descansar. Cuando la respuesta llega como un destello, escríbela enseguida, mientras la imagen sigue viva. Después compruébala paso a paso: el destello muestra la dirección, el trabajo muestra el camino.',
     'teach.serendipity.quote': 'Mantente abierto, y lo que no buscabas puede encontrarte.',
     'teach.serendipity.lesson': 'Deja espacio al azar: prueba cosas nuevas, habla con gente fuera de tu círculo, toma un desvío de vez en cuando. Fíjate en las pequeñas sorpresas y quédate con las que ayudan. La suerte favorece a la mente preparada para notarla.',
+    'teach.stretch.quote': 'Siempre que puedas, estira. Es de buena educación.',
+    'teach.stretch.lesson': 'Estirarse es un buen hábito físico. Unos minutos al día, al despertar o antes de sentarte, mantienen los músculos largos y las articulaciones libres, y el cuerpo queda listo para lo que pida el día. Hazlo despacio, respira y para antes de que duela.',
     'teach.tummo.quote': 'El calor encendido desde dentro impide que el frío gane.',
     'teach.tummo.lesson': 'El calor también se puede producir, no solo esperar. Cuando sientas frío o desánimo, lleva la atención al vientre y a la respiración, y deja que el calor se junte allí unos minutos. Luego lleva esa firmeza a lo que ibas a hacer.',
     'teach.firewalking.quote': 'Lo que más temes quizá no te queme.',
@@ -1846,6 +1848,12 @@ export const ES: Catalog = {
         description: 'Lo que no buscabas te encuentra, si estás abierto a ello. Parte de lo que haces estallar vuelve convertido en algo que puedes usar.',
         effect: 'Suerte +1. Cada explosión de tus bombas tiene un 25 % de probabilidad (+5 % por suerte, hasta 60 %) de dejar una llave, una bomba o un corazón.',
         inspiredBy: 'la serendipia, palabra acuñada por Horace Walpole (1754)',
+      },
+      stretch: {
+        name: 'Estirar',
+        description: 'Estirarse es un buen hábito físico: unos minutos al día mantienen el cuerpo largo, suelto y listo. Llegas un poco más lejos que tus manos, y lo que necesitas en el suelo se acerca cuando te abres.',
+        effect: 'Las llaves, bombas y corazones del suelo a menos de 3 bloques de ti vuelan hacia ti. Las prácticas no se atraen. Cuenta para el estado de ser Encarnado.',
+        inspiredBy: 'el yoga y sus posturas de estiramiento',
       },
       // ── the Book of Secrets (the Recipe Book) ──
       bookofsecrets: {

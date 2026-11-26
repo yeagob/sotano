@@ -16,6 +16,7 @@ Changes to the tutorial and to the book are listed without their content, so not
 - A new ending, at the top of the sky (#351).
 - A global difficulty that grows with the Roots' mastery level (#352).
 - New achievements: hold the six branch practices in one run, reach the new ending, overcome the Shadow at the highest difficulty (#353), and complete the bestiary (#360).
+- Stretch, a body practice: keys, bombs and hearts on the floor within 3 blocks fly to you.
 
 ### Changed
 - A challenge room's three waves run once: after the third is cleared the room stays open and does not start again.

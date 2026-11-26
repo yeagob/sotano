@@ -970,6 +970,8 @@ const messages = {
   'teach.boltfromtheblue.lesson': 'Stay with a problem you cannot solve yet, then let it rest. When the answer comes as a flash, write it down at once, while the picture is still bright. Then test it step by step: the flash shows the direction, the work shows the way.',
   'teach.serendipity.quote': 'Stay open, and what you were not looking for may find you.',
   'teach.serendipity.lesson': 'Make room for chance: try new things, talk to people outside your usual circle, take a detour now and then. Notice the small surprises and keep the ones that help. Luck favours the mind that is ready to notice it.',
+  'teach.stretch.quote': 'Whenever you can, stretch. It is good manners.',
+  'teach.stretch.lesson': 'Stretching is a good physical habit. A few minutes a day, when you wake or before you sit, keep the muscles long and the joints free, and the body stays ready for what the day asks of it. Go slowly, breathe, and stop before it hurts.',
   'teach.tummo.quote': 'Heat kindled from within keeps the cold from winning.',
   'teach.tummo.lesson': 'Warmth can be made, not only waited for. When you feel cold or discouraged, bring your attention to your belly and your breath, and let the heat gather there for a few minutes. Then carry that steadiness into what you were about to do.',
   'teach.firewalking.quote': 'What you fear most may not burn you.',

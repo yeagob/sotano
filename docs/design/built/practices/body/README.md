@@ -19,7 +19,6 @@ The folder holds the practices whose first path tag is body. Practices that also
 | [Sleep Hygiene](SLEEP-HYGIENE.md) | 2 | none | treasure rooms |
 | [Wall Jump](WALL-JUMP.md) | 3 | none | treasure rooms |
 | [Walk Slowly](WALK-SLOWLY.md) | 4 | none | no pool: an achievement lays it (`unlock`) |
-| [Stretch](STRETCH.md) | 1 | none | not in the catalogue yet |
 
 ## Also on this path (first path tag elsewhere)
 
