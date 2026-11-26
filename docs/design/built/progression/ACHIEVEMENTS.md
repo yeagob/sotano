@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 76 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, the 19 of the owner's approved list, §1, the six branches of the tree, §1, issue #329, and the ending of illumination of #351, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 77 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, the 19 of the owner's approved list, §1, the six branches of the tree, §1, issue #329, the ending of illumination of #351, §1, and the Shadow at the maximum difficulty of #353, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -8,7 +8,7 @@ An achievement is a moment the game recognises once and keeps for ever: the firs
 
 Ids are stable: the save refers to them. Names follow `sotano-lore`: each names what the moment means, not the mechanic.
 
-### Bosses: destroyed, and turned to your side (28)
+### Bosses: destroyed, and turned to your side (28), and the Shadow at the maximum difficulty (1)
 
 Each boss has two achievements, independent of each other (owner, 2026-11-12):
 
@@ -19,7 +19,7 @@ A player who only converts a boss gets only that boss's conversion achievement; 
 
 **The Shadow's own ending.** Standing still beside the Shadow for three seconds ends its fight (`src/content/bosses/shadow.ts` ends it through its behaviour, not through damage). The design counts it as **turning it to your side**, not as destroying it: its pattern wants "to be seen, and to come home", and the stillness ending is the game's integration of the Shadow, the opposite of breaking it. So `boss.shadow.converted` unlocks by a conversion or by the stillness ending, and `boss.shadow.destroyed` only by bringing its health to zero.
 
-The event says how: `bossOvercome { boss, floor, how }` with `how` one of `destroyed`, `converted`, `stillness` (section 2).
+The event says how: `bossOvercome { boss, floor, how, mastery }` with `how` one of `destroyed`, `converted`, `stillness`, and `mastery` the level the run was carved with (section 2).
 
 #### Destroyed (14)
 
@@ -60,6 +60,16 @@ The event says how: `bossOvercome { boss, floor, how }` with `how` one of `destr
 | `boss.shadow.converted` | The Shadow | Coming Home | Volver a casa | Turn the Shadow to your side, or stay still beside it until it comes home. | Pon a la Sombra de tu lado, o no te muevas de su lado hasta que vuelva a casa. |
 
 Why these names: each answers the boss's pattern (`pattern` in its definition), once as the pattern broken and once as the pattern befriended. Resistance stops creative work: broken, the work begins; befriended, it is a door that holds steady. Inertia is rest that became a stop: pushed, it moves; befriended, it is rest again. The Insatiable wants to be full: its cup breaks, or it learns the right measure. Overwhelm is too much at once: taken a wave at a time, or a tide that holds you. The Hoard holds on to everything: open hands, or enough to share. The Downpour keeps the room grey: after the rain, or rain that waters. The Guardian keeps the edge of change: crossed, or a guide at the edge. The Verdict wants to be beyond reproach: free to be wrong, or a fair judge. The Grudge never wants to be hurt again: letting go, or a lighter heart. The Old Rule is a belief from childhood: outgrown, or rewritten. The Furnace wants to be enough: already enough, or a fire that warms instead of burning. The Impostor fears being found out: nothing to hide, or belonging. The Many Faces wants to be loved: one face, or loved as you are. The Shadow wants to be seen and to come home: light on it, or bringing it home.
+
+#### The Shadow at the maximum difficulty (1, issue #353)
+
+The owner's direction: with the maximum global difficulty, defeat the Shadow (El Espejo, #339). The maximum difficulty (2) is reached at mastery level 100, which this achievement would itself be needed for; the owner's answer to that loop (2026-11-26): **from mastery level 99 on, the maximum counts**. So it unlocks when the Shadow is overcome in any way (destroyed, turned to your side, or the stillness ending) in a run carved at mastery level 99 or more ([DIFFICULTY](DIFFICULTY.md)). The level is the one the run started with, read once at run start; a level earned during the run counts from the next. A run started on the debug level (`S.mastery`) counts as level 0. It unlocks beside the Shadow's own destroyed or converted achievement, both on the same event. It cannot be earned yet: level 99 needs 99 other achievements, and 74 others exist (72 reachable with a book of 9 pages, [MASTERY](MASTERY.md)); it opens as the pending ones of #179 enter.
+
+| Id | Boss | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `boss.shadow.max-difficulty` | The Shadow | Face to Face | Cara a cara | Overcome the Shadow at the highest difficulty: mastery level 99 or more. | Supera a la Sombra en la dificultad más alta: nivel de maestría 99 o más. |
+
+Why the name: at the deepest mastery the Shadow is met at its fullest, and it is still met, face to face, not avoided. The entry: `{ id: 'boss.shadow.max-difficulty', on: 'bossOvercome', where: { boss: 'shadow', mastery: [99, 100] } }` (the level is capped at 100, so the list is every level from 99).
 
 Renamed from the first draft, whose single boss achievement became the "destroyed" one: the Insatiable's was "Full Enough" (now its conversion name), it is "The Cup Breaks"; the Shadow's was "Coming Home" (now its conversion name), it is "Light on the Shadow". The ids changed from `boss.<id>` to `boss.<id>.destroyed` and `boss.<id>.converted`; nothing was saved under the old ids.
 
@@ -248,7 +258,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 75 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, the six branches of the tree, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 75 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, the six branches of the tree, the ending of illumination, the Shadow at the maximum difficulty, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 

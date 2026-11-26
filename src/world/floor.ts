@@ -284,7 +284,7 @@ export function createDungeonWorld(rr: RunRandom, dungeon: DungeonPlan): VoxelWo
 }
 
 /** Enemy roster per room: what can appear and how many, by floor. */
-export interface EnemyBudget { pick(rng: Rng, floor: number, cells?: number): string[] }
+export interface EnemyBudget { pick(rng: Rng, floor: number, cells?: number, difficulty?: number): string[] }
 
 export interface CarveOptions {
   templates: readonly RoomTemplate[];
@@ -296,6 +296,9 @@ export interface CarveOptions {
   /** The player's mastery level (0 to 100), read by floor 0 only (REWARDS). Default 0. Generation never reads the save:
    *  the game passes the level it read at run start. */
   mastery?: number;
+  /** The run's global difficulty (#352, enemies/difficulty.ts), from the mastery level the game read at run start: it
+   *  adds projections to each room's roster on the same room fork. Default 1: every roster as before. */
+  difficulty?: number;
   /** The depth the last run faded on (the save's `fade`, read at run start by the game): the Echo waits on that floor.
    *  Undefined when no Echo waits. It only picks which floor holds the Echo; the room is still chosen by the seed. */
   echoFloor?: number;
@@ -459,8 +462,8 @@ export function carveFloor(w: VoxelWorld, rr: RunRandom, k: number, plan: FloorP
     rooms.push({
       id: gid(pr.id), floor: k, type: pr.type, gx: pr.gx, gz: pr.gz, x0, y0, z0, hx, hz, height, w: RW, d: RD, open: openMask, template: t.id, flipX, flipZ, mood, doors: {},
       // the tutorial floor is peaceful: no roster at all
-      // a bigger room holds more of them (the roster budget grows with its open floor, a cell at a time)
-      enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D)))) : [],
+      // a bigger room holds more of them (the roster budget grows with its open floor, a cell at a time); the difficulty adds more
+      enemies: fights && !lv.tutorial ? opt.enemies.pick(rr.fork('floor', k, 'room', pr.id, 'roster'), k, Math.max(1, Math.round(openTiles / (ROOM_W * ROOM_D))), opt.difficulty ?? 1) : [],
       presence: pr.type === 'vault' && !lv.tutorial ? 'boundary' : undefined,
     });
   }

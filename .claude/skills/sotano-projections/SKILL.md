@@ -24,7 +24,7 @@ The tier is a **layer over any definition**, never a new projection. All of it i
 |---|---|---|
 | The numbers | `tierMultipliers(def, tier)` | **The single source** for projections and bosses. `TIER_MULTIPLIERS`: Yellow hp ×1.5, damage ×1.25, speed ×1.2, climb +1 block; Red hp ×2.5, damage ×1.5, speed ×1.4, climb +2. `BOSS_TIER_MULTIPLIERS`: health only, Yellow ×1.25, Red ×1.5. Never copy a number elsewhere. |
 | Who takes one | `tiered(def)`, `TIERLESS` | Projections and bosses. Never creatures, never the Shadow (it mirrors the player, #339). A new boss that must not tier goes in `TIERLESS`. |
-| The chance | `tierChances(floor, difficulty)` | Yellow = d × (5 % + 2.5 % × (floor − 1)); Red = d × 1.5 % × max(0, floor − 3); floor clamped 1–13; floor 0 none. `difficulty` is an input, `BASE_DIFFICULTY` = 1 until #352. |
+| The chance | `tierChances(floor, difficulty)` | Yellow = d × (5 % + 2.5 % × (floor − 1)); Red = d × 1.5 % × max(0, floor − 3); floor clamped 1–13; floor 0 none. `difficulty` is the run's global difficulty (#352, `difficultyOf` in `src/enemies/difficulty.ts`, 1 + min(level, 100) / 100), passed by `Game.spawnEnemy`; `BASE_DIFFICULTY` = 1 is level 0. A higher difficulty only widens the bands: never lower a seed's tier. |
 | The roll | `spawnTier(rng, floor, room, seq, def)` | One draw on `fork('floor', f, 'room', r, 'tier', seq)`: its own fork, so no other stream moves. Same seed, same tiers. |
 | The stats | `tierStats(def, tier, baseHp)` | Applied in `Game.spawnEnemy` before `enemySpawn`, after the rooted multiplier or the floor's boss health. |
 | In play | `Enemy.tier`, `climb`, `power` | `power` multiplies every hurt; `climb` adds blocks to the step hop, the flow field's step (`climbOf`) and the leap's apex (`leapAir`). |

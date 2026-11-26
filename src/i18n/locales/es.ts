@@ -1131,6 +1131,8 @@ export const ES: Catalog = {
     'achievement.boss.many-faces.converted.desc': 'Pon a Muchas Caras de tu lado con intenciones buenas.',
     'achievement.boss.shadow.converted.name': 'Volver a casa',
     'achievement.boss.shadow.converted.desc': 'Pon a la Sombra de tu lado, o no te muevas de su lado hasta que vuelva a casa.',
+    'achievement.boss.shadow.max-difficulty.name': 'Cara a cara',
+    'achievement.boss.shadow.max-difficulty.desc': 'Supera a la Sombra en la dificultad más alta: nivel de maestría 99 o más.',
     'achievement.meditation.ground.name': 'Con raíces',
     'achievement.meditation.ground.desc': 'Completa tres veces la meditación de Enraizamiento.',
     'achievement.meditation.dusk.name': 'Faroles al anochecer',

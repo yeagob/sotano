@@ -265,6 +265,25 @@ describe('the sandbox and the lab (ACHIEVEMENTS §2)', () => {
     expect(JSON.stringify(record)).toBe(before);
   });
 
+  it('the Shadow at the maximum difficulty (#353) unlocks in a live run at level 99, never in the sandbox, and carving at difficulty 2 writes nothing', () => {
+    const SHADOW_99: Payload = { boss: 'shadow', floor: 9, how: 'converted', mastery: 99 };
+    const sandbox = fresh();
+    const s = session(sandbox.record, sandbox.store);
+    s.live = false;
+    expect(s.track('bossOvercome', SHADOW_99, NOW)).toEqual([]);
+    expect(sandbox.store.writes).toBe(0);
+
+    const { record, store } = fresh();
+    const k = session(record, store);
+    const before = JSON.stringify(record);
+    buildRun(5, 4, undefined, { mastery: 99, difficulty: 1.99 });
+    expect(store.writes).toBe(0);
+    expect(JSON.stringify(record)).toBe(before);
+    expect(k.track('bossOvercome', { ...SHADOW_99, mastery: 98 }, NOW).map(n => n.id)).toEqual(['boss.shadow.converted']);
+    expect(k.track('bossOvercome', SHADOW_99, NOW + 1).map(n => n.id)).toEqual(['boss.shadow.max-difficulty']);
+    expect(k.track('bossOvercome', SHADOW_99, NOW + 2)).toEqual([]);
+  });
+
   it('a record from a newer build is read-only: nothing is tracked or written', () => {
     const store = memory(JSON.stringify({ ...defaultMeta(), v: 3 }));
     const record = loadMeta(store);

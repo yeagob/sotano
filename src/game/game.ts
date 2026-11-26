@@ -106,6 +106,7 @@ import { TunnelLog } from './minimap';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
 import { spawnTier, tierStats, type Tier } from '../enemies/tiers';
+import { difficultyOf } from '../enemies/difficulty';
 import { requestOf } from '../content/presences/requests';
 import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
 import { ChoiceGuard, boatmanCrossing, choiceOutcome, offerOutcome } from '../content/presences/consent';
@@ -523,6 +524,10 @@ export class Game {
   private readonly heightWatch = new HeightWatch();
   /** The Roots' mastery level this run started with (REWARDS §6): read once at run start, never during the run. */
   private runMastery = 0;
+  /** Whether this run's level came from the debug override (S.mastery): such a run counts as level 0 for achievements. */
+  private runMasteryDebug = false;
+  /** The run's global difficulty (#352): 1 + min(level, 100) / 100 from `runMastery`, read once at run start. */
+  private runDifficulty = 1;
   /** Debug (S.mastery): the level the next runs start with, in memory only. Null reads the save. */
   private debugMastery: number | null = null;
   /** Floor 0's Roots pedestals (extra practices and the altar): each site, the item it shows and its pickup (roots-draws.ts). */
@@ -685,6 +690,8 @@ export class Game {
     this.keeper.live = sandbox === null;
     this.heightWatch.reset();
     this.runMastery = sandbox ? 0 : clampLevel(this.debugMastery ?? achievedMastery(this.meta));
+    this.runMasteryDebug = !sandbox && this.debugMastery !== null;
+    this.runDifficulty = difficultyOf(this.runMastery);
     seedFx(sandbox ? root : null);
     this.seed = root;
     this.seedCode = encodeSeed(root);
@@ -916,6 +923,8 @@ export class Game {
       echoFloor: this.keeper.fade,
       // the Roots' mastery level, read once at run start (REWARDS §4-§6); only floor 0 reads it
       mastery: this.runMastery,
+      // the global difficulty (#352): more projections in each room above level 0, on the room's own roster fork
+      difficulty: this.runDifficulty,
     });
     f.boss = boss;
     if (f.boss) this.bossUsed.add(f.boss);
@@ -1036,6 +1045,9 @@ export class Game {
 
   /** The Roots' mastery level the current run was carved with (REWARDS §6). */
   get rootsMastery(): number { return this.runMastery; }
+
+  /** The global difficulty the current run plays at (#352): 1 at level 0, 2 at level 100. */
+  get difficulty(): number { return this.runDifficulty; }
 
   /** The achievements listen to the events of their catalogue on this run's bus (ACHIEVEMENTS §2). */
   private listenAchievements() {
@@ -2546,7 +2558,7 @@ export class Game {
   private nextWave(r: RoomInfo, st: ChallengeState) {
     st.wave++;
     const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'wave', st.entries, st.wave);
-    st.queue = pickWave(rng, r.floor, waveBudget(r.floor, st.wave, st.entries - 1));
+    st.queue = pickWave(rng, r.floor, waveBudget(r.floor, st.wave, st.entries - 1), this.runDifficulty);
     this.hud.toast('toast.challengeWave', { n: st.wave });
   }
 
@@ -2653,7 +2665,8 @@ export class Game {
     const id = this.actors.newId();
     const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
     // the colour tier: projections and bosses (health only), never the Shadow, on its own fork so no other roll moves (TIERS.md)
-    const tier = spawnTier(this.rng, r.floor, r.id % ROOM_ID_STRIDE, seq, def);
+    // the global difficulty (#352) only raises the chances: the roll on its fork is the same, so a tier is never lost
+    const tier = spawnTier(this.rng, r.floor, r.id % ROOM_ID_STRIDE, seq, def, this.runDifficulty);
     // a boss's life comes from its floor and the run's seed (#315); the tier multiplies it
     const base = def.kind === 'boss' ? bossSpawnLife(def, r.floor, this.rng, this.playerHealth()) : rooted ? Math.round(birthHp(def) * ROOTED_HP) : birthHp(def);
     const stats = tier === 'black' ? { hp: base, speed: def.speed, contactDamage: def.contactDamage } : tierStats(def, tier, base);
@@ -5196,7 +5209,8 @@ export class Game {
     this.doors.seal(st.room, false);
     this.roomState.get(st.room)!.cleared = true;
     const f = this.floors.get(floor)!;
-    if (f.boss) this.bus.emit('bossOvercome', { boss: f.boss, floor, how });
+    // `mastery`: the level the run was carved with (a debug level counts as 0), for the Shadow at the maximum difficulty (#353)
+    if (f.boss) this.bus.emit('bossOvercome', { boss: f.boss, floor, how, mastery: this.runMasteryDebug ? 0 : this.runMastery });
     this.revealBossItem(f);
     this.hud.toast('toast.bossDown');
     this.hud.shake(0.6);

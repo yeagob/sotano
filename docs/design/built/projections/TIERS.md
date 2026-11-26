@@ -47,7 +47,7 @@ Challenge-room waves roll like any other spawn. A projection that splits when hi
 
 ### The difficulty
 
-There is no difficulty setting in the game yet. The formula takes the difficulty as an input, fixed at 1 today (`BASE_DIFFICULTY` in `src/enemies/tiers.ts`): 0 would turn everything Black, 2 doubles both chances. A later issue (#352) will drive it from the mastery level.
+The difficulty is the run's global difficulty (#352, [DIFFICULTY](../progression/DIFFICULTY.md)): `d = 1 + min(level, 100) / 100` from the Roots' mastery level the run started with, so 1 at level 0 (`BASE_DIFFICULTY`, the table above) and 2 at level 100, where both chances double (Yellow 70 % and Red 30 % on floor 13). The game passes it to the roll (`spawnTier` in `Game.spawnEnemy`). The roll itself does not move: one draw on the spawn's own fork, and Red takes the bottom of it, then Yellow. A higher difficulty only widens those bands, so a spawn that was Yellow stays Yellow or turns Red and a Red stays Red: **the same seed never loses a tier as the level rises**. 0 would turn everything Black. The sandbox and the lab play at difficulty 1.
 
 ## Optional, off: the falter after a Red release
 
