@@ -12,9 +12,10 @@
  * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only), and
  * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8), and the three of the
  * block, projection and state-of-being achievements: `projectionConverted`, `projectionDestroyed` and `synergyOn`, and the
- * presences' first exchange, `presenceMet` (one per presence, the codex's rule).
+ * presences' first exchange, `presenceMet` (one per presence, the codex's rule), and the ending of illumination,
+ * `illumination` (issue #351, once per run when the Sun's light is full).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'illumination'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -150,6 +151,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'presence.trickster', on: 'presenceMet', where: { presence: 'trickster' } },
   { id: 'presence.wanderer', on: 'presenceMet', where: { presence: 'wanderer' } },
   { id: 'presence.witness', on: 'presenceMet', where: { presence: 'witness' } },
+
+  // The ending of illumination: the last platform carried the player into the Sun (issue #351, the owner's direction) (1).
+  { id: 'sun.illumination', on: 'illumination' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

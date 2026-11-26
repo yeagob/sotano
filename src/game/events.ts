@@ -197,6 +197,10 @@ export interface GameEvents {
    *  the toll paid, the ore given, the Child's build finished), the rule the codex keeps (CODEX.md). `presence` is its id
    *  ('boatman', 'star-reader'…). Once per presence and encounter; the achievements count it once in the save. React only (ACHIEVEMENTS §1). */
   presenceMet: { presence: string };
+  /** The ending of illumination (ILLUMINATION.md): the last checkpoint carried the player into the Sun and the screen
+   *  is all light; the card is shown. Once per run, by the game. `friends` is the run's befriended beings (ally-tally.ts).
+   *  React only (ACHIEVEMENTS §1). */
+  illumination: { friends: number };
 }
 
 /** A rebound of an intention, as the `intentBounce` event carries it. */

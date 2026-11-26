@@ -188,6 +188,24 @@ export const spatial = {
   },
 };
 
+/** A bell's fundamental and partials (ratio, share of the level, share of the length): a struck bar's inharmonic set. */
+const CELESTIAL = { freq: 1318.5, vol: 0.06, dur: 3.2, partials: [[1, 1, 1], [2.76, 0.22, 0.45], [5.4, 0.08, 0.25]] } as const;
+
+function celestialStrike(at: number) {
+  if (!ctx) return;
+  const t = ctx.currentTime + Math.max(0, at);
+  for (const [ratio, share, len] of CELESTIAL.partials) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), dur = CELESTIAL.dur * len;
+    o.type = 'sine';
+    o.frequency.setValueAtTime(CELESTIAL.freq * ratio, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(CELESTIAL.vol * share, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(master);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+}
+
 /** A soft bell for the guided breath: it swells in over 60 ms (never a click) and fades over its length. */
 function bellTone(freq: number, dur: number, vol: number) {
   if (!ctx) return;
@@ -236,6 +254,9 @@ export const sfx3 = {
   converted: () => { tone(523, 0.14, 'sine', 0.14); setTimeout(() => tone(784, 0.2, 'sine', 0.14), 110); },
   /** An achievement is recognised: a soft rising chime, three gentle notes with a long tail. Once per card, never repeated. */
   achievement: () => [523, 659, 880].forEach((f, i) => setTimeout(() => tone(f, 0.9, 'sine', 0.07, 1.04), i * 170)),
+  /** The ending of illumination: the celestial bells, one high calm strike at each of `times` (seconds from now; the
+   *  timings are ASCENSION's, totality/ascension.ts). Each strike swells in and rings out with two inharmonic partials. */
+  celestialBells: (times: readonly number[]) => { for (const at of times) celestialStrike(at); },
   /** An ally turns hostile again: a cold, falling pair. */
   relapsed: () => { tone(330, 0.16, 'triangle', 0.16, 0.6); setTimeout(() => tone(220, 0.25, 'triangle', 0.14, 0.7), 110); },
   judge: () => tone(880, 0.12, 'sawtooth', 0.06, 0.5),

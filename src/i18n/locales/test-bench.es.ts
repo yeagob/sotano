@@ -72,7 +72,7 @@ export const TEST_BENCH_ES: { [K in keyof typeof TEST_BENCH_EN]: Message } = {
   'test.g.horse.exit': 'La subida está en lo alto del mástil, hacia la Totalidad.',
   'test.g.totality.title': 'La Totalidad',
   'test.g.totality.layout': 'Plataformas en espiral desde la copa hasta el Sol, unos 60 saltos; una de cada seis es un punto de control, adonde la corriente ascendente te devuelve tras una caída.',
-  'test.g.totality.exit': 'Pide el Triple salto (el regalo del caballo, o dalo desde Prácticas). El último salto desde el último punto de control entra en el Sol; la Unidad no está construida, así que aún no pasa nada más.',
+  'test.g.totality.exit': 'Pide el Triple salto (el regalo del caballo, o dalo desde Prácticas). Con los cinco guardianes ganados, al pisar el último punto de control este sube hasta el Sol: la pantalla se vuelve luz, aparece la tarjeta y la partida termina. Sin ellos, el último salto entra en el Sol y no pasa nada más.',
   'test.g.spirit.health': 'En el cielo nada quita vida. Los ataques especiales drenan espíritu (sobre 100): como mucho una vez por ataque, con 6 s entre drenajes, nunca mientras te sujetan ni en el segundo siguiente, 1 s.',
   'test.g.spirit.zero': 'Con 0 de espíritu te envían a un piso de abajo al azar, del 0 al 9, y el espíritu se rellena. Ganar a una deidad también lo rellena. Una captura te sujeta 3 s y se lleva una práctica.',
   'test.g.spirit.rules': 'Solo las intenciones positivas sirven con las criaturas del cielo: una negativa se apaga en un soplo. Una torre de tus bloques que llega a la altura de una deidad cae tras un aviso. Los bloques rotos del cielo vuelven a crecer.',

@@ -153,6 +153,7 @@ To make *everything* modifiable, the rule for the core code is: **any behaviour 
 | `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` | — (react) | the achievements' events: a death (`floor`, `source`), the climb into the surface (`from`), a block placed (`afterPact`), the tutorial book turned back (`from`, `page`), bedrock touched (`side`) |
 | `projectionConverted`, `projectionDestroyed` | — (react) | a projection turned to your side (`def`, `boss`: true for a boss), or a hostile projection's health reached zero by harm and it died (`def`, `boss`); the achievements of 100 of each, bosses excluded |
 | `synergyOn` | — (react) | a practice gained turned a synergy on for the first time in this inventory (`synergy`, its id); the states of being's achievements and the synergies' |
+| `illumination` | — (react) | the ending of illumination's card shows, once per run (`friends`, the run's befriended beings); the achievement `sun.illumination` |
 | `presenceMet` | — (react) | a presence is met for the first time on its enemy: its first exchange is done (`presence`, its id); the presences' achievements |
 
 **Actor events** (`actorDamage`, `contact`, `actorDeath`) cover the player and every projection, so a hook on them must say which actors it is for: `hook('actorDamage', fn, { target: 'player' })` (`'player'`, `'projection'` or `'any'`). The inventory skips the others; the validator and a contract test require it. See [ACTORS.md](ACTORS.md).

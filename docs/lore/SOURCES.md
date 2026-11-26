@@ -143,6 +143,7 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | Id | Source | Status | Key ideas | In the game |
 |---|---|---|---|---|
 | `cosmere` | The Cosmere novels (Brandon Sanderson, 2005–) | Credit; "Cosmere" and its coined terms are the author's (Caution for names) *(verify)* | A whole broken into shards, each carrying a single intent; power that is held, carried and changes the holder | **Shards**: the owner's name for the light held in broken blocks, the material you carry and build with ([COSMOLOGY.md §4](COSMOLOGY.md#4-other-maps-of-the-same-world)); "shard" is a common word, we never use the author's coined terms |
+| `lathe-of-heaven` | *The Lathe of Heaven* (Ursula K. Le Guin, 1971; Spanish title *La rueda celeste*), with the song title "With a Little Help from My Friends" (The Beatles, 1967), which the novel's hero sings to himself | Novel; song title | Credit (both modern works; the song title is named, its lyrics are never used) | A dreamer whose dreams change the world learns that no one is made whole alone; the help of friends | The ending of illumination: the friends of the run rise with the player into the Sun, and the card says no one is illuminated alone ([ILLUMINATION.md](../design/built/levels/totality/ILLUMINATION.md)); the owner's nod is the title only, never quoted in the game |
 
 ### Anime (credit only)
 

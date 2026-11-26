@@ -4,6 +4,7 @@ Each idea the game is built on: where it comes from (ids from [SOURCES.md](SOURC
 
 | Concept | Sources | In the game |
 |---|---|---|
+| **No one is illuminated alone** | `lathe-of-heaven` | The ending of illumination: the friends of the run rise into the Sun with the player ([ILLUMINATION.md](../design/built/levels/totality/ILLUMINATION.md)) |
 | **Intention alters reality** | `as-a-man-thinketh`, `kybalion` (mentalism) | The core verb: intentions break the world's blocks |
 | **Looking is the way through** | `eye-contact`, `dowsing` | Steering: Eye Contact curves intentions toward what you fear; Dowsing toward what lies hidden |
 | **Insight is electric** | `insight`, `kindling` | Electricity: a sudden flash that runs from one thought to the next (Aha Moment, Resonance, Rapport, Discharge) |

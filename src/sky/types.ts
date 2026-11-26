@@ -784,7 +784,16 @@ export interface SkyRealmApi {
   enterUnity(): void;
   /** True once `enterUnity` has been called. */
   readonly enteredUnity: boolean;
+  /** The ending of illumination (totality/ascension.ts): the game reads its light and takes its card once. */
+  readonly ascension: AscensionView;
   dispose(): void;
+}
+
+/** What the game reads of the ending of illumination: its phase, the screen's light (0 → 1) and the card, due once. */
+export interface AscensionView {
+  readonly phase: 'waiting' | 'rising' | 'light' | 'card';
+  readonly light: number;
+  takeCard(): boolean;
 }
 export interface SkyRealmCtor { create(host: SkyHost, root: THREE.Group, makeSet: SkySetFactory): SkyRealmApi }
 

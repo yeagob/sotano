@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 74 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, and the 19 of the owner's approved list, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 75 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, the 19 of the owner's approved list, §1, and the ending of illumination of #351, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -166,6 +166,14 @@ The owner approved these ids, names and events as a list. The names are the owne
 | `presence.wanderer` | `presenceMet` with `presence` `wanderer` | Fellow Traveller | Compañero de camino | Meet The Wanderer: finish your first exchange with it. | Conoce al Caminante: termina tu primer intercambio con él. |
 | `presence.witness` | `presenceMet` with `presence` `witness` | Seen | Visto | Meet The Witness: finish your first exchange with it. | Conoce al Testigo: termina tu primer intercambio con él. |
 
+### The ending of illumination (1, issue #351)
+
+The owner's achievement for becoming light. The names are the owner's, provisional ("Turned to light" / "Convertido en luz"). See [ILLUMINATION](../levels/totality/ILLUMINATION.md).
+
+| Id | Unlocked by | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `sun.illumination` | `illumination` | Turned to Light | Convertido en luz | Win the five guardians of the sky and ride the last platform into the Sun. | Gana a los cinco guardianes del cielo y sube en la última plataforma hasta el Sol. |
+
 **What "met" means.** A presence is met when the player finishes its first exchange with it: the gift taken, the choice answered, the toll paid, the ore given, or the Child's build finished. This is the rule the codex already keeps (`meet` in `game.ts`, CODEX.md): the tag `met` is set only there, so the event `presenceMet` is emitted at the same point, the first time that enemy is met. The presence's card opening is not the moment, because a player can open a card and decline it.
 
 ## 2. The data model (takes the rest without code changes)
@@ -200,6 +208,7 @@ New events the 46 need (`src/game/events.ts`):
 | `projectionConverted` | `{ def: string; boss: boolean }` | In `convert`, once per conversion (`boss` true for a boss) |
 | `projectionDestroyed` | `{ def: string; boss: boolean }` | In `onEnemyDeath`, when a hostile projection dies with its health at zero (not a self-ending) |
 | `synergyOn` | `{ synergy: string }` | In `Game.give`, for each synergy a practice gained turns on (its id, as in `src/content/synergies.ts`) |
+| `illumination` | `{ friends: number }` | Once per run, in `Game.illuminate`, when the ending's light is full and its card shows (ILLUMINATION §2); `friends` is the run's friend count (`AllyTally`). React only |
 | `presenceMet` | `{ presence: string }` | In `Game.meet`, the first time a presence's enemy is met: its first exchange is done (its id, as in `src/content/presences`). Once per presence and encounter |
 
 Rules the tracker keeps:

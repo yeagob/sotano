@@ -1222,6 +1222,12 @@ const messages = {
   'achievement.presence.wanderer.desc': 'Meet The Wanderer: finish your first exchange with it.',
   'achievement.presence.witness.name': 'Seen',
   'achievement.presence.witness.desc': 'Meet The Witness: finish your first exchange with it.',
+  'achievement.sun.illumination.name': 'Turned to Light',
+  'achievement.sun.illumination.desc': 'Win the five guardians of the sky and ride the last platform into the Sun.',
+  // the ending of illumination (ILLUMINATION.md): the owner's three lines, written by him in Spanish; '@' and the plural are his
+  'sun.ending.1': 'Congratulations, you have reached illumination.',
+  'sun.ending.2': 'No one is illuminated alone. Together we reached illumination, together with @.',
+  'sun.ending.3': 'At last you have all turned to light.',
 
   // ── the hidden book: a quotation's translation note (PANELS §4b) ──
   'book.quote.translated': 'Our translation',

@@ -1217,6 +1217,11 @@ export const ES: Catalog = {
     'achievement.presence.wanderer.desc': 'Conoce al Caminante: termina tu primer intercambio con él.',
     'achievement.presence.witness.name': 'Visto',
     'achievement.presence.witness.desc': 'Conoce al Testigo: termina tu primer intercambio con él.',
+    'achievement.sun.illumination.name': 'Convertido en luz',
+    'achievement.sun.illumination.desc': 'Gana a los cinco guardianes del cielo y sube en la última plataforma hasta el Sol.',
+    'sun.ending.1': 'Felicidades, has alcanzado la iluminación.',
+    'sun.ending.2': 'Nadie se ilumina solo. Alcanzamos juntas la iluminación, juntas con @.',
+    'sun.ending.3': 'Finalmente os habéis convertido en luz.',
 
     // ── the hidden book: a quotation's translation note (PANELS §4b) ──
     'book.quote.translated': 'Traducción nuestra',

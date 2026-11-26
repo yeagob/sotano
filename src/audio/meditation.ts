@@ -103,6 +103,11 @@ export class MeditationAudio {
     this.note(freq * 2.76, dur * 0.35, vol * 0.12, 'sine', 0.03, at);
   }
 
+  /** A meditation's own chime out of a sitting: the bells that open each of its parts (the ascent companions, ILLUMINATION.md). */
+  chime(seq: Sequence) {
+    for (const [i, n] of seq.sounds.part.entries()) this.bell(semi(seq.music.root, n + 12), 0.045, seq.music.bell, i * 0.45, 6);
+  }
+
   /** The app's own small sounds: moving the selection, choosing, going back, a switch. */
   ui(kind: 'move' | 'pick' | 'back' | 'toggle' | 'open') {
     if (kind === 'move') this.note(660, 0.25, 0.018, 'sine', 0.02);
