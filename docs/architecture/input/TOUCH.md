@@ -32,9 +32,23 @@ Phones and tablets, **always in landscape**. The game detects a touch device (`p
 
 References: Minecraft's pocket edition (left joystick, look by dragging on the right, jump at the lower right, tap to place), Noita (fire held while you aim), Isaac (one button per consumable, a glance tells you what you have).
 
+### 1.1 When the buttons are on screen (issue #376)
+
+The owner does not want the screen covered with buttons. The touch controls are **contextual**: they come up when the thumbs need them and leave when they do not. The rules live in one place, `src/input/touch-layout.ts` (`TOUCH_LAYOUT`): every touch button's slot (place, size, tier), the timings and the checks. `bindings.ts` says which actions have a button; the layout says where it goes and when it is seen.
+
+- **At rest (no touch), the minimum set:** only the tab button (the menu) in the top bar, and the fullscreen button while the page is not fullscreen. The stick's ring and every play button are gone.
+- **A touch brings the set up:** any touch on the layer (start, drag or lift) shows the stick's ring and the play buttons at once. Coming into play on a phone shows them once, so the player sees where everything is.
+- **It leaves after 3 s with no touch** (`TOUCH_IDLE_MS` = 3000), fading out over 0.3 s (`TOUCH_FADE_MS`; no fade with reduced motion). A held touch (the stick, a held cast) keeps the set up.
+- **A faded button still answers where it sits.** The first touch on the place of jump jumps and wakes the set: a thumb that knows the layout never needs a first tap to bring it back.
+- **Contextual buttons are there only while they can act:** throw while a block or flask is in the hand, the bomb while there is a seed to place, drink while a flask is on top, the miracle while Kairos is held. One that appears wakes the set, so a new verb is seen. (They no longer sit dimmed: hidden is clearer than dim on a phone.)
+- **Target size:** every button is at least **48 CSS px** (`TOUCH_TARGET_MIN_PX`; Material's 48 dp, above Apple's 44 pt); jump and the bead of light at least **64 px** (`TOUCH_CORE_MIN_PX`), the bead 72 px. Sizes are a share of the screen's short side with that floor (`max(48px, 15vmin)`).
+- **The arc (right thumb):** the bead of light in the bottom-right corner, jump to its left, throw above the bead, drink above jump, the miracle beside it, the bomb at the arc's far end. Nothing in the left 42 % (the stick's zone), nothing on the minimap. `tests/touch-layout.test.ts` checks the sizes, the overlaps, the stick zone and the minimap on five landscape screens (568 × 320, 640 × 360, 844 × 390, 915 × 412, 1024 × 768), and that keyboard, mouse and gamepad never show the layer. `?gallery=touch` draws the layout at phone size, at rest and awake.
+
+Gestures (the dash and crouch swipes, the stick edge for run, the half turn for polarity, the tap to place, the hand slots) are unchanged and need no button on screen.
+
 ## 2. The layer
 
-`TouchControls` puts a full-screen layer above the game canvas and below every card. It is shown only on a touch device while playing (or with a banner open). Every touch is tracked by its identifier: a stick touch, a look touch, or a button touch (several at once). Leaving play, losing the window or switching device clears every track, so nothing stays held.
+`TouchControls` puts a full-screen layer above the game canvas and below every card. It is shown only on a touch device while playing (or with a banner open), and its buttons wake and fade as §1.1 says (`TouchPresence`, the `awake` class on `#touch`). Each button is placed by the inline style its slot gives (`place`, `slotStyle`), with the safe-area insets. Every touch is tracked by its identifier: a stick touch, a look touch, or a button touch (several at once). Leaving play, losing the window or switching device clears every track, so nothing stays held.
 
 **A tap on the world** is a touch that starts on the stick side or the look side, lasts under 250 ms and does not move more than 12 px. It is recorded in `Input.touchTap` with the `place` action; the game aims the placement ray through that pixel (`Game.tapDirection`). A tap that finds no block in reach is refused with the denied sound. It never throws the block in your hand, so a stray tap cannot lose it.
 
@@ -56,7 +70,7 @@ Resuming asks for fullscreen and locks the orientation to landscape where the br
 
 ## 6. Glyphs and feedback
 
-The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`, or `seedLove` for a good intention, chosen by `bombGlyph` in `src/input/touch.ts`), drawn from palette tokens (`sotano-art`). Buttons dim when they cannot act (empty hand, no seeds) and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).
+The button glyphs are 12 × 12 pixel strings in `src/content/hud-icons.ts` (`touchCast`, `touchJump`, `touchThrow`, `touchInventory`; the bomb uses `seed`, or `seedLove` for a good intention, chosen by `bombGlyph` in `src/input/touch.ts`), drawn from palette tokens (`sotano-art`). Buttons that cannot act are hidden, not dimmed (§1.1), and shrink while pressed. Screen shake vibrates the phone (`navigator.vibrate`).
 
 ## 7. Why these controls
 

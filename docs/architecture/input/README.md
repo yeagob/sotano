@@ -8,7 +8,7 @@ How the player's hands reach the game. The Roots ships three complete control sc
 |---|---|
 | [KEYBOARD.md](KEYBOARD.md) | Keyboard and mouse: the layout, pointer lock as pause, key repeat, the debug keys |
 | [GAMEPAD.md](GAMEPAD.md) | Gamepad: the standard mapping, sticks and dead zones, waking the device, menus with the d-pad, death and disconnection, rumble |
-| [TOUCH.md](TOUCH.md) | Touch: landscape only, the floating stick, look drag, the button arc, the half turn of the phone for polarity, the tab button and the screen, tap to place, what leaves the screen, fullscreen and the rotate card |
+| [TOUCH.md](TOUCH.md) | Touch: landscape only, contextual buttons that come up on a touch and fade (§1.1), the floating stick, look drag, the button arc, the half turn of the phone for polarity, the tab button and the screen, tap to place, what leaves the screen, fullscreen and the rotate card |
 
 Reviews: [../../reviews/input.md](../../reviews/input.md).
 
@@ -19,6 +19,7 @@ Reviews: [../../reviews/input.md](../../reviews/input.md).
 | `src/input/bindings.ts` | `BINDINGS`: every action with its keyboard/mouse input, gamepad button or stick, touch control, contexts and Minecraft / Noita / Isaac references. Pure data, tested in node. |
 | `src/input/input.ts` | `Input`: raw state of the three devices, the action layer, the active device (`activeDevice()`, `onDeviceChange`), pausing (`playing`, `resume`, `release`), gamepad polling and rumble. |
 | `src/input/touch.ts` | `TouchControls`: the touch layer. |
+| `src/input/touch-layout.ts` | `TOUCH_LAYOUT`: every touch button's place, size and tier, the minimum target size, and `TouchPresence` (the set comes up on a touch and leaves 3 s after the last one, issue #376). Pure data, tested in node. |
 | `src/input/labels.ts` | Words per device: `controlKey(row, device)`, `forDevice(prompt, device)`, `controlParams(device)` for the tablets. |
 
 ## 2. Actions and contexts
