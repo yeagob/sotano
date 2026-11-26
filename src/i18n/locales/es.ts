@@ -1807,6 +1807,12 @@ export const ES: Catalog = {
         effect: 'Suerte +1. Cada explosión de tus bombas tiene un 25 % de probabilidad (+5 % por suerte, hasta 60 %) de dejar una llave, una bomba o un corazón.',
         inspiredBy: 'la serendipia, palabra acuñada por Horace Walpole (1754)',
       },
+      stretch: {
+        name: 'Estirar',
+        description: 'Estirarse es un buen hábito físico: unos minutos al día mantienen el cuerpo largo, suelto y listo. Llegas un poco más lejos que tus manos, y lo que necesitas en el suelo se acerca cuando te abres.',
+        effect: 'Las llaves, bombas y corazones del suelo a menos de 3 bloques de ti vuelan hacia ti. Las prácticas no se atraen.',
+        inspiredBy: 'el yoga y sus posturas de estiramiento',
+      },
       // ── the Book of Secrets (the Recipe Book) ──
       bookofsecrets: {
         name: 'El libro de los secretos',

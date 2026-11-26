@@ -17,7 +17,7 @@ The folder holds the practices whose first path tag is body. Practices that also
 | [Lion's Mane](LIONS-MANE.md) | 2 | none | treasure rooms, boss rewards |
 | [Discharge](DISCHARGE.md) | 2 | none | treasure rooms |
 | [Sleep Hygiene](SLEEP-HYGIENE.md) | 2 | none | treasure rooms |
-| [Stretch](STRETCH.md) | 1 | none | not in the catalogue yet |
+| [Stretch](STRETCH.md) | 1 | none | treasure rooms |
 
 ## Also on this path (first path tag elsewhere)
 
