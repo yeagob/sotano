@@ -724,7 +724,11 @@ export class Game {
     this.alembicViews = new Alembics(this.dungeonRoot);
     this.kitchenViews = new Kitchens(this.dungeonRoot);
     // the dungeon's allies give way to the player (issue #327); the sky's set has none (out of scope)
-    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost(), { player: () => this.escortee() });
+    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost(), {
+      player: () => this.escortee(),
+      settled: room => this.floorSettled(room),
+      unsafe: (x, y, z) => !!elemDef(this.world.elemAt(x, y, z)),
+    });
     this.potions.clear();
     this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
@@ -1950,6 +1954,26 @@ export class Game {
   }
 
   // ───────────────────────── enemies ─────────────────────────
+
+  /** A room whose floor's boss is overcome, or whose floor is open: its allies stop following and stand still (owner, #327). */
+  private floorSettled(room: number) {
+    const r = this.rooms.get(room);
+    const st = r ? this.bossRooms.get(r.floor) : undefined;
+    return !!st && (st.defeated || st.open);
+  }
+
+  /** Allies never change floor (owner, #327): every ally of another floor than `floor` leaves the world. */
+  private dismissAllies(floor: number) {
+    for (const e of [...this.enemies.list]) {
+      if (!e.alive || e.faction !== 'self' || this.rooms.get(e.room)?.floor === floor) continue;
+      this.particles.burst(e.body.x, e.body.y + e.body.h * 0.6, e.body.z, pal('light.ember'), 10, 1.2, 0.05);
+      this.enemies.dissolve(e);
+      this.bus.off(null, `actor:${e.id}`);
+      this.actors.remove(e.id);
+      this.contacts.forget(e.id);
+      this.projectionSeq.delete(e.id);
+    }
+  }
 
   /** The player as the dungeon's allies see it (enemies/escort.ts), or null while it is not about. */
   private escortee() {
@@ -5007,11 +5031,15 @@ export class Game {
       // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
       const entered = this.floors.get(band);
       this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
+      this.dismissAllies(band);
       if (entered) this.hud.setFloor(entered, band);
       this.hud.toast('toast.floor', { n: band });
     }
     const r = this.roomAt(b.x, b.y + 0.1, b.z);
     if (r && r.id !== this.room) {
+      // allies come through the door with the player, inside one floor only (issue #327)
+      const from = this.rooms.get(this.room);
+      if (from && from.floor === r.floor) this.enemies.crossDoor(from.id, r.id);
       this.room = r.id;
       this.player.room = r.id;
       const first = !this.visited.has(r.id);

@@ -32,7 +32,7 @@ A walker moves on a flow field for its room: a map of which cells lead toward th
 
 Built (issue #327). Allies move with the player and keep out of its way. Hostile projections move as before. Code: `src/enemies/escort.ts`, applied by the dungeon's set of beings in `src/entities/enemies.ts`.
 
-**Who is an ally here.** The projections on your side, converted by positive intentions or mended by the Mender, and the friendly creatures that love shots have grown past their birth size. Sky allies and the future drones of the practices Amistad and Maestros are not covered (owner, #327).
+**Who is an ally here.** The projections on your side, converted by positive intentions or mended by the Mender, and the friendly creatures that love shots have grown past their birth size (they give way and keep their spacing, but do not follow or come through doors). Sky allies and the future drones of the practices Amistad and Maestros are not covered (owner, #327).
 
 **The rule.** An ally keeps its behaviour (it still chases, shoots and fights its target), and gives way to you on top of it:
 
@@ -42,7 +42,25 @@ Built (issue #327). Allies move with the player and keep out of its way. Hostile
 - **It leaves doorways and corridors.** Standing in a one-block doorway or corridor while you walk toward it from within 4 blocks, it walks out to the nearest wider cell, never through you.
 - **It steps out of your line.** Inside 10 blocks of your aim, or 3 blocks of the path you are walking, it sidesteps across the line, keeping the part of its walk that goes along it, so it can still reach a target at the end of your shot.
 
-Nothing ever pushed your body: beings and the player do not collide, so "pushing" meant overlapping, and that is what the rule prevents.
+- **It keeps its spacing.** Allies steer apart when their centres are closer than 1.2 blocks, so a group that follows you spreads round you instead of piling up. A little overlap is allowed (owner, export v1).
+- **It comes through doors with you.** When you cross into another room of the same floor, every ally on your side within 8 blocks of you is set down at once inside that door, in the new room: 1.5 blocks in, in rows 1.2 blocks apart, on the floor, clear of you, of each other and of the elements. An ally further off walks to the door and comes through when it gets within a block of it, or after 8 seconds at the latest. Grown creatures belong to their room and stay there.
+- **It climbs, and does not fall.** Every walking ally steps up a rise of one block. A climber kind steps up two, and its route may go up and down two-block steps (see Climbers). An ally on the ground never goes over a ledge deeper than its own step: a knock or a shove slides it along the edge instead. Hostile projections keep the old rule: one block, and a knock can still drop them.
+- **It pushes, a little (to be tried).** An ally that walks into another ally passes 0.3 of that walk on to it. One that walks into you moves you 0.15 of its walk, and only while you are on the ground, the ground stays under you and no part of your box goes over an element. Both shares are one number each (`ALLY_PUSH`, `PLAYER_PUSH` in `src/enemies/escort.ts`); set to 0, pushing is off.
+- **It never changes floor** (owner, 2026-11-26). Allies do not come down with you and are not carried through the toll. Once the floor's boss is overcome, by any means, or the floor is opened, the allies of that floor stop following: they stand where they are and turn to face you, and nobody comes through a door any more. When you reach a new floor, every ally of the floor you left fades out in a few ember motes. Code: `Game.floorSettled`, `Game.dismissAllies`.
+
+Before the rework, beings and the player did not collide, so "pushing" meant overlapping; now an ally may shove you a little, as above, and overlapping is not in itself interference (owner, export v1).
+
+### Climbers
+
+Marked as data on the projection (`climber` in its definition). Proposed, for the owner to confirm:
+
+| Kind | Why it climbs |
+|---|---|
+| Impulse | It already leaps before it thinks; two blocks is one more hop |
+| Scarcity | It scrambles over anything to reach what it wants |
+| Shortcut | It always finds the easier way, over the top |
+
+Only an ally uses the climb. A hostile Impulse, Scarcity or Shortcut walks the one-block field as before.
 
 ### What it was before (the investigation)
 
@@ -73,6 +91,16 @@ Checked tick by tick at 60 ticks a second in `tests/allies-escort.test.ts`:
 | An ally with a reachable target reaches it, with you standing in the way | At most 600 ticks (10 s) | An 8-block route round you takes about 6.5 s with a Doubt's pauses |
 | With nothing hostile in the room, after 300 ticks (5 s) | Between 1.5 and 4.5 blocks from you | The follow band (2 to 4 blocks) with half a block of settling |
 | A hostile projection's path | The same, tick for tick, with and without the rule | The owner's rule: hostiles do not change |
+| An ally inside your box (more than 0.2 blocks deep, in plan) | At most 30 ticks in a row (0.5 s) | A little overlap is allowed; standing in you is not |
+| A shove of yours | Never takes the ground from under your centre, never puts your box over an element, never while you are in the air | The owner's rule: never off a ledge or into an element |
+| After a door crossing, an ally that was within 8 blocks | In the new room within 30 ticks (0.5 s); in the test it is the same tick | It comes with you |
+| After a door crossing, an ally further off | In the new room within 8 s and one more | Time to walk to the door, then it is moved in anyway |
+| A rise in the way of a following ally | One block: stepped; two blocks: stepped by a climber, never by another kind | The owner's rule: at least one, some two |
+| Following allies, after 8 s | Centres at least 0.5 blocks apart (a Doubt is 0.64 wide) | Spacing with a little overlap |
+| Allies following you in every room of three seeded floors (seed 0x327, 600 ticks each) | No ally ever lands more than its step below where it stood | They do not fall easily |
+| A knock toward a sheer ledge | An ally stays on top; a hostile knocked the same way falls | The guard is for allies only |
+| On a settled floor | An ally keeps its place (under 0.05 blocks in 5 s) and faces you | The owner's floor rule |
+| Reaching a new floor | No ally of another floor is left | The owner's floor rule |
 
 ### Decided (owner, #327)
 
@@ -81,6 +109,8 @@ Checked tick by tick at 60 ticks a second in `tests/allies-escort.test.ts`:
 3. With no hostile in the room, allies follow you at a set distance and keep out of your way.
 4. Hostile projections are not changed; their navigation tests stay green.
 5. No seed or room was reported where an ally collides with you; the investigation above stands in for it.
+6. Export v1 (2026-11-25): a little overlap is allowed; interference is blocking your path, standing in doors and pushing you off, not overlap itself. Better following across rooms (built: through doors), a climb of one block for every ally and two for some kinds (built: Climbers), not falling easily (built), spacing between allies (built), pushing to be tried (built behind two numbers).
+7. Allies never change floor (2026-11-26): built as above.
 
 ## Passing through blocks
 
@@ -115,6 +145,10 @@ See [not-built encounters: movement](../../not-built/encounters/movement/README.
 - **Walk through the room.** Walkers follow the flow field, which knows no doors. Check that a walker never waits forever at a door it cannot pass.
 - **Ghosts.** A ghost ignores walls on its way. Is that the right rule for the burrower's loop, or does the design's rock path matter?
 - **Patrol.** The patrol behaviour is unused. Keep it for the burrower loop, or remove it?
-- **Allies between rooms.** An ally belongs to the room it was in and stays there when you leave. Should allies go through doors with you?
-- **The follow distance.** Allies hold 2 to 4 blocks from you. Is that the right distance in play?
-- **Deep pits.** A walker, ally or hostile, cannot climb out of a pit two blocks deep with sheer walls. Should the field mark such pits, or should walkers get a higher step?
+- ~~**Allies between rooms.**~~ Decided (export v1) and built: they come through doors with you, inside one floor.
+- ~~**Deep pits.**~~ Decided and built for allies: a climber ally climbs out of a pit two deep; any other walker, ally or hostile, still cannot.
+- **Which kinds climb two blocks.** Impulse, Scarcity and Shortcut are proposed (Climbers); the owner may change the list.
+- **The distances in play.** Follow 2 to 4 blocks, spacing 1.2, teleport radius 8, walk to the door 8 s, set down 1.5 blocks inside. Chosen by tests, not yet tried in the browser.
+- **Pushing.** Whether allies keep pushing each other (0.3) and you (0.15) after the owner tries it.
+- **Who comes through.** Grown creatures stay in their room; mended and converted projections come. Is that right? (Open question 1 of #327.)
+- **A seed where an ally got in your way** (open question 3 of #327) is still welcome.

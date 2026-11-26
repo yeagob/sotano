@@ -2,7 +2,7 @@
 // rules over boxes and the voxel grid: no three.js. Enemies.escort applies them to allies only; a hostile
 // projection never reads this file, so its navigation is the one it always had.
 
-import type { Body } from '../physics/voxel-collide';
+import { boxHits, type Body } from '../physics/voxel-collide';
 import type { Enemy } from './types';
 import { growsUnder } from '../entities/growth';
 
@@ -29,6 +29,28 @@ export const SOFT_COST = 8;
 /** Cells the doorway search looks through before it gives up and steps straight away. */
 const YIELD_SEARCH = 200;
 
+/** Allies within this distance of the player (blocks, centre to centre) when it crosses a door are moved with it. */
+export const TELEPORT_RADIUS = 8;
+/** Seconds an ally further away walks to the door before it is moved in anyway. */
+export const DOOR_WALK_TIME = 8;
+/** How close (blocks) a walking ally must come to the door to step through it. */
+export const DOOR_REACH = 1;
+/** How far inside the new room (blocks, from the door) the first ally is set down, and the spacing of the next ones. */
+export const ENTRY_DEPTH = 1.5;
+export const ENTRY_SPACING = 1.2;
+/** Centre-to-centre distance (blocks) inside which two allies steer apart. */
+export const ALLY_SPACING = 1.2;
+/** Share of an ally's walk into another ally that shoves it (0: allies never push each other). To be tried by the owner. */
+export const ALLY_PUSH = 0.3;
+/** Share of an ally's walk into the player that shoves the player (0: never). Small on purpose; to be tried by the owner. */
+export const PLAYER_PUSH = 0.15;
+/** Rise (blocks) every walking ally steps up, and the rise a climber kind steps up. */
+export const STEP = 1;
+export const CLIMB_STEP = 2;
+/** Upward speeds (blocks/s) that clear one block and two blocks under the walkers' gravity (26). */
+export const STEP_JUMP = 7.6;
+export const CLIMB_JUMP = 10.6;
+
 /** The player as an ally sees it: its box, its eye height over the feet, its aim (unit, 3D) and its velocity. */
 export interface Escortee {
   id: number; room: number;
@@ -40,6 +62,89 @@ export interface Escortee {
 /** Allies in the sense of #327: the projections on the player's side (converted and mended) and the friendly
  *  creatures love shots have grown. Sky allies and the future drones are not here (owner, #327). */
 export const isAlly = (e: Enemy) => e.faction === 'self' || (growsUnder(e) && e.scale > 1);
+
+/** The highest rise this ally steps up and the deepest drop it lets itself go down (1, or 2 for a climber kind). */
+export const stepOf = (e: Enemy) => e.spec.climber ? CLIMB_STEP : STEP;
+
+/**
+ * Whether a box of half width `hw` with its feet at `y`, centred on (x, z), would still stand on something no
+ * more than `step` blocks down: some column under its footprint has ground (or a rise) within reach.
+ */
+export function grounded(solid: Solid, x: number, y: number, z: number, hw: number, step: number): boolean {
+  const fy = Math.floor(y + 0.05), e = 1e-4;
+  for (let cx = Math.floor(x - hw + e); cx <= Math.floor(x + hw - e); cx++) for (let cz = Math.floor(z - hw + e); cz <= Math.floor(z + hw - e); cz++) {
+    for (let k = 0; k <= step + 1; k++) if (solid(cx, fy - k, cz)) return true;
+  }
+  return false;
+}
+
+/**
+ * Keeps an ally that was on the ground from going over a ledge deeper than its step (a nudge or a knock
+ * never drops it): when its move this frame took every column under it away, the move is undone along
+ * one axis, or both, so it slides along the edge instead. `from` is where it stood before the move.
+ */
+export function holdLedge(solid: Solid, b: Body, from: { x: number; y: number; z: number }, step: number) {
+  if (grounded(solid, b.x, from.y, b.z, b.hw, step)) return;
+  const fits = (x: number, z: number) => grounded(solid, x, from.y, z, b.hw, step) && !boxHits(solid, x, from.y, z, b.hw, b.h);
+  if (fits(from.x, b.z)) { b.x = from.x; b.vx = 0; }
+  else if (fits(b.x, from.z)) { b.z = from.z; b.vz = 0; }
+  else { b.x = from.x; b.z = from.z; b.vx = 0; b.vz = 0; }
+  if (b.y < from.y) { b.y = from.y; b.vy = 0; b.onGround = true; }
+}
+
+/**
+ * Where an ally that crosses a door with the player is set down: on the floor, `ENTRY_DEPTH` inside the
+ * door along `inward`, in rows `ENTRY_SPACING` apart, clear of every box in `taken` (the player and the
+ * beings already there), inside `bounds` (x0, z0, x1, z1) and on no cell `unsafe` refuses. Null when none fits.
+ */
+export function entrySpot(solid: Solid, unsafe: (x: number, y: number, z: number) => boolean, door: { x: number; y: number; z: number },
+  inward: [number, number], hw: number, h: number, taken: Body[], bounds: [number, number, number, number]): { x: number; y: number; z: number } | null {
+  const [ix, iz] = inward, sx = -iz, sz = ix;
+  const [x0, z0, x1, z1] = bounds;
+  for (let row = 0; row < 3; row++) for (const lat of [0, 1, -1, 2, -2]) {
+    const x = door.x + ix * (ENTRY_DEPTH + row * ENTRY_SPACING) + sx * lat * ENTRY_SPACING;
+    const z = door.z + iz * (ENTRY_DEPTH + row * ENTRY_SPACING) + sz * lat * ENTRY_SPACING;
+    if (x - hw < x0 || x + hw > x1 || z - hw < z0 || z + hw > z1) continue;
+    for (const dy of [0, 1, -1, 2, -2]) {
+      const y = Math.floor(door.y + 0.05) + dy;
+      if (!solid(Math.floor(x), y - 1, Math.floor(z)) || boxHits(solid, x, y, z, hw, h) || unsafe(Math.floor(x), y, Math.floor(z))) continue;
+      const box: Body = { x, y, z, vx: 0, vy: 0, vz: 0, hw, h, onGround: true };
+      if (taken.some(o => boxGap(box, o) < 0.1 && box.y < o.y + o.h && box.y + box.h > o.y)) break;
+      return { x, y, z };
+    }
+  }
+  return null;
+}
+
+/**
+ * Moves the player's box by (dx, dz) only when that is safe: it is on the ground, the box stays out of
+ * blocks, the ground stays under its centre (never off a ledge) and no cell under its box holds what
+ * `unsafe` refuses (an element). True when it moved.
+ */
+export function nudgePlayer(solid: Solid, unsafe: (x: number, y: number, z: number) => boolean, p: Body, dx: number, dz: number): boolean {
+  if (!p.onGround) return false;
+  const x = p.x + dx, z = p.z + dz, fy = Math.floor(p.y + 0.05);
+  if (boxHits(solid, x, p.y, z, p.hw, p.h) || !solid(Math.floor(x), fy - 1, Math.floor(z))) return false;
+  for (const cx of [x - p.hw, x + p.hw]) for (const cz of [z - p.hw, z + p.hw]) if (unsafe(Math.floor(cx), fy, Math.floor(cz))) return false;
+  p.x = x; p.z = z;
+  return true;
+}
+
+/** The pull apart (unit-less, added to a wish) of an ally from the others inside ALLY_SPACING: nothing beyond it, a full step on the same spot. */
+export function spacing(b: Body, others: Body[]): [number, number] {
+  let wx = 0, wz = 0;
+  for (const o of others) {
+    if (o === b) continue;
+    let dx = b.x - o.x, dz = b.z - o.z;
+    const d = Math.hypot(dx, dz);
+    if (d >= ALLY_SPACING) continue;
+    // on the very same spot, split by position in the list so the two go opposite ways
+    if (d < 1e-3) { dx = others.indexOf(b) < others.indexOf(o) ? 1 : -1; dz = 0; }
+    const l = Math.hypot(dx, dz), k = (ALLY_SPACING - d) / ALLY_SPACING;
+    wx += dx / l * k; wz += dz / l * k;
+  }
+  return [wx, wz];
+}
 
 /** Whether two boxes overlap (feet-based boxes, square in plan). */
 export function overlaps(a: Body, b: Body): boolean {

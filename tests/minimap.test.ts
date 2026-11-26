@@ -192,6 +192,8 @@ describe('explored rooms stay on the map (trackPlace)', () => {
       player: { room: id(0), body: { x: 0, y: Y0, z: 0 } },
       bus: { emit: (_k: string, e: object) => e, clearDeferred() {} },
       potions: { endFloor: () => [] }, potionsEnded() {}, activate() {}, carve() {},
+      // no beings: the allies' door and floor rules (#327) have nothing to move
+      rooms: new Map(), enemies: { list: [], crossDoor() {} },
       hud: { setFloor() {}, toast() {}, setRoom: (_f: unknown, _r: number, v: Set<number>) => shown.push(new Set(v)) },
     });
     return { g, f, shown };
