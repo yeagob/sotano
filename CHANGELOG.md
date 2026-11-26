@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Changed
+- A challenge room's three waves run once: after the third is cleared the room stays open and does not start again.
+
 ## 0.2.9-alpha.f5 · 2026-11-25
 
 ### Changed
