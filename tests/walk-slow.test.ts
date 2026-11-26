@@ -11,7 +11,7 @@ import { DebrisSystem } from '../src/physics/debris';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import distraction from '../src/content/enemies/distraction';
 import type { Actor } from '../src/entities/actors';
-import type { Enemy } from '../src/enemies/types';
+import { birthHp, type Enemy } from '../src/enemies/types';
 import { fx, seedFx } from '../src/core/fx';
 import { RunRandom } from '../src/core/rng';
 import type { Input } from '../src/input/input';
@@ -145,7 +145,7 @@ describe('the blocks and the projections under the scale', () => {
       id: 1, kind: 'player', def: 'player', faction: 'self', hp: 24, tags: new Set<string>(), room: 0, alive: true, spawning: 0,
       body: { x: 10.5, y: 0, z: 3.5, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true },
     } as Actor);
-    const e: Enemy = en.spawn(distraction, 2, 0, 2.5, 1, 2.5, distraction.hp, distraction.speed, distraction.contactDamage, new Set());
+    const e: Enemy = en.spawn(distraction, 2, 0, 2.5, 1, 2.5, birthHp(distraction), distraction.speed, distraction.contactDamage, new Set());
     e.spawning = 0;
     actors.push(e);
     return { en, e };
