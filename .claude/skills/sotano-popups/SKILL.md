@@ -56,6 +56,8 @@ If a type you need is missing from this table, it is not a type yet. Read sectio
 
 **Control.** Every window that waits for the player is dismissed or answered on **keyboard, mouse, gamepad and touch** (`sotano-controls`). Each such window needs a confirm action and a back action. A **timed** window (the toast, the achievement notice) needs no answer: it leaves by itself, and takes no input. The code paths differ (the presence offer, the toll, the screen and the death screen each wire their own), so check the path for the window you touch. A window the player cannot close is a bug.
 
+**The mouse in a window (#356).** A window with clickable controls that shows while the pointer is free must not capture the mouse on a press: put it inside `#overlay` or mark its element `data-menu` (`capturesMouse` in `src/input/input.ts`). Never redraw a control under the pointer on hover or on every frame: a redraw between the press and the release loses the click (`hoverRedraws` in `src/game/menu-pointer.ts`).
+
 **Focus and accessibility.** Only the presence offer sets `role="dialog"`, `aria-modal`, `aria-labelledby` and `aria-describedby`, and it moves focus to its accept action. Two gaps exist today: focus is not given back when a window closes, and the toast has no `aria-live` region. When you touch either one, close the gap: restore focus on close, and add `aria-live="polite"` to the toast. A toast is never a focus target.
 
 **Single slot.** Each element holds one window at a time. A toast replaces the previous toast; a banner replaces the previous banner. Do not stack them and do not queue silently. When two things must be seen, use a blocking type and let the player answer one before the next.

@@ -34,6 +34,16 @@ const LOOK_EVENT_MAX = 300;
 
 const clampLook = (v: number) => Number.isFinite(v) ? Math.max(-LOOK_EVENT_MAX, Math.min(LOOK_EVENT_MAX, v)) : 0;
 
+/**
+ * Whether a mouse press on `target` may capture the mouse (pointer lock). Never inside a menu: an element marked
+ * `data-menu` (the pause card, the menu panel and the screen: `#overlay` in index.html) keeps the pointer visible, so
+ * its controls get their click. Starting play from a menu is that menu's own click (`resume`), never the press (#356).
+ */
+export function capturesMouse(target: EventTarget | null): boolean {
+  const el = target as { closest?: (sel: string) => unknown } | null;
+  return !el?.closest?.('[data-menu]');
+}
+
 const BUTTON_ACTIONS =BINDINGS.filter(b => b.kind !== 'axis').map(b => b.action);
 
 export class Input {
@@ -93,7 +103,7 @@ export class Input {
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
-      if (!this.locked) { if (!this.engaged && !this.modal) this.lock(); return; }
+      if (!this.locked) { if (!this.engaged && !this.modal && capturesMouse(e.target)) this.lock(); return; }
       if (!this.mouse.has(e.button)) this.mousePressed.add(e.button);
       this.mouse.add(e.button);
     });
