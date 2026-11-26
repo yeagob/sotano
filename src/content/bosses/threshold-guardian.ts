@@ -12,7 +12,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Threshold Guardian',
   pattern: 'The fear at the edge of change',
-  hp: 140,
   speed: 2,
   size: [0.9, 3],
   contactDamage: 8,

@@ -21,7 +21,7 @@ Floors 7 and 8. Code: [burnout.ts](../../../../src/content/enemies/burnout.ts).
 
 ## How the player answers it
 
-Its speed grows with time, so do not let the fight run long. The spent period is the moment to strike. Good intentions do half damage and warm it; bad intentions do full damage.
+Its speed grows with time, so do not let the fight run long. The spent period is the moment to strike. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

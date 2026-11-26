@@ -2,7 +2,7 @@
 
 Up: [levels](../README.md) · the room templates, the rules every room obeys, and the rooms that the player builds through.
 
-A room is one cell of a floor's map (13 blocks by 7 inside, with a two-block wall shared with its neighbour), and it may spread into the empty cells beside it. The build has 149 room templates, chosen per cell by kind and by floor: starts, normal rooms, treasure rooms, vaults, bosses, the corridors of the Tree (paths) and six challenge rooms. A template is a picture of the room in blocks, with markers for the start, the pedestal, the key, the boss's hole and the doors. Every template passes a validator that enforces the house rules below before it may be used. The tests check the validator and the building rule on every hostile floor.
+A room is one cell of a floor's map (13 blocks by 7 inside, with a two-block wall shared with its neighbour), and it may spread into the empty cells beside it. The build has 150 room templates, chosen per cell by kind and by floor: starts, normal rooms, treasure rooms, vaults, bosses, the corridors of the Tree (paths) and six challenge rooms. A template is a picture of the room in blocks, with markers for the start, the pedestal, the key, the boss's hole and the doors. Every template passes a validator that enforces the house rules below before it may be used. The tests check the validator and the building rule on every hostile floor.
 
 ## The house rules
 
@@ -36,7 +36,7 @@ At least half of the fighting rooms with two or more doors need building on ever
 
 | Document | Contents |
 |---|---|
-| [TEMPLATES.md](TEMPLATES.md) | All 149 templates by kind, floors, height, ceiling, footprint and features; the rooms the player builds through |
+| [TEMPLATES.md](TEMPLATES.md) | All 150 templates by kind, floors, height, ceiling, footprint and features; the rooms the player builds through |
 | [LAYOUT-RULES.md](LAYOUT-RULES.md) | Open corners: the rules every room with projections keeps, the audit of the rooms that broke them, the new layouts and how many each band has |
 | [ELEMENT-ROOMS.md](ELEMENT-ROOMS.md) | The 28 rooms where water, lava or fire is the protagonist, and what each asks of the player |
 | [HEIGHT-AND-CEILINGS.md](HEIGHT-AND-CEILINGS.md) | Rooms taller than 5 blocks, the nine ceiling shapes, pits, dips, plateaus and layers |

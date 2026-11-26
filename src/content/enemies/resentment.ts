@@ -1,6 +1,6 @@
 import { pal } from '../palette';
 import { chase } from '../../enemies/behaviours';
-import { defineEnemy, TX, type Behaviour, type Enemy, type EnemyCtx } from '../../enemies/types';
+import { birthHp, defineEnemy, TX, type Behaviour, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const GROWTH_EVERY = 6;
 const walk = chase({});
@@ -14,10 +14,12 @@ const grudge: Behaviour = {
       e.timer = 1;
       ctx.strike(e, { lead: 0, live: 5, damage: 0, shape: { kind: 'field', x: e.body.x, y: e.body.y, z: e.body.z, r: 0.8, effect: 'slow' } });
     }
-    if (e.clock >= GROWTH_EVERY && e.maxHp < e.spec.hp * 2) {
+    if (e.clock >= GROWTH_EVERY && e.maxHp < birthHp(e.spec) * 2) {
       e.clock = 0;
-      e.maxHp = Math.min(e.spec.hp * 2, e.maxHp * 1.2);
-      e.hp = Math.min(e.maxHp, e.hp * 1.2);
+      // it grows, and its bar keeps its place: love already given and harm already done stay the same share
+      const grown = Math.min(birthHp(e.spec) * 2, e.maxHp * 1.2);
+      e.hp *= grown / e.maxHp;
+      e.maxHp = grown;
       e.pulse = 0.6;
     }
     walk.update(e, ctx);

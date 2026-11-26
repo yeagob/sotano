@@ -42,7 +42,7 @@ Never:
 | **Inline hint** | `#fov-hint` and similar `.hint` text | set the element's text | A line of text beside a control. Not a window. | Explaining one control in a menu. |
 | **Meditation app** | `src/game/meditation-app.ts`, `meditation-view.ts` | its own screen | A full screen of its own, not a pop-up. Listed so nobody builds a second one. | The Sanctuary. |
 | **Developer panels** | `src/debug/test-panel.ts`, `src/debug/test-bench.ts` | developer only | Never shown to players. Their text is English on purpose (see the comment at the top of `hud.ts`). | Testing and debugging only. |
-| **Fade** | `#fade` | `fadeOut(seconds)`, `fadeIn()` | Full-screen transition that is not a message. Each call restarts it. | Changing floor or room. |
+| **Fade** | `#fade` | `fadeOut(seconds)`, `fadeIn()`, `fadeLevel(k)` (the realm gate), `lightLevel(k, easeS)` (its light tone) | Full-screen transition that is not a message. Each call restarts it. The light tone whitens the screen in `light.core` with no ensō, each change easing in over `easeS`; a banner card opened over it stays on top (`#banner.over-light`); `fadeIn` comes back from the light and `lightLevel(0)` gives the dark tone back. | Changing floor or room; the ending of illumination's light (ILLUMINATION.md), whose card is a Presence card. |
 | **Flash and hurt** | `#flash`, `#hurt` | `flash(color)`, `hurt()` | Screen effects, not messages. The flash has a 333 ms budget (`FLASH_BUDGET_MS`). | Damage and bright moments. |
 | **Rotate prompt** | `#rotate` | shown by the device check | Blocks a phone in portrait until the player turns it. | Portrait phones only. |
 | **Loading** | `#loading` | shown while the game starts | Full-screen wait message, localized through `app.loading`. | Start-up only. |

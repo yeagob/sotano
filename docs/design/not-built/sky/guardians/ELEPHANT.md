@@ -190,7 +190,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 
 ### B5. Minions
 
-- **How many:** at most target 5 on the floor, a herd, allies included. At most target 3 hostile.
+- **How many:** at most target 50 on the floor, a herd, allies included. At most target 30 hostile (#357, section B10; was 5 and 3).
 - **Spawn:** from the waterhole, the herd's pool on the ground ring at the mountain's foot (B6). Bubbles rise and a low rumble grows for target 2 s, and a young elephant wades out. One every target 15 s while fewer than 3 are hostile.
 - **Movement (the elephant's own):**
   - walks heavily at a steady target 2 blocks a second that never changes, in water or out;
@@ -282,9 +282,9 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery (Drinking) | 2.5 s | up to about 1 s |
 | Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
 | Current speed | 3 blocks a second | wading pace about 2.8 blocks a second |
-| Positive hits | 36 | 229 health: about 65 bad hits |
+| Positive hits | 960 (owner, #357) | 229 health: about 65 bad hits |
 | Hits to turn a minion | 5 | 5 good hits for a projection |
-| Minions at once | 5 (3 hostile) | no built equivalent |
+| Minions at once | 50 (30 hostile), five at a time every 3 s (#357) | no built equivalent |
 | Floor size | radius 24, 34 high (rows 110 to 143), 4 rows of headroom (hall 110 to 147) | trunk story 22 high |
 | Rings | ground 2, terraces 8, 14, 20, the Basin's shore 26; walls 6 | no built equivalent |
 | The Basin | pool radius 3, water line 26, rim top 28; the deity floats 1 over the water | no built equivalent |
@@ -295,6 +295,17 @@ Every value in the middle column is a target. The right column is the built game
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 | Special attacks (provisional) | 6: 3 drain spirit (16, 12, 14 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
 | Special telegraphs | 1.1 s to slow or move, 1.3 s to drain, 1.6 s to capture | windup 0.4 to 0.9 s |
+
+### B10. The hunt (#357)
+
+Status: built as a target; the numbers are provisional until the owner plays them. The shared rules are in [guardians, section 8](README.md#8-the-hunt-357).
+
+- **Follows the player** at 10 blocks, 3 over their feet (plus its 1 hover), slowly (2.8 blocks/s, dash 7, 0.2 rad/s); it backs away within 5. The rim's rule still holds wherever it floats: a hit counts only when the player sees its body (or its raised head).
+- **When a hit counts** it dodges 3 blocks to the side and 1.5 up (at most every 2 s); its next attack comes within 1.2 s.
+- **Mud stamp (its dive):** every 5.5 s of free time a circle of 4 where the player is heading (1.1 s telegraph); it drops over the spot and the ground there turns dense for 4 s (the player walks at 0.4).
+- **Warded wind-up:** while it telegraphs, a hit counts only from within 5 blocks.
+- **Holds still** while Listening.
+- **Its herd:** 50 at most, 30 hostile (ten times the first count). Effects three times stronger: a shoulder shoves 6 blocks (was 2) and a spray's current pushes 9 (was 3). Half of them leave the file and hunt the player.
 
 ## Open questions
 

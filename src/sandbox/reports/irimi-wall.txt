@@ -9,27 +9,28 @@ t 0 (0.0 s)
   cubes — · pickups 0
 
 t 30 (0.5 s)
-  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  player hp 24/24 · at 6.0 0.0 3.5 · hand [crate] · bombs 99 · keys 99
   practices irimi · synergies —
-  blocks crate 1
+  blocks —
   elements —
-  cubes — · pickups 0
-  events roomEnter 1
+  cubes — · pickups 1
+  events blockBreak:crate 1 · blockDamage:crate 1 · blockLoot:crate 1 · roomEnter 1 · touchCube:crate 1
 
 t 120 (2.0 s)
-  player hp 24/24 · at 5.7 0.0 3.5 · hand [] · bombs 99 · keys 99
+  player hp 24/24 · at 10.5 0.0 3.5 · hand [crate] · bombs 99 · keys 99
   practices irimi · synergies —
-  blocks crate 1
+  blocks —
   elements —
-  cubes — · pickups 0
+  cubes — · pickups 1
+  events pickupCollect 1
 
 map t 120 · h 0
   .............
   .............
   .............
-  ......c......
+  .............
   .............
   .............
   .............
 
-legend c crate
+legend

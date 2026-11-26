@@ -8,7 +8,7 @@ The Hoard is a mound of everything kept: crates, stones and bundles packed toget
 
 - **Pattern:** holding on to everything. To be safe from lack.
 - **Path:** Will.
-- **Health:** 229 on floor 3, 293 on floor 4.
+- **Health:** 208 to 447 on floor 3, 267 to 571 on floor 4.
 
 ## Phases
 

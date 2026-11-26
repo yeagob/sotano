@@ -20,7 +20,7 @@ Only as a split of Procrastination. The roster never rolls it. Code: [procrastin
 
 ## How the player answers it
 
-Good intentions do half damage and warm it; bad intentions do full damage. Its health is small enough to finish in a few hits, but each hit adds one more piece.
+Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. Its health is small enough to finish in a few hits, but each hit adds one more piece.
 
 ## Element affinities
 

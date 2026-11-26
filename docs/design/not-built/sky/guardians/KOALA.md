@@ -188,7 +188,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 
 ### B5. Minions
 
-- **How many:** at most target 6 on the floor, allies included.
+- **How many:** at most target 60 on the floor, allies included (#357, section B10; was 6).
 - **Spawn:** the floor begins with three clusters of two sleeping koalas on thick branches. When a koala turns ally and leaves its cluster, a new sleeping koala appears there after target 20 s, while the floor holds fewer than 6. A new koala appears with a soft rustle of leaves and a curled shape that grows for target 1.5 s.
 - **Movement (the koala's own):**
   - walks slowly on flat branches, target 1.2 blocks a second;
@@ -248,13 +248,24 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2 s | up to about 1 s |
 | Guard (Clinging) | 2.5 s, from the second stage | no built equivalent |
 | Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
-| Positive hits | 30 | 179 health: about 51 bad hits |
+| Positive hits | 480 (owner, #357) | 179 health: about 51 bad hits |
 | Hits to turn a minion | 3 | 5 good hits for a projection |
-| Minions at once | 6 | no built equivalent |
+| Minions at once | 60 (60 asleep or hostile), six at a time every 4 s (#357) | no built equivalent |
 | Floor size | radius 22, 32 high | trunk story 22 high |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 | Special attacks (provisional) | 6: 3 drain spirit (8, 10, 18 of 100), 1 captures (3 s, one practice), 2 slow or hold | no built equivalent |
 | Special telegraphs | 1.2 s to slow or hold, 1.4 s to drain, 1.7 s to capture | windup 0.4 to 0.9 s |
+
+### B10. The hunt (#357)
+
+Status: built as a target; the numbers are provisional until the owner plays them. The shared rules are in [guardians, section 8](README.md#8-the-hunt-357).
+
+- **Follows the player** at 9 blocks, 4 over their feet (plus its 1 hover), circling at 0.35 rad/s; it backs away within 5. Glide 4 blocks/s, dash 10. Its teleport still applies.
+- **When a hit counts** it dodges 4 blocks to the side and 1.5 up (at most every 1.5 s); its next attack comes within 1 s.
+- **Drop hold (its dive):** every 5 s of free time a ring of 4 where the player is heading (1.2 s telegraph); it drops over the spot and the ring holds a grounded player for 1.5 s.
+- **Warded wind-up:** while it telegraphs, a hit counts only from within 5 blocks.
+- **Holds still** while Asleep and Stirring.
+- **Its herd:** 60 at most, all of them may be wild (ten times the first count). Effects three times stronger: they wake at 12 (was 4), climb toward the player from 24 away (was 8), and a hug holds for 6 s (was 2) until a positive shot looses it.
 
 ## Open questions
 

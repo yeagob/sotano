@@ -12,11 +12,12 @@ import { BERSERKER_FRAME, HEART_HUD, STAR_GLOW } from '../content/heart-art';
 import { SYNERGIES } from '../content/synergies';
 import { BASE_STATS, fmtStat, statLabel, type StatName } from '../core/stats';
 import { fill, fmtNum, locale, locales, onLocaleChange, t, type MessageKey, type Params } from '../i18n';
-import { causeName, effectMessage, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
+import { effectMessage, tieredCause, isPath, itemText, materialName, partText, pathName, practiceTeaching, synergyText } from '../i18n/content';
 import { chooseLocale } from '../i18n/dom';
 import { copyMods, type ItemDef, type Req, type SynergyDef } from '../items/types';
 import { isPromised } from '../items/pool';
 import type { Polarity } from '../combat/polarity';
+import type { Tier } from '../enemies/tiers';
 import { HUD_ICONS } from '../content/hud-icons';
 import { palCss, PATH_GLYPH, type PalToken, type PathName } from '../content/palette';
 import { materialTexture } from '../render/atlas';
@@ -116,6 +117,7 @@ export class Hud {
   private toastEl = $('toast');
   private bossEl = $('boss');
   private bossFill = $('bossfill');
+  private bossLove = $('bosslove');
   private bossName = $('bossname');
   private heartsEl = $('hearts');
   private heartsRow = $('hearts-row');
@@ -380,14 +382,20 @@ export class Hud {
     }));
   }
 
-  /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
-  bossBar(boss: { name: string; ratio: number } | null) {
+  /** The boss bar. With `turn` it is the conversion bar of a hostile boss (combat/polarity.ts): a centre mark,
+   *  the cold fill up to the middle and the captive fill past it, so harm empties it and love fills it to the
+   *  top (DECISIONS §14.10). Without it, a plain fill (an allied boss, the sky's presences). */
+  bossBar(boss: { name: string; ratio: number; turn?: boolean } | null) {
     this.bossEl.hidden = !boss;
     if (!boss) return;
     this.bossName.textContent = boss.name;
-    this.bossFill.style.width = `${Math.max(0, Math.min(1, boss.ratio)) * 100}%`;
+    const r = Math.max(0, Math.min(1, boss.ratio));
+    this.bossEl.classList.toggle('turn', !!boss.turn);
+    this.bossFill.style.width = `${(boss.turn ? Math.min(r, 0.5) : r) * 100}%`;
+    this.bossLove.style.width = `${(boss.turn ? Math.max(0, r - 0.5) : 0) * 100}%`;
   }
 
+  /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
   setPolarity(p: Polarity) {
     this.lastPolarity = p;
     this.renderPolarity();
@@ -1012,10 +1020,35 @@ export class Hud {
     this.fadeEl.classList.add('on');
   }
 
-  /** …and back, a little slower, once the new run is ready. */
+  /** …and back, a little slower, once the new run is ready. After the light of the ending it comes back from the
+   *  light, and the fade's own dark returns only once it is clear. */
   fadeIn() {
     this.fadeEl.style.setProperty('--fade-t', '0.6s');
+    this.fadeEl.style.opacity = '';
     this.fadeEl.classList.remove('on');
+    this.bannerEl.classList.remove('over-light');
+    if (this.fadeEl.classList.contains('light')) setTimeout(() => this.lightLevel(0), 700);
+  }
+
+  /**
+   * The Fade in its light tone (the ending of illumination, ILLUMINATION.md): the screen whitens to `k` (0 → 1) in the
+   * light's core colour, each change easing in over `easeS` seconds, with no ensō. A card opened over it stays on top.
+   * 0 gives the screen back to the Fade's dark tone.
+   */
+  lightLevel(k: number, easeS = 0) {
+    if (k > 0) {
+      this.fadeEl.classList.add('light');
+      this.fadeEl.style.setProperty('--fade-bg', palCss('light.core'));
+      this.fadeEl.style.setProperty('--fade-t', `${easeS}s`);
+      this.fadeEl.style.opacity = String(Math.min(1, k));
+      this.bannerEl.classList.add('over-light');
+      return;
+    }
+    if (this.fadeEl.classList.contains('on')) return;
+    this.fadeEl.classList.remove('light');
+    this.fadeEl.style.opacity = '';
+    this.fadeEl.style.setProperty('--fade-bg', palCss('ink.void'));
+    this.bannerEl.classList.remove('over-light');
   }
 
   shake(seconds: number) {
@@ -1102,17 +1135,19 @@ export class Hud {
     if (el && this.seedText) el.textContent = t('seed.copy', { seed: this.seedText });
   }
 
-  showDeath(depth: number, items: readonly ItemDef[], source: string) {
+  /** `tier`: the colour tier of the projection that held the player, when it was Yellow or Red. */
+  showDeath(depth: number, items: readonly ItemDef[], source: string, tier?: Tier) {
     this.dismissBanner();
     document.exitPointerLock?.();
-    this.lastDeath = [depth, items, source];
-    this.renderDeath(depth, items, source);
+    this.lastDeath = [depth, items, source, tier];
+    this.renderDeath(depth, items, source, tier);
     this.deathEl.classList.add('show');
   }
 
-  private renderDeath(depth: number, items: readonly ItemDef[], source: string) {
+  private renderDeath(depth: number, items: readonly ItemDef[], source: string, tier?: Tier) {
+    const cause = tieredCause(source, tier);
     this.deathEl.innerHTML =
-      `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause: causeName(source), n: depth })}</p>` +
+      `<div class="card slate"><h1>${th('death.title')}</h1><p>${th('death.cause', { cause, n: depth })}</p>` +
       `<div class="icons">${items.map(i => `<img src="${iconDataUrl(i, 3)}" title="${esc(itemText(i).name)}" alt="">`).join('')}</div>` +
       `${this.completionHtml()}<p class="seed">${th('seed.label', { seed: this.seedText })}</p><button type="button" class="go" data-act="restart">${th(forDevice('death.restart', activeDevice()))}</button></div>`;
   }

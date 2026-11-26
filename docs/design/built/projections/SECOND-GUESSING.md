@@ -20,7 +20,7 @@ Floors 3 to 7. Code: [second-guessing.ts](../../../../src/content/enemies/second
 
 ## How the player answers it
 
-Its pauses are the windows. Good intentions do half damage and warm it; bad intentions do full damage.
+Its pauses are the windows. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

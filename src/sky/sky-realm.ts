@@ -28,6 +28,10 @@ import { SpiritLaw } from './laws/spirit';
 import { towerUnder } from './laws/tower';
 import { Updraft } from './laws/updraft';
 import { Threshold } from './totality/threshold';
+import { Ascension, onLast } from './totality/ascension';
+import { footprint } from './totality/chain';
+import { RisingPlatformView } from './render/rising-platform';
+import { AIR } from '../content/materials';
 import type {
   Cell, CellTest, CreatureDeps, FloorIndex, HindranceCtx, PositiveHit, SkyCreaturesApi, SkyHost, SkyPlace, SkyPlans, SkyRealmApi,
   SkyRealmSet, SkySetFactory, SkyWorldApi, Tower, Vec3,
@@ -71,8 +75,13 @@ export class SkyRealm implements SkyRealmApi {
   private readonly spawners: MinionSpawner[];
   private tower: Tower | null = null;
   private unityEntered = false;
+  /** The ending of illumination: the last checkpoint rises into the Sun once the five guardians are won. */
+  private readonly rise: Ascension;
+  private platformView: RisingPlatformView | null = null;
+  /** The feet's offset from the platform's top centre when the rise began: the ride keeps it. */
+  private riderOffset = { x: 0, z: 0 };
 
-  private constructor(private readonly host: SkyHost, root: THREE.Group, readonly set: SkyRealmSet, readonly plans: SkyPlans) {
+  private constructor(private readonly host: SkyHost, private readonly root: THREE.Group, readonly set: SkyRealmSet, readonly plans: SkyPlans) {
     this.world = set.world;
     const occupied: CellTest = (x, y, z) => this.occupied(x, y, z);
     this.regrowth = new Regrowth(set.world, host, occupied);
@@ -105,6 +114,33 @@ export class SkyRealm implements SkyRealmApi {
     this.updraft = new Updraft(host, checkpoints);
     this.outside = new OutsideWatch(host, plans.tree, (tower, floor) => this.knockByGuardian(tower, floor));
     this.threshold = new Threshold(host, plans.totality);
+    this.rise = new Ascension(plans.totality.platforms[plans.totality.platforms.length - 1], plans.totality.sun);
+  }
+
+  get ascension() { return this.rise; }
+
+  /** The five guardians of the sky (the deities of the five floors: panda, koala, elephant, lion, horse) are won. */
+  get fiveWon(): boolean {
+    const won = new Set(this.creatures.all().filter(a => a.role === 'deity' && a.side === 'ally').map(a => a.animal));
+    return this.plans.floors.every(f => won.has(f.animal));
+  }
+
+  /** The rise begins: the last checkpoint's cells leave the world for good and its box takes their place. */
+  private beginRise() {
+    const last = this.rise.last, f = footprint(last);
+    const shape = this.plans.totality.shapes[last.id];
+    for (let y = last.y - 2; y < last.y; y++) for (let z = f.z0; z < f.z1; z++) for (let x = f.x0; x < f.x1; x++) this.world.setStory(x, y, z, AIR);
+    this.platformView = new RisingPlatformView(this.root, last.w, last.d, shape && 'm' in shape ? shape.m : 0);
+    const b = this.host.player().body, top = this.rise.platformAt();
+    this.riderOffset = { x: b.x - top.x, z: b.z - top.z };
+    this.platformView.place(top);
+  }
+
+  /** One frame of the ride: the box moves on its path and carries the feet with it, held there after the rise ends. */
+  private ride(dt: number) {
+    const top = this.rise.platformAt();
+    this.platformView?.place(top);
+    this.host.player().carry({ x: top.x + this.riderOffset.x, y: top.y + 0.02, z: top.z + this.riderOffset.z }, Math.max(dt, 1e-3));
   }
 
   /** The placed tower the player stands on this frame, if any (law 3.9): the creatures read it. */
@@ -142,7 +178,9 @@ export class SkyRealm implements SkyRealmApi {
     // only the player's floor spawns (once a frame, here); the deck (0) and Totality (6) have no herd
     if (floor >= 1 && floor <= this.spawners.length) this.spawners[floor - 1].update(dt);
     this.creatures.update(dt, floor);
-    this.updraft.update(dt);
+    // the ending of illumination (ILLUMINATION.md): while it runs, the ride carries the body and no fall is caught
+    if (!this.rise.started && floor === 6 && this.rise.tryBegin(this.fiveWon, onLast(this.rise.last, body))) this.beginRise();
+    if (this.rise.started) { this.rise.update(dt); this.ride(dt); } else this.updraft.update(dt);
     this.threshold.update(dt);
     if (floor !== this.reachedFloor) {
       this.reachedFloor = floor;
@@ -210,6 +248,7 @@ export class SkyRealm implements SkyRealmApi {
     this.creatures.dispose();
     this.earth.dispose();
     this.sun.dispose();
+    this.platformView?.dispose();
   }
 
   private placeOf(eye: Vec3): SkyPlace {

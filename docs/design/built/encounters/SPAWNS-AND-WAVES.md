@@ -18,6 +18,26 @@ A normal room's roster is rolled once, when the floor is carved, from its own se
 
 The budget grows with the room's open floor, a cell at a time. Some rooms are quiet and have no roster at all. Vault rooms have none either.
 
+### The difficulty adds projections
+
+Built (issue #352, `src/enemies/difficulty.ts` `moreEnemies`, called by `ENEMY_BUDGET.pick` and `pickWave` in `src/content/enemies/index.ts`). The global difficulty ([DIFFICULTY](../progression/DIFFICULTY.md)) multiplies the number of projections in a room. The budget formula above is kept: it rolls the usual roster first, exactly as at difficulty 1, and the difficulty then adds to it.
+
+- **The multiplier**: `m = 1 + 0.5 × (difficulty − 1)`, which is `1 + 0.5 × min(level, 100) / 100` from the mastery level. 1 at level 0 (the count of today), 1.5 at level 100, linear in between.
+- **The count**: the room aims at `usual × m` projections. The whole part is added for sure; the fraction is one more projection with that chance (a usual roster of 2 at m = 1.25 holds 2, and 3 one time in two).
+- **The surge, now and then**: a room may hold a few more than its multiplier gives. Its chance is `10 % × (difficulty − 1)`: none at level 0, 5 % at level 50, 10 % at level 100. A surge adds 1 or 2 projections, even odds.
+- **Each added projection** is drawn from the same roster table as the usual ones: it belongs to the floor and costs no more than the room's budget.
+- **The cap**: a room's usual cap (5 per cell, 7 for a challenge wave) is multiplied by `m` and rounded down, and the surge may pass it by its 1 or 2.
+- **A quiet room stays quiet.** An empty roster gains nothing.
+- **The seed**: the added projections are drawn from the room's own roster fork, after the usual roster, and every draw is the seed's (never the mastery level's). The same seed at the same level gives the same room; a higher level keeps the usual roster and only adds to it. At difficulty 1 nothing is drawn.
+- **Challenge waves** grow the same way, on the wave's own fork.
+
+| Level | Difficulty | Multiplier | Surge chance |
+|---|---|---|---|
+| 0 | 1 | 1 | 0 % |
+| 25 | 1.25 | 1.125 | 2.5 % |
+| 50 | 1.5 | 1.25 | 5 % |
+| 100 | 2 | 1.5 | 10 % |
+
 ## Where a projection rises
 
 Each projection gets its own spawn point, chosen when its omen opens:

@@ -21,7 +21,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Old Rule',
   pattern: 'A belief from childhood',
-  hp: 140,
   speed: 0.6,
   size: [1.4, 3.2],
   contactDamage: 8,

@@ -7,10 +7,32 @@ Changes to the tutorial and to the book are listed without their content, so not
 ## Unreleased
 
 ### Added
+- A new body practice, the Double Jump: one more jump in the air (#293).
+- A new body practice, the Wall Jump: one more jump in the air, taken from a wall beside you (#294).
+- A new practice, Walk Slowly: while you crouch on the ground, the world slows down (#340).
+- The giant tree's trunk is a climb of its own: broken stretches of the stairs to jump, dig, swim or build across (#317, #328).
+- Six branches leave the giant tree, each a course of moving or vanishing platforms that leads to a practice (#329).
+- Projections and bosses can rise in a colour tier, Yellow or Red, stronger than the Black; an ally is drawn in inverted colours (#338).
+- A new ending, at the top of the sky (#351).
+- A global difficulty that grows with the Roots' mastery level (#352).
+- New achievements: hold the six branch practices in one run, reach the new ending, overcome the Shadow at the highest difficulty (#353), and complete the bestiary (#360).
 - Stretch, a body practice: keys, bombs and hearts on the floor within 3 blocks fly to you.
+- A gift from each sky deity when it is defeated: Self-Distancing (panda), Guarding the Centre (koala), Like Water (elephant), the Shield (lion) and the Triple Jump (horse) (#357).
+- Self-Distancing: intentions hurt projections ×0.5 to ×2 by how far they flew, times their size (#357).
+- Guarding the Centre: every 3 s a sphere grows to 4 blocks in 1.5 s and freezes what it reaches for 3 s (#357).
+- Like Water: a positive intention that hits a block leaves water there for 3 s (#357).
+- The Shield: while you are in the air nothing reaches you, from the lion only (#357).
+- Every being in water in the sky, and in the water of Like Water, moves at half speed (#357).
 
 ### Changed
+- The sky deities have more life: the panda 240 (10 times its former 24), then each deity double the one before, up to the horse at 3840 (#357).
+- Every freeze is one family: after a freeze ends, nothing can freeze that being again for 3 s; the lion's roar and Thought Stopping included (#357).
 - A challenge room's three waves run once: after the third is cleared the room stays open and does not start again.
+- Every boss's health now depends on its floor and on the run's seed, so the same boss can be tougher or weaker from one run to the next (#315).
+- Allies follow you through doors, climb steps, keep out of your way and stay on their floor (#327).
+- The Shadow is your mirror: it has your health, uses the practices and bombs you hold, and its pace comes from the run (#339).
+- The bestiary counts every variation of each projection: its three colour tiers, hostile and as an ally (#360).
+- The achievements and the mastery level each one gives are listed in one register (#363).
 
 ## 0.2.9-alpha.f5 · 2026-11-25
 

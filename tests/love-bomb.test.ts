@@ -82,7 +82,7 @@ function rig(polarity: Polarity, realm: 'dungeon' | 'sky' = 'sky') {
     actors: { all: () => [] },
     enemies: { list: [] },
     doors: { solidAt: () => false, list: [] },
-    bombCause: new Map(),
+    bombCause: new Map(), bombBlast: new Map(),
     blasts: new BlastQueue(),
     breakFx: 0,
     breakSfx: 0,

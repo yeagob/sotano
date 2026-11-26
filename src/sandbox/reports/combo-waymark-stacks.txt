@@ -10,27 +10,27 @@ t 0 (0.0 s)
   cubes — · pickups 0
 
 t 100 (1.7 s)
-  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
-  practices waymark nourishment×4 teaceremony×3 · synergies —
-  stats move speed 1.2 · damage 4.1 · jump 1.1 · fire rate 2.9
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [flask.plain-tonic flask.meal-small flask.plain-tonic] · bombs 99 · keys 99
+  practices waymark nourishment×1 teaceremony×1 · synergies —
+  stats move speed 1.1 · damage 3.6 · jump 1.0 · fire rate 2.8
   blocks —
   elements —
   cubes — · pickups 0
-  events drink 3 · heal 3 · roomEnter 1
+  events roomEnter 1
 
 t 200 (3.3 s)
-  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
-  practices nourishment×4 teaceremony×3 · synergies —
-  stats move speed 1.2 · damage 4.1 · jump 1.1 · fire rate 2.9
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [flask.plain-tonic flask.meal-small flask.plain-tonic] · bombs 99 · keys 99
+  practices nourishment×1 teaceremony×1 · synergies —
+  stats move speed 1.1 · damage 3.6 · jump 1.0 · fire rate 2.8
   blocks —
   elements —
   cubes — · pickups 0
   events actorDamage:player<item 1 · death! 1 · heal 1 · roomEnter 1
 
 t 300 (5.0 s)
-  player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
-  practices nourishment×4 teaceremony×3 · synergies —
-  stats move speed 1.2 · damage 4.1 · jump 1.1 · fire rate 2.9
+  player hp 24/24 · at 1.5 0.0 3.5 · hand [flask.plain-tonic flask.meal-small flask.plain-tonic] · bombs 99 · keys 99
+  practices nourishment×1 teaceremony×1 · synergies —
+  stats move speed 1.1 · damage 3.6 · jump 1.0 · fire rate 2.8
   blocks —
   elements —
   cubes — · pickups 0

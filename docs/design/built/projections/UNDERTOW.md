@@ -20,7 +20,7 @@ Floors 3 and 4. Code: [undertow.ts](../../../../src/content/enemies/undertow.ts)
 
 ## How the player answers it
 
-Move out of the wave's path. Good intentions do half damage and warm it; bad intentions do full damage.
+Move out of the wave's path. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

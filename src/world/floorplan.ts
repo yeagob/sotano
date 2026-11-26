@@ -58,7 +58,9 @@ export interface FloorPlan {
 
 /** `wideBoss`: the boss room must have an empty cell east or west of it, so a boss room two cells
  *  wide always fits there (docs/design/built/levels/README.md, boss rooms). */
-export interface PlanOptions { w: number; h: number; minRooms: number; maxRooms: number; wideBoss?: boolean }
+/** `bossBlock`: more than that, the boss room must sit at the corner of an empty two-by-two block of cells, so a
+ *  boss room of four cells always fits there (floor 9, the Shadow's arena: docs/design/built/bosses/ARENAS.md). */
+export interface PlanOptions { w: number; h: number; minRooms: number; maxRooms: number; wideBoss?: boolean; bossBlock?: boolean }
 
 export const DEFAULT_PLAN: PlanOptions = { w: 7, h: 7, minRooms: 8, maxRooms: 11 };
 
@@ -80,7 +82,7 @@ export function generatePlan(rng: Rng, opt: PlanOptions = DEFAULT_PLAN, start?: 
 
 /** `fromExit`: the plan grows from its exit (the boss / way-down room) instead of its start, so a
  *  floor can end right above where the next one begins; the farthest dead end becomes the start. */
-function tryPlan(rng: Rng, { w, h, minRooms, maxRooms, wideBoss }: PlanOptions, [sx, sz]: [number, number], fromExit = false): FloorPlan | null {
+function tryPlan(rng: Rng, { w, h, minRooms, maxRooms, wideBoss, bossBlock }: PlanOptions, [sx, sz]: [number, number], fromExit = false): FloorPlan | null {
   const target = rng.int(minRooms, maxRooms);
   const grid = new Int16Array(w * h).fill(-1);
   const at = (x: number, z: number) => (x < 0 || z < 0 || x >= w || z >= h ? -2 : grid[x + z * w]);
@@ -133,8 +135,8 @@ function tryPlan(rng: Rng, { w, h, minRooms, maxRooms, wideBoss }: PlanOptions, 
   } else {
     rooms[0].type = 'start';
     // the farthest dead end is the boss, never next to the start; with `wideBoss`, the farthest one
-    // with an empty cell east or west to spread into (a large boss room)
-    const roomy = (r: PlanRoom) => [-1, 1].some(dx => at(r.gx + dx, r.gz) === -1);
+    // with an empty cell east or west to spread into (a large boss room); with `bossBlock`, an empty 2×2 block
+    const roomy = (r: PlanRoom) => bossBlock ? blockBeside(at, r.gx, r.gz) !== null : [-1, 1].some(dx => at(r.gx + dx, r.gz) === -1);
     const boss = deadEnds.find(r => r.dist >= 2 && (!wideBoss || roomy(r)));
     if (!boss) return null;
     boss.type = 'boss';
@@ -145,6 +147,13 @@ function tryPlan(rng: Rng, { w, h, minRooms, maxRooms, wideBoss }: PlanOptions, 
   if (rest.length) rest[rng.int(0, rest.length - 1)].type = 'vault';
 
   return { w, h, rooms, grid, start: startId };
+}
+
+/** The first empty two-by-two block of cells with (x, z) at its corner, as the [dx, dz] it spreads to, or null. */
+export function blockBeside(at: (x: number, z: number) => number, x: number, z: number): [number, number] | null {
+  for (const dz of [-1, 1]) for (const dx of [-1, 1])
+    if (at(x + dx, z) === -1 && at(x, z + dz) === -1 && at(x + dx, z + dz) === -1) return [dx, dz];
+  return null;
 }
 
 /** Steps from `from` to every room (BFS over links). */

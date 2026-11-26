@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { BOSSES } from '../src/content/bosses';
 import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, ACHIEVEMENT_CAP, ACHIEVEMENT_EVENTS, ACHIEVEMENT_MEDITATIONS, type AchievementDef } from '../src/content/achievements';
 import { SEQUENCES } from '../src/content/presences/meditations';
+import { MAX_DIFFICULTY_FROM } from '../src/enemies/difficulty';
 import { SYNERGIES } from '../src/content/synergies';
 import { PRESENCE_BY_ID } from '../src/content/presences';
 import { EN } from '../src/i18n/locales/en';
@@ -29,8 +30,8 @@ const boss = (id: string, how: string) => ({ event: 'bossOvercome', payload: { b
 const ids = (defs: readonly AchievementDef[]) => defs.map(d => d.id);
 
 describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
-  it('holds the 74 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), and is well formed', () => {
-    expect(ACHIEVEMENTS).toHaveLength(74);
+  it('holds the 78 achievements: the 48 before them (the 40 of #147, the 6 of #179, Made Omh and the hour of meditation), the 7 of the blocks, the projections and the four states of being, and the 19 of the owner\'s list (the fifth state, six synergies, twelve presences), the six branches of the tree (#329), the ending of illumination (#351), the Shadow at the maximum difficulty (#353) and the bestiary complete (#360), and is well formed', () => {
+    expect(ACHIEVEMENTS).toHaveLength(78);
     expect(catalogueErrors(ACHIEVEMENTS)).toEqual([]);
   });
 
@@ -82,9 +83,10 @@ describe('the catalogue (ACHIEVEMENTS §1-2)', () => {
     }
   });
 
-  it('has 28 boss achievements, one destroyed and one converted for each of the 14 bosses', () => {
+  it('has 29 boss achievements, one destroyed and one converted for each of the 14 bosses, and the Shadow at the maximum difficulty', () => {
     const bosses = ACHIEVEMENTS.filter(d => d.on === 'bossOvercome');
-    expect(bosses).toHaveLength(28);
+    expect(bosses).toHaveLength(29);
+    expect(ids(bosses).filter(id => !/\.(destroyed|converted)$/.test(id))).toEqual(['boss.shadow.max-difficulty']);
     expect(new Set(ACHIEVEMENT_BOSSES).size).toBe(14);
     for (const id of ACHIEVEMENT_BOSSES) {
       expect(ids(bosses)).toContain(`boss.${id}.destroyed`);
@@ -274,6 +276,21 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     expect(ids(run(EMPTY, 'bossOvercome', { boss: 'shadow', floor: 9, how: 'destroyed' }).unlocked)).toEqual(['boss.shadow.destroyed']);
   });
 
+  it('the Shadow at the maximum difficulty (#353): overcome in a run of mastery level 99 or more, in any way, and only the Shadow', () => {
+    const def = ACHIEVEMENTS.find(d => d.id === 'boss.shadow.max-difficulty')!;
+    // the list is every level from MAX_DIFFICULTY_FROM to the cap
+    expect(def.where?.mastery).toEqual(Array.from({ length: ACHIEVEMENT_CAP - MAX_DIFFICULTY_FROM + 1 }, (_, i) => MAX_DIFFICULTY_FROM + i));
+    for (const how of ['destroyed', 'converted', 'stillness']) {
+      for (const level of [99, 100]) expect(matches(def, 'bossOvercome', { boss: 'shadow', floor: 9, how, mastery: level })).toBe(true);
+      for (const level of [0, 1, 50, 98]) expect(matches(def, 'bossOvercome', { boss: 'shadow', floor: 9, how, mastery: level })).toBe(false);
+    }
+    expect(matches(def, 'bossOvercome', { boss: 'resistance', floor: 1, how: 'destroyed', mastery: 100 })).toBe(false);
+    expect(matches(def, 'bossOvercome', { boss: 'shadow', floor: 9, how: 'destroyed' })).toBe(false);
+    expect(ids(run(EMPTY, 'bossOvercome', { boss: 'shadow', floor: 9, how: 'destroyed', mastery: 99 }).unlocked))
+      .toEqual(['boss.shadow.destroyed', 'boss.shadow.max-difficulty']);
+    expect(ids(run(EMPTY, 'bossOvercome', { boss: 'shadow', floor: 9, how: 'destroyed', mastery: 98 }).unlocked)).toEqual(['boss.shadow.destroyed']);
+  });
+
   it('several first times in one run each count, in any order', () => {
     let s = EMPTY;
     s = run(s, 'bossOvercome', { boss: 'verdict', floor: 3, how: 'converted' }).state;
@@ -364,6 +381,12 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
     expect(ids(run(EMPTY, 'presenceMet', { presence: 'unknown' }).unlocked)).toEqual([]);
   });
 
+  it('the six branches of the tree (#329): the six branch practices held in one run unlock exactly tree.branches.all, once', () => {
+    const first = run(EMPTY, 'branchPracticesAll', { practices: 6 });
+    expect(ids(first.unlocked)).toEqual(['tree.branches.all']);
+    expect(ids(run(first.state, 'branchPracticesAll', { practices: 6 }).unlocked)).toEqual([]);
+  });
+
   it('the twelve presences and the six synergies, with the five states, make the 19 of the owner\'s list; the total stays under the cap', () => {
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS.filter(x => x.id.startsWith('presence.') || x.id.startsWith('synergy.') || x.id === 'state.transcendent')) all[d.id] = NOW;
@@ -380,11 +403,11 @@ describe('the tracker (ACHIEVEMENTS §2, MASTERY §1)', () => {
 });
 
 describe('mastery (MASTERY §1)', () => {
-  it('counts the unlocked catalogue ids: 0 at the start, 74 with every achievement', () => {
+  it('counts the unlocked catalogue ids: 0 at the start, 78 with every achievement', () => {
     expect(mastery(EMPTY)).toBe(0);
     const all: Record<string, number> = {};
     for (const d of ACHIEVEMENTS) all[d.id] = NOW;
-    expect(mastery({ achievements: all })).toBe(74);
+    expect(mastery({ achievements: all })).toBe(78);
   });
 
   it('a book-page achievement counts toward the level like any other', () => {

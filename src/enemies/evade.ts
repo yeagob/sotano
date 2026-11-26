@@ -76,7 +76,8 @@ export function evasive(inner: Behaviour, d: Dodge): Behaviour {
       const inst = moved > 2 ? 0 : Math.min(MAX_PACE, moved / Math.max(ctx.dt, 1e-3));
       m.lx = b.x; m.lz = b.z;
       m.speed += (inst - m.speed) * Math.min(1, ctx.dt * 4);
-      const hit = e.hp < m.hp - 1e-6;
+      // a hit moves the bar either way: harm drains it, love fills it (combat/polarity.ts)
+      const hit = Math.abs(e.hp - m.hp) > 1e-6;
       m.hp = e.hp;
       m.cool = Math.max(0, m.cool - ctx.dt);
       if (m.phase !== 'none') { step(e, ctx, m, d, tell, seconds); return; }

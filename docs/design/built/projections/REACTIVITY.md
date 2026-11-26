@@ -22,7 +22,7 @@ Floors 5 and 6. Code: [reactivity.ts](../../../../src/content/enemies/reactivity
 
 ## How the player answers it
 
-Stay off its axes, and stand where a placed block is between you. Good intentions do half damage and warm it; bad intentions do full damage. The stun is the moment to strike.
+Stay off its axes, and stand where a placed block is between you. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. The stun is the moment to strike.
 
 ## Element affinities
 

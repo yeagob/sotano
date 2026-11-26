@@ -10,6 +10,7 @@
 //
 // Rules receive no dt: timers here read the host's clock, so they are deterministic under a fixed dt.
 
+import { hunt } from '../hunt';
 import { pal } from '../../../content/palette';
 import { TX, type ModelPart } from '../../../enemies/types';
 import { cellsOfTags } from '../../hindrances/fading-platforms';
@@ -31,7 +32,9 @@ export const LOOP_POINTS = 12;
 export const GRAZE = 3;
 /** A kick: the player behind it within this distance; its push in blocks; seconds before it kicks again. */
 export const KICK_REACH = 2;
-export const KICK_PUSH = 2.5;
+export const EFFECT = 4;
+export const HUNTERS = 0.5;
+export const KICK_PUSH = 2.5 * EFFECT;
 export const KICK_REST = 4;
 /** A block placed or a jump landed within this distance startles it. */
 export const STARTLE_REACH = 3;
@@ -413,12 +416,12 @@ function mindAt(parts: Parts): Mind | null {
 
 export const horseMinion: MinionDef = {
   animal: 'horse',
-  max: 5, wildMax: 3,
+  max: 50, wildMax: 30,
   // from the paddock gate at the edge of the meadow: a 1.5 s warning, one every 15 s while fewer than 3 are wild
-  spawn: { where: 'gate', warning: 1.5, every: 15 },
+  spawn: { where: 'gate', warning: 1.5, every: 3, batch: 6 },
   hitsToTurn: 4,
   gait: gallopLoop(HERD_SPEED, TURN_AT),
-  rules: [rally, kicking, startle, kick, errand, graze, pass, loop],
+  rules: [rally, kicking, startle, kick, errand, hunt(HUNTERS), graze, pass, loop],
   ally: [
     { kind: 'clear', rule: clear },
     { kind: 'carry', rule: carry },

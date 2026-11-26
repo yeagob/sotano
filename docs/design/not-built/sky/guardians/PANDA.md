@@ -185,7 +185,7 @@ Status: provisional, to confirm. The owner decided that the panda has special at
 
 ### B4. Defeat by positive hits
 
-- **Hit count:** target 24 positive hits. For comparison, a built floor 1 boss has 140 health, about 40 bad hits; a good intention's warmth converts any built boss in about 5 hits, which is an open question of the built fight flow.
+- **Hit count:** target 24 positive hits. For comparison, a built floor 1 boss has 140 health, about 40 bad hits; in the built game good intentions convert a boss with the same damage (its bar runs from 0 to twice its health, starting in the middle), so about 40 good hits too.
 - **What counts:** a positive intention that touches the panda's body or head in any state. The panda has no guard; it is the gentlest floor.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the heavy lids open a little more, as if it were waking. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the seat and sits against the panda adds one positive hit every target 4 s while it sits. At most target 2 allies sit at once.
@@ -193,7 +193,7 @@ Status: provisional, to confirm. The owner decided that the panda has special at
 
 ### B5. Minions
 
-- **How many:** at most target 4 on the floor at once, allies included. At most target 3 hostile.
+- **How many:** at most target 40 on the floor at once, allies included. At most target 30 hostile (#357, section B10; was 4 and 3).
 - **Spawn:** from two bamboo clumps on the ground, on opposite sides of the seat. A clump rustles and shakes for target 1.5 s, and a panda tumbles out of it. One spawn every target 12 s while fewer than 3 are hostile and fewer than 4 are on the floor.
 - **Movement (the panda's own):**
   - walks at target 1.5 blocks a second, about a third of the player's pace;
@@ -255,14 +255,25 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2.5 s | up to about 1 s |
 | Phases | 2 (provisional; a deity has 2 or 3) | 3 phases |
 | Rest between attacks | 3.5, 2.5 s by phase | a short walk, shorter each phase |
-| Positive hits | 24 | 140 health: about 40 bad hits, or 5 good hits that convert it (an open question) |
+| Positive hits | 240 (owner, #357) | 140 health: about 40 bad hits, or 5 good hits that convert it (an open question) |
 | Hits to turn a minion | 3 | 5 good hits for a projection |
-| Minions at once | 4 (3 hostile) | no built equivalent |
+| Minions at once | 40 (30 hostile), six at a time every 3 s (#357) | no built equivalent |
 | Floor size | radius 20, 28 high | trunk story 22 high, radius 23 to 34 |
 | Harm of a lob | none (decided: it pushes or holds) | boss touch 8 |
 | Special attacks (provisional) | 6: 3 drain spirit (6, 8, 8 of 100), 1 captures (3 s, one practice), 2 move or hold | no built equivalent |
 | Special telegraphs | 1.4 s to move or hold, 1.6 s to drain, 1.9 s to capture | windup 0.4 to 0.9 s |
 | Tower rule | triggers within 2 blocks of the panda's height, on a stack of 3 or more player blocks; telegraph 2 s; push 2 blocks | no built equivalent |
+
+### B10. The hunt (#357)
+
+Status: built as a target; the numbers are provisional until the owner plays them. The shared rules are in [guardians, section 8](README.md#8-the-hunt-357).
+
+- **Follows the player** at 8 blocks, 3.5 blocks over their feet (plus its 1.5 hover), circling at 0.3 rad/s; it backs away fast when the player comes within 4.5. It glides at 3.5 blocks/s and dashes at 9.
+- **When a hit counts** it dodges 3.5 blocks to the side and 1.5 up (at most every 1.5 s), and its next attack comes within 1 s.
+- **Belly flop (its dive):** every 4.5 s of free time it marks a ring of 3.5 where the player is heading (the floor's 1.4 s telegraph), drops to 2.4 blocks over the spot and lands a push of 10. Then it rises again.
+- **Warded wind-up:** while it telegraphs (and in Chewing, Peeking, Tumbling and Cradling) a hit counts, and answers the attack, only from within 5 blocks; from farther it puffs.
+- **Holds still** while it naps and in its long telegraphs.
+- **Its herd:** 40 at most, 30 hostile (ten times the first count). Their effects are four times stronger: the roll's shove is 15 (was 3.75). Six in ten hunt the player across the floor; any of them within 5 blocks shoves the player along a line, after the floor's telegraph, at most once every 6 s each, with at most three shoves telegraphed on the floor at once and 1.2 s between them.
 
 ## Open questions
 

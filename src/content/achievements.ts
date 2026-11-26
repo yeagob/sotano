@@ -4,7 +4,8 @@
 //
 // An entry says which event may unlock it (`on`), the payload fields that must match (`where`; a list means any
 // of its values) and how many matching events it needs across runs (`times`, default 1). A boss has two entries,
-// `destroyed` and `converted`; the Shadow's `converted` also takes the stillness ending (`how: 'stillness'`).
+// `destroyed` and `converted`; the Shadow's `converted` also takes the stillness ending (`how: 'stillness'`). The Shadow
+// has a third, overcome at the maximum difficulty (#353).
 
 /**
  * The events the catalogue listens to, all declared in GameEvents (game/events.ts): `pageReached` (the current page of the
@@ -12,9 +13,12 @@
  * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only), and
  * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8), and the three of the
  * block, projection and state-of-being achievements: `projectionConverted`, `projectionDestroyed` and `synergyOn`, and the
- * presences' first exchange, `presenceMet` (one per presence, the codex's rule).
+ * presences' first exchange, `presenceMet` (one per presence, the codex's rule), `branchPracticesAll`, the six practices
+ * of the giant tree's branches held in one run (#329), the ending of illumination, `illumination` (issue #351, once
+ * per run when the Sun's light is full), and `bestiaryComplete`, emitted once when every variation of every projection
+ * has been seen (COMPLETION.md §2, issue #360).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination', 'bestiaryComplete'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -45,6 +49,9 @@ export const ACHIEVEMENT_MEDITATIONS = ['ground', 'dusk', 'night', 'box', 'warm'
  * 100, so counting it would make 100 unreachable.
  */
 export const COMPLETION_ACHIEVEMENT = 'completion.full';
+
+/** The bestiary's achievement (issue #360): every variation of every projection seen (completion.ts `bestiaryComplete`). */
+export const BESTIARY_ACHIEVEMENT = 'bestiary.full';
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // Bosses destroyed: their health reaches zero (14).
@@ -78,6 +85,11 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'boss.impostor.converted', on: 'bossOvercome', where: { boss: 'impostor', how: 'converted' } },
   { id: 'boss.many-faces.converted', on: 'bossOvercome', where: { boss: 'many-faces', how: 'converted' } },
   { id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } },
+
+  // The Shadow at the maximum difficulty (#353): overcome in any way (destroyed, converted or stillness) in a run carved
+  // at mastery level 99 or more (owner: from 99 the maximum counts, MAX_DIFFICULTY_FROM in enemies/difficulty.ts). The
+  // level is capped at 100, so the list holds every level from 99 (1).
+  { id: 'boss.shadow.max-difficulty', on: 'bossOvercome', where: { boss: 'shadow', mastery: [99, 100] } },
 
   // Meditations: a sitting completed three times, across runs (6).
   { id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 },
@@ -150,6 +162,14 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'presence.trickster', on: 'presenceMet', where: { presence: 'trickster' } },
   { id: 'presence.wanderer', on: 'presenceMet', where: { presence: 'wanderer' } },
   { id: 'presence.witness', on: 'presenceMet', where: { presence: 'witness' } },
+
+  // The giant tree's six branches (#329, the owner's criterion): the six branch practices held in the same run (1). It is
+  // what opens "Andar despacio" (Camina Despacio, #340; the hook in src/game/branch-gifts.ts).
+  { id: 'tree.branches.all', on: 'branchPracticesAll' },
+  // The ending of illumination: the last platform carried the player into the Sun (issue #351, the owner's direction) (1).
+  { id: 'sun.illumination', on: 'illumination' },
+  // The bestiary complete: every projection seen in Black, Yellow and Red, hostile and as an ally (issue #360) (1).
+  { id: BESTIARY_ACHIEVEMENT, on: 'bestiaryComplete' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

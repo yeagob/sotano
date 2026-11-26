@@ -11,6 +11,8 @@
 //   &filter=grey|deutan|protan|tritan|silhouette
 //   &angle=35                turntable angle for enemies and pickups (degrees)
 //   &id=critic               one enemy or item only
+//   &tier=yellow|red|all     the enemies in a colour tier (tiers.ts), or every tier side by side
+//   &ally=1                  the enemies as allies too (every colour inverted; DECISIONS §14.6)
 
 import * as THREE from 'three';
 import { ENEMIES } from '../content/enemies';
@@ -21,7 +23,8 @@ import { PALETTE, PATH_GLYPH, PATHS, pal, palCss, type PalToken } from '../conte
 import { PART_ICONS } from '../content/part-icons';
 import { flaskDef } from '../content/potions';
 import { CRACK_STAGES } from '../content/tiles';
-import { buildModel } from '../entities/enemies';
+import { BAR_LIFT, buildBar, buildModel, paintAllied, setBar } from '../entities/enemies';
+import { TIERS, type Tier } from '../enemies/tiers';
 import { pickupMesh } from '../entities/pickups';
 import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
 import { buildChest } from '../render/chest-model';
@@ -91,6 +94,9 @@ export function runGallery(params: URLSearchParams) {
   const filter = params.get('filter') ?? '';
   const angle = Number(params.get('angle') ?? 35) * Math.PI / 180;
   const only = params.get('id');
+  const tierParam = params.get('tier');
+  const tiers: readonly Tier[] = tierParam === 'all' ? TIERS : TIERS.includes(tierParam as Tier) ? [tierParam as Tier] : ['black'];
+  const sides = params.get('ally') ? [false, true] : [false];
   document.body.innerHTML = '';
   document.body.style.overflow = 'auto';
   document.body.style.userSelect = 'text';
@@ -237,10 +243,29 @@ export function runGallery(params: URLSearchParams) {
     const r = row();
     for (const e of ENEMIES) {
       if (only && e.id !== only) continue;
-      for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
-        const c = three(scene => { const v = buildModel(e).group; scene.add(v); return v; }, 260, 320, 3.6, e.size[1] / 2, bg);
-        fig(r, c, `${e.id} · ${bg}`);
+      for (const tier of tiers) for (const ally of sides) for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
+        const c = three(scene => {
+          const v = buildModel(e, tier);
+          if (ally) paintAllied(v, true);
+          scene.add(v.group); return v.group;
+        }, 260, 320, 3.6, e.size[1] / 2, bg);
+        fig(r, c, `${e.id} · ${tier === 'black' ? '' : `${tier} · `}${ally ? 'ally · ' : ''}${bg}`);
       }
+    }
+    // the bar over a hostile projection (DECISIONS §14.10): released at 0, fresh at the middle, converted at the top
+    head('The bar over a projection: 10 %, 50 % (fresh), 75 %, 95 % of the way from release to conversion');
+    const bars = row();
+    const def = ENEMIES.find(e => e.id === (only ?? 'doubt')) ?? ENEMIES[0];
+    for (const tier of tiers) for (const share of [0.1, 0.5, 0.75, 0.95]) for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
+      const c = three(scene => {
+        const g = new THREE.Group(), v = buildModel(def, tier), bar = buildBar();
+        setBar(bar, share * 2 * 10, 10);
+        bar.group.position.y = def.size[1] + BAR_LIFT;
+        bar.group.rotation.y = -angle; // the turntable turns the body; the bar faces the camera, as in play
+        g.add(v.group, bar.group);
+        scene.add(g); return g;
+      }, 260, 320, 3.6, def.size[1] / 2 + 0.25, bg);
+      fig(bars, c, `${def.id} · ${tier === 'black' ? '' : `${tier} · `}${Math.round(share * 100)} % · ${bg}`);
     }
   }
 

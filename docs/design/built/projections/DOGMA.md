@@ -19,7 +19,7 @@ Floors 5 and 6, rare (weight one). Code: [dogma.ts](../../../../src/content/enem
 
 ## How the player answers it
 
-Keep out of its field, and watch the effect change as its health falls. Good intentions do half damage and warm it; bad intentions do full damage.
+Keep out of its field, and watch the effect change as its health falls. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

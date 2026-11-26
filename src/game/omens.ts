@@ -99,7 +99,22 @@ export function pickSpawnCell(cells: readonly Cell[], doors: readonly Cell[], pl
   return far.length > 0 ? rng.pick(far) : null;
 }
 
-export const spawnBlocked = (o: Cell, player: Cell) => dist(o, player) < PLAYER_CLEARANCE;
+/**
+ * The spawn cell farthest from the player, never within DOOR_CLEARANCE of a door: a boss room that asks for it
+ * (`RoomTemplate.bossStart: 'far'`, the Shadow's arena) starts the fight across the whole room. The first of equal
+ * cells in the order given, so the same room and the same place always give the same cell. Null when none is clear.
+ */
+export function farthestCell(cells: readonly Cell[], doors: readonly Cell[], player: Cell): Cell | null {
+  let best: Cell | null = null, far = -1;
+  for (const c of cells) {
+    if (!doors.every(d => dist(c, d) >= DOOR_CLEARANCE)) continue;
+    const d = dist(c, player);
+    if (d > far + 1e-9) { far = d; best = c; }
+  }
+  return best;
+}
+
+export const spawnBlocked =(o: Cell, player: Cell) => dist(o, player) < PLAYER_CLEARANCE;
 
 /** How long a wave may stand before the next one opens anyway: stalling never empties a room. */
 export const WAVE_PATIENCE = 25;

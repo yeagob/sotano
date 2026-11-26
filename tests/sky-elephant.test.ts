@@ -4,6 +4,7 @@
 // spirit gate; the rest between attacks; the rim guard; the capture and its answer; defeat by 36 positive hits; the
 // herd wades out, shoulders, turns and carries; the plush tokens keep clear of the reserved colours. Everything runs
 // at a fixed dt and repeats exactly.
+import { calm } from './helpers/sky-calm';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { PALETTE, type PalToken } from '../src/content/palette';
@@ -84,7 +85,7 @@ function rig(def: DeityDef = elephantDeity) {
     tags: new Set(), room: -1, alive: true, spawning: 0, side: 'wild', state: 'Idle', t: 0, hits: 0, parked: false,
   };
   actors.register(actor as unknown as Actor, 'sky');
-  const deity = new Deity(actor, def, PLAN, deps, host, new Rng(5));
+  const deity = new Deity(actor, calm(def), PLAN, deps, host, new Rng(5));
   const states: [number, string][] = [];
   const frame = () => {
     spiritLaw.update();

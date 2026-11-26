@@ -20,7 +20,7 @@ Floors 6 to 9. Code: [tribunal.ts](../../../../src/content/enemies/tribunal.ts).
 
 ## How the player answers it
 
-Its volleys sweep across the room, so use blocks as cover and step between the posts' lines. Good intentions do half damage and warm it; bad intentions do full damage.
+Its volleys sweep across the room, so use blocks as cover and step between the posts' lines. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

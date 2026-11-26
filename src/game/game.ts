@@ -4,17 +4,18 @@
 
 import * as THREE from 'three';
 import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
-import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
+import { easeMaster, setMasterTarget, setWorldTimeScale, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
-import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
+import { allyHeal, barShare, convertedHp, isConverted, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
 import { TouchRouter } from '../combat/touch-router';
 import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enemies';
-import { BOSS_BY_ID, bossFor, bossHp } from '../content/bosses';
+import { BOSS_BY_ID, bossFor, bossSpawnLife } from '../content/bosses';
+import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb, type BombBlast } from './bomb';
 import { enemyText, materialName, partText } from '../i18n/content';
-import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
+import {farthestCell, gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
@@ -47,7 +48,7 @@ import { hash3, RunRandom } from '../core/rng';
 import { decodeSeed, encodeSeed, formatSeed, GEN_VERSION, randomRoot } from '../core/seed';
 import { ROOM_CLEAR } from '../content/tables/rewards';
 import { StatSheet } from '../core/stats';
-import type { Enemy } from '../enemies/types';
+import { birthHp, type Enemy } from '../enemies/types';
 import type { FieldEffect } from '../enemies/attacks';
 import { Doors, type Door } from '../entities/doors';
 import { Enemies } from '../entities/enemies';
@@ -59,7 +60,7 @@ import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
 import { dashTouches, DASH_DAMAGE, DASH_MINING } from '../entities/dash';
-import { crouchedContact } from '../entities/stance';
+import { castOrigin, crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
 /** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
@@ -76,6 +77,7 @@ import { validateCatalogue, validateItem } from '../items/validate';
 import { DEBRIS_SIZE, DebrisSystem } from '../physics/debris';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import { Kairos, KAIROS_CHARGES, KAIROS_HOMING, KAIROS_INTENTIONS, KAIROS_REACH, dealMarks, type KairosMark } from './kairos';
+import { worldFrame } from './time-scale';
 import { BREWS, BULB, brew as labBrew, feed as labFeed, newAlembic, tickLabs, type Alembic } from './alembic';
 import { PotionEffects } from './potion-effects';
 import { boxHits, type Body } from '../physics/voxel-collide';
@@ -103,6 +105,8 @@ import { floorStarMap, type StarMap, type StarMarks } from './star-map';
 import { TunnelLog } from './minimap';
 import { ambientCreatures, CREATURE_BY_ID } from '../content/creatures';
 import { ROOTED_HP, rootedChance } from '../content/rooted';
+import { spawnTier, tierStats, type Tier } from '../enemies/tiers';
+import { difficultyOf } from '../enemies/difficulty';
 import { requestOf } from '../content/presences/requests';
 import { covenantComplete, keepPiece, remembersInRun, NO_COVENANT, type Covenant, type CovenantSource } from '../content/presences/covenant';
 import { ChoiceGuard, boatmanCrossing, choiceOutcome, offerOutcome } from '../content/presences/consent';
@@ -112,7 +116,8 @@ import { DONE_CHOICE, StillWatch, TRUST_START, answerDone, doneGift } from '../c
 import { MENDED_SEAM_S, MENDED_TAG, ReleaseLog, countsAsRelease, projectionToMend } from '../content/presences/mended';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
 import { type OfferPick, PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, findCartographerOre, gardenerWants, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
-import { COMPLETION_ACHIEVEMENT } from '../content/achievements';
+import { BESTIARY_ACHIEVEMENT, COMPLETION_ACHIEVEMENT } from '../content/achievements';
+import { seenId } from './completion';
 import { downloadRootsBook } from './book-download';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
@@ -138,9 +143,21 @@ import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
 import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
 import { SkyRealm } from '../sky/sky-realm';
+import { ASCENSION, bellTimes } from '../sky/totality/ascension';
+import { AllyTally, allyKindOf, type AllyKind } from './ally-tally';
+import { AscentCompanions, roster } from './ascent-companions';
+import { CompanionView } from '../render/companion-view';
+import { MeditationAudio } from '../audio/meditation';
+import { SEQUENCE, SEQUENCE_IDS } from '../content/presences/meditations';
 import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type SkyWorldApi, type Travel } from '../sky/types';
 import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
+import { CourseRunner } from '../world/course';
+import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
+import { freezeProjection } from '../core/freeze';
+import { FreezeSpheres, SPHERE_FREEZE, sphereRadius, type SphereTarget } from '../combat/freeze-sphere';
+import { TempWater } from '../world/temp-water';
+import { WATER_PACE } from '../sky/laws/water';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -213,7 +230,6 @@ const SLICED_CUBES_PER_STRIKE = 24;
 /** Seconds between contact wear ticks (the `crush` stat is damage per second). */
 const CONTACT_TICK = 0.25;
 /** Damage points a blast deals to every actor in range (8 = one heart to the player). */
-const BLAST_ACTOR_DAMAGE = 2 * HALF_HEART;
 
 /** Element effects per frame at most (particles, sounds): a big fire or a flood never floods the screen. */
 const ELEMENT_FX_PER_FRAME = 10;
@@ -228,7 +244,7 @@ const BREATH_REFILL = 4;
 /** A loose cube must fly at least this fast (blocks/s) to hurt a projection it hits. */
 const CUBE_HIT_SPEED = 4;
 
-/** An intention's touch on an actor: its polarity, and whether this touch may warm the target (once per stroke). */
+/** An intention's touch on an actor: its polarity, and whether this is the stroke's first touch on it (`warm`). */
 interface IntentTouch { polarity: Polarity; warm: boolean }
 
 interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
@@ -291,8 +307,23 @@ export class Game {
   /** The inactive world's set: the dungeon's while in the sky, the sky's below. Null until the sky is first reached. */
   private stash: RealmSet | null = null;
   private sky: SkyRealm | null = null;
+  /** The run's friends by kind (ally-tally.ts), fed from factionChange and the sky's won guardians; never saved. */
+  private allies = new AllyTally();
+  /** The ascent companions (ILLUMINATION.md §3): null until the first checkpoint of the final ascent. */
+  private companions: AscentCompanions | null = null;
+  private companionView: CompanionView | null = null;
+  /** The meditations whose sounds the companions play, one per kind that joins; its own bus, apart from the Sanctuary's. */
+  private readonly companionAudio = new MeditationAudio();
+  private companionChimes = 0;
+  /** The meditations completed in this run (meditationComplete), for the companions' sounds. */
+  private heardThisRun: string[] = [];
+  /** The ending of illumination: the card is shown; once it is gone the run ends. */
+  private illuminated = false;
+  private lightShown = 0;
   /** Every non-projection actor an intention, stroke or blast can reach (SKY.md §5.7): the sky's creatures while the sky is active. */
   private readonly router = new TouchRouter();
+  private readonly spheres = new FreezeSpheres();
+  private readonly tempWater = new TempWater();
   private readonly dungeonRoot = new THREE.Group();
   private readonly skyRoot = new THREE.Group();
   private gate!: RealmGate;
@@ -374,6 +405,8 @@ export class Game {
   private spawnSeq = new Map<number, number>();
   /** Per live projection: the spawn count of its omen, the seed path of its parts. */
   private projectionSeq = new Map<number, number>();
+  /** The tier of every Yellow or Red projection of the run, kept past its death so the death screen can name it. */
+  private projectionTier = new Map<number, Tier>();
   private camDir = new THREE.Vector3();
   /** Every chest of the activated floors (the blocks themselves live in the world). */
   private chests: { spec: ChestSpec; opened: boolean; refused: boolean; view: ChestView }[] = [];
@@ -425,10 +458,13 @@ export class Game {
   get spiritNow() { return this.spirit; }
   get inSky() { return this.realm === 'sky'; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
-   *  already warmed, so a beam warms a projection once, not on every tick. */
+   *  already touched, so a beam grows a creature and carries its stroke's effects once, not on every tick
+   *  (each tick still moves a projection's bar by its own damage). */
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
+  /** Bombs on the floor that are not the player's (the Shadow's), by cube: what each blast does. */
+  private bombBlast = new Map<number, BombBlast>();
   /** Fire shields (Controlled Burn): where fire never hurts you, and until when (game time). */
   private fireShields: { x: number; y: number; z: number; r: number; until: number }[] = [];
   /** Bombs in flight, launched by a double tap with the `missile` stat (Dr. Launcher). */
@@ -473,6 +509,14 @@ export class Game {
   private stillT = 0;
   /** The Leaves' gift (issue #316): the jump practice over the ring's east stone, laid at run start. */
   private leavesGift: Pickup | null = null;
+  /** The branches' gifts (issue #329): the mobility practice at the centre of each branch's ball, laid at run start. */
+  private branchGifts: Pickup[] = [];
+  /** The branch courses' moving pieces (src/world/course.ts), one runner per branch once the branch story has grown. */
+  private courses: CourseRunner[] = [];
+  /** The run held the six branch practices at once (the achievement's moment, emitted once a run). */
+  private branchesAll = false;
+  /** How many of the tree's water boxes were woken (the galleries' waterfall flows once its story grows). */
+  private watersWoken = 0;
   /** What the HUD says about where you are (a floor, or a level of the tree). */
   private zone = '';
   private stars: THREE.Points;
@@ -490,6 +534,10 @@ export class Game {
   private readonly heightWatch = new HeightWatch();
   /** The Roots' mastery level this run started with (REWARDS §6): read once at run start, never during the run. */
   private runMastery = 0;
+  /** Whether this run's level came from the debug override (S.mastery): such a run counts as level 0 for achievements. */
+  private runMasteryDebug = false;
+  /** The run's global difficulty (#352): 1 + min(level, 100) / 100 from `runMastery`, read once at run start. */
+  private runDifficulty = 1;
   /** Debug (S.mastery): the level the next runs start with, in memory only. Null reads the save. */
   private debugMastery: number | null = null;
   /** Floor 0's Roots pedestals (extra practices and the altar): each site, the item it shows and its pickup (roots-draws.ts). */
@@ -652,6 +700,8 @@ export class Game {
     this.keeper.live = sandbox === null;
     this.heightWatch.reset();
     this.runMastery = sandbox ? 0 : clampLevel(this.debugMastery ?? achievedMastery(this.meta));
+    this.runMasteryDebug = !sandbox && this.debugMastery !== null;
+    this.runDifficulty = difficultyOf(this.runMastery);
     seedFx(sandbox ? root : null);
     this.seed = root;
     this.seedCode = encodeSeed(root);
@@ -691,6 +741,7 @@ export class Game {
     // the giant tree grows once per run above the surface, from its own fork (docs/architecture/RNG.md)
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
+    this.courses = []; this.branchesAll = false; this.watersWoken = 0;
     this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
@@ -709,7 +760,7 @@ export class Game {
     this.playerIn.clear(); this.drownT = 0; this.lavaSpent = 0;
     this.chunks = new ChunkRenderer(this.world, this.dungeonRoot, this.atlas, 48);
     this.debris = this.newDebris();
-    this.blasts.clear(); this.bombCause.clear(); this.fireShields = [];
+    this.blasts.clear(); this.bombCause.clear(); this.bombBlast.clear(); this.fireShields = [];
     this.missiles.clear(); this.lastCastTap = -Infinity; this.missileHinted = false;
     this.doors = new Doors(this.dungeonRoot);
     this.pickups = new Pickups(this.dungeonRoot);
@@ -725,11 +776,17 @@ export class Game {
     this.chestViews = new Chests(this.dungeonRoot);
     this.alembicViews = new Alembics(this.dungeonRoot);
     this.kitchenViews = new Kitchens(this.dungeonRoot);
-    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost());
+    // the dungeon's allies give way to the player (issue #327); the sky's set has none (out of scope)
+    this.enemies = new Enemies(this.dungeonRoot, this.enemyHost(), {
+      player: () => this.escortee(),
+      settled: room => this.floorSettled(room),
+      unsafe: (x, y, z) => !!elemDef(this.world.elemAt(x, y, z)),
+    });
     this.potions.clear();
-    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.projectionTier.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     attachDevlog(this.bus);
+    this.resetEnding();
     this.listenAchievements();
     this.showCompletion();
     this.inventory.restore([]);
@@ -738,6 +795,8 @@ export class Game {
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath'); this.lavaSpent = 0;
     p.clearStates();
+    this.tempWater.clear();
+    this.spheres.reset();
     this.statuses.clear();
     this.phase = null;
     // actors: one id space per run, the player first
@@ -769,6 +828,7 @@ export class Game {
     this.call = callActive(this.runMastery, sandbox !== null) ? new RootsCall(this.pickups.list) : null;
     // the Leaves' gift (#316), after the call: the crown's practice is never the Roots' to call
     this.leavesGift = box ? null : this.placeLeavesGift();
+    this.branchGifts = box ? [] : this.placeBranchGifts();
     this.carve(FIRST_FLOOR + 1);
     p.spawnAt(...this.floors.get(k)!.spawn);
     p.yaw = 0; p.pitch = 0;
@@ -818,7 +878,7 @@ export class Game {
     if (!r) return null;
     // the Boundary as a vault places it (updateBoundaries reads its tag), without the Sanctuary's ring: a sandbox has no chest
     if (defId === boundaryDef.id) {
-      const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, x, y, z, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+      const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, x, y, z, birthHp(boundaryDef), boundaryDef.speed, 0, new Set(['boundary']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -826,7 +886,7 @@ export class Game {
     }
     const presence = PRESENCE_BY_ID.get(defId);
     if (presence) {
-      const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, presence.hp, presence.speed, 0, new Set(['presence']));
+      const e = this.enemies.spawn(presence, this.actors.newId(), r.id, x, y, z, birthHp(presence), presence.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -834,7 +894,7 @@ export class Game {
     }
     const creature = CREATURE_BY_ID.get(defId);
     if (creature) {
-      const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, creature.hp, creature.speed, 0, new Set(['creature']));
+      const e = this.enemies.spawn(creature, this.actors.newId(), r.id, x, y, z, birthHp(creature), creature.speed, 0, new Set(['creature']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -875,6 +935,8 @@ export class Game {
       echoFloor: this.keeper.fade,
       // the Roots' mastery level, read once at run start (REWARDS §4-§6); only floor 0 reads it
       mastery: this.runMastery,
+      // the global difficulty (#352): more projections in each room above level 0, on the room's own roster fork
+      difficulty: this.runDifficulty,
     });
     f.boss = boss;
     if (f.boss) this.bossUsed.add(f.boss);
@@ -996,6 +1058,9 @@ export class Game {
   /** The Roots' mastery level the current run was carved with (REWARDS §6). */
   get rootsMastery(): number { return this.runMastery; }
 
+  /** The global difficulty the current run plays at (#352): 1 at level 0, 2 at level 100. */
+  get difficulty(): number { return this.runDifficulty; }
+
   /** The achievements listen to the events of their catalogue on this run's bus (ACHIEVEMENTS §2). */
   private listenAchievements() {
     const source = 'achievements';
@@ -1016,13 +1081,21 @@ export class Game {
     this.bus.on('projectionDestroyed', { priority: 300, source, fn: p => this.achieved('projectionDestroyed', p) });
     this.bus.on('synergyOn', { priority: 300, source, fn: p => this.achieved('synergyOn', p) });
     this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
+    this.bus.on('branchPracticesAll', { priority: 300, source, fn: p => this.achieved('branchPracticesAll', p) });
+    this.bus.on('illumination', { priority: 300, source, fn: p => this.achieved('illumination', p) });
+    // the run's friends (ally-tally.ts): every change to the player's side, from the conversion events that exist
+    this.bus.on('factionChange', { priority: 300, source: 'allies', fn: p => {
+      const kind = allyKindOf(p, (ENEMY_BY_ID.get(p.def) ?? CREATURE_BY_ID.get(p.def))?.kind);
+      if (kind) this.allies.record(kind, p.def);
+    } });
+    this.bus.on('meditationComplete', { priority: 300, source: 'allies', fn: p => { if (!this.heardThisRun.includes(p.meditation)) this.heardThisRun.push(p.meditation); } });
+    this.bus.on('bestiaryComplete', { priority: 300, source, fn: p => this.achieved('bestiaryComplete', p) });
     // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
     this.bus.on('itemGained', { priority: 300, source: first, fn: p => this.firstTime('practices', p.id) });
     // the Mender's Thread is the Covenant's Thread once the Thread the Mender dropped is picked up (thread.ts)
     this.bus.on('itemGained', { priority: 300, source: 'covenant', fn: p => { if (gainKeepsThread(p.id, this.threadDropped)) this.keepCovenantPiece('mender'); } });
-    this.bus.on('enemySpawn', { priority: 300, source: first, fn: p => this.firstTime('bestiary', p.def) });
     this.bus.on('brew', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.potion) });
     this.bus.on('cook', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.meal) });
     this.bus.on('treeStory', { priority: 300, source: first, fn: p => this.firstTime('floors', `tree.${p.story}`) });
@@ -1039,6 +1112,15 @@ export class Game {
     if (this.keeper.recordFirst(kind, id)) this.showCompletion();
   }
 
+  /**
+   * A projection is seen in its variation (COMPLETION.md §2, issue #360): its tier, hostile or allied as it is now. A
+   * hostile one is seen when it materialises (`spawnEnemy`, the spawn not cancelled, a split's halves too), an ally when it
+   * turns to the player's side (`convert`) or comes back mended (`mendReleased`). A boss is kept under its own id.
+   */
+  private seeVariation(e: Enemy) {
+    this.firstTime('bestiary', seenId(e.spec, e.tier, e.faction === 'self'));
+  }
+
   /** The sky's guardian floor `animal` is first stood on: its floor, its deity and its herd are met (COMPLETION.md). */
   private meetSkyFloor(animal: string) {
     this.firstTime('floors', `sky.${animal}`);
@@ -1052,6 +1134,8 @@ export class Game {
     const c = this.keeper.completion;
     this.hud.setCompletion(c);
     if (c.percent >= 100 && this.keeper.live && !this.keeper.unlocked(COMPLETION_ACHIEVEMENT)) this.bus.emit('completionFull', { percent: c.percent });
+    // the bestiary's achievement, once, when the last variation of the last projection is seen (issue #360)
+    if (this.keeper.live && !this.keeper.unlocked(BESTIARY_ACHIEVEMENT) && this.keeper.bestiaryComplete) this.bus.emit('bestiaryComplete', { projections: this.keeper.variations.projections });
   }
 
   /**
@@ -1089,7 +1173,7 @@ export class Game {
       const face = this.chestFacing(spec);
       this.chests.push({ spec, opened: false, refused: false, view: this.chestViews.add(spec, face.angle, face.tight) });
       if (!this.sandbox && spec.meditation) {
-        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), spec.room, spec.x + 0.5, spec.y + 1, spec.z + 0.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), spec.room, spec.x + 0.5, spec.y + 1, spec.z + 0.5, birthHp(boundaryDef), boundaryDef.speed, 0, new Set(['boundary']));
         e.faction = 'neutral';
         e.spawning = 0;
         this.actors.add(e);
@@ -1104,7 +1188,7 @@ export class Game {
     // the roots are home to peaceful creatures: they wander, they never fight (L6)
     for (const c of this.sandbox ? [] : ambientCreatures(f, this.rng.fork('floor', k, 'creatures'))) {
       const def = CREATURE_BY_ID.get(c.def)!;
-      const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, def.hp, def.speed, 0, new Set(['creature']));
+      const e = this.enemies.spawn(def, this.actors.newId(), c.room, c.x, c.y, c.z, birthHp(def), def.speed, 0, new Set(['creature']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -1113,7 +1197,7 @@ export class Game {
     for (const r of this.sandbox ? [] : f.rooms) {
       if (!r.presence) continue;
       if (r.presence === 'boundary') {
-        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, boundaryDef.hp, boundaryDef.speed, 0, new Set(['boundary']));
+        const e = this.enemies.spawn(boundaryDef, this.actors.newId(), r.id, r.x0 + 6.5, r.y0 + 1, r.z0 + 3.5, birthHp(boundaryDef), boundaryDef.speed, 0, new Set(['boundary']));
         e.faction = 'neutral';
         e.spawning = 0;
         this.actors.add(e);
@@ -1127,7 +1211,7 @@ export class Game {
         continue;
       }
       const def = PRESENCE_BY_ID.get(r.presence)!;
-      const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, def.hp, def.speed, 0, new Set(['presence']));
+      const e = this.enemies.spawn(def, this.actors.newId(), r.id, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, birthHp(def), def.speed, 0, new Set(['presence']));
       e.faction = 'neutral';
       e.spawning = 0;
       this.actors.add(e);
@@ -1156,6 +1240,27 @@ export class Game {
   private placeLeavesGift(): Pickup | null {
     const s = LEAVES_GIFT_SPOT, def = ITEM_BY_ID.get(s.item) ?? null;
     return def ? this.pickups.add('item', s.x, s.y, s.z, -1, def) : null;
+  }
+
+  /** The branches' gifts (issue #329, BRANCHES.md): each branch's practice floats at the centre of its ball of leaves, taken
+   *  by touch, as the Leaves' gift is. A practice this build does not have (the double jump, the wall jump: their own
+   *  issues) leaves its ball empty. */
+  private placeBranchGifts(): Pickup[] {
+    return branchGifts(this.tree.branchPlans, id => ITEM_BY_ID.has(id)).map(g => this.pickups.add('item', g.x, g.y, g.z, -1, ITEM_BY_ID.get(g.item)!));
+  }
+
+  /** The six branch practices are held at once (issue #329): the achievement's event, once a run, and the hook of
+   *  "Andar despacio" (branch-gifts.ts): Camina Despacio (#340) on a pedestal at the centre of the branch story's hall,
+   *  when this build has it. */
+  private branchesComplete() {
+    this.branchesAll = true;
+    this.bus.emit('branchPracticesAll', { practices: this.tree.branchPlans.length });
+    const def = ITEM_BY_ID.get(WALK_SLOW_ITEM);
+    if (!def || this.inventory.has(def.id)) return;
+    const i = TREE_STORIES.findIndex(s => s.key === 'branches');
+    const at = walkSlowSpot(this.tree.cx, this.tree.cz, this.tree.base + TREE_STORIES[i].y0 + 2);
+    this.dw.set(at.x, at.y, at.z, MAT.pedestal);
+    this.pickups.add('item', at.x + 0.5, at.y + 1, at.z + 0.5, -1, def);
   }
 
   /** Floor 0's Roots pedestals (extra practices and the altar) hold their practices from the moment floor 0 activates. */
@@ -1259,6 +1364,8 @@ export class Game {
         if (this.realm === 'sky') this.sky?.leave();
       },
       hooks: kind => {
+        this.tempWater?.clear();
+        this.spheres?.reset();
         const creatures = this.sky?.creatures;
         if (kind === 'sky') { this.sky?.install(this.bus); if (creatures) this.router.add(creatures); }
         else { this.bus.off(null, 'sky'); if (creatures) this.router.remove(creatures); }
@@ -1297,8 +1404,14 @@ export class Game {
   private newDebris(): DebrisSystem {
     const debris = new DebrisSystem(MAX_CUBES, (x, y, z) => this.solid(x, y, z), (i, x, y, z, s) => this.onDebrisImpact(i, x, y, z, s));
     debris.onFuse = (i, x, y, z, love) => {
-      const chain = this.bombCause.get(i);
-      this.bombCause.delete(i);
+      const chain = this.bombCause.get(i), other = this.bombBlast.get(i);
+      this.bombCause.delete(i); this.bombBlast.delete(i);
+      if (other) {
+        this.blasts.current = chain ?? null;
+        this.explode(x, y, z, other.radius, other.blocks, other.source, other.owner, other.damage);
+        this.blasts.current = null;
+        return;
+      }
       // a white bomb (placed at positive polarity) goes off as a love explosion (DECISIONS §7.8)
       if (love) { this.loveBlast(x, y, z, 'bomb'); return; }
       this.blasts.current = chain ?? null;
@@ -1334,10 +1447,12 @@ export class Game {
       get hand() { return p.hand; },
       push: (vx, vy, vz) => p.push(vx, vy, vz),
       // the player's own slow factor applies; the sky gives the time only (provisional)
-      slow: (_f, s) => { p.slowT = Math.max(p.slowT, s); },
+      slow: (_f, s) => p.slow(s),
       hold: s => p.hold(s),
       carry: (to, s) => p.carry(to, s),
+      freeze: s => p.freeze(s),
       get held() { return p.heldT > 0; },
+      get shielded() { return p.shielded; },
     };
     return {
       time: () => this.time,
@@ -1361,7 +1476,7 @@ export class Game {
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
       refillSpirit: () => this.refillSpirit(),
-      takeRandomPractice: () => this.takePractice(),
+      takeRandomPractice: () => (p.shielded ? null : this.takePractice()),
       sendUnderground: (floors, rng) => this.sendUnderground(floors, rng),
     };
   }
@@ -1530,6 +1645,7 @@ export class Game {
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
       convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
+      tempWater: (x, y, z, s) => this.placeTempWater(x, y, z, s),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
@@ -1714,6 +1830,9 @@ export class Game {
     this.player.hp = Math.min(this.player.hp, this.maxHp);
   }
 
+  /** The player's health now in points: the hearts and every layer over them. */
+  private playerHealth() { return this.player.hp + this.player.layers.reduce((a, l) => a + l.hp, 0); }
+
   /** The player's maximum health in points (heart containers × HEART). */
   get maxHp() { return Math.floor(this.stats.get('maxHearts')) * HEART; }
 
@@ -1735,6 +1854,7 @@ export class Game {
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     if (t === p && p.invulnT > 0) return false;
     if (t === p && p.starT > 0 && kind !== 'toll') return false;
+    if (t === p && p.shielded && kind !== 'toll') return false;
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -1758,7 +1878,7 @@ export class Game {
       this.bus.emit('playerDied', { floor: bandOf(p.body.y), source });
       this.bus.emit('actorDeath', { target: p.id, targetKind: 'player', def: 'player', x: p.body.x, y: p.body.y, z: p.body.z, drops: [] });
       sfx3.death();
-      this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source);
+      this.hud.showDeath(this.maxDepth, this.inventory.items.map(i => i.def), source, typeof owner === 'number' ? this.projectionTier.get(owner) : undefined);
       this.endRoots();
       // the Echo remembers where this run faded (ECHO.md): the deepest floor reached
       this.keeper.recordFade(this.maxDepth);
@@ -1952,6 +2072,34 @@ export class Game {
 
   // ───────────────────────── enemies ─────────────────────────
 
+  /** A room whose floor's boss is overcome, or whose floor is open: its allies stop following and stand still (owner, #327). */
+  private floorSettled(room: number) {
+    const r = this.rooms.get(room);
+    const st = r ? this.bossRooms.get(r.floor) : undefined;
+    return !!st && (st.defeated || st.open);
+  }
+
+  /** Allies never change floor (owner, #327): every ally of another floor than `floor` leaves the world. */
+  private dismissAllies(floor: number) {
+    for (const e of [...this.enemies.list]) {
+      if (!e.alive || e.faction !== 'self' || this.rooms.get(e.room)?.floor === floor) continue;
+      this.particles.burst(e.body.x, e.body.y + e.body.h * 0.6, e.body.z, pal('light.ember'), 10, 1.2, 0.05);
+      this.enemies.dissolve(e);
+      this.bus.off(null, `actor:${e.id}`);
+      this.actors.remove(e.id);
+      this.contacts.forget(e.id);
+      this.projectionSeq.delete(e.id);
+    }
+  }
+
+  /** The player as the dungeon's allies see it (enemies/escort.ts), or null while it is not about. */
+  private escortee() {
+    const p = this.player;
+    if (!p.alive) return null;
+    const f = p.forward;
+    return { id: p.id, room: p.room, body: p.body, eye: p.eyeHeight, aim: [f.x, f.y, f.z] as [number, number, number] };
+  }
+
   private enemyHost() {
     return {
       solid: (x: number, y: number, z: number) => this.solid(x, y, z),
@@ -1965,6 +2113,10 @@ export class Game {
         return d ? this.affinity(e, d.key).path : null;
       },
       contact: (e: Enemy, t: Actor) => this.contact(e, t),
+      practices: () => this.inventory.items.map(i => i.def.id),
+      health: () => this.playerHealth(),
+      placeBomb: (e: Enemy, blast: { radius: number; blocks: number; damage: number }) => this.enemyBomb(e, blast),
+      bombs: () => this.player.bombs,
       projectileHit: (t: Actor, dmg: number, thrower: number, from?: HurtFrom) => { this.damageActor(t, dmg, 'projectile', 'judgement', thrower, 0, 0, undefined, from ?? null); },
       reflects: (t: Actor, x: number, y: number, z: number) => {
         if (t !== this.player || !this.berserkOn) return false;
@@ -1982,7 +2134,7 @@ export class Game {
         this.damageBlock(x, y, z, damage, 'crush', `enemy:${e.def}`);
         return true;
       },
-      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE),
+      burst: (e: Enemy, r: number) => this.explode(e.body.x, e.body.y + 0.5, e.body.z, r, 30, `enemy:${e.def}`, e.id, BLAST_ACTOR_DAMAGE * (e.power ?? 1)),
       died: (e: Enemy) => this.onEnemyDeath(e),
       pickupsIn: (room: number) => this.pickups.list.filter(p => !p.taken && p.room === room && (p.type === 'key' || p.type === 'bomb' || p.type === 'heart'))
         .map(p => ({ kind: p.type as PickupKind, x: p.x, y: p.y, z: p.z, take: () => this.pickups.take(p) })),
@@ -2138,8 +2290,9 @@ export class Game {
 
   /**
    * An intention (a shot, or a stroke of a held weapon) touches an actor. A positive one heals an
-   * ally and halves its damage against a projection; a negative one hits an ally at full damage.
-   * The rules are in combat/polarity.ts. `warm` is false for the repeat ticks of a beam.
+   * ally and fills a hostile projection's bar by its whole damage; a negative one drains the bar, or
+   * hits an ally, by its whole damage. The rules are in combat/polarity.ts. `warm` is false for the
+   * repeat ticks of a beam (only a creature's growth reads it).
    */
   private intentTouch(id: number, damage: number, kx: number, kz: number, kind: DamageKind, source: string, polarity: Polarity, warm: boolean) {
     if (this.router.owns(id)) { this.router.touchBody(id, polarity, warm, kind); return; }
@@ -2162,7 +2315,7 @@ export class Game {
       const b = e.body;
       this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('mat.dirt.base'), 4, 1, 0.05);
     }
-    this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
+    this.damageActor(e, damage, kind, source, this.player.id, kx, kz, { polarity, warm });
   }
 
   private dropCreatureGrowthGift(e: Enemy) {
@@ -2212,9 +2365,10 @@ export class Game {
   }
 
   /**
-   * An enemy takes `amount` after the `actorDamage` hooks. Without an intention it is plain damage.
-   * With one, the rules of combat/polarity.ts decide (`resolveHit`): warmth, relapse, the ceiling
-   * of positive intentions, and conversion.
+   * An enemy takes `amount` after the `actorDamage` hooks. Without an intention it is plain harm. With
+   * one, the rules of combat/polarity.ts decide (`resolveHit`): harm drains a hostile's bar (at zero it
+   * is released), love fills it (at the top it converts), and an ally a negative hit brings to zero
+   * relapses. A boss runs on the same bar.
    */
   private hurtEnemy(e: Enemy, amount: number, kx: number, kz: number, intent?: IntentTouch): boolean {
     if (!intent) {
@@ -2223,12 +2377,17 @@ export class Game {
       if (e.alive) this.splitOnHit(e);
       return true;
     }
-    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth, boss: e.spec.kind === 'boss' }, amount);
-    e.warmth = r.warmth;
+    const r = resolveHit({ polarity: intent.polarity, faction: e.faction, hp: e.hp }, amount);
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
-    if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
-    if (r.convert && e.alive) this.convert(e);
-    else if (e.alive && r.dealt > 0) this.splitOnHit(e);
+    if (r.love > 0) {
+      this.enemies.mend(e, r.love, kx, kz);
+      if (isConverted(e.hp, e.maxHp)) this.convert(e);
+      return true;
+    }
+    if (r.harm > 0) {
+      this.enemies.hurt(e, r.harm, kx, kz); // at zero it dissolves: a release
+      if (e.alive) this.splitOnHit(e);
+    }
     return true;
   }
 
@@ -2249,10 +2408,11 @@ export class Game {
     });
   }
 
-  /** A projection's warmth is full: it turns to your side (not destroyed). */
+  /** A projection's bar is full: it turns to your side (not destroyed), with half its health as an ally. */
   private convert(e: Enemy) {
-    e.hp = convertedHp(e.hp, e.maxHp);
+    e.hp = convertedHp(e.maxHp);
     this.setFaction(e, 'self', 'polarity');
+    this.seeVariation(e);
     this.bus.emit('projectionConverted', { def: e.def, boss: e.spec.kind === 'boss' });
     const floor = this.rooms.get(e.room)?.floor;
     if (e.spec.kind === 'boss' && floor !== undefined) this.bossDown(floor, 'converted');
@@ -2263,12 +2423,11 @@ export class Game {
   }
 
   /**
-   * An ally at zero under a negative intention turns hostile again, with half its health. Not
+   * An ally at zero under a negative intention turns hostile again, its bar back in the middle. Not
    * resealed: a room that is cleared stays cleared (docs/reviews/polarity.md, ruling 5).
    */
   private relapse(e: Enemy, kx: number, kz: number) {
     e.hp = relapseHp(e.maxHp);
-    e.warmth = 0;
     e.flash = 0.15;
     e.body.vx += kx; e.body.vz += kz;
     this.setFaction(e, 'projection', 'polarity');
@@ -2309,9 +2468,13 @@ export class Game {
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
     // a release the Mender may bring back on this floor (mended.ts)
-    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def);
+    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def, e.tier ?? 'black');
     // a hostile projection destroyed by harm: its health is at zero (a self-ending, an alarm's blast or a fall, keeps health above zero)
-    if (e.faction === 'projection' && e.hp <= 0) this.bus.emit('projectionDestroyed', { def: e.def, boss: e.spec.kind === 'boss' });
+    if (e.faction === 'projection' && e.hp <= 0) {
+      this.bus.emit('projectionDestroyed', { def: e.def, boss: e.spec.kind === 'boss' });
+      // optional, off by default (FALTER_ENABLED): the strongest form let go, the rest of its room falters (DEEPER-BEHAVIOUR)
+      this.enemies.falter(e);
+    }
     // the Shadow's stillness ending is a turning to your side, not a destruction (ACHIEVEMENTS §1)
     if (floor !== undefined && e.spec.kind === 'boss') this.bossDown(floor, e.tags.has(STILLNESS_TAG) ? 'stillness' : 'destroyed');
     if (e.spec.split && !e.spec.splitOnHit) { const r = this.rooms.get(e.room); if (r) for (const id of e.spec.split) this.announce(id, r); }
@@ -2430,7 +2593,7 @@ export class Game {
   private nextWave(r: RoomInfo, st: ChallengeState) {
     st.wave++;
     const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'wave', st.entries, st.wave);
-    st.queue = pickWave(rng, r.floor, waveBudget(r.floor, st.wave, st.entries - 1));
+    st.queue = pickWave(rng, r.floor, waveBudget(r.floor, st.wave, st.entries - 1), this.runDifficulty);
     this.hud.toast('toast.challengeWave', { n: st.wave });
   }
 
@@ -2446,7 +2609,7 @@ export class Game {
   }
 
   /** A seeded spawn point among the room's standable floor cells (never by a door, away from the player). */
-  private spawnSpot(r: RoomInfo, seq: number): { x: number; y: number; z: number } {
+  private spawnSpot(r: RoomInfo, seq: number, far = false): { x: number; y: number; z: number } {
     const cells: Cell[] = [];
     for (let row = 0; row < r.d; row++) for (let col = 0; col < r.w; col++) {
       const cx = r.x0 + col, cz = r.z0 + row;
@@ -2457,7 +2620,7 @@ export class Game {
     const doors: Cell[] = this.doors.list.filter(d => d.rooms.includes(r.id)).map(d => ({ x: d.cx, z: d.cz }));
     const b = this.player.body;
     const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'spawn', seq);
-    const cell = pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
+    const cell = (far ? farthestCell(cells, doors, { x: b.x, z: b.z }) : pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng)) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
     let y = r.y0;
     while (y < r.y0 + 3 && this.solid(Math.floor(cell.x), y, Math.floor(cell.z))) y++;
     return { x: cell.x, y, z: cell.z };
@@ -2536,14 +2699,22 @@ export class Game {
     if (!def) return null;
     const id = this.actors.newId();
     const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
-    const hp = def.kind === 'boss' ? bossHp(r.floor) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
+    // the colour tier: projections and bosses (health only), never the Shadow, on its own fork so no other roll moves (TIERS.md)
+    // the global difficulty (#352) only raises the chances: the roll on its fork is the same, so a tier is never lost
+    const tier = spawnTier(this.rng, r.floor, r.id % ROOM_ID_STRIDE, seq, def, this.runDifficulty);
+    // a boss's life comes from its floor and the run's seed (#315); the tier multiplies it
+    const base = def.kind === 'boss' ? bossSpawnLife(def, r.floor, this.rng, this.playerHealth()) : rooted ? Math.round(birthHp(def) * ROOTED_HP) : birthHp(def);
+    const stats = tier === 'black' ? { hp: base, speed: def.speed, contactDamage: def.contactDamage } : tierStats(def, tier, base);
     const tags = new Set(def.asleep ? ['asleep'] : []);
     if (rooted) tags.add('rooted');
-    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp, speed: def.speed, contactDamage: def.contactDamage, tags, x, y, z });
+    const ev = this.bus.emit('enemySpawn', { id, def: defId, hp: stats.hp, speed: stats.speed, contactDamage: stats.contactDamage, tags, x, y, z });
     if (ev.cancelled) return null;
     this.projectionSeq.set(id, seq);
-    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags);
+    if (tier !== 'black') this.projectionTier.set(id, tier);
+    // a boss with its own life (the Shadow: your health at entry) keeps it: no practice changes it at spawn
+    const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, def.life ? stats.hp : ev.hp, ev.speed, ev.contactDamage, ev.tags, tier);
     this.actors.add(e);
+    this.seeVariation(e);
     return e;
   }
 
@@ -2820,10 +2991,52 @@ export class Game {
     e.body.vz += dz / l * speed;
   }
 
+  private placeTempWater(x: number, y: number, z: number, seconds: number): boolean {
+    const cx = Math.floor(x), cy = Math.floor(y), cz = Math.floor(z);
+    const fresh = !this.tempWater.has(this.world, cx, cy, cz);
+    if (!this.tempWater.place(this.world, cx, cy, cz, this.time, seconds)) return false;
+    if (fresh) this.particles.burst(cx + 0.5, cy + 0.5, cz + 0.5, pal('el.water.foam'), 8, 1.6, 0.06);
+    return true;
+  }
+
+  private sphereTargets(): SphereTarget[] {
+    const out: SphereTarget[] = [];
+    if (this.inSky) {
+      for (const t of this.sky?.creatures.targets() ?? []) out.push({ id: t.id, x: t.x, y: t.y + t.h / 2, z: t.z });
+      return out;
+    }
+    for (const e of this.enemies.list) {
+      if (e.faction !== 'projection' || !e.alive || e.spawning > 0) continue;
+      out.push({ id: e.id, x: e.body.x, y: e.body.y + e.body.h / 2, z: e.body.z });
+    }
+    return out;
+  }
+
+  private freezeBySphere(id: number) {
+    if (this.inSky) { this.sky?.creatures.freeze(id, SPHERE_FREEZE); return; }
+    this.affectProjection(id, 'frozen', SPHERE_FREEZE);
+  }
+
+  private updateSpheres(dt: number) {
+    const b = this.player.body;
+    const from = { x: b.x, y: b.y + b.h / 2, z: b.z };
+    const born = this.spheres.update(dt, this.stats.get('freezeSphere') >= 1 && !this.player.dead, from, this.sphereTargets(), id => this.freezeBySphere(id));
+    if (born) spatial.cue('field', born.x, born.y, born.z);
+    for (const s of this.spheres.live) {
+      const r = sphereRadius(s.age);
+      if (r <= 0) continue;
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * Math.PI * 2 + s.age * 2;
+        this.particles.burst(s.x + Math.cos(a) * r, s.y, s.z + Math.sin(a) * r, pal('light.core'), 1, 0.2, 0.05, true);
+      }
+    }
+  }
+
   private affectProjection(id: number, field: 'frozen' | 'fear', seconds: number) {
     const e = this.enemies.get(id);
     if (!e || e.faction !== 'projection') return;
-    e[field] = Math.max(e[field], seconds);
+    if (field === 'frozen' && !freezeProjection(e, seconds)) return;
+    if (field === 'fear') e.fear = Math.max(e.fear, seconds);
     const b = e.body;
     this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
@@ -3002,18 +3215,26 @@ export class Game {
   private placeBomb() {
     const p = this.player;
     if (p.bombs <= 0) { sfx.denied(); this.hud.toast('toast.noBombs'); return; }
-    const ev = this.bus.emit('bombPlace', { fuse: 1.8 });
+    const ev = this.bus.emit('bombPlace', { fuse: BOMB_FUSE });
     if (ev.cancelled) return;
     p.bombs--;
     const f = p.forward;
     const l = Math.hypot(f.x, f.z) || 1;
     const b = p.body;
-    const cube = this.debris.spawn(MAT.bomb, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, 0, b.vz * 0.5);
-    this.debris.fuse[cube] = Math.max(0.1, ev.fuse);
     // a bomb placed while the polarity is positive is white: its fuse ends in a love explosion (DECISIONS §7.8)
-    this.debris.love[cube] = this.polarity === 'positive' ? 1 : 0;
-    this.bombCause.delete(cube); // the slot may have held an old bomb that despawned unlit
-    this.debris.cooldown[cube] = 0.8;
+    const cube = lightBomb(this.debris, b.x + (f.x / l) * 0.6, b.y + 0.5, b.z + (f.z / l) * 0.6, b.vx * 0.5, b.vz * 0.5, ev.fuse, this.polarity === 'positive');
+    // the slot may have held an old bomb that despawned unlit
+    this.bombCause.delete(cube); this.bombBlast.delete(cube);
+    sfx3.fuse();
+  }
+
+  /** A projection drops a bomb at its feet (the Shadow): the player's bomb, cold, with the projection's own blast. */
+  private enemyBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }) {
+    const b = e.body;
+    const cube = lightBomb(this.debris, b.x, b.y + 0.5, b.z, b.vx * 0.5, b.vz * 0.5, BOMB_FUSE, false);
+    this.bombCause.delete(cube);
+    this.bombBlast.set(cube, { ...blast, owner: e.id, source: `enemy:${e.def}` });
+    spatial.cue('windup', b.x, b.y, b.z);
     sfx3.fuse();
   }
 
@@ -3132,7 +3353,7 @@ export class Game {
   /**
    * The love explosion (a positive missile): the bomb's sphere, but every block and actor in it is
    * touched as a positive intention touches it, with the blast's own damage as the amount. It mends
-   * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
+   * blocks and never breaks one, heals allies, fills hostile projections' bars by the blast's damage,
    * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
    */
   private loveBlast(x: number, y: number, z: number, source: 'bomb' | 'missile') {
@@ -3296,7 +3517,8 @@ export class Game {
     const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
     const onLava = [m.feet, m.mid, m.head].some(d => d?.key === 'lava') || this.elementAt(b.x, b.y - 0.05, b.z)?.key === 'lava';
     this.lavaSpent = onLava && this.stats.get('lavaWalk') > 0 ? this.lavaSpent + dt : 0;
-    this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
+    const slowWater = feet?.key === 'water' && (this.inSky || this.tempWater.near(this.world, Math.floor(b.x), Math.floor(b.y + 0.1), Math.floor(b.z)));
+    this.playerMedium = { ...m, feet: slowWater && feet ? { ...feet, wade: WATER_PACE } : feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
     // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
@@ -3405,6 +3627,8 @@ export class Game {
   // simulate (stopTime). Docs: docs/design/built/practices/MIRACLES.md (Kairos).
   private kairos = new Kairos();
   private kairosBeatT = 0;
+  /** The world's speed in the last simulated frame: 0.5 while walking slowly (Walk Slowly), else 1 (game/time-scale.ts). */
+  timeScale = 1;
 
   /** The charge of the held Kairos (0 when it is not held). */
   kairosCharge(): number { return this.inventory.memoryFor('kairos').charge ?? 0; }
@@ -3522,7 +3746,7 @@ export class Game {
     const dir = p.forward;
     const side = this.castHand();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
-    const from = p.eye.addScaledVector(right, 0.18 * side).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
+    const from = castOrigin(p.eye, right, side, dir);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
     this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
     this.hands.fire(side);
@@ -4700,10 +4924,13 @@ export class Game {
     // beside the Mender, on the side away from the player, so it does not stand in the player's way
     const a = Math.atan2(b.z - player.z, b.x - player.x);
     const x = b.x + Math.cos(a) * 1.2, z = b.z + Math.sin(a) * 1.2;
-    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, def.hp, def.speed, def.contactDamage, new Set([MENDED_TAG]));
+    // it comes back in the tier it was released in (TIERS.md): its numbers, its white ally body
+    const tier = this.releases.lastTier(r.floor), s = tierStats(def, tier);
+    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, s.hp, s.speed, s.contactDamage, new Set([MENDED_TAG]), tier);
     e.spawning = 0;
     this.actors.add(e);
     this.setFaction(e, 'self', 'mender');
+    this.seeVariation(e);
     this.particles.burst(x, b.y + 1, z, pal('light.gold'), 16, 1.6, 0.05);
     this.mendedNow = true;
   }
@@ -4727,7 +4954,7 @@ export class Game {
     if (!r || !menderComesTo(this.rng, r.floor, this.menderCame)) return;
     this.menderCame = true;
     const def = PRESENCE_BY_ID.get('mender')!;
-    const e = this.enemies.spawn(def, this.actors.newId(), room, at.x, at.y, at.z, def.hp, def.speed, 0, new Set(['presence']));
+    const e = this.enemies.spawn(def, this.actors.newId(), room, at.x, at.y, at.z, birthHp(def), def.speed, 0, new Set(['presence']));
     e.faction = 'neutral';
     e.spawning = 0;
     this.actors.add(e);
@@ -4955,6 +5182,9 @@ export class Game {
     // the Leaves' gift (#316) leaves once its practice is held some other way (the horse's gift): never offered twice
     const gift = this.leavesGift;
     if (gift && !gift.taken && this.realm === 'dungeon' && gift.item && this.inventory.has(gift.item.id)) this.pickups.take(gift);
+    // the branches' gifts (#329) likewise: a practice already held empties its ball
+    for (const g of this.branchGifts) if (!g.taken && this.realm === 'dungeon' && g.item && this.inventory.has(g.item.id)) this.pickups.take(g);
+    if (!this.branchesAll && this.realm === 'dungeon' && holdsAllBranchPractices(id => this.inventory.has(id))) this.branchesComplete();
     // what the HUD calls this place: a floor below, a level of the tree above, silence at the bottom
     const zone = inSilence ? 'silence' : bandOf(b.y) !== SURFACE ? '' : TREE_STORIES[Math.max(0, this.tree.storyAt(b.y))].zone;
     if (zone !== this.zone) {
@@ -4974,6 +5204,14 @@ export class Game {
       const i = -n - 1;
       if (i < 0 || i >= TREE_STORIES.length || this.tree.isGrown(i)) continue;
       this.tree.grow(i);
+      // the branch courses run once their story has grown (src/world/course.ts)
+      if (TREE_STORIES[i].key === 'branches') this.courses = this.tree.branchPlans.map(b => new CourseRunner(b.pieces));
+      // the water the tree carved (the galleries' waterfall) is meshed and woken, so it flows by rule
+      for (; this.watersWoken < this.tree.waters.length; this.watersWoken++) {
+        const q = this.tree.waters[this.watersWoken];
+        for (let y = q.y0; y <= q.y1; y += 4) this.world.markElemDirty(q.x0, y, q.z0), this.world.markElemDirty(q.x1, y, q.z1);
+        this.elements.wakeBox(q.x0, q.y0, q.z0, q.x1, q.y1, q.z1);
+      }
       const [y0, y1] = this.tree.range(i);
       for (let y = y0; y <= y1 + CHUNK; y += CHUNK) for (let z = 0; z < this.world.sz + CHUNK; z += CHUNK) for (let x = 0; x < this.world.sx + CHUNK; x += CHUNK)
         this.world.markDirty(Math.min(x, this.world.sx - 1), Math.min(y, y1), Math.min(z, this.world.sz - 1));
@@ -5016,11 +5254,15 @@ export class Game {
       // a band with no floor plan (the sandbox's rock under its one room) arrives where the feet are
       const entered = this.floors.get(band);
       this.bus.emit('floorEnter', { depth: band, arrival: entered ? arrivalOf(entered.spawn) : { x: b.x, y: b.y, z: b.z } });
+      this.dismissAllies(band);
       if (entered) this.hud.setFloor(entered, band);
       this.hud.toast('toast.floor', { n: band });
     }
     const r = this.roomAt(b.x, b.y + 0.1, b.z);
     if (r && r.id !== this.room) {
+      // allies come through the door with the player, inside one floor only (issue #327)
+      const from = this.rooms.get(this.room);
+      if (from && from.floor === r.floor) this.enemies.crossDoor(from.id, r.id);
       this.room = r.id;
       this.player.room = r.id;
       const first = !this.visited.has(r.id);
@@ -5049,7 +5291,9 @@ export class Game {
   }
 
   private summonBoss(f: FloorResult, r: RoomInfo) {
-    const at = this.spawnSpot(r, 0);
+    // the Shadow's arena raises its boss at the far end of the room from you (RoomTemplate.bossStart, ARENAS.md)
+    const far = ROOM_TEMPLATES.find(tp => tp.id === r.template)?.bossStart === 'far';
+    const at = this.spawnSpot(r, 0, far);
     this.omens.push({ def: f.boss!, room: r.id, seq: 0, x: at.x, y: at.y, z: at.z, t: 0, breached: false, emitted: 0 });
     spatial.omenHum(at.x, at.y + 0.5, at.z, 'floor');
   }
@@ -5063,7 +5307,8 @@ export class Game {
     this.doors.seal(st.room, false);
     this.roomState.get(st.room)!.cleared = true;
     const f = this.floors.get(floor)!;
-    if (f.boss) this.bus.emit('bossOvercome', { boss: f.boss, floor, how });
+    // `mastery`: the level the run was carved with (a debug level counts as 0), for the Shadow at the maximum difficulty (#353)
+    if (f.boss) this.bus.emit('bossOvercome', { boss: f.boss, floor, how, mastery: this.runMasteryDebug ? 0 : this.runMastery });
     this.revealBossItem(f);
     this.hud.toast('toast.bossDown');
     this.hud.shake(0.6);
@@ -5074,7 +5319,8 @@ export class Game {
   private syncBossBar() {
     const st = [...this.bossRooms.values()].find(s => s.spawned && s.room === this.room);
     const boss = st && !this.player.dead ? this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room) : undefined;
-    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
+    // a hostile boss shows its bar (0 released, the middle at the start, full converted); the bar's ends are the endings
+    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.faction === 'projection' ? barShare(boss.hp, boss.maxHp) : boss.hp / boss.maxHp, turn: boss.faction === 'projection' } : null);
   }
 
   /**
@@ -5227,6 +5473,8 @@ export class Game {
       if ((!this.chunks.busy && !this.wallsLoading) || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
     this.gate.update(dt);
+    // the ending of illumination: once its card is read (or cut off), the run ends (ILLUMINATION.md §4)
+    if (this.illuminated && !this.hud.bannerOpen && this.restartT <= 0 && this.revealT < 0) this.requestRestart();
     // an information banner stays until clicked; that click only dismisses it
     if (ctx === 'prompt' && this.hud.presenceChoiceOpen) {
       // the choice card: navigate moves between the answers, confirm picks the selected one, back declines
@@ -5288,6 +5536,8 @@ export class Game {
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.hud.presenceOfferOpen && !this.paused) this.guard('simulate', () => this.simulate(this.sandbox ? SANDBOX_DT : dt));
+    // Walk Slowly: the sound follows the slowed world; menus, pauses and Kairos's stop sound as they always did
+    setWorldTimeScale(running && !this.paused && !this.kairos.stopped ? this.timeScale : 1);
     if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
@@ -5345,11 +5595,16 @@ export class Game {
     inp.endFrame();
   }
 
-  private simulate(dt: number) {
+  private simulate(realDt: number) {
     // Kairos (#123): while time is stopped this is the only branch of the world: the view turns, the marks
-    // and the countdown run; the body, intentions, projections, elements, doors and timers do not
-    if (this.kairos.stopped) { this.stopTime(dt); return; }
+    // and the countdown run; the body, intentions, projections, elements, doors and timers do not.
+    // Walk Slowly: crouched on the ground, every system below gets half the step (game/time-scale.ts).
+    const p0 = this.player;
+    const frame = worldFrame(realDt, { kairosStopped: this.kairos.stopped, walkSlow: this.stats.get('walkSlow'), onGround: p0.body.onGround, crouching: p0.crouching });
+    if (frame.kind === 'stopped') { this.stopTime(frame.dt); return; }
     if (this.input.hit('miracle') && this.startKairos()) return;
+    const dt = frame.dt;
+    this.timeScale = frame.scale;
     this.time += dt;
     this.simFrame++;
     this.breakSfx = this.breakFx = this.elemFx = this.elemSfx = 0;
@@ -5363,6 +5618,9 @@ export class Game {
     const solid = (x: number, y: number, z: number) => solidHere(x, y, z) || (walk && this.lavaSurface(x, y, z, feet0));
     const below = this.below;
     const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
+    // the branch courses move before the body does, and carry it when it stands on a moving piece (BRANCHES.md)
+    if (below) for (const c of this.courses) c.update(this.time, dt, this.dw, b);
+    this.player.airShield = this.stats.get('airShield') >= 1;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5410,6 +5668,8 @@ export class Game {
     this.updateMissiles(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
+    this.tempWater.update(this.time);
+    this.updateSpheres(dt);
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
     if (below) {
@@ -5422,6 +5682,7 @@ export class Game {
     } else {
       this.skyGate();
       this.sky!.update(dt);
+      this.updateEnding(dt);
     }
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
@@ -5435,6 +5696,61 @@ export class Game {
     // the active item is the one in the right hand; the item under the choice goes in the other
     const p = this.player, active = p.activeIndex;
     this.hands.update(dt, p.walkPhase, p.active ?? 0, p.hand.filter((_, i) => i !== active).at(-1) ?? 0);
+  }
+
+  /** A new run: no friend, no companion, no light carried over from the last one. */
+  private resetEnding() {
+    this.allies = new AllyTally();
+    this.companions = null;
+    this.companionView?.dispose();
+    this.companionView = null;
+    this.companionChimes = 0;
+    this.heardThisRun = [];
+    this.illuminated = false;
+    this.lightShown = 0;
+    this.hud.lightLevel(0);
+  }
+
+  /** The ascent companions and the ending of illumination, once a frame in the sky (ILLUMINATION.md). */
+  private updateEnding(dt: number) {
+    const sky = this.sky!;
+    this.updateCompanions(dt, sky);
+    const asc = sky.ascension;
+    if (asc.phase === 'waiting') return;
+    if (asc.light !== this.lightShown) { this.lightShown = asc.light; this.hud.lightLevel(asc.light, ASCENSION.STEP_EASE_S); }
+    if (asc.takeCard()) this.illuminate();
+  }
+
+  /** The light is full: the bells ring, the achievement is granted (tracked by the keeper, never in the sandbox) and the card shows. */
+  private illuminate() {
+    this.illuminated = true;
+    this.bus.emit('illumination', { friends: this.allies.total });
+    sfx3.celestialBells(bellTimes());
+    this.hud.presenceCard('sun.ending.1', ['sun.ending.2', 'sun.ending.3']);
+  }
+
+  /** From the first checkpoint of the final ascent on, the run's friends rise round the player (ILLUMINATION.md §3). */
+  private updateCompanions(dt: number, sky: SkyRealm) {
+    const tot = sky.plans.totality, first = tot.platforms[tot.checkpoints[0]], last = tot.platforms[tot.platforms.length - 1];
+    const b = this.player.body, inTotality = sky.floorAt(b.y) === 6;
+    if (!this.companions) {
+      if (!inTotality || b.y < first.y - 0.5) return;
+      this.companions = new AscentCompanions();
+      this.companionView = new CompanionView(this.skyRoot);
+    }
+    const won = sky.creatures.all().filter(a => a.role === 'deity' && a.side === 'ally').map(a => a.animal);
+    this.allies.syncDeities(sky.plans.floors.map(f => f.animal).filter(a => won.includes(a)));
+    const progress = (b.y - first.y) / Math.max(1, last.y - first.y);
+    for (const kind of this.companions.update(dt, roster(this.allies), progress, b)) this.friendChime(kind);
+    this.companionView!.visible = inTotality;
+    this.companionView!.update(dt, this.companions.companions, b);
+  }
+
+  /** A kind's first friend joins: one of the meditations the player has heard sounds, in turn; a soft bell when none. */
+  private friendChime(_kind: AllyKind) {
+    const heard = SEQUENCE_IDS.filter(id => this.heardThisRun.includes(id) || this.keeper.unlocked(`meditation.${id}`));
+    if (!heard.length) { sfx3.bell('rest'); return; }
+    this.companionAudio.chime(SEQUENCE[heard[this.companionChimes++ % heard.length]]);
   }
 
   requestRestart() {

@@ -98,7 +98,7 @@ g.missiles.launch(...W(4.5, 1.4, 6.5), gx, gy, gz, 'positive'); g.missiles.launc
   { name: 'practice', floor: 0, rows: grid(9, 9).map((r, z) => z === 5 ? r.slice(0, 4) + 'T' + r.slice(5) : r), pedestal: 'grounding',
     eye: [4.5, 1.0, 7.4], at: [4.5, 1.0, 5] },
   { name: 'convert', floor: 1, rows: grid(9, 9), enemies: [{ def: 'doubt', at: [4, 0, 4] }],
-    prep: `const e = g.enemies.list.find(x => x.def === 'doubt' && x.alive); e.warmth = 0.95; S.sb.step(1);`,
+    prep: `const e = g.enemies.list.find(x => x.def === 'doubt' && x.alive); e.hp = e.maxHp * 1.9; S.sb.step(1);`,
     eye: [4.5, 1.62, 7.5], at: [4.5, 0.9, 4.5] },
   { name: 'throw', floor: 1, rows: grid(9, 9), enemies: [{ def: 'doubt', at: [4, 0, 2] }],
     lab: { ticks: 15, actions: [{ t: 0, do: 'cube', block: 'obsidian', at: [4, 0, 6], v: [0, 0.6, -8] }] },
@@ -121,9 +121,9 @@ const at = [[4.1, 3.4], [4.6, 3.0], [5.2, 3.6], [5.7, 3.2]];
 ['flesh', 'heart', 'mind', 'essence'].forEach((kind, i) => g.pickups.add('part', ...W(at[i][0], 0, at[i][1]), g.room, null, 0, PARTS.find(p => p.kind === kind)));
 S.sb.step(3);`,
     eye: [4.6, 0.9, 6.0], at: [4.7, 0.2, 3.6] },
-  // a boss warmed almost to your side (warmth 0.95, as convert does for a projection), seen from about eight blocks
+  // a boss warmed almost to your side (its bar at 95 %, as convert does for a projection), seen from about eight blocks
   { name: 'warm-boss', floor: 1, rows: grid(21, 15), enemies: [{ def: 'resistance', at: [10, 0, 6] }],
-    prep: `const e = g.enemies.list.find(x => x.def === 'resistance' && x.alive); e.warmth = 0.95; S.sb.step(1);`,
+    prep: `const e = g.enemies.list.find(x => x.def === 'resistance' && x.alive); e.hp = e.maxHp * 1.9; S.sb.step(1);`,
     eye: [10.5, 1.62, 11], at: [10, 1.3, 6] },
   // a positive missile over lava: the white bomb's light bursts where it lands (the lava is the lesson's water and lava)
   { name: 'white-bomb', floor: 3, rows: grid(11, 9), place: [E('lava', 0, 0, 3, 6, 0, 7)],

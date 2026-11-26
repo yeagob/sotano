@@ -792,7 +792,7 @@ export const LAYOUTS_115: RoomTemplate[] = [
   },
   {
     // an ember throne: the second hall is pooled with lava round the boss's practice
-    id: 'ember-throne', types: ['boss'], floors: [6, 9], size: [2, 1], height: 8, ceiling: 'cave', rows: [
+    id: 'ember-throne', types: ['boss'], floors: [6, 8], size: [2, 1], height: 8, ceiling: 'cave', rows: [
       '............................',
       '...r.....r.......LLL...LLL..',
       '.................LLL...LLL..',
@@ -800,6 +800,31 @@ export const LAYOUTS_115: RoomTemplate[] = [
       '.................LLL...LLL..',
       '...r.....r.......LLL...LLL..',
       '............................',
+    ],
+  },
+  {
+    // the Shadow's arena (floor 9, docs/design/built/bosses/ARENAS.md): the biggest room a floor can hold, four cells
+    // of space under a flat roof at the band's full height. You come in at one corner and your Shadow rises at the
+    // far one; between you, cover of every material the frozen floor has: pillars of dark brick to the roof, obsidian
+    // walls, stepped ashlar ledges, stone boulders, crates and dirt that a shot breaks, lead ore, and ice underfoot.
+    // The diagonal between the doors and the far corner stays open, so you see it the moment it rises.
+    id: 'mirror-hall', types: ['boss'], floors: [9, 9], size: [2, 2], height: 8, bossStart: 'far', rows: [
+      '..............1233321.......',
+      '...........Rr.1233321.......',
+      '..........o.................',
+      '......H.......Cc........o...',
+      '.........c.......##........C',
+      '.Cc..............##.....i..c',
+      '..........r..........cC.....',
+      '..R...........od.....X......',
+      '..r..iii.............X..##..',
+      '.1233.......ww...Rr..X..##..',
+      '.1233...##.www............R.',
+      '........##......i.www.T...r.',
+      '...b................d.bbb...',
+      '...o....d....XXXX...........',
+      '.......Rr..Cc....1233321....',
+      '.................1233321....',
     ],
   },
 ];

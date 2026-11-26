@@ -6,6 +6,7 @@ import type { EnemyDef } from '../../enemies/types';
 import type { Rng } from '../../core/rng';
 import { QUIET_ROOM, ROSTER } from '../tables/enemies';
 import { level } from '../levels';
+import { moreEnemies } from '../../enemies/difficulty';
 import critic from './critic';
 import doubt from './doubt';
 import panic from './panic';
@@ -59,10 +60,12 @@ export const ENEMY_BY_ID: ReadonlyMap<string, EnemyDef> = new Map([...ENEMIES, .
  */
 /**
  * One wave of a challenge room: `budget` points spent on the ROSTER table, never quiet, at most
- * seven projections (structure for the floor, runtime for the wave: the caller passes the fork).
+ * seven projections (structure for the floor, runtime for the wave: the caller passes the fork). Above difficulty 1
+ * the same fork adds projections to the wave (`moreEnemies`), as for a normal room.
  */
-export function pickWave(rng: Rng, floor: number, budget: number): string[] {
+export function pickWave(rng: Rng, floor: number, budget: number, difficulty = 1): string[] {
   const out: string[] = [];
+  const wave = budget;
   for (let guard = 0; guard < 24 && budget > 0 && out.length < 7; guard++) {
     const id = ROSTER.roll(rng, { floor });
     const def = id ? ENEMY_BY_ID.get(id) : undefined;
@@ -70,16 +73,21 @@ export function pickWave(rng: Rng, floor: number, budget: number): string[] {
     out.push(def.id);
     budget -= def.cost;
   }
-  return out;
+  return moreEnemies(rng, floor, out, difficulty, wave, 7, ENEMY_BY_ID);
 }
 
 /** A challenge wave's budget: the floor, the wave (1–3) and how many times you have come back. */
 export const waveBudget = (floor: number, wave: number, entry: number) => Math.min(3 + floor + 2 * wave + entry, 16);
 
+/**
+ * A normal room's roster. At a difficulty above 1 (#352) the same room fork goes on after the usual roster and adds
+ * projections to it (`moreEnemies`, SPAWNS-AND-WAVES §1.1): the usual roster is never changed.
+ */
 export const ENEMY_BUDGET = {
-  pick(rng: Rng, floor: number, cells = 1): string[] {
+  pick(rng: Rng, floor: number, cells = 1, difficulty = 1): string[] {
     if (QUIET_ROOM.roll(rng, { floor })) return [];
-    let budget = level(floor).enemyBudget * cells;
+    const room = level(floor).enemyBudget * cells;
+    let budget = room;
     const out: string[] = [];
     for (let guard = 0; guard < 12 && budget > 0; guard++) {
       const id = ROSTER.roll(rng, { floor });
@@ -89,6 +97,6 @@ export const ENEMY_BUDGET = {
       out.push(def.id);
       budget -= def.cost;
     }
-    return out.slice(0, 5 * cells);
+    return moreEnemies(rng, floor, out.slice(0, 5 * cells), difficulty, room, 5 * cells, ENEMY_BY_ID);
   },
 };

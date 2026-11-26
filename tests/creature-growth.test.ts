@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
+import { birthHp } from '../src/enemies/types';
 import { GROWTH_MAX, GROWTH_STEP, grownScale, growsUnder, setScale } from '../src/entities/growth';
 import { claimCreatureGrowthGift } from '../src/content/tables/heart-gifts';
 import { CREATURE_BY_ID } from '../src/content/creatures';
@@ -28,7 +29,7 @@ const host = (): EnemyHost => ({
   solid: () => false, worldVersion: () => 1, actors: () => [] as Actor[], actor: () => undefined,
   room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: 13, d: 7, hx: 0, hz: 0 }), elemVersion: () => 0,
   pickupsIn: () => [],
-  hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+  hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, projectileHit: () => {}, projectileBlock: () => false,
   smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
   affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
 } as EnemyHost);
@@ -36,7 +37,7 @@ const host = (): EnemyHost => ({
 /** A friendly creature (neutral, tagged as a creature) that stands still, so only its size moves. */
 const friend = (en: Enemies) => {
   const def = CREATURE_BY_ID.get('huddler')!;
-  const e = en.spawn(def, 7, 0, 3, 0, 3, def.hp, def.speed, 0, new Set(['creature']));
+  const e = en.spawn(def, 7, 0, 3, 0, 3, birthHp(def), def.speed, 0, new Set(['creature']));
   e.faction = 'neutral';
   e.spawning = 0;
   e.hold = 1e6;
@@ -159,7 +160,7 @@ describe('friendly actors grow, and negative shots shrink them back (#102)', () 
   it('only friendly creatures grow: not converted enemies, bosses, presences, the Boundary or projections', () => {
     const en = new Enemies(new THREE.Scene(), host());
     const make = (id: number, faction: 'neutral' | 'self' | 'projection', tags: string[], kind = def) => {
-      const e = en.spawn(kind, id, 0, 3, 0, 3, kind.hp, kind.speed, 0, new Set(tags));
+      const e = en.spawn(kind, id, 0, 3, 0, 3, birthHp(kind), kind.speed, 0, new Set(tags));
       e.faction = faction;
       e.spawning = 0;
       return e;
@@ -201,7 +202,7 @@ function wiring(en: Enemies) {
 describe('the wiring of shots in Game (#102)', () => {
   const def = CREATURE_BY_ID.get('huddler')!;
   const creature = (en: Enemies, id: number, scale = 1, kind = def) => {
-    const e = en.spawn(kind, id, 0, 3, 0, 3, kind.hp, kind.speed, 0, new Set(['creature']));
+    const e = en.spawn(kind, id, 0, 3, 0, 3, birthHp(kind), kind.speed, 0, new Set(['creature']));
     e.faction = 'neutral';
     e.spawning = 0;
     e.hold = 1e6;
@@ -215,7 +216,7 @@ describe('the wiring of shots in Game (#102)', () => {
     expect(both.responds).toBeUndefined();
     const en = new Enemies(new THREE.Scene(), host());
     const g = wiring(en);
-    const e = en.spawn(both, 40, 0, 3, 0, 3, both.hp, both.speed, 0, new Set(['creature']));
+    const e = en.spawn(both, 40, 0, 3, 0, 3, birthHp(both), both.speed, 0, new Set(['creature']));
     e.faction = 'neutral';
     e.spawning = 0;
     e.hold = 1e6;
@@ -256,7 +257,7 @@ describe('the wiring of shots in Game (#102)', () => {
     for (let n = 0; n < 4; n++) g.intentTouch(cr.id, 8, 0, 0, 'cut', 'love', 'positive', true);
     expect(g.dropCreatureGrowthGift).toHaveBeenCalledTimes(1);
 
-    const ally = en.spawn(def, 51, 0, 3, 0, 3, def.hp, def.speed, 0, new Set());
+    const ally = en.spawn(def, 51, 0, 3, 0, 3, birthHp(def), def.speed, 0, new Set());
     ally.faction = 'self';
     ally.spawning = 0;
     for (let n = 0; n < 8; n++) g.intentTouch(ally.id, 8, 0, 0, 'cut', 'love', 'positive', true);
@@ -267,7 +268,7 @@ describe('the wiring of shots in Game (#102)', () => {
   it('the presence push uses the grown box, so a grown presence pushes the player from further out', () => {
     const en = new Enemies(new THREE.Scene(), host());
     const g = wiring(en);
-    const pres = en.spawn(def, 60, 0, 10, 0, 10, def.hp, def.speed, 0, new Set(['presence']));
+    const pres = en.spawn(def, 60, 0, 10, 0, 10, birthHp(def), def.speed, 0, new Set(['presence']));
     pres.faction = 'neutral';
     pres.spawning = 0;
     setScale(pres, 3);

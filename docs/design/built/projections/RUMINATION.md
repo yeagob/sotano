@@ -20,7 +20,7 @@ Floors 3 and 4. Code: [rumination.ts](../../../../src/content/enemies/rumination
 
 ## How the player answers it
 
-Step off the line's path before it fires. Good intentions do half damage and warm it; bad intentions do full damage.
+Step off the line's path before it fires. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

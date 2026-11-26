@@ -20,7 +20,7 @@ Floor 9. Code: [isolation.ts](../../../../src/content/enemies/isolation.ts).
 
 ## How the player answers it
 
-Break the wall or go around it. Good intentions do half damage and warm it; bad intentions do full damage.
+Break the wall or go around it. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

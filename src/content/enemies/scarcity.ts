@@ -28,6 +28,7 @@ export default defineEnemy({
   minFloor: 3,
   maxFloor: 4,
   drops: { key: 0.6, bomb: 0.4, heart: 0.3 },
+  climber: true,
   behaviour: thief,
   model: [
     { size: [8 * TX, 8 * TX, 8 * TX], pos: [0, 5 * TX, 0], color: pal('husk.panic.dark'), name: 'body' },

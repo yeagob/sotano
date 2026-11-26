@@ -8,7 +8,7 @@ The Old Rule is a tall stone tablet with two dim eyes on its face. It issues rul
 
 - **Pattern:** a belief from childhood. Certainty.
 - **Path:** Mind.
-- **Health:** 478 on floor 6.
+- **Health:** 435 to 932 on floor 6.
 
 ## Phases
 

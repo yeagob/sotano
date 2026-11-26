@@ -12,19 +12,33 @@ A boss room is one room of its floor. Entering it shuts its doors at once, with 
 
 ## 2. The boss rises
 
-The boss wakes 1.2 seconds after the player enters. An omen opens on a seeded floor cell of the room, away from the player: the cold motes gather, the crack opens, and the boss breaches out of it. The omen holds at its crack while the player stands within 3.5 blocks, as any projection's does. The boss then looks at the player and begins.
+The boss wakes 1.2 seconds after the player enters. An omen opens on a seeded floor cell of the room, away from the player (in the Shadow's room, on the open floor tile farthest from the player, at least 25 blocks away from either door: see [Arenas](ARENAS.md#the-shadows-room-built)): the cold motes gather, the crack opens, and the boss breaches out of it. The omen holds at its crack while the player stands within 3.5 blocks, as any projection's does. The boss then looks at the player and begins.
 
 The entrance omen lasts 1.5 seconds in total. The design asked for 2.5 seconds (see open questions).
 
 ## 3. Health
 
-Boss health is set when the boss spawns, from its floor, not from its definition: 140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9 (a curve of about ×1.28 a floor). The HUD shows a health bar with the boss's name and its ratio, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there.
+A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor; the Shadow is exempt, its life is yours, see [The Shadow](SHADOW.md)) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The Shadow is exempt: its life is twice your health as it materialises, converted ([SHADOW](SHADOW.md)). The range each floor can give:
+
+| Floor | Life |
+|---|---|
+| 1 | 127 to 273 |
+| 2 | 163 to 349 |
+| 3 | 208 to 447 |
+| 4 | 267 to 571 |
+| 5 | 340 to 729 |
+| 6 | 435 to 932 |
+| 7 | 557 to 1193 |
+| 8 | 712 to 1525 |
+| 9 | 910 to 1950 (no boss today: floor 9's keystone is the Shadow, exempt) |
+
+The HUD shows the boss's bar with its name, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there. A hostile boss runs on the same bar as every projection ([polarity](../encounters/POLARITY.md#the-bar-owner-2026-11-26)): it runs from 0 to twice the life it spawned with and starts in the middle; a centre mark shows the start, harm empties the cold part toward 0 and love fills the captive part past the middle toward the top. Every boss but the Shadow may rise in a colour tier that multiplies this life ([colour tiers](../projections/TIERS.md)).
 
 A boss's touch deals 8, the same as a full heart. Its shots and ground attacks are in [Attacks](../encounters/ATTACKS.md).
 
 ## 4. Phases
 
-A boss has three phases. The phase changes when its health falls to two thirds and to one third.
+A boss has three phases. The phase changes when what is left of its fight falls to two thirds and to one third: the distance from its bar to the nearer end, so harm and love both move it through its phases (the Shadow reads its own health, harm only: see [The Shadow](SHADOW.md)).
 
 When a phase changes:
 
@@ -66,7 +80,7 @@ A boss never stands in the player's line of fire for long (issue #314). Every bo
 
 **The answer.** After a dodge its next move or shot comes within a quarter of a second, so a dodge is followed by an attack. The Shadow is the exception: it does not answer.
 
-**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: if the player stands still and holds their fire, so does it.
+**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: it never repositions on its own, so a player who stands still is never chased by its manoeuvre. It still fights on its own, choosing from the moment: it fires as often as the player's fire rate allows, with no pause between shots, while it moves, and it drops the player's own bombs (see [The Shadow](SHADOW.md#the-fight)).
 
 The code is `src/enemies/evade.ts` (`evasive`), wrapped around each boss's phases in its own file. The tests are in `tests/boss-evasion.test.ts`: every boss, in every phase, leaves the line of fire when shot standing still, is never a sitting duck under steady fire for more than a few seconds, and always has a next action.
 
@@ -78,8 +92,8 @@ Each boss has a breaking strength (its `breaks` field) and breaks soft blocks as
 
 A boss is defeated when:
 
-- its health reaches zero (the usual case), or
-- it is converted by positive intentions: its warmth fills and it turns to the player's side (see [polarity](../encounters/POLARITY.md)), or
+- its bar reaches zero (the usual case), or
+- its bar reaches twice its life under positive intentions and it turns to the player's side (see [polarity](../encounters/POLARITY.md)): the same damage as destroying it, or
 - it is the Shadow and the player stands still beside it for three seconds (see [The Shadow](SHADOW.md)).
 
 Any of these runs the same defeat (`bossDown`):
@@ -113,7 +127,6 @@ The owner's verdict on the first bosses was that they felt weak: few and poor at
 ## Open questions
 
 - **Entrance omen.** The design asks for a 2.5-second omen where the whole arena's motes converge and the floor cracks along the boss's outline. The code uses the standard 1.5-second omen and no outline crack.
-- **Convertible bosses.** The code lets a positive intention convert any boss: warmth fills, the boss stays alive at half health on the player's side, and the room is counted defeated. The design gives conversion to the Threshold Guardian only. Should the other bosses be convertible, and should a converted boss stay as an ally, or end as a release?
-- **Health curve.** The design gave both about 140 on floor 1 and 1000 on floor 9 and also a ×1.35 a floor step; the two cannot both hold. The build follows the two ends (×1.28). Which one stands?
+- **Convertible bosses.** The code lets a positive intention convert any boss through the bar, the Shadow included: the bar fills, the boss stays alive at half health on the player's side, and the room is counted defeated. The design gives conversion to the Threshold Guardian only. Should the other bosses be convertible, and should a converted boss stay as an ally, or end as a release?
 - **Floors 6 to 9.** Their bosses still use the older single-behaviour phases for some moves. The gap between each boss's built phases and its design is in its document.
 - **Release.** A defeated boss dissolves. The design says its blocks become architecture (a stair, a bridge, a light, a door). That is not built: see [Voxel bodies](../../not-built/bosses/VOXEL-BODIES.md).

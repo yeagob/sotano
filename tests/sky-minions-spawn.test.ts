@@ -66,21 +66,22 @@ const minionsOn = (c: SkyCreatures, n: number) => c.minionsOn(n);
 const targetIds = (c: SkyCreatures) => new Set(c.targets().map(t => t.id));
 
 describe('the floors spawn their herds in play', () => {
-  it('each floor with the player on it shows its first minion within its warning, and fills to wildMax one warning apart', () => {
+  it('each floor with the player on it shows its first batch within its warning, and fills to wildMax one batch a warning', () => {
     for (let n = 1; n <= 5; n++) {
       const r = newRealm();
       r.standOn(n);
       expect(r.realm.floorAt(r.body.y), `floor ${n} height`).toBe(n);
       const def = MINIONS[r.realm.plans.floors[n - 1].animal];
       const warning = Math.max(MIN_WARNING, def.spawn.warning);
+      const batch = def.spawn.batch ?? 1;
       r.step();
       const first = minionsOn(r.creatures, n);
-      expect(first.length, `floor ${n} first`).toBe(1);
-      expect(first[0].state).toBe('Spawning');
+      expect(first.length, `floor ${n} first`).toBe(batch);
+      expect(first.every(a => a.state === 'Spawning')).toBe(true);
       r.run(warning);
       expect(first[0].spawning, `floor ${n} spawned`).toBe(0);
       expect(targetIds(r.creatures).has(first[0].id)).toBe(true);
-      r.run(warning * (def.wildMax + 1));
+      r.run(warning * (Math.ceil(def.wildMax / batch) + 1));
       expect(minionsOn(r.creatures, n).length, `floor ${n} filled`).toBe(Math.min(def.max, def.wildMax));
     }
   });
@@ -91,7 +92,7 @@ describe('the floors spawn their herds in play', () => {
       r.standOn(n);
       const def = MINIONS[r.realm.plans.floors[n - 1].animal];
       for (let round = 0; round < 4; round++) {
-        r.run(def.spawn.every + Math.max(MIN_WARNING, def.spawn.warning) * (def.wildMax + 1));
+        r.run(def.spawn.every + Math.max(MIN_WARNING, def.spawn.warning) * (Math.ceil(def.wildMax / (def.spawn.batch ?? 1)) + 1));
         const all = minionsOn(r.creatures, n);
         expect(all.length, `floor ${n} max`).toBeLessThanOrEqual(def.max);
         expect(all.filter(a => a.side === 'wild').length, `floor ${n} wildMax`).toBeLessThanOrEqual(def.wildMax);
@@ -99,7 +100,10 @@ describe('the floors spawn their herds in play', () => {
         const wild = all.find(a => a.side === 'wild' && a.spawning <= 0);
         if (wild) for (let i = 0; i < def.hitsToTurn; i++) r.creatures.touch(wild.id, 'positive', true, wild.body, 'intent');
       }
-      r.run(def.spawn.every * 3);
+      for (const wild of minionsOn(r.creatures, n).filter(a => a.side === 'wild' && a.spawning <= 0).slice(0, def.max - def.wildMax)) {
+        for (let i = 0; i < def.hitsToTurn; i++) r.creatures.touch(wild.id, 'positive', true, wild.body, 'intent');
+      }
+      r.run(def.spawn.every * Math.ceil((def.max - def.wildMax) / (def.spawn.batch ?? 1) + 3));
       expect(minionsOn(r.creatures, n).length, `floor ${n} reaches max`).toBe(def.max);
     }
   });
@@ -115,17 +119,18 @@ describe('the floors spawn their herds in play', () => {
     for (let n = 2; n <= 5; n++) expect(minionsOn(r.creatures, n), `floor ${n}`).toHaveLength(0);
   });
 
-  it('the realm drives the spawner once a frame: one update spawns one minion, never two', () => {
+  it('the realm drives the spawner once a frame: one update spawns one batch, then nothing until the next warning', () => {
     const r = newRealm();
     r.standOn(3);
     let calls = 0;
     const spawn = r.creatures.spawnMinion.bind(r.creatures);
     r.creatures.spawnMinion = (...a) => { calls++; return spawn(...a); };
+    const batch = MINIONS.elephant.spawn.batch ?? 1;
     r.step(0.01);
-    expect(calls).toBe(1);
+    expect(calls).toBe(batch);
     const warning = Math.max(MIN_WARNING, MINIONS.elephant.spawn.warning);
     for (let t = 0.01; t < warning - 0.05; t += 0.01) r.step(0.01);
-    expect(calls).toBe(1);
+    expect(calls).toBe(batch);
   });
 
   it('a floor\'s minions are touchable only while unparked, and the herd is not doubled on the way back', () => {

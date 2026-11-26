@@ -439,16 +439,18 @@ function newRealm(seed = 1): SkyRealm {
   actors.setRealm('sky');
   const noop = () => {};
   const player: Body = { x: 6, y: 10, z: 0, vx: 0, vy: 0, vz: 0, hw: 0.3, h: 1.8, onGround: true };
+  let world: SkyWorld | null = null;
   const host = {
     time: () => 0,
     player: () => ({ body: player, eye: { x: 0, y: 0, z: 0 }, aim: { x: 1, y: 0, z: 0 }, hand: [], push: noop, slow: noop, hold: noop, carry: noop }),
     actors: () => actors,
+    world: () => world,
     debris: () => ({ spawn: () => 0, max: 0 }),
     fork: (...path: (string | number)[]) => new Rng(path.length * 7 + seed),
     fx: noop, cue: noop, toast: noop, card: noop, bar: noop, place: noop, gift: noop, travel: noop,
     drainSpirit: noop, spirit: () => 100, refillSpirit: noop, takeRandomPractice: () => null, sendUnderground: noop,
   } as unknown as SkyHost;
-  return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: new SkyWorld(layout) } as unknown as SkyRealmSet));
+  return SkyRealm.create(host, new THREE.Group(), layout => ({ kind: 'sky', world: (world = new SkyWorld(layout)) } as unknown as SkyRealmSet));
 }
 
 describe('the five deities of the sky (SKY.md §5.3)', () => {
@@ -488,7 +490,7 @@ describe('the five deities of the sky (SKY.md §5.3)', () => {
     const [a] = realm.creatures.all();
     const ids = realm.creatures.all().map(x => x.id);
     const p = { x: a.body.x, y: a.body.y + 0.5, z: a.body.z };
-    for (let i = 0; i < 24; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
+    for (let i = 0; i < 1000 && a.state !== 'Won'; i++) realm.creatures.touch(a.id, 'positive', true, p, 'intent');
     expect([a.state, a.side]).toEqual(['Won', 'ally']);
     realm.leave();
     realm.creatures.update(DT, 1);

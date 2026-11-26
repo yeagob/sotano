@@ -20,7 +20,7 @@ All floors: the roster gives it no range. Code: [critic.ts](../../../../src/cont
 
 ## How the player answers it
 
-Good intentions do half damage and warm it. Bad intentions do full damage. A block placed in the arc of a judgement stops it.
+Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. A block placed in the arc of a judgement stops it.
 
 ## Element affinities
 

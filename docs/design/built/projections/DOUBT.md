@@ -21,7 +21,7 @@ All floors: the roster gives it no range. Code: [doubt.ts](../../../../src/conte
 
 ## How the player answers it
 
-Good intentions do half damage and warm it; at full warmth it turns to your side. Bad intentions do full damage, and a kill releases it. Its pauses are the moments to throw.
+Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage; at the top it turns to your side, at zero it is released. Its pauses are the moments to throw.
 
 ## Element affinities
 

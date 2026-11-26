@@ -8,7 +8,7 @@ The Downpour is a low ceiling of cloud the size of the arena. It hovers over the
 
 - **Pattern:** a cloud that keeps the room grey. To be left alone.
 - **Path:** Emotion, grown old.
-- **Health:** 229 on floor 3, 293 on floor 4.
+- **Health:** 208 to 447 on floor 3, 267 to 571 on floor 4.
 
 ## Phases
 

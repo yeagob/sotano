@@ -1,13 +1,13 @@
 # Rooms and floors
 
-How a floor is put together: a procedural **plan** (which room goes where) filled with hand-made **room templates** (what's inside each room), joined by doors. Code: [`src/world/floorplan.ts`](../src/world/floorplan.ts), [`src/world/floor.ts`](../src/world/floor.ts), [`src/content/rooms.ts`](../src/content/rooms.ts).
+How a floor is put together: a procedural **plan** (which room goes where) filled with hand-made **room templates** (what's inside each room), joined by doors. Code: [`src/world/floorplan.ts`](../../src/world/floorplan.ts), [`src/world/floor.ts`](../../src/world/floor.ts), [`src/content/rooms.ts`](../../src/content/rooms.ts).
 
 ## 1. The plan
 
 Isaac-style (see [TECHNICAL.md §1.6](../research/TECHNICAL.md#16-floor-generation)):
 
 1. A 7×7 grid. Start in the middle (floor 0) or **right under the boss room of the floor above** (floors 1–9), and grow with a queue: each room tries its four neighbours; a new cell is accepted only if it would touch **exactly one** existing room (so there are no loops) and a coin flip says yes. Target: 8–11 rooms.
-2. Rooms with a single neighbour are **dead ends**. The farthest one (by steps from the start) becomes the **boss** room; another one at random the **treasure** room; a third, if there is one, a locked **vault**. On floors with a boss (`wideBoss`), the boss is the farthest dead end with an empty cell east or west of it, so its room can always be two cells wide (issue #131; `fitTemplates` and `bossRoomIsLarge` in `world/floor.ts`, design in [../design/built/levels/rooms/MULTI-CELL.md](../design/built/levels/rooms/MULTI-CELL.md#boss-rooms-are-always-large)).
+2. Rooms with a single neighbour are **dead ends**. The farthest one (by steps from the start) becomes the **boss** room; another one at random the **treasure** room; a third, if there is one, a locked **vault**. On floors with a boss (`wideBoss`), the boss is the farthest dead end with an empty cell east or west of it, so its room can always be two cells wide; floor 9 adds `bossBlock` (`LevelDef.plan`): its boss sits at the corner of an empty 2×2 block of cells, which `allotSpace` claims for it, so the Shadow's four-cell room always fits (issue #131; `fitTemplates` and `bossRoomIsLarge` in `world/floor.ts`, design in [../design/built/levels/rooms/MULTI-CELL.md](../design/built/levels/rooms/MULTI-CELL.md#boss-rooms-are-always-large)).
 3. If there aren't enough rooms or dead ends, or the boss would be next to the start, try again. Starts on an edge or a corner have fewer ways to grow, so after many failed attempts the minimum room count is relaxed step by step (tested from all 49 start cells).
 
 Every floor's plan is decided when the run starts, from the run's seed (see [RNG.md](RNG.md)): same seed, same plans. Tests check every plan has one start, one treasure and one boss room, that every room is reachable, and that it's a tree.
@@ -82,6 +82,7 @@ Optional fields (design and authoring rules: [LEVELS.md](../design/built/levels/
 - `height` (5–8, default 5): the interior height. `#` columns reach the ceiling, whatever its height. `RoomInfo.height` carries it to the game (combat bounds, flow fields).
 - `ceiling` (`flat`, `vault-x`, `vault-z`, `dome`, `pointed-x`, `pointed-z`, `cross`, `stepped`, `cave`): how the height above 5 is shaped (`ceilingAt` in `rooms.ts`). Two blocks of headroom stay over every stack under it (checked).
 - `size: [cellsX, cellsZ]` (1–2 each) and `home: [cx, cz]`: a room bigger than its cell. On the map it is only its home cell; its space spreads into empty cells around it that the floor allotted to it ([LEVELS.md](LEVELS.md) §11). Doors, the centre, `P` and `H` are the home cell's. Big templates may be mirrored; vaults keep to one cell.
+- `bossStart: 'far'` (boss rooms): the boss rises on the open floor tile farthest from the player (`farthestCell` in `game/omens.ts`) instead of a seeded tile away from the player; the Shadow's `mirror-hall` uses it ([ARENAS](../design/built/bosses/ARENAS.md#the-shadows-room-built)).
 - `layers: [{ y, rows }]`: extra 13×7 grids of single blocks at `y` blocks above the floor (1…height − 3): bridges, balconies, galleries. Layers use `.`, `r`, `c`, `o`, `d`, `i`, `b` and `f` (a flame on a terrace exactly `y` high: a brazier on a pillar). Layers are mirrored with the room.
 - Pools dig up to 2 blocks (`MAX_PIT`) and 2-deep ones are lined with the level's floor material; the room's shell grows with its height. Rooms with height and elements draw no randomness of their own.
 

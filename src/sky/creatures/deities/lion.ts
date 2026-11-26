@@ -11,9 +11,17 @@ import type { ModelPart } from '../../../enemies/types';
 import { BOB, BOB_HZ, deityOf, reachOf, type Deity } from '../deity';
 import { HELP_RANGE } from '../minion';
 import {
+  type ChaseSpec,
   CAPTURE_TIME, ExceptionKind, MIN_TELEGRAPH, TELEGRAPH, type AttackDef, type CustomState, type DeityCtx, type DeityDef,
   type DeityRule, type Parts, type Place, type SkyActor, type TelegraphSpec, type Vec3,
 } from '../../types';
+
+export const LION_CHASE: ChaseSpec = {
+  keep: 9, near: 5, lift: 4, speed: 4, dash: 10, orbit: 0.3, dodge: 4, cool: 1.5, counter: 0.8, answer: 5,
+  still: ['Pouncing', 'Scruffing'],
+  dive: { kind: 'pull', every: 4.5, radius: 3.5, strength: 9, cue: 'lion.leap' },
+  cue: 'lion.growl',
+};
 
 // ───────────────────────── targets (B2, B3, B3b, B9) ─────────────────────────
 
@@ -474,7 +482,7 @@ const lionRule: DeityRule = {
       if (place && m.shine <= 0) { m.shine += 0.25; glare(ctx, place); }
     }
     stare(ctx, m, dt, looking);
-    moveBody(ctx, m, dt);
+    moveBody(ctx, m, dt * (ctx.pace?.() ?? 1));
     const pb = ctx.host.player().body;
     m.yaw = Math.atan2(pb.x - b.x, pb.z - b.z);
     if (m.blink > 0) m.blink = Math.max(0, m.blink - dt);
@@ -530,12 +538,12 @@ function stare(ctx: DeityCtx, m: Mind, dt: number, looking: boolean) {
 /** The lion's body: a glide when one runs, hanging where it landed while it recovers there, else home over the
  *  Sunning Ledge, pacing in the air while it watches, with the levitation's bob. */
 function moveBody(ctx: DeityCtx, m: Mind, dt: number) {
-  const b = ctx.deity.body, s = ctx.plan.seat;
+  const b = ctx.deity.body, s = m.deity.homePoint;
   const bob = BOB * Math.sin(2 * Math.PI * BOB_HZ * m.clock);
   const beside = m.state === 'Pouncing' || m.state === 'Scruffing' || m.state === 'Recovering';
   if (!beside && m.away) {
     // back to the ledge along the same line
-    const home = { x: s.x + 0.5 + paceOffset(m), y: s.y + HOVER, z: s.z + 0.5 };
+    const home = { x: s.x + paceOffset(m), y: s.y + HOVER, z: s.z };
     startGlide(m, { x: b.x, y: b.y, z: b.z }, home, Math.hypot(home.x - b.x, home.y - b.y, home.z - b.z) / RETURN_SPEED, false);
   }
   if (m.glide) {
@@ -548,9 +556,9 @@ function moveBody(ctx: DeityCtx, m: Mind, dt: number) {
     b.x = m.away.x; b.z = m.away.z; b.y = m.away.y + bob;
   } else {
     if (m.state === 'Watching') m.pace += dt * PACE_SPEED;
-    const tx = s.x + 0.5 + paceOffset(m), tz = s.z + 0.5, ty = s.y + HOVER + bob;
+    const tx = s.x + paceOffset(m), tz = s.z, ty = s.y + HOVER + bob;
     const dx = tx - b.x, dy = ty - b.y, dz = tz - b.z, d = Math.hypot(dx, dy, dz);
-    const k = d > 1e-9 ? Math.min(1, (RETURN_SPEED * dt) / d) : 1;
+    const k = d > 1e-9 ? Math.min(1, (Math.max(RETURN_SPEED, 2 * LION_CHASE.dash) * dt) / d) : 1;
     b.x += dx * k; b.y += dy * k; b.z += dz * k;
   }
   b.vx = 0; b.vy = 0; b.vz = 0;
@@ -664,7 +672,7 @@ export function poseLion(parts: Parts, p: LionPose) {
 
 export const lionDeity: DeityDef = {
   animal: 'lion', floor: 4,
-  hits: 42,
+  hits: 1920,
   telegraph: TELEGRAPH[3],
   recover: 2,
   rest: [3, 2.5, 2],
@@ -677,8 +685,10 @@ export const lionDeity: DeityDef = {
   // B4: an ally adds a hit every 5 s while it stays; the floor's cap is a third of the target (provisional)
   ally: { act: 'rub', every: 5, cap: 14 },
   knock: 'paw',
+  chase: LION_CHASE,
   won: {
     toast: 'toast.skyLionWon',
+    gift: 'shield',
     // its attitude changes (provisional, owner 2026-11-03): the pride lies down (its wild minions go Calm, minion.ts),
     // the stare ends, and the lion settles over its ledge, purring
     play: ctx => {

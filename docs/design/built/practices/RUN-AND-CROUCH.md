@@ -62,6 +62,8 @@ The pause card shows both rows always (`CONTROL_ROWS`), with "(with Fartlek or a
 
 The lab gained a `hold` action (SANDBOX.md §2): a key held for a number of ticks, so a run or a crouch lasts its script.
 
+Walk Slowly also gives the crouch, and while it is held a crouch on the ground slows the whole world to half ([WALK-SLOWLY](body/WALK-SLOWLY.md)).
+
 ## 7. Feedback
 
 Running and crouching have no sound or particle of their own yet (see §8). The crouch and the run change the body's height and speed, which the player sees in the camera's eye and in the pace.

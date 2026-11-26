@@ -6,7 +6,7 @@ A room is one cell on the map, but its space may spread into the empty cells bes
 
 ## The footprint
 
-A template declares its size in cells, east and south, from one to two each way. Each cell is thirteen blocks by seven. So a room two cells wide is 28 blocks by 7; two cells deep is 13 by 16; two by two would be 28 by 16. The build authors twenty-two templates: seventeen two-cell-wide rooms and five two-cell-deep rooms. None is two by two yet, though the validator allows it.
+A template declares its size in cells, east and south, from one to two each way. Each cell is thirteen blocks by seven. So a room two cells wide is 28 blocks by 7; two cells deep is 13 by 16; two by two is 28 by 16, the biggest a template may be. The build authors twenty-three templates: seventeen two-cell-wide rooms, five two-cell-deep rooms, and one two by two, the Shadow's room on floor 9.
 
 | Footprint | Template | Floors | Kind |
 |---|---|---|---|
@@ -18,7 +18,7 @@ A template declares its size in cells, east and south, from one to two each way.
 | 2×1 | styx-cavern | 5–6 | normal or path (cave roof, a deep pool) |
 | 2×1 | crown-hall | 1–4 | boss (the crown, a long dome) |
 | 2×1 | abyss | 5 | boss (the great pit) |
-| 2×1 | caldera-hall | 6–9 | boss (lava pools and braziers on pillars round the boss's practice) |
+| 2×1 | caldera-hall | 6–8 | boss (lava pools and braziers on pillars round the boss's practice) |
 | 2×1 | antechamber | 6–9 | normal (a river of lava) |
 | 2×1 | dis-hall | 6–7 | normal or path (a ditch of lava) |
 | 1×2 | chasm | 6–9 | normal or path (a plateau of holes, a bridge of pillars) |
@@ -31,7 +31,8 @@ A template declares its size in cells, east and south, from one to two each way.
 | 1×2 | lake-hall | 3–5 | normal or path (a cavern lake with an island) |
 | 2×1 | ember-hall | 5–9 | normal or path (a floor of lava, the key on an island) |
 | 1×2 | catacombs | 6–9 | normal (an obsidian wall, crypt cells with flames) |
-| 2×1 | ember-throne | 6–9 | boss (lava pools round the boss's practice) |
+| 2×1 | ember-throne | 6–8 | boss (lava pools round the boss's practice) |
+| 2×2 | mirror-hall | 9 | boss (the Shadow's room: cover of every material of the floor, the fight started across it; see [ARENAS](../../bosses/ARENAS.md#the-shadows-room-built)) |
 
 ## The home cell
 
@@ -39,15 +40,15 @@ Every multi-cell room has a home cell: the one cell that is the room on the map.
 
 ## How space is allotted
 
-After the plan of a floor is drawn, the empty cells of the map are allotted to the rooms beside them: a room's preset footprint takes its cells first, then the boss room takes the empty cells east and west of it, then every empty cell beside a room goes to one of them, and a room takes only the cells that fit its shape. The space is the room's; the map never shows it.
+After the plan of a floor is drawn, the empty cells of the map are allotted to the rooms beside them: a room's preset footprint takes its cells first, then the boss room takes the empty cells east and west of it (on floor 9 also the cells that close an empty two-by-two block round it), then every empty cell beside a room goes to one of them, and a room takes only the cells that fit its shape. The space is the room's; the map never shows it.
 
 ## Boss rooms are always large
 
 On floor 0 and every floor below it, a boss room is always a template of two cells (issue #131), unless the floor's boss asks for a small room in its definition (`EnemyDef.smallRoom`, see [Fight flow](../../bosses/FIGHT-FLOW.md#1-the-room-seals)). Three things make sure it always fits:
 
-- On the random floors (6 to 9), the boss is the farthest dead end that has an empty cell east or west of it (`wideBoss` in `generatePlan`). On the Tree floors the crown always has empty cells on both sides.
+- On the random floors (6 to 9), the boss is the farthest dead end that has an empty cell east or west of it (`wideBoss` in `generatePlan`). On floor 9 it must also sit at the corner of an empty two-by-two block of cells (`bossBlock`), so the Shadow's four-cell room always fits. On the Tree floors the crown always has empty cells on both sides.
 - The boss room claims those cells before any other room (`allotSpace`).
-- Only templates of two cells or more are chosen for it (`pickTemplate` with `large`); if none fits, generation fails loudly instead of falling back to a small room. Every floor from 1 to 9 has one: `crown-hall` (1–4) and `throne-hall` (2–4), `abyss` (5), `caldera-hall` and `ember-throne` (6–9).
+- Only templates of two cells or more are chosen for it (`pickTemplate` with `large`); if none fits, generation fails loudly instead of falling back to a small room. Every floor from 1 to 9 has one: `crown-hall` (1–4) and `throne-hall` (2–4), `abyss` (5), `caldera-hall` and `ember-throne` (6–8), `mirror-hall` (9, the only one there).
 
 The roots' last room (floor 0) is the way down, not a boss room, and keeps its fixed one-cell template.
 

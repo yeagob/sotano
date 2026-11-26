@@ -21,7 +21,7 @@ Floors 3 to 6. Code: [alarm.ts](../../../../src/content/enemies/alarm.ts). It is
 
 ## How the player answers it
 
-Learn the swell: a burst is announced three steps ahead. Stay out of the burst radius. Good intentions do half damage and warm it; bad intentions do full damage.
+Learn the swell: a burst is announced three steps ahead. Stay out of the burst radius. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 
