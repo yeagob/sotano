@@ -90,7 +90,7 @@ import { Particles } from '../render/particles';
 import { currentVoice, panelImages, Tablets } from '../render/tablets';
 import { PageStone } from '../render/page-stone';
 import { loadBook } from '../content/book';
-import { onLocaleChange, t, type MessageKey } from '../i18n';
+import { locale, onLocaleChange, t, type MessageKey } from '../i18n';
 import {
   BAND, bandOf, carveFloor, cellOf, createDungeonWorld, inRoomSpace, depthOf, DOOR_FRAME, FIRST_FLOOR, floorY, LAST_FLOOR, openHole, pedestalSlots, planDungeon, ROOM_ID_STRIDE, SKY_LIMIT, SURFACE, SURFACE_Y,
   type DungeonPlan,
@@ -148,6 +148,11 @@ import { AllyTally, allyKindOf, type AllyKind } from './ally-tally';
 import { AscentCompanions, roster } from './ascent-companions';
 import { CompanionView } from '../render/companion-view';
 import { MeditationAudio } from '../audio/meditation';
+import { clipUrl, htmlPlayer } from '../audio/meditation-voice';
+import { ASCENT_BLOCKS, AscentBlocks } from './ascent-blocks';
+import { MeditationSky, STAR_DIM } from '../sky/render/meditation-sky';
+import { mixColour } from '../sky/atmosphere';
+import { loadPrefs } from './meditation-view';
 import { SEQUENCE, SEQUENCE_IDS } from '../content/presences/meditations';
 import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type SkyWorldApi, type Travel } from '../sky/types';
 import { SkyWorld } from '../sky/world/sky-world';
@@ -311,6 +316,12 @@ export class Game {
   /** The meditations whose sounds the companions play, one per kind that joins; its own bus, apart from the Sanctuary's. */
   private readonly companionAudio = new MeditationAudio();
   private companionChimes = 0;
+  /** The meditations of the ascent (ILLUMINATION.md §3a): the 40-second blocks of sky and sound, from the first checkpoint on. */
+  private ascentBlocks: AscentBlocks | null = null;
+  private ascentSky: MeditationSky | null = null;
+  /** The blocks' two music players (one fades while the other rises) and their voice, made once and reused by every run. */
+  private readonly blockAudio: readonly [MeditationAudio, MeditationAudio] = [new MeditationAudio(), new MeditationAudio()];
+  private readonly blockVoice = htmlPlayer();
   /** The meditations completed in this run (meditationComplete), for the companions' sounds. */
   private heardThisRun: string[] = [];
   /** The ending of illumination: the card is shown; once it is gone the run ends. */
@@ -5481,6 +5492,8 @@ export class Game {
     if (running && !this.hud.presenceOfferOpen && !this.paused) this.guard('simulate', () => this.simulate(this.sandbox ? SANDBOX_DT : dt));
     // Walk Slowly: the sound follows the slowed world; menus, pauses and Kairos's stop sound as they always did
     setWorldTimeScale(running && !this.paused && !this.kairos.stopped ? this.timeScale : 1);
+    // the ascent's blocks hold with the world: a menu, a pause or a card draws their music back and holds their voice
+    this.ascentBlocks?.pause(!(running && !this.hud.presenceOfferOpen && !this.paused));
     if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
@@ -5513,7 +5526,7 @@ export class Game {
       const deep = this.floors.get(LAST_FLOOR)?.silence;
       if (deep && e.y < deep.y1 + 2) { this.fogColor.setHex(pal('ink.void')); fog.near = 0; fog.far = 14; }
       fog.color.copy(this.fogColor);
-    } else this.sky!.atmosphere(e, this.fogColor, fog, this.stars);
+    } else { this.sky!.atmosphere(e, this.fogColor, fog, this.stars); this.ascentAtmosphere(fog); }
     easeMaster(dt);
     this.chunks.animate(this.time);
     this.renderer.setClearColor(this.fogColor);
@@ -5645,6 +5658,10 @@ export class Game {
     this.companionView?.dispose();
     this.companionView = null;
     this.companionChimes = 0;
+    this.ascentBlocks?.stop();
+    this.ascentBlocks = null;
+    this.ascentSky?.dispose();
+    this.ascentSky = null;
     this.heardThisRun = [];
     this.illuminated = false;
     this.lightShown = 0;
@@ -5656,6 +5673,7 @@ export class Game {
     const sky = this.sky!;
     this.updateCompanions(dt, sky);
     const asc = sky.ascension;
+    if (asc.started) this.ascentBlocks?.end();
     if (asc.phase === 'waiting') return;
     if (asc.light !== this.lightShown) { this.lightShown = asc.light; this.hud.lightLevel(asc.light, ASCENSION.STEP_EASE_S); }
     if (asc.takeCard()) this.illuminate();
@@ -5677,13 +5695,45 @@ export class Game {
       if (!inTotality || b.y < first.y - 0.5) return;
       this.companions = new AscentCompanions();
       this.companionView = new CompanionView(this.skyRoot);
+      this.beginAscentBlocks();
     }
+    this.ascentBlocks?.setAway(!inTotality);
+    this.ascentBlocks?.update(dt);
     const won = sky.creatures.all().filter(a => a.role === 'deity' && a.side === 'ally').map(a => a.animal);
     this.allies.syncDeities(sky.plans.floors.map(f => f.animal).filter(a => won.includes(a)));
     const progress = (b.y - first.y) / Math.max(1, last.y - first.y);
     for (const kind of this.companions.update(dt, roster(this.allies), progress, b)) this.friendChime(kind);
     this.companionView!.visible = inTotality;
     this.companionView!.update(dt, this.companions.companions, b);
+  }
+
+  /**
+   * The ascent's blocks begin with the companions (ILLUMINATION.md §3a): the sky and the sound share one clock. The
+   * Sanctuary's own mute silences them and the friends' chimes; its voice switch does not, the ascent speaks.
+   */
+  private beginAscentBlocks() {
+    const muted = loadPrefs().mute;
+    for (const m of this.blockAudio) m.setMuted(muted);
+    this.companionAudio.setMuted(muted);
+    this.companionAudio.setLevel(ASCENT_BLOCKS.FRIENDS_LEVEL);
+    this.ascentBlocks = new AscentBlocks(this.blockAudio, this.blockVoice, key => clipUrl(import.meta.env.BASE_URL, locale(), key), muted);
+    this.ascentSky = new MeditationSky(this.scene);
+    this.ascentSky.warm(this.renderer, this.camera);
+  }
+
+  /** The ascent's sky over the strata's (after `atmosphere`): the meditation's background on the dome, the fog melting into its horizon. */
+  private ascentAtmosphere(fog: THREE.Fog) {
+    const blocks = this.ascentBlocks, dome = this.ascentSky;
+    if (!blocks || !dome) return;
+    const s = blocks.sky();
+    const inTotality = this.sky!.floorAt(this.player.body.y) === 6;
+    if (!inTotality) { dome.hide(); return; }
+    const horizon = dome.update(this.player.eye, this.fogColor.getHex(), s.from, s.to, s.k, s.share);
+    if (horizon === null || s.share <= 0.001) return;
+    fog.color.setHex(mixColour(fog.color.getHex(), horizon, s.share));
+    this.fogColor.setHex(mixColour(this.fogColor.getHex(), horizon, s.share));
+    const m = this.stars.material as THREE.PointsMaterial;
+    m.opacity *= 1 - STAR_DIM * s.share;
   }
 
   /** A kind's first friend joins: one of the meditations the player has heard sounds, in turn; a soft bell when none. */

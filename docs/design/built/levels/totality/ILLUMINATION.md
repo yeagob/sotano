@@ -34,6 +34,18 @@ The timings are written once, in `ASCENSION` (`src/sky/totality/ascension.ts`): 
 - **How they look.** Every friend is white (owner, 2026-11-26): its own model, with no tier, every part of it drawn in the light's core white and lit from inside by the same white, whatever its kind. The ally yellow belongs to the allies in play, not to the ending. They are becoming the light the screen turns into. A boss is drawn at half size and a deity at six tenths, so the rings hold them.
 - **How they sound.** When the first friend of a kind appears, one of the meditations the player has heard plays its chime: the bells that open each of its parts. A meditation is heard once it has been sat to the end in this run, or its achievement is earned. They play in turn, one per kind. When the player has heard none yet, a soft Sanctuary bell plays instead.
 
+## 3a. The meditations of the ascent (issue #380)
+
+From the same moment the friends begin (the first checkpoint), the sky and the sound run one cycle of 40-second blocks: the starry sky, then the six meditations in the Sanctuary's order (Grounding, Gratitude, Visualization, Box Breathing, Self-Compassion, Listening to the River), and again. The cycle runs on the ascent's own clock (it holds while the game is paused or the player is out of Totality) and never reads the seed, so every run gives the same cycle.
+
+- **The sky.** A meditation's block shows its background as the sky: its three stops (`med.<id>.high` at the zenith, `mid` on the horizon, `deep` below) on a low dome round the eye, drawn behind everything; the fog melts into its horizon and the stars dim to 40 %. The starry block is the strata's own sky. Each block cross-fades from the one before over its first 4 seconds.
+- **The sound.** The block's music and ambience are the meditation's own synthesised sound (MEDITATION-APP.md §7), rising over the same 4 seconds while the block before fades. Its reflections are spoken as game audio, no text: one guidance line of each part, in the parts' order (the first loop the first lines, the next loop the next ones), the first due 5 s into the block and each next one 6 s later, never sooner than 1.5 s after the one before ended, none begun after 31 s. The music is lowered while a line is spoken.
+- **The friends' chimes** (§3) still play as friends appear, a quieter layer on top (0.45 of the app's level, against 0.85 for the block's music and 0.6 while a line is spoken).
+- **Muted.** With the Sanctuary's sound off, the blocks and the friends' chimes are silent; the sky still turns. The Sanctuary's voice switch does not apply here: the ascent speaks.
+- **The end.** When the rise into the Sun begins, no new block or line begins, the music fades over 5 s and the backgrounds clear over 4 s.
+
+Code: `src/game/ascent-blocks.ts` (the cycle, timings in `ASCENT_BLOCKS`), `src/sky/render/meditation-sky.ts` (the dome), wired in `src/game/game.ts` (`beginAscentBlocks`, `ascentAtmosphere`). Tests: `tests/ascent-blocks.test.ts`. Not yet heard or seen on a device.
+
 ## 4. The card
 
 The Presence card, on full light, with the owner's three lines:

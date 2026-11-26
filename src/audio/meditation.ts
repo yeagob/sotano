@@ -28,6 +28,8 @@ export class MeditationAudio {
   private seq: Sequence | null = null;
   private bellIn = 0;
   private muted = false;
+  /** A share of the app's level (1 in the Sanctuary): the ascent's blocks and the friends' chimes set their own. */
+  private level = 1;
 
   /** Builds the app's bus on first use. Returns false while audio is still locked (no gesture yet). */
   private ready(): boolean {
@@ -40,7 +42,7 @@ export class MeditationAudio {
     limit.threshold.value = -14; limit.ratio.value = 6; limit.attack.value = 0.02; limit.release.value = 0.4;
     limit.connect(ctx.destination);
     this.bus = ctx.createGain();
-    this.bus.gain.value = this.muted ? 0 : LEVEL;
+    this.bus.gain.value = this.muted ? 0 : LEVEL * this.level;
     this.bus.connect(limit);
     const room = ctx.createConvolver();
     room.buffer = this.impulse(ctx, 3.2);
@@ -77,7 +79,17 @@ export class MeditationAudio {
 
   setMuted(muted: boolean) {
     this.muted = muted;
-    if (this.ctx && this.bus) this.bus.gain.setTargetAtTime(muted ? 0 : LEVEL, this.ctx.currentTime, 0.15);
+    this.applyLevel(0.15);
+  }
+
+  /** Sets this bus's share of the app's level (0 → 1), eased over about `easeS` seconds so it never steps. */
+  setLevel(level: number, easeS = 0.6) {
+    this.level = Math.max(0, Math.min(1, level));
+    this.applyLevel(easeS / 3);
+  }
+
+  private applyLevel(tau: number) {
+    if (this.ctx && this.bus) this.bus.gain.setTargetAtTime(this.muted ? 0 : LEVEL * this.level, this.ctx.currentTime, Math.max(0.01, tau));
   }
 
   /** One soft note: it swells in over `attack` seconds and rings out over `dur`. Dry and into the room. */
@@ -117,8 +129,8 @@ export class MeditationAudio {
     else { this.bell(293.66, 0.05, 'sine', 0, 6); this.bell(440, 0.04, 'sine', 0.5, 6); this.bell(587.33, 0.03, 'sine', 1.0, 7); }
   }
 
-  /** A sitting begins: the meditation's drone, pad and texture rise over five seconds. */
-  start(seq: Sequence) {
+  /** A sitting begins: the meditation's drone, pad and texture rise over `riseS` seconds (five in the Sanctuary). */
+  start(seq: Sequence, riseS = 5) {
     this.stop();
     this.seq = seq;
     this.bellIn = 6;
@@ -126,7 +138,7 @@ export class MeditationAudio {
     const ctx = this.ctx!, t = ctx.currentTime, mu = seq.music;
     const group = this.group = ctx.createGain();
     group.gain.setValueAtTime(0.0001, t);
-    group.gain.linearRampToValueAtTime(1, t + 5);
+    group.gain.linearRampToValueAtTime(1, t + Math.max(0.1, riseS));
     group.connect(this.bus!);
     const toRoom = ctx.createGain();
     toRoom.gain.value = 0.5;
@@ -275,6 +287,6 @@ export class MeditationAudio {
     setTimeout(() => group.disconnect(), (seconds + 0.5) * 1000);
   }
 
-  /** The sitting's music stops, eased so it never cuts. */
-  stop() { this.fade(1.2); }
+  /** The sitting's music stops, eased over `fadeS` seconds so it never cuts. */
+  stop(fadeS = 1.2) { this.fade(fadeS); }
 }

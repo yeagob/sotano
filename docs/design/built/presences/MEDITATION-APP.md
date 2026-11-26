@@ -289,6 +289,10 @@ Decided by the owner for issue #203. The first plan for this used Gemini's text-
 - **Checked.** With `--check`, each clip is transcribed back (faster-whisper, offline) and compared with its line. It is kept when the words match at least 0.9 and it lasts at most 6 seconds (the time a line is on screen). Otherwise the line is generated again with the next seed, up to eight seeds, and the best candidate is kept. Seeds are fixed (`SEED + index + attempt`), so a re-run gives the same clips. A clip that exists is kept unless `--force`, or `--recheck` finds it failing.
 - **Code:** `src/audio/meditation-voice.ts` (the queue, DOM-free, and the HTML player), `src/game/meditation-view.ts` (the calls: a line due is said, the switch, the pause and the stop).
 
+## 7b. The meditations in the ascent (issue #380)
+
+Outside the app, the six meditations also play during the final ascent of Totality, in 40-second blocks after a starry one: each block shows the meditation's background as the sky, plays its music and ambience, and speaks one guidance line of each part from its clips (§7a), in order, never two at once. The app's Sound switch silences them; its Voice switch does not. Details: [ILLUMINATION.md §3a](../levels/totality/ILLUMINATION.md).
+
 ## 8. Settings inside the app
 
 Three switches, on the Home screen and on the session bar, remembered between visits. Each says its state in words ("Voice: on") and with a small lamp before them, a filled dot when the thing named is on and an empty ring when it is off, so the state never rests on colour (docs/art/DECISIONS.md §10.8):
