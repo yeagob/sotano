@@ -362,7 +362,7 @@ export class Brain {
     if (a.state !== 'Hurt' && a.state !== this.lastState) this.entered(a.state);
     if (a.state !== 'Hurt') this.lastState = a.state;
 
-    this.move(dt);
+    this.move(dt * (this.ctx.pace?.() ?? 1));
     if (this.strike) {
       this.strike.left -= dt;
       if (this.strike.left <= 1e-9) { const id = this.strike.id; this.strike = null; this.land(id); }
@@ -856,7 +856,7 @@ export class Brain {
     const c = this.feetPoint(this.home);
     this.grazeA += dt * GRAZE_SPEED / 1.2;
     const tx = c.x + Math.cos(this.grazeA) * 1.2, tz = c.z + Math.sin(this.grazeA) * 1.2;
-    glide(this.world, this.body, tx, tz, GRAZE_SPEED * 2, dt);
+    glide(this.world, this.body, tx, tz, GRAZE_SPEED * 2, dt * (this.ctx.pace?.() ?? 1));
   }
 
   gentleEnter() {
@@ -1171,7 +1171,7 @@ export const horseDeity: DeityDef = {
   knock: 'kick',
   won: {
     toast: 'toast.horseWon',
-    gift: 'open-field',
+    gift: 'triple-jump',
     // it changes its attitude (provisional, owner 2026-11-03): it stops leaping away, and the wind stops
     play: ctx => {
       const b = brainOf(ctx);

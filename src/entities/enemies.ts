@@ -1,6 +1,7 @@
 // could care about goes back to the game through `EnemyHost`, which emits the events.
 
 import { fx } from '../core/fx';
+import { FREEZE_CADENCE } from '../core/freeze';
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -166,7 +167,7 @@ export class Enemies {
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
-      hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
+      hidden: false, stage: 0, hold: 0, frozen: 0, thaw: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def));
@@ -348,7 +349,11 @@ export class Enemies {
         if (e.spec.kind !== 'creature') { this.unbury(e); e.spec.behaviour.update(e, ctx); }
         b.vx = 0; b.vz = 0; this.draw(e); continue;
       }
-      if (e.frozen > 0) { e.frozen -= dt; e.wishX = 0; e.wishZ = 0; }
+      if (e.frozen <= 0 && e.thaw > 0) e.thaw = Math.max(0, e.thaw - dt);
+      if (e.frozen > 0) {
+        e.frozen -= dt; e.wishX = 0; e.wishZ = 0;
+        if (e.frozen <= 0) { e.frozen = 0; e.thaw = FREEZE_CADENCE; }
+      }
       else if (e.fear > 0) { e.fear -= dt; this.flee(e, ctx); }
       else if (e.hold > 0) { e.hold -= dt; e.wishX = 0; e.wishZ = 0; }
       else e.spec.behaviour.update(e, ctx);

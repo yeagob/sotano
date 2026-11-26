@@ -482,7 +482,7 @@ const lionRule: DeityRule = {
       if (place && m.shine <= 0) { m.shine += 0.25; glare(ctx, place); }
     }
     stare(ctx, m, dt, looking);
-    moveBody(ctx, m, dt);
+    moveBody(ctx, m, dt * (ctx.pace?.() ?? 1));
     const pb = ctx.host.player().body;
     m.yaw = Math.atan2(pb.x - b.x, pb.z - b.z);
     if (m.blink > 0) m.blink = Math.max(0, m.blink - dt);
@@ -688,7 +688,7 @@ export const lionDeity: DeityDef = {
   chase: LION_CHASE,
   won: {
     toast: 'toast.skyLionWon',
-    gift: 'assertive-roar',
+    gift: 'shield',
     // its attitude changes (provisional, owner 2026-11-03): the pride lies down (its wild minions go Calm, minion.ts),
     // the stare ends, and the lion settles over its ledge, purring
     play: ctx => {

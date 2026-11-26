@@ -441,6 +441,7 @@ export interface DeityCtx {
   drain(n: number): void;
   /** The attack being telegraphed or acted now, null between attacks (B3 addition: an animal's rules draw its marks and pose its body during the telegraph). */
   readonly attack?: AttackDef | null;
+  pace?(): number;
 }
 
 export interface Gait {
@@ -501,6 +502,7 @@ export interface SkyCreaturesApi extends TouchProvider {
   /** Only the creatures of the player's floor move. */
   update(dt: number, floor: number): void;
   all(): readonly SkyActor[];
+  freeze(id: number, seconds: number): boolean;
   /** Fired once per deity, when it is won. */
   onWon: ((d: SkyActor, floor: FloorIndex) => void) | null;
   dispose(): void;
@@ -544,6 +546,8 @@ export interface MinionApi {
   readonly def: MinionDef;
   update(dt: number, deity: DeityApi | null, others: readonly SkyActor[]): void;
   touch(polarity: Polarity, warm: boolean, p: Vec3, kind: DamageKind): void;
+  readonly frozen: number;
+  freeze(seconds: number): boolean;
 }
 export type MinionCtor = new (actor: SkyActor, def: MinionDef, plan: SkyFloorPlan, deps: CreatureDeps, host: SkyHost, rng: Rng) => MinionApi;
 
@@ -700,6 +704,7 @@ export interface SkyEffectsApi {
   push(vx: number, vy: number, vz: number): void;
   slow(f: number, s: number): void;
   hold(s: number): void;
+  freeze(s: number): boolean;
   /** A solid block between the two points (shelter from a push or a gust). */
   shelter(from: Vec3, to: Vec3): boolean;
   /** Not placed and not protected. */
@@ -842,6 +847,8 @@ export interface SkyPlayer {
   slow(f: number, s: number): void;
   hold(s: number): void;
   carry(to: Vec3, s: number): void;
+  freeze?(s: number): boolean;
+  readonly shielded?: boolean;
 }
 
 /** A practice's id (ItemDef.id). */

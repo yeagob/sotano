@@ -58,11 +58,10 @@ import fartlek from './fartlek';
 import balasana from './balasana';
 import bookofsecrets from './bookofsecrets';
 import mendersThread from './menders-thread';
-import stillSitting from './still-sitting';
-import coRegulation from './co-regulation';
-import longMemory from './long-memory';
-import assertiveRoar from './assertive-roar';
-import openField from './open-field';
+import selfDistancing from './self-distancing';
+import guardingTheCentre from './guarding-the-centre';
+import likeWater from './like-water';
+import shield from './shield';
 import dowsing from './dowsing';
 import eyecontact from './eyecontact';
 import dialectic from './dialectic';
@@ -102,7 +101,7 @@ export const ITEMS: readonly ItemDef[] = [
   lionsmane, occamsrazor, kiai,
   ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
   drlauncher, tripleJump, mendersThread,
-  stillSitting, coRegulation, longMemory, assertiveRoar, openField,
+  selfDistancing, guardingTheCentre, likeWater, shield,
   dowsing, eyecontact,
   dialectic, reframing,
   waymark,

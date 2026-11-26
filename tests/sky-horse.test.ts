@@ -115,7 +115,7 @@ describe('the horse deity: data (HORSE.md B9)', () => {
   it('walks (no levitation), teleports, takes 3840 hits, telegraphs for 0.9 s and rests 2.5, 2, 1.5', () => {
     expect([horseDeity.hover, horseDeity.teleport, horseDeity.hits, horseDeity.telegraph]).toEqual([null, true, HORSE_HITS, TELEGRAPH[4]]);
     expect(horseDeity.rest).toEqual(REST);
-    expect(horseDeity.won.gift).toBe('open-field');
+    expect(horseDeity.won.gift).toBe('triple-jump');
     expect(horseDeity.won.toast).toBe('toast.horseWon');
   });
 
@@ -329,7 +329,7 @@ describe('the horse deity: startle, calm and defeat', () => {
     expect(r.deity.state).toBe('Won');
     expect(r.deity.side).toBe('ally');
     expect(r.log.toasts).toContain('toast.horseWon');
-    expect(r.log.gifts).toEqual(['open-field']);
+    expect(r.log.gifts).toEqual(['triple-jump']);
     r.step(200);
     expect(r.deity.state).toBe('Won');
     expect(r.deity.alive).toBe(true);

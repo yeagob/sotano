@@ -240,6 +240,7 @@ export interface IntentSpec {
   absorb?: number;
   /** How the intention flies as three strands (combat/intents.ts): set from the `triad` and `spiral` stats. */
   formation?: Formation;
+  flightDamage?: boolean;
 }
 
 /** The shape of an intention's strands: a triangle that widens over the flight (`triad`, Rule of Three),

@@ -941,7 +941,7 @@ export function makePandaDeity(only?: readonly Kind[]): DeityDef {
     chase: PANDA_CHASE,
     won: {
       toast: 'sky.panda.won',
-      gift: 'still-sitting',
+      gift: 'self-distancing',
       play(ctx) {
         const m = mindOf(ctx);
         m.won = true;

@@ -800,6 +800,6 @@ export const elephantDeity: DeityDef = {
   ally: { act: 'trumpet', every: 6, cap: HITS },
   knock: 'sweep',
   chase: ELEPHANT_CHASE,
-  won: { toast: WON_TOAST, gift: 'long-memory', play: settle },
+  won: { toast: WON_TOAST, gift: 'like-water', play: settle },
   model: { body: BODY, head: HEAD, hw: 1.1, h: 3, progress: (parts, ratio) => poseModel(parts, ratio) },
 };

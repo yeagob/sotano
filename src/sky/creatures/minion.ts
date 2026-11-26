@@ -12,9 +12,11 @@
 
 import type { Polarity } from '../../combat/polarity';
 import type { DamageKind } from '../../core/damage';
+import { Freeze } from '../../core/freeze';
 import type { Rng } from '../../core/rng';
 import { nearest } from '../floors/graph';
 import { HINDRANCES } from '../hindrances';
+import { slowStep, waterPace, worldOf } from '../laws/water';
 import {
   TELEGRAPH, type CreatureDeps, type DeityApi, type Gait, type HindranceId, type HindranceParams, type MinionApi,
   type MinionCtx, type MinionDef, type MinionRule, type Place, type SkyActor, type SkyFloorPlan, type SkyHost, type Vec3,
@@ -69,6 +71,7 @@ export class Minion implements MinionApi {
   private back: Place | null = null;
   private helpT = 0;
   private owners = new Set<number>();
+  private readonly ice = new Freeze();
 
   constructor(
     readonly actor: SkyActor,
@@ -99,12 +102,34 @@ export class Minion implements MinionApi {
     this.enterSpawning();
   }
 
+  get frozen(): number { return this.ice.left; }
+
+  freeze(seconds: number): boolean {
+    const a = this.actor;
+    if (!a.body || a.state === SPAWNING || a.state === FADING) return false;
+    if (!this.ice.start(seconds)) return false;
+    const b = a.body;
+    b.vx = 0; b.vz = 0;
+    this.host.fx('motes', b.x, b.y + b.h / 2, b.z, 6);
+    return true;
+  }
+
   update(dt: number, deity: DeityApi | null, others: readonly SkyActor[]) {
     const a = this.actor;
     if (!a.body) return;
-    this.dt = dt;
     this.deity = deity;
     this.others = others;
+    if (this.ice.frozen) { this.ice.tick(dt); return; }
+    this.ice.tick(dt);
+    const b = a.body, x0 = b.x, z0 = b.z, was = a.state;
+    this.step(dt);
+    const moving = was !== SPAWNING && was !== FADING && a.state !== SPAWNING && a.state !== FADING;
+    if (moving) slowStep(b, x0, z0, waterPace(worldOf(this.host), b));
+  }
+
+  private step(dt: number) {
+    const a = this.actor, deity = this.deity;
+    this.dt = dt;
     a.t += dt;
     switch (a.state) {
       case SPAWNING: return this.spawning(dt);

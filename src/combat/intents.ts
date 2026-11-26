@@ -8,10 +8,25 @@ import type { IntentBounce, Formation, IntentSpec } from '../game/events';
 import { raycastVoxels, type VoxelHit } from '../physics/raycast';
 import type { Polarity } from './polarity';
 
+export const BASE_RADIUS = 0.12;
+
+export function distanceFactor(flown: number, max: number): number {
+  if (!(max > 0) || !Number.isFinite(flown)) return 1;
+  const u = Math.min(1, Math.max(0, flown / max));
+  return u <= 0.5 ? 0.5 + u : 2 * u;
+}
+
+export const flightReach = (spec: IntentSpec): number => spec.speed * spec.flight;
+
+export function flightDamage(spec: IntentSpec, flown: number): number {
+  return spec.damage * distanceFactor(flown, flightReach(spec)) * (spec.radius / BASE_RADIUS);
+}
+
 export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
   const triad = s.triad >= 1, spiral = s.spiral >= 1;
   return {
     ...(triad || spiral ? { formation: { triad, spiral } } : {}),
+    ...(s.flightDamage >= 1 ? { flightDamage: true } : {}),
     damage: s.damage,
     polarity,
     mining: s.mining,
@@ -19,7 +34,7 @@ export function intentFromStats(s: Stats, polarity: Polarity): IntentSpec {
     speed: 16 * s.shotSpeed,
     flight: 0.5 * s.range,
     gravity: 22 * s.gravity,
-    radius: 0.12 * s.size,
+    radius: BASE_RADIUS * s.size,
     pierce: 0,
     pierceTier: 0,
     phase: 0,
@@ -103,7 +118,8 @@ interface Intent { spec: IntentSpec; pos: THREE.Vector3; vel: THREE.Vector3; age
   /** Projections an aura touched, and the age until it may touch each again. */
   aura?: Map<number, number>;
   /** The element of the cell it was in last frame (`entered` fires when it changes). */
-  inEl: 'water' | 'lava' | 'fire' | null }
+  inEl: 'water' | 'lava' | 'fire' | null;
+  flown: number }
 
 /** Polarity (BESTIARY §1.1): both stay round, warm and yours; the negative one is darker, never cold. */
 const CORE_POSITIVE = new THREE.Color(pal('light.core'));
@@ -288,7 +304,7 @@ export class Intents {
 
   private add(spec: IntentSpec, pos: THREE.Vector3, vel: THREE.Vector3, rebounds: number, orbit?: Orbit) {
     if (this.list.length >= this.max) this.list.shift();
-    this.list.push({ spec, pos, vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, rebounds, look: intentLook(spec), lookSpec: spec, inEl: null, orbit });
+    this.list.push({ spec, pos, vel, age: 0, phased: null, aim: null, aimT: 0, calm: null, rebounds, look: intentLook(spec), lookSpec: spec, inEl: null, orbit, flown: 0 });
   }
 
   /** The rebound of an intention: the hooks see it, then its velocity is what they left. */
@@ -351,6 +367,8 @@ export class Intents {
         t.orbit.last.copy(_off);
       }
       const dist = step.length();
+      const flown = t.flown;
+      t.flown += dist;
       let dead = false;
 
       // against loose cubes: push them
@@ -360,9 +378,10 @@ export class Intents {
       const foe = seen >= 0 && t.calm && t.calm[0] === seen && t.age < t.calm[1] ? -1 : seen;
       if (foe >= 0) {
         const axis = h.mirrorAxis?.(foe) ?? null;
-        h.hitEnemy(foe, t.vel, t.spec);
+        const spec = t.spec.flightDamage ? { ...t.spec, damage: flightDamage(t.spec, flown) } : t.spec;
+        h.hitEnemy(foe, t.vel, spec);
         h.splash(t.pos, t.spec.color, true);
-        h.hit('actor', foe, t.pos, NO_NORMAL, t.vel, t.spec);
+        h.hit('actor', foe, t.pos, NO_NORMAL, t.vel, spec);
         if (axis) {
           if (axis === 'x') t.vel.x = -t.vel.x; else t.vel.z = -t.vel.z;
           t.calm = [foe, t.age + MIRROR_CALM];

@@ -70,6 +70,7 @@ export interface ItemApi {
    *  nothing was (not that fluid there, no room, or already one conversion this frame); -1 when a negative conversion into
    *  lava is refused because the player's body touches the section and no `lavaWalk` time is left. `source` names the practice. */
   convertFluid(x: number, y: number, z: number, from: 'water' | 'lava', to: 'water' | 'lava', cap: number, source: string): number;
+  tempWater(x: number, y: number, z: number, seconds: number): boolean;
   launch(spec: IntentSpec, x: number, y: number, z: number, dx: number, dy: number, dz: number): void;
   intentsHere(): number;
   tagCube(cube: number, tag: string): void;

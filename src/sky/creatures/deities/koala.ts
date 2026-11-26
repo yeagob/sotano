@@ -389,7 +389,7 @@ export const koalaDeity: DeityDef = {
   chase: KOALA_CHASE,
   won: {
     toast: 'toast.skyKoalaWon',
-    gift: 'co-regulation',
+    gift: 'guarding-the-centre',
     play(ctx) {
       // section 6 (provisional): it lets go of its branch; whether the branches then give way is open
       const b = ctx.deity.body;

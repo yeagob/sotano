@@ -4,8 +4,10 @@
 
 import type { Polarity } from '../../combat/polarity';
 import type { DamageKind } from '../../core/damage';
+import { Freeze, FREEZE_CADENCE } from '../../core/freeze';
 import type { Rng } from '../../core/rng';
 import { HINDRANCES } from '../hindrances';
+import { waterPace, worldOf } from '../laws/water';
 import { Chaser, type ChaseView } from './chase';
 import {
   MIN_TELEGRAPH, type AttackDef, type CreatureDeps, type CustomState, type DeityApi, type DeityCtx, type DeityDef,
@@ -34,7 +36,7 @@ const STILL_SPEED = 0.05;
 export const TELEPORTING = 'Teleporting';
 export const WON = 'Won';
 export const FREEZE = 2;
-export const FREEZE_GAP = 3;
+export const FREEZE_GAP = FREEZE_CADENCE;
 export const SHOT_FOR = 4;
 export const SETTLE_SPEED = 3;
 
@@ -100,8 +102,9 @@ export class Deity implements DeityApi {
   /** This attack run has drained already: a run drains once (guardians §6.6). Reset when a run begins. */
   private runDrained = false;
   readonly chaser: Chaser | null;
-  private frozenLeft = 0;
-  private freezeReady = 0;
+  private readonly ice = new Freeze();
+  private paceNow = 1;
+  private moveClock = 0;
   private shotClock = -Infinity;
   readonly freezes: number[] = [];
 
@@ -137,6 +140,7 @@ export class Deity implements DeityApi {
       far: min => self.farPlace(min),
       drain: n => self.drain(n),
       get attack() { return self.attack; },
+      pace: () => self.paceNow,
     };
     this.coreRecs = {
       Idle: { next: () => (this.inSight() ? 'Watching' : null) },
@@ -200,7 +204,7 @@ export class Deity implements DeityApi {
       [WON]: {
         enter: () => {
           this.chaser?.end();
-          this.frozenLeft = 0;
+          this.ice.end();
           def.won.play(this.ctx);
           if (def.won.toast) host.toast(def.won.toast);
           if (def.won.gift) host.gift(def.won.gift, plan.seat.x + 0.5, plan.seat.y, plan.seat.z + 0.5);
@@ -217,7 +221,9 @@ export class Deity implements DeityApi {
   get stage(): Stage { return this.level; }
   get won(): boolean { return this.wonFlag; }
 
-  get frozen(): number { return this.frozenLeft; }
+  get frozen(): number { return this.ice.left; }
+
+  get pace(): number { return this.paceNow; }
 
   get targeted(): boolean { return !this.wonFlag && this.clock - this.shotClock <= SHOT_FOR; }
 
@@ -228,8 +234,7 @@ export class Deity implements DeityApi {
   }
 
   freeze(seconds = FREEZE): boolean {
-    if (this.wonFlag || this.frozenLeft > 0 || this.clock < this.freezeReady) return false;
-    this.frozenLeft = seconds;
+    if (this.wonFlag || !this.ice.start(seconds)) return false;
     this.freezes.push(this.clock);
     const b = this.actor.body;
     this.host.fx('motes', b.x, b.y + b.h / 2, b.z, 10);
@@ -255,13 +260,17 @@ export class Deity implements DeityApi {
   }
 
   update(dt: number) {
-    if (this.frozenLeft > 0) {
+    if (this.ice.frozen) {
       this.clock += dt;
-      this.frozenLeft = Math.max(0, this.frozenLeft - dt);
-      if (this.frozenLeft === 0) this.freezeReady = this.clock + FREEZE_GAP;
+      this.moveClock += dt;
+      this.ice.tick(dt);
       this.sync();
       return;
     }
+    this.ice.tick(dt);
+    this.paceNow = waterPace(worldOf(this.host), this.actor.body);
+    const move = dt * this.paceNow;
+    this.moveClock += move;
     const p = this.host.player().body;
     const moving = Math.hypot(p.vx, p.vz) > STILL_SPEED || !p.onGround;
     this.stillFor = moving ? 0 : this.stillFor + dt;
@@ -276,8 +285,8 @@ export class Deity implements DeityApi {
       const next = this.recOf(from).next();
       if (next !== null) this.go(next);
     }
-    if (this.chaser) this.chaser.tick(dt, this.chaseView(), this.chaseFree());
-    if (this.wonFlag) this.settle(dt);
+    if (this.chaser) this.chaser.tick(move, this.chaseView(), this.chaseFree());
+    if (this.wonFlag) this.settle(move);
     this.placeBody(dt);
     this.sync();
   }
@@ -408,11 +417,11 @@ export class Deity implements DeityApi {
   /** Levitation: a bob and a slow drift round the home. A walking deity (hover null) stays where its files put it. */
   private placeBody(_dt: number) {
     if (!this.anchored || this.def.hover === null) return;
-    const a = this.clock * DRIFT_RATE;
+    const a = this.moveClock * DRIFT_RATE;
     const b = this.actor.body;
     b.x = this.home.x + DRIFT_RADIUS * Math.cos(a);
     b.z = this.home.z + DRIFT_RADIUS * Math.sin(a);
-    b.y = this.home.y + this.def.hover + BOB * Math.sin(2 * Math.PI * BOB_HZ * this.clock);
+    b.y = this.home.y + this.def.hover + BOB * Math.sin(2 * Math.PI * BOB_HZ * this.moveClock);
     b.vx = 0; b.vy = 0; b.vz = 0;
   }
 

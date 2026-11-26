@@ -113,6 +113,7 @@ export interface Enemy extends Actor {
   stage: number;
   hold: number;
   frozen: number;
+  thaw: number;
   fear: number;
   aimX: number; aimZ: number;
   flyY: number;

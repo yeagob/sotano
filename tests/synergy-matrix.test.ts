@@ -129,6 +129,7 @@ function sandbox() {
     burst: () => {},
     chime: () => {},
     convertFluid: () => 0,
+    tempWater: () => true,
   };
   const inv = new Inventory(new Map(ITEMS.map(i => [i.id, i])), SYNERGIES, stats, () => bus, () => api);
   return { bus, stats, inv, calls };

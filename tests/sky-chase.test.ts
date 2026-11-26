@@ -157,10 +157,11 @@ describe('the deities hunt the player (#357)', () => {
       const fresh = r.runner.active().filter(h => h.source === d.id && h.phase === 'telegraph' && !seen.has(h.run));
       expect(fresh.length, a).toBeGreaterThan(0);
       expect(Math.max(...fresh.map(h => h.left))).toBeGreaterThanOrEqual(TELEGRAPH[DEITIES[a].floor - 1] - 2 * DT);
-      r.run(TELEGRAPH[DEITIES[a].floor - 1], at);
+      const slow = 1 / m.pace;
+      r.run(TELEGRAPH[DEITIES[a].floor - 1] * slow, at);
       const low = d.body.y - r.body.y;
       expect(low < DIVE_OVER + (DEITIES[a].hover ?? 0) + 1 || low < pre - 1, `${a} came down from ${pre} to ${low}`).toBe(true);
-      r.run(2, at);
+      r.run(4 * slow, at);
       expect(d.body.y - r.body.y, `${a} rose again`).toBeGreaterThan(low);
     });
 
@@ -210,7 +211,7 @@ describe('the deities hunt the player (#357)', () => {
     for (let i = 0; i < DEITIES.panda.hits + 10; i++) r.shoot(d);
     r.run(10, at);
     expect([d.side, d.state]).toEqual(['ally', 'Won']);
-    expect(r.log.gifts).toEqual(['still-sitting']);
+    expect(r.log.gifts).toEqual(['self-distancing']);
     const seat = r.realm.plans.floors[0].seat;
     expect(flat(d.body, { x: seat.x + 0.5, z: seat.z + 0.5 })).toBeLessThan(2);
   });

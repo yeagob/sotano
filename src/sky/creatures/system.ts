@@ -174,6 +174,13 @@ export class SkyCreatures implements SkyCreaturesApi {
     }
   }
 
+  freeze(id: number, seconds: number): boolean {
+    const m = this.minionById.get(id);
+    if (m) return !m.actor.parked && m.minion.freeze(seconds);
+    const e = this.byId.get(id);
+    return !!e && !e.actor.parked && e.deity.freeze(seconds);
+  }
+
   /** Only the creatures of `floor` move; the others are parked (hidden, not updated) until the player comes back. */
   update(dt: number, floor: number) {
     for (const e of this.deities) {
