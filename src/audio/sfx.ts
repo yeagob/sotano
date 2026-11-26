@@ -18,14 +18,47 @@ export function unlockAudio() {
   ctx = new AudioContext();
   master = ctx.createGain();
   master.gain.value = 0.35;
-  master.connect(ctx.destination);
+  // the slow's low-pass sits after the master; open at the Nyquist frequency (a Butterworth curve, flat) it is off
+  slowFilter = ctx.createBiquadFilter();
+  slowFilter.type = 'lowpass';
+  slowFilter.Q.value = Math.SQRT1_2;
+  slowFilter.frequency.value = ctx.sampleRate / 2;
+  master.connect(slowFilter).connect(ctx.destination);
+  slowScale = 1;
 }
+
+/** Walk Slowly (docs/design/built/practices/body/WALK-SLOWLY.md): the low-pass cutoff while the world runs slowed. */
+export const SLOW_CUTOFF = 900;
+let slowFilter: BiquadFilterNode | null = null;
+let slowScale = 1;
+let voicePitch = 1;
+
+/** What the sound does at a world time scale: at 1 nothing (pitch 1, no cutoff); below 1 every voice is pitched down by the
+ *  scale and lasts 1 / scale as long, and the mix is low-passed at SLOW_CUTOFF. */
+export function slowSound(scale: number): { pitch: number; cutoff: number | null } {
+  return scale < 1 ? { pitch: scale, cutoff: SLOW_CUTOFF } : { pitch: 1, cutoff: null };
+}
+
+/** The world's time scale this frame (Game.frame): the sound follows it. Only a change touches the filter. */
+export function setWorldTimeScale(scale: number) {
+  const s = slowSound(scale);
+  voicePitch = s.pitch;
+  if (scale === slowScale) return;
+  slowScale = scale;
+  if (!ctx || !slowFilter) return;
+  slowFilter.frequency.cancelScheduledValues(ctx.currentTime);
+  slowFilter.frequency.setTargetAtTime(s.cutoff ?? ctx.sampleRate / 2, ctx.currentTime, 0.08);
+}
+
+/** The pitch every voice is played at now (1 unless the world is slowed). */
+export function soundPitch() { return voicePitch; }
 
 /** The context once audio is unlocked, else null: for sound parts that synthesise their own voices (src/audio/sky/). */
 export function audioContext(): AudioContext | null { return ctx; }
 
 function tone(freq: number, dur: number, type: OscillatorType, vol: number, slide = 0, out: AudioNode = master) {
   if (!ctx) return;
+  if (voicePitch !== 1) { freq *= voicePitch; dur /= voicePitch; }
   const t = ctx.currentTime;
   const o = ctx.createOscillator(), g = ctx.createGain();
   o.type = type;
@@ -41,6 +74,7 @@ function tone(freq: number, dur: number, type: OscillatorType, vol: number, slid
  *  the speaker clicks on the first sample, which is wrong for a sound that repeats (a gust, not a tick). */
 function noise(dur: number, vol: number, freq: number, q = 1, out: AudioNode = master, attack = 0) {
   if (!ctx) return;
+  if (voicePitch !== 1) { freq *= voicePitch; dur /= voicePitch; attack /= voicePitch; }
   const t = ctx.currentTime;
   const len = Math.ceil(ctx.sampleRate * dur);
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);

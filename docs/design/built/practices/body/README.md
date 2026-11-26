@@ -30,5 +30,5 @@ The folder holds the practices whose first path tag is body. Practices that also
 
 ## Open questions in this folder
 
-- [Walk Slowly](WALK-SLOWLY.md): the firing point of the player's shots (the owner's next topic), its feedback and recipe.
+- [Walk Slowly](WALK-SLOWLY.md): the depth of the slowed sound, its visual feedback and recipe.
 - [Flow](FLOW.md): Naming N7: the name is the central term of the credited book. Verify whether the author coined it; if so, the lore rule (Caution) applies. The owner decides.
