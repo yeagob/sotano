@@ -1,6 +1,7 @@
 // The running and crouching body (docs/design/built/practices/RUN-AND-CROUCH.md). Pure functions over the
 // voxel solid test, so the tests drive them with plain numbers.
 
+import * as THREE from 'three';
 import type { Body } from '../physics/voxel-collide';
 
 type Solid = (x: number, y: number, z: number) => boolean;
@@ -15,6 +16,14 @@ export const EYE_CROUCH = EYE_STAND - 1;
 /** Horizontal speed multipliers (on top of the moveSpeed stat). Crouching wins over running. */
 export const RUN_SPEED = 1.45;
 export const CROUCH_SPEED = 0.45;
+
+/**
+ * Where an intention leaves the body: from the eye, a little to the side of the casting hand, a little below and ahead.
+ * The eye drops with the crouch (EYE_CROUCH), so a crouched body casts from its crouched height (Walk Slowly, #364).
+ */
+export function castOrigin(eye: THREE.Vector3, right: THREE.Vector3, side: number, dir: THREE.Vector3): THREE.Vector3 {
+  return eye.clone().addScaledVector(right, 0.18 * side).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
+}
 
 /** A crouched body takes half the contact damage of a projection, rounded up to whole points. */
 export function crouchedContact(points: number): number {

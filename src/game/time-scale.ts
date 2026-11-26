@@ -3,7 +3,8 @@
 //  - Kairos stops it (game/kairos.ts): the stopped frame gets the real dt for its own countdown and nothing else moves.
 //  - Walk Slowly (the `walkSlow` stat) halves it while the body is crouched and on the ground: every system the frame
 //    steps (the body, intentions, projections, loose cubes, elements, doors, timers) gets the halved dt.
-// The HUD, the input, the menus and the audio mixer are stepped outside the simulation and keep the real dt.
+// The HUD, the input and the menus are stepped outside the simulation and keep the real dt. The sound follows the scale on
+// its own terms (audio/sfx.ts `setWorldTimeScale`: pitch down and a low-pass).
 
 /** The world's speed while the Roots walks slowly: crouched, on the ground, holding the practice. */
 export const WALK_SLOW_SCALE = 0.5;

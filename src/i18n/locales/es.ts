@@ -1441,7 +1441,7 @@ export const ES: Catalog = {
       'walk-slow': {
         name: 'Camina Despacio',
         description: 'La lentitud no es quedarse atrás: es negarse a la prisa. Dóblate y quédate cerca del suelo, y la prisa del mundo se afloja a tu alrededor hasta que puedes ver todo lo que se mueve.',
-        effect: 'Agachado y con los pies en el suelo, todo el mundo va al 50% de velocidad: las proyecciones y sus disparos, tus intenciones, los bloques sueltos, los elementos y tu propio cuerpo (agachado caminas al 22,5% del paso normal). Levantarte o dejar el suelo lo termina al instante. El agachado es de la Postura del niño: sin ella no puedes agacharte.',
+        effect: 'Agachado y con los pies en el suelo, todo el mundo va al 50% de velocidad: las proyecciones y sus disparos, tus intenciones, los bloques sueltos, los elementos y tu propio cuerpo (agachado caminas al 22,5% del paso normal). Tus intenciones salen desde tu altura agachado, y el sonido se ralentiza y se oscurece con el mundo. Levantarte o dejar el suelo lo termina al instante. Te da el agachado de la Postura del niño si no la tienes: pulsa C para agacharte y otra vez para levantarte, o mantén Control (R3, o desliza hacia abajo desde el borde inferior derecho, alterna).',
         inspiredBy: 'Santiago Dopazo: «El acto más revolucionario que puedes llevar a cabo es caminar despacio»',
       },
       chunking: {

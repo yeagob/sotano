@@ -8,6 +8,8 @@ import { Kairos, KAIROS_STOP_SECONDS } from '../src/game/kairos';
 import { Player, type PlayerHooks } from '../src/entities/player';
 import { BASE_STATS, computeStats, type Stats } from '../src/core/stats';
 import { DebrisSystem } from '../src/physics/debris';
+import { castOrigin, EYE_CROUCH, EYE_STAND } from '../src/entities/stance';
+import { SLOW_CUTOFF, setWorldTimeScale, slowSound, soundPitch } from '../src/audio/sfx';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import distraction from '../src/content/enemies/distraction';
 import type { Actor } from '../src/entities/actors';
@@ -100,11 +102,25 @@ describe("the player's own body under the scale", () => {
     expect(r.frame().scale).toBe(1);
   });
 
-  it("without Child's Pose the body cannot crouch, so the practice alone never slows the world", () => {
-    const r = rig({ crouch: 0, walkSlow: 1 });
+  it("the practice alone crouches and slows: its own crouch stat stands in for Child's Pose", () => {
+    const def = ITEM_BY_ID.get('walk-slow')!;
+    const r = rig(computeStats(def.stats!.map(m => ({ ...m, source: def.id }))));
     r.raw(DT);
-    expect(r.p.crouching).toBe(false);
-    expect(r.frame().scale).toBe(1);
+    expect(r.p.crouching).toBe(true);
+    expect(r.frame().scale).toBe(0.5);
+  });
+
+  it('a crouched body casts from its crouched height: one block lower than standing', () => {
+    const r = rig({ crouch: 1, walkSlow: 1 });
+    const dir = r.p.forward, right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+    const standing = castOrigin(r.p.eye, right, 1, dir);
+    r.raw(DT);
+    expect(r.p.crouching).toBe(true);
+    const crouched = castOrigin(r.p.eye, right, 1, dir);
+    expect(r.p.body.y).toBe(1);                       // on the same ground, so only the eye moved
+    expect(standing.y).toBeCloseTo(1 + EYE_STAND - 0.12, 9);
+    expect(crouched.y).toBeCloseTo(1 + EYE_CROUCH - 0.12, 9);
+    expect(standing.y - crouched.y).toBeCloseTo(EYE_STAND - EYE_CROUCH, 9);
   });
 
   it('standing up ends it, and without the practice the crouch does nothing to time', () => {
@@ -215,14 +231,16 @@ describe('determinism without the practice', () => {
 describe('the practice Walk Slowly', () => {
   const def = ITEM_BY_ID.get('walk-slow')!;
 
-  it("is a valid quality 4 body practice that gives the slow and not the crouch (Child's Pose gives it, #364)", () => {
+  it("is a valid quality 4 body practice that gives the slow and the crouch of Child's Pose (#364)", () => {
     expect(def).toBeDefined();
     expect(validateItem(def)).toEqual([]);
     expect(def.quality).toBe(4);
     expect(def.tags).toEqual(['body', 'movement']);
     const s = computeStats(def.stats!.map(m => ({ ...m, source: def.id })));
     expect(s.walkSlow).toBe(1);
-    expect(s.crouch).toBe(0);
+    expect(s.crouch).toBe(1);
+    const both = computeStats([...def.stats!, ...ITEM_BY_ID.get('balasana')!.stats!].map(m => ({ ...m, source: 'x' })));
+    expect(both.crouch).toBe(1);
   });
 
   it('is never drawn: its only pool is the unlock, and no pool or reservation hands it out', () => {
@@ -248,5 +266,20 @@ describe('the practice Walk Slowly', () => {
     expect(tr?.inspiredBy).toContain('Santiago Dopazo');
     expect(es.messages['teach.walk-slow.quote']).toBe('El acto más revolucionario que puedes llevar a cabo es caminar despacio.');
     for (const c of LOCALES) for (const k of ['teach.walk-slow.quote', 'teach.walk-slow.lesson', 'stat.walkSlow'] as const) expect(c.messages[k], `${c.code} ${k}`).toBeTruthy();
+  });
+});
+
+describe('the sound under the slow', () => {
+  it('is untouched at full speed, and pitched down by the scale and low-passed while slowed', () => {
+    expect(slowSound(1)).toEqual({ pitch: 1, cutoff: null });
+    expect(slowSound(WALK_SLOW_SCALE)).toEqual({ pitch: 0.5, cutoff: SLOW_CUTOFF });
+    expect(SLOW_CUTOFF).toBeLessThan(2000);
+  });
+
+  it('follows the scale the game sets each frame, and comes back to 1 when the slow ends', () => {
+    setWorldTimeScale(worldFrame(DT, ground()).kind === 'running' ? WALK_SLOW_SCALE : 1);
+    expect(soundPitch()).toBe(0.5);
+    setWorldTimeScale(1);
+    expect(soundPitch()).toBe(1);
   });
 });

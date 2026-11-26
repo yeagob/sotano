@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
-import { easeMaster, setMasterTarget, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
+import { easeMaster, setMasterTarget, setWorldTimeScale, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
 import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
@@ -59,7 +59,7 @@ import { Kitchens } from '../entities/kitchens';
 import { COOKS, cook as kitchenCook, mealOf, newKitchen, type Kitchen } from './kitchen';
 import { Player, nextCastSide, type Carried, type PlayerMedium } from '../entities/player';
 import { dashTouches, DASH_DAMAGE, DASH_MINING } from '../entities/dash';
-import { crouchedContact } from '../entities/stance';
+import { castOrigin, crouchedContact } from '../entities/stance';
 import { Input, activeDevice, onDeviceChange } from '../input/input';
 import { DOUBLE_TAP_MS } from '../input/bindings';
 /** Degrees the field of view widens at the middle of a dash (DASH.md §4). */
@@ -3523,7 +3523,7 @@ export class Game {
     const dir = p.forward;
     const side = this.castHand();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
-    const from = p.eye.addScaledVector(right, 0.18 * side).add(new THREE.Vector3(0, -0.12, 0)).addScaledVector(dir, 0.3);
+    const from = castOrigin(p.eye, right, side, dir);
     this.intents.fire(ev.intent, from, dir, new THREE.Vector3(p.body.vx, 0, p.body.vz));
     this.enemies.mirror(p.body.x, p.body.z, 16, dir.x, dir.y, dir.z);
     this.hands.fire(side);
@@ -5273,6 +5273,8 @@ export class Game {
     const running = playing && !this.player.dead && !this.hud.screenOpen && !this.hud.tollOpen && !this.hud.sanctuaryOpen && !this.transitioning;
     // the sandbox moves in fixed steps, one per frame, so a session can be replayed
     if (running && !this.hud.presenceOfferOpen && !this.paused) this.guard('simulate', () => this.simulate(this.sandbox ? SANDBOX_DT : dt));
+    // Walk Slowly: the sound follows the slowed world; menus, pauses and Kairos's stop sound as they always did
+    setWorldTimeScale(running && !this.paused && !this.kairos.stopped ? this.timeScale : 1);
     if (this.below) { this.stream(); this.chunks.streamOuter(this.player.eye.x, this.player.eye.z); } else this.sky!.stream(this.player.eye);
     this.chunks.update();
     const p = this.player, e = p.eye;
