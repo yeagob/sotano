@@ -48,7 +48,7 @@ Both are `hold` actions in `BINDINGS`, live in `play` on every device. The keybo
 
 On touch **the crouch is the body button** (issue #377, owner: the crouch had no button on the phone): a context button in the right thumb's arc, above jump and left of throw, shown only while a practice gives the crouch or the dash. A press switches the crouch on, and while crouched the button is ringed in gold and a press stands you up. With Irimi too, it kneels while the stick rests and dashes while the stick moves ([TOUCH.md §1.1](../../../architecture/input/TOUCH.md)). Its glyph is Child's Pose's icon, or Irimi's when a press would dash. The old **swipe down from the bottom twelfth of the right side** still toggles the crouch and takes back the look it turned; it sat where the phone's home gesture lives, so it was hard to find and to make.
 
-The pause card shows both rows always (`CONTROL_ROWS`), with "(with Fartlek or a Stride Tonic)" and "(with Child's Pose or a Folding Tincture)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
+The pause card's controls list shows the run row only while the `run` stat is held, and the crouch row only while `crouch` is, so a player without either sees neither row (issue #349; [input](../../../architecture/input/README.md)). The rows read, with "(with Fartlek or a Stride Tonic)" and "(with Child's Pose or a Folding Tincture)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
 
 ## 6. Sandbox
 
