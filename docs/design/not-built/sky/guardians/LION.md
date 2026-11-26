@@ -191,7 +191,7 @@ Status: provisional, to confirm. The owner did not name the special attacks; eve
 
 ### B5. Minions
 
-- **How many:** at most target 6 on the floor, allies included. At most target 4 hostile.
+- **How many:** at most target 60 on the floor, allies included. At most target 40 hostile (#357, section B10; was 6 and 4).
 - **Spawn:** from two shade rocks on the plain. The grass round a rock parts and a low growl grows for target 1.5 s, and a lion walks out. One every target 14 s while fewer than 4 are hostile, and two at each rally.
 - **Movement (the lion's own):**
   - keeps low and stalks: target 1 block a second while it is in the player's view (within target 60 degrees of the aim), target 3.5 blocks a second out of it;
@@ -248,14 +248,25 @@ Every value in the middle column is a target. The right column is the built game
 | Recovery | 2 s (2.5 s after a pounce) | up to about 1 s |
 | Freeze | 1.5 s (minion 1 s) | no built freeze; the built Paralysis projection slows |
 | Rest between attacks | 3, 2.5, 2 s by stage | a short walk, shorter each phase |
-| Positive hits | 42 | 293 health: about 84 bad hits |
+| Positive hits | 1920 (owner, #357) | 293 health: about 84 bad hits |
 | Hits to turn a minion | 4 | 5 good hits for a projection |
-| Minions at once | 6 (4 hostile) | no built equivalent |
+| Minions at once | 60 (40 hostile), six at a time every 3 s (#357) | no built equivalent |
 | Widest gap | 5 blocks, bridged | flat jump about 2.7 blocks |
 | Floor size | radius 26, 36 high | trunk story 22 high |
 | Special attacks (provisional) | 6: 3 drain spirit (12, 14, 16 of 100), 1 captures (3 s, one practice), 2 slow or move | no built equivalent |
 | Special telegraphs | 1.0 s to slow or move, 1.2 s to drain, 1.5 s to capture | windup 0.4 to 0.9 s |
 | Stare-down timer (provisional) | 5 s of looking away (owner's range 4 to 6 s); falls back over 1 s when the player looks back; looking at the lion within 30 degrees of the view's centre | no built equivalent |
+
+### B10. The hunt (#357)
+
+Status: built as a target; the numbers are provisional until the owner plays them. The shared rules are in [guardians, section 8](README.md#8-the-hunt-357).
+
+- **Follows the player** at 9 blocks, 4 over their feet (plus its 1 hover), circling at 0.3 rad/s; it backs away within 5. Glide 4 blocks/s, dash 10; its pacing, glides and Pounce now start from where it hunts, not from the Sunning Ledge.
+- **When a hit counts** it dodges 4 blocks to the side and 1.5 up (at most every 1.5 s); its next attack comes within 0.8 s.
+- **Swipe (its dive):** every 4.5 s of free time a fan of 7 blocks behind the player, aimed at the lion (1.0 s telegraph); it drops over the spot and the fan pulls the player 9 toward it, off ledges.
+- **Warded wind-up:** while it telegraphs, a hit counts only from within 5 blocks.
+- **Holds still** in its own glides (Pouncing, Scruffing).
+- **Its herd:** 60 at most, 40 hostile (ten times the first count). Effects three times stronger: a pounce's ring pushes 15 (was 5) and a roar freezes for 3 s (was 1).
 
 ## Open questions
 

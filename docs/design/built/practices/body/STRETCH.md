@@ -1,8 +1,8 @@
 # Stretch
 
-Up: [body](README.md) · Status: built in the code, not yet in the catalogue (waiting for the owner's credit, `inspiredBy`).
+Up: [body](README.md) · Status: built.
 
-Stretch is a body practice (quality 1, treasure rooms). Its effect is the `magnet` stat: 3 blocks.
+Stretch is a body practice (quality 1, treasure rooms), inspired by yoga and its stretching postures. Its effect is the `magnet` stat: 3 blocks.
 
 - Keys, bombs and hearts lying on the floor within the magnet's reach fly to the player's chest at 9 blocks a second, after their pop-in.
 - Practices (items on pedestals) and parts are never pulled.

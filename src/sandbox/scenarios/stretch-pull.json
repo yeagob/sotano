@@ -1,0 +1,39 @@
+{
+  "rows": [
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    ".............",
+    "............."
+  ],
+  "player": [
+    5,
+    3,
+    3
+  ],
+  "god": true,
+  "items": [
+    "stretch"
+  ],
+  "ticks": 120,
+  "report": [
+    0,
+    60,
+    120
+  ],
+  "note": "Stretch: a key on the floor 2 blocks away flies to the player and is taken",
+  "actions": [
+    {
+      "t": 0,
+      "do": "drop",
+      "kind": "key",
+      "at": [
+        7,
+        3,
+        3
+      ]
+    }
+  ]
+}

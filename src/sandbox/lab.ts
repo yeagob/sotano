@@ -140,6 +140,7 @@ function act(game: Game, a: Action, o: Vec3, fire: (ticks: number) => void, erro
     case 'lose': game.loseItem(a.item); break;
     case 'hurt': game.damagePlayer(a.amount, 'item', 'lab', game.player.id); break;
     case 'collect': game.collect(a.kind, a.kind === 'heart' ? 2 : 1); break;
+    case 'drop': { const [x, y, z] = w(a.at); game.pickups.add(a.kind, x + 0.5, y + 0.5, z + 0.5, game.room); break; }
     case 'tp': { const [x, y, z] = w(a.at); p.spawnAt(x + 0.5, y, z + 0.5); break; }
     case 'look': {
       const [x, y, z] = w(a.at), e = p.eye;

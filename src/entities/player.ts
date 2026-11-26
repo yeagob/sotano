@@ -7,6 +7,7 @@ import type { Input } from '../input/input';
 import { boxHits, moveBody, type Body } from '../physics/voxel-collide';
 import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER, STEER_RUNG } from '../physics/jump';
 import type { AirForces, AirQuery, AirVec } from '../physics/air-forces';
+import { Freeze } from '../core/freeze';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
 import type { PartDef } from '../content/parts';
@@ -132,6 +133,8 @@ export class Player implements Actor {
   wishX = 0; wishZ = 0;
   /** Seconds the body is held in place (SKY.md §6): move and jump input are ignored; looking and shooting are not. */
   heldT = 0;
+  readonly ice = new Freeze();
+  airShield = false;
   /** Air jumps made since the last landing: the `airJumps` stat minus this is what is left, and the next
    *  one climbs to step `airStep + 1` of the ladder. Landing sets it back to 0. */
   airStep = 0;
@@ -206,6 +209,7 @@ export class Player implements Actor {
     this.carrying = null;
     this.pushX = this.pushZ = 0;
     this.heldT = 0;
+    this.ice.reset();
     this.airStep = 0;
     this.jumpBuffer = 0;
     this.coyote = 0;
@@ -285,8 +289,10 @@ export class Player implements Actor {
    * `vy` adds to the vertical speed, which gravity takes back. A steady force calls it every frame with
    * `acceleration · dt`.
    */
+  get shielded(): boolean { return this.airShield && !this.body.onGround && !this.dead; }
+
   push(vx: number, vy: number, vz: number) {
-    if (!Number.isFinite(vx + vy + vz) || this.carrying) return;
+    if (!Number.isFinite(vx + vy + vz) || this.carrying || this.shielded) return;
     this.pushX += vx; this.pushZ += vz;
     this.body.vx += vx; this.body.vz += vz;
     this.body.vy += vy;
@@ -294,7 +300,17 @@ export class Player implements Actor {
 
   /** Hold the body for `s` seconds (paralysis): no walking or jumping; looking and shooting stay. The longer hold wins. */
   hold(s: number) {
-    if (s > 0) this.heldT = Math.max(this.heldT, s);
+    if (s > 0 && !this.shielded) this.heldT = Math.max(this.heldT, s);
+  }
+
+  slow(s: number) {
+    if (s > 0 && !this.shielded) this.slowT = Math.max(this.slowT, s);
+  }
+
+  freeze(s: number): boolean {
+    if (this.shielded || !this.ice.start(s)) return false;
+    this.heldT = Math.max(this.heldT, s);
+    return true;
   }
 
   /** Carry the body to `to` over `s` seconds (a trunk, a lifting gust): input is held while it moves, gravity waits. */
@@ -329,6 +345,7 @@ export class Player implements Actor {
     this.slowT = Math.max(0, this.slowT - dt);
     this.muteT = Math.max(0, this.muteT - dt);
     this.heldT = Math.max(0, this.heldT - dt);
+    this.ice.tick(dt);
     const b = this.body;
     this.dashStarted = false;
     this.dashCool = Math.max(0, this.dashCool - dt);

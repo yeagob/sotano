@@ -12,7 +12,7 @@ export type StatName =
   | 'moveSpeed' | 'jump' | 'airJumps' | 'wallJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
-  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'walkSlow' | 'magnet';
+  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'walkSlow' | 'magnet' | 'flightDamage' | 'freezeSphere' | 'airShield';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -60,6 +60,9 @@ export const BASE_STATS: Stats = {
   recipes: 0,      // 1 = the Recipe Book opens (Book of Secrets, src/game/recipe-book.ts; 0 = its key and tab do nothing)
   walkSlow: 0,     // 1 = crouched on the ground, the whole world runs at half speed (Walk Slowly, src/game/time-scale.ts; 0 = no slow)
   magnet: 0,
+  flightDamage: 0,
+  freezeSphere: 0,
+  airShield: 0,
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -95,6 +98,9 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   spiral: [0, 1],
   recipes: [0, 1],
   walkSlow: [0, 1],
+  flightDamage: [0, 1],
+  freezeSphere: [0, 1],
+  airShield: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -136,6 +142,9 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   spiral: v => (v < 1 ? t('unit.off') : t('unit.on')),
   recipes: v => (v < 1 ? t('unit.off') : t('unit.on')),
   walkSlow: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  flightDamage: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  freezeSphere: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  airShield: v => (v < 1 ? t('unit.off') : t('unit.on')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

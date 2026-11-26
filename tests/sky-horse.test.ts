@@ -112,7 +112,7 @@ function only(r: ReturnType<typeof rig>, ids: HorseAttackId[]) {
 }
 
 describe('the horse deity: data (HORSE.md B9)', () => {
-  it('walks (no levitation), teleports, takes 48 hits, telegraphs for 0.9 s and rests 2.5, 2, 1.5', () => {
+  it('walks (no levitation), teleports, takes 3840 hits, telegraphs for 0.9 s and rests 2.5, 2, 1.5', () => {
     expect([horseDeity.hover, horseDeity.teleport, horseDeity.hits, horseDeity.telegraph]).toEqual([null, true, HORSE_HITS, TELEGRAPH[4]]);
     expect(horseDeity.rest).toEqual(REST);
     expect(horseDeity.won.gift).toBe('triple-jump');
@@ -230,8 +230,9 @@ describe('the horse deity: special attacks and the spirit gate', () => {
     for (const moving of [true, false]) {
       const r = rig(towardCentre(10));
       r.step();
-      // 32 of 48 hits: the third stage, where Herd panic enters
-      r.hit(32);
+      // 2560 of 3840 hits: the third stage, where Herd panic enters
+      r.hit(2560);
+      r.brain().settleHits();
       r.brain().only = ['panic'];
       r.brain().calmReady = false;
       r.until(() => r.deity.state === 'Attacking', 400);
@@ -245,7 +246,8 @@ describe('the horse deity: special attacks and the spirit gate', () => {
   it('Gallop line drains 16 from a player it touches, once', () => {
     const r = rig(towardCentre(10));
     r.step();
-    r.hit(16);
+    r.hit(1280);
+    r.brain().settleHits();
     r.brain().only = ['gallop'];
     r.until(() => r.deity.state === 'Attacking', 400);
     r.step(1);
@@ -262,7 +264,8 @@ describe('the horse deity: special attacks and the spirit gate', () => {
   it('Snaking captures a player who stays inside the circle (3 s, one practice), 0.5 s after the floor’s telegraph', () => {
     const r = rig(towardCentre(8));
     r.step();
-    r.hit(32);
+    r.hit(2560);
+    r.brain().settleHits();
     r.brain().only = ['snaking'];
     r.brain().calmReady = false;
     r.until(() => r.deity.state === 'Attacking', 600);
@@ -280,7 +283,8 @@ describe('the horse deity: special attacks and the spirit gate', () => {
   it('a player who leaves the circle before it closes is not captured', () => {
     const r = rig(towardCentre(8));
     r.step();
-    r.hit(32);
+    r.hit(2560);
+    r.brain().settleHits();
     r.brain().only = ['snaking'];
     r.brain().calmReady = false;
     r.until(() => r.deity.state === 'Attacking', 600);
@@ -318,7 +322,7 @@ describe('the horse deity: startle, calm and defeat', () => {
     expect(r.deity.hits).toBe(7);
   });
 
-  it('48 positive hits win it: its outcome, the toast, the gift, and the herd goes calm; it never dies', () => {
+  it('3840 positive hits win it: its outcome, the toast, the gift, and the herd goes calm; it never dies', () => {
     const r = rig(towardCentre(10));
     r.step();
     r.hit(HORSE_HITS);
@@ -343,7 +347,7 @@ describe('the horse deity: startle, calm and defeat', () => {
     const run = () => {
       const r = rig(towardCentre(10));
       const out: number[] = [];
-      for (let i = 0; i < 400; i++) { r.step(); if (i === 150) r.hit(16); if (i % 20 === 0) out.push(r.deity.body.x, r.deity.body.y, r.deity.body.z); }
+      for (let i = 0; i < 400; i++) { r.step(); if (i === 150) r.hit(1280); if (i % 20 === 0) out.push(r.deity.body.x, r.deity.body.y, r.deity.body.z); }
       return [out, r.log.starts.map(s => `${s.id}@${s.t.toFixed(2)}`)];
     };
     expect(run()).toEqual(run());
@@ -373,8 +377,9 @@ describe('the herd (B5)', () => {
     r.brain().calmReady = false;
     r.until(() => SENT.has(r.m.id), 600);
     expect(SENT.has(r.m.id)).toBe(true);
-    r.until(() => r.log.starts.some(s => s.id === 'knockback' && s.source === r.m.id), 400);
-    const kick = r.log.starts.find(s => s.id === 'knockback' && s.source === r.m.id)!;
+    const sent = r.log.starts.length;
+    r.until(() => r.log.starts.slice(sent).some(s => s.id === 'knockback' && s.source === r.m.id), 400);
+    const kick = r.log.starts.slice(sent).find(s => s.id === 'knockback' && s.source === r.m.id)!;
     expect(kick.telegraph).toBe(TELEGRAPH[4]);
     expect(SENT.has(r.m.id)).toBe(false);
     const before = r.log.pushes.length;

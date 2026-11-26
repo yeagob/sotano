@@ -99,7 +99,7 @@ class Ring implements Effect {
     const level = b.y >= this.p.from.y - 1 && b.y <= this.p.from.y + HEIGHT;
     if (!this.held && b.onGround && level && d + b.hw >= was - BAND && d - b.hw <= this.r + BAND) {
       this.held = true;
-      this.ctx.effects.hold(this.p.hold * (SHORTENED.has(this.p) ? SHORT : 1));
+      this.ctx.effects.freeze(this.p.hold * (SHORTENED.has(this.p) ? SHORT : 1));
     }
     return this.r < this.reach;
   }
