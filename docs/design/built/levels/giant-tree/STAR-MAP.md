@@ -14,6 +14,8 @@ The star map is the third tab of the menu screen, beside the menu and the practi
 
 Opening it pauses the world, as the screen always does. The arrows and the d-pad do nothing on it; it is read, not used.
 
+The pause card's controls list shows the map row once the star map has been opened in the run (issue #349). No item grants the map, so its first opening is what the list counts; a new run starts without the row.
+
 ## The floor as a constellation
 
 - **Rooms are stars, doors are the lines between them.** A room you have been in is a bright four-point star; a room whose door you have seen is a small dim star; the lines are the doors you have seen, dotted.

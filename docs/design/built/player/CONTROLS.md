@@ -25,3 +25,7 @@ Part of [the player](README.md).
 Every action is defined once and every device reaches it. The three control schemes, keyboard and mouse, gamepad and touch in landscape, all ship complete, so a player can switch device at any time and keep playing. The design text settled this as a decision ([DESIGN.md, section 13, question 7](../README.md)).
 
 The device mapping, the contexts in which each action is live, and the words shown for each device are in [the input document](../../../architecture/input/README.md).
+
+## The controls list
+
+The pause card lists the controls the player has. The basic controls always show: moving, looking, jumping, casting, polarity, picking up, placing, throwing, drinking, dropping a bomb, doors, choosing carried items, the practices tab, a new run and the menu. A control that needs a practice, a potion or the star map shows only once the player has it: running, crouching, dashing, the recipe book, the miracle and the star map. No row says that a control is missing. The list is the same on every device (issue #349).

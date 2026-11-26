@@ -260,6 +260,47 @@ export const CONTROL_ROWS: readonly (Action | typeof PASSIVE[number])[] = [
   'look', 'move', 'jump', 'cast', 'polarity', 'dash', 'run', 'crouch', 'pickup', 'place', 'throw', 'drink', 'bomb', 'miracle', 'doors', 'previous', 'next', 'pick', 'inventory', 'map', 'recipes', 'restart', 'pause',
 ];
 
+export type ControlRow = (typeof CONTROL_ROWS)[number];
+/** A stat a practice (or a potion) grants, read by the controls list: the control does nothing without it. */
+export type ControlStat = 'run' | 'crouch' | 'dash' | 'recipes';
+
+/**
+ * What the player must hold for a row of the controls list (the pause card) to show: a stat from a practice or a
+ * potion, a practice held by id, or the star map opened once in this run. A row with no gate is a basic control, that
+ * every game has, and it always shows (issue #349). No row says that another one is missing.
+ */
+export type ControlGate = { stat: ControlStat } | { item: string } | { starMapSeen: true };
+
+export const CONTROL_GATES: Partial<Record<ControlRow, ControlGate>> = {
+  dash: { stat: 'dash' },        // Irimi
+  run: { stat: 'run' },          // Fartlek, a Stride Tonic
+  crouch: { stat: 'crouch' },    // Child's Pose, a Folding Tincture, Walk Slowly
+  recipes: { stat: 'recipes' },  // the Book of Secrets (the book row)
+  miracle: { item: 'kairos' },   // Kairos, the miracle
+  map: { starMapSeen: true },    // the star map: no item grants it, so its first opening in the run does
+};
+
+/** What the controls list reads from the player: the stats, the practices held by id, and the star map's first opening. */
+export interface ControlFacts {
+  stat(name: ControlStat): number;
+  holds(item: string): boolean;
+  starMapSeen: boolean;
+}
+
+export function gateMet(gate: ControlGate, facts: ControlFacts): boolean {
+  if ('stat' in gate) return facts.stat(gate.stat) >= 1;
+  if ('item' in gate) return facts.holds(gate.item);
+  return facts.starMapSeen;
+}
+
+/** The rows the controls list shows, in CONTROL_ROWS order: every basic row, and each gated row the player meets. */
+export function visibleControlRows(facts: ControlFacts): ControlRow[] {
+  return CONTROL_ROWS.filter(r => {
+    const gate = CONTROL_GATES[r];
+    return !gate || gateMet(gate, facts);
+  });
+}
+
 export function contextsFor(b: Binding, device: Device): readonly Context[] {
   const d = device === 'keyboard' ? b.keyboard : device === 'gamepad' ? b.gamepad : b.touch;
   return d.when ?? b.when;

@@ -500,6 +500,8 @@ export class Game {
   /** What the star map shows beyond what you walked (D15): the Cartographer's marks, the Star-reader's room and reading. */
   private starMarks: { cartographer: Map<number, { room: number; want: 'vault' | 'boss'; also?: number }>; starReader: StarMarks['starReader']; read: boolean } =
     { cartographer: new Map(), starReader: null, read: false };
+  /** The star map was opened at least once in this run: its controls row shows from then on (CONTROL_GATES, issue #349). */
+  starMapSeen = false;
   private stillT = 0;
   /** The Leaves' gift (issue #316): the jump practice over the ring's east stone, laid at run start. */
   private leavesGift: Pickup | null = null;
@@ -736,7 +738,7 @@ export class Game {
     this.tree = new GiantTree(this.dw, SURFACE_Y, i => this.rng.fork('tree', i));
     this.story = NaN; this.silenceSeen = false; this.leavesSeen = false; this.stillT = 0;
     this.courses = []; this.branchesAll = false; this.watersWoken = 0;
-    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.zone = ''; this.presenceReplies.clear();
+    this.starMarks = { cartographer: new Map(), starReader: null, read: false }; this.starMapSeen = false; this.zone = ''; this.presenceReplies.clear();
     this.childBuilds.clear(); this.gardenGiven.clear(); this.builds = new BuildCount(); this.menderCame = false;
     this.idle.clear();
     this.codex = [];

@@ -48,7 +48,7 @@ Both are `hold` actions in `BINDINGS`, live in `play` on every device. The keybo
 
 On touch no button is added (the seven-button limit in play is kept for the Kairos button): **the crouch is a swipe down from the bottom twelfth of the right side, right of the middle**. It toggles the crouch and takes back the look it turned, the same way the dash swipe does. A look drag that is not a downward swipe keeps its look.
 
-The pause card shows both rows always (`CONTROL_ROWS`), with "(with Fartlek or a Stride Tonic)" and "(with Child's Pose or a Folding Tincture)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
+The pause card's controls list shows the run row only while the `run` stat is held, and the crouch row only while `crouch` is, so a player without either sees neither row (issue #349; [input](../../../architecture/input/README.md)). The rows read, with "(with Fartlek or a Stride Tonic)" and "(with Child's Pose or a Folding Tincture)". Prompts name the gesture of the device in use (`controls.run.*`, `controls.crouch.*`).
 
 ## 6. Sandbox
 

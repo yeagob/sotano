@@ -35,7 +35,7 @@ import type { Game } from './game';
 import { PHASE_WARN_S } from './phase';
 import { hurtEdge } from './hurt-feedback';
 import type { Carried } from '../entities/player';
-import { CONTROL_ROWS, type Device } from '../input/bindings';
+import { visibleControlRows, type ControlRow, type Device } from '../input/bindings';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
@@ -291,10 +291,21 @@ export class Hud {
     for (const k of ['keyboard', 'gamepad', 'touch']) document.body.classList.toggle(`dev-${k}`, k === d);
   }
 
+  /** The controls list shows the rows the player meets (CONTROL_GATES). It starts with the basic rows only. */
+  private controlRows: readonly ControlRow[] = visibleControlRows({ stat: () => 0, holds: () => false, starMapSeen: false });
+
+  /** Redraws the controls list when the rows the player meets change (an item, a stat or the star map gained or lost). */
+  private syncControls(g: Game) {
+    const rows = visibleControlRows({ stat: n => g.stats.get(n), holds: id => g.inventory.has(id), starMapSeen: g.starMapSeen });
+    if (rows.length === this.controlRows.length && rows.every((r, i) => r === this.controlRows[i])) return;
+    this.controlRows = rows;
+    this.renderControls();
+  }
+
   private renderControls() {
     const d = activeDevice();
     const table = document.getElementById('controls');
-    if (table) table.innerHTML = CONTROL_ROWS.map(r =>
+    if (table) table.innerHTML = this.controlRows.map(r =>
       `<tr><td>${th(controlKey(r, d))}</td><td>${th(`controls.${r}` as MessageKey)}</td></tr>`).join('');
     const go = document.getElementById('play');
     if (go) go.textContent = t(forDevice('intro.play', d));
@@ -432,6 +443,7 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     if (running) this.tickAchievement(dt);
     this.syncRecipesTab(g);
+    this.syncControls(g);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
     this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
@@ -1159,6 +1171,7 @@ export class Hud {
   /** Opens the screen on a tab (or switches tabs when it is open). Opening pauses the world. */
   openScreen(g: Game, tab: ScreenTab) {
     this.game = g;
+    if (tab === 'map') g.starMapSeen = true;
     if (!this.screenOpen) {
       this.screenOpen = true;
       if (g.input.device === 'keyboard') g.input.unlockFor(); else g.input.release();
