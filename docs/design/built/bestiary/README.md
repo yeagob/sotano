@@ -60,6 +60,8 @@ The list of entities whose meaning is not yet documented, and of entities that c
 
 Forty projections: thirty-eight enemy files in `src/content/enemies/`, two of which (Procrastination B and C) are splits of a third, so forty entities. "All floors" means the roster gives no floor range. Each projection's rules are in [projections](../projections/README.md).
 
+**Every variation counts** (issue #360). For the completion percentage a projection is met only when all six of its variations have been seen: its Black, Yellow and Red tiers ([TIERS](../projections/TIERS.md)), each hostile (when it materialises) and as an ally (when it turns to your side or the Mender brings it back). Seeing every variation of every projection, 240 in all, is the achievement "Know Thyself". The record and the moment are in [COMPLETION](../progression/COMPLETION.md) §2. The pictures below show each projection Black and hostile; the other variations are in the gallery (`?gallery=enemies&tier=all&ally=1`).
+
 ### Doubt
 
 ![Doubt](img/doubt.png)

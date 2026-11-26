@@ -3,12 +3,16 @@
 // keeper that records them.
 
 import { describe, expect, it } from 'vitest';
-import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, COMPLETION_ACHIEVEMENT } from '../src/content/achievements';
+import { ACHIEVEMENTS, ACHIEVEMENT_BOSSES, BESTIARY_ACHIEVEMENT, COMPLETION_ACHIEVEMENT } from '../src/content/achievements';
+import { BOSSES } from '../src/content/bosses';
+import { ENEMIES } from '../src/content/enemies';
+import { EN } from '../src/i18n/locales/en';
+import { ES } from '../src/i18n/locales/es';
 import { loadBook } from '../src/content/book';
 import { ITEMS } from '../src/content/items';
 import { LEVELS } from '../src/content/levels';
 import { POTION_IDS } from '../src/content/potions';
-import { PART_WEIGHT, PARTS, completion, contentIds, partPercent, type ContentIds, type CompletionSave } from '../src/game/completion';
+import { PART_WEIGHT, PARTS, bestiaryComplete, bestiaryVariations, completion, contentIds, hasVariations, partPercent, seenId, variationId, variationsOf, type ContentIds, type CompletionSave } from '../src/game/completion';
 import { AchievementKeeper } from '../src/game/achievement-keeper';
 import { BOOK_DOWNLOAD_PERCENT, bookButtonHtml, bookDownloadShown, bookHtml } from '../src/game/book-download';
 import { defaultMeta, loadMeta, mergeMeta, unionFirsts, type LoadedMeta, type MetaStore } from '../src/game/meta';
@@ -218,5 +222,102 @@ describe('a part shows its own percentage', () => {
     expect(partPercent({ done: 0, total: 29, weight: 5 })).toBe(0);
     expect(partPercent({ done: 22, total: 22, weight: 25 })).toBe(100);
     expect(partPercent({ done: 0, total: 0, weight: 5 })).toBe(100);
+  });
+});
+
+describe('the bestiary counts every variation of every projection (issue #360)', () => {
+  /** A bestiary of one projection with variations and one creature without. */
+  const VARIED: ContentIds = { ...CONTENT, bestiary: ['e.one', 'c.one'], variations: { 'e.one': variationsOf('e.one') } };
+  const withBestiary = (bestiary: string[]): CompletionSave => ({ ...EMPTY, firsts: { bestiary } });
+
+  it('a projection has six variations: Black, Yellow and Red, each hostile and allied', () => {
+    expect(variationsOf('doubt')).toEqual(['doubt:black', 'doubt:black:ally', 'doubt:yellow', 'doubt:yellow:ally', 'doubt:red', 'doubt:red:ally']);
+    expect(variationId('doubt', 'red', true)).toBe('doubt:red:ally');
+  });
+
+  it('every projection of the shipped content has its variations; bosses, creatures and presences have none', () => {
+    const shipped = contentIds(10);
+    const vars = shipped.variations ?? {};
+    expect(Object.keys(vars).sort()).toEqual(ENEMIES.map(e => e.id).sort());
+    for (const v of Object.values(vars)) expect(v).toHaveLength(6);
+    expect(bestiaryVariations(undefined, shipped)).toEqual({ seen: 0, total: ENEMIES.length * 6, complete: 0, projections: ENEMIES.length });
+    for (const b of BOSSES) expect(vars[b.id]).toBeUndefined();
+  });
+
+  it('a sighting is kept under its variation for a projection, and under its own id for anything else', () => {
+    const doubt = ENEMIES.find(e => e.id === 'doubt')!;
+    expect(seenId(doubt, 'yellow', false)).toBe('doubt:yellow');
+    expect(seenId(doubt, undefined, false)).toBe('doubt:black');
+    expect(seenId(doubt, 'red', true)).toBe('doubt:red:ally');
+    expect(seenId(BOSSES[0], 'red', false)).toBe(BOSSES[0].id);
+    expect(seenId({ id: 'wonder', kind: 'creature' }, undefined, false)).toBe('wonder');
+    expect(hasVariations(doubt)).toBe(true);
+    expect(hasVariations({ id: 'shadow', kind: 'boss' })).toBe(false);
+  });
+
+  it('a projection counts only when all of its variations are seen, and the percentage follows the count', () => {
+    const all = variationsOf('e.one');
+    expect(completion(withBestiary(['c.one', ...all.slice(0, 5)]), VARIED).parts.bestiary.done).toBe(1);
+    expect(completion(withBestiary(['c.one', ...all]), VARIED).parts.bestiary).toEqual({ done: 2, total: 2, weight: 10 });
+    // the bare id is not a variation: it reads as the Black hostile one only (an older save's spawn)
+    expect(completion(withBestiary(['e.one', ...all.slice(1)]), VARIED).parts.bestiary.done).toBe(1);
+    expect(completion(withBestiary(['e.one']), VARIED).parts.bestiary.done).toBe(0);
+    const before = completion(withBestiary(['c.one', ...all.slice(0, 5)]), VARIED).percent;
+    const after = completion(withBestiary(['c.one', ...all]), VARIED).percent;
+    expect(after - before).toBe(5);
+  });
+
+  it('a variation counts once: a repeat in the record changes nothing, and the keeper keeps it once', () => {
+    const twice = withBestiary(['e.one:red', 'e.one:red', 'e.one:red:ally']);
+    expect(bestiaryVariations(twice.firsts, VARIED).seen).toBe(2);
+    let raw: string | null = null;
+    const store: MetaStore = { read: () => raw, write: s => { raw = s; } };
+    const keeper = new AchievementKeeper(defaultMeta(), store);
+    expect(keeper.recordFirst('bestiary', 'doubt:red')).toBe(true);
+    expect(keeper.recordFirst('bestiary', 'doubt:red')).toBe(false);
+    expect(loadMeta(store).firsts?.bestiary).toEqual(['doubt:red']);
+    expect(keeper.variations.seen).toBe(1);
+  });
+
+  it('the bestiary is complete only when the last variation of the last projection is seen', () => {
+    const two: ContentIds = { ...CONTENT, bestiary: ['e.one', 'e.two'], variations: { 'e.one': variationsOf('e.one'), 'e.two': variationsOf('e.two') } };
+    const order = [...variationsOf('e.one'), ...variationsOf('e.two')];
+    const seen: string[] = [];
+    for (const [i, v] of order.entries()) {
+      expect(bestiaryComplete({ bestiary: seen }, two)).toBe(false);
+      seen.push(v);
+      expect(bestiaryComplete({ bestiary: seen }, two)).toBe(i === order.length - 1);
+    }
+    // a content without projections never completes it
+    expect(bestiaryComplete({ bestiary: ['e.one'] }, CONTENT)).toBe(false);
+  });
+
+  it('the shipped record completes the bestiary with every variation, and the keeper says so', () => {
+    const bestiary = ENEMIES.flatMap(e => variationsOf(e.id));
+    expect(bestiaryComplete({ bestiary })).toBe(true);
+    expect(bestiaryComplete({ bestiary: bestiary.slice(1) })).toBe(false);
+    const record: LoadedMeta = { ...defaultMeta(), firsts: { floors: [], practices: [], bestiary, recipes: [] } };
+    expect(new AchievementKeeper(record, { read: () => null, write: () => undefined }).bestiaryComplete).toBe(true);
+  });
+
+  it('the sandbox records no variation and writes nothing', () => {
+    let writes = 0;
+    const store: MetaStore = { read: () => null, write: () => { writes++; } };
+    const sandbox = new AchievementKeeper(defaultMeta(), store);
+    sandbox.live = false;
+    for (const v of variationsOf('doubt')) expect(sandbox.recordFirst('bestiary', v)).toBe(false);
+    expect(sandbox.track('bestiaryComplete', { projections: 40 }, 1)).toEqual([]);
+    expect(writes).toBe(0);
+    expect(sandbox.variations.seen).toBe(0);
+  });
+
+  it('the achievement is one catalogue entry on its own event, named in English and Spanish', () => {
+    expect(ACHIEVEMENTS.filter(a => a.on === 'bestiaryComplete')).toEqual([{ id: BESTIARY_ACHIEVEMENT, on: 'bestiaryComplete' }]);
+    for (const cat of [EN.messages, ES.messages] as Record<string, unknown>[]) {
+      expect(typeof cat[`achievement.${BESTIARY_ACHIEVEMENT}.name`]).toBe('string');
+      expect(typeof cat[`achievement.${BESTIARY_ACHIEVEMENT}.desc`]).toBe('string');
+    }
+    expect((EN.messages as Record<string, unknown>)['achievement.bestiary.full.name']).toBe('Know Thyself');
+    expect((ES.messages as Record<string, unknown>)['achievement.bestiary.full.name']).toBe('Conócete a ti mismo');
   });
 });

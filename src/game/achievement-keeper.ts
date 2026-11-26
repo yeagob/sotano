@@ -14,7 +14,7 @@ import type { MessageKey } from '../i18n';
 import type { Params } from '../i18n';
 import { qualityStars } from '../render/icons';
 import { isUnlocked, mastery, track, type Payload } from './achievements';
-import { completion, type Completion } from './completion';
+import { bestiaryComplete, bestiaryVariations, completion, type Completion, type VariationCount } from './completion';
 import { adoptMeta, emptyFirsts, resetMeta, saveMeta, type FirstKind, type LoadedMeta, type MetaStore } from './meta';
 
 /** One achievement earned, waiting for its card. `level` is the mastery level once it counts (1 to 100). */
@@ -140,6 +140,12 @@ export class AchievementKeeper {
 
   /** The completion percentage now (completion.ts): the achievements, the page and the first-time records of this record. */
   get completion(): Completion { return completion(this.record); }
+
+  /** The projections' variations this record has seen (completion.ts `bestiaryVariations`, issue #360). */
+  get variations(): VariationCount { return bestiaryVariations(this.record.firsts); }
+
+  /** Whether every variation of every projection has been seen: the criterion of `bestiary.full` (issue #360). */
+  get bestiaryComplete(): boolean { return bestiaryComplete(this.record.firsts); }
 
   /**
    * Records a first time for the completion percentage (COMPLETION.md): the id is kept once, saved at once like an unlock.

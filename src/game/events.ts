@@ -197,6 +197,9 @@ export interface GameEvents {
    *  the toll paid, the ore given, the Child's build finished), the rule the codex keeps (CODEX.md). `presence` is its id
    *  ('boatman', 'star-reader'…). Once per presence and encounter; the achievements count it once in the save. React only (ACHIEVEMENTS §1). */
   presenceMet: { presence: string };
+  /** Every variation of every projection has been seen (its three tiers, hostile and allied; COMPLETION.md §2, issue #360):
+   *  `projections` is how many projections that is. Emitted once, by the game, while `bestiary.full` is locked. React only. */
+  bestiaryComplete: { projections: number };
 }
 
 /** A rebound of an intention, as the `intentBounce` event carries it. */

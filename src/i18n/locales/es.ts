@@ -1221,6 +1221,8 @@ export const ES: Catalog = {
     'achievement.presence.wanderer.desc': 'Conoce al Caminante: termina tu primer intercambio con él.',
     'achievement.presence.witness.name': 'Visto',
     'achievement.presence.witness.desc': 'Conoce al Testigo: termina tu primer intercambio con él.',
+    'achievement.bestiary.full.name': 'Conócete a ti mismo',
+    'achievement.bestiary.full.desc': 'Completa el bestiario: ve cada proyección en negro, amarillo y rojo, hostil y como aliada.',
 
     // ── the hidden book: a quotation's translation note (PANELS §4b) ──
     'book.quote.translated': 'Traducción nuestra',

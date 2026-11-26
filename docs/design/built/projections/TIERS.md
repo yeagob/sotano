@@ -56,5 +56,5 @@ An earlier build made the room's other hostile projections hold still for 1.5 se
 ## Open questions
 
 - **Rewards.** Do Yellow and Red beings drop more or better? Today they drop what a Black one drops.
-- **The bestiary.** The game has no screen that lists projections yet (the Codex shows Presences only), so the tier names are on the death screen alone. The codex entries should name the tiers when they are built.
+- **The bestiary.** The game has no screen that lists projections yet (the Codex shows Presences only), so the tier names are on the death screen alone. The codex entries should name the tiers when they are built. Built: the completion percentage counts every tier of every projection, hostile and allied, and seeing them all is the achievement "Know Thyself" (issue #360, [COMPLETION](../progression/COMPLETION.md) §2).
 - **The sky.** Should the sky realm's beings take a tier later?

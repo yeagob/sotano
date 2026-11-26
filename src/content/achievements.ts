@@ -12,9 +12,10 @@
  * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only), and
  * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8), and the three of the
  * block, projection and state-of-being achievements: `projectionConverted`, `projectionDestroyed` and `synergyOn`, and the
- * presences' first exchange, `presenceMet` (one per presence, the codex's rule).
+ * presences' first exchange, `presenceMet` (one per presence, the codex's rule), and `bestiaryComplete`, emitted once when
+ * every variation of every projection has been seen (COMPLETION.md §2, issue #360).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'bestiaryComplete'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -45,6 +46,9 @@ export const ACHIEVEMENT_MEDITATIONS = ['ground', 'dusk', 'night', 'box', 'warm'
  * 100, so counting it would make 100 unreachable.
  */
 export const COMPLETION_ACHIEVEMENT = 'completion.full';
+
+/** The bestiary's achievement (issue #360): every variation of every projection seen (completion.ts `bestiaryComplete`). */
+export const BESTIARY_ACHIEVEMENT = 'bestiary.full';
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // Bosses destroyed: their health reaches zero (14).
@@ -150,6 +154,9 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'presence.trickster', on: 'presenceMet', where: { presence: 'trickster' } },
   { id: 'presence.wanderer', on: 'presenceMet', where: { presence: 'wanderer' } },
   { id: 'presence.witness', on: 'presenceMet', where: { presence: 'witness' } },
+
+  // The bestiary complete: every projection seen in Black, Yellow and Red, hostile and as an ally (issue #360) (1).
+  { id: BESTIARY_ACHIEVEMENT, on: 'bestiaryComplete' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

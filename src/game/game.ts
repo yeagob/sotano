@@ -113,7 +113,8 @@ import { DONE_CHOICE, StillWatch, TRUST_START, answerDone, doneGift } from '../c
 import { MENDED_SEAM_S, MENDED_TAG, ReleaseLog, countsAsRelease, projectionToMend } from '../content/presences/mended';
 import { IDLE_PRESENCES, IdleTimer, idleWindowOf } from '../content/presences/idle';
 import { type OfferPick, PRESENCE_BY_ID, PRESENCE_CHOICE, PRESENCE_OFFER_QUESTION, PRESENCE_TALK, GIFT_OFFER, directionOf, leavesAfterOffer, presenceReaction, pushedOut, TALK_REACH, findPresenceOffer, findCartographerOre, gardenerWants, answerDue, unlocksPresence, menderComesTo, type PresenceId } from '../content/presences';
-import { COMPLETION_ACHIEVEMENT } from '../content/achievements';
+import { BESTIARY_ACHIEVEMENT, COMPLETION_ACHIEVEMENT } from '../content/achievements';
+import { seenId } from './completion';
 import { downloadRootsBook } from './book-download';
 import { rewardBand, type Outcome, type SequenceId } from '../content/presences/meditations';
 import { clampLevel, CRATE_CHANCE_CAP, rootsRewards } from '../content/tables/roots-mastery';
@@ -1017,13 +1018,13 @@ export class Game {
     this.bus.on('projectionDestroyed', { priority: 300, source, fn: p => this.achieved('projectionDestroyed', p) });
     this.bus.on('synergyOn', { priority: 300, source, fn: p => this.achieved('synergyOn', p) });
     this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
+    this.bus.on('bestiaryComplete', { priority: 300, source, fn: p => this.achieved('bestiaryComplete', p) });
     // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
     this.bus.on('itemGained', { priority: 300, source: first, fn: p => this.firstTime('practices', p.id) });
     // the Mender's Thread is the Covenant's Thread once the Thread the Mender dropped is picked up (thread.ts)
     this.bus.on('itemGained', { priority: 300, source: 'covenant', fn: p => { if (gainKeepsThread(p.id, this.threadDropped)) this.keepCovenantPiece('mender'); } });
-    this.bus.on('enemySpawn', { priority: 300, source: first, fn: p => this.firstTime('bestiary', p.def) });
     this.bus.on('brew', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.potion) });
     this.bus.on('cook', { priority: 300, source: first, fn: p => this.firstTime('recipes', p.meal) });
     this.bus.on('treeStory', { priority: 300, source: first, fn: p => this.firstTime('floors', `tree.${p.story}`) });
@@ -1040,6 +1041,15 @@ export class Game {
     if (this.keeper.recordFirst(kind, id)) this.showCompletion();
   }
 
+  /**
+   * A projection is seen in its variation (COMPLETION.md §2, issue #360): its tier, hostile or allied as it is now. A
+   * hostile one is seen when it materialises (`spawnEnemy`, the spawn not cancelled, a split's halves too), an ally when it
+   * turns to the player's side (`convert`) or comes back mended (`mendReleased`). A boss is kept under its own id.
+   */
+  private seeVariation(e: Enemy) {
+    this.firstTime('bestiary', seenId(e.spec, e.tier, e.faction === 'self'));
+  }
+
   /** The sky's guardian floor `animal` is first stood on: its floor, its deity and its herd are met (COMPLETION.md). */
   private meetSkyFloor(animal: string) {
     this.firstTime('floors', `sky.${animal}`);
@@ -1053,6 +1063,8 @@ export class Game {
     const c = this.keeper.completion;
     this.hud.setCompletion(c);
     if (c.percent >= 100 && this.keeper.live && !this.keeper.unlocked(COMPLETION_ACHIEVEMENT)) this.bus.emit('completionFull', { percent: c.percent });
+    // the bestiary's achievement, once, when the last variation of the last projection is seen (issue #360)
+    if (this.keeper.live && !this.keeper.unlocked(BESTIARY_ACHIEVEMENT) && this.keeper.bestiaryComplete) this.bus.emit('bestiaryComplete', { projections: this.keeper.variations.projections });
   }
 
   /**
@@ -2254,6 +2266,7 @@ export class Game {
   private convert(e: Enemy) {
     e.hp = convertedHp(e.hp, e.maxHp);
     this.setFaction(e, 'self', 'polarity');
+    this.seeVariation(e);
     this.bus.emit('projectionConverted', { def: e.def, boss: e.spec.kind === 'boss' });
     const floor = this.rooms.get(e.room)?.floor;
     if (e.spec.kind === 'boss' && floor !== undefined) this.bossDown(floor, 'converted');
@@ -2553,6 +2566,7 @@ export class Game {
     if (tier !== 'black') this.projectionTier.set(id, tier);
     const e = this.enemies.spawn(def, id, r.id, ev.x, ev.y, ev.z, ev.hp, ev.speed, ev.contactDamage, ev.tags, tier);
     this.actors.add(e);
+    this.seeVariation(e);
     return e;
   }
 
@@ -4699,6 +4713,7 @@ export class Game {
     e.spawning = 0;
     this.actors.add(e);
     this.setFaction(e, 'self', 'mender');
+    this.seeVariation(e);
     this.particles.burst(x, b.y + 1, z, pal('light.gold'), 16, 1.6, 0.05);
     this.mendedNow = true;
   }

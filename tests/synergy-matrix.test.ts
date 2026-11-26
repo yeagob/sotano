@@ -71,6 +71,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   projectionDestroyed: () => ({ def: 'doubt', boss: false }),
   synergyOn: () => ({ synergy: 'embodied' }),
   presenceMet: () => ({ presence: 'boatman' }),
+  bestiaryComplete: () => ({ projections: 40 }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),
