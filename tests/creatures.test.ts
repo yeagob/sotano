@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { CREATURES, CREATURE_BY_ID, CREATURE_LIFE, ambientCreatures } from '../src/content/creatures';
-import { RunRandom } from '../src/core/rng';
+import { Rng, RunRandom } from '../src/core/rng';
 import type { Actor } from '../src/entities/actors';
 import type { FloorResult } from '../src/world/floor';
 
@@ -36,7 +36,7 @@ describe('creatures: never killed by a hit', () => {
     solid: () => false, worldVersion: () => 1, actors: () => [] as Actor[], actor: () => undefined,
     room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: 13, d: 7, hx: 0, hz: 0 }), elemVersion: () => 0,
     pickupsIn: () => [],
-    hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+    hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost);

@@ -18,7 +18,7 @@ The entrance omen lasts 1.5 seconds in total. The design asked for 2.5 seconds (
 
 ## 3. Health
 
-A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The range each floor can give:
+A boss's life is set when it spawns, from its floor and the run's seed: the floor's curve (140 on floor 1, 179 on floor 2, 229 on floor 3, 293 on floor 4, 374 on floor 5, 478 on floor 6, 612 on floor 7, 782 on floor 8 and 1000 on floor 9, about ×1.28 a floor) times 1.3, times a factor between 0.7 and 1.5 that the seed fixes for that boss. The same seed always gives the same life; two bosses of one floor usually differ. The Shadow is exempt: its life is your health as it materialises ([SHADOW](SHADOW.md)). The range each floor can give:
 
 | Floor | Life |
 |---|---|
@@ -30,9 +30,9 @@ A boss's life is set when it spawns, from its floor and the run's seed: the floo
 | 6 | 435 to 932 |
 | 7 | 557 to 1193 |
 | 8 | 712 to 1525 |
-| 9 | 910 to 1950 |
+| 9 | 910 to 1950 (no boss today: floor 9's keystone is the Shadow, exempt) |
 
-The HUD shows a health bar with the boss's name and its ratio of the life it spawned with, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there. Boss colour variants come later, after issue #338 lands; they are not built.
+The HUD shows a health bar with the boss's name and its ratio of the life it spawned with, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there. Every boss but the Shadow may rise in a colour tier that multiplies this life ([colour tiers](../projections/TIERS.md)).
 
 A boss's touch deals 8, the same as a full heart. Its shots and ground attacks are in [Attacks](../encounters/ATTACKS.md).
 
@@ -80,7 +80,7 @@ A boss never stands in the player's line of fire for long (issue #314). Every bo
 
 **The answer.** After a dodge its next move or shot comes within a quarter of a second, so a dodge is followed by an attack. The Shadow is the exception: it does not answer.
 
-**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: if the player stands still and holds their fire, so does it.
+**Never idle.** A boss that has done nothing for three seconds (no move under way, no shot, not walking) repositions with its manoeuvre on its own, so no state is a dead end. The Shadow is the exception: it never repositions on its own, so a player who stands still is never chased by its manoeuvre. It still fights on its own, choosing from the moment, with a seeded pause of 1 second to its fight's maximum (2 to 4 seconds) between volleys, and it drops the player's own bombs (see [The Shadow](SHADOW.md#the-fight)).
 
 The code is `src/enemies/evade.ts` (`evasive`), wrapped around each boss's phases in its own file. The tests are in `tests/boss-evasion.test.ts`: every boss, in every phase, leaves the line of fire when shot standing still, is never a sitting duck under steady fire for more than a few seconds, and always has a next action.
 

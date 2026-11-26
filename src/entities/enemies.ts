@@ -1,6 +1,7 @@
 // could care about goes back to the game through `EnemyHost`, which emits the events.
 
 import { fx } from '../core/fx';
+import type { Rng } from '../core/rng';
 import * as THREE from 'three';
 import { pal } from '../content/palette';
 import { ROOM_D, ROOM_W } from '../content/rooms';
@@ -55,6 +56,16 @@ export interface EnemyHost {
   hazard(e: Enemy, x: number, y: number, z: number): 'avoid' | 'cross' | 'dwell' | null;
   /** This enemy touches an actor it is hostile to (the game emits `contact`, rate-limited). */
   contact(e: Enemy, target: Actor): void;
+  /** The ids of the practices the player holds now, in the order gained (EnemyCtx.practices). */
+  practices(): readonly string[];
+  /** The player's health now in points, hearts and layers (EnemyCtx.health). */
+  health(): number;
+  /** The bombs the player carries now (EnemyCtx.bombs). */
+  bombs(): number;
+  /** A projection drops the player's bomb (EnemyCtx.placeBomb). */
+  placeBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }): void;
+  /** A fresh RNG for one decision site of an enemy's fight (EnemyCtx.rng). */
+  rng(e: Enemy, site: string): Rng;
   /** A projectile reached an actor hostile to its thrower (`thrower` is the thrower's actor id). */
   projectileHit(target: Actor, damage: number, thrower: number, from?: { x: number; z: number }): void;
   reflects?(target: Actor, x: number, y: number, z: number): boolean;
@@ -85,7 +96,10 @@ export interface EscortHost {
   unsafe?(x: number, y: number, z: number): boolean;
 }
 
-interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction']; gravity: number }
+interface Projectile { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; damage: number; thrower: number; faction: Actor['faction']; gravity: number; r?: number }
+
+/** How close a bolt must pass to hit, in blocks, unless it says otherwise. */
+const BOLT_RADIUS = 0.12;
 
 export interface View {
   group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[];
@@ -144,6 +158,7 @@ export class Enemies {
   private hazards: Hazards;
   private m = new THREE.Matrix4();
   private euler = new THREE.Euler();
+  private boltScale = new THREE.Vector3();
   private time = 0;
   /** Stones on their way down from the ceiling: each becomes a loose cube `t` seconds before it lands. */
   private drops: { owner: number; x: number; y: number; z: number; t: number }[] = [];
@@ -344,7 +359,12 @@ export class Enemies {
       burst: (e, r) => host.burst(e, r),
       kill: e => this.kill(e),
       strike: (e, s: Strike) => this.hazards.add(e.id, e.faction, `enemy:${e.def}`, (e.power ?? 1) === 1 ? s : { ...s, damage: s.damage * e.power! }),
-      bolt: (e, dx, dy, dz, speed, damage) => this.bolt(e, dx, dy, dz, speed, damage),
+      bolt: (e, dx, dy, dz, speed, damage, radius) => this.bolt(e, dx, dy, dz, speed, damage, radius),
+      practices: () => host.practices(),
+      health: () => host.health(),
+      bombs: () => host.bombs(),
+      placeBomb: (e, blast) => host.placeBomb(e, blast),
+      rng: (e, site) => host.rng(e, site),
       safe: (e, x, y, z) => this.safeCell(e, x, y, z),
       centre: e => { const rm = host.room(e.room); return [(rm.hx ?? rm.x0) + ROOM_W / 2, (rm.hz ?? rm.z0) + ROOM_D / 2]; },
       quiet: e => this.blockingIn(e.room) === 0,
@@ -843,11 +863,11 @@ export class Enemies {
     }
   }
 
-  private bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number) {
+  private bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number, radius?: number) {
     const b = e.body, l = Math.hypot(dx, dy, dz) || 1;
     damage *= e.power ?? 1;
     this.push({
-      x: b.x, y: b.y + b.h * 0.6, z: b.z, vx: dx / l * speed, vy: dy / l * speed, vz: dz / l * speed, age: 0, damage, thrower: e.id, faction: e.faction, gravity: 0,
+      x: b.x, y: b.y + b.h * 0.6, z: b.z, vx: dx / l * speed, vy: dy / l * speed, vz: dz / l * speed, age: 0, damage, thrower: e.id, faction: e.faction, gravity: 0, r: radius,
     });
     // a volley of bolts is one sound, not one per bolt
     if (this.time !== this.boltCued) { this.boltCued = this.time; this.host.cue('bolt', b.x, b.y, b.z); }
@@ -868,7 +888,7 @@ export class Enemies {
       let dead = p.age > 5;
       // the first actor hostile to the thrower's side that it touches
       const hit = actors.find(a => a.alive && a.spawning <= 0 && a.id !== p.thrower && hostile(p.faction, a.faction)
-        && Math.abs(p.x - a.body.x) < a.body.hw + 0.12 && Math.abs(p.z - a.body.z) < a.body.hw + 0.12 && p.y > a.body.y && p.y < a.body.y + a.body.h);
+        && Math.abs(p.x - a.body.x) < a.body.hw + (p.r ?? BOLT_RADIUS) && Math.abs(p.z - a.body.z) < a.body.hw + (p.r ?? BOLT_RADIUS) && p.y > a.body.y && p.y < a.body.y + a.body.h);
       if (hit && this.host.reflects?.(hit, p.x, p.y, p.z)) {
         p.vx = -p.vx; p.vy = -p.vy; p.vz = -p.vz;
         p.faction = hit.faction; p.thrower = hit.id;
@@ -885,7 +905,8 @@ export class Enemies {
     }
     for (const p of this.projectiles) {
       // a red cube tumbling on two axes: every shot here hurts, so it is the attack red (issue #47, DECISIONS §7.2)
-      this.m.makeRotationFromEuler(this.euler.set(p.age * 9.4, p.age * 6.3, 0)).setPosition(p.x, p.y, p.z);
+      const k = (p.r ?? BOLT_RADIUS) / BOLT_RADIUS;
+      this.m.makeRotationFromEuler(this.euler.set(p.age * 9.4, p.age * 6.3, 0)).scale(this.boltScale.set(k, k, k)).setPosition(p.x, p.y, p.z);
       this.projMesh.setMatrixAt(n++, this.m);
     }
     this.projMesh.count = n;

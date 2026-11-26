@@ -13,7 +13,7 @@ import distraction from '../src/content/enemies/distraction';
 import type { Actor } from '../src/entities/actors';
 import { birthHp, type Enemy } from '../src/enemies/types';
 import { fx, seedFx } from '../src/core/fx';
-import { RunRandom } from '../src/core/rng';
+import { Rng, RunRandom } from '../src/core/rng';
 import type { Input } from '../src/input/input';
 import { ITEM_BY_ID, ITEMS } from '../src/content/items';
 import { ItemPools, isHandedOut, isUnlockGift } from '../src/items/pool';
@@ -136,7 +136,7 @@ describe('the blocks and the projections under the scale', () => {
       solid: (x: number, y: number, z: number) => y < 0 || y >= 8 || x < 0 || x >= 13 || z < 0 || z >= 7,
       worldVersion: () => 1, actors: () => actors, actor: (id: number) => actors.find(a => a.id === id),
       room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: 13, d: 7, hx: 0, hz: 0 }), elemVersion: () => 0,
-      pickupsIn: () => [], hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+      pickupsIn: () => [], hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
       smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
       affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
     } as EnemyHost;

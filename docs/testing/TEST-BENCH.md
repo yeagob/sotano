@@ -61,7 +61,7 @@ The same text as the panel's guide. Sources: [levels/floors](../design/built/lev
 | 6 · The walls | A random plan of 8 to 11 rooms. The boss room is the dead end farthest from the start; another dead end is the treasure room; no vault. Bigger rooms are common. | One of The Verdict, The Grudge, The Old Rule (health 478). | The boss room: beat the boss, pay the toll, and a 2 by 2 shaft opens down. Digging down instead meets lava in the rock. | 2 practices. |
 | 7 · The rivers | As floor 6. | One of The Furnace, The Impostor, The Many Faces (health 612). | As floor 6. | 3 practices. |
 | 8 · The ditches | As floor 6. | As floor 7 (health 782). | As floor 6. | 4 practices. |
-| 9 · The ice | A random plan like the circles above, frozen: every pool is ice on top, water under it. | The Shadow, always (health 1000). | The boss room: beat the Shadow and a free 2 by 2 shaft drops you into silence. | Nothing: the hole is free. |
+| 9 · The ice | A random plan like the circles above, frozen: every pool is ice on top, water under it. | The Shadow, always (its health is yours as it appears; the bench shows the floor curve's 1000, which the Shadow does not use). | The boss room: beat the Shadow and a free 2 by 2 shaft drops you into silence. | Nothing: the hole is free. |
 | Silence | A sealed chamber of air under the ninth floor's boss room, dark and quiet. | | Stand still for 3 s: you are carried up above the giant tree and float. Rising to the top of the sky opens the sky realm. | |
 
 The panel names the floors and bosses from the catalogs, so it reads the same pools and health in Spanish. The floor jump skips the toll: to test a toll, jump to the floor and walk to its boss room.

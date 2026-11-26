@@ -746,7 +746,6 @@ const messages = {
   'boss.impostor.phase.2': 'The frame breaks: the small figure was the only real thing',
   'boss.many-faces.phase.1': 'It swaps: the masks change places, and only one is real',
   'boss.many-faces.phase.2': 'The masks fall: one plain face is left',
-  'boss.shadow.phase.1': 'It reveals: the projections you let go rise as shadows',
   'boss.shadow.phase.2': 'It stops fighting: stand still beside it for three seconds',
   'toast.relapsed': 'An ally turned hostile again',
   'hud.polarity.positive': 'Good intention (F to switch)',

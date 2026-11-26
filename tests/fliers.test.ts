@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { Rng } from '../src/core/rng';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { CREATURE_BY_ID } from '../src/content/creatures';
@@ -19,7 +20,7 @@ function world(solid: (x: number, y: number, z: number) => boolean = closed) {
   const host = {
     solid, worldVersion: () => 1, actors: () => actors, actor: (id: number) => actors.find(a => a.id === id),
     room: () => ({ id: 0, x0: 0, y0: 0, z0: 0, w: W, d: D, hx: 0, hz: 0 }), elemVersion: () => 0,
-    pickupsIn: () => [], hazard: () => null, contact: (e: Enemy) => { touched.push(e.def); }, projectileHit: () => {}, projectileBlock: () => false,
+    pickupsIn: () => [], hazard: () => null, contact: (e: Enemy) => { touched.push(e.def); }, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost;

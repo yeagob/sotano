@@ -4,7 +4,7 @@
 // The spawn and the bar are driven through the real Game methods on a stand-in rig (as tests/boss-bar.test.ts does).
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { BOSSES, BOSS_BY_ID, BOSS_ZONES, bossHp, bossLife, bossLifeFactor, bossLifeRange } from '../src/content/bosses';
+import { BOSSES, BOSS_BY_ID, BOSS_ZONES, bossHp, bossLife, bossLifeFactor, bossLifeRange, bossSpawnLife } from '../src/content/bosses';
 import { RunRandom } from '../src/core/rng';
 import { tierStats } from '../src/enemies/tiers';
 
@@ -110,13 +110,16 @@ describe('boss life: the curve and the factor', () => {
 });
 
 describe('boss life in the game', () => {
-  /** The boss's life of its floor and seed, times its colour tier when it rose in one (#338: health only). */
+  /** The boss's life of its floor and seed (the Shadow's: your health, #339), times its colour tier when it rose in
+   *  one (#338: health only). */
   const expected = (g: any, e: any, floor: number, seed: number, id: string) => {
-    const life = bossLife(floor, new RunRandom(seed), id), tier = g.projectionTier.get(e.id);
+    const life = bossSpawnLife(BOSS_BY_ID.get(id)!, floor, new RunRandom(seed), HEALTH), tier = g.projectionTier.get(e.id);
     return tier ? tierStats(BOSS_BY_ID.get(id)!, tier, life).hp : life;
   };
+  const HEALTH = 48;
   const rig = (seed: number, floor: number): any => {
     const g: any = Object.create(Game.prototype);
+    g.player = { hp: HEALTH, layers: [] };
     g.rng = new RunRandom(seed);
     g.actors = { newId: () => 1, add: () => {} };
     g.bus = { emit: (_kind: string, payload: object) => ({ cancelled: false, ...payload }) };

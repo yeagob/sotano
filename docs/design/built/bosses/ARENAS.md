@@ -2,7 +2,7 @@
 
 # Boss arenas
 
-Built, in part. A phase change can name an arena: a change to the room that every boss announces. The code names 20 arenas across the 14 bosses. Eight change the world; twelve only show their toast. The arena runs once, when its phase begins (see [Fight flow](FIGHT-FLOW.md#4-phases)).
+Built, in part. A phase change can name an arena: a change to the room that every boss announces. The code names 19 arenas across the 14 bosses. Eight change the world; eleven only show their toast. The arena runs once, when its phase begins (see [Fight flow](FIGHT-FLOW.md#4-phases)).
 
 ## Arenas that change the room (built)
 
@@ -32,8 +32,7 @@ The phase in brackets is the one the arena starts. Hoard's arenas are `rockfall`
 | `plain` | Many Faces (phase 3) | Toast only |
 | `brass` | Impostor (phase 2) | Toast only |
 | `frame` | Impostor (phase 3) | Toast only |
-| `mirrors` | Shadow (phase 2) | Toast only |
-| `stop` | Shadow (phase 3) | Toast only |
+| `stop` | Shadow (its health falls to a third: the stillness ending opens) | Toast only |
 | `cool` | Furnace (phase 3) | Toast only |
 
 Their toasts still play, so the phase is announced, but the room is not changed.
@@ -50,6 +49,6 @@ Their toasts still play, so the phase is announced, but the room is not changed.
 
 ## Open questions
 
-- **Twelve toast-only arenas.** Build them, or remove them? Each of these names is a promise in the toast that the room changes. Until the owner decides, the toast is ahead of the room (see [Not-built bosses](../../not-built/bosses/README.md)). The verdict, the grudge, the many-faces, the impostor, the shadow and the furnace each have a design for their arena, recorded in their own documents.
+- **Eleven toast-only arenas.** Build them, or remove them? Each of these names is a promise in the toast that the room changes. Until the owner decides, the toast is ahead of the room (see [Not-built bosses](../../not-built/bosses/README.md)). The verdict, the grudge, the many-faces, the impostor, the shadow and the furnace each have a design for their arena, recorded in their own documents.
 - **`walls` placement.** The design asks for walls that cut the arena into a corridor. The build raises a central column with gaps. Confirm the shape.
 - **`rockfall` and `spill` on the same boss.** Inertia, Insatiable and Hoard reuse them. Is that a deliberate shared language (falling stones are the room's weight, spilling is the boss's hoard) or a shortcut to be replaced?

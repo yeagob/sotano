@@ -3,6 +3,7 @@
 // runs with no escort (the dungeon before #327) so the findings in the doc can be reproduced. Every
 // threshold of the issue's criteria is in the block below, and nowhere else.
 import { describe, expect, it } from 'vitest';
+import { Rng } from '../src/core/rng';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { ENEMY_BY_ID } from '../src/content/enemies';
@@ -58,7 +59,7 @@ function rig(s: Script, escort: boolean) {
   const host = {
     solid, worldVersion: () => 0, actors: () => actors, actor: (id: number) => actors.find(a => a.id === id),
     room: (id: number) => s.rooms?.find(r => r.id === id) ?? ROOM, elemVersion: () => 0, pickupsIn: () => [],
-    hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+    hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost;

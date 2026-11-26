@@ -60,3 +60,8 @@ export const bossLifeRange = (floor: number): readonly [number, number] => [
   Math.round(bossHp(floor) * BOSS_LIFE_MULTIPLIER * BOSS_LIFE_FACTOR[0]),
   Math.round(bossHp(floor) * BOSS_LIFE_MULTIPLIER * BOSS_LIFE_FACTOR[1]),
 ];
+
+/** A boss's life as it materialises: its own `life` from your health in points (the Shadow, #339: exempt from the
+ *  formula), or the life of its floor and the run's seed (`bossLife`, #315). */
+export const bossSpawnLife = (def: EnemyDef, floor: number, rr: RunRandom, points: number) =>
+  (def.life ? def.life(points) : bossLife(floor, rr, def.id));
