@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import type { Input } from '../input/input';
-import { moveBody, type Body } from '../physics/voxel-collide';
+import { boxHits, moveBody, type Body } from '../physics/voxel-collide';
 import { WALK, GRAVITY, JUMP_V, AIR_CONTROL, COYOTE, JUMP_BUFFER, LADDER, STEER_RUNG } from '../physics/jump';
 import type { Stats } from '../core/stats';
 import type { ElementDef } from '../content/elements';
@@ -28,6 +28,8 @@ const SWIM_G = 0.2, SINK = 1.5, SWIM_UP = 3.4, SWIM_OUT = 5.2, WADE_JUMP = 0.7, 
 /** An air jump is refused when ground lies this close below the feet: the press waits in the buffer
  *  and becomes a ground jump on landing (SKY.md §9). */
 export const AIR_JUMP_CLEARANCE = 0.6;
+/** How far outside its sides the body probes for a wall, in blocks: a block this close counts as touching (Wall Jump). */
+const WALL_TOUCH = 0.05;
 /** How fast an external push fades, per second: on the ground, on ice, and in the air or water. */
 const PUSH_DRAG = 8, PUSH_DRAG_ICE = 1, PUSH_DRAG_AIR = 2;
 
@@ -415,7 +417,7 @@ export class Player implements Actor {
         const v = hooks.jump(JUMP_V * Math.sqrt(jumpStat) * (fluid ? Math.sqrt(WADE_JUMP) : 1), 0);
         if (v !== null) b.vy = v;
         this.jumpBuffer = 0; this.coyote = 0;
-      } else if (this.jumpBuffer > 0 && this.airStep < Math.floor(stats.airJumps) && !this.float && !this.groundNear(solid)) {
+      } else if (this.jumpBuffer > 0 && !this.float && this.airJumpReady(stats, solid)) {
         // an air jump: the next step on the ladder (2×, then 8× the height of a ground jump)
         const step = Math.min(this.airStep + 1, LADDER.length - 1);
         this.airStep++;
@@ -433,6 +435,22 @@ export class Player implements Actor {
     if (b.onGround && this.float) this.float = false;
     else if (b.onGround && !wasGround && fall > 2) hooks.land(fall, b.x, b.y, b.z);
     if (rise > 0 && b.vy === 0 && !b.onGround) b.vy = hooks.bump(rise);
+  }
+
+  /** Whether the next air jump may be made now. The `airJumps` count is one counter; the last `wallJumps` of it (the
+   *  Wall Jump's) need a solid block touching a side, and the others need open air. Every air jump needs no ground
+   *  within `AIR_JUMP_CLEARANCE` below the feet, so the Wall Jump is never a ground jump either. */
+  private airJumpReady(stats: Stats, solid: (x: number, y: number, z: number) => boolean): boolean {
+    const air = Math.floor(stats.airJumps), wall = Math.min(Math.floor(stats.wallJumps), air);
+    if (this.airStep >= air || this.groundNear(solid)) return false;
+    return this.airStep < air - wall || this.touchesWall(solid);
+  }
+
+  /** A solid block against one of the body's sides, at feet level and above (the Wall Jump's test). */
+  private touchesWall(solid: (x: number, y: number, z: number) => boolean): boolean {
+    const b = this.body, d = WALL_TOUCH;
+    return boxHits(solid, b.x + d, b.y, b.z, b.hw, b.h) || boxHits(solid, b.x - d, b.y, b.z, b.hw, b.h)
+      || boxHits(solid, b.x, b.y, b.z + d, b.hw, b.h) || boxHits(solid, b.x, b.y, b.z - d, b.hw, b.h);
   }
 
   /** Solid ground within `AIR_JUMP_CLEARANCE` below the feet (any cell under the body's footprint). */
