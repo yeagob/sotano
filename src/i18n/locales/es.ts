@@ -935,6 +935,8 @@ export const ES: Catalog = {
     'teach.spiralgrowth.lesson': 'El cambio rara vez va en línea recta. Vuelves a la misma pregunta, al mismo hábito o al mismo sentimiento, pero desde otro lugar cada vez. No juzgues la vuelta por su primer paso. Anota dónde estás ahora, y deja que la siguiente vuelta sea un poco más amplia.',
     'teach.triple-jump.quote': 'Ningún salto solo te lleva; cada uno impulsa al siguiente.',
     'teach.triple-jump.lesson': 'Divide una meta grande en tres etapas, cada una sobre la anterior. Termina la primera antes de preocuparte por la tercera. El impulso te lleva más lejos que un solo esfuerzo.',
+    'teach.double-jump.quote': 'Aunque ya no toques el suelo, todavía puedes subir.',
+    'teach.double-jump.lesson': 'Cuando el primer intento no basta, inténtalo otra vez antes de rendirte. Un segundo intento desde donde estás también es avance.',
     'teach.menders-thread.quote': 'Donde se rompió, aguanta.',
     'teach.menders-thread.lesson': 'Una reparación no tiene por qué ocultar la rotura. Lo que reparaste puede ser lo más fuerte de ti, y la costura es su registro honesto.',
     'teach.dowsing.quote': 'Confía en el tirón tranquilo y mira adónde te lleva.',
@@ -1644,6 +1646,12 @@ export const ES: Catalog = {
         description: 'Subir no se hace de un solo salto. Cada salto llega más alto que el anterior, y el último te lleva adonde ningún paso solo alcanzaba.',
         effect: 'Dos saltos más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. El primero sube 2× un salto en tierra; el segundo sube 8× y da control completo en el aire. Ninguno te empuja hacia delante. Al aterrizar se recuperan. Una segunda copia añade un salto más, que sube 16×, el doble del anterior. Una tercera copia no añade nada.',
         inspiredBy: 'Atletismo: el triple salto (un deporte, su nombre genérico)',
+      },
+      'double-jump': {
+        name: 'Salto doble',
+        description: 'Dejar el suelo no es el final del impulso. El cuerpo puede subir una vez más antes de tener que bajar.',
+        effect: 'Un salto más en el aire: pulsa saltar otra vez mientras estás fuera del suelo. Sube 2× un salto en tierra, controla el aire como el primer salto del triple salto y no te empuja hacia delante. Al aterrizar se recupera. Con el triple salto tienes cuatro saltos en total (el de tierra y tres en el aire); el segundo sube 8× y el tercero 16×, los dos con control completo. Los saltos en el aire son tres como mucho, den los objetos que los den. Cuenta también para Encarnado.',
+        inspiredBy: 'Juegos de plataformas: el salto doble (un nombre genérico de mecánica)',
       },
       occamsrazor: {
         name: 'Corta con las relaciones tóxicas',
