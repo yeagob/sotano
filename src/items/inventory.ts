@@ -14,7 +14,7 @@
 import { Rng } from '../core/rng';
 import { StatSheet, diffStats, type Stats } from '../core/stats';
 import type { GameBus, WeaponId } from '../game/events';
-import type { HostApi, ItemApi, ItemDef, ItemInstance, Req, SynergyDef } from './types';
+import { copyMods, type HostApi, type ItemApi, type ItemDef, type ItemInstance, type Req, type SynergyDef } from './types';
 import type { Params } from '../i18n';
 
 export interface GainResult {
@@ -145,7 +145,7 @@ export class Inventory {
     for (const it of this.held) {
       const copy = copies.get(it.def.id) ?? 0;
       copies.set(it.def.id, copy + 1);
-      this.install(`item:${it.uid}`, it.def.id, it.def, suppressed, this.itemRng(it.def.id, copy), it);
+      this.install(`item:${it.uid}`, it.def.id, it.def, suppressed, this.itemRng(it.def.id, copy), it, copy);
       this.installStacks(it);
     }
     for (const s of this.active) this.install(`syn:${s.id}`, s.id, s, suppressed, this.itemRng(`syn:${s.id}`, 0));
@@ -197,10 +197,10 @@ export class Inventory {
     this.installed.add(source);
   }
 
-  private install(source: string, ownerId: string, e: ItemDef | SynergyDef, suppressed: Set<string>, rng: Rng, copy?: ItemInstance) {
+  private install(source: string, ownerId: string, e: ItemDef | SynergyDef, suppressed: Set<string>, rng: Rng, copy?: ItemInstance, index = 0) {
     const bus = this.bus();
     const api = this.scoped(e, source, rng, copy);
-    for (const m of e.stats ?? []) this.stats.add({ ...m, source });
+    for (const m of copyMods(e, index)) this.stats.add({ ...m, source });
     for (const h of e.hooks ?? []) {
       if (h.id && suppressed.has(`${ownerId}.${h.id}`)) continue;
       const only = h.target && h.target !== 'any' ? h.target : null;

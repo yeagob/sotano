@@ -1,5 +1,5 @@
 // Solve et Coagula (solvecoagula): a positive intention in lava turns the connected lava into water, a negative one in
-// water turns the connected water into lava (never water the player's body touches, unless lavaWalk). The real
+// water turns the connected water into lava (never water the player's body touches, unless it has lavaWalk time left). The real
 // Game.convertFluid runs on a stand-in (Object.create(Game.prototype)) over an in-memory element grid; the item's hook is
 // checked against a stub API, and the Intents entry event is checked with the real Intents class.
 
@@ -32,7 +32,7 @@ const solve = ITEM_BY_ID.get('solvecoagula')!;
 const key = (x: number, y: number, z: number) => `${x},${y},${z}`;
 
 /** A Game stand-in with only what convertFluid and the element helpers read. `room` says which room a cell is in. */
-function rig(opts: { lavaWalk?: number; room?: (x: number, z: number) => number; body?: { x: number; y: number; z: number } } = {}) {
+function rig(opts: { lavaWalk?: number; lavaSpent?: number; room?: (x: number, z: number) => number; body?: { x: number; y: number; z: number } } = {}) {
   const cells = new Map<string, number>();
   const world = {
     inside: () => true,
@@ -49,6 +49,7 @@ function rig(opts: { lavaWalk?: number; room?: (x: number, z: number) => number;
     bus: createBus(),
     simFrame: 0,
     fluidFrame: -1,
+    lavaSpent: opts.lavaSpent ?? 0,
     elemFx: 0,
     elemSfx: 0,
     particles: { burst() {} },
@@ -144,16 +145,22 @@ describe('Game.convertFluid', () => {
     expect(g.convertFluid(2, 0, 0, 'lava', 'water', 256, 'solvecoagula')).toBe(5);
   });
 
-  it('refuses a negative conversion into lava that the body touches, unless lavaWalk is 1', () => {
+  it('refuses a negative conversion into lava that the body touches, unless lavaWalk time is left', () => {
     const near = rig({ body: { x: 9.5, y: 0, z: 9.5 } });
     near.fill(EL_WATER, 8, 10, 0, 8, 10);
     expect(near.g.convertFluid(9, 0, 9, 'water', 'lava', 256, 'solvecoagula')).toBe(-1);
     expect(elemKind(near.cells.get(key(9, 0, 9))!)).toBe(EL_WATER);
 
-    const walk = rig({ lavaWalk: 1, body: { x: 9.5, y: 0, z: 9.5 } });
+    const walk = rig({ lavaWalk: 2, body: { x: 9.5, y: 0, z: 9.5 } });
     walk.fill(EL_WATER, 8, 10, 0, 8, 10);
     expect(walk.g.convertFluid(9, 0, 9, 'water', 'lava', 256, 'solvecoagula')).toBe(9);
     expect(elemKind(walk.cells.get(key(9, 0, 9))!)).toBe(EL_LAVA);
+  });
+
+  it('refuses it again once the lavaWalk time is used up, with the practice on', () => {
+    const spent = rig({ lavaWalk: 2, lavaSpent: 2, body: { x: 9.5, y: 0, z: 9.5 } });
+    spent.fill(EL_WATER, 8, 10, 0, 8, 10);
+    expect(spent.g.convertFluid(9, 0, 9, 'water', 'lava', 256, 'solvecoagula')).toBe(-1);
   });
 
   it('a negative conversion far from the body goes ahead', () => {

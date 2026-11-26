@@ -9,7 +9,7 @@ export default defineItem({
   id: 'triple-jump',
   name: 'Triple Jump',
   description: 'Climbing is not one leap. Each jump takes you higher than the one before, and the last one carries you where no single step could reach.',
-  effect: 'Two more jumps in the air: press jump again while you are off the ground. The first rises 2× a ground jump; the second rises 8× and gives full steering in the air. Neither pushes you forward. Landing restores them. No jump rises above 16 blocks.',
+  effect: 'Two more jumps in the air: press jump again while you are off the ground. The first rises 2× a ground jump; the second rises 8× and gives full steering in the air. Neither pushes you forward. Landing restores them. A second copy adds one more jump, which rises 16×, twice the one before it. A third copy adds nothing.',
   inspiredBy: 'Athletics: the triple jump (a sport, its generic name)',
   pools: { sky: 1 },
   tags: ['body'],
@@ -32,5 +32,6 @@ export default defineItem({
     ],
     palette: { b: pal('path.body.base'), c: pal('path.body.glow'), d: pal('path.body.dark') },
   },
-  stats: [{ stat: 'airJumps', layer: 'add', value: 2 }],
+  // the first copy gives two air jumps; the second adds one more (a quadruple jump); a third adds nothing (the stat caps at three)
+  copyStats: [[{ stat: 'airJumps', layer: 'add', value: 2 }], [{ stat: 'airJumps', layer: 'add', value: 1 }]],
 });

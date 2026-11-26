@@ -1,10 +1,10 @@
 // The player's verbs for the sky (docs/architecture/SKY.md §6, §9): a push, a hold, a carry,
-// the air jumps on the ladder 1× → 2× → 8×, the apex cap and the sky's `minJump`.
+// the air jumps on the ladder 1× → 2× → 8×, the cap of two air jumps, and the sky's `minJump`.
 
 import { describe, expect, it } from 'vitest';
-import { AIR_JUMP_CLEARANCE, APEX_CAP, Player, type PlayerHooks, type PlayerUpdateOptions } from '../src/entities/player';
-import { BASE_STATS, computeStats, type Stats } from '../src/core/stats';
-import { AIR_CONTROL, GRAVITY, JUMP_V, LADDER, apex, velocity } from '../src/physics/jump';
+import { AIR_JUMP_CLEARANCE, Player, type PlayerHooks, type PlayerUpdateOptions } from '../src/entities/player';
+import { BASE_STATS, computeStats, STAT_LIMITS, type Stats } from '../src/core/stats';
+import { AIR_CONTROL, JUMP_V, apex, velocity } from '../src/physics/jump';
 import type { Input } from '../src/input/input';
 
 /** Open ground: every cell at y ≤ 0 is solid, so the feet rest at y = 1. */
@@ -186,10 +186,24 @@ describe('air jumps (SKY.md §9)', () => {
     expect(rises[0]).toBeCloseTo(apex(0), 1);
   });
 
-  it('beyond the ladder each air jump climbs its last step', () => {
-    const { r } = ladder({ airJumps: 4 }, 5);
-    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2, 3, 4]);
-    expect(r.jumps[4].v).toBeCloseTo(Math.min(velocity(LADDER.length - 1), Math.sqrt(2 * GRAVITY * APEX_CAP)), 9);
+  it('two copies of the Triple Jump allow four jumps, 1×, 2×, 8× and 16×: measured, the fourth peaks twice as high as the third (#325)', () => {
+    const held = computeStats([{ stat: 'airJumps' as const, layer: 'add' as const, value: 2, source: 'triple-jump-0' }, { stat: 'airJumps' as const, layer: 'add' as const, value: 1, source: 'triple-jump-1' }]);
+    expect(held.airJumps).toBe(3);
+    const { rises, r } = ladder(held, 6);
+    expect(rises).toHaveLength(4);
+    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2, 3]);
+    expect(r.jumps[2].v).toBeCloseTo(velocity(2), 9);
+    expect(r.jumps[3].v).toBeCloseTo(velocity(3), 9);
+    // the peaks, each measured from where its jump was pressed: the fourth is twice the third, and the third is the Triple Jump's own
+    for (let k = 0; k < 4; k++) expect(rises[k], `jump ${k + 1}`).toBeCloseTo(apex(k), 1);
+    expect(rises[3] / rises[2]).toBeCloseTo(2, 1);
+  });
+
+  it('nine copies still give three: the stat is capped, and so is the ladder', () => {
+    const held = computeStats(Array.from({ length: 9 }, (_, i) => ({ stat: 'airJumps' as const, layer: 'add' as const, value: 2, source: `copy-${i}` })));
+    expect(held.airJumps).toBe(3);
+    const { r } = ladder(held, 12);
+    expect(r.jumps.map(j => j.air)).toEqual([0, 1, 2, 3]);
   });
 
   it('no air jump near the ground: the press waits and becomes a ground jump on landing', () => {
@@ -251,12 +265,12 @@ describe('air jumps (SKY.md §9)', () => {
     expect(-r.p.body.vz).toBeGreaterThan(4.6 * (1 - Math.exp(-14 * AIR_CONTROL / 60)));
   });
 
-  it('no jump rises past the cap, however high the jump stat', () => {
+  it('no jump has a cap: a jump stat raises every jump, the third one past 16 blocks (#325)', () => {
     const { rises, r } = ladder({ jump: 5, airJumps: 2 }, 3);
-    expect(rises[0]).toBeCloseTo(apex(0, 5), 1);      // a ground jump is far below the cap
-    expect(rises[2]).toBeLessThanOrEqual(APEX_CAP + 0.01);
-    expect(rises[2]).toBeGreaterThan(APEX_CAP - 0.1);
-    expect(r.jumps[2].v).toBeCloseTo(Math.sqrt(2 * GRAVITY * APEX_CAP), 9);
+    expect(rises[0]).toBeCloseTo(apex(0, 5), 1);
+    expect(rises[2]).toBeCloseTo(apex(2, 5), 0);
+    expect(rises[2]).toBeGreaterThan(16);
+    expect(r.jumps[2].v).toBeCloseTo(velocity(2, 5), 9);
   });
 });
 
@@ -275,9 +289,10 @@ describe('minJump (SKY.md §2.5)', () => {
 });
 
 describe('the airJumps stat', () => {
-  it('is 0 by default, at most 4 and never negative', () => {
+  it('is 0 by default, at most 3 however many Triple Jumps are held (#325), and never negative', () => {
     expect(BASE_STATS.airJumps).toBe(0);
-    expect(computeStats([{ stat: 'airJumps', layer: 'add', value: 9, source: 't' }]).airJumps).toBe(4);
+    expect(STAT_LIMITS.airJumps).toEqual([0, 3]);
+    expect(computeStats([{ stat: 'airJumps', layer: 'add', value: 9, source: 't' }]).airJumps).toBe(3);
     expect(computeStats([{ stat: 'airJumps', layer: 'add', value: -3, source: 't' }]).airJumps).toBe(0);
   });
 });
