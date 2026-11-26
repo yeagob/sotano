@@ -426,7 +426,7 @@ const messages = {
   'codex.star-reader.gives': 'A practice of quality one or two, or a special heart.',
   'toast.heaven': 'You are carried up.',
   'toast.challengeWave': 'Wave {n} of 3',
-  'toast.challengeDone': 'Challenge overcome: come back for more',
+  'toast.challengeDone': 'Challenge overcome',
   'toast.noBombs': 'No bombs',
   'toast.missileHint': 'With a {launch}, one bomb flies as a missile.',
   'toast.locked': 'Locked: you need a key',

@@ -400,7 +400,7 @@ export const ES: Catalog = {
   'codex.star-reader.gives': 'Una práctica de calidad uno o dos, o un corazón especial.',
     'toast.heaven': 'Algo te eleva.',
     'toast.challengeWave': 'Oleada {n} de 3',
-    'toast.challengeDone': 'Desafío superado: vuelve cuando quieras',
+    'toast.challengeDone': 'Desafío superado',
     'toast.noBombs': 'No te quedan bombas',
     'toast.missileHint': 'Con un {launch}, una bomba sale como misil.',
     'toast.locked': 'Cerrada: necesitas una llave',
