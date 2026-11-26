@@ -15,14 +15,15 @@ import type { Move, MinionCtx, MinionDef, MinionRule, Parts, Place, SkyActor } f
 import { climbFace, compose, hangUnder, walk } from '../gaits';
 
 /** B5 targets. */
-export const WAKE_RANGE = 4;
+export const EFFECT = 3;
+export const WAKE_RANGE = 4 * EFFECT;
 export const STRETCH = 1;
 export const DOZE_RANGE = 6;
 export const DOZE_AFTER = 10;
-export const HUG_SECONDS = 2;
+export const HUG_SECONDS = 2 * EFFECT;
 export const CURL = 6;
 /** A wild koala follows the player only this close (provisional: B5 has it hang near the player's path). */
-export const CHASE = 8;
+export const CHASE = 8 * EFFECT;
 /** Seconds of the swing (the floor's telegraph) plus the hug: a dropping koala does nothing else meanwhile. */
 const SWING = 1.2;
 /** The most allies that hug the deity at once (B4). */
@@ -274,9 +275,9 @@ export function minionReact(parts: Parts, ratio: number) {
 
 export const koalaMinion: MinionDef = {
   animal: 'koala',
-  max: 6, wildMax: 6,
+  max: 60, wildMax: 60,
   // B5: a new sleeping koala appears 20 s after one leaves its cluster, with a rustle and a curled shape for 1.5 s
-  spawn: { where: 'clusters', warning: 1.5, every: 20, asleep: true },
+  spawn: { where: 'clusters', warning: 1.5, every: 4, asleep: true, batch: 6 },
   hitsToTurn: 3,
   gait: KOALA_GAIT,
   rules: [curled, sleep, stretching, holding, drop, doze, approach],

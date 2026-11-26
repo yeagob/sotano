@@ -6,6 +6,7 @@
 // defeat by 24 positive hits; the minions' rules (the well's rim, the seat's height, turning, the allies' help); the
 // bamboo hindrance; the palette and the words.
 
+import { calm } from './helpers/sky-calm';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { Hazards, type HazardHost } from '../src/enemies/attacks';
@@ -101,7 +102,7 @@ function rig(def: DeityDef = pandaDeity, at = SPOT) {
   };
   const deps: CreatureDeps = { actors, runner, effects, puff: new Puff(host), knock: {} as TowerKnockApi, spirit };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);
-  const deity = creatures.spawnDeity(def, PLAN);
+  const deity = creatures.spawnDeity(calm(def), PLAN);
   const won: number[] = [];
   creatures.onWon = d => { won.push(d.id); };
   const frame = () => {
@@ -130,10 +131,10 @@ const mind = (r: Rig) => pandaMind(r.deity)!;
 const toTell = (r: Rig, id?: Kind, max = 60) => r.until(() => !!mind(r)?.tell && (!id || mind(r).tell!.id === id), max);
 
 describe('the panda deity (B2)', () => {
-  it('is the floor 1 guardian of its document: 24 hits, a 1.4 s telegraph, 2.5 s recovery, hovering 1.5, no teleport', () => {
+  it('is the floor 1 guardian of its document: 240 hits, a 1.4 s telegraph, 2.5 s recovery, hovering 1.5, no teleport', () => {
     expect(DEITIES.panda).toBe(pandaDeity);
     expect([pandaDeity.floor, pandaDeity.hits, pandaDeity.telegraph, pandaDeity.recover, pandaDeity.hover, pandaDeity.teleport])
-      .toEqual([1, 24, TELEGRAPH[0], 2.5, 1.5, false]);
+      .toEqual([1, 240, TELEGRAPH[0], 2.5, 1.5, false]);
     expect(PANDA_KINDS).toEqual(['toss', 'press', 'sit', 'yawn', 'shove', 'thicket', 'chew', 'peekaboo', 'tumble', 'cradle']);
     expect(PANDA_KINDS.filter(k => phaseOf(k) === 2)).toEqual(['yawn', 'peekaboo', 'tumble', 'cradle']);
     expect(PANDA_ATTACKS.filter(a => a.spirit !== undefined).map(a => [a.id, a.spirit])).toEqual([['chew', 6], ['peekaboo', 8], ['tumble', 8]]);
@@ -431,29 +432,29 @@ describe('phases, the rally and the nap (B2, B3b)', () => {
     for (let t = 0; t < 60; t += DT) { const m = pandaMind(r.deity); if (m?.tell) seen.add(m.tell.id); r.frame(); }
     for (const k of seen) expect(phaseOf(k)).toBe(1);
     // a third of the hits passes through the machine's own rally
-    r.touch(8);
+    r.touch(80);
     r.run(0.5);
     expect(mind(r).log).not.toContain('rally');
     r.until(() => ['Idle', 'Watching'].includes(mind(r).core), 10);
-    r.touch(4);
+    r.touch(40);
     r.until(() => mind(r).core === 'Rallying', 10);
     expect(mind(r).log.filter(l => l === 'rally').length).toBe(1);
     r.until(() => mind(r).core === 'Napping', 3);
     const napStart = r.now();
     r.until(() => mind(r).core !== 'Napping', 10);
     expect(r.now() - napStart).toBeCloseTo(NAP, 1);
-    r.touch(4); // two thirds: no second rally, no second nap
+    r.touch(40); // two thirds: no second rally, no second nap
     r.run(20);
     expect(mind(r).log.filter(l => l === 'rally' || l === 'nap')).toEqual(['rally', 'nap']);
   });
 });
 
 describe('defeat by positive hits (B4)', () => {
-  it('24 warm positive hits win it: it settles awake and friendly, becomes an ally and opens the way once', () => {
+  it('240 warm positive hits win it: it settles awake and friendly, becomes an ally and opens the way once', () => {
     const r = rig();
     r.touch(30, 'negative');
     expect(r.deity.hits).toBe(0);
-    r.touch(23);
+    r.touch(239);
     expect(r.deity.side).toBe('wild');
     r.touch(1);
     r.run(1);
@@ -491,10 +492,10 @@ describe('the panda minions (B5)', () => {
     return { ...r, m };
   }
 
-  it('is the minion of its document: 4 at most, 3 wild, 3 hits to turn, a 1.5 s warning every 12 s', () => {
+  it('is the minion of its document: 40 at most, 30 wild, 3 hits to turn, a 1.5 s warning, six at a time every 3 s', () => {
     expect(MINIONS.panda).toBe(pandaMinion);
-    expect([pandaMinion.max, pandaMinion.wildMax, pandaMinion.hitsToTurn, pandaMinion.spawn.warning, pandaMinion.spawn.every])
-      .toEqual([4, 3, 3, 1.5, 12]);
+    expect([pandaMinion.max, pandaMinion.wildMax, pandaMinion.hitsToTurn, pandaMinion.spawn.warning, pandaMinion.spawn.every, pandaMinion.spawn.batch])
+      .toEqual([40, 30, 3, 1.5, 3, 6]);
   });
 
   it('moves the same way every time, never onto the well\'s rim and never above the seat\'s height', () => {

@@ -7,6 +7,7 @@
 // nothing takes health; 42 positive hits win the lion and the pride lies down; the pride stalks, pounces from
 // above, never on a frozen player, and turns ally at four hits. Deterministic under a fixed dt.
 
+import { calm } from './helpers/sky-calm';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { pal, type PalToken } from '../src/content/palette';
@@ -97,7 +98,7 @@ function rig(def: DeityDef = lionDeity, at: Vec3 = { x: LEDGE.x + 0.5, y: LEDGE.
     spirit: { update() {}, canDrain: () => gate.open, drain: n => { if (!gate.open) return false; log.drains.push(n); return true; } },
   };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);
-  const actor = creatures.spawnDeity(def, PLAN);
+  const actor = creatures.spawnDeity(calm(def), PLAN);
   const step = (n = 1) => {
     for (let i = 0; i < n; i++) {
       creatures.update(DT, 4);
@@ -415,23 +416,23 @@ describe('the pounce (B3 3)', () => {
 
 // ───────────────────────── defeat ─────────────────────────
 
-describe('defeat by 42 positive hits (B4)', () => {
-  it('rallies at a third and two thirds, is won at 42, never dies, and its wild pride lies down', () => {
+describe('defeat by 1920 positive hits (B4)', () => {
+  it('rallies at a third and two thirds, is won at 1920, never dies, and its wild pride lies down', () => {
     const r = rig(only(), onSeat());
     const m = r.creatures.spawnMinion(lionMinion, PLAN, PLAN.spawns[0]);
     r.step();
-    r.touch(14);
+    r.touch(640);
     r.seconds(0.4);
     expect(r.actor.state).toBe('Rallying');
     r.seconds(2.5);
-    r.touch(14);
+    r.touch(640);
     r.seconds(0.4);
     expect(r.actor.state).toBe('Rallying');
     r.seconds(2.5);
-    r.touch(13);
+    r.touch(639);
     expect(r.actor.side).toBe('wild');
     r.touch(1);
-    expect(r.actor.hits).toBe(42);
+    expect(r.actor.hits).toBe(1920);
     expect([r.actor.state, r.actor.side, r.actor.alive]).toEqual(['Won', 'ally', true]);
     expect(r.log.toasts).toContain('toast.skyLionWon');
     r.seconds(3);

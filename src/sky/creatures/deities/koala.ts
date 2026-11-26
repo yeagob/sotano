@@ -11,9 +11,17 @@ import { cellUnderFeet } from '../../hindrances/effects';
 import { cellsOfTags } from '../../hindrances/fading-platforms';
 import { ridden } from '../../hindrances/koala-hug';
 import {
+  type ChaseSpec,
   CAPTURE_TIME, TELEGRAPH, type AttackDef, type CustomState, type DeityCtx, type DeityDef, type DeityRule, type Parts,
   type Place, type SkyActor, type Stage, type TelegraphSpec, type Vec3,
 } from '../../types';
+
+export const KOALA_CHASE: ChaseSpec = {
+  keep: 9, near: 5, lift: 4, speed: 4, dash: 10, orbit: 0.35, dodge: 4, cool: 1.5, counter: 1, answer: 5,
+  still: ['Asleep', 'Stirring'],
+  dive: { kind: 'hold', every: 5, radius: 4, strength: 1.5, cue: 'koala.grab' },
+  cue: 'koala.squeak',
+};
 import { HELP_RANGE } from '../minion';
 
 /** B2: Stirring starts when the player comes within 12 blocks, and lasts 1.5 s. */
@@ -363,7 +371,7 @@ const MODEL = koalaModel();
 
 export const koalaDeity: DeityDef = {
   animal: 'koala', floor: 2,
-  hits: 30,
+  hits: 480,
   telegraph: TELEGRAPH[1],
   recover: DOZE,
   rest: [3, 2.5, 2],
@@ -378,8 +386,10 @@ export const koalaDeity: DeityDef = {
   // B4: an ally hugging it adds one hit every 4 s. The floor's cap is not in the document: a third of the target (provisional).
   ally: { act: 'hug', every: 4, cap: 10 },
   knock: 'hug',
+  chase: KOALA_CHASE,
   won: {
     toast: 'toast.skyKoalaWon',
+    gift: 'guarding-the-centre',
     play(ctx) {
       // section 6 (provisional): it lets go of its branch; whether the branches then give way is open
       const b = ctx.deity.body;

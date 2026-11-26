@@ -37,7 +37,8 @@ export class SpiritLaw implements SpiritApi {
 
   canDrain(): boolean {
     const now = this.host.time();
-    if (this.host.player().held) return false;
+    const pl = this.host.player();
+    if (pl.held || pl.shielded) return false;
     if (now - this.heldAt < DRAIN_CALM) return false;
     return now - this.drainedAt >= DRAIN_GAP;
   }

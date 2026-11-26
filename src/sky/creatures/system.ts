@@ -165,12 +165,20 @@ export class SkyCreatures implements SkyCreaturesApi {
     }
     const e = this.byId.get(id);
     if (!e) return;
+    e.deity.markShot();
     e.deity.touch(polarity, warm, p, kind);
     const a = e.actor;
     if (a.hits > e.seen) {
       e.marks.add({ x: p.x - a.body.x, y: p.y - a.body.y, z: p.z - a.body.z });
       e.seen = a.hits;
     }
+  }
+
+  freeze(id: number, seconds: number): boolean {
+    const m = this.minionById.get(id);
+    if (m) return !m.actor.parked && m.minion.freeze(seconds);
+    const e = this.byId.get(id);
+    return !!e && !e.actor.parked && e.deity.freeze(seconds);
   }
 
   /** Only the creatures of `floor` move; the others are parked (hidden, not updated) until the player comes back. */

@@ -15,7 +15,7 @@ The design gives the player walk and jump, with no sprint at first, and says tha
 - **The Triple Jump's gift (Status: decided, not built)**:
   - Granted by an item awarded upon overcoming the fifth god of the tree ([HORSE](../sky/guardians/HORSE.md)). The two air jumps, their heights and the item are built: see [TRIPLE-JUMP.md](../../built/player/TRIPLE-JUMP.md).
   - Purpose: Enables long-distance, high-altitude platforming across tiny stepping stones in [Totality](../levels/TOTALITY.md), ascending into space toward the Sun ([Unity](../levels/UNITY.md)).
-- **A second jump in the air (idea)**: Lower-tier double jump prior to the tree.
+- **A second jump in the air (idea)**: Lower-tier double jump prior to the tree. Decided (owner, #357, 2026-11-26): a double-jump practice, if it is built, is quality (tier) 4. No such practice exists in the code; not built.
 - **Flight from an item (idea)**.
 - **A sprint (idea)**: A faster walk, if the owner wants one.
 

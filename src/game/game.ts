@@ -154,6 +154,10 @@ import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
 import { CourseRunner } from '../world/course';
 import { branchGifts, holdsAllBranchPractices, walkSlowSpot, WALK_SLOW_ITEM } from './branch-gifts';
+import { freezeProjection } from '../core/freeze';
+import { FreezeSpheres, SPHERE_FREEZE, sphereRadius, type SphereTarget } from '../combat/freeze-sphere';
+import { TempWater } from '../world/temp-water';
+import { WATER_PACE } from '../sky/laws/water';
 
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 
@@ -318,6 +322,8 @@ export class Game {
   private lightShown = 0;
   /** Every non-projection actor an intention, stroke or blast can reach (SKY.md §5.7): the sky's creatures while the sky is active. */
   private readonly router = new TouchRouter();
+  private readonly spheres = new FreezeSpheres();
+  private readonly tempWater = new TempWater();
   private readonly dungeonRoot = new THREE.Group();
   private readonly skyRoot = new THREE.Group();
   private gate!: RealmGate;
@@ -789,6 +795,8 @@ export class Game {
     const p = this.player;
     p.hand = []; p.keys = 0; p.bombs = 1; p.layers = []; p.starT = 0; p.blood = null; this.setBerserk(false); this.stats.removeSource(BLOOD_SLOT_SOURCE); p.hp = this.maxHp; p.dead = false; p.invulnT = 0; p.breath = this.stats.get('breath'); this.lavaSpent = 0;
     p.clearStates();
+    this.tempWater.clear();
+    this.spheres.reset();
     this.statuses.clear();
     this.phase = null;
     // actors: one id space per run, the player first
@@ -1356,6 +1364,8 @@ export class Game {
         if (this.realm === 'sky') this.sky?.leave();
       },
       hooks: kind => {
+        this.tempWater?.clear();
+        this.spheres?.reset();
         const creatures = this.sky?.creatures;
         if (kind === 'sky') { this.sky?.install(this.bus); if (creatures) this.router.add(creatures); }
         else { this.bus.off(null, 'sky'); if (creatures) this.router.remove(creatures); }
@@ -1437,10 +1447,12 @@ export class Game {
       get hand() { return p.hand; },
       push: (vx, vy, vz) => p.push(vx, vy, vz),
       // the player's own slow factor applies; the sky gives the time only (provisional)
-      slow: (_f, s) => { p.slowT = Math.max(p.slowT, s); },
+      slow: (_f, s) => p.slow(s),
       hold: s => p.hold(s),
       carry: (to, s) => p.carry(to, s),
+      freeze: s => p.freeze(s),
       get held() { return p.heldT > 0; },
+      get shielded() { return p.shielded; },
     };
     return {
       time: () => this.time,
@@ -1464,7 +1476,7 @@ export class Game {
       drainSpirit: n => { this.spirit = Math.max(0, this.spirit - n); },
       spirit: () => this.spirit,
       refillSpirit: () => this.refillSpirit(),
-      takeRandomPractice: () => this.takePractice(),
+      takeRandomPractice: () => (p.shielded ? null : this.takePractice()),
       sendUnderground: (floors, rng) => this.sendUnderground(floors, rng),
     };
   }
@@ -1633,6 +1645,7 @@ export class Game {
       igniteArea: (x, y, z, r) => this.igniteArea(x, y, z, r),
       shieldFire: (x, y, z, r, s) => this.shieldFire(x, y, z, r, s),
       convertFluid: (x, y, z, from, to, cap, src) => this.convertFluid(x, y, z, from, to, cap, src),
+      tempWater: (x, y, z, s) => this.placeTempWater(x, y, z, s),
       launch: (spec, x, y, z, dx, dy, dz) => this.intents.fire(spec, new THREE.Vector3(x, y, z), new THREE.Vector3(dx, dy, dz), new THREE.Vector3()),
       intentsHere: () => this.intents.within(p => this.roomAt(p.x, p.y, p.z)?.id === this.room),
       tagCube: (cube, tag) => this.tagCube(cube, tag),
@@ -1841,6 +1854,7 @@ export class Game {
     if (!t.alive || t.spawning > 0 || amount <= 0) return false;
     if (t === p && p.invulnT > 0) return false;
     if (t === p && p.starT > 0 && kind !== 'toll') return false;
+    if (t === p && p.shielded && kind !== 'toll') return false;
     if (t.kind === 'projection' && kind === 'explosion' && (t as Enemy).spec.kind === 'creature') { t.body.vx += kx; t.body.vz += kz; return false; }
     const ev = this.bus.emit('actorDamage', {
       target: t.id, targetKind: t.kind, def: t.def, amount, kind, source, owner,
@@ -2977,10 +2991,52 @@ export class Game {
     e.body.vz += dz / l * speed;
   }
 
+  private placeTempWater(x: number, y: number, z: number, seconds: number): boolean {
+    const cx = Math.floor(x), cy = Math.floor(y), cz = Math.floor(z);
+    const fresh = !this.tempWater.has(this.world, cx, cy, cz);
+    if (!this.tempWater.place(this.world, cx, cy, cz, this.time, seconds)) return false;
+    if (fresh) this.particles.burst(cx + 0.5, cy + 0.5, cz + 0.5, pal('el.water.foam'), 8, 1.6, 0.06);
+    return true;
+  }
+
+  private sphereTargets(): SphereTarget[] {
+    const out: SphereTarget[] = [];
+    if (this.inSky) {
+      for (const t of this.sky?.creatures.targets() ?? []) out.push({ id: t.id, x: t.x, y: t.y + t.h / 2, z: t.z });
+      return out;
+    }
+    for (const e of this.enemies.list) {
+      if (e.faction !== 'projection' || !e.alive || e.spawning > 0) continue;
+      out.push({ id: e.id, x: e.body.x, y: e.body.y + e.body.h / 2, z: e.body.z });
+    }
+    return out;
+  }
+
+  private freezeBySphere(id: number) {
+    if (this.inSky) { this.sky?.creatures.freeze(id, SPHERE_FREEZE); return; }
+    this.affectProjection(id, 'frozen', SPHERE_FREEZE);
+  }
+
+  private updateSpheres(dt: number) {
+    const b = this.player.body;
+    const from = { x: b.x, y: b.y + b.h / 2, z: b.z };
+    const born = this.spheres.update(dt, this.stats.get('freezeSphere') >= 1 && !this.player.dead, from, this.sphereTargets(), id => this.freezeBySphere(id));
+    if (born) spatial.cue('field', born.x, born.y, born.z);
+    for (const s of this.spheres.live) {
+      const r = sphereRadius(s.age);
+      if (r <= 0) continue;
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * Math.PI * 2 + s.age * 2;
+        this.particles.burst(s.x + Math.cos(a) * r, s.y, s.z + Math.sin(a) * r, pal('light.core'), 1, 0.2, 0.05, true);
+      }
+    }
+  }
+
   private affectProjection(id: number, field: 'frozen' | 'fear', seconds: number) {
     const e = this.enemies.get(id);
     if (!e || e.faction !== 'projection') return;
-    e[field] = Math.max(e[field], seconds);
+    if (field === 'frozen' && !freezeProjection(e, seconds)) return;
+    if (field === 'fear') e.fear = Math.max(e.fear, seconds);
     const b = e.body;
     this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('cold.body'), 10, 1.4, 0.06);
     spatial.cue(field === 'frozen' ? 'field' : 'chirp', b.x, b.y, b.z);
@@ -3461,7 +3517,8 @@ export class Game {
     const feet = walk && m.feet?.key === 'lava' ? { ...m.feet, wade: 1 } : m.feet;
     const onLava = [m.feet, m.mid, m.head].some(d => d?.key === 'lava') || this.elementAt(b.x, b.y - 0.05, b.z)?.key === 'lava';
     this.lavaSpent = onLava && this.stats.get('lavaWalk') > 0 ? this.lavaSpent + dt : 0;
-    this.playerMedium = { ...m, feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
+    const slowWater = feet?.key === 'water' && (this.inSky || this.tempWater.near(this.world, Math.floor(b.x), Math.floor(b.y + 0.1), Math.floor(b.z)));
+    this.playerMedium = { ...m, feet: slowWater && feet ? { ...feet, wade: WATER_PACE } : feet, slippery: !!mat(this.world.get(Math.floor(b.x), Math.floor(b.y - 0.05), Math.floor(b.z))).slippery };
     this.actorEnterLeave(p.id, 'player', 'player', this.playerIn, m);
     // the hottest thing touching you hurts (the invulnerability window paces it)
     // fire that a blast of yours set alight does not hurt you inside its shield (Controlled Burn)
@@ -5563,6 +5620,7 @@ export class Game {
     const dashFrom = { x: b.x, y: b.y, z: b.z }, dashing = this.player.dashT > 0;
     // the branch courses move before the body does, and carry it when it stands on a moving piece (BRANCHES.md)
     if (below) for (const c of this.courses) c.update(this.time, dt, this.dw, b);
+    this.player.airShield = this.stats.get('airShield') >= 1;
     this.player.update(dt, inp, this.stats.all, solid, {
       jump: v => { const ev = this.bus.emit('jump', { velocity: v }); return ev.cancelled ? null : ev.velocity; },
       land: (fall, x, y, z) => {
@@ -5610,6 +5668,8 @@ export class Game {
     this.updateMissiles(dt);
     this.enemyElements(dt);
     this.enemies.update(dt);
+    this.tempWater.update(this.time);
+    this.updateSpheres(dt);
     this.blasts.run(b => this.blast(b));
     this.bus.flush();
     if (below) {

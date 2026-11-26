@@ -26,11 +26,12 @@ export const POUNCE_SIDE = 5;
 export const POUNCE_DROP = 2;
 export const CROUCH = 0.3;
 export const LEAP = 0.7;
-export const POUNCE_PUSH = 5;
+export const EFFECT = 3;
+export const POUNCE_PUSH = 5 * EFFECT;
 export const POUNCE_COOLDOWN = 6;
 /** The small roar: its reach, its freeze, how near the player must be, and its cooldown. */
 export const ROAR_REACH = 4;
-export const ROAR_HOLD = 1;
+export const ROAR_HOLD = 1 * EFFECT;
 export const ROAR_COOLDOWN = 9;
 /** The sign of the roar, the mane lifted (the ring's own warning runs with it). */
 export const ROAR_POSE = 1;
@@ -322,8 +323,8 @@ export function posePride(parts: Parts, p: PridePose) {
 
 export const lionMinion: MinionDef = {
   animal: 'lion',
-  max: 6, wildMax: 4,
-  spawn: { where: 'shade', warning: 1.5, every: 14 },
+  max: 60, wildMax: 40,
+  spawn: { where: 'shade', warning: 1.5, every: 3, batch: 6 },
   hitsToTurn: 4,
   gait: LION_GAIT,
   rules: [busy, pounceRule, roarRule, holderRule, watchedRule, stalkRule],
