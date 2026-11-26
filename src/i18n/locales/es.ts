@@ -73,8 +73,8 @@ export const ES: Catalog = {
     'controls.inventory.touch': 'Prácticas: la otra pestaña de la misma pantalla',
     'controls.doors.touch': 'Puertas',
     'controls.bomb.touch': 'La bomba',
-    'controls.throw.touch': 'El bloque en vuelo',
-    'controls.drink.touch': 'El frasco',
+    'controls.throw.touch': 'El botón de usar',
+    'controls.drink.touch': 'El botón de usar, con un frasco en la mano',
     'controls.place.touch': 'Toca el bloque sobre el que quieres poner el tuyo',
     'controls.pickup.touch': 'Pasar por encima',
     'controls.polarity.touch': 'Gira el móvil 180 grados, como un volante',
@@ -138,7 +138,7 @@ export const ES: Catalog = {
     'controls.launch': 'lanzar una bomba como misil (con Dr. Launcher)',
     'controls.dash.key': 'Doble toque en una dirección',
     'controls.dash.pad': 'Doble empujón del stick izquierdo',
-    'controls.dash.touch': 'Desliza por el lado izquierdo de la pantalla',
+    'controls.dash.touch': 'El botón del cuerpo mientras te mueves, o desliza por el lado izquierdo',
     'controls.dash': 'impulso de 4,5 bloques en esa dirección, intocable mientras avanzas (con Irimi)',
     'controls.run.key': 'Mayús',
     'controls.run.pad': 'L3',
@@ -146,7 +146,7 @@ export const ES: Catalog = {
     'controls.run': 'corres un 45% más rápido (con Fartlek o un Tónico de zancada)',
     'controls.crouch.key': 'C',
     'controls.crouch.pad': 'R3',
-    'controls.crouch.touch': 'Desliza hacia abajo desde el borde inferior del lado derecho',
+    'controls.crouch.touch': 'El botón del cuerpo (quieto, si también tienes Irimi)',
     'controls.crouch': 'agacharte, con alternancia (con la Postura del niño o una Tintura de repliegue): pasas huecos de 1 bloque, no caes por los bordes y recibes la mitad del contacto',
     'controls.doors.key': 'Puertas',
     'controls.doors': 'se abren al acercarte; las cerradas necesitan una llave',
@@ -632,7 +632,7 @@ export const ES: Catalog = {
     'potion.stride-tonic.name': 'Tónico de zancada',
     'potion.stride-tonic.effect': 'Durante {rooms} salas selladas, mantén Mayús (L3, o empuja el stick hasta su borde) para correr un 45% más rápido, como con Fartlek.',
     'potion.folding-tincture.name': 'Tintura de repliegue',
-    'potion.folding-tincture.effect': 'Durante {rooms} salas selladas, pulsa C para agacharte y vuelve a pulsarla para levantarte, o mantén Control para agacharte mientras lo aprietas (R3, o desliza hacia abajo desde el borde inferior derecho), como la postura del niño: 1 bloque más bajo, 45% de velocidad, la mitad del contacto, nunca por un borde.',
+    'potion.folding-tincture.effect': 'Durante {rooms} salas selladas, pulsa C para agacharte y vuelve a pulsarla para levantarte, o mantén Control para agacharte mientras lo aprietas (R3, o el botón del cuerpo en el móvil), como la postura del niño: 1 bloque más bajo, 45% de velocidad, la mitad del contacto, nunca por un borde.',
     'potion.rebirth.question': '¿Empezar de nuevo desde el primer piso? Tus prácticas vienen contigo; las llaves, las bombas, los corazones y lo que llevas empiezan de cero.',
     'potion.rebirth.begin': 'Empezar de nuevo',
     'potion.rebirth.stay': 'Todavía no',
@@ -1474,7 +1474,7 @@ export const ES: Catalog = {
       'walk-slow': {
         name: 'Camina Despacio',
         description: 'La lentitud no es quedarse atrás: es negarse a la prisa. Dóblate y quédate cerca del suelo, y la prisa del mundo se afloja a tu alrededor hasta que puedes ver todo lo que se mueve.',
-        effect: 'Agachado y con los pies en el suelo, todo el mundo va al 50% de velocidad: las proyecciones y sus disparos, tus intenciones, los bloques sueltos, los elementos y tu propio cuerpo (agachado caminas al 22,5% del paso normal). Tus intenciones salen desde tu altura agachado, y el sonido se ralentiza y se oscurece con el mundo. Levantarte o dejar el suelo lo termina al instante. Te da el agachado de la Postura del niño si no la tienes: pulsa C para agacharte y otra vez para levantarte, o mantén Control (R3, o desliza hacia abajo desde el borde inferior derecho, alterna).',
+        effect: 'Agachado y con los pies en el suelo, todo el mundo va al 50% de velocidad: las proyecciones y sus disparos, tus intenciones, los bloques sueltos, los elementos y tu propio cuerpo (agachado caminas al 22,5% del paso normal). Tus intenciones salen desde tu altura agachado, y el sonido se ralentiza y se oscurece con el mundo. Levantarte o dejar el suelo lo termina al instante. Te da el agachado de la Postura del niño si no la tienes: pulsa C para agacharte y otra vez para levantarte, o mantén Control (R3, o el botón del cuerpo en el móvil, alterna).',
         inspiredBy: 'Santiago Dopazo: «El acto más revolucionario que puedes llevar a cabo es caminar despacio»',
       },
       chunking: {
@@ -1623,7 +1623,7 @@ export const ES: Catalog = {
       irimi: {
         name: 'Irimi',
         description: 'Entrar, no retroceder. Cuando algo viene hacia ti, la salida no es hacia atrás: da el paso hacia el movimiento, rápido y limpio, y estarás en otro sitio antes de que llegue.',
-        effect: 'Doble toque en una dirección (doble empujón del stick, o desliza por el lado izquierdo) para impulsarte 4,5 bloques en esa dirección. Impulso hacia delante mirando hacia arriba para subir (hasta 3,5 bloques). Intocable mientras impulsas: cada proyección que atraviesas recibe 7 de daño, y los bloques en tu camino se rompen (hasta la piedra profunda; la obsidiana, los marcos y lo más duro te detienen, y el impulso nunca excava bajo tus pies). Enfriamiento de 0,8 s; un impulso en el aire hasta que aterrizas. En el agua, el impulso cubre la mitad del camino.',
+        effect: 'Doble toque en una dirección (doble empujón del stick, o el botón del cuerpo en el móvil) para impulsarte 4,5 bloques en esa dirección. Impulso hacia delante mirando hacia arriba para subir (hasta 3,5 bloques). Intocable mientras impulsas: cada proyección que atraviesas recibe 7 de daño, y los bloques en tu camino se rompen (hasta la piedra profunda; la obsidiana, los marcos y lo más duro te detienen, y el impulso nunca excava bajo tus pies). Enfriamiento de 0,8 s; un impulso en el aire hasta que aterrizas. En el agua, el impulso cubre la mitad del camino.',
         inspiredBy: 'Irimi, el paso de entrada del aikido',
       },
       fartlek: {
@@ -1635,7 +1635,7 @@ export const ES: Catalog = {
       balasana: {
         name: 'Postura del niño',
         description: 'Plegarse para descansar también es avanzar. Hazte pequeño y bajo: el cuerpo que se dobla pasa por debajo de lo que lo detendría y mantiene el equilibrio al borde.',
-        effect: 'Pulsa C para agacharte y vuelve a pulsarla para levantarte; mantén Control para estar agachado solo mientras lo aprietas (R3, o desliza hacia abajo desde el borde inferior derecho, alterna). Pasas huecos de 1 bloque, nunca caes por los bordes y recibes la mitad del contacto. Agachado te mueves al 45% de velocidad.',
+        effect: 'Pulsa C para agacharte y vuelve a pulsarla para levantarte; mantén Control para estar agachado solo mientras lo aprietas (R3, o el botón del cuerpo en el móvil, alterna). Pasas huecos de 1 bloque, nunca caes por los bordes y recibes la mitad del contacto. Agachado te mueves al 45% de velocidad.',
         inspiredBy: 'Balasana, la postura del niño del yoga',
       },
       drlauncher: {

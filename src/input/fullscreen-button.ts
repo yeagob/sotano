@@ -1,6 +1,7 @@
 import { onLocaleChange, t, type MessageKey } from '../i18n';
 import { onDeviceChange, type Input } from './input';
 import { canEnterFullscreen, enterFullscreen, showFullscreenButton } from './fullscreen';
+import { SLOT, slotStyle } from './touch-layout';
 
 // Four corners, drawn in the current colour: a plain outline that needs no pixel icon from the art agent yet.
 const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/></svg>';
@@ -20,6 +21,8 @@ export class FullscreenButton {
     this.el.type = 'button';
     this.el.className = 'tb sys';
     this.el.innerHTML = ICON;
+    // its place is in the touch layout, left of the tab button (src/input/touch-layout.ts)
+    for (const [k, v] of Object.entries(slotStyle(SLOT.fullscreen))) this.el.style.setProperty(k, v);
     this.el.addEventListener('click', () => void this.press());
     document.body.appendChild(this.el);
     document.addEventListener('fullscreenchange', () => this.sync());

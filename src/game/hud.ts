@@ -35,7 +35,8 @@ import type { Game } from './game';
 import { PHASE_WARN_S } from './phase';
 import { hurtEdge } from './hurt-feedback';
 import type { Carried } from '../entities/player';
-import { CONTROL_ROWS, type Device } from '../input/bindings';
+import { visibleControlRows, type ControlRow, type Device } from '../input/bindings';
+import { practiceReleaseCloses } from '../input/gestures';
 import { activeDevice, onDeviceChange } from '../input/input';
 import { controlKey, controlParams, forDevice, keyLabel } from '../input/labels';
 import type { CardKeys } from './achievement-keeper';
@@ -45,6 +46,7 @@ import { FOV_DEFAULT, FOV_MAX, FOV_MIN, FOV_STEP } from './settings';
 import { PRESENCE_TALK, type PresenceId } from '../content/presences';
 import { COVENANT_PIECES } from '../content/presences/covenant';
 import { mapKeyOutcome, starMapHtml } from './star-map';
+import { backdropResumes, hoverRedraws } from './menu-pointer';
 import { recipeBook, recipeBookHtml, recipesKeyOutcome } from './recipe-book';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -173,6 +175,8 @@ export class Hud {
   private lastItems: readonly ItemDef[] = [];
   private lastDepth = -1;
   private lastBanner: Parameters<Hud['itemBanner']> | null = null;
+  /** The press on the practice card in progress (#375): its pointer, where it started, and how far it moved. */
+  private press: { id: number; x: number; y: number; onCard: boolean; reach: number; path: number } | null = null;
   private lastCard: CardSpec | null = null;
   private lastPresenceOffer: { nameKey: MessageKey; carried: Carried | readonly Carried[] | undefined; questionKey?: MessageKey; gift: boolean; request?: PresenceRequestText; answers?: OfferAnswers } | null = null;
   /** The key of the held-item label last drawn (the flask in hand and its language), so it is not redrawn each frame. */
@@ -244,10 +248,23 @@ export class Hud {
     addEventListener('click', e => {
       const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-act]');
       if (el) { e.stopPropagation(); if (el.closest('#graphics')) el.blur(); this.onAct?.(el.dataset.act!); return; }
+      // the mouse: a click on the pause card's backdrop (outside the card, not its scrollbar) starts play, from the click
+      // itself; a press inside the menu never captures the mouse (input.ts capturesMouse, #356)
+      if (backdropResumes({ device: activeDevice(), screenOpen: this.screenOpen, onBackdrop: e.target === this.overlay, offsetX: e.offsetX, clientWidth: this.overlay.clientWidth })) {
+        this.onAct?.('resume');
+        return;
+      }
       if (activeDevice() !== 'touch' || this.screenOpen || !this.overlay.contains(e.target as Node)) return;
       if ((e.target as HTMLElement).closest('[data-lang], .seed, #graphics')) return;
       this.onAct?.('resume');
     });
+    // the practice card closes on the release of a tap, never on a press (#375, practiceReleaseCloses)
+    addEventListener('pointerdown', e => this.practicePress(e), true);
+    addEventListener('pointermove', e => this.practiceMove(e), true);
+    addEventListener('pointerup', e => this.practiceRelease(e), true);
+    addEventListener('pointercancel', () => { this.press = null; }, true);
+    // with the pointer locked, a wheel targets the canvas, not the card: the card still scrolls
+    addEventListener('wheel', e => { if (this.practiceOpen && !this.bannerEl.contains(e.target as Node)) this.scrollPractice(e.deltaY); }, { passive: true });
     // capture phase, like the seed: choosing a language must not also capture the mouse
     addEventListener('mousedown', e => {
       const b = (e.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-lang]');
@@ -291,10 +308,21 @@ export class Hud {
     for (const k of ['keyboard', 'gamepad', 'touch']) document.body.classList.toggle(`dev-${k}`, k === d);
   }
 
+  /** The controls list shows the rows the player meets (CONTROL_GATES). It starts with the basic rows only. */
+  private controlRows: readonly ControlRow[] = visibleControlRows({ stat: () => 0, holds: () => false, starMapSeen: false });
+
+  /** Redraws the controls list when the rows the player meets change (an item, a stat or the star map gained or lost). */
+  private syncControls(g: Game) {
+    const rows = visibleControlRows({ stat: n => g.stats.get(n), holds: id => g.inventory.has(id), starMapSeen: g.starMapSeen });
+    if (rows.length === this.controlRows.length && rows.every((r, i) => r === this.controlRows[i])) return;
+    this.controlRows = rows;
+    this.renderControls();
+  }
+
   private renderControls() {
     const d = activeDevice();
     const table = document.getElementById('controls');
-    if (table) table.innerHTML = CONTROL_ROWS.map(r =>
+    if (table) table.innerHTML = this.controlRows.map(r =>
       `<tr><td>${th(controlKey(r, d))}</td><td>${th(`controls.${r}` as MessageKey)}</td></tr>`).join('');
     const go = document.getElementById('play');
     if (go) go.textContent = t(forDevice('intro.play', d));
@@ -432,6 +460,7 @@ export class Hud {
     this.shakeT = Math.max(0, this.shakeT - dt);
     if (running) this.tickAchievement(dt);
     this.syncRecipesTab(g);
+    this.syncControls(g);
     // the screen is the overlay's tab while it is open; otherwise the pause card shows the menu
     this.showTab(this.screenOpen ? this.screenTab : 'menu');
     this.overlay.style.display = running || this.tollOpen || this.sanctuaryOpen || g.player.dead ? 'none' : 'flex';
@@ -882,6 +911,7 @@ export class Hud {
     this.lastPresenceOffer = null;
     this.lastPresenceChoice = null;
     delete this.bannerEl.dataset.offer;
+    delete this.bannerEl.dataset.practice;
     this.bannerEl.removeAttribute('role');
     this.bannerEl.removeAttribute('aria-modal');
     this.bannerEl.removeAttribute('aria-labelledby');
@@ -894,6 +924,7 @@ export class Hud {
     this.lastCard = null;
     this.clearPresenceOfferState();
     this.renderBanner(def, changes, synergies);
+    this.bannerEl.dataset.practice = 'true';
     this.bannerEl.classList.remove('show');
     void this.bannerEl.offsetWidth; // restart the entrance animation
     this.bannerEl.classList.add('show');
@@ -915,6 +946,37 @@ export class Hud {
       `<p class="effect">${esc(fill(tx.effect, controlParams(activeDevice())))}</p>` +
       (tx.inspiredBy ? `<small>${th('banner.inspired', { credit: tx.inspiredBy })}</small>` : '') +
       `${lines.concat(syn).join('')}<p class="dismiss">${th(forDevice('banner.continue', activeDevice()))}</p></div></div>`;
+  }
+
+  /** The practice card (the item banner) is on screen: its text scrolls, and a tap's release closes it (#375). */
+  get practiceOpen() { return this.bannerOpen && this.lastBanner !== null; }
+
+  /** Scrolls the practice card's text by `dy` pixels: the keyboard, the pad stick, a wheel the card does not get. */
+  scrollPractice(dy: number) {
+    this.bannerEl.querySelector<HTMLElement>('.ribbon')?.scrollBy({ top: dy });
+  }
+
+  private practicePress(e: PointerEvent) {
+    if (!this.practiceOpen) return;
+    this.press = { id: e.pointerId, x: e.clientX, y: e.clientY, onCard: this.bannerEl.contains(e.target as Node), reach: 0, path: 0 };
+  }
+
+  private practiceMove(e: PointerEvent) {
+    const p = this.press;
+    if (!p || p.id !== e.pointerId) return;
+    p.reach = Math.max(p.reach, Math.hypot(e.clientX - p.x, e.clientY - p.y));
+    // a locked pointer keeps its position: only the movement tells how far a mouse went
+    p.path += Math.hypot(e.movementX, e.movementY);
+  }
+
+  private practiceRelease(e: PointerEvent) {
+    const p = this.press;
+    this.press = null;
+    if (!p || p.id !== e.pointerId || !this.practiceOpen) return;
+    const target = e.target as Element | null;
+    const endedOnCard = this.bannerEl.contains(target as Node);
+    const endedOnClose = endedOnCard && !!target?.closest?.('.dismiss');
+    if (practiceReleaseCloses({ startedOnCard: p.onCard, endedOnCard, endedOnClose, travel: Math.max(p.reach, p.path) })) this.confirmBanner();
   }
 
   /** Information banners stay until the player clicks (owner rule). */
@@ -1159,6 +1221,7 @@ export class Hud {
   /** Opens the screen on a tab (or switches tabs when it is open). Opening pauses the world. */
   openScreen(g: Game, tab: ScreenTab) {
     this.game = g;
+    if (tab === 'map') g.starMapSeen = true;
     if (!this.screenOpen) {
       this.screenOpen = true;
       if (g.input.device === 'keyboard') g.input.unlockFor(); else g.input.release();
@@ -1444,7 +1507,9 @@ export class Hud {
       return slot;
     }));
     for (const b of this.invEl.querySelectorAll<HTMLElement>('.tile, .hand-row .slot')) {
-      b.addEventListener('mouseenter', () => { this.selected = b.dataset.id!; this.renderInventory(g); });
+      // only a new tile redraws: redrawing replaces the tile under the pointer, and a redraw between press and release
+      // would send the click to no tile (#356)
+      b.addEventListener('mouseenter', () => { if (hoverRedraws(this.selected, b.dataset.id!)) { this.selected = b.dataset.id!; this.renderInventory(g); } });
       b.addEventListener('click', () => {
         this.selected = b.dataset.id!;
         if (this.selected.startsWith('hand:')) g.chooseCarried(this.selectedCarried());

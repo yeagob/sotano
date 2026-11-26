@@ -66,21 +66,26 @@ export const relapseHp = (maxHp: number) => barStart(maxHp);
 export const meetsIntention = (faction: Faction, hp: number, maxHp: number, polarity: Polarity, responds?: Polarity) =>
   responds ? responds === polarity : faction === 'projection' || polarity === 'negative' || hp < maxHp;
 
-/** An actor as an intention sees it, before the hit. */
-export interface HitState { polarity: Polarity; faction: Faction; hp: number }
+/** An actor as an intention sees it, before the hit. `hostile`: the intention comes from the hostile side (the
+ *  Shadow's bolts and strokes), not from the player. */
+export interface HitState { polarity: Polarity; faction: Faction; hp: number; hostile?: boolean }
 
-/** What the hit does: the harm it takes off the bar, the love it adds, and whether an ally relapses. */
+/** What the hit does: the harm it takes off the bar, the love it adds, and whether an ally relapses. A relapse
+ *  comes first: with harm as well, the harm drains the bar from its middle. */
 export interface HitResolution { harm: number; love: number; relapse: boolean }
 
 /**
  * One intention hit, after the `actorDamage` hooks have had their say (`amount`). A negative
  * intention harms by the whole amount, and an ally it would bring to zero relapses instead of
- * dissolving. A positive intention adds the whole amount to a hostile being's bar: it never harms
+ * dissolving. A hostile negative intention (friendly fire, issue #372) turns an ally at once and
+ * harms it too. A positive intention adds the whole amount to a hostile being's bar: it never harms
  * one, so the route of light always ends in a conversion. (A positive intention on an ally heals it
- * before this point, in the game's `intentTouch`.)
+ * before this point, in the game's `intentTouch`.) Plain harm on an ally (a bomb, a touch, a hostile
+ * shot, lava) is resolved as a negative intention of the player's: it harms, and relapses at zero.
  */
 export function resolveHit(s: HitState, amount: number): HitResolution {
   if (s.polarity === 'negative') {
+    if (s.faction === 'self' && s.hostile) return { harm: amount, love: 0, relapse: true };
     if (s.faction === 'self' && s.hp - amount <= 0) return { harm: 0, love: 0, relapse: true };
     return { harm: amount, love: 0, relapse: false };
   }

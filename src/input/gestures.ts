@@ -2,6 +2,8 @@
 // swipe on the left side of the phone. Pure and DOM-free, so the tests drive them with plain numbers
 // (docs/design/built/practices/DASH.md §3). Directions are relative to the camera.
 
+import { TAP_SLOP } from './bindings';
+
 export type DashDir = 'forward' | 'back' | 'left' | 'right';
 
 /** Two presses of the same direction this close (seconds) are a double tap. */
@@ -77,4 +79,19 @@ export function swipeDir(dx: number, dy: number, seconds: number): DashDir | nul
   if (seconds > SWIPE_S || Math.hypot(dx, dy) < SWIPE_PX) return null;
   if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'right' : 'left';
   return dy < 0 ? 'forward' : 'back';
+}
+
+/** How one press on the practice card ended (#375): where it started and ended, and how far it travelled in pixels. */
+export interface PressRelease { startedOnCard: boolean; endedOnCard: boolean; endedOnClose: boolean; travel: number }
+
+/**
+ * The practice card's close rule (#375). A press closes the card only when it is a tap: its travel never passed the
+ * tap slop, so a drag, a scroll or a mouse look never closes it. A press that starts on the card closes it only when
+ * it ends on the card's close control ("Tap to continue"). A press that starts elsewhere closes it unless it ends on
+ * the card's text.
+ */
+export function practiceReleaseCloses(r: PressRelease): boolean {
+  if (r.travel > TAP_SLOP) return false;
+  if (r.startedOnCard) return r.endedOnClose;
+  return r.endedOnClose || !r.endedOnCard;
 }

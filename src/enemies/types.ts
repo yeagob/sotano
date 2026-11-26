@@ -47,6 +47,9 @@ export interface EnemyDef {
   id: string;
   kind?: BeingKind;
   responds?: Polarity;
+  /** Its bolts and strikes are intentions of this polarity (the Shadow's are cold): one that reaches an ally of the
+   *  player turns it hostile at once and harms it (friendly fire, POLARITY.md). Its touch and its bombs are plain harm. */
+  intends?: Polarity;
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
@@ -167,6 +170,15 @@ export interface EnemyCtx {
   hide(e: Enemy, hidden: boolean): void;
   arena(e: Enemy, what: string): void;
   summon(e: Enemy, defIds: string[]): void;
+  /** The beings the player befriended in this run that can be summoned, one entry per friend, in the order of the
+   *  run's ally tally (game/ally-tally.ts): projections, mended allies and creatures. Deities and bosses never come.
+   *  Read only: the Shadow takes them once, when its fight starts. Absent in a stand-in: no friends. */
+  allies?(): readonly string[];
+  /** Announces one being of `defId` near `e` (an omen on a standable cell 1.5 to 4 blocks from it), hostile, through
+   *  the game's one spawn path, so it rolls its own tier. False when nothing could be announced. */
+  summonNear?(e: Enemy, defId: string): boolean;
+  /** How many beings `e` summoned are alive and hostile, or still in their omen. */
+  summoned?(e: Enemy): number;
   /** The enemy's current target, or null (then it idles). */
   target(e: Enemy): TargetView | null;
   /** The nearest actor of the self (the player, its allies), whatever the enemy's side: peaceful

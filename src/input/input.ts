@@ -3,7 +3,7 @@ import {
   WHEEL_STEP_MS,
   type Action, type Device,
 } from './bindings';
-import { enterFullscreen } from './fullscreen';
+import { enterFullscreen, FullscreenEscape } from './fullscreen';
 import { DoubleFlick, DoubleTap, type DashDir } from './gestures';
 
 let current: Device = 'keyboard';
@@ -34,6 +34,16 @@ const LOOK_EVENT_MAX = 300;
 
 const clampLook = (v: number) => Number.isFinite(v) ? Math.max(-LOOK_EVENT_MAX, Math.min(LOOK_EVENT_MAX, v)) : 0;
 
+/**
+ * Whether a mouse press on `target` may capture the mouse (pointer lock). Never inside a menu: an element marked
+ * `data-menu` (the pause card, the menu panel and the screen: `#overlay` in index.html) keeps the pointer visible, so
+ * its controls get their click. Starting play from a menu is that menu's own click (`resume`), never the press (#356).
+ */
+export function capturesMouse(target: EventTarget | null): boolean {
+  const el = target as { closest?: (sel: string) => unknown } | null;
+  return !el?.closest?.('[data-menu]');
+}
+
 const BUTTON_ACTIONS =BINDINGS.filter(b => b.kind !== 'axis').map(b => b.action);
 
 export class Input {
@@ -59,6 +69,8 @@ export class Input {
   private flick = new DoubleFlick();
   private gestureNow: Gesture | null = null;
   private suppressed = new Set<Action>();
+  /** An Escape that leaves fullscreen is the browser's, not a menu key (issue #374). */
+  private fullscreenEscape = new FullscreenEscape();
   private lastTouch = -1e9;
   private expectUnlock = false;
   private skipLookEvent = false;
@@ -80,9 +92,11 @@ export class Input {
 
   constructor(private el: HTMLElement) {
     addEventListener('keydown', e => {
+      this.use('keyboard');
+      const inFullscreen = typeof document !== 'undefined' && !!document.fullscreenElement;
+      if (this.fullscreenEscape.takes(e.code, inFullscreen, performance.now())) return;
       if (!e.repeat && !this.keys.has(e.code)) this.pressed.add(e.code);
       this.keys.add(e.code);
-      this.use('keyboard');
       const dir = KEY_DIR[e.code];
       if (dir && !e.repeat && this.doubleTap.press(dir, performance.now() / 1000)) this.gesture('dash', dir, 'keyboard');
       if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
@@ -90,10 +104,11 @@ export class Input {
     addEventListener('keyup', e => this.keys.delete(e.code));
     addEventListener('blur', () => this.lost());
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.lost(); });
+    document.addEventListener('fullscreenchange', () => this.fullscreenEscape.changed(!!document.fullscreenElement, performance.now()));
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
-      if (!this.locked) { if (!this.engaged && !this.modal) this.lock(); return; }
+      if (!this.locked) { if (!this.engaged && !this.modal && capturesMouse(e.target)) this.lock(); return; }
       if (!this.mouse.has(e.button)) this.mousePressed.add(e.button);
       this.mouse.add(e.button);
     });
@@ -137,6 +152,11 @@ export class Input {
   get active(): boolean {
     return this.keys.size > 0 || this.mouse.size > 0 || this.lookDX !== 0 || this.lookDY !== 0 || this.padHeld.size > 0
       || this.padMove.x !== 0 || this.padMove.y !== 0 || this.touchHeld.size > 0 || this.touchMove.x !== 0 || this.touchMove.y !== 0;
+  }
+
+  /** Whether this frame's confirm came from a pointer (a touch, or a mouse button), not from a key or the pad (#375). */
+  get pointerConfirm(): boolean {
+    return this.touchPressed.has('confirm') || [...this.mousePressed].some(b => BINDING.confirm.keyboard.mouse?.includes(b));
   }
 
   get portrait() { return current === 'touch' && innerHeight > innerWidth; }

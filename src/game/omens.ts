@@ -28,6 +28,8 @@ export interface Omen {
   breached: boolean;
   /** Gather motes already emitted (the schedule's accumulator, see gatherMotesDue). */
   emitted: number;
+  /** The actor id of the being that summoned it near itself (the Shadow, issue #372), if one did. */
+  by?: number;
 }
 
 // ── The omen's motes (art: DECISIONS §3.6, §7.3) ──
@@ -115,6 +117,21 @@ export function farthestCell(cells: readonly Cell[], doors: readonly Cell[], pla
 }
 
 export const spawnBlocked =(o: Cell, player: Cell) => dist(o, player) < PLAYER_CLEARANCE;
+
+/** A summon comes this near its summoner, in blocks: out of its body, inside its reach. */
+export const SUMMON_NEAR: readonly [number, number] = [1.5, 4];
+
+/**
+ * A cell for a summon near `at` (issue #372), seeded through `rng`: SUMMON_NEAR from it, never within DOOR_CLEARANCE of
+ * a door nor PLAYER_CLEARANCE of the player (its omen would only wait). Null when no cell is clear.
+ */
+export function nearCell(cells: readonly Cell[], doors: readonly Cell[], at: Cell, player: Cell, rng: Rng): Cell | null {
+  const ok = cells.filter(c => {
+    const d = dist(c, at);
+    return d >= SUMMON_NEAR[0] && d <= SUMMON_NEAR[1] && doors.every(o => dist(c, o) >= DOOR_CLEARANCE) && dist(c, player) >= PLAYER_CLEARANCE;
+  });
+  return ok.length > 0 ? rng.pick(ok) : null;
+}
 
 /** How long a wave may stand before the next one opens anyway: stalling never empties a room. */
 export const WAVE_PATIENCE = 25;

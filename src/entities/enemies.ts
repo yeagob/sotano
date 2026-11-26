@@ -78,6 +78,10 @@ export interface EnemyHost {
   affectActor(target: Actor, effect: FieldEffect, seconds: number): void;
   arena(e: Enemy, what: string): void;
   summon(e: Enemy, defIds: string[]): void;
+  /** EnemyCtx.allies, summonNear and summoned (the Shadow's summons, issue #372). A host without them has no friends. */
+  allies?(): readonly string[];
+  summonNear?(e: Enemy, defId: string): boolean;
+  summoned?(e: Enemy): number;
   cue(kind: string, x: number, y: number, z: number): void;
   /** A heavy impact: the screen shakes by distance to the player, the floor at the point spits chips. */
   quake(x: number, y: number, z: number, power: number): void;
@@ -460,6 +464,9 @@ export class Enemies {
       hide: (e, hidden) => this.hide(e, hidden),
       arena: (e, what) => host.arena(e, what),
       summon: (e, ids) => host.summon(e, ids),
+      allies: () => host.allies?.() ?? [],
+      summonNear: (e, id) => host.summonNear?.(e, id) ?? false,
+      summoned: e => host.summoned?.(e) ?? 0,
       quake: (_e, x, y, z, power) => host.quake(x, y, z, power),
       crash: (e, dx, dz) => this.crash(e, dx, dz),
       rain: (e, x, y, z, damage) => this.rain(e, x, y, z, damage),
