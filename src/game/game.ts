@@ -196,6 +196,8 @@ function makeStars(): THREE.Points {
   return m;
 }
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
+const MAGNET_SPEED = 9;
+const POP_IN_PULL = 0.45;
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
 
 /** The seconds the Boatman's ferry takes to carry the player to the island (BOATMAN.md, proposed). */
@@ -252,7 +254,7 @@ interface RoomState {
 }
 
 /** A challenge room: every time you walk in, three waves (harder each wave and each visit). */
-interface ChallengeState { entries: number; wave: number; active: boolean; queue: string[]; next: number; wasInside: boolean }
+interface ChallengeState { entries: number; wave: number; active: boolean; done: boolean; queue: string[]; next: number; wasInside: boolean }
 const CHALLENGE_WAVES = 3;
 const WAVE_GAP = 1.4;
 /** The breath between two waves of a normal room (BESTIARY §2.4). */
@@ -2524,21 +2526,20 @@ export class Game {
   }
 
   /**
-   * Challenge rooms (Isaac's, for farming): walking in seals the doors and starts three waves, each
-   * harder than the last and every visit harder than the one before; each wave cleared drops a
-   * reward rolled on the room's own fork (wave and visit in the path). Leave and come back as often
-   * as you like.
+   * Challenge rooms: walking in seals the doors and starts three waves, each harder than the last;
+   * each wave cleared drops a reward rolled on the room's own fork (wave in the path). The waves run
+   * once: after the third is cleared the room stays open and never starts again.
    */
   private updateChallenges(dt: number) {
     const b = this.player.body;
     for (const r of this.rooms.values()) {
       if (r.type !== 'challenge') continue;
       let st = this.challenges.get(r.id);
-      if (!st) this.challenges.set(r.id, st = { entries: 0, wave: 0, active: false, queue: [], next: 0, wasInside: false });
+      if (!st) this.challenges.set(r.id, st = { entries: 0, wave: 0, active: false, done: false, queue: [], next: 0, wasInside: false });
       // inside its open space (a tunnel dug through the rock of an irregular room is not the room)
       const inside = b.x - b.hw > r.x0 && b.x + b.hw < r.x0 + r.w && b.z - b.hw > r.z0 && b.z + b.hw < r.z0 + r.d
         && inRoomSpace(r, b.x, b.z) && b.y > r.y0 - 3 && b.y < r.y0 + r.height;
-      if (!st.active && inside && !st.wasInside) {
+      if (!st.active && !st.done && inside && !st.wasInside) {
         st.entries++; st.wave = 0; st.active = true; st.next = 0.8;
         this.doors.seal(r.id, true);
         sfx3.seal();
@@ -2560,6 +2561,7 @@ export class Game {
       this.ejectRewards(ev.drops.map(k => this.pickups.add(k, r.hx + 6.5, r.y0 + 1, r.hz + 3.5, r.id, null, 0.3)), 3.2, 4);
       if (st.wave < CHALLENGE_WAVES) { this.nextWave(r, st); st.next = WAVE_GAP; sfx3.clear(); continue; }
       st.active = false;
+      st.done = true;
       this.doors.seal(r.id, false);
       this.roomState.get(r.id)!.cleared = true;
       this.hud.toast('toast.challengeDone');
@@ -4009,6 +4011,22 @@ export class Game {
       this.particles.burst(d.cx, d.cy, d.cz, mat(MAT.crate).colors[0], 30, 6, 0.14);
       this.particles.burst(d.cx, d.cy, d.cz, pal('ink.ash'), 16, 3, 0.2);
       sfx.break(2);
+    }
+  }
+
+  private pullPickups(dt: number) {
+    const reach = this.stats.get('magnet');
+    if (reach <= 0) return;
+    const b = this.player.body;
+    for (const p of this.pickups.list) {
+      if (p.taken || p.delay > 0 || p.homing || p.age < POP_IN_PULL) continue;
+      if (p.type !== 'key' && p.type !== 'bomb' && p.type !== 'heart') continue;
+      const dx = b.x - p.x, dy = b.y + 0.9 - p.y, dz = b.z - p.z;
+      const d = Math.hypot(dx, dy, dz);
+      if (d > reach || d < 1e-3) continue;
+      const step = Math.min(d, MAGNET_SPEED * dt);
+      p.x += (dx / d) * step; p.y += (dy / d) * step; p.z += (dz / d) * step;
+      p.flying = false; p.vx = 0; p.vy = 0; p.vz = 0;
     }
   }
 
@@ -5576,6 +5594,7 @@ export class Game {
     this.cubeStrikes();
     this.shoveCubes();
     if (below) this.updateCall(dt);
+    this.pullPickups(dt);
     this.touchPickups();
     if (below) this.touchChests();
     this.intents.update(dt);
