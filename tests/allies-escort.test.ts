@@ -17,6 +17,7 @@ import {
   narrow, nudgePlayer, overlaps, spacing, stepOf, yieldStep,
 } from '../src/enemies/escort';
 import type { EnemyDef } from '../src/enemies/types';
+import type { Tier } from '../src/enemies/tiers';
 import type { RoomInfo } from '../src/world/floor';
 import { buildRun } from './helpers';
 
@@ -71,9 +72,9 @@ function rig(s: Script, escort: boolean) {
     unsafe: s.unsafe,
   } : undefined);
   let next = 10;
-  const add = (def: string | EnemyDef, x: number, y: number, z: number, faction: Actor['faction'], room = 0) => {
+  const add = (def: string | EnemyDef, x: number, y: number, z: number, faction: Actor['faction'], room = 0, tier: Tier = 'black') => {
     const d = typeof def === 'string' ? ENEMY_BY_ID.get(def) ?? CREATURE_BY_ID.get(def)! : def;
-    const e = en.spawn(d, next++, room, x, y, z, birthHp(d), d.speed, d.contactDamage, new Set(CREATURE_BY_ID.has(d.id) ? ['creature'] : []));
+    const e = en.spawn(d, next++, room, x, y, z, birthHp(d), d.speed, d.contactDamage, new Set(CREATURE_BY_ID.has(d.id) ? ['creature'] : []), tier);
     e.spawning = 0; e.faction = faction;
     actors.push(e);
     return e;
@@ -560,5 +561,41 @@ describe('criterion 9: after the floor boss, allies stand still and face the pla
     expect(centres(e.body, start)).toBeLessThan(0.05);
     const yaw = r.en.viewOf(e.id)!.group.rotation.y;
     expect(yaw).toBeCloseTo(Math.atan2(r.player.body.x - e.body.x, r.player.body.z - e.body.z), 5);
+  });
+});
+
+describe('a tier climb and the ledge guard agree (#327 with #338)', () => {
+  /** A shelf `h` blocks high (x <= 6) over the floor the player stands on. */
+  const shelf = (h: number): Blocks => (x, y) => y < 0 || (x <= 6 && y < h);
+  function down(tier: Tier, h: number) {
+    const r = rig({ solid: shelf(h), px: 11.5, pz: 3.5 }, true);
+    const e = r.add('doubt', 2.5, h, 3.5, 'self', 0, tier);
+    let at = -1;
+    for (let i = 0; i < MAX_REACH_TICKS && at < 0; i++) { r.tick(); if (e.body.onGround && e.body.y < 0.01 && centres(e.body, r.player.body) <= FOLLOW_FAR + 0.5) at = i + 1; }
+    return at;
+  }
+
+  it('a yellow ally (climb 2) walks down a 2-block ledge and a red one (climb 3) a 3-block ledge to follow the player', () => {
+    expect(down('yellow', 2)).toBeGreaterThan(0);
+    expect(down('yellow', 2)).toBeLessThanOrEqual(MAX_REACH_TICKS);
+    expect(down('red', 3)).toBeGreaterThan(0);
+    expect(down('red', 3)).toBeLessThanOrEqual(MAX_REACH_TICKS);
+  });
+
+  it('a black ally still stops at a 2-block ledge', () => {
+    expect(down('black', 2)).toBe(-1);
+  });
+
+  it('a hostile of the same tiers walks the same path with and without the escort', () => {
+    for (const [tier, h] of [['yellow', 2], ['red', 3]] as [Tier, number][]) {
+      const path = (escort: boolean) => {
+        const r = rig({ solid: shelf(h), px: 11.5, pz: 3.5 }, escort);
+        const e = r.add('doubt', 2.5, h, 3.5, 'projection', 0, tier);
+        const out: number[] = [];
+        for (let i = 0; i < 240; i++) { r.tick(); out.push(e.body.x, e.body.y, e.body.z); }
+        return out;
+      };
+      expect(path(true)).toEqual(path(false));
+    }
   });
 });

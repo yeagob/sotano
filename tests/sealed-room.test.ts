@@ -1,5 +1,4 @@
 // Issue #301: rooms stayed sealed with no projection left to fight. Three causes, each reproduced
-import { Rng } from '../src/core/rng';
 // here, and the watchdog that recounts a sealed room from the real state.
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
@@ -24,7 +23,7 @@ function rig(blocks = new Set<string>(), px = 6.5, pz = 3.5) {
   const host = {
     solid, worldVersion: () => blocks.size, actors: () => [player], actor: (id: number) => (id === 1 ? player : undefined),
     room: () => ROOM, elemVersion: () => 0, pickupsIn: () => [],
-    hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
+    hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost;
