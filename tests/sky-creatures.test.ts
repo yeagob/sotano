@@ -512,4 +512,21 @@ describe('the puff (law 3.3)', () => {
     expect(h.log.toasts).toEqual(['toast.skyPuff']);
     expect(h.log.fx).toEqual(['puff', 'puff']);
   });
+  it('shows the intent-only toast at most once every few seconds after the first puff', () => {
+    const h = fakeHost();
+    const puff = new Puff(h.host);
+    const p = { x: 1, y: 1, z: 1 };
+    puff.at(p);
+    puff.at(p);
+    expect(h.log.toasts).toEqual(['toast.skyPuff']);
+    puff.update(2);
+    puff.at(p);
+    expect(h.log.toasts).toEqual(['toast.skyPuff']);
+    puff.update(2);
+    puff.at(p);
+    expect(h.log.toasts).toEqual(['toast.skyPuff', 'toast.skyIntentOnly']);
+    puff.at(p);
+    expect(h.log.toasts).toHaveLength(2);
+    expect(h.log.fx.filter(k => k === 'puff')).toHaveLength(5);
+  });
 });

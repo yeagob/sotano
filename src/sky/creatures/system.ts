@@ -183,6 +183,7 @@ export class SkyCreatures implements SkyCreaturesApi {
 
   /** Only the creatures of `floor` move; the others are parked (hidden, not updated) until the player comes back. */
   update(dt: number, floor: number) {
+    this.deps.puff.update(dt);
     for (const e of this.deities) {
       const on = e.def.floor === floor;
       e.actor.parked = !on;

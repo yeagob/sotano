@@ -553,6 +553,7 @@ export type MinionCtor = new (actor: SkyActor, def: MinionDef, plan: SkyFloorPla
 
 /** Law 3.3: every touch that is not positive goes out in a small puff. */
 export interface PuffApi {
+  update(dt: number): void;
   at(p: Vec3): void;
   /** The first puff of a run shows `toast.skyPuff`. */
   readonly shown: boolean;

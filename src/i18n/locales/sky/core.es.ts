@@ -9,6 +9,7 @@ export const SKY_CORE_ES: { [K in keyof typeof SKY_CORE_EN]: Message } = {
   'toast.skyEnter': 'Estás en el cielo. Nada de aquí te quita salud.',
   'toast.skyLeave': 'Caes de vuelta a la copa del árbol.',
   'toast.skyPuff': 'Solo una buena intención llega hasta aquí. Lo demás se disipa.',
+  'toast.skyIntentOnly': 'Solo las intenciones buenas la alcanzan.',
   'toast.gateOpens': 'El camino hacia arriba se abre.',
   'toast.towerDown': 'La torre se derrumba.',
   'sky.won': 'El guardián cede.',
