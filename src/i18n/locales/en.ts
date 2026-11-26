@@ -1002,6 +1002,7 @@ const messages = {
   'stat.crouch': 'Crouching',
   'stat.lavaWalk': 'Lava walking time',
   'stat.bombRadius': 'Bomb radius',
+  'stat.magnet': 'Magnet reach',
   'stat.bombDamage': 'Bomb power',
   'stat.twinCast': 'Hand turns',
   'stat.triad': 'Triangle',
