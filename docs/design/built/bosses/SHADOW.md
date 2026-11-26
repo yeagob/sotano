@@ -175,5 +175,5 @@ Stillness is a defeat like any other: the boss room opens and the way down is cr
 ## Open questions
 
 - **Integration.** The design says the Shadow shrinks into the player's hands. The build removes it with the usual release.
-- **Arena.** The design turns the frozen floor into mirrors. The build has no arena change.
+- **Arena.** The design turns the frozen floor into mirrors. The build gives the Shadow its own room, the biggest a floor holds, with the fight started across it and cover all over it ([Arenas](ARENAS.md#the-shadows-room-built)); the mirrors are not built, and the phase at a third of its health changes nothing in the room.
 - The mirror's own open questions, and the full design, are in [not-built/bosses/SHADOW.md](../../not-built/bosses/SHADOW.md).

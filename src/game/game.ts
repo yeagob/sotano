@@ -15,7 +15,7 @@ import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enem
 import { BOSS_BY_ID, bossFor, bossSpawnLife } from '../content/bosses';
 import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb, type BombBlast } from './bomb';
 import { enemyText, materialName, partText } from '../i18n/content';
-import {gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
+import {farthestCell, gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
@@ -2595,7 +2595,7 @@ export class Game {
   }
 
   /** A seeded spawn point among the room's standable floor cells (never by a door, away from the player). */
-  private spawnSpot(r: RoomInfo, seq: number): { x: number; y: number; z: number } {
+  private spawnSpot(r: RoomInfo, seq: number, far = false): { x: number; y: number; z: number } {
     const cells: Cell[] = [];
     for (let row = 0; row < r.d; row++) for (let col = 0; col < r.w; col++) {
       const cx = r.x0 + col, cz = r.z0 + row;
@@ -2606,7 +2606,7 @@ export class Game {
     const doors: Cell[] = this.doors.list.filter(d => d.rooms.includes(r.id)).map(d => ({ x: d.cx, z: d.cz }));
     const b = this.player.body;
     const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'spawn', seq);
-    const cell = pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
+    const cell = (far ? farthestCell(cells, doors, { x: b.x, z: b.z }) : pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng)) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
     let y = r.y0;
     while (y < r.y0 + 3 && this.solid(Math.floor(cell.x), y, Math.floor(cell.z))) y++;
     return { x: cell.x, y, z: cell.z };
@@ -5234,7 +5234,9 @@ export class Game {
   }
 
   private summonBoss(f: FloorResult, r: RoomInfo) {
-    const at = this.spawnSpot(r, 0);
+    // the Shadow's arena raises its boss at the far end of the room from you (RoomTemplate.bossStart, ARENAS.md)
+    const far = ROOM_TEMPLATES.find(tp => tp.id === r.template)?.bossStart === 'far';
+    const at = this.spawnSpot(r, 0, far);
     this.omens.push({ def: f.boss!, room: r.id, seq: 0, x: at.x, y: at.y, z: at.z, t: 0, breached: false, emitted: 0 });
     spatial.omenHum(at.x, at.y + 0.5, at.z, 'floor');
   }

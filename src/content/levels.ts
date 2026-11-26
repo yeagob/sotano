@@ -25,7 +25,7 @@ export interface LevelDef {
    *  practices lasts the whole run (review levels.md point 4). */
   vaults: boolean;
   /** Rooms in its plan. */
-  plan: { minRooms: number; maxRooms: number };
+  plan: { minRooms: number; maxRooms: number; bossBlock?: boolean };
   /** How much more often templates bigger than one cell are chosen where they fit (× their weight). */
   bigRooms: number;
   /** What its rooms are built from (material keys): the walls and ceiling, the floor under the
@@ -87,7 +87,7 @@ export const LEVELS: readonly LevelDef[] = [
   L(6, 'circle6', 'random', 'f3', { deep: 0.75, obsidian: 0.1, pockets: 0, ore: 0.1 }, { circle: 6, bigRooms: 3, lava: { layer: 0.25, pockets: 2, reach: 2 }, palette: { wall: 'darkbrick', floor: 'slate', trim: 'darkbrick' } }),
   L(7, 'circle7', 'random', 'f4', { deep: 0.85, obsidian: 0.15, pockets: 0, ore: 0.11 }, { circle: 7, bigRooms: 3.5, lava: { layer: 0.5, pockets: 3, reach: 2 }, palette: { wall: 'darkbrick', floor: 'darkbrick', trim: 'slate' } }),
   L(8, 'circle8', 'random', 'f4', { deep: 0.9, obsidian: 0.22, pockets: 0, ore: 0.12 }, { circle: 8, bigRooms: 4, lava: { layer: 1, pockets: 4, reach: 3 }, palette: { wall: 'darkbrick', floor: 'slate', trim: 'slate' } }),
-  L(9, 'circle9', 'random', 'f4', { deep: 0.9, obsidian: 0.3, pockets: 0, ore: 0.12 }, { circle: 9, bigRooms: 4, frozen: true, palette: { wall: 'darkbrick', floor: 'ashlar', trim: 'ashlar' } }),
+  L(9, 'circle9', 'random', 'f4', { deep: 0.9, obsidian: 0.3, pockets: 0, ore: 0.12 }, { circle: 9, bigRooms: 4, frozen: true, plan: { minRooms: 8, maxRooms: 11, bossBlock: true }, palette: { wall: 'darkbrick', floor: 'ashlar', trim: 'ashlar' } }),
 ];
 
 export const FIRST_FLOOR = 0;

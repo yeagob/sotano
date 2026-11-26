@@ -12,7 +12,7 @@ A boss room is one room of its floor. Entering it shuts its doors at once, with 
 
 ## 2. The boss rises
 
-The boss wakes 1.2 seconds after the player enters. An omen opens on a seeded floor cell of the room, away from the player: the cold motes gather, the crack opens, and the boss breaches out of it. The omen holds at its crack while the player stands within 3.5 blocks, as any projection's does. The boss then looks at the player and begins.
+The boss wakes 1.2 seconds after the player enters. An omen opens on a seeded floor cell of the room, away from the player (in the Shadow's room, on the open floor tile farthest from the player, at least 25 blocks away from either door: see [Arenas](ARENAS.md#the-shadows-room-built)): the cold motes gather, the crack opens, and the boss breaches out of it. The omen holds at its crack while the player stands within 3.5 blocks, as any projection's does. The boss then looks at the player and begins.
 
 The entrance omen lasts 1.5 seconds in total. The design asked for 2.5 seconds (see open questions).
 
