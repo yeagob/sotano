@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { BuildCount, CHILD_BUILD_BLOCKS } from './build-count';
 import { easeMaster, setMasterTarget, setWorldTimeScale, sfx, sfx2, sfx3, sfxKairos, spatial, unlockAudio } from '../audio/sfx';
 import { BlastQueue } from '../combat/blasts';
-import { allyHeal, convertedHp, intentDamage, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
+import { allyHeal, barShare, convertedHp, isConverted, meetsIntention, relapseHp, resolveHit, type Polarity } from '../combat/polarity';
 import { intentFromStats, Intents } from '../combat/intents';
 import { createWeapon, type Weapon, type WeaponHost } from '../combat/weapons';
 import { Missiles, MISSILE_RANGE, MISSILE_SPEED, muzzleBlocked } from '../combat/missiles';
@@ -240,7 +240,7 @@ const BREATH_REFILL = 4;
 /** A loose cube must fly at least this fast (blocks/s) to hurt a projection it hits. */
 const CUBE_HIT_SPEED = 4;
 
-/** An intention's touch on an actor: its polarity, and whether this touch may warm the target (once per stroke). */
+/** An intention's touch on an actor: its polarity, and whether this is the stroke's first touch on it (`warm`). */
 interface IntentTouch { polarity: Polarity; warm: boolean }
 
 interface Blast { x: number; y: number; z: number; radius: number; damage: number; actorDamage: number; source: string; owner: Owner; cause: Cause }
@@ -452,7 +452,8 @@ export class Game {
   get spiritNow() { return this.spirit; }
   get inSky() { return this.realm === 'sky'; }
   /** The stroke in progress (a swing, a beam or a great cut): its polarity, and the targets it has
-   *  already warmed, so a beam warms a projection once, not on every tick. */
+   *  already touched, so a beam grows a creature and carries its stroke's effects once, not on every tick
+   *  (each tick still moves a projection's bar by its own damage). */
   private stroke: { polarity: Polarity; warmed: Set<number>; intent: IntentSpec | null; weapon: WeaponId } = { polarity: 'positive', warmed: new Set(), intent: null, weapon: 'intent' };
   /** Bombs set off by a blast carry its chain to their own explosion. */
   private bombCause = new Map<number, Cause>();
@@ -2276,8 +2277,9 @@ export class Game {
 
   /**
    * An intention (a shot, or a stroke of a held weapon) touches an actor. A positive one heals an
-   * ally and halves its damage against a projection; a negative one hits an ally at full damage.
-   * The rules are in combat/polarity.ts. `warm` is false for the repeat ticks of a beam.
+   * ally and fills a hostile projection's bar by its whole damage; a negative one drains the bar, or
+   * hits an ally, by its whole damage. The rules are in combat/polarity.ts. `warm` is false for the
+   * repeat ticks of a beam (only a creature's growth reads it).
    */
   private intentTouch(id: number, damage: number, kx: number, kz: number, kind: DamageKind, source: string, polarity: Polarity, warm: boolean) {
     if (this.router.owns(id)) { this.router.touchBody(id, polarity, warm, kind); return; }
@@ -2300,7 +2302,7 @@ export class Game {
       const b = e.body;
       this.particles.burst(b.x, b.y + b.h * 0.6, b.z, pal('mat.dirt.base'), 4, 1, 0.05);
     }
-    this.damageActor(e, intentDamage(polarity, damage), kind, source, this.player.id, kx, kz, { polarity, warm });
+    this.damageActor(e, damage, kind, source, this.player.id, kx, kz, { polarity, warm });
   }
 
   private dropCreatureGrowthGift(e: Enemy) {
@@ -2350,9 +2352,10 @@ export class Game {
   }
 
   /**
-   * An enemy takes `amount` after the `actorDamage` hooks. Without an intention it is plain damage.
-   * With one, the rules of combat/polarity.ts decide (`resolveHit`): warmth, relapse, the ceiling
-   * of positive intentions, and conversion.
+   * An enemy takes `amount` after the `actorDamage` hooks. Without an intention it is plain harm. With
+   * one, the rules of combat/polarity.ts decide (`resolveHit`): harm drains a hostile's bar (at zero it
+   * is released), love fills it (at the top it converts), and an ally a negative hit brings to zero
+   * relapses. A boss runs on the same bar.
    */
   private hurtEnemy(e: Enemy, amount: number, kx: number, kz: number, intent?: IntentTouch): boolean {
     if (!intent) {
@@ -2361,12 +2364,17 @@ export class Game {
       if (e.alive) this.splitOnHit(e);
       return true;
     }
-    const r = resolveHit({ polarity: intent.polarity, warm: intent.warm, faction: e.faction, hp: e.hp, maxHp: e.maxHp, warmth: e.warmth, boss: e.spec.kind === 'boss' }, amount);
-    e.warmth = r.warmth;
+    const r = resolveHit({ polarity: intent.polarity, faction: e.faction, hp: e.hp }, amount);
     if (r.relapse) { this.relapse(e, kx, kz); return true; }
-    if (r.dealt > 0) this.enemies.hurt(e, r.dealt, kx, kz); // at zero it dissolves: a release
-    if (r.convert && e.alive) this.convert(e);
-    else if (e.alive && r.dealt > 0) this.splitOnHit(e);
+    if (r.love > 0) {
+      this.enemies.mend(e, r.love, kx, kz);
+      if (isConverted(e.hp, e.maxHp)) this.convert(e);
+      return true;
+    }
+    if (r.harm > 0) {
+      this.enemies.hurt(e, r.harm, kx, kz); // at zero it dissolves: a release
+      if (e.alive) this.splitOnHit(e);
+    }
     return true;
   }
 
@@ -2387,9 +2395,9 @@ export class Game {
     });
   }
 
-  /** A projection's warmth is full: it turns to your side (not destroyed). */
+  /** A projection's bar is full: it turns to your side (not destroyed), with half its health as an ally. */
   private convert(e: Enemy) {
-    e.hp = convertedHp(e.hp, e.maxHp);
+    e.hp = convertedHp(e.maxHp);
     this.setFaction(e, 'self', 'polarity');
     this.seeVariation(e);
     this.bus.emit('projectionConverted', { def: e.def, boss: e.spec.kind === 'boss' });
@@ -2402,12 +2410,11 @@ export class Game {
   }
 
   /**
-   * An ally at zero under a negative intention turns hostile again, with half its health. Not
+   * An ally at zero under a negative intention turns hostile again, its bar back in the middle. Not
    * resealed: a room that is cleared stays cleared (docs/reviews/polarity.md, ruling 5).
    */
   private relapse(e: Enemy, kx: number, kz: number) {
     e.hp = relapseHp(e.maxHp);
-    e.warmth = 0;
     e.flash = 0.15;
     e.body.vx += kx; e.body.vz += kz;
     this.setFaction(e, 'projection', 'polarity');
@@ -3291,7 +3298,7 @@ export class Game {
   /**
    * The love explosion (a positive missile): the bomb's sphere, but every block and actor in it is
    * touched as a positive intention touches it, with the blast's own damage as the amount. It mends
-   * blocks and never breaks one, heals allies, warms projections (half damage, never the last point),
+   * blocks and never breaks one, heals allies, fills hostile projections' bars by the blast's damage,
    * grows creatures, and never hurts you. It does not set bombs off or throw loose cubes.
    */
   private loveBlast(x: number, y: number, z: number, source: 'bomb' | 'missile') {
@@ -5254,7 +5261,8 @@ export class Game {
   private syncBossBar() {
     const st = [...this.bossRooms.values()].find(s => s.spawned && s.room === this.room);
     const boss = st && !this.player.dead ? this.enemies.list.find(e => e.alive && e.spec.kind === 'boss' && e.room === st.room) : undefined;
-    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.hp / boss.maxHp } : null);
+    // a hostile boss shows its bar (0 released, the middle at the start, full converted); the bar's ends are the endings
+    this.hud.bossBar(boss ? { name: enemyText(boss.spec).name, ratio: boss.faction === 'projection' ? barShare(boss.hp, boss.maxHp) : boss.hp / boss.maxHp, turn: boss.faction === 'projection' } : null);
   }
 
   /**

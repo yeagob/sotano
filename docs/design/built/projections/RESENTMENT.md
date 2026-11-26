@@ -20,7 +20,7 @@ Floors 3 and 4. Code: [resentment.ts](../../../../src/content/enemies/resentment
 
 ## How the player answers it
 
-Hit it early, while it is small. Good intentions do half damage and warm it; bad intentions do full damage. Keep out of the pools it leaves behind you.
+Hit it early, while it is small. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. Keep out of the pools it leaves behind you.
 
 ## Element affinities
 

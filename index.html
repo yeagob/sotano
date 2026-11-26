@@ -283,6 +283,10 @@
     #boss span { display: block; font-size: 14px; letter-spacing: 2px; margin-bottom: 4px; color: var(--ui-text-2); }
     #boss div { height: 6px; background: var(--pal-ink-void); border: 1px solid var(--pal-ink-bevel); }
     #boss i { display: block; height: 100%; width: 100%; background: var(--pal-cold-body); transition: width .25s; }
+    #boss div { position: relative; }
+    #boss b, #boss u { display: none; position: absolute; top: 0; height: 100%; }
+    #boss.turn b { display: block; left: 50%; width: 0; background: var(--pal-captive-ember); transition: width .25s; }
+    #boss.turn u { display: block; left: calc(50% - 1px); width: 2px; top: -2px; height: calc(100% + 4px); background: var(--pal-cold-white); }
 
     /* panels */
     #overlay { position: fixed; inset: 0; display: flex; padding: 16px; overflow-y: auto; background: color-mix(in srgb, var(--pal-ink-void) 55%, transparent); cursor: pointer; }
@@ -765,7 +769,7 @@
   <div id="banner"></div>
   <div id="achievement" aria-live="polite"></div>
   <div id="toast" class="slate"></div>
-  <div id="boss" hidden><span id="bossname"></span><div><i id="bossfill"></i></div></div>
+  <div id="boss" hidden><span id="bossname"></span><div><i id="bossfill"></i><b id="bosslove"></b><u></u></div></div>
   <div id="toll"></div>
   <div id="death"></div>
   <div id="fade"><i></i></div>

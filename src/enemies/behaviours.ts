@@ -6,6 +6,7 @@ import type { Behaviour, Enemy, EnemyCtx } from './types';
 import { fx } from '../core/fx';
 import { hash3 } from '../core/rng';
 import { leapAir } from './tiers';
+import { barRest } from '../combat/polarity';
 
 /**
  * Walk at the target and keep pressing on it (Doubt). With `hesitate`, it stops every so often to
@@ -339,7 +340,8 @@ export function phased(opt: { phases: Behaviour[]; arena: string[] }): Behaviour
   return {
     name: 'phased',
     update(e, ctx) {
-      const share = e.hp / e.maxHp;
+      // what is left of the fight, so love moves a boss through its phases as harm does (combat/polarity.ts)
+      const share = barRest(e.hp, e.maxHp);
       const stage = share <= 1 / 3 ? 2 : share <= 2 / 3 ? 1 : 0;
       if (stage > e.stage) {
         e.stage = stage;
@@ -364,7 +366,7 @@ export function sleep(opt: { wakeSpeed: number; wakeHurt?: number; then: Behavio
         e.wishX = 0; e.wishZ = 0; e.pulse = 0.05;
         // a push wakes it, and so does being hurt (`wakeHurt`, a share of its health): shots too weak
         // to move it must not leave it asleep for good (issue #314)
-        const hurt = opt.wakeHurt !== undefined && e.hp <= e.maxHp * (1 - opt.wakeHurt);
+        const hurt = opt.wakeHurt !== undefined && barRest(e.hp, e.maxHp) <= 1 - opt.wakeHurt;
         if (Math.hypot(e.body.vx, e.body.vz) > opt.wakeSpeed || hurt) { e.tags.delete('asleep'); ctx.cue(e, 'phase'); }
         return;
       }

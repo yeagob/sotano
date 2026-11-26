@@ -21,7 +21,7 @@ Floors 1 and 2. Code: [autopilot.ts](../../../../src/content/enemies/autopilot.t
 
 ## How the player answers it
 
-Step off the leg before it charges, or put a block on the route. Good intentions do half damage and warm it; bad intentions do full damage. It is easy to hit while it walks, because it does not chase you.
+Step off the leg before it charges, or put a block on the route. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. It is easy to hit while it walks, because it does not chase you.
 
 ## Element affinities
 

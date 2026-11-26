@@ -182,3 +182,23 @@ Open after this change:
 - **Bombs, blasts, lava, fire, kicks and contact** keep today's damage, as ruled. They release allies and projections alike.
 - **Owner to confirm** the negative colours (DECISIONS §14.1).
 - **Not built:** inhabitants, presences, the gifts of full-health allies, warmth decay, and the Threshold Guardian.
+
+## 5. The owner's ruling: one bar (2026-11-26)
+
+After playtesting, the owner replaced warmth and the positive ceiling with a single value. His words, translated: converting and killing are one bar; positive intentions fill it toward conversion and negative ones drain it toward death; it starts in the middle; at 0 the being dies and at 100 % it converts; it is relative to the being's own life, "no matter how much life it has" ("if it reaches twice the life you convert it, if it reaches 0 it dies"); and the damage needed to kill must equal the damage needed to convert.
+
+**Built** (`src/combat/polarity.ts`, `src/game/game.ts` `hurtEnemy`, `src/entities/enemies.ts` `mend`):
+
+- While a projection or a boss is hostile, its `hp` is the bar: 0 to `2 × maxHp`, starting at `maxHp`. `maxHp` stays its life. Warmth (`Enemy.warmth`, `WARMTH_PER_HIT` 0.2, `WARMTH_COOL` 0.25, `bossWarmth`), the positive halving (`POSITIVE_DAMAGE` 0.5, `intentDamage`) and the ceiling (`intentCeiling`) are removed.
+- A hit moves the bar by its whole damage after the `actorDamage` hooks: a positive one up (`love`), a negative one down (`harm`). Converting and killing a fresh being both take `maxHp` of damage. Before, any projection turned after 5 good hits whatever its life, and a boss after its whole health in raw damage (which the bar keeps). At the base damage of 3.5 a fresh projection now takes `ceil(maxHp / 3.5)` good hits: Noise (8) 3, Panic (14) 4, Doubt (24) 7, the median projection (32) 10, Backlog (120) 35; a tier multiplies its health and so both counts.
+- The first added rule of part 3 (a positive intention never kills a projection) holds by construction: love only fills. Plain harm (bombs, blasts, lava, fire, kicks, contact) drains the same bar.
+- Shells and armor guard against harm only; love passes them, as warmth did. So an armored being (Not Yet, Dogma) takes more hits to release than to turn: the bar's two halves are equal, its defence is not.
+- A converted projection comes back with half its maximum health as an ally (`TURN_HP`, as before; the bar is spent at the top, so "at least half" is exactly half). An ally that relapses starts its bar again in the middle (`relapseHp` = `maxHp`; before, half its health).
+- Readings of "life left" on a projection (`phased`, `sleep`'s `wakeHurt`, Dogma's decree) read `barRest`, the distance to the nearer end, so love moves a boss through its phases as harm does; `evasive` counts any move of the bar as a hit; Resentment's growth keeps its bar's share.
+- Bosses use the same bar. The Shadow can convert today (no rule stops a positive intention on it, and `boss.shadow.converted` counts `converted` and `stillness`), so it is on the bar too; its own third-of-health stillness ending and its "behind" test still read `hp / maxHp` (harm only) and are left to the Shadow's own work.
+- The events and their counts are unchanged: `projectionConverted` at the top, `projectionDestroyed` at zero after harm, `bossOvercome` with `converted` or `destroyed`.
+- The bar is drawn over every hostile projection, and the boss bar shows it for a boss ([DECISIONS §14.10](../art/DECISIONS.md)).
+
+**Tests:** `tests/polarity.test.ts` (the pure rules, rewritten) and `tests/bar-conversion.test.ts` (the real pipeline on a stand-in: start at 50 %, both directions, the events at each end, the same hits for both endings, the same share whatever the life, a shot-type change, the `actorDamage` hooks, plain harm, relapse, a boss, the Shadow, the bar's visibility and fills).
+
+**Not decided here, for the owner:** whether a heavy projection should take as many good hits as bad ones (the hit's damage as the step is the literal reading of "the same damage"), whether the bar drifts back to the middle over time, and whether armor should also slow love. This ruling did not go through a new three-party review: it is the owner's direct rule, built as stated.

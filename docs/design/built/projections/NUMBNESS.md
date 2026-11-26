@@ -20,7 +20,7 @@ Floor 9. Code: [numbness.ts](../../../../src/content/enemies/numbness.ts).
 
 ## How the player answers it
 
-Keep out of its field, and keep moving: its pace is slow. Good intentions do half damage and warm it; bad intentions do full damage.
+Keep out of its field, and keep moving: its pace is slow. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

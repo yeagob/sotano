@@ -23,8 +23,8 @@ This folder has one document per projection in the code: 40 documents. Sixteen a
 
 Every intention is good or bad. The loaded one is switched with the polarity key (F on the keyboard, see the controls) and the HUD shows which is loaded. Weapon strokes carry the polarity too.
 
-- **Good** against a hostile projection: half damage, and its warmth rises with each hit. At full warmth it turns to your side and becomes an ally that keeps its pattern.
-- **Bad** against a hostile projection: full damage. A projection it kills releases.
+- **Good** against a hostile projection: it fills its bar by the hit's damage. The bar runs from 0 to twice the projection's health and starts in the middle ([the bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26)); at the top it turns to your side and becomes an ally that keeps its pattern.
+- **Bad** against a hostile projection: it drains the same bar by the same damage. At zero the projection releases. A small bar over each hostile projection shows where it stands.
 - **Allies:** a good intention heals them, a bad one harms them. An ally at zero under a bad intention turns hostile again.
 - A room clears when no hostile projection is left. Allies do not keep doors shut.
 

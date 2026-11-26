@@ -20,7 +20,7 @@ Floors 7 to 9. Code: [hall-of-mirrors.ts](../../../../src/content/enemies/hall-o
 
 ## How the player answers it
 
-It stands still, so it is a fixed target. Keep out of the lines of its bolts, and use blocks as cover. Good intentions do half damage and warm it; bad intentions do full damage.
+It stands still, so it is a fixed target. Keep out of the lines of its bolts, and use blocks as cover. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

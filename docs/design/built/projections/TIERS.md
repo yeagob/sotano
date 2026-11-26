@@ -27,7 +27,7 @@ Built (issue #338, a hotfix). Any projection, and any boss except the Shadow, ca
 - **Damage** multiplies every hurt the projection deals: its touch, its strikes (rings, lines, sweeps, fields that sting), its shots and lobs, its bolts, its rockfalls and Panic's burst.
 - **Speed** multiplies the projection's own walking speed. A behaviour that sets its own run speed (a charge's run, an emitter's follow) keeps that speed.
 - **Climb** adds blocks to the tallest step a walker takes between two cells, up or down, and to the height of a leaper's arc (the flight time grows so it still lands on its mark).
-- Warmth is not touched: five good intentions still turn any projection, whatever its tier.
+- The tier's health multiplier also widens the [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26): the bar runs from 0 to twice the tiered health, so a Yellow or Red projection takes as many more good hits to turn as bad hits to release (owner, 2026-11-26; before, five good intentions turned any tier).
 - The numbers are the owner's (#338, "Decisions"); one function holds them for projections and bosses.
 
 ## When a tier appears

@@ -32,13 +32,13 @@ A boss's life is set when it spawns, from its floor and the run's seed: the floo
 | 8 | 712 to 1525 |
 | 9 | 910 to 1950 (no boss today: floor 9's keystone is the Shadow, exempt) |
 
-The HUD shows a health bar with the boss's name and its ratio of the life it spawned with, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there. Every boss but the Shadow may rise in a colour tier that multiplies this life ([colour tiers](../projections/TIERS.md)).
+The HUD shows the boss's bar with its name, only while the player is alive in the boss room and the boss is alive. It is hidden from the frame the player dies (under the death screen too), and it is hidden when a reset makes the new world, until a fight resumes there. A hostile boss runs on the same bar as every projection ([polarity](../encounters/POLARITY.md#the-bar-owner-2026-11-26)): it runs from 0 to twice the life it spawned with and starts in the middle; a centre mark shows the start, harm empties the cold part toward 0 and love fills the captive part past the middle toward the top. Every boss but the Shadow may rise in a colour tier that multiplies this life ([colour tiers](../projections/TIERS.md)).
 
 A boss's touch deals 8, the same as a full heart. Its shots and ground attacks are in [Attacks](../encounters/ATTACKS.md).
 
 ## 4. Phases
 
-A boss has three phases. The phase changes when its health falls to two thirds and to one third.
+A boss has three phases. The phase changes when what is left of its fight falls to two thirds and to one third: the distance from its bar to the nearer end, so harm and love both move it through its phases (the Shadow reads its own health, harm only: see [The Shadow](SHADOW.md)).
 
 When a phase changes:
 
@@ -92,8 +92,8 @@ Each boss has a breaking strength (its `breaks` field) and breaks soft blocks as
 
 A boss is defeated when:
 
-- its health reaches zero (the usual case), or
-- it is converted by positive intentions: its warmth fills and it turns to the player's side (see [polarity](../encounters/POLARITY.md)), or
+- its bar reaches zero (the usual case), or
+- its bar reaches twice its life under positive intentions and it turns to the player's side (see [polarity](../encounters/POLARITY.md)): the same damage as destroying it, or
 - it is the Shadow and the player stands still beside it for three seconds (see [The Shadow](SHADOW.md)).
 
 Any of these runs the same defeat (`bossDown`):
@@ -127,6 +127,6 @@ The owner's verdict on the first bosses was that they felt weak: few and poor at
 ## Open questions
 
 - **Entrance omen.** The design asks for a 2.5-second omen where the whole arena's motes converge and the floor cracks along the boss's outline. The code uses the standard 1.5-second omen and no outline crack.
-- **Convertible bosses.** The code lets a positive intention convert any boss: warmth fills, the boss stays alive at half health on the player's side, and the room is counted defeated. The design gives conversion to the Threshold Guardian only. Should the other bosses be convertible, and should a converted boss stay as an ally, or end as a release?
+- **Convertible bosses.** The code lets a positive intention convert any boss through the bar, the Shadow included: the bar fills, the boss stays alive at half health on the player's side, and the room is counted defeated. The design gives conversion to the Threshold Guardian only. Should the other bosses be convertible, and should a converted boss stay as an ally, or end as a release?
 - **Floors 6 to 9.** Their bosses still use the older single-behaviour phases for some moves. The gap between each boss's built phases and its design is in its document.
 - **Release.** A defeated boss dissolves. The design says its blocks become architecture (a stair, a bridge, a light, a door). That is not built: see [Voxel bodies](../../not-built/bosses/VOXEL-BODIES.md).

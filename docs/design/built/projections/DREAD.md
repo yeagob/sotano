@@ -20,7 +20,7 @@ Floors 6 to 9. Code: [dread.ts](../../../../src/content/enemies/dread.ts). It is
 
 ## How the player answers it
 
-The ring is announced by its lead. Stay out of its path or let it pass over you; its height is 1.4 blocks. Good intentions do half damage and warm it; bad intentions do full damage.
+The ring is announced by its lead. Stay out of its path or let it pass over you; its height is 1.4 blocks. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

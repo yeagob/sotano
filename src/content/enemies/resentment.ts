@@ -16,8 +16,10 @@ const grudge: Behaviour = {
     }
     if (e.clock >= GROWTH_EVERY && e.maxHp < birthHp(e.spec) * 2) {
       e.clock = 0;
-      e.maxHp = Math.min(birthHp(e.spec) * 2, e.maxHp * 1.2);
-      e.hp = Math.min(e.maxHp, e.hp * 1.2);
+      // it grows, and its bar keeps its place: love already given and harm already done stay the same share
+      const grown = Math.min(birthHp(e.spec) * 2, e.maxHp * 1.2);
+      e.hp *= grown / e.maxHp;
+      e.maxHp = grown;
       e.pulse = 0.6;
     }
     walk.update(e, ctx);

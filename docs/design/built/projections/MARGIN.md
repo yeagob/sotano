@@ -20,7 +20,7 @@ Floors 3 to 6. Code: [margin.ts](../../../../src/content/enemies/margin.ts). It 
 
 ## How the player answers it
 
-Step off a mark: the mark slows you while you stand in it. It stands still, so it is an easy target from a distance. Good intentions do half damage and warm it; bad intentions do full damage.
+Step off a mark: the mark slows you while you stand in it. It stands still, so it is an easy target from a distance. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

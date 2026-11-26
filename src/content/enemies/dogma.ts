@@ -1,9 +1,10 @@
 import { pal } from '../palette';
+import { barRest } from '../../combat/polarity';
 import { emitter } from '../../enemies/behaviours';
 import { defineEnemy, TX, type Enemy, type EnemyCtx } from '../../enemies/types';
 
 const decree = (e: Enemy, ctx: EnemyCtx) => {
-  const share = e.hp / e.maxHp;
+  const share = barRest(e.hp, e.maxHp);
   const effect = share > 0.5 ? 'mute' : share > 0.25 ? 'slow' : 'sting';
   ctx.strike(e, { lead: 0.6, live: 4, damage: 2, shape: { kind: 'field', x: e.body.x, y: e.body.y, z: e.body.z, r: 3, effect } });
 };

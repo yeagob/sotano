@@ -185,7 +185,7 @@ Status: provisional, to confirm. The owner decided that the panda has special at
 
 ### B4. Defeat by positive hits
 
-- **Hit count:** target 24 positive hits. For comparison, a built floor 1 boss has 140 health, about 40 bad hits; a good intention's warmth converts any built boss in about 5 hits, which is an open question of the built fight flow.
+- **Hit count:** target 24 positive hits. For comparison, a built floor 1 boss has 140 health, about 40 bad hits; in the built game good intentions convert a boss with the same damage (its bar runs from 0 to twice its health, starting in the middle), so about 40 good hits too.
 - **What counts:** a positive intention that touches the panda's body or head in any state. The panda has no guard; it is the gentlest floor.
 - **Progress (target):** each positive hit leaves one short gold mark of light on the plush body where it lands, and the marks gather until the body is covered. As they gather, the heavy lids open a little more, as if it were waking. The sign is a target until the owner confirms it.
 - **Allies:** an ally that reaches the seat and sits against the panda adds one positive hit every target 4 s while it sits. At most target 2 allies sit at once.

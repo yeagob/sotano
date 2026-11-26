@@ -20,7 +20,7 @@ Floors 2 to 5. Code: [procrastination.ts](../../../../src/content/enemies/procra
 
 ## How the player answers it
 
-Each hit makes more of it, so a fight with Procrastination is a fight with its splits. Good intentions do half damage and warm it; bad intentions do full damage. Its splits are the real danger when a room is crowded.
+Each hit makes more of it, so a fight with Procrastination is a fight with its splits. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. Its splits are the real danger when a room is crowded.
 
 ## Element affinities
 

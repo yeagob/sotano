@@ -20,7 +20,7 @@ Floors 5 to 9. Code: [backlog.ts](../../../../src/content/enemies/backlog.ts). I
 
 ## How the player answers it
 
-Keep out of the crates' arc, and use blocks as cover. Good intentions do half damage and warm it; bad intentions do full damage.
+Keep out of the crates' arc, and use blocks as cover. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

@@ -23,7 +23,7 @@ import { PALETTE, PATH_GLYPH, PATHS, pal, palCss, type PalToken } from '../conte
 import { PART_ICONS } from '../content/part-icons';
 import { flaskDef } from '../content/potions';
 import { CRACK_STAGES } from '../content/tiles';
-import { buildModel, paintAllied } from '../entities/enemies';
+import { BAR_LIFT, buildBar, buildModel, paintAllied, setBar } from '../entities/enemies';
 import { TIERS, type Tier } from '../enemies/tiers';
 import { pickupMesh } from '../entities/pickups';
 import { doorTexture, logTopCanvas, materialCanvas, paintCracks, type DoorLook } from '../render/atlas';
@@ -251,6 +251,21 @@ export function runGallery(params: URLSearchParams) {
         }, 260, 320, 3.6, e.size[1] / 2, bg);
         fig(r, c, `${e.id} · ${tier === 'black' ? '' : `${tier} · `}${ally ? 'ally · ' : ''}${bg}`);
       }
+    }
+    // the bar over a hostile projection (DECISIONS §14.10): released at 0, fresh at the middle, converted at the top
+    head('The bar over a projection: 10 %, 50 % (fresh), 75 %, 95 % of the way from release to conversion');
+    const bars = row();
+    const def = ENEMIES.find(e => e.id === (only ?? 'doubt')) ?? ENEMIES[0];
+    for (const tier of tiers) for (const share of [0.1, 0.5, 0.75, 0.95]) for (const bg of ['rock.f1.base', 'mat.deepstone.base'] as PalToken[]) {
+      const c = three(scene => {
+        const g = new THREE.Group(), v = buildModel(def, tier), bar = buildBar();
+        setBar(bar, share * 2 * 10, 10);
+        bar.group.position.y = def.size[1] + BAR_LIFT;
+        bar.group.rotation.y = -angle; // the turntable turns the body; the bar faces the camera, as in play
+        g.add(v.group, bar.group);
+        scene.add(g); return g;
+      }, 260, 320, 3.6, def.size[1] / 2 + 0.25, bg);
+      fig(bars, c, `${def.id} · ${tier === 'black' ? '' : `${tier} · `}${Math.round(share * 100)} % · ${bg}`);
     }
   }
 

@@ -20,7 +20,7 @@ Floors 7 and 8. Code: [spark.ts](../../../../src/content/enemies/spark.ts).
 
 ## How the player answers it
 
-Step out of the arc's line. Good intentions do half damage and warm it; bad intentions do full damage.
+Step out of the arc's line. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage.
 
 ## Element affinities
 

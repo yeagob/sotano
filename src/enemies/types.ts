@@ -92,6 +92,9 @@ export interface Enemy extends Actor {
   readonly kind: 'projection';
   /** The definition (`Actor.def` holds its id). */
   spec: EnemyDef;
+  /** Its life. While hostile, `hp` is its place on the bar from 0 to 2 × maxHp, starting at maxHp: harm drains
+   *  it (0 releases it), love fills it (the top turns it to your side). As an ally, `hp` is plain health up to
+   *  maxHp (combat/polarity.ts). */
   maxHp: number;
   /** Size multiplier: 1 at birth, up to GROWTH_MAX for a creature that love shots have grown (entities/growth.ts). */
   scale: number;
@@ -112,8 +115,6 @@ export interface Enemy extends Actor {
   /** The element its body is in now (null on dry ground), and seconds until the element can hurt it again. */
   inElement: ElementKey | null;
   elemT: number;
-  /** Intention warmth, 0–1: positive intentions fill it, and at full warmth it turns to your side (combat/polarity.ts). */
-  warmth: number;
   /** Visual-only: hit flash and scale pulse. */
   flash: number;
   pulse: number;

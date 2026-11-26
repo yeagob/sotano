@@ -20,7 +20,7 @@ Floors 6 to 9. Code: [not-yet.ts](../../../../src/content/enemies/not-yet.ts).
 
 ## How the player answers it
 
-Keep the pressure on, so that it does not get four seconds without a hit. Good intentions do half damage and warm it; bad intentions do full damage. Its armour applies after either.
+Keep the pressure on, so that it does not get four seconds without a hit. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. Its armour applies after either.
 
 ## Element affinities
 

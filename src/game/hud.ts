@@ -117,6 +117,7 @@ export class Hud {
   private toastEl = $('toast');
   private bossEl = $('boss');
   private bossFill = $('bossfill');
+  private bossLove = $('bosslove');
   private bossName = $('bossname');
   private heartsEl = $('hearts');
   private heartsRow = $('hearts-row');
@@ -381,14 +382,20 @@ export class Hud {
     }));
   }
 
-  /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
-  bossBar(boss: { name: string; ratio: number } | null) {
+  /** The boss bar. With `turn` it is the conversion bar of a hostile boss (combat/polarity.ts): a centre mark,
+   *  the cold fill up to the middle and the captive fill past it, so harm empties it and love fills it to the
+   *  top (DECISIONS §14.10). Without it, a plain fill (an allied boss, the sky's presences). */
+  bossBar(boss: { name: string; ratio: number; turn?: boolean } | null) {
     this.bossEl.hidden = !boss;
     if (!boss) return;
     this.bossName.textContent = boss.name;
-    this.bossFill.style.width = `${Math.max(0, Math.min(1, boss.ratio)) * 100}%`;
+    const r = Math.max(0, Math.min(1, boss.ratio));
+    this.bossEl.classList.toggle('turn', !!boss.turn);
+    this.bossFill.style.width = `${(boss.turn ? Math.min(r, 0.5) : r) * 100}%`;
+    this.bossLove.style.width = `${(boss.turn ? Math.max(0, r - 0.5) : 0) * 100}%`;
   }
 
+  /** The loaded intention's polarity: a static mark (filled = positive, ring = negative), set only when it changes. */
   setPolarity(p: Polarity) {
     this.lastPolarity = p;
     this.renderPolarity();

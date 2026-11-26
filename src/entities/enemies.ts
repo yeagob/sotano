@@ -18,6 +18,7 @@ import {
   across, approaching, entrySpot, holdLedge, isAlly, keepClear, laneSide, nudgePlayer, overlaps, spacing, stepOf, yieldStep, type Escortee,
 } from '../enemies/escort';
 import { allyColor, climbOf, FALTER_ENABLED, falterTargets, FALTER_SECONDS, tierModel, tierMultipliers, type Tier } from '../enemies/tiers';
+import { barLove, barShare, barTop } from '../combat/polarity';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
@@ -112,10 +113,64 @@ export interface View {
 
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
-/** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
- *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest
- *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
+/** A projection whose bar love has filled past the middle: your light held captive inside it (DECISIONS §2),
+ *  so the dim captive ramp, never gold: gold on a living projection would read as an ally. It grows with
+ *  the upper half of the bar (`barLove`), and it is gone the moment the being turns. */
 const WARM_GLOW = new THREE.Color(pal('captive.ember')).multiplyScalar(0.35);
+
+/** The bar over a hostile projection (DECISIONS §14.10), in texels: 12 wide, 2 tall, its centre mark 1 × 4, set
+ *  BAR_LIFT blocks over the head. One geometry and four materials serve every bar. */
+const BAR_W = 12 * (1 / 16), BAR_H = 2 * (1 / 16);
+export const BAR_LIFT = 0.3;
+const BAR_BOX = new THREE.BoxGeometry(1, 1, 1);
+const BAR_MATS = {
+  track: new THREE.MeshBasicMaterial({ color: pal('ink.void') }),
+  harm: new THREE.MeshBasicMaterial({ color: pal('cold.body') }),
+  love: new THREE.MeshBasicMaterial({ color: pal('captive.ember') }),
+  mark: new THREE.MeshBasicMaterial({ color: pal('cold.white') }),
+};
+export interface BarView { group: THREE.Group; harm: THREE.Mesh; love: THREE.Mesh }
+
+/** A bar's meshes, its front (+z) toward whoever reads it: a 1-texel `ink.void` frame round the track, the
+ *  two fills, and the `cold.white` centre mark that stands for the start. */
+export function buildBar(): BarView {
+  const group = new THREE.Group();
+  const part = (mat: THREE.MeshBasicMaterial, w: number, h: number, z: number) => {
+    const m = new THREE.Mesh(BAR_BOX, mat);
+    m.scale.set(w, h, 1 / 64);
+    m.position.z = z;
+    group.add(m);
+    return m;
+  };
+  part(BAR_MATS.track, BAR_W + 2 / 16, BAR_H + 2 / 16, 0);
+  const harm = part(BAR_MATS.harm, 1, BAR_H, 1 / 64);
+  const love = part(BAR_MATS.love, 1, BAR_H, 1 / 64);
+  part(BAR_MATS.mark, 1 / 16, BAR_H + 2 / 16, 2 / 64);
+  return { group, harm, love };
+}
+
+/** Sets a bar's fills to a being's health on its bar. */
+export function setBar(bar: BarView, hp: number, maxHp: number) {
+  const f = barFills(hp, maxHp);
+  bar.harm.visible = f.harm > 1e-4;
+  bar.harm.scale.x = Math.max(1e-4, f.harm);
+  bar.harm.position.x = -BAR_W / 2 + f.harm / 2;
+  bar.love.visible = f.love > 1e-4;
+  bar.love.scale.x = Math.max(1e-4, f.love);
+  bar.love.position.x = f.love / 2;
+}
+
+/** Who carries the bar: a hostile projection on the field. A boss shows it in the HUD's boss bar instead,
+ *  an ally carries none (its inversion is its sign, DECISIONS §14.6), and a creature has no side to turn. */
+export const showsBar = (e: Pick<Enemy, 'faction' | 'spec' | 'spawning' | 'hidden'>) =>
+  e.faction === 'projection' && (e.spec.kind ?? 'projection') === 'projection' && e.spawning <= 0 && !e.hidden;
+
+/** The two fills of a bar at this health, in blocks along the bar from its left end: the cold part runs from
+ *  the left end up to the middle at most, the captive part from the middle on. */
+export function barFills(hp: number, maxHp: number) {
+  const at = barShare(hp, maxHp) * BAR_W;
+  return { harm: Math.min(at, BAR_W / 2), love: Math.max(0, at - BAR_W / 2) };
+}
 
 export function buildModel(def: EnemyDef, tier: Tier = 'black'): View {
   const group = new THREE.Group();
@@ -150,6 +205,10 @@ export function paintAllied(v: View, allied: boolean) {
 export class Enemies {
   readonly list: Enemy[] = [];
   private views = new Map<number, View>();
+  /** The bars over hostile projections, built on first show (`drawBar`). */
+  private bars = new Map<number, BarView>();
+  /** Where the bars face: the player's eye, read once per update. */
+  private eye: { x: number; z: number } | null = null;
   private flows = new Map<string, FlowField>();
   private lastDt = 0;
   private projectiles: Projectile[] = [];
@@ -194,6 +253,9 @@ export class Enemies {
     this.scene.remove(this.group);
     this.scene.remove(this.projMesh);
     this.hazards.dispose();
+    // the bars share one geometry and four materials with every other set: take them out before freeing the rest
+    for (const bar of this.bars.values()) this.group.remove(bar.group);
+    this.bars.clear();
     this.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
   }
 
@@ -213,7 +275,7 @@ export class Enemies {
       id, kind: 'projection', def: def.id, spec: def, faction: 'projection', room, hp, maxHp: hp, scale: 1, speed, contactDamage, tags,
       body: { x, y, z, vx: 0, vy: 0, vz: 0, hw: def.size[0], h: def.size[1], onGround: false },
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
-      elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
+      elemSpeed: 1, inElement: null, elemT: 0,
       hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
       tier, climb: m.climb, power: m.damage,
     };
@@ -276,6 +338,15 @@ export class Enemies {
     return true;
   }
 
+  /** Love reaches a hostile projection: its bar fills by `amount`, never past the top (combat/polarity.ts). A
+   *  shell or armor guards against harm only, so love passes them; it still flashes, resets the clock and pushes. */
+  mend(e: Enemy, amount: number, kx: number, kz: number) {
+    e.hp = Math.min(barTop(e.maxHp), e.hp + amount);
+    e.clock = 0;
+    e.flash = 0.15;
+    e.body.vx += kx; e.body.vz += kz;
+  }
+
   takeCarried(id: number): PickupKind[] {
     const kinds = this.carrying.get(id) ?? [];
     this.carrying.delete(id);
@@ -330,6 +401,8 @@ export class Enemies {
       v.group.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
       this.views.delete(e.id);
     }
+    const bar = this.bars.get(e.id);
+    if (bar) { this.group.remove(bar.group); this.bars.delete(e.id); }
   }
 
   hide(e: Enemy, hidden: boolean) {
@@ -345,6 +418,8 @@ export class Enemies {
     this.lastDt = dt;
     const host = this.host;
     const actors = [...host.actors()];
+    const you = actors.find(a => a.kind === 'player');
+    this.eye = you ? { x: you.body.x, z: you.body.z } : null;
     const ctx: EnemyCtx = {
       dt,
       target: e => this.target(e, actors),
@@ -948,12 +1023,30 @@ export class Enemies {
     // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
       if (e.flash > 0) m.emissive.copy(HURT_FLASH);
-      else if (e.warmth > 0) m.emissive.copy(WARM_GLOW).multiplyScalar(e.warmth);
+      else if (!allied && e.hp > e.maxHp) m.emissive.copy(WARM_GLOW).multiplyScalar(barLove(e.hp, e.maxHp));
       else m.emissive.setRGB(0, 0, 0);
     }
     v.tells.forEach((m, i) => {
       m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse));
       if (allied) m.color.setHex(allyColor(m.color.getHex()));
     });
+    this.drawBar(e);
+  }
+
+  /** The bar over a hostile projection: unlit, facing the player, in the fog like the body. */
+  private drawBar(e: Enemy) {
+    let bar = this.bars.get(e.id);
+    const show = showsBar(e);
+    if (!show) { if (bar) bar.group.visible = false; return; }
+    if (!bar) {
+      bar = buildBar();
+      this.group.add(bar.group);
+      this.bars.set(e.id, bar);
+    }
+    const b = e.body;
+    bar.group.visible = true;
+    bar.group.position.set(b.x, b.y + b.h + BAR_LIFT, b.z);
+    if (this.eye) bar.group.rotation.y = Math.atan2(this.eye.x - b.x, this.eye.z - b.z);
+    setBar(bar, e.hp, e.maxHp);
   }
 }

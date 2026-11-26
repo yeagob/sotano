@@ -20,7 +20,7 @@ All floors. Code: [panic.ts](../../../../src/content/enemies/panic.ts). The rost
 
 ## How the player answers it
 
-Stay outside its burst radius while it swells. Good intentions do half damage and warm it; bad intentions do full damage, and a kill releases it. A burst that breaks blocks often opens a way forward.
+Stay outside its burst radius while it swells. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage, and a kill releases it. A burst that breaks blocks often opens a way forward.
 
 ## Element affinities
 

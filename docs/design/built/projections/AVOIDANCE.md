@@ -20,7 +20,7 @@ Floors 1 and 2. Code: [avoidance.ts](../../../../src/content/enemies/avoidance.t
 
 ## How the player answers it
 
-It can be hit only while it is peeking. Good intentions do half damage and warm it; bad intentions do full damage. Wait for the peek.
+It can be hit only while it is peeking. Good intentions fill its [bar](../encounters/POLARITY.md#the-bar-owner-2026-11-26) toward conversion and bad intentions drain it toward release, by the same damage. Wait for the peek.
 
 ## Element affinities
 
