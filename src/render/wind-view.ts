@@ -88,7 +88,7 @@ export class WindView {
   private x = new THREE.Vector3(1, 0, 0);
   private d = new THREE.Vector3();
 
-  constructor(scene: THREE.Scene, from: number) {
+  constructor(scene: THREE.Object3D, from: number) {
     this.motes = new WindMotes(from);
     const mat = new THREE.MeshBasicMaterial({ color: pal(MOTE_TOKEN), transparent: true, opacity: 0.7, depthWrite: false });
     this.mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat, MOTE_MAX);
