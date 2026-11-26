@@ -93,6 +93,8 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
   let status: HTMLElement | null = null;
   let fpsEl: HTMLElement | null = null;
   let godBtn: HTMLButtonElement | null = null;
+  let flyBtn: HTMLButtonElement | null = null;
+  let ghostBtn: HTMLButtonElement | null = null;
   const button = (text: string, act: () => void) => {
     const b = el('button', undefined, text);
     b.type = 'button';
@@ -102,6 +104,8 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
 
   const refresh = () => {
     if (godBtn) { godBtn.textContent = t(bench.god ? 'test.god.on' : 'test.god.off'); godBtn.classList.toggle('on', bench.god); }
+    if (flyBtn) { flyBtn.textContent = t(bench.fly ? 'test.fly.on' : 'test.fly.off'); flyBtn.classList.toggle('on', bench.fly); }
+    if (ghostBtn) { ghostBtn.textContent = t(bench.ghost ? 'test.ghost.on' : 'test.ghost.off'); ghostBtn.classList.toggle('on', bench.ghost); }
     if (fpsEl) fpsEl.textContent = t('test.fps', { n: fps.value });
     if (!status) return;
     status.textContent = game.inSky
@@ -121,6 +125,9 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
     panel.append(el('h3', undefined, t('test.god')));
     godBtn = button('', () => { bench.setGod(!bench.god); refresh(); });
     panel.append(godBtn, el('p', undefined, t('test.god.hint')));
+    flyBtn = button('', () => { bench.setFly(!bench.fly); refresh(); });
+    ghostBtn = button('', () => { bench.setGhost(!bench.ghost); refresh(); });
+    panel.append(flyBtn, el('p', undefined, t('test.fly.hint')), ghostBtn, el('p', undefined, t('test.ghost.hint')));
 
     panel.append(el('h3', undefined, t('test.floors')), el('p', undefined, t('test.floors.hint')));
     const floors = el('div', 'grid');
@@ -130,10 +137,18 @@ export function mountTestPanel(game: BenchGame, helpers: BenchHelpers): TestBenc
       }));
     }
     floors.append(button(t('test.floors.sky'), () => bench.sky()));
+    for (let k = 1; k <= 5; k++) {
+      floors.append(button(t('test.floors.go', { n: k, name: t(`level.sky${k}` as MessageKey) }), () => {
+        if (!bench.skyFloor(k) && status) status.textContent = t('test.where.busy');
+      }));
+    }
+    floors.append(button(t('test.floors.go', { n: 6, name: t('test.g.totality.title') }), () => {
+      if (!bench.skyFloor(6) && status) status.textContent = t('test.where.busy');
+    }));
     panel.append(floors);
 
     panel.append(el('h3', undefined, t('test.sky')));
-    panel.append(button(t('test.sky.refill'), () => { bench.refillSpirit(); refresh(); }), el('p', undefined, t('test.sky.noTeleport')));
+    panel.append(button(t('test.sky.refill'), () => { bench.refillSpirit(); refresh(); }), el('p', undefined, t('test.sky.hint')));
 
     panel.append(el('h3', undefined, t('test.items')), el('p', undefined, t('test.items.hint')));
     panel.append(button(t('test.items.all'), () => bench.giveAll()));
