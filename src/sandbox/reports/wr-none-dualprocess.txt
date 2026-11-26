@@ -5,7 +5,7 @@ t 0 (0.0 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices dualprocess · synergies —
   doubt#2 hp 24.0/24 · projection · at 5.5 0.0 3.5
-  doubt#3 hp 24.0/24 · projection · at 6.5 0.0 5.5
+  doubt#3 hp 36.0/36 · projection · at 6.5 0.0 5.5
   blocks —
   elements —
   cubes — · pickups 0
@@ -14,7 +14,7 @@ t 90 (1.5 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices dualprocess · synergies —
   doubt#2 hp 4.4/24 · projection · at 5.2 0.0 3.5
-  doubt#3 hp 24.0/24 · projection · at 4.8 0.0 5.5
+  doubt#3 hp 36.0/36 · projection · at 4.5 0.0 5.5
   blocks —
   elements —
   cubes — · pickups 0
@@ -24,7 +24,7 @@ t 180 (3.0 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices dualprocess · synergies —
   doubt#2 hp 4.4/24 · projection · at 3.7 0.0 3.5
-  doubt#3 hp 24.0/24 · projection · at 2.7 0.0 4.6
+  doubt#3 hp 36.0/36 · projection · at 2.3 0.0 4.3
   blocks —
   elements —
   cubes — · pickups 0
@@ -38,4 +38,4 @@ map t 180 · h 0
   .............
   .............
 
-legend 
+legend

@@ -50,7 +50,7 @@ t 600 (10.0 s)
   blocks —
   elements —
   cubes — · pickups 0
-  events actorDamage:player<item 1 · actorDeath:player 1 · death 1 · playerDied 1
+  events actorDamage:player<item 1 · actorDeath:player 1 · death 1 · land 1 · playerDied 1
 
 map t 600 · h 0
   .............
