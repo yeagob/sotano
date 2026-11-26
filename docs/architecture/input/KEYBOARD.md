@@ -39,6 +39,8 @@ A click anywhere captures the mouse (`Input.lock()`); Esc releases it and the pa
 
 Opening the screen releases the lock on purpose (`Input.unlockFor()`), so the cursor can click tiles and buttons while the game stays "engaged"; closing it with the keyboard captures the mouse again. Esc closes the screen when it is open.
 
+**Esc in fullscreen (#374).** The browser takes Esc to leave fullscreen, and the game reads the same key for pause and back. An Esc that leaves fullscreen is the browser's alone: the open menu stays open and its buttons work, and the next Esc closes it as usual. Outside fullscreen Esc keeps its meaning. The rule is `FullscreenEscape` in `src/input/fullscreen.ts`, used by `Input`: an Esc that goes down while the page is fullscreen is not read, and neither is one that goes down within 500 ms after the page left fullscreen on its own (the browser may report the key after the exit). The keys themselves do not change. Tested in `tests/fullscreen.test.ts`.
+
 ## 3. Details
 
 - Key repeat never creates a new press (`KeyboardEvent.repeat` is ignored), so holding Tab or E across a lock change does nothing twice.

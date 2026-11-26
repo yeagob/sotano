@@ -3,7 +3,7 @@ import {
   WHEEL_STEP_MS,
   type Action, type Device,
 } from './bindings';
-import { enterFullscreen } from './fullscreen';
+import { enterFullscreen, FullscreenEscape } from './fullscreen';
 import { DoubleFlick, DoubleTap, type DashDir } from './gestures';
 
 let current: Device = 'keyboard';
@@ -59,6 +59,8 @@ export class Input {
   private flick = new DoubleFlick();
   private gestureNow: Gesture | null = null;
   private suppressed = new Set<Action>();
+  /** An Escape that leaves fullscreen is the browser's, not a menu key (issue #374). */
+  private fullscreenEscape = new FullscreenEscape();
   private lastTouch = -1e9;
   private expectUnlock = false;
   private skipLookEvent = false;
@@ -80,9 +82,11 @@ export class Input {
 
   constructor(private el: HTMLElement) {
     addEventListener('keydown', e => {
+      this.use('keyboard');
+      const inFullscreen = typeof document !== 'undefined' && !!document.fullscreenElement;
+      if (this.fullscreenEscape.takes(e.code, inFullscreen, performance.now())) return;
       if (!e.repeat && !this.keys.has(e.code)) this.pressed.add(e.code);
       this.keys.add(e.code);
-      this.use('keyboard');
       const dir = KEY_DIR[e.code];
       if (dir && !e.repeat && this.doubleTap.press(dir, performance.now() / 1000)) this.gesture('dash', dir, 'keyboard');
       if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
@@ -90,6 +94,7 @@ export class Input {
     addEventListener('keyup', e => this.keys.delete(e.code));
     addEventListener('blur', () => this.lost());
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.lost(); });
+    document.addEventListener('fullscreenchange', () => this.fullscreenEscape.changed(!!document.fullscreenElement, performance.now()));
     document.addEventListener('mousedown', e => {
       if (performance.now() - this.lastTouch < 1000) return;
       this.use('keyboard');
