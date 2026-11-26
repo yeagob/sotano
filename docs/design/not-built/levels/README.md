@@ -11,6 +11,7 @@ The built levels are in [built/levels](../../built/levels/README.md). This folde
 | [TREE-CORE.md](TREE-CORE.md) | built in part, open | What issues #328 (the core), #317 (the gaps) and #329 (the six branches) still leave open, now that the broken climb and the six branch courses are built |
 | [FLOOR-KINDS.md](FLOOR-KINDS.md) | proposal, open | The trunk, branches and leaves as maps of rooms, and the contradiction with seven stories |
 | [ROUTE-FROM-ROOTS.md](ROUTE-FROM-ROOTS.md) | decided, not built | The climb from the roots to the surface, however you can |
+| [WIND-ABOVE-THE-CROWN.md](WIND-ABOVE-THE-CROWN.md) | proposal, open | What issue #373 leaves open about the wind above the crown: how the Lion's shield stops it, the stars' route in the wind, a sound, the turn's warning |
 | [TREE-CONSTELLATIONS.md](TREE-CONSTELLATIONS.md) | proposal, open | Where the constellations belong: the leaves (design) or the heaven zone (build) |
 | [ENDING-AND-RETURN.md](ENDING-AND-RETURN.md) | open | What ends a run, the mechanism of the silence and heaven loop, and the link between heaven and the bottom |
 | [TOLL-OPEN.md](TOLL-OPEN.md) | open | Whether the fifth floor asks for a practice |

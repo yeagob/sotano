@@ -32,6 +32,8 @@ The pads carry no teleport. Stepping onto a pad does nothing: the route is the o
 
 The pads keep their cells for the whole run: they are made once, when the tree's stars are grown, and never change.
 
+The whole route lies in the wind: from the disc up, every hop is blown by a wind that turns every 3 seconds ([WIND](WIND.md)). The route's tests walk it without the wind; whether every hop must stay crossable in any wind is open ([WIND-ABOVE-THE-CROWN](../../../not-built/levels/WIND-ABOVE-THE-CROWN.md)).
+
 ## The way from the crown
 
 The stair from the canopy rises past the Leaves and comes out on the disc; the first pad lies on the disc, so you walk onto it. From there the route is climbed with the Triple Jump: each hop is a jump from one pad's centre, with an air jump at each apex, to the next pad. The jump practice waits in the Leaves on the way up ([LEAVES](LEAVES.md), issue #316). Tested in `tests/star-pads.test.ts` (every hop fits, the real player body crosses the route by jumps on several seeds, and the same route fails without the Triple Jump) and in `tests/leaves-gift.test.ts` (from the ring of the Leaves to the top pad, and by the jumps from the top pad into the cloud layer).
