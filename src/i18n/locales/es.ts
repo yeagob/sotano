@@ -998,6 +998,7 @@ export const ES: Catalog = {
     'stat.crouch': 'Agacharse',
     'stat.lavaWalk': 'Tiempo caminando sobre lava',
     'stat.bombRadius': 'Radio de bomba',
+    'stat.magnet': 'Alcance del imán',
     'stat.bombDamage': 'Potencia de bomba',
     'stat.twinCast': 'Turnos de manos',
     'stat.triad': 'Triángulo',

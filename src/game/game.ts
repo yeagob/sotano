@@ -183,6 +183,8 @@ function makeStars(): THREE.Points {
   return m;
 }
 /** Pickup colours for bursts: the key's gold, the seed's ember, life's red. */
+const MAGNET_SPEED = 9;
+const POP_IN_PULL = 0.45;
 const PICKUP_FX = { key: pal('light.gold'), bomb: pal('light.ember'), heart: pal('life.heart') } as const;
 
 /** The seconds the Boatman's ferry takes to carry the player to the island (BOATMAN.md, proposed). */
@@ -3851,6 +3853,22 @@ export class Game {
     }
   }
 
+  private pullPickups(dt: number) {
+    const reach = this.stats.get('magnet');
+    if (reach <= 0) return;
+    const b = this.player.body;
+    for (const p of this.pickups.list) {
+      if (p.taken || p.delay > 0 || p.homing || p.age < POP_IN_PULL) continue;
+      if (p.type !== 'key' && p.type !== 'bomb' && p.type !== 'heart') continue;
+      const dx = b.x - p.x, dy = b.y + 0.9 - p.y, dz = b.z - p.z;
+      const d = Math.hypot(dx, dy, dz);
+      if (d > reach || d < 1e-3) continue;
+      const step = Math.min(d, MAGNET_SPEED * dt);
+      p.x += (dx / d) * step; p.y += (dy / d) * step; p.z += (dz / d) * step;
+      p.flying = false; p.vx = 0; p.vy = 0; p.vz = 0;
+    }
+  }
+
   private touchPickups() {
     const b = this.player.body;
     for (const p of this.pickups.list) {
@@ -5385,6 +5403,7 @@ export class Game {
     this.cubeStrikes();
     this.shoveCubes();
     if (below) this.updateCall(dt);
+    this.pullPickups(dt);
     this.touchPickups();
     if (below) this.touchChests();
     this.intents.update(dt);
