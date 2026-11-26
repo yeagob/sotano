@@ -2,7 +2,7 @@
 
 Up: [rooms](README.md) · Status: built.
 
-A challenge room is a room you come back to. Every time you walk in, three waves of projections come at you, harder each time, and you may stay for as long as you like. The owner asked for it for farming: a room to test yourself in and to win from again.
+A challenge room is a room you walk into once. The first time you walk in, three waves of projections come at you, each harder than the last. Once the third wave is down the room stays open and its waves never run again. The owner decided on 2026-11-26 that the waves launch only once.
 
 ## Where it is
 
@@ -13,16 +13,16 @@ A challenge room is a room you come back to. Every time you walk in, three waves
 
 ## What a visit is
 
-1. **Enter.** When you step inside the room's open space (not a tunnel dug through its rock), its doors seal and the first wave is announced.
+1. **Enter.** When you step inside the room's open space (not a tunnel dug through its rock) for the first time, its doors seal and the first wave is announced. A room that is already done never seals again.
 2. **Waves.** A wave is a group of projections, spawned one at a time with a short gap between them. There are three waves per visit. The next wave starts once the last one is down, after a pause.
 3. **Reward.** Each wave that is cleared rolls for a reward, a heart, a bomb or a key, with luck added for the wave number. The room's clear table is the one used for every room.
-4. **Done.** After the third wave the doors open again, the room is marked cleared, and a toast says the challenge is overcome: "come back for more".
+4. **Done.** After the third wave the doors open again, the room is marked cleared, and a toast says the challenge is overcome.
 
 Timing (built): the first wave after eight-tenths of a second; a spawn every 0.45 seconds within a wave; 1.4 seconds between waves.
 
-## Harder each time
+## Harder each wave
 
-Every visit is harder than the one before, and every wave of a visit is harder than the wave before it. The projections chosen for a wave depend on the floor, the wave number, and the number of earlier visits, so repeat visits draw from a richer set.
+Every wave is harder than the one before it. The projections chosen for a wave depend on the floor and the wave number.
 
 ## Not built here
 
