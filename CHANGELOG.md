@@ -6,6 +6,9 @@ Changes to the tutorial and to the book are listed without their content, so not
 
 ## Unreleased
 
+### Added
+- Stretch, a body practice: keys, bombs and hearts on the floor within 3 blocks fly to you.
+
 ### Changed
 - A challenge room's three waves run once: after the third is cleared the room stays open and does not start again.
 

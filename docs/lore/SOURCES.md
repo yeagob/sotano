@@ -79,6 +79,7 @@ Living traditions of indigenous nations of the Americas are presented as traditi
 | `controlled-burn` | Controlled (prescribed) burns in forest management: a small fire set on purpose removes the fuel for a large one | Land practice | Concept | A little fire that you light yourself keeps the big one away | Controlled Burn |
 | `gestalt-insight` | The Gestalt "aha" of sudden insight (Max Wertheimer, Wolfgang Köhler) | Psychology concept | Concept ("the aha moment", "insight") | Insight arrives all at once as a whole, not step by step | Bolt from the Blue |
 | `serendipity` | The word coined by Horace Walpole (letter of 1754, after "The Three Princes of Serendip") | Word | Public domain (the word) | Finding what you were not looking for, by staying open to it | Serendipity |
+| `stretch` | Yoga and its stretching postures (asanas) | Practice tradition | Public domain (ancient practice) | Reaching further and opening the body, the habit of stretching | Stretch |
 | `art-therapy` | Art therapy; the idea that making art transforms people | Therapy / principle | Concept | Creating gives form to what can't be said; the maker is changed by the making | **Art Therapy** (building heals you); placing blocks as creation |
 | `cbt` | Cognitive behavioural therapy | Therapy | Concept | Exposure; Socratic questioning; reframing | **Exposure**, **Socratic Questioning** |
 | `dbt` | Dialectical behaviour therapy | Therapy | Concept | Radical acceptance | **Radical Acceptance** |

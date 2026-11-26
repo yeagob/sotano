@@ -1,0 +1,35 @@
+# stretch-pull — Stretch: a key on the floor 2 blocks away flies to the player and is taken
+floor 1 · seed 1 · room 13×7×5 · 120 ticks (2.0 s)
+
+t 0 (0.0 s)
+  player hp 24/24 · at 5.5 3.0 3.5 · hand [] · bombs 99 · keys 99
+  practices stretch · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 0
+
+t 60 (1.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices stretch · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 1
+  events land 1 · pickupCollect 1 · roomEnter 1
+
+t 120 (2.0 s)
+  player hp 24/24 · at 5.5 0.0 3.5 · hand [] · bombs 99 · keys 99
+  practices stretch · synergies —
+  blocks —
+  elements —
+  cubes — · pickups 1
+
+map t 120 · h 0
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+  .............
+
+legend
