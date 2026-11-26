@@ -72,6 +72,7 @@ const SAMPLES: { [K in keyof GameEvents]: () => GameEvents[K] } = {
   synergyOn: () => ({ synergy: 'embodied' }),
   presenceMet: () => ({ presence: 'boatman' }),
   branchPracticesAll: () => ({ practices: 6 }),
+  illumination: () => ({ friends: 5 }),
   heartLost: () => ({ heart: 'blue' }) as const,
   berserkChange: () => ({ on: true }),
   doorBreak: () => ({ door: 101, locked: false, source: 'bomb' }),

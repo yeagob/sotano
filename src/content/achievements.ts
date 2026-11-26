@@ -12,10 +12,11 @@
  * five of #179: `playerDied`, `surfaceEnter`, `blockPlaced`, `bookBack`, `bedrockTouch` (all React only), and
  * `completionFull`, emitted once when the completion percentage reaches 100 (COMPLETION.md §8), and the three of the
  * block, projection and state-of-being achievements: `projectionConverted`, `projectionDestroyed` and `synergyOn`, and the
- * presences' first exchange, `presenceMet` (one per presence, the codex's rule), and `branchPracticesAll`, the six practices
- * of the giant tree's branches held in one run (#329).
+ * presences' first exchange, `presenceMet` (one per presence, the codex's rule), `branchPracticesAll`, the six practices
+ * of the giant tree's branches held in one run (#329), and the ending of illumination, `illumination` (issue #351, once
+ * per run when the Sun's light is full).
  */
-export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll'] as const;
+export const ACHIEVEMENT_EVENTS = ['bossOvercome', 'meditationComplete', 'brew', 'cook', 'pageReached', 'playerDied', 'surfaceEnter', 'blockPlaced', 'bookBack', 'bedrockTouch', 'treeStory', 'completionFull', 'projectionConverted', 'projectionDestroyed', 'synergyOn', 'presenceMet', 'branchPracticesAll', 'illumination'] as const;
 export type AchievementEvent = (typeof ACHIEVEMENT_EVENTS)[number];
 
 export type WhereValue = string | number | boolean | readonly (string | number)[];
@@ -155,6 +156,8 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   // The giant tree's six branches (#329, the owner's criterion): the six branch practices held in the same run (1). It is
   // what opens "Andar despacio" (Camina Despacio, #340; the hook in src/game/branch-gifts.ts).
   { id: 'tree.branches.all', on: 'branchPracticesAll' },
+  // The ending of illumination: the last platform carried the player into the Sun (issue #351, the owner's direction) (1).
+  { id: 'sun.illumination', on: 'illumination' },
 ];
 
 /** The most achievements the catalogue can hold: the mastery level is capped at this. */

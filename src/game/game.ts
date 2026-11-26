@@ -141,6 +141,12 @@ import { playSkyCue } from '../audio/sky';
 import { swapRealm } from '../sky/realm';
 import { RealmGate, SKY_FLOOR_OUT } from '../sky/gate';
 import { SkyRealm } from '../sky/sky-realm';
+import { ASCENSION, bellTimes } from '../sky/totality/ascension';
+import { AllyTally, allyKindOf, type AllyKind } from './ally-tally';
+import { AscentCompanions, roster } from './ascent-companions';
+import { CompanionView } from '../render/companion-view';
+import { MeditationAudio } from '../audio/meditation';
+import { SEQUENCE, SEQUENCE_IDS } from '../content/presences/meditations';
 import { SPIRIT_MAX, type Cell as SkyCell, type RealmGateHost, type RealmHost, type RealmKind, type RealmSet, type SkyBounds, type SkyHost, type SkyLayout, type SkyPlayer, type SkyRealmSet, type SkyFx, type SkyWorldApi, type Travel } from '../sky/types';
 import { SkyWorld } from '../sky/world/sky-world';
 import type { Rng } from '../core/rng';
@@ -293,6 +299,19 @@ export class Game {
   /** The inactive world's set: the dungeon's while in the sky, the sky's below. Null until the sky is first reached. */
   private stash: RealmSet | null = null;
   private sky: SkyRealm | null = null;
+  /** The run's friends by kind (ally-tally.ts), fed from factionChange and the sky's won guardians; never saved. */
+  private allies = new AllyTally();
+  /** The ascent companions (ILLUMINATION.md §3): null until the first checkpoint of the final ascent. */
+  private companions: AscentCompanions | null = null;
+  private companionView: CompanionView | null = null;
+  /** The meditations whose sounds the companions play, one per kind that joins; its own bus, apart from the Sanctuary's. */
+  private readonly companionAudio = new MeditationAudio();
+  private companionChimes = 0;
+  /** The meditations completed in this run (meditationComplete), for the companions' sounds. */
+  private heardThisRun: string[] = [];
+  /** The ending of illumination: the card is shown; once it is gone the run ends. */
+  private illuminated = false;
+  private lightShown = 0;
   /** Every non-projection actor an intention, stroke or blast can reach (SKY.md §5.7): the sky's creatures while the sky is active. */
   private readonly router = new TouchRouter();
   private readonly dungeonRoot = new THREE.Group();
@@ -750,6 +769,7 @@ export class Game {
     this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.projectionTier.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     attachDevlog(this.bus);
+    this.resetEnding();
     this.listenAchievements();
     this.showCompletion();
     this.inventory.restore([]);
@@ -1038,6 +1058,13 @@ export class Game {
     this.bus.on('synergyOn', { priority: 300, source, fn: p => this.achieved('synergyOn', p) });
     this.bus.on('presenceMet', { priority: 300, source, fn: p => this.achieved('presenceMet', p) });
     this.bus.on('branchPracticesAll', { priority: 300, source, fn: p => this.achieved('branchPracticesAll', p) });
+    this.bus.on('illumination', { priority: 300, source, fn: p => this.achieved('illumination', p) });
+    // the run's friends (ally-tally.ts): every change to the player's side, from the conversion events that exist
+    this.bus.on('factionChange', { priority: 300, source: 'allies', fn: p => {
+      const kind = allyKindOf(p, (ENEMY_BY_ID.get(p.def) ?? CREATURE_BY_ID.get(p.def))?.kind);
+      if (kind) this.allies.record(kind, p.def);
+    } });
+    this.bus.on('meditationComplete', { priority: 300, source: 'allies', fn: p => { if (!this.heardThisRun.includes(p.meditation)) this.heardThisRun.push(p.meditation); } });
     // the first-time records of the completion percentage (COMPLETION.md): each kept once, shown on the pause card and the death screen
     const first = 'completion';
     this.bus.on('floorEnter', { priority: 300, source: first, fn: p => this.firstTime('floors', String(p.depth)) });
@@ -5333,6 +5360,8 @@ export class Game {
       if ((!this.chunks.busy && !this.wallsLoading) || this.revealT > RESTART_HOLD_MAX) { this.revealT = -1; this.hud.fadeIn(); }
     }
     this.gate.update(dt);
+    // the ending of illumination: once its card is read (or cut off), the run ends (ILLUMINATION.md §4)
+    if (this.illuminated && !this.hud.bannerOpen && this.restartT <= 0 && this.revealT < 0) this.requestRestart();
     // an information banner stays until clicked; that click only dismisses it
     if (ctx === 'prompt' && this.hud.presenceChoiceOpen) {
       // the choice card: navigate moves between the answers, confirm picks the selected one, back declines
@@ -5534,6 +5563,7 @@ export class Game {
     } else {
       this.skyGate();
       this.sky!.update(dt);
+      this.updateEnding(dt);
     }
     this.pickups.update(dt, solid);
     this.checkpointMark.update(dt);
@@ -5547,6 +5577,61 @@ export class Game {
     // the active item is the one in the right hand; the item under the choice goes in the other
     const p = this.player, active = p.activeIndex;
     this.hands.update(dt, p.walkPhase, p.active ?? 0, p.hand.filter((_, i) => i !== active).at(-1) ?? 0);
+  }
+
+  /** A new run: no friend, no companion, no light carried over from the last one. */
+  private resetEnding() {
+    this.allies = new AllyTally();
+    this.companions = null;
+    this.companionView?.dispose();
+    this.companionView = null;
+    this.companionChimes = 0;
+    this.heardThisRun = [];
+    this.illuminated = false;
+    this.lightShown = 0;
+    this.hud.lightLevel(0);
+  }
+
+  /** The ascent companions and the ending of illumination, once a frame in the sky (ILLUMINATION.md). */
+  private updateEnding(dt: number) {
+    const sky = this.sky!;
+    this.updateCompanions(dt, sky);
+    const asc = sky.ascension;
+    if (asc.phase === 'waiting') return;
+    if (asc.light !== this.lightShown) { this.lightShown = asc.light; this.hud.lightLevel(asc.light, ASCENSION.STEP_EASE_S); }
+    if (asc.takeCard()) this.illuminate();
+  }
+
+  /** The light is full: the bells ring, the achievement is granted (tracked by the keeper, never in the sandbox) and the card shows. */
+  private illuminate() {
+    this.illuminated = true;
+    this.bus.emit('illumination', { friends: this.allies.total });
+    sfx3.celestialBells(bellTimes());
+    this.hud.presenceCard('sun.ending.1', ['sun.ending.2', 'sun.ending.3']);
+  }
+
+  /** From the first checkpoint of the final ascent on, the run's friends rise round the player (ILLUMINATION.md §3). */
+  private updateCompanions(dt: number, sky: SkyRealm) {
+    const tot = sky.plans.totality, first = tot.platforms[tot.checkpoints[0]], last = tot.platforms[tot.platforms.length - 1];
+    const b = this.player.body, inTotality = sky.floorAt(b.y) === 6;
+    if (!this.companions) {
+      if (!inTotality || b.y < first.y - 0.5) return;
+      this.companions = new AscentCompanions();
+      this.companionView = new CompanionView(this.skyRoot);
+    }
+    const won = sky.creatures.all().filter(a => a.role === 'deity' && a.side === 'ally').map(a => a.animal);
+    this.allies.syncDeities(sky.plans.floors.map(f => f.animal).filter(a => won.includes(a)));
+    const progress = (b.y - first.y) / Math.max(1, last.y - first.y);
+    for (const kind of this.companions.update(dt, roster(this.allies), progress, b)) this.friendChime(kind);
+    this.companionView!.visible = inTotality;
+    this.companionView!.update(dt, this.companions.companions, b);
+  }
+
+  /** A kind's first friend joins: one of the meditations the player has heard sounds, in turn; a soft bell when none. */
+  private friendChime(_kind: AllyKind) {
+    const heard = SEQUENCE_IDS.filter(id => this.heardThisRun.includes(id) || this.keeper.unlocked(`meditation.${id}`));
+    if (!heard.length) { sfx3.bell('rest'); return; }
+    this.companionAudio.chime(SEQUENCE[heard[this.companionChimes++ % heard.length]]);
   }
 
   requestRestart() {

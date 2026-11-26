@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 75 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, and the 19 of the owner's approved list, §1, and the six branches of the tree, §1, issue #329). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 76 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, the 19 of the owner's approved list, §1, the six branches of the tree, §1, issue #329, and the ending of illumination of #351, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -172,7 +172,15 @@ The owner approved these ids, names and events as a list. The names are the owne
 |---|---|---|---|---|---|
 | `tree.branches.all` | `branchPracticesAll` | Every Way Out | Todos los caminos | Hold the six practices of the branches of the giant tree in the same run. | Ten a la vez las seis prácticas de las ramas del gran árbol en la misma partida. |
 
-The owner says it "enables" Andar despacio (Camina Despacio, #340, item id `walk-slow`). That practice is not built here. The hook is built: at the moment the achievement fires, the game puts `walk-slow` on a pedestal at the centre of the branch story's hall, if the build has the item (`src/game/branch-gifts.ts`, BRANCHES.md). Two of the six practices, the double jump (#293) and the wall jump (#294), are built on their own branches. Until both are merged, nobody can hold all six, so the achievement cannot be earned.
+The owner says it "enables" Andar despacio (Camina Despacio, #340, item id `walk-slow`). That practice is not built here. The hook is built: at the moment the achievement fires, the game puts `walk-slow` on a pedestal at the centre of the branch story's hall, if the build has the item (`src/game/branch-gifts.ts`, BRANCHES.md). Two of the six practices, the double jump (#293) and the wall jump (#294), are built too (both merged in iteration 0.2.10), so the six can be held together.
+
+### The ending of illumination (1, issue #351)
+
+The owner's achievement for becoming light. The names are the owner's, provisional ("Turned to light" / "Convertido en luz"). See [ILLUMINATION](../levels/totality/ILLUMINATION.md).
+
+| Id | Unlocked by | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `sun.illumination` | `illumination` | Turned to Light | Convertido en luz | Win the five guardians of the sky and ride the last platform into the Sun. | Gana a los cinco guardianes del cielo y sube en la última plataforma hasta el Sol. |
 
 **What "met" means.** A presence is met when the player finishes its first exchange with it: the gift taken, the choice answered, the toll paid, the ore given, or the Child's build finished. This is the rule the codex already keeps (`meet` in `game.ts`, CODEX.md): the tag `met` is set only there, so the event `presenceMet` is emitted at the same point, the first time that enemy is met. The presence's card opening is not the moment, because a player can open a card and decline it.
 
@@ -208,6 +216,7 @@ New events the 46 need (`src/game/events.ts`):
 | `projectionConverted` | `{ def: string; boss: boolean }` | In `convert`, once per conversion (`boss` true for a boss) |
 | `projectionDestroyed` | `{ def: string; boss: boolean }` | In `onEnemyDeath`, when a hostile projection dies with its health at zero (not a self-ending) |
 | `synergyOn` | `{ synergy: string }` | In `Game.give`, for each synergy a practice gained turns on (its id, as in `src/content/synergies.ts`) |
+| `illumination` | `{ friends: number }` | Once per run, in `Game.illuminate`, when the ending's light is full and its card shows (ILLUMINATION §2); `friends` is the run's friend count (`AllyTally`). React only |
 | `presenceMet` | `{ presence: string }` | In `Game.meet`, the first time a presence's enemy is met: its first exchange is done (its id, as in `src/content/presences`). Once per presence and encounter |
 | `branchPracticesAll` | `{ practices: number }` | In `Game.updateLoop`, the first frame of a run in which the inventory holds every practice of `BRANCH_PRACTICES` (`src/world/branches.ts`). It fires once a run (`branchesAll`) |
 

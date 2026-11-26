@@ -1013,10 +1013,35 @@ export class Hud {
     this.fadeEl.classList.add('on');
   }
 
-  /** …and back, a little slower, once the new run is ready. */
+  /** …and back, a little slower, once the new run is ready. After the light of the ending it comes back from the
+   *  light, and the fade's own dark returns only once it is clear. */
   fadeIn() {
     this.fadeEl.style.setProperty('--fade-t', '0.6s');
+    this.fadeEl.style.opacity = '';
     this.fadeEl.classList.remove('on');
+    this.bannerEl.classList.remove('over-light');
+    if (this.fadeEl.classList.contains('light')) setTimeout(() => this.lightLevel(0), 700);
+  }
+
+  /**
+   * The Fade in its light tone (the ending of illumination, ILLUMINATION.md): the screen whitens to `k` (0 → 1) in the
+   * light's core colour, each change easing in over `easeS` seconds, with no ensō. A card opened over it stays on top.
+   * 0 gives the screen back to the Fade's dark tone.
+   */
+  lightLevel(k: number, easeS = 0) {
+    if (k > 0) {
+      this.fadeEl.classList.add('light');
+      this.fadeEl.style.setProperty('--fade-bg', palCss('light.core'));
+      this.fadeEl.style.setProperty('--fade-t', `${easeS}s`);
+      this.fadeEl.style.opacity = String(Math.min(1, k));
+      this.bannerEl.classList.add('over-light');
+      return;
+    }
+    if (this.fadeEl.classList.contains('on')) return;
+    this.fadeEl.classList.remove('light');
+    this.fadeEl.style.opacity = '';
+    this.fadeEl.style.setProperty('--fade-bg', palCss('ink.void'));
+    this.bannerEl.classList.remove('over-light');
   }
 
   shake(seconds: number) {

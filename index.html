@@ -490,6 +490,9 @@
       transform: rotate(-30deg); opacity: .8; animation: enso 2.4s linear infinite; }
     @keyframes enso { to { transform: rotate(330deg); } }
     @media (prefers-reduced-motion: reduce) { #fade i { animation: none; } }
+    /* the Fade's light tone, the ending of illumination: no ensō, and the card it shows stays over it */
+    #fade.light i { display: none; }
+    #banner.over-light { z-index: 51; }
     .seed { font-size: 14px; color: var(--ui-faded); letter-spacing: 1px; text-align: center; cursor: copy; }
     .seed:hover { color: var(--ui-gold); }
     #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--pal-ink-void); color: var(--pal-bone-paper); }
