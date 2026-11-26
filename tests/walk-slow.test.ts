@@ -100,6 +100,13 @@ describe("the player's own body under the scale", () => {
     expect(r.frame().scale).toBe(1);
   });
 
+  it("without Child's Pose the body cannot crouch, so the practice alone never slows the world", () => {
+    const r = rig({ crouch: 0, walkSlow: 1 });
+    r.raw(DT);
+    expect(r.p.crouching).toBe(false);
+    expect(r.frame().scale).toBe(1);
+  });
+
   it('standing up ends it, and without the practice the crouch does nothing to time', () => {
     const r = rig({ crouch: 1, walkSlow: 1 });
     r.raw(DT);
@@ -208,14 +215,14 @@ describe('determinism without the practice', () => {
 describe('the practice Walk Slowly', () => {
   const def = ITEM_BY_ID.get('walk-slow')!;
 
-  it('is a valid quality 4 body practice that gives the slow and the crouch', () => {
+  it("is a valid quality 4 body practice that gives the slow and not the crouch (Child's Pose gives it, #364)", () => {
     expect(def).toBeDefined();
     expect(validateItem(def)).toEqual([]);
     expect(def.quality).toBe(4);
     expect(def.tags).toEqual(['body', 'movement']);
     const s = computeStats(def.stats!.map(m => ({ ...m, source: def.id })));
     expect(s.walkSlow).toBe(1);
-    expect(s.crouch).toBe(1);
+    expect(s.crouch).toBe(0);
   });
 
   it('is never drawn: its only pool is the unlock, and no pool or reservation hands it out', () => {
@@ -235,7 +242,7 @@ describe('the practice Walk Slowly', () => {
     expect(EN.messages['teach.walk-slow.quote']).toBe('The most revolutionary act you can carry out is to walk slowly.');
     const es = LOCALES.find(c => c.code === 'es')!;
     const tr = es.content.items['walk-slow'];
-    expect(tr?.name).toBe('Camina despacio');
+    expect(tr?.name).toBe('Camina Despacio');
     expect(tr?.effect).toContain('50%');
     expect(tr?.inspiredBy).toContain('«El acto más revolucionario que puedes llevar a cabo es caminar despacio»');
     expect(tr?.inspiredBy).toContain('Santiago Dopazo');
