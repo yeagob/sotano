@@ -9,7 +9,7 @@ The book's images are built from the game itself ([BOOK-DATA §4](../../../built
 | Picture | What it must show | Why it is not captured |
 |---|---|---|
 | `ring` | The minimap of the whole Roots, with the ring of rooms | The minimap of a real run of floor 0 shows only the rooms near the player; the sandbox is one room |
-| `drink` | A flask on top of the hand, the drink button on touch | The sandbox hand carries blocks and parts, not potions |
+| `drink` | A flask on top of the hand, the use button on touch | The sandbox hand carries blocks and parts, not potions |
 | `recipe` | The alembic and the potion it made | The floor generator places the alembic; the capture does not stage one |
 | `paths` | The practices tab with its path chips | The capture does not open the inventory screen |
 | `state` | The banner of a state of being | The banner shows only after three practices of one path |

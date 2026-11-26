@@ -142,7 +142,7 @@ Lesson screenshots (39, **all new captures**; 28 are taken, the 11 marked pendin
 | `practice` | A practice floating over a pedestal | `roots-door` |
 | `ring` | The HUD map of the Roots with the ring of rooms | any roots room |
 | `way-down` | The toll window over the open way down | `roots-door` |
-| `drink` | A flask on top of the hand, the drink button on touch | a sandbox room |
+| `drink` | A flask on top of the hand, the use button on touch | a sandbox room |
 | `alembic` | The alembic with a full bulb | a laboratory room, floor 2 |
 | `kitchen` | The kitchen with a part in front of it | a kitchen room, floor 1 |
 | `convert` | A projection turning gold as it comes to the player's side | a sandbox room, floor 1 |

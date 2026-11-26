@@ -47,9 +47,10 @@ describe('controls contract', () => {
   });
 
   it('no two actions share an input in the same context on the same device, except the shared touch buttons', () => {
-    // the only shared input is the body button (#377): crouch and dash, on touch, in play
+    // the shared inputs are the body button (#377: crouch and dash) and the use button (owner, #376: throw and drink), on touch, in play
     expect(SHARED_TOUCH.body).toEqual(['dash', 'crouch']);
-    expect(clashes(BINDINGS)).toEqual(['button-body on touch in play: dash and crouch']);
+    expect(SHARED_TOUCH.use).toEqual(['throw', 'drink']);
+    expect(clashes(BINDINGS)).toEqual(['button-body on touch in play: dash and crouch', 'button-use on touch in play: throw and drink']);
     expect(clashes(BINDINGS.filter(b => !b.touch.shared))).toEqual([]);
   });
 
@@ -91,11 +92,12 @@ describe('controls contract', () => {
   it('the play screen shows at most seven touch buttons when no practice adds one', () => {
     const buttons = BINDINGS.filter(b => (b.touch.control === 'button' || b.touch.control === 'systemButton') && contextsFor(b, 'touch').includes('play'));
     const onScreen = new Set(buttons.map(b => b.touch.shared ?? b.action));
-    // drink (a flask on top), miracle (Kairos) and the body button (crouch or dash) appear only in their state
-    const conditional = new Set(['drink', 'miracle', 'body']);
+    // miracle (Kairos) and the body button (crouch or dash) appear only in their state; drink is the use button's (owner, #376)
+    const conditional = new Set(['miracle', 'body']);
     expect([...onScreen].filter(k => !conditional.has(k)).length).toBeLessThanOrEqual(7);
-    // the worst case, every conditional button at once, is eight: an open question for the owner (TOUCH.md §1.1)
-    expect(onScreen.size).toBe(8);
+    // the worst case, every conditional button at once (a flask in hand, Kairos and a body practice), is seven: the skill's limit holds
+    expect([...onScreen].sort()).toEqual(['body', 'bomb', 'cast', 'inventory', 'jump', 'miracle', 'use']);
+    expect(onScreen.size).toBe(7);
   });
 
   it('a double tap of a direction does not clash with the movement keys, but two gestures on the same direction would', () => {

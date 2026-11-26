@@ -41,8 +41,8 @@ export function bombGlyph(polarity: Polarity): 'seedLove' | 'seed' {
 }
 
 /**
- * What the drink button shows for the top of the hand. Only a flask on top can be drunk (Game.drink
- * takes the top), so the button is shown for exactly that case and hidden for everything else.
+ * What the use button shows for the top of the hand when it drinks. Only a flask on top can be drunk (Game.drink
+ * takes the top), so the use button drinks in exactly that case and throws for everything else (`updateUse`).
  * `key` changes whenever the button's look must be redrawn (another flask, or an iced one).
  */
 export interface DrinkView { show: boolean; key: string; flask?: Flask; liquid?: PalToken }
@@ -99,6 +99,8 @@ export class TouchControls {
   private buttons = new Map<Action, HTMLElement>();
   /** The body button (#377): the context button the crouch and the dash share (context-button.ts). */
   private body: HTMLElement;
+  /** The use button (owner, #376): one button for the active hand, throw and drink share it; `data-a` is what a press does now. */
+  private use: HTMLElement;
   private bodyStats = { crouch: false, dash: false };
   private bodyGlyph = '';
   private tracks = new Map<number, Track>();
@@ -133,6 +135,17 @@ export class TouchControls {
       this.buttons.set(b.action, el);
       this.root.appendChild(el);
     }
+    this.use = document.createElement('button');
+    (this.use as HTMLButtonElement).type = 'button';
+    this.use.className = 'tb tb-use';
+    this.use.dataset.a = 'throw';
+    this.use.style.setProperty('--glyph', 'var(--ico-touchThrow)');
+    this.use.appendChild(document.createElement('span'));
+    this.use.hidden = true;
+    place(this.use, SLOT.use);
+    this.buttons.set('throw', this.use);
+    this.buttons.set('drink', this.use);
+    this.root.appendChild(this.use);
     this.body = document.createElement('button');
     (this.body as HTMLButtonElement).type = 'button';
     this.body.className = 'tb tb-body';
@@ -362,21 +375,28 @@ export class TouchControls {
   }
 
   /**
-   * The drink button exists only while a flask is on top of the hand: it is hidden (not dimmed) otherwise,
-   * drawn as that flask's own pixel icon, framed in its liquid colour. Hiding it also lets go of a press
-   * that was still held, so no hidden control stays pressed.
+   * The use button (owner, #376) acts on what the active hand holds: it exists only while the hand holds
+   * something (hidden, not dimmed, otherwise). With a flask on top it drinks it, drawn as that flask's own
+   * pixel icon framed in its liquid colour; with anything else it throws, drawn as the flying block. A change
+   * of verb, or hiding it, lets go of the press of the other verb, so no hidden control stays pressed.
    */
-  private updateDrink(v: DrinkView) {
-    const el = this.buttons.get('drink')!;
-    el.hidden = !v.show;
-    this.noteContext('drink', v.show);
-    if (!v.show || !v.flask || !v.liquid) {
-      forgetButtonPress(this.tracks, this.input.touchHeld, 'drink');
-      el.classList.remove('on');
-      return;
+  private updateUse(holding: boolean, v: DrinkView) {
+    const el = this.use;
+    el.hidden = !holding;
+    this.noteContext('throw', holding);
+    const drink = holding && v.show && !!v.flask && !!v.liquid;
+    const verb: Action = drink ? 'drink' : 'throw';
+    for (const a of ['throw', 'drink'] as const) if (!holding || a !== verb) forgetButtonPress(this.tracks, this.input.touchHeld, a);
+    if (!holding || el.dataset.a !== verb) el.classList.remove('on');
+    el.dataset.a = verb;
+    el.setAttribute('aria-label', t(`controls.${verb}` as MessageKey));
+    el.classList.toggle('flask', drink);
+    if (drink) {
+      el.style.setProperty('--glyph', `url("${iconDataUrl(carriedDef(v.flask!), 3)}")`);
+      el.style.setProperty('--liquid', palCss(v.liquid!));
+    } else {
+      el.style.setProperty('--glyph', 'var(--ico-touchThrow)');
     }
-    el.style.setProperty('--glyph', `url("${iconDataUrl(carriedDef(v.flask), 3)}")`);
-    el.style.setProperty('--liquid', palCss(v.liquid));
   }
 
   /** Show or hide a contextual button; hiding it lets go of its press, showing it wakes the set. */
@@ -421,9 +441,8 @@ export class TouchControls {
     if (key === this.key) return;
     this.key = key;
     const bomb = this.buttons.get('bomb')!;
-    // a contextual button is there only while it can act (issue #376): no block in hand, no throw; no seed, no bomb
-    this.showContext('throw', p.hand.length > 0);
-    this.updateDrink(drink);
+    // a contextual button is there only while it can act (issue #376): nothing in hand, no use button; no seed, no bomb
+    this.updateUse(p.hand.length > 0, drink);
     this.showContext('bomb', p.bombs > 0);
     bomb.querySelector('span')!.textContent = String(p.bombs);
     // the bomb takes the loaded intention's colour: the white seed and its frame when positive, the black seed when negative

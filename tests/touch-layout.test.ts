@@ -54,6 +54,15 @@ describe('touch controls: when they are on screen', () => {
     for (const s of TOUCH_LAYOUT) if (s.action) expect(buttons.map(b => b.action), s.id).toContain(s.action);
     for (const b of BINDINGS) expect(b.keyboard, b.action).toBeDefined();
   });
+
+  it('one use button for the active hand: throw and drink share its slot, and play shows at most seven buttons (owner, #376)', () => {
+    expect(slotFor('throw')).toBe(SLOT.use);
+    expect(slotFor('drink')).toBe(SLOT.use);
+    // every play button at once (a flask in hand, Kairos and a body practice): the fullscreen button is a page control, not a play button
+    const play = TOUCH_LAYOUT.filter(s => s.id !== 'stick' && s.id !== 'fullscreen').map(s => s.id);
+    expect(play).toEqual(['cast', 'jump', 'use', 'miracle', 'body', 'bomb', 'inventory']);
+    expect(play.length).toBeLessThanOrEqual(7);
+  });
 });
 
 describe('touch layout: targets on every checked phone', () => {

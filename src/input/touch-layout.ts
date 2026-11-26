@@ -25,13 +25,13 @@ export type TouchTier = 'rest' | 'wake';
 /** A length as the sum of viewport units and pixels (resolved by the browser in CSS, by `resolve` here). */
 export interface Len { vw?: number; vh?: number; vmin?: number; px?: number; plusSizeOf?: SlotId }
 
-export type SlotId = 'stick' | 'jump' | 'cast' | 'throw' | 'drink' | 'bomb' | 'miracle' | 'body' | 'inventory' | 'fullscreen';
+export type SlotId = 'stick' | 'jump' | 'cast' | 'use' | 'bomb' | 'miracle' | 'body' | 'inventory' | 'fullscreen';
 
 export interface TouchSlot {
   id: SlotId;
   /** The action the slot fires; the stick moves, the fullscreen button is not an action. */
   action?: Action;
-  /** The actions that share this slot's one button (the body button: crouch and dash, `touch.shared` in the bindings). */
+  /** The actions that share this slot's one button (`touch.shared` in the bindings): the use button (throw and drink), the body button (crouch and dash). */
   shares?: readonly Action[];
   tier: TouchTier;
   /** Distance from the right edge (or the left, for the stick's resting ring) to the button's near side. */
@@ -46,19 +46,19 @@ export interface TouchSlot {
 }
 
 /**
- * The layout. The right thumb's arc round the bead of light (bottom right): jump to its left, throw above
- * it, then the contextual drink and miracle above jump, the body button above the miracle, the bomb at the arc's far end. Nothing in the left
+ * The layout. The right thumb's arc round the bead of light (bottom right): jump to its left, the use button
+ * above it (throw, or drink with a flask on top), then the contextual body button and miracle above jump, the bomb at the arc's far end. Nothing in the left
  * 42 % (the stick's zone). The top bar sits left of the minimap.
  */
 export const TOUCH_LAYOUT: readonly TouchSlot[] = [
   { id: 'stick', tier: 'wake', x: { from: 'left', vw: 18 }, y: { from: 'top', vh: 72 }, size: { vmin: 26, min: 96 }, centred: true },
   { id: 'cast', action: 'cast', tier: 'wake', x: { from: 'right', vw: 5 }, y: { from: 'bottom', vh: 8 }, size: { vmin: 23, min: 72 } },
   { id: 'jump', action: 'jump', tier: 'wake', x: { from: 'right', vw: 5, vmin: 25 }, y: { from: 'bottom', vh: 6 }, size: { vmin: 19, min: TOUCH_CORE_MIN_PX } },
-  { id: 'throw', action: 'throw', tier: 'wake', x: { from: 'right', vw: 5, vmin: 4 }, y: { from: 'bottom', vh: 8, vmin: 25 }, size: { vmin: 15, min: TOUCH_TARGET_MIN_PX }, contextual: true },
-  { id: 'drink', action: 'drink', tier: 'wake', x: { from: 'right', vw: 5, vmin: 25 }, y: { from: 'bottom', vh: 6, vmin: 22 }, size: { vmin: 14, min: TOUCH_TARGET_MIN_PX }, contextual: true },
+  // the use button (owner, #376): what the active hand holds; it drinks a flask on top, and throws anything else
+  { id: 'use', shares: ['throw', 'drink'], tier: 'wake', x: { from: 'right', vw: 5, vmin: 4 }, y: { from: 'bottom', vh: 8, vmin: 25 }, size: { vmin: 15, min: TOUCH_TARGET_MIN_PX }, contextual: true },
   { id: 'miracle', action: 'miracle', tier: 'wake', x: { from: 'right', vw: 5, vmin: 41 }, y: { from: 'bottom', vh: 6, vmin: 21 }, size: { vmin: 14, min: TOUCH_TARGET_MIN_PX }, contextual: true },
-  // the body button (#377): crouch and dash share it (context-button.ts), above the clock ring; its action is chosen at the press
-  { id: 'body', shares: ['crouch', 'dash'], tier: 'wake', x: { from: 'right', vw: 5, vmin: 41 }, y: { from: 'bottom', vh: 6, vmin: 37 }, size: { vmin: 14, min: TOUCH_TARGET_MIN_PX }, contextual: true },
+  // the body button (#377): crouch and dash share it (context-button.ts), above jump; its action is chosen at the press
+  { id: 'body', shares: ['crouch', 'dash'], tier: 'wake', x: { from: 'right', vw: 5, vmin: 25 }, y: { from: 'bottom', vh: 6, vmin: 22 }, size: { vmin: 14, min: TOUCH_TARGET_MIN_PX }, contextual: true },
   { id: 'bomb', action: 'bomb', tier: 'wake', x: { from: 'right', vw: 5, vmin: 46 }, y: { from: 'bottom', vh: 6 }, size: { vmin: 15, min: TOUCH_TARGET_MIN_PX }, contextual: true },
   { id: 'inventory', action: 'inventory', tier: 'rest', x: { from: 'right', px: 150 }, y: { from: 'top', px: 10 }, size: { vmin: 11, min: TOUCH_TARGET_MIN_PX } },
   { id: 'fullscreen', tier: 'rest', x: { from: 'right', px: 158, plusSizeOf: 'inventory' }, y: { from: 'top', px: 10 }, size: { vmin: 11, min: TOUCH_TARGET_MIN_PX }, contextual: true },

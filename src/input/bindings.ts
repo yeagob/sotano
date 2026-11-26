@@ -22,7 +22,7 @@ export type PadButton = typeof PAD[keyof typeof PAD];
 export type TouchControl = 'stick' | 'stickEdge' | 'lookPad' | 'button' | 'systemButton' | 'menuButton' | 'tap' | 'worldTap' | 'turn' | 'swipe' | 'none';
 
 /** The touch context buttons: one button, several actions, only one of which applies at a time (issue #377). */
-export type ContextButton = 'body';
+export type ContextButton = 'body' | 'use';
 
 export interface Binding {
   action: Action;
@@ -109,14 +109,16 @@ export const BINDINGS: readonly Binding[] = [
     action: 'throw', kind: 'press', when: ['play'],
     keyboard: { keys: ['KeyQ'] },
     gamepad: { buttons: [PAD.B] },
-    touch: { control: 'button', icon: 'touchThrow' },
+    // touch (owner, #376): the use button, shared with drink: it drinks a flask on top of the hand and throws anything else
+    touch: { control: 'button', shared: 'use', icon: 'touchThrow' },
     refs: { minecraft: 'Q / B drops the held item', noita: 'throwing a held item or flask', isaac: 'dropping a trinket or pocket item' },
   },
   {
     action: 'drink', kind: 'press', when: ['play'],
     keyboard: { keys: ['KeyG'] },
     gamepad: { buttons: [PAD.X] },
-    touch: { control: 'button', icon: 'touchDrink' },
+    // touch (owner, #376): the use button, shared with throw (it drinks while a flask is on top of the hand)
+    touch: { control: 'button', shared: 'use', icon: 'touchDrink' },
     refs: { minecraft: 'right click eats or drinks the food or potion you hold', noita: 'a flask you hold is drunk with its own key, never thrown by accident', isaac: 'the active item on its own button (Space / right trigger)' },
   },
   {
@@ -264,6 +266,7 @@ export const BINDINGS: readonly Binding[] = [
 /** The actions each touch context button carries, in table order. */
 export const SHARED_TOUCH: Readonly<Record<ContextButton, readonly Action[]>> = {
   body: BINDINGS.filter(b => b.touch.shared === 'body').map(b => b.action),
+  use: BINDINGS.filter(b => b.touch.shared === 'use').map(b => b.action),
 };
 
 export const BINDING = Object.fromEntries(BINDINGS.map(b => [b.action, b])) as Record<Action, Binding>;

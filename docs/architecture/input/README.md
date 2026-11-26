@@ -47,8 +47,8 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | jump | hold | play | Space | A | the arrow |
 | cast | hold | play | left click | RT | the bead of light |
 | place | press | play | right click | LT | a tap on the block (aims at the tap) |
-| throw | press | play | Q | B | the flying block |
-| drink | press | play | G | X | the flask in your hand (shown only while one is in the hand) |
+| throw | press | play | Q | B | the use button (the flying block): one button for the active hand, shared with drink |
+| drink | press | play | G | X | the use button, while a flask is on top of the hand (drawn as that flask) |
 | bomb | press | play | E | RB | the bomb |
 | polarity | press | play | F | LB | a half turn of the phone |
 | dash | press | play | double tap of a movement key (W A S D or arrows) | double flick of the left stick | the body button while the stick moves (shared with crouch, TOUCH §1.1); the swipe on the left side still dashes |
