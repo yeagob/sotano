@@ -12,7 +12,7 @@ export type StatName =
   | 'moveSpeed' | 'jump' | 'airJumps' | 'reach'
   | 'carry' | 'kick' | 'throw' | 'crush' | 'headbutt'
   | 'maxHearts' | 'invuln' | 'bombRadius' | 'bombDamage' | 'breath' | 'missile' | 'dash' | 'run' | 'crouch' | 'lavaWalk'
-  | 'twinCast' | 'triad' | 'spiral' | 'recipes';
+  | 'twinCast' | 'triad' | 'spiral' | 'recipes' | 'walkSlow';
 
 export type StatLayer = 'add' | 'mul' | 'final';
 
@@ -57,6 +57,7 @@ export const BASE_STATS: Stats = {
   triad: 0,        // 1 = each intention flies as three strands in a widening triangle (Rule of Three)
   spiral: 0,       // 1 = each intention flies as three strands on a turning helix (Spiral Growth)
   recipes: 0,      // 1 = the Recipe Book opens (Book of Secrets, src/game/recipe-book.ts; 0 = its key and tab do nothing)
+  walkSlow: 0,     // 1 = crouched on the ground, the whole world runs at half speed (Walk Slowly, src/game/time-scale.ts; 0 = no slow)
 };
 
 export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
@@ -89,6 +90,7 @@ export const STAT_LIMITS: Partial<Record<StatName, [number, number]>> = {
   triad: [0, 1],
   spiral: [0, 1],
   recipes: [0, 1],
+  walkSlow: [0, 1],
 };
 
 const times = (v: number) => t('unit.times', { n: fmtNum(v, 2) });
@@ -127,6 +129,7 @@ const STAT_FMT: Record<StatName, (v: number) => string> = {
   triad: v => (v < 1 ? t('unit.off') : t('unit.on')),
   spiral: v => (v < 1 ? t('unit.off') : t('unit.on')),
   recipes: v => (v < 1 ? t('unit.off') : t('unit.on')),
+  walkSlow: v => (v < 1 ? t('unit.off') : t('unit.on')),
 };
 
 export const statLabel = (n: StatName) => t(`stat.${n}`);

@@ -17,6 +17,7 @@ The folder holds the practices whose first path tag is body. Practices that also
 | [Lion's Mane](LIONS-MANE.md) | 2 | none | treasure rooms, boss rewards |
 | [Discharge](DISCHARGE.md) | 2 | none | treasure rooms |
 | [Sleep Hygiene](SLEEP-HYGIENE.md) | 2 | none | treasure rooms |
+| [Walk Slowly](WALK-SLOWLY.md) | 4 | none | no pool: an achievement lays it (`unlock`) |
 
 ## Also on this path (first path tag elsewhere)
 
@@ -28,4 +29,5 @@ The folder holds the practices whose first path tag is body. Practices that also
 
 ## Open questions in this folder
 
+- [Walk Slowly](WALK-SLOWLY.md): whether the slow also applies to the player's own shots (built: it does), its feedback, recipe and icon gate.
 - [Flow](FLOW.md): Naming N7: the name is the central term of the credited book. Verify whether the author coined it; if so, the lore rule (Caution) applies. The owner decides.

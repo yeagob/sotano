@@ -21,8 +21,12 @@ export const isPromised = (item: ItemDef) => (item.pools.covenant ?? 0) > 0;
  *  level on (FIXED_PRACTICES), never drawn, so adding one moves no seed. */
 export const isRootsGift = (item: ItemDef) => (item.pools.roots ?? 0) > 0;
 
-/** An item no pool draws: a sky gift, a promised piece or a gift of the Roots. */
-export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item) || isRootsGift(item);
+/** An unlock (its only pool is 'unlock'): an achievement lays it by id at its place (Walk Slowly), never drawn, so adding
+ *  one moves no seed. */
+export const isUnlockGift = (item: ItemDef) => (item.pools.unlock ?? 0) > 0;
+
+/** An item no pool draws: a sky gift, a promised piece, a gift of the Roots or an unlock. */
+export const isHandedOut = (item: ItemDef) => isSkyGift(item) || isPromised(item) || isRootsGift(item) || isUnlockGift(item);
 
 export class ItemPools {
   private weights = new Map<PoolName, Map<string, number>>();
