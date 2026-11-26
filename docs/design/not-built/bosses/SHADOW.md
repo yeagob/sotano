@@ -2,7 +2,7 @@
 
 # The Shadow: the design not yet built
 
-Status: **decided** for the keystone (floor 9 has the Shadow, owner 2026-10-27) and for the Mirror (issue #339, built: your health, your practices and bombs, a fight chosen from the moment, the stillness ending); **proposal** for its arena and its release.
+Status: **decided** for the keystone (floor 9 has the Shadow, owner 2026-10-27), for the Mirror (issue #339, built: your health, your practices and bombs, a fight chosen from the moment, the stillness ending) and for its summons of your friends (issue #372, built); **proposal** for its arena and its release.
 
 Everything you do not want to see in yourself: your own silhouette in the room's negative, with your hands and your jumper.
 
@@ -13,7 +13,7 @@ Everything you do not want to see in yourself: your own silhouette in the room's
 - **The stillness ending.** It stops fighting; the player stands still beside it for three seconds. Built, from a third of its health.
 - **Release.** It shrinks into the player's hands, which keep a thin dark ring at the wrist: the state "Shadow integrated" (art guide §9). The way into silence opens.
 
-The earlier proposal to summon, as shadows, the projections the player released this run was dropped by issue #339: a player does not summon projections, and the Mirror fights as a player.
+The earlier proposal to summon, as shadows, the projections the player released this run was dropped by issue #339. Issue #372 gave it summons of another kind: the friends the player made in the run, turned against them. Built: see [built: Its summons](../../built/bosses/SHADOW.md#its-summons).
 
 ## Open questions
 
@@ -29,3 +29,8 @@ The earlier proposal to summon, as shadows, the projections the player released 
 - **The far start for other bosses.** Only the Shadow's room raises its boss at the farthest tile; every other boss still rises on a seeded tile at least 3.5 blocks away. Should other deep bosses get it?
 - **Its cover under the owner's eye.** The materials and their spread are checked in numbers (contrast against the ashlar floor) but not yet seen in the game; the stone boulders sit closest to the floor in value (ΔL* 6.5) and may need a darker stone or a different place.
 - **Boundaries** is classified (its shots deal nothing) but is not in the catalogue today.
+- **Its summons: the numbers.** One every 7 to 10 seconds, three at most, the first at 4 seconds. Chosen by the implementer for readability (issue #372 leaves the cap to the build); confirm in play.
+- **Creatures as summons.** A creature the player befriended is not called: it is no pattern, and the dungeon spawns creatures only with their floor, never through an omen. Should the Shadow call a creature's shadow, and how would it look and fight?
+- **Bosses and deities as summons.** A converted boss is one to a floor and a deity never enters the dungeon, so neither comes. Confirm.
+- **Its summons after it.** They stay hostile once it falls. Should they fade with it, or turn back to the player's side?
+- **A word on the first summon.** The omen announces it, but nothing says that it is the player's own friend. A toast (both languages)?

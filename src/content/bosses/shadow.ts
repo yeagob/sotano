@@ -7,6 +7,7 @@ import {
   BEAM, BLADE, DASH, GREATCUT, MISSILE, RING,
   POINTS_PER_DAMAGE, bladeEvery, bladeReach, mirrorOf, shadowLife, strokeDamage, type Mirror,
 } from './mirror';
+import { SUMMON_CAP, SUMMON_FIRST, summonAt, summonGap } from './summons';
 
 // The floor 9 keystone (docs/design/built/bosses/SHADOW.md). It fights as you do, with what you carry: each frame
 // it scores every action it could take from the moment (how far you are, both healths, whether it was just hurt,
@@ -69,6 +70,9 @@ interface Mind {
   bomb: { x: number; z: number; t: number } | null;
   /** How many times it took each action: read by the tests and the lab. */
   acts: Record<Act, number>;
+  /** Your friends of this run it can summon (taken with the mirror), seconds to its next summon, and the beings it has
+   *  called so far, in order. */
+  pool: readonly string[]; summonT: number; called: string[];
 }
 
 const minds = new WeakMap<Enemy, Mind>();
@@ -83,6 +87,7 @@ function mindOf(e: Enemy, ctx: EnemyCtx): Mind {
       blade: FIRST_ECHO, bombT: FIRST_ECHO, missileT: FIRST_ECHO, dashT: 0, jumpT: 0, ringT: 0,
       dash: 0, dx: 0, dz: 0, air: 0, airLeft: mirror.airJumps, hp: e.hp, hurt: HURT, side: 1, sideT: STRAFE, seq: 0, ox: NaN, oz: NaN,
       bomb: null, acts: { shot: 0, stroke: 0, bomb: 0, missile: 0, dash: 0, jump: 0 },
+      pool: [...(ctx.allies?.() ?? [])], summonT: SUMMON_FIRST, called: [],
     };
     minds.set(e, h);
     e.speed = SPEED * mirror.move;
@@ -93,8 +98,8 @@ function mindOf(e: Enemy, ctx: EnemyCtx): Mind {
 /** The mirror of this Shadow (taken now if it has none yet). */
 export const mirrorFor = (e: Enemy, ctx: EnemyCtx): Mirror => mindOf(e, ctx).mirror;
 
-/** Bombs it still carries, and how many times it took each action (for the tests and the lab). */
-export const shadowState = (e: Enemy) => { const h = minds.get(e); return h ? { bombs: h.bombs, acts: { ...h.acts } } : null; };
+/** Bombs it still carries, how many times it took each action, and the beings it summoned (for the tests and the lab). */
+export const shadowState = (e: Enemy) => { const h = minds.get(e); return h ? { bombs: h.bombs, acts: { ...h.acts }, summons: [...h.called] } : null; };
 
 const did = (h: Mind, a: Act) => { h.acts[a]++; };
 
@@ -156,6 +161,19 @@ function bomb(e: Enemy, ctx: EnemyCtx, h: Mind) {
 function missile(e: Enemy, ctx: EnemyCtx, h: Mind, you: TargetView) {
   h.bombs--; h.missileT = MISSILE_EVERY;
   ctx.rain(e, you.x, you.y, you.z, h.mirror.bomb.damage);
+}
+
+/**
+ * Its summons (issue #372): your own friends of this run, hostile, one at a time, near it. The first comes
+ * SUMMON_FIRST seconds into the fight, then one every 7 to 10 seconds (seeded), never more than SUMMON_CAP alive at
+ * once. With no friends it summons nothing. A summon that cannot be announced (no room for it) waits for the next turn.
+ */
+function summon(e: Enemy, ctx: EnemyCtx, h: Mind) {
+  if (!h.pool.length || !ctx.summonNear || (h.summonT -= ctx.dt) > 0) return;
+  h.summonT = summonGap(e.id, h.called.length);
+  if ((ctx.summoned?.(e) ?? 0) >= SUMMON_CAP) return;
+  const id = summonAt(h.pool, h.called.length);
+  if (id && ctx.summonNear(e, id)) h.called.push(id);
 }
 
 /** The best action now and its score: every action it could take is scored from the moment, and only the best acts. */
@@ -247,6 +265,7 @@ const fights: Behaviour = {
 
     const you = ctx.target(e);
     if (!you) { e.wishX = 0; e.wishZ = 0; e.pulse = 0; return; }
+    summon(e, ctx, h);
     const d = ctx.dist(e, you);
     if (!Number.isNaN(h.ox)) {
       // the dodge it just made: it keeps going that way round you
@@ -307,6 +326,7 @@ const dashing = evasive(fights, { ...ORBIT, ...DASH });
 export default defineEnemy({
   id: 'shadow',
   kind: 'boss',
+  intends: 'negative',
   name: 'The Shadow',
   pattern: 'Everything you do not want to see in yourself',
   life: shadowLife,

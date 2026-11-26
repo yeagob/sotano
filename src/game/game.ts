@@ -15,7 +15,7 @@ import { ENEMY_BUDGET, ENEMY_BY_ID, pickWave, waveBudget } from '../content/enem
 import { BOSS_BY_ID, bossFor, bossSpawnLife } from '../content/bosses';
 import { BLAST_ACTOR_DAMAGE, BOMB_FUSE, lightBomb, type BombBlast } from './bomb';
 import { enemyText, materialName, partText } from '../i18n/content';
-import {farthestCell, gatherMoteColor, gatherMotesDue, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
+import {farthestCell, gatherMoteColor, gatherMotesDue, nearCell, OMEN_BREACH, OMEN_BREACH_COLOR, OMEN_GATHER, pickSpawnCell, SLAM_SHAKE, slamMotesPerDoor, spawnBlocked, splitWaves,
   type Cell, type Omen, waveDue } from './omens';
 import { ITEM_BY_ID, ITEMS } from '../content/items';
 import { AIR, MAT, mat, MATERIALS, isPlaceable } from '../content/materials';
@@ -37,6 +37,7 @@ import { drawRootsItems, drawRootsPractice, redrawRootsSite, rootsFork, rootsSit
 import { callActive, chestAnswersCall, RootsCall } from './roots-call';
 import { offerPedestal, rollChestContents } from './chest-draws';
 import { STILLNESS_TAG } from '../content/bosses/shadow';
+import { summonPool } from '../content/bosses/summons';
 import { cellOverlap, cellTaken, PLACE_NUDGE_CLEAR, PLACE_NUDGE_MAX, type CellOverlap } from './placement';
 import { RecountClock, strandedIn } from './room-watchdog';
 import { SYNERGIES } from '../content/synergies';
@@ -397,6 +398,8 @@ export class Game {
   private omens: Omen[] = [];
   /** Per room: how many spawns it has announced, so each spawn point roll has its own seed path. */
   private spawnSeq = new Map<number, number>();
+  /** A summoned being's actor id → its summoner's (the Shadow's summons, issue #372). */
+  private summoner = new Map<number, number>();
   /** Per live projection: the spawn count of its omen, the seed path of its parts. */
   private projectionSeq = new Map<number, number>();
   /** The tier of every Yellow or Red projection of the run, kept past its death so the death screen can name it. */
@@ -777,7 +780,7 @@ export class Game {
       unsafe: (x, y, z) => !!elemDef(this.world.elemAt(x, y, z)),
     });
     this.potions.clear();
-    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.projectionSeq.clear(); this.projectionTier.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
+    this.floors.clear(); this.labs.clear(); this.kitchens.clear(); this.rooms.clear(); this.activated.clear(); this.roomState.clear(); this.challenges.clear(); this.omens = []; this.spawnSeq.clear(); this.summoner.clear(); this.projectionSeq.clear(); this.projectionTier.clear(); this.bossRooms.clear(); this.bossUsed.clear(); this.chests = []; this.spits = [];
     this.bus = createBus();
     attachDevlog(this.bus);
     this.resetEnding();
@@ -1847,7 +1850,7 @@ export class Game {
       knockback: t === p ? 1 : 3, cause: this.blasts.current ?? undefined, polarity: intent?.polarity ?? null,
     });
     if (ev.cancelled) return false;
-    if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent);
+    if (t !== p) return this.hurtEnemy(t as Enemy, ev.amount, kx * ev.knockback, kz * ev.knockback, intent, this.hostileIntent(kind, owner));
     if (ev.amount <= 0) return false;
     if (p.blood) { p.blood = null; sfxHeart.bloodEnd(); this.hud.toast('heart.bloodBroken'); }
     const hit = landHit(p.layers, ev.amount, kind !== 'toll');
@@ -2129,6 +2132,9 @@ export class Game {
       affectActor: (t: Actor, effect: FieldEffect, seconds: number) => this.affectActor(t, effect, seconds),
       arena: (e: Enemy, what: string) => this.bossArena(e, what),
       summon: (e: Enemy, ids: string[]) => this.summonFor(e, ids),
+      allies: () => summonPool(this.allies, ENEMY_BY_ID),
+      summonNear: (e: Enemy, id: string) => this.summonNear(e, id),
+      summoned: (e: Enemy) => this.summonedBy(e),
       cue: (kind: string, x: number, y: number, z: number) => spatial.cue(kind, x, y, z),
       quake: (x: number, y: number, z: number, power: number) => this.quake(x, y, z, power),
       drop: (e: Enemy, x: number, y: number, z: number) => {
@@ -2258,6 +2264,14 @@ export class Game {
     if (ev.toAttacker > 0) this.damageActor(a, ev.toAttacker, 'contact', 'contact', t.id);
   }
 
+  /** The polarity of a hostile intention this hit is, or null: a bolt or a strike (both arrive as 'projectile') of a
+   *  hostile being whose attacks are intentions (`EnemyDef.intends`, the Shadow). Its touch and its bombs are not. */
+  private hostileIntent(kind: DamageKind, owner: Owner): Polarity | null {
+    if (kind !== 'projectile' || typeof owner !== 'number') return null;
+    const o = this.enemies.get(owner);
+    return o && o.faction === 'projection' ? o.spec.intends ?? null : null;
+  }
+
   /** Moves an actor to another side (e.g. a projection that becomes part of the self). */
   setFaction(a: Actor, faction: Faction, source: string) {
     if (a.faction === faction || a.faction === 'neutral') return;
@@ -2356,15 +2370,26 @@ export class Game {
    * is released), love fills it (at the top it converts), and an ally a negative hit brings to zero
    * relapses. A boss runs on the same bar.
    */
-  private hurtEnemy(e: Enemy, amount: number, kx: number, kz: number, intent?: IntentTouch): boolean {
-    if (!intent) {
+  private hurtEnemy(e: Enemy, amount: number, kx: number, kz: number, intent?: IntentTouch, hostile?: Polarity | null): boolean {
+    if (!intent && e.faction !== 'self') {
       if (amount <= 0) return false;
       this.enemies.hurt(e, amount, kx, kz);
       if (e.alive) this.splitOnHit(e);
       return true;
     }
-    const r = resolveHit({ polarity: intent.polarity, faction: e.faction, hp: e.hp }, amount);
-    if (r.relapse) { this.relapse(e, kx, kz); return true; }
+    // friendly fire (issue #372, POLARITY.md): every hit reaches an ally. A hostile intention (the Shadow's bolts and
+    // strokes) turns it at once and harms it; any other harm (a touch, a shot, a bomb, lava) is a negative hit that
+    // relapses it at zero instead of releasing it
+    if (!intent && amount <= 0) return false;
+    const polarity = intent?.polarity ?? hostile ?? 'negative';
+    const r = resolveHit({ polarity, faction: e.faction, hp: e.hp, hostile: !intent && !!hostile }, amount);
+    if (r.relapse) {
+      this.relapse(e, kx, kz);
+      if (r.harm <= 0) return true;
+      this.enemies.hurt(e, r.harm, 0, 0);
+      if (e.alive) this.splitOnHit(e);
+      return true;
+    }
     if (r.love > 0) {
       this.enemies.mend(e, r.love, kx, kz);
       if (isConverted(e.hp, e.maxHp)) this.convert(e);
@@ -2596,6 +2621,15 @@ export class Game {
 
   /** A seeded spawn point among the room's standable floor cells (never by a door, away from the player). */
   private spawnSpot(r: RoomInfo, seq: number, far = false): { x: number; y: number; z: number } {
+    const { cells, doors } = this.spawnCells(r);
+    const b = this.player.body;
+    const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'spawn', seq);
+    const cell = (far ? farthestCell(cells, doors, { x: b.x, z: b.z }) : pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng)) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
+    return this.standOn(r, cell);
+  }
+
+  /** The room's standable floor cells (no element), and its doors. */
+  private spawnCells(r: RoomInfo): { cells: Cell[]; doors: Cell[] } {
     const cells: Cell[] = [];
     for (let row = 0; row < r.d; row++) for (let col = 0; col < r.w; col++) {
       const cx = r.x0 + col, cz = r.z0 + row;
@@ -2603,13 +2637,41 @@ export class Game {
       if (this.world.elemAt(cx, r.y0, cz) || this.world.elemAt(cx, r.y0 - 1, cz)) continue;
       cells.push({ x: cx + 0.5, z: cz + 0.5 });
     }
-    const doors: Cell[] = this.doors.list.filter(d => d.rooms.includes(r.id)).map(d => ({ x: d.cx, z: d.cz }));
-    const b = this.player.body;
-    const rng = this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'spawn', seq);
-    const cell = (far ? farthestCell(cells, doors, { x: b.x, z: b.z }) : pickSpawnCell(cells, doors, { x: b.x, z: b.z }, rng)) ?? { x: r.hx + 6.5, z: r.hz + 3.5 };
+    return { cells, doors: this.doors.list.filter(d => d.rooms.includes(r.id)).map(d => ({ x: d.cx, z: d.cz })) };
+  }
+
+  private standOn(r: RoomInfo, cell: Cell): { x: number; y: number; z: number } {
     let y = r.y0;
     while (y < r.y0 + 3 && this.solid(Math.floor(cell.x), y, Math.floor(cell.z))) y++;
     return { x: cell.x, y, z: cell.z };
+  }
+
+  /**
+   * The Shadow's summon (issue #372, SHADOW.md "Its summons"): one being of `defId`, announced by an omen on a seeded
+   * cell near `e`, then spawned hostile through `spawnEnemy` like any other (its own tier roll, `enemySpawn`). Only a
+   * projection of the catalogue comes. The seed path is the room's spawn count, as for every omen.
+   */
+  private summonNear(e: Enemy, defId: string): boolean {
+    const r = this.rooms.get(e.room), def = ENEMY_BY_ID.get(defId);
+    if (!r || !def || (def.kind ?? 'projection') !== 'projection') return false;
+    const seq = this.spawnSeq.get(r.id) ?? 0;
+    const { cells, doors } = this.spawnCells(r);
+    const b = this.player.body;
+    const cell = nearCell(cells, doors, { x: e.body.x, z: e.body.z }, { x: b.x, z: b.z }, this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'summon', seq));
+    if (!cell) return false;
+    this.spawnSeq.set(r.id, seq + 1);
+    const spot = this.standOn(r, cell);
+    this.omens.push({ def: defId, room: r.id, seq, x: spot.x, y: spot.y, z: spot.z, t: 0, breached: false, emitted: 0, by: e.id });
+    spatial.omenHum(spot.x, spot.y + 0.5, spot.z, 'floor');
+    return true;
+  }
+
+  /** How many of `e`'s summons are alive and hostile, or still in their omen (the cap, SUMMON_CAP). */
+  private summonedBy(e: Enemy): number {
+    let n = 0;
+    for (const o of this.omens) if (o.by === e.id) n++;
+    for (const [child, by] of this.summoner) if (by === e.id && this.enemies.get(child)?.alive && this.enemies.get(child)!.faction === 'projection') n++;
+    return n;
   }
 
   /** How many omens of a room are still open (its projections are not out yet). */
@@ -2656,7 +2718,8 @@ export class Game {
       if (this.spawnHeld(o)) { o.t = OMEN_GATHER + OMEN_BREACH; continue; }
       this.omens.splice(i, 1);
       const r = this.rooms.get(o.room);
-      if (r) this.spawnEnemy(o.def, r, o.seq, o.x, o.y, o.z);
+      const child = r ? this.spawnEnemy(o.def, r, o.seq, o.x, o.y, o.z) : null;
+      if (child && o.by !== undefined) this.summoner.set(child.id, o.by);
     }
   }
 
