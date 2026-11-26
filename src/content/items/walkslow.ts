@@ -9,7 +9,7 @@ export default defineItem({
   id: 'walk-slow',
   name: 'Walk Slowly',
   description: 'Slowness is not falling behind: it is refusing the hurry. Bend low and stay close to the ground, and the rush of the world loosens around you until you can see every moving thing.',
-  effect: "Crouched with your feet on the ground, the whole world runs at 50% speed: projections and their shots, your intentions, loose blocks, elements and your own body (a crouched walk goes at 22.5% of the walk). Your intentions leave from your crouched height, and the sound slows and darkens with the world. Standing up or leaving the ground ends it at once. Gives the crouch of Child's Pose if you do not have it: press C to crouch and again to stand, or hold Control (R3, or the body button on a phone, toggles it).",
+  effect: "Crouched with your feet on the ground, the whole world runs at 50% speed: projections and their shots, your intentions, loose blocks, elements and your own body (a crouched walk goes at 22.5% of the walk). Your intentions leave from your crouched height, and the sound slows and darkens with the world. Standing up or leaving the ground ends it at once. Gives the crouch of Child's Pose if you do not have it: press C to crouch and again to stand (R3, or the body button on a phone, toggles it).",
   inspiredBy: 'Santiago Dopazo: "The most revolutionary act you can carry out is to walk slowly"',
   pools: { unlock: 1 },
   tags: ['body', 'movement'],

@@ -92,7 +92,7 @@ export const BINDINGS: readonly Binding[] = [
   },
   {
     action: 'crouch', kind: 'hold', when: ['play'],
-    keyboard: { keys: ['ControlLeft', 'ControlRight'], toggle: ['KeyC'] },
+    keyboard: { toggle: ['KeyC'] },
     gamepad: { buttons: [PAD.RS] },
     // touch (#377): the body button, shared with the dash (it kneels while the stick rests); the swipe down still toggles
     touch: { control: 'button', shared: 'body', gesture: 'swipe' },
