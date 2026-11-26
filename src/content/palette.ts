@@ -13,6 +13,7 @@ import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
 import { MEDITATION_PALETTE } from './palette/meditation';
 import { DEEP_MATTER_PALETTE } from './palette/deep-matter';
+import { TREE_COURSE_PALETTE } from './palette/tree-course';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -156,6 +157,9 @@ export const PALETTE = {
 
   // The presences' materials (D13): the Gardener's root and cave moss, the zones' ore veins (DECISIONS §6.7).
   ...DEEP_MATTER_PALETTE,
+
+  // The giant tree's branch courses (issue #329): one block per platform mechanic (DECISIONS §14.8).
+  ...TREE_COURSE_PALETTE,
 
   // The sky realm (docs/architecture/SKY.md §11): one part per package, never edited here.
   ...SKY_BLOCKS_PALETTE,

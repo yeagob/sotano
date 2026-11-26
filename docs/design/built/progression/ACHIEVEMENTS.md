@@ -1,6 +1,6 @@
 # Achievements
 
-Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 74 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, and the 19 of the owner's approved list, §1). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
+Up: [progression](README.md) · Status: built (issue #147, owner's decisions 8 and 10). The 75 entries are in `src/content/achievements.ts` (the 46 of #147 and #179, the hour of meditation, §1, the 7 of the blocks, the projections and the states of being, §1, and the 19 of the owner's approved list, §1, and the six branches of the tree, §1, issue #329). The final one of #180, "Made Omh", is a constant of the same file, which the completion percentage unlocks. The names are the shipped proposal, awaiting the owner's word ([pending](../../not-built/levels/roots/PENDING.md#names-awaiting-the-owner)).
 
 An achievement is a moment the game recognises once and keeps for ever: the first time a boss is destroyed or turned to your side, a meditation sat three times, a first potion, a first meal, a page of the hidden book reached. Each one raises the Roots' [mastery level](MASTERY.md) by one and tells the player what the Roots gained.
 
@@ -166,6 +166,14 @@ The owner approved these ids, names and events as a list. The names are the owne
 | `presence.wanderer` | `presenceMet` with `presence` `wanderer` | Fellow Traveller | Compañero de camino | Meet The Wanderer: finish your first exchange with it. | Conoce al Caminante: termina tu primer intercambio con él. |
 | `presence.witness` | `presenceMet` with `presence` `witness` | Seen | Visto | Meet The Witness: finish your first exchange with it. | Conoce al Testigo: termina tu primer intercambio con él. |
 
+**The six branches of the giant tree (issue #329, the owner's criterion).** One achievement. Its name is a proposal and the owner may change it.
+
+| Id | Unlocks on | Name (EN) | Name (ES) | Description (EN) | Description (ES) |
+|---|---|---|---|---|---|
+| `tree.branches.all` | `branchPracticesAll` | Every Way Out | Todos los caminos | Hold the six practices of the branches of the giant tree in the same run. | Ten a la vez las seis prácticas de las ramas del gran árbol en la misma partida. |
+
+The owner says it "enables" Andar despacio (Camina Despacio, #340, item id `walk-slow`). That practice is not built here. The hook is built: at the moment the achievement fires, the game puts `walk-slow` on a pedestal at the centre of the branch story's hall, if the build has the item (`src/game/branch-gifts.ts`, BRANCHES.md). Two of the six practices, the double jump (#293) and the wall jump (#294), are built on their own branches. Until both are merged, nobody can hold all six, so the achievement cannot be earned.
+
 **What "met" means.** A presence is met when the player finishes its first exchange with it: the gift taken, the choice answered, the toll paid, the ore given, or the Child's build finished. This is the rule the codex already keeps (`meet` in `game.ts`, CODEX.md): the tag `met` is set only there, so the event `presenceMet` is emitted at the same point, the first time that enemy is met. The presence's card opening is not the moment, because a player can open a card and decline it.
 
 ## 2. The data model (takes the rest without code changes)
@@ -181,7 +189,7 @@ interface AchievementDef {
 }
 ```
 
-The 74 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
+The 75 entries are written as data: `{ id: 'boss.resistance.destroyed', on: 'bossOvercome', where: { boss: 'resistance', how: 'destroyed' } }`, `{ id: 'boss.shadow.converted', on: 'bossOvercome', where: { boss: 'shadow', how: ['converted', 'stillness'] } }`, `{ id: 'meditation.ground', on: 'meditationComplete', where: { meditation: 'ground' }, times: 3 }`, `{ id: 'brew.first', on: 'brew' }`, `{ id: 'cook.first', on: 'cook' }`, `{ id: 'book.page.7', on: 'pageReached', where: { page: 7 } }`. The tracker (`src/game/achievements.ts`) matches `where` against the payload, counts matches per id in the save when `times` > 1, and unlocks the id when the count is reached. The game feeds it through `listenAchievements` (`game.ts`), which has one listener per name in `ACHIEVEMENT_EVENTS`; an event the tracker is not listening to never unlocks anything. A new achievement for #179 is a new entry and two message keys (`achievement.<id>.name`, `achievement.<id>.desc`); it needs new code only if no existing event says what it waits for. Then the event is added: its payload in `GameEvents` (`src/game/events.ts`), its name in `ACHIEVEMENT_EVENTS`, its emit site, a sample in the synergy matrix (`tests/synergy-matrix.test.ts`, which checks each `where` field against it), and a listener in `listenAchievements`.
 
 New events the 46 need (`src/game/events.ts`):
 
@@ -201,6 +209,7 @@ New events the 46 need (`src/game/events.ts`):
 | `projectionDestroyed` | `{ def: string; boss: boolean }` | In `onEnemyDeath`, when a hostile projection dies with its health at zero (not a self-ending) |
 | `synergyOn` | `{ synergy: string }` | In `Game.give`, for each synergy a practice gained turns on (its id, as in `src/content/synergies.ts`) |
 | `presenceMet` | `{ presence: string }` | In `Game.meet`, the first time a presence's enemy is met: its first exchange is done (its id, as in `src/content/presences`). Once per presence and encounter |
+| `branchPracticesAll` | `{ practices: number }` | In `Game.updateLoop`, the first frame of a run in which the inventory holds every practice of `BRANCH_PRACTICES` (`src/world/branches.ts`). It fires once a run (`branchesAll`) |
 
 Rules the tracker keeps:
 
@@ -230,7 +239,7 @@ When an achievement is earned the player sees, in one corner notice: its name, i
 
 - "The first ten improvements are earned sequentially, at most one boss step per run": replaced by decision 8 and its correction (two achievements per boss, destroyed and converted; every first time counts, several per run, any order).
 - "A first clear of each sky plant grants its improvement": out of scope (decision 11).
-- "Keep later objectives as explicitly pending entries": the catalogue holds only the 74 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
+- "Keep later objectives as explicitly pending entries": the catalogue holds only the 75 defined ones (the 46, the hour of meditation, the seven of the blocks, the projections and the states of being, the nineteen of the owner's list, the six branches of the tree, and "Made Omh", the final one that the completion percentage unlocks at 100%); the others are pending in #179 and enter as data when the owner defines them ([pending](../../not-built/levels/roots/PENDING.md#achievements-still-to-define)).
 
 ## Not decided
 

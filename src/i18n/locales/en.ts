@@ -1232,6 +1232,8 @@ const messages = {
   'achievement.presence.wanderer.desc': 'Meet The Wanderer: finish your first exchange with it.',
   'achievement.presence.witness.name': 'Seen',
   'achievement.presence.witness.desc': 'Meet The Witness: finish your first exchange with it.',
+  'achievement.tree.branches.all.name': 'Every Way Out',
+  'achievement.tree.branches.all.desc': 'Hold the six practices of the branches of the giant tree in the same run.',
 
   // ── the hidden book: a quotation's translation note (PANELS §4b) ──
   'book.quote.translated': 'Our translation',

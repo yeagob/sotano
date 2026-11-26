@@ -182,6 +182,9 @@ export interface GameEvents {
   /** The body, above the surface, entered a new story of the giant tree (`story` is its key: roots, rings, galleries,
    *  hollows, branches, canopy or stars). The canopy is the crown (ACHIEVEMENTS §1). React only. */
   treeStory: { story: string };
+  /** The run holds the six branch practices of the giant tree at once (issue #329, BRANCHES.md), however each was taken.
+   *  Emitted once a run, by the game. `practices` is how many there are (6). React only. */
+  branchPracticesAll: { practices: number };
   /** The completion percentage reached 100: every part is complete (COMPLETION.md §8). Emitted once, by the game. React only. */
   completionFull: { percent: number };
   /** A projection turned to the player's side (`convert`, once per conversion). `boss` is true for a boss, whose own
