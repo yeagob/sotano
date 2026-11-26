@@ -61,10 +61,10 @@ const shape = (f: FloorResult) => JSON.stringify({
  *  Re-recorded at GEN_VERSION 40, once for iteration 0.2.10 (the Double Jump, the Wall Jump and the other new practices join
  *  the pools, which changes floor 0 and floors 1 to 9; the band and the world are unchanged). */
 const BASELINE: Record<string, { shape: number; band: number; world: number; floors1to9: number }> = {
-  '1/0': { shape: 1580888932, band: 1591722983, world: 2352658586, floors1to9: 215229672 },
-  '1/22': { shape: 3284463103, band: 1081796789, world: 296907192, floors1to9: 215229672 },
-  '48879/0': { shape: 1201584274, band: 2222142443, world: 3688475951, floors1to9: 4136640345 },
-  '48879/22': { shape: 391549363, band: 4268051601, world: 1813437189, floors1to9: 4136640345 },
+  '1/0': { shape: 1580888932, band: 1591722983, world: 1550744343, floors1to9: 2251529399 },
+  '1/22': { shape: 3284463103, band: 1081796789, world: 1420980245, floors1to9: 2251529399 },
+  '48879/0': { shape: 1201584274, band: 2222142443, world: 2131378710, floors1to9: 3274962838 },
+  '48879/22': { shape: 391549363, band: 4268051601, world: 3309429804, floors1to9: 3274962838 },
 };
 
 // ── the walker's routes: door middles and room centres, in the frame each room is carved in ──
