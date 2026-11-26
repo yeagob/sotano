@@ -2,9 +2,9 @@
 
 # Deeper behaviour of projections
 
-Status: **proposal** (issue #338), with one small part built: the falter after a Red release. The owner approves the scope before anything else is built.
+Status: **proposal** (issue #338, optional, not part of the tier hotfix). The owner approves the scope before anything is built. One part, the falter after a Red release, has code in the game behind a switch that is **off**.
 
-The owner asked for projections with more depth in how they behave and interact. This document reviews what the 38 projections do today, proposes a scope in four steps, and records the one change built with the colour tiers. The tiers themselves are built: see [built/projections/TIERS](../../built/projections/TIERS.md).
+The owner asked for projections with more depth in how they behave and interact. This document reviews what the 38 projections do today, proposes a scope in four steps, and records the one change whose code exists but is switched off. The tiers themselves are built: see [built/projections/TIERS](../../built/projections/TIERS.md).
 
 ## What the projections do today
 
@@ -19,7 +19,7 @@ So the shallow part is not the single projection, which already mirrors its patt
 ## The proposal, in order
 
 1. **Projections that react to each other** (first: smallest, needs no new verbs from the player). Patterns in a room lean on one another. Examples to build one at a time, each with its story sentence:
-   - *A pattern let go weakens the ones beside it.* **Built** for the Red tier (below).
+   - *A pattern let go weakens the ones beside it.* Coded for the Red tier and **off** (below).
    - *Panic spreads.* A Panic that bursts near another projection makes it rush for two seconds (Panic feeding Panic).
    - *The Critic speaks through others.* While an Inner Critic stands in the room, Doubt and Second-Guessing hesitate less (judgement makes doubt sharper).
    - *Isolation shuts the others in.* Its wall of ice also cuts the others off from their allies.
@@ -27,11 +27,12 @@ So the shallow part is not the single projection, which already mirrors its patt
 3. **Projections that react to the player's practices.** A few patterns notice what the player carries (a Critic that aims at the newest practice's light, Scarcity that goes for the fullest hand). Needs a read-only view of the inventory for behaviours; it must never read the save.
 4. **Tiers that change behaviour, not only numbers.** A Red projection could add one move to its set (a second telegraphed strike), always readable, never a new unreadable attack.
 
-## Built now: the falter after a Red release
+## Coded, off by default: the falter after a Red release
 
-- **What the player sees.** When a Red projection is released (destroyed by bad intentions, its health at zero), every other hostile projection in its room holds still for 1.5 seconds: it stops walking and starts no new attack (its touch still hurts, and a strike already marked on the floor still lands), a few pale motes rise over it, and two soft tones sink once. Allies, bosses, projections still forming and projections of other rooms are not touched. A Red projection that ends itself (Panic's burst), falls out of the world or is turned by good intentions does not cause it.
+- **Status.** Optional, pending the owner. The code is kept behind `FALTER_ENABLED` in `src/enemies/tiers.ts`, which is `false`: in the game nothing falters. Turning it on is one line; a test checks it stays off.
+- **What the player would see.** When a Red projection is released (destroyed by bad intentions, its health at zero), every other hostile projection in its room holds still for 1.5 seconds: it stops walking and starts no new attack (its touch still hurts, and a strike already marked on the floor still lands), a few pale motes rise over it, and two soft tones sink once. Allies, bosses, projections still forming and projections of other rooms are not touched. A Red projection that ends itself (Panic's burst), falls out of the world or is turned by good intentions does not cause it.
 - **Story.** When the strongest form of a pattern is let go, the lesser forms of it lose their conviction for a breath. It rewards facing the hardest one first, the way Isaac rewards killing a champion, and gives the player a short window to act.
-- **Why this one.** It is the smallest change that makes projections react to each other, it reads with no text (everything stops), it is bounded (one hold per release, no chain), and it can be tested without the browser. Code: `falterTargets` and `FALTER_SECONDS` in `src/enemies/tiers.ts`, `Enemies.falter`; test: `tests/tiers.test.ts`.
+- **Why this one.** It is the smallest change that makes projections react to each other, it reads with no text (everything stops), it is bounded (one hold per release, no chain), and it can be tested without the browser. Code: `falterTargets` and `FALTER_SECONDS` in `src/enemies/tiers.ts`, `Enemies.falter`; test: `tests/tiers.test.ts` (off by default, and what it does when on).
 
 ## Out of scope for this iteration
 
@@ -41,6 +42,7 @@ So the shallow part is not the single projection, which already mirrors its patt
 ## Open questions
 
 - Which of the four steps first, and which of the examples in step 1?
+- Should the falter be switched on?
 - Is 1.5 seconds the right falter, and should a Yellow release cause a smaller one?
 - Should step 3 (practices) be allowed to read what the player carries, given that a behaviour must never read the save?
 - Questions to the player: kind, way of answering, consequence (owner's definition needed).

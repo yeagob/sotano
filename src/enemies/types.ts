@@ -128,8 +128,9 @@ export interface Enemy extends Actor {
   volley: number;
   /** Its colour tier (tiers.ts); absent means Black. */
   tier?: Tier;
-  /** The tier's jump multiplier (hop and leap height), and its damage multiplier for strikes and shots. */
-  jump?: number;
+  /** The tier's extra climb in blocks (its tallest step and its leap's height), and its damage multiplier
+   *  for strikes, shots and bursts. A converted or mended ally keeps both. */
+  climb?: number;
   power?: number;
 }
 

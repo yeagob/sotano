@@ -11,9 +11,8 @@ import type { PickupKind } from '../game/events';
 import { shellHit, shellStart, type ShellState } from '../enemies/shell';
 import { hostile, type Actor } from './actors';
 import { grownScale, setScale, shrunkScale } from './growth';
-import { MENDED_TAG } from '../content/presences/mended';
 import { boxHits, freeBody, moveBody } from '../physics/voxel-collide';
-import { climbOf, falterTargets, FALTER_SECONDS, tierMarks, tierMultipliers, type Tier } from '../enemies/tiers';
+import { allyColor, climbOf, FALTER_ENABLED, falterTargets, FALTER_SECONDS, tierModel, tierMultipliers, type Tier } from '../enemies/tiers';
 
 const GRAVITY = 26;
 export const SPAWN_TIME = 0.9;
@@ -78,13 +77,13 @@ export interface View {
   group: THREE.Group; parts: Map<string, THREE.Object3D[]>; mats: THREE.MeshLambertMaterial[];
   /** Glowing parts named 'tell' or 'core', and their idle colours. */
   tells: THREE.MeshBasicMaterial[]; tellBase: THREE.Color[];
+  /** Every part's material and its hostile colour, in model order: an ally draws each one inverted
+   *  (`allyColor`, DECISIONS §14.6). `allied` is what the view shows now. */
+  paints: { mat: THREE.MeshLambertMaterial | THREE.MeshBasicMaterial; hostile: THREE.Color }[]; allied: boolean;
 }
 
 const TELL_HOT = new THREE.Color(pal('cold.white'));
 const HURT_FLASH = new THREE.Color(pal('cold.dim')).multiplyScalar(0.5);
-const ALLY_GLOW = new THREE.Color(pal('light.ember')).multiplyScalar(0.25);
-/** A mended ally (the Mender's integration, mended.ts) glows with repair's gold instead of the ally's ember (DECISIONS.md §14.4). */
-const MENDED_GLOW = new THREE.Color(pal('light.gold')).multiplyScalar(0.25);
 /** A projection warming toward your side: your light held captive inside it (DECISIONS §2), so the
  *  dim captive ramp, never gold: gold on a living projection would read as an ally. At the highest
  *  warmth it can show (0.8) it stays under half the dimmest ally glow (docs/reviews/polarity.md). */
@@ -95,10 +94,12 @@ export function buildModel(def: EnemyDef, tier: Tier = 'black'): View {
   const parts = new Map<string, THREE.Object3D[]>();
   const mats: THREE.MeshLambertMaterial[] = [];
   const tells: THREE.MeshBasicMaterial[] = [];
-  for (const p of tier === 'black' ? def.model : [...def.model, ...tierMarks(def, tier)]) {
+  const paints: View['paints'] = [];
+  for (const p of tierModel(def, tier)) {
     const mat = p.glow ? new THREE.MeshBasicMaterial({ color: p.color }) : new THREE.MeshLambertMaterial({ color: p.color });
     // an inlay shares a face with its host: pull its depth toward the camera so the two never fight
     if (p.inlay) { mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -4; }
+    paints.push({ mat, hostile: new THREE.Color(p.color) });
     if (!p.glow) mats.push(mat as THREE.MeshLambertMaterial);
     else if (p.name === 'tell' || p.name === 'core') tells.push(mat as THREE.MeshBasicMaterial);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...p.size), mat);
@@ -109,7 +110,13 @@ export function buildModel(def: EnemyDef, tier: Tier = 'black'): View {
     (parent ?? group).add(mesh);
     if (p.name) parts.set(p.name, [...(parts.get(p.name) ?? []), mesh]);
   }
-  return { group, parts, mats, tells, tellBase: tells.map(m => m.color.clone()) };
+  return { group, parts, mats, tells, tellBase: tells.map(m => m.color.clone()), paints, allied: false };
+}
+
+/** Draws a view as an ally (every part in `allyColor`) or back as its hostile self. */
+export function paintAllied(v: View, allied: boolean) {
+  v.allied = allied;
+  for (const { mat, hostile } of v.paints) mat.color.setHex(allied ? allyColor(hostile.getHex()) : hostile.getHex());
 }
 
 export class Enemies {
@@ -163,8 +170,8 @@ export class Enemies {
     for (const a of this.host.actors()) this.hazards.clear(a.id);
   }
 
-  /** `hp`, `speed` and `contactDamage` already carry the tier (tierStats); the tier adds its jump, the
-   *  power of its strikes and shots, and its mark. */
+  /** `hp`, `speed` and `contactDamage` already carry the tier (tierStats); the tier adds its climb, the
+   *  power of its strikes and shots, and its look. */
   spawn(def: EnemyDef, id: number, room: number, x: number, y: number, z: number, hp: number, speed: number, contactDamage: number, tags: Set<string>, tier: Tier = 'black') {
     const m = tierMultipliers(def, tier);
     const e: Enemy = {
@@ -173,7 +180,7 @@ export class Enemies {
       spawning: SPAWN_TIME, targetId: -1, retarget: 0, state: 'move', armed: true, timer: 1 + (id % 3) * 0.4, wishX: 0, wishZ: 0, flash: 0, pulse: 0, alive: true,
       elemSpeed: 1, inElement: null, elemT: 0, warmth: 0,
       hidden: false, stage: 0, hold: 0, frozen: 0, fear: 0, aimX: 0, aimZ: 0, flyY: -1, hover: -1, ghost: false, seq: 0, clock: 0, volley: 2, move: -1, act: 0,
-      tier, jump: m.jump, power: m.damage,
+      tier, climb: m.climb, power: m.damage,
     };
     this.list.push(e);
     this.views.set(id, this.buildView(def, tier));
@@ -249,11 +256,12 @@ export class Enemies {
   }
 
   /**
-   * A Red projection was released: the hostile projections left in its room hold still for
-   * FALTER_SECONDS (DEEPER-BEHAVIOUR), each shedding a few pale motes, with one falling sound. Returns how many.
+   * A Red projection was released: when the optional falter is on (FALTER_ENABLED, off by default), the
+   * hostile projections left in its room hold still for FALTER_SECONDS (DEEPER-BEHAVIOUR), each shedding
+   * a few pale motes, with one falling sound. Returns how many.
    */
-  falter(released: Enemy): number {
-    const who = falterTargets(this.list, released);
+  falter(released: Enemy, enabled = FALTER_ENABLED): number {
+    const who = falterTargets(this.list, released, enabled);
     for (const o of who) {
       o.hold = Math.max(o.hold, FALTER_SECONDS);
       o.pulse = 0;
@@ -399,7 +407,7 @@ export class Enemies {
         const fx = b.x + Math.sign(wantX) * (b.hw + 0.2), fz = b.z + Math.sign(wantZ) * (b.hw + 0.2);
         if (boxHits(host.solid, fx, b.y, fz, b.hw, b.h)) {
           // the lowest step it can take, up to its tier's climb
-          const climb = climbOf(e.jump ?? 1);
+          const climb = climbOf(e.climb ?? 0);
           for (let k = 1; k <= climb; k++) if (!boxHits(host.solid, fx, b.y + k + 0.05, fz, b.hw, b.h)) { b.vy = STEP_HOP * Math.sqrt(k); break; }
         }
       }
@@ -557,7 +565,7 @@ export class Enemies {
     // one field per room, target, kind of projection and footprint (each treats the elements its own way).
     // A grown body needs the cells beyond its birth footprint; the birth footprint is always the same.
     const reach = reachOf(e.body.hw) - reachOf(e.spec.size[0]);
-    const climb = climbOf(e.jump ?? 1);
+    const climb = climbOf(e.climb ?? 0);
     const key = `${e.room}:${t.id}:${e.def}:${reach}:${climb}`;
     let f = this.flows.get(key);
     if (!f) {
@@ -736,14 +744,19 @@ export class Enemies {
     for (const l of v.parts.get('legR') ?? []) l.rotation.x = -walk;
     for (const l of v.parts.get('armL') ?? []) l.rotation.x = -walk * 0.6;
     for (const l of v.parts.get('armR') ?? []) l.rotation.x = walk * 0.6;
-    // the hit flash is a short cold lift, never white; allies (part of the self) keep a dim warm glow.
+    // an ally of any tier is the full inversion of its colours, and a relapse paints it back (DECISIONS §14.6)
+    const allied = e.faction === 'self';
+    if (allied !== v.allied) paintAllied(v, allied);
+    // the hit flash is a short cold lift, never white; an ally takes no glow over its inverted colours.
     // The telegraph lives in the 'tell'/'core' parts, which brighten toward cold white as it winds up.
     for (const m of v.mats) {
       if (e.flash > 0) m.emissive.copy(HURT_FLASH);
-      else if (e.faction === 'self') m.emissive.copy(e.tags.has(MENDED_TAG) ? MENDED_GLOW : ALLY_GLOW).multiplyScalar(0.5 + 0.5 * e.hp / e.maxHp);
       else if (e.warmth > 0) m.emissive.copy(WARM_GLOW).multiplyScalar(e.warmth);
       else m.emissive.setRGB(0, 0, 0);
     }
-    v.tells.forEach((m, i) => m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse)));
+    v.tells.forEach((m, i) => {
+      m.color.copy(v.tellBase[i]).lerp(TELL_HOT, Math.min(1, e.pulse));
+      if (allied) m.color.setHex(allyColor(m.color.getHex()));
+    });
   }
 }

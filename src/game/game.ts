@@ -2310,11 +2310,11 @@ export class Game {
     const seq = this.projectionSeq.get(e.id) ?? 0;
     this.projectionSeq.delete(e.id);
     // a release the Mender may bring back on this floor (mended.ts)
-    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def);
+    if (floor !== undefined && countsAsRelease(e.spec.kind, e.tags)) this.releases.record(floor, e.def, e.tier ?? 'black');
     // a hostile projection destroyed by harm: its health is at zero (a self-ending, an alarm's blast or a fall, keeps health above zero)
     if (e.faction === 'projection' && e.hp <= 0) {
       this.bus.emit('projectionDestroyed', { def: e.def, boss: e.spec.kind === 'boss' });
-      // the strongest form of a pattern let go: the rest of its room falters (DEEPER-BEHAVIOUR)
+      // optional, off by default (FALTER_ENABLED): the strongest form let go, the rest of its room falters (DEEPER-BEHAVIOUR)
       this.enemies.falter(e);
     }
     // the Shadow's stillness ending is a turning to your side, not a destruction (ACHIEVEMENTS §1)
@@ -2541,7 +2541,7 @@ export class Game {
     if (!def) return null;
     const id = this.actors.newId();
     const rooted = def.kind !== 'boss' && this.rng.fork('floor', r.floor, 'room', r.id % ROOM_ID_STRIDE, 'rooted', seq).chance(rootedChance(r.floor));
-    // the colour tier: projections only, on its own fork, so no other roll of the run moves (TIERS.md)
+    // the colour tier: projections and bosses (health only), never the Shadow, on its own fork so no other roll moves (TIERS.md)
     const tier = spawnTier(this.rng, r.floor, r.id % ROOM_ID_STRIDE, seq, def);
     const base = def.kind === 'boss' ? bossHp(r.floor) : rooted ? Math.round(def.hp * ROOTED_HP) : def.hp;
     const stats = tier === 'black' ? { hp: base, speed: def.speed, contactDamage: def.contactDamage } : tierStats(def, tier, base);
@@ -4693,7 +4693,9 @@ export class Game {
     // beside the Mender, on the side away from the player, so it does not stand in the player's way
     const a = Math.atan2(b.z - player.z, b.x - player.x);
     const x = b.x + Math.cos(a) * 1.2, z = b.z + Math.sin(a) * 1.2;
-    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, def.hp, def.speed, def.contactDamage, new Set([MENDED_TAG]));
+    // it comes back in the tier it was released in (TIERS.md): its numbers, its white ally body
+    const tier = this.releases.lastTier(r.floor), s = tierStats(def, tier);
+    const e = this.enemies.spawn(def, this.actors.newId(), r.id, x, b.y, z, s.hp, s.speed, s.contactDamage, new Set([MENDED_TAG]), tier);
     e.spawning = 0;
     this.actors.add(e);
     this.setFaction(e, 'self', 'mender');
