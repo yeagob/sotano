@@ -4,6 +4,7 @@
 // and its 30 s gap; the rest by stage, the Clinging guard and an ally's hug that lifts it; teleport far; defeat by
 // 30 positive hits; the minion's sleep, swing, hug, shake-off and turning, an ally's hold; determinism; palette.
 
+import { calm } from './helpers/sky-calm';
 import * as THREE from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MAT } from '../src/content/materials';
@@ -13,7 +14,7 @@ import { Hazards, type HazardHost } from '../src/enemies/attacks';
 import { ActorRegistry, type Actor } from '../src/entities/actors';
 import type { Body } from '../src/physics/voxel-collide';
 import { KOALA_ATTACKS, koalaDeity, CAPTURE_GAP, TELEPORT_GAP } from '../src/sky/creatures/deities/koala';
-import { koalaMinion } from '../src/sky/creatures/minions/koala';
+import { WAKE_RANGE, koalaMinion } from '../src/sky/creatures/minions/koala';
 import { Puff } from '../src/sky/creatures/puff';
 import { SkyCreatures } from '../src/sky/creatures/system';
 import { koala } from '../src/sky/floors/koala';
@@ -74,7 +75,7 @@ function rig(def: DeityDef | null = koalaDeity, seed = 1) {
   const deps: CreatureDeps = { actors, runner, effects, puff: new Puff(host), knock, spirit: law };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);
   creatures.onWon = (_d, floor) => { log.won.push(floor); };
-  const deity = def ? creatures.spawnDeity(def, plan) : null;
+  const deity = def ? creatures.spawnDeity(calm(def), plan) : null;
   const seat = plan.seat;
   const frame = (dt = DT) => {
     law.update();
@@ -467,14 +468,15 @@ describe('the koala deity: the guard and defeat (B2, B4)', () => {
 });
 
 describe('the koala minions (B5)', () => {
-  it('sleeps in its cluster until the player comes within 4, then wakes with a stretch', () => {
+  it('sleeps in its cluster until the player comes within its wake range (12, three times the first 4), then wakes with a stretch', () => {
     const r = rig(null);
     const at = r.plan.spawns[0];
     const m = r.creatures.spawnMinion(koalaMinion, r.plan, at);
-    r.standAt(at.x + 10, at.y, at.z);
+    expect(WAKE_RANGE).toBe(12);
+    r.standAt(at.x + WAKE_RANGE + 6, at.y, at.z);
     r.run(3);
     expect(m.state).toBe('Asleep');
-    r.standAt(at.x + 3.5, at.y, at.z + 0.5);
+    r.standAt(at.x + WAKE_RANGE - 0.5, at.y, at.z + 0.5);
     r.frame();
     expect(m.state).toBe('Wild');
     expect(r.log.cues).toContain('koala.stretch');

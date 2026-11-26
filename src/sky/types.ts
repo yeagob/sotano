@@ -390,6 +390,33 @@ export interface DeityDef {
   knock: 'nudge' | 'hug' | 'sweep' | 'paw' | 'kick';
   won: WonOutcome;
   model: DeityModel;
+  chase?: ChaseSpec;
+}
+
+export type DiveKind = 'push' | 'hold' | 'slow' | 'pull';
+export interface DiveSpec {
+  kind: DiveKind;
+  every: number;
+  radius: number;
+  strength: number;
+  slow?: number;
+  cue: SkyCue;
+}
+export interface ChaseSpec {
+  keep: number;
+  near: number;
+  lift: number;
+  speed: number;
+  dash: number;
+  orbit: number;
+  dodge: number;
+  cool: number;
+  counter: number;
+  answer: number;
+  ward?: readonly string[];
+  still?: readonly string[];
+  dive: DiveSpec;
+  cue: SkyCue;
 }
 
 export interface DeityCtx {
@@ -432,6 +459,7 @@ export interface SpawnRule {
   every: number;
   /** Clusters spawn asleep. */
   asleep?: boolean;
+  batch?: number;
 }
 
 export type AllyHelpKind = 'hold' | 'clear' | 'carry' | 'help';
@@ -439,7 +467,6 @@ export interface AllyHelp { kind: AllyHelpKind; rule: MinionRule }
 
 export interface MinionDef {
   animal: Animal;
-  /** 4/3, 6/6, 5/3, 6/4, 5/3. */
   max: number; wildMax: number;
   spawn: SpawnRule;
   /** 3, 3, 5, 4, 4. */
@@ -506,6 +533,9 @@ export interface DeityApi {
   update(dt: number): void;
   touch(polarity: Polarity, warm: boolean, p: Vec3, kind: DamageKind): void;
   onWon: ((d: SkyActor) => void) | null;
+  readonly targeted: boolean;
+  readonly frozen: number;
+  freeze(seconds?: number): boolean;
 }
 export type DeityCtor = new (actor: SkyActor, def: DeityDef, plan: SkyFloorPlan, deps: CreatureDeps, host: SkyHost, rng: Rng) => DeityApi;
 

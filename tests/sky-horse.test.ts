@@ -232,6 +232,7 @@ describe('the horse deity: special attacks and the spirit gate', () => {
       r.step();
       // 2560 of 3840 hits: the third stage, where Herd panic enters
       r.hit(2560);
+      r.brain().settleHits();
       r.brain().only = ['panic'];
       r.brain().calmReady = false;
       r.until(() => r.deity.state === 'Attacking', 400);
@@ -246,6 +247,7 @@ describe('the horse deity: special attacks and the spirit gate', () => {
     const r = rig(towardCentre(10));
     r.step();
     r.hit(1280);
+    r.brain().settleHits();
     r.brain().only = ['gallop'];
     r.until(() => r.deity.state === 'Attacking', 400);
     r.step(1);
@@ -263,6 +265,7 @@ describe('the horse deity: special attacks and the spirit gate', () => {
     const r = rig(towardCentre(8));
     r.step();
     r.hit(2560);
+    r.brain().settleHits();
     r.brain().only = ['snaking'];
     r.brain().calmReady = false;
     r.until(() => r.deity.state === 'Attacking', 600);
@@ -281,6 +284,7 @@ describe('the horse deity: special attacks and the spirit gate', () => {
     const r = rig(towardCentre(8));
     r.step();
     r.hit(2560);
+    r.brain().settleHits();
     r.brain().only = ['snaking'];
     r.brain().calmReady = false;
     r.until(() => r.deity.state === 'Attacking', 600);
@@ -373,8 +377,9 @@ describe('the herd (B5)', () => {
     r.brain().calmReady = false;
     r.until(() => SENT.has(r.m.id), 600);
     expect(SENT.has(r.m.id)).toBe(true);
-    r.until(() => r.log.starts.some(s => s.id === 'knockback' && s.source === r.m.id), 400);
-    const kick = r.log.starts.find(s => s.id === 'knockback' && s.source === r.m.id)!;
+    const sent = r.log.starts.length;
+    r.until(() => r.log.starts.slice(sent).some(s => s.id === 'knockback' && s.source === r.m.id), 400);
+    const kick = r.log.starts.slice(sent).find(s => s.id === 'knockback' && s.source === r.m.id)!;
     expect(kick.telegraph).toBe(TELEGRAPH[4]);
     expect(SENT.has(r.m.id)).toBe(false);
     const before = r.log.pushes.length;

@@ -24,9 +24,17 @@ import type { ModelPart } from '../../../enemies/types';
 import type { MessageKey } from '../../../i18n/locales/en';
 import { hazardOwner } from '../../hindrances/runner';
 import {
+  type ChaseSpec,
   CAPTURE_TIME, ExceptionKind, TELEGRAPH, type AttackDef, type Cell, type Channel, type CustomState, type DeityCtx,
   type DeityDef, type DeityRule, type Parts, type SkyActor, type SkyCue, type Vec3,
 } from '../../types';
+
+export const ELEPHANT_CHASE: ChaseSpec = {
+  keep: 10, near: 5, lift: 3, speed: 2.8, dash: 7, orbit: 0.2, dodge: 3, cool: 2, counter: 1.2, answer: 5,
+  still: ['Listening'],
+  dive: { kind: 'slow', every: 5.5, radius: 4, strength: 4, slow: 0.4, cue: 'elephant.thud' },
+  cue: 'elephant.call',
+};
 
 // ───────────────────────── numbers (ELEPHANT.md B2–B4, B9: every one a target) ─────────────────────────
 
@@ -791,6 +799,7 @@ export const elephantDeity: DeityDef = {
   // (B8), so the cap is the whole count
   ally: { act: 'trumpet', every: 6, cap: HITS },
   knock: 'sweep',
+  chase: ELEPHANT_CHASE,
   won: { toast: WON_TOAST, gift: 'long-memory', play: settle },
   model: { body: BODY, head: HEAD, hw: 1.1, h: 3, progress: (parts, ratio) => poseModel(parts, ratio) },
 };

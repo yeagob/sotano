@@ -165,6 +165,7 @@ export class SkyCreatures implements SkyCreaturesApi {
     }
     const e = this.byId.get(id);
     if (!e) return;
+    e.deity.markShot();
     e.deity.touch(polarity, warm, p, kind);
     const a = e.actor;
     if (a.hits > e.seen) {

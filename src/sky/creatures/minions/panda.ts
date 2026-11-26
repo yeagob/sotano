@@ -11,6 +11,7 @@
 // half pace. An ally clears a wild minion off a column, climbs to the seat to sit against the panda (two at most),
 // or follows the player and sits on their column, holding the cell under it. Nothing here hurts or drains.
 
+import { harass, hunt } from '../hunt';
 import type * as THREE from 'three';
 import { AIR } from '../../../content/materials';
 import { pal, type PalToken } from '../../../content/palette';
@@ -35,7 +36,9 @@ export const REGROW = 5;
 /** Seconds between two rolls, and two chews, of one minion. */
 const ROLL_EVERY = 8;
 const CHEW_EVERY = 15;
-const SOFT_PUSH = 1.5 * 2.5;
+export const EFFECT = 4;
+export const HUNTERS = 0.6;
+const SOFT_PUSH = 1.5 * 2.5 * EFFECT;
 /** The well's rim: one block round the mouth; a minion keeps this far from the mouth's centre. */
 const RIM = 1;
 const RIM_MARGIN = 0.5;
@@ -450,12 +453,12 @@ export function reactMinion(parts: Parts, ratio: number) {
 
 export const pandaMinion: MinionDef = {
   animal: 'panda',
-  max: 4, wildMax: 3,
+  max: 40, wildMax: 30,
   // B5: a clump rustles and shakes for 1.5 s, then a panda tumbles out; one every 12 s while below the counts.
-  spawn: { where: 'clumps', warning: 1.5, every: 12 },
+  spawn: { where: 'clumps', warning: 1.5, every: 3, batch: 6 },
   hitsToTurn: 3,
   gait: PANDA_GAIT,
-  rules: [knocked, rim, curious, tuckRoll, chew, perch],
+  rules: [knocked, rim, harass({ reach: 5, every: 6, strength: SOFT_PUSH, cue: 'panda.huff' }), curious, tuckRoll, chew, hunt(HUNTERS), perch],
   ally: [
     { kind: 'clear', rule: clear },
     { kind: 'help', rule: help },

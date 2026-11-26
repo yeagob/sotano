@@ -7,6 +7,7 @@
 // nothing takes health; 42 positive hits win the lion and the pride lies down; the pride stalks, pounces from
 // above, never on a frozen player, and turns ally at four hits. Deterministic under a fixed dt.
 
+import { calm } from './helpers/sky-calm';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { pal, type PalToken } from '../src/content/palette';
@@ -97,7 +98,7 @@ function rig(def: DeityDef = lionDeity, at: Vec3 = { x: LEDGE.x + 0.5, y: LEDGE.
     spirit: { update() {}, canDrain: () => gate.open, drain: n => { if (!gate.open) return false; log.drains.push(n); return true; } },
   };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);
-  const actor = creatures.spawnDeity(def, PLAN);
+  const actor = creatures.spawnDeity(calm(def), PLAN);
   const step = (n = 1) => {
     for (let i = 0; i < n; i++) {
       creatures.update(DT, 4);

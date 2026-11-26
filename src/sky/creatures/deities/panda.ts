@@ -25,9 +25,18 @@ import { hazardOwner } from '../../hindrances/runner';
 import { HOLDER } from '../../render/creature-view';
 import { RALLY } from '../deity';
 import {
+  type ChaseSpec,
   CAPTURE_TIME, ExceptionKind, TELEGRAPH, type AttackDef, type Cell, type CustomState, type DeityCtx, type DeityDef, type DeityRule,
   type Parts, type SkyActor, type TelegraphSpec, type Vec3,
 } from '../../types';
+
+export const PANDA_CHASE: ChaseSpec = {
+  keep: 8, near: 4.5, lift: 3.5, speed: 3.5, dash: 9, orbit: 0.3, dodge: 3.5, cool: 1.5, counter: 1, answer: 5,
+  ward: ['Chewing', 'Peeking', 'Tumbling', 'Cradling'],
+  still: ['Napping', 'Chewing', 'Peeking', 'Tumbling', 'Cradling'],
+  dive: { kind: 'push', every: 4.5, radius: 3.5, strength: 10, cue: 'panda.whump' },
+  cue: 'panda.huff',
+};
 
 // ───────────────────────── numbers (PANDA.md B2–B4, B9: every one a target) ─────────────────────────
 
@@ -929,6 +938,7 @@ export function makePandaDeity(only?: readonly Kind[]): DeityDef {
     // the cap is the whole count.
     ally: { act: 'sit', every: 4, cap: HITS },
     knock: 'nudge',
+    chase: PANDA_CHASE,
     won: {
       toast: 'sky.panda.won',
       gift: 'still-sitting',

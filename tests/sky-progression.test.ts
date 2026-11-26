@@ -127,11 +127,11 @@ function fight(r: Rig, n: number) {
     acted = base >= 0 && (effects() > base || r.runner.active().some(h => h.source === deity.id && h.phase === 'effect'));
   }
   let touches = 0;
-  for (let t = 0; t < 900 && deity.state !== 'Won'; t += DT) {
+  for (let t = 0; t < 1800 && deity.state !== 'Won'; t += DT) {
     r.stand(x + 0.5, y, z + 0.5);
     r.frame();
     seen.add(deity.state);
-    if (Math.round(t / DT) % 6 === 0) {
+    if (Math.round(t / DT) % 2 === 0) {
       const b = deity.body;
       const id = r.realm.creatures.at(b.x, b.y + b.h / 2, b.z, 0.2);
       if (id === deity.id) { r.realm.creatures.touch(id, 'positive', true, { x: b.x, y: b.y + b.h / 2, z: b.z }, 'intent'); touches++; }

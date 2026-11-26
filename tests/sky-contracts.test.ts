@@ -123,7 +123,7 @@ describe('sky registries', () => {
     expect(ANIMALS.map(a => DEITIES[a].teleport)).toEqual([false, true, false, false, true]);
     expect(DEITIES.horse.hover).toBeNull();
     expect(ANIMALS.map(a => MINIONS[a].hitsToTurn)).toEqual([3, 3, 5, 4, 4]);
-    expect(ANIMALS.map(a => [MINIONS[a].max, MINIONS[a].wildMax])).toEqual([[4, 3], [6, 6], [5, 3], [6, 4], [5, 3]]);
+    expect(ANIMALS.map(a => [MINIONS[a].max, MINIONS[a].wildMax])).toEqual([[40, 30], [60, 60], [50, 30], [60, 40], [50, 30]]);
   });
 
   it('every deity hands out its own gift on defeat, and the horse never gives the triple jump', () => {

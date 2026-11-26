@@ -31,6 +31,9 @@ export const FADE = 1;
 export const MIN_WARNING = 0.5;
 /** An ally this close to its deity (horizontally, and within its height) counts as helping it. */
 export const HELP_RANGE = 3;
+export const CONTACT = 1.5;
+export const CONTACT_UNDER = 6;
+export const RUSH_FREEZE = 2;
 /** Seconds between the motes of a spawn warning. */
 const OMEN_EVERY = 0.25;
 
@@ -169,9 +172,29 @@ export class Minion implements MinionApi {
     for (const r of rules) if (r(this.actor, this.ctx)) return;
   }
 
+  private rush(d: DeityApi): void {
+    const a = this.actor, b = a.body, db = d.actor.body;
+    const flat = Math.hypot(b.x - db.x, b.z - db.z);
+    const under = db.y - (b.y + b.h);
+    if (flat <= CONTACT + db.hw && under <= CONTACT_UNDER && b.y <= db.y + db.h) {
+      b.vx = 0; b.vz = 0;
+      if (d.freeze(RUSH_FREEZE)) {
+        this.host.fx('gold', b.x, b.y + b.h, b.z, 6);
+        this.host.cue('core.gold', b.x, b.y + b.h, b.z);
+      }
+      return;
+    }
+    const near = nearest(this.plan.graph, db.x, b.y, db.z);
+    const to: Place = near && !arrived(a, near) && Math.hypot(near.x + 0.5 - db.x, near.z + 0.5 - db.z) < flat
+      ? near
+      : { id: -1, kind: 'ground', x: Math.floor(db.x), y: Math.floor(b.y + 1e-3), z: Math.floor(db.z), w: 1, d: 1, tag: 0 };
+    this.moveTo(a, to);
+  }
+
   private ally(dt: number) {
-    for (const h of this.def.ally) if (h.rule(this.actor, this.ctx)) break;
     const d = this.deity;
+    if (d && !d.won && d.targeted) this.rush(d);
+    else for (const h of this.def.ally) if (h.rule(this.actor, this.ctx)) break;
     if (!d || d.won || !this.def.ally.some(h => h.kind === 'help')) return;
     const at = d.def.ally;
     const b = this.actor.body, db = d.actor.body;
@@ -307,14 +330,22 @@ export class MinionSpawner {
       return;
     }
     this.clock += dt;
+    const room = Math.min(this.def.max - all.length, this.def.wildMax - wild, Math.max(1, this.def.spawn.batch ?? 1));
     if (this.opening) {
       if (this.clock < Math.max(MIN_WARNING, this.def.spawn.warning)) return;
       this.clock = 0;
-      this.spawn(this.plan.spawns[this.next++ % this.plan.spawns.length]);
+      for (let k = 0; k < room; k++) this.spawn(this.scatter(this.plan.spawns[this.next++ % this.plan.spawns.length], k));
       return;
     }
     if (this.clock < this.def.spawn.every) return;
     this.clock = 0;
-    this.spawn(this.plan.spawns[this.rng.int(0, this.plan.spawns.length - 1)]);
+    for (let k = 0; k < room; k++) this.spawn(this.scatter(this.plan.spawns[this.rng.int(0, this.plan.spawns.length - 1)], k));
+  }
+
+  private scatter(at: Place, k: number): Place {
+    if (k === 0 || (at.w <= 1 && at.d <= 1)) return at;
+    const x = at.x - ((at.w - 1) >> 1) + this.rng.int(0, Math.max(0, at.w - 1));
+    const z = at.z - ((at.d - 1) >> 1) + this.rng.int(0, Math.max(0, at.d - 1));
+    return { ...at, x, z };
   }
 }

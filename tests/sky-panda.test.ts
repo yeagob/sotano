@@ -6,6 +6,7 @@
 // defeat by 24 positive hits; the minions' rules (the well's rim, the seat's height, turning, the allies' help); the
 // bamboo hindrance; the palette and the words.
 
+import { calm } from './helpers/sky-calm';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { Hazards, type HazardHost } from '../src/enemies/attacks';
@@ -101,7 +102,7 @@ function rig(def: DeityDef = pandaDeity, at = SPOT) {
   };
   const deps: CreatureDeps = { actors, runner, effects, puff: new Puff(host), knock: {} as TowerKnockApi, spirit };
   const creatures = new SkyCreatures(new THREE.Group(), host, deps);
-  const deity = creatures.spawnDeity(def, PLAN);
+  const deity = creatures.spawnDeity(calm(def), PLAN);
   const won: number[] = [];
   creatures.onWon = d => { won.push(d.id); };
   const frame = () => {
@@ -491,10 +492,10 @@ describe('the panda minions (B5)', () => {
     return { ...r, m };
   }
 
-  it('is the minion of its document: 4 at most, 3 wild, 3 hits to turn, a 1.5 s warning every 12 s', () => {
+  it('is the minion of its document: 40 at most, 30 wild, 3 hits to turn, a 1.5 s warning, six at a time every 3 s', () => {
     expect(MINIONS.panda).toBe(pandaMinion);
-    expect([pandaMinion.max, pandaMinion.wildMax, pandaMinion.hitsToTurn, pandaMinion.spawn.warning, pandaMinion.spawn.every])
-      .toEqual([4, 3, 3, 1.5, 12]);
+    expect([pandaMinion.max, pandaMinion.wildMax, pandaMinion.hitsToTurn, pandaMinion.spawn.warning, pandaMinion.spawn.every, pandaMinion.spawn.batch])
+      .toEqual([40, 30, 3, 1.5, 3, 6]);
   });
 
   it('moves the same way every time, never onto the well\'s rim and never above the seat\'s height', () => {
