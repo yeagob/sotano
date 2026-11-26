@@ -16,7 +16,7 @@ export type SkipWhy =
   | 'nourish'  // grows with meals or potions: the Shadow eats and drinks nothing
   | 'tables'   // brewing, cooking, the recipe book: crafting has no meaning in a fight
   | 'miracle'  // a miracle that is neither a shot nor a movement: stopping time, walking through walls, turning lava
-  | 'loot'     // luck, keys, rewards of cleared rooms, chests and blasts
+  | 'loot'     // luck, keys, rewards of cleared rooms, chests and blasts, pulling pickups
   | 'life'     // a checkpoint, healing from allies: its life is your health at entry and nothing else
   | 'defence'  // heart containers, invulnerability, answers to contact or blasts: already in your health at entry
   | 'world'    // blocks, mining, carrying, kicking, throwing, fire and lava underfoot, shots through blocks
@@ -65,6 +65,7 @@ export const MIRROR_RULES: Readonly<Record<string, MirrorRule>> = {
   dialectic: { how: 'adapted', strands: [0.5, 0.5] },
   discharge: { how: 'adapted', landing: true },
   distillation: S('nourish'),
+  'double-jump': C,
   dowsing: S('world'),
   drlauncher: C,
   dualprocess: { how: 'copied', strands: [0.6] },
@@ -118,6 +119,7 @@ export const MIRROR_RULES: Readonly<Record<string, MirrorRule>> = {
   spagyric: S('nourish'),
   spiralgrowth: C,
   stoic: C,
+  stretch: S('loot'),
   taoteching: S('world'),
   teaceremony: S('nourish'),
   thinkwaitfast: S('defence'),
@@ -126,6 +128,8 @@ export const MIRROR_RULES: Readonly<Record<string, MirrorRule>> = {
   'triple-jump': C,
   tummo: { how: 'adapted', damage: 1.5 },
   visualization: C,
+  'walk-slow': S('miracle'),
+  'wall-jump': S('world'),
   waymark: S('life'),
 };
 

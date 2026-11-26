@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_STATS, computeStats, type StatMod } from '../src/core/stats';
-import { BOSSES, bossHp, bossLife } from '../src/content/bosses';
+import { BOSSES, bossLife, bossSpawnLife } from '../src/content/bosses';
+import { RunRandom } from '../src/core/rng';
 import {
   LIFE_PER_POINT, LIFE_SCALE, MIRROR_RULES, POINTS_PER_DAMAGE, mirrorOf, shadowLife,
 } from '../src/content/bosses/mirror';
@@ -120,22 +121,23 @@ describe('the Shadow: every practice is classified', () => {
 });
 
 describe('the Shadow: its life is your health at entry', () => {
+  const rr = new RunRandom(1);
   it('its starting life is your health at entry, converted and doubled, for two different healths', () => {
     expect(LIFE_SCALE).toBe(2);
     for (const points of [48, 24]) {
-      const lifeNow = bossLife(SHADOW, 9, points);
+      const lifeNow = bossSpawnLife(SHADOW, 9, rr, points);
       expect(lifeNow).toBe(shadowLife(points));
       // twice your hearts: a heart of yours (8 points) is 7 of its life, times LIFE_SCALE
       expect(lifeNow / (HEART * LIFE_PER_POINT)).toBe(LIFE_SCALE * points / HEART);
     }
-    expect(bossLife(SHADOW, 9, 48)).not.toBe(bossLife(SHADOW, 9, 24));
+    expect(bossSpawnLife(SHADOW, 9, rr, 48)).not.toBe(bossSpawnLife(SHADOW, 9, rr, 24));
     expect(shadowLife(48)).toBe(84);
     expect(shadowLife(80)).toBe(140); // ten hearts
   });
 
-  it('is exempt from the boss formula: any other boss keeps the life of its floor', () => {
-    expect(bossLife(SHADOW, 9, 48)).not.toBe(bossHp(9));
-    for (const b of BOSSES.filter(x => x.id !== 'shadow')) expect(bossLife(b, 9, 48), b.id).toBe(bossHp(9));
+  it('is exempt from the boss formula: any other boss keeps the life of its floor and seed (#315)', () => {
+    expect(bossSpawnLife(SHADOW, 9, rr, 48)).not.toBe(bossLife(9, rr, 'shadow'));
+    for (const b of BOSSES.filter(x => x.id !== 'shadow')) expect(bossSpawnLife(b, 9, rr, 48), b.id).toBe(bossLife(9, rr, b.id));
   });
 
   it('you need LIFE_SCALE times the hits it needs: your base shots to end it, its base strands to end you', () => {

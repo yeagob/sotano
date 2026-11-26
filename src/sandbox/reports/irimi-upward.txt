@@ -24,12 +24,12 @@ t 40 (0.7 s)
   cubes — · pickups 0
 
 t 240 (4.0 s)
-  player hp 24/24 · at 2.5 0.0 0.3 · hand [] · bombs 99 · keys 99
+  player hp 24/24 · at 2.5 0.0 -1.9 · hand [brick brick] · bombs 99 · keys 99
   practices irimi · synergies —
   blocks —
   elements —
-  cubes — · pickups 0
-  events land 1
+  cubes brick 2 · stone 2 · pickups 0
+  events blockBreak:brick 4 · blockBreak:stone 2 · blockDamage:brick 4 · blockDamage:stone 2 · blockLoot:brick 4 · blockLoot:stone 2 · kick:brick 1 · kick:stone 6 · land 1 · touchCube:brick 3 · touchCube:stone 6
 
 map t 240 · h 0
   .....

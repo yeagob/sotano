@@ -13,6 +13,7 @@ import { SKY_PANDA_PALETTE } from './palette/sky-panda';
 import { SKY_TOTALITY_PALETTE } from './palette/sky-totality';
 import { MEDITATION_PALETTE } from './palette/meditation';
 import { DEEP_MATTER_PALETTE } from './palette/deep-matter';
+import { TREE_COURSE_PALETTE } from './palette/tree-course';
 
 export const PALETTE = {
   // Ink, bone and ash: shared darks and paper.
@@ -66,6 +67,12 @@ export const PALETTE = {
   // light.* token under normal vision), and never a light.* name, so the light scan still holds.
   'attack.warn.base': '#EEE33C',
   'attack.warn.dim': '#A8A02E',
+
+  // The colour tiers' bodies (owner, issue #338; DECISIONS §14.6): a hostile Yellow is a loud, green-leaning
+  // yellow (ΔE ≥ 20 from light.gold under normal, deutan and protan vision), a hostile Red a red kept ΔE ≥ 20
+  // from life.heart under every simulation. Never light.* names. (An ally is the inversion of its colours: tiers.ts allyColor.)
+  'tier.yellow.dark': '#8C8800', 'tier.yellow.base': '#F5F000', 'tier.yellow.hi': '#FFFA70',
+  'tier.red.dark': '#7A1010', 'tier.red.base': '#E01E1E', 'tier.red.hi': '#FF3B1F',
 
   // The five paths: base, glow, dark and the shadow a projection takes. Miracles (the fifth,
   // placed first by the owner) is magenta: the one hue the rainbow lacks, made where its two ends meet
@@ -150,6 +157,9 @@ export const PALETTE = {
 
   // The presences' materials (D13): the Gardener's root and cave moss, the zones' ore veins (DECISIONS §6.7).
   ...DEEP_MATTER_PALETTE,
+
+  // The giant tree's branch courses (issue #329): one block per platform mechanic (DECISIONS §14.8).
+  ...TREE_COURSE_PALETTE,
 
   // The sky realm (docs/architecture/SKY.md §11): one part per package, never edited here.
   ...SKY_BLOCKS_PALETTE,

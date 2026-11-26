@@ -160,8 +160,9 @@ export interface GameEvents {
   brew: { potion: string; iced: boolean; contents: number; x: number; y: number; z: number };
   drink: { potion: string; rooms: number };
   /** A boss of a floor was overcome, once per boss room (ACHIEVEMENTS §1): its health reached zero (`destroyed`), it turned
-   *  to the player's side (`converted`), or the Shadow's own ending was reached by standing still beside it (`stillness`). React only. */
-  bossOvercome: { boss: string; floor: number; how: 'destroyed' | 'converted' | 'stillness' };
+   *  to the player's side (`converted`), or the Shadow's own ending was reached by standing still beside it (`stillness`). `mastery` is the Roots' mastery level the run was carved
+   *  with (read at run start, 0 in a run started on the debug level), which the global difficulty follows (#352, #353). React only. */
+  bossOvercome: { boss: string; floor: number; how: 'destroyed' | 'converted' | 'stillness'; mastery: number };
   /** A Sanctuary opened by a Boundary (the Roots' chest or a vault's) ended with `complete` (ACHIEVEMENTS §1). `seconds` is
    *  the time of every sitting finished in that visit, each at its full length (the hour achievement adds them up). React only. */
   meditationComplete: { meditation: string; source: 'roots' | 'vault'; seconds: number };
@@ -182,6 +183,9 @@ export interface GameEvents {
   /** The body, above the surface, entered a new story of the giant tree (`story` is its key: roots, rings, galleries,
    *  hollows, branches, canopy or stars). The canopy is the crown (ACHIEVEMENTS §1). React only. */
   treeStory: { story: string };
+  /** The run holds the six branch practices of the giant tree at once (issue #329, BRANCHES.md), however each was taken.
+   *  Emitted once a run, by the game. `practices` is how many there are (6). React only. */
+  branchPracticesAll: { practices: number };
   /** The completion percentage reached 100: every part is complete (COMPLETION.md §8). Emitted once, by the game. React only. */
   completionFull: { percent: number };
   /** A projection turned to the player's side (`convert`, once per conversion). `boss` is true for a boss, whose own
@@ -197,6 +201,13 @@ export interface GameEvents {
    *  the toll paid, the ore given, the Child's build finished), the rule the codex keeps (CODEX.md). `presence` is its id
    *  ('boatman', 'star-reader'…). Once per presence and encounter; the achievements count it once in the save. React only (ACHIEVEMENTS §1). */
   presenceMet: { presence: string };
+  /** The ending of illumination (ILLUMINATION.md): the last checkpoint carried the player into the Sun and the screen
+   *  is all light; the card is shown. Once per run, by the game. `friends` is the run's befriended beings (ally-tally.ts).
+   *  React only (ACHIEVEMENTS §1). */
+  illumination: { friends: number };
+  /** Every variation of every projection has been seen (its three tiers, hostile and allied; COMPLETION.md §2, issue #360):
+   *  `projections` is how many projections that is. Emitted once, by the game, while `bestiary.full` is locked. React only. */
+  bestiaryComplete: { projections: number };
 }
 
 /** A rebound of an intention, as the `intentBounce` event carries it. */

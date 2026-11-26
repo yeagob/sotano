@@ -8,6 +8,7 @@ import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
 import type { Polarity } from '../combat/polarity';
+import type { Tier } from './tiers';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -49,9 +50,10 @@ export interface EnemyDef {
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
-  hp: number;
-  /** Bosses only: its life from your health in points as it materialises, instead of the boss formula of its
-   *  floor (`bossHp`), and no practice changes it at spawn (the Shadow: the same hearts as yours, SHADOW.md). */
+  /** Life at birth, for a projection or a creature. A boss has none: its life comes from its floor and the run's seed (`bossLife`, content/bosses). */
+  hp?: number;
+  /** Bosses only: its life from your health in points as it materialises, instead of the boss life of its
+   *  floor (`bossLife`), and no practice changes it at spawn (the Shadow: the same hearts as yours, SHADOW.md). */
   life?(points: number): number;
   speed: number;
   /** Half-width and height of its box. */
@@ -75,6 +77,8 @@ export interface EnemyDef {
   /** A shell of plates in front of the core: hits break plates first, and the core takes none until they are gone. */
   shell?: { plates: number; plateHp: number };
   breaks?: { tier: number; power: number };
+  /** On the player's side it steps up and lets itself down two blocks instead of one (issue #327, MOVEMENT.md "Climbers"). A hostile ignores it. */
+  climber?: boolean;
   /** Bosses only: this boss's design needs a small room (its design doc must say why). Without it,
    *  a boss on floor 0 and below always fights in a large room (`bossRoomIsLarge`, issue #131). */
   smallRoom?: boolean;
@@ -128,6 +132,12 @@ export interface Enemy extends Actor {
   move: number;
   act: number;
   volley: number;
+  /** Its colour tier (tiers.ts); absent means Black. */
+  tier?: Tier;
+  /** The tier's extra climb in blocks (its tallest step and its leap's height), and its damage multiplier
+   *  for strikes, shots and bursts. A converted or mended ally keeps both. */
+  climb?: number;
+  power?: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
@@ -198,3 +208,9 @@ export interface Behaviour {
 }
 
 export const defineEnemy = (d: EnemyDef) => d;
+
+/** A projection's or creature's life at birth (`EnemyDef.hp`). Throws for a boss, whose life is set at its spawn. */
+export const birthHp = (def: Pick<EnemyDef, 'id' | 'hp'>): number => {
+  if (def.hp === undefined) throw new Error(`${def.id}: no birth health (a boss's life comes from bossLife)`);
+  return def.hp;
+};

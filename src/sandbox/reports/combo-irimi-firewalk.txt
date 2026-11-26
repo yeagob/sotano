@@ -17,20 +17,20 @@ t 60 (1.0 s)
   events actorDamage:player<fire! 48 · elementEnter:player:fire 1 · roomEnter 1
 
 t 180 (3.0 s)
-  player hp 8/24 · at 10.3 -1.0 3.5 · hand [] · bombs 99 · keys 99
+  player hp 8/24 · at 7.3 -1.0 3.5 · hand [brick brick] · bombs 99 · keys 99
   practices irimi firewalking waymark · synergies —
   blocks stone 21
-  elements lava 14 (14 src) · fire 7 (7 src)
+  elements lava 17 (14 src) · fire 7 (7 src)
   cubes — · pickups 0
-  events actorDamage:player<fire 2 · elementEnter:player:lava 1 · elementLeave:player:fire 1 · land 1
+  events actorDamage:player<fire 2 · blockBreak:brick 3 · blockDamage:brick 3 · blockLoot:brick 3 · elementEnter:player:lava 4 · elementLeave:player:fire 1 · elementLeave:player:lava 3 · land 2 · touchCube:brick 2
 
 t 360 (6.0 s)
-  player hp 24/24 · at 1.5 0.0 6.7 · hand [] · bombs 99 · keys 99
-  practices irimi firewalking · synergies —
+  player hp 8/24 · at 7.3 -1.0 5.7 · hand [brick brick] · bombs 99 · keys 99
+  practices irimi firewalking waymark · synergies —
   blocks stone 21
-  elements lava 14 (14 src) · fire 7 (7 src)
-  cubes — · pickups 0
-  events actorDamage:player<fire 1 · death! 1 · elementLeave:player:lava 1 · heal 1 · roomEnter 1
+  elements lava 17 (14 src) · fire 7 (7 src)
+  cubes brick 5 · pickups 0
+  events blockBreak:brick 6 · blockDamage:brick 6 · blockLoot:brick 6 · elementEnter:player:lava 1 · elementLeave:player:lava 2 · kick:brick 4 · touchCube:brick 4
 
 map t 360 · h 0
   .....F......r

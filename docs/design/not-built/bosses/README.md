@@ -22,4 +22,6 @@ What the design asks for the bosses that the build does not have yet. Every boss
 | [MANY-FACES.md](MANY-FACES.md) | The Many Faces' copying, real mask and stepping stones | proposal |
 | [SHADOW.md](SHADOW.md) | The Shadow's arena, integration and the Mirror's open questions | decided (keystone, Mirror built); arena and release proposal |
 
+Boss colour variants come later, after issue #338 lands. They are not built and have no design document yet; the life rule they will sit beside is in [Fight flow §3](../../built/bosses/FIGHT-FLOW.md#3-health).
+
 The Tree's bosses belong with the Tree milestone (L5), which is not built; they are ideas until the owner designs them with the Tree.

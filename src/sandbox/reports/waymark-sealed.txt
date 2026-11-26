@@ -40,7 +40,7 @@ t 240 (4.0 s)
   blocks —
   elements —
   cubes — · pickups 0
-  events actorDamage:player<contact 1 · actorDamage:player<item 1 · contact 1 · death! 1 · heal 1 · roomEnter 1
+  events actorDamage:player<contact 1 · actorDamage:player<item 1 · contact 1 · death! 1 · heal 1 · land 1 · roomEnter 1
 
 map t 240 · h 0
   .............

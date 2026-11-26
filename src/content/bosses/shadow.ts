@@ -309,7 +309,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Shadow',
   pattern: 'Everything you do not want to see in yourself',
-  hp: 140,
   life: shadowLife,
   speed: SPEED,
   size: [0.34, 1.8],

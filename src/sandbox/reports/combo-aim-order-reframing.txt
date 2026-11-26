@@ -15,7 +15,7 @@ t 150 (2.5 s)
   blocks stone 21
   elements —
   cubes — · pickups 1
-  events actorDamage:doubt<intent 10 · actorDeath:doubt 1 · fire 7 · intentHit 10 · polarityChange 1 · roomEnter 1
+  events actorDamage:doubt<intent 10 · actorDeath:doubt 1 · fire 7 · intentHit 10 · polarityChange 1 · projectionDestroyed 1 · roomEnter 1
 
 t 300 (5.0 s)
   player hp 24/24 · at 6.5 0.0 3.5 · hand [] · bombs 99 · keys 99

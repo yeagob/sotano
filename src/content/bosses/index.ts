@@ -1,6 +1,6 @@
 
 import type { EnemyDef } from '../../enemies/types';
-import type { Rng } from '../../core/rng';
+import type { Rng, RunRandom } from '../../core/rng';
 import furnace from './furnace';
 import grudge from './grudge';
 import hoard from './hoard';
@@ -44,6 +44,24 @@ export function bossFor(floor: number, rng: Rng, used: ReadonlySet<string>): str
 
 export const bossHp = (floor: number) => Math.round(140 * Math.pow(1000 / 140, (Math.max(1, floor) - 1) / 8));
 
-/** A boss's life as it materialises: its own `life` from your health in points (the Shadow, exempt from the
- *  formula), or the formula of its floor. */
-export const bossLife = (def: EnemyDef, floor: number, points: number) => (def.life ? def.life(points) : bossHp(floor));
+/** A boss's life is its floor's curve times this multiplier and its seeded factor (issue #315). */
+export const BOSS_LIFE_MULTIPLIER = 1.3;
+export const BOSS_LIFE_FACTOR: readonly [number, number] = [0.7, 1.5];
+
+/** The boss's life factor: a fork of the run's root keyed by the boss, so the same seed gives the same factor
+ *  to a boss in every run, and no other stream moves. */
+export const bossLifeFactor = (rr: RunRandom, id: string) => rr.fork('boss', 'life', id).range(BOSS_LIFE_FACTOR[0], BOSS_LIFE_FACTOR[1]);
+
+/** The boss's health when it spawns on `floor` in the run `rr`. */
+export const bossLife = (floor: number, rr: RunRandom, id: string) => Math.round(bossHp(floor) * BOSS_LIFE_MULTIPLIER * bossLifeFactor(rr, id));
+
+/** The smallest and largest life a boss can have on `floor`, over every seed. */
+export const bossLifeRange = (floor: number): readonly [number, number] => [
+  Math.round(bossHp(floor) * BOSS_LIFE_MULTIPLIER * BOSS_LIFE_FACTOR[0]),
+  Math.round(bossHp(floor) * BOSS_LIFE_MULTIPLIER * BOSS_LIFE_FACTOR[1]),
+];
+
+/** A boss's life as it materialises: its own `life` from your health in points (the Shadow, #339: exempt from the
+ *  formula), or the life of its floor and the run's seed (`bossLife`, #315). */
+export const bossSpawnLife = (def: EnemyDef, floor: number, rr: RunRandom, points: number) =>
+  (def.life ? def.life(points) : bossLife(floor, rr, def.id));

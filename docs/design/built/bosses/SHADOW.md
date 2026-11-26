@@ -8,7 +8,7 @@ The Shadow is the player's own silhouette in the room's negative: the same heigh
 
 - **Pattern:** everything you do not want to see in yourself. To be seen, and to come home.
 - **Path:** all paths.
-- **Health:** twice the player's health as it materialises, converted (see [Health](#health)). It is exempt from the boss health curve of the other bosses.
+- **Health:** twice the player's health as it materialises, converted (see [Health](#health)). It is exempt from the boss health curve and the seeded life factor of the other bosses (#315), and it never takes a colour tier (#338).
 
 ## Health
 
@@ -64,7 +64,7 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 
 **The fallback.** A player with no practices meets the base mirror: single strands of 4 points at the player's base fire interval (2.7 shots a second), 9 blocks a second, on the move; its own speed, a jump of 1.25 blocks, its orbit, and as many bombs as the player carries. With three hearts it has 42 of life.
 
-**Skipped, the documented list.** These have no meaning in a fight, or would act on the player rather than through the Shadow: meals and potions (the nourish practices that grow when you eat or drink), crafting and the recipe book, miracles that are neither a shot nor a movement (stopped time, walking through walls, turning lava), luck, keys and rewards (of rooms, chests and blasts), heart containers, invulnerability and answers to contact or blasts (the hearts are already in the player's health at entry, which is its life), healing and the checkpoint, blocks and mining, carrying, kicking and throwing, fire and lava underfoot, shots through blocks, crouching, shot behaviours a bolt cannot carry (bounces off blocks, intentions in flight), effects on other projections, and effects that would take the player's body out of their control.
+**Skipped, the documented list.** These have no meaning in a fight, or would act on the player rather than through the Shadow: meals and potions (the nourish practices that grow when you eat or drink), crafting and the recipe book, miracles that are neither a shot nor a movement (stopped time, walking through walls, turning lava), luck, keys and rewards (of rooms, chests and blasts) and pulling pickups, heart containers, invulnerability and answers to contact or blasts (the hearts are already in the player's health at entry, which is its life), healing and the checkpoint, blocks and mining, carrying, kicking and throwing, fire and lava underfoot, shots through blocks, crouching, shot behaviours a bolt cannot carry (bounces off blocks, intentions in flight), effects on other projections, and effects that would take the player's body out of their control.
 
 ### Every practice
 
@@ -91,6 +91,7 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Dialectic | `dialectic` | adapted | Its split becomes two more strands at 50% |
 | Discharge | `discharge` | adapted | Landing from a long jump sends a ring of 3 blocks, 4 points (converted) |
 | Distillation | `distillation` | skipped | Potions |
+| Double Jump | `double-jump` | copied | One more air jump |
 | Dowsing | `dowsing` | skipped | World: curves toward blocks |
 | Dr. Launcher | `drlauncher` | copied | It lobs its bombs as missiles |
 | Dual Process | `dualprocess` | copied | One more strand at 60% |
@@ -144,6 +145,7 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Spagyric Art | `spagyric` | skipped | Potions |
 | Spiral Growth | `spiralgrowth` | copied | Fire rate ×2, two more strands at 40% |
 | Stoic Resolve | `stoic` | copied | Damage +2, size ×1.4 |
+| Stretch | `stretch` | skipped | Loot: pulls keys, bombs and hearts on the floor to you; the Shadow picks nothing up |
 | Tao Te Ching | `taoteching` | skipped | World: piercing blocks |
 | Tea Ceremony | `teaceremony` | skipped | Potions |
 | Thinking, Waiting, Fasting | `thinkwaitfast` | skipped | Defence: invulnerability, luck |
@@ -152,6 +154,8 @@ Its contact hurts too (a heart). It summons nothing: a player does not summon pr
 | Triple Jump | `triple-jump` | copied | Your air jumps (each rises as a ground jump) |
 | Inner Fire | `tummo` | adapted | +1.5 damage to its cold strands, nothing set alight |
 | Visualization | `visualization` | copied | Range ×1.6, shot speed +30% |
+| Walk Slowly | `walk-slow` | skipped | Miracle: slowed time |
+| Wall Jump | `wall-jump` | skipped | World: it needs a wall beside the body |
 | Waymark | `waymark` | skipped | Life: a checkpoint |
 
 A new practice without a row in the code's table fails `tests/shadow-mirror.test.ts`; the row here goes with it.

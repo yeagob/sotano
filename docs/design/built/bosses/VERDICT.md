@@ -8,7 +8,7 @@ The Verdict is a long bench of ledger stone with seven tall lecterns standing on
 
 - **Pattern:** the Tribunal, grown old. To be beyond reproach.
 - **Path:** Mind.
-- **Health:** 478 on floor 6.
+- **Health:** 435 to 932 on floor 6.
 
 ## Phases
 

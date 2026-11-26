@@ -7,7 +7,7 @@ import noise from '../src/content/enemies/noise';
 import type { Actor } from '../src/entities/actors';
 import { seedFx } from '../src/core/fx';
 import { boxHits } from '../src/physics/voxel-collide';
-import type { Enemy } from '../src/enemies/types';
+import { birthHp, type Enemy } from '../src/enemies/types';
 
 const W = 13, D = 7, CEIL = 8;
 /** A closed room 13 x 7 with a floor at y = 0 (solid below), a ceiling at CEIL and walls all round. */
@@ -37,7 +37,7 @@ describe('Distraction and Noise, the dark winged projections', () => {
   for (const def of [distraction, noise]) {
     it(`${def.id} comes to the player and its touch lands`, () => {
       const w = world();
-      w.add(w.en.spawn(def, 2, 0, 2.5, 0, 2.5, def.hp, def.speed, def.contactDamage, new Set()));
+      w.add(w.en.spawn(def, 2, 0, 2.5, 0, 2.5, birthHp(def), def.speed, def.contactDamage, new Set()));
       for (let i = 0; i < 60 * 20; i++) w.en.update(1 / 60);
       expect(w.contacts()).toBeGreaterThan(0);
     });
@@ -87,7 +87,7 @@ describe('Wonder, the white winged creature, hovers and keeps off the walls', ()
 describe('an allied Distraction', () => {
   it('flies at eye height over the terrain and strikes the projection it is hostile to', () => {
     const w = world(terrace);
-    const ally = w.add(w.en.spawn(distraction, 2, 0, 2.5, 0, 2.5, distraction.hp, distraction.speed, distraction.contactDamage, new Set()));
+    const ally = w.add(w.en.spawn(distraction, 2, 0, 2.5, 0, 2.5, birthHp(distraction), distraction.speed, distraction.contactDamage, new Set()));
     ally.faction = 'self';
     w.add(w.en.spawn(noise, 3, 0, 10.5, 2, 3.5, 99, 0, 0, new Set()));
     let low = 0, n = 0;

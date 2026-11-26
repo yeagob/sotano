@@ -8,7 +8,7 @@ import { ItemPools } from '../src/items/pool';
 import { carveFloor, createDungeonWorld, FIRST_FLOOR, FLOORS, pedestalSlots, planDungeon } from '../src/world/floor';
 
 /** `carve`: the Roots' options as Game.newRun passes them (mastery 0 and the teaching layout by default). */
-export function buildRun(root: number, floors = FLOORS, beforeCarve?: (rr: RunRandom, pools: ItemPools) => void, carve: { mastery?: number; easyRoots?: boolean } = {}) {
+export function buildRun(root: number, floors = FLOORS, beforeCarve?: (rr: RunRandom, pools: ItemPools) => void, carve: { mastery?: number; easyRoots?: boolean; difficulty?: number } = {}) {
   const rr = new RunRandom(root);
   const dungeon = planDungeon(rr);
   const pools = new ItemPools(ITEMS);
@@ -24,6 +24,7 @@ export function buildRun(root: number, floors = FLOORS, beforeCarve?: (rr: RunRa
       enemies: ENEMY_BUDGET,
       mastery: carve.mastery,
       easyRoots: carve.easyRoots,
+      difficulty: carve.difficulty,
     }));
   }
   return { rr, dungeon, pools, w, floors: result };

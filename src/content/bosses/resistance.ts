@@ -12,7 +12,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'Resistance',
   pattern: 'The force that stops creative work',
-  hp: 140,
   speed: 3,
   size: [0.9, 2.6],
   contactDamage: 8,

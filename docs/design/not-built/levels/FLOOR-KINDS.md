@@ -34,4 +34,4 @@ The owner has also said that two stories are still missing from the tree, totali
 1. Are the upper three levels room maps like the floors below, or walkable stories as built?
 2. If room maps: which templates, and does a tree room follow the same house rules as a floor room?
 3. Does the star map keep the teleport doors (the design) or only the pads (the build)? The built map shows the pads as the doors (D15); a door of its own is not built.
-4. Does the trunk keep its four stories, or fold into three floors as the design text says?
+4. Does the trunk keep its four stories, or fold into three floors as the design text says? (Today the four stories are the interior's route, each with its broken stair: see [TREE-CORE](TREE-CORE.md).)

@@ -16,6 +16,7 @@ Two subfolders hold the variants that are read one at a time: [spawn-kinds](spaw
 | [WAVE-TRIGGERS.md](WAVE-TRIGGERS.md) | The wave triggers beyond "remaining" and "patience" | proposal |
 | [TRIAL-ROOM-PEDESTAL.md](TRIAL-ROOM-PEDESTAL.md) | The trial room's pedestal practice, after timed waves | decided |
 | [FAIRNESS-RULES.md](FAIRNESS-RULES.md) | The spawn fairness rules the build does not yet check | proposal |
+| [DEEPER-BEHAVIOUR.md](DEEPER-BEHAVIOUR.md) | Projections reacting to each other, to polarity and to practices; the falter after a Red release is coded and off | proposal (optional) |
 | [OMEN-SIGNALS.md](OMEN-SIGNALS.md) | Edge markers, elevation sound, occlusion and ducking for omens | proposal |
 | [spawn-kinds/](spawn-kinds/README.md) | Walls, ceilings, liquids, element sources, blocks and burrows as spawn points | proposal |
 | [movement/](movement/README.md) | Swimmers, mounted beings, the burrower and the patrol | proposal and idea |

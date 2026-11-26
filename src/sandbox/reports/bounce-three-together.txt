@@ -21,11 +21,11 @@ t 60 (1.0 s)
 t 240 (4.0 s)
   player hp 24/24 · at 1.5 0.0 3.5 · hand [] · bombs 99 · keys 99
   practices dialectic reframing bounceback · synergies —
-  doubt#2 hp 20.5/24 · self · at 1.7 0.0 3.5
+  doubt#2 hp 20.5/24 · self · at 3.2 0.0 4.8
   blocks stone 14
   elements —
   cubes — · pickups 0
-  events actorDamage:doubt<intent 4 · factionChange:doubt>self 1 · intentBounce 19 · intentHit 28
+  events actorDamage:doubt<intent 4 · factionChange:doubt>self 1 · intentBounce 19 · intentHit 28 · projectionConverted 1
 
 map t 240 · h 0
   ........r....

@@ -13,7 +13,6 @@ export default defineEnemy({
   kind: 'boss',
   name: 'The Insatiable',
   pattern: 'To be full',
-  hp: 140,
   speed: 1,
   size: [1.4, 2.4],
   contactDamage: 8,
