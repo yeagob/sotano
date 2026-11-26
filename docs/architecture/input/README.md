@@ -30,7 +30,7 @@ Game code never reads a key code, a button index or a touch. It asks `input.held
 | Context | When |
 |---|---|
 | `play` | Simulating |
-| `prompt` | Information banners dismiss with confirm; a Presence offer pauses the world until confirm accepts or back declines |
+| `prompt` | Information banners dismiss with confirm; a practice card (the item banner) closes on the release of a tap that did not drag (a pointer press never closes it, #375); a Presence offer pauses the world until confirm accepts or back declines |
 | `paused` | The menu is up (the screen with its menu tab, or the pause card) |
 | `dead` | The death screen |
 | `inventory` | The screen is open on its menu, practices or star map tab (it pauses the world) |

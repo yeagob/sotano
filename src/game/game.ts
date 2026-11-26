@@ -5418,7 +5418,10 @@ export class Game {
     this.gate.update(dt);
     // the ending of illumination: once its card is read (or cut off), the run ends (ILLUMINATION.md §4)
     if (this.illuminated && !this.hud.bannerOpen && this.restartT <= 0 && this.revealT < 0) this.requestRestart();
-    // an information banner stays until clicked; that click only dismisses it
+    // the practice card's text scrolls with the arrows (or WASD) and the pad's stick, at 600 px a second (#375)
+    if (ctx === 'prompt' && this.hud.practiceOpen) this.hud.scrollPractice(-inp.move.y * 600 * dt);
+    // an information banner stays until clicked; that click only dismisses it. A practice card closes on a pointer's
+    // tap release (hud.practiceRelease), so a pointer's press here does not close it (#375)
     if (ctx === 'prompt' && this.hud.presenceChoiceOpen) {
       // the choice card: navigate moves between the answers, confirm picks the selected one, back declines
       const n = inp.navigate();
@@ -5431,7 +5434,7 @@ export class Game {
       const confirmedBy = inp.hitBy('confirm');
       if (confirmedBy && confirmedBy !== 'touch') this.resolvePresenceOffer(true);
       else if (inp.hit('back')) this.resolvePresenceOffer(false);
-    } else if (ctx === 'prompt' && inp.hit('confirm')) {
+    } else if (ctx === 'prompt' && inp.hit('confirm') && !(this.hud.practiceOpen && inp.pointerConfirm)) {
       this.hud.confirmBanner();
       inp.suppress('cast', 'place', 'jump', 'throw', 'bomb', 'polarity', 'confirm');
     }

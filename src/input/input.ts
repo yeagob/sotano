@@ -139,6 +139,11 @@ export class Input {
       || this.padMove.x !== 0 || this.padMove.y !== 0 || this.touchHeld.size > 0 || this.touchMove.x !== 0 || this.touchMove.y !== 0;
   }
 
+  /** Whether this frame's confirm came from a pointer (a touch, or a mouse button), not from a key or the pad (#375). */
+  get pointerConfirm(): boolean {
+    return this.touchPressed.has('confirm') || [...this.mousePressed].some(b => BINDING.confirm.keyboard.mouse?.includes(b));
+  }
+
   get portrait() { return current === 'touch' && innerHeight > innerWidth; }
 
   get playing() { return this.locked || (this.engaged && !this.portrait); }

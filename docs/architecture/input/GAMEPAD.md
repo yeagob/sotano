@@ -27,7 +27,7 @@ Any controller the browser exposes with the **standard mapping** (Xbox, PlayStat
 | pause / resume | Menu |
 | restart | View, on the landing, the pause card or the death screen |
 | book | X, on the pause card or the death screen (download the book at 100%) |
-| confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death) |
+| confirm | A (accepts a Presence offer; dismisses banners, resumes, begins again after death). The left stick scrolls a practice card's text |
 | back | B (declines a Presence offer) |
 
 Free in `play` for future actions: X, LS and RS (`sotano-controls` §2).
