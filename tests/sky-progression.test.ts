@@ -12,6 +12,7 @@ import { Hazards, type HazardHost } from '../src/enemies/attacks';
 import { ActorRegistry, type Actor } from '../src/entities/actors';
 import { DebrisSystem } from '../src/physics/debris';
 import type { Body } from '../src/physics/voxel-collide';
+import { apex } from '../src/physics/jump';
 import { FOOT_WELL as W, openGate } from '../src/sky/floors/tree';
 import { SkyRealm } from '../src/sky/sky-realm';
 import { SPIRIT_MAX, type FloorIndex, type HindranceRunnerApi, type SkyActor, type SkyHost, type SkyRealmSet } from '../src/sky/types';
@@ -210,6 +211,35 @@ describe('the five floors are won in order', () => {
       const up = climb(r, n);
       expect(up.ok, `floor ${n} climb ${JSON.stringify(up)}`).toBe(true);
       expect(r.realm.floorAt(up.at.y)).toBe(n + 1);
+    }
+  });
+});
+
+describe('the opening after each guardian is wide, and its steps are one block apart', () => {
+  it('is one cell wider than its gate, at least five across with twenty free cells on its membrane layer, and each step rises one block, one cell over, within a jump', () => {
+    for (let seed = 1; seed <= 4; seed++) {
+      const r = rig(seed);
+      for (let n = 1; n <= 5; n++) {
+        const plan = r.realm.plans.floors[n - 1].gate;
+        const g = r.realm.plans.tree.gates[n - 1];
+        const s = g.steps!;
+        expect(g.r, `seed ${seed} floor ${n} radius`).toBe(plan.r + 1);
+        expect(g.r * 2 + 1, `seed ${seed} floor ${n} across`).toBeGreaterThanOrEqual(5);
+        let free = 0;
+        for (let z = g.z - g.r; z <= g.z + g.r; z++) for (let x = g.x - g.r; x <= g.x + g.r; x++)
+          if ((x - g.x) ** 2 + (z - g.z) ** 2 <= g.r * g.r + g.r && !covers(s, x, g.y, z)) free++;
+        expect(free, `seed ${seed} floor ${n} free cells on the membrane layer`).toBeGreaterThanOrEqual(20);
+        let prev: [number, number] | null = null;
+        for (let y = s.y0; y <= s.y1; y++) {
+          const cells: [number, number][] = [];
+          for (let z = s.z0; z <= s.z0 + 1; z++) for (let x = s.x0; x <= s.x0 + 1; x++) if (covers(s, x, y, z)) cells.push([x, z]);
+          expect(cells.length, `seed ${seed} floor ${n} height ${y} has one step`).toBe(1);
+          const [x, z] = cells[0];
+          if (prev) expect(Math.abs(x - prev[0]) + Math.abs(z - prev[1]), `seed ${seed} floor ${n} step at ${y}`).toBe(1);
+          prev = [x, z];
+        }
+        expect(apex(0), 'the normal jump clears one block').toBeGreaterThanOrEqual(1);
+      }
     }
   });
 });

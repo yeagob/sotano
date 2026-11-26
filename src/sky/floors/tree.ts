@@ -25,6 +25,7 @@ export const SKY_AXIS = { x: 128, z: 128 } as const;
 /** Heartwood walls and slabs are this thick (Â§7.1). */
 const WALL = 3;
 const SLAB = 3;
+const OPENING_GROWTH = 1;
 /** The deck: its walking surface, and its disc's radius (the deck row of Â§7.1). */
 export const DECK_Y = 32;
 const DECK_RADIUS = 48;
@@ -113,12 +114,13 @@ export function buildSkyTree(_rng: Rng, floors: readonly SkyFloorPlan[] = []): S
     const g = plan?.gate;
     if (!g) return;
     const y = b.y1 + 1;
-    shapes.push({ k: 'ring', cx: g.x, cz: g.z, r0: 0, r1: g.r, y0: y, y1: y + SLAB - 1, m: AIR });
-    shapes.push({ k: 'ring', cx: g.x, cz: g.z, r0: 0, r1: g.r, y0: y, y1: y, m: MAT.heartwood });
+    const r = g.r + OPENING_GROWTH;
+    shapes.push({ k: 'ring', cx: g.x, cz: g.z, r0: 0, r1: r, y0: y, y1: y + SLAB - 1, m: AIR });
+    shapes.push({ k: 'ring', cx: g.x, cz: g.z, r0: 0, r1: r, y0: y, y1: y, m: MAT.heartwood });
     const next = i + 1 < BANDS.length ? BANDS[i + 1].y0 : CROWN_Y;
     const c = plan.route.length ? climbOf(plan, next, floors[i + 1]?.shapes ?? []) : null;
     if (c) climbs.push(...c.shapes);
-    gates.push({ x: g.x, y, z: g.z, r: g.r, ...(c ? { steps: c.steps } : {}) });
+    gates.push({ x: g.x, y, z: g.z, r, ...(c ? { steps: c.steps } : {}) });
   });
 
   const deck: Place = { id: 0, kind: 'ground', x: ARRIVAL.x, y: DECK_Y, z: ARRIVAL.z, w: 1, d: 1, tag: 0 };
