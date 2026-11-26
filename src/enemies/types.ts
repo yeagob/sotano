@@ -73,6 +73,8 @@ export interface EnemyDef {
   /** A shell of plates in front of the core: hits break plates first, and the core takes none until they are gone. */
   shell?: { plates: number; plateHp: number };
   breaks?: { tier: number; power: number };
+  /** On the player's side it steps up and lets itself down two blocks instead of one (issue #327, MOVEMENT.md "Climbers"). A hostile ignores it. */
+  climber?: boolean;
   /** Bosses only: this boss's design needs a small room (its design doc must say why). Without it,
    *  a boss on floor 0 and below always fights in a large room (`bossRoomIsLarge`, issue #131). */
   smallRoom?: boolean;

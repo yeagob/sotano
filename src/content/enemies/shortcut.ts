@@ -29,6 +29,7 @@ export default defineEnemy({
   minFloor: 7,
   maxFloor: 8,
   drops: { key: 0.1, bomb: 0.1 },
+  climber: true,
   behaviour: way,
   model: [
     { size: [6 * TX, 8 * TX, 6 * TX], pos: [0, 4 * TX, 0], color: pal('husk.panic.dark'), name: 'body' },
