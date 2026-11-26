@@ -8,6 +8,8 @@ import type { Actor } from '../entities/actors';
 import type { ElementAffinity, ElementKey } from '../content/elements';
 import type { Strike } from './attacks';
 import type { Polarity } from '../combat/polarity';
+import type { Tier } from './tiers';
+import type { Rng } from '../core/rng';
 
 /** How a projection lives with one element: its affinity (content/elements.ts DEFAULT_AFFINITY
  *  fills what is left out) and an optional reaction when its body goes in. */
@@ -49,7 +51,11 @@ export interface EnemyDef {
   name: string;
   /** The pattern it stands for (shown in the inventory's bestiary later). */
   pattern: string;
-  hp: number;
+  /** Life at birth, for a projection or a creature. A boss has none: its life comes from its floor and the run's seed (`bossLife`, content/bosses). */
+  hp?: number;
+  /** Bosses only: its life from your health in points as it materialises, instead of the boss life of its
+   *  floor (`bossLife`), and no practice changes it at spawn (the Shadow: the same hearts as yours, SHADOW.md). */
+  life?(points: number): number;
   speed: number;
   /** Half-width and height of its box. */
   size: [number, number];
@@ -127,6 +133,12 @@ export interface Enemy extends Actor {
   move: number;
   act: number;
   volley: number;
+  /** Its colour tier (tiers.ts); absent means Black. */
+  tier?: Tier;
+  /** The tier's extra climb in blocks (its tallest step and its leap's height), and its damage multiplier
+   *  for strikes, shots and bursts. A converted or mended ally keeps both. */
+  climb?: number;
+  power?: number;
 }
 
 /** Where a target is (a snapshot for this frame). */
@@ -143,7 +155,8 @@ export interface EnemyCtx {
   /** How many prizes the enemy carries. */
   carried(e: Enemy): number;
   strike(e: Enemy, s: Strike): void;
-  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number): void;
+  /** A straight bolt along (dx, dy, dz). `radius` (blocks, default 0.12) is how close it must pass to hit, and its size. */
+  bolt(e: Enemy, dx: number, dy: number, dz: number, speed: number, damage: number, radius?: number): void;
   safe(e: Enemy, x: number, y: number, z: number): boolean;
   centre(e: Enemy): [number, number];
   quiet(e: Enemy): boolean;
@@ -158,6 +171,19 @@ export interface EnemyCtx {
   /** The nearest actor of the self (the player, its allies), whatever the enemy's side: peaceful
    *  creatures use it to keep you company. */
   near(e: Enemy): TargetView | null;
+  /** The ids of the practices the player holds now, in the order gained. Read only: the Shadow takes them once,
+   *  when its fight starts, and mirrors them (content/bosses/mirror.ts). With `health` and `bombs`, the only
+   *  things of the player a behaviour can read. */
+  practices(): readonly string[];
+  /** The player's health now, in points (hearts and layers). Read only: the Shadow scores its choices on it. */
+  health(): number;
+  /** The bombs the player carries now. Read only: the Shadow takes as many when its fight starts. */
+  bombs(): number;
+  /** Drops the player's own bomb at its feet (game/bomb.ts: the same cube, look and fuse), cold, with its own blast:
+   *  radius in blocks, block damage at the centre, and points to every actor it reaches. */
+  placeBomb(e: Enemy, blast: { radius: number; blocks: number; damage: number }): void;
+  /** A fresh seeded RNG for one decision site of this enemy's fight (`fork('floor', k, 'room', i, 'boss', site)`). */
+  rng(e: Enemy, site: string): Rng;
   /** Horizontal distance to a target. */
   dist(e: Enemy, t: TargetView): number;
   /** Direction to walk towards a target inside the room (flow field), or straight at it. */
@@ -185,3 +211,9 @@ export interface Behaviour {
 }
 
 export const defineEnemy = (d: EnemyDef) => d;
+
+/** A projection's or creature's life at birth (`EnemyDef.hp`). Throws for a boss, whose life is set at its spawn. */
+export const birthHp = (def: Pick<EnemyDef, 'id' | 'hp'>): number => {
+  if (def.hp === undefined) throw new Error(`${def.id}: no birth health (a boss's life comes from bossLife)`);
+  return def.hp;
+};

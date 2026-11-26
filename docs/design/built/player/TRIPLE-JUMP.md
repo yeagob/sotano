@@ -12,6 +12,7 @@ Part of [the player (built)](README.md).
 - Landing gives both air jumps back.
 - Your practices raise every jump with no cap: a jump-height practice makes each of the three jumps higher, the third one without limit.
 - The item adds **+2 air jumps** (the `airJumps` stat, base 0) for its first copy. A second copy adds **one more** air jump, so a fourth jump rises sixteen times as high as a ground jump, twice the rise of the second air jump. Measured peaks, jumps one to four: 1.26, 2.52, 10.07 and 20.15 blocks. A third copy adds nothing: the stat stops at three however many copies you hold.
+- With the [Double Jump](../../not-built/practices/DOUBLE-JUMP.md) (one more air jump, built in code, awaiting the owner's acceptance) held too, the climb is four jumps: the ground jump and three in the air, rising 2×, 8× and 16×, the same ladder as two Triple Jump copies. The air jumps are counted, not named, so it makes no difference which item gave which; the stat still stops at three.
 
 The rule behind it: the jump is the one button, and the air jump is a new meaning of that button in the air, so the player needs no new control. The pause card's jump row mentions the air jumps ([the input document](../../../architecture/input/README.md)).
 

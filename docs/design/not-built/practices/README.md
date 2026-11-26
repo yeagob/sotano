@@ -18,6 +18,7 @@ The ideas for practices, parts and their uses that are decided or proposed and a
 | [RULE-OF-THREE.md](RULE-OF-THREE.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Mind, quality 3. Each intention flies as three strands in a triangle that widens; 70% damage and mining each |
 | [BOOK-OF-SECRETS.md](BOOK-OF-SECRETS.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Mind, quality 1. Opens the Recipe Book; the Roots lay it from mastery level 30 |
 | [SPIRAL-GROWTH.md](SPIRAL-GROWTH.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Body, quality 4. Fire rate ×2; each intention flies as a helix of three strands (one full, two at 40%). Double Helix with Bilateral Stimulation |
+| [DOUBLE-JUMP.md](DOUBLE-JUMP.md) | Status: built in code, awaiting the owner's acceptance before it moves to built/practices | Body, quality 3. One more air jump (2× a ground jump, no forward push); with the Triple Jump, four jumps in all. The name is provisional |
 
 ## Decided design rule
 

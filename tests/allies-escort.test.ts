@@ -3,12 +3,13 @@
 // runs with no escort (the dungeon before #327) so the findings in the doc can be reproduced. Every
 // threshold of the issue's criteria is in the block below, and nowhere else.
 import { describe, expect, it } from 'vitest';
+import { Rng } from '../src/core/rng';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { ENEMY_BY_ID } from '../src/content/enemies';
 import { CREATURE_BY_ID } from '../src/content/creatures';
 import type { Actor } from '../src/entities/actors';
-import type { Enemy } from '../src/enemies/types';
+import { birthHp, type Enemy } from '../src/enemies/types';
 import { FlowField, type RoomArea } from '../src/enemies/flowfield';
 import { setScale } from '../src/entities/growth';
 import {
@@ -58,7 +59,7 @@ function rig(s: Script, escort: boolean) {
   const host = {
     solid, worldVersion: () => 0, actors: () => actors, actor: (id: number) => actors.find(a => a.id === id),
     room: (id: number) => s.rooms?.find(r => r.id === id) ?? ROOM, elemVersion: () => 0, pickupsIn: () => [],
-    hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+    hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost;
@@ -72,7 +73,7 @@ function rig(s: Script, escort: boolean) {
   let next = 10;
   const add = (def: string | EnemyDef, x: number, y: number, z: number, faction: Actor['faction'], room = 0) => {
     const d = typeof def === 'string' ? ENEMY_BY_ID.get(def) ?? CREATURE_BY_ID.get(def)! : def;
-    const e = en.spawn(d, next++, room, x, y, z, d.hp, d.speed, d.contactDamage, new Set(CREATURE_BY_ID.has(d.id) ? ['creature'] : []));
+    const e = en.spawn(d, next++, room, x, y, z, birthHp(d), d.speed, d.contactDamage, new Set(CREATURE_BY_ID.has(d.id) ? ['creature'] : []));
     e.spawning = 0; e.faction = faction;
     actors.push(e);
     return e;

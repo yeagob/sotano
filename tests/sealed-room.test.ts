@@ -1,9 +1,11 @@
 // Issue #301: rooms stayed sealed with no projection left to fight. Three causes, each reproduced
+import { Rng } from '../src/core/rng';
 // here, and the watchdog that recounts a sealed room from the real state.
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { Enemies, type EnemyHost } from '../src/entities/enemies';
 import { ENEMY_BY_ID } from '../src/content/enemies';
+import { birthHp } from '../src/enemies/types';
 import type { Actor } from '../src/entities/actors';
 import { boxHits, freeBody, type Body } from '../src/physics/voxel-collide';
 import { cellTaken } from '../src/game/placement';
@@ -22,14 +24,14 @@ function rig(blocks = new Set<string>(), px = 6.5, pz = 3.5) {
   const host = {
     solid, worldVersion: () => blocks.size, actors: () => [player], actor: (id: number) => (id === 1 ? player : undefined),
     room: () => ROOM, elemVersion: () => 0, pickupsIn: () => [],
-    hazard: () => null, contact: () => {}, projectileHit: () => {}, projectileBlock: () => false,
+    hazard: () => null, contact: () => {}, practices: () => [], health: () => 48, bombs: () => 0, placeBomb: () => {}, rng: () => new Rng(1), projectileHit: () => {}, projectileBlock: () => false,
     smash: () => false, burst: () => {}, died: () => {}, particles: () => {}, hurtActor: () => {},
     affectActor: () => {}, arena: () => {}, summon: () => {}, cue: () => {}, quake: () => {}, drop: () => {},
   } as EnemyHost;
   const en = new Enemies(new THREE.Scene(), host);
   const add = (def: string, x: number, y: number, z: number, id = 10) => {
     const d = ENEMY_BY_ID.get(def)!;
-    const e = en.spawn(d, id, 0, x, y, z, d.hp, d.speed, d.contactDamage, new Set());
+    const e = en.spawn(d, id, 0, x, y, z, birthHp(d), d.speed, d.contactDamage, new Set());
     e.spawning = 0;
     return e;
   };

@@ -4,7 +4,7 @@ Up: [not-built levels](README.md) · [Totality](TOTALITY.md) · [The realm of th
 
 Status: decided for the setting (occurs in the Sun), its role as the final destination of the upward climb, and granting the solar relic needed to confront the Spiked Entity at the bottom of the world. Proposal for the space layout, visual manifestation, and final interaction.
 
-Not built, and pending by design (owner, 2026-11-03; the entrance, owner, 2026-11-05): Unity is a different game, where every mechanic changes. Its definition is issue #95. The sky realm build ends at the entrance to the Sun at the top of [Totality](TOTALITY.md): the last jump enters the Sun and activates Unity, which does nothing yet. The solar relic and the rematch with the Spiked Entity wait for Unity.
+Not built, and pending by design (owner, 2026-11-03; the entrance, owner, 2026-11-05): Unity is a different game, where every mechanic changes. Its definition is issue #95. The sky realm build ends at the entrance to the Sun at the top of [Totality](TOTALITY.md): the last jump enters the Sun and activates Unity, which does nothing yet; the ending of illumination, built for a player who has won the five guardians, ends the run in the Sun ([ILLUMINATION](../../built/levels/totality/ILLUMINATION.md), issue #351). The solar relic and the rematch with the Spiked Entity wait for Unity.
 
 ## 1. What Unity is
 

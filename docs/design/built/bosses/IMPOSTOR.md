@@ -8,7 +8,7 @@ The Impostor is a hollow frame of brass, never gold, with a smile too wide for i
 
 - **Pattern:** fear of being found out. To be safe.
 - **Path:** Emotion.
-- **Health:** 612 on floor 7, 782 on floor 8.
+- **Health:** 557 to 1193 on floor 7, 712 to 1525 on floor 8.
 
 ## Phases
 

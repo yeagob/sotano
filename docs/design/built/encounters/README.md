@@ -9,7 +9,7 @@ An encounter is the way a fight begins, unfolds and ends in a room: the doors sh
 | [KINDS-OF-BEINGS.md](KINDS-OF-BEINGS.md) | The three kinds of beings: projections, creatures and presences |
 | [POLARITY.md](POLARITY.md) | Good and bad intentions and what each does to each kind of being |
 | [SEAL-AND-OMENS.md](SEAL-AND-OMENS.md) | The doors that shut, the omen every projection is announced by, and the clear |
-| [SPAWNS-AND-WAVES.md](SPAWNS-AND-WAVES.md) | Where projections rise, how waves follow one another, and the breath between them |
+| [SPAWNS-AND-WAVES.md](SPAWNS-AND-WAVES.md) | Where projections rise, how a room's roster grows with the difficulty, how waves follow one another, and the breath between them |
 | [CHALLENGE-ROOMS.md](CHALLENGE-ROOMS.md) | The challenge room: three harder waves, and a reward for each |
 | [ATTACKS.md](ATTACKS.md) | The attack shapes and the telegraph every attack gives before it lands |
 | [MOVEMENT.md](MOVEMENT.md) | The movement behaviours projections, creatures and bosses use |

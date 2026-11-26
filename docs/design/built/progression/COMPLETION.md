@@ -19,9 +19,9 @@ The weights are the proposal of issue #180, unchanged (they add up to 100). The 
 |---|---|---|---|---|
 | Floors | 25 | the floor was entered for the first time, on any of three routes | 22: the descent 10, the giant tree 7, the sky 5 | `LEVELS` (`0` to `9`), `TREE_STORIES` (`tree.<story>`), `DEITIES` (`sky.<animal>`) |
 | Bosses | 20 | the boss was destroyed or turned to your side (either achievement unlocked) | 14 | `ACHIEVEMENT_BOSSES` |
-| Achievements | 20 | the achievement is unlocked | 46 | `ACHIEVEMENTS`, without `completion.full` (§8) |
+| Achievements | 20 | the achievement is unlocked | 77 | `ACHIEVEMENTS`, without `completion.full` (§8) |
 | Practices | 15 | the practice was held at least once | 46 | `ITEMS` |
-| Bestiary | 10 | the projection, creature, presence or sky creature was met | 76 | see below |
+| Bestiary | 10 | the creature, presence or sky creature was met; a projection only when every one of its six variations was seen (issue #360) | 76 (the 40 projections need 240 variations) | see below |
 | Recipes | 5 | the potion or meal was made at least once | 27 | `POTION_IDS` (twenty-five potions, the Echo counted once whatever practice it carries, and two meals) |
 | The hidden book | 5 | the page was reached | 19 pages | the Roots' book; reached = the Roots' current page |
 
@@ -35,6 +35,18 @@ The weights are the proposal of issue #180, unchanged (they add up to 100). The 
 - the thirteen Presences: the Gardener, the Listener, the Trickster, the Echo, the Wanderer, the Elder, the Cartographer, the Child, the Witness, the Boatman, the Mender, the Star-reader (issue #149) and the Boundary (`boundary`, the Sanctuary's presence). Each counts when it is placed in a room; the Mender, which is not placed with the floor, counts when it comes to an opened vault. Every one is reachable over runs (the Echo after a death, the Boatman on a floor with a drowned nave, the Mender after a vault on its floor). Decided at the merge of #222 into #149, pending owner ruling: the presences count like the other beings met, as the design's row says;
 - the sky's guardians (`guardian-<animal>`, the deity of each guardian floor) and its herds (`herd-<animal>`, the minions of each floor), counted with their floor.
 
+**A projection counts only when all of its variations are seen** (issue #360, owner direction for 0.2.10). Its variations are its three colour tiers ([TIERS](../projections/TIERS.md): Black, Yellow, Red), each seen **hostile** and seen **as an ally** (the inverted view): six per projection, 240 for the 40 projections. Each variation is one id in `firsts.bestiary`, `<projection>:<tier>` and `<projection>:<tier>:ally` (`variationId`, `variationsOf` in `src/game/completion.ts`), kept once like every first time. The bestiary's done count is the creatures, presences and sky beings met plus the projections with all six variations seen; its total is unchanged (76). Bosses keep their own part and their own id; creatures, presences and the Shadow never take a tier, so they have no variations.
+
+**When a variation counts as seen** (`Game.seeVariation`, the same moment for the bestiary and its achievement):
+- **hostile**: when the projection materialises in its room (`Game.spawnEnemy`, after its omen, the spawn not cancelled by a hook), in the tier it rolled; a split's halves are seen as they appear;
+- **allied**: when it turns to the player's side (`Game.convert`), or when the Mender brings a released one back as an ally in the tier it was released in (`Game.mendReleased`). A relapse and a second conversion add nothing.
+
+An omen alone, a projection still announcing itself, is not a sighting. The sandbox and the lab record nothing (the keeper is not live there).
+
+**Older saves.** Before the tiers every projection was Black, and the game kept it under its bare id when it spawned. A bare projection id reads as its Black hostile variation; the game no longer writes a bare projection id, so the reading stays true.
+
+**Completing the bestiary is an achievement**: "Know Thyself" (`bestiary.full`, [ACHIEVEMENTS](ACHIEVEMENTS.md) §1), unlocked once when the last variation of the last projection is seen (`bestiaryComplete`). Only the projections' variations count for it, not the creatures or the presences.
+
 Not counted, on purpose:
 - **the Spiked Entity** (`src/endgame/`): its `Encounter` class exists but nothing in the game builds it yet, so no player can meet it. It joins the bestiary when it is wired.
 - **the item `boundaries`** (`src/content/items/boundaries.ts`): a practice file that is not in `ITEMS` and has no Spanish text, so no player can hold it. It joins the practices when the owner registers it and it is translated.
@@ -46,7 +58,7 @@ A part with no content counts as complete.
 
 Four first-time lists in the save record, optional (see [SAVE](SAVE.md) §1): `firsts.floors`, `firsts.practices`, `firsts.bestiary`, `firsts.recipes`. Each holds ids, each kept once. Bosses, achievements and the book need no list: they are read from the achievements and the Roots' page that the save already holds.
 
-- The floor ids are `0` to `9` (the descent), `tree.<story>` and `sky.<animal>`; the bestiary ids are the content's ids plus `guardian-<animal>` and `herd-<animal>`.
+- The floor ids are `0` to `9` (the descent), `tree.<story>` and `sky.<animal>`; the bestiary ids are the content's ids plus `guardian-<animal>` and `herd-<animal>`, and for a projection its variations (`<projection>:<tier>`, `<projection>:<tier>:ally`, §2).
 - A list is only added to. On a merge of two tabs it is a union.
 - A save from before this feature has no lists. It reads as none: its achievements, bosses and pages count at once, its floors, practices, creatures and recipes start counting from the next time they happen.
 - The debug reset (`S.meta.reset`) forgets the lists with the rest of the Roots' progress.
@@ -68,13 +80,13 @@ Four first-time lists in the save record, optional (see [SAVE](SAVE.md) §1): `f
 
 ## 6. Tests
 
-`tests/completion.test.ts`: 0% on an empty save, a partial state with each part worked out by hand, 100% when complete (and 99 at one page short), the bosses by either ending, the book past its last page, a part with no content, the totals growing with content, the monotone steps, the shipped content reading 0% (22 floors across the three routes, 76 bestiary ids, the final achievement not counted), the migration of an older record without the lists, the union on merge, the keeper recording each first time once and nothing in the sandbox, the book download hidden below 100% and shown at 100%, and the book's page self-contained. `tests/achievements-game.test.ts` checks that `completionFull` unlocks `completion.full` once and nothing else.
+`tests/completion.test.ts`: 0% on an empty save, a partial state with each part worked out by hand, 100% when complete (and 99 at one page short), the bosses by either ending, the book past its last page, a part with no content, the totals growing with content, the monotone steps, the shipped content reading 0% (22 floors across the three routes, 76 bestiary ids, the final achievement not counted), the migration of an older record without the lists, the union on merge, the keeper recording each first time once and nothing in the sandbox, the book download hidden below 100% and shown at 100%, and the book's page self-contained. The variations (#360): six per projection and none for bosses, creatures or presences, a sighting kept under its variation, a projection counted only with all six, the percentage following the count, a bare id read as Black hostile, a variation kept once, the bestiary complete only at the last variation, and the sandbox recording nothing. `tests/achievements-game.test.ts` checks that `completionFull` unlocks `completion.full` once and nothing else, and that `bestiaryComplete` unlocks `bestiary.full` once and nothing else.
 
 ## 7. Decisions, pending owner ruling
 
 1. **Floors count as "entered", not "cleared".** The game has no floor-clear event; `floorEnter` (descent), `treeStory` (tree) and the sky's floor are the first events that say a floor was reached. A clear event would be a new emit site. Pending owner ruling. (The original proposal said "cleared".)
 2. **The routes.** Round two of the owner's review: all three routes count (the descent, the tree, the sky), so 22 floors. The sky's deck and Totality do not count (Totality is not built). Pending owner ruling on Totality once it is built.
-3. **Bestiary counts projections, creatures, the Presences and the sky's guardians and herds.** The owner asked for every creature the player meets; the Spiked Entity and the item `boundaries` are left out because they are not reachable or registered (§2). The owner ruled it inside (2026-11-19): every Presence counts, as the bestiary row says.
+3. **Bestiary counts projections (each with all its variations, issue #360), creatures, the Presences and the sky's guardians and herds.** The owner asked for every creature the player meets; the Spiked Entity and the item `boundaries` are left out because they are not reachable or registered (§2). The owner ruled it inside (2026-11-19): every Presence counts, as the bestiary row says.
 4. **Bosses and achievements overlap.** Each boss has two achievements, so a boss's two achievements count toward both parts. Kept as proposed. Pending owner ruling.
 5. **Recipes include meals.** Cooking a meal counts as a recipe, as brewing a potion does.
 6. **The percentage unlocks one thing: the final achievement.** At 100% "Made Omh" unlocks (§8; its name and text are proposed, pending the owner's name). The percentage unlocks nothing else (no title, no change in the Roots).

@@ -24,7 +24,7 @@ Up: [the Roots: what is still open](README.md) · Status: record. The packages o
 ## What is left
 
 - The eleven pictures and the four pages 3 to 6 pictures listed in [PENDING](PENDING.md#lesson-pictures-not-captured-yet).
-- The 60 achievements of issue #179, and the names awaiting the owner ([PENDING](PENDING.md#achievements-still-to-define)).
+- The 22 achievements of issue #179, and the names awaiting the owner ([PENDING](PENDING.md#achievements-still-to-define)).
 - The three first pages of the hidden book and page 7's quotation ([HIDDEN-BOOK](HIDDEN-BOOK.md)).
 - The open questions of the owner ([OPEN-QUESTIONS](OPEN-QUESTIONS.md)).
 - No lab scenario for the whole Roots flow: the lab carves sealed single rooms and moves the player only by teleport, so it cannot run the Roots (`docs/architecture/SANDBOX.md` §6). The flow is covered by the node tests `tests/roots-book-game.test.ts` (including the whole chain: walk, death, page 2 in the easy layout, a reverse lap), `tests/achievements-game.test.ts` and `tests/roots-streams.test.ts`.

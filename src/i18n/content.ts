@@ -8,6 +8,7 @@ import { ITEM_BY_ID } from '../content/items';
 import { mat } from '../content/materials';
 import type { PartDef } from '../content/parts';
 import type { EnemyDef } from '../enemies/types';
+import type { Tier } from '../enemies/tiers';
 import type { ItemDef, SynergyDef } from '../items/types';
 import { catalog, fill, t, type MessageKey, type Params } from '.';
 
@@ -83,6 +84,15 @@ export function causeName(source: string): string {
   if (item) return itemText(item).name;
   if ((CAUSES as readonly string[]).includes(s)) return t(`cause.${s as (typeof CAUSES)[number]}`);
   return t(source.startsWith('explosion') || source.startsWith('enemy:') ? 'cause.explosion' : 'cause.unknown');
+}
+
+/** A projection's colour tier as the player reads it ('yellow tier'); Black is the projection itself. */
+export const tierName = (tier: Tier) => t(`tier.${tier}`);
+
+/** The death screen's cause, naming the tier of a Yellow or Red projection ('Doubt (yellow tier)'). */
+export function tieredCause(source: string, tier?: Tier): string {
+  const name = causeName(source);
+  return tier && tier !== 'black' ? t('tier.named', { name, tier: tierName(tier) }) : name;
 }
 
 let causeOwners: Map<string, ItemDef> | null = null;

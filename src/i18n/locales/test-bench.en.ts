@@ -72,7 +72,7 @@ export const TEST_BENCH_EN = {
   'test.g.horse.exit': 'The way up is at the top of the mast, into Totality.',
   'test.g.totality.title': 'Totality',
   'test.g.totality.layout': 'Platforms spiralling up from the crown to the Sun, about 60 hops; every sixth is a checkpoint, where the updraft brings you back after a fall.',
-  'test.g.totality.exit': 'Needs the Triple Jump (the horse’s gift, or give it from Practices). The last jump from the last checkpoint enters the Sun; Unity is not built, so nothing follows yet.',
+  'test.g.totality.exit': 'Needs the Triple Jump (the horse’s gift, or give it from Practices). With the five guardians won, standing on the last checkpoint makes it rise into the Sun: the screen turns to light, the card shows and the run ends. Without them, the last jump enters the Sun and nothing follows.',
   'test.g.spirit.health': 'Nothing in the sky takes health. Special attacks drain spirit (out of 100): at most once per attack, 6 s apart, never while you are held nor within 1 s after.',
   'test.g.spirit.zero': 'At 0 spirit you are sent to a random underground floor, 0 to 9, and spirit refills. A won deity refills it too. A capture holds you 3 s and takes one practice.',
   'test.g.spirit.rules': 'Only positive intentions work on sky creatures: a negative one goes out in a puff. A tower of your blocks that reaches a deity’s height is knocked down after a warning. Broken sky blocks grow back.',

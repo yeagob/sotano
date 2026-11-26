@@ -113,7 +113,7 @@ describe('the Kairos charge', () => {
     const { inv, bus } = item();
     inv.gain('kairos');
     inv.memoryFor('kairos').charge = 0;
-    bus.emit('bossOvercome', { boss: 'x', floor: 1, how: 'destroyed' });
+    bus.emit('bossOvercome', { boss: 'x', floor: 1, how: 'destroyed', mastery: 0 });
     expect(inv.memoryFor('kairos').charge).toBe(KAIROS_CHARGES);
   });
 

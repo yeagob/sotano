@@ -53,6 +53,8 @@ import sleephygiene from './sleephygiene';
 import thoughtstopping from './thoughtstopping';
 import triangulation from './triangulation';
 import tripleJump from './triple-jump';
+import doubleJump from './double-jump';
+import wallJump from './wall-jump';
 import irimi from './irimi';
 import fartlek from './fartlek';
 import balasana from './balasana';
@@ -86,6 +88,7 @@ import posttraumatic from './posttraumatic';
 import bilateral from './bilateral';
 import ruleofthree from './ruleofthree';
 import spiralgrowth from './spiralgrowth';
+import walkslow from './walkslow';
 
 export const ITEMS: readonly ItemDef[] = [
   stoic, deepfocus, kaizen, habitstack, secondbrain, exposure,
@@ -95,7 +98,7 @@ export const ITEMS: readonly ItemDef[] = [
   forgiveness, nothingpersonal, constellation, arttherapy, thinkwaitfast, omens,
   lionsmane, occamsrazor, kiai,
   ahamoment, affirmation, bounceback, chunking, discharge, dualprocess, kindling, rapport, resonance, selfcompassion, selfefficacy, sleephygiene, thoughtstopping, triangulation,
-  drlauncher, tripleJump, mendersThread,
+  drlauncher, tripleJump, doubleJump, wallJump, mendersThread,
   dowsing, eyecontact,
   dialectic, reframing,
   waymark,
@@ -108,6 +111,7 @@ export const ITEMS: readonly ItemDef[] = [
   luciddream,
   solvecoagula, posttraumatic,
   bilateral, ruleofthree, spiralgrowth,
+  walkslow,
 ];
 
 export const ITEM_BY_ID: ReadonlyMap<string, ItemDef> = new Map(ITEMS.map(i => [i.id, i]));

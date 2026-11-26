@@ -15,7 +15,7 @@ import { defaultMeta, noStore } from '../src/game/meta';
 
 vi.mock('../src/audio/sfx', () => {
   const silent = new Proxy({}, { get: () => () => {} });
-  return { sfx: silent, sfx2: silent, sfx3: silent, easeMaster: () => {}, setMasterTarget: () => {}, spatial: silent, unlockAudio: () => {} };
+  return { sfx: silent, sfx2: silent, sfx3: silent, easeMaster: () => {}, setMasterTarget: () => {}, setWorldTimeScale: () => {}, spatial: silent, unlockAudio: () => {} };
 });
 
 let Game: typeof import('../src/game/game').Game;
